@@ -72,7 +72,9 @@ class PostProcessAdmin:
             self.send('/queue/'+self.conf.reduction_started, json.dumps(self.data))
 
             # specify instrument directory  
-            #instrument_dir = "/isisdatar80/ndx" + self.instrument.lower() + "/user/processed/autoreduction/"
+            #instrument_dir = "/isisdatar80/ndx" + self.instrument.lower() + "/user/scripts/autoreduction/"
+            #if os.path.exists(instrument_dir) == False:
+            #    instrument_dir = "/isisdatar55/ndx" + self.instrument.lower() + "/user/scripts/autoreduction/"
             instrument_dir = "/home/ajm64/tmp/" + self.instrument.lower() + "/"
 
             # specify script to run and directory
