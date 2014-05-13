@@ -26,7 +26,12 @@ class PostProcessAdmin:
                 self.data_file = str(data['data_file'])
                 logging.info("data_file: " + self.data_file)
                 if os.access(self.data_file, os.R_OK) == False:
-                    raise ValueError("data_file path doesn't exist or file not readable")
+                    if 'isisdatar80' in self.data_file:
+                        self.data_file = self.data_file.replace('isisdatar80', 'isisdatar55')
+                    else:
+                        self.data_file = self.data_file.replace('isisdatar55', 'isisdatar80')
+                    if os.access(self.data_file, os.R_OK) == False:
+                        raise ValueError("data_file path (" + self.data_file + ") doesn't exist or file not readable")
             else:
                 raise ValueError("data_file is missing")
 
