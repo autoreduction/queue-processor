@@ -1,4 +1,4 @@
-<mockup version="1.0" skin="sketch" fontFace="Balsamiq Sans" measuredW="2560" measuredH="908" mockupW="2440" mockupH="864">
+<mockup version="1.0" skin="sketch" fontFace="Balsamiq Sans" measuredW="2560" measuredH="908" mockupW="2440" mockupH="888">
   <controls>
     <control controlID="0" controlTypeID="com.balsamiq.mockups::BrowserWindow" x="238" y="44" w="1398" h="713" measuredW="450" measuredH="400" zOrder="0" locked="true" isInGroup="-1">
       <controlProperties>
@@ -16,7 +16,7 @@
       <controlProperties>
         <controlName>Xoom%20-%20Landscape</controlName>
         <href>ISIS_Autoreduction_SignIn%26bm%3BISIS_Autoreduction_SignIn.bmml%26bm%3BISIS_Autoreduction_SignIn.bmml%26bm%3BISIS_Autoreduction_SignIn.bmml</href>
-        <map>%3Carea%20shape%3D%22rect%22%20coords%3D%221192%2C190%2C2440%2C864%22%20href%3D%22ISIS_Autoreduction_SignIn.bmml%22%20alt%3D%22ISIS_Autoreduction_SignIn%22%20id%3D%2278%22/%3E</map>
+        <map>%3Carea%20shape%3D%22rect%22%20coords%3D%221192%2C214%2C2440%2C888%22%20href%3D%22ISIS_Autoreduction_SignIn.bmml%22%20alt%3D%22ISIS_Autoreduction_SignIn%22%20id%3D%2278%22/%3E</map>
       </controlProperties>
       <groupChildrenDescriptors>
         <control controlID="0" controlTypeID="__group__" x="0" y="0" w="1248" h="674" measuredW="1248" measuredH="674" zOrder="0" locked="true" isInGroup="78">
@@ -170,7 +170,7 @@
         <control controlID="77" controlTypeID="com.balsamiq.mockups::Link" x="124" y="208" w="-1" h="-1" measuredW="141" measuredH="19" zOrder="10" locked="false" isInGroup="78">
           <controlProperties>
             <href>ISIS_Autoreduction_ByExperiment%26bm%3BISIS_Autoreduction_ByExperiment.bmml%26bm%3BISIS_Autoreduction_ByExperiment.bmml%26bm%3BISIS_Autoreduction_ByExperiment.bmml</href>
-            <map>%3Carea%20shape%3D%22rect%22%20coords%3D%221316%2C398%2C1457%2C417%22%20href%3D%22ISIS_Autoreduction_ByExperiment.bmml%22%20alt%3D%22ISIS_Autoreduction_ByExperiment%22%20id%3D%2277%22/%3E</map>
+            <map>%3Carea%20shape%3D%22rect%22%20coords%3D%221316%2C422%2C1457%2C441%22%20href%3D%22ISIS_Autoreduction_ByExperiment.bmml%22%20alt%3D%22ISIS_Autoreduction_ByExperiment%22%20id%3D%2277%22/%3E</map>
             <text>%3C-%20back%20to%20reduction%20list</text>
           </controlProperties>
         </control>
@@ -225,7 +225,7 @@
           <controlProperties>
             <direction>left</direction>
             <href>ISIS_Autoreduction_ByExperiment%26bm%3BISIS_Autoreduction_ByExperiment.bmml%26bm%3BISIS_Autoreduction_ByExperiment.bmml%26bm%3BISIS_Autoreduction_ByExperiment.bmml</href>
-            <map>%3Carea%20shape%3D%22rect%22%20coords%3D%2236%2C193%2C84%2C220%22%20href%3D%22ISIS_Autoreduction_ByExperiment.bmml%22%20alt%3D%22ISIS_Autoreduction_ByExperiment%22%20id%3D%2262%22/%3E</map>
+            <map>%3Carea%20shape%3D%22rect%22%20coords%3D%2236%2C217%2C84%2C244%22%20href%3D%22ISIS_Autoreduction_ByExperiment.bmml%22%20alt%3D%22ISIS_Autoreduction_ByExperiment%22%20id%3D%2262%22/%3E</map>
             <text>Back</text>
           </controlProperties>
         </control>
@@ -336,7 +336,7 @@
     <control controlID="128" controlTypeID="com.balsamiq.mockups::Link" x="723" y="234" w="-1" h="-1" measuredW="141" measuredH="19" zOrder="5" locked="false" isInGroup="-1">
       <controlProperties>
         <href>ISIS_Autoreduction_ByExperiment%26bm%3BISIS_Autoreduction_ByExperiment.bmml%26bm%3BISIS_Autoreduction_ByExperiment.bmml%26bm%3BISIS_Autoreduction_ByExperiment.bmml</href>
-        <map>%3Carea%20shape%3D%22rect%22%20coords%3D%22603%2C190%2C744%2C209%22%20href%3D%22ISIS_Autoreduction_ByExperiment.bmml%22%20alt%3D%22ISIS_Autoreduction_ByExperiment%22%20id%3D%22128%22/%3E</map>
+        <map>%3Carea%20shape%3D%22rect%22%20coords%3D%22603%2C214%2C744%2C233%22%20href%3D%22ISIS_Autoreduction_ByExperiment.bmml%22%20alt%3D%22ISIS_Autoreduction_ByExperiment%22%20id%3D%22128%22/%3E</map>
         <text>%3C-%20back%20to%20reduction%20list</text>
       </controlProperties>
     </control>
@@ -355,6 +355,31 @@
       <controlProperties>
         <text>Run%20Number%2C%20Instrument%2C%20Status%2C%20Submitted%2C%20Submitted%20By%0A%5B12345%5D%2C%20LET%2C%20%7Bcolor%3A%23ff9900%7DProcessing...%7Bcolor%7D%2C%2043min%20ago%2C%20Autoreduction%20Service%0A%5B2468-1%5D%2C%20Loq%2C%20%7Bcolor%3A%23cf2a27%7DPending%7Bcolor%7D%2C%2032min%20ago%2C%20Richard%20Tompson%0A%5B12246%5D%2C%20LET%2C%20%7Bcolor%3A%23cf2a27%7DPending%7Bcolor%7D%2C%2024min%20ago%2C%20Autoreduction%20Service</text>
       </controlProperties>
+    </control>
+    <control controlID="198" controlTypeID="__group__" x="1662" y="20" w="193" h="64" measuredW="193" measuredH="64" zOrder="10" locked="false" isInGroup="-1">
+      <groupChildrenDescriptors>
+        <control controlID="0" controlTypeID="com.balsamiq.mockups::Canvas" x="0" y="0" w="193" h="64" measuredW="100" measuredH="70" zOrder="0" locked="false" isInGroup="198">
+          <controlProperties>
+            <borderStyle>roundedSolid</borderStyle>
+          </controlProperties>
+        </control>
+        <control controlID="1" controlTypeID="com.balsamiq.mockups::Icon" x="15" y="0" w="-1" h="-1" measuredW="64" measuredH="64" zOrder="1" locked="false" isInGroup="198">
+          <controlProperties>
+            <icon>ContactIcon%7Cxlarge</icon>
+          </controlProperties>
+        </control>
+        <control controlID="2" controlTypeID="com.balsamiq.mockups::Label" x="94" y="6" w="-1" h="-1" measuredW="78" measuredH="21" zOrder="2" locked="false" isInGroup="198">
+          <controlProperties>
+            <text>Current%20User</text>
+          </controlProperties>
+        </control>
+        <control controlID="3" controlTypeID="com.balsamiq.mockups::Label" x="94" y="28" w="-1" h="-1" measuredW="84" measuredH="21" zOrder="3" locked="false" isInGroup="198">
+          <controlProperties>
+            <bold>true</bold>
+            <text>Administrator</text>
+          </controlProperties>
+        </control>
+      </groupChildrenDescriptors>
     </control>
   </controls>
 </mockup>

@@ -1,4 +1,4 @@
-<mockup version="1.0" skin="sketch" fontFace="Balsamiq Sans" measuredW="2560" measuredH="1019" mockupW="2452" mockupH="975">
+<mockup version="1.0" skin="sketch" fontFace="Balsamiq Sans" measuredW="2560" measuredH="1019" mockupW="2452" mockupH="999">
   <controls>
     <control controlID="0" controlTypeID="com.balsamiq.mockups::BrowserWindow" x="238" y="44" w="1398" h="713" measuredW="450" measuredH="400" zOrder="0" locked="true" isInGroup="-1">
       <controlProperties>
@@ -243,7 +243,7 @@
         <control controlID="77" controlTypeID="com.balsamiq.mockups::Link" x="154" y="210" w="-1" h="-1" measuredW="141" measuredH="19" zOrder="24" locked="false" isInGroup="78">
           <controlProperties>
             <href>ISIS_Autoreduction_ByExperiment%26bm%3BISIS_Autoreduction_ByExperiment.bmml%26bm%3BISIS_Autoreduction_ByExperiment.bmml%26bm%3BISIS_Autoreduction_ByExperiment.bmml</href>
-            <map>%3Carea%20shape%3D%22rect%22%20coords%3D%221358%2C400%2C1499%2C419%22%20href%3D%22ISIS_Autoreduction_ByExperiment.bmml%22%20alt%3D%22ISIS_Autoreduction_ByExperiment%22%20id%3D%2277%22/%3E</map>
+            <map>%3Carea%20shape%3D%22rect%22%20coords%3D%221358%2C424%2C1499%2C443%22%20href%3D%22ISIS_Autoreduction_ByExperiment.bmml%22%20alt%3D%22ISIS_Autoreduction_ByExperiment%22%20id%3D%2277%22/%3E</map>
             <text>%3C-%20back%20to%20reduction%20list</text>
           </controlProperties>
         </control>
@@ -253,12 +253,12 @@
             <text>preview%20reduction%20script</text>
           </controlProperties>
         </control>
-        <control controlID="80" controlTypeID="com.balsamiq.mockups::CallOut" x="771" y="291" w="-1" h="-1" measuredW="45" measuredH="40" zOrder="27" locked="false" isInGroup="78">
+        <control controlID="80" controlTypeID="com.balsamiq.mockups::CallOut" x="771" y="291" w="-1" h="-1" measuredW="39" measuredH="39" zOrder="27" locked="false" isInGroup="78">
           <controlProperties>
             <text>1</text>
           </controlProperties>
         </control>
-        <control controlID="81" controlTypeID="com.balsamiq.mockups::CallOut" x="754" y="395" w="-1" h="-1" measuredW="36" measuredH="43" zOrder="28" locked="false" isInGroup="78">
+        <control controlID="81" controlTypeID="com.balsamiq.mockups::CallOut" x="754" y="395" w="-1" h="-1" measuredW="38" measuredH="40" zOrder="28" locked="false" isInGroup="78">
           <controlProperties>
             <text>2</text>
           </controlProperties>
@@ -268,7 +268,7 @@
             <text>3</text>
           </controlProperties>
         </control>
-        <control controlID="83" controlTypeID="com.balsamiq.mockups::CallOut" x="784" y="524" w="-1" h="-1" measuredW="36" measuredH="39" zOrder="30" locked="false" isInGroup="78">
+        <control controlID="83" controlTypeID="com.balsamiq.mockups::CallOut" x="784" y="524" w="-1" h="-1" measuredW="36" measuredH="37" zOrder="30" locked="false" isInGroup="78">
           <controlProperties>
             <text>4</text>
           </controlProperties>
@@ -385,7 +385,7 @@
           <controlProperties>
             <direction>left</direction>
             <href>ISIS_Autoreduction_ByExperiment%26bm%3BISIS_Autoreduction_ByExperiment.bmml%26bm%3BISIS_Autoreduction_ByExperiment.bmml%26bm%3BISIS_Autoreduction_ByExperiment.bmml</href>
-            <map>%3Carea%20shape%3D%22rect%22%20coords%3D%2248%2C193%2C96%2C220%22%20href%3D%22ISIS_Autoreduction_ByExperiment.bmml%22%20alt%3D%22ISIS_Autoreduction_ByExperiment%22%20id%3D%2262%22/%3E</map>
+            <map>%3Carea%20shape%3D%22rect%22%20coords%3D%2248%2C217%2C96%2C244%22%20href%3D%22ISIS_Autoreduction_ByExperiment.bmml%22%20alt%3D%22ISIS_Autoreduction_ByExperiment%22%20id%3D%2262%22/%3E</map>
             <text>Back</text>
           </controlProperties>
         </control>
@@ -394,7 +394,7 @@
             <text>preview%20reduction%20script</text>
           </controlProperties>
         </control>
-        <control controlID="64" controlTypeID="com.balsamiq.mockups::CallOut" x="274" y="190" w="-1" h="-1" measuredW="36" measuredH="43" zOrder="21" locked="false" isInGroup="79">
+        <control controlID="64" controlTypeID="com.balsamiq.mockups::CallOut" x="274" y="190" w="-1" h="-1" measuredW="38" measuredH="40" zOrder="21" locked="false" isInGroup="79">
           <controlProperties>
             <text>1</text>
           </controlProperties>
@@ -404,12 +404,12 @@
             <text>2</text>
           </controlProperties>
         </control>
-        <control controlID="66" controlTypeID="com.balsamiq.mockups::CallOut" x="309" y="460" w="-1" h="-1" measuredW="36" measuredH="37" zOrder="23" locked="false" isInGroup="79">
+        <control controlID="66" controlTypeID="com.balsamiq.mockups::CallOut" x="309" y="460" w="-1" h="-1" measuredW="39" measuredH="39" zOrder="23" locked="false" isInGroup="79">
           <controlProperties>
             <text>3</text>
           </controlProperties>
         </control>
-        <control controlID="67" controlTypeID="com.balsamiq.mockups::CallOut" x="0" y="495" w="-1" h="-1" measuredW="36" measuredH="37" zOrder="24" locked="false" isInGroup="79">
+        <control controlID="67" controlTypeID="com.balsamiq.mockups::CallOut" x="0" y="495" w="-1" h="-1" measuredW="38" measuredH="40" zOrder="24" locked="false" isInGroup="79">
           <controlProperties>
             <text>4</text>
           </controlProperties>
@@ -554,7 +554,7 @@
     <control controlID="128" controlTypeID="com.balsamiq.mockups::Link" x="723" y="234" w="-1" h="-1" measuredW="141" measuredH="19" zOrder="30" locked="false" isInGroup="-1">
       <controlProperties>
         <href>ISIS_Autoreduction_ByExperiment%26bm%3BISIS_Autoreduction_ByExperiment.bmml%26bm%3BISIS_Autoreduction_ByExperiment.bmml%26bm%3BISIS_Autoreduction_ByExperiment.bmml</href>
-        <map>%3Carea%20shape%3D%22rect%22%20coords%3D%22615%2C190%2C756%2C209%22%20href%3D%22ISIS_Autoreduction_ByExperiment.bmml%22%20alt%3D%22ISIS_Autoreduction_ByExperiment%22%20id%3D%22128%22/%3E</map>
+        <map>%3Carea%20shape%3D%22rect%22%20coords%3D%22615%2C214%2C756%2C233%22%20href%3D%22ISIS_Autoreduction_ByExperiment.bmml%22%20alt%3D%22ISIS_Autoreduction_ByExperiment%22%20id%3D%22128%22/%3E</map>
         <text>%3C-%20back%20to%20reduction%20list</text>
       </controlProperties>
     </control>
@@ -564,22 +564,22 @@
         <text>preview%20reduction%20script</text>
       </controlProperties>
     </control>
-    <control controlID="133" controlTypeID="com.balsamiq.mockups::CallOut" x="1067" y="301" w="-1" h="-1" measuredW="36" measuredH="39" zOrder="33" locked="false" isInGroup="-1">
+    <control controlID="133" controlTypeID="com.balsamiq.mockups::CallOut" x="1067" y="301" w="-1" h="-1" measuredW="39" measuredH="39" zOrder="33" locked="false" isInGroup="-1">
       <controlProperties>
         <text>1</text>
       </controlProperties>
     </control>
-    <control controlID="134" controlTypeID="com.balsamiq.mockups::CallOut" x="1019" y="409" w="-1" h="-1" measuredW="36" measuredH="39" zOrder="34" locked="false" isInGroup="-1">
+    <control controlID="134" controlTypeID="com.balsamiq.mockups::CallOut" x="1019" y="409" w="-1" h="-1" measuredW="36" measuredH="43" zOrder="34" locked="false" isInGroup="-1">
       <controlProperties>
         <text>2</text>
       </controlProperties>
     </control>
-    <control controlID="135" controlTypeID="com.balsamiq.mockups::CallOut" x="1162" y="487" w="-1" h="-1" measuredW="45" measuredH="40" zOrder="35" locked="false" isInGroup="-1">
+    <control controlID="135" controlTypeID="com.balsamiq.mockups::CallOut" x="1162" y="487" w="-1" h="-1" measuredW="41" measuredH="39" zOrder="35" locked="false" isInGroup="-1">
       <controlProperties>
         <text>3</text>
       </controlProperties>
     </control>
-    <control controlID="137" controlTypeID="com.balsamiq.mockups::CallOut" x="836" y="671" w="-1" h="-1" measuredW="36" measuredH="43" zOrder="36" locked="false" isInGroup="-1">
+    <control controlID="137" controlTypeID="com.balsamiq.mockups::CallOut" x="836" y="671" w="-1" h="-1" measuredW="36" measuredH="39" zOrder="36" locked="false" isInGroup="-1">
       <controlProperties>
         <text>4</text>
       </controlProperties>
@@ -587,12 +587,12 @@
     <control controlID="148" controlTypeID="__group__" x="499" y="772" w="459" h="247" measuredW="459" measuredH="247" zOrder="37" locked="false" isInGroup="-1">
       <groupChildrenDescriptors>
         <control controlID="0" controlTypeID="com.balsamiq.mockups::Canvas" x="0" y="0" w="457" h="247" measuredW="100" measuredH="70" zOrder="0" locked="false" isInGroup="148"/>
-        <control controlID="1" controlTypeID="com.balsamiq.mockups::CallOut" x="7" y="15" w="-1" h="-1" measuredW="39" measuredH="39" zOrder="1" locked="false" isInGroup="148">
+        <control controlID="1" controlTypeID="com.balsamiq.mockups::CallOut" x="7" y="15" w="-1" h="-1" measuredW="36" measuredH="37" zOrder="1" locked="false" isInGroup="148">
           <controlProperties>
             <text>1</text>
           </controlProperties>
         </control>
-        <control controlID="2" controlTypeID="com.balsamiq.mockups::CallOut" x="7" y="70" w="-1" h="-1" measuredW="35" measuredH="39" zOrder="2" locked="false" isInGroup="148">
+        <control controlID="2" controlTypeID="com.balsamiq.mockups::CallOut" x="7" y="70" w="-1" h="-1" measuredW="38" measuredH="40" zOrder="2" locked="false" isInGroup="148">
           <controlProperties>
             <text>2</text>
           </controlProperties>
@@ -625,6 +625,31 @@
         <control controlID="8" controlTypeID="com.balsamiq.mockups::Paragraph" x="52" y="174" w="405" h="40" measuredW="200" measuredH="80" zOrder="8" locked="false" isInGroup="148">
           <controlProperties>
             <text>Generate%20a%20python%20file%20with%20the%20variables%20updated%20for%20the%20user%20to%20check%20its%20correct</text>
+          </controlProperties>
+        </control>
+      </groupChildrenDescriptors>
+    </control>
+    <control controlID="149" controlTypeID="__group__" x="1662" y="20" w="232" h="64" measuredW="232" measuredH="64" zOrder="38" locked="false" isInGroup="-1">
+      <groupChildrenDescriptors>
+        <control controlID="0" controlTypeID="com.balsamiq.mockups::Canvas" x="0" y="0" w="232" h="64" measuredW="100" measuredH="70" zOrder="0" locked="false" isInGroup="149">
+          <controlProperties>
+            <borderStyle>roundedSolid</borderStyle>
+          </controlProperties>
+        </control>
+        <control controlID="1" controlTypeID="com.balsamiq.mockups::Icon" x="15" y="0" w="-1" h="-1" measuredW="64" measuredH="64" zOrder="1" locked="false" isInGroup="149">
+          <controlProperties>
+            <icon>ContactIcon%7Cxlarge</icon>
+          </controlProperties>
+        </control>
+        <control controlID="2" controlTypeID="com.balsamiq.mockups::Label" x="94" y="6" w="-1" h="-1" measuredW="78" measuredH="21" zOrder="2" locked="false" isInGroup="149">
+          <controlProperties>
+            <text>Current%20User</text>
+          </controlProperties>
+        </control>
+        <control controlID="3" controlTypeID="com.balsamiq.mockups::Label" x="94" y="28" w="-1" h="-1" measuredW="129" measuredH="21" zOrder="3" locked="false" isInGroup="149">
+          <controlProperties>
+            <bold>true</bold>
+            <text>Instrument%20Scientist</text>
           </controlProperties>
         </control>
       </groupChildrenDescriptors>
