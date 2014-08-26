@@ -359,17 +359,17 @@
         <text>*Title*%3A%20Example%20experiment%20title</text>
       </controlProperties>
     </control>
-    <control controlID="172" controlTypeID="com.balsamiq.mockups::Label" x="791" y="361" w="-1" h="-1" measuredW="122" measuredH="21" zOrder="11" locked="false" isInGroup="-1">
+    <control controlID="172" controlTypeID="com.balsamiq.mockups::Label" x="791" y="371" w="-1" h="-1" measuredW="122" measuredH="21" zOrder="11" locked="false" isInGroup="-1">
       <controlProperties>
         <text>*Started*%3A%2001/01/2014</text>
       </controlProperties>
     </control>
-    <control controlID="173" controlTypeID="com.balsamiq.mockups::Label" x="935" y="361" w="-1" h="-1" measuredW="115" measuredH="21" zOrder="12" locked="false" isInGroup="-1">
+    <control controlID="173" controlTypeID="com.balsamiq.mockups::Label" x="935" y="371" w="-1" h="-1" measuredW="115" measuredH="21" zOrder="12" locked="false" isInGroup="-1">
       <controlProperties>
         <text>*Ended*%3A%2007/01/2014</text>
       </controlProperties>
     </control>
-    <control controlID="174" controlTypeID="com.balsamiq.mockups::Canvas" x="717" y="316" w="447" h="90" measuredW="100" measuredH="70" zOrder="4" locked="false" isInGroup="-1">
+    <control controlID="174" controlTypeID="com.balsamiq.mockups::Canvas" x="717" y="316" w="447" h="100" measuredW="100" measuredH="70" zOrder="4" locked="false" isInGroup="-1">
       <controlProperties>
         <borderStyle>none</borderStyle>
         <color>13421772</color>
@@ -392,14 +392,14 @@
         <text>*Principal%20Investigator*%3A%20Dr%20James%20Carlson</text>
       </controlProperties>
     </control>
-    <control controlID="179" controlTypeID="com.balsamiq.mockups::Label" x="760" y="382" w="-1" h="-1" measuredW="153" measuredH="21" zOrder="16" locked="false" isInGroup="-1">
+    <control controlID="179" controlTypeID="com.balsamiq.mockups::Label" x="808" y="392" w="-1" h="-1" measuredW="105" measuredH="21" zOrder="16" locked="false" isInGroup="-1">
       <controlProperties>
-        <text>*Data*%3A%20%5B%5C%5C%5Cpath%5Cto%5Cdata%5Cfiles%5D</text>
+        <text>*Data*%3A%20%5B/home/data%5D</text>
       </controlProperties>
     </control>
-    <control controlID="180" controlTypeID="com.balsamiq.mockups::Label" x="935" y="382" w="-1" h="-1" measuredW="179" measuredH="21" zOrder="17" locked="false" isInGroup="-1">
+    <control controlID="180" controlTypeID="com.balsamiq.mockups::Label" x="935" y="392" w="-1" h="-1" measuredW="159" measuredH="21" zOrder="17" locked="false" isInGroup="-1">
       <controlProperties>
-        <text>*Reduced*%3A%20%5B%5C%5C%5Cpath%5Cto%5Cdata%5Cfiles%5D</text>
+        <text>*Reduced*%3A%20%5B/home/reduced/%5D</text>
       </controlProperties>
     </control>
     <control controlID="181" controlTypeID="__group__" x="1662" y="20" w="232" h="64" measuredW="232" measuredH="64" zOrder="18" locked="false" isInGroup="-1">
@@ -426,6 +426,11 @@
           </controlProperties>
         </control>
       </groupChildrenDescriptors>
+    </control>
+    <control controlID="182" controlTypeID="com.balsamiq.mockups::Label" x="889" y="356" w="-1" h="-1" measuredW="96" measuredH="21" zOrder="19" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>Instrument%3A%20LET</text>
+      </controlProperties>
     </control>
   </controls>
 </mockup>

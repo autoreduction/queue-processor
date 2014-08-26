@@ -174,66 +174,66 @@
             <text>ISIS%20Auto-reduction</text>
           </controlProperties>
         </control>
-        <control controlID="50" controlTypeID="com.balsamiq.mockups::Canvas" x="339" y="267" w="567" h="30" measuredW="100" measuredH="70" zOrder="11" locked="false" isInGroup="78">
+        <control controlID="50" controlTypeID="com.balsamiq.mockups::Canvas" x="323" y="267" w="602" h="30" measuredW="100" measuredH="70" zOrder="11" locked="false" isInGroup="78">
           <controlProperties>
             <backgroundAlpha>0.75</backgroundAlpha>
             <borderStyle>none</borderStyle>
             <color>10027008</color>
           </controlProperties>
         </control>
-        <control controlID="51" controlTypeID="com.balsamiq.mockups::FieldSet" x="339" y="223" w="570" h="201" measuredW="200" measuredH="170" zOrder="12" locked="false" isInGroup="78">
+        <control controlID="51" controlTypeID="com.balsamiq.mockups::FieldSet" x="323" y="223" w="602" h="201" measuredW="200" measuredH="170" zOrder="12" locked="false" isInGroup="78">
           <controlProperties>
             <backgroundAlpha>0</backgroundAlpha>
             <text>Sign%20In</text>
           </controlProperties>
         </control>
-        <control controlID="52" controlTypeID="com.balsamiq.mockups::Paragraph" x="346" y="244" w="548" h="23" measuredW="200" measuredH="80" zOrder="13" locked="false" isInGroup="78">
+        <control controlID="52" controlTypeID="com.balsamiq.mockups::Paragraph" x="330" y="244" w="548" h="23" measuredW="200" measuredH="80" zOrder="13" locked="false" isInGroup="78">
           <controlProperties>
             <text>Please%20sign%20in%20using%20your%20STFC%20online%20credentials%20%28those%20that%20are%20used%20for%20ICAT%29</text>
           </controlProperties>
         </control>
-        <control controlID="53" controlTypeID="com.balsamiq.mockups::Label" x="354" y="309" w="-1" h="-1" measuredW="69" measuredH="22" zOrder="14" locked="false" isInGroup="78">
+        <control controlID="53" controlTypeID="com.balsamiq.mockups::Label" x="338" y="309" w="-1" h="-1" measuredW="69" measuredH="22" zOrder="14" locked="false" isInGroup="78">
           <controlProperties>
             <bold>true</bold>
             <size>14</size>
             <text>Username</text>
           </controlProperties>
         </control>
-        <control controlID="54" controlTypeID="com.balsamiq.mockups::TextInput" x="427" y="307" w="367" h="-1" measuredW="140" measuredH="27" zOrder="15" locked="false" isInGroup="78">
+        <control controlID="54" controlTypeID="com.balsamiq.mockups::TextInput" x="411" y="307" w="367" h="-1" measuredW="140" measuredH="27" zOrder="15" locked="false" isInGroup="78">
           <controlProperties>
             <text>john.smith@stfc.ac.uk</text>
           </controlProperties>
         </control>
-        <control controlID="55" controlTypeID="com.balsamiq.mockups::Label" x="354" y="348" w="-1" h="-1" measuredW="62" measuredH="22" zOrder="16" locked="false" isInGroup="78">
+        <control controlID="55" controlTypeID="com.balsamiq.mockups::Label" x="338" y="348" w="-1" h="-1" measuredW="62" measuredH="22" zOrder="16" locked="false" isInGroup="78">
           <controlProperties>
             <bold>true</bold>
             <size>14</size>
             <text>Password</text>
           </controlProperties>
         </control>
-        <control controlID="56" controlTypeID="com.balsamiq.mockups::TextInput" x="427" y="346" w="367" h="-1" measuredW="79" measuredH="26" zOrder="17" locked="false" isInGroup="78">
+        <control controlID="56" controlTypeID="com.balsamiq.mockups::TextInput" x="411" y="346" w="367" h="-1" measuredW="79" measuredH="26" zOrder="17" locked="false" isInGroup="78">
           <controlProperties>
             <borderColor>6684672</borderColor>
             <text/>
           </controlProperties>
         </control>
-        <control controlID="57" controlTypeID="com.balsamiq.mockups::Button" x="719" y="382" w="-1" h="-1" measuredW="75" measuredH="27" zOrder="18" locked="false" isInGroup="78">
+        <control controlID="57" controlTypeID="com.balsamiq.mockups::Button" x="703" y="382" w="-1" h="-1" measuredW="75" measuredH="27" zOrder="18" locked="false" isInGroup="78">
           <controlProperties>
             <href>ISIS_Autoreduction_ByExperiment%26bm%3BISIS_Autoreduction_ByExperiment.bmml%26bm%3BISIS_Autoreduction_ByExperiment.bmml%26bm%3BISIS_Autoreduction_ByExperiment.bmml</href>
-            <map>%3Carea%20shape%3D%22rect%22%20coords%3D%221927%2C587%2C2002%2C614%22%20href%3D%22ISIS_Autoreduction_ByExperiment.bmml%22%20alt%3D%22ISIS_Autoreduction_ByExperiment%22%20id%3D%2257%22/%3E</map>
+            <map>%3Carea%20shape%3D%22rect%22%20coords%3D%221911%2C587%2C1986%2C614%22%20href%3D%22ISIS_Autoreduction_ByExperiment.bmml%22%20alt%3D%22ISIS_Autoreduction_ByExperiment%22%20id%3D%2257%22/%3E</map>
             <menuIcon>false</menuIcon>
             <size>16</size>
             <text>Sign%20In</text>
           </controlProperties>
         </control>
-        <control controlID="58" controlTypeID="com.balsamiq.mockups::Link" x="797" y="311" w="-1" h="-1" measuredW="105" measuredH="19" zOrder="19" locked="false" isInGroup="78">
+        <control controlID="58" controlTypeID="com.balsamiq.mockups::Link" x="781" y="311" w="-1" h="-1" measuredW="134" measuredH="19" zOrder="19" locked="false" isInGroup="78">
           <controlProperties>
-            <text>forgot%20username%3F</text>
+            <text>forgot%20your%20username%3F</text>
           </controlProperties>
         </control>
-        <control controlID="59" controlTypeID="com.balsamiq.mockups::Link" x="797" y="348" w="-1" h="-1" measuredW="102" measuredH="19" zOrder="20" locked="false" isInGroup="78">
+        <control controlID="59" controlTypeID="com.balsamiq.mockups::Link" x="781" y="348" w="-1" h="-1" measuredW="131" measuredH="19" zOrder="20" locked="false" isInGroup="78">
           <controlProperties>
-            <text>forgot%20password%3F</text>
+            <text>forgot%20your%20password%3F</text>
           </controlProperties>
         </control>
         <control controlID="60" controlTypeID="com.balsamiq.mockups::IconLabel" x="550" y="270" w="-1" h="-1" measuredW="149" measuredH="24" zOrder="21" locked="false" isInGroup="78">
@@ -312,14 +312,14 @@
             <text>Sign%20In</text>
           </controlProperties>
         </control>
-        <control controlID="41" controlTypeID="com.balsamiq.mockups::Link" x="182" y="293" w="-1" h="-1" measuredW="105" measuredH="19" zOrder="11" locked="false" isInGroup="79">
+        <control controlID="41" controlTypeID="com.balsamiq.mockups::Link" x="160" y="293" w="-1" h="-1" measuredW="129" measuredH="19" zOrder="11" locked="false" isInGroup="79">
           <controlProperties>
-            <text>forgot%20username%3F</text>
+            <text>forgot%20you%20username%3F</text>
           </controlProperties>
         </control>
-        <control controlID="42" controlTypeID="com.balsamiq.mockups::Link" x="182" y="369" w="-1" h="-1" measuredW="102" measuredH="19" zOrder="12" locked="false" isInGroup="79">
+        <control controlID="42" controlTypeID="com.balsamiq.mockups::Link" x="160" y="369" w="-1" h="-1" measuredW="131" measuredH="19" zOrder="12" locked="false" isInGroup="79">
           <controlProperties>
-            <text>forgot%20password%3F</text>
+            <text>forgot%20your%20password%3F</text>
           </controlProperties>
         </control>
         <control controlID="43" controlTypeID="com.balsamiq.mockups::IconLabel" x="43" y="212" w="-1" h="-1" measuredW="196" measuredH="24" zOrder="13" locked="false" isInGroup="79">
@@ -333,68 +333,68 @@
         </control>
       </groupChildrenDescriptors>
     </control>
-    <control controlID="81" controlTypeID="com.balsamiq.mockups::FieldSet" x="652" y="260" w="570" h="201" measuredW="200" measuredH="170" zOrder="8" locked="false" isInGroup="-1">
+    <control controlID="81" controlTypeID="com.balsamiq.mockups::FieldSet" x="633" y="262" w="604" h="201" measuredW="200" measuredH="170" zOrder="8" locked="false" isInGroup="-1">
       <controlProperties>
         <backgroundAlpha>0</backgroundAlpha>
         <text>Sign%20In</text>
       </controlProperties>
     </control>
-    <control controlID="82" controlTypeID="com.balsamiq.mockups::Paragraph" x="659" y="281" w="548" h="23" measuredW="200" measuredH="80" zOrder="9" locked="false" isInGroup="-1">
+    <control controlID="82" controlTypeID="com.balsamiq.mockups::Paragraph" x="640" y="283" w="548" h="23" measuredW="200" measuredH="80" zOrder="9" locked="false" isInGroup="-1">
       <controlProperties>
         <text>Please%20sign%20in%20using%20your%20STFC%20online%20credentials%20%28those%20that%20are%20used%20for%20ICAT%29</text>
       </controlProperties>
     </control>
-    <control controlID="83" controlTypeID="com.balsamiq.mockups::Label" x="667" y="346" w="-1" h="-1" measuredW="69" measuredH="22" zOrder="10" locked="false" isInGroup="-1">
+    <control controlID="83" controlTypeID="com.balsamiq.mockups::Label" x="648" y="348" w="-1" h="-1" measuredW="69" measuredH="22" zOrder="10" locked="false" isInGroup="-1">
       <controlProperties>
         <bold>true</bold>
         <size>14</size>
         <text>Username</text>
       </controlProperties>
     </control>
-    <control controlID="84" controlTypeID="com.balsamiq.mockups::TextInput" x="740" y="344" w="367" h="-1" measuredW="132" measuredH="27" zOrder="11" locked="false" isInGroup="-1">
+    <control controlID="84" controlTypeID="com.balsamiq.mockups::TextInput" x="721" y="346" w="367" h="-1" measuredW="132" measuredH="27" zOrder="11" locked="false" isInGroup="-1">
       <controlProperties>
         <text>incorect@email.com</text>
       </controlProperties>
     </control>
-    <control controlID="85" controlTypeID="com.balsamiq.mockups::Label" x="667" y="385" w="-1" h="-1" measuredW="62" measuredH="22" zOrder="12" locked="false" isInGroup="-1">
+    <control controlID="85" controlTypeID="com.balsamiq.mockups::Label" x="648" y="387" w="-1" h="-1" measuredW="62" measuredH="22" zOrder="12" locked="false" isInGroup="-1">
       <controlProperties>
         <bold>true</bold>
         <size>14</size>
         <text>Password</text>
       </controlProperties>
     </control>
-    <control controlID="86" controlTypeID="com.balsamiq.mockups::TextInput" x="740" y="383" w="367" h="-1" measuredW="136" measuredH="27" zOrder="13" locked="false" isInGroup="-1">
+    <control controlID="86" controlTypeID="com.balsamiq.mockups::TextInput" x="721" y="385" w="367" h="-1" measuredW="136" measuredH="27" zOrder="13" locked="false" isInGroup="-1">
       <controlProperties>
         <text>********************</text>
       </controlProperties>
     </control>
-    <control controlID="87" controlTypeID="com.balsamiq.mockups::Button" x="1032" y="419" w="-1" h="-1" measuredW="75" measuredH="27" zOrder="14" locked="false" isInGroup="-1">
+    <control controlID="87" controlTypeID="com.balsamiq.mockups::Button" x="1013" y="421" w="-1" h="-1" measuredW="75" measuredH="27" zOrder="14" locked="false" isInGroup="-1">
       <controlProperties>
         <href>ISIS_Autoreduction_ByExperiment%26bm%3BISIS_Autoreduction_ByExperiment.bmml%26bm%3BISIS_Autoreduction_ByExperiment.bmml%26bm%3BISIS_Autoreduction_ByExperiment.bmml</href>
-        <map>%3Carea%20shape%3D%22rect%22%20coords%3D%22912%2C375%2C987%2C402%22%20href%3D%22ISIS_Autoreduction_ByExperiment.bmml%22%20alt%3D%22ISIS_Autoreduction_ByExperiment%22%20id%3D%2287%22/%3E</map>
+        <map>%3Carea%20shape%3D%22rect%22%20coords%3D%22893%2C377%2C968%2C404%22%20href%3D%22ISIS_Autoreduction_ByExperiment.bmml%22%20alt%3D%22ISIS_Autoreduction_ByExperiment%22%20id%3D%2287%22/%3E</map>
         <menuIcon>false</menuIcon>
         <size>16</size>
         <text>Sign%20In</text>
       </controlProperties>
     </control>
-    <control controlID="88" controlTypeID="com.balsamiq.mockups::Link" x="1110" y="348" w="-1" h="-1" measuredW="105" measuredH="19" zOrder="15" locked="false" isInGroup="-1">
+    <control controlID="88" controlTypeID="com.balsamiq.mockups::Link" x="1091" y="350" w="-1" h="-1" measuredW="134" measuredH="19" zOrder="15" locked="false" isInGroup="-1">
       <controlProperties>
-        <text>forgot%20username%3F</text>
+        <text>forgot%20your%20username%3F</text>
       </controlProperties>
     </control>
-    <control controlID="89" controlTypeID="com.balsamiq.mockups::Link" x="1110" y="385" w="-1" h="-1" measuredW="102" measuredH="19" zOrder="16" locked="false" isInGroup="-1">
+    <control controlID="89" controlTypeID="com.balsamiq.mockups::Link" x="1091" y="387" w="-1" h="-1" measuredW="131" measuredH="19" zOrder="16" locked="false" isInGroup="-1">
       <controlProperties>
-        <text>forgot%20password%3F</text>
+        <text>forgot%20your%20password%3F</text>
       </controlProperties>
     </control>
-    <control controlID="90" controlTypeID="com.balsamiq.mockups::Canvas" x="652" y="304" w="567" h="30" measuredW="100" measuredH="70" zOrder="2" locked="false" isInGroup="-1">
+    <control controlID="90" controlTypeID="com.balsamiq.mockups::Canvas" x="633" y="306" w="567" h="30" measuredW="100" measuredH="70" zOrder="2" locked="false" isInGroup="-1">
       <controlProperties>
         <backgroundAlpha>0.75</backgroundAlpha>
         <borderStyle>none</borderStyle>
         <color>10027008</color>
       </controlProperties>
     </control>
-    <control controlID="92" controlTypeID="com.balsamiq.mockups::IconLabel" x="801" y="307" w="-1" h="-1" measuredW="272" measuredH="24" zOrder="17" locked="false" isInGroup="-1">
+    <control controlID="92" controlTypeID="com.balsamiq.mockups::IconLabel" x="782" y="309" w="-1" h="-1" measuredW="272" measuredH="24" zOrder="17" locked="false" isInGroup="-1">
       <controlProperties>
         <color>16777215</color>
         <icon>Alert2Icon%7Csmall</icon>
@@ -402,7 +402,7 @@
         <text>Your%20username%20or%20password%20are%20incorrect</text>
       </controlProperties>
     </control>
-    <control controlID="93" controlTypeID="com.balsamiq.mockups::CallOut" x="1176" y="295" w="-1" h="-1" measuredW="39" measuredH="39" zOrder="18" locked="false" isInGroup="-1">
+    <control controlID="93" controlTypeID="com.balsamiq.mockups::CallOut" x="1157" y="297" w="-1" h="-1" measuredW="41" measuredH="39" zOrder="18" locked="false" isInGroup="-1">
       <controlProperties>
         <text>1</text>
       </controlProperties>
@@ -417,12 +417,12 @@
         <text>Client-side%20and%20server-side%20error%20messages</text>
       </controlProperties>
     </control>
-    <control controlID="96" controlTypeID="com.balsamiq.mockups::CallOut" x="1208" y="352" w="-1" h="-1" measuredW="36" measuredH="37" zOrder="21" locked="false" isInGroup="-1">
+    <control controlID="96" controlTypeID="com.balsamiq.mockups::CallOut" x="1224" y="354" w="-1" h="-1" measuredW="39" measuredH="39" zOrder="21" locked="false" isInGroup="-1">
       <controlProperties>
         <text>2</text>
       </controlProperties>
     </control>
-    <control controlID="97" controlTypeID="com.balsamiq.mockups::CallOut" x="510" y="874" w="-1" h="-1" measuredW="39" measuredH="39" zOrder="22" locked="false" isInGroup="-1">
+    <control controlID="97" controlTypeID="com.balsamiq.mockups::CallOut" x="510" y="874" w="-1" h="-1" measuredW="36" measuredH="37" zOrder="22" locked="false" isInGroup="-1">
       <controlProperties>
         <text>2</text>
       </controlProperties>
