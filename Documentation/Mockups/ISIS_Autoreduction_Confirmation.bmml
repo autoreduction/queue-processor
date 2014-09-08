@@ -192,11 +192,11 @@
             <text>Run%20Variables</text>
           </controlProperties>
         </control>
-        <control controlID="115" controlTypeID="com.balsamiq.mockups::SubTitle" x="403" y="265" w="-1" h="-1" measuredW="447" measuredH="23" zOrder="15" locked="false" isInGroup="78">
+        <control controlID="115" controlTypeID="com.balsamiq.mockups::SubTitle" x="410" y="271" w="-1" h="-1" measuredW="429" measuredH="17" zOrder="15" locked="false" isInGroup="78">
           <controlProperties>
             <color>40463</color>
-            <size>20</size>
-            <text>Successfully%20submitted%20run%20*%2312345*%20for%20reduction</text>
+            <size>14</size>
+            <text>Successfully%20submitted%20run%20*%2312345%2C%20%2312346%2C%20%2312347*%20for%20reduction</text>
           </controlProperties>
         </control>
         <control controlID="116" controlTypeID="com.balsamiq.mockups::Label" x="500" y="288" w="-1" h="-1" measuredW="251" measuredH="24" zOrder="16" locked="false" isInGroup="78">
