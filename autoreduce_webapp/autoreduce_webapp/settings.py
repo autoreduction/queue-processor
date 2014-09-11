@@ -1,14 +1,4 @@
-"""
-Django settings for autoreduce_webapp project.
-
-For more information on this file, see
-https://docs.djangoproject.com/en/dev/topics/settings/
-
-For the full list of settings and their values, see
-https://docs.djangoproject.com/en/dev/ref/settings/
-"""
-
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+import logging
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
@@ -74,13 +64,9 @@ DATABASES = {
 # https://docs.djangoproject.com/en/dev/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_L10N = True
-
 USE_TZ = True
 
 
@@ -88,3 +74,28 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 
 STATIC_URL = '/static/'
+
+
+# Logging
+# https://docs.python.org/2/howto/logging.html
+
+LOG_FILE = os.path.join(BASE_DIR, 'autoreduction.log')
+if DEBUG:
+    LOG_LEVEL = logging.DEBUG
+else:
+    LOG_LEVEL = logging.INFO
+
+# ActiveMQ 
+
+ACTIVEMQ = {
+    'topics' : [
+        'Topic.DataReady',
+        'Topic.ReductionPending',
+        'Topic.ReductionStarted',
+        'Topic.ReductionComplete',
+        'Topic.ReductionError'
+        ],
+    'username' : '',
+    'password' : '',
+    'broker' : [("localhost", 61613)]
+}
