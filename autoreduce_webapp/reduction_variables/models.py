@@ -12,7 +12,7 @@ class InstrumentVariable(models.Model):
         return u'%s - %s=%s' % (self.instrument.name, self.name, self.value)
 
 class RunVariable(models.Model):
-    reduction_run = models.ForeignKey(ReductionRun)
+    reduction_run = models.ForeignKey(ReductionRun, related_name="run_variables")
     name = models.CharField(max_length=50, blank=False)
     value = models.CharField(max_length=300, blank=False)
     type = models.CharField(max_length=50, blank=False)
@@ -24,6 +24,7 @@ class ScriptFile(models.Model):
     reduction_run = models.ForeignKey(ReductionRun, blank=False, related_name="scripts")
     script = models.BinaryField(blank=False)
     file_name = models.CharField(max_length=50, blank=False)
+    created = models.DateTimeField(auto_now_add=True,blank=False)
 
     def __unicode__(self):
         return u'%s' % self.file_name
