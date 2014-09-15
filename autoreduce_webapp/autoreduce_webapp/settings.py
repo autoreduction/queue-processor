@@ -99,3 +99,8 @@ ACTIVEMQ = {
     'password' : '',
     'broker' : [("localhost", 61613)]
 }
+
+# File Locations
+
+REDUCTION_SCRIPT_BASE = ''
+ARCHIVE_BASE = ''

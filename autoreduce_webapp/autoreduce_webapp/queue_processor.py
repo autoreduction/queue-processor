@@ -1,5 +1,5 @@
 import stomp
-from settings import LOG_FILE, LOG_LEVEL, ACTIVEMQ, BASE_DIR
+from settings import LOG_FILE, LOG_LEVEL, ACTIVEMQ, BASE_DIR, ARCHIVE_BASE, REDUCTION_SCRIPT_BASE
 import logging
 logging.basicConfig(filename=LOG_FILE,level=LOG_LEVEL)
 import time
@@ -10,6 +10,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 sys.path.insert(0, BASE_DIR)
 from reduction_viewer.models import ReductionRun, Instrument, ReductionLocation, Status
 from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFile
+from utils import StatusUtils, InstrumentUtils
 
 class Listener(object):
     def __init__(self, client):
@@ -45,12 +46,7 @@ class Listener(object):
     def data_ready():
         logging.info("Data ready for processing run %s on %s" % (str(self._data_dict['run_number']), self._data_dict['instrument']))
         
-        instrument = None
-        try:
-            instrument = Instrument.objects.get(name=self._data_dict['instrument'])
-        except Instrument.DoesNotExist:
-            instrument = Instrument(name=self._data_dict['instrument'])
-            instrument.save()
+        instrument = InstrumentUtils.get_instrument(self._data_dict['instrument'])
 
         instrument_variables_start_run = InstrumentVariable.objects.filter(instrument=instrument, start_run__lte=self._data_dict['run_number']).order_by('start_run')[:1].start_run
         instrument_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run=instrument_variables_start_run)
@@ -62,16 +58,10 @@ class Listener(object):
                                     )
 
         if not instrument_variables:
-            logging.error("No instrument variables found on %s for run %s" % (self._data_dict['instrument'], self._data_dict['run_number']))
+            logging.error("No instrument variables found on %s for run %s" % (instrument.name, self._data_dict['run_number']))
             
-            reduction_run.message = "No instrument variables found on %s for run %s" % (self._data_dict['instrument'], self._data_dict['run_number'])
-            status = None
-            try:
-                status = Status.objects.get(value="Error")
-            except Status.DoesNotExist:
-                status = Status(value="Error")
-                status.save()
-            reduction_run.status = status
+            reduction_run.message = "No instrument variables found on %s for run %s" % (instrument.name, self._data_dict['run_number'])
+            reduction_run.status = StatusUtils.get_error()
         else:
             for variables in instrument_variables:
                 reduction_run_variables = RunVariable(name=variables.name, value=variables.value, type=variables.type)
@@ -92,15 +82,8 @@ class Listener(object):
         logging.info("Run %s has started reduction" % self._data_dict['run_number'])
         
         reduction_run = ReductionRun.objects.get(run_number=self._data_dict['run_number'], run_version=self._data_dict['run_version'])
-        
-        status = None
-        try:
-            status = Status.objects.get(value="Processing")
-        except Status.DoesNotExist:
-            status = Status(value="Processing")
-            status.save()
-        
-        reduction_run.status = status
+                
+        reduction_run.status = StatusUtils.get_processing()
         reduction_run.started = datetime.now()
         reduction_run.save()
 
@@ -108,15 +91,8 @@ class Listener(object):
         logging.info("Run %s has completed reduction" % self._data_dict['run_number'])
         
         reduction_run = ReductionRun.objects.get(run_number=self._data_dict['run_number'], run_version=self._data_dict['run_version'])
-        
-        status = None
-        try:
-            status = Status.objects.get(value="Completed")
-        except Status.DoesNotExist:
-            status = Status(value="Completed")
-            status.save()
-        
-        reduction_run.status = status
+                
+        reduction_run.status = StatusUtils.get_completed()
         reduction_run.finished = datetime.now()
         if self._data_dict['message']:
             reduction_run.message = self._data_dict['message']
@@ -133,15 +109,8 @@ class Listener(object):
         logging.info("Run %s has encountered an error - %s" % (self._data_dict['run_number'], self._data_dict['message']))
         
         reduction_run = ReductionRun.objects.get(run_number=self._data_dict['run_number'], run_version=self._data_dict['run_version'])
-        
-        status = None
-        try:
-            status = Status.objects.get(value="Error")
-        except Status.DoesNotExist:
-            status = Status(value="Error")
-            status.save()
-        
-        reduction_run.status = status
+                
+        reduction_run.status = StatusUtils.get_error()
         reduction_run.finished = datetime.now()
         reduction_run.message = self._data_dict['message']
         reduction_run.save()
@@ -207,7 +176,6 @@ class Client(object):
 
 
 def main():
-    # TODO: Remove these values and replace with real ones
     client = Client(ACTIVEMQ['broker'], ACTIVEMQ['username'], ACTIVEMQ['password'], ACTIVEMQ['topics'], 'Autoreduction_QueueProcessor')
     client.connect()
 
