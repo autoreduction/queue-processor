@@ -1,22 +1,49 @@
 from django.db import models
 from django.contrib.auth.models import User
 from autoreduce_webapp.utils import SeparatedValuesField
+import autoreduce_webapp.icat as icat
+
+class UserProfile(models.Model):
+    user_number = models.IntegerField()
+    user = models.ForeignKey(User, unique=True)
 
 class Instrument(models.Model):
     name = models.CharField(max_length=50)
     is_active = models.BooleanField(default=True)
     scientists = models.ManyToManyField(User)
+    experimenters = models.ManyToManyField(User, related_name='experiment_instruments')
 
     def __unicode__(self):
         return u'%s' % self.name
 
-    def get_experiments():
-        #ToDo: get filtered experiments
-        pass
+    def get_experiments(current_user):
+        reference_numbers = icat.get_associated_experiments(current_user)
+        return Experiment.objects.filter(reference_number__in=reference_numbers)
 
-    def should_show_instrument():
-        #ToDo: return whether or not to display this instrument based on its status and if the user has any valid runs 
-        pass
+    def should_show_instrument(current_user):
+        if current_user.is_superuser:
+            ''' Superusers can see everything '''
+            return True
+        elif current_user.is_staff 
+            ''' Staff can see instruments they are the scientist on '''
+            if current_user.instrument_set.filter(name=name):
+                return True
+            else:
+                ''' Get an updated list of associated instruments from ICAT '''
+                current_user.instrument_set = icat.get_owned_instruments(current_user.get_profile().user_number)
+                current_user.save()
+                if current_user.instrument_set.filter(name=name):
+                    return True
+        else:
+            if current_user.experiment_instruments.filter(name=name):
+                return True
+            else:
+                ''' Get an updated list of associated instruments from ICAT '''
+                current_user.experiment_instruments = icat.get_valid_instruments(current_user.get_profile().user_number)
+                current_user.save()
+                if current_user.experiment_instruments.filter(name=name):
+                    return True
+        return False
 
 class Experiment(models.Model):
     reference_number = models.IntegerField()
@@ -24,17 +51,11 @@ class Experiment(models.Model):
     def __unicode__(self):
         return u'%s' % self.reference_number
 
-    def get_runs():
-        #ToDo: get filtered experiment runs
-        pass
-
     def get_ICAT_details():
-        #ToDo: get details from ICAT
-        pass
+        return icat.get_experiment_details(reference_number)
 
     def is_team_member(possibleMember):
-        #ToDo: check is the given user is a member of the experiment team
-        pass
+        return icat.is_on_experiment_team(reference_number, possibleMember.get_profile().user_number)
 
 class Status(models.Model):
     value = models.CharField(max_length=25)
@@ -46,7 +67,7 @@ class ReductionRun(models.Model):
     run_number = models.IntegerField(blank=False)
     run_name = models.CharField(max_length=50)
     run_version = models.IntegerField(blank=False)
-    experiment = models.ForeignKey(Experiment,blank=False)
+    experiment = models.ForeignKey(Experiment,blank=False, related_name='reduction_runs')
     created = models.DateTimeField(auto_now_add=True,blank=False)
     started_by = models.IntegerField()
     last_updated = models.DateTimeField(auto_now=True,blank=False)

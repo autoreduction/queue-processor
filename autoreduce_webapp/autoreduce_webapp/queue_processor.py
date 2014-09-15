@@ -11,6 +11,7 @@ sys.path.insert(0, BASE_DIR)
 from reduction_viewer.models import ReductionRun, Instrument, ReductionLocation, Status
 from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFile
 from utils import StatusUtils, InstrumentUtils
+import icat
 
 class Listener(object):
     def __init__(self, client):
