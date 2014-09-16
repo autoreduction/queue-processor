@@ -416,11 +416,11 @@ class QueueProcessorTestCase(TestCase):
     '''
     def test_reduction_error_reduction_run_exists_no_message(self):
         rb_number = get_rb_number()
-        insert_run(run_number=-1, instrument="test_reduction_error_reduction_run_exists-TestInstrument", rb_number=rb_number)
+        insert_run(run_number=-1, instrument="test_reduction_error_reduction_run_exists_no_message-TestInstrument", rb_number=rb_number)
 
         test_data = {
             "run_number" : -1,
-            "instrument" : "test_reduction_error_reduction_run_exists-TestInstrument",
+            "instrument" : "test_reduction_error_reduction_run_exists_no_message-TestInstrument",
             "rb_number" : rb_number,
             "data" : "/false/path",
             "run_version" : 0
@@ -434,3 +434,23 @@ class QueueProcessorTestCase(TestCase):
         assert_run_match(test_data, runs[0])
         self.assertEqual(runs[0].status.value, "Error", "Expecting status to be 'Error' but was '%s'" % runs[0].status.value)
         self.assertEqual(runs[0].message, None, "Not expecting the error message to be populated")
+
+    '''
+        Set a reduction run as having an error
+    '''
+    def test_reduction_error_reduction_run_doesnt_exists(self):
+        rb_number = get_rb_number()
+
+        test_data = {
+            "run_number" : -1,
+            "instrument" : "test_reduction_error_reduction_run_doesnt_exists-TestInstrument",
+            "rb_number" : rb_number,
+            "data" : "/false/path",
+            "run_version" : 0
+        }
+        self._client.send('Topic.ReductionError', json.dumps(test_data))
+        time.sleep(0.5)
+
+        runs = ReductionRun.objects.filter(rb_number=rb_number)
+
+        self.assertEqual(len(runs), 0, "Should only return 0 reduction run")
