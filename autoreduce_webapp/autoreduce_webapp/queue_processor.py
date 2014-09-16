@@ -10,7 +10,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 sys.path.insert(0, BASE_DIR)
 from reduction_viewer.models import ReductionRun, Instrument, ReductionLocation, Status
 from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFile
-from utils import StatusUtils, InstrumentUtils
+from reduction_viewer.utils import StatusUtils, InstrumentUtils
 import icat
 
 class Listener(object):
@@ -82,39 +82,46 @@ class Listener(object):
     def reduction_started():
         logging.info("Run %s has started reduction" % self._data_dict['run_number'])
         
-        reduction_run = ReductionRun.objects.get(run_number=self._data_dict['run_number'], run_version=self._data_dict['run_version'])
-                
-        reduction_run.status = StatusUtils.get_processing()
-        reduction_run.started = datetime.now()
-        reduction_run.save()
+        reduction_run = ReductionRun.objects.get(experiment=self._data_dict['rb_number'], run_number=self._data_dict['run_number'], run_version=self._data_dict['run_version'])
+        if reduction_run:
+            reduction_run.status = StatusUtils.get_processing()
+            reduction_run.started = datetime.now()
+            reduction_run.save()
+        else:
+            logging.error("A reduction run started that wasn't found in the database. Experiment: %s, Run Number: %s, Run Version %s" % (self._data_dict['rb_number'], self._data_dict['run_number'], self._data_dict['run_version']))
 
     def reduction_complete():
         logging.info("Run %s has completed reduction" % self._data_dict['run_number'])
         
-        reduction_run = ReductionRun.objects.get(run_number=self._data_dict['run_number'], run_version=self._data_dict['run_version'])
-                
-        reduction_run.status = StatusUtils.get_completed()
-        reduction_run.finished = datetime.now()
-        if self._data_dict['message']:
-            reduction_run.message = self._data_dict['message']
-        for location in self._data_dict['reduction_data']:
-            reduction_location = ReductionLocation(file_path=location)
-            reduction_run.reduction_location.add(reduction_location)
-            # TODO: get graphs
-        reduction_run.save()
+        reduction_run = ReductionRun.objects.get(experiment=self._data_dict['rb_number'], run_number=self._data_dict['run_number'], run_version=self._data_dict['run_version'])
+             
+         if reduction_run:   
+            reduction_run.status = StatusUtils.get_completed()
+            reduction_run.finished = datetime.now()
+            if self._data_dict['message']:
+                reduction_run.message = self._data_dict['message']
+            for location in self._data_dict['reduction_data']:
+                reduction_location = ReductionLocation(file_path=location)
+                reduction_run.reduction_location.add(reduction_location)
+                # TODO: get graphs
+            reduction_run.save()
 
-        # TODO: reduction_complete - trigger any post-processes (e.g. ICAT)
-        
+            # TODO: reduction_complete - trigger any post-processes (e.g. ICAT)
+        else:
+            logging.error("A reduction run completed that wasn't found in the database. Experiment: %s, Run Number: %s, Run Version %s" % (self._data_dict['rb_number'], self._data_dict['run_number'], self._data_dict['run_version']))
 
     def reduction_error():
         logging.info("Run %s has encountered an error - %s" % (self._data_dict['run_number'], self._data_dict['message']))
         
-        reduction_run = ReductionRun.objects.get(run_number=self._data_dict['run_number'], run_version=self._data_dict['run_version'])
+        reduction_run = ReductionRun.objects.get(experiment=self._data_dict['rb_number'], run_number=self._data_dict['run_number'], run_version=self._data_dict['run_version'])
                 
-        reduction_run.status = StatusUtils.get_error()
-        reduction_run.finished = datetime.now()
-        reduction_run.message = self._data_dict['message']
-        reduction_run.save()
+        if reduction_run:
+            reduction_run.status = StatusUtils.get_error()
+            reduction_run.finished = datetime.now()
+            reduction_run.message = self._data_dict['message']
+            reduction_run.save()
+        else:
+            logging.error("A reduction run that caused an error wasn't found in the database. Experiment: %s, Run Number: %s, Run Version %s" % (self._data_dict['rb_number'], self._data_dict['run_number'], self._data_dict['run_version']))
         
 
 class Client(object):
