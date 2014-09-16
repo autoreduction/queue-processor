@@ -52,29 +52,31 @@ class Listener(object):
         instrument_variables_start_run = InstrumentVariable.objects.filter(instrument=instrument, start_run__lte=self._data_dict['run_number']).order_by('start_run')[:1].start_run
         instrument_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run=instrument_variables_start_run)
 
-        reduction_run = ReductionRun(run_number=self._data_dict['run_number'],
+        reduction_run, created = ReductionRun.object.get_or_create(run_number=self._data_dict['run_number'],
                                     run_version=0, 
                                     experiment=self._data_dict['rb_number'], 
                                     data_location=self._data_dict['data']
                                     )
+        if created:
+            if not instrument_variables:
+                logging.error("No instrument variables found on %s for run %s" % (instrument.name, self._data_dict['run_number']))
+                
+                reduction_run.message = "No instrument variables found on %s for run %s" % (instrument.name, self._data_dict['run_number'])
+                reduction_run.status = StatusUtils.get_error()
+            else:
+                for variables in instrument_variables:
+                    reduction_run_variables = RunVariable(name=variables.name, value=variables.value, type=variables.type)
+                    reduction_run.run_variables.add(reduction_run_variables)
+                # TODO: Create script - need some logic for finding script file
+                #reduction_run.scripts.add()
 
-        if not instrument_variables:
-            logging.error("No instrument variables found on %s for run %s" % (instrument.name, self._data_dict['run_number']))
-            
-            reduction_run.message = "No instrument variables found on %s for run %s" % (instrument.name, self._data_dict['run_number'])
-            reduction_run.status = StatusUtils.get_error()
+            reduction_run.save()
+
+            if instrument_variables:
+                # TODO: add script and variables to data_dict
+                self._client.send('Topic.ReductionPending', json.dumps(self._data_dict))        
         else:
-            for variables in instrument_variables:
-                reduction_run_variables = RunVariable(name=variables.name, value=variables.value, type=variables.type)
-                reduction_run.run_variables.add(reduction_run_variables)
-            # TODO: Create script - need some logic for finding script file
-            #reduction_run.scripts.add()
-
-        reduction_run.save()
-
-        if instrument_variables:
-            # TODO: add script and variables to data_dict
-            self._client.send('Topic.ReductionPending', json.dumps(self._data_dict))        
+            logging.error("An invalid attempt to queue an existing reduction run was captured. Experiment: %s, Run Number: %s, Run Version %s" % (self._data_dict['rb_number'], self._data_dict['run_number'], self._data_dict['run_version']))
 
     def reduction_pending():
         logging.info("Run %s ready for reduction" % self._data_dict['run_number'])
@@ -84,9 +86,12 @@ class Listener(object):
         
         reduction_run = ReductionRun.objects.get(experiment=self._data_dict['rb_number'], run_number=self._data_dict['run_number'], run_version=self._data_dict['run_version'])
         if reduction_run:
-            reduction_run.status = StatusUtils.get_processing()
-            reduction_run.started = datetime.now()
-            reduction_run.save()
+            if reduction_run.status.value == "Error" or reduction_run.status.value == "Queued":
+                reduction_run.status = StatusUtils.get_processing()
+                reduction_run.started = datetime.now()
+                reduction_run.save()
+            else:
+                logging.error("An invalid attempt to re-start a reduction run was captured. Experiment: %s, Run Number: %s, Run Version %s" % (self._data_dict['rb_number'], self._data_dict['run_number'], self._data_dict['run_version']))
         else:
             logging.error("A reduction run started that wasn't found in the database. Experiment: %s, Run Number: %s, Run Version %s" % (self._data_dict['rb_number'], self._data_dict['run_number'], self._data_dict['run_version']))
 
@@ -95,18 +100,21 @@ class Listener(object):
         
         reduction_run = ReductionRun.objects.get(experiment=self._data_dict['rb_number'], run_number=self._data_dict['run_number'], run_version=self._data_dict['run_version'])
              
-         if reduction_run:   
-            reduction_run.status = StatusUtils.get_completed()
-            reduction_run.finished = datetime.now()
-            if self._data_dict['message']:
-                reduction_run.message = self._data_dict['message']
-            for location in self._data_dict['reduction_data']:
-                reduction_location = ReductionLocation(file_path=location)
-                reduction_run.reduction_location.add(reduction_location)
-                # TODO: get graphs
-            reduction_run.save()
+         if reduction_run:
+            if reduction_run.status.value == "Processing":
+                reduction_run.status = StatusUtils.get_completed()
+                reduction_run.finished = datetime.now()
+                if self._data_dict['message']:
+                    reduction_run.message = self._data_dict['message']
+                for location in self._data_dict['reduction_data']:
+                    reduction_location = ReductionLocation(file_path=location)
+                    reduction_run.reduction_location.add(reduction_location)
+                    # TODO: get graphs
+                reduction_run.save()
 
-            # TODO: reduction_complete - trigger any post-processes (e.g. ICAT)
+                # TODO: reduction_complete - trigger any post-processes (e.g. ICAT)
+            else:
+                logging.error("An invalid attempt to complete a reduction run that wasn't processing has been captured. Experiment: %s, Run Number: %s, Run Version %s" % (self._data_dict['rb_number'], self._data_dict['run_number'], self._data_dict['run_version']))
         else:
             logging.error("A reduction run completed that wasn't found in the database. Experiment: %s, Run Number: %s, Run Version %s" % (self._data_dict['rb_number'], self._data_dict['run_number'], self._data_dict['run_version']))
 
