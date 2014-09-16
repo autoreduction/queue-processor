@@ -24,7 +24,7 @@ class Instrument(models.Model):
         if current_user.is_superuser:
             ''' Superusers can see everything '''
             return True
-        elif current_user.is_staff 
+        elif current_user.is_staff:
             ''' Staff can see instruments they are the scientist on '''
             if current_user.instrument_set.filter(name=name):
                 return True
