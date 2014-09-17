@@ -24,6 +24,9 @@ class Instrument(models.Model):
         if current_user.is_superuser:
             ''' Superusers can see everything '''
             return True
+        elif not is_active:
+            ''' Don't show if it is inactive '''
+            return False
         elif current_user.is_staff:
             ''' Staff can see instruments they are the scientist on '''
             if current_user.instrument_set.filter(name=name):
