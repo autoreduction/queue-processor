@@ -27,19 +27,32 @@ class QueueProcessorTestCase(TestCase):
         daemon = QueueProcessorDaemon('/tmp/QueueProcessorDaemon.pid')
         daemon.stop()
 
+    '''
+        Insert any data that is needed for tests
+    '''
     def setup_data():
         instrument1, created = Instrument.objects.get_or_create(instrument_name="ExistingTestInstrument1")
+        instrument2, created = Instrument.objects.get_or_create(instrument_name="InactiveInstrument", is_active=False)
 
+    '''
+        Insert a reduction run to ensure the QueueProcessor can find one when recieving a topic message
+    '''
     def insert_run(rb_number=-1, run_number=-1, run_version=0, instrument="TestInstrument", data="/false/path"):
         run = ReductionRun(run_number=run_number, instrument=instrument, rb_number=rb_number, data=data, run_version=run_version)
         run.save()
         return run
 
+    '''
+        Check that a reduction run matches the values in the dictionary used to create it
+    '''
     def assert_run_match(data_dict, reduction_run):
         self.assertEqual(reduction_run.instrument, data_dict["instrument"], "Expecting instrument to be %s but was %s" % (reduction_run.instrument, data_dict["instrument"]))
         self.assertEqual(reduction_run.run_number, data_dict["run_number"], "Expecting run_number to be %s but was %s" % (reduction_run.run_number, data_dict["run_number"]))
         self.assertEqual(reduction_run.rb_number, data_dict["rb_number"], "Expecting rb_number to be %s but was %s" % (reduction_run.rb_number, data_dict["rb_number"]))
 
+    '''
+        Get a new RB Number to prevent conflicts
+    '''
     def get_rb_number(self):
         self._rb_number -= 1
         return self._rb_number
@@ -93,6 +106,34 @@ class QueueProcessorTestCase(TestCase):
         assert_run_match(test_data, runs[0])
         self.assertEqual(runs[0].status.value, "Queued", "Expecting status to be 'Queued' but was '%s'" % runs[0].status.value)
         self.assertNotEqual(Instrument.object.get(name=instrument_name), None, "Was expecting to find %s" % instrument_name)
+
+    '''
+        Create a new reduction run on an instrument that already exists
+    '''
+    def test_data_ready_inactive_instrument(self):
+        rb_number = get_rb_number()
+        instrument_name = "InactiveInstrument"
+        instrument = Instrument.object.get(name=instrument_name)
+        self.assertNotEqual(instrument, None, "Was expecting to find %s" % instrument_name)
+        self.assertFalse(instrument.is_active, "Was expecting %s to be inactive" % instrument_name)
+        test_data = {
+            "run_number" : -1,
+            "instrument" : instrument_name,
+            "rb_number" : rb_number,
+            "data" : "/false/path",
+            "run_version" : 0
+        }
+        self._client.send('Topic.DataReady', json.dumps(test_data))
+        time.sleep(0.5)
+
+        runs = ReductionRun.objects.filter(rb_number=rb_number, run_number=-1)
+
+        self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
+        assert_run_match(test_data, runs[0])
+        self.assertEqual(runs[0].status.value, "Queued", "Expecting status to be 'Queued' but was '%s'" % runs[0].status.value)
+        instrument = Instrument.object.get(name=instrument_name)
+        self.assertNotEqual(instrument, None, "Was expecting to find %s" % instrument_name)
+        self.assertTrue(instrument.is_active, "Was expecting %s to be active" % instrument_name)
 
     '''
         Create two new reduction runs for the same experiment

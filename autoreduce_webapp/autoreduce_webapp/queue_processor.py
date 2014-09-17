@@ -48,6 +48,10 @@ class Listener(object):
         logging.info("Data ready for processing run %s on %s" % (str(self._data_dict['run_number']), self._data_dict['instrument']))
         
         instrument = InstrumentUtils.get_instrument(self._data_dict['instrument'])
+        # Activate the instrument if it is currently set to inactive
+        if not instrument.is_active:
+            instrument.is_active = True
+            instrument.save()
 
         instrument_variables_start_run = InstrumentVariable.objects.filter(instrument=instrument, start_run__lte=self._data_dict['run_number']).order_by('start_run')[:1].start_run
         instrument_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run=instrument_variables_start_run)
