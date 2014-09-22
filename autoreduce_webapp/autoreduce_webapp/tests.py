@@ -32,15 +32,6 @@ class QueueProcessorTestCase(TestCase):
         cls._rb_number = 0
         cls._timeout_wait = 0.5
 
-    @classmethod
-    def tearDownClass(cls):
-        logging.info("Shutting down QueueProcessorDaemon")
-        try:
-            daemon = QueueProcessorDaemon('/tmp/QueueProcessorDaemon.pid')
-            daemon.stop()
-        except: 
-            pass
-
     '''
         Insert a reduction run to ensure the QueueProcessor can find one when recieving a topic message
     '''
@@ -70,7 +61,7 @@ class QueueProcessorTestCase(TestCase):
     def test_data_ready_new_instrument(self):
         rb_number = self.get_rb_number()
         instrument_name = "test_data_ready_new_instrument-TestInstrument"
-        self.assertEqual(Instrument.objects.get(name=instrument_name), None, "Wasn't expecting to find %s" % instrument_name)
+        self.assertEqual(Instrument.objects.filter(name=instrument_name).first(), None, "Wasn't expecting to find %s" % instrument_name)
         test_data = {
             "run_number" : -1,
             "instrument" : instrument_name,
@@ -86,7 +77,7 @@ class QueueProcessorTestCase(TestCase):
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
         self.assert_run_match(test_data, runs[0])
         self.assertEqual(runs[0].status.value, "Queued", "Expecting status to be 'Queued' but was '%s'" % runs[0].status.value)
-        instrument = Instrument.objects.get(name=instrument_name)
+        instrument = Instrument.objects.filter(name=instrument_nam.first()e)
         self.assertNotEqual(instrument, None, "Was expecting to find %s" % instrument_name)
         self.assertTrue(instrument.is_active, "Was expecting instrument to be active")
 
@@ -96,7 +87,7 @@ class QueueProcessorTestCase(TestCase):
     def test_data_ready_existing_instrument(self):
         rb_number = self.get_rb_number()
         instrument_name = "ExistingTestInstrument1"
-        self.assertNotEqual(Instrument.objects.get(name=instrument_name), None, "Was expecting to find %s" % instrument_name)
+        self.assertNotEqual(Instrument.objects.filter(name=instrument_name).first(), None, "Was expecting to find %s" % instrument_name)
         test_data = {
             "run_number" : -1,
             "instrument" : instrument_name,
@@ -112,7 +103,7 @@ class QueueProcessorTestCase(TestCase):
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
         self.assert_run_match(test_data, runs[0])
         self.assertEqual(runs[0].status.value, "Queued", "Expecting status to be 'Queued' but was '%s'" % runs[0].status.value)
-        self.assertNotEqual(Instrument.objects.get(name=instrument_name), None, "Was expecting to find %s" % instrument_name)
+        self.assertNotEqual(Instrument.objects.filter(name=instrument_name).first(), None, "Was expecting to find %s" % instrument_name)
 
     '''
         Create a new reduction run on an instrument that already exists
@@ -120,7 +111,7 @@ class QueueProcessorTestCase(TestCase):
     def test_data_ready_inactive_instrument(self):
         rb_number = self.get_rb_number()
         instrument_name = "InactiveInstrument"
-        instrument = Instrument.objects.get(name=instrument_name)
+        instrument = Instrument.objects.filter(name=instrument_nam.first()e)
         self.assertNotEqual(instrument, None, "Was expecting to find %s" % instrument_name)
         self.assertFalse(instrument.is_active, "Was expecting %s to be inactive" % instrument_name)
         test_data = {
@@ -138,7 +129,7 @@ class QueueProcessorTestCase(TestCase):
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
         self.assert_run_match(test_data, runs[0])
         self.assertEqual(runs[0].status.value, "Queued", "Expecting status to be 'Queued' but was '%s'" % runs[0].status.value)
-        instrument = Instrument.objects.get(name=instrument_name)
+        instrument = Instrument.objects.filter(name=instrument_nam.first()e)
         self.assertNotEqual(instrument, None, "Was expecting to find %s" % instrument_name)
         self.assertTrue(instrument.is_active, "Was expecting %s to be active" % instrument_name)
 
