@@ -73,7 +73,8 @@ class QueueProcessorTestCase(TestCase):
         self._client.send('Topic.DataReady', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
-        runs = ReductionRun.objects.filter(experiment.reference_number=rb_number, run_number=-1)
+        experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
+        runs = ReductionRun.objects.filter(experiment=experiment, run_number=-1)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
         self.assert_run_match(test_data, runs[0])
@@ -99,7 +100,8 @@ class QueueProcessorTestCase(TestCase):
         self._client.send('Topic.DataReady', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
-        runs = ReductionRun.objects.filter(experiment.reference_number=rb_number, run_number=-1)
+        experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
+        runs = ReductionRun.objects.filter(experiment=experiment, run_number=-1)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
         self.assert_run_match(test_data, runs[0])
@@ -125,7 +127,8 @@ class QueueProcessorTestCase(TestCase):
         self._client.send('Topic.DataReady', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
-        runs = ReductionRun.objects.filter(experiment.reference_number=rb_number, run_number=-1)
+        experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
+        runs = ReductionRun.objects.filter(experiment=experiment, run_number=-1)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
         self.assert_run_match(test_data, runs[0])
@@ -158,7 +161,8 @@ class QueueProcessorTestCase(TestCase):
         self._client.send('Topic.DataReady', json.dumps(test_data_run_2))
         time.sleep(self._timeout_wait)
 
-        runs = ReductionRun.objects.filter(experiment.reference_number=rb_number)
+        experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
+        runs = ReductionRun.objects.filter(experiment=experiment)
 
         self.assertEqual(len(runs), 2, "Should only return 2 reduction run")
         self.assert_run_match(test_data_run_1, runs[0])
@@ -184,7 +188,7 @@ class QueueProcessorTestCase(TestCase):
         self._client.send('Topic.ReductionStarted', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
-        runs = ReductionRun.objects.filter(experiment.reference_number=rb_number)
+        runs = ReductionRun.objects.filter(experiment=experiment)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
         self.assert_run_match(test_data, runs[0])
@@ -205,7 +209,8 @@ class QueueProcessorTestCase(TestCase):
         self._client.send('Topic.ReductionStarted', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
-        runs = ReductionRun.objects.filter(experiment.reference_number=rb_number)
+        experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
+        runs = ReductionRun.objects.filter(experiment=experiment)
 
         self.assertEqual(len(runs), 0, "Shouldn't return any reduction runs")
 
@@ -231,7 +236,7 @@ class QueueProcessorTestCase(TestCase):
         self._client.send('Topic.ReductionStarted', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
-        runs = ReductionRun.objects.filter(experiment.reference_number=rb_number)
+        runs = ReductionRun.objects.filter(experiment=experiment)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
         self.assert_run_match(test_data, runs[0])
@@ -260,7 +265,7 @@ class QueueProcessorTestCase(TestCase):
         self._client.send('Topic.ReductionStarted', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
-        runs = ReductionRun.objects.filter(experiment.reference_number=rb_number)
+        runs = ReductionRun.objects.filter(experiment=experiment)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
         self.assert_run_match(test_data, runs[0])
@@ -289,7 +294,7 @@ class QueueProcessorTestCase(TestCase):
         self._client.send('Topic.ReductionStarted', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
-        runs = ReductionRun.objects.filter(experiment.reference_number=rb_number)
+        runs = ReductionRun.objects.filter(experiment=experiment)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
         self.assert_run_match(test_data, runs[0])
@@ -318,7 +323,7 @@ class QueueProcessorTestCase(TestCase):
         self._client.send('Topic.ReductionComplete', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
-        runs = ReductionRun.objects.filter(experiment.reference_number=rb_number)
+        runs = ReductionRun.objects.filter(experiment=experiment)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
         self.assert_run_match(test_data, runs[0])
@@ -341,7 +346,8 @@ class QueueProcessorTestCase(TestCase):
         self._client.send('Topic.ReductionComplete', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
-        runs = ReductionRun.objects.filter(experiment.reference_number=rb_number)
+        experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
+        runs = ReductionRun.objects.filter(experiment=experiment)
 
         self.assertEqual(len(runs), 0, "Should only return 0 reduction run")
 
@@ -365,7 +371,7 @@ class QueueProcessorTestCase(TestCase):
         self._client.send('Topic.ReductionComplete', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
-        runs = ReductionRun.objects.filter(experiment.reference_number=rb_number)
+        runs = ReductionRun.objects.filter(experiment=experiment)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
         self.assert_run_match(test_data, runs[0])
@@ -397,7 +403,7 @@ class QueueProcessorTestCase(TestCase):
         self._client.send('Topic.ReductionComplete', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
-        runs = ReductionRun.objects.filter(experiment.reference_number=rb_number)
+        runs = ReductionRun.objects.filter(experiment=experiment)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
         self.assert_run_match(test_data, runs[0])
@@ -425,7 +431,7 @@ class QueueProcessorTestCase(TestCase):
         self._client.send('Topic.ReductionComplete', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
-        runs = ReductionRun.objects.filter(experiment.reference_number=rb_number)
+        runs = ReductionRun.objects.filter(experiment=experiment)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
         self.assert_run_match(test_data, runs[0])
@@ -453,7 +459,7 @@ class QueueProcessorTestCase(TestCase):
         self._client.send('Topic.ReductionError', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
-        runs = ReductionRun.objects.filter(experiment.reference_number=rb_number)
+        runs = ReductionRun.objects.filter(experiment=experiment)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
         self.assert_run_match(test_data, runs[0])
@@ -478,7 +484,7 @@ class QueueProcessorTestCase(TestCase):
         self._client.send('Topic.ReductionError', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
-        runs = ReductionRun.objects.filter(experiment.reference_number=rb_number)
+        runs = ReductionRun.objects.filter(experiment=experiment)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
         self.assert_run_match(test_data, runs[0])
@@ -501,6 +507,7 @@ class QueueProcessorTestCase(TestCase):
         self._client.send('Topic.ReductionError', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
-        runs = ReductionRun.objects.filter(experiment.reference_number=rb_number)
+        experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
+        runs = ReductionRun.objects.filter(experiment=experiment)
 
         self.assertEqual(len(runs), 0, "Should only return 0 reduction run")
