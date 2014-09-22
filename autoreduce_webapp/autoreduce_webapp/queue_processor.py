@@ -104,7 +104,7 @@ class Listener(object):
         
         reduction_run = ReductionRun.objects.get(experiment=self._data_dict['rb_number'], run_number=self._data_dict['run_number'], run_version=self._data_dict['run_version'])
              
-         if reduction_run:
+        if reduction_run:
             if reduction_run.status.value == "Processing":
                 reduction_run.status = StatusUtils.get_completed()
                 reduction_run.finished = datetime.now()
