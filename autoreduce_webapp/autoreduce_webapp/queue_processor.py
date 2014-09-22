@@ -32,15 +32,15 @@ class Listener(object):
             logging.error(sys.exc_value)
             return
 
-        if destination is '/Topic/DataReady':
+        if destination is '/topic/DataReady':
             data_ready()
-        elif destination is '/Topic/ReductionPending':
+        elif destination is '/topic/ReductionPending':
             reduction_pending()
-        elif destination is '/Topic/ReductionStarted':
+        elif destination is '/topic/ReductionStarted':
             reduction_started()
-        elif destination is '/Topic/ReductionComplete':
+        elif destination is '/topic/ReductionComplete':
             reduction_complete()
-        elif destination is '/Topic/ReductionError':
+        elif destination is '/topic/ReductionError':
             reduction_error()
         else:
             logging.warning("Recieved a message on an unknown topic %s" % destination)
@@ -79,7 +79,7 @@ class Listener(object):
 
             if instrument_variables:
                 # TODO: add script and variables to data_dict
-                self._client.send('/Topic/ReductionPending', json.dumps(self._data_dict))        
+                self._client.send('/topic/ReductionPending', json.dumps(self._data_dict))        
         else:
             logging.error("An invalid attempt to queue an existing reduction run was captured. Experiment: %s, Run Number: %s, Run Version %s" % (self._data_dict['rb_number'], self._data_dict['run_number'], self._data_dict['run_version']))
 
