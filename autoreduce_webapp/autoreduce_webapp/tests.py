@@ -39,9 +39,9 @@ class QueueProcessorTestCase(TestCase):
         Check that a reduction run matches the values in the dictionary used to create it
     '''
     def assert_run_match(self, data_dict, reduction_run):
-        self.assertNotEqual(reduction_run.experiment.experiment_instruments.filter(name=data_dict["instrument"]), None, "Expecting to be associated with instrument %s" % (data_dict["instrument"]))
+        self.assertEqual(reduction_run.instrument.name, data_dict["instrument"], "Expecting instrument to be %s but was %s" % (data_dict["instrument"], reduction_run.instrument.name))
         self.assertEqual(reduction_run.run_number, data_dict["run_number"], "Expecting run_number to be %s but was %s" % (data_dict["run_number"], reduction_run.run_number))
-        self.assertEqual(reduction_run.experiment.reference_number, data_dict["rb_number"], "Expecting rb_number to be %s but was %s" % (reduction_run.data_dict["rb_number"], experiment.reference_number))
+        self.assertEqual(reduction_run.experiment.reference_number, data_dict["rb_number"], "Expecting rb_number to be %s but was %s" % (data_dict["rb_number"], reduction_run.experiment.reference_number))
 
     '''
         Get a new RB Number to prevent conflicts

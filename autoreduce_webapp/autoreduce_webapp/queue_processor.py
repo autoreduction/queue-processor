@@ -63,7 +63,8 @@ class Listener(object):
         experiment, experiment_created = Experiment.objects.get_or_create(reference_number=self._data_dict['rb_number'], )
         reduction_run, created = ReductionRun.objects.get_or_create(run_number=self._data_dict['run_number'],
                                     run_version=0, 
-                                    experiment=experiment
+                                    experiment=experiment,
+                                    instrument=instrument
                                     )
         data_location = DataLocation(file_path=self._data_dict['data'], reduction_run=reduction_run)
         if created:
