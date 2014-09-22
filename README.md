@@ -182,5 +182,9 @@ Recommended Server OS: Red Hat 6
 1. `lokkit --port=80:tcp`
 2. Copy `apache_auto_reduce_webapp.conf` to `/etc/httpd/conf.d/`
 3. `service httpd restart`
+
+### Installing application
+1. `git clone https://github.com/mantidproject/autoreduce.git`
+2. `ln -s ./autoreduce/WebApp/ISIS/autoreduce_webapp /var/www/autoreduce_webapp`
 4. `mkdir /var/www/autoreduce_webapp/static`
 5. `ln -s /usr/local/lib/python2.7/site-packages/django/contrib/admin/static/admin/ /var/www/autoreduce_webapp/static/admin`
