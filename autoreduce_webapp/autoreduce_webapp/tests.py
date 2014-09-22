@@ -21,16 +21,10 @@ class QueueProcessorTestCase(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        logging.info("Starting up QueueProcessorDaemon")
-        try:
-            daemon = QueueProcessorDaemon('/tmp/QueueProcessorDaemon.pid')
-            daemon.start()
-        except:
-            pass
         cls._client = Client(ACTIVEMQ['broker'], ACTIVEMQ['username'], ACTIVEMQ['password'], ACTIVEMQ['topics'], 'Autoreduction_QueueProcessor_Test')
         cls._client.connect()
         cls._rb_number = 0
-        cls._timeout_wait = 0.5
+        cls._timeout_wait = 1
 
     '''
         Insert a reduction run to ensure the QueueProcessor can find one when recieving a topic message
