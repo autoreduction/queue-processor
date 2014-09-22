@@ -15,8 +15,11 @@ class QueueProcessorTestCase(TestCase):
 
     def setUp(self):
         logging.info("Starting up QueueProcessorDaemon")
-        daemon = QueueProcessorDaemon('/tmp/QueueProcessorDaemon.pid')
-        daemon.start()
+        try:
+            daemon = QueueProcessorDaemon('/tmp/QueueProcessorDaemon.pid')
+            daemon.start()
+        except:
+            pass
         self._client = Client(ACTIVEMQ['broker'], ACTIVEMQ['username'], ACTIVEMQ['password'], ACTIVEMQ['topics'], 'Autoreduction_QueueProcessor_Test')
         self._client.connect()
         setup_data()

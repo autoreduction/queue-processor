@@ -171,7 +171,7 @@ class Client(object):
             self._disconnect()
             self._connection = self.get_connection()
         
-        for queue in self._queues:
+        for queue in self._topics:
             logging.info("[%s] Subscribing to %s" % (self._consumer_name, queue))
             self._connection.subscribe(destination=queue, id=1, ack='auto')
 

@@ -176,7 +176,9 @@ Recommended Server OS: Red Hat 6
 4. `CREATE DATABASE autoreduction`
 5. `CREATE USER 'autoreduce'@'*' IDENTIFIED BY 'password';`
 6. `GRANT ALL ON 'autoreduction'.* TO 'autoreduce'@'*' IDENTIFIED BY 'password';`
-7. `python /var/www/autoreduce_webapp/manage.py syncdb`
+7. `GRANT ALL ON 'test_autoreduction'.* TO 'autoreduce'@'*' IDENTIFIED BY 'password';`
+8. `python /var/www/autoreduce_webapp/manage.py syncdb`
+9. Add `max_allowed_packet=64M` to `/etc/my.cnf`
 
 ### Setting up Apache
 1. `lokkit --port=80:tcp`
