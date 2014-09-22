@@ -9,7 +9,7 @@ Recommended Server OS: Red Hat 6
 ### Install prerequisites
 1. `yum update`
 2. `yum groupinstall 'development tools'`
-3. `yum install zlib-devel bzip2-devel openssl-devel xz-libs wget httpd`
+3. `yum install zlib-devel bzip2-devel openssl-devel xz-libs wget httpd mod_wsgi mysql-devel python-devel`
 
 ### Install Python 2.7
 **Note: Do not remove python 2.6! Ensure that you specify python 2.7 correctly when using sudo commands as it will default to the installed.**
@@ -31,11 +31,10 @@ Recommended Server OS: Red Hat 6
 
 ### Install MySQL
 1. `yum install mysql mysql-server MySQL-python`
+2. `pip install mysql-python`
 
 ### Install Django
-1. `wget http://mirrors.nl.eu.kernel.org/fedora-epel/6/i386/epel-release-6-8.noarch.rpm`
-2. `rpm -Uvh epel-release-6-8.noarch.rpm`
-3. `yum install Django`
+1. `easy_install Django`
 
 ### Install ActiveMQ and stomp.py
 1. `wget http://mirror.gopotato.co.uk/apache/activemq/5.9.1/apache-activemq-5.9.1-bin.tar.gz`
@@ -160,3 +159,18 @@ Recommended Server OS: Red Hat 6
                 </users>
             </simpleAuthenticationPlugin>
         </plugins>
+
+### Setting up MySQL
+1. `service mysqld start`
+2. `/usr/bin/mysql_secure_installation`
+3. `mysql -u admin -p`
+4. `CREATE DATABASE autoreduction`
+5. `CREATE USER 'autoreduce'@'*' IDENTIFIED BY 'password';`
+6. `GRANT ALL ON 'autoreduction'.* TO 'autoreduce'@'*' IDENTIFIED BY 'password';`
+7. `python /var/www/autoreduce_webapp/manage.py syncdb`
+
+### Setting up Apache
+1. `lokkit --port=80:tcp`
+2. Copy `apache_auto_reduce_webapp.conf` to `/etc/httpd/conf.d/`
+3. `service httpd restart`
+
