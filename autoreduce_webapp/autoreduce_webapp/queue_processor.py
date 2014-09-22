@@ -9,7 +9,7 @@ import json
 from datetime import datetime
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 sys.path.insert(0, BASE_DIR)
-from reduction_viewer.models import ReductionRun, Instrument, ReductionLocation, Status
+from reduction_viewer.models import ReductionRun, Instrument, ReductionLocation, Status, DataLocation
 from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFile
 from reduction_viewer.utils import StatusUtils, InstrumentUtils
 import icat
@@ -64,8 +64,8 @@ class Listener(object):
         reduction_run, created = ReductionRun.objects.get_or_create(run_number=self._data_dict['run_number'],
                                     run_version=0, 
                                     experiment=self._data_dict['rb_number'], 
-                                    data_location=self._data_dict['data']
                                     )
+        data_location = DataLocation(file_path=self._data_dict['data'], reduction_run=reduction_run)
         if created:
             if not instrument_variables:
                 logging.error("No instrument variables found on %s for run %s" % (instrument.name, self._data_dict['run_number']))
@@ -80,6 +80,7 @@ class Listener(object):
                 #reduction_run.scripts.add()
 
             reduction_run.save()
+            data_location.save()
 
             if instrument_variables:
                 # TODO: add script and variables to data_dict
