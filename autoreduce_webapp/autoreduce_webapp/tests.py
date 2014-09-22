@@ -12,6 +12,12 @@ from reduction_viewer.utils import StatusUtils
 from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFile
 
 class QueueProcessorTestCase(TestCase):
+    '''
+        Insert any data that is needed for tests
+    '''
+    def setup_data():
+        instrument1, created = Instrument.objects.get_or_create(instrument_name="ExistingTestInstrument1")
+        instrument2, created = Instrument.objects.get_or_create(instrument_name="InactiveInstrument", is_active=False)
 
     def setUp(self):
         logging.info("Starting up QueueProcessorDaemon")
@@ -30,13 +36,6 @@ class QueueProcessorTestCase(TestCase):
         logging.info("Shutting down QueueProcessorDaemon")
         daemon = QueueProcessorDaemon('/tmp/QueueProcessorDaemon.pid')
         daemon.stop()
-
-    '''
-        Insert any data that is needed for tests
-    '''
-    def setup_data():
-        instrument1, created = Instrument.objects.get_or_create(instrument_name="ExistingTestInstrument1")
-        instrument2, created = Instrument.objects.get_or_create(instrument_name="InactiveInstrument", is_active=False)
 
     '''
         Insert a reduction run to ensure the QueueProcessor can find one when recieving a topic message
