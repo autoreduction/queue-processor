@@ -90,11 +90,11 @@ else:
 
 ACTIVEMQ = {
     'topics' : [
-        '/Topic/DataReady',
-        '/Topic/ReductionPending',
-        '/Topic/ReductionStarted',
-        '/Topic/ReductionComplete',
-        '/Topic/ReductionError'
+        '/topic/DataReady',
+        '/topic/ReductionPending',
+        '/topic/ReductionStarted',
+        '/topic/ReductionComplete',
+        '/topic/ReductionError'
         ],
     'username' : 'admin',
     'password' : 'pa$$w0rd',
