@@ -8,7 +8,7 @@ app_path = os.path.abspath(app_path)
 if app_path not in sys.path:
     sys.path.append(app_path)
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
+os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 
 import django.core.handlers.wsgi
 application = django.core.handlers.wsgi.WSGIHandler()

@@ -9,7 +9,7 @@ Recommended Server OS: Red Hat 6
 ### Install prerequisites
 1. `yum update`
 2. `yum groupinstall 'development tools'`
-3. `yum install zlib-devel bzip2-devel openssl-devel xz-libs wget httpd mod_wsgi mysql-devel python-devel`
+3. `yum install zlib-devel bzip2-devel openssl-devel xz-libs wget httpd mod_wsgi mysql-devel python-devel httpd-devel.x86_64`
 
 ### Install Python 2.7
 **Note: Do not remove python 2.6! Ensure that you specify python 2.7 correctly when using sudo commands as it will default to the installed.**
@@ -17,9 +17,18 @@ Recommended Server OS: Red Hat 6
 2. `xz -d Python-2.7.6.tar.xz`
 3. `tar -xvf Python-2.7.6.tar`
 4. `cd Python-2.7.6`
-5. `./configure --prefix=/usr/local`
+5. `./configure --prefix=/usr/local --enable-shared`
 6. `make && make install`
-7. `export PATH="/usr/local/bin:$PATH"`
+7. `ln -s /usr/local/lib/libpython2.7.so.1.0 /usr/lib/libpython2.7.so.1.0`
+8. `ldconfig /usr/local/bin/python`
+9. `export PATH="/usr/local/bin:$PATH"`
+
+### Install mod_wsgi
+1. `wget https://github.com/GrahamDumpleton/mod_wsgi/archive/4.3.0.tar.gz`
+2. `tar xvfz 4.3.0.tar.gz`
+3. `cd mod_wsgi-4.3.0/`
+4. `./configure --with-python=/usr/local/bin/python`
+5. `make && make install`
 
 ### Install Pip and easy_install
 1. `wget --no-check-certificate https://pypi.python.org/packages/source/s/setuptools/setuptools-1.4.2.tar.gz`
