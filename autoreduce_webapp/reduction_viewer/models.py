@@ -78,7 +78,7 @@ class ReductionRun(models.Model):
     started = models.DateTimeField(null=True, blank=True)
     finished = models.DateTimeField(null=True, blank=True)
     message = models.CharField(max_length=255)
-    graph = SeparatedValuesField()
+    graph = SeparatedValuesField(null=True, blank=True)
 
     def __unicode__(self):
         if seld.run_name:

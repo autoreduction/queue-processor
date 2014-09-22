@@ -14,16 +14,16 @@ class StatusUtils(object):
         return status
 
     def get_error(self):
-        return self.__get_status("Error")
+        return self._get_status("Error")
 
     def get_completed(self):
-        return self.__get_status("Completed")
+        return self._get_status("Completed")
 
     def get_processing(self):
-        return self.__get_status("Processing")
+        return self._get_status("Processing")
 
     def get_queued(self):
-        return self.__get_status("Queued")
+        return self._get_status("Queued")
             
 class InstrumentUtils(object):
     def get_instrument(self, instrument_name):
