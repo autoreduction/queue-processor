@@ -77,7 +77,7 @@ class QueueProcessorTestCase(TestCase):
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
         self.assert_run_match(test_data, runs[0])
         self.assertEqual(runs[0].status.value, "Queued", "Expecting status to be 'Queued' but was '%s'" % runs[0].status.value)
-        instrument = Instrument.objects.filter(name=instrument_nam.first()e)
+        instrument = Instrument.objects.filter(name=instrument_name).first()
         self.assertNotEqual(instrument, None, "Was expecting to find %s" % instrument_name)
         self.assertTrue(instrument.is_active, "Was expecting instrument to be active")
 
@@ -111,7 +111,7 @@ class QueueProcessorTestCase(TestCase):
     def test_data_ready_inactive_instrument(self):
         rb_number = self.get_rb_number()
         instrument_name = "InactiveInstrument"
-        instrument = Instrument.objects.filter(name=instrument_nam.first()e)
+        instrument = Instrument.objects.filter(name=instrument_name).first()
         self.assertNotEqual(instrument, None, "Was expecting to find %s" % instrument_name)
         self.assertFalse(instrument.is_active, "Was expecting %s to be inactive" % instrument_name)
         test_data = {
@@ -129,7 +129,7 @@ class QueueProcessorTestCase(TestCase):
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
         self.assert_run_match(test_data, runs[0])
         self.assertEqual(runs[0].status.value, "Queued", "Expecting status to be 'Queued' but was '%s'" % runs[0].status.value)
-        instrument = Instrument.objects.filter(name=instrument_nam.first()e)
+        instrument = Instrument.objects.filter(name=instrument_name).first()
         self.assertNotEqual(instrument, None, "Was expecting to find %s" % instrument_name)
         self.assertTrue(instrument.is_active, "Was expecting %s to be active" % instrument_name)
 
