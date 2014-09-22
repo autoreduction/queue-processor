@@ -7,7 +7,7 @@ from queue_processor_daemon import QueueProcessorDaemon
 from queue_processor import Client
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 sys.path.insert(0, BASE_DIR)
-from reduction_viewer.models import ReductionRun, Instrument, ReductionLocation, Status
+from reduction_viewer.models import ReductionRun, Instrument, ReductionLocation, Status, Experiment
 from reduction_viewer.utils import StatusUtils
 from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFile
 
