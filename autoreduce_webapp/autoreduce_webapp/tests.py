@@ -36,7 +36,8 @@ class QueueProcessorTestCase(TestCase):
         Insert a reduction run to ensure the QueueProcessor can find one when recieving a topic message
     '''
     def insert_run(rb_number=-1, run_number=-1, run_version=0, instrument="TestInstrument", data="/false/path"):
-        run = ReductionRun(run_number=run_number, instrument=instrument, rb_number=rb_number, data=data, run_version=run_version)
+        experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
+        run = ReductionRun(run_number=run_number, instrument=instrument, experiment=experiment, data=data, run_version=run_version)
         run.save()
         return run
 
@@ -72,7 +73,7 @@ class QueueProcessorTestCase(TestCase):
         self._client.send('Topic.DataReady', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
-        runs = ReductionRun.objects.filter(rb_number=rb_number, run_number=-1)
+        runs = ReductionRun.objects.filter(experiment.reference_number=rb_number, run_number=-1)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
         self.assert_run_match(test_data, runs[0])
@@ -98,7 +99,7 @@ class QueueProcessorTestCase(TestCase):
         self._client.send('Topic.DataReady', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
-        runs = ReductionRun.objects.filter(rb_number=rb_number, run_number=-1)
+        runs = ReductionRun.objects.filter(experiment.reference_number=rb_number, run_number=-1)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
         self.assert_run_match(test_data, runs[0])
@@ -124,7 +125,7 @@ class QueueProcessorTestCase(TestCase):
         self._client.send('Topic.DataReady', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
-        runs = ReductionRun.objects.filter(rb_number=rb_number, run_number=-1)
+        runs = ReductionRun.objects.filter(experiment.reference_number=rb_number, run_number=-1)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
         self.assert_run_match(test_data, runs[0])
@@ -157,7 +158,7 @@ class QueueProcessorTestCase(TestCase):
         self._client.send('Topic.DataReady', json.dumps(test_data_run_2))
         time.sleep(self._timeout_wait)
 
-        runs = ReductionRun.objects.filter(rb_number=rb_number)
+        runs = ReductionRun.objects.filter(experiment.reference_number=rb_number)
 
         self.assertEqual(len(runs), 2, "Should only return 2 reduction run")
         self.assert_run_match(test_data_run_1, runs[0])
@@ -170,7 +171,8 @@ class QueueProcessorTestCase(TestCase):
     '''
     def test_reduction_started_reduction_run_exists(self):
         rb_number = self.get_rb_number()
-        insert_run(run_number=-1, instrument="test_reduction_started-TestInstrument", rb_number=rb_number)
+        experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
+        insert_run(run_number=-1, instrument="test_reduction_started-TestInstrument", experiment=experiment)
 
         test_data = {
             "run_number" : -1,
@@ -182,7 +184,7 @@ class QueueProcessorTestCase(TestCase):
         self._client.send('Topic.ReductionStarted', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
-        runs = ReductionRun.objects.filter(rb_number=rb_number)
+        runs = ReductionRun.objects.filter(experiment.reference_number=rb_number)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
         self.assert_run_match(test_data, runs[0])
@@ -203,7 +205,7 @@ class QueueProcessorTestCase(TestCase):
         self._client.send('Topic.ReductionStarted', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
-        runs = ReductionRun.objects.filter(rb_number=rb_number)
+        runs = ReductionRun.objects.filter(experiment.reference_number=rb_number)
 
         self.assertEqual(len(runs), 0, "Shouldn't return any reduction runs")
 
@@ -213,7 +215,8 @@ class QueueProcessorTestCase(TestCase):
     def test_reduction_started_reduction_run_already_started(self):
         rb_number = self.get_rb_number()
         started_time = datetime.datetime.now()
-        run = insert_run(run_number=-1, instrument="test_reduction_started_reduction_run_already_started-TestInstrument", rb_number=rb_number)
+        experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
+        run = insert_run(run_number=-1, instrument="test_reduction_started_reduction_run_already_started-TestInstrument", experiment=experiment)
         run.status = StatusUtils.get_processing()
         run.started = started_time
         run.save()
@@ -228,7 +231,7 @@ class QueueProcessorTestCase(TestCase):
         self._client.send('Topic.ReductionStarted', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
-        runs = ReductionRun.objects.filter(rb_number=rb_number)
+        runs = ReductionRun.objects.filter(experiment.reference_number=rb_number)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
         self.assert_run_match(test_data, runs[0])
@@ -241,7 +244,8 @@ class QueueProcessorTestCase(TestCase):
     def test_reduction_started_reduction_run_already_completed(self):
         rb_number = self.get_rb_number()
         started_time = datetime.datetime.now()
-        run = insert_run(run_number=-1, instrument="test_reduction_started_reduction_run_already_completed-TestInstrument", rb_number=rb_number)
+        experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
+        run = insert_run(run_number=-1, instrument="test_reduction_started_reduction_run_already_completed-TestInstrument", experiment=experiment)
         run.status = StatusUtils.get_completed()
         run.started = started_time
         run.save()
@@ -256,7 +260,7 @@ class QueueProcessorTestCase(TestCase):
         self._client.send('Topic.ReductionStarted', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
-        runs = ReductionRun.objects.filter(rb_number=rb_number)
+        runs = ReductionRun.objects.filter(experiment.reference_number=rb_number)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
         self.assert_run_match(test_data, runs[0])
@@ -269,7 +273,8 @@ class QueueProcessorTestCase(TestCase):
     def test_reduction_started_reduction_run_error(self):
         rb_number = self.get_rb_number()
         started_time = datetime.datetime.now()
-        run = insert_run(run_number=-1, instrument="test_reduction_started_reduction_run_error-TestInstrument", rb_number=rb_number)
+        experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
+        run = insert_run(run_number=-1, instrument="test_reduction_started_reduction_run_error-TestInstrument", experiment=experiment)
         run.status = StatusUtils.get_error()
         run.started = started_time
         run.save()
@@ -284,7 +289,7 @@ class QueueProcessorTestCase(TestCase):
         self._client.send('Topic.ReductionStarted', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
-        runs = ReductionRun.objects.filter(rb_number=rb_number)
+        runs = ReductionRun.objects.filter(experiment.reference_number=rb_number)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
         self.assert_run_match(test_data, runs[0])
@@ -297,7 +302,8 @@ class QueueProcessorTestCase(TestCase):
     def test_reduction_complete_reduction_run_exists(self):
         rb_number = self.get_rb_number()
         started_time = datetime.datetime.now()
-        run = insert_run(run_number=-1, instrument="test_reduction_complete_reduction_run_exists-TestInstrument", rb_number=rb_number)
+        experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
+        run = insert_run(run_number=-1, instrument="test_reduction_complete_reduction_run_exists-TestInstrument", experiment=experiment)
         run.status = StatusUtils.get_processing()
         run.started = started_time
         run.save()
@@ -312,7 +318,7 @@ class QueueProcessorTestCase(TestCase):
         self._client.send('Topic.ReductionComplete', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
-        runs = ReductionRun.objects.filter(rb_number=rb_number)
+        runs = ReductionRun.objects.filter(experiment.reference_number=rb_number)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
         self.assert_run_match(test_data, runs[0])
@@ -335,7 +341,7 @@ class QueueProcessorTestCase(TestCase):
         self._client.send('Topic.ReductionComplete', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
-        runs = ReductionRun.objects.filter(rb_number=rb_number)
+        runs = ReductionRun.objects.filter(experiment.reference_number=rb_number)
 
         self.assertEqual(len(runs), 0, "Should only return 0 reduction run")
 
@@ -344,7 +350,8 @@ class QueueProcessorTestCase(TestCase):
     '''
     def test_reduction_complete_reduction_run_queued(self):
         rb_number = self.get_rb_number()
-        run = insert_run(run_number=-1, instrument="test_reduction_complete_reduction_run_queued-TestInstrument", rb_number=rb_number)
+        experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
+        run = insert_run(run_number=-1, instrument="test_reduction_complete_reduction_run_queued-TestInstrument", experiment=experiment)
         run.status = StatusUtils.get_queued()
         run.save()
 
@@ -358,7 +365,7 @@ class QueueProcessorTestCase(TestCase):
         self._client.send('Topic.ReductionComplete', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
-        runs = ReductionRun.objects.filter(rb_number=rb_number)
+        runs = ReductionRun.objects.filter(experiment.reference_number=rb_number)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
         self.assert_run_match(test_data, runs[0])
@@ -373,7 +380,8 @@ class QueueProcessorTestCase(TestCase):
         rb_number = self.get_rb_number()
         started_time = datetime.datetime.now()
         finished_time = datetime.datetime.now()
-        run = insert_run(run_number=-1, instrument="test_reduction_complete_reduction_run_complete-TestInstrument", rb_number=rb_number)
+        experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
+        run = insert_run(run_number=-1, instrument="test_reduction_complete_reduction_run_complete-TestInstrument", experiment=experiment)
         run.status = StatusUtils.get_completed()
         run.started = started_time
         run.finished = finished_time
@@ -389,7 +397,7 @@ class QueueProcessorTestCase(TestCase):
         self._client.send('Topic.ReductionComplete', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
-        runs = ReductionRun.objects.filter(rb_number=rb_number)
+        runs = ReductionRun.objects.filter(experiment.reference_number=rb_number)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
         self.assert_run_match(test_data, runs[0])
@@ -402,7 +410,8 @@ class QueueProcessorTestCase(TestCase):
     '''
     def test_reduction_complete_reduction_run_error(self):
         rb_number = self.get_rb_number()
-        run = insert_run(run_number=-1, instrument="test_reduction_complete_reduction_run_error-TestInstrument", rb_number=rb_number)
+        experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
+        run = insert_run(run_number=-1, instrument="test_reduction_complete_reduction_run_error-TestInstrument", experiment=experiment)
         run.status = StatusUtils.get_error()
         run.save()
 
@@ -416,7 +425,7 @@ class QueueProcessorTestCase(TestCase):
         self._client.send('Topic.ReductionComplete', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
-        runs = ReductionRun.objects.filter(rb_number=rb_number)
+        runs = ReductionRun.objects.filter(experiment.reference_number=rb_number)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
         self.assert_run_match(test_data, runs[0])
@@ -429,7 +438,8 @@ class QueueProcessorTestCase(TestCase):
     '''
     def test_reduction_error_reduction_run_exists(self):
         rb_number = self.get_rb_number()
-        insert_run(run_number=-1, instrument="test_reduction_error_reduction_run_exists-TestInstrument", rb_number=rb_number)
+        experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
+        insert_run(run_number=-1, instrument="test_reduction_error_reduction_run_exists-TestInstrument", experiment=experiment)
         error_message = "We have an error here"
 
         test_data = {
@@ -443,7 +453,7 @@ class QueueProcessorTestCase(TestCase):
         self._client.send('Topic.ReductionError', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
-        runs = ReductionRun.objects.filter(rb_number=rb_number)
+        runs = ReductionRun.objects.filter(experiment.reference_number=rb_number)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
         self.assert_run_match(test_data, runs[0])
@@ -455,7 +465,8 @@ class QueueProcessorTestCase(TestCase):
     '''
     def test_reduction_error_reduction_run_exists_no_message(self):
         rb_number = self.get_rb_number()
-        insert_run(run_number=-1, instrument="test_reduction_error_reduction_run_exists_no_message-TestInstrument", rb_number=rb_number)
+        experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
+        insert_run(run_number=-1, instrument="test_reduction_error_reduction_run_exists_no_message-TestInstrument", experiment=experiment)
 
         test_data = {
             "run_number" : -1,
@@ -467,7 +478,7 @@ class QueueProcessorTestCase(TestCase):
         self._client.send('Topic.ReductionError', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
-        runs = ReductionRun.objects.filter(rb_number=rb_number)
+        runs = ReductionRun.objects.filter(experiment.reference_number=rb_number)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
         self.assert_run_match(test_data, runs[0])
@@ -490,6 +501,6 @@ class QueueProcessorTestCase(TestCase):
         self._client.send('Topic.ReductionError', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
-        runs = ReductionRun.objects.filter(rb_number=rb_number)
+        runs = ReductionRun.objects.filter(experiment.reference_number=rb_number)
 
         self.assertEqual(len(runs), 0, "Should only return 0 reduction run")
