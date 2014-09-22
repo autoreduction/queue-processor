@@ -60,10 +60,10 @@ class Listener(object):
         except:
             pass
         instrument_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run=instrument_variables_start_run)
-
+        experiment, experiment_created = Experiment.objects.get_or_create(reference_number=self._data_dict['rb_number'], )
         reduction_run, created = ReductionRun.objects.get_or_create(run_number=self._data_dict['run_number'],
                                     run_version=0, 
-                                    experiment=self._data_dict['rb_number'], 
+                                    experiment=experiment
                                     )
         data_location = DataLocation(file_path=self._data_dict['data'], reduction_run=reduction_run)
         if created:
