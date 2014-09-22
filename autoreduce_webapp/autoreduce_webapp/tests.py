@@ -15,9 +15,9 @@ class QueueProcessorTestCase(TestCase):
     '''
         Insert any data that is needed for tests
     '''
-    def setup_data():
-        instrument1, created = Instrument.objects.get_or_create(instrument_name="ExistingTestInstrument1")
-        instrument2, created = Instrument.objects.get_or_create(instrument_name="InactiveInstrument", is_active=False)
+    def setup_data(self):
+        instrument1, created = Instrument.objects.get_or_create(name="ExistingTestInstrument1")
+        instrument2, created = Instrument.objects.get_or_create(name="InactiveInstrument", is_active=False)
 
     def setUp(self):
         logging.info("Starting up QueueProcessorDaemon")
@@ -28,7 +28,7 @@ class QueueProcessorTestCase(TestCase):
             pass
         self._client = Client(ACTIVEMQ['broker'], ACTIVEMQ['username'], ACTIVEMQ['password'], ACTIVEMQ['topics'], 'Autoreduction_QueueProcessor_Test')
         self._client.connect()
-        setup_data()
+        self.setup_data()
         self._rb_number = 0
         self._timeout_wait = 0.5
 
