@@ -29,5 +29,7 @@ class InstrumentUtils(object):
     def get_instrument(self, instrument_name):
         instrument, created = Instrument.objects.get_or_create(name__iexact=instrument_name)
         if created:
+            instrument.name = instrument_name
+            instrument.save()
             logging.warn("%s instrument was not found, created it." % instrument_name)
         return instrument
