@@ -32,20 +32,20 @@ class Listener(object):
             logging.error(sys.exc_value)
             return
 
-        if destination is '/topic/DataReady':
-            data_ready()
-        elif destination is '/topic/ReductionPending':
-            reduction_pending()
-        elif destination is '/topic/ReductionStarted':
-            reduction_started()
-        elif destination is '/topic/ReductionComplete':
-            reduction_complete()
-        elif destination is '/topic/ReductionError':
-            reduction_error()
+        if destination == '/topic/DataReady':
+            self.data_ready()
+        elif destination == '/topic/ReductionPending':
+            self.reduction_pending()
+        elif destination == '/topic/ReductionStarted':
+            self.reduction_started()
+        elif destination == '/topic/ReductionComplete':
+            self.reduction_complete()
+        elif destination == '/topic/ReductionError':
+            self.reduction_error()
         else:
-            logging.warning("Recieved a message on an unknown topic %s" % destination)
+            logging.warning("Recieved a message on an unknown topic '%s'" % destination)
 
-    def data_ready():
+    def data_ready(self):
         logging.info("Data ready for processing run %s on %s" % (str(self._data_dict['run_number']), self._data_dict['instrument']))
         
         instrument = InstrumentUtils.get_instrument(self._data_dict['instrument'])
@@ -83,10 +83,10 @@ class Listener(object):
         else:
             logging.error("An invalid attempt to queue an existing reduction run was captured. Experiment: %s, Run Number: %s, Run Version %s" % (self._data_dict['rb_number'], self._data_dict['run_number'], self._data_dict['run_version']))
 
-    def reduction_pending():
+    def reduction_pending(self):
         logging.info("Run %s ready for reduction" % self._data_dict['run_number'])
 
-    def reduction_started():
+    def reduction_started(self):
         logging.info("Run %s has started reduction" % self._data_dict['run_number'])
         
         reduction_run = ReductionRun.objects.get(experiment=self._data_dict['rb_number'], run_number=self._data_dict['run_number'], run_version=self._data_dict['run_version'])
@@ -100,7 +100,7 @@ class Listener(object):
         else:
             logging.error("A reduction run started that wasn't found in the database. Experiment: %s, Run Number: %s, Run Version %s" % (self._data_dict['rb_number'], self._data_dict['run_number'], self._data_dict['run_version']))
 
-    def reduction_complete():
+    def reduction_complete(self):
         logging.info("Run %s has completed reduction" % self._data_dict['run_number'])
         
         reduction_run = ReductionRun.objects.get(experiment=self._data_dict['rb_number'], run_number=self._data_dict['run_number'], run_version=self._data_dict['run_version'])
@@ -123,7 +123,7 @@ class Listener(object):
         else:
             logging.error("A reduction run completed that wasn't found in the database. Experiment: %s, Run Number: %s, Run Version %s" % (self._data_dict['rb_number'], self._data_dict['run_number'], self._data_dict['run_version']))
 
-    def reduction_error():
+    def reduction_error(self):
         logging.info("Run %s has encountered an error - %s" % (self._data_dict['run_number'], self._data_dict['message']))
         
         reduction_run = ReductionRun.objects.get(experiment=self._data_dict['rb_number'], run_number=self._data_dict['run_number'], run_version=self._data_dict['run_version'])
