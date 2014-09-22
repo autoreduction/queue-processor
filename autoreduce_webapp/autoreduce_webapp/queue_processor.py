@@ -61,7 +61,7 @@ class Listener(object):
             pass
         instrument_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run=instrument_variables_start_run)
 
-        reduction_run, created = ReductionRun.object.get_or_create(run_number=self._data_dict['run_number'],
+        reduction_run, created = ReductionRun.objects.get_or_create(run_number=self._data_dict['run_number'],
                                     run_version=0, 
                                     experiment=self._data_dict['rb_number'], 
                                     data_location=self._data_dict['data']
