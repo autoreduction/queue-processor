@@ -79,7 +79,7 @@ class Listener(object):
 
             if instrument_variables:
                 # TODO: add script and variables to data_dict
-                self._client.send('Topic.ReductionPending', json.dumps(self._data_dict))        
+                self._client.send('/Topic/ReductionPending', json.dumps(self._data_dict))        
         else:
             logging.error("An invalid attempt to queue an existing reduction run was captured. Experiment: %s, Run Number: %s, Run Version %s" % (self._data_dict['rb_number'], self._data_dict['run_number'], self._data_dict['run_version']))
 
