@@ -1,6 +1,6 @@
 from django.test import TestCase
 from settings import LOG_FILE, LOG_LEVEL, ACTIVEMQ, BASE_DIR
-import sys, time, logging, os, datetime
+import sys, time, logging, os, datetime, json
 logging.basicConfig(filename=LOG_FILE,level=LOG_LEVEL)
 from daemon import Daemon
 from queue_processor_daemon import QueueProcessorDaemon
