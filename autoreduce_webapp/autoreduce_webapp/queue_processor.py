@@ -9,7 +9,7 @@ import json
 from datetime import datetime
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 sys.path.insert(0, BASE_DIR)
-from reduction_viewer.models import ReductionRun, Instrument, ReductionLocation, Status, DataLocation
+from reduction_viewer.models import ReductionRun, Instrument, ReductionLocation, Status, DataLocation, Experiment
 from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFile
 from reduction_viewer.utils import StatusUtils, InstrumentUtils
 import icat
