@@ -54,7 +54,11 @@ class Listener(object):
             instrument.is_active = True
             instrument.save()
 
-        instrument_variables_start_run = InstrumentVariable.objects.filter(instrument=instrument, start_run__lte=self._data_dict['run_number']).latest('start_run').start_run
+        instrument_variables_start_run = 0
+        try:
+            instrument_variables_start_run =  InstrumentVariable.objects.filter(instrument=instrument, start_run__lte=self._data_dict['run_number']).latest('start_run').start_run
+        except:
+            pass
         instrument_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run=instrument_variables_start_run)
 
         reduction_run, created = ReductionRun.object.get_or_create(run_number=self._data_dict['run_number'],
