@@ -67,7 +67,7 @@ class Status(models.Model):
         return u'%s' % self.value
 
 class ReductionRun(models.Model):
-    instrument = models.ForeignKey(Instrument, related_name='reduction_runs')
+    instrument = models.ForeignKey(Instrument, related_name='reduction_runs', null=True)
     run_number = models.IntegerField(blank=False)
     run_name = models.CharField(max_length=50)
     run_version = models.IntegerField(blank=False)
