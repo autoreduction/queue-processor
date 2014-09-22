@@ -19,7 +19,7 @@ class QueueProcessorTestCase(TestCase):
         instrument1, created = Instrument.objects.get_or_create(name="ExistingTestInstrument1")
         instrument2, created = Instrument.objects.get_or_create(name="InactiveInstrument", is_active=False)
 
-    def setUp(self):
+    def setUpClass(self):
         logging.info("Starting up QueueProcessorDaemon")
         try:
             daemon = QueueProcessorDaemon('/tmp/QueueProcessorDaemon.pid')
@@ -32,7 +32,7 @@ class QueueProcessorTestCase(TestCase):
         self._rb_number = 0
         self._timeout_wait = 0.5
 
-    def tearDown(self):
+    def tearDownClass(self):
         logging.info("Shutting down QueueProcessorDaemon")
         daemon = QueueProcessorDaemon('/tmp/QueueProcessorDaemon.pid')
         daemon.stop()
@@ -64,7 +64,7 @@ class QueueProcessorTestCase(TestCase):
         Create a new reduction run and check that it auto-creates an instrument when it doesn't exist
     '''
     def test_data_ready_new_instrument(self):
-        rb_number = get_rb_number()
+        rb_number = self.get_rb_number()
         instrument_name = "test_data_ready_new_instrument-TestInstrument"
         self.assertEqual(Instrument.object.get(name=instrument_name), None, "Wasn't expecting to find %s" % instrument_name)
         test_data = {
@@ -80,7 +80,7 @@ class QueueProcessorTestCase(TestCase):
         runs = ReductionRun.objects.filter(rb_number=rb_number, run_number=-1)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
-        assert_run_match(test_data, runs[0])
+        self.assert_run_match(test_data, runs[0])
         self.assertEqual(runs[0].status.value, "Queued", "Expecting status to be 'Queued' but was '%s'" % runs[0].status.value)
         instrument = Instrument.object.get(name=instrument_name)
         self.assertNotEqual(instrument, None, "Was expecting to find %s" % instrument_name)
@@ -90,7 +90,7 @@ class QueueProcessorTestCase(TestCase):
         Create a new reduction run on an instrument that already exists
     '''
     def test_data_ready_existing_instrument(self):
-        rb_number = get_rb_number()
+        rb_number = self.get_rb_number()
         instrument_name = "ExistingTestInstrument1"
         self.assertNotEqual(Instrument.object.get(name=instrument_name), None, "Was expecting to find %s" % instrument_name)
         test_data = {
@@ -106,7 +106,7 @@ class QueueProcessorTestCase(TestCase):
         runs = ReductionRun.objects.filter(rb_number=rb_number, run_number=-1)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
-        assert_run_match(test_data, runs[0])
+        self.assert_run_match(test_data, runs[0])
         self.assertEqual(runs[0].status.value, "Queued", "Expecting status to be 'Queued' but was '%s'" % runs[0].status.value)
         self.assertNotEqual(Instrument.object.get(name=instrument_name), None, "Was expecting to find %s" % instrument_name)
 
@@ -114,7 +114,7 @@ class QueueProcessorTestCase(TestCase):
         Create a new reduction run on an instrument that already exists
     '''
     def test_data_ready_inactive_instrument(self):
-        rb_number = get_rb_number()
+        rb_number = self.get_rb_number()
         instrument_name = "InactiveInstrument"
         instrument = Instrument.object.get(name=instrument_name)
         self.assertNotEqual(instrument, None, "Was expecting to find %s" % instrument_name)
@@ -132,7 +132,7 @@ class QueueProcessorTestCase(TestCase):
         runs = ReductionRun.objects.filter(rb_number=rb_number, run_number=-1)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
-        assert_run_match(test_data, runs[0])
+        self.assert_run_match(test_data, runs[0])
         self.assertEqual(runs[0].status.value, "Queued", "Expecting status to be 'Queued' but was '%s'" % runs[0].status.value)
         instrument = Instrument.object.get(name=instrument_name)
         self.assertNotEqual(instrument, None, "Was expecting to find %s" % instrument_name)
@@ -142,7 +142,7 @@ class QueueProcessorTestCase(TestCase):
         Create two new reduction runs for the same experiment
     '''
     def test_data_ready_multiple_runs(self):
-        rb_number = get_rb_number()
+        rb_number = self.get_rb_number()
         instrument_name = "test_data_ready_multiple_runs-TestInstrument"
         test_data_run_1 = {
             "run_number" : -1,
@@ -165,16 +165,16 @@ class QueueProcessorTestCase(TestCase):
         runs = ReductionRun.objects.filter(rb_number=rb_number)
 
         self.assertEqual(len(runs), 2, "Should only return 2 reduction run")
-        assert_run_match(test_data_run_1, runs[0])
+        self.assert_run_match(test_data_run_1, runs[0])
         self.assertEqual(runs[0].status.value, "Queued", "Expecting status to be 'Queued' but was '%s'" % runs[0].status.value)
-        assert_run_match(test_data_run_2, runs[1])
+        self.assert_run_match(test_data_run_2, runs[1])
         self.assertEqual(runs[1].status.value, "Queued", "Expecting status to be 'Queued' but was '%s'" % runs[1].status.value)
         
     '''
         Change an existing reduction run from Queued to Started
     '''
     def test_reduction_started_reduction_run_exists(self):
-        rb_number = get_rb_number()
+        rb_number = self.get_rb_number()
         insert_run(run_number=-1, instrument="test_reduction_started-TestInstrument", rb_number=rb_number)
 
         test_data = {
@@ -190,14 +190,14 @@ class QueueProcessorTestCase(TestCase):
         runs = ReductionRun.objects.filter(rb_number=rb_number)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
-        assert_run_match(test_data, runs[0])
+        self.assert_run_match(test_data, runs[0])
         self.assertEqual(runs[0].status.value, "Processing", "Expecting status to be 'Processing' but was '%s'" % runs[0].status.value)
 
     '''
         Attempt to change a non-existing reduction run from Queued to Started
     '''
     def test_reduction_started_reduction_run_doesnt_exist(self):
-        rb_number = get_rb_number()
+        rb_number = self.get_rb_number()
         test_data = {
             "run_number" : -1,
             "instrument" : "test_reduction_started-TestInstrument",
@@ -216,7 +216,7 @@ class QueueProcessorTestCase(TestCase):
         Attempt to (incorrectly) start an already started reduction run
     '''
     def test_reduction_started_reduction_run_already_started(self):
-        rb_number = get_rb_number()
+        rb_number = self.get_rb_number()
         started_time = datetime.datetime.now()
         run = insert_run(run_number=-1, instrument="test_reduction_started_reduction_run_already_started-TestInstrument", rb_number=rb_number)
         run.status = StatusUtils.get_processing()
@@ -236,7 +236,7 @@ class QueueProcessorTestCase(TestCase):
         runs = ReductionRun.objects.filter(rb_number=rb_number)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
-        assert_run_match(test_data, runs[0])
+        self.assert_run_match(test_data, runs[0])
         self.assertEqual(runs[0].status.value, "Processing", "Expecting status to be 'Processing' but was '%s'" % runs[0].status.value)
         self.assertEqual(runs[0].started, started_time, "Started time should not have been updated")
 
@@ -244,7 +244,7 @@ class QueueProcessorTestCase(TestCase):
         Attempt to (incorrectly) start a reduction run that has already completed
     '''
     def test_reduction_started_reduction_run_already_completed(self):
-        rb_number = get_rb_number()
+        rb_number = self.get_rb_number()
         started_time = datetime.datetime.now()
         run = insert_run(run_number=-1, instrument="test_reduction_started_reduction_run_already_completed-TestInstrument", rb_number=rb_number)
         run.status = StatusUtils.get_completed()
@@ -264,7 +264,7 @@ class QueueProcessorTestCase(TestCase):
         runs = ReductionRun.objects.filter(rb_number=rb_number)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
-        assert_run_match(test_data, runs[0])
+        self.assert_run_match(test_data, runs[0])
         self.assertEqual(runs[0].status.value, "Completed", "Expecting status to be 'Completed' but was '%s'" % runs[0].status.value)
         self.assertEqual(runs[0].started, started_time, "Started time should not have been updated")
 
@@ -272,7 +272,7 @@ class QueueProcessorTestCase(TestCase):
         Re-start a reduction run than had previously shown an error
     '''
     def test_reduction_started_reduction_run_error(self):
-        rb_number = get_rb_number()
+        rb_number = self.get_rb_number()
         started_time = datetime.datetime.now()
         run = insert_run(run_number=-1, instrument="test_reduction_started_reduction_run_error-TestInstrument", rb_number=rb_number)
         run.status = StatusUtils.get_error()
@@ -292,7 +292,7 @@ class QueueProcessorTestCase(TestCase):
         runs = ReductionRun.objects.filter(rb_number=rb_number)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
-        assert_run_match(test_data, runs[0])
+        self.assert_run_match(test_data, runs[0])
         self.assertEqual(runs[0].status.value, "Processing", "Expecting status to be 'Processing' but was '%s'" % runs[0].status.value)
         self.assertNotEqual(runs[0].started, started_time, "Started time should have been updated")
 
@@ -300,7 +300,7 @@ class QueueProcessorTestCase(TestCase):
         Change a started reduction run to completed
     '''
     def test_reduction_complete_reduction_run_exists(self):
-        rb_number = get_rb_number()
+        rb_number = self.get_rb_number()
         started_time = datetime.datetime.now()
         run = insert_run(run_number=-1, instrument="test_reduction_complete_reduction_run_exists-TestInstrument", rb_number=rb_number)
         run.status = StatusUtils.get_processing()
@@ -320,7 +320,7 @@ class QueueProcessorTestCase(TestCase):
         runs = ReductionRun.objects.filter(rb_number=rb_number)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
-        assert_run_match(test_data, runs[0])
+        self.assert_run_match(test_data, runs[0])
         self.assertEqual(runs[0].status.value, "Completed", "Expecting status to be 'Completed' but was '%s'" % runs[0].status.value)
         self.assertNotEqual(runs[0].finished, None, "Expected the reduction run to have a finished timestamp")
 
@@ -328,7 +328,7 @@ class QueueProcessorTestCase(TestCase):
         Attempt to complete a reduction run that doesn't exist
     '''
     def test_reduction_complete_reduction_run_exists(self):
-        rb_number = get_rb_number()
+        rb_number = self.get_rb_number()
 
         test_data = {
             "run_number" : -1,
@@ -348,7 +348,7 @@ class QueueProcessorTestCase(TestCase):
         Attempt to (incorrectly) complete a queued reduction run
     '''
     def test_reduction_complete_reduction_run_queued(self):
-        rb_number = get_rb_number()
+        rb_number = self.get_rb_number()
         run = insert_run(run_number=-1, instrument="test_reduction_complete_reduction_run_queued-TestInstrument", rb_number=rb_number)
         run.status = StatusUtils.get_queued()
         run.save()
@@ -366,7 +366,7 @@ class QueueProcessorTestCase(TestCase):
         runs = ReductionRun.objects.filter(rb_number=rb_number)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
-        assert_run_match(test_data, runs[0])
+        self.assert_run_match(test_data, runs[0])
         self.assertEqual(runs[0].status.value, "Queued", "Expecting status to be 'Queued' but was '%s'" % runs[0].status.value)
         self.assertEqual(runs[0].started, None, "Not expecting the reduction run to have a started timestamp")
         self.assertEqual(runs[0].finished, None, "Not expecting the reduction run to have a finished timestamp")
@@ -375,7 +375,7 @@ class QueueProcessorTestCase(TestCase):
         Attempt to (incorrectly) complete a completed reduction run
     '''
     def test_reduction_complete_reduction_run_complete(self):
-        rb_number = get_rb_number()
+        rb_number = self.get_rb_number()
         started_time = datetime.datetime.now()
         finished_time = datetime.datetime.now()
         run = insert_run(run_number=-1, instrument="test_reduction_complete_reduction_run_complete-TestInstrument", rb_number=rb_number)
@@ -397,7 +397,7 @@ class QueueProcessorTestCase(TestCase):
         runs = ReductionRun.objects.filter(rb_number=rb_number)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
-        assert_run_match(test_data, runs[0])
+        self.assert_run_match(test_data, runs[0])
         self.assertEqual(runs[0].status.value, "Complete", "Expecting status to be 'Complete' but was '%s'" % runs[0].status.value)
         self.assertEqual(runs[0].started, started_time, "Not expecting the reduction run to have changed")
         self.assertEqual(runs[0].finished, finished_time, "Not expecting the reduction run to have changed")
@@ -406,7 +406,7 @@ class QueueProcessorTestCase(TestCase):
         Attempt to (incorrectly) complete a reduction run with an error
     '''
     def test_reduction_complete_reduction_run_error(self):
-        rb_number = get_rb_number()
+        rb_number = self.get_rb_number()
         run = insert_run(run_number=-1, instrument="test_reduction_complete_reduction_run_error-TestInstrument", rb_number=rb_number)
         run.status = StatusUtils.get_error()
         run.save()
@@ -424,7 +424,7 @@ class QueueProcessorTestCase(TestCase):
         runs = ReductionRun.objects.filter(rb_number=rb_number)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
-        assert_run_match(test_data, runs[0])
+        self.assert_run_match(test_data, runs[0])
         self.assertEqual(runs[0].status.value, "Complete", "Expecting status to be 'Complete' but was '%s'" % runs[0].status.value)
         self.assertEqual(runs[0].started, None, "Not expecting the reduction run to have a started timestamp")
         self.assertEqual(runs[0].finished, None, "Not expecting the reduction run to have a finished timestamp")
@@ -433,7 +433,7 @@ class QueueProcessorTestCase(TestCase):
         Set a reduction run as having an error
     '''
     def test_reduction_error_reduction_run_exists(self):
-        rb_number = get_rb_number()
+        rb_number = self.get_rb_number()
         insert_run(run_number=-1, instrument="test_reduction_error_reduction_run_exists-TestInstrument", rb_number=rb_number)
         error_message = "We have an error here"
 
@@ -451,7 +451,7 @@ class QueueProcessorTestCase(TestCase):
         runs = ReductionRun.objects.filter(rb_number=rb_number)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
-        assert_run_match(test_data, runs[0])
+        self.assert_run_match(test_data, runs[0])
         self.assertEqual(runs[0].status.value, "Error", "Expecting status to be 'Error' but was '%s'" % runs[0].status.value)
         self.assertEqual(runs[0].message, error_message, "Expecting the error message to be populated")
 
@@ -459,7 +459,7 @@ class QueueProcessorTestCase(TestCase):
         Set a reduction run as having an error
     '''
     def test_reduction_error_reduction_run_exists_no_message(self):
-        rb_number = get_rb_number()
+        rb_number = self.get_rb_number()
         insert_run(run_number=-1, instrument="test_reduction_error_reduction_run_exists_no_message-TestInstrument", rb_number=rb_number)
 
         test_data = {
@@ -475,7 +475,7 @@ class QueueProcessorTestCase(TestCase):
         runs = ReductionRun.objects.filter(rb_number=rb_number)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
-        assert_run_match(test_data, runs[0])
+        self.assert_run_match(test_data, runs[0])
         self.assertEqual(runs[0].status.value, "Error", "Expecting status to be 'Error' but was '%s'" % runs[0].status.value)
         self.assertEqual(runs[0].message, None, "Not expecting the error message to be populated")
 
@@ -483,7 +483,7 @@ class QueueProcessorTestCase(TestCase):
         Set a reduction run as having an error
     '''
     def test_reduction_error_reduction_run_doesnt_exists(self):
-        rb_number = get_rb_number()
+        rb_number = self.get_rb_number()
 
         test_data = {
             "run_number" : -1,
