@@ -31,15 +31,15 @@ class Listener(object):
             logging.error(sys.exc_value)
             return
 
-        if destination is 'Topic.DataReady':
+        if destination is '/Topic/DataReady':
             data_ready()
-        elif destination is 'Topic.ReductionPending':
+        elif destination is '/Topic/ReductionPending':
             reduction_pending()
-        elif destination is 'Topic.ReductionStarted':
+        elif destination is '/Topic/ReductionStarted':
             reduction_started()
-        elif destination is 'Topic.ReductionComplete':
+        elif destination is '/Topic/ReductionComplete':
             reduction_complete()
-        elif destination is 'Topic.ReductionError':
+        elif destination is '/Topic/ReductionError':
             reduction_error()
         else:
             logging.warning("Recieved a message on an unknown topic %s" % destination)
@@ -161,7 +161,7 @@ class Client(object):
         connection = stomp.Connection(host_and_ports=self._brokers)
         connection.set_listener(self._consumer_name, listener)
         connection.start()
-        connection.connect(self._user, self._passcode, wait=True)
+        connection.connect(self._user, self._password, wait=True)
 
         time.sleep(0.5)
         return connection

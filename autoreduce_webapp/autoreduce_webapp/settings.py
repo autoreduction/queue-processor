@@ -90,15 +90,15 @@ else:
 
 ACTIVEMQ = {
     'topics' : [
-        'Topic.DataReady',
-        'Topic.ReductionPending',
-        'Topic.ReductionStarted',
-        'Topic.ReductionComplete',
-        'Topic.ReductionError'
+        '/Topic/DataReady',
+        '/Topic/ReductionPending',
+        '/Topic/ReductionStarted',
+        '/Topic/ReductionComplete',
+        '/Topic/ReductionError'
         ],
-    'username' : '',
-    'password' : '',
-    'broker' : [("localhost", 61613)]
+    'username' : 'admin',
+    'password' : 'pa$$w0rd',
+    'broker' : [("datareducedev.isis.cclrc.ac.uk", 61613)]
 }
 
 # File Locations
