@@ -48,13 +48,13 @@ class Listener(object):
     def data_ready(self):
         logging.info("Data ready for processing run %s on %s" % (str(self._data_dict['run_number']), self._data_dict['instrument']))
         
-        instrument = InstrumentUtils.get_instrument(self._data_dict['instrument'])
+        instrument = InstrumentUtils().get_instrument(self._data_dict['instrument'])
         # Activate the instrument if it is currently set to inactive
         if not instrument.is_active:
             instrument.is_active = True
             instrument.save()
 
-        instrument_variables_start_run = InstrumentVariable.objects.filter(instrument=instrument, start_run__lte=self._data_dict['run_number']).order_by('start_run')[:1].start_run
+        instrument_variables_start_run = InstrumentVariable.objects.filter(instrument=instrument, start_run__lte=self._data_dict['run_number']).latest('start_run').start_run
         instrument_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run=instrument_variables_start_run)
 
         reduction_run, created = ReductionRun.object.get_or_create(run_number=self._data_dict['run_number'],
@@ -67,7 +67,7 @@ class Listener(object):
                 logging.error("No instrument variables found on %s for run %s" % (instrument.name, self._data_dict['run_number']))
                 
                 reduction_run.message = "No instrument variables found on %s for run %s" % (instrument.name, self._data_dict['run_number'])
-                reduction_run.status = StatusUtils.get_error()
+                reduction_run.status = StatusUtils().get_error()
             else:
                 for variables in instrument_variables:
                     reduction_run_variables = RunVariable(name=variables.name, value=variables.value, type=variables.type)
@@ -92,7 +92,7 @@ class Listener(object):
         reduction_run = ReductionRun.objects.get(experiment=self._data_dict['rb_number'], run_number=self._data_dict['run_number'], run_version=self._data_dict['run_version'])
         if reduction_run:
             if reduction_run.status.value == "Error" or reduction_run.status.value == "Queued":
-                reduction_run.status = StatusUtils.get_processing()
+                reduction_run.status = StatusUtils().get_processing()
                 reduction_run.started = datetime.now()
                 reduction_run.save()
             else:
@@ -107,7 +107,7 @@ class Listener(object):
              
         if reduction_run:
             if reduction_run.status.value == "Processing":
-                reduction_run.status = StatusUtils.get_completed()
+                reduction_run.status = StatusUtils().get_completed()
                 reduction_run.finished = datetime.now()
                 if self._data_dict['message']:
                     reduction_run.message = self._data_dict['message']
@@ -129,7 +129,7 @@ class Listener(object):
         reduction_run = ReductionRun.objects.get(experiment=self._data_dict['rb_number'], run_number=self._data_dict['run_number'], run_version=self._data_dict['run_version'])
                 
         if reduction_run:
-            reduction_run.status = StatusUtils.get_error()
+            reduction_run.status = StatusUtils().get_error()
             reduction_run.finished = datetime.now()
             reduction_run.message = self._data_dict['message']
             reduction_run.save()
