@@ -76,7 +76,7 @@ class QueueProcessorTestCase(TestCase):
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
         runs = ReductionRun.objects.filter(experiment=experiment, run_number=-1)
 
-        self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
+        self.assertEqual(len(runs), 1, "Should only return 1 reduction run but returned %s" % len(runs))
         self.assert_run_match(test_data, runs[0])
         self.assertEqual(runs[0].status.value, "Queued", "Expecting status to be 'Queued' but was '%s'" % runs[0].status.value)
         instrument = Instrument.objects.filter(name=instrument_name).first()
@@ -103,7 +103,7 @@ class QueueProcessorTestCase(TestCase):
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
         runs = ReductionRun.objects.filter(experiment=experiment, run_number=-1)
 
-        self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
+        self.assertEqual(len(runs), 1, "Should only return 1 reduction run but returned %s" % len(runs))
         self.assert_run_match(test_data, runs[0])
         self.assertEqual(runs[0].status.value, "Queued", "Expecting status to be 'Queued' but was '%s'" % runs[0].status.value)
         self.assertNotEqual(Instrument.objects.filter(name=instrument_name).first(), None, "Was expecting to find %s" % instrument_name)
@@ -130,7 +130,7 @@ class QueueProcessorTestCase(TestCase):
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
         runs = ReductionRun.objects.filter(experiment=experiment, run_number=-1)
 
-        self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
+        self.assertEqual(len(runs), 1, "Should only return 1 reduction run but returned %s" % len(runs))
         self.assert_run_match(test_data, runs[0])
         self.assertEqual(runs[0].status.value, "Queued", "Expecting status to be 'Queued' but was '%s'" % runs[0].status.value)
         instrument = Instrument.objects.filter(name=instrument_name).first()
@@ -164,7 +164,7 @@ class QueueProcessorTestCase(TestCase):
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
         runs = ReductionRun.objects.filter(experiment=experiment)
 
-        self.assertEqual(len(runs), 2, "Should only return 2 reduction run")
+        self.assertEqual(len(runs), 2, "Should only return 2 reduction runs but returned %s" % len(runs))
         self.assert_run_match(test_data_run_1, runs[0])
         self.assertEqual(runs[0].status.value, "Queued", "Expecting status to be 'Queued' but was '%s'" % runs[0].status.value)
         self.assert_run_match(test_data_run_2, runs[1])
@@ -190,7 +190,7 @@ class QueueProcessorTestCase(TestCase):
 
         runs = ReductionRun.objects.filter(experiment=experiment)
 
-        self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
+        self.assertEqual(len(runs), 1, "Should only return 1 reduction run but returned %s" % len(runs))
         self.assert_run_match(test_data, runs[0])
         self.assertEqual(runs[0].status.value, "Processing", "Expecting status to be 'Processing' but was '%s'" % runs[0].status.value)
 
@@ -212,7 +212,7 @@ class QueueProcessorTestCase(TestCase):
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
         runs = ReductionRun.objects.filter(experiment=experiment)
 
-        self.assertEqual(len(runs), 0, "Shouldn't return any reduction runs")
+        self.assertEqual(len(runs), 0, "Shouldn't return any reduction runs but returned %s" % len(runs))
 
     '''
         Attempt to (incorrectly) start an already started reduction run
@@ -238,7 +238,7 @@ class QueueProcessorTestCase(TestCase):
 
         runs = ReductionRun.objects.filter(experiment=experiment)
 
-        self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
+        self.assertEqual(len(runs), 1, "Should only return 1 reduction run but returned %s" % len(runs))
         self.assert_run_match(test_data, runs[0])
         self.assertEqual(runs[0].status.value, "Processing", "Expecting status to be 'Processing' but was '%s'" % runs[0].status.value)
         self.assertEqual(runs[0].started, started_time, "Started time should not have been updated")
@@ -267,7 +267,7 @@ class QueueProcessorTestCase(TestCase):
 
         runs = ReductionRun.objects.filter(experiment=experiment)
 
-        self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
+        self.assertEqual(len(runs), 1, "Should only return 1 reduction run but returned %s" % len(runs))
         self.assert_run_match(test_data, runs[0])
         self.assertEqual(runs[0].status.value, "Completed", "Expecting status to be 'Completed' but was '%s'" % runs[0].status.value)
         self.assertEqual(runs[0].started, started_time, "Started time should not have been updated")
@@ -296,7 +296,7 @@ class QueueProcessorTestCase(TestCase):
 
         runs = ReductionRun.objects.filter(experiment=experiment)
 
-        self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
+        self.assertEqual(len(runs), 1, "Should only return 1 reduction run but returned %s" % len(runs))
         self.assert_run_match(test_data, runs[0])
         self.assertEqual(runs[0].status.value, "Processing", "Expecting status to be 'Processing' but was '%s'" % runs[0].status.value)
         self.assertNotEqual(runs[0].started, started_time, "Started time should have been updated")
@@ -325,7 +325,7 @@ class QueueProcessorTestCase(TestCase):
 
         runs = ReductionRun.objects.filter(experiment=experiment)
 
-        self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
+        self.assertEqual(len(runs), 1, "Should only return 1 reduction run but returned %s" % len(runs))
         self.assert_run_match(test_data, runs[0])
         self.assertEqual(runs[0].status.value, "Completed", "Expecting status to be 'Completed' but was '%s'" % runs[0].status.value)
         self.assertNotEqual(runs[0].finished, None, "Expected the reduction run to have a finished timestamp")
@@ -349,7 +349,7 @@ class QueueProcessorTestCase(TestCase):
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
         runs = ReductionRun.objects.filter(experiment=experiment)
 
-        self.assertEqual(len(runs), 0, "Should only return 0 reduction run")
+        self.assertEqual(len(runs), 0, "Should only return 0 reduction runs but returned %s" % len(runs))
 
     '''
         Attempt to (incorrectly) complete a queued reduction run
@@ -373,7 +373,7 @@ class QueueProcessorTestCase(TestCase):
 
         runs = ReductionRun.objects.filter(experiment=experiment)
 
-        self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
+        self.assertEqual(len(runs), 1, "Should only return 1 reduction run but returned %s" % len(runs))
         self.assert_run_match(test_data, runs[0])
         self.assertEqual(runs[0].status.value, "Queued", "Expecting status to be 'Queued' but was '%s'" % runs[0].status.value)
         self.assertEqual(runs[0].started, None, "Not expecting the reduction run to have a started timestamp")
@@ -405,7 +405,7 @@ class QueueProcessorTestCase(TestCase):
 
         runs = ReductionRun.objects.filter(experiment=experiment)
 
-        self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
+        self.assertEqual(len(runs), 1, "Should only return 1 reduction run but returned %s" % len(runs))
         self.assert_run_match(test_data, runs[0])
         self.assertEqual(runs[0].status.value, "Complete", "Expecting status to be 'Complete' but was '%s'" % runs[0].status.value)
         self.assertEqual(runs[0].started, started_time, "Not expecting the reduction run to have changed")
@@ -433,7 +433,7 @@ class QueueProcessorTestCase(TestCase):
 
         runs = ReductionRun.objects.filter(experiment=experiment)
 
-        self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
+        self.assertEqual(len(runs), 1, "Should only return 1 reduction run but returned %s" % len(runs))
         self.assert_run_match(test_data, runs[0])
         self.assertEqual(runs[0].status.value, "Complete", "Expecting status to be 'Complete' but was '%s'" % runs[0].status.value)
         self.assertEqual(runs[0].started, None, "Not expecting the reduction run to have a started timestamp")
@@ -461,7 +461,7 @@ class QueueProcessorTestCase(TestCase):
 
         runs = ReductionRun.objects.filter(experiment=experiment)
 
-        self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
+        self.assertEqual(len(runs), 1, "Should only return 1 reduction run but returned %s" % len(runs))
         self.assert_run_match(test_data, runs[0])
         self.assertEqual(runs[0].status.value, "Error", "Expecting status to be 'Error' but was '%s'" % runs[0].status.value)
         self.assertEqual(runs[0].message, error_message, "Expecting the error message to be populated")
@@ -486,7 +486,7 @@ class QueueProcessorTestCase(TestCase):
 
         runs = ReductionRun.objects.filter(experiment=experiment)
 
-        self.assertEqual(len(runs), 1, "Should only return 1 reduction run")
+        self.assertEqual(len(runs), 1, "Should only return 1 reduction run but returned %s" % len(runs))
         self.assert_run_match(test_data, runs[0])
         self.assertEqual(runs[0].status.value, "Error", "Expecting status to be 'Error' but was '%s'" % runs[0].status.value)
         self.assertEqual(runs[0].message, None, "Not expecting the error message to be populated")
@@ -510,4 +510,4 @@ class QueueProcessorTestCase(TestCase):
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
         runs = ReductionRun.objects.filter(experiment=experiment)
 
-        self.assertEqual(len(runs), 0, "Should only return 0 reduction run")
+        self.assertEqual(len(runs), 0, "Should only return 0 reduction runs but returned %s" % len(runs))
