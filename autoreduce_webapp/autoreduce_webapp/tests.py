@@ -70,7 +70,7 @@ class QueueProcessorTestCase(TestCase):
             "data" : "/false/path",
             "run_version" : 0
         }
-        self._client.send('Topic.DataReady', json.dumps(test_data))
+        self._client.send('/Topic/DataReady', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
@@ -97,7 +97,7 @@ class QueueProcessorTestCase(TestCase):
             "data" : "/false/path",
             "run_version" : 0
         }
-        self._client.send('Topic.DataReady', json.dumps(test_data))
+        self._client.send('/Topic/DataReady', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
@@ -124,7 +124,7 @@ class QueueProcessorTestCase(TestCase):
             "data" : "/false/path",
             "run_version" : 0
         }
-        self._client.send('Topic.DataReady', json.dumps(test_data))
+        self._client.send('/Topic/DataReady', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
@@ -157,8 +157,8 @@ class QueueProcessorTestCase(TestCase):
             "data" : "/false/path",
             "run_version" : 0
         }
-        self._client.send('Topic.DataReady', json.dumps(test_data_run_1))
-        self._client.send('Topic.DataReady', json.dumps(test_data_run_2))
+        self._client.send('/Topic/DataReady', json.dumps(test_data_run_1))
+        self._client.send('/Topic/DataReady', json.dumps(test_data_run_2))
         time.sleep(self._timeout_wait)
 
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
@@ -185,7 +185,7 @@ class QueueProcessorTestCase(TestCase):
             "data" : "/false/path",
             "run_version" : 0
         }
-        self._client.send('Topic.ReductionStarted', json.dumps(test_data))
+        self._client.send('/Topic/ReductionStarted', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
         runs = ReductionRun.objects.filter(experiment=experiment)
@@ -206,7 +206,7 @@ class QueueProcessorTestCase(TestCase):
             "data" : "/false/path",
             "run_version" : 0
         }
-        self._client.send('Topic.ReductionStarted', json.dumps(test_data))
+        self._client.send('/Topic/ReductionStarted', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
@@ -233,7 +233,7 @@ class QueueProcessorTestCase(TestCase):
             "data" : "/false/path",
             "run_version" : 0
         }
-        self._client.send('Topic.ReductionStarted', json.dumps(test_data))
+        self._client.send('/Topic/ReductionStarted', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
         runs = ReductionRun.objects.filter(experiment=experiment)
@@ -262,7 +262,7 @@ class QueueProcessorTestCase(TestCase):
             "data" : "/false/path",
             "run_version" : 0
         }
-        self._client.send('Topic.ReductionStarted', json.dumps(test_data))
+        self._client.send('/Topic/ReductionStarted', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
         runs = ReductionRun.objects.filter(experiment=experiment)
@@ -291,7 +291,7 @@ class QueueProcessorTestCase(TestCase):
             "data" : "/false/path",
             "run_version" : 0
         }
-        self._client.send('Topic.ReductionStarted', json.dumps(test_data))
+        self._client.send('/Topic/ReductionStarted', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
         runs = ReductionRun.objects.filter(experiment=experiment)
@@ -320,7 +320,7 @@ class QueueProcessorTestCase(TestCase):
             "data" : "/false/path",
             "run_version" : 0
         }
-        self._client.send('Topic.ReductionComplete', json.dumps(test_data))
+        self._client.send('/Topic/ReductionComplete', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
         runs = ReductionRun.objects.filter(experiment=experiment)
@@ -343,7 +343,7 @@ class QueueProcessorTestCase(TestCase):
             "data" : "/false/path",
             "run_version" : 0
         }
-        self._client.send('Topic.ReductionComplete', json.dumps(test_data))
+        self._client.send('/Topic/ReductionComplete', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
@@ -368,7 +368,7 @@ class QueueProcessorTestCase(TestCase):
             "data" : "/false/path",
             "run_version" : 0
         }
-        self._client.send('Topic.ReductionComplete', json.dumps(test_data))
+        self._client.send('/Topic/ReductionComplete', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
         runs = ReductionRun.objects.filter(experiment=experiment)
@@ -400,7 +400,7 @@ class QueueProcessorTestCase(TestCase):
             "data" : "/false/path",
             "run_version" : 0
         }
-        self._client.send('Topic.ReductionComplete', json.dumps(test_data))
+        self._client.send('/Topic/ReductionComplete', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
         runs = ReductionRun.objects.filter(experiment=experiment)
@@ -428,7 +428,7 @@ class QueueProcessorTestCase(TestCase):
             "data" : "/false/path",
             "run_version" : 0
         }
-        self._client.send('Topic.ReductionComplete', json.dumps(test_data))
+        self._client.send('/Topic/ReductionComplete', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
         runs = ReductionRun.objects.filter(experiment=experiment)
@@ -456,7 +456,7 @@ class QueueProcessorTestCase(TestCase):
             "run_version" : 0,
             "message" : error_message
         }
-        self._client.send('Topic.ReductionError', json.dumps(test_data))
+        self._client.send('/Topic/ReductionError', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
         runs = ReductionRun.objects.filter(experiment=experiment)
@@ -481,7 +481,7 @@ class QueueProcessorTestCase(TestCase):
             "data" : "/false/path",
             "run_version" : 0
         }
-        self._client.send('Topic.ReductionError', json.dumps(test_data))
+        self._client.send('/Topic/ReductionError', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
         runs = ReductionRun.objects.filter(experiment=experiment)
@@ -504,7 +504,7 @@ class QueueProcessorTestCase(TestCase):
             "data" : "/false/path",
             "run_version" : 0
         }
-        self._client.send('Topic.ReductionError', json.dumps(test_data))
+        self._client.send('/Topic/ReductionError', json.dumps(test_data))
         time.sleep(self._timeout_wait)
 
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
