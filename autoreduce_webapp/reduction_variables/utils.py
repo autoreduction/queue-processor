@@ -10,7 +10,11 @@ from reduction_viewer.utils import InstrumentUtils
 class InstrumentVariablesUtils(object):
     def set_default_instrument_variables(self, instrument_name, start_run):
         reduction_file = os.path.join(REDUCTION_SCRIPT_BASE, instrument_name, 'reduce.py')
-        reduce_script = imp.load_source('reduce_script', reduction_file)
+        try:
+            reduce_script = imp.load_source('reduce_script', reduction_file)
+        except IOError:
+            logging.error("Unable to load reduction script %s" % reduction_file)
+            return
         instrument = InstrumentUtils.get_instrument(instrument_name)
         instrument_variables = []
         for key in reduce_script.standard_vars:

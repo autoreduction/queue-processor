@@ -29,7 +29,7 @@ class QueueProcessorTestCase(TestCase):
     '''
         Insert a reduction run to ensure the QueueProcessor can find one when recieving a topic message
     '''
-    def insert_run(self, rb_number=-1, run_number=-1, run_version=0, instrument="TestInstrument", data="/false/path"):
+    def insert_run(self, rb_number=-1, run_number=1, run_version=0, instrument="TestInstrument", data="/false/path"):
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
         run = ReductionRun(run_number=run_number, instrument=instrument, experiment=experiment, data=data, run_version=run_version)
         run.save()
@@ -76,7 +76,7 @@ class QueueProcessorTestCase(TestCase):
         time.sleep(self._timeout_wait)
 
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
-        runs = ReductionRun.objects.filter(experiment=experiment, run_number=-1)
+        runs = ReductionRun.objects.filter(experiment=experiment, run_number=1)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run but returned %s" % len(runs))
         self.assert_run_match(test_data, runs[0])
@@ -104,7 +104,7 @@ class QueueProcessorTestCase(TestCase):
         time.sleep(self._timeout_wait)
 
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
-        runs = ReductionRun.objects.filter(experiment=experiment, run_number=-1)
+        runs = ReductionRun.objects.filter(experiment=experiment, run_number=1)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run but returned %s" % len(runs))
         self.assert_run_match(test_data, runs[0])
@@ -131,7 +131,7 @@ class QueueProcessorTestCase(TestCase):
         time.sleep(self._timeout_wait)
 
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
-        runs = ReductionRun.objects.filter(experiment=experiment, run_number=-1)
+        runs = ReductionRun.objects.filter(experiment=experiment, run_number=1)
 
         self.assertEqual(len(runs), 1, "Should only return 1 reduction run but returned %s" % len(runs))
         self.assert_run_match(test_data, runs[0])
@@ -179,7 +179,7 @@ class QueueProcessorTestCase(TestCase):
     def test_reduction_started_reduction_run_exists(self):
         rb_number = self.get_rb_number()
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
-        self.insert_run(run_number=-1, instrument="test_reduction_started-TestInstrument", experiment=experiment)
+        self.insert_run(run_number=1, instrument="test_reduction_started-TestInstrument", experiment=experiment)
 
         test_data = {
             "run_number" : 1,
@@ -224,7 +224,7 @@ class QueueProcessorTestCase(TestCase):
         rb_number = self.get_rb_number()
         started_time = datetime.datetime.now()
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
-        run = self.insert_run(run_number=-1, instrument="test_reduction_started_reduction_run_already_started-TestInstrument", experiment=experiment)
+        run = self.insert_run(run_number=1, instrument="test_reduction_started_reduction_run_already_started-TestInstrument", experiment=experiment)
         run.status = StatusUtils.get_processing()
         run.started = started_time
         run.save()
@@ -253,7 +253,7 @@ class QueueProcessorTestCase(TestCase):
         rb_number = self.get_rb_number()
         started_time = datetime.datetime.now()
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
-        run = self.insert_run(run_number=-1, instrument="test_reduction_started_reduction_run_already_completed-TestInstrument", experiment=experiment)
+        run = self.insert_run(run_number=1, instrument="test_reduction_started_reduction_run_already_completed-TestInstrument", experiment=experiment)
         run.status = StatusUtils.get_completed()
         run.started = started_time
         run.save()
@@ -282,7 +282,7 @@ class QueueProcessorTestCase(TestCase):
         rb_number = self.get_rb_number()
         started_time = datetime.datetime.now()
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
-        run = self.insert_run(run_number=-1, instrument="test_reduction_started_reduction_run_error-TestInstrument", experiment=experiment)
+        run = self.insert_run(run_number=1, instrument="test_reduction_started_reduction_run_error-TestInstrument", experiment=experiment)
         run.status = StatusUtils.get_error()
         run.started = started_time
         run.save()
@@ -311,7 +311,7 @@ class QueueProcessorTestCase(TestCase):
         rb_number = self.get_rb_number()
         started_time = datetime.datetime.now()
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
-        run = self.insert_run(run_number=-1, instrument="test_reduction_complete_reduction_run_exists-TestInstrument", experiment=experiment)
+        run = self.insert_run(run_number=1, instrument="test_reduction_complete_reduction_run_exists-TestInstrument", experiment=experiment)
         run.status = StatusUtils.get_processing()
         run.started = started_time
         run.save()
@@ -360,7 +360,7 @@ class QueueProcessorTestCase(TestCase):
     def test_reduction_complete_reduction_run_queued(self):
         rb_number = self.get_rb_number()
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
-        run = self.insert_run(run_number=-1, instrument="test_reduction_complete_reduction_run_queued-TestInstrument", experiment=experiment)
+        run = self.insert_run(run_number=1, instrument="test_reduction_complete_reduction_run_queued-TestInstrument", experiment=experiment)
         run.status = StatusUtils.get_queued()
         run.save()
 
@@ -390,7 +390,7 @@ class QueueProcessorTestCase(TestCase):
         started_time = datetime.datetime.now()
         finished_time = datetime.datetime.now()
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
-        run = self.insert_run(run_number=-1, instrument="test_reduction_complete_reduction_run_complete-TestInstrument", experiment=experiment)
+        run = self.insert_run(run_number=1, instrument="test_reduction_complete_reduction_run_complete-TestInstrument", experiment=experiment)
         run.status = StatusUtils.get_completed()
         run.started = started_time
         run.finished = finished_time
@@ -420,7 +420,7 @@ class QueueProcessorTestCase(TestCase):
     def test_reduction_complete_reduction_run_error(self):
         rb_number = self.get_rb_number()
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
-        run = self.insert_run(run_number=-1, instrument="test_reduction_complete_reduction_run_error-TestInstrument", experiment=experiment)
+        run = self.insert_run(run_number=1, instrument="test_reduction_complete_reduction_run_error-TestInstrument", experiment=experiment)
         run.status = StatusUtils.get_error()
         run.save()
 
@@ -448,7 +448,7 @@ class QueueProcessorTestCase(TestCase):
     def test_reduction_error_reduction_run_exists(self):
         rb_number = self.get_rb_number()
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
-        self.insert_run(run_number=-1, instrument="test_reduction_error_reduction_run_exists-TestInstrument", experiment=experiment)
+        self.insert_run(run_number=1, instrument="test_reduction_error_reduction_run_exists-TestInstrument", experiment=experiment)
         error_message = "We have an error here"
 
         test_data = {
@@ -475,7 +475,7 @@ class QueueProcessorTestCase(TestCase):
     def test_reduction_error_reduction_run_exists_no_message(self):
         rb_number = self.get_rb_number()
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
-        self.insert_run(run_number=-1, instrument="test_reduction_error_reduction_run_exists_no_message-TestInstrument", experiment=experiment)
+        self.insert_run(run_number=1, instrument="test_reduction_error_reduction_run_exists_no_message-TestInstrument", experiment=experiment)
 
         test_data = {
             "run_number" : 1,
