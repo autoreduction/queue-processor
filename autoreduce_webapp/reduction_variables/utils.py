@@ -15,7 +15,7 @@ class InstrumentVariablesUtils(object):
         except IOError:
             logging.error("Unable to load reduction script %s" % reduction_file)
             return
-        instrument = InstrumentUtils.get_instrument(instrument_name)
+        instrument = InstrumentUtils().get_instrument(instrument_name)
         instrument_variables = []
         for key in reduce_script.standard_vars:
             instrument_var = InstrumentVariable(instrument=instrument, name=key, value=reduce_script.standard_vars[key], is_advanced=False, type=type(reduce_script.standard_vars[key]).__name__, start_run=start_run)

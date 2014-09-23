@@ -103,5 +103,5 @@ ACTIVEMQ = {
 
 # File Locations
 
-REDUCTION_SCRIPT_BASE = ''
+REDUCTION_SCRIPT_BASE = '/reduction_data/'
 ARCHIVE_BASE = ''

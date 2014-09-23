@@ -6,7 +6,7 @@ import time
 import sys
 import os
 import json
-from datetime import datetime
+from django.utils import timezone
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 sys.path.insert(0, BASE_DIR)
 from reduction_viewer.models import ReductionRun, Instrument, ReductionLocation, Status, DataLocation, Experiment
@@ -68,6 +68,7 @@ class Listener(object):
                                     experiment=experiment,
                                     instrument=instrument
                                     )
+        reduction_run.status = StatusUtils().get_queued()
         data_location = DataLocation(file_path=self._data_dict['data'], reduction_run=reduction_run)
         if created:
             if not instrument_variables:
@@ -97,11 +98,16 @@ class Listener(object):
     def reduction_started(self):
         logging.info("Run %s has started reduction" % self._data_dict['run_number'])
         
-        reduction_run = ReductionRun.objects.get(experiment=self._data_dict['rb_number'], run_number=self._data_dict['run_number'], run_version=self._data_dict['run_version'])
+        experiment = Experiment.objects.filter(reference_number=self._data_dict['rb_number']).first()
+        if not experiment:
+            logging.error("Unable to find experiment %s" % self._data_dict['rb_number'])
+            return
+
+        reduction_run = ReductionRun.objects.get(experiment=experiment, run_number=self._data_dict['run_number'], run_version=self._data_dict['run_version'])
         if reduction_run:
-            if reduction_run.status.value == "Error" or reduction_run.status.value == "Queued":
+            if str(reduction_run.status) == "Error" or str(reduction_run.status) == "Queued":
                 reduction_run.status = StatusUtils().get_processing()
-                reduction_run.started = datetime.now()
+                reduction_run.started = timezone.now().replace(microsecond=0)
                 reduction_run.save()
             else:
                 logging.error("An invalid attempt to re-start a reduction run was captured. Experiment: %s, Run Number: %s, Run Version %s" % (self._data_dict['rb_number'], self._data_dict['run_number'], self._data_dict['run_version']))
@@ -110,19 +116,23 @@ class Listener(object):
 
     def reduction_complete(self):
         logging.info("Run %s has completed reduction" % self._data_dict['run_number'])
-        
-        reduction_run = ReductionRun.objects.get(experiment=self._data_dict['rb_number'], run_number=self._data_dict['run_number'], run_version=self._data_dict['run_version'])
+        experiment = Experiment.objects.filter(reference_number=self._data_dict['rb_number']).first()
+        if not experiment:
+            logging.error("Unable to find experiment %s" % self._data_dict['rb_number'])
+            return
+        reduction_run = ReductionRun.objects.get(experiment=experiment, run_number=self._data_dict['run_number'], run_version=self._data_dict['run_version'])
              
         if reduction_run:
             if reduction_run.status.value == "Processing":
                 reduction_run.status = StatusUtils().get_completed()
-                reduction_run.finished = datetime.now()
-                if self._data_dict['message']:
+                reduction_run.finished = timezone.now().replace(microsecond=0)
+                if 'message' in self._data_dict:
                     reduction_run.message = self._data_dict['message']
-                for location in self._data_dict['reduction_data']:
-                    reduction_location = ReductionLocation(file_path=location)
-                    reduction_run.reduction_location.add(reduction_location)
-                    # TODO: get graphs
+                if 'reduction_data' in self._data_dict:
+                    for location in self._data_dict['reduction_data']:
+                        reduction_location = ReductionLocation(file_path=location)
+                        reduction_run.reduction_location.add(reduction_location)
+                        # TODO: get graphs
                 reduction_run.save()
 
                 # TODO: reduction_complete - trigger any post-processes (e.g. ICAT)
@@ -132,14 +142,22 @@ class Listener(object):
             logging.error("A reduction run completed that wasn't found in the database. Experiment: %s, Run Number: %s, Run Version %s" % (self._data_dict['rb_number'], self._data_dict['run_number'], self._data_dict['run_version']))
 
     def reduction_error(self):
-        logging.info("Run %s has encountered an error - %s" % (self._data_dict['run_number'], self._data_dict['message']))
+        if 'message' in self._data_dict:
+            logging.info("Run %s has encountered an error - %s" % (self._data_dict['run_number'], self._data_dict['message']))
+        else:
+            logging.info("Run %s has encountered an error - No error message was found" % (self._data_dict['run_number']))
         
-        reduction_run = ReductionRun.objects.get(experiment=self._data_dict['rb_number'], run_number=self._data_dict['run_number'], run_version=self._data_dict['run_version'])
+        experiment = Experiment.objects.filter(reference_number=self._data_dict['rb_number']).first()
+        if not experiment:
+            logging.error("Unable to find experiment %s" % self._data_dict['rb_number'])
+            return
+        reduction_run = ReductionRun.objects.get(experiment=experiment, run_number=self._data_dict['run_number'], run_version=self._data_dict['run_version'])
                 
         if reduction_run:
             reduction_run.status = StatusUtils().get_error()
-            reduction_run.finished = datetime.now()
-            reduction_run.message = self._data_dict['message']
+            reduction_run.finished = timezone.now().replace(microsecond=0)
+            if 'message' in self._data_dict:
+                reduction_run.message = self._data_dict['message']
             reduction_run.save()
         else:
             logging.error("A reduction run that caused an error wasn't found in the database. Experiment: %s, Run Number: %s, Run Version %s" % (self._data_dict['rb_number'], self._data_dict['run_number'], self._data_dict['run_version']))
