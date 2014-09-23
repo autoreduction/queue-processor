@@ -4,7 +4,7 @@
 
 Recommended Server OS: Red Hat 6
 
-***Note: Most, if not all, commands will need to be run as root. If using `sudo` please take check the python note below***
+***Note: Most, if not all, commands will need to be run as root. If using `sudo` please check the python note below***
 
 ### Install prerequisites
 1. `yum update`
@@ -13,6 +13,7 @@ Recommended Server OS: Red Hat 6
 
 ### Install Python 2.7
 **Note: Do not remove python 2.6! Ensure that you specify python 2.7 correctly when using sudo commands as it will default to the installed.**
+
 1. `wget http://www.python.org/ftp/python/2.7.6/Python-2.7.6.tar.xz`
 2. `xz -d Python-2.7.6.tar.xz`
 3. `tar -xvf Python-2.7.6.tar`
