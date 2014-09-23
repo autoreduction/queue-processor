@@ -86,7 +86,7 @@ class QueueProcessorTestCase(TestCase):
     '''
     def remove_dummy_reduce_script(self, instrument_name):
         directory = os.path.join(REDUCTION_SCRIPT_BASE, instrument_name)
-        logger.warning("About to remove %s" % directory)
+        logging.warning("About to remove %s" % directory)
         if os.path.exists(directory):
             shutil.rmtree(directory)
 
