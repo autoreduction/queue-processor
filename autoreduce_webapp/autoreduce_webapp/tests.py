@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.utils import timezone
-from settings import LOG_FILE, LOG_LEVEL, ACTIVEMQ, BASE_DIR
-import sys, time, logging, os, datetime, json
+from settings import LOG_FILE, LOG_LEVEL, ACTIVEMQ, BASE_DIR, REDUCTION_SCRIPT_BASE
+import sys, time, logging, os, datetime, json, shutil
 logging.basicConfig(filename=LOG_FILE.replace('.log', '.test.log'),level=LOG_LEVEL)
 from daemon import Daemon
 from queue_processor_daemon import QueueProcessorDaemon
@@ -19,6 +19,13 @@ class QueueProcessorTestCase(TestCase):
     def setUp(self):
         instrument1, created1 = Instrument.objects.get_or_create(name="ExistingTestInstrument1")
         instrument2, created2 = Instrument.objects.get_or_create(name="InactiveInstrument", is_active=False)
+        self.save_dummy_reduce_script("InactiveInstrument")
+
+    '''
+        Remove InactiveInstrument dummy script
+    '''
+    def tearDown(self):
+        self.remove_dummy_reduce_script("InactiveInstrument")
 
     @classmethod
     def setUpClass(cls):
@@ -62,31 +69,57 @@ class QueueProcessorTestCase(TestCase):
         instrument_variables.save()
 
     '''
+        Copy a test reduce.py script to the correct location for use in the tests
+    '''
+    def save_dummy_reduce_script(self, instrument_name):
+        directory = os.path.join(REDUCTION_SCRIPT_BASE, instrument_name)
+        test_reduce = os.path.join(os.path.dirname(__file__), '../', 'test_files','reduce.py')
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        file_path = os.path.join(directory, 'reduce.py')
+        if not os.path.isfile(file_path):
+            shutil.copyfile(test_reduce, file_path)
+
+    '''
+        Remove dummy script file. 
+        WARNING!!!! Destructive!!!
+    '''
+    def remove_dummy_reduce_script(self, instrument_name):
+        directory = os.path.join(REDUCTION_SCRIPT_BASE, instrument_name)
+        logger.warning("About to remove %s" % directory)
+        if os.path.exists(directory):
+            shutil.rmtree(directory)
+
+    '''
         Create a new reduction run and check that it auto-creates an instrument when it doesn't exist
     '''
     def test_data_ready_new_instrument(self):
         rb_number = self.get_rb_number()
         instrument_name = "test_data_ready_new_instrument-TestInstrument"
-        self.assertEqual(Instrument.objects.filter(name=instrument_name).first(), None, "Wasn't expecting to find %s" % instrument_name)
-        test_data = {
-            "run_number" : 1,
-            "instrument" : instrument_name,
-            "rb_number" : rb_number,
-            "data" : "/false/path",
-            "run_version" : 0
-        }
-        self._client.send('/topic/DataReady', json.dumps(test_data))
-        time.sleep(self._timeout_wait)
+        self.save_dummy_reduce_script(instrument_name)
+        try:
+            self.assertEqual(Instrument.objects.filter(name=instrument_name).first(), None, "Wasn't expecting to find %s" % instrument_name)
+            test_data = {
+                "run_number" : 1,
+                "instrument" : instrument_name,
+                "rb_number" : rb_number,
+                "data" : "/false/path",
+                "run_version" : 0
+            }
+            self._client.send('/topic/DataReady', json.dumps(test_data))
+            time.sleep(self._timeout_wait)
 
-        experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
-        runs = ReductionRun.objects.filter(experiment=experiment, run_number=1)
+            experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
+            runs = ReductionRun.objects.filter(experiment=experiment, run_number=1)
 
-        self.assertEqual(len(runs), 1, "Should only return 1 reduction run but returned %s" % len(runs))
-        self.assert_run_match(test_data, runs[0])
-        self.assertEqual(str(runs[0].status), "Queued", "Expecting status to be 'Queued' but was '%s'" % runs[0].status)
-        instrument = Instrument.objects.filter(name=instrument_name).first()
-        self.assertNotEqual(instrument, None, "Was expecting to find %s" % instrument_name)
-        self.assertTrue(instrument.is_active, "Was expecting instrument to be active")
+            self.assertEqual(len(runs), 1, "Should only return 1 reduction run but returned %s" % len(runs))
+            self.assert_run_match(test_data, runs[0])
+            self.assertEqual(str(runs[0].status), "Queued", "Expecting status to be 'Queued' but was '%s'" % runs[0].status)
+            instrument = Instrument.objects.filter(name=instrument_name).first()
+            self.assertNotEqual(instrument, None, "Was expecting to find %s" % instrument_name)
+            self.assertTrue(instrument.is_active, "Was expecting instrument to be active")
+        finally:
+            self.remove_dummy_reduce_script(instrument_name)
 
     '''
         Create a new reduction run on an instrument that already exists
@@ -149,32 +182,36 @@ class QueueProcessorTestCase(TestCase):
     def test_data_ready_multiple_runs(self):
         rb_number = self.get_rb_number()
         instrument_name = "test_data_ready_multiple_runs-TestInstrument"
-        test_data_run_1 = {
-            "run_number" : 1,
-            "instrument" : instrument_name,
-            "rb_number" : rb_number,
-            "data" : "/false/path",
-            "run_version" : 0
-        }
-        test_data_run_2 = {
-            "run_number" : -2,
-            "instrument" : instrument_name,
-            "rb_number" : rb_number,
-            "data" : "/false/path",
-            "run_version" : 0
-        }
-        self._client.send('/topic/DataReady', json.dumps(test_data_run_1))
-        self._client.send('/topic/DataReady', json.dumps(test_data_run_2))
-        time.sleep(self._timeout_wait)
+        self.save_dummy_reduce_script(instrument_name)
+        try:
+            test_data_run_1 = {
+                "run_number" : 1,
+                "instrument" : instrument_name,
+                "rb_number" : rb_number,
+                "data" : "/false/path",
+                "run_version" : 0
+            }
+            test_data_run_2 = {
+                "run_number" : -2,
+                "instrument" : instrument_name,
+                "rb_number" : rb_number,
+                "data" : "/false/path",
+                "run_version" : 0
+            }
+            self._client.send('/topic/DataReady', json.dumps(test_data_run_1))
+            self._client.send('/topic/DataReady', json.dumps(test_data_run_2))
+            time.sleep(self._timeout_wait)
 
-        experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
-        runs = ReductionRun.objects.filter(experiment=experiment)
+            experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
+            runs = ReductionRun.objects.filter(experiment=experiment)
 
-        self.assertEqual(len(runs), 2, "Should only return 2 reduction runs but returned %s" % len(runs))
-        self.assert_run_match(test_data_run_1, runs[0])
-        self.assertEqual(str(runs[0].status), "Queued", "Expecting status to be 'Queued' but was '%s'" % runs[0].status)
-        self.assert_run_match(test_data_run_2, runs[1])
-        self.assertEqual(str(runs[1].status), "Queued", "Expecting status to be 'Queued' but was '%s'" % runs[1].status)
+            self.assertEqual(len(runs), 2, "Should only return 2 reduction runs but returned %s" % len(runs))
+            self.assert_run_match(test_data_run_1, runs[0])
+            self.assertEqual(str(runs[0].status), "Queued", "Expecting status to be 'Queued' but was '%s'" % runs[0].status)
+            self.assert_run_match(test_data_run_2, runs[1])
+            self.assertEqual(str(runs[1].status), "Queued", "Expecting status to be 'Queued' but was '%s'" % runs[1].status)
+        finally:
+            self.remove_dummy_reduce_script(instrument_name)
         
     '''
         Change an existing reduction run from Queued to Started
