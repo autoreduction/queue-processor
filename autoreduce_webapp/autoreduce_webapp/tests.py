@@ -18,6 +18,9 @@ class QueueProcessorTestCase(TestCase):
     def setupUp(self):
         instrument1, created = Instrument.objects.get_or_create(name="ExistingTestInstrument1")
         instrument2, created = Instrument.objects.get_or_create(name="InactiveInstrument", is_active=False)
+        #Force it to be false as a previous test may have set it to true
+        instrument2.is_active = False
+        instrument2.save()
 
     @classmethod
     def setUpClass(cls):
@@ -29,8 +32,7 @@ class QueueProcessorTestCase(TestCase):
     '''
         Insert a reduction run to ensure the QueueProcessor can find one when recieving a topic message
     '''
-    def insert_run(self, rb_number=-1, run_number=1, run_version=0, instrument="TestInstrument", data="/false/path"):
-        experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
+    def insert_run(self, experiment, run_number=1, run_version=0, instrument="TestInstrument", data="/false/path"):
         run = ReductionRun(run_number=run_number, instrument=instrument, experiment=experiment, data=data, run_version=run_version)
         run.save()
         return run
