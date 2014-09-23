@@ -8,7 +8,7 @@ class UserProfile(models.Model):
     user = models.ForeignKey(User, unique=True)
 
 class Instrument(models.Model):
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=80)
     is_active = models.BooleanField(default=False)
     scientists = models.ManyToManyField(User)
     experimenters = models.ManyToManyField(User, related_name='experiment_instruments')
