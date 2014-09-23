@@ -56,6 +56,7 @@ class QueueProcessorTestCase(TestCase):
     def create_instrument_variables(self, instrument_name):
         instrument, created = Instrument.objects.get_or_create(name=instrument_name)
         instrument_variables = InstrumentVariable(instrument=instrument, start_run=0,name='TEST_NAME',value='TEST_VALUE', type='String')
+        instrument_variables.save()
 
     '''
         Create a new reduction run and check that it auto-creates an instrument when it doesn't exist
