@@ -7,6 +7,7 @@ class InstrumentVariable(models.Model):
     name = models.CharField(max_length=50, blank=False)
     value = models.CharField(max_length=300, blank=False)
     type = models.CharField(max_length=50, blank=False)
+    is_advanced = models.BooleanField(default=False)
 
     def __unicode__(self):
         return u'%s - %s=%s' % (self.instrument.name, self.name, self.value)

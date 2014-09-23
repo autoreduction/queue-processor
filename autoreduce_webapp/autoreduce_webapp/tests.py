@@ -51,6 +51,13 @@ class QueueProcessorTestCase(TestCase):
         return self._rb_number
 
     '''
+        Create dummy variables for a given instrument
+    '''
+    def create_instrument_variables(self, instrument_name):
+        instrument, created = Instrument.objects.get_or_create(name=instrument_name)
+        instrument_variables = InstrumentVariable(instrument=instrument, start_run=0,name='TEST_NAME',value='TEST_VALUE', type='String')
+
+    '''
         Create a new reduction run and check that it auto-creates an instrument when it doesn't exist
     '''
     def test_data_ready_new_instrument(self):
@@ -83,6 +90,7 @@ class QueueProcessorTestCase(TestCase):
     def test_data_ready_existing_instrument(self):
         rb_number = self.get_rb_number()
         instrument_name = "ExistingTestInstrument1"
+        self.create_instrument_variables(instrument_name)
         self.assertNotEqual(Instrument.objects.filter(name=instrument_name).first(), None, "Was expecting to find %s" % instrument_name)
         test_data = {
             "run_number" : -1,
