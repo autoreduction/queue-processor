@@ -65,7 +65,7 @@ class QueueProcessorTestCase(TestCase):
         instrument_name = "test_data_ready_new_instrument-TestInstrument"
         self.assertEqual(Instrument.objects.filter(name=instrument_name).first(), None, "Wasn't expecting to find %s" % instrument_name)
         test_data = {
-            "run_number" : -1,
+            "run_number" : 1,
             "instrument" : instrument_name,
             "rb_number" : rb_number,
             "data" : "/false/path",
@@ -93,7 +93,7 @@ class QueueProcessorTestCase(TestCase):
         self.create_instrument_variables(instrument_name)
         self.assertNotEqual(Instrument.objects.filter(name=instrument_name).first(), None, "Was expecting to find %s" % instrument_name)
         test_data = {
-            "run_number" : -1,
+            "run_number" : 1,
             "instrument" : instrument_name,
             "rb_number" : rb_number,
             "data" : "/false/path",
@@ -120,7 +120,7 @@ class QueueProcessorTestCase(TestCase):
         self.assertNotEqual(instrument, None, "Was expecting to find %s" % instrument_name)
         self.assertFalse(instrument.is_active, "Was expecting %s to be inactive" % instrument_name)
         test_data = {
-            "run_number" : -1,
+            "run_number" : 1,
             "instrument" : instrument_name,
             "rb_number" : rb_number,
             "data" : "/false/path",
@@ -146,7 +146,7 @@ class QueueProcessorTestCase(TestCase):
         rb_number = self.get_rb_number()
         instrument_name = "test_data_ready_multiple_runs-TestInstrument"
         test_data_run_1 = {
-            "run_number" : -1,
+            "run_number" : 1,
             "instrument" : instrument_name,
             "rb_number" : rb_number,
             "data" : "/false/path",
@@ -181,7 +181,7 @@ class QueueProcessorTestCase(TestCase):
         self.insert_run(run_number=-1, instrument="test_reduction_started-TestInstrument", experiment=experiment)
 
         test_data = {
-            "run_number" : -1,
+            "run_number" : 1,
             "instrument" : "test_reduction_started-TestInstrument",
             "rb_number" : rb_number,
             "data" : "/false/path",
@@ -202,7 +202,7 @@ class QueueProcessorTestCase(TestCase):
     def test_reduction_started_reduction_run_doesnt_exist(self):
         rb_number = self.get_rb_number()
         test_data = {
-            "run_number" : -1,
+            "run_number" : 1,
             "instrument" : "test_reduction_started-TestInstrument",
             "rb_number" : rb_number,
             "data" : "/false/path",
@@ -229,7 +229,7 @@ class QueueProcessorTestCase(TestCase):
         run.save()
 
         test_data = {
-            "run_number" : -1,
+            "run_number" : 1,
             "instrument" : "test_reduction_started_reduction_run_already_started-TestInstrument",
             "rb_number" : rb_number,
             "data" : "/false/path",
@@ -258,7 +258,7 @@ class QueueProcessorTestCase(TestCase):
         run.save()
 
         test_data = {
-            "run_number" : -1,
+            "run_number" : 1,
             "instrument" : "test_reduction_started_reduction_run_already_completed-TestInstrument",
             "rb_number" : rb_number,
             "data" : "/false/path",
@@ -287,7 +287,7 @@ class QueueProcessorTestCase(TestCase):
         run.save()
 
         test_data = {
-            "run_number" : -1,
+            "run_number" : 1,
             "instrument" : "test_reduction_started_reduction_run_error-TestInstrument",
             "rb_number" : rb_number,
             "data" : "/false/path",
@@ -316,7 +316,7 @@ class QueueProcessorTestCase(TestCase):
         run.save()
 
         test_data = {
-            "run_number" : -1,
+            "run_number" : 1,
             "instrument" : "test_reduction_complete_reduction_run_exists-TestInstrument",
             "rb_number" : rb_number,
             "data" : "/false/path",
@@ -339,7 +339,7 @@ class QueueProcessorTestCase(TestCase):
         rb_number = self.get_rb_number()
 
         test_data = {
-            "run_number" : -1,
+            "run_number" : 1,
             "instrument" : "test_reduction_complete_reduction_run_exists-TestInstrument",
             "rb_number" : rb_number,
             "data" : "/false/path",
@@ -364,7 +364,7 @@ class QueueProcessorTestCase(TestCase):
         run.save()
 
         test_data = {
-            "run_number" : -1,
+            "run_number" : 1,
             "instrument" : "test_reduction_complete_reduction_run_queued-TestInstrument",
             "rb_number" : rb_number,
             "data" : "/false/path",
@@ -396,7 +396,7 @@ class QueueProcessorTestCase(TestCase):
         run.save()
 
         test_data = {
-            "run_number" : -1,
+            "run_number" : 1,
             "instrument" : "test_reduction_complete_reduction_run_complete-TestInstrument",
             "rb_number" : rb_number,
             "data" : "/false/path",
@@ -424,7 +424,7 @@ class QueueProcessorTestCase(TestCase):
         run.save()
 
         test_data = {
-            "run_number" : -1,
+            "run_number" : 1,
             "instrument" : "test_reduction_complete_reduction_run_error-TestInstrument",
             "rb_number" : rb_number,
             "data" : "/false/path",
@@ -451,7 +451,7 @@ class QueueProcessorTestCase(TestCase):
         error_message = "We have an error here"
 
         test_data = {
-            "run_number" : -1,
+            "run_number" : 1,
             "instrument" : "test_reduction_error_reduction_run_exists-TestInstrument",
             "rb_number" : rb_number,
             "data" : "/false/path",
@@ -477,7 +477,7 @@ class QueueProcessorTestCase(TestCase):
         self.insert_run(run_number=-1, instrument="test_reduction_error_reduction_run_exists_no_message-TestInstrument", experiment=experiment)
 
         test_data = {
-            "run_number" : -1,
+            "run_number" : 1,
             "instrument" : "test_reduction_error_reduction_run_exists_no_message-TestInstrument",
             "rb_number" : rb_number,
             "data" : "/false/path",
@@ -500,7 +500,7 @@ class QueueProcessorTestCase(TestCase):
         rb_number = self.get_rb_number()
 
         test_data = {
-            "run_number" : -1,
+            "run_number" : 1,
             "instrument" : "test_reduction_error_reduction_run_doesnt_exists-TestInstrument",
             "rb_number" : rb_number,
             "data" : "/false/path",
