@@ -190,3 +190,11 @@ Recommended Server OS: Red Hat 6
 2. `ln -s ./autoreduce/WebApp/ISIS/autoreduce_webapp /var/www/autoreduce_webapp`
 4. `mkdir /var/www/autoreduce_webapp/static`
 5. `ln -s /usr/local/lib/python2.7/site-packages/django/contrib/admin/static/admin/ /var/www/autoreduce_webapp/static/admin`
+
+### Installing ICAT support
+1. `pip install suds-jurko`
+2. `wget http://icatproject.googlecode.com/svn/contrib/python-icat/python-icat-0.5.1.tar.gz`
+3. `tar xzf python-icat-0.5.1.tar.gz`
+4. `cd python-icat-0.5.1`
+5. `python setup.py build`
+6. `python setup.py install`
