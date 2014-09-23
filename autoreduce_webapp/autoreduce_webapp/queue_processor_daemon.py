@@ -7,6 +7,8 @@ import queue_processor
 class QueueProcessorDaemon(Daemon):
 	def run(self):
 		queue_processor.main()
+		while True:
+			pass
  
 if __name__ == "__main__":
 	daemon = QueueProcessorDaemon('/tmp/QueueProcessorDaemon.pid')
