@@ -59,8 +59,8 @@ class Listener(object):
         try:
             instrument_variables_start_run =  InstrumentVariable.objects.filter(instrument=instrument, start_run__lte=self._data_dict['run_number']).latest('start_run').start_run
         except:
-            InstrumentVariablesUtils.set_default_instrument_variables(instrument.name, instrument_variables_start_run)
-            
+            InstrumentVariablesUtils().set_default_instrument_variables(instrument.name, instrument_variables_start_run)
+
         instrument_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run=instrument_variables_start_run)
         experiment, experiment_created = Experiment.objects.get_or_create(reference_number=self._data_dict['rb_number'], )
         reduction_run, created = ReductionRun.objects.get_or_create(run_number=self._data_dict['run_number'],
