@@ -7,7 +7,7 @@ from queue_processor_daemon import QueueProcessorDaemon
 from queue_processor import Client
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 sys.path.insert(0, BASE_DIR)
-from reduction_viewer.models import ReductionRun, Instrument, ReductionLocation, Status, Experiment
+from reduction_viewer.models import ReductionRun, Instrument, ReductionLocation, Status, Experiment, DataLocation
 from reduction_viewer.utils import StatusUtils
 from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFile
 
@@ -31,8 +31,10 @@ class QueueProcessorTestCase(TestCase):
     '''
     def insert_run(self, experiment, run_number=1, run_version=0, instrument="TestInstrument", data="/false/path"):
         ins, created = Instrument.objects.get_or_create(name=instrument)
-        run = ReductionRun(run_number=run_number, instrument=ins, experiment=experiment, data=data, run_version=run_version)
+        run = ReductionRun(run_number=run_number, instrument=ins, experiment=experiment, run_version=run_version)
+        data_location = DataLocation(file_path=data, reduction_run=run)
         run.save()
+        data_location.save()
         return run
 
     '''
@@ -336,12 +338,12 @@ class QueueProcessorTestCase(TestCase):
     '''
         Attempt to complete a reduction run that doesn't exist
     '''
-    def test_reduction_complete_reduction_run_exists(self):
+    def test_reduction_complete_reduction_run_doesnt_exists(self):
         rb_number = self.get_rb_number()
 
         test_data = {
             "run_number" : 1,
-            "instrument" : "test_reduction_complete_reduction_run_exists-TestInstrument",
+            "instrument" : "test_reduction_complete_reduction_run_doesnt_exists-TestInstrument",
             "rb_number" : rb_number,
             "data" : "/false/path",
             "run_version" : 0
