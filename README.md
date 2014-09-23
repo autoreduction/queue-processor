@@ -4,7 +4,7 @@
 
 Recommended Server OS: Red Hat 6
 
-***Note: Most, if not all, commands will need to be run as root. If using `sudo` please take check the python note below***
+***Note: Most, if not all, commands will need to be run as root. If using `sudo` please check the python note below***
 
 ### Install prerequisites
 1. `yum update`
