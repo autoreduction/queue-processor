@@ -13,7 +13,7 @@ from reduction_viewer.models import ReductionRun, Instrument, ReductionLocation,
 from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFile
 from reduction_viewer.utils import StatusUtils, InstrumentUtils
 from reduction_variables.utils import InstrumentVariablesUtils
-import icat
+import icat_communication
 
 class Listener(object):
     def __init__(self, client):

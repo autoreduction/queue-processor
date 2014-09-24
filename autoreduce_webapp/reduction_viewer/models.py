@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from autoreduce_webapp.utils import SeparatedValuesField
-import autoreduce_webapp.icat as icat
+import autoreduce_webapp.icat_communication
 
 class UserProfile(models.Model):
     user_number = models.IntegerField()
@@ -17,7 +17,7 @@ class Instrument(models.Model):
         return u'%s' % self.name
 
     def get_experiments(current_user):
-        reference_numbers = icat.get_associated_experiments(current_user)
+        reference_numbers = icat_communication.get_associated_experiments(current_user)
         return Experiment.objects.filter(reference_number__in=reference_numbers)
 
     def should_show_instrument(current_user):
@@ -33,7 +33,7 @@ class Instrument(models.Model):
                 return True
             else:
                 ''' Get an updated list of associated instruments from ICAT '''
-                current_user.instrument_set = icat.get_owned_instruments(current_user.get_profile().user_number)
+                current_user.instrument_set = icat_communication.get_owned_instruments(current_user.get_profile().user_number)
                 current_user.save()
                 if current_user.instrument_set.filter(name=name):
                     return True
@@ -42,7 +42,7 @@ class Instrument(models.Model):
                 return True
             else:
                 ''' Get an updated list of associated instruments from ICAT '''
-                current_user.experiment_instruments = icat.get_valid_instruments(current_user.get_profile().user_number)
+                current_user.experiment_instruments = icat_communication.get_valid_instruments(current_user.get_profile().user_number)
                 current_user.save()
                 if current_user.experiment_instruments.filter(name=name):
                     return True
@@ -55,10 +55,10 @@ class Experiment(models.Model):
         return u'%s' % self.reference_number
 
     def get_ICAT_details():
-        return icat.get_experiment_details(reference_number)
+        return icat_communication.get_experiment_details(reference_number)
 
     def is_team_member(possibleMember):
-        return icat.is_on_experiment_team(reference_number, possibleMember.get_profile().user_number)
+        return icat_communication.is_on_experiment_team(reference_number, possibleMember.get_profile().user_number)
 
 class Status(models.Model):
     value = models.CharField(max_length=25)

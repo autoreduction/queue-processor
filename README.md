@@ -199,3 +199,4 @@ Recommended Server OS: Red Hat 6
 4. `cd python-icat-0.5.1`
 5. `python setup.py build`
 6. `python setup.py install`
+7. Set the correct values for ICAT in `autoreduce_webapp\autoreduce_webapp\settings.py`

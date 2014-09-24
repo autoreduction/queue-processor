@@ -105,3 +105,12 @@ ACTIVEMQ = {
 
 REDUCTION_SCRIPT_BASE = '/reduction_data/'
 ARCHIVE_BASE = ''
+
+# ICAT 
+
+ICAT = {
+    'AUTH' : 'uows',
+    'URL' : 'https://icatdev.isis.cclrc.ac.uk/ICATService/ICAT?wsdl',
+    'USER' : 'icat',
+    'PASSWORD' : 'icat'
+}

@@ -1,7 +1,8 @@
 from django.test import TestCase
 from django.utils import timezone
-from settings import LOG_FILE, LOG_LEVEL, ACTIVEMQ, BASE_DIR, REDUCTION_SCRIPT_BASE
+from settings import LOG_FILE, LOG_LEVEL, ACTIVEMQ, BASE_DIR, REDUCTION_SCRIPT_BASE, ICAT
 import sys, time, logging, os, datetime, json, shutil
+from sets import Set
 logging.basicConfig(filename=LOG_FILE.replace('.log', '.test.log'),level=LOG_LEVEL)
 from daemon import Daemon
 from queue_processor_daemon import QueueProcessorDaemon
@@ -11,6 +12,9 @@ sys.path.insert(0, BASE_DIR)
 from reduction_viewer.models import ReductionRun, Instrument, ReductionLocation, Status, Experiment, DataLocation
 from reduction_viewer.utils import StatusUtils
 from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFile
+from icat_communication import ICATCommunication
+from icat.exception import ICATSessionError
+from urllib2 import URLError
 
 class QueueProcessorTestCase(TestCase):
     '''
@@ -556,3 +560,225 @@ class QueueProcessorTestCase(TestCase):
         runs = ReductionRun.objects.filter(experiment=experiment)
 
         self.assertEqual(len(runs), 0, "Should only return 0 reduction runs but returned %s" % len(runs))
+
+class ICATCommunicationTestCase(TestCase):
+
+    def setUp(self):
+        self.test_user = 18187
+        self.test_instrument_scientist = 5818
+        self.test_experiment = 1190070
+
+    def test_icat_login_with_setting_values(self):
+        with ICATCommunication() as icat:
+            pass
+
+    def test_icat_login_with_invalid_credentials(self):
+        try:
+            with ICATCommunication(USER='MadeUp') as icat:
+                self.fail("Expecting login to fail")
+        except ICATSessionError:
+            pass
+    
+    def test_icat_login_with_invalid_url(self):
+        try:
+            with ICATCommunication(URL='https://www.example.com/') as icat:
+                self.fail("Expecting login to fail")
+        except URLError:
+            pass
+
+    def test_icat_login_with_valid_values_passed_in(self):
+        with ICATCommunication(**ICAT) as icat:
+            pass
+    
+    def test_get_experiment_details_existing_experiment(self):
+        with ICATCommunication() as icat:
+            experiment = icat.get_experiment_details(self.test_experiment)
+            
+            self.assertNotEqual(experiment, None, 'Expecting an experiment to be returned')
+            self.assertEqual(experiment['reference_number'], str(self.test_experiment), 'Expecting reference number to be %s to was %s instead' % (str(self.test_experiment), experiment['reference_number']))
+            self.assertEqual(experiment['instrument'], 'GEM', 'Expecting instrument to be %s to was %s instead' % ('GEM', experiment['instrument']))
+
+    def test_get_experiment_details_invalid_experiment(self):
+        with ICATCommunication() as icat:
+            experiment = icat.get_experiment_details(-123)
+            
+            self.assertEqual(experiment, None, 'Not expecting an experiment to be returned')
+
+    def test_get_experiment_details_invalid_input_number_string(self):
+        with ICATCommunication() as icat:
+            try:
+                experiment = icat.get_experiment_details('123')
+                self.fail("Expecting a TypeError to be thrown")
+            except TypeError:
+                pass
+    
+    def test_get_experiment_details_invalid_input_char_string(self):
+        with ICATCommunication() as icat:
+            try:
+                experiment = icat.get_experiment_details('abc')
+                self.fail("Expecting a TypeError to be thrown")
+            except TypeError:
+                pass
+
+    def test_get_valid_instruments_successful(self):
+        with ICATCommunication() as icat:
+            instruments = icat.get_valid_instruments(self.test_user)
+            
+            self.assertNotEqual(instruments, None, "Expecting some instruments returned")
+            self.assertTrue(len(instruments) > 0, "Expecting some instruments returned")
+            self.assertTrue('GEM' in instruments, "Expecting GEM to be returned")
+    
+    def test_get_valid_instruments_invalid_user(self):
+        with ICATCommunication() as icat:
+            instruments = icat.get_valid_instruments(1)
+            
+            self.assertEqual(instruments, Set(), "Not expecting some instruments returned")
+            
+    def test_get_valid_instruments_invalid_input_number_string(self):
+        with ICATCommunication() as icat:
+            try:
+                experiment = icat.get_valid_instruments('123')
+                self.fail("Expecting a TypeError to be thrown")
+            except TypeError:
+                pass     
+
+    def test_get_valid_instruments_invalid_input_char_string(self):
+        with ICATCommunication() as icat:
+            try:
+                experiment = icat.get_valid_instruments('abc')
+                self.fail("Expecting a TypeError to be thrown")
+            except TypeError:
+                pass
+
+    def test_get_valid_instruments_contains_all_owned_instruments(self):
+        with ICATCommunication() as icat:
+            instruments = icat.get_valid_instruments(self.test_instrument_scientist)
+            owned_instruments = icat.get_owned_instruments(self.test_instrument_scientist)
+            
+            self.assertNotEqual(instruments, None, "Expecting some valid instruments returned")
+            self.assertNotEqual(owned_instruments, None, "Expecting some owned instruments returned")
+            for instrument in owned_instruments:
+                self.assertTrue(instrument in instruments, "Expecting %s from owned instruments to be in valid instruments")
+
+    def test_get_owned_instruments_as_instrument_scientist(self):
+        with ICATCommunication() as icat:
+            owned_instruments = icat.get_owned_instruments(self.test_instrument_scientist)
+            
+            self.assertNotEqual(owned_instruments, None, "Expecting some owned instruments returned")
+            self.assertTrue(len(owned_instruments) > 0, "Expecting some owned instruments returned")
+            self.assertTrue('EMU' in owned_instruments, "Expecting EMU to be returned")
+
+    def test_get_owned_instruments_not_as_instrument_scientist(self):
+        with ICATCommunication() as icat:
+            owned_instruments = icat.get_owned_instruments(self.test_user)
+            
+            self.assertEqual(owned_instruments, Set(), "Not expecting some owned instruments returned")
+
+    def test_get_owned_instruments_invalid_user(self):
+        with ICATCommunication() as icat:
+            owned_instruments = icat.get_owned_instruments(1)
+            
+            self.assertEqual(owned_instruments, Set(), "Not expecting some owned instruments returned")
+
+    def test_get_owned_instruments_invalid_input_number_string(self):
+        try:
+            with ICATCommunication() as icat:
+                owned_instruments = icat.get_owned_instruments('123')
+                self.fail('Excpecting TypeError to be raised')
+        except TypeError:
+            pass                
+
+    def test_get_owned_instruments_invalid_input_char_string(self):
+        try:
+            with ICATCommunication() as icat:
+                owned_instruments = icat.get_owned_instruments('abc')
+                self.fail('Excpecting TypeError to be raised')
+        except TypeError:
+            pass
+
+    def test_is_on_experiment_team_true(self):
+        with ICATCommunication() as icat:
+            is_on_team = icat.is_on_experiment_team(self.test_experiment, self.test_user)
+            
+            self.assertTrue(is_on_team, "Expecting to be on experiment team")
+
+    def test_is_on_experiment_team_false(self):
+        with ICATCommunication() as icat:
+            is_on_team = icat.is_on_experiment_team(self.test_experiment, self.test_instrument_scientist)
+            
+            self.assertFalse(is_on_team, "Not expecting to be on experiment team")
+
+    def test_is_on_experiment_team_invalid_user(self):
+        with ICATCommunication() as icat:
+            is_on_team = icat.is_on_experiment_team(self.test_experiment, 1)
+            
+            self.assertFalse(is_on_team, "Not expecting to be on experiment team")
+
+    def test_is_on_experiment_team_invalid_experiment(self):
+        with ICATCommunication() as icat:
+            is_on_team = icat.is_on_experiment_team(1, self.test_user)
+            
+            self.assertFalse(is_on_team, "Not expecting to be on experiment team")
+
+    def test_is_on_experiment_team_invalid_input_number_string_experiment(self):
+        try:
+            with ICATCommunication() as icat:
+                is_on_team = icat.is_on_experiment_team('123', self.test_user)
+                self.fail("Expecting a TypeError to be raised")
+        except TypeError:
+            pass
+
+    def test_is_on_experiment_team_invalid_input_char_string_experiment(self):
+        try:
+            with ICATCommunication() as icat:
+                is_on_team = icat.is_on_experiment_team('abc', self.test_user)
+                self.fail("Expecting a TypeError to be raised")
+        except TypeError:
+            pass
+
+    def test_is_on_experiment_team_invalid_input_number_string_user(self):
+        try:
+            with ICATCommunication() as icat:
+                is_on_team = icat.is_on_experiment_team(self.test_experiment, '123')
+                self.fail("Expecting a TypeError to be raised")
+        except TypeError:
+            pass
+
+    def test_is_on_experiment_team_invalid_input_char_string_user(self):
+        try:
+            with ICATCommunication() as icat:
+                is_on_team = icat.is_on_experiment_team(self.test_experiment, 'abc')
+                self.fail("Expecting a TypeError to be raised")
+        except TypeError:
+            pass
+
+    def test_get_associated_experiments_successful(self):
+        with ICATCommunication() as icat:
+            experiments = icat.get_associated_experiments(self.test_user)
+            
+            self.assertNotEqual(experiments, None, "Expecting some experiments to be returned")
+            self.assertTrue(len(experiments) > 0, "Expecting some experiments to be returned")
+            self.assertTrue(str(self.test_experiment) in experiments, "Expecting to find %s in the list of experiments" % str(self.test_experiment))
+    
+    def test_get_associated_experiments_invalid_user(self):
+        with ICATCommunication() as icat:
+            experiments = icat.get_associated_experiments(1)
+            
+            self.assertEqual(experiments, None, "Not expecting some experiments to be returned")
+            
+    def test_get_associated_experiments_invalid_input_number_string(self):
+        try:
+            with ICATCommunication() as icat:
+                experiments = icat.get_associated_experiments('123')
+                self.fail("Expecting a TypeError to be raised")
+        except TypeError:
+            pass
+
+    def test_get_associated_experiments_invalid_input_char_string(self):
+        try:
+            with ICATCommunication() as icat:
+                experiments = icat.get_associated_experiments('abc')
+                self.fail("Expecting a TypeError to be raised")
+        except TypeError:
+            pass
+            
