@@ -764,7 +764,7 @@ class ICATCommunicationTestCase(TestCase):
         with ICATCommunication() as icat:
             experiments = icat.get_associated_experiments(1)
             
-            self.assertEqual(experiments, None, "Not expecting some experiments to be returned")
+            self.assertEqual(experiments, Set(), "Not expecting some experiments to be returned")
             
     def test_get_associated_experiments_invalid_input_number_string(self):
         try:
