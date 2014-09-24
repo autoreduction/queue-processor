@@ -25,7 +25,7 @@ class ScriptFile(models.Model):
     reduction_run = models.ForeignKey(ReductionRun, blank=False, related_name="scripts")
     script = models.BinaryField(blank=False)
     file_name = models.CharField(max_length=50, blank=False)
-    created = models.DateTimeField(auto_now_add=True,blank=False)
+    created = models.DateTimeField(auto_now_add=True,blank=True)
 
     def __unicode__(self):
         return u'%s' % self.file_name
