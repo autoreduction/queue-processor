@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
+from django.utils import timezone
 import datetime
 
 
@@ -15,7 +16,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='scriptfile',
             name='created',
-            field=models.DateTimeField(default=datetime.date(2014, 9, 16), auto_now_add=True),
+            field=models.DateTimeField(default=timezone.make_aware(datetime.date(2014, 9, 16), timezone.get_current_timezone()), auto_now_add=True),
             preserve_default=False,
         ),
         migrations.AlterField(
