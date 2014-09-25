@@ -8,6 +8,7 @@ class InstrumentVariable(models.Model):
     value = models.CharField(max_length=300, blank=False)
     type = models.CharField(max_length=50, blank=False)
     is_advanced = models.BooleanField(default=False)
+    scripts = models.ManyToManyField(ScriptFile)
 
     def __unicode__(self):
         return u'%s - %s=%s' % (self.instrument.name, self.name, self.value)
@@ -17,12 +18,12 @@ class RunVariable(models.Model):
     name = models.CharField(max_length=50, blank=False)
     value = models.CharField(max_length=300, blank=False)
     type = models.CharField(max_length=50, blank=False)
+    scripts = models.ManyToManyField(ScriptFile)
 
     def __unicode__(self):
         return u'%s - %s=%s' % (self.reduction_run, self.name, self.value)
 
 class ScriptFile(models.Model):
-    reduction_run = models.ForeignKey(ReductionRun, blank=False, related_name="scripts")
     script = models.BinaryField(blank=False)
     file_name = models.CharField(max_length=50, blank=False)
     created = models.DateTimeField(auto_now_add=True,blank=True)
