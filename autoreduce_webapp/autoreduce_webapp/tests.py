@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.utils import timezone
 from settings import LOG_FILE, LOG_LEVEL, ACTIVEMQ, BASE_DIR, REDUCTION_SCRIPT_BASE, ICAT
-import sys, time, logging, os, datetime, json, shutil
+import sys, time, logging, os, datetime, json, shutil, getpass
 from sets import Set
 logging.basicConfig(filename=LOG_FILE.replace('.log', '.test.log'),level=LOG_LEVEL)
 from daemon import Daemon
@@ -34,10 +34,31 @@ class QueueProcessorTestCase(TestCase):
 
     @classmethod
     def setUpClass(cls):
+        cls._username = raw_input('ICAT Username: ')
+        cls._password = getpass.getpass('ICAT Password: ')
+        f = open(os.path.join(os.getcwd(), 'autoreduce_webapp/settings.py'), 'r+')
+        settings = f.read()
+        settings = settings.replace("'USER' : 'icat',", "'USER' : '%s'," % cls._username)
+        settings = settings.replace("'PASSWORD' : 'icat'", "'PASSWORD' : '%s'" % cls._password)
+        f.seek(0)
+        f.write(settings)
+        f.truncate()
+        f.close()
         cls._client = Client(ACTIVEMQ['broker'], ACTIVEMQ['username'], ACTIVEMQ['password'], ACTIVEMQ['topics'], 'Autoreduction_QueueProcessor_Test')
         cls._client.connect()
         cls._rb_number = 0
         cls._timeout_wait = 1
+
+    @classmethod
+    def tearDownClass(cls):
+        f = open(os.path.join(os.getcwd(), 'autoreduce_webapp/settings.py'), 'r+')
+        settings = f.read()
+        settings = settings.replace("'USER' : '%s'," % cls._username, "'USER' : 'icat',")
+        settings = settings.replace("'PASSWORD' : '%s'" % cls._password, "'PASSWORD' : 'icat'")
+        f.seek(0)
+        f.write(settings)
+        f.truncate()
+        f.close()
 
     '''
         Insert a reduction run to ensure the QueueProcessor can find one when recieving a topic message
@@ -609,6 +630,30 @@ class QueueProcessorTestCase(TestCase):
         self.assertEqual(len(runs), 0, "Should only return 0 reduction runs but returned %s" % len(runs))
 
 class ICATCommunicationTestCase(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls._username = raw_input('ICAT Username: ')
+        cls._password = getpass.getpass('ICAT Password: ')
+        f = open(os.path.join(os.getcwd(), 'autoreduce_webapp/settings.py'), 'r+')
+        settings = f.read()
+        settings = settings.replace("'USER' : 'icat',", "'USER' : '%s'," % cls._username)
+        settings = settings.replace("'PASSWORD' : 'icat'", "'PASSWORD' : '%s'" % cls._password)
+        f.seek(0)
+        f.write(settings)
+        f.truncate()
+        f.close()
+
+    @classmethod
+    def tearDownClass(cls):
+        f = open(os.path.join(os.getcwd(), 'autoreduce_webapp/settings.py'), 'r+')
+        settings = f.read()
+        settings = settings.replace("'USER' : '%s'," % cls._username, "'USER' : 'icat',")
+        settings = settings.replace("'PASSWORD' : '%s'" % cls._password, "'PASSWORD' : 'icat'")
+        f.seek(0)
+        f.write(settings)
+        f.truncate()
+        f.close()
 
     def setUp(self):
         self.test_user = 18187
