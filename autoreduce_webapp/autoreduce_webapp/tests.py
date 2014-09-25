@@ -44,6 +44,8 @@ class QueueProcessorTestCase(TestCase):
         f.write(settings)
         f.truncate()
         f.close()
+        from settings import ICAT
+        from queue_processor import Client
         cls._client = Client(ACTIVEMQ['broker'], ACTIVEMQ['username'], ACTIVEMQ['password'], ACTIVEMQ['topics'], 'Autoreduction_QueueProcessor_Test')
         cls._client.connect()
         cls._rb_number = 0
@@ -636,13 +638,15 @@ class ICATCommunicationTestCase(TestCase):
         cls._username = raw_input('ICAT Username: ')
         cls._password = getpass.getpass('ICAT Password: ')
         f = open(os.path.join(os.getcwd(), 'autoreduce_webapp/settings.py'), 'r+')
-        settings = f.read()
-        settings = settings.replace("'USER' : 'icat',", "'USER' : '%s'," % cls._username)
-        settings = settings.replace("'PASSWORD' : 'icat'", "'PASSWORD' : '%s'" % cls._password)
+        text = f.read()
+        text = text.replace("'USER' : 'icat',", "'USER' : '%s'," % cls._username)
+        text = text.replace("'PASSWORD' : 'icat'", "'PASSWORD' : '%s'" % cls._password)
         f.seek(0)
-        f.write(settings)
+        f.write(text)
         f.truncate()
         f.close()
+        # Re-import changed file property
+        from settings import ICAT
 
     @classmethod
     def tearDownClass(cls):
