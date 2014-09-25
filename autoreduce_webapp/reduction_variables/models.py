@@ -1,6 +1,14 @@
 from django.db import models
 from reduction_viewer.models import Instrument, ReductionRun
 
+class ScriptFile(models.Model):
+    script = models.BinaryField(blank=False)
+    file_name = models.CharField(max_length=50, blank=False)
+    created = models.DateTimeField(auto_now_add=True,blank=True)
+
+    def __unicode__(self):
+        return u'%s' % self.file_name
+
 class InstrumentVariable(models.Model):
     instrument = models.ForeignKey(Instrument)
     start_run = models.IntegerField(blank=False)
@@ -22,11 +30,3 @@ class RunVariable(models.Model):
 
     def __unicode__(self):
         return u'%s - %s=%s' % (self.reduction_run, self.name, self.value)
-
-class ScriptFile(models.Model):
-    script = models.BinaryField(blank=False)
-    file_name = models.CharField(max_length=50, blank=False)
-    created = models.DateTimeField(auto_now_add=True,blank=True)
-
-    def __unicode__(self):
-        return u'%s' % self.file_name
