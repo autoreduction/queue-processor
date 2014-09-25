@@ -126,6 +126,45 @@ class QueueProcessorTestCase(TestCase):
             self.remove_dummy_reduce_script(instrument_name)
 
     '''
+        Create a new reduction run and check that it auto-creates an instrument and its variables
+    '''
+    def test_data_ready_new_instrument_instrument_variables(self):
+        rb_number = self.get_rb_number()
+        instrument_name = "test_data_ready_new_instrument-TestInstrument"
+        self.save_dummy_reduce_script(instrument_name)
+        try:
+            self.assertEqual(Instrument.objects.filter(name=instrument_name).first(), None, "Wasn't expecting to find %s" % instrument_name)
+            test_data = {
+                "run_number" : 1,
+                "instrument" : instrument_name,
+                "rb_number" : rb_number,
+                "data" : "/false/path",
+                "run_version" : 0
+            }
+            self._client.send('/topic/DataReady', json.dumps(test_data))
+            time.sleep(self._timeout_wait)
+
+            experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
+            runs = ReductionRun.objects.filter(experiment=experiment, run_number=1)
+
+            self.assertEqual(len(runs), 1, "Should only return 1 reduction run but returned %s" % len(runs))
+            self.assert_run_match(test_data, runs[0])
+            self.assertEqual(str(runs[0].status), "Queued", "Expecting status to be 'Queued' but was '%s'" % runs[0].status)
+            instrument = Instrument.objects.filter(name=instrument_name).first()
+            self.assertNotEqual(instrument, None, "Was expecting to find %s" % instrument_name)
+            self.assertTrue(instrument.is_active, "Was expecting instrument to be active")
+            instrument_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run__lte=1)
+            self.assertNotEqual(instrument_variables, None, "Was expecting to find some instrument variables")
+            self.assertTrue(len(instrument_variables) > 0, "Was expecting to find some instrument variables")
+            self.assertNotEqual(instrument_variables[0].name, None, "Was expecting to find an instrument variable name")
+            self.assertNotEqual(instrument_variables[0].value, None, "Was expecting to find an instrument variable value")
+            self.assertNotEqual(instrument_variables[0].type, None, "Was expecting to find an instrument variable type")
+            self.assertNotEqual(instrument_variables[0].scripts.all(), None, "Was expecting to find an instrument variable scripts")
+            self.assertTrue(len(instrument_variables[0].scripts.all()) > 0, "Was expecting to find an instrument variable scripts")
+        finally:
+            self.remove_dummy_reduce_script(instrument_name)
+
+    '''
         Create a new reduction run on an instrument that already exists
     '''
     def test_data_ready_existing_instrument(self):

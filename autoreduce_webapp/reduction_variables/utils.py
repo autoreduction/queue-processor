@@ -25,9 +25,11 @@ class InstrumentVariablesUtils(object):
         instrument_variables = []
         for key in reduce_script.standard_vars:
             instrument_var = InstrumentVariable(instrument=instrument, name=key, value=reduce_script.standard_vars[key], is_advanced=False, type=type(reduce_script.standard_vars[key]).__name__, start_run=start_run)
+            instrument_var.save()
             instrument_var.scripts.add(script)
             instrument_var.save()
         for key in reduce_script.advanced_vars:
             instrument_var = InstrumentVariable(instrument=instrument, name=key, value=reduce_script.advanced_vars[key], is_advanced=True, type=type(reduce_script.advanced_vars[key]).__name__, start_run=start_run)
+            instrument_var.save()
             instrument_var.scripts.add(script)
             instrument_var.save()
