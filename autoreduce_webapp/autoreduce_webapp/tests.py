@@ -631,6 +631,132 @@ class QueueProcessorTestCase(TestCase):
 
         self.assertEqual(len(runs), 0, "Should only return 0 reduction runs but returned %s" % len(runs))
 
+    '''
+        Check that all .png files are read as graphs
+    '''
+    def test_graphs_correctly_read_single(self):
+        data_path = '/tmp/test_data/test_graphs_correctly_read_single/'
+        if not os.path.exists(data_path):
+            os.makedirs(data_path)
+        test_graph = os.path.join(os.path.dirname(__file__), '../', 'test_files','test_graph.png')
+        file_path = os.path.join(data_path, 'test_graph.png')
+        if not os.path.isfile(file_path):
+            shutil.copyfile(test_graph, file_path)
+
+        rb_number = self.get_rb_number()
+        started_time = timezone.now().replace(microsecond=0)
+        experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
+        run = self.insert_run(run_number=1, instrument="test_graphs_correctly_read_single-TestInstrument", experiment=experiment)
+        run.status = StatusUtils().get_processing()
+        run.started = started_time
+        run.save()
+
+        test_data = {
+            "run_number" : 1,
+            "instrument" : "test_graphs_correctly_read_single-TestInstrument",
+            "rb_number" : rb_number,
+            "data" : "/false/path",
+            "run_version" : 0,
+            "reduction_data" : [data_path]
+        }
+        self._client.send('/topic/ReductionComplete', json.dumps(test_data))
+        time.sleep(self._timeout_wait)
+
+        runs = ReductionRun.objects.filter(experiment=experiment)
+
+        self.assertEqual(len(runs), 1, "Should only return 1 reduction run but returned %s" % len(runs))
+        self.assertEqual(str(runs[0].status), "Completed", "Expecting status to be 'Completed' but was '%s'" % runs[0].status)
+        self.assertNotEqual(runs[0].finished, None, "Expected the reduction run to have a finished timestamp")
+        self.assertNotEqual(runs[0].graph, None, "Expected to find some graphs")
+        self.assertTrue(len(runs[0].graph) == 1, "Expected to find 1 graph but instead found %s" % len(runs[0].graph))
+        self.assertTrue('base64' in runs[0].graph[0], "Expected to find 'base64' in graph text")
+
+    '''
+        Check that all .png files are read as graphs
+    '''
+    def test_graphs_correctly_read_multiple(self):
+        data_path = '/tmp/test_data/test_graphs_correctly_read_multiple/'
+        if not os.path.exists(data_path):
+            os.makedirs(data_path)
+        test_graph = os.path.join(os.path.dirname(__file__), '../', 'test_files','test_graph.png')
+        file_path = os.path.join(data_path, 'test_graph1.png')
+        if not os.path.isfile(file_path):
+            shutil.copyfile(test_graph, file_path)
+        file_path = os.path.join(data_path, 'test_graph2.png')
+        if not os.path.isfile(file_path):
+            shutil.copyfile(test_graph, file_path)
+
+        rb_number = self.get_rb_number()
+        started_time = timezone.now().replace(microsecond=0)
+        experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
+        run = self.insert_run(run_number=1, instrument="test_graphs_correctly_read_multiple-TestInstrument", experiment=experiment)
+        run.status = StatusUtils().get_processing()
+        run.started = started_time
+        run.save()
+
+        test_data = {
+            "run_number" : 1,
+            "instrument" : "test_graphs_correctly_read_multiple-TestInstrument",
+            "rb_number" : rb_number,
+            "data" : "/false/path",
+            "run_version" : 0,
+            "reduction_data" : [data_path]
+        }
+        self._client.send('/topic/ReductionComplete', json.dumps(test_data))
+        time.sleep(self._timeout_wait)
+
+        runs = ReductionRun.objects.filter(experiment=experiment)
+
+        self.assertEqual(len(runs), 1, "Should only return 1 reduction run but returned %s" % len(runs))
+        self.assertEqual(str(runs[0].status), "Completed", "Expecting status to be 'Completed' but was '%s'" % runs[0].status)
+        self.assertNotEqual(runs[0].finished, None, "Expected the reduction run to have a finished timestamp")
+        self.assertNotEqual(runs[0].graph, None, "Expected to find some graphs")
+        self.assertTrue(len(runs[0].graph) == 2, "Expected to find 2 graph but instead found %s" % len(runs[0].graph))
+        self.assertTrue('base64' in runs[0].graph[0], "Expected to find 'base64' in graph text")
+        self.assertTrue('base64' in runs[0].graph[1], "Expected to find 'base64' in graph text")
+
+    '''
+        Check that all .png files are read as graphs
+    '''
+    def test_graphs_correctly_read_case_sensitive(self):
+        data_path = '/tmp/test_data/test_graphs_correctly_read_case_sensitive/'
+        if not os.path.exists(data_path):
+            os.makedirs(data_path)
+        test_graph = os.path.join(os.path.dirname(__file__), '../', 'test_files','test_graph.png')
+        file_path = os.path.join(data_path, 'test_graph.PNG')
+        if not os.path.isfile(file_path):
+            shutil.copyfile(test_graph, file_path)
+
+        rb_number = self.get_rb_number()
+        started_time = timezone.now().replace(microsecond=0)
+        experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
+        run = self.insert_run(run_number=1, instrument="test_graphs_correctly_read_case_sensitive-TestInstrument", experiment=experiment)
+        run.status = StatusUtils().get_processing()
+        run.started = started_time
+        run.save()
+
+        test_data = {
+            "run_number" : 1,
+            "instrument" : "test_graphs_correctly_read_case_sensitive-TestInstrument",
+            "rb_number" : rb_number,
+            "data" : "/false/path",
+            "run_version" : 0,
+            "reduction_data" : [data_path]
+        }
+        self._client.send('/topic/ReductionComplete', json.dumps(test_data))
+        time.sleep(self._timeout_wait)
+
+        runs = ReductionRun.objects.filter(experiment=experiment)
+
+        self.assertEqual(len(runs), 1, "Should only return 1 reduction run but returned %s" % len(runs))
+        self.assertEqual(str(runs[0].status), "Completed", "Expecting status to be 'Completed' but was '%s'" % runs[0].status)
+        self.assertNotEqual(runs[0].finished, None, "Expected the reduction run to have a finished timestamp")
+        self.assertNotEqual(runs[0].graph, None, "Expected to find some graphs")
+        self.assertTrue(len(runs[0].graph) == 1, "Expected to find 1 graph but instead found %s" % len(runs[0].graph))
+        self.assertTrue('base64' in runs[0].graph[0], "Expected to find 'base64' in graph text")
+
+
+
 class ICATCommunicationTestCase(TestCase):
 
     @classmethod

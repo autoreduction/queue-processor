@@ -136,13 +136,14 @@ class Listener(object):
                         reduction_run.reduction_location.add(reduction_location)
                         
                         # Get any .png files and store them as base64 strings
-                        graphs = glob.glob(location + '*.png')
+                        graphs = glob.glob(location + '*.[pP][nN][gG]')
                         for graph in graphs:
-                            if not reduction_run.graph:
-                                reduction_run.graph = []
                             with open(graph, "rb") as image_file:
-                                encoded_string = base64.b64encode(image_file.read())
-                                reduction_run.graph.append(encoded_string)
+                                encoded_string = 'data:image/png;base64,' + base64.b64encode(image_file.read())
+                                if reduction_run.graph is None:
+                                    reduction_run.graph = [encoded_string]
+                                else:
+                                    reduction_run.graph.append(encoded_string)
 
                 reduction_run.save()
                 
