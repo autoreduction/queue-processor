@@ -24,6 +24,7 @@ class QueueProcessorTestCase(TestCase):
         instrument1, created1 = Instrument.objects.get_or_create(name="ExistingTestInstrument1")
         instrument2, created2 = Instrument.objects.get_or_create(name="InactiveInstrument", is_active=False)
         self.save_dummy_reduce_script("InactiveInstrument")
+        self.save_dummy_reduce_script("ExistingTestInstrument1")
 
     '''
         Remove InactiveInstrument dummy script
@@ -69,7 +70,14 @@ class QueueProcessorTestCase(TestCase):
     '''
     def create_instrument_variables(self, instrument_name):
         instrument, created = Instrument.objects.get_or_create(name=instrument_name)
+        reduction_file = os.path.join(REDUCTION_SCRIPT_BASE, instrument_name, 'reduce.py')
+        f = open(reduction_file, 'rb')
+        script_binary = f.read()
+        script, created2 = ScriptFile.objects.get_or_create(file_name='reduce.py', script=script_binary)
+        script.save()
         instrument_variables = InstrumentVariable(instrument=instrument, start_run=0,name='TEST_NAME',value='TEST_VALUE', type='String')
+        instrument_variables.save()
+        instrument_variables.scripts.add(script)
         instrument_variables.save()
 
     '''

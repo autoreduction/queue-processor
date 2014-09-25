@@ -27,6 +27,7 @@ class RunVariable(models.Model):
     value = models.CharField(max_length=300, blank=False)
     type = models.CharField(max_length=50, blank=False)
     scripts = models.ManyToManyField(ScriptFile)
+    is_advanced = models.BooleanField(default=False)
 
     def __unicode__(self):
         return u'%s - %s=%s' % (self.reduction_run, self.name, self.value)

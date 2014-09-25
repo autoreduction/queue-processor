@@ -82,7 +82,7 @@ class ReductionRun(models.Model):
     graph = SeparatedValuesField(null=True, blank=True)
 
     def __unicode__(self):
-        if seld.run_name:
+        if self.run_name:
             return u'%s-%s' % (self.run_number, self.run_name)
         else:
             return u'%s' % self.run_number

@@ -109,5 +109,5 @@ class ICATCommunication(object):
         Performs any post-processing actions required once reduction is complete.
         Currenty a placeholder. Not sure yet what this may contain.
     '''
-    def post_processing(self, reduction_run):
+    def post_process(self, reduction_run):
         pass

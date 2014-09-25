@@ -76,11 +76,11 @@ class Listener(object):
             else:
                 for variables in instrument_variables:
                     reduction_run_variables = RunVariable(name=variables.name, value=variables.value, type=variables.type)
-                    reduction_run_variables.save()
-                    for script in variables.scripts:
-                        reduction_run_variables.scripts.add(script)
-                    reduction_run_variables.save()
+                    reduction_run_variables.reduction_run = reduction_run
                     reduction_run.run_variables.add(reduction_run_variables)
+                    reduction_run_variables.save()
+                    for script in variables.scripts.all():
+                        reduction_run_variables.scripts.add(script)
 
             reduction_run.save()
             data_location.save()

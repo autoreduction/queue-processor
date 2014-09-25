@@ -40,6 +40,8 @@ class ReductionVariablesUtiles(object):
             raise Exception("Run variables required")
         reduction_run = None
         for variables in run_variables:
+            if variables.scripts is None or len(variables.scripts.all()) == 0:
+                raise Exception("Run variables missing scripts")
             if not reduction_run:
                 reduction_run = variables.reduction_run.id
             else:
@@ -49,14 +51,14 @@ class ReductionVariablesUtiles(object):
         # Currently only supports a single script file
         script_file = run_variables[0].scripts.all()[0]
 
-        unique_name = uuid.uuid4() + '.py'
+        unique_name = str(uuid.uuid4()) + '.py'
         script_path = os.path.join(REDUCTION_SCRIPT_BASE, 'reduction_script_temp', unique_name)
         # Make sure we don't accidently overwrite a file
         while os.path.isfile(script_path):
-            unique_name = uuid.uuid4() + '.py'
+            unique_name = str(uuid.uuid4()) + '.py'
             script_path = os.path.join(REDUCTION_SCRIPT_BASE, 'reduction_script_temp', unique_name)
         f = open(script_path, 'wb')
-        f.write(script_file)
+        f.write(script_file.script)
         f.close()
 
         standard_vars = {}
