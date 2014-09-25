@@ -27,10 +27,16 @@ class ICATCommunication(object):
         logging.debug("Logging out of ICAT")
         self.client.logout()
     
+    '''
+        Takes all items in the given list and adds them to the given set
+    '''
     def _add_list_to_set(self, my_list, my_set):
         [my_set.add(each) for each in my_list]
         return my_set
 
+    '''
+        Returns experiment details for the given reference number
+    '''
     def get_experiment_details(self, reference_number):
         if not isinstance(reference_number, (int, long)):
             raise TypeError("Reference number must be a number")
@@ -52,6 +58,10 @@ class ICATCommunication(object):
             return trimmed_investigation
         return None
 
+    '''
+        Returns a set of all instruments a given user can see.
+        This includes instruments they own and are an experimenter on.
+    '''
     def get_valid_instruments(self, user_number):
         if not isinstance(user_number, (int, long)):
             raise TypeError("User number must be a number")
@@ -61,6 +71,9 @@ class ICATCommunication(object):
         self._add_list_to_set(self.client.search("SELECT inst.name FROM Instrument inst JOIN inst.investigationInstruments ii WHERE ii.investigation.id IN (SELECT i.id from Investigation i JOIN i.investigationUsers iu WHERE iu.user.name = 'uows/" + str(user_number) + "')"), instruments)
         return instruments
 
+    '''
+        Returns all instruments for which the given user is an instrument scientist
+    '''
     def get_owned_instruments(self, user_number):
         if not isinstance(user_number, (int, long)):
             raise TypeError("User number must be a number")
@@ -69,6 +82,9 @@ class ICATCommunication(object):
         self._add_list_to_set(self.client.search("SELECT ins.instrument.name from InstrumentScientist ins WHERE ins.user.name = 'uows/" + str(user_number) + "'"), instruments)
         return instruments
 
+    '''
+        Returns True is the given user is part of the experiment team for the given reference number.
+    '''
     def is_on_experiment_team(self, reference_number, user_number):
         if not isinstance(user_number, (int, long)) or not isinstance(reference_number, (int, long)):
             raise TypeError("User number and reference number must be a number")
@@ -78,6 +94,9 @@ class ICATCommunication(object):
             return True
         return False
 
+    '''
+        Returns a set of experiment reference numbers for which the given user is on the experiment team.
+    '''
     def get_associated_experiments(self, user_number):
         if not isinstance(user_number, (int, long)):
             raise TypeError("User number must be a number")
@@ -85,3 +104,10 @@ class ICATCommunication(object):
         experiments = Set()
         self._add_list_to_set(self.client.search("SELECT i.name from Investigation i JOIN i.investigationUsers iu where iu.user.name = 'uows/" + str(user_number) + "'"), experiments)
         return experiments
+
+    '''
+        Performs any post-processing actions required once reduction is complete.
+        Currenty a placeholder. Not sure yet what this may contain.
+    '''
+    def post_processing(self, reduction_run):
+        pass

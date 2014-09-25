@@ -2,18 +2,15 @@ import stomp
 from settings import LOG_FILE, LOG_LEVEL, ACTIVEMQ, BASE_DIR, ARCHIVE_BASE, REDUCTION_SCRIPT_BASE
 import logging
 logging.basicConfig(filename=LOG_FILE,level=LOG_LEVEL)
-import time
-import sys
-import os
-import json
+import time, sys, os, json, glob, base64
 from django.utils import timezone
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 sys.path.insert(0, BASE_DIR)
 from reduction_viewer.models import ReductionRun, Instrument, ReductionLocation, Status, DataLocation, Experiment
 from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFile
 from reduction_viewer.utils import StatusUtils, InstrumentUtils
-from reduction_variables.utils import InstrumentVariablesUtils
-import icat_communication
+from reduction_variables.utils import InstrumentVariablesUtils, ReductionVariablesUtiles
+from icat_communication import ICATCommunication
 
 class Listener(object):
     def __init__(self, client):
@@ -79,21 +76,26 @@ class Listener(object):
             else:
                 for variables in instrument_variables:
                     reduction_run_variables = RunVariable(name=variables.name, value=variables.value, type=variables.type)
+                    reduction_run_variables.save()
+                    for script in variables.scripts:
+                        reduction_run_variables.scripts.add(script)
+                    reduction_run_variables.save()
                     reduction_run.run_variables.add(reduction_run_variables)
-                # TODO: Create script - need some logic for finding script file
-                #reduction_run.scripts.add()
 
             reduction_run.save()
             data_location.save()
 
             if instrument_variables:
-                # TODO: add script and variables to data_dict
+                script_path, arguments = ReductionVariablesUtiles().get_script_path_and_arguments(reduction_run.run_variables.all())
+                self._data_dict['reduction_script'] = script_path
+                self._data_dict['reduction_arguments'] = arguments
                 self._client.send('/topic/ReductionPending', json.dumps(self._data_dict))        
         else:
             logging.error("An invalid attempt to queue an existing reduction run was captured. Experiment: %s, Run Number: %s, Run Version %s" % (self._data_dict['rb_number'], self._data_dict['run_number'], self._data_dict['run_version']))
 
     def reduction_pending(self):
         logging.info("Run %s ready for reduction" % self._data_dict['run_number'])
+        logging.info("Reduction file: %s" % self._data_dict['reduction_script'])
 
     def reduction_started(self):
         logging.info("Run %s has started reduction" % self._data_dict['run_number'])
@@ -132,10 +134,21 @@ class Listener(object):
                     for location in self._data_dict['reduction_data']:
                         reduction_location = ReductionLocation(file_path=location)
                         reduction_run.reduction_location.add(reduction_location)
-                        # TODO: get graphs
-                reduction_run.save()
+                        
+                        # Get any .png files and store them as base64 strings
+                        graphs = glob.glob(location + '*.png')
+                        for graph in graphs:
+                            if not reduction_run.graph:
+                                reduction_run.graph = []
+                            with open(graph, "rb") as image_file:
+                                encoded_string = base64.b64encode(image_file.read())
+                                reduction_run.graph.append(encoded_string)
 
-                # TODO: reduction_complete - trigger any post-processes (e.g. ICAT)
+                reduction_run.save()
+                
+                # Trigger any post-processing, such as saving data to ICAT
+                with ICATCommunication() as icat:
+                    icat.post_process(reduction_run)                    
             else:
                 logging.error("An invalid attempt to complete a reduction run that wasn't processing has been captured. Experiment: %s, Run Number: %s, Run Version %s" % (self._data_dict['rb_number'], self._data_dict['run_number'], self._data_dict['run_version']))
         else:
