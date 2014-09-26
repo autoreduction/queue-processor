@@ -114,3 +114,7 @@ ICAT = {
     'USER' : 'icat',
     'PASSWORD' : 'icat'
 }
+
+# UserOffice WebService
+
+UOWS_URL = ''
