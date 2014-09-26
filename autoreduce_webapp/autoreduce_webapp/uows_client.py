@@ -2,6 +2,7 @@ from settings import LOG_FILE, LOG_LEVEL, UOWS_URL
 import logging
 logging.basicConfig(filename=LOG_FILE,level=LOG_LEVEL)
 from suds.client import Client
+import suds
 
 class UOWSClient(object):
     def __init__(self, **kwargs):
@@ -25,10 +26,10 @@ class UOWSClient(object):
                 if not first_name:
                     first_name = person.givenName
                 trimmed_person = {
-                    first_name : first_name,
-                    last_name : person.familyName,
-                    email : person.email,
-                    usernumber : person.userNumber
+                    'first_name' : first_name,
+                    'last_name' : person.familyName,
+                    'email' : person.email,
+                    'usernumber' : person.userNumber
                 }
                 return trimmed_person
         except suds.WebFault:

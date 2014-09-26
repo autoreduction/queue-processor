@@ -1163,21 +1163,30 @@ class UOWSClientTestCase(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        username = raw_input('\nUserOffice WebService Username: ')
-        password = getpass.getpass('UserOffice WebService Password: ')
-        url = 'https://fitbawebdev.isis.cclrc.ac.uk:8181/UserOfficeWebService/UserOfficeWebService?wsdl'
-        client = Client(url)
-        cls._session_id = client.service.login(username, password)
-
+        print '\nThese tests require that you have a user account on the dev user office system. https://devusers.facilities.rl.ac.uk/auth/'
+        cls._username = raw_input('UserOffice WebService Username: ')
+        cls._password = getpass.getpass('UserOffice WebService Password: ')
+        
     def setUp(self):
         url = 'https://fitbawebdev.isis.cclrc.ac.uk:8181/UserOfficeWebService/UserOfficeWebService?wsdl'
+        client = Client(url)
+        self._session_id = client.service.login(self._username, self._password)
+        url = 'https://fitbawebdev.isis.cclrc.ac.uk:8181/UserOfficeWebService/UserOfficeWebService?wsdl'
         self.uows = UOWSClient(URL=url)
+
+    def tearDown(self):
+        url = 'https://fitbawebdev.isis.cclrc.ac.uk:8181/UserOfficeWebService/UserOfficeWebService?wsdl'
+        client = Client(url)
+        try:
+            client.service.logout(self._session_id)
+        except:
+            pass
 
     '''
         Check that a valid session is correctly identified
     '''
     def test_check_session_of_valid_sessionid(self):
-        session_id = cls._session_id
+        session_id = self._session_id
 
         is_valid = self.uows.check_session(session_id)
 
@@ -1217,15 +1226,19 @@ class UOWSClientTestCase(TestCase):
         Check that a person is returned for a valid Session ID
     '''
     def test_get_person_valid_sessionid(self):
-        session_id = cls._session_id
+        session_id = self._session_id
 
         person = self.uows.get_person(session_id)
 
         self.assertNotEqual(person, None, "Expecting a person to be returned")
-        self.assertNotEqual(person.email, None, "Expecting the person to have an email")
-        self.assertNotEqual(person.first_name, None, "Expecting the person to have a first name")
-        self.assertNotEqual(person.last_number, None, "Expecting the person to have a last name")
-        self.assertNotEqual(person.usernumber, None, "Expecting the person to have a user number")
+        self.assertNotEqual(person['email'], None, "Expecting the person to have an email")
+        self.assertNotEqual(person['email'], '', "Expecting the person to have an email")
+        self.assertNotEqual(person['first_name'], None, "Expecting the person to have a first name")
+        self.assertNotEqual(person['first_name'], '', "Expecting the person to have a first name")
+        self.assertNotEqual(person['last_name'], None, "Expecting the person to have a last name")
+        self.assertNotEqual(person['last_name'], '', "Expecting the person to have a last name")
+        self.assertNotEqual(person['usernumber'], None, "Expecting the person to have a user number")
+        self.assertNotEqual(person['usernumber'], '', "Expecting the person to have a user number")
 
     '''
         Check that None is returned for an invalid Session ID
@@ -1261,7 +1274,7 @@ class UOWSClientTestCase(TestCase):
         Check that a Session ID is invalidated on logout
     '''
     def test_logout_valid_sessionid(self):
-        session_id = cls._session_id
+        session_id = self._session_id
         try:
             person = self.uows.logout(session_id)
             is_valid = self.uows.check_session(session_id)
