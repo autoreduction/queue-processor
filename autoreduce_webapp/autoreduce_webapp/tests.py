@@ -15,6 +15,8 @@ from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFi
 from icat_communication import ICATCommunication
 from icat.exception import ICATSessionError
 from urllib2 import URLError
+from uows_client import UOWSClient
+from suds.client import Client
 
 class QueueProcessorTestCase(TestCase):
     '''
@@ -812,7 +814,6 @@ class QueueProcessorTestCase(TestCase):
         finally:
             self.remove_dummy_reduce_script(instrument_name)
 
-
 class ICATCommunicationTestCase(TestCase):
 
     @classmethod
@@ -1158,3 +1159,141 @@ class ICATCommunicationTestCase(TestCase):
         except TypeError:
             pass
             
+class UOWSClientTestCase(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        username = raw_input('\nUserOffice WebService Username: ')
+        password = getpass.getpass('UserOffice WebService Password: ')
+        client = Client(url)
+        cls._session_id = client.service.login(username, password)
+
+    def setUp(self):
+        url = 'https://fitbawebdev.isis.cclrc.ac.uk:8181/UserOfficeWebService/UserOfficeWebService?wsdl'
+        self.uows = UOWSClient(URL=url)
+
+    '''
+        Check that a valid session is correctly identified
+    '''
+    def test_check_session_of_valid_sessionid(self):
+        session_id = cls._session_id
+
+        is_valid = self.uows.check_session(session_id)
+
+        self.assertTrue(is_valid, "Expecting Session ID to be valid")
+
+    '''
+        Check that an invalid session is correctly identified
+    '''
+    def test_check_session_of_invalid_sessionid(self):
+        session_id = '123'
+
+        is_valid = self.uows.check_session(session_id)
+
+        self.assertFalse(is_valid, "Expecting Session ID to be invalid")
+
+    '''
+        Check that an invalid session is correctly identified
+    '''
+    def test_check_session_of_invalid_sessionid_chars(self):
+        session_id = 'abc'
+
+        is_valid = self.uows.check_session(session_id)
+
+        self.assertFalse(is_valid, "Expecting Session ID to be invalid")
+
+    '''
+        Check that an invalid session is correctly identified
+    '''
+    def test_check_session_of_invalid_sessionid_none(self):
+        session_id = None
+
+        is_valid = self.uows.check_session(session_id)
+
+        self.assertFalse(is_valid, "Expecting Session ID to be invalid")
+
+    '''
+        Check that a person is returned for a valid Session ID
+    '''
+    def test_get_person_valid_sessionid(self):
+        session_id = cls._session_id
+
+        person = self.uows.get_person(session_id)
+
+        self.assertNotEqual(person, None, "Expecting a person to be returned")
+        self.assertNotEqual(person.email, None, "Expecting the person to have an email")
+        self.assertNotEqual(person.first_name, None, "Expecting the person to have a first name")
+        self.assertNotEqual(person.last_number, None, "Expecting the person to have a last name")
+        self.assertNotEqual(person.usernumber, None, "Expecting the person to have a user number")
+
+    '''
+        Check that None is returned for an invalid Session ID
+    '''
+    def test_get_person_invalid_sessionid(self):
+        session_id = '123'
+
+        person = self.uows.get_person(session_id)
+
+        self.assertEqual(person, None, "Not expecting a person to be returned")
+
+    '''
+        Check that None is returned for an invalid Session ID
+    '''
+    def test_get_person_invalid_sessionid_chars(self):
+        session_id = 'abc'
+
+        person = self.uows.get_person(session_id)
+
+        self.assertEqual(person, None, "Not expecting a person to be returned")
+
+    '''
+        Check that None is returned for an invalid Session ID
+    '''
+    def test_get_person_invalid_sessionid_none(self):
+        session_id = None
+
+        person = self.uows.get_person(session_id)
+
+        self.assertEqual(person, None, "Not expecting a person to be returned")
+
+    '''
+        Check that a Session ID is invalidated on logout
+    '''
+    def test_logout_valid_sessionid(self):
+        session_id = cls._session_id
+        try:
+            person = self.uows.logout(session_id)
+            is_valid = self.uows.check_session(session_id)
+            self.assertFalse(is_valid, "Expecting Session ID to be invalid")
+        except:
+            self.fail("Wasn't expecting an exception")
+
+    '''
+        Check that calling logout with an invalidated Session ID doesn't throw an exception
+    '''
+    def test_logout_invalid_sessionid(self):
+        session_id = '123'
+        try:
+            person = self.uows.logout(session_id)
+        except:
+            self.fail("Wasn't expecting an exception")
+
+    '''
+        Check that calling logout with an invalidated Session ID doesn't throw an exception
+    '''
+    def test_logout_invalid_sessionid_chars(self):
+        session_id = 'abc'
+        try:
+            person = self.uows.logout(session_id)
+        except:
+            self.fail("Wasn't expecting an exception")
+
+    '''
+        Check that calling logout with an invalidated Session ID doesn't throw an exception
+    '''
+    def test_logout_invalid_sessionid_none(self):
+        session_id = None
+        try:
+            person = self.uows.logout(session_id)
+        except:
+            self.fail("Wasn't expecting an exception")
