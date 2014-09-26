@@ -851,10 +851,16 @@ class ICATCommunicationTestCase(TestCase):
         self.test_instrument_scientist = 5818
         self.test_experiment = 1190070
 
+    '''
+        Check that ICAT can login using the credentials found in settings.py
+    '''
     def test_icat_login_with_setting_values(self):
         with ICATCommunication() as icat:
             pass
 
+    '''
+        Check that ICAT fails to login using invalid credentials
+    '''
     def test_icat_login_with_invalid_credentials(self):
         try:
             with ICATCommunication(USER='MadeUp') as icat:
@@ -862,6 +868,9 @@ class ICATCommunicationTestCase(TestCase):
         except ICATSessionError:
             pass
     
+    '''
+        Check that ICAT fails to login using invalid URL
+    '''
     def test_icat_login_with_invalid_url(self):
         try:
             with ICATCommunication(URL='https://www.example.com/') as icat:
@@ -869,13 +878,19 @@ class ICATCommunicationTestCase(TestCase):
         except URLError:
             pass
 
+    '''
+        Check that ICAT can login when passed in credentials
+    '''
     def test_icat_login_with_valid_values_passed_in(self):
         import settings
         reload(settings)
         from settings import ICAT
         with ICATCommunication(**ICAT) as icat:
             pass
-    
+        
+    '''
+        Check that ICAT returns experiment details correctly
+    '''
     def test_get_experiment_details_existing_experiment(self):
         with ICATCommunication() as icat:
             experiment = icat.get_experiment_details(self.test_experiment)
@@ -884,12 +899,18 @@ class ICATCommunicationTestCase(TestCase):
             self.assertEqual(experiment['reference_number'], str(self.test_experiment), 'Expecting reference number to be %s to was %s instead' % (str(self.test_experiment), experiment['reference_number']))
             self.assertEqual(experiment['instrument'], 'GEM', 'Expecting instrument to be %s to was %s instead' % ('GEM', experiment['instrument']))
 
+    '''
+        Check that nothing is returned for an invalid experiment
+    '''
     def test_get_experiment_details_invalid_experiment(self):
         with ICATCommunication() as icat:
             experiment = icat.get_experiment_details(-123)
             
             self.assertEqual(experiment, None, 'Not expecting an experiment to be returned')
 
+    '''
+        Check that an error is raised when passing in invalid values
+    '''
     def test_get_experiment_details_invalid_input_number_string(self):
         with ICATCommunication() as icat:
             try:
@@ -897,7 +918,10 @@ class ICATCommunicationTestCase(TestCase):
                 self.fail("Expecting a TypeError to be thrown")
             except TypeError:
                 pass
-    
+        
+    '''
+        Check that an error is raised when passing in invalid values
+    '''
     def test_get_experiment_details_invalid_input_char_string(self):
         with ICATCommunication() as icat:
             try:
@@ -906,6 +930,9 @@ class ICATCommunicationTestCase(TestCase):
             except TypeError:
                 pass
 
+    '''
+        Check that ICAT returns a set of instruments
+    '''
     def test_get_valid_instruments_successful(self):
         with ICATCommunication() as icat:
             instruments = icat.get_valid_instruments(self.test_user)
@@ -913,13 +940,19 @@ class ICATCommunicationTestCase(TestCase):
             self.assertNotEqual(instruments, None, "Expecting some instruments returned")
             self.assertTrue(len(instruments) > 0, "Expecting some instruments returned")
             self.assertTrue('GEM' in instruments, "Expecting GEM to be returned")
-    
+       
+    '''
+        Check that an empty set is returned for an invalid user
+    ''' 
     def test_get_valid_instruments_invalid_user(self):
         with ICATCommunication() as icat:
             instruments = icat.get_valid_instruments(1)
             
             self.assertEqual(instruments, Set(), "Not expecting some instruments returned")
-            
+                    
+    '''
+        Check that an error is raised when passing in invalid values
+    '''    
     def test_get_valid_instruments_invalid_input_number_string(self):
         with ICATCommunication() as icat:
             try:
@@ -928,6 +961,9 @@ class ICATCommunicationTestCase(TestCase):
             except TypeError:
                 pass     
 
+    '''
+        Check that an error is raised when passing in invalid values
+    '''
     def test_get_valid_instruments_invalid_input_char_string(self):
         with ICATCommunication() as icat:
             try:
@@ -936,6 +972,9 @@ class ICATCommunicationTestCase(TestCase):
             except TypeError:
                 pass
 
+    '''
+        Check that ICAT returns a set of instruments that at least contains all owned instruments
+    '''
     def test_get_valid_instruments_contains_all_owned_instruments(self):
         with ICATCommunication() as icat:
             instruments = icat.get_valid_instruments(self.test_instrument_scientist)
@@ -946,6 +985,9 @@ class ICATCommunicationTestCase(TestCase):
             for instrument in owned_instruments:
                 self.assertTrue(instrument in instruments, "Expecting %s from owned instruments to be in valid instruments")
 
+    '''
+        Check that ICAT returns a set of instruments
+    '''
     def test_get_owned_instruments_as_instrument_scientist(self):
         with ICATCommunication() as icat:
             owned_instruments = icat.get_owned_instruments(self.test_instrument_scientist)
@@ -954,18 +996,27 @@ class ICATCommunicationTestCase(TestCase):
             self.assertTrue(len(owned_instruments) > 0, "Expecting some owned instruments returned")
             self.assertTrue('EMU' in owned_instruments, "Expecting EMU to be returned")
 
+    '''
+        Check that and empty set is returned
+    '''
     def test_get_owned_instruments_not_as_instrument_scientist(self):
         with ICATCommunication() as icat:
             owned_instruments = icat.get_owned_instruments(self.test_user)
             
             self.assertEqual(owned_instruments, Set(), "Not expecting some owned instruments returned")
 
+    '''
+        Check that and empty set is returned
+    '''
     def test_get_owned_instruments_invalid_user(self):
         with ICATCommunication() as icat:
             owned_instruments = icat.get_owned_instruments(1)
             
             self.assertEqual(owned_instruments, Set(), "Not expecting some owned instruments returned")
 
+    '''
+        Check that an error is raised when passing in invalid values
+    '''
     def test_get_owned_instruments_invalid_input_number_string(self):
         try:
             with ICATCommunication() as icat:
@@ -974,6 +1025,9 @@ class ICATCommunicationTestCase(TestCase):
         except TypeError:
             pass                
 
+    '''
+        Check that an error is raised when passing in invalid values
+    '''
     def test_get_owned_instruments_invalid_input_char_string(self):
         try:
             with ICATCommunication() as icat:
@@ -982,30 +1036,45 @@ class ICATCommunicationTestCase(TestCase):
         except TypeError:
             pass
 
+    '''
+        Check that ICAT returns true when a user is on an experiment team
+    '''
     def test_is_on_experiment_team_true(self):
         with ICATCommunication() as icat:
             is_on_team = icat.is_on_experiment_team(self.test_experiment, self.test_user)
             
             self.assertTrue(is_on_team, "Expecting to be on experiment team")
 
+    '''
+        Check that ICAT returns false when a user is not on an experiment team
+    '''
     def test_is_on_experiment_team_false(self):
         with ICATCommunication() as icat:
             is_on_team = icat.is_on_experiment_team(self.test_experiment, self.test_instrument_scientist)
             
             self.assertFalse(is_on_team, "Not expecting to be on experiment team")
 
+    '''
+        Check that ICAT returns false when a user isn't found
+    '''
     def test_is_on_experiment_team_invalid_user(self):
         with ICATCommunication() as icat:
             is_on_team = icat.is_on_experiment_team(self.test_experiment, 1)
             
             self.assertFalse(is_on_team, "Not expecting to be on experiment team")
 
+    '''
+        Check that ICAT returns false when an experiment isn't found
+    '''
     def test_is_on_experiment_team_invalid_experiment(self):
         with ICATCommunication() as icat:
             is_on_team = icat.is_on_experiment_team(1, self.test_user)
             
             self.assertFalse(is_on_team, "Not expecting to be on experiment team")
 
+    '''
+        Check that an error is raised when passing in invalid values
+    '''
     def test_is_on_experiment_team_invalid_input_number_string_experiment(self):
         try:
             with ICATCommunication() as icat:
@@ -1014,6 +1083,9 @@ class ICATCommunicationTestCase(TestCase):
         except TypeError:
             pass
 
+    '''
+        Check that an error is raised when passing in invalid values
+    '''
     def test_is_on_experiment_team_invalid_input_char_string_experiment(self):
         try:
             with ICATCommunication() as icat:
@@ -1022,6 +1094,9 @@ class ICATCommunicationTestCase(TestCase):
         except TypeError:
             pass
 
+    '''
+        Check that an error is raised when passing in invalid values
+    '''
     def test_is_on_experiment_team_invalid_input_number_string_user(self):
         try:
             with ICATCommunication() as icat:
@@ -1030,6 +1105,9 @@ class ICATCommunicationTestCase(TestCase):
         except TypeError:
             pass
 
+    '''
+        Check that an error is raised when passing in invalid values
+    '''
     def test_is_on_experiment_team_invalid_input_char_string_user(self):
         try:
             with ICATCommunication() as icat:
@@ -1038,6 +1116,9 @@ class ICATCommunicationTestCase(TestCase):
         except TypeError:
             pass
 
+    '''
+        Check that ICAT returns a set containing experiment reference numbers
+    '''
     def test_get_associated_experiments_successful(self):
         with ICATCommunication() as icat:
             experiments = icat.get_associated_experiments(self.test_user)
@@ -1046,12 +1127,18 @@ class ICATCommunicationTestCase(TestCase):
             self.assertTrue(len(experiments) > 0, "Expecting some experiments to be returned")
             self.assertTrue(str(self.test_experiment) in experiments, "Expecting to find %s in the list of experiments" % str(self.test_experiment))
     
+    '''
+        Check that ICAT returns and empty set when the user is not found
+    '''
     def test_get_associated_experiments_invalid_user(self):
         with ICATCommunication() as icat:
             experiments = icat.get_associated_experiments(1)
             
             self.assertEqual(experiments, Set(), "Not expecting some experiments to be returned")
-            
+                
+    '''
+        Check that an error is raised when passing in invalid values
+    '''        
     def test_get_associated_experiments_invalid_input_number_string(self):
         try:
             with ICATCommunication() as icat:
@@ -1060,6 +1147,9 @@ class ICATCommunicationTestCase(TestCase):
         except TypeError:
             pass
 
+    '''
+        Check that an error is raised when passing in invalid values
+    '''
     def test_get_associated_experiments_invalid_input_char_string(self):
         try:
             with ICATCommunication() as icat:
