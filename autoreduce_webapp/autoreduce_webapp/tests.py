@@ -1165,6 +1165,7 @@ class UOWSClientTestCase(TestCase):
     def setUpClass(cls):
         username = raw_input('\nUserOffice WebService Username: ')
         password = getpass.getpass('UserOffice WebService Password: ')
+        url = 'https://fitbawebdev.isis.cclrc.ac.uk:8181/UserOfficeWebService/UserOfficeWebService?wsdl'
         client = Client(url)
         cls._session_id = client.service.login(username, password)
 
