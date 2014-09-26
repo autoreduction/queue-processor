@@ -26,9 +26,9 @@ class UOWSClient(object):
                     first_name = person.givenName
                 trimmed_person = {
                     first_name : first_name,
-                    last_name = person.familyName,
+                    last_name : person.familyName,
                     email : person.email,
-                    usernumber = person.userNumber
+                    usernumber : person.userNumber
                 }
                 return trimmed_person
         except suds.WebFault:
