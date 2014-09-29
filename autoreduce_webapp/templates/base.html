@@ -41,7 +41,7 @@
                     </li>
                     {% else %}
                     <li>
-                        <p class="navbar-text">Welcome, please <a href="{% authenticate_url %}">sign in</a></p>
+                        <p class="navbar-text">Welcome, please <a href="{{ authenticate_url }}">sign in</a></p>
                     </li>
                     {% endif %}
                 </ul>
