@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.template import RequestContext
 from django.shortcuts import render_to_response
+from django.contrib.auth import logout
 
 def index(request):
     context = RequestContext(request)
@@ -8,7 +9,8 @@ def index(request):
     return render_to_response('base.html', context_dict, context)
 
 def logout(request):
-    pass
+    logout(request)
+    return redirect('index')
 
 def run_queue(request):
     pass
