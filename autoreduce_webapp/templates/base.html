@@ -24,7 +24,7 @@
                 <ul class="nav navbar-nav navbar-right">
                     {% if user %}
                     <li>
-                        <p class="navbar-text">Welcome, {% user.full_name %}</p>
+                        <p class="navbar-text">Welcome, {{ user.full_name }</p>
                     </li>
                     {% if user.is_staff or user.is_superuser %}
                     <li>
