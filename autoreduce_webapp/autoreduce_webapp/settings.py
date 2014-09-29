@@ -42,6 +42,11 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
+TEMPLATE_PATH = os.path.join(PROJECT_PATH, 'templates')
+TEMPLATE_DIRS = (
+    TEMPLATE_PATH
+)
+
 ROOT_URLCONF = 'autoreduce_webapp.urls'
 
 WSGI_APPLICATION = 'autoreduce_webapp.wsgi.application'
