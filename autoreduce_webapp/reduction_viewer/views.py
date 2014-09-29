@@ -6,3 +6,9 @@ def index(request):
     context = RequestContext(request)
     context_dict = {}
     return render_to_response('base.html', context_dict, context)
+
+def logout(request):
+    pass
+
+def run_queue(request):
+    pass

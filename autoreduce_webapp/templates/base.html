@@ -28,16 +28,16 @@
                     </li>
                     {% if user.is_staff or user.is_superuser %}
                     <li>
-                        <a href="{% url 'reduction_viewer:run_queue' %}">Run Queue</a>
+                        <a href="{% url 'reduction_viewer.views.run_queue' %}">Run Queue</a>
                     </li>
                     {% endif %}                    
                     {% if user.is_superuser %}
                     <li>
-                        <a href="{% url 'autoreduce_webapp:admin' %}">Admin</a>
+                        <a href="{% url admin:index %}">Admin</a>
                     </li>
                     {% endif %}
                     <li>
-                        <a href="{% url 'reduction_viewer:logout' %}">Logout</a>
+                        <a href="{% url 'reduction_viewer.views.logout' %}">Logout</a>
                     </li>
                     {% else %}
                     <li>
