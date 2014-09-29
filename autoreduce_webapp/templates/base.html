@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-{% load staticfiles  %}
+{% load static from staticfiles  %}
 <html>
 <head>
     <meta charset="utf-8">
@@ -18,11 +18,10 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="#">ISIS Auto-reduction</a>
             </div>
             <div class="collapse navbar-collapse">
-                <ul class="nav navbar-nav">
-                    <li>Welcome, please sign in</li>
+                <ul class="nav navbar-nav navbar-right">
+                    <li><p class="navbar-text">Welcome, please sign in</p></li>
                 </ul>
             </div>
         </div>
@@ -32,6 +31,8 @@
 
         {% include "footer.html" %}
     </div>
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 </body>
 </html>
