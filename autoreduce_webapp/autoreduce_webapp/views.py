@@ -3,7 +3,7 @@ from django.template import RequestContext
 
 def handler404(request):
     context_dictionary = {
-        admin_email : ''
+        'admin_email' : ''
     }
     response = render_to_response('404.html', context_dictionary, RequestContext(request))
     response.status_code = 404
@@ -11,7 +11,7 @@ def handler404(request):
 
 def handler500(request):
     context_dictionary = {
-        admin_email : ''
+        'admin_email' : ''
     }
     response = render_to_response('500.html', context_dictionary, RequestContext(request))
     response.status_code = 500
