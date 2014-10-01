@@ -20,3 +20,6 @@ def logout(request):
 
 def run_queue(request):
     return render_to_response('base.html')
+
+def run_list(request):
+    return render_to_response('base.html')
