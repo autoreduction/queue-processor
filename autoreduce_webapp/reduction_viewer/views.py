@@ -19,11 +19,21 @@ def logout(request):
     return redirect('index')
 
 def run_queue(request):
-    context = RequestContext(request)
-    context_dict = {}
-    return render_to_response('base.html', context_dict, context)
+    context_dictionary = {}
+    return render_to_response('base.html', context_dictionary, RequestContext(request))
 
 def run_list(request):
-    context = RequestContext(request)
-    context_dict = {}
-    return render_to_response('base.html', context_dict, context)
+    context_dictionary = {}
+    return render_to_response('base.html', context_dictionary, RequestContext(request))
+
+def run_summary(request):
+    context_dictionary = {}
+    return render_to_response('base.html', context_dictionary, RequestContext(request))
+
+def instrument_summary(request):
+    context_dictionary = {}
+    return render_to_response('base.html', context_dictionary, RequestContext(request))
+
+def experiment_summary(request):
+    context_dictionary = {}
+    return render_to_response('base.html', context_dictionary, RequestContext(request))
