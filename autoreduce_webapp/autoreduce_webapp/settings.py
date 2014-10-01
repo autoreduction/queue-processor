@@ -126,3 +126,4 @@ ICAT = {
 # UserOffice WebService
 
 UOWS_URL = ''
+UOWS_LOGIN_URL = 'https://devusers.facilities.rl.ac.uk/auth/?service='
