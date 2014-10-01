@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.template import RequestContext
 from django.shortcuts import render_to_response, redirect
 from django.contrib.auth import logout as django_logout
-from autoreduction_webapp.uows_client import UOWSClient
+from autoreduce_webapp.uows_client import UOWSClient
 from settings import UOWS_LOGIN_URL
 
 def index(request):
