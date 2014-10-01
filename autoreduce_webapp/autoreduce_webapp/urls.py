@@ -5,6 +5,7 @@ from reduction_variables import views as reduction_variables_views
 from . import views as autoreduce_webapp_views
 
 handler404 = 'autoreduce_webapp_views.handler404'
+handler400 = 'autoreduce_webapp_views.handler404'
 handler500 = 'autoreduce_webapp_views.handler500'
 
 urlpatterns = patterns('',
