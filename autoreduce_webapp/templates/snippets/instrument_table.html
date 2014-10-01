@@ -1,0 +1,21 @@
+<div class="instrument">
+    <div class="row">
+        <div class="md-1"><i class="fa fa-chevron-right"></i></div>
+        <div class="md-3"><a href="{% url 'reduction_viewer.views.instrument_summary' instrument.name %}">{{ instrument.name }}</a></div>
+        <div class="md-4">{{ instrument.progress_summary }}</div>
+        <div class="md-4">
+            {% if reduction_variables_on %}
+                <a href="{% url 'reduction_variables.views.instrument_variables' instrument.name %}">Edit Reduction Variables</a>
+            {% endif %}
+        </div>
+    </div>
+    {% if by=="experiment" %}
+        {% for experiment in instrument.experiments %}
+            {% include "snippets/experiment_table.html" with experiment=experiment only %}
+        {% endfor %}
+    {% elif by=="run" %}
+        {% for run in instrument.runs %}
+            {% include "snippets/run_table.html" with run=run only %}
+        {% endfor %}
+    {% endif %}
+</div>

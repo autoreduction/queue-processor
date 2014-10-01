@@ -10,8 +10,8 @@ urlpatterns = patterns('',
 
     url(r'^runs/$', reduction_viewer_views.run_list, name='run_list'),   
     url(r'^runs/queue/$', reduction_viewer_views.run_queue, name='run_queue'), 
-    url(r'^runs/(?P<run_number>[0-9]+)/$', reduction_viewer_views.run_summary, name='run_summary'),  
-    url(r'^runs/(?P<run_number>[0-9]+)/confirmation/$', reduction_variables_views.run_confirmation, name='run_confirmation'),  
+    url(r'^runs/(?P<run_number>[0-9]+)(?:/(?P<run_version>[0-9]+))?/$', reduction_viewer_views.run_summary, name='run_summary'),  
+    url(r'^runs/(?P<run_number>[0-9]+)(?:/(?P<run_version>[0-9]+))?/confirmation/$', reduction_variables_views.run_confirmation, name='run_confirmation'),  
 
     url(r'^instrument/(?P<instrument>\w+)/$', reduction_viewer_views.instrument_summary, name='instrument_summary'),       
     url(r'^instrument/(?P<instrument>\w+)/variables/$', reduction_variables_views.instrument_variables, name='instrument_variables'),       
