@@ -24,7 +24,7 @@ def run_queue(request):
 
 def run_list(request):
     context_dictionary = {}
-    return render_to_response('base.html', context_dictionary, RequestContext(request))
+    return render_to_response('run_list.html', context_dictionary, RequestContext(request))
 
 def run_summary(request, run_number, run_version=0):
     context_dictionary = {}
