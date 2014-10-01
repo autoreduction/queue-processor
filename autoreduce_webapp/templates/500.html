@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block body %}
+    <h2>500 - An unexpected error occured</h2>
+    <p>
+        <i class="fa fa-frown-o"></i> Sorry, something went wrong. Please try again shortly.<br/>
+        {% if admin_email %}
+            If this error continues please <a href="mailto:{{ admin_email }}">contact us</a>.<br/>
+        {% endif %}
+    </p>
+{% endblock %}

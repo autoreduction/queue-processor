@@ -27,6 +27,9 @@
                         <li>
                             <p class="navbar-text">Welcome, {{ user.first_name }}</p>
                         </li>
+                         <li>
+                            <a href="{% url 'reduction_viewer.views.run_list' %}">All Runs</a>
+                        </li>
                         {% if user.is_staff or user.is_superuser %}
                         <li>
                             <a href="{% url 'reduction_viewer.views.run_queue' %}">Run Queue</a>
