@@ -106,6 +106,25 @@ class ICATCommunication(object):
         return experiments
 
     '''
+        Returns all experiments allowed for a given list of instruments
+    '''
+    def get_valid_experiments_for_instruments(self, user_number, instruments):
+        if not isinstance(user_number, (int, long)):
+            raise TypeError("User number must be a number")
+        if not instruments:
+            raise Exception("At least one instrument must be supplied")
+        
+        instruments_query = "("
+        for ins in instruments:
+            instruments_query += ins + ","
+        instruments_query = instruments_query[:-1] + ")"
+        
+        experiments = Set()
+        self._add_list_to_set(self.client.search("SELECT i FROM Investigation i JOIN i.investigationInstruments inst WHERE inst.instrument.name IN " + instruments_query + " include i.investigationInstruments.instrument"), experiments)
+        return experiments
+
+
+    '''
         Performs any post-processing actions required once reduction is complete.
         Currenty a placeholder. Not sure yet what this may contain.
     '''

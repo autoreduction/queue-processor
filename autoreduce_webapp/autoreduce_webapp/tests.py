@@ -851,6 +851,7 @@ class ICATCommunicationTestCase(TestCase):
         self.test_user = 18187
         self.test_instrument_scientist = 5818
         self.test_experiment = 1190070
+        self.test_instrument = "GEM"
 
     '''
         Check that ICAT can login using the credentials found in settings.py
@@ -1156,6 +1157,44 @@ class ICATCommunicationTestCase(TestCase):
             with ICATCommunication() as icat:
                 experiments = icat.get_associated_experiments('abc')
                 self.fail("Expecting a TypeError to be raised")
+        except TypeError:
+            pass
+    
+    '''
+        Check that experiments can be returned to a list of instruments
+    '''
+    def test_get_valid_experiments_for_instruments_valid_user_valid_instruments(self):
+        with ICATCommunication() as icat:
+            experiments = icat.get_valid_experiments_for_instruments(self.test_user, [self.test_instrument])
+
+            self.assertNotEqual(experiments, None, "Expecting some experiments to be returned")
+            self.assertTrue(len(experiments) > 0, "Expecting some experiments to be returned")
+
+            found_experiment = False
+            for experiment in experiments:
+                if experiment.name == self.test_experiment:
+                    found_experiment = True
+            self.assertTrue(found_experiment, "Expecting to find experiment %s" % self.test_experiment)
+              
+    '''
+        Check that an exception is raised when no instruments are passed in
+    '''
+    def test_get_valid_experiments_for_instruments_valid_user_empty_instruments(self):
+        try:
+            with ICATCommunication() as icat:
+                experiments = icat.get_valid_experiments_for_instruments(self.test_user, [])
+                self.fail("Expecting an Exception to be raised")
+        except Exception:
+            pass
+
+    '''
+        Check that an exception is raised when an invalid user is passed in
+    '''
+    def test_get_valid_experiments_for_instruments_invalid_user_empty_instruments(self):
+        try:
+            with ICATCommunication() as icat:
+                experiments = icat.get_valid_experiments_for_instruments('123', [])
+                self.fail("Expecting an TypeError to be raised")
         except TypeError:
             pass
             
