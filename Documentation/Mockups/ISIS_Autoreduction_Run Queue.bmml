@@ -1,8 +1,8 @@
 <mockup version="1.0" skin="sketch" fontFace="Balsamiq Sans" measuredW="2560" measuredH="908" mockupW="2467" mockupH="888">
   <controls>
-    <control controlID="0" controlTypeID="com.balsamiq.mockups::BrowserWindow" x="238" y="44" w="1398" h="713" measuredW="450" measuredH="400" zOrder="0" locked="true" isInGroup="-1">
+    <control controlID="0" controlTypeID="com.balsamiq.mockups::BrowserWindow" x="238" y="44" w="1398" h="713" measuredW="450" measuredH="400" zOrder="0" locked="false" isInGroup="-1">
       <controlProperties>
-        <text>ISIS%20Auto-reduction</text>
+        <text>ISIS%20Auto-reduction%0Ahttp%3A//datareducedev.isis.cclrc.ac.uk/runs/queue</text>
       </controlProperties>
     </control>
     <control controlID="1" controlTypeID="com.balsamiq.mockups::Title" x="758" y="191" w="-1" h="-1" measuredW="358" measuredH="43" zOrder="1" locked="false" isInGroup="-1">
