@@ -26,14 +26,14 @@ def run_list(request):
     context_dictionary = {}
     return render_to_response('base.html', context_dictionary, RequestContext(request))
 
-def run_summary(request):
+def run_summary(request, run_number):
     context_dictionary = {}
     return render_to_response('base.html', context_dictionary, RequestContext(request))
 
-def instrument_summary(request):
+def instrument_summary(request, instrument):
     context_dictionary = {}
     return render_to_response('base.html', context_dictionary, RequestContext(request))
 
-def experiment_summary(request):
+def experiment_summary(request, reference_number):
     context_dictionary = {}
     return render_to_response('base.html', context_dictionary, RequestContext(request))
