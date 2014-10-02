@@ -9,7 +9,7 @@ Recommended Server OS: Red Hat 6
 ### Install prerequisites
 1. `yum update`
 2. `yum groupinstall 'development tools'`
-3. `yum install zlib-devel bzip2-devel openssl-devel xz-libs wget httpd mod_wsgi mysql-devel python-devel httpd-devel.x86_64`
+3. `yum install zlib-devel bzip2-devel openssl-devel xz-libs wget httpd mod_wsgi mysql-devel python-devel httpd-devel.x86_64 mercurial`
 
 ### Install Python 2.7
 **Note: Do not remove python 2.6! Ensure that you specify python 2.7 correctly when using sudo commands as it will default to the installed.**
@@ -193,10 +193,12 @@ Recommended Server OS: Red Hat 6
 5. `ln -s /usr/local/lib/python2.7/site-packages/django/contrib/admin/static/admin/ /var/www/autoreduce_webapp/static/admin`
 
 ### Installing ICAT support
-1. `pip install suds-jurko`
-2. `wget http://icatproject.googlecode.com/svn/contrib/python-icat/python-icat-0.5.1.tar.gz`
-3. `tar xzf python-icat-0.5.1.tar.gz`
-4. `cd python-icat-0.5.1`
-5. `python setup.py build`
-6. `python setup.py install`
-7. Set the correct values for ICAT in `autoreduce_webapp/autoreduce_webapp/settings.py`
+1. `hg clone https://AverageMarcus@bitbucket.org/AverageMarcus/suds -u release-0.6.1`
+2. `cd suds`
+3. `python setup.py install`
+4. `wget http://icatproject.googlecode.com/svn/contrib/python-icat/python-icat-0.5.1.tar.gz`
+5. `tar xzf python-icat-0.5.1.tar.gz`
+6. `cd python-icat-0.5.1`
+7. `python setup.py build`
+8. `python setup.py install`
+9. Set the correct values for ICAT in `autoreduce_webapp/autoreduce_webapp/settings.py`
