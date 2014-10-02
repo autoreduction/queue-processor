@@ -10,12 +10,28 @@
         </div>
     </div>
     {% if by=="experiment" %}
-        {% for experiment in instrument.experiments %}
-            {% include "snippets/experiment_table.html" with experiment=experiment only %}
-        {% endfor %}
+        {% if instrument.experiments %}
+            {% for experiment in instrument.experiments %}
+                {% include "snippets/experiment_table.html" with experiment=experiment only %}
+            {% endfor %}
+        {% else %}
+            <div class="row">
+                <div class="md-12 text-center no-results">
+                    No experiments found.
+                </div>
+            </div>
+        {% endif %}
     {% elif by=="run" %}
-        {% for run in instrument.runs %}
-            {% include "snippets/run_table.html" with run=run only %}
-        {% endfor %}
+        {% if instrument.runs %}
+            {% for run in instrument.runs %}
+                {% include "snippets/run_table.html" with run=run only %}
+            {% endfor %}
+        {% else %}
+            <div class="row">
+                <div class="md-12 text-center no-results">
+                    No runs found.
+                </div>
+            </div>
+        {% endif %}
     {% endif %}
 </div>

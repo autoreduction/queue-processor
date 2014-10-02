@@ -1,3 +1,7 @@
 header { 
     text-align:center;
 }
+
+.instrument .no-results {
+    font-style: italic;
+}
