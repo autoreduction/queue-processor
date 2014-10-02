@@ -1,5 +1,5 @@
-from settings import LOG_FILE, LOG_LEVEL, ICAT
-import logging
+from settings import LOG_FILE, LOG_LEVEL, ICAT, BASE_DIR
+import logging, os, sys
 logging.basicConfig(filename=LOG_FILE,level=LOG_LEVEL)
 from sets import Set
 import icat
@@ -33,6 +33,16 @@ class ICATCommunication(object):
     def _add_list_to_set(self, my_list, my_set):
         [my_set.add(each) for each in my_list]
         return my_set
+
+    def _build_in_clause(self, field, values):
+        clause = field + " IN ("
+        for item in values:
+            if isinstance(item, (int, long)):
+                clause += "" + str(item) + ","
+            else:
+                clause += "'" + str(item) + "',"
+        clause = clause[:-1] + ")"
+        return clause
 
     '''
         Returns experiment details for the given reference number
@@ -113,16 +123,15 @@ class ICATCommunication(object):
             raise TypeError("User number must be a number")
         if not instruments:
             raise Exception("At least one instrument must be supplied")
-        
-        instruments_query = "("
-        for ins in instruments:
-            instruments_query += ins + ","
-        instruments_query = instruments_query[:-1] + ")"
-        
-        experiments = Set()
-        self._add_list_to_set(self.client.search("SELECT i FROM Investigation i JOIN i.investigationInstruments inst WHERE inst.instrument.name IN " + instruments_query + " include i.investigationInstruments.instrument"), experiments)
-        return experiments
 
+        instruments_dict = {}
+
+        for instrument in instruments:
+            experiments = Set()
+            self._add_list_to_set(self.client.search("SELECT i.name FROM Investigation i JOIN i.investigationInstruments inst WHERE inst.instrument.name = '"+instrument+"' INCLUDE i.investigationInstruments.instrument"), experiments)
+            instruments_dict[instrument] = experiments
+
+        return instruments_dict
 
     '''
         Performs any post-processing actions required once reduction is complete.

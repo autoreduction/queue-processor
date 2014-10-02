@@ -3,7 +3,7 @@ from django.utils import timezone
 from settings import LOG_FILE, LOG_LEVEL, ACTIVEMQ, BASE_DIR, REDUCTION_SCRIPT_BASE, ICAT
 import sys, time, logging, os, datetime, json, shutil, getpass
 from sets import Set
-logging.basicConfig(filename=LOG_FILE.replace('.log', '.test.log'),level=LOG_LEVEL)
+logging.basicConfig(filename=LOG_FILE.replace('.log', '.test.log'),level=LOG_LEVEL, format=u'%(message)s',)
 from daemon import Daemon
 from queue_processor_daemon import QueueProcessorDaemon
 from queue_processor import Client
@@ -1164,16 +1164,19 @@ class ICATCommunicationTestCase(TestCase):
         Check that experiments can be returned to a list of instruments
     '''
     def test_get_valid_experiments_for_instruments_valid_user_valid_instruments(self):
+        Experiment.objects.get_or_create(reference_number=self.test_experiment)
         with ICATCommunication() as icat:
-            experiments = icat.get_valid_experiments_for_instruments(self.test_user, [self.test_instrument])
+            instruments = icat.get_valid_experiments_for_instruments(self.test_user, [self.test_instrument])
 
-            self.assertNotEqual(experiments, None, "Expecting some experiments to be returned")
-            self.assertTrue(len(experiments) > 0, "Expecting some experiments to be returned")
+            self.assertNotEqual(instruments, None, "Expecting some experiments to be returned")
+            self.assertTrue(len(instruments) > 0, "Expecting some experiments to be returned")
 
             found_experiment = False
-            for experiment in experiments:
-                if experiment.name == self.test_experiment:
-                    found_experiment = True
+            for instrument in instruments:
+                for experiment in instruments[instrument]:
+                    if experiment == str(self.test_experiment):
+                        found_experiment = True
+                        break
             self.assertTrue(found_experiment, "Expecting to find experiment %s" % self.test_experiment)
               
     '''
