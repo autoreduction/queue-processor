@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.template import RequestContext
 from django.shortcuts import render_to_response, redirect
-from django.contrib.auth import logout as django_logout
+from django.contrib.auth import logout as django_logout, authenticate, login
 from autoreduce_webapp.uows_client import UOWSClient
 from autoreduce_webapp.icat_communication import ICATCommunication
 from autoreduce_webapp.settings import UOWS_LOGIN_URL
@@ -12,9 +12,12 @@ def index(request):
         return redirect('run_list')
     elif request.GET.get('sessionid'):
         # TODO: login user using session ID
-        request.session['sessionid'] = request.GET.get('sessionid')
-        if UOWSClient().check_session(request.session['sessionid']):
-            return redirect('run_list')
+        user = authenticate(token=request.GET.get('sessionid'))
+        if user is not None:
+            if user.is_active:
+                request.session['sessionid'] = request.GET.get('sessionid')
+                login(request, user)
+                return redirect('run_list')           
 
     return redirect(UOWS_LOGIN_URL + request.build_absolute_uri('index'))
 
