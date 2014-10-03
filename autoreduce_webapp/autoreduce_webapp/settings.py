@@ -30,8 +30,6 @@ INSTALLED_APPS = (
     'reduction_variables',
 )
 
-AUTH_PROFILE_MODULE = 'reduction_variables.UserProfile'
-
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -43,7 +41,7 @@ MIDDLEWARE_CLASSES = (
 )
 
 AUTHENTICATION_BACKENDS = (
-    'autoreduce_webapp.backends.UOWSAuthenticationBackend'
+    'autoreduce_webapp.backends.UOWSAuthenticationBackend',
 )
 
 TEMPLATE_PATH = os.path.join(BASE_DIR, 'templates')
