@@ -94,6 +94,14 @@ class ICATCommunication(object):
         return instruments
 
     '''
+        Checks if a user has any owned instruments and thus an instrument scientist
+    '''
+    def is_instrument_scientist(self, user_number):
+        if self.get_owned_instruments(user_number):
+            return True
+        return False
+
+    '''
         Returns True is the given user is part of the experiment team for the given reference number.
     '''
     def is_on_experiment_team(self, reference_number, user_number):
