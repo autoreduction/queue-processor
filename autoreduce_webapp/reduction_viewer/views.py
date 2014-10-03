@@ -19,7 +19,7 @@ def index(request):
                 login(request, user)
                 return redirect('run_list')           
 
-    return redirect(UOWS_LOGIN_URL + request.build_absolute_uri('index'))
+    return redirect(UOWS_LOGIN_URL + request.build_absolute_uri())
 
 def logout(request):
     django_logout(request)
