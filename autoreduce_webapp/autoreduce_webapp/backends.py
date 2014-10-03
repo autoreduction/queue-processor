@@ -2,7 +2,7 @@ from autoreduce_webapp.uows_client import UOWSClient
 from django.conf import settings
 from django.contrib.auth.models import User
 
-class UOWSAuthenticationBackened(object):
+class UOWSAuthenticationBackend(object):
     def authenticate(self, token=None):
         with UOWSClient() as client:
             if client.check_session(token):

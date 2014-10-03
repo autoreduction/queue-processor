@@ -43,7 +43,7 @@ MIDDLEWARE_CLASSES = (
 )
 
 AUTHENTICATION_BACKENDS = (
-    'autoreduce_webapp.UOWS_authentication'
+    'autoreduce_webapp.backends.UOWSAuthenticationBackend'
 )
 
 TEMPLATE_PATH = os.path.join(BASE_DIR, 'templates')
