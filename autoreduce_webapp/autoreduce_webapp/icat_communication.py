@@ -1,5 +1,5 @@
 from settings import LOG_FILE, LOG_LEVEL, ICAT, BASE_DIR
-import logging, os, sys
+import logging, os, sys, datetime
 logging.basicConfig(filename=LOG_FILE,level=LOG_LEVEL)
 from sets import Set
 import icat
@@ -126,9 +126,11 @@ class ICATCommunication(object):
 
         instruments_dict = {}
 
+        three_years_ago = datetime.datetime.now() - datetime.timedelta(days=(3*365.24))
+
         for instrument in instruments:
             experiments = Set()
-            self._add_list_to_set(self.client.search("SELECT i.name FROM Investigation i JOIN i.investigationInstruments inst WHERE inst.instrument.name = '"+instrument+"' INCLUDE i.investigationInstruments.instrument"), experiments)
+            self._add_list_to_set(self.client.search("SELECT i.name FROM Investigation i JOIN i.investigationInstruments inst WHERE i.endDate > "+str(three_years_ago)+" inst.instrument.name = '"+instrument+"' INCLUDE i.investigationInstruments.instrument"), experiments)
             instruments_dict[instrument] = experiments
 
         return instruments_dict
