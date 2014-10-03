@@ -13,7 +13,7 @@ class UOWSClient(object):
 
     # Add the ability to use 'with'
     def __enter__(self):
-        pass
+        return self
     def __exit__(self, type, value, traceback):
         pass
 
