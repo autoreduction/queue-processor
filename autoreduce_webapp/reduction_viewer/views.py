@@ -22,7 +22,7 @@ def index(request):
     return redirect(UOWS_LOGIN_URL + request.build_absolute_uri())
 
 def logout(request):
-    session_id = request.session.get('session_id')
+    session_id = request.session.get('sessionid')
     if session_id:
         UOWSClient().logout(session_id)
     django_logout(request)
