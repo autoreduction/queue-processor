@@ -11,6 +11,9 @@ class UOWSClient(object):
             url = kwargs['URL']
         self.client = Client(url)
 
+    def __exit__(self, type, value, traceback):
+        pass
+
     def check_session(self, session_id):
         try:
             return self.client.service.checkSession(session_id)
