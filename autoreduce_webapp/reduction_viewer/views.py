@@ -22,10 +22,11 @@ def index(request):
     return redirect(UOWS_LOGIN_URL + request.build_absolute_uri())
 
 def logout(request):
-    django_logout(request)
     session_id = request.session.get('session_id')
     if session_id:
         UOWSClient().logout(session_id)
+    django_logout(request)
+    request.session.flush()
     return redirect('index')
 
 def run_queue(request):
