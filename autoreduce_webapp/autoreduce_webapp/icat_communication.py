@@ -3,6 +3,7 @@ import logging, os, sys, datetime
 logging.basicConfig(filename=LOG_FILE,level=LOG_LEVEL)
 from sets import Set
 import icat
+sys.path.insert(0, BASE_DIR)
 
 class ICATCommunication(object):
     def __init__(self, **kwargs):
@@ -119,6 +120,7 @@ class ICATCommunication(object):
         Returns all experiments allowed for a given list of instruments
     '''
     def get_valid_experiments_for_instruments(self, user_number, instruments):
+        from reduction_viewer.models import Setting
         if not isinstance(user_number, (int, long)):
             raise TypeError("User number must be a number")
         if not instruments:
@@ -126,11 +128,14 @@ class ICATCommunication(object):
 
         instruments_dict = {}
 
-        three_years_ago = datetime.datetime.now() - datetime.timedelta(days=(3*365.24))
+        number_of_years = Setting.objects.filter(name='ICAT_YEARS_TO_SHOW')
+        if not number_of_years:
+            number_of_years = 3
+        years_back = datetime.datetime.now() - datetime.timedelta(days=(number_of_years*365.24))
 
         for instrument in instruments:
             experiments = Set()
-            self._add_list_to_set(self.client.search("SELECT i.name FROM Investigation i JOIN i.investigationInstruments inst WHERE i.endDate > "+str(three_years_ago)+" inst.instrument.name = '"+instrument+"' INCLUDE i.investigationInstruments.instrument"), experiments)
+            self._add_list_to_set(self.client.search("SELECT i.name FROM Investigation i JOIN i.investigationInstruments inst WHERE i.endDate > "+str(years_back)+" inst.instrument.name = '"+instrument+"' INCLUDE i.investigationInstruments.instrument"), experiments)
             instruments_dict[instrument] = experiments
 
         return instruments_dict
