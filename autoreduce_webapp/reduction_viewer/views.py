@@ -5,12 +5,18 @@ from django.contrib.auth import logout as django_logout
 from autoreduce_webapp.uows_client import UOWSClient
 from autoreduce_webapp.icat_communication import ICATCommunication
 from autoreduce_webapp.settings import UOWS_LOGIN_URL
+from reduction_viewer.models import Experiment
 
 def index(request):
-    if request.user.is_authenticated():
+    if request.user.is_authenticated() and request.session['sessionid'] and UOWSClient().check_session(request.session['sessionid']):
         return redirect('run_list')
-    else:
-        return redirect(UOWS_LOGIN_URL + request.build_absolute_uri('run_queue'))
+    elif request.GET.get('sessionid'):
+        # TODO: login user using session ID
+        request.session['sessionid'] = request.GET.get('sessionid')
+        if UOWSClient().check_session(request.session['sessionid']):
+            return redirect('run_list')
+
+    return redirect(UOWS_LOGIN_URL + request.build_absolute_uri('index'))
 
 def logout(request):
     django_logout(request)
@@ -28,10 +34,12 @@ def run_list(request):
     instruments = {}
     instrument_names = ICATCommunication().get_valid_instruments(requst.user.username)
     experiments = ICATCommunication().get_valid_experiments_for_instruments(requst.user.username, instrument_names)
-    for experiment in experiments:
-        if not instruments[experiment.investigationInstruments[0].instrument.name]:
-            instruments[experiment.investigationInstruments[0].instrument.name] = []
-        instruments[experiment.investigationInstruments[0].instrument.name].append(experiment.name)
+    for instrument in instrument_names:
+        instruments[instrument_name] = []
+        instrument_experiments = experiments[instrument]
+        for experiment in instrument_experiments:
+            if Experiment.objects.filter(reference_number=experiment.name):
+                instruments[instrument_name].append(experiment.name)
     
     context_dictionary['instrument_list'] = instruments
 
