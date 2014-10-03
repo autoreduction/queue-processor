@@ -11,6 +11,9 @@ class UOWSClient(object):
             url = kwargs['URL']
         self.client = Client(url)
 
+    # Add the ability to use 'with'
+    def __enter__(self):
+        pass
     def __exit__(self, type, value, traceback):
         pass
 
