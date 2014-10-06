@@ -1,5 +1,6 @@
 from django.shortcuts import redirect
 from autoreduce_webapp.uows_client import UOWSClient
+from autoreduce_webapp.settings import UOWS_LOGIN_URL
 
 def login_and_uows_valid(fn):
     """
