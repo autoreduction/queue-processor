@@ -22,7 +22,7 @@ class ReplaceNode(Node):
         new = unicode(get_var(self.new, context))
         return s.replace(old, new)
  
-@register.filter
+@register.tag
 def replace(parser, token):
     args = token.split_contents()[1:]
     if len(args) != 3:
