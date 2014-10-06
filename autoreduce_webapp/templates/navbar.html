@@ -9,13 +9,15 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <img src="{% static "images/logo.png" %}" />
+            <div class="navbar-brand">
+                <img src="{% static "images/logo.png" %}" />
+            </div>
         </div>
         <div class="collapse navbar-collapse">
             <ul class="nav navbar-nav navbar-right">
                 {% if user.is_authenticated %}
                     <li>
-                        <p class="navbar-text">Welcome, {{ user.first_name }}</p>
+                        <p class="navbar-text">Welcome, <span id="navbar-username">{{ user.first_name }}</span></p>
                     </li>
                      <li>
                         <a href="{% url 'run_list' %}">All Runs</a>

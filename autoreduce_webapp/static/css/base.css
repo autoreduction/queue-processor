@@ -17,6 +17,9 @@
     padding-left: 15px;
     padding-right: 15px;
 }
+.navbar-nav>li>a {
+    color: #428bca;
+}
 
 /****************
  3. Header
