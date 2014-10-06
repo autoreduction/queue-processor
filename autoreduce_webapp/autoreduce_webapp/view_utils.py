@@ -1,6 +1,6 @@
 from django.shortcuts import redirect
 from autoreduce_webapp.uows_client import UOWSClient
-from autoreduce_webapp.settings import UOWS_LOGIN_URL
+from autoreduce_webapp.settings import UOWS_LOGIN_URL, LOGIN_URL
 
 def login_and_uows_valid(fn):
     """
@@ -10,5 +10,5 @@ def login_and_uows_valid(fn):
         if request.user.is_authenticated() and request.session['sessionid'] and UOWSClient().check_session(request.session['sessionid']):
             return fn(request, *args, **kws)
 
-        return redirect(UOWS_LOGIN_URL + request.build_absolute_uri('login'))
+        return redirect(UOWS_LOGIN_URL + request.build_absolute_uri(LOGIN_URL))
     return request_processor
