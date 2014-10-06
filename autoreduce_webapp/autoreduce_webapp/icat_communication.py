@@ -154,3 +154,10 @@ class ICATCommunication(object):
     '''
     def post_process(self, reduction_run):
         pass
+
+    '''
+        Check if the user is in the relevant admin group within ICAT for the autoreduction webapp
+    '''
+    def is_admin(self, user_number):
+        # TODO: Check ICAT user group
+        pass
