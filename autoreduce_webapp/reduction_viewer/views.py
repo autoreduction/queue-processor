@@ -11,6 +11,8 @@ import autoreduce_webapp.view_utils
 
 def index(request):
     if request.user.is_authenticated() and request.session['sessionid'] and UOWSClient().check_session(request.session['sessionid']):
+        if request.GET.get('next'):
+            return redirect(request.build_absolute_uri(request.GET.get('next'))
         return redirect('run_list')
     elif request.GET.get('sessionid'):
         user = authenticate(token=request.GET.get('sessionid'))

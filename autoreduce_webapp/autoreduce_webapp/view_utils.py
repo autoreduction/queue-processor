@@ -9,6 +9,7 @@ def login_and_uows_valid(fn):
     def request_processor(request, *args, **kws):
         if request.user.is_authenticated() and request.session['sessionid'] and UOWSClient().check_session(request.session['sessionid']):
             return fn(request, *args, **kws)
-
-        return redirect(UOWS_LOGIN_URL + request.build_absolute_uri(LOGIN_URL))
+        if request.GET.get('sessionid'):                                                                                                           
+            return redirect(request.build_absolute_uri(LOGIN_URL) + "?next=" + request.build_absolute_uri().replace('?sessionid=', '&sessionid=')) 
+        return redirect(UOWS_LOGIN_URL + request.build_absolute_uri())
     return request_processor
