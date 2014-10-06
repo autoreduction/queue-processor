@@ -37,8 +37,9 @@ class Migration(migrations.Migration):
             name='Instrument',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('name', models.CharField(max_length=50)),
-                ('is_active', models.BooleanField(default=True)),
+                ('name', models.CharField(max_length=80)),
+                ('is_active', models.BooleanField(default=False)),
+                ('experimenters', models.ManyToManyField(related_name=b'experiment_instruments', to=settings.AUTH_USER_MODEL)),
                 ('scientists', models.ManyToManyField(to=settings.AUTH_USER_MODEL)),
             ],
             options={
@@ -76,13 +77,14 @@ class Migration(migrations.Migration):
                 ('run_name', models.CharField(max_length=50)),
                 ('run_version', models.IntegerField()),
                 ('created', models.DateTimeField(auto_now_add=True)),
-                ('started_by', models.IntegerField()),
+                ('started_by', models.IntegerField(null=True, blank=True)),
                 ('last_updated', models.DateTimeField(auto_now=True)),
-                ('started', models.DateTimeField()),
-                ('finished', models.DateTimeField()),
+                ('started', models.DateTimeField(null=True, blank=True)),
+                ('finished', models.DateTimeField(null=True, blank=True)),
                 ('message', models.CharField(max_length=255)),
-                ('graph', autoreduce_webapp.utils.SeparatedValuesField()),
-                ('experiment', models.ForeignKey(to='reduction_viewer.Experiment')),
+                ('graph', autoreduce_webapp.utils.SeparatedValuesField(null=True, blank=True)),
+                ('experiment', models.ForeignKey(related_name=b'reduction_runs', to='reduction_viewer.Experiment')),
+                ('instrument', models.ForeignKey(related_name=b'reduction_runs', to='reduction_viewer.Instrument', null=True)),
             ],
             options={
             },
@@ -104,6 +106,17 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('value', models.CharField(max_length=25)),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='UserProfile',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('user_number', models.IntegerField()),
+                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL, unique=True)),
             ],
             options={
             },
