@@ -9,24 +9,32 @@ from autoreduce_webapp.settings import UOWS_LOGIN_URL
 from reduction_viewer.models import Experiment
 import autoreduce_webapp.view_utils
 
-def index(request):
+def index(request)
+    return_url = redirect(UOWS_LOGIN_URL + request.build_absolute_uri())
+    if request.GET.get('next'):
+        return_url = redirect(UOWS_LOGIN_URL + request.build_absolute_uri(request.GET.get('next')))
+
+    use_query_next = redirect(request.build_absolute_uri(request.GET.get('next')))
+    default_next = redirect('run_list')
+
     if request.user.is_authenticated() and request.session['sessionid'] and UOWSClient().check_session(request.session['sessionid']):
         if request.GET.get('next'):
-            return redirect(request.build_absolute_uri(request.GET.get('next')))
-        return redirect('run_list')
+            return_url = use_query_next
+        else:
+            return_url = default_next
+
     elif request.GET.get('sessionid'):
         user = authenticate(token=request.GET.get('sessionid'))
         if user is not None:
             if user.is_active:
                 request.session['sessionid'] = request.GET.get('sessionid')
                 login(request, user)
-                return redirect('run_list')  
-
-    return_url = request.build_absolute_uri()
-    if request.GET.get('next'):
-        return_url = request.build_absolute_uri(request.GET.get('next'))
-
-    return redirect(UOWS_LOGIN_URL + return_url)
+                if request.GET.get('next'):
+                    return_url = use_query_next
+                else:
+                    return_url = default_next
+    
+    return return_url
 
 @autoreduce_webapp.view_utils.login_and_uows_valid
 def logout(request):
