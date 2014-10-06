@@ -22,7 +22,7 @@ def index(request):
 
     return redirect(UOWS_LOGIN_URL + request.build_absolute_uri())
 
-@login_required
+@autoreduce_webapp.view_utils.login_and_uows_valid
 def logout(request):
     session_id = request.session.get('sessionid')
     if session_id:
@@ -31,12 +31,12 @@ def logout(request):
     request.session.flush()
     return redirect('index')
 
-@login_required
+@autoreduce_webapp.view_utils.login_and_uows_valid
 def run_queue(request):
     context_dictionary = {}
     return render_to_response('base.html', context_dictionary, RequestContext(request))
 
-@login_required
+@autoreduce_webapp.view_utils.login_and_uows_valid
 def run_list(request):
     context_dictionary = {}
     instruments = {}
@@ -53,17 +53,17 @@ def run_list(request):
 
     return render_to_response('run_list.html', context_dictionary, RequestContext(request))
 
-@login_required
+@autoreduce_webapp.view_utils.login_and_uows_valid
 def run_summary(request, run_number, run_version=0):
     context_dictionary = {}
     return render_to_response('base.html', context_dictionary, RequestContext(request))
 
-@login_required
+@autoreduce_webapp.view_utils.login_and_uows_valid
 def instrument_summary(request, instrument):
     context_dictionary = {}
     return render_to_response('base.html', context_dictionary, RequestContext(request))
 
-@login_required
+@autoreduce_webapp.view_utils.login_and_uows_valid
 def experiment_summary(request, reference_number):
     context_dictionary = {}
     return render_to_response('base.html', context_dictionary, RequestContext(request))
