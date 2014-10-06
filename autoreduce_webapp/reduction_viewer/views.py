@@ -9,7 +9,7 @@ from autoreduce_webapp.settings import UOWS_LOGIN_URL
 from reduction_viewer.models import Experiment
 import autoreduce_webapp.view_utils
 
-def index(request)
+def index(request):
     return_url = redirect(UOWS_LOGIN_URL + request.build_absolute_uri())
     if request.GET.get('next'):
         return_url = redirect(UOWS_LOGIN_URL + request.build_absolute_uri(request.GET.get('next')))
