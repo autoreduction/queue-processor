@@ -1,7 +1,37 @@
+###################
+# 1. Base - links, text, etc.
+# 2. Navbar
+# 3. Header
+# 4. Footer
+# 5. Run List
+###################
+
+##############
+# 1. Base
+##############
+
+##############
+# 2. Navbar
+##############
+.navbar-collapse.collapse.in .navbar-text {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+##############
+# 3. Header
+##############
 header { 
     text-align:center;
 }
 
+##############
+# 4. Footer
+##############
+
+##############
+# 5. Run List
+##############
 .instrument .no-results {
     font-style: italic;
 }
