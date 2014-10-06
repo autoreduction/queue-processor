@@ -3,8 +3,8 @@
 <header>
     {% if notifications %}
         {% for notification in notifications %}
-            <div class="alert alert-{{ notification.severity|replace 'error' 'danger' }}" role="alert">
-                <i class="fa-{{ notification.severity|replace 'error' 'exclamation' }}"></i> {{ notification.message }}
+            <div class="alert alert-{% replace notification.severity 'error' 'danger' %}" role="alert">
+                <i class="fa-{% replace notification.severity 'error' 'exclamation' %}"></i> {{ notification.message }}
             </div>
         {% endfor %}
     {% endif %}
