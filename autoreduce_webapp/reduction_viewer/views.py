@@ -7,6 +7,7 @@ from autoreduce_webapp.uows_client import UOWSClient
 from autoreduce_webapp.icat_communication import ICATCommunication
 from autoreduce_webapp.settings import UOWS_LOGIN_URL
 from reduction_viewer.models import Experiment
+import autoreduce_webapp.view_utils
 
 def index(request):
     if request.user.is_authenticated() and request.session['sessionid'] and UOWSClient().check_session(request.session['sessionid']):
