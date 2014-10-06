@@ -12,15 +12,18 @@ def index(request):
     if request.user.is_authenticated() and request.session['sessionid'] and UOWSClient().check_session(request.session['sessionid']):
         return redirect('run_list')
     elif request.GET.get('sessionid'):
-        # TODO: login user using session ID
         user = authenticate(token=request.GET.get('sessionid'))
         if user is not None:
             if user.is_active:
                 request.session['sessionid'] = request.GET.get('sessionid')
                 login(request, user)
-                return redirect('run_list')           
+                return redirect('run_list')  
 
-    return redirect(UOWS_LOGIN_URL + request.build_absolute_uri())
+    return_url = request.build_absolute_uri()
+    if request.GET.get('next'):
+        return_url = request.build_absolute_uri(request.GET.get('next'))
+
+    return redirect(UOWS_LOGIN_URL + return_url)
 
 @autoreduce_webapp.view_utils.login_and_uows_valid
 def logout(request):
