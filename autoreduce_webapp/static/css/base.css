@@ -9,16 +9,22 @@
 /****************
  1. Base
 ****************/
-
+hr {
+    width: 60%;
+}
 /****************
  2. Navbar
 ****************/
-.navbar-collapse.collapse.in .navbar-text {
+.navbar-collapse.collapse.in .navbar-text, 
+.navbar-collapse.collapsing .navbar-text {
     padding-left: 15px;
     padding-right: 15px;
 }
 .navbar-default .navbar-nav>li>a {
     color: #428bca;
+}
+.navbar-brand {
+    padding: 10px;
 }
 
 /****************
