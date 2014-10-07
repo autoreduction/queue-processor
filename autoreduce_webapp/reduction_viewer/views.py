@@ -56,8 +56,8 @@ def run_queue(request):
 def run_list(request):
     context_dictionary = {}
     instruments = {}
-    instrument_names = ICATCommunication().get_valid_instruments(requst.user.username)
-    experiments = ICATCommunication().get_valid_experiments_for_instruments(requst.user.username, instrument_names)
+    instrument_names = ICATCommunication().get_valid_instruments(request.user.username)
+    experiments = ICATCommunication().get_valid_experiments_for_instruments(request.user.username, instrument_names)
     for instrument in instrument_names:
         instruments[instrument_name] = []
         instrument_experiments = experiments[instrument]
