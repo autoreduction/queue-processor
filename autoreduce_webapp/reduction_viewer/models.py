@@ -110,14 +110,14 @@ class Setting(models.Model):
 
 class Notification(models.Model):
     SEVERITY_CHOICES = (
-        (1, 'info'),
-        (2, 'warning'),
-        (3, 'error')
+        ('i', 'info'),
+        ('w', 'warning'),
+        ('e', 'error')
     );
 
     message = models.CharField(max_length=50, blank=False)
     is_active = models.BooleanField(default=True)
-    severity = models.CharField(max_length=1,choices=SEVERITY_CHOICES,default=1)
+    severity = models.CharField(max_length=1,choices=SEVERITY_CHOICES,default='i')
     is_staff_only = models.BooleanField(default=False)
 
     def __unicode__(self):
