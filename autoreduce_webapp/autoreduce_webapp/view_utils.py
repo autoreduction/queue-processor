@@ -17,16 +17,6 @@ def login_and_uows_valid(fn):
         return redirect(UOWS_LOGIN_URL + request.build_absolute_uri())
     return request_processor
 
-def with_template(template):
-    def wrapper(view):
-        def call(request, *args, **kwargs):
-            context = {}
-            ret = view(request, context, *args, **kwargs)
-            if ret: return(ret)
-            return(render_to_response(template, RequestContext(request, context)))
-        return(call)
-    return(wrapper)
-
 def render_with(template):
     """
         Decorator for Django views that sends returned dict to render_to_response function
