@@ -1,6 +1,6 @@
 <div class="run">
     <div class="row">
-        <div class="md-4"><a href="{% url 'reduction_viewer.views.run_summary' run.run_number run.run_version %}">{{ run.run_number }}{% if run.run_name %} - {{ run.run_name }}{% endif %}</a></div>
+        <div class="md-4"><a href="{% url 'run_summary' run.run_number run.run_version %}">{{ run.run_number }}{% if run.run_name %} - {{ run.run_name }}{% endif %}</a></div>
         <div class="md-4 run-status {{ run.status }}">{{ run.status }}</div>
         <div class="md-4">{{ run.last_updated }}</div>
     </div>
