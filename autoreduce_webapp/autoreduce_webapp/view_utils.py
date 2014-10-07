@@ -33,7 +33,7 @@ def render_with(template):
         with given template and RequestContext as context instance.
     """
     def renderer(fn):
-        def populate_template_dict(output):
+        def populate_template_dict(request, output):
             if 'notifications' not in output:
                 if request.user.is_authenticated() and request.user.is_staff:
                     output['notifications'] = Notification.objects.filter(is_active=True, is_staff_only=True)
@@ -44,7 +44,7 @@ def render_with(template):
         def wrapper(request, *args, **kw):  
             output = fn(request, *args, **kw)
             if isinstance(output, dict):
-                output = populate_template_dict(output)    
+                output = populate_template_dict(request, output)    
                 return render_to_response(template, output, RequestContext(request))      
             return output
         return wrapper
