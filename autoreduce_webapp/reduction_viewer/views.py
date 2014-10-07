@@ -46,7 +46,7 @@ def logout(request):
     return redirect('index')
 
 @login_and_uows_valid
-@render_with('base.html')
+@render_with('run_queue.html')
 def run_queue(request):
     context_dictionary = {}
     return context_dictionary
