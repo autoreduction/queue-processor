@@ -17,13 +17,13 @@
         var ignoredNotifications = getIgnoredNotification();
         $('.alert.hide').each(function(){
             if(ignoredNotifications.indexOf($(this).data('notification-id')) < 0){
-                $(this).show();
+                $(this).removeClass('hide');
             }
         });
     };
 
     var init = function init(){
-        $('.alert-dismissible').on('closed.bs.alert', notificationDismissed);
+        $('.alert').on('closed.bs.alert', notificationDismissed);
 
         showNotifications();
     };
