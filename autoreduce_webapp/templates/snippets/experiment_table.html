@@ -1,8 +1,8 @@
 <div class="experiment">
     <div class="row">
-        <div class="md-1"><i class="fa fa-chevron-right"></i></div>
-        <div class="md-3"><a href="{% url 'experiment_summary' experiment.reference_number %}">{{ experiment.reference_number }}</a></div>
-        <div class="md-8">{{ experiment.progress_summary }}</div>
+        <div class="col-md-1"><i class="fa fa-chevron-right"></i></div>
+        <div class="col-md-3"><a href="{% url 'experiment_summary' experiment.reference_number %}">{{ experiment.reference_number }}</a></div>
+        <div class="col-md-8">{{ experiment.progress_summary }}</div>
     </div>
     {% for run in experiment.runs %}
         {% include "snippets/run_table.html" with run=run only %}

@@ -55,16 +55,20 @@ def run_queue(request):
 @render_with('run_list.html')
 def run_list(request):
     context_dictionary = {}
-    instruments = {}
+    instruments = []
     instrument_names = ICATCommunication().get_valid_instruments(int(request.user.username))
     experiments = ICATCommunication().get_valid_experiments_for_instruments(int(request.user.username), instrument_names)
     for instrument in instrument_names:
-        instruments[instrument] = []
+        instrument_obj = {
+            'name' : instrument,
+            'experiments' : []
+        }
         instrument_experiments = experiments[instrument]
         for experiment in instrument_experiments:
             if experiment.isdigit():
                 if Experiment.objects.filter(reference_number=experiment):
-                    instruments[instrument].append(experiment)
+                    instrument_obj['experiments'].append(experiment)
+        instruments.append(instrument_obj)
     
     context_dictionary['instrument_list'] = instruments
 

@@ -1,9 +1,9 @@
 <div class="instrument">
     <div class="row">
-        <div class="md-1"><i class="fa fa-chevron-right"></i></div>
-        <div class="md-3"><a href="{% url 'instrument_summary' instrument.name %}">{{ instrument.name }}</a></div>
-        <div class="md-4">{{ instrument.progress_summary }}</div>
-        <div class="md-4">
+        <div class="col-md-1"><i class="fa fa-chevron-right"></i></div>
+        <div class="col-md-3"><a href="{% url 'instrument_summary' instrument.name %}">{{ instrument.name }}</a></div>
+        <div class="col-md-4">{{ instrument.progress_summary }}</div>
+        <div class="col-md-4">
             {% if reduction_variables_on %}
                 <a href="{% url 'instrument_variables' instrument.name %}">Edit Reduction Variables</a>
             {% endif %}
@@ -16,7 +16,7 @@
             {% endfor %}
         {% else %}
             <div class="row">
-                <div class="md-12 text-center no-results">
+                <div class="col-md-12 text-center no-results">
                     No experiments found.
                 </div>
             </div>
@@ -28,7 +28,7 @@
             {% endfor %}
         {% else %}
             <div class="row">
-                <div class="md-12 text-center no-results">
+                <div class="col-md-12 text-center no-results">
                     No runs found.
                 </div>
             </div>

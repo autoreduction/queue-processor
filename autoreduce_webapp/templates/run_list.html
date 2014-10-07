@@ -3,12 +3,12 @@
 {% block body %}
     {% if instrument_list %}
         <div class="row">
-            <div class="md-12">
+            <div class="col-md-12">
                 <input type="search" placeholder="Search" name="run_search" id="run_search">
             </div>
         </div>
         <div class="row">
-            <div class="md-12">
+            <div class="col-md-12">
                 <ul class="nav nav-tabs" role="tablist">
                     <li class="active"><a href="#by-experiment" role="tab" data-toggle="tab">View By Experiment Number</a></li>
                     <li class="active"><a href="#by-run-number" role="tab" data-toggle="tab">View By Run Number</a></li>
@@ -29,7 +29,7 @@
         </div>
     {% else %}
         <div class="row">
-            <div class="md-12 text-center">
+            <div class="col-md-12 text-center">
                 <h3>No reduction runs found. <i class="fa fa-frown-o"></i></h3>
             </div>
         </div>
