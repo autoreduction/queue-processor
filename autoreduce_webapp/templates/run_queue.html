@@ -26,7 +26,7 @@
                         </td>
                         <td>{{ job.instrument.name }}</td>
                         <td>{{ job.status.value }}</td>
-                        <td>{{ naturaltime|job.created }}</td>
+                        <td>{{ job.created|naturaltime }}</td>
                         <td>
                             {% if job.started_by %}
                                 {{ job.started_by}}
