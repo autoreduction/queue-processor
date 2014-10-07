@@ -36,26 +36,6 @@ class QueueProcessorTestCase(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._username = raw_input('\nICAT Username: ')
-        cls._password = getpass.getpass('ICAT Password: ')
-        f = open(os.path.join(os.getcwd(), 'autoreduce_webapp/settings.py'), 'r+')
-        settings = f.read()
-        settings = settings.replace("'USER' : 'icat',", "'USER' : '%s'," % cls._username)
-        settings = settings.replace("'PASSWORD' : 'icat'", "'PASSWORD' : '%s'" % cls._password)
-        f.seek(0)
-        f.write(settings)
-        f.truncate()
-        f.close()
-        # Re-import changed file property
-        import settings
-        reload(settings)
-        from settings import ICAT
-        import icat_communication
-        reload(icat_communication)
-        from icat_communication import ICATCommunication
-        import queue_processor
-        reload(queue_processor)
-        from queue_processor import Client
         cls._client = Client(ACTIVEMQ['broker'], ACTIVEMQ['username'], ACTIVEMQ['password'], ACTIVEMQ['topics'], 'Autoreduction_QueueProcessor_Test')
         cls._client.connect()
         cls._rb_number = 0
@@ -63,14 +43,7 @@ class QueueProcessorTestCase(TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        f = open(os.path.join(os.getcwd(), 'autoreduce_webapp/settings.py'), 'r+')
-        settings = f.read()
-        settings = settings.replace("'USER' : '%s'," % cls._username, "'USER' : 'icat',")
-        settings = settings.replace("'PASSWORD' : '%s'" % cls._password, "'PASSWORD' : 'icat'")
-        f.seek(0)
-        f.write(settings)
-        f.truncate()
-        f.close()
+        pass
 
     '''
         Insert a reduction run to ensure the QueueProcessor can find one when recieving a topic message
@@ -1194,7 +1167,7 @@ class ICATCommunicationTestCase(TestCase):
         with ICATCommunication() as icat:
             is_admin = icat.is_admin(self.test_instrument_scientist)
 
-            self.assertFalse(is_admin, "Not expecting user %s to be an admin." % self.test_user)
+            self.assertFalse(is_admin, "Not expecting user %s to be an admin." % self.test_instrument_scientist)
             
 class UOWSClientTestCase(TestCase):
 

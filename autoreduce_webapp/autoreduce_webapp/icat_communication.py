@@ -143,7 +143,7 @@ class ICATCommunication(object):
 
         for instrument in instruments:
             experiments = Set()
-            self._add_list_to_set(self.client.search("SELECT i.name FROM Investigation i JOIN i.investigationInstruments inst WHERE i.endDate > "+str(years_back)+" inst.instrument.name = '"+instrument+"' INCLUDE i.investigationInstruments.instrument"), experiments)
+            self._add_list_to_set(self.client.search("SELECT i.name FROM Investigation i JOIN i.investigationInstruments inst WHERE i.endDate > '"+str(years_back)+"' and inst.instrument.name = '"+instrument+"' INCLUDE i.investigationInstruments.instrument"), experiments)
             instruments_dict[instrument] = experiments
 
         return instruments_dict
@@ -153,7 +153,7 @@ class ICATCommunication(object):
     '''
     def is_admin(self, user_number):
         admin_group = 'Autoreduce Admins'
-        if self.client.search("SELECT 1 FROM Grouping g JOIN g.userGroups ug WHERE g.name = '"+ admin_group +"' and ug.user.name = '"+ str(user_number) +"'"):
+        if self.client.search("SELECT g FROM Grouping g JOIN g.userGroups ug WHERE g.name = '"+ admin_group +"' and ug.user.name = 'uows/"+ str(user_number) +"'"):
             return True
         return False
 

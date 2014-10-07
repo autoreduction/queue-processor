@@ -28,9 +28,9 @@ class UOWSClient(object):
         try:
             person = self.client.service.getPersonDetailsFromSessionId(session_id)
             if person:
-                first_name = person.firstNameKnownAs
+                first_name = person.givenName
                 if not first_name:
-                    first_name = person.givenName
+                    first_name = person.firstNameKnownAs
                 trimmed_person = {
                     'first_name' : first_name,
                     'last_name' : person.familyName,
