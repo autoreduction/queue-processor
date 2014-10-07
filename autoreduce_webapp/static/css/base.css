@@ -12,6 +12,7 @@
 hr {
     width: 60%;
 }
+
 /****************
  2. Navbar
 ****************/
@@ -30,8 +31,12 @@ hr {
 /****************
  3. Header
 ****************/
-header { 
-    text-align:center;
+header {
+    text-align: center;
+}
+header .alert {
+    margin-bottom: 5px;
+    padding: 10px;
 }
 
 /****************
