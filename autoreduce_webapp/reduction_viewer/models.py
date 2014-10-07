@@ -122,3 +122,6 @@ class Notification(models.Model):
 
     def __unicode__(self):
         return u'%s' % self.message
+
+    def severity_verbose(self):
+        return dict(Notification.SEVERITY_CHOICES)[self.severity]
