@@ -19,8 +19,8 @@ class UOWSAuthenticationBackend(object):
 
                 try:
                     # Make sure user has correct permissions set. This will be checked upon each login
-                    user.is_superuser = ICATCommunication().is_admin(int(person['usernumber'])
-                    user.is_staff = (ICATCommunication().is_instrument_scientist(int(person['usernumber']) or user.is_superuser)
+                    user.is_superuser = ICATCommunication().is_admin(int(person['usernumber']))
+                    user.is_staff = (ICATCommunication().is_instrument_scientist(int(person['usernumber'])) or user.is_superuser)
                 except URLError:
                     logging.error("Unable to connect to ICAT. Cannot update user's permission levels.")
                 user.save()
