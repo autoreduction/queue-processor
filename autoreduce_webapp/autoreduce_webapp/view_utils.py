@@ -36,9 +36,9 @@ def render_with(template):
         def populate_template_dict(request, output):
             if 'notifications' not in output:
                 if request.user.is_authenticated() and request.user.is_staff:
-                    output['notifications'] = Notification.objects.filter(is_active=True, is_staff_only=True)
-                else:
                     output['notifications'] = Notification.objects.filter(is_active=True)
+                else:
+                    output['notifications'] = Notification.objects.filter(is_active=True, is_staff_only=False)
             return output
 
         def wrapper(request, *args, **kw):  
