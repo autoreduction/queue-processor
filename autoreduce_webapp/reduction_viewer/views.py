@@ -7,7 +7,7 @@ from autoreduce_webapp.uows_client import UOWSClient
 from autoreduce_webapp.icat_communication import ICATCommunication
 from autoreduce_webapp.settings import UOWS_LOGIN_URL
 from reduction_viewer.models import Experiment
-import autoreduce_webapp.view_utils
+from autoreduce_webapp.view_utils import login_and_uows_valid, render_with
 from django.http import HttpResponse
 
 def index(request):
@@ -36,7 +36,7 @@ def index(request):
 
     return redirect(return_url)
 
-@autoreduce_webapp.view_utils.login_and_uows_valid
+@login_and_uows_valid
 def logout(request):
     session_id = request.session.get('sessionid')
     if session_id:
@@ -45,12 +45,14 @@ def logout(request):
     request.session.flush()
     return redirect('index')
 
-@autoreduce_webapp.view_utils.login_and_uows_valid
+@login_and_uows_valid
+@render_with('base.html')
 def run_queue(request):
     context_dictionary = {}
-    return render_to_response('base.html', context_dictionary, RequestContext(request))
+    return context_dictionary
 
-@autoreduce_webapp.view_utils.login_and_uows_valid
+@login_and_uows_valid
+@render_with('run_list.html')
 def run_list(request):
     context_dictionary = {}
     instruments = {}
@@ -65,19 +67,22 @@ def run_list(request):
     
     context_dictionary['instrument_list'] = instruments
 
-    return render_to_response('run_list.html', context_dictionary, RequestContext(request))
+    return context_dictionary
 
-@autoreduce_webapp.view_utils.login_and_uows_valid
+@login_and_uows_valid
+@render_with('base.html')
 def run_summary(request, run_number, run_version=0):
     context_dictionary = {}
-    return render_to_response('base.html', context_dictionary, RequestContext(request))
+    return context_dictionary
 
-@autoreduce_webapp.view_utils.login_and_uows_valid
+@login_and_uows_valid
+@render_with('base.html')
 def instrument_summary(request, instrument):
     context_dictionary = {}
-    return render_to_response('base.html', context_dictionary, RequestContext(request))
+    return context_dictionary
 
-@autoreduce_webapp.view_utils.login_and_uows_valid
+@login_and_uows_valid
+@render_with('base.html')
 def experiment_summary(request, reference_number):
     context_dictionary = {}
-    return render_to_response('base.html', context_dictionary, RequestContext(request))
+    return context_dictionary
