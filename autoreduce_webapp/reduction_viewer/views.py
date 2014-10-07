@@ -18,7 +18,7 @@ def index(request):
     use_query_next = request.build_absolute_uri(request.GET.get('next'))
     default_next = 'run_list'
 
-    if request.user.is_authenticated() and request.session['sessionid'] and UOWSClient().check_session(request.session['sessionid']):
+    if request.user.is_authenticated() and sessionid in request.session and UOWSClient().check_session(request.session['sessionid']):
         if request.GET.get('next'):
             return_url = use_query_next
         else:
