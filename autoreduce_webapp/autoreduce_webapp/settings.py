@@ -120,9 +120,9 @@ ARCHIVE_BASE = ''
 # ICAT 
 
 ICAT = {
-    'AUTH' : 'uows',
+    'AUTH' : 'simple',
     'URL' : 'https://icatdev.isis.cclrc.ac.uk/ICATService/ICAT?wsdl',
-    'USER' : 'icat',
+    'USER' : 'autoreduce',
     'PASSWORD' : 'icat'
 }
 

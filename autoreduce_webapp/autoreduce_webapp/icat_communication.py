@@ -149,15 +149,18 @@ class ICATCommunication(object):
         return instruments_dict
 
     '''
+        Check if the user is in the relevant admin group within ICAT for the autoreduction webapp
+    '''
+    def is_admin(self, user_number):
+        admin_group = 'Autoreduce Admins'
+        if self.client.search("SELECT 1 FROM Grouping g JOIN g.userGroups ug WHERE g.name = '"+ admin_group +"' and ug.user.name = '"+ str(user_number) +"'"):
+            return True
+        return False
+
+    '''
         Performs any post-processing actions required once reduction is complete.
         Currenty a placeholder. Not sure yet what this may contain.
     '''
     def post_process(self, reduction_run):
-        pass
-
-    '''
-        Check if the user is in the relevant admin group within ICAT for the autoreduction webapp
-    '''
-    def is_admin(self, user_number):
-        # TODO: Check ICAT user group
+        # TODO: ICAT post-processing
         pass

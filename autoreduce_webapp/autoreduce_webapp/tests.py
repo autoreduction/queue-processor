@@ -818,34 +818,11 @@ class ICATCommunicationTestCase(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._username = raw_input('\nICAT Username: ')
-        cls._password = getpass.getpass('ICAT Password: ')
-        f = open(os.path.join(os.getcwd(), 'autoreduce_webapp/settings.py'), 'r+')
-        text = f.read()
-        text = text.replace("'USER' : 'icat',", "'USER' : '%s'," % cls._username)
-        text = text.replace("'PASSWORD' : 'icat'", "'PASSWORD' : '%s'" % cls._password)
-        f.seek(0)
-        f.write(text)
-        f.truncate()
-        f.close()
-        # Re-import changed file property
-        import settings
-        reload(settings)
-        from settings import ICAT
-        import icat_communication
-        reload(icat_communication)
-        from icat_communication import ICATCommunication
+        pass
 
     @classmethod
     def tearDownClass(cls):
-        f = open(os.path.join(os.getcwd(), 'autoreduce_webapp/settings.py'), 'r+')
-        settings = f.read()
-        settings = settings.replace("'USER' : '%s'," % cls._username, "'USER' : 'icat',")
-        settings = settings.replace("'PASSWORD' : '%s'" % cls._password, "'PASSWORD' : 'icat'")
-        f.seek(0)
-        f.write(settings)
-        f.truncate()
-        f.close()
+        pass
 
     def setUp(self):
         self.test_user = 18187
@@ -1200,6 +1177,24 @@ class ICATCommunicationTestCase(TestCase):
                 self.fail("Expecting an TypeError to be raised")
         except TypeError:
             pass
+
+    '''
+        Check that a user is an admin
+    '''
+    def test_is_admin(self):
+        with ICATCommunication() as icat:
+            is_admin = icat.is_admin(self.test_user)
+
+            self.assertTrue(is_admin, "Expecting user %s to be an admin." % self.test_user)
+
+    '''
+        Check that a user is not an admin
+    '''
+    def test_is_not_admin(self):
+        with ICATCommunication() as icat:
+            is_admin = icat.is_admin(self.test_instrument_scientist)
+
+            self.assertFalse(is_admin, "Not expecting user %s to be an admin." % self.test_user)
             
 class UOWSClientTestCase(TestCase):
 
