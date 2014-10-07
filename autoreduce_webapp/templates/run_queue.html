@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load naturaltime from humanize %}
+
+{% block body %}
+    <div class="row">
+        <div class="md-12 text-center">
+            <h2>Run Queue</h2>
+        </div>
+    </div>
+    {% if queue %}
+        <table class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>Run Number</th>
+                    <th>Instrument</th>
+                    <th>Status</th>
+                    <th>Submitted</th>
+                    <th>Submitted By</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for job in queue %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'run_summary' run_number=job.run_number run_version=job.run_version %}">{{ job.run_number }}{% if job.run_name %}-{{ job.run_name }}</a>
+                        </td>
+                        <td>{{ job.instrument.name }}</td>
+                        <td>{{ job.status.value }}</td>
+                        <td>{{ naturaltime|job.created }}</td>
+                        <td>
+                            {% if job.started_by %}
+                                {{ job.started_by}}
+                            {% else %}
+                                Autoreduction Service
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="row">
+            <div class="md-12 text-center">
+                <h3>No pending reduction jobs.</h3>
+            </div>
+        </div>
+    {% endif %} 
+{% endblock %}
