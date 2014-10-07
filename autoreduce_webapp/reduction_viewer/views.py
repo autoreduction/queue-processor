@@ -59,11 +59,11 @@ def run_list(request):
     instrument_names = ICATCommunication().get_valid_instruments(int(request.user.username))
     experiments = ICATCommunication().get_valid_experiments_for_instruments(int(request.user.username), instrument_names)
     for instrument in instrument_names:
-        instruments[instrument_name] = []
+        instruments[instrument] = []
         instrument_experiments = experiments[instrument]
         for experiment in instrument_experiments:
             if Experiment.objects.filter(reference_number=experiment.name):
-                instruments[instrument_name].append(experiment.name)
+                instruments[instrument].append(experiment.name)
     
     context_dictionary['instrument_list'] = instruments
 
