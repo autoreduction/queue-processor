@@ -16,7 +16,8 @@
     var showNotifications = function showNotifications(){
         var ignoredNotifications = getIgnoredNotification();
         $('.alert.hide').each(function(){
-            if(ignoredNotifications.indexOf($(this).data('notification-id')) < 0){
+            var notificationId = $(this).data('notification-id').toString();
+            if(ignoredNotifications.indexOf(notificationId) < 0){
                 $(this).removeClass('hide');
             }
         });
