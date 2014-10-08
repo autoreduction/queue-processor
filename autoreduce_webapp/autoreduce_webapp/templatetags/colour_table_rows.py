@@ -4,10 +4,10 @@ register = Library()
 
 @register.simple_tag
 def colour_table_row(status):
-    if status is 'Error':
+    if status == 'Error':
         return 'danger'
-    if status is 'Processing':
+    if status == 'Processing':
         return 'warning'
-    if status is 'Queued':
+    if status == 'Queued':
         return 'info'
     return status
