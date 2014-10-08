@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load colour_table_rows %}
+{% load get_user_name %}
 {% load naturaltime from humanize %}
 
 {% block body %}
@@ -30,7 +31,7 @@
                         <td title="{{ job.created|date:'SHORT_DATETIME_FORMAT' }}">{{ job.created|naturaltime }}</td>
                         <td>
                             {% if job.started_by %}
-                                {{ job.started_by}}
+                                {% get_user_name job.started_by %}
                             {% else %}
                                 Autoreduction Service
                             {% endif %}
