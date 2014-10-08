@@ -24,7 +24,7 @@
 
     var toggleInstrumentsExperimentsClickAction = function toggleInstrumentsExperimentsClickAction(){
         $(this).find('i.fa').toggleClass('fa-chevron-right fa-chevron-down');
-        $(this).parents('instrument').find('.experiment').toggleClass('hide');
+        $(this).parents('.instrument').find('.experiment').toggleClass('hide');
     };
 
     var init = function init(){
