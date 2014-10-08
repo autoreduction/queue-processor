@@ -19,13 +19,13 @@
                     <li class="active"><a href="#by-experiment" role="tab" data-toggle="tab">View By Experiment Number</a></li>
                     <li class="active"><a href="#by-run-number" role="tab" data-toggle="tab">View By Run Number</a></li>
                 </ul>
-                <div class="tab-content">
-                    <div class="tab-pane active" id="by-experiment">
+                <div class="tab-content col-md-12">
+                    <div class="tab-pane row active" id="by-experiment">
                         {% for instrument in instrument_list %}
                             {% include "snippets/instrument_table.html" with instrument=instrument reduction_variables_on=reduction_variables_on by="experiment" only %}
                         {% endfor %}
                     </div>
-                    <div class="tab-pane hide" id="by-run-number">
+                    <div class="tab-pane row hide" id="by-run-number">
                         {% for instrument in instrument_list %}
                             {% include "snippets/instrument_table.html" with instrument=instrument reduction_variables_on=reduction_variables_on by="run" only %}
                         {% endfor %}

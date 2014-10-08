@@ -1,7 +1,5 @@
-<div class="run">
-    <div class="row">
-        <div class="col-md-4"><a href="{% url 'run_summary' run.run_number run.run_version %}">{{ run.run_number }}{% if run.run_name %} - {{ run.run_name }}{% endif %}</a></div>
-        <div class="col-md-4 run-status {{ run.status }}">{{ run.status }}</div>
-        <div class="col-md-4">{{ run.last_updated }}</div>
-    </div>
+<div class="row">
+    <div class="col-md-4"><a href="{% url 'run_summary' run.run_number run.run_version %}">{{ run.run_number }}{% if run.run_name %} - {{ run.run_name }}{% endif %}</a></div>
+    <div class="col-md-4 run-status {{ run.status }}">{{ run.status }}</div>
+    <div class="col-md-4">{{ run.last_updated }}</div>
 </div>

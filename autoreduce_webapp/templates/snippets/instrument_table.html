@@ -1,5 +1,5 @@
-<div class="instrument">
-    <div class="row instrument-heading bg-primary">
+<div class="instrument col-md-12">
+    <div class="row instrument-heading bg-info">
         <div class="col-md-1"><i class="fa fa-chevron-right"></i></div>
         <div class="col-md-3"><a href="{% url 'instrument_summary' instrument.name %}">{{ instrument.name }}</a></div>
         <div class="col-md-4">{{ instrument.progress_summary }}</div>
@@ -10,28 +10,32 @@
         </div>
     </div>
     {% if by == "experiment" %}
-        {% if instrument.experiments %}
-            {% for experiment in instrument.experiments %}
-                {% include "snippets/experiment_table.html" with experiment=experiment only %}
-            {% endfor %}
-        {% else %}
-            <div class="row">
-                <div class="col-md-12 text-center no-results">
-                    No experiments found.
+        <div class="experiment hide">
+            {% if instrument.experiments %}
+                {% for experiment in instrument.experiments %}
+                    {% include "snippets/experiment_table.html" with experiment=experiment only %}
+                {% endfor %}
+            {% else %}
+                <div class="row">
+                    <div class="col-md-12 text-center no-results">
+                        No experiments found.
+                    </div>
                 </div>
-            </div>
-        {% endif %}
+            {% endif %}
+        </div>
     {% elif by == "run" %}
-        {% if instrument.runs %}
-            {% for run in instrument.runs %}
-                {% include "snippets/run_table.html" with run=run only %}
-            {% endfor %}
-        {% else %}
-            <div class="row">
-                <div class="col-md-12 text-center no-results">
-                    No runs found.
+        <div class="run hide">
+            {% if instrument.runs %}
+                {% for run in instrument.runs %}
+                    {% include "snippets/run_table.html" with run=run only %}
+                {% endfor %}
+            {% else %}
+                <div class="row">
+                    <div class="col-md-12 text-center no-results">
+                        No runs found.
+                    </div>
                 </div>
-            </div>
-        {% endif %}
+            {% endif %}
+        </div>
     {% endif %}
 </div>
