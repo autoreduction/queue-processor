@@ -5,7 +5,7 @@
     {% if instrument_list %}
         <div class="row">
             <div class="col-md-12">
-                <form role="form">
+                <form role="form" action="#" method="POST">
                     <div class="form-group">
                         <label for="run_search" class="screenreader-only">Search</label>
                         <input type="search" placeholder="Search" name="run_search" id="run_search" class="form-control">
@@ -16,8 +16,8 @@
         <div class="row">
             <div class="col-md-12">
                 <ul class="nav nav-tabs" role="tablist">
-                    <li class="active"><a href="#by-experiment" role="tab" data-toggle="tab">View By Experiment Number</a></li>
-                    <li class="active"><a href="#by-run-number" role="tab" data-toggle="tab">View By Run Number</a></li>
+                    <li class="active" id="by-experiment-tab"><a href="#by-experiment" role="tab" data-toggle="tab">View By Experiment Number</a></li>
+                    <li class="" id="by-run-number-tab"><a href="#by-run-number" role="tab" data-toggle="tab">View By Run Number</a></li>
                 </ul>
                 <div class="tab-content col-md-12">
                     <div class="tab-pane row active" id="by-experiment">

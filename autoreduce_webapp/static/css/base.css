@@ -70,4 +70,5 @@ search#run_search {
 
 .instrument .instrument-heading {
     font-size: 1.3em;
+    border-top: 1px solid #ddd;
 }

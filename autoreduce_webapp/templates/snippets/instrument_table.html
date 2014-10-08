@@ -1,6 +1,8 @@
 <div class="instrument col-md-12">
     <div class="row instrument-heading bg-info">
-        <div class="col-md-1"><i class="fa fa-chevron-right"></i></div>
+        <div class="col-md-1">
+            <a href="#" class="js-toggle-instrument-experiments"><i class="fa fa-chevron-right"></i></a>
+        </div>
         <div class="col-md-3"><a href="{% url 'instrument_summary' instrument.name %}">{{ instrument.name }}</a></div>
         <div class="col-md-4">{{ instrument.progress_summary }}</div>
         <div class="col-md-4">
