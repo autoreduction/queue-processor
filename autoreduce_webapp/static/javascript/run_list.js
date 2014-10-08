@@ -26,7 +26,7 @@
     var toggleInstrumentsExperimentsClickAction = function toggleInstrumentsExperimentsClickAction(event){
         event.preventDefault();
         $(this).find('i.fa').toggleClass('fa-chevron-right fa-chevron-down');
-        $(this).parents('.instrument').find('.experiment').toggleClass('hide');
+        $(this).parents('.instrument').find('.experiment,.run').toggleClass('hide');
     };
 
     var init = function init(){
@@ -34,7 +34,7 @@
         showBy(locationhash);
 
         $('#by-run-number-tab a,#by-experiment-tab a').on('click', tabClickAction);
-        $('.js-toggle-instrument-experiments').on('click', toggleInstrumentsExperimentsClickAction)
+        $('.js-toggle-instrument-children').on('click', toggleInstrumentsExperimentsClickAction)
     };
 
     init();
