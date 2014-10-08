@@ -20,7 +20,7 @@
             </thead>
             <tbody>
                 {% for job in queue %}
-                    <tr>
+                    <tr class="{% colour_table_row job.status.value %}">
                         <td>
                             <a href="{% url 'run_summary' run_number=job.run_number run_version=job.run_version %}">{{ job.run_number }}{% if job.run_name %}-{{ job.run_name }}{% endif %}</a>
                         </td>
