@@ -15,6 +15,7 @@
             $('#by-run-number-tab').addClass('active');
             $('#by-experiment-tab').removeClass('active');
         }
+        window.location.hash = '#' + by;
     };
 
     var tabClickAction = function tabClickAction(){
@@ -22,7 +23,8 @@
         showBy(by);
     };
 
-    var toggleInstrumentsExperimentsClickAction = function toggleInstrumentsExperimentsClickAction(){
+    var toggleInstrumentsExperimentsClickAction = function toggleInstrumentsExperimentsClickAction(event){
+        event.preventDefault();
         $(this).find('i.fa').toggleClass('fa-chevron-right fa-chevron-down');
         $(this).parents('.instrument').find('.experiment').toggleClass('hide');
     };

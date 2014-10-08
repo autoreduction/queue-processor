@@ -72,3 +72,7 @@ search#run_search {
     font-size: 1.3em;
     border-top: 1px solid #ddd;
 }
+
+.instrument .no-results {
+    padding: 10px;
+}
