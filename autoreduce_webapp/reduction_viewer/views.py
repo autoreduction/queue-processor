@@ -70,10 +70,11 @@ def run_list(request):
             'experiments' : []
         }
         instrument_experiments = experiments[instrument]
+        reference_numbers = []
         for experiment in instrument_experiments:
             if experiment.isdigit():
-                if Experiment.objects.filter(reference_number=experiment):
-                    instrument_obj['experiments'].append(experiment)
+                reference_numbers.append(experiment)
+        instrument_obj['experiments'] = Experiment.objects.filter(reference_number__in=reference_numbers)
         instruments.append(instrument_obj)
     
     context_dictionary['instrument_list'] = instruments
