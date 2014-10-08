@@ -18,7 +18,7 @@ class UserNameNode(Node):
  
     def render(self, context):
         usernumber = unicode(get_var(self.usernumber, context))
-        person = User.object.get(username=usernumber)
+        person = User.objects.get(username=usernumber)
         return mark_safe('<a href="mailto:' + person.email + '">'+ person.first_name + " " + person.last_name + '</a>')
  
 @register.tag
