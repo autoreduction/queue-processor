@@ -6,7 +6,8 @@ from django.contrib.auth.decorators import login_required
 from autoreduce_webapp.uows_client import UOWSClient
 from autoreduce_webapp.icat_communication import ICATCommunication
 from autoreduce_webapp.settings import UOWS_LOGIN_URL
-from reduction_viewer.models import Experiment
+from reduction_viewer.models import Experiment, ReductionRun
+from reduction_viewer.utils import StatusUtils
 from autoreduce_webapp.view_utils import login_and_uows_valid, render_with
 from django.http import HttpResponse
 
@@ -48,7 +49,12 @@ def logout(request):
 @login_and_uows_valid
 @render_with('run_queue.html')
 def run_queue(request):
-    context_dictionary = {}
+    complete_status = StatusUtils().get_completed()
+    error_status = StatusUtils().get_error()
+    pending_jobs = ReductionRun.objects.all().exclude(status=complete_status).exclude(status=error_status)
+    context_dictionary = {
+        'queue' : pending_jobs
+    }
     return context_dictionary
 
 @login_and_uows_valid
