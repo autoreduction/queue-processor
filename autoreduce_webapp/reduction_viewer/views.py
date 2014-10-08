@@ -8,7 +8,7 @@ from autoreduce_webapp.icat_communication import ICATCommunication
 from autoreduce_webapp.settings import UOWS_LOGIN_URL
 from reduction_viewer.models import Experiment, ReductionRun
 from reduction_viewer.utils import StatusUtils
-from autoreduce_webapp.view_utils import login_and_uows_valid, render_with
+from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, require_staff
 from django.http import HttpResponse
 
 def index(request):
@@ -48,6 +48,7 @@ def logout(request):
 
 @login_and_uows_valid
 @render_with('run_queue.html')
+@require_staff
 def run_queue(request):
     complete_status = StatusUtils().get_completed()
     error_status = StatusUtils().get_error()

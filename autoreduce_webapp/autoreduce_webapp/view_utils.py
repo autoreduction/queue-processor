@@ -4,6 +4,7 @@ from autoreduce_webapp.settings import UOWS_LOGIN_URL, LOGIN_URL
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from reduction_viewer.models import Notification
+from django.http import HttpResponse
 
 def login_and_uows_valid(fn):
     """
@@ -15,6 +16,26 @@ def login_and_uows_valid(fn):
         if request.GET.get('sessionid'):
             return redirect(request.build_absolute_uri(LOGIN_URL) + "?next=" + request.build_absolute_uri().replace('?sessionid=', '&sessionid=')) 
         return redirect(UOWS_LOGIN_URL + request.build_absolute_uri())
+    return request_processor
+
+def require_staff(fn):
+    """
+        Function decorator to check whether a user's session is still valid
+    """
+    def request_processor(request, *args, **kws):
+        if request.user.is_authenticated() and request.session['sessionid'] and UOWSClient().check_session(request.session['sessionid']) and request.user.is_staff:
+            return fn(request, *args, **kws)
+        return HttpResponse('Access Forbidden', status_code=403)
+    return request_processor
+
+def require_admin(fn):
+    """
+        Function decorator to check whether a user's session is still valid
+    """
+    def request_processor(request, *args, **kws):
+        if request.user.is_authenticated() and request.session['sessionid'] and UOWSClient().check_session(request.session['sessionid']) and request.user.is_superuser:
+            return fn(request, *args, **kws)
+        return HttpResponse('Access Forbidden', status_code=403)
     return request_processor
 
 def render_with(template):
