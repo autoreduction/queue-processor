@@ -6,8 +6,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>ISIS Auto-reduction</title>
-    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
-    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="{% static "css/vendor/bootstrap.min.css" %}">
+    <link rel="stylesheet" href="{% static "css/vendor/font-awesome.min.css" %}">
     <link rel="stylesheet" href="{% static "css/base.css" %}">
     {% block stylesheets %}{% endblock %}
 </head>
@@ -26,8 +26,8 @@
         {% include "footer.html" %}
     </div>
     
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script src="{% static "javascript/vendor/jquery.min.js" %}"></script>
+    <script src="{% static "javascript/vendor/bootstrap.min.js" %}"></script>
     <script src="{% static "javascript/cookies.js" %}"></script>
     <script src="{% static "javascript/base.js" %}"></script>
     {% block scripts %}{% endblock %}

@@ -1,10 +1,16 @@
 {% extends "base.html" %}
+{% load static from staticfiles %}
 
 {% block body %}
     {% if instrument_list %}
         <div class="row">
             <div class="col-md-12">
-                <input type="search" placeholder="Search" name="run_search" id="run_search">
+                <form role="form">
+                    <div class="form-group">
+                        <label for="run_search" class="screenreader-only">Search</label>
+                        <input type="search" placeholder="Search" name="run_search" id="run_search" class="form-control">
+                    </div>
+                </form>
             </div>
         </div>
         <div class="row">
@@ -19,7 +25,7 @@
                             {% include "snippets/instrument_table.html" with instrument=instrument reduction_variables_on=reduction_variables_on by="experiment" only %}
                         {% endfor %}
                     </div>
-                    <div class="tab-pane" id="by-run-number">
+                    <div class="tab-pane hide" id="by-run-number">
                         {% for instrument in instrument_list %}
                             {% include "snippets/instrument_table.html" with instrument=instrument reduction_variables_on=reduction_variables_on by="run" only %}
                         {% endfor %}
@@ -34,4 +40,8 @@
             </div>
         </div>
     {% endif %} 
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static "javascript/run_list.js" %}"></script>
 {% endblock %}

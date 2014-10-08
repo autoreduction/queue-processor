@@ -12,6 +12,11 @@
 hr {
     width: 60%;
 }
+.screenreader-only {
+    position: absolute; 
+    top: 0; 
+    left: -9999px
+}
 
 /****************
  2. Navbar
@@ -48,4 +53,21 @@ header .alert {
 ****************/
 .instrument .no-results {
     font-style: italic;
+}
+search {
+    border-radius: 5px;
+}
+search#run_search {
+    margin-top:4px;
+    margin-bottom:4px;
+}
+
+.tab-content {
+    border-left: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+}
+
+.instrument .instrument-heading {
+    font-size: 1.3em;
 }
