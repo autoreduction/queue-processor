@@ -45,6 +45,7 @@ Recommended Server OS: Red Hat 6
 
 ### Install Django
 1. `easy_install Django`
+2. `pip install pytz`
 
 ### Install ActiveMQ and stomp.py
 1. `wget http://mirror.gopotato.co.uk/apache/activemq/5.9.1/apache-activemq-5.9.1-bin.tar.gz`
