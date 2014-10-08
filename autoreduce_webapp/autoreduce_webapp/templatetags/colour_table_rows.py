@@ -10,4 +10,4 @@ def colour_table_row(status):
         return 'warning'
     if status is 'Queued':
         return 'info'
-    return ''
+    return status
