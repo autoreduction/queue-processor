@@ -1,7 +1,13 @@
 from django.template import Library, Node, Variable, VariableDoesNotExist, TemplateSyntaxError
  
 register = Library()
-
+ 
+def get_var(v, context):
+    try:
+        return v.resolve(context)
+    except VariableDoesNotExist:
+        return v.var
+        
 class ColourNode(Node):
  
     def __init__(self, status):
