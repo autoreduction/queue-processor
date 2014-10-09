@@ -84,7 +84,8 @@ search#run_search {
     background-color: #f5f5f5;
     font-size: 1.1em;
     padding-top: 5px;
-    padding-bottom: 5px
+    padding-bottom: 5px;
+    border-bottom: 1px solid #eee;
 }
 .instrument .experiment-heading a {
     margin-left: 15px;

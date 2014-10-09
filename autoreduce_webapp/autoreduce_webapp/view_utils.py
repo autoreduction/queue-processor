@@ -1,6 +1,6 @@
 from django.shortcuts import redirect
 from autoreduce_webapp.uows_client import UOWSClient
-from autoreduce_webapp.settings import UOWS_LOGIN_URL, LOGIN_URL
+from autoreduce_webapp.settings import UOWS_LOGIN_URL, LOGIN_URL, INSTALLED_APPS
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from reduction_viewer.models import Notification
@@ -50,6 +50,9 @@ def render_with(template):
                     output['notifications'] = Notification.objects.filter(is_active=True)
                 else:
                     output['notifications'] = Notification.objects.filter(is_active=True, is_staff_only=False)
+
+            if 'reduction_variables_on' not in output:
+                output['reduction_variables_on'] = ('reduction_variables' in INSTALLED_APPS)
             return output
 
         def wrapper(request, *args, **kw):  
