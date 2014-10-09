@@ -11,11 +11,7 @@
         <div class="row">
             <fieldset class="col-md-6 col-md-offset-3">
                 <legend>Status</legend>
-                {% if !processing and ! queued %}
-                    <div class="text-center">
-                        All reduction jobs complete.
-                    </div>
-                {% else %}
+                {% if processing or queued %}
                     {% if processing %}
                         <div>
                             <strong>Currently processing:</strong> 
@@ -32,6 +28,10 @@
                             {% endfor %}
                         </div>
                     {% endif %}
+                {% else %}
+                    <div class="text-center">
+                        All reduction jobs complete.
+                    </div>
                 {% endif %}
             </fieldset>
         </div>  
