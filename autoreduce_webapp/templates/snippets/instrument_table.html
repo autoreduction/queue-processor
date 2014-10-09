@@ -12,19 +12,21 @@
         </div>
     </div>
     {% if by == "experiment" %}
-        <div class="experiment hide">
-            {% if instrument.experiments %}
+        {% if instrument.experiments %}
+            <div class="experiment hide">
                 {% for experiment in instrument.experiments %}
                     {% include "snippets/experiment_table.html" with experiment=experiment only %}
                 {% endfor %}
-            {% else %}
+            </div>
+        {% else %}
+            <div class="experiment hide">
                 <div class="row">
                     <div class="col-md-12 text-center no-results">
                         No experiments found.
                     </div>
                 </div>
-            {% endif %}
-        </div>
+            </div>
+        {% endif %}
     {% elif by == "run" %}
         <div class="run hide">
             {% if instrument.runs %}
