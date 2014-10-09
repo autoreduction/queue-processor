@@ -10,6 +10,7 @@ from reduction_viewer.models import Experiment, ReductionRun, Instrument
 from reduction_viewer.utils import StatusUtils
 from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, require_staff
 from django.http import HttpResponse
+from django.core.exceptions import DoesNotExist
 
 def index(request):
     return_url = UOWS_LOGIN_URL + request.build_absolute_uri()
@@ -97,12 +98,15 @@ def run_summary(request, run_number, run_version=0):
 def instrument_summary(request, instrument):
     processing_status = StatusUtils().get_processing()
     queued_status = StatusUtils().get_queued()
-    instrument_obj = Instrument.objects.get(name=instrument)
-    context_dictionary = {
-        'instrument' : instrument_obj,
-        'processing' : ReductionRun.objects.filter(instrument=instrument_obj, status=processing_status),
-        'queued' : ReductionRun.objects.filter(instrument=instrument_obj, status=queued_status),
-    }
+    try:
+        instrument_obj = Instrument.objects.get(name=instrument)
+        context_dictionary = {
+            'instrument' : instrument_obj,
+            'processing' : ReductionRun.objects.filter(instrument=instrument_obj, status=processing_status),
+            'queued' : ReductionRun.objects.filter(instrument=instrument_obj, status=queued_status),
+        }
+    except DoesNotExist:
+        context_dictionary = {}
     return context_dictionary
 
 @login_and_uows_valid
