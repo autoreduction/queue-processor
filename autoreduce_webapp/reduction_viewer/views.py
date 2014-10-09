@@ -10,7 +10,6 @@ from reduction_viewer.models import Experiment, ReductionRun, Instrument
 from reduction_viewer.utils import StatusUtils
 from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, require_staff
 from django.http import HttpResponse
-from django.core.exceptions import DoesNotExist
 
 def index(request):
     return_url = UOWS_LOGIN_URL + request.build_absolute_uri()
