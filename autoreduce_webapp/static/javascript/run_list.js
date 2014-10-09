@@ -9,17 +9,23 @@
             $('#by-run-number').removeClass('active').addClass('hide');
             $('#by-experiment-tab').addClass('active');
             $('#by-run-number-tab').removeClass('active');
+            $('#by-tabs-mobile').val(by);
         }else if(by === 'by-run-number'){
             $('#by-run-number').removeClass('hide').addClass('active');
             $('#by-experiment').removeClass('active').addClass('hide');
             $('#by-run-number-tab').addClass('active');
             $('#by-experiment-tab').removeClass('active');
+            $('#by-tabs-mobile').val(by);
         }
         window.location.hash = '#' + by;
     };
 
     var tabClickAction = function tabClickAction(){
         var by = $(this).attr('href').replace('#','');
+        showBy(by);
+    };
+    var mobileTabChangeAction = function mobileTabChangeAction(){
+        var by = $(this).val();
         showBy(by);
     };
 
@@ -43,6 +49,7 @@
         showBy(locationhash);
 
         $('#by-run-number-tab a,#by-experiment-tab a').on('click', tabClickAction);
+        $('#by-tabs-mobile').on('change', mobileTabChangeAction);
         $('.instrument-heading').on('click', toggleInstrumentsExperimentsClickAction)
         $('.experiment-heading').on('click', toggleExperimentRunsClickAction)
     };

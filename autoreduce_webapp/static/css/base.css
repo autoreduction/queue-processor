@@ -61,7 +61,10 @@ search#run_search {
     margin-top:4px;
     margin-bottom:4px;
 }
-
+#by-tabs-mobile {
+    width: 100%;
+    margin-bottom: 5px;
+}
 .tab-content {
     border-left: 1px solid #ddd;
     border-right: 1px solid #ddd;
