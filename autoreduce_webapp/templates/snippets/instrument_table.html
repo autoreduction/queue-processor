@@ -13,11 +13,11 @@
     </div>
     {% if by == "experiment" %}
         {% if instrument.experiments %}
-            <div class="experiment hide">
                 {% for experiment in instrument.experiments %}
-                    {% include "snippets/experiment_table.html" with experiment=experiment only %}
+                    <div class="experiment hide">
+                        {% include "snippets/experiment_table.html" with experiment=experiment only %}
+                    </div>
                 {% endfor %}
-            </div>
         {% else %}
             <div class="experiment hide">
                 <div class="row">
