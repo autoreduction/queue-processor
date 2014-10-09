@@ -97,10 +97,11 @@ def run_summary(request, run_number, run_version=0):
 def instrument_summary(request, instrument):
     processing_status = StatusUtils().get_processing()
     queued_status = StatusUtils().get_queued()
+    instrument_obj = Instrument.objects.get(name=instrument)
     context_dictionary = {
-        'instrument' : Instrument.objects.get(name=instrument),
-        'processing' : ReductionRun.objects.filter(instrument=instrument, status=processing_status),
-        'queued' : ReductionRun.objects.filter(instrument=instrument, status=queued_status),
+        'instrument' : instrument_obj,
+        'processing' : ReductionRun.objects.filter(instrument=instrument_obj, status=processing_status),
+        'queued' : ReductionRun.objects.filter(instrument=instrument_obj, status=queued_status),
     }
     return context_dictionary
 
