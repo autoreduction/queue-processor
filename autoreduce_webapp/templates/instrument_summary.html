@@ -9,39 +9,51 @@
             </div>
         </div>
         <div class="row">
-            <fieldset class="col-md-6 col-md-offset-3">
-                <legend>Status</legend>
-                {% if processing or queued %}
-                    {% if processing %}
-                        <div>
-                            <strong>Currently processing:</strong> 
-                            {% for job in processing %}
-                                <a href="{% url 'run_summary' run_number=job.run_number run_version=job.run_version %}">{{ job.run_number }}{% if job.run_name %}-{{ job.run_name }}{% endif %}</a> 
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                    {% if queued %}
-                        <div>
-                            <strong>Currently queued:</strong> 
-                            {% for job in queued %}
-                                <a href="{% url 'run_summary' run_number=job.run_number run_version=job.run_version %}">{{ job.run_number }}{% if job.run_name %}-{{ job.run_name }}{% endif %}</a> 
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                {% else %}
-                    <div class="text-center">
-                        All reduction jobs complete.
+            <div class="col-md-4 col-md-offset-4">
+                <div class="panel panel-default">
+                    <div class="panel-heading">Status</div>
+                    <div class="panel-body">
+                        {% if processing or queued %}
+                            {% if processing %}
+                                <div class="row">
+                                    <div class="col-md-2"><strong>Currently processing:</strong></div>
+                                    <div class="col-md-10">
+                                        <ul class="list-inline">
+                                            {% for job in processing %}
+                                            <li>
+                                                <a href="{% url 'run_summary' run_number=job.run_number run_version=job.run_version %}">{{ job.run_number }}{% if job.run_name %}-{{ job.run_name }}{% endif %}</a> 
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            {% if queued %}
+                                <div class="row">
+                                    <div class="col-md-2"><strong>Currently queued:</strong></div>
+                                    <div class="col-md-10">
+                                        <ul class="list-inline">
+                                            {% for job in queued %}
+                                                <li>
+                                                    <a href="{% url 'run_summary' run_number=job.run_number run_version=job.run_version %}">{{ job.run_number }}{% if job.run_name %}-{{ job.run_name }}{% endif %}</a> 
+                                                </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <div class="text-center">
+                                All reduction jobs complete.
+                            </div>
+                        {% endif %}
                     </div>
-                {% endif %}
-            </fieldset>
+                </div>
+            </div>
         </div>  
     {% else %}
         <div class="well well-small">
             Instrument not found
         </div>
     {% endif %}
-{% endblock %}
-
-{% block scripts %}
-    <script src="{% static "javascript/run_list.js" %}"></script>
 {% endblock %}
