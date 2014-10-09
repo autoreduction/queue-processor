@@ -144,7 +144,7 @@ class ICATCommunication(object):
         instruments_dict = {}
 
         try:
-            number_of_years = Setting.objects.get(name='ICAT_YEARS_TO_SHOW').value
+            number_of_years = int(Setting.objects.get(name='ICAT_YEARS_TO_SHOW').value)
         except:
             number_of_years = 3
         years_back = datetime.datetime.now() - datetime.timedelta(days=(number_of_years*365.24))
