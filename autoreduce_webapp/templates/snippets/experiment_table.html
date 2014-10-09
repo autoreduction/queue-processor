@@ -1,8 +1,8 @@
 <div class="row experiment-heading">
-    <div class="col-md-1">
+    <div class="col-md-1 col-xs-1">
         <a href="#" class="js-toggle-experiment-children"><i class="fa fa-lg fa-chevron-right"></i></a>
     </div>
-    <div class="col-md-3"><a href="{% url 'experiment_summary' experiment.reference_number %}">{{ experiment.reference_number }}</a></div>
+    <div class="col-md-3 col-xs-10"><a href="{% url 'experiment_summary' experiment.reference_number %}">{{ experiment.reference_number }}</a></div>
     <div class="col-md-8">{{ experiment.progress_summary }}</div>
 </div>
 <div class="experiment-runs hide">

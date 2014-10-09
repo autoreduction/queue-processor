@@ -1,13 +1,13 @@
 <div class="instrument col-md-12">
     <div class="row instrument-heading bg-info">
-        <div class="col-md-1">
+        <div class="col-md-1 col-xs-1">
             <a href="#" class="js-toggle-instrument-children"><i class="fa fa-lg fa-chevron-right"></i></a>
         </div>
-        <div class="col-md-3"><a href="{% url 'instrument_summary' instrument.name %}">{{ instrument.name }}</a></div>
+        <div class="col-md-3 col-xs-10"><a href="{% url 'instrument_summary' instrument.name %}">{{ instrument.name }}</a></div>
         <div class="col-md-4">{{ instrument.progress_summary }}</div>
         <div class="col-md-4">
             {% if reduction_variables_on and is_instrument_scientist %}
-                <a href="{% url 'instrument_variables' instrument.name %}" class="pull-right edit-instrument-variables">Edit Reduction Variables</a>
+                <a href="{% url 'instrument_variables' instrument.name %}" class="pull-right edit-instrument-variables">Edit<span class="hidden-xs"> Reduction Variables</span></a>
             {% endif %}
         </div>
     </div>
