@@ -9,15 +9,15 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-md-4 col-md-offset-4">
+            <div class="col-md-6 col-md-offset-3">
                 <div class="panel panel-default">
                     <div class="panel-heading">Status</div>
                     <div class="panel-body">
                         {% if processing or queued %}
                             {% if processing %}
                                 <div class="row">
-                                    <div class="col-md-2"><strong>Currently processing:</strong></div>
-                                    <div class="col-md-10">
+                                    <div class="col-md-4"><strong>Currently processing:</strong></div>
+                                    <div class="col-md-8">
                                         <ul class="list-inline">
                                             {% for job in processing %}
                                             <li>
@@ -30,8 +30,8 @@
                             {% endif %}
                             {% if queued %}
                                 <div class="row">
-                                    <div class="col-md-2"><strong>Currently queued:</strong></div>
-                                    <div class="col-md-10">
+                                    <div class="col-md-4"><strong>Currently queued:</strong></div>
+                                    <div class="col-md-8">
                                         <ul class="list-inline">
                                             {% for job in queued %}
                                                 <li>
