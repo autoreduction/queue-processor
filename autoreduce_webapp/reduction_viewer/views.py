@@ -87,13 +87,14 @@ def run_list(request):
     return context_dictionary
 
 @login_and_uows_valid
-@render_with('base.html')
+@render_with('run_summary.html')
 def run_summary(request, run_number, run_version=0):
     context_dictionary = {}
     return context_dictionary
 
 @login_and_uows_valid
 @render_with('instrument_summary.html')
+@require_staff
 def instrument_summary(request, instrument):
     processing_status = StatusUtils().get_processing()
     queued_status = StatusUtils().get_queued()
@@ -109,7 +110,7 @@ def instrument_summary(request, instrument):
     return context_dictionary
 
 @login_and_uows_valid
-@render_with('base.html')
+@render_with('experiment_summary.html')
 def experiment_summary(request, reference_number):
     context_dictionary = {}
     return context_dictionary
