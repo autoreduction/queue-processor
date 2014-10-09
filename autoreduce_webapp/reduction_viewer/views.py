@@ -104,7 +104,7 @@ def instrument_summary(request, instrument):
             'processing' : ReductionRun.objects.filter(instrument=instrument_obj, status=processing_status),
             'queued' : ReductionRun.objects.filter(instrument=instrument_obj, status=queued_status),
         }
-    except DoesNotExist:
+    except:
         context_dictionary = {}
     return context_dictionary
 
