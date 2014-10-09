@@ -82,7 +82,7 @@ class ICATCommunication(object):
         instruments = Set()
         self._add_list_to_set(self.get_owned_instruments(user_number), instruments)
         self._add_list_to_set(self.client.search("SELECT inst.name FROM Instrument inst JOIN inst.investigationInstruments ii WHERE ii.investigation.id IN (SELECT i.id from Investigation i JOIN i.investigationUsers iu WHERE iu.user.name = 'uows/" + str(user_number) + "')"), instruments)
-        return instruments
+        return sorted(instruments)
 
     '''
         Returns all instruments for which the given user is an instrument scientist
@@ -94,7 +94,7 @@ class ICATCommunication(object):
 
         instruments = Set()
         self._add_list_to_set(self.client.search("SELECT ins.instrument.name from InstrumentScientist ins WHERE ins.user.name = 'uows/" + str(user_number) + "'"), instruments)
-        return instruments
+        return sorted(instruments)
 
     '''
         Checks if a user has any owned instruments and thus an instrument scientist
@@ -128,7 +128,7 @@ class ICATCommunication(object):
 
         experiments = Set()
         self._add_list_to_set(self.client.search("SELECT i.name from Investigation i JOIN i.investigationUsers iu where iu.user.name = 'uows/" + str(user_number) + "'"), experiments)
-        return experiments
+        return sorted(experiments, reverse=True)
 
     '''
         Returns all experiments allowed for a given list of instruments
@@ -151,7 +151,7 @@ class ICATCommunication(object):
         for instrument in instruments:
             experiments = Set()
             self._add_list_to_set(self.client.search("SELECT i.name FROM Investigation i JOIN i.investigationInstruments inst WHERE i.endDate > '"+str(years_back)+"' and inst.instrument.name = '"+instrument+"' INCLUDE i.investigationInstruments.instrument"), experiments)
-            instruments_dict[instrument] = experiments
+            instruments_dict[instrument] = sorted(experiments, reverse=True)
 
         return instruments_dict
 
