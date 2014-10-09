@@ -63,7 +63,7 @@ def run_queue(request):
 def run_list(request):
     context_dictionary = {}
     instruments = []
-    with ICATCommunication(AUTH='uows',SESSION={token:request.session.get('sessionid')}) as icat:
+    with ICATCommunication(AUTH='uows',SESSION={'sessionid':request.session.get('sessionid')}) as icat:
         instrument_names = icat.get_valid_instruments(int(request.user.username))
         experiments = icat.get_valid_experiments_for_instruments(int(request.user.username), instrument_names)
         owned_instruments = icat.get_owned_instruments(request.user.username)
