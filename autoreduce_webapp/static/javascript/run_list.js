@@ -34,7 +34,7 @@
         showBy(locationhash);
 
         $('#by-run-number-tab a,#by-experiment-tab a').on('click', tabClickAction);
-        $('.js-toggle-instrument-children').on('click', toggleInstrumentsExperimentsClickAction)
+        $('.instrument-heading').on('click', toggleInstrumentsExperimentsClickAction)
     };
 
     init();
