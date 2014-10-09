@@ -24,18 +24,18 @@
     };
 
     var toggleInstrumentsExperimentsClickAction = function toggleInstrumentsExperimentsClickAction(event){
-        if($(this).is('a') && $(this).attr('href')==='#'){
+        if(($(this).is('a') && $(this).attr('href')==='#') || $(this).is(':not(a)')){
             event.preventDefault();
+            $(this).find('i.fa').toggleClass('fa-chevron-right fa-chevron-down');
+            $(this).parents('.instrument').find('.experiment,.run').toggleClass('hide');
         }
-        $(this).find('i.fa').toggleClass('fa-chevron-right fa-chevron-down');
-        $(this).parents('.instrument').find('.experiment,.run').toggleClass('hide');
     };
     var toggleExperimentRunsClickAction = function toggleExperimentRunsClickAction(event){
-        if($(this).is('a') && $(this).attr('href')==='#'){
+        if(($(this).is('a') && $(this).attr('href')==='#') || $(this).is(':not(a)')){
             event.preventDefault();
+            $(this).find('i.fa').toggleClass('fa-chevron-right fa-chevron-down');
+            $(this).parents('.experiment').find('.experiment-runs').toggleClass('hide');
         }
-        $(this).find('i.fa').toggleClass('fa-chevron-right fa-chevron-down');
-        $(this).parents('.experiment').find('.experiment-runs').toggleClass('hide');
     };
 
     var init = function init(){

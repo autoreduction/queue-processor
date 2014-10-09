@@ -10,7 +10,7 @@
     var notificationDismissed = function notificationDismissed(){
         var ignoredNotifications = getIgnoredNotification();
         ignoredNotifications.push($(this).data('notification-id'));
-        docCookies.setItem('ignoredNotifications', ignoredNotifications.join(','));
+        docCookies.setItem('ignoredNotifications', ignoredNotifications.join(','), undefined, '/');
     };
 
     var showNotifications = function showNotifications(){
