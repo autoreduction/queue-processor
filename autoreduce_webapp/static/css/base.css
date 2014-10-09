@@ -71,6 +71,8 @@ search#run_search {
 .instrument .instrument-heading {
     font-size: 1.3em;
     border-top: 1px solid #ddd;
+    padding-top: 5px;
+    padding-bottom: 5px
 }
 
 .instrument .no-results {

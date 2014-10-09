@@ -65,7 +65,9 @@ def run_list(request):
     instruments = []
     with ICATCommunication() as icat:
         instrument_names = icat.get_valid_instruments(int(request.user.username))
+        instrument_names.sort()
         experiments = icat.get_valid_experiments_for_instruments(int(request.user.username), instrument_names)
+        experiments.sort(reverse=True)
     for instrument in instrument_names:
         instrument_obj = {
             'name' : instrument,
