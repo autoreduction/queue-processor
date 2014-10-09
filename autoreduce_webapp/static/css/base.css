@@ -79,3 +79,13 @@ search#run_search {
     padding: 10px;
     font-style: italic;
 }
+
+.instrument .experiment-heading {
+    background-color: #f5f5f5;
+    font-size: 1.1em;
+    paddint-top: 5px;
+    padding-bottom: 5px
+}
+.instrument .experiment-heading a {
+    margin-left: 15px;
+}

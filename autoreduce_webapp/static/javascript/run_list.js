@@ -28,6 +28,11 @@
         $(this).find('i.fa').toggleClass('fa-chevron-right fa-chevron-down');
         $(this).parents('.instrument').find('.experiment,.run').toggleClass('hide');
     };
+    var toggleExperimentRunsClickAction = function toggleExperimentRunsClickAction(event){
+        event.preventDefault();
+        $(this).find('i.fa').toggleClass('fa-chevron-right fa-chevron-down');
+        $(this).parents('.experiment').find('.run').toggleClass('hide');
+    };
 
     var init = function init(){
         var locationhash = window.location.hash.replace('#','');
@@ -35,6 +40,7 @@
 
         $('#by-run-number-tab a,#by-experiment-tab a').on('click', tabClickAction);
         $('.instrument-heading').on('click', toggleInstrumentsExperimentsClickAction)
+        $('.experiment-heading').on('click', toggleInstrumentsExperimentsClickAction)
     };
 
     init();
