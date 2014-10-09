@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load static from staticfiles %}
+
+{% block body %}
+    {% if instrument %}
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <h2>{{ instrument.name }}</h2>
+            </div>
+        </div>
+        <div class="row">
+            <fieldset class="col-md-6 col-md-offset-3">
+                <legend>Status</legend>
+                {% if !processing and ! queued %}
+                    <div class="text-center">
+                        All reduction jobs complete.
+                    </div>
+                {% else %}
+                    {% if processing %}
+                        <div>
+                            <strong>Currently processing:</strong> 
+                            {% for job in processing %}
+                                <a href="{% url 'run_summary' run_number=job.run_number run_version=job.run_version %}">{{ job.run_number }}{% if job.run_name %}-{{ job.run_name }}{% endif %}</a> 
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    {% if queued %}
+                        <div>
+                            <strong>Currently queued:</strong> 
+                            {% for job in queued %}
+                                <a href="{% url 'run_summary' run_number=job.run_number run_version=job.run_version %}">{{ job.run_number }}{% if job.run_name %}-{{ job.run_name }}{% endif %}</a> 
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endif %}
+            </fieldset>
+        </div>  
+    {% else %}
+        <div class="well well-small">
+            Instrument not found
+        </div>
+    {% enfif %}
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static "javascript/run_list.js" %}"></script>
+{% endblock %}

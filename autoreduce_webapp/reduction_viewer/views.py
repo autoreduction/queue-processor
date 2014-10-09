@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from autoreduce_webapp.uows_client import UOWSClient
 from autoreduce_webapp.icat_communication import ICATCommunication
 from autoreduce_webapp.settings import UOWS_LOGIN_URL
-from reduction_viewer.models import Experiment, ReductionRun
+from reduction_viewer.models import Experiment, ReductionRun, Instrument
 from reduction_viewer.utils import StatusUtils
 from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, require_staff
 from django.http import HttpResponse
@@ -93,9 +93,15 @@ def run_summary(request, run_number, run_version=0):
     return context_dictionary
 
 @login_and_uows_valid
-@render_with('base.html')
+@render_with('instrument_summary.html')
 def instrument_summary(request, instrument):
-    context_dictionary = {}
+    processing_status = StatusUtils().get_processing()
+    queued_status = StatusUtils().get_queued()
+    context_dictionary = {
+        'instrument' : Instrument.objects.get(name=instrument),
+        'processing' : ReductionRun.objects.filter(instrument=instrument, Status=processing_status),
+        'queued' : ReductionRun.objects.filter(instrument=instrument, Status=queued_status),
+    }
     return context_dictionary
 
 @login_and_uows_valid
