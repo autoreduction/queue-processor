@@ -24,12 +24,16 @@
     };
 
     var toggleInstrumentsExperimentsClickAction = function toggleInstrumentsExperimentsClickAction(event){
-        event.preventDefault();
+        if($(this).is('a') && $(this).attr('href')==='#'){
+            event.preventDefault();
+        }
         $(this).find('i.fa').toggleClass('fa-chevron-right fa-chevron-down');
         $(this).parents('.instrument').find('.experiment,.run').toggleClass('hide');
     };
     var toggleExperimentRunsClickAction = function toggleExperimentRunsClickAction(event){
-        event.preventDefault();
+        if($(this).is('a') && $(this).attr('href')==='#'){
+            event.preventDefault();
+        }
         $(this).find('i.fa').toggleClass('fa-chevron-right fa-chevron-down');
         $(this).parents('.experiment').find('.experiment-runs').toggleClass('hide');
     };
