@@ -799,6 +799,7 @@ class ICATCommunicationTestCase(TestCase):
 
     def setUp(self):
         self.test_user = 18187
+        self.test_user_not_instrument_scientist = 13562
         self.test_instrument_scientist = 5818
         self.test_experiment = 1190070
         self.test_instrument = "GEM"
@@ -953,7 +954,7 @@ class ICATCommunicationTestCase(TestCase):
     '''
     def test_get_owned_instruments_not_as_instrument_scientist(self):
         with ICATCommunication() as icat:
-            owned_instruments = icat.get_owned_instruments(self.test_user)
+            owned_instruments = icat.get_owned_instruments(self.test_user_not_instrument_scientist)
             
             self.assertEqual(owned_instruments, [], "Not expecting some owned instruments returned")
 
