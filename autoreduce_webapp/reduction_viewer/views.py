@@ -70,43 +70,61 @@ def run_list(request):
         experiments = icat.get_valid_experiments_for_instruments(int(request.user.username), instrument_names)
         owned_instruments = icat.get_owned_instruments(int(request.user.username))
     for instrument in instrument_names:
-        queued_runs = 0
-        processing_runs = 0
-        error_runs = 0
+        instrument_queued_runs = 0
+        instrument_processing_runs = 0
+        instrument_error_runs = 0
+
         instrument_obj = {
             'name' : instrument,
             'experiments' : [],
             'is_instrument_scientist' : (instrument in owned_instruments),
             'runs' : []
         }
+        
         instrument_experiments = experiments[instrument]
         reference_numbers = []
         for experiment in instrument_experiments:
+            # Filter out calibration runs
             if experiment.isdigit():
                 reference_numbers.append(experiment)
 
         matching_experiments = Experiment.objects.filter(reference_number__in=reference_numbers)
         for experiment in matching_experiments:
+            experiment_queued_runs = 0
+            experiment_processing_runs = 0
+            experiment_error_runs = 0
+
             runs = ReductionRun.objects.filter(experiment=experiment).order_by('-created')
             for run in runs:
                 if run.status == StatusUtils().get_error():
-                    error_runs += 1
+                    experiment_error_runs += 1
                 if run.status == StatusUtils().get_queued():
-                    queued_runs += 1
+                    experiment_queued_runs += 1
                 if run.status == StatusUtils().get_processing():
-                    processing_runs += 1
+                    experiment_processing_runs += 1
+
+            # Add exepriment stats to instrument
+            instrument_queued_runs += experiment_queued_runs
+            instrument_processing_runs += experiment_processing_runs
+            instrument_error_runs += experiment_error_runs
 
             experiment_obj = {
                 'reference_number' : experiment.reference_number,
-                'runs' : runs
+                'runs' : runs,
+                'progress_summary' : {
+                    'processing' : experiment_processing_runs,
+                    'queued' : experiment_queued_runs,
+                    'error' : experiment_error_runs,
+                }
             }
+            # Add all runs to instrument object as well to be used by the "view by run number" layout
             instrument_obj['runs'].extend(runs)
             instrument_obj['experiments'].append(experiment_obj)
-            
+
         instrument_obj['progress_summary']= {
-            'processing' : processing_runs,
-            'queued' : queued_runs,
-            'error' : error_runs,
+            'processing' : instrument_processing_runs,
+            'queued' : instrument_queued_runs,
+            'error' : instrument_error_runs,
         }
 
         # Sort lists before appending

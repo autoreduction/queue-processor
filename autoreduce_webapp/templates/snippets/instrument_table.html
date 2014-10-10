@@ -3,8 +3,8 @@
         <div class="col-md-1 col-xs-1">
             <a href="#" class="js-toggle-instrument-children"><i class="fa fa-lg fa-chevron-right"></i></a>
         </div>
-        <div class="col-md-3 col-xs-8"><a href="{% url 'instrument_summary' instrument.name %}">{{ instrument.name }}</a></div>
-        <div class="col-md-4 hidden-xs">
+        <div class="col-md-7 col-xs-8">
+            <a href="{% url 'instrument_summary' instrument.name %}">{{ instrument.name }}</a>
             {% if instrument.progress_summary.queued %}
                 <span class="text-info">({{ instrument.progress_summary.queued }}) Queued</span> 
             {% endif %}
