@@ -72,14 +72,27 @@ def run_list(request):
         instrument_obj = {
             'name' : instrument,
             'experiments' : [],
-            'is_instrument_scientist' : (instrument in owned_instruments)
+            'is_instrument_scientist' : (instrument in owned_instruments),
+            'runs' : []
         }
         instrument_experiments = experiments[instrument]
         reference_numbers = []
         for experiment in instrument_experiments:
             if experiment.isdigit():
                 reference_numbers.append(experiment)
-        instrument_obj['experiments'] = Experiment.objects.filter(reference_number__in=reference_numbers)
+        matching_experiments = Experiment.objects.filter(reference_number__in=reference_numbers)
+        for experiment in matching_experiments:
+            runs = ReductionRun.objects.filter(experiment=experiment)
+            experiment_obj = {
+                'reference_number' : experiment.reference_number,
+                'progress_summary' : '',
+                'runs' : sorted(runs, key=lambda k: k['created'], reverse=True)
+            }
+            instrument_obj['runs'].append(runs)
+            instrument_obj['experiments'].append(experiment_obj)
+        # Sort lists before appending
+        instrument_obj['runs'] = sorted(instrument_obj['runs'], key=lambda k: k['created'], reverse=True)
+        instrument_obj['experiments'] = sorted(instrument_obj['experiments'], key=lambda k: k['reference_number'], reverse=True)
         instruments.append(instrument_obj)
     
     context_dictionary['instrument_list'] = instruments
