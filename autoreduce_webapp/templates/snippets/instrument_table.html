@@ -4,7 +4,17 @@
             <a href="#" class="js-toggle-instrument-children"><i class="fa fa-lg fa-chevron-right"></i></a>
         </div>
         <div class="col-md-3 col-xs-8"><a href="{% url 'instrument_summary' instrument.name %}">{{ instrument.name }}</a></div>
-        <div class="col-md-4 hidden-xs">{{ instrument.progress_summary }}</div>
+        <div class="col-md-4 hidden-xs">
+            {% if instrument.progress_summary.queued %}
+                <span class="text-info">({{ instrument.progress_summary.queued }}) Queued</span> 
+            {% endif %}
+            {% if instrument.progress_summary.processing %}
+                <span class="text-warning">({{ instrument.progress_summary.processing }}) Processing</span> 
+            {% endif %}
+            {% if instrument.progress_summary.error %}
+                <span class="text-danger">({{ instrument.progress_summary.error }}) Error</span> 
+            {% endif %}
+        </div>
         <div class="col-md-4 col-xs-2">
             {% if reduction_variables_on and instrument.is_instrument_scientist %}
                 <a href="{% url 'instrument_variables' instrument.name %}" class="pull-right edit-instrument-variables">Edit<span class="hidden-xs"> Reduction Variables</span></a>
