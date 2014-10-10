@@ -69,7 +69,7 @@
     };
 
     var mobileOnly = function mobileOnly(){
-        $('#run_search').data('position', 'top');
+        $('#run_search').data('placement', 'top');
     };
 
     var init = function init(){
