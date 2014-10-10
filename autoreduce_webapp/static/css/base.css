@@ -96,3 +96,8 @@ search#run_search {
 .instrument .experiment-heading a {
     margin-left: 15px;
 }
+
+.run-row {
+    padding-to: 5px;
+    padding-bottom: 5px;
+}

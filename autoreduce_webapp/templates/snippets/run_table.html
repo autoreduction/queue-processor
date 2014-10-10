@@ -1,5 +1,5 @@
-<div class="row">
-    <div class="col-md-4"><a href="{% url 'run_summary' run_number=run.run_number run_version=run.run_version %}">{{ run.run_number }}{% if run.run_name %} - {{ run.run_name }}{% endif %}</a></div>
+<div class="row run-row {% colour_table_row run.status.value %}">
+    <div class="col-md-3 col-md-offset-1"><a href="{% url 'run_summary' run_number=run.run_number run_version=run.run_version %}">{{ run.run_number }}{% if run.run_name %} - {{ run.run_name }}{% endif %}</a></div>
     <div class="col-md-4 run-status {{ run.status }}">{{ run.status }}</div>
-    <div class="col-md-4">{{ run.last_updated }}</div>
+    <div class="col-md-4"><strong>Last updated:</strong> {{ run.last_updated }}</div>
 </div>
