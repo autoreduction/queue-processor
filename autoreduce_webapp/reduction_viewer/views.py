@@ -98,15 +98,15 @@ def run_list(request):
 
             experiment_obj = {
                 'reference_number' : experiment.reference_number,
-                'progress_summary' : {
-                    'processing' : processing_runs,
-                    'queued' : queued_runs,
-                    'error' : error_runs,
-                },
                 'runs' : runs
             }
             instrument_obj['runs'].extend(runs)
             instrument_obj['experiments'].append(experiment_obj)
+            instrument_obj['progress_summary']= {
+                'processing' : processing_runs,
+                'queued' : queued_runs,
+                'error' : error_runs,
+            }
 
         # Sort lists before appending
         instrument_obj['runs'] = sorted(instrument_obj['runs'], key=operator.attrgetter('created'), reverse=True)
