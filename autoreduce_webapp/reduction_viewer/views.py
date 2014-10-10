@@ -81,22 +81,41 @@ def run_list(request):
         for experiment in instrument_experiments:
             if experiment.isdigit():
                 reference_numbers.append(experiment)
+
         matching_experiments = Experiment.objects.filter(reference_number__in=reference_numbers)
         for experiment in matching_experiments:
             runs = ReductionRun.objects.filter(experiment=experiment).order_by('-created')
+            queued_runs = 0
+            processing_runs = 0
+            error_runs = 0
+            for run in runs:
+                if run.status == StatusUtils().get_error():
+                    error_runs += 1
+                if run.status == StatusUtils().get_queued():
+                    queued_runs += 1
+                if run.status == StatusUtils().get_processing():
+                    processing_runs += 1
+
             experiment_obj = {
                 'reference_number' : experiment.reference_number,
-                'progress_summary' : '',
+                'progress_summary' : {
+                    'processing' : processing_runs,
+                    'queued' : queued_runs,
+                    'error' : error_runs,
+                },
                 'runs' : runs
             }
             instrument_obj['runs'].extend(runs)
             instrument_obj['experiments'].append(experiment_obj)
+
         # Sort lists before appending
         instrument_obj['runs'] = sorted(instrument_obj['runs'], key=operator.attrgetter('created'), reverse=True)
         instrument_obj['experiments'] = sorted(instrument_obj['experiments'], key=lambda k: k['reference_number'], reverse=True)
         instruments.append(instrument_obj)
     
+    # TODO: generate notification if there are any error runs
     context_dictionary['instrument_list'] = instruments
+    # TODO: generate object to tell the template what to display by default (such as which tab and instruments to expand)
 
     return context_dictionary
 
