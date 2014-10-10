@@ -66,7 +66,9 @@
             // We're using fastdom to avoid any possible DOM thrashing.
             fastdom.write(updateHidden);
         });
-        $('.experiment-heading:visible .fa-chevron-right, .instrument-heading:visible .fa-chevron-right').toggleClass('fa-chevron-right fa-chevron-down');
+        fastdom.write(function(){
+            $('.experiment-heading:visible .fa-chevron-right, .instrument-heading:visible .fa-chevron-right').toggleClass('fa-chevron-right fa-chevron-down');
+        });
         if($matches.length === 0){
             $('#no-search-results').removeClass('hide').show();
         }
