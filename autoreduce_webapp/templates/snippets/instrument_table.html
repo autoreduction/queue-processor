@@ -1,19 +1,21 @@
 <div class="instrument col-md-12">
     <div class="row instrument-heading bg-info">
         <div class="col-md-1 col-xs-1">
-            <a href="#" class="js-toggle-instrument-children"><i class="fa fa-lg fa-chevron-right"></i></a>
+            <a href="#" class="js-toggle-instrument-children" title="Expand/Collapse"><i class="fa fa-lg fa-chevron-right"></i></a>
         </div>
         <div class="col-md-7 col-xs-8">
             <a href="{% url 'instrument_summary' instrument.name %}">{{ instrument.name }}</a>
-            {% if instrument.progress_summary.queued %}
-                <span class="text-info">({{ instrument.progress_summary.queued }}) Queued</span> 
-            {% endif %}
-            {% if instrument.progress_summary.processing %}
-                <span class="text-warning">({{ instrument.progress_summary.processing }}) Processing</span> 
-            {% endif %}
-            {% if instrument.progress_summary.error %}
-                <span class="text-danger">({{ instrument.progress_summary.error }}) Error</span> 
-            {% endif %}
+            <div class="progress-summary">
+                {% if instrument.progress_summary.queued %}
+                    <span class="text-info">({{ instrument.progress_summary.queued }}) Queued</span> 
+                {% endif %}
+                {% if instrument.progress_summary.processing %}
+                    <span class="text-warning">({{ instrument.progress_summary.processing }}) Processing</span> 
+                {% endif %}
+                {% if instrument.progress_summary.error %}
+                    <span class="text-danger">({{ instrument.progress_summary.error }}) Error</span> 
+                {% endif %}
+            </div>
         </div>
         <div class="col-md-4 col-xs-2">
             {% if reduction_variables_on and instrument.is_instrument_scientist %}

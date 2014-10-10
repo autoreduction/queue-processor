@@ -107,3 +107,13 @@ search#run_search {
     font-weight: bold;
     font-size: 1.1em;
 }
+
+.progress-summary { 
+    display: inline-block;
+}
+
+@media screen and (max-width: 767px) {
+    .progress-summary { 
+        font-size: 0.7em;
+    }
+}
