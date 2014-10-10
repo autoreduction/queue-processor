@@ -5,10 +5,10 @@
     {% if instrument_list %}
         <div class="row">
             <div class="col-md-12">
-                <form role="form" action="#" method="POST">
+                <form role="form" action="#" method="POST" autocomplete="off">
                     <div class="form-group">
                         <label for="run_search" class="screenreader-only">Search</label>
-                        <input type="search" placeholder="Search" name="run_search" id="run_search" class="form-control">
+                        <input type="search" placeholder="Search" name="run_search" id="run_search" class="form-control" autocomplete="off" data-toggle="popover" data-trigger="focus" data-content="Try entering an RB number or run number." data-placement="left">
                     </div>
                 </form>
             </div>
@@ -43,7 +43,7 @@
         </div>
         <div class="row hide" id="no-search-results">
             <div class="col-md-12 text-center">
-                <h3>No matching results. <i class="fa fa-frown-o"></i></h3>
+                <h3>No matching results.</h3>
             </div>
         </div>
     {% else %}

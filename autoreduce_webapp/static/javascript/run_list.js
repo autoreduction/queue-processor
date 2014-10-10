@@ -68,9 +68,16 @@
         }
     };
 
+    var mobileOnly = function mobileOnly(){
+        $('#run_search').data('position', 'top');
+    };
+
     var init = function init(){
         var locationhash = window.location.hash.replace('#','');
         showBy(locationhash);
+        if(Math.max(document.documentElement.clientWidth, window.innerWidth || 0) < 767){
+            mobileOnly();
+        }
 
         $('#run_search').on('keyup', run_search);
         $('#by-run-number-tab a,#by-experiment-tab a').on('click', tabClickAction);
