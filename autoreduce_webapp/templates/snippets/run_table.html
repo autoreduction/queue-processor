@@ -1,3 +1,5 @@
+{% load colour_table_rows %}
+
 <div class="row run-row {% colour_table_row run.status.value %}">
     <div class="col-md-3 col-md-offset-1"><a href="{% url 'run_summary' run_number=run.run_number run_version=run.run_version %}">{{ run.run_number }}{% if run.run_name %} - {{ run.run_name }}{% endif %}</a></div>
     <div class="col-md-4 run-status {{ run.status }}">{{ run.status }}</div>
