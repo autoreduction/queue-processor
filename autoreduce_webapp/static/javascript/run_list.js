@@ -57,7 +57,10 @@
                     $this.parents('.instrument').removeClass('hide').show().find('.instrument-heading').removeClass('hide').show();
                     $this.parents('.experiment,.run').removeClass('hide').show();
                     $this.parents('.experiment').find('.experiment-heading,.experiment-runs').removeClass('hide').show();
-                    $this.parents('.run-row').removeClass('hide').removeClass('hide').show();
+                    $this.parents('.run-row').removeClass('hide').show();
+                    if($this.closes('.experiment-runs, .experiment').is('.experiment')){
+                        $this.parents('.experiment').find('run-row').removeClass('hide').show();
+                    }
                 };
             }($(this));
             // We're using fastdom to avoid any possible DOM thrashing.
