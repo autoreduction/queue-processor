@@ -79,7 +79,7 @@
             mobileOnly();
         }
 
-        $('#run_search').on('keyup', run_search);
+        $('#run_search').on('keyup', run_search).popover();
         $('#by-run-number-tab a,#by-experiment-tab a').on('click', tabClickAction);
         $('#by-tabs-mobile').on('change', mobileTabChangeAction);
         $('.instrument-heading').on('click', toggleInstrumentsExperimentsClickAction)
