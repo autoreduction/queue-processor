@@ -44,10 +44,24 @@
         }
     };
 
+    var run_search = function run_search(){
+        $('.instrument, .instrument .instrument-heading, .instrument .experiment-heading, .instrument .run-row, .no-results').hide();
+        var $matches = $('div>a:contains('+$(this).val()+')');
+        $matches.each(function(){
+            fastdom.write(function() {
+                $(this).parents('.instrument').removeClass('hide').show().find('.instrument-heading').removeClass('hide').show();
+                $(this).parents('.experiment,.run').removeClass('hide').show();
+                $(this).parents('.experiment').find('.experiment-heading,.experiment-runs').removeClass('hide').show();
+                $(this).parents('.run-row').removeClass('hide').removeClass('hide').show();
+            });
+        });
+    };
+
     var init = function init(){
         var locationhash = window.location.hash.replace('#','');
         showBy(locationhash);
 
+        $('#run_search').on('keyup', run_search);
         $('#by-run-number-tab a,#by-experiment-tab a').on('click', tabClickAction);
         $('#by-tabs-mobile').on('change', mobileTabChangeAction);
         $('.instrument-heading').on('click', toggleInstrumentsExperimentsClickAction)
