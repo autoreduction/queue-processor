@@ -10,6 +10,7 @@ from reduction_viewer.models import Experiment, ReductionRun, Instrument
 from reduction_viewer.utils import StatusUtils
 from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, require_staff
 from django.http import HttpResponse
+import operator 
 
 def index(request):
     return_url = UOWS_LOGIN_URL + request.build_absolute_uri()
@@ -82,16 +83,16 @@ def run_list(request):
                 reference_numbers.append(experiment)
         matching_experiments = Experiment.objects.filter(reference_number__in=reference_numbers)
         for experiment in matching_experiments:
-            runs = ReductionRun.objects.filter(experiment=experiment)
+            runs = ReductionRun.objects.filter(experiment=experiment).order_by('-created')
             experiment_obj = {
                 'reference_number' : experiment.reference_number,
                 'progress_summary' : '',
-                'runs' : sorted(runs, key=lambda k: k['created'], reverse=True)
+                'runs' : runs
             }
-            instrument_obj['runs'].append(runs)
+            instrument_obj['runs'].extend(runs)
             instrument_obj['experiments'].append(experiment_obj)
         # Sort lists before appending
-        instrument_obj['runs'] = sorted(instrument_obj['runs'], key=lambda k: k['created'], reverse=True)
+        instrument_obj['runs'] = sorted(instrument_obj['runs'], key=operator.attrgetter('created'), reverse=True)
         instrument_obj['experiments'] = sorted(instrument_obj['experiments'], key=lambda k: k['reference_number'], reverse=True)
         instruments.append(instrument_obj)
     
