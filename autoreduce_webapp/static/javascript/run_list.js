@@ -44,8 +44,12 @@
         }
     };
 
-    var run_search = function run_search(){
-        $('.instrument, .instrument .instrument-heading, .instrument .experiment-heading, .instrument .run-row, .no-results').hide();
+    var run_search = function run_search(event){
+        if((event.keyCode || event.which || event.charCode) === 13){
+            event.preventDefault();
+            return;
+        }
+        $('#no-search-results, .instrument, .instrument .instrument-heading, .instrument .experiment-heading, .instrument .run-row, .no-results').hide();
         var $matches = $('div>a:contains('+$(this).val()+')');
         $matches.each(function(){
             var updateHidden = function($this){
@@ -59,6 +63,9 @@
             // We're using fastdom to avoid any possible DOM thrashing.
             fastdom.write(updateHidden);
         });
+        if($matches.length === 0){
+            $('#no-search-results').removeClass('hide').show();
+        }
     };
 
     var init = function init(){
