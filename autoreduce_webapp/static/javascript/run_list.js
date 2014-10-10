@@ -58,14 +58,15 @@
                     $this.parents('.experiment,.run').removeClass('hide').show();
                     $this.parents('.experiment').find('.experiment-heading,.experiment-runs').removeClass('hide').show();
                     $this.parents('.run-row').removeClass('hide').show();
-                    if($this.closes('.experiment-runs, .experiment').is('.experiment')){
-                        $this.parents('.experiment').find('run-row').removeClass('hide').show();
+                    if($this.closest('.experiment-runs, .experiment').is('.experiment')){
+                        $this.parents('.experiment').find('.run-row').removeClass('hide').show();
                     }
                 };
             }($(this));
             // We're using fastdom to avoid any possible DOM thrashing.
             fastdom.write(updateHidden);
         });
+        $('.experiment-heading:visible .fa-chevron-right, .instrument-heading:visible .fa-chevron-right').toggleClass('fa-chevron-right fa-chevron-down');
         if($matches.length === 0){
             $('#no-search-results').removeClass('hide').show();
         }
