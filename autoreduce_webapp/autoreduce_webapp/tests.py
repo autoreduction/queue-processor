@@ -900,7 +900,7 @@ class ICATCommunicationTestCase(TestCase):
         with ICATCommunication() as icat:
             instruments = icat.get_valid_instruments(1)
             
-            self.assertEqual(instruments, Set(), "Not expecting some instruments returned")
+            self.assertEqual(instruments, [], "Not expecting some instruments returned")
                     
     '''
         Check that an error is raised when passing in invalid values
@@ -955,7 +955,7 @@ class ICATCommunicationTestCase(TestCase):
         with ICATCommunication() as icat:
             owned_instruments = icat.get_owned_instruments(self.test_user)
             
-            self.assertEqual(owned_instruments, Set(), "Not expecting some owned instruments returned")
+            self.assertEqual(owned_instruments, [], "Not expecting some owned instruments returned")
 
     '''
         Check that and empty set is returned
@@ -964,7 +964,7 @@ class ICATCommunicationTestCase(TestCase):
         with ICATCommunication() as icat:
             owned_instruments = icat.get_owned_instruments(1)
             
-            self.assertEqual(owned_instruments, Set(), "Not expecting some owned instruments returned")
+            self.assertEqual(owned_instruments, [], "Not expecting some owned instruments returned")
 
     '''
         Check that an error is raised when passing in invalid values
@@ -1086,7 +1086,7 @@ class ICATCommunicationTestCase(TestCase):
         with ICATCommunication() as icat:
             experiments = icat.get_associated_experiments(1)
             
-            self.assertEqual(experiments, Set(), "Not expecting some experiments to be returned")
+            self.assertEqual(experiments, [], "Not expecting some experiments to be returned")
                 
     '''
         Check that an error is raised when passing in invalid values
