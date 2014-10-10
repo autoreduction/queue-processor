@@ -49,7 +49,7 @@
             event.preventDefault();
             return;
         }
-        $('#no-search-results, .instrument, .instrument .instrument-heading, .instrument .experiment-heading, .instrument .run-row').hide();
+        $('#no-search-results, .instrument, .instrument .instrument-heading, .instrument .experiment-heading, .instrument .run-row, .experiment-runs').hide();
         var $matches = $('div>a:contains('+$(this).val()+')');
         $matches.each(function(){
             var updateHidden = function($this){
