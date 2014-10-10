@@ -70,6 +70,9 @@ def run_list(request):
         experiments = icat.get_valid_experiments_for_instruments(int(request.user.username), instrument_names)
         owned_instruments = icat.get_owned_instruments(int(request.user.username))
     for instrument in instrument_names:
+        queued_runs = 0
+        processing_runs = 0
+        error_runs = 0
         instrument_obj = {
             'name' : instrument,
             'experiments' : [],
@@ -85,9 +88,6 @@ def run_list(request):
         matching_experiments = Experiment.objects.filter(reference_number__in=reference_numbers)
         for experiment in matching_experiments:
             runs = ReductionRun.objects.filter(experiment=experiment).order_by('-created')
-            queued_runs = 0
-            processing_runs = 0
-            error_runs = 0
             for run in runs:
                 if run.status == StatusUtils().get_error():
                     error_runs += 1
@@ -102,11 +102,12 @@ def run_list(request):
             }
             instrument_obj['runs'].extend(runs)
             instrument_obj['experiments'].append(experiment_obj)
-            instrument_obj['progress_summary']= {
-                'processing' : processing_runs,
-                'queued' : queued_runs,
-                'error' : error_runs,
-            }
+            
+        instrument_obj['progress_summary']= {
+            'processing' : processing_runs,
+            'queued' : queued_runs,
+            'error' : error_runs,
+        }
 
         # Sort lists before appending
         instrument_obj['runs'] = sorted(instrument_obj['runs'], key=operator.attrgetter('created'), reverse=True)
