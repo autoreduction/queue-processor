@@ -67,7 +67,20 @@
             fastdom.write(updateHidden);
         });
         fastdom.write(function(){
-            $('.experiment-heading:visible .fa-chevron-right, .instrument-heading:visible .fa-chevron-right').toggleClass('fa-chevron-right fa-chevron-down');
+            $('.experiment-heading:visible').each(function(){
+                if($(this).parent().find('.experiment-runs:visible').length > 0){
+                    $(this).find('.fa.fa-lg').addClass('fa-caret-down').removeClass('fa-caret-right')
+                }else{
+                    $(this).find('.fa.fa-lg').addClass('fa-caret-right').removeClass('fa-caret-down')
+                }
+            });
+            $('.instrument-heading:visible').each(function(){
+                if($(this).parent().find('.experiment:visible').length > 0){
+                    $(this).find('.fa.fa-lg').addClass('fa-caret-down').removeClass('fa-caret-right')
+                }else{
+                    $(this).find('.fa.fa-lg').addClass('fa-caret-right').removeClass('fa-caret-down')
+                }
+            });
         });
         if($matches.length === 0){
             $('#no-search-results').removeClass('hide').show();
