@@ -49,7 +49,7 @@
             event.preventDefault();
             return;
         }
-        $('#no-search-results, .instrument, .instrument .instrument-heading, .instrument .experiment-heading, .instrument .run-row, .no-results').hide();
+        $('#no-search-results, .instrument, .instrument .instrument-heading, .instrument .experiment-heading, .instrument .run-row').hide();
         var $matches = $('div>a:contains('+$(this).val()+')');
         $matches.each(function(){
             var updateHidden = function($this){
@@ -69,16 +69,16 @@
         fastdom.write(function(){
             $('.experiment-heading:visible').each(function(){
                 if($(this).parent().find('.experiment-runs:visible').length > 0){
-                    $(this).find('.fa.fa-lg').addClass('fa-caret-down').removeClass('fa-caret-right')
+                    $(this).find('.fa.fa-lg').addClass('fa-chevron-down').removeClass('fa-chevron-right')
                 }else{
-                    $(this).find('.fa.fa-lg').addClass('fa-caret-right').removeClass('fa-caret-down')
+                    $(this).find('.fa.fa-lg').addClass('fa-chevron-right').removeClass('fa-chevron-down')
                 }
             });
             $('.instrument-heading:visible').each(function(){
                 if($(this).parent().find('.experiment:visible').length > 0){
-                    $(this).find('.fa.fa-lg').addClass('fa-caret-down').removeClass('fa-caret-right')
+                    $(this).find('.fa.fa-lg').addClass('fa-chevron-down').removeClass('fa-chevron-right')
                 }else{
-                    $(this).find('.fa.fa-lg').addClass('fa-caret-right').removeClass('fa-caret-down')
+                    $(this).find('.fa.fa-lg').addClass('fa-chevron-right').removeClass('fa-chevron-down')
                 }
             });
         });
