@@ -48,12 +48,13 @@
         $('.instrument, .instrument .instrument-heading, .instrument .experiment-heading, .instrument .run-row, .no-results').hide();
         var $matches = $('div>a:contains('+$(this).val()+')');
         $matches.each(function(){
-            fastdom.write(function() {
+            var updateHidden = function(){
                 $(this).parents('.instrument').removeClass('hide').show().find('.instrument-heading').removeClass('hide').show();
                 $(this).parents('.experiment,.run').removeClass('hide').show();
                 $(this).parents('.experiment').find('.experiment-heading,.experiment-runs').removeClass('hide').show();
                 $(this).parents('.run-row').removeClass('hide').removeClass('hide').show();
-            });
+            };
+            fastdom.write(updateHidden);
         });
     };
 
