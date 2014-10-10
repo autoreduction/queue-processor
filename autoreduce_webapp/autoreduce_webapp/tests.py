@@ -16,7 +16,7 @@ from icat_communication import ICATCommunication
 from icat.exception import ICATSessionError
 from urllib2 import URLError
 from uows_client import UOWSClient
-from suds.client import Client
+from suds.client import Client as suds_client
 
 class QueueProcessorTestCase(TestCase):
     '''
@@ -1178,14 +1178,14 @@ class UOWSClientTestCase(TestCase):
         
     def setUp(self):
         url = 'https://fitbawebdev.isis.cclrc.ac.uk:8181/UserOfficeWebService/UserOfficeWebService?wsdl'
-        client = Client(url)
+        client = suds_client(url)
         self._session_id = client.service.login(self._username, self._password)
         url = 'https://fitbawebdev.isis.cclrc.ac.uk:8181/UserOfficeWebService/UserOfficeWebService?wsdl'
         self.uows = UOWSClient(URL=url)
 
     def tearDown(self):
         url = 'https://fitbawebdev.isis.cclrc.ac.uk:8181/UserOfficeWebService/UserOfficeWebService?wsdl'
-        client = Client(url)
+        client = suds_client(url)
         try:
             client.service.logout(self._session_id)
         except:
