@@ -1,4 +1,5 @@
 from django.template import Library, Node, Variable, VariableDoesNotExist, TemplateSyntaxError
+from django.template.defaultfilters import pluralize
 
 register = Library()
  
@@ -26,19 +27,19 @@ class NaturalTimeDifferenceNode(Node):
         if days > 0:
             if len(human_delta) > 0:
                 human_delta += ', '
-            human_delta += '%i days' % days
+            human_delta += '%i day{}' % (days, pluralize(days))
         if hours > 0:
             if len(human_delta) > 0:
                 human_delta += ', '
-            human_delta += '%i hours' % hours
+            human_delta += '%i hour{}' % (hours, pluralize(hours))
         if minutes > 0:
             if len(human_delta) > 0:
                 human_delta += ', '
-            human_delta += '%i minutes' % minutes
+            human_delta += '%i minute{}' % (minutes, pluralize(minutes))
         if seconds > 0:
             if len(human_delta) > 0:
                 human_delta += ', '
-            human_delta += '%i seconds' % seconds
+            human_delta += '%i second{}' % (seconds, pluralize(seconds))
         return human_delta
 
 
