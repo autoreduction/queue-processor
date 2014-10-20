@@ -24,7 +24,7 @@
     };
 
     var toggleIconOnCollapse = function toggleIconOnCollapse(){
-        $('a[data-toggle="collapse"]').on('hide.bs.collapse show.bs.collapse', function () {
+        $('a[data-toggle="collapse"]').on('click.bs.collapse.data-api', function () {
             $(this).find('i').toggleClass('fa-chevron-down fa-chevron-right');
         });
     };
