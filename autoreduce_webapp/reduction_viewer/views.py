@@ -141,7 +141,13 @@ def run_list(request):
 @login_and_uows_valid
 @render_with('run_summary.html')
 def run_summary(request, run_number, run_version=0):
-    context_dictionary = {}
+    try:
+        run = ReductionRun.objects.get(run_number=run_number, run_version=run_version)
+        context_dictionary = {
+            'run' : run,
+        }
+    except:
+        context_dictionary = {}
     return context_dictionary
 
 @login_and_uows_valid

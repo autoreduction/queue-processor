@@ -4,6 +4,7 @@
  3. Header
  4. Footer
  5. Run List
+ 6. Overrides
 ********************************/
 
 /****************
@@ -110,10 +111,19 @@ search#run_search {
 
 .progress-summary { 
     display: inline-block;
+    font-size: small;
 }
 
 @media screen and (max-width: 767px) {
     .progress-summary { 
         font-size: 0.7em;
     }
+}
+
+
+/****************
+ 6. Overrides
+****************/
+.panel-small .panel-body {
+    padding: 3px 15px;
 }
