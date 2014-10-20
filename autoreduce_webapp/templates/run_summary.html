@@ -52,7 +52,7 @@
                                 <div>
                                     <strong>Data:</strong>
                                     {% if run.data_location %}
-                                        {% for location in run.data_location.all() %}
+                                        {% for location in run.data_location.all %}
                                             {{ location }}<br/>
                                         {% endfor %}
                                     {% endif %}
@@ -62,7 +62,7 @@
                                 <div>
                                     <strong>Reduced:</strong>
                                     {% if run.reduction_location %}
-                                        {% for location in run.reduction_location.all() %}
+                                        {% for location in run.reduction_location.all %}
                                             {{ location }}<br/>
                                         {% endfor %}
                                     {% endif %}
