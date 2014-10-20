@@ -11,7 +11,7 @@
         <div class="row">
             <div class="col-md-12 text-center">
                 <h2>Run #{{ run.run_number }}{% if run.run_name %}-{{ run.run_name }}{% endif %}</h2>
-                {% if history.count > 0 %}
+                {% if history.count > 1 %}
                     (This run has been re-reduced, <a href="#" class="js-reduction-run-history">see history</a>)
                 {% endif %}
             </div>
