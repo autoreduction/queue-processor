@@ -143,8 +143,10 @@ def run_list(request):
 def run_summary(request, run_number, run_version=0):
     try:
         run = ReductionRun.objects.get(run_number=run_number, run_version=run_version)
+        history = ReductionRun.objects.filter(run_number=run_number).order_by('-run_version')
         context_dictionary = {
             'run' : run,
+            'history' : history,
         }
     except:
         context_dictionary = {}

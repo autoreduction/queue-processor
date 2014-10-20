@@ -104,9 +104,57 @@
         {% if reduction_variables_on %}  
             {% view "reduction_variables.views.run_summary" run.run_number run.run_version %}
         {% endif %}
+
+        <div class="run-history modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                        <h4 class="modal-title">Run History</h4>
+                    </div>
+                    <div class="modal-body">
+                        <table class="table table-striped table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Run Number</th>
+                                    <th>Last Updated</th>
+                                    <th>Submitted By</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for job in history %}
+                                    <tr>
+                                        <td>
+                                            {% if job.run_version != run.run_version %}
+                                            <a href="{% url 'run_summary' run_number=job.run_number run_version=job.run_version %}">{{ job.run_number }}{% if job.run_name %}-{{ job.run_name }}{% endif %}</a>
+                                            {% else %}
+                                                {{ job.run_number }}{% if job.run_name %}-{{ job.run_name }}{% endif %}
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ job.status.value }}</td>
+                                        <td title="{{ job.last_updated|date:'SHORT_DATETIME_FORMAT' }}">{{ job.last_updated|naturaltime }}</td>
+                                        <td>
+                                            {% if job.started_by %}
+                                                {% get_user_name job.started_by %}
+                                            {% else %}
+                                                Autoreduction Service
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     {% else %}
         <div class="text-center col-md-6 col-md-offset-3 well well-small">
             Reduction run not found.
         </div>
     {% endif %}
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static "javascript/run_summary.js" %}"></script>
 {% endblock %}
