@@ -14,23 +14,21 @@ def run_confirmation(request, run_number, run_version=0):
     context_dictionary = {}
     return render_to_response('base.html', context_dictionary, RequestContext(request))
 
-class InstrumentSummary(View):
-    def get(request, instrument):
-        context_dictionary = {}
+def instrument_sumary(request, instrument):
+    context_dictionary = {}
 
-        try:
-            #TODO: comment out when ICAT and uows are pointing at same session
-            #with ICATCommunication(AUTH='uows', SESSION={'sessionid':request.session['sessionid']}) as icat:
-            with ICATCommunication() as icat:
-                owned_instruments = icat.get_owned_instruments(int(request.user.username))
-                if not request.user.is_superuser and instrument not in owned_instruments:
-                    return HttpResponseForbidden('Access Forbidden')
-        except Exception as icat_e:
-            logging.error(icat_e.message)
-            return HttpResponseForbidden('Could not verify access permission')
+    try:
+        #TODO: comment out when ICAT and uows are pointing at same session
+        #with ICATCommunication(AUTH='uows', SESSION={'sessionid':request.session['sessionid']}) as icat:
+        with ICATCommunication() as icat:
+            owned_instruments = icat.get_owned_instruments(int(request.user.username))
+            if not request.user.is_superuser and instrument not in owned_instruments:
+                return HttpResponseForbidden('Access Forbidden')
+    except Exception as icat_e:
+        logging.error(icat_e.message)
+        return HttpResponseForbidden('Could not verify access permission')
 
-        output = populate_template_dict(request, context_dictionary)    
-        return render_to_response(template, output, RequestContext(request))
+    return render_to_response('instrument_summary_variables.html', context_dictionary, RequestContext(request))
 
 def instrument_variables(request, instrument):
     context_dictionary = {}

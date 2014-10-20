@@ -45,6 +45,9 @@ def render_with(template):
     """
     def renderer(fn):
         def populate_template_dict(request, output):
+            if 'request' not in output:
+                output['request'] = request
+                
             if 'notifications' not in output:
                 if request.user.is_authenticated() and request.user.is_staff:
                     output['notifications'] = Notification.objects.filter(is_active=True)
