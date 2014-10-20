@@ -151,7 +151,7 @@ def run_summary(request, run_number, run_version=0):
             'history' : history,
         }
     except Exception as e:
-        logging.error(e.strerror)
+        logging.error(e.message)
         context_dictionary = {}
     return context_dictionary
 
@@ -169,7 +169,7 @@ def instrument_summary(request, instrument):
             'queued' : ReductionRun.objects.filter(instrument=instrument_obj, status=queued_status),
         }
     except Exception as e:
-        logging.error(e.strerror)
+        logging.error(e.message)
         context_dictionary = {}
     return context_dictionary
 
@@ -210,6 +210,6 @@ def experiment_summary(request, reference_number):
             'reduced_data' : reduced_data,
         }
     except Exception as e:
-        logging.error(e.strerror)
+        logging.error(e.message)
         context_dictionary = {}
     return context_dictionary
