@@ -63,7 +63,7 @@
                             <div class="col-md-6">
                                 <div>
                                     <strong>Data:</strong>
-                                    {% if run.data_location %}
+                                    {% if run.data_location.all %}
                                         {% for location in run.data_location.all %}
                                             {{ location }}<br/>
                                         {% endfor %}
@@ -75,7 +75,7 @@
                             <div class="col-md-6">
                                 <div>
                                     <strong>Reduced:</strong>
-                                    {% if run.reduction_location %}
+                                    {% if run.reduction_location.all %}
                                         {% for location in run.reduction_location.all %}
                                             {{ location }}<br/>
                                         {% endfor %}
