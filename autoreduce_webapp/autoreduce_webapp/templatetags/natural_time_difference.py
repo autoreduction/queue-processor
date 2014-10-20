@@ -19,7 +19,7 @@ class NaturalTimeDifferenceNode(Node):
         end = get_var(self.end, context)
         delta = end - start
         days = delta.days
-        hours, remainder = divmod(remainder, 3600)
+        hours, remainder = divmod(delta.seconds, 3600)
         minutes, remainder = divmod(remainder, 60)
         seconds = remainder
         human_delta = ''
