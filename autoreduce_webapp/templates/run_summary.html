@@ -135,7 +135,7 @@
                                                 {{ job.run_number }}{% if job.run_name %}-{{ job.run_name }}{%else%}-{{ job.run_version }}{% endif %}
                                             {% endif %}
                                         </td>
-                                        <td class="text-{% colour_table_row job.status.value %}">{{ job.status.value }}</td>
+                                        <td class="text-{% colour_table_row job.status.value %}"><strong>{{ job.status.value }}</strong></td>
                                         <td title="{{ job.last_updated|date:'SHORT_DATETIME_FORMAT' }}">{{ job.last_updated|naturaltime }}</td>
                                         <td>
                                             {% if job.started_by %}

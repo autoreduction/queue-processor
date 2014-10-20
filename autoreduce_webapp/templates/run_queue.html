@@ -27,7 +27,7 @@
                             <a href="{% url 'run_summary' run_number=job.run_number run_version=job.run_version %}">{{ job.run_number }}{% if job.run_name %}-{{ job.run_name }}{% endif %}</a>
                         </td>
                         <td>{{ job.instrument.name }}</td>
-                        <td>{{ job.status.value }}</td>
+                        <td><strong>{{ job.status.value }}</strong></td>
                         <td title="{{ job.created|date:'SHORT_DATETIME_FORMAT' }}">{{ job.created|naturaltime }}</td>
                         <td>
                             {% if job.started_by %}
