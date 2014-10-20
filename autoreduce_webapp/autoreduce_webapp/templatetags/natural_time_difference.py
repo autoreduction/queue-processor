@@ -38,9 +38,10 @@ class NaturalTimeDifferenceNode(Node):
         return human_delta
 
 
-@register.tag
 def natural_time_difference(parser, token):
     args = token.split_contents()[1:]
     if len(args) != 2:
         raise TemplateSyntaxError, '%r tag requires two datetimes.' % token.contents.split()[0]
     return NaturalTimeDifferenceNode(*args)
+
+register.tag('natural_time_difference', natural_time_difference)
