@@ -15,26 +15,30 @@ class NaturalTimeDifferenceNode(Node):
         self.end = Variable(end)
  
     def render(self, context):
-        start = unicode(get_var(self.start, context))
-        end = unicode(get_var(self.end, context))
+        start = get_var(self.start, context)
+        end = get_var(self.end, context)
         delta = end - start
+        days = delta.days
+        hours, remainder = divmod(delta.seconds, 3600)
+        minutes, remainder = divmod(delta.seconds, 60)
+        seconds = delta.seconds
         human_delta = ''
-        if delta.days > 0:
+        if days > 0:
             if len(human_delta) > 0:
                 human_delta += ', '
-            human_delta += '%i days' % delta.days
-        if delta.hours > 0:
+            human_delta += '%i days' % days
+        if hours > 0:
             if len(human_delta) > 0:
                 human_delta += ', '
-            human_delta += '%i hours' % delta.hours
-        if delta.minutes > 0:
+            human_delta += '%i hours' % hours
+        if minutes > 0:
             if len(human_delta) > 0:
                 human_delta += ', '
-            human_delta += '%i minutes' % delta.minutes
-        if delta.seconds > 0:
+            human_delta += '%i minutes' % minutes
+        if seconds > 0:
             if len(human_delta) > 0:
                 human_delta += ', '
-            human_delta += '%i seconds' % delta.seconds
+            human_delta += '%i seconds' % seconds
         return human_delta
 
 
