@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.template import RequestContext
 from django.shortcuts import render_to_response
+from django.views.generic.base import View
 from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, require_staff
 from reduction_variables.models import InstrumentVariable, RunVariable
 from django.http import HttpResponseForbidden
