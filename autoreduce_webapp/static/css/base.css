@@ -4,7 +4,8 @@
  3. Header
  4. Footer
  5. Run List
- 6. Overrides
+ 6. Run Summary
+ 7. Overrides
 ********************************/
 
 /****************
@@ -120,9 +121,21 @@ search#run_search {
     }
 }
 
+/****************
+ 6. Run Summary
+****************/
+#graphs {
+    column-count: 2;
+    -webkit-column-count: 2;
+    -moz-column-count: 2;
+    -o-column-count: 2;
+}
+#graphs img{
+    max-width: 100%;
+}
 
 /****************
- 6. Overrides
+ 7. Overrides
 ****************/
 .panel-small .panel-body {
     padding: 3px 15px;

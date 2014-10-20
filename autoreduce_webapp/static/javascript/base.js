@@ -23,10 +23,17 @@
         });
     };
 
+    var toggleIconOnCollapse = function toggleIconOnCollapse(){
+        $('a[data-toggle="collapse"]').on('hide.bs.collapse show.bs.collapse', function () {
+            $(this).find('i').toggleClass('fa-chevron-down fa-chevron-right');
+        });
+    };
+
     var init = function init(){
         $('.alert').on('closed.bs.alert', notificationDismissed);
 
         showNotifications();
+        toggleIconOnCollapse();
     };
 
     init();
