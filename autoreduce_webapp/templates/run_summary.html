@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 {% load view %}
+{% load colour_table_rows %}
+{% load natural_time_difference %}
 
 {% block body %}
     {% if run %}
@@ -9,6 +11,66 @@
                 {% if job.run_version > 0 %}
                     (This run has been re-reduced, <a href="#" class="js-reduction-run-history">see history</a>)
                 {% endif %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 col-md-offset-3">
+                <div class="panel panel-primary panel-small panel-2-column">
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div>
+                                    <strong>Status:</strong> <div class="text-{% colour_table_row run.status.value %}">{{ run.status }}</div>
+                                </div>
+                                <div>
+                                    <strong>Instrument:</strong> {{ run.instrument }}
+                                </div>
+                                <div>
+                                    <strong>RB Number:</strong> {{ run.experiment }}
+                                </div>
+                                <div>
+                                    <strong>Last Updated:</strong> {{ run.last_updated }}
+                                </div>
+                            </div>
+                            <div class="col-md-6 text-right">
+                                <div>
+                                    <strong>Start:</strong> {% if run.started %}{{ run.started }}{% endif %}
+                                </div>
+                                <div>
+                                    <strong>Finish:</strong> {% if run.finished %}{{ run.finished }}{% endif %}
+                                </div>
+                                <div>
+                                    <strong>Duration:</strong> 
+                                    {% if run.started and run.finished %}
+                                        {% natural_time_difference run.started run.finished %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div>
+                                    <strong>Data:</strong>
+                                    {% if run.data_location %}
+                                        {% for location in run.data_location %}
+                                            {{ location }}<br/>
+                                        {% endfor %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6 text-right">
+                                <div>
+                                    <strong>Reduced:</strong>
+                                    {% if run.reduction_location %}
+                                        {% for location in run.reduction_location %}
+                                            {{ location }}<br/>
+                                        {% endfor %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     {% else %}

@@ -127,3 +127,25 @@ search#run_search {
 .panel-small .panel-body {
     padding: 3px 15px;
 }
+
+.panel.panel-2-column .panel-body .row>div:first {
+    border-right:1px solid #ddd;
+}
+.panel-primary.panel-2-column .panel-body .row>div:first {
+    border-right-color: #428bca;
+}
+.panel-default.panel-2-column .panel-body .row>div:first {
+    border-right-color: #ddd;
+}
+.panel-success.panel-2-column .panel-body .row>div:first {
+    border-right-color: #d6e9c6;
+}
+.panel-info.panel-2-column .panel-body .row>div:first {
+    border-right-color: #bce8f1;
+}
+.panel-warning.panel-2-column .panel-body .row>div:first {
+    border-right-color: #faebcc;
+}
+.panel-danger.panel-2-column .panel-body .row>div:first {
+    border-right-color: #ebccd1;
+}
