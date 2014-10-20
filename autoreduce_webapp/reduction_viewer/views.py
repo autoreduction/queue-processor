@@ -3,6 +3,7 @@ from django.template import RequestContext
 from django.shortcuts import render_to_response, redirect
 from django.contrib.auth import logout as django_logout, authenticate, login
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseForbidden
 from autoreduce_webapp.uows_client import UOWSClient
 from autoreduce_webapp.icat_communication import ICATCommunication
 from autoreduce_webapp.settings import UOWS_LOGIN_URL, LOG_FILE, LOG_LEVEL
@@ -145,6 +146,17 @@ def run_list(request):
 def run_summary(request, run_number, run_version=0):
     try:
         run = ReductionRun.objects.get(run_number=run_number, run_version=run_version)
+        try:
+            #TODO: comment out when ICAT and uows are pointing at same session
+            #with ICATCommunication(AUTH='uows', SESSION={'sessionid':request.session['sessionid']}) as icat:
+            with ICATCommunication() as icat:
+                on_experiment_team = icat.is_on_experiment_team(int(run.experiment.reference_number), int(request.user.username))
+                owned_instruments = icat.get_owned_instruments(int(request.user.username))
+                if not on_experiment_team and run.instrument.name not in owned_instruments:
+                    return HttpResponseForbidden('Access Forbidden')
+        except Exception as icat_e:
+            logging.error(icat_e.message)
+            return HttpResponseForbidden('Could not verify access permission')
         history = ReductionRun.objects.filter(run_number=run_number).order_by('-run_version')
         context_dictionary = {
             'run' : run,
@@ -171,6 +183,17 @@ def instrument_summary(request, instrument):
     except Exception as e:
         logging.error(e.message)
         context_dictionary = {}
+
+    try:
+        #TODO: comment out when ICAT and uows are pointing at same session
+        #with ICATCommunication(AUTH='uows', SESSION={'sessionid':request.session['sessionid']}) as icat:
+        with ICATCommunication() as icat:
+            owned_instruments = icat.get_owned_instruments(int(request.user.username))
+            if instrument not in owned_instruments:
+                return HttpResponseForbidden('Access Forbidden')
+    except Exception as icat_e:
+        logging.error(icat_e.message)
+        return HttpResponseForbidden('Could not verify access permission')
     return context_dictionary
 
 @login_and_uows_valid
@@ -212,4 +235,17 @@ def experiment_summary(request, reference_number):
     except Exception as e:
         logging.error(e.message)
         context_dictionary = {}
+
+    try:
+        #TODO: comment out when ICAT and uows are pointing at same session
+        #with ICATCommunication(AUTH='uows', SESSION={'sessionid':request.session['sessionid']}) as icat:
+        with ICATCommunication() as icat:
+            on_experiment_team = icat.is_on_experiment_team(int(reference_number), int(request.user.username))
+            owned_instruments = icat.get_owned_instruments(int(request.user.username))
+            if not on_experiment_team and experiment_details.instrument not in owned_instruments:
+                return HttpResponseForbidden('Access Forbidden')
+    except Exception as icat_e:
+        logging.error(icat_e.message)
+        return HttpResponseForbidden('Could not verify access permission')
+
     return context_dictionary
