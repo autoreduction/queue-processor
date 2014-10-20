@@ -180,13 +180,13 @@ def experiment_summary(request, reference_number):
                 experiment_details = icat.get_experiment_details(int(reference_number))
         except:
             experiment_details = {
-                'reference_number' : ''
-                'start_date' : ''
-                'end_date' : ''
-                'title' : ''
-                'summary' : ''
-                'instrument' : ''
-                'pi' : ''
+                'reference_number' : '',
+                'start_date' : '',
+                'end_date' : '',
+                'title' : '',
+                'summary' : '',
+                'instrument' : '',
+                'pi' : '',
             }
         context_dictionary = {
             'experiment' : experiment,
