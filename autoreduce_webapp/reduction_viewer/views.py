@@ -152,7 +152,7 @@ def run_summary(request, run_number, run_version=0):
             with ICATCommunication() as icat:
                 on_experiment_team = icat.is_on_experiment_team(int(run.experiment.reference_number), int(request.user.username))
                 owned_instruments = icat.get_owned_instruments(int(request.user.username))
-                if not on_experiment_team and run.instrument.name not in owned_instruments:
+                if not request.user.is_superuser and not on_experiment_team and run.instrument.name not in owned_instruments:
                     return HttpResponseForbidden('Access Forbidden')
         except Exception as icat_e:
             logging.error(icat_e.message)
@@ -189,7 +189,7 @@ def instrument_summary(request, instrument):
         #with ICATCommunication(AUTH='uows', SESSION={'sessionid':request.session['sessionid']}) as icat:
         with ICATCommunication() as icat:
             owned_instruments = icat.get_owned_instruments(int(request.user.username))
-            if instrument not in owned_instruments:
+            if not request.user.is_superuser and instrument not in owned_instruments:
                 return HttpResponseForbidden('Access Forbidden')
     except Exception as icat_e:
         logging.error(icat_e.message)
@@ -242,7 +242,7 @@ def experiment_summary(request, reference_number):
         with ICATCommunication() as icat:
             on_experiment_team = icat.is_on_experiment_team(int(reference_number), int(request.user.username))
             owned_instruments = icat.get_owned_instruments(int(request.user.username))
-            if not on_experiment_team and experiment_details.instrument not in owned_instruments:
+            if not request.user.is_superuser and not on_experiment_team and experiment_details.instrument not in owned_instruments:
                 return HttpResponseForbidden('Access Forbidden')
     except Exception as icat_e:
         logging.error(icat_e.message)
