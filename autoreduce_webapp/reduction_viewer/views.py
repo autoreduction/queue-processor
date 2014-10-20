@@ -175,9 +175,19 @@ def experiment_summary(request, reference_number):
     try:
         experiment = Experiment.objects.get(reference_number=reference_number)
         runs = ReductionRun.objects.filter(experiment=experiment).order_by('-run_version')
-        with ICATCommunication(SESSION={'sessionid':request.session['sessionid']}) as icat:
-            experiment_details = icat.get_experiment_details(int(reference_number))
-
+        try:
+            with ICATCommunication(AUTH='uows', SESSION={'sessionid':request.session['sessionid']}) as icat:
+                experiment_details = icat.get_experiment_details(int(reference_number))
+        except:
+            experiment_details = {
+                'reference_number' : ''
+                'start_date' : ''
+                'end_date' : ''
+                'title' : ''
+                'summary' : ''
+                'instrument' : ''
+                'pi' : ''
+            }
         context_dictionary = {
             'experiment' : experiment,
             'runs' : runs,
