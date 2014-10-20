@@ -37,7 +37,7 @@
                                     <strong>Start:</strong> 
                                     {% if run.started %}
                                         {{ run.started }}
-                                    {% elif %}
+                                    {% else %}
                                         <em>Not yet started</em>
                                     {% endif %}
                                 </div>
@@ -45,7 +45,7 @@
                                     <strong>Finish:</strong> 
                                     {% if run.finished %}
                                         {{ run.finished }}
-                                    {% elif %}
+                                    {% else %}
                                         <em>Not yet finished</em>
                                     {% endif %}
                                 </div>
@@ -53,7 +53,7 @@
                                     <strong>Duration:</strong> 
                                     {% if run.started and run.finished %}
                                         {% natural_time_difference run.started run.finished %}
-                                    {% elif %}
+                                    {% else %}
                                         <em>Not yet finished</em>
                                     {% endif %}
                                 </div>
@@ -67,7 +67,7 @@
                                         {% for location in run.data_location.all %}
                                             {{ location }}<br/>
                                         {% endfor %}
-                                    {% elif %}
+                                    {% else %}
                                         <em>No data found</em>
                                     {% endif %}
                                 </div>
@@ -79,7 +79,7 @@
                                         {% for location in run.reduction_location.all %}
                                             {{ location }}<br/>
                                         {% endfor %}
-                                    {% elif %}
+                                    {% else %}
                                         <em>No reduced data found</em>
                                     {% endif %}
                                 </div>
