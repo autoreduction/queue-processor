@@ -15,12 +15,8 @@ def run_confirmation(request, run_number, run_version=0):
     return render_to_response('base.html', context_dictionary, RequestContext(request))
 
 class InstrumentSummary(View):
-    @login_and_uows_valid
-    @render_with('snippets/instrument_summary_variables.html')
-    @require_staff
     def get(request, instrument):
         context_dictionary = {}
-
 
         try:
             #TODO: comment out when ICAT and uows are pointing at same session
@@ -33,7 +29,8 @@ class InstrumentSummary(View):
             logging.error(icat_e.message)
             return HttpResponseForbidden('Could not verify access permission')
 
-        return context_dictionary
+        output = populate_template_dict(request, context_dictionary)    
+        return render_to_response(template, output, RequestContext(request))
 
 def instrument_variables(request, instrument):
     context_dictionary = {}
