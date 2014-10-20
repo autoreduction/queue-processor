@@ -28,7 +28,7 @@ def instrument_summary(request, instrument):
         logging.error(icat_e.message)
         return HttpResponseForbidden('Could not verify access permission')
 
-    return render_to_response('instrument_summary_variables.html', context_dictionary, RequestContext(request))
+    return render_to_response('snippets/instrument_summary_variables.html', context_dictionary, RequestContext(request))
 
 def instrument_variables(request, instrument):
     context_dictionary = {}
