@@ -182,17 +182,17 @@ def experiment_summary(request, reference_number):
         data = []
         reduced_data = []
         for run in runs:
-            for location in run.data_location.all:
+            for location in run.data_location.all():
                 if location not in data:
                     data.append(location)
-            for location in run.reduction_location.all:
+            for location in run.reduction_location.all():
                 if location not in reduced_data:
                     reduced_data.append(location)
         try:
             with ICATCommunication(AUTH='uows', SESSION={'sessionid':request.session['sessionid']}) as icat:
                 experiment_details = icat.get_experiment_details(int(reference_number))
         except Exception as icat_e:
-            logging.error(icat_e.strerror)
+            logging.error(icat_e.message)
             experiment_details = {
                 'reference_number' : '',
                 'start_date' : '',
