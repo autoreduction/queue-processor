@@ -20,29 +20,41 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div>
-                                    <strong>Status:</strong> <div class="text-{% colour_table_row run.status.value %}">{{ run.status }}</div>
+                                    <strong>Status:</strong> <strong class="text-{% colour_table_row run.status.value %}">{{ run.status }}</strong>
                                 </div>
                                 <div>
-                                    <strong>Instrument:</strong> {{ run.instrument }}
+                                    <strong>Instrument:</strong> <a href="{% url 'instrument_summary' instrument=run.instrument %}">{{ run.instrument }}</a>
                                 </div>
                                 <div>
-                                    <strong>RB Number:</strong> {{ run.experiment }}
+                                    <strong>RB Number:</strong> <a href="{% url 'experiment_summary' reference_number=run.experiment %}">{{ run.experiment }}</>
                                 </div>
                                 <div>
                                     <strong>Last Updated:</strong> {{ run.last_updated }}
                                 </div>
                             </div>
-                            <div class="col-md-6 text-right">
+                            <div class="col-md-6">
                                 <div>
-                                    <strong>Start:</strong> {% if run.started %}{{ run.started }}{% endif %}
+                                    <strong>Start:</strong> 
+                                    {% if run.started %}
+                                        {{ run.started }}
+                                    {% elif %}
+                                        <em>Not yet started</em>
+                                    {% endif %}
                                 </div>
                                 <div>
-                                    <strong>Finish:</strong> {% if run.finished %}{{ run.finished }}{% endif %}
+                                    <strong>Finish:</strong> 
+                                    {% if run.finished %}
+                                        {{ run.finished }}
+                                    {% elif %}
+                                        <em>Not yet finished</em>
+                                    {% endif %}
                                 </div>
                                 <div>
                                     <strong>Duration:</strong> 
                                     {% if run.started and run.finished %}
                                         {% natural_time_difference run.started run.finished %}
+                                    {% elif %}
+                                        <em>Not yet finished</em>
                                     {% endif %}
                                 </div>
                             </div>
@@ -55,16 +67,20 @@
                                         {% for location in run.data_location.all %}
                                             {{ location }}<br/>
                                         {% endfor %}
+                                    {% elif %}
+                                        <em>No data found</em>
                                     {% endif %}
                                 </div>
                             </div>
-                            <div class="col-md-6 text-right">
+                            <div class="col-md-6">
                                 <div>
                                     <strong>Reduced:</strong>
                                     {% if run.reduction_location %}
                                         {% for location in run.reduction_location.all %}
                                             {{ location }}<br/>
                                         {% endfor %}
+                                    {% elif %}
+                                        <em>No reduced data found</em>
                                     {% endif %}
                                 </div>
                             </div>
