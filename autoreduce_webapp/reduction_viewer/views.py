@@ -5,12 +5,14 @@ from django.contrib.auth import logout as django_logout, authenticate, login
 from django.contrib.auth.decorators import login_required
 from autoreduce_webapp.uows_client import UOWSClient
 from autoreduce_webapp.icat_communication import ICATCommunication
-from autoreduce_webapp.settings import UOWS_LOGIN_URL
+from autoreduce_webapp.settings import UOWS_LOGIN_URL, LOG_FILE, LOG_LEVEL
 from reduction_viewer.models import Experiment, ReductionRun, Instrument
 from reduction_viewer.utils import StatusUtils
 from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, require_staff
 from django.http import HttpResponse
 import operator 
+import logging
+logging.basicConfig(filename=LOG_FILE,level=LOG_LEVEL)
 
 def index(request):
     return_url = UOWS_LOGIN_URL + request.build_absolute_uri()
@@ -148,7 +150,8 @@ def run_summary(request, run_number, run_version=0):
             'run' : run,
             'history' : history,
         }
-    except:
+    except e:
+        logging.error(e.strerror)
         context_dictionary = {}
     return context_dictionary
 
@@ -165,7 +168,8 @@ def instrument_summary(request, instrument):
             'processing' : ReductionRun.objects.filter(instrument=instrument_obj, status=processing_status),
             'queued' : ReductionRun.objects.filter(instrument=instrument_obj, status=queued_status),
         }
-    except:
+    except e:
+        logging.error(e.strerror)
         context_dictionary = {}
     return context_dictionary
 
@@ -187,7 +191,8 @@ def experiment_summary(request, reference_number):
         try:
             with ICATCommunication(AUTH='uows', SESSION={'sessionid':request.session['sessionid']}) as icat:
                 experiment_details = icat.get_experiment_details(int(reference_number))
-        except:
+        except icat_e:
+            logging.error(icat_e.strerror)
             experiment_details = {
                 'reference_number' : '',
                 'start_date' : '',
@@ -204,6 +209,7 @@ def experiment_summary(request, reference_number):
             'data' : data,
             'reduced_data' : reduced_data,
         }
-    except:
+    except e:
+        logging.error(e.strerror)
         context_dictionary = {}
     return context_dictionary
