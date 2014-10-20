@@ -172,5 +172,17 @@ def instrument_summary(request, instrument):
 @login_and_uows_valid
 @render_with('experiment_summary.html')
 def experiment_summary(request, reference_number):
-    context_dictionary = {}
+    try:
+        experiment = Experiment.objects.get(reference_number=reference_number)
+        runs = ReductionRun.objects.filter(experiment=experiment).order_by('-run_version')
+        with ICATCommunication(SESSION={'sessionid':request.session['sessionid']}) as icat:
+            experiment_details = icat.get_experiment_details(int(reference_number))
+
+        context_dictionary = {
+            'experiment' : experiment,
+            'runs' : runs,
+            'experiment_details' : experiment_details,
+        }
+    except:
+        context_dictionary = {}
     return context_dictionary
