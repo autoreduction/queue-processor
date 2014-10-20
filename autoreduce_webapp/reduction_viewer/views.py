@@ -150,7 +150,7 @@ def run_summary(request, run_number, run_version=0):
             'run' : run,
             'history' : history,
         }
-    except e:
+    except Exception as e:
         logging.error(e.strerror)
         context_dictionary = {}
     return context_dictionary
@@ -168,7 +168,7 @@ def instrument_summary(request, instrument):
             'processing' : ReductionRun.objects.filter(instrument=instrument_obj, status=processing_status),
             'queued' : ReductionRun.objects.filter(instrument=instrument_obj, status=queued_status),
         }
-    except e:
+    except Exception as e:
         logging.error(e.strerror)
         context_dictionary = {}
     return context_dictionary
@@ -191,7 +191,7 @@ def experiment_summary(request, reference_number):
         try:
             with ICATCommunication(AUTH='uows', SESSION={'sessionid':request.session['sessionid']}) as icat:
                 experiment_details = icat.get_experiment_details(int(reference_number))
-        except icat_e:
+        except Exception as icat_e:
             logging.error(icat_e.strerror)
             experiment_details = {
                 'reference_number' : '',
@@ -209,7 +209,7 @@ def experiment_summary(request, reference_number):
             'data' : data,
             'reduced_data' : reduced_data,
         }
-    except e:
+    except Exception as e:
         logging.error(e.strerror)
         context_dictionary = {}
     return context_dictionary
