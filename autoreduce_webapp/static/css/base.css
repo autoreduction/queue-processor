@@ -162,3 +162,6 @@ search#run_search {
 .panel-danger.panel-2-column .panel-body .row>div:first-of-type {
     border-right-color: #ebccd1;
 }
+.panel-title>a:only-child{
+    display:block;
+}
