@@ -7,8 +7,8 @@
     {% if run %}
         <div class="row">
             <div class="col-md-12 text-center">
-                <h2>Run #{{ run.run_number }}{% if job.run_name %}-{{ job.run_name }}{% endif %}</h2>
-                {% if job.run_version > 0 %}
+                <h2>Run #{{ run.run_number }}{% if run.run_name %}-{{ run.run_name }}{% endif %}</h2>
+                {% if run.run_version > 0 %}
                     (This run has been re-reduced, <a href="#" class="js-reduction-run-history">see history</a>)
                 {% endif %}
             </div>
