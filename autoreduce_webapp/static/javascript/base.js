@@ -31,7 +31,8 @@
 
     var init = function init(){
         $('.alert').on('closed.bs.alert', notificationDismissed);
-
+        $('[data-toggle="popover"]').popover()
+        
         showNotifications();
         toggleIconOnCollapse();
     };
