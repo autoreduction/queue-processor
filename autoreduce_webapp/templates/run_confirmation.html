@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load view %}
+{% load colour_table_rows %}
+{% load natural_time_difference %}
+{% load get_user_name %}
+{% load naturaltime from humanize %}
+{% load static from staticfiles %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+            <div class="panel panel-success">
+                <div class="panel-heading">
+                    <div class="panel-title">
+                        Successfully submitted run #{{run.run_number}} for reduction
+                    </div>
+                </div>
+                <div class="panel-body">
+                    {% if queued %}
+                        <div class="row">
+                            <div class="col-md-12 text-center">
+                                There are currently {{queued}} runs queued.
+                            </div>
+                        </div>
+                    {% endif %}
+                    <fieldset>
+                        <legend>Run Variables</legend>
+                        {% for variable in run.run_variables.all %}
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <strong>{{variable.name}}</strong> {{variable.value}}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </fieldset>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
