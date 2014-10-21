@@ -27,17 +27,22 @@
                         <legend>Run Variables</legend>
                         <div class="row">
                             <div class="col-md-12">
-                                <strong>Description</strong> {{run.run_name}}
+                                <strong>Description:</strong> {% if run.run_name %}{{run.run_name}}{% else %}<em>No description provided</em>{% endif %}
                             </div>
                         </div>
                         {% for variable in run.run_variables.all %}
                             <div class="row">
                                 <div class="col-md-12">
-                                    <strong>{{variable.name}}</strong> {{variable.value}}
+                                    <strong>{{variable.name}}:</strong> {{variable.value}}
                                 </div>
                             </div>
                         {% endfor %}
                     </fieldset>
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <a href="{% url 'run_summary' run_number=run.run_number run_version=run.run_version %}">View this reduction job</a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
