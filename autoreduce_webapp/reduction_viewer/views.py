@@ -62,7 +62,7 @@ def logout(request):
 def run_queue(request):
     complete_status = StatusUtils().get_completed()
     error_status = StatusUtils().get_error()
-    pending_jobs = ReductionRun.objects.all().exclude(status=complete_status).exclude(status=error_status)
+    pending_jobs = ReductionRun.objects.all().exclude(status=complete_status).exclude(status=error_status).order_by('created')
     context_dictionary = {
         'queue' : pending_jobs
     }
@@ -143,7 +143,6 @@ def run_list(request):
     
     # TODO: generate notification if there are any error runs
     context_dictionary['instrument_list'] = instruments
-    # TODO: generate object to tell the template what to display by default (such as which tab and instruments to expand)
     if owned_instruments:
         context_dictionary['default_tab'] = 'run_number'
     else:
