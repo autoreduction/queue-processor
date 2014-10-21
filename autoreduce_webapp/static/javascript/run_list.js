@@ -2,7 +2,7 @@
 
     var showBy = function showBy(by){
         if(by !== 'by-experiment' && by !== 'by-run-number'){
-            by = 'by-experiment';
+            by = $('.js-run-tabs li.active a').attr('href').replace('#','');
         }
         if(by === 'by-experiment'){
             $('#by-experiment').removeClass('hide').addClass('active');
