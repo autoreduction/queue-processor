@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.core.context_processors import csrf
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.views.generic.base import View
@@ -133,6 +134,7 @@ def instrument_variables(request, instrument, start=0, end=0):
         'run_end' : end,
         'minimum_run_start' : max(latest_completed_run, latest_processing_run)
     }
+    context_dictionary.update(csrf(request))
 
     return context_dictionary
 
