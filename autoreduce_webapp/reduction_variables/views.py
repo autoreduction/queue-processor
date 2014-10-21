@@ -86,16 +86,17 @@ def instrument_variables(request, instrument, start=0, end=0):
     completed_status = StatusUtils().get_completed()
     processing_status = StatusUtils().get_processing()
     queued_status = StatusUtils().get_queued()
+    
+    try:
+        latest_completed_run = ReductionRun.objects.filter(instrument=instrument, run_version=0, status=completed_status).order_by('-run_number').first().run_number
+    except AttributeError :
+        latest_completed_run = 0
+    try:
+        latest_processing_run = ReductionRun.objects.filter(instrument=instrument, run_version=0, status=processing_status).order_by('-run_number').first().run_number
+    except AttributeError :
+        latest_processing_run = 0
 
     if start == 0 and end == 0:
-        try:
-            latest_completed_run = ReductionRun.objects.filter(instrument=instrument, run_version=0, status=completed_status).order_by('-run_number').first().run_number
-        except AttributeError :
-            latest_completed_run = 0
-        try:
-            latest_processing_run = ReductionRun.objects.filter(instrument=instrument, run_version=0, status=processing_status).order_by('-run_number').first().run_number
-        except AttributeError :
-            latest_processing_run = 0
         try:
             start = InstrumentVariable.objects.filter(instrument=instrument,start_run__lte=latest_completed_run ).order_by('-start_run').first().start_run
         except AttributeError :
