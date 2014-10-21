@@ -19,8 +19,14 @@ def run_confirmation(request, run_number, run_version=0):
 def instrument_summary(request, instrument):
     instrument = Instrument.objects.get(name=instrument)
     completed_status = StatusUtils().get_completed()
-    latest_completed_run = ReductionRun.objects.filter(instrument=instrument, run_version=0, status=completed_status).order_by('-run_number').first().run_number
-    current_variables_run_start = InstrumentVariable.objects.filter(instrument=instrument,start_run__lte=latest_completed_run ).order_by('-start_run').first().start_run
+    try:
+        latest_completed_run = ReductionRun.objects.filter(instrument=instrument, run_version=0, status=completed_status).order_by('-run_number').first().run_number
+    except AttributeError :
+        latest_completed_run = 0
+    try:
+        current_variables_run_start = InstrumentVariable.objects.filter(instrument=instrument,start_run__lte=latest_completed_run ).order_by('-start_run').first().start_run
+    except AttributeError :
+        current_variables_run_start = 1
     current_variables = InstrumentVariable.objects.filter(instrument=instrument,start_run=current_variables_run_start )
     upcoming_variables = InstrumentVariable.objects.filter(instrument=instrument,start_run__gt=latest_completed_run ).order_by('start_run')
     upcoming_variables_dict = {}
