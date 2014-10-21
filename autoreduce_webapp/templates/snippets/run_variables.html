@@ -1,10 +1,10 @@
 <form id="run_variables" method="POST" class="form-horizontal">
     {% csrf_token %}
     <div class="form-group">
-        <div class="col-md-2 text-right">
-            <label for="run_description" class="control-label">Re-run description</label> 
+        <label for="run_description" class="control-label col-md-2">
+            Re-run description
             <a href="#" data-toggle="popover" data-content="This will be appended onto the run number for you and others to identify the reason for re-submitting." data-trigger="hover click focus" data-placement="top" data-container="body"><i class="fa fa-info-circle"></i></a>
-        </div>
+        </label>
         <div class="col-md-10">
             <input type="text" id="run_description" name="run_description" class="form-control"/>
         </div>
