@@ -14,10 +14,6 @@ from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL
 import logging
 logging.basicConfig(filename=LOG_FILE,level=LOG_LEVEL)
 
-def run_confirmation(request, run_number, run_version=0):
-    context_dictionary = {}
-    return render_to_response('base.html', context_dictionary, RequestContext(request))
-
 '''
     Imported into another view, thus no middlewear
 '''
@@ -138,6 +134,25 @@ def instrument_variables(request, instrument, start=0, end=0):
 
     return context_dictionary
 
-def run_variables(request, run_number, run_version=0):
+def run_summary(request, run_number, run_version=0):
+    reduction_run = ReductionRun.objects.get(run_number=run_number, run_version=run_version)
+    variables = reduction_run.run_variables
+
+    standard_vars = {}
+    advanced_vars = {}
+    for variable in variables:
+        if variable.is_advanced:
+            advanced_vars[variable.name] = variable
+        else:
+            standard_vars[variable.name] = variable
+
+    context_dictionary = {
+        'standard_variables' : standard_vars,
+        'advanced_variables' : advanced_vars,
+    }
+    context_dictionary.update(csrf(request))
+    return render_to_response('snippets/run_variables.html', context_dictionary, RequestContext(request))
+
+def run_confirmation(request, run_number, run_version=0):
     context_dictionary = {}
     return render_to_response('base.html', context_dictionary, RequestContext(request))
