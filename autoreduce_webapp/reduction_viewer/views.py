@@ -148,7 +148,7 @@ def run_list(request):
         for run in error_runs:
             if run.run_name:
                 message = 'Reduction run %s-%s has reported an error.' % (run.run_number, run.run_name)
-            elif: run.run_version > 0:
+            elif run.run_version > 0:
                 message = 'Reduction run %s-%s has reported an error.' % (run.run_number, run.run_version)
             else:
                 message = 'Reduction run %s has reported an error.' % run.run_number
