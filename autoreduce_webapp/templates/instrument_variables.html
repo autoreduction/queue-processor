@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load view %}
+
+{% block body %}
+    {% if instrument %}
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <h2>{{ instrument.name }}</h2>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 col-md-offset-3">
+                {% include "snippets/instrument_status.html" with processing=processing queued=queued only %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <p>
+                    <a href="{% url 'instrument_summary' instrument=instrument %}">View upcoming saved variable changes</a>
+                </p>
+            </div>
+        </div>
+        <form id="instrument_variables" method="POST">
+            <div class="row">
+                <div class="col-md-12">
+                    <label for="run_start">Run Number Start</label> <input type="number" id="run_start" name="run_start" value="{{run_start}}" min="{{minimum_run_start}}"/>
+                    <label for="run_end">Finished <small>(Optional}</small></label> <input type="number" id="run_end" name="run_end" value="{{run_end}}"/>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <fieldset class="hide" id="subsequant_variable_choices">
+                        <legend>What variables should be used from run <span id="next_run"></span> onwards?</legend>
+                    </fieldset>
+                </div>
+            </div>
+            {% include "snippets/edit_variables.html" with standard_variables=standard_variables advanced_variables=advanced_variables button_text="Submit Changes" only %}
+        </form>
+    {% else %}
+        <div class="text-center col-md-6 col-md-offset-3 well well-small">
+            Instrument not found.
+        </div>
+    {% endif %}
+{% endblock %}

@@ -10,45 +10,7 @@
         </div>
         <div class="row">
             <div class="col-md-6 col-md-offset-3">
-                <div class="panel panel-primary panel-small">
-                    <div class="panel-heading">Status</div>
-                    <div class="panel-body">
-                        {% if processing or queued %}
-                            {% if processing %}
-                                <div class="row">
-                                    <div class="col-md-4"><strong>Currently processing:</strong></div>
-                                    <div class="col-md-8">
-                                        <ul class="list-inline">
-                                            {% for job in processing %}
-                                            <li>
-                                                <a href="{% url 'run_summary' run_number=job.run_number run_version=job.run_version %}">{{ job.run_number }}{% if job.run_name %}-{{ job.run_name }}{% endif %}</a> 
-                                            </li>
-                                            {% endfor %}
-                                        </ul>
-                                    </div>
-                                </div>
-                            {% endif %}
-                            {% if queued %}
-                                <div class="row">
-                                    <div class="col-md-4"><strong>Currently queued:</strong></div>
-                                    <div class="col-md-8">
-                                        <ul class="list-inline">
-                                            {% for job in queued %}
-                                                <li>
-                                                    <a href="{% url 'run_summary' run_number=job.run_number run_version=job.run_version %}">{{ job.run_number }}{% if job.run_name %}-{{ job.run_name }}{% endif %}</a> 
-                                                </li>
-                                            {% endfor %}
-                                        </ul>
-                                    </div>
-                                </div>
-                            {% endif %}
-                        {% else %}
-                            <div class="text-center">
-                                All reduction jobs complete.
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
+                {% include "snippets/instrument_status.html" with processing=processing queued=queued only %}
             </div>
         </div>
         {% if reduction_variables_on %}  
