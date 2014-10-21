@@ -144,6 +144,10 @@ def run_list(request):
     # TODO: generate notification if there are any error runs
     context_dictionary['instrument_list'] = instruments
     # TODO: generate object to tell the template what to display by default (such as which tab and instruments to expand)
+    if owned_instruments:
+        context_dictionary['default_tab'] = 'run_number'
+    else:
+        context_dictionary['default_tab'] = 'experiment'
 
     return context_dictionary
 
