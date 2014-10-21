@@ -1,4 +1,4 @@
-<form id="run_variables" method="POST" action="{% url 'run_confirmation' %}" class="form-horizontal">
+<form id="run_variables" method="POST" action="{% url 'run_confirmation' run_number=run_number run_version=run_version %}" class="form-horizontal">
     {% csrf_token %}
     <div class="form-group">
         <label for="run_description" class="control-label col-md-2">

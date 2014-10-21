@@ -150,6 +150,8 @@ def run_summary(request, run_number, run_version=0):
             standard_vars[variable.name] = variable
 
     context_dictionary = {
+        'run_number' : run_number,
+        'run_version' : run_version,
         'standard_variables' : standard_vars,
         'advanced_variables' : advanced_vars,
     }
