@@ -25,6 +25,11 @@
                     {% endif %}
                     <fieldset>
                         <legend>Run Variables</legend>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <strong>Description</strong> {{run.run_name}}
+                            </div>
+                        </div>
                         {% for variable in run.run_variables.all %}
                             <div class="row">
                                 <div class="col-md-12">
