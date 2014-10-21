@@ -38,6 +38,12 @@ def index(request):
                     return_url = use_query_next
                 else:
                     return_url = default_next
+                # Cache these for the session as they are used for permission checking
+                #TODO: comment out when ICAT and uows are pointing at same session
+                #with ICATCommunication(AUTH='uows', SESSION={'sessionid':request.session['sessionid']}) as icat:
+                with ICATCommunication() as icat:
+                    request.session['owned_instruments'] = icat.get_owned_instruments(int(request.user.username))
+                    request.session['experiments'] = icat.get_associated_experiments(int(request.user.username))
 
     return redirect(return_url)
 
@@ -146,17 +152,9 @@ def run_list(request):
 def run_summary(request, run_number, run_version=0):
     try:
         run = ReductionRun.objects.get(run_number=run_number, run_version=run_version)
-        try:
-            #TODO: comment out when ICAT and uows are pointing at same session
-            #with ICATCommunication(AUTH='uows', SESSION={'sessionid':request.session['sessionid']}) as icat:
-            with ICATCommunication() as icat:
-                on_experiment_team = icat.is_on_experiment_team(int(run.experiment.reference_number), int(request.user.username))
-                owned_instruments = icat.get_owned_instruments(int(request.user.username))
-                if not request.user.is_superuser and not on_experiment_team and run.instrument.name not in owned_instruments:
-                    return HttpResponseForbidden('Access Forbidden')
-        except Exception as icat_e:
-            logging.error(icat_e.message)
-            return HttpResponseForbidden('Could not verify access permission')
+        # Check the user has permission
+        if not request.user.is_superuser and run.experiment.reference_number not in request.session['experiments'] and run.instrument.name not in request.session['owned_instruments']:
+            return HttpResponseForbidden('Access Forbidden')
         history = ReductionRun.objects.filter(run_number=run_number).order_by('-run_version')
         context_dictionary = {
             'run' : run,
@@ -171,6 +169,10 @@ def run_summary(request, run_number, run_version=0):
 @render_with('instrument_summary.html')
 @require_staff
 def instrument_summary(request, instrument):
+    # Check the user has permission
+    if not request.user.is_superuser and instrument not in request.session['owned_instruments']:
+        return HttpResponseForbidden('Access Forbidden')
+
     processing_status = StatusUtils().get_processing()
     queued_status = StatusUtils().get_queued()
     try:
@@ -184,16 +186,6 @@ def instrument_summary(request, instrument):
         logging.error(e.message)
         context_dictionary = {}
 
-    try:
-        #TODO: comment out when ICAT and uows are pointing at same session
-        #with ICATCommunication(AUTH='uows', SESSION={'sessionid':request.session['sessionid']}) as icat:
-        with ICATCommunication() as icat:
-            owned_instruments = icat.get_owned_instruments(int(request.user.username))
-            if not request.user.is_superuser and instrument not in owned_instruments:
-                return HttpResponseForbidden('Access Forbidden')
-    except Exception as icat_e:
-        logging.error(icat_e.message)
-        return HttpResponseForbidden('Could not verify access permission')
     return context_dictionary
 
 @login_and_uows_valid
@@ -235,17 +227,8 @@ def experiment_summary(request, reference_number):
     except Exception as e:
         logging.error(e.message)
         context_dictionary = {}
-
-    try:
-        #TODO: comment out when ICAT and uows are pointing at same session
-        #with ICATCommunication(AUTH='uows', SESSION={'sessionid':request.session['sessionid']}) as icat:
-        with ICATCommunication() as icat:
-            on_experiment_team = icat.is_on_experiment_team(int(reference_number), int(request.user.username))
-            owned_instruments = icat.get_owned_instruments(int(request.user.username))
-            if not request.user.is_superuser and not on_experiment_team and experiment_details.instrument not in owned_instruments:
-                return HttpResponseForbidden('Access Forbidden')
-    except Exception as icat_e:
-        logging.error(icat_e.message)
-        return HttpResponseForbidden('Could not verify access permission')
-
+    
+    #Check the users permissions
+    if not request.user.is_superuser and reference_number not in request.session['experiments'] and experiment_details.instrument not in request.session['owned_instruments']:
+       return HttpResponseForbidden('Access Forbidden')
     return context_dictionary

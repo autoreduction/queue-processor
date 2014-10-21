@@ -143,7 +143,7 @@ search#run_search {
  7. Variables
 ****************/
 .run-numbers{
-    border: 3px solid #428bca;
+    border: 3px solid #ddd;
     border-radius: 15px;
     font-size: 1.2em;
     line-height: 0.9em;

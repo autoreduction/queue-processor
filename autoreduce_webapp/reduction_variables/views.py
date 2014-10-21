@@ -17,6 +17,10 @@ def run_confirmation(request, run_number, run_version=0):
     return render_to_response('base.html', context_dictionary, RequestContext(request))
 
 def instrument_summary(request, instrument):
+    # Check the user has permission
+    if not request.user.is_superuser and instrument not in request.session['owned_instruments']:
+        return HttpResponseForbidden('Access Forbidden')
+
     instrument = Instrument.objects.get(name=instrument)
     completed_status = StatusUtils().get_completed()
     try:
@@ -65,17 +69,6 @@ def instrument_summary(request, instrument):
         'current_variables' : current_vars,
         'upcoming_variables' : upcoming_variables_dict,
     }
-
-    try:
-        #TODO: comment out when ICAT and uows are pointing at same session
-        #with ICATCommunication(AUTH='uows', SESSION={'sessionid':request.session['sessionid']}) as icat:
-        with ICATCommunication() as icat:
-            owned_instruments = icat.get_owned_instruments(int(request.user.username))
-            if not request.user.is_superuser and instrument not in owned_instruments:
-                return HttpResponseForbidden('Access Forbidden')
-    except Exception as icat_e:
-        logging.error(icat_e.message)
-        return HttpResponseForbidden('Could not verify access permission')
 
     return render_to_response('snippets/instrument_summary_variables.html', context_dictionary, RequestContext(request))
 
