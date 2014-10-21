@@ -86,7 +86,7 @@ def instrument_variables(request, instrument, start=0, end=0):
     completed_status = StatusUtils().get_completed()
     processing_status = StatusUtils().get_processing()
     queued_status = StatusUtils().get_queued()
-    
+
     try:
         latest_completed_run = ReductionRun.objects.filter(instrument=instrument, run_version=0, status=completed_status).order_by('-run_number').first().run_number
     except AttributeError :
@@ -113,9 +113,9 @@ def instrument_variables(request, instrument, start=0, end=0):
     advanced_vars = {}
     for variable in variables:
         if variable.is_advanced:
-            advanced_vars[variable.name] = variable.value
+            advanced_vars[variable.name] = variable
         else:
-            standard_vars[variable.name] = variable.value
+            standard_vars[variable.name] = variable
 
     context_dictionary = {
         'instrument' : instrument,
