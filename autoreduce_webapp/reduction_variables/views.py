@@ -81,6 +81,8 @@ def instrument_variables(request, instrument, start=0, end=0):
     if not request.user.is_superuser and instrument not in request.session['owned_instruments']:
         return HttpResponseForbidden('Access Forbidden')
     
+    instrument = Instrument.objects.get(name=instrument)
+
     completed_status = StatusUtils().get_completed()
     processing_status = StatusUtils().get_processing()
     queued_status = StatusUtils().get_queued()
@@ -103,7 +105,7 @@ def instrument_variables(request, instrument, start=0, end=0):
 
     # If no variables are saved, use the dfault ones from the reduce script
     if not variables:
-        InstrumentVariablesUtils().set_default_instrument_variables(instrument, start)
+        InstrumentVariablesUtils().set_default_instrument_variables(instrument.name, start)
         variables = InstrumentVariable.objects.filter(instrument=instrument,start_run=start )
 
     standard_vars = {}
@@ -114,11 +116,10 @@ def instrument_variables(request, instrument, start=0, end=0):
         else:
             standard_vars[variable.name] = variable.value
 
-    instrument_obj = Instrument.objects.get(name=instrument)
     context_dictionary = {
-        'instrument' : instrument_obj,
-        'processing' : ReductionRun.objects.filter(instrument=instrument_obj, status=processing_status),
-        'queued' : ReductionRun.objects.filter(instrument=instrument_obj, status=queued_status),
+        'instrument' : instrument,
+        'processing' : ReductionRun.objects.filter(instrument=instrument, status=processing_status),
+        'queued' : ReductionRun.objects.filter(instrument=instrument, status=queued_status),
         'standard_variables' : standard_vars,
         'advanced_variables' : advanced_vars,
         'run_start' : start,
