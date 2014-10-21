@@ -136,7 +136,7 @@ def instrument_variables(request, instrument, start=0, end=0):
 
 def run_summary(request, run_number, run_version=0):
     reduction_run = ReductionRun.objects.get(run_number=run_number, run_version=run_version)
-    variables = reduction_run.run_variables
+    variables = reduction_run.run_variables.all()
 
     standard_vars = {}
     advanced_vars = {}
