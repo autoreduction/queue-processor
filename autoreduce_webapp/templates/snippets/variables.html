@@ -3,7 +3,10 @@
         <div class="run-numbers">
             Runs
             <div>{{ instrument_variables.run_start }}</div>
-                <div><i class="fa fa-arrow-down"></i></div>
+                <div>
+                    <i class="fa fa-arrow-down hidden-xs"></i>
+                    <i class="fa fa-arrow-right visible-xs"></i>
+                </div>
             {% if instrument_variables.run_end > 0 %}
                 <div>{{ instrument_variables.run_end }}</div>
             {% else %}
@@ -19,7 +22,7 @@
         {% endfor %}
     </div>
     <div class="col-md-3 text-center">
-        <a href="">preview reduction script</a><br/>
+        <a href="">preview reduction script</a>
         <br/>
         <a href="{% url 'instrument_variables' instrument=instrument_variables.instrument start=instrument_variables.run_start end=instrument_variables.run_end %}">edit variables</a>
     </div>

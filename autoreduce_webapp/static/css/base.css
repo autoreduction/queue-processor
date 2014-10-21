@@ -150,6 +150,11 @@ search#run_search {
     font-weight: bold;
     padding:5px;
 }
+@media screen and (max-width: 767px) {
+    .run-numbers div{
+        display: inline-block;
+    }
+}
 
 
 /****************
