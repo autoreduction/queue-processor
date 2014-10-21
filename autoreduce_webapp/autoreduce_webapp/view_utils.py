@@ -47,12 +47,15 @@ def render_with(template):
         def populate_template_dict(request, output):
             if 'request' not in output:
                 output['request'] = request
-                
+            
+            if request.user.is_authenticated() and request.user.is_staff:
+                notifications = Notification.objects.filter(is_active=True)
+            else:
+                notifications = Notification.objects.filter(is_active=True, is_staff_only=False)
             if 'notifications' not in output:
-                if request.user.is_authenticated() and request.user.is_staff:
-                    output['notifications'] = Notification.objects.filter(is_active=True)
-                else:
-                    output['notifications'] = Notification.objects.filter(is_active=True, is_staff_only=False)
+                output['notifications'] = notifications
+            else:
+                output['notifications'].extend(notifications)
 
             if 'reduction_variables_on' not in output:
                 output['reduction_variables_on'] = ('reduction_variables' in INSTALLED_APPS)

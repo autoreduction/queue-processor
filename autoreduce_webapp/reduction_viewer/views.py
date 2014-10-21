@@ -141,7 +141,27 @@ def run_list(request):
         instrument_obj['experiments'] = sorted(instrument_obj['experiments'], key=lambda k: k['reference_number'], reverse=True)
         instruments.append(instrument_obj)
     
-    # TODO: generate notification if there are any error runs
+    # Generate notification for any errored runs    
+    error_runs = ReductionRun.objects.filter(status=StatusUtils().get_error())
+    if error_runs:
+        notifications = []
+        for run in error_runs:
+            if run.run_name:
+                message = 'Reduction run %s-%s has reported an error.' % (run.run_number, run.run_name)
+            elif: run.run_version > 0:
+                message = 'Reduction run %s-%s has reported an error.' % (run.run_number, run.run_version)
+            else:
+                message = 'Reduction run %s has reported an error.' % run.run_number
+            error_notification = {
+                'message': message,
+                'severity_verbose': 'error',
+                'is_staff_only': False,
+                'is_active': True,
+                'id' : 'error-%s-%s' % (run.run_number, run.run_version),
+            }
+            notifications.append(error_notification)
+        context_dictionary['notifications'] = notifications
+
     context_dictionary['instrument_list'] = instruments
     if owned_instruments:
         context_dictionary['default_tab'] = 'run_number'
