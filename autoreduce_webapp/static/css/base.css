@@ -154,6 +154,10 @@ search#run_search {
     .run-numbers div{
         display: inline-block;
     }
+    .variables-buttons .btn {
+        display:block !important;
+        width: 100% !important;
+    }
 }
 
 
