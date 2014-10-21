@@ -34,6 +34,17 @@ class InstrumentVariablesUtils(object):
             instrument_var.scripts.add(script)
             instrument_var.save()
 
+    def get_current_script(self, instrument_name):
+        reduction_file = os.path.join(REDUCTION_SCRIPT_BASE, instrument_name, 'reduce.py')
+        try:
+            reduce_script = imp.load_source('reduce_script', reduction_file)
+            f = open(reduction_file, 'rb')
+            script_binary = f.read()
+            return script_binary
+        except IOError:
+            logging.error("Unable to load reduction script %s" % reduction_file)
+            return
+
 class ReductionVariablesUtiles(object):
     def get_script_path_and_arguments(self, run_variables):
         if not run_variables or len(run_variables) == 0:
