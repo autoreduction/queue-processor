@@ -1,7 +1,7 @@
 {% for name,variable in standard_variables.items %}
-    <div class="form-control">
-        <label for="var-{{variable.name}}" class="control-label col-md-4">{{variable.name}}</label>
-        <div class="col-md-8">
+    <div class="form-group">
+        <label for="var-{{variable.name}}" class="control-label col-md-2">{{variable.name}}</label>
+        <div class="col-md-10">
             <input id="var-{{variable.name}}" name="var-{{variable.name}}" type="{{variable.type}}" value="{{variable.value}}" class="form-control" />
         </div>
     </div>
@@ -13,9 +13,9 @@
         </div>
         <div class="panel-body collapse" id="advanced_variables">
             {% for name,variable in advanced_variables.items %}
-                <div class="form-control">
-                    <label for="var-{{variable.name}}" class="control-label col-md-4">{{variable.name}}</label>
-                    <div class="col-md-8">
+                <div class="form-group">
+                    <label for="var-{{variable.name}}" class="control-label col-md-2">{{variable.name}}</label>
+                    <div class="col-md-10">
                         <input id="var-{{variable.name}}" name="var-{{variable.name}}" type="{{variable.type}}" value="{{variable.value}}" class="form-control" />
                     </div>
                 </div>
