@@ -22,7 +22,7 @@
         {% endfor %}
     </div>
     <div class="col-md-3 text-center">
-        <a href="">preview reduction script</a>
+        <a href="{% url 'preview_script' run_number=instrument_variables.run_start %}">preview reduction script</a>
         <br/>
         <a href="{% url 'instrument_variables' instrument=instrument_variables.instrument start=instrument_variables.run_start end=instrument_variables.run_end %}">edit variables</a>
     </div>

@@ -3,6 +3,7 @@ from django.core.context_processors import csrf
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.views.generic.base import View
+from django.http import HttpResponse
 from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, require_staff
 from reduction_variables.models import InstrumentVariable, RunVariable
 from reduction_variables.utils import InstrumentVariablesUtils
@@ -172,3 +173,28 @@ def run_confirmation(request, run_number, run_version=0):
         'queued' : ReductionRun.objects.filter(instrument=reduction_run.instrument, status=queued_status).count(),
     }
     return context_dictionary
+
+@login_and_uows_valid
+def preview_script(request, instrument, run_number):
+    reduce_script = ''
+
+    if request.method == 'GET':
+        instrument = Instrument.objects.get(name=instrument)
+        run_variables = InstrumentVariable.objects.filter(start_run=run_number, instrument=instrument)
+        script_file = run_variables[0].scripts[0].script.decode("utf-8")
+        for variable in run_variables:
+            # TODO: Replace variable values in script text
+            pass
+        reduce_script = script_file
+    elif request.method == 'POST':
+        script_file = InstrumentVariablesUtils().get_current_script(instrument).decode("utf-8")
+        for key,value in request.POST:
+            if 'var-' in key:
+                # TODO: Replace variable in script text
+                pass
+        reduce_script = script_file
+
+    response = HttpResponse(content_type='application/x-python')
+    response['Content-Disposition'] = 'attachment; filename=reduce.py'
+    response.write(reduce_script)
+    return response
