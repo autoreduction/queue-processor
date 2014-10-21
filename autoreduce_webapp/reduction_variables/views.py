@@ -59,6 +59,7 @@ def instrument_summary(request, instrument):
     }
 
     context_dictionary = {
+        'instrument' : instrument,
         'current_variables' : current_vars,
         'upcoming_variables' : upcoming_variables_dict,
     }

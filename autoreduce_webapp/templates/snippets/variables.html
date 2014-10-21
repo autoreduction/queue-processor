@@ -1,10 +1,14 @@
 <div class="row">
-    <div class="col-md-3 text-center">
-        Runs
+    <div class="col-md-1 text-center">
         <div class="run-numbers">
+            Runs
             <div>{{ instrument_variables.run_start }}</div>
-            <div><i class="fa fa-arrow-circle-down"></i></div>
-            <div>{{ instrument_variables.run_end }}</div>
+                <div><i class="fa fa-arrow-down"></i></div>
+            {% if instrument_variables.run_start > 0 %}
+                <div>{{ instrument_variables.run_end }}</div>
+            {% else %}
+                <div>Ongoing</div>
+            {% endif %}
         </div>
     </div>
     <div class="col-md-7">
@@ -14,7 +18,7 @@
             </div>
         {% endfor %}
     </div>
-    <div class="col-md-9">
+    <div class="col-md-3 text-center">
         <a href="">preview reduction script</a><br/>
         <br/>
         <a href="{% url 'instrument_variables' instrument=instrument_variables.instrument start=instrument_variables.run_start end=instrument_variables.run_end %}">edit variables</a>

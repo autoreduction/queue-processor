@@ -5,7 +5,8 @@
  4. Footer
  5. Run List
  6. Run Summary
- 7. Overrides
+ 7. Variables
+ 8. Overrides
 ********************************/
 
 /****************
@@ -139,7 +140,21 @@ search#run_search {
 }
 
 /****************
- 7. Overrides
+ 7. Variables
+****************/
+.run-numbers{
+    border: 3px solid #428bca;
+    border-radius: 15px;
+    font-size: 1.2em;
+    line-height: 0.9em;
+    font-weight: bold;
+    margin: 0 20px;
+    padding:5px;
+}
+
+
+/****************
+ 8. Overrides
 ****************/
 .panel-small .panel-body {
     padding: 3px 15px;
