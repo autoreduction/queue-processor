@@ -1,4 +1,4 @@
-{% if current_variables['variables'] %}
+{% if current_variables.variables %}
     <div class="row">
         <div class="col-md-12">
             <div class="panel panel-primary">
@@ -31,7 +31,7 @@
                 <div class="panel-title">Upcoming Variables</div>
             </div>
             <div class="panel-body zebra-rows">
-                {% for upcoming_variable in upcoming_variables %}
+                {% for key,upcoming_variable in upcoming_variables.items %}
                     {% include "snippets/variables.html" with instrument_variables=upcoming_variable only %}
                 {% endfor %}
             </div>

@@ -51,6 +51,8 @@ def instrument_summary(request, instrument):
     except ValueError:
         next_variable_run_start = 0
 
+    # TODO: If current_variables is empty then generate variables from script
+
     current_vars = {
         'run_start' : current_variables_run_start,
         'run_end' : next_variable_run_start,
