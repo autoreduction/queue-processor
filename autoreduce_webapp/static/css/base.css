@@ -20,6 +20,10 @@ hr {
     left: -9999px
 }
 
+.zebra-rows .row:nth-of-type(even){
+    background: #f9f9f9;
+}
+
 /****************
  2. Navbar
 ****************/

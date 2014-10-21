@@ -1,12 +1,30 @@
+{% if current_variables %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <div class="panel-title">Current Variables</div>
+                </div>
+                <div class="panel-body">
+                    {% include "variables.html" with instrument_variables=current_variables only %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% if upcoming_variables %}
 <div class="row">
     <div class="col-md-12">
         <div class="panel panel-primary">
             <div class="panel-heading">
-                <div class="panel-title">Current Variables</div>
+                <div class="panel-title">Upcoming Variables</div>
             </div>
-            <div class="panel-body">
-
+            <div class="panel-body zebra-rows">
+                {% for upcoming_variable in upcoming_variables %}
+                    {% include "variables.html" with instrument_variables=upcoming_variable only %}
+                {% endfor %}
             </div>
         </div>
     </div>
 </div>
+{% endif %}
