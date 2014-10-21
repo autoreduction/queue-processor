@@ -17,6 +17,9 @@ def run_confirmation(request, run_number, run_version=0):
     context_dictionary = {}
     return render_to_response('base.html', context_dictionary, RequestContext(request))
 
+'''
+    Imported into another view, thus no middlewear
+'''
 def instrument_summary(request, instrument):
     # Check the user has permission
     if not request.user.is_superuser and instrument not in request.session['owned_instruments']:
@@ -76,6 +79,9 @@ def instrument_summary(request, instrument):
 
     return render_to_response('snippets/instrument_summary_variables.html', context_dictionary, RequestContext(request))
 
+@login_and_uows_valid
+@render_with('instrument_variables.html')
+@require_staff
 def instrument_variables(request, instrument, start=0, end=0):
     # Check the user has permission
     if not request.user.is_superuser and instrument not in request.session['owned_instruments']:
@@ -128,7 +134,7 @@ def instrument_variables(request, instrument, start=0, end=0):
         'minimum_run_start' : max(latest_completed_run, latest_processing_run)
     }
 
-    return render_to_response('instrument_variables.html', context_dictionary, RequestContext(request))
+    return context_dictionary
 
 def run_variables(request, run_number, run_version=0):
     context_dictionary = {}
