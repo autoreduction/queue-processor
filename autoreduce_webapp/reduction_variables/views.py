@@ -5,7 +5,7 @@ from django.shortcuts import render_to_response
 from django.views.generic.base import View
 from django.http import HttpResponse
 from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, require_staff
-from reduction_variables.models import InstrumentVariable, RunVariable
+from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFile
 from reduction_variables.utils import InstrumentVariablesUtils, VariableUtils
 from reduction_viewer.models import Instrument, ReductionRun
 from reduction_viewer.utils import StatusUtils
