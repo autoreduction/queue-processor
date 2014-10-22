@@ -55,7 +55,7 @@ def instrument_summary(request, instrument):
     try:
         next_variable_run_start = min(upcoming_variables_dict, key=upcoming_variables_dict.get)
     except ValueError:
-        next_variable_run_start = 0
+        next_variable_run_start = 1
 
     # If no variables are saved, use the dfault ones from the reduce script
     if not current_variables:
