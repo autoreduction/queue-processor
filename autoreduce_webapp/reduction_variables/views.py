@@ -100,7 +100,7 @@ def instrument_variables(request, instrument, start=0, end=0):
     except AttributeError :
         latest_processing_run = 0
 
-    if start == 0 and end == 0:
+    if not start and not end:
         try:
             start = InstrumentVariable.objects.filter(instrument=instrument,start_run__lte=latest_completed_run ).order_by('-start_run').first().start_run
         except AttributeError :
