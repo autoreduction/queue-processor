@@ -21,6 +21,9 @@ class InstrumentVariable(models.Model):
     def __unicode__(self):
         return u'%s - %s=%s' % (self.instrument.name, self.name, self.value)
 
+    def sanitized_name(self):
+        return name.replace(' ', '-')
+        
 class RunVariable(models.Model):
     reduction_run = models.ForeignKey(ReductionRun, related_name="run_variables")
     name = models.CharField(max_length=50, blank=False)
@@ -31,3 +34,6 @@ class RunVariable(models.Model):
 
     def __unicode__(self):
         return u'%s - %s=%s' % (self.reduction_run, self.name, self.value)
+
+    def sanitized_name(self):
+        return name.replace(' ', '-')
