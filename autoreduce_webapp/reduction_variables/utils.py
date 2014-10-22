@@ -1,4 +1,4 @@
-import logging, os, sys, imp, uuid
+import logging, os, sys, imp, uuid, re
 sys.path.append(os.path.join("../", os.path.dirname(os.path.dirname(__file__))))
 os.environ["DJANGO_SETTINGS_MODULE"] = "autoreduce_webapp.settings"
 from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL, BASE_DIR, REDUCTION_SCRIPT_BASE
@@ -6,6 +6,46 @@ logging.basicConfig(filename=LOG_FILE,level=LOG_LEVEL)
 from django.db import models
 from reduction_variables.models import InstrumentVariable, ScriptFile
 from reduction_viewer.utils import InstrumentUtils
+
+class VariableUtils(object):
+    def wrap_in-type_syntax(self, value, var_type):
+        if var_type == 'text':
+            return "'%s'" % value
+        if var_type == 'number':
+            return re.sub("[^0-9.]", "", value)
+        if var_type == 'boolean':
+            return value.lower() == 'true'
+        if var_type == 'list_number':
+            return '[%s]' % value
+        if var_type == 'list_text':
+            list_values = value.split(',')
+            for val in list_values:
+                val = "'%s'" % val.strip()
+            return '[%s]' % ','.join(list_values)
+
+    def convert_variable_to_type(value, var_type):
+        if var_type == "text":
+            return str(value)
+        if var_type == "number":
+            if '.' in value:
+                return float(value)
+            else:
+                return int(value)
+        if var_type == "list_text":
+            var_list = value.split(',')
+            for list_val in var_list:
+                list_val = str(list_val)
+            return var_list
+        if var_type == "list_number":
+            var_list = value.split(',')
+            for list_val in var_list:
+                if '.' in value:
+                    list_val = float(list_val)
+                else:
+                    list_val = int(list_val)
+            return var_list
+        if var_type == "bool":
+            return value.lower() == 'true'
 
 class InstrumentVariablesUtils(object):
     def set_default_instrument_variables(self, instrument_name, start_run):
@@ -23,6 +63,7 @@ class InstrumentVariablesUtils(object):
 
         instrument = InstrumentUtils().get_instrument(instrument_name)
         instrument_variables = []
+        # TODO: better handling of type decisions
         for key in reduce_script.standard_vars:
             instrument_var = InstrumentVariable(instrument=instrument, name=key, value=reduce_script.standard_vars[key], is_advanced=False, type=type(reduce_script.standard_vars[key]).__name__, start_run=start_run)
             instrument_var.save()
@@ -55,6 +96,7 @@ class InstrumentVariablesUtils(object):
             logging.error("Unable to load reduction script %s" % reduction_file)
             return
         variables = []
+        # TODO: better handling of type decisions
         for key in reduce_script.standard_vars:
             variable = {
                 'instrument' : instrument_name,
@@ -104,6 +146,7 @@ class ReductionVariablesUtiles(object):
 
         standard_vars = {}
         advanced_vars = {}
+        # TODO: need to correctly convert type
         for variables in run_variables:
             if variables.is_advanced:
                 advanced_vars[variables.name] = variables.value
