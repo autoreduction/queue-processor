@@ -23,6 +23,8 @@ hr {
 
 .zebra-rows .row:nth-of-type(even){
     background: #f9f9f9;
+    padding-top:10px;
+    padding-bottom:10px;
 }
 
 /****************
