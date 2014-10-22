@@ -45,6 +45,36 @@ class InstrumentVariablesUtils(object):
             logging.error("Unable to load reduction script %s" % reduction_file)
             return
 
+    def get_default_variables(self, instrument_name):
+        reduction_file = os.path.join(REDUCTION_SCRIPT_BASE, instrument_name, 'reduce.py')
+        try:
+            reduce_script = imp.load_source('reduce_script', reduction_file)
+            f = open(reduction_file, 'rb')
+            script_binary = f.read()
+        except IOError:
+            logging.error("Unable to load reduction script %s" % reduction_file)
+            return
+        variables = []
+        for key in reduce_script.standard_vars:
+            variable = {
+                'instrument' : instrument_name,
+                'is_advanced' : False,
+                'name' : key,
+                'value' : reduce_script.standard_vars[key],
+                'type' : type(reduce_script.standard_vars[key]).__name__,
+            }
+            variables.append(variable)
+        for key in reduce_script.advanced_vars:
+            variable = {
+                'instrument' : instrument_name,
+                'is_advanced' : True,
+                'name' : key,
+                'value' : reduce_script.advanced_vars[key],
+                'type' : type(reduce_script.advanced_vars[key]).__name__,
+            }
+            variables.append(variable)
+        return variables
+
 class ReductionVariablesUtiles(object):
     def get_script_path_and_arguments(self, run_variables):
         if not run_variables or len(run_variables) == 0:
