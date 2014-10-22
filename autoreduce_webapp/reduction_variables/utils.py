@@ -72,10 +72,10 @@ class InstrumentVariablesUtils(object):
             return reduce_script, script_binary
         except IOError:
             logging.error("Unable to load reduction script %s" % reduction_file)
-            return
+            return None, None
 
     def set_default_instrument_variables(self, instrument_name, start_run):
-        reduce_script, script_binary =  self.__load_reduction_script
+        reduce_script, script_binary =  self.__load_reduction_script(instrument_name)
 
         script = ScriptFile(script=script_binary, file_name='reduce.py')
         script.save()
@@ -88,11 +88,11 @@ class InstrumentVariablesUtils(object):
             variable.save()
 
     def get_current_script(self, instrument_name):
-        reduce_script, script_binary =  self.__load_reduction_script
+        reduce_script, script_binary =  self.__load_reduction_script(instrument_name)
         return script_binary
 
     def get_default_variables(self, instrument_name):
-        reduce_script, script_binary =  self.__load_reduction_script
+        reduce_script, script_binary =  self.__load_reduction_script(instrument_name)
         instrument = InstrumentUtils().get_instrument(instrument_name)
         variables = []
         for key in reduce_script.standard_vars:
