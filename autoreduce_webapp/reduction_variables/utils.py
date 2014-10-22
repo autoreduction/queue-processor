@@ -48,7 +48,7 @@ class VariableUtils(object):
             return value.lower() == 'true'
 
     def get_type_string(self, value):
-        var_type = type(reduce_script.advanced_vars[key]).__name__
+        var_type = type(value).__name__
         if var_type == 'str':
             return "text"
         if var_type == 'int' or var_type == 'float':
