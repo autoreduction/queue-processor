@@ -22,6 +22,10 @@
         var $form = $('#run_variables');
         if($form.length===0) $form = $('#instrument_variables');
 
+        var resetValidationStates = function resetValidationStates(){
+            $('.has-error').removeClass('has-error');
+        };
+
         var validateNotEmpty = function validateNotEmpty(){
             if($(this).val().trim() === ''){
                 $(this).parent().addClass('has-error');
@@ -89,6 +93,7 @@
             }
         });
 
+        resetValidationStates();
         $('[data-type="text"]').each(validateText);
         $('[data-type="number"]').each(validateNumber);
         $('[data-type="boolean"]').each(validateBoolean);
