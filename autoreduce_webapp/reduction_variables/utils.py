@@ -47,73 +47,71 @@ class VariableUtils(object):
         if var_type == "bool":
             return value.lower() == 'true'
 
+    def get_type_string(self, value):
+        var_type = type(reduce_script.advanced_vars[key]).__name__
+        if var_type == 'str':
+            return "text"
+        if var_type == 'int' or var_type == 'float':
+            return "number"
+        if var_type == 'bool':
+            return "boolean"
+        if var_type == 'list':
+            if len(value) == 0 or type(value[0]).__name__ == 'str':
+                return "list_text"
+            if type(value[0]).__name__ == 'int' or type(value[0]).__name__ == 'float':
+                return "list_number"
+        return "text"
+
 class InstrumentVariablesUtils(object):
-    def set_default_instrument_variables(self, instrument_name, start_run):
+    def __load_reduction_script(self, instrument_name):
         reduction_file = os.path.join(REDUCTION_SCRIPT_BASE, instrument_name, 'reduce.py')
         try:
             reduce_script = imp.load_source('reduce_script', reduction_file)
             f = open(reduction_file, 'rb')
             script_binary = f.read()
+            return reduce_script, script_binary
         except IOError:
             logging.error("Unable to load reduction script %s" % reduction_file)
             return
+
+    def set_default_instrument_variables(self, instrument_name, start_run):
+        reduce_script, script_binary =  self.__load_reduction_script
 
         script = ScriptFile(script=script_binary, file_name='reduce.py')
         script.save()
 
-        instrument = InstrumentUtils().get_instrument(instrument_name)
-        instrument_variables = []
-        # TODO: better handling of type decisions
-        for key in reduce_script.standard_vars:
-            instrument_var = InstrumentVariable(instrument=instrument, name=key, value=reduce_script.standard_vars[key], is_advanced=False, type=type(reduce_script.standard_vars[key]).__name__, start_run=start_run)
-            instrument_var.save()
-            instrument_var.scripts.add(script)
-            instrument_var.save()
-        for key in reduce_script.advanced_vars:
-            instrument_var = InstrumentVariable(instrument=instrument, name=key, value=reduce_script.advanced_vars[key], is_advanced=True, type=type(reduce_script.advanced_vars[key]).__name__, start_run=start_run)
-            instrument_var.save()
-            instrument_var.scripts.add(script)
-            instrument_var.save()
+        instrument_variables = self.get_default_variables(instrument_name)
+        for variable in instrument_variables:
+            variable.start_run = start_run
+            variable.save()
+            variable.scripts.add(script)
+            variable.save()
 
     def get_current_script(self, instrument_name):
-        reduction_file = os.path.join(REDUCTION_SCRIPT_BASE, instrument_name, 'reduce.py')
-        try:
-            reduce_script = imp.load_source('reduce_script', reduction_file)
-            f = open(reduction_file, 'rb')
-            script_binary = f.read()
-            return script_binary
-        except IOError:
-            logging.error("Unable to load reduction script %s" % reduction_file)
-            return
+        reduce_script, script_binary =  self.__load_reduction_script
+        return script_binary
 
     def get_default_variables(self, instrument_name):
-        reduction_file = os.path.join(REDUCTION_SCRIPT_BASE, instrument_name, 'reduce.py')
-        try:
-            reduce_script = imp.load_source('reduce_script', reduction_file)
-            f = open(reduction_file, 'rb')
-            script_binary = f.read()
-        except IOError:
-            logging.error("Unable to load reduction script %s" % reduction_file)
-            return
+        reduce_script, script_binary =  self.__load_reduction_script
+        instrument = InstrumentUtils().get_instrument(instrument_name)
         variables = []
-        # TODO: better handling of type decisions
         for key in reduce_script.standard_vars:
-            variable = {
-                'instrument' : instrument_name,
-                'is_advanced' : False,
-                'name' : key,
-                'value' : reduce_script.standard_vars[key],
-                'type' : type(reduce_script.standard_vars[key]).__name__,
-            }
+            variable = InstrumentVariable(
+                instrument=instrument, 
+                name=key, 
+                value=reduce_script.standard_vars[key], 
+                is_advanced=False, 
+                type=VariableUtils().get_type_string(reduce_script.standard_vars[key]),
+                )
             variables.append(variable)
         for key in reduce_script.advanced_vars:
-            variable = {
-                'instrument' : instrument_name,
-                'is_advanced' : True,
-                'name' : key,
-                'value' : reduce_script.advanced_vars[key],
-                'type' : type(reduce_script.advanced_vars[key]).__name__,
-            }
+            variable = InstrumentVariable(
+                instrument=instrument, 
+                name=key, 
+                value=reduce_script.advanced_vars[key], 
+                is_advanced=True, 
+                type=VariableUtils().get_type_string(reduce_script.advanced_vars[key]),
+                )
             variables.append(variable)
         return variables
 
