@@ -88,7 +88,49 @@ def instrument_variables(request, instrument, start=0, end=0):
     instrument = Instrument.objects.get(name=instrument)
 
     if request.method == 'POST':
-        # TODO: Read variables, validate and save
+        # TODO: validate
+
+        start = request.POST.get("run_start", 1)
+        end = request.POST.get("run_end", None)
+
+        # Remove any existing variables saved within the provided range
+        if end:
+            existing_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run__gte=start, start_run__lte=end)
+            # TODO: Set values for following period
+        else:
+            existing_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run__gte=start)
+        for existing in existing_variables:
+            existing.delete()
+
+        script_binary = InstrumentVariablesUtils().get_current_script(instrument)
+        script = ScriptFile(script=script_binary, file_name='reduce.py')
+        script.save()
+
+        default_variables = InstrumentVariablesUtils().get_default_variables(instrument)
+        for default_var in default_variables:
+            form_name = 'var-'
+            if default_var.is_advanced:
+                form_name += 'advanced-'
+            else:
+                form_name += 'standard-'
+            form_name += default_var.sanitized_name
+
+            post_variable = request.POST.get(form_name, None)
+            if post_variable:
+                variable = InstrumentVariable(
+                    instrument=instrument, 
+                    name=default_var.name, 
+                    value=post_variable, 
+                    is_advanced=default_var.is_advanced, 
+                    type=default_var.type,
+                    start_run =start,
+                    )
+            else:
+                variable = default_var
+                variable.scripts.clear()
+            variable.save()
+            variable.scripts.add(script)
+            varaible.save()
 
         return redirect('instrument_summary', instrument=instrument.name)
     else:
