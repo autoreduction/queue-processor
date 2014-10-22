@@ -178,7 +178,7 @@ def instrument_variables(request, instrument, start=0, end=0):
             'queued' : ReductionRun.objects.filter(instrument=instrument, status=queued_status),
             'standard_variables' : standard_vars,
             'advanced_variables' : advanced_vars,
-            'default_variables' : InstrumentVariablesUtils().get_default_variables(instrument=instrument.name),
+            'default_variables' : InstrumentVariablesUtils().get_default_variables(instrument.name),
             'run_start' : start,
             'run_end' : end,
             'minimum_run_start' : max(latest_completed_run, latest_processing_run)
