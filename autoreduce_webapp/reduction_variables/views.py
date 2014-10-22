@@ -130,7 +130,7 @@ def instrument_variables(request, instrument, start=0, end=0):
                 variable.scripts.clear()
             variable.save()
             variable.scripts.add(script)
-            varaible.save()
+            variable.save()
 
         return redirect('instrument_summary', instrument=instrument.name)
     else:
