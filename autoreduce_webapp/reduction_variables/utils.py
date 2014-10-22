@@ -75,6 +75,8 @@ class InstrumentVariablesUtils(object):
             return None, None
 
     def set_default_instrument_variables(self, instrument_name, start_run):
+        if not start_run:
+            start_run = 1
         reduce_script, script_binary =  self.__load_reduction_script(instrument_name)
 
         script = ScriptFile(script=script_binary, file_name='reduce.py')
@@ -102,6 +104,7 @@ class InstrumentVariablesUtils(object):
                 value=str(reduce_script.standard_vars[key]).replace('[','').replace(']',''), 
                 is_advanced=False, 
                 type=VariableUtils().get_type_string(reduce_script.standard_vars[key]),
+                start_run = 0,
                 )
             variables.append(variable)
         for key in reduce_script.advanced_vars:
@@ -111,6 +114,7 @@ class InstrumentVariablesUtils(object):
                 value=str(reduce_script.advanced_vars[key]).replace('[','').replace(']',''), 
                 is_advanced=True, 
                 type=VariableUtils().get_type_string(reduce_script.advanced_vars[key]),
+                start_run = 0,
                 )
             variables.append(variable)
         return variables
