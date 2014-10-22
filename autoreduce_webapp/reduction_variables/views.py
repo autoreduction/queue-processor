@@ -155,6 +155,7 @@ def run_summary(request, run_number, run_version=0):
         'run_version' : run_version,
         'standard_variables' : standard_vars,
         'advanced_variables' : advanced_vars,
+        'instrument' : reduction_run.instrument,
     }
     context_dictionary.update(csrf(request))
     return render_to_response('snippets/run_variables.html', context_dictionary, RequestContext(request))

@@ -25,8 +25,9 @@
 {% endif %}
 <div class="form-group variables-buttons">
     <div class="col-md-12 text-right">
-        <a href="#previewScript" class="btn btn-default ">Preview reduction script</a> 
-        <a href="#resetValues" class="btn btn-default">Reset to default values</a> 
-        <input type="submit" value="{{button_text}}" class="btn btn-success" />
+        <input type="hidden" id="preview_url" value="{% url 'preview_script' instrument=instrument %}"/>
+        <a href="#previewScript" class="btn btn-default " id="previewScript">Preview reduction script</a> 
+        <a href="#resetValues" class="btn btn-default" id="resetValues">Reset to default values</a> 
+        <input type="submit" value="{{button_text}}" class="btn btn-success" id="variableSubmit" />
     </div>
 </div>

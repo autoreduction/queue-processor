@@ -161,4 +161,7 @@
 
 {% block scripts %}
     <script src="{% static "javascript/run_summary.js" %}"></script>
+    {% if reduction_variables_on %}  
+        <script src="{% static "javascript/run_variables.js" %}"></script>
+    {% endif %}
 {% endblock %}
