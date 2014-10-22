@@ -206,7 +206,7 @@ def preview_script(request, instrument, run_number):
     elif request.method == 'POST':
         script_file = InstrumentVariablesUtils().get_current_script(instrument).decode("utf-8")
         default_variables = InstrumentVariablesUtils().get_default_variables(instrument)
-        for key,value in request.POST:
+        for key,value in request.POST.iteritems():
             if 'var-' in key:
                 if 'var-advanced-' in key:
                     name = key.replace('var-advanced-', '').replace('-',' ')
