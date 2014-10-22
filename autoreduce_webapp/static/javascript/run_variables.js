@@ -111,7 +111,7 @@
 
     var triggerAfterRunOptions = function triggerAfterRunOptions(){
         if($(this).val().trim() !== ''){
-            $('#next_run').text(int($(this).val())+1);
+            $('#next_run').text(parseInt($(this).val())+1);
             $('#run_finish_warning').show();
         }
     };
