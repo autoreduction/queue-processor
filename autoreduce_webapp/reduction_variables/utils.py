@@ -23,7 +23,7 @@ class VariableUtils(object):
                 val = "'%s'" % val.strip()
             return '[%s]' % ','.join(list_values)
 
-    def convert_variable_to_type(value, var_type):
+    def convert_variable_to_type(self, value, var_type):
         if var_type == "text":
             return str(value)
         if var_type == "number":
