@@ -59,7 +59,7 @@ def instrument_summary(request, instrument):
 
     # If no variables are saved, use the dfault ones from the reduce script
     if not current_variables:
-        InstrumentVariablesUtils().set_default_instrument_variables(instrument, current_variables_run_start)
+        InstrumentVariablesUtils().set_default_instrument_variables(instrument.name, current_variables_run_start)
         current_variables = InstrumentVariable.objects.filter(instrument=instrument,start_run=current_variables_run_start )
 
     current_vars = {
@@ -191,14 +191,14 @@ def preview_script(request, instrument, run_number):
     if request.method == 'GET':
         instrument = Instrument.objects.get(name=instrument)
         run_variables = InstrumentVariable.objects.filter(start_run=run_number, instrument=instrument)
-        script_file = run_variables[0].scripts[0].script.decode("utf-8")
+        script_file = run_variables[0].scripts.all()[0].script.decode("utf-8")
         for variable in run_variables:
             if variable.is_advanced:
                 pattern = advanced_pattern % variable.name
             else:
                 pattern = standard_pattern % variable.name
             # Wrap the value in the correct syntax to indicate the type
-            value = VariableUtils().wrap_in_type_syntax(variable.value, default_var.type)
+            value = VariableUtils().wrap_in_type_syntax(variable.value, variable.type)
             value = '\g<before>%s' % value
             script_file = re.sub(pattern, value, script_file)
 
