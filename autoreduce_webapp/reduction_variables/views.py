@@ -105,8 +105,10 @@ def instrument_variables(request, instrument, start=0, end=0):
             start = InstrumentVariable.objects.filter(instrument=instrument,start_run__lte=latest_completed_run ).order_by('-start_run').first().start_run
         except AttributeError :
             start = 1
-        if not start:
-            start = 1
+    if not start:
+        start = 1
+    if not end:
+        end = 0
     variables = InstrumentVariable.objects.filter(instrument=instrument,start_run=start)
 
     # If no variables are saved, use the dfault ones from the reduce script
