@@ -146,12 +146,12 @@ class ReductionVariablesUtiles(object):
 
         standard_vars = {}
         advanced_vars = {}
-        # TODO: need to correctly convert type
         for variables in run_variables:
+            value = VariableUtils().convert_variable_to_type(variables.value, variables.type)
             if variables.is_advanced:
-                advanced_vars[variables.name] = variables.value
+                advanced_vars[variables.name] = value
             else:
-                standard_vars[variables.name] = variables.value
+                standard_vars[variables.name] = value
 
         arguments = { 'standard_vars' : standard_vars, 'advanced_vars': advanced_vars }
 
