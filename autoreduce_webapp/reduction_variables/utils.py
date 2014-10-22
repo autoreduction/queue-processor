@@ -99,7 +99,7 @@ class InstrumentVariablesUtils(object):
             variable = InstrumentVariable(
                 instrument=instrument, 
                 name=key, 
-                value=reduce_script.standard_vars[key].replace('[','').replace(']',''), 
+                value=str(reduce_script.standard_vars[key]).replace('[','').replace(']',''), 
                 is_advanced=False, 
                 type=VariableUtils().get_type_string(reduce_script.standard_vars[key]),
                 )
@@ -108,7 +108,7 @@ class InstrumentVariablesUtils(object):
             variable = InstrumentVariable(
                 instrument=instrument, 
                 name=key, 
-                value=reduce_script.advanced_vars[key].replace('[','').replace(']',''), 
+                value=str(reduce_script.advanced_vars[key]).replace('[','').replace(']',''), 
                 is_advanced=True, 
                 type=VariableUtils().get_type_string(reduce_script.advanced_vars[key]),
                 )
