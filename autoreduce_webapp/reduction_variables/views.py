@@ -102,11 +102,11 @@ def instrument_variables(request, instrument, start=0, end=0):
         for existing in existing_variables:
             existing.delete()
 
-        script_binary = InstrumentVariablesUtils().get_current_script(instrument)
+        script_binary = InstrumentVariablesUtils().get_current_script(instrument.name)
         script = ScriptFile(script=script_binary, file_name='reduce.py')
         script.save()
 
-        default_variables = InstrumentVariablesUtils().get_default_variables(instrument)
+        default_variables = InstrumentVariablesUtils().get_default_variables(instrument.name)
         for default_var in default_variables:
             form_name = 'var-'
             if default_var.is_advanced:
