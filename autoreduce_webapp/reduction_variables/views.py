@@ -95,7 +95,7 @@ def instrument_variables(request, instrument, start=0, end=0):
 
         # Remove any existing variables saved within the provided range
         if end > 0:
-            existing_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run__range(start, end))
+            existing_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run__gte=start, start_run__lte=end)
             # TODO: Set values for following period
         else:
             existing_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run__gte=start)
