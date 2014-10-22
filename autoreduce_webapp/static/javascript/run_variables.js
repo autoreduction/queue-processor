@@ -46,15 +46,15 @@
             }
         };
         var validateListNumber = function validateListNumber(){
-            var items;
+            var items, i;
             validateNotEmpty.call(this);
             if($(this).val().trim().endsWith(',')){
                 $(this).parent().addClass('has-error');
                 isValid = false;
             }else{
                 items = $(this).val().split(',');
-                for(item in items){
-                    if(!isNumber(item)){
+                for(i=0;i<items.length;i++){
+                    if(!isNumber(items[i])){
                         $(this).parent().addClass('has-error');
                         isValid = false;
                         break;
@@ -63,14 +63,15 @@
             }
         };
         var validateListText = function validateListText(){
+            var items, i;
             validateNotEmpty.call(this);
             if($(this).val().trim().endsWith(',')){
                 $(this).parent().addClass('has-error');
                 isValid = false;
             }else{
                 items = $(this).val().split(',');
-                for(item in items){
-                    if(item.trim() === ''){
+                for(i=0;i<items.length;i++){
+                    if(items[i].trim() === ''){
                         $(this).parent().addClass('has-error');
                         isValid = false;
                         break;
