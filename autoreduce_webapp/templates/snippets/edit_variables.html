@@ -4,7 +4,7 @@
     <div class="form-group">
         <label for="var-standard-{{variable.sanitized_name}}" class="control-label col-md-2">{{variable.name}}</label>
         <div class="col-md-10">
-            <input id="var-standard-{{variable.sanitized_name}}" name="var-standard-{{variable.sanitized_name}}" type="{% variable_type variable.type %}" data-type="{{variable.type}}" value="{{variable.value}}" class="form-control" {% if variable.type == 'boolean' and variable.value.lower == 'true' %}checked{%endif%} />
+            <input id="var-standard-{{variable.sanitized_name}}" name="var-standard-{{variable.sanitized_name}}" type="{% variable_type variable.type %}" data-type="{{variable.type}}" value="{{variable.value}}" {% if variable.type == 'boolean' and variable.value.lower == 'true' %}checked{% else %}class="form-control"{%endif%} />
         </div>
     </div>
 {% endfor %}
@@ -18,7 +18,7 @@
                 <div class="form-group">
                     <label for="var-advanced-{{variable.sanitized_name}}" class="control-label col-md-2">{{variable.name}}</label>
                     <div class="col-md-10">
-                        <input id="var-advanced-{{variable.sanitized_name}}" name="var-advanced-{{variable.sanitized_name}}" type="{% variable_type variable.type %}" data-type="{{variable.type}}" value="{{variable.value}}" class="form-control" {% if variable.type == 'boolean' and variable.value.lower == 'true' %}checked{%endif%}/>
+                        <input id="var-advanced-{{variable.sanitized_name}}" name="var-advanced-{{variable.sanitized_name}}" type="{% variable_type variable.type %}" data-type="{{variable.type}}" value="{{variable.value}}" {% if variable.type == 'boolean' and variable.value.lower == 'true' %}checked{% else %}class="form-control"{%endif%}/>
                     </div>
                 </div>
             {% endfor %}
