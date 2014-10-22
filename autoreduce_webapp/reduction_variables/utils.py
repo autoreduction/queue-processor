@@ -8,7 +8,7 @@ from reduction_variables.models import InstrumentVariable, ScriptFile
 from reduction_viewer.utils import InstrumentUtils
 
 class VariableUtils(object):
-    def wrap_in-type_syntax(self, value, var_type):
+    def wrap_in_type_syntax(self, value, var_type):
         if var_type == 'text':
             return "'%s'" % value
         if var_type == 'number':
