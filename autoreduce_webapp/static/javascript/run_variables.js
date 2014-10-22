@@ -113,6 +113,8 @@
         if($(this).val().trim() !== ''){
             $('#next_run').text(parseInt($(this).val())+1);
             $('#run_finish_warning').show();
+        }else{
+            $('#run_finish_warning').hide();
         }
     };
 
