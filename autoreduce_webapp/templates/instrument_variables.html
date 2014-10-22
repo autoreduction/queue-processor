@@ -42,14 +42,29 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-md-12">
-                    <fieldset class="hide" id="subsequant_variable_choices">
-                        <legend>What variables should be used from run <span id="next_run"></span> onwards?</legend>
-                    </fieldset>
+                <div class="col-md-10 col-md-offset-1">
+                    <div class="alert alert-warning collapse" id="run_finish_warning">
+                        <strong>Please Note:</strong> The <a href="#" class="js-show-default-variables">default script values</a> will be used from run <span id="next_run"></span> onwards. You will be able to change this by selecting the appropriate "edit variables" link from the Instrument Summary page.
+                    </div>
                 </div>
             </div>
             {% include "snippets/edit_variables.html" with standard_variables=standard_variables advanced_variables=advanced_variables instrument=instrument.name button_text="Submit Changes" only %}
         </form>
+
+        <div class="modal fade" id="default-variables-modal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                        <h4 class="modal-title">Default Variables</h4>
+                    </div>
+                    <div class="modal-body">
+                        {% include "snippets/variables.html" with instrument_variables=default_variables instrument=instrument only %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
     {% else %}
         <div class="text-center col-md-6 col-md-offset-3 well well-small">
             Instrument not found.

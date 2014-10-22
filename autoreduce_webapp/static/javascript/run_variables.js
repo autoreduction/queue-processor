@@ -109,9 +109,22 @@
         }
     };
 
+    var triggerAfterRunOptions = function triggerAfterRunOptions(){
+        if($(this).val().trim() !== ''){
+            $('#next_run').text(int($(this).val())+1);
+            $('#run_finish_warning').show();
+        }
+    };
+
+    var showDefaultSriptVariables = function showDefaultSriptVariables(){
+        $('#default-variables-modal').modal();
+    };
+    
     var init = function init(){
         $('#previewScript').on('click', previewScript);
         $('#variableSubmit').on('click', validateForm);
+        $('#run_end').on('change', triggerAfterRunOptions);
+        $('.js-show-default-variables').on('click', showDefaultSriptVariables);
     };
 
     init();

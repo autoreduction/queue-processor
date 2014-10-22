@@ -88,15 +88,15 @@ def instrument_variables(request, instrument, start=0, end=0):
     instrument = Instrument.objects.get(name=instrument)
 
     if request.method == 'POST':
-        # TODO: validate
-
         start = request.POST.get("run_start", 1)
         end = request.POST.get("run_end", None)
 
         # Remove any existing variables saved within the provided range
         if end and end > 0:
             existing_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run__gte=start, start_run__lte=end)
-            # TODO: Set values for following period
+            # Create default variables for after the run end if they don't already exist
+            if not InstrumentVariable.objects.filter(instrument=instrument, start_run=end+1):
+                InstrumentVariablesUtils().set_default_instrument_variables(instrument.name, end+1)
         else:
             existing_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run__gte=start)
         for existing in existing_variables:
@@ -178,6 +178,7 @@ def instrument_variables(request, instrument, start=0, end=0):
             'queued' : ReductionRun.objects.filter(instrument=instrument, status=queued_status),
             'standard_variables' : standard_vars,
             'advanced_variables' : advanced_vars,
+            'default_variables' : InstrumentVariablesUtils().get_default_variables(instrument=instrument.name),
             'run_start' : start,
             'run_end' : end,
             'minimum_run_start' : max(latest_completed_run, latest_processing_run)
