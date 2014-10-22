@@ -10,7 +10,7 @@ from reduction_viewer.utils import InstrumentUtils
 class VariableUtils(object):
     def wrap_in_type_syntax(self, value, var_type):
         if var_type == 'text':
-            return "'%s'" % value
+            return "'%s'" % value.replace("'", "\'")
         if var_type == 'number':
             return re.sub("[^0-9.]", "", value)
         if var_type == 'boolean':
@@ -20,7 +20,7 @@ class VariableUtils(object):
         if var_type == 'list_text':
             list_values = value.split(',')
             for val in list_values:
-                val = "'%s'" % val.strip()
+                val = "'%s'" % val.strip().replace("'", "\'")
             return '[%s]' % ','.join(list_values)
 
     def convert_variable_to_type(self, value, var_type):
