@@ -59,7 +59,11 @@
                         <h4 class="modal-title">Default Variables</h4>
                     </div>
                     <div class="modal-body">
-                        {% include "snippets/variables.html" with instrument_variables=default_variables instrument=instrument only %}
+                        {% for variable in default_variables %}
+                            <div>
+                                <strong>{{ variable.name }}:</strong> {{ variable.value }}
+                            </div>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
