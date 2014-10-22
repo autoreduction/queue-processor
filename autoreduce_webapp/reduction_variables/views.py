@@ -6,13 +6,13 @@ from django.views.generic.base import View
 from django.http import HttpResponse
 from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, require_staff
 from reduction_variables.models import InstrumentVariable, RunVariable
-from reduction_variables.utils import InstrumentVariablesUtils
+from reduction_variables.utils import InstrumentVariablesUtils, VariableUtils
 from reduction_viewer.models import Instrument, ReductionRun
 from reduction_viewer.utils import StatusUtils
 from django.http import HttpResponseForbidden
 from autoreduce_webapp.icat_communication import ICATCommunication
 from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL
-import logging
+import logging, re
 logging.basicConfig(filename=LOG_FILE,level=LOG_LEVEL)
 
 '''
@@ -178,21 +178,52 @@ def run_confirmation(request, run_number, run_version=0):
 def preview_script(request, instrument, run_number):
     reduce_script = ''
 
+    '''
+        Regular expressions to find the values of the exposed variables
+        Each is seperated into two named groups, before & value.
+        \s* is used to allow for unlimited spaces
+        %s is later replaced with the variable name
+        A live example can be found at: http://regex101.com/r/oJ7iY5/1
+    '''
+    standard_pattern = "(?P<before>(\s)standard_vars\s*=\s*\{(([\s\S])+)['|\"]%s['|\"]\s*:\s*)(?P<value>((?!,\n)[\S])+)"
+    advanced_pattern = "(?P<before>(\s)advanced_vars\s*=\s*\{(([\s\S])+)['|\"]%s['|\"]\s*:\s*)(?P<value>((?!,\n)[\S])+)"
+
     if request.method == 'GET':
         instrument = Instrument.objects.get(name=instrument)
         run_variables = InstrumentVariable.objects.filter(start_run=run_number, instrument=instrument)
         script_file = run_variables[0].scripts[0].script.decode("utf-8")
         for variable in run_variables:
-            # TODO: Replace variable values in script text
-            pass
-        reduce_script = script_file
+            if variable.is_advanced:
+                pattern = advanced_pattern % variable.name
+            else:
+                pattern = standard_pattern % variable.name
+            # Wrap the value in the correct syntax to indicate the type
+            value = VariableUtils().wrap_in_type_syntax(variable.value, default_var.type)
+            value = '\g<before>%s' % value
+            script_file = re.sub(pattern, value, script_file)
+
     elif request.method == 'POST':
         script_file = InstrumentVariablesUtils().get_current_script(instrument).decode("utf-8")
+        default_variables = InstrumentVariablesUtils().get_default_variables(instrument)
         for key,value in request.POST:
             if 'var-' in key:
-                # TODO: Replace variable in script text
-                pass
-        reduce_script = script_file
+                if 'var-advanced-' in key:
+                    name = key.replace('var-advanced-', '').replace('-',' ')
+                    default_var = next((x for x in default_variables if x.name == name), None)
+                    if not default_var: continue
+                    pattern = advanced_pattern % name
+
+                if 'var-standard-' in key:
+                    name = key.replace('var-standard-', '').replace('-',' ')
+                    default_var = next((x for x in default_variables if x.name == name), None)
+                    if not default_var: continue
+                    pattern = standard_pattern % name
+                # Wrap the value in the correct syntax to indicate the type
+                value = VariableUtils().wrap_in_type_syntax(value, default_var.type)
+                value = '\g<before>%s' % value
+                script_file = re.sub(pattern, value, script_file)
+
+    reduce_script = script_file
 
     response = HttpResponse(content_type='application/x-python')
     response['Content-Disposition'] = 'attachment; filename=reduce.py'
