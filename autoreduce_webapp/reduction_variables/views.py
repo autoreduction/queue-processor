@@ -87,56 +87,62 @@ def instrument_variables(request, instrument, start=0, end=0):
     
     instrument = Instrument.objects.get(name=instrument)
 
-    completed_status = StatusUtils().get_completed()
-    processing_status = StatusUtils().get_processing()
-    queued_status = StatusUtils().get_queued()
+    if request.method == 'POST':
+        # TODO: Read variables, validate and save
 
-    try:
-        latest_completed_run = ReductionRun.objects.filter(instrument=instrument, run_version=0, status=completed_status).order_by('-run_number').first().run_number
-    except AttributeError :
-        latest_completed_run = 0
-    try:
-        latest_processing_run = ReductionRun.objects.filter(instrument=instrument, run_version=0, status=processing_status).order_by('-run_number').first().run_number
-    except AttributeError :
-        latest_processing_run = 0
+        return redirect('instrument_summary', instrument=instrument.name)
+    else:
 
-    if not start and not end:
+        completed_status = StatusUtils().get_completed()
+        processing_status = StatusUtils().get_processing()
+        queued_status = StatusUtils().get_queued()
+
         try:
-            start = InstrumentVariable.objects.filter(instrument=instrument,start_run__lte=latest_completed_run ).order_by('-start_run').first().start_run
+            latest_completed_run = ReductionRun.objects.filter(instrument=instrument, run_version=0, status=completed_status).order_by('-run_number').first().run_number
         except AttributeError :
+            latest_completed_run = 0
+        try:
+            latest_processing_run = ReductionRun.objects.filter(instrument=instrument, run_version=0, status=processing_status).order_by('-run_number').first().run_number
+        except AttributeError :
+            latest_processing_run = 0
+
+        if not start and not end:
+            try:
+                start = InstrumentVariable.objects.filter(instrument=instrument,start_run__lte=latest_completed_run ).order_by('-start_run').first().start_run
+            except AttributeError :
+                start = 1
+        if not start:
             start = 1
-    if not start:
-        start = 1
-    if not end:
-        end = 0
-    variables = InstrumentVariable.objects.filter(instrument=instrument,start_run=start)
+        if not end:
+            end = 0
+        variables = InstrumentVariable.objects.filter(instrument=instrument,start_run=start)
 
-    # If no variables are saved, use the dfault ones from the reduce script
-    if not variables:
-        InstrumentVariablesUtils().set_default_instrument_variables(instrument.name, start)
-        variables = InstrumentVariable.objects.filter(instrument=instrument,start_run=start )
+        # If no variables are saved, use the dfault ones from the reduce script
+        if not variables:
+            InstrumentVariablesUtils().set_default_instrument_variables(instrument.name, start)
+            variables = InstrumentVariable.objects.filter(instrument=instrument,start_run=start )
 
-    standard_vars = {}
-    advanced_vars = {}
-    for variable in variables:
-        if variable.is_advanced:
-            advanced_vars[variable.name] = variable
-        else:
-            standard_vars[variable.name] = variable
+        standard_vars = {}
+        advanced_vars = {}
+        for variable in variables:
+            if variable.is_advanced:
+                advanced_vars[variable.name] = variable
+            else:
+                standard_vars[variable.name] = variable
 
-    context_dictionary = {
-        'instrument' : instrument,
-        'processing' : ReductionRun.objects.filter(instrument=instrument, status=processing_status),
-        'queued' : ReductionRun.objects.filter(instrument=instrument, status=queued_status),
-        'standard_variables' : standard_vars,
-        'advanced_variables' : advanced_vars,
-        'run_start' : start,
-        'run_end' : end,
-        'minimum_run_start' : max(latest_completed_run, latest_processing_run)
-    }
-    context_dictionary.update(csrf(request))
+        context_dictionary = {
+            'instrument' : instrument,
+            'processing' : ReductionRun.objects.filter(instrument=instrument, status=processing_status),
+            'queued' : ReductionRun.objects.filter(instrument=instrument, status=queued_status),
+            'standard_variables' : standard_vars,
+            'advanced_variables' : advanced_vars,
+            'run_start' : start,
+            'run_end' : end,
+            'minimum_run_start' : max(latest_completed_run, latest_processing_run)
+        }
+        context_dictionary.update(csrf(request))
 
-    return context_dictionary
+        return context_dictionary
 
 '''
     Imported into another view, thus no middlewear
