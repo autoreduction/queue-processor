@@ -32,7 +32,7 @@
             </div>
             <div class="panel-body zebra-rows">
                 {% for key,upcoming_variable in upcoming_variables.items %}
-                    {% include "snippets/variables.html" with instrument_variables=upcoming_variable only %}
+                    {% include "snippets/variables.html" with instrument_variables=upcoming_variable instrument=instrument only %}
                 {% endfor %}
             </div>
         </div>

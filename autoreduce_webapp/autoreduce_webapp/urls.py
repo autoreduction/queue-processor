@@ -23,5 +23,5 @@ urlpatterns = patterns('',
 
     url(r'^experiment/(?P<reference_number>[0-9]+)/$', reduction_viewer_views.experiment_summary, name='experiment_summary'),       
 
-    url(r'^script(?:/(?P<instrument>[0-9]+))?(?:/(?P<run_number>[0-9]+))?/$', reduction_variables_views.preview_script, name='preview_script'),
+    url(r'^script(?:/(?P<instrument>\w+))?(?:/(?P<run_number>[0-9]+))?/$', reduction_variables_views.preview_script, name='preview_script'),
 )
