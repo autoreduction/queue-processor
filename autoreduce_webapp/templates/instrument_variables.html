@@ -21,7 +21,7 @@
                 </p>
             </div>
         </div>
-        <form id="instrument_variables" method="POST" class="form-horizontal">
+        <form id="instrument_variables" method="POST" action="{% url 'instrument_variables' instrument=instrument start=run_start end=run_end %}" class="form-horizontal">
             {% csrf_token %}
             <div class="row">
                 <div class="col-md-6">
