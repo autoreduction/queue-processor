@@ -80,7 +80,7 @@
         };
 
         // Populate all boolean values with their checked state
-        $('[type="boolean"]').each(function(){
+        $('[data-type="boolean"]').each(function(){
             if($(this).attr('checked')){
                 $(this).val('True');
             }else{
@@ -88,11 +88,11 @@
             }
         });
 
-        $('[type="text"]').each(validateText);
-        $('[type="number"]').each(validateNumber);
-        $('[type="boolean"]').each(validateBoolean);
-        $('[type="list_number"]').each(validateListNumber);
-        $('[type="list_text"]').each(validateListText);
+        $('[data-type="text"]').each(validateText);
+        $('[data-type="number"]').each(validateNumber);
+        $('[data-type="boolean"]').each(validateBoolean);
+        $('[data-type="list_number"]').each(validateListNumber);
+        $('[data-type="list_text"]').each(validateListText);
 
         event.preventDefault();
         if(isValid){
