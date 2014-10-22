@@ -113,7 +113,7 @@ def instrument_variables(request, instrument, start=0, end=0):
                 form_name += 'advanced-'
             else:
                 form_name += 'standard-'
-            form_name += default_var.sanitized_name
+            form_name += default_var.sanitized_name()
 
             post_variable = request.POST.get(form_name, None)
             if post_variable:
