@@ -45,7 +45,8 @@
 
     var init = function init(){
         $('.alert').on('closed.bs.alert', notificationDismissed);
-        $('body').on('click', '[data-toggle="popover"]', function(e){e.preventDefault(); return true;}).popover();
+        $('[data-toggle="popover"]').popover();
+        $('body').on('click', '[data-toggle="popover"]', function(e){e.preventDefault(); return true;});
         
         showNotifications();
         toggleIconOnCollapse();

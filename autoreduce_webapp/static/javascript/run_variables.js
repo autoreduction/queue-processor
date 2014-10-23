@@ -193,6 +193,8 @@
         var $form = $('#run_variables');
         if($form.length===0) $form = $('#instrument_variables');
         $form.html($('#default_instrument_variables_form').html());
+        // We need to enable the popover again as the element is new
+        $('[data-toggle="popover"]').popover();
     };
     
     var init = function init(){
