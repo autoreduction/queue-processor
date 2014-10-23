@@ -121,9 +121,9 @@
         var end = parseInt($('#run_end').val());
         var upcoming = $('#upcoming_runs').val().split(',');
         var conflicts = [];
-        for(var upcomingRun in upcoming){
-            if(parseInt(upcomingRun) >= start && (end == NaN || upcomingRun <= end)){
-                conflicts.push(upcomingRun);
+        for(var i=0;i<upcoming;i++){
+            if(parseInt(upcomingRun[i]) >= start && (end == NaN || upcomingRun[i] <= end)){
+                conflicts.push(upcomingRun[i]);
             }
         }
         if(conflicts.length === 0){

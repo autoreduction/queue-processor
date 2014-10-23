@@ -172,7 +172,7 @@ def instrument_variables(request, instrument, start=0, end=0):
             else:
                 standard_vars[variable.name] = variable
 
-        upcoming_run_variables = ','.join([str(i) for i in InstrumentVariable.objects.filter(instrument=instrument, start_run__gt=start).values_list('start_run', flat=True)])
+        upcoming_run_variables = ','.join([str(i) for i in InstrumentVariable.objects.filter(instrument=instrument, start_run__gt=start).values_list('start_run', flat=True).distinct()])
 
         context_dictionary = {
             'instrument' : instrument,
