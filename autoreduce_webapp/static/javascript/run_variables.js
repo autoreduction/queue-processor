@@ -129,8 +129,8 @@
         if(conflicts.length === 0){
             successCallback();
         }else{
-            $('#conflicts-modal js-conflicts-cancel').unbind('click').on('click', cancelCallback);
-            $('#conflicts-modal js-conflicts-confirm').unbind('click').on('click', successCallback);
+            $('#conflicts-modal .js-conflicts-cancel').unbind('click').on('click', cancelCallback);
+            $('#conflicts-modal .js-conflicts-confirm').unbind('click').on('click', successCallback);
             $('#conflicts-modal').modal();
         }
     };
