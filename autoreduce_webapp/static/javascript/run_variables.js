@@ -26,6 +26,17 @@
             $('.has-error').removeClass('has-error');
         };
 
+        var validateRunRange = function validateRunRange(){
+            var $start = $('#run_start');
+            var $end = $('#run_end');
+            if($start.length && $end.length){
+                if(parseInt($end.val()) < parseInt($start.val()){
+                    $end.parent().addClass('has-error');
+                    isValid = false;
+                }
+            }
+        };
+
         var validateNotEmpty = function validateNotEmpty(){
             if($(this).val().trim() === ''){
                 $(this).parent().addClass('has-error');
