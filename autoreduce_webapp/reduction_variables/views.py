@@ -224,11 +224,22 @@ def run_summary(request, run_number, run_version=0):
         else:
             standard_vars[variable.name] = variable
 
+    default_variables = InstrumentVariablesUtils().get_default_variables(reduction_run.instrument.name)
+    default_standard_variables = {}
+    default_advanced_variables = {}
+    for variable in default_variables:
+        if variable.is_advanced:
+            default_advanced_variables[variable.name] = variable
+        else:
+            default_standard_variables[variable.name] = variable
+
     context_dictionary = {
         'run_number' : run_number,
         'run_version' : run_version,
         'standard_variables' : standard_vars,
         'advanced_variables' : advanced_vars,
+        'default_standard_variables' : default_standard_variables,
+        'default_advanced_variables' : default_advanced_variables,
         'instrument' : reduction_run.instrument,
     }
     context_dictionary.update(csrf(request))
