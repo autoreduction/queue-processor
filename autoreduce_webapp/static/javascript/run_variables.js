@@ -7,6 +7,7 @@
             var $form = $('#run_variables');
             if($form.length===0) $form = $('#instrument_variables');
             $form.attr('action', url);
+            window.onbeforeunload = undefined;
             $form.submit();
         };
         var cancelAction = function cancelAction(){
