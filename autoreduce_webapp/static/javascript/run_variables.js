@@ -122,7 +122,7 @@
         var upcoming = $('#upcoming_runs').val().split(',');
         var conflicts = [];
         for(var upcomingRun in upcoming){
-            if(parseInt(upcomingRun) >= start && (end == NaN || upcomingRun <= end){
+            if(parseInt(upcomingRun) >= start && (end == NaN || upcomingRun <= end)){
                 conflicts.push(upcomingRun);
             }
         }
