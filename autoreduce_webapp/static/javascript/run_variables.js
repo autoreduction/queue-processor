@@ -175,6 +175,25 @@
         $start.on('change', setMin);
         setMin();
     };
+
+    var confirmUnsavedChanges = function confirmUnsavedChanges(){
+        var $form = $('#run_variables');
+        if($form.length===0) $form = $('#instrument_variables');
+
+        $form.on('change', function(){
+            $form.unbind('change');
+            window.onbeforeunload = function confirmLeave(e) {
+                if(!e) e = window.event;
+                e.cancelBubble = true;
+                e.returnValue = 'You have made changes. Are you sure you want to leave without saving these?';
+                if (e.stopPropagation) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                }
+            };
+
+        });
+    };
     
     var init = function init(){
         $('#previewScript').on('click', previewScript);
@@ -182,6 +201,7 @@
         $('#run_end').on('change', triggerAfterRunOptions);
         $('.js-show-default-variables').on('click', showDefaultSriptVariables);
         restrictFinished();
+        confirmUnsavedChanges();
     };
 
     init();
