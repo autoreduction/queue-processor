@@ -23,6 +23,7 @@
         </div>
         <form id="instrument_variables" method="POST" action="{% url 'instrument_variables' instrument=instrument.name start=run_start end=run_end %}" class="form-horizontal">
             {% csrf_token %}
+            <input type="hidden" id="upcoming_runs" name="upcoming_runs" value="{{upcoming_run_variables}}" />
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-group">
@@ -64,6 +65,25 @@
                                 <strong>{{ variable.name }}:</strong> {{ variable.value }}
                             </div>
                         {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="conflicts-modal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                        <h4 class="modal-title">Overwrite Existing Variables?</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>There are already saved values that fall within this run range chosen.</p>
+                        <p>Do you want to overwrite these calues with the new values?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal" class="js-conflicts-cancel">Cancel</button>
+                        <button type="button" class="btn btn-primary" class="js-conflicts-confirm">Yes, Replace</button>
                     </div>
                 </div>
             </div>

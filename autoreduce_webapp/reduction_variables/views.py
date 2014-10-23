@@ -181,7 +181,8 @@ def instrument_variables(request, instrument, start=0, end=0):
             'default_variables' : InstrumentVariablesUtils().get_default_variables(instrument.name),
             'run_start' : start,
             'run_end' : end,
-            'minimum_run_start' : max(latest_completed_run, latest_processing_run)
+            'minimum_run_start' : max(latest_completed_run, latest_processing_run),
+            'upcoming_run_variables' : ','.join(InstrumentVariable.objects.filter(instrument=instrument, start_run__gt=start).values_list('start_run', flat=True)),
         }
         context_dictionary.update(csrf(request))
 

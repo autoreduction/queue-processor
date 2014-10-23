@@ -17,7 +17,7 @@
         $form.submit();
     };
 
-    var validateForm = function validateForm(event){
+    var validateForm = function validateForm(){
         var isValid = true;
         var $form = $('#run_variables');
         if($form.length===0) $form = $('#instrument_variables');
@@ -100,13 +100,7 @@
         $('[data-type="list_number"]').each(validateListNumber);
         $('[data-type="list_text"]').each(validateListText);
 
-        event.preventDefault();
-        if(isValid){
-            $form.attr('action', formUrl);
-            $form.submit();
-        }else{
-            return false;
-        }
+        return isValid;
     };
 
     var triggerAfterRunOptions = function triggerAfterRunOptions(){
@@ -120,6 +114,44 @@
 
     var showDefaultSriptVariables = function showDefaultSriptVariables(){
         $('#default-variables-modal').modal();
+    };
+
+    var checkForConflicts = function checkForConflicts(successCallback, cancelCallback){
+        var start = parseInt($('#run_start').val());
+        var end = parseInt($('#run_end').val());
+        var upcoming = $('#upcoming_runs').val().split(',');
+        var conflicts = [];
+        for(var upcomingRun in upcoming){
+            if(parseInt(upcomingRun) >= start && (end == NaN || upcomingRun <= end){
+                conflicts.push(upcomingRun);
+            }
+        }
+        if(conflicts.length === 0){
+            successCallback();
+        }else{
+            $('#conflicts-modal js-conflicts-cancel').unbind('click').on('click', cancelCallback);
+            $('#conflicts-modal js-conflicts-confirm').unbind('click').on('click', successCallback);
+            $('#conflicts-modal').modal();
+        }
+    };
+
+    var submitForm = function submitForm(event){
+        var submitAction = function submitAction(){
+            var $form = $('#run_variables');
+            if($form.length===0) $form = $('#instrument_variables');
+            $form.attr('action', formUrl);
+            $form.submit();
+        };
+        var cancelAction = function cancelAction(){
+            return false;
+        };
+
+        event.preventDefault();
+        if(validateForm()){
+            checkForConflicts(submitAction, cancelAction);
+        }else{
+            cancelAction();
+        }
     };
     
     var init = function init(){
