@@ -92,11 +92,11 @@ def instrument_variables(request, instrument, start=0, end=0):
         end = request.POST.get("run_end", None)
 
         # Remove any existing variables saved within the provided range
-        if end and end > 0:
+        if end and int(end) > 0:
             existing_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run__gte=start, start_run__lte=end)
             # Create default variables for after the run end if they don't already exist
-            if not InstrumentVariable.objects.filter(instrument=instrument, start_run=end+1):
-                InstrumentVariablesUtils().set_default_instrument_variables(instrument.name, end+1)
+            if not InstrumentVariable.objects.filter(instrument=instrument, start_run=int(end)+1):
+                InstrumentVariablesUtils().set_default_instrument_variables(instrument.name, int(end)+1)
         else:
             existing_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run__gte=start)
         for existing in existing_variables:
