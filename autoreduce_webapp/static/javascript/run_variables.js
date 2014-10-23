@@ -1,14 +1,6 @@
 (function(){
     var formUrl = $('#run_variables').attr('action');
 
-    var isNumber = function isNumber(n){
-        return !isNaN(parseFloat(n)) && isFinite(n);
-    };
-
-    String.prototype.endsWith = function(suffix) {
-        return this.indexOf(suffix, this.length - suffix.length) !== -1;
-    };
-
     var previewScript  = function previewScript(){
         var url = $('#preview_url').val();
         var $form = $('#run_variables');
