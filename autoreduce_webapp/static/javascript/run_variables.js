@@ -196,9 +196,9 @@
     };
     
     var init = function init(){
-        $('#previewScript').on('click', previewScript);
-        $('#resetValues').on('click', resetDefaultVariables);
-        $('#variableSubmit').on('click', submitForm);
+        $('#run_variables,#instrument_variables').on('click', '#previewScript', previewScript);
+        $('#run_variables,#instrument_variables').on('click', '#resetValues', resetDefaultVariables);
+        $('#run_variables,#instrument_variables').on('click', '#variableSubmit', submitForm);
         $('#run_end').on('change', triggerAfterRunOptions);
         $('.js-show-default-variables').on('click', showDefaultSriptVariables);
         restrictFinished();
