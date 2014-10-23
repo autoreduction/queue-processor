@@ -122,8 +122,8 @@
         var upcoming = $('#upcoming_runs').val().split(',');
         var conflicts = [];
         for(var i=0;i<upcoming.length;i++){
-            if(parseInt(upcomingRun[i]) >= start && (end == NaN || upcomingRun[i] <= end)){
-                conflicts.push(upcomingRun[i]);
+            if(parseInt(upcoming[i]) >= start && (end == NaN || upcoming[i] <= end)){
+                conflicts.push(upcoming[i]);
             }
         }
         if(conflicts.length === 0){
