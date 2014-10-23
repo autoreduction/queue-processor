@@ -141,6 +141,7 @@
         if(conflicts.length === 0){
             successCallback();
         }else{
+            $('.js-conflicts-list').text(conflicts.join(','));
             $('#conflicts-modal .js-conflicts-confirm').unbind('click').on('click', successCallback);
             $('#conflicts-modal').modal();
         }
