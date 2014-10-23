@@ -1,11 +1,11 @@
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 from django.core.context_processors import csrf
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.views.generic.base import View
 from django.http import HttpResponse
 from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, require_staff
-from reduction_variables.models import InstrumentVariable, RunVariable
+from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFile
 from reduction_variables.utils import InstrumentVariablesUtils, VariableUtils
 from reduction_viewer.models import Instrument, ReductionRun
 from reduction_viewer.utils import StatusUtils
@@ -87,56 +87,127 @@ def instrument_variables(request, instrument, start=0, end=0):
     
     instrument = Instrument.objects.get(name=instrument)
 
-    completed_status = StatusUtils().get_completed()
-    processing_status = StatusUtils().get_processing()
-    queued_status = StatusUtils().get_queued()
+    if request.method == 'POST':
+        start = request.POST.get("run_start", 1)
+        end = request.POST.get("run_end", None)
 
-    try:
-        latest_completed_run = ReductionRun.objects.filter(instrument=instrument, run_version=0, status=completed_status).order_by('-run_number').first().run_number
-    except AttributeError :
-        latest_completed_run = 0
-    try:
-        latest_processing_run = ReductionRun.objects.filter(instrument=instrument, run_version=0, status=processing_status).order_by('-run_number').first().run_number
-    except AttributeError :
-        latest_processing_run = 0
-
-    if not start and not end:
-        try:
-            start = InstrumentVariable.objects.filter(instrument=instrument,start_run__lte=latest_completed_run ).order_by('-start_run').first().start_run
-        except AttributeError :
-            start = 1
-    if not start:
-        start = 1
-    if not end:
-        end = 0
-    variables = InstrumentVariable.objects.filter(instrument=instrument,start_run=start)
-
-    # If no variables are saved, use the dfault ones from the reduce script
-    if not variables:
-        InstrumentVariablesUtils().set_default_instrument_variables(instrument.name, start)
-        variables = InstrumentVariable.objects.filter(instrument=instrument,start_run=start )
-
-    standard_vars = {}
-    advanced_vars = {}
-    for variable in variables:
-        if variable.is_advanced:
-            advanced_vars[variable.name] = variable
+        if request.POST.get("is_editing", '') == 'True':
+            old_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run=start)
+            script = old_variables[0].scripts.all()[0]
+            default_variables = list(old_variables)
         else:
-            standard_vars[variable.name] = variable
+            script_binary = InstrumentVariablesUtils().get_current_script(instrument.name)
+            script = ScriptFile(script=script_binary, file_name='reduce.py')
+            script.save()
+            default_variables = InstrumentVariablesUtils().get_default_variables(instrument.name)
 
-    context_dictionary = {
-        'instrument' : instrument,
-        'processing' : ReductionRun.objects.filter(instrument=instrument, status=processing_status),
-        'queued' : ReductionRun.objects.filter(instrument=instrument, status=queued_status),
-        'standard_variables' : standard_vars,
-        'advanced_variables' : advanced_vars,
-        'run_start' : start,
-        'run_end' : end,
-        'minimum_run_start' : max(latest_completed_run, latest_processing_run)
-    }
-    context_dictionary.update(csrf(request))
+        # Remove any existing variables saved within the provided range
+        if end and int(end) > 0:
+            existing_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run__gte=start, start_run__lte=end)
+            # Create default variables for after the run end if they don't already exist
+            if not InstrumentVariable.objects.filter(instrument=instrument, start_run=int(end)+1):
+                InstrumentVariablesUtils().set_default_instrument_variables(instrument.name, int(end)+1)
+        else:
+            existing_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run__gte=start)
+        for existing in existing_variables:
+            existing.delete()
 
-    return context_dictionary
+        for default_var in default_variables:
+            form_name = 'var-'
+            if default_var.is_advanced:
+                form_name += 'advanced-'
+            else:
+                form_name += 'standard-'
+            form_name += default_var.sanitized_name()
+
+            post_variable = request.POST.get(form_name, None)
+            if post_variable:
+                variable = InstrumentVariable(
+                    instrument=instrument, 
+                    name=default_var.name, 
+                    value=post_variable, 
+                    is_advanced=default_var.is_advanced, 
+                    type=default_var.type,
+                    start_run =start,
+                    )
+            else:
+                variable = default_var
+                variable.scripts.clear()
+            variable.save()
+            variable.scripts.add(script)
+            variable.save()
+
+        return redirect('instrument_summary', instrument=instrument.name)
+    else:
+        editing = (start>0)
+        completed_status = StatusUtils().get_completed()
+        processing_status = StatusUtils().get_processing()
+        queued_status = StatusUtils().get_queued()
+
+        try:
+            latest_completed_run = ReductionRun.objects.filter(instrument=instrument, run_version=0, status=completed_status).order_by('-run_number').first().run_number
+        except AttributeError :
+            latest_completed_run = 0
+        try:
+            latest_processing_run = ReductionRun.objects.filter(instrument=instrument, run_version=0, status=processing_status).order_by('-run_number').first().run_number
+        except AttributeError :
+            latest_processing_run = 0
+
+        if not start and not end:
+            try:
+                start = InstrumentVariable.objects.filter(instrument=instrument,start_run__lte=latest_completed_run ).order_by('-start_run').first().start_run
+            except AttributeError :
+                start = 1
+        if not start:
+            start = 1
+        if not end:
+            end = 0
+        variables = InstrumentVariable.objects.filter(instrument=instrument,start_run=start)
+        
+        if not editing:
+            variables = InstrumentVariablesUtils().get_default_variables(instrument.name)
+        elif not variables:
+            # If no variables are saved, use the dfault ones from the reduce script
+            editing = False
+            InstrumentVariablesUtils().set_default_instrument_variables(instrument.name, start)
+            variables = InstrumentVariable.objects.filter(instrument=instrument,start_run=start )
+
+        standard_vars = {}
+        advanced_vars = {}
+        for variable in variables:
+            if variable.is_advanced:
+                advanced_vars[variable.name] = variable
+            else:
+                standard_vars[variable.name] = variable
+
+        upcoming_run_variables = ','.join([str(i) for i in InstrumentVariable.objects.filter(instrument=instrument, start_run__gt=start).values_list('start_run', flat=True).distinct()])
+
+        default_variables = InstrumentVariablesUtils().get_default_variables(instrument.name)
+        default_standard_variables = {}
+        default_advanced_variables = {}
+        for variable in default_variables:
+            if variable.is_advanced:
+                default_advanced_variables[variable.name] = variable
+            else:
+                default_standard_variables[variable.name] = variable
+
+        context_dictionary = {
+            'instrument' : instrument,
+            'processing' : ReductionRun.objects.filter(instrument=instrument, status=processing_status),
+            'queued' : ReductionRun.objects.filter(instrument=instrument, status=queued_status),
+            'standard_variables' : standard_vars,
+            'advanced_variables' : advanced_vars,
+            'default_standard_variables' : default_standard_variables,
+            'default_advanced_variables' : default_advanced_variables,
+            'run_start' : start,
+            'run_end' : end,
+            'minimum_run_start' : max(latest_completed_run, latest_processing_run),
+            'upcoming_run_variables' : upcoming_run_variables,
+            'editing' : editing,
+        }
+        context_dictionary.update(csrf(request))
+
+        return context_dictionary
 
 '''
     Imported into another view, thus no middlewear
@@ -153,11 +224,22 @@ def run_summary(request, run_number, run_version=0):
         else:
             standard_vars[variable.name] = variable
 
+    default_variables = InstrumentVariablesUtils().get_default_variables(reduction_run.instrument.name)
+    default_standard_variables = {}
+    default_advanced_variables = {}
+    for variable in default_variables:
+        if variable.is_advanced:
+            default_advanced_variables[variable.name] = variable
+        else:
+            default_standard_variables[variable.name] = variable
+
     context_dictionary = {
         'run_number' : run_number,
         'run_version' : run_version,
         'standard_variables' : standard_vars,
         'advanced_variables' : advanced_vars,
+        'default_standard_variables' : default_standard_variables,
+        'default_advanced_variables' : default_advanced_variables,
         'instrument' : reduction_run.instrument,
     }
     context_dictionary.update(csrf(request))
