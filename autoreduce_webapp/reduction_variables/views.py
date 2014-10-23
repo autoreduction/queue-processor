@@ -164,8 +164,10 @@ def instrument_variables(request, instrument, start=0, end=0):
             end = 0
         variables = InstrumentVariable.objects.filter(instrument=instrument,start_run=start)
         
-        # If no variables are saved, use the dfault ones from the reduce script
-        if not variables or not editing:
+        if not editing:
+            variables = InstrumentVariablesUtils().get_default_variables(instrument.name)
+        elif not variables:
+            # If no variables are saved, use the dfault ones from the reduce script
             editing = False
             InstrumentVariablesUtils().set_default_instrument_variables(instrument.name, start)
             variables = InstrumentVariable.objects.filter(instrument=instrument,start_run=start )
