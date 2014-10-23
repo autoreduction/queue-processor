@@ -18,8 +18,10 @@
             </div>
         </div>
         <div class="col-md-4 col-xs-2">
-            {% if reduction_variables_on and instrument.is_instrument_scientist %}
-                <a href="{% url 'instrument_variables' instrument.name %}" class="pull-right edit-instrument-variables">Edit<span class="hidden-xs"> Reduction Variables</span></a>
+            {% if reduction_variables_on %}
+                {% if instrument.is_instrument_scientist or user.is_superuser %}
+                    <a href="{% url 'instrument_variables' instrument.name %}" class="pull-right edit-instrument-variables">Edit<span class="hidden-xs"> Reduction Variables</span></a>
+                {% endif %}
             {% endif %}
         </div>
     </div>
