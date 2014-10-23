@@ -1,7 +1,7 @@
 (function(){
     var formUrl = $('#run_variables').attr('action');
 
-    var previewScript  = function previewScript(){
+    var previewScript  = function previewScript(event){
         var submitAction = function submitAction(){
             var url = $('#preview_url').val();
             var $form = $('#run_variables');
@@ -187,13 +187,13 @@
 
         $form.on('change', function(){
             $form.unbind('change');
-            window.onbeforeunload = function confirmLeave(e) {
-                if(!e) e = window.event;
-                e.cancelBubble = true;
-                e.returnValue = 'There are unsaved changes.';
-                if (e.stopPropagation) {
-                    e.stopPropagation();
-                    e.preventDefault();
+            window.onbeforeunload = function confirmLeave(event) {
+                if(!event) event = window.event;
+                event.cancelBubble = true;
+                event.returnValue = 'There are unsaved changes.';
+                if (event.stopPropagation) {
+                    event.stopPropagation();
+                    event.preventDefault();
                 }
             };
 
