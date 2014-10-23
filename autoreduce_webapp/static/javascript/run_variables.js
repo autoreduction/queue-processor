@@ -30,7 +30,7 @@
             var $start = $('#run_start');
             var $end = $('#run_end');
             if($start.length && $end.length){
-                if(parseInt($end.val()) < parseInt($start.val()){
+                if(parseInt($end.val()) < parseInt($start.val())){
                     $end.parent().addClass('has-error');
                     isValid = false;
                 }
