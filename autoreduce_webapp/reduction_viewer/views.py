@@ -76,7 +76,8 @@ def run_list(request):
     # TODO: Uncomment on release: with ICATCommunication(AUTH='uows',SESSION={'sessionid':request.session.get('sessionid')}) as icat:
     with ICATCommunication() as icat:
         instrument_names = icat.get_valid_instruments(int(request.user.username))
-        experiments = icat.get_valid_experiments_for_instruments(int(request.user.username), instrument_names)
+        if instrument_names:
+            experiments = icat.get_valid_experiments_for_instruments(int(request.user.username), instrument_names)
         owned_instruments = icat.get_owned_instruments(int(request.user.username))
     for instrument in instrument_names:
         instrument_queued_runs = 0
