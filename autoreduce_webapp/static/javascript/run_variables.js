@@ -185,7 +185,7 @@
             window.onbeforeunload = function confirmLeave(e) {
                 if(!e) e = window.event;
                 e.cancelBubble = true;
-                e.returnValue = 'You have made changes. Are you sure you want to leave without saving these?';
+                e.returnValue = 'There are unsaved changes.';
                 if (e.stopPropagation) {
                     e.stopPropagation();
                     e.preventDefault();
