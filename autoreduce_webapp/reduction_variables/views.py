@@ -94,7 +94,7 @@ def instrument_variables(request, instrument, start=0, end=0):
         if request.POST.get("is_editing", '') == 'True':
             old_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run=start)
             script = old_variables[0].scripts.all()[0]
-            default_variables = old_variables
+            default_variables = list(old_variables)
         else:
             script_binary = InstrumentVariablesUtils().get_current_script(instrument.name)
             script = ScriptFile(script=script_binary, file_name='reduce.py')
