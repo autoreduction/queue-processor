@@ -30,15 +30,14 @@
     };
 
     var toggleInstrumentsExperimentsClickAction = function toggleInstrumentsExperimentsClickAction(event){
-        if((($(event.target).is('a') && $(event.target).attr('href')==='#') || ($(event.target).parent().is('a') && $(event.target).parent().attr('href')==='#')) || $(event.target).is(':not(a)')){
+        if(($(event.target).is('a') && $(event.target).attr('href')==='#') || ($(event.target).parent().is('a') && $(event.target).parent().attr('href')==='#')|| $(event.target).is(':not(a)') && ($(event.target).parent().is(':not(a)'))){
             event.preventDefault();
             $(this).find('i.fa').toggleClass('fa-chevron-right fa-chevron-down');
             $(this).parents('.instrument').find('.experiment,.run').toggleClass('hide');
         }
     };
     var toggleExperimentRunsClickAction = function toggleExperimentRunsClickAction(event){
-        if((($(event.target).is('a') && $(event.target).attr('href')==='#') || ($(event.target).parent().is('a') && $(event.target).parent().attr('href')==='#')) || $(event.target).is(':not(a)')){
-            event.preventDefault();
+        if(($(event.target).is('a') && $(event.target).attr('href')==='#') || ($(event.target).parent().is('a') && $(event.target).parent().attr('href')==='#')|| $(event.target).is(':not(a)') && ($(event.target).parent().is(':not(a)'))){
             $(this).find('i.fa').toggleClass('fa-chevron-right fa-chevron-down');
             $(this).parents('.experiment').find('.experiment-runs').toggleClass('hide');
         }
