@@ -192,7 +192,7 @@
         event.preventDefault();
         var $form = $('#run_variables');
         if($form.length===0) $form = $('#instrument_variables');
-        $form.innerHTML($('#default_instrument_variables_form').innerHTML());
+        $form.html($('#default_instrument_variables_form').html());
     };
     
     var init = function init(){
