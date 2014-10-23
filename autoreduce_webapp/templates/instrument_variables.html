@@ -24,6 +24,7 @@
         <form id="instrument_variables" method="POST" action="{% url 'instrument_variables' instrument=instrument.name start=run_start end=run_end %}" class="form-horizontal">
             {% csrf_token %}
             <input type="hidden" id="upcoming_runs" name="upcoming_runs" value="{{upcoming_run_variables}}" />
+            <input type="hidden" id="is_editing" name="is_editing" value="{{editing}}" />
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-group">

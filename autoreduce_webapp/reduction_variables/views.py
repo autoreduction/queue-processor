@@ -91,6 +91,16 @@ def instrument_variables(request, instrument, start=0, end=0):
         start = request.POST.get("run_start", 1)
         end = request.POST.get("run_end", None)
 
+        if request.POST.get("is_editing", '') == 'True':
+            old_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run=start)
+            script = old_variables[0].scripts.all()[0]
+            default_variables = old_variables
+        else:
+            script_binary = InstrumentVariablesUtils().get_current_script(instrument.name)
+            script = ScriptFile(script=script_binary, file_name='reduce.py')
+            script.save()
+            default_variables = InstrumentVariablesUtils().get_default_variables(instrument.name)
+
         # Remove any existing variables saved within the provided range
         if end and int(end) > 0:
             existing_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run__gte=start, start_run__lte=end)
@@ -102,11 +112,6 @@ def instrument_variables(request, instrument, start=0, end=0):
         for existing in existing_variables:
             existing.delete()
 
-        script_binary = InstrumentVariablesUtils().get_current_script(instrument.name)
-        script = ScriptFile(script=script_binary, file_name='reduce.py')
-        script.save()
-
-        default_variables = InstrumentVariablesUtils().get_default_variables(instrument.name)
         for default_var in default_variables:
             form_name = 'var-'
             if default_var.is_advanced:
@@ -158,9 +163,10 @@ def instrument_variables(request, instrument, start=0, end=0):
         if not end:
             end = 0
         variables = InstrumentVariable.objects.filter(instrument=instrument,start_run=start)
-
+        editing = True
         # If no variables are saved, use the dfault ones from the reduce script
         if not variables:
+            editing = False
             InstrumentVariablesUtils().set_default_instrument_variables(instrument.name, start)
             variables = InstrumentVariable.objects.filter(instrument=instrument,start_run=start )
 
@@ -185,6 +191,7 @@ def instrument_variables(request, instrument, start=0, end=0):
             'run_end' : end,
             'minimum_run_start' : max(latest_completed_run, latest_processing_run),
             'upcoming_run_variables' : upcoming_run_variables,
+            'editing' : editing,
         }
         context_dictionary.update(csrf(request))
 
