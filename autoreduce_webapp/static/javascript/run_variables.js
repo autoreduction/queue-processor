@@ -116,7 +116,7 @@
         $('#default-variables-modal').modal();
     };
 
-    var checkForConflicts = function checkForConflicts(successCallback, cancelCallback){
+    var checkForConflicts = function checkForConflicts(successCallback){
         var start = parseInt($('#run_start').val());
         var end = parseInt($('#run_end').val());
         var upcoming = $('#upcoming_runs').val().split(',');
@@ -129,7 +129,6 @@
         if(conflicts.length === 0){
             successCallback();
         }else{
-            $('#conflicts-modal .js-conflicts-cancel').unbind('click').on('click', cancelCallback);
             $('#conflicts-modal .js-conflicts-confirm').unbind('click').on('click', successCallback);
             $('#conflicts-modal').modal();
         }
@@ -148,7 +147,7 @@
 
         event.preventDefault();
         if(validateForm()){
-            checkForConflicts(submitAction, cancelAction);
+            checkForConflicts(submitAction);
         }else{
             cancelAction();
         }
