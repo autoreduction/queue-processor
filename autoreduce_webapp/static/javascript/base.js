@@ -29,13 +29,30 @@
         });
     };
 
+    var fixIeDataURILinks = function fixIeDataURILinks(){
+        $("a[href]").each(function(){
+            if($(this).attr('href').indexOf('data:image/jpeg;base64') === 0){
+                var output = this.innerHTML;
+                $(this).on('click', function openDataURIImage(event){
+                    event.preventDefault();
+                    var win = window.open("about:blank");
+                    win.document.body.innerHTML = output;
+                    win.document.title = document.title;
+                });
+            }
+        });
+    };
+
     var init = function init(){
         $('.alert').on('closed.bs.alert', notificationDismissed);
         $('[data-toggle="popover"]').on('click', function(e){e.preventDefault(); return true;}).popover();
         
         showNotifications();
         toggleIconOnCollapse();
+        if(isIE()){
+            fixIeDataURILinks();
+        }
     };
 
     init();
-}())
+}());
