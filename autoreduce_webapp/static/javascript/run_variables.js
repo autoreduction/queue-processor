@@ -135,11 +135,13 @@
     var checkForConflicts = function checkForConflicts(successCallback){
         var start = parseInt($('#run_start').val());
         var end = parseInt($('#run_end').val());
-        var upcoming = $('#upcoming_runs').val().split(',');
         var conflicts = [];
-        for(var i=0;i<upcoming.length;i++){
-            if(parseInt(upcoming[i]) >= start && (end == NaN || upcoming[i] <= end)){
-                conflicts.push(upcoming[i]);
+        if($('#upcoming_runs').length > 0){
+            var upcoming = $('#upcoming_runs').val().split(',');
+            for(var i=0;i<upcoming.length;i++){
+                if(parseInt(upcoming[i]) >= start && (end == NaN || upcoming[i] <= end)){
+                    conflicts.push(upcoming[i]);
+                }
             }
         }
         if(conflicts.length === 0){
