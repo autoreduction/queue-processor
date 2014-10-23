@@ -2,11 +2,22 @@
     var formUrl = $('#run_variables').attr('action');
 
     var previewScript  = function previewScript(){
-        var url = $('#preview_url').val();
-        var $form = $('#run_variables');
-        if($form.length===0) $form = $('#instrument_variables');
-        $form.attr('action', url);
-        $form.submit();
+        var submitAction = function submitAction(){
+            var url = $('#preview_url').val();
+            var $form = $('#run_variables');
+            if($form.length===0) $form = $('#instrument_variables');
+            $form.attr('action', url);
+            $form.submit();
+        };
+        var cancelAction = function cancelAction(){
+            return false;
+        };
+        event.preventDefault();
+        if(validateForm()){
+            checkForConflicts(submitAction);
+        }else{
+            cancelAction();
+        }
     };
 
     var validateForm = function validateForm(){
