@@ -152,12 +152,23 @@
             cancelAction();
         }
     };
+
+    var restrictFinished = function restrictFinished(){
+        var $end = $('#run_end');
+        var $start = $('#run_start');
+        var setMin = function setMin(){
+            $end.attr('min', $start.val());
+        };        
+        $start.on('change', setMin);
+        setMin();
+    };
     
     var init = function init(){
         $('#previewScript').on('click', previewScript);
         $('#variableSubmit').on('click', submitForm);
         $('#run_end').on('change', triggerAfterRunOptions);
         $('.js-show-default-variables').on('click', showDefaultSriptVariables);
+        restrictFinished();
     };
 
     init();
