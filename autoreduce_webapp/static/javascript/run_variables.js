@@ -105,6 +105,7 @@
         });
 
         resetValidationStates();
+        validateRunRange();
         $('[data-type="text"]').each(validateText);
         $('[data-type="number"]').each(validateNumber);
         $('[data-type="boolean"]').each(validateBoolean);
