@@ -139,7 +139,7 @@ def instrument_variables(request, instrument, start=0, end=0):
 
         return redirect('instrument_summary', instrument=instrument.name)
     else:
-
+        editing = (start>0)
         completed_status = StatusUtils().get_completed()
         processing_status = StatusUtils().get_processing()
         queued_status = StatusUtils().get_queued()
@@ -163,7 +163,7 @@ def instrument_variables(request, instrument, start=0, end=0):
         if not end:
             end = 0
         variables = InstrumentVariable.objects.filter(instrument=instrument,start_run=start)
-        editing = True
+        
         # If no variables are saved, use the dfault ones from the reduce script
         if not variables:
             editing = False
