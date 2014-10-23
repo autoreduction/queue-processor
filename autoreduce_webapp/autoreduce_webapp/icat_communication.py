@@ -80,8 +80,11 @@ class ICATCommunication(object):
             raise TypeError("User number must be a number")
 
         instruments = Set()
-        self._add_list_to_set(self.get_owned_instruments(user_number), instruments)
-        self._add_list_to_set(self.client.search("SELECT inst.name FROM Instrument inst JOIN inst.investigationInstruments ii WHERE ii.investigation.id IN (SELECT i.id from Investigation i JOIN i.investigationUsers iu WHERE iu.user.name = 'uows/" + str(user_number) + "')"), instruments)
+        if self.is_admin(user_number):
+            self._add_list_to_set(self.client.search("SELECT inst.name FROM Instrument inst"), instruments)
+        else:
+            self._add_list_to_set(self.get_owned_instruments(user_number), instruments)
+            self._add_list_to_set(self.client.search("SELECT inst.name FROM Instrument inst JOIN inst.investigationInstruments ii WHERE ii.investigation.id IN (SELECT i.id from Investigation i JOIN i.investigationUsers iu WHERE iu.user.name = 'uows/" + str(user_number) + "')"), instruments)
         return sorted(instruments)
 
     '''
