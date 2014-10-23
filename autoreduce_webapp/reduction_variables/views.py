@@ -172,6 +172,8 @@ def instrument_variables(request, instrument, start=0, end=0):
             else:
                 standard_vars[variable.name] = variable
 
+        upcoming_run_variables = ','.join([str(i) for i in InstrumentVariable.objects.filter(instrument=instrument, start_run__gt=start).values_list('start_run', flat=True)])
+
         context_dictionary = {
             'instrument' : instrument,
             'processing' : ReductionRun.objects.filter(instrument=instrument, status=processing_status),
@@ -182,7 +184,7 @@ def instrument_variables(request, instrument, start=0, end=0):
             'run_start' : start,
             'run_end' : end,
             'minimum_run_start' : max(latest_completed_run, latest_processing_run),
-            'upcoming_run_variables' : ','.join(InstrumentVariable.objects.filter(instrument=instrument, start_run__gt=start).values_list('start_run', flat=True)),
+            'upcoming_run_variables' : upcoming_run_variables,
         }
         context_dictionary.update(csrf(request))
 
