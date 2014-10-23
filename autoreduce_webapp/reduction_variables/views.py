@@ -180,13 +180,23 @@ def instrument_variables(request, instrument, start=0, end=0):
 
         upcoming_run_variables = ','.join([str(i) for i in InstrumentVariable.objects.filter(instrument=instrument, start_run__gt=start).values_list('start_run', flat=True).distinct()])
 
+        default_variables = InstrumentVariablesUtils().get_default_variables(instrument.name)
+        default_standard_variables = {}
+        default_advanced_variables = {}
+        for variable in default_variables:
+            if variable.is_advanced:
+                default_advanced_variables[variable.name] = variable
+            else:
+                default_standard_variables[variable.name] = variable
+
         context_dictionary = {
             'instrument' : instrument,
             'processing' : ReductionRun.objects.filter(instrument=instrument, status=processing_status),
             'queued' : ReductionRun.objects.filter(instrument=instrument, status=queued_status),
             'standard_variables' : standard_vars,
             'advanced_variables' : advanced_vars,
-            'default_variables' : InstrumentVariablesUtils().get_default_variables(instrument.name),
+            'default_standard_variables' : default_standard_variables,
+            'default_advanced_variables' : default_advanced_variables,
             'run_start' : start,
             'run_end' : end,
             'minimum_run_start' : max(latest_completed_run, latest_processing_run),

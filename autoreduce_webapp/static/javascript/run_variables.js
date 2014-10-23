@@ -187,9 +187,17 @@
 
         });
     };
+
+    var resetDefaultVariables = function resetDefaultVariables(event){
+        event.preventDefault();
+        var $form = $('#run_variables');
+        if($form.length===0) $form = $('#instrument_variables');
+        $form.innerHTML($('#default_instrument_variables_form').innerHTML());
+    };
     
     var init = function init(){
         $('#previewScript').on('click', previewScript);
+        $('#resetValues').on('click', resetDefaultVariables);
         $('#variableSubmit').on('click', submitForm);
         $('#run_end').on('change', triggerAfterRunOptions);
         $('.js-show-default-variables').on('click', showDefaultSriptVariables);
