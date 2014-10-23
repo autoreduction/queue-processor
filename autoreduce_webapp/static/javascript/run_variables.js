@@ -156,7 +156,7 @@
     
     var init = function init(){
         $('#previewScript').on('click', previewScript);
-        $('#variableSubmit').on('click', validateForm);
+        $('#variableSubmit').on('click', submitForm);
         $('#run_end').on('change', triggerAfterRunOptions);
         $('.js-show-default-variables').on('click', showDefaultSriptVariables);
     };
