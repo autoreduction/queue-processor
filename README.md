@@ -2,16 +2,20 @@
 
 ## Installation
 
-Recommended Server OS: Red Hat 6
+Recommended Server OS: Red Hat 6 / Red Hat 7
 
 ***Note: Most, if not all, commands will need to be run as root. If using `sudo` please check the python note below***
+
+### Red Hat 7 Only
+1. `wget http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm`
+2. `rpm -ivh mysql-community-release-el7-5.noarch.rpm`
 
 ### Install prerequisites
 1. `yum update`
 2. `yum groupinstall 'development tools'`
 3. `yum install zlib-devel bzip2-devel openssl-devel xz-libs wget httpd mod_wsgi mysql-devel python-devel httpd-devel.x86_64 mercurial`
 
-### Install Python 2.7
+### Install Python 2.7 (Not required for Red Hat 7)
 **Note: Do not remove python 2.6! Ensure that you specify python 2.7 correctly when using sudo commands as it will default to the installed.**
 
 1. `wget http://www.python.org/ftp/python/2.7.6/Python-2.7.6.tar.xz`
@@ -46,6 +50,12 @@ Recommended Server OS: Red Hat 6
 ### Install Django
 1. `easy_install Django`
 2. `pip install pytz`
+
+### Installing application
+1. `git clone https://github.com/mantidproject/autoreduce.git /usr/src/autoreduce`
+2. `ln -s /usr/src/autoreduce/WebApp/ISIS/autoreduce_webapp /var/www/autoreduce_webapp`
+3. `ln -s /usr/local/lib/python2.7/site-packages/django/contrib/admin/static/admin/ /var/www/autoreduce_webapp/static/admin` Red Hat 6 Only
+3. `ln -s /usr/lib/python2.7/site-packages/Django-1.7.1-py2.7.egg/django/contrib/admin/static/admin/ /var/www/autoreduce_webapp/static/admin` Red Hat 7 Only
 
 ### Install ActiveMQ and stomp.py
 1. `wget http://mirror.gopotato.co.uk/apache/activemq/5.9.1/apache-activemq-5.9.1-bin.tar.gz`
@@ -145,7 +155,8 @@ Recommended Server OS: Red Hat 6
 11. `/opt/apache-activemq-5.9.1/bin/activemq setup /etc/default/activemq`
 12. `chown root /etc/default/activemq`
 13. `chmod 600 /etc/default/activemq`
-14. `lokkit --port=61613:tcp`
+14. `lokkit --port=61613:tcp` Red Hat 6 Only
+    `firewall-cmd --add-port=61613/tcp --permanent && firewall-cmd --reload && firewall-cmd --add-port=61613/tcp` Read Hat 7 Only (Ignore the warning)
 
 ### Checking everything is working
 1. Modify `simple_stop_test.py` by changing `localhost` to the correct hostname.
@@ -171,27 +182,6 @@ Recommended Server OS: Red Hat 6
             </simpleAuthenticationPlugin>
         </plugins>
 
-### Setting up MySQL
-1. `service mysqld start`
-2. `/usr/bin/mysql_secure_installation`
-3. `mysql -u admin -p`
-4. `CREATE DATABASE autoreduction`
-5. `CREATE USER 'autoreduce'@'*' IDENTIFIED BY 'password';`
-6. `GRANT ALL ON 'autoreduction'.* TO 'autoreduce'@'*' IDENTIFIED BY 'password';`
-7. `GRANT ALL ON 'test_autoreduction'.* TO 'autoreduce'@'*' IDENTIFIED BY 'password';`
-8. `python /var/www/autoreduce_webapp/manage.py syncdb`
-9. Add `max_allowed_packet=64M` to `/etc/my.cnf`
-
-### Setting up Apache
-1. `lokkit --port=80:tcp`
-2. Copy `apache_auto_reduce_webapp.conf` to `/etc/httpd/conf.d/`
-3. `service httpd restart`
-
-### Installing application
-1. `git clone https://github.com/mantidproject/autoreduce.git`
-2. `ln -s ./autoreduce/WebApp/ISIS/autoreduce_webapp /var/www/autoreduce_webapp`
-4. `mkdir /var/www/autoreduce_webapp/static`
-5. `ln -s /usr/local/lib/python2.7/site-packages/django/contrib/admin/static/admin/ /var/www/autoreduce_webapp/static/admin`
 
 ### Installing ICAT support
 1. `hg clone https://AverageMarcus@bitbucket.org/AverageMarcus/suds -u release-0.6.1`
@@ -203,3 +193,22 @@ Recommended Server OS: Red Hat 6
 7. `python setup.py build`
 8. `python setup.py install`
 9. Set the correct values for ICAT in `autoreduce_webapp/autoreduce_webapp/settings.py`
+
+### Setting up MySQL
+1. `service mysqld start`
+2. `/usr/bin/mysql_secure_installation`
+3. `mysql -u admin -p` on Red Hat 6. `mysql -u root -p` on Red Hat 7
+4. `CREATE DATABASE autoreduction;`
+5. `CREATE USER 'autoreduce'@'*' IDENTIFIED BY 'password';`
+6. `GRANT ALL ON autoreduction.* TO 'autoreduce'@'localhost' IDENTIFIED BY 'password';`
+7. `GRANT ALL ON test_autoreduction.* TO 'autoreduce'@'localhost' IDENTIFIED BY 'password';`
+8. `exit`
+8. `python /var/www/autoreduce_webapp/manage.py syncdb`
+9. Add `max_allowed_packet=64M` to `/etc/my.cnf`
+10. `service mysqld restart`
+
+### Setting up Apache
+1. `lokkit --port=80:tcp` Red Hat 6 Only
+1. `firewall-cmd --add-port=80/tcp --permanent && firewall-cmd --reload && firewall-cmd --add-port=80/tcp` Red Hat 7 Only
+2. Copy `apache_auto_reduce_webapp.conf` to `/etc/httpd/conf.d/`
+3. `service httpd restart`
