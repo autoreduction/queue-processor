@@ -34,6 +34,15 @@
             var $start = $('#run_start');
             var $end = $('#run_end');
             if($start.length && $end.length){
+                validateNotEmpty.call($start[0]);
+                if(!isNumber($start.val())){
+                    $start.parent().addClass('has-error');
+                    isValid = false;
+                }
+                if($end.val() !== '' && !isNumber($end.val())){
+                    $end.parent().addClass('has-error');
+                    isValid = false;
+                }
                 if(parseInt($end.val()) < parseInt($start.val())){
                     $end.parent().addClass('has-error');
                     isValid = false;
