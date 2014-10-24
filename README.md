@@ -1,6 +1,6 @@
 # ISIS Autoreduction WebApp
 
-## Installation
+## Linux Installation
 
 Recommended Server OS: Red Hat 6 / Red Hat 7
 
@@ -212,3 +212,11 @@ Recommended Server OS: Red Hat 6 / Red Hat 7
 1. `firewall-cmd --add-port=80/tcp --permanent && firewall-cmd --reload && firewall-cmd --add-port=80/tcp` Red Hat 7 Only
 2. Copy `apache_auto_reduce_webapp.conf` to `/etc/httpd/conf.d/`
 3. `service httpd restart`
+
+
+## Windows Installation
+
+Recommended Server: Windows Server 2012
+
+### Install prerequisites
+
