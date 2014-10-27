@@ -148,7 +148,7 @@
         if($('#upcoming_runs').length > 0){
             var upcoming = $('#upcoming_runs').val().split(',');
             for(var i=0;i<upcoming.length;i++){
-                if(parseInt(upcoming[i]) >= start && (end == NaN || upcoming[i] <= end)){
+                if(parseInt(upcoming[i]) >= start && (!end || upcoming[i] <= end)){
                     conflicts.push(upcoming[i]);
                 }
             }
