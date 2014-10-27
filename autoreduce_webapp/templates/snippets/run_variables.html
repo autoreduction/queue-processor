@@ -5,6 +5,7 @@
     <div class="panel-body collapse" id="rerun_form">
         <form id="run_variables" method="POST" action="{% url 'run_confirmation' run_number=run_number run_version=run_version %}" class="form-horizontal">
             {% csrf_token %}
+            {% include "snippets/form_warnings.html" %}
             <div class="form-group">
                 <label for="run_description" class="control-label col-md-2">
                     Re-run description
@@ -21,15 +22,16 @@
 <div class="hide">
     <form id="default_instrument_variables_form" method="POST" action="{% url 'run_confirmation' run_number=run_number run_version=run_version %}" class="form-horizontal">
         {% csrf_token %}
-    <div class="form-group">
-        <label for="run_description" class="control-label col-md-2">
-            Re-run description
-            <a href="#" data-toggle="popover" data-content="This will be appended onto the run number for you and others to identify the reason for re-submitting." data-trigger="hover click focus" data-placement="top" data-container="body"><i class="fa fa-info-circle"></i></a>
-        </label>
-        <div class="col-md-10">
-            <input type="text" id="run_description" name="run_description" class="form-control"/>
+        {% include "snippets/form_warnings.html" %}
+        <div class="form-group">
+            <label for="run_description" class="control-label col-md-2">
+                Re-run description
+                <a href="#" data-toggle="popover" data-content="This will be appended onto the run number for you and others to identify the reason for re-submitting." data-trigger="hover click focus" data-placement="top" data-container="body"><i class="fa fa-info-circle"></i></a>
+            </label>
+            <div class="col-md-10">
+                <input type="text" id="run_description" name="run_description" class="form-control"/>
+            </div>
         </div>
-    </div>
         {% include "snippets/edit_variables.html" with standard_variables=default_standard_variables advanced_variables=default_advanced_variables instrument=instrument.name button_text="Submit Changes" only %}
     </form>
 </div>

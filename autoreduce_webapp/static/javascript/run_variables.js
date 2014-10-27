@@ -23,11 +23,18 @@
 
     var validateForm = function validateForm(){
         var isValid = true;
+        var errorMessages = [];
+        var $errorList;
         var $form = $('#run_variables');
         if($form.length===0) $form = $('#instrument_variables');
 
         var resetValidationStates = function resetValidationStates(){
             $('.has-error').removeClass('has-error');
+            $('.js-form-validation-message').hide();
+        };
+
+        var getVarName = function getVarName($input){
+            return '<strong>' + $input.attr('id').replace('var-standard-','').replace('var-advanced-','').replace('-',' ') + '</strong>';
         };
 
         var validateRunRange = function validateRunRange(){
@@ -38,22 +45,27 @@
                 if(!isNumber($start.val())){
                     $start.parent().addClass('has-error');
                     isValid = false;
+                    errorMessages.push('<strong>Run start</strong> must be a number.')
                 }
                 if($end.val() !== '' && !isNumber($end.val())){
                     $end.parent().addClass('has-error');
                     isValid = false;
+                    errorMessages.push('<strong>Run finish</strong> can only be a number.')
                 }
                 if(parseInt($end.val()) < parseInt($start.val())){
                     $end.parent().addClass('has-error');
                     isValid = false;
+                    errorMessages.push('<strong>Run finish</strong> must be greater than the run start.')
                 }
             }
         };
 
         var validateNotEmpty = function validateNotEmpty(){
+            
             if($(this).val().trim() === ''){
                 $(this).parent().addClass('has-error');
                 isValid = false;
+                errorMessages.push(getVarName($(this)) + ' is required.')
             }
         };
         var validateText = function validateText(){
@@ -64,6 +76,7 @@
             if(!isNumber($(this).val())){
                 $(this).parent().addClass('has-error');
                 isValid = false;
+                errorMessages.push(getVarName($(this)) + ' must be a number.')
             }
         };
         var validateBoolean = function validateBoolean(){
@@ -71,6 +84,7 @@
             if($(this).val().toLowerCase() !== 'true' && $(this).val().toLowerCase() !== 'false'){
                 $(this).parent().addClass('has-error');
                 isValid = false;
+                errorMessages.push(getVarName($(this)) + ' must be a boolean.')
             }
         };
         var validateListNumber = function validateListNumber(){
@@ -85,6 +99,7 @@
                     if(!isNumber(items[i])){
                         $(this).parent().addClass('has-error');
                         isValid = false;
+                        errorMessages.push(getVarName($(this)) + ' must be a comma seperated list of numbers.')
                         break;
                     }
                 }
@@ -102,6 +117,7 @@
                     if(items[i].trim() === ''){
                         $(this).parent().addClass('has-error');
                         isValid = false;
+                        errorMessages.push(getVarName($(this)) + ' must be a comma seperated list.')
                         break;
                     }
                 }
@@ -124,6 +140,16 @@
         $('[data-type="boolean"]').each(validateBoolean);
         $('[data-type="list_number"]').each(validateListNumber);
         $('[data-type="list_text"]').each(validateListText);
+
+        if(!isValid){
+            $('.js-form-validation-message').html('');
+            $('.js-form-validation-message').append($('<p/>').text('Please fix the following error:'));
+            $errorList = $('<ul/>');
+            for(var i=0;i<errorMessages.length;i++){
+                $errorList.append($('<li/>').html(errorMessages[i]));
+            }
+            $('.js-form-validation-message').append($errorList).show();
+        }
 
         return isValid;
     };

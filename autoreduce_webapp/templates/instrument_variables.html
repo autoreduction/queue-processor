@@ -25,6 +25,7 @@
             {% csrf_token %}
             <input type="hidden" id="upcoming_runs" name="upcoming_runs" value="{{upcoming_run_variables}}" />
             <input type="hidden" id="is_editing" name="is_editing" value="{{editing}}" />
+            {% include "snippets/form_warnings.html" %}
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-group">
@@ -103,6 +104,7 @@
                 {% csrf_token %}
                 <input type="hidden" id="upcoming_runs" name="upcoming_runs" value="{{upcoming_run_variables}}" />
                 <input type="hidden" id="is_editing" name="is_editing" value="False" />
+                {% include "snippets/form_warnings.html" %}
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
