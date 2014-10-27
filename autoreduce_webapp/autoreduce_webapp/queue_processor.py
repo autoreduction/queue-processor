@@ -30,15 +30,13 @@ class Listener(object):
             logging.error(sys.exc_value)
             return
 
-        if destination == '/topic/DataReady':
+        if destination == '/queue/DataReady':
             self.data_ready()
-        elif destination == '/topic/ReductionPending':
-            self.reduction_pending()
-        elif destination == '/topic/ReductionStarted':
+        elif destination == '/queue/ReductionStarted':
             self.reduction_started()
-        elif destination == '/topic/ReductionComplete':
+        elif destination == '/queue/ReductionComplete':
             self.reduction_complete()
-        elif destination == '/topic/ReductionError':
+        elif destination == '/queue/ReductionError':
             self.reduction_error()
         else:
             logging.warning("Recieved a message on an unknown topic '%s'" % destination)
@@ -89,13 +87,11 @@ class Listener(object):
                 script_path, arguments = ReductionVariablesUtiles().get_script_path_and_arguments(reduction_run.run_variables.all())
                 self._data_dict['reduction_script'] = script_path
                 self._data_dict['reduction_arguments'] = arguments
-                self._client.send('/topic/ReductionPending', json.dumps(self._data_dict))        
+                self._client.send('/queue/ReductionPending', json.dumps(self._data_dict))     
+                logging.info("Run %s ready for reduction" % self._data_dict['run_number'])
+                logging.info("Reduction file: %s" % self._data_dict['reduction_script'])   
         else:
             logging.error("An invalid attempt to queue an existing reduction run was captured. Experiment: %s, Run Number: %s, Run Version %s" % (self._data_dict['rb_number'], self._data_dict['run_number'], self._data_dict['run_version']))
-
-    def reduction_pending(self):
-        logging.info("Run %s ready for reduction" % self._data_dict['run_number'])
-        logging.info("Reduction file: %s" % self._data_dict['reduction_script'])
 
     def reduction_started(self):
         logging.info("Run %s has started reduction" % self._data_dict['run_number'])

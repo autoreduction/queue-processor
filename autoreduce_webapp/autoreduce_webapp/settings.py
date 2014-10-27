@@ -103,7 +103,7 @@ else:
 ACTIVEMQ = {
     'topics' : [
         '/topic/DataReady',
-        '/topic/ReductionPending',
+        #'/topic/ReductionPending', - Only used by autoreduction server
         '/topic/ReductionStarted',
         '/topic/ReductionComplete',
         '/topic/ReductionError'
