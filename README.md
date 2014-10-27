@@ -220,3 +220,9 @@ Recommended Server: Windows Server 2012
 
 ### Install prerequisites
 
+1. Download and install Python 2.7 from: https://www.python.org/downloads/windows/
+2. Add `c:\Python27` to the PATH environmental variable.
+3. Download and install MySqlServer from: http://dev.mysql.com/downloads/windows/installer/5.6.html
+4. Download and install Git from: http://git-scm.com/download/win
+5. Download https://raw.github.com/pypa/pip/master/contrib/get-pip.py and run `python get-pip.py`
+6. Add `c:\python27\scripts` to the PATH environmental variable.
