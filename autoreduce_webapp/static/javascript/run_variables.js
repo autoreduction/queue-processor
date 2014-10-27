@@ -219,11 +219,18 @@
         // We need to enable the popover again as the element is new
         $('[data-toggle="popover"]').popover();
     };
+
+    var cancelForm = function cancelForm(event){
+        event.preventDefault();
+        window.onbeforeunload = undefined;
+        window.location.href = document.referrer;
+    };
     
     var init = function init(){
         $('#run_variables,#instrument_variables').on('click', '#previewScript', previewScript);
         $('#run_variables,#instrument_variables').on('click', '#resetValues', resetDefaultVariables);
         $('#run_variables,#instrument_variables').on('click', '#variableSubmit', submitForm);
+        $('#run_variables,#instrument_variables').on('click', '#cancelForm', cancelForm);
         $('#run_end').on('change', triggerAfterRunOptions);
         $('.js-show-default-variables').on('click', showDefaultSriptVariables);
         restrictFinished();
