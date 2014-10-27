@@ -102,11 +102,11 @@ else:
 
 ACTIVEMQ = {
     'topics' : [
-        '/topic/DataReady',
-        #'/topic/ReductionPending', - Only used by autoreduction server
-        '/topic/ReductionStarted',
-        '/topic/ReductionComplete',
-        '/topic/ReductionError'
+        '/queue/DataReady',
+        #'/queue/ReductionPending', - Only used by autoreduction server
+        '/queue/ReductionStarted',
+        '/queue/ReductionComplete',
+        '/queue/ReductionError'
         ],
     'username' : 'admin',
     'password' : 'pa$$w0rd',

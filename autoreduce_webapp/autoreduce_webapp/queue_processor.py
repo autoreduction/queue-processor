@@ -54,6 +54,7 @@ class Listener(object):
         try:
             instrument_variables_start_run =  InstrumentVariable.objects.filter(instrument=instrument, start_run__lte=self._data_dict['run_number']).latest('start_run').start_run
         except:
+            instrument_variables_start_run = 1
             InstrumentVariablesUtils().set_default_instrument_variables(instrument.name, instrument_variables_start_run)
 
         instrument_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run=instrument_variables_start_run)
