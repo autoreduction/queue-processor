@@ -5,6 +5,7 @@ from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL, BASE_DIR, REDUCTION_
 logging.basicConfig(filename=LOG_FILE,level=LOG_LEVEL)
 from django.db import models
 from reduction_variables.models import InstrumentVariable, ScriptFile
+from reduction_viewer.models import Instrument
 from reduction_viewer.utils import InstrumentUtils
 
 class VariableUtils(object):

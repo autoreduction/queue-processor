@@ -249,16 +249,62 @@ def run_summary(request, run_number, run_version=0):
 @render_with('run_confirmation.html')
 @require_staff
 def run_confirmation(request, run_number, run_version=0):
-    # TODO: Create new reduction run from post variables
-
     reduction_run = ReductionRun.objects.get(run_number=run_number, run_version=run_version)
-    queued_status = StatusUtils().get_queued()
+    instrument = reduction_run.instrument
 
-    context_dictionary = {
-        'run' : reduction_run,
-        'queued' : ReductionRun.objects.filter(instrument=reduction_run.instrument, status=queued_status).count(),
-    }
-    return context_dictionary
+    if request.method == 'POST':
+        highest_version = ReductionRun.objects.filter(run_number=run_number).order_by('-run_version').first().run_version
+        queued_status = StatusUtils().get_queued()
+        new_job = ReductionRun(
+            instrument=instrument,
+            run_number=run_number,
+            run_name=request.POST.get('run_description'),
+            run_version=(highest_version+1),
+            experiment=reduction_run.experiment,
+            started_by=request.user.username,
+            status=queued_status,
+            )
+        new_job.save()
+
+        script_binary = InstrumentVariablesUtils().get_current_script(instrument.name)
+        script = ScriptFile(script=script_binary, file_name='reduce.py')
+        script.save()
+
+        default_variables = InstrumentVariablesUtils().get_variables_for_run(instrument.name, run_number)
+        new_variables = []
+        for default_var in default_variables:
+            form_name = 'var-'
+            if default_var.is_advanced:
+                form_name += 'advanced-'
+            else:
+                form_name += 'standard-'
+            form_name += default_var.sanitized_name()
+
+            post_variable = request.POST.get(form_name, None)
+            if post_variable:
+                variable = RunVariable(
+                    reduction_run=new_job,
+                    name=default_var.name, 
+                    value=post_variable, 
+                    is_advanced=default_var.is_advanced, 
+                    type=default_var.type
+                    )
+            else:
+                variable = default_var
+                variable.scripts.clear()
+            variable.save()
+            variable.scripts.add(script)
+            variable.save()
+            new_variables.append(variable)
+
+        context_dictionary = {
+            'run' : new_job,
+            'variables' : new_variables,
+            'queued' : ReductionRun.objects.filter(instrument=reduction_run.instrument, status=queued_status).count(),
+        }
+        return context_dictionary
+    else:
+        return redirect('instrument_summary', instrument=instrument.name)
 
 @login_and_uows_valid
 def preview_script(request, instrument, run_number):
