@@ -270,7 +270,7 @@ def run_confirmation(request, run_number, run_version=0):
         script = ScriptFile(script=script_binary, file_name='reduce.py')
         script.save()
 
-        default_variables = InstrumentVariablesUtils().get_variables_for_run(instrument.name, run_number)
+        default_variables = reduction_run.run_variables
         new_variables = []
         for default_var in default_variables:
             form_name = 'var-'
