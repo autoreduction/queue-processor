@@ -254,7 +254,7 @@ def run_confirmation(request, run_number, run_version=0):
 
     if request.method == 'POST':
         highest_version = ReductionRun.objects.filter(run_number=run_number).order_by('-run_version').first().run_version
-
+        queued_status = StatusUtils().get_queued()
         new_job = ReductionRun(
             instrument=instrument,
             run_number=run_number,
@@ -262,7 +262,7 @@ def run_confirmation(request, run_number, run_version=0):
             run_version=(highest_version+1),
             experiment=reduction_run.experiment,
             started_by=request.user.username,
-            status=StatusUtils().get_queued(),
+            status=queued_status,
             )
         new_job.save()
 
