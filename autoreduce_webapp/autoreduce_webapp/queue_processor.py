@@ -9,7 +9,7 @@ sys.path.insert(0, BASE_DIR)
 from reduction_viewer.models import ReductionRun, Instrument, ReductionLocation, Status, DataLocation, Experiment
 from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFile
 from reduction_viewer.utils import StatusUtils, InstrumentUtils
-from reduction_variables.utils import InstrumentVariablesUtils, ReductionVariablesUtiles
+from reduction_variables.utils import InstrumentVariablesUtils, ReductionVariablesUtils
 from icat_communication import ICATCommunication
 
 class Listener(object):
@@ -85,7 +85,7 @@ class Listener(object):
             data_location.save()
 
             if instrument_variables:
-                script_path, arguments = ReductionVariablesUtiles().get_script_path_and_arguments(reduction_run.run_variables.all())
+                script_path, arguments = ReductionVariablesUtils().get_script_path_and_arguments(reduction_run.run_variables.all())
                 self._data_dict['reduction_script'] = script_path
                 self._data_dict['reduction_arguments'] = arguments
                 self._client.send('/queue/ReductionPending', json.dumps(self._data_dict))     

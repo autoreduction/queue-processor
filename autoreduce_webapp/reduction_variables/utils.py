@@ -5,6 +5,7 @@ from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL, BASE_DIR, REDUCTION_
 logging.basicConfig(filename=LOG_FILE,level=LOG_LEVEL)
 from django.db import models
 from reduction_variables.models import InstrumentVariable, ScriptFile
+from reduction_viewer.models import Instrument
 from reduction_viewer.utils import InstrumentUtils
 
 class VariableUtils(object):
@@ -89,6 +90,11 @@ class InstrumentVariablesUtils(object):
             variable.scripts.add(script)
             variable.save()
 
+    def get_variables_for_run(self, instrument_name, run_number):
+        instrument = Instrument.objects.get(name=instrument_name)
+        variables_run_start = InstrumentVariable.objects.filter(instrument=instrument,start_run__lte=run_number ).order_by('-start_run').first().start_run
+        return InstrumentVariable.objects.filter(instrument=instrument,start_run=variables_run_start )
+
     def get_current_script(self, instrument_name):
         reduce_script, script_binary =  self.__load_reduction_script(instrument_name)
         return script_binary
@@ -119,7 +125,7 @@ class InstrumentVariablesUtils(object):
             variables.append(variable)
         return variables
 
-class ReductionVariablesUtiles(object):
+class ReductionVariablesUtils(object):
     def get_script_path_and_arguments(self, run_variables):
         if not run_variables or len(run_variables) == 0:
             raise Exception("Run variables required")
@@ -159,3 +165,7 @@ class ReductionVariablesUtiles(object):
 
         return (script_path, arguments)
 
+class MessagingUtils(object):
+    def send_pending(self, reduction_run):
+        # TODO: Send new reduction run to queue
+        pass

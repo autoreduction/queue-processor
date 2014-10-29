@@ -132,6 +132,8 @@ def instrument_variables(request, instrument, start=0, end=0):
                     )
             else:
                 variable = default_var
+                variable.pk = None
+                variable.id = None
                 variable.scripts.clear()
             variable.save()
             variable.scripts.add(script)
@@ -197,8 +199,8 @@ def instrument_variables(request, instrument, start=0, end=0):
             'queued' : ReductionRun.objects.filter(instrument=instrument, status=queued_status),
             'standard_variables' : standard_vars,
             'advanced_variables' : advanced_vars,
-            'default_standard_variables' : default_standard_variables,
-            'default_advanced_variables' : default_advanced_variables,
+        'default_standard_variables' : default_standard_variables,
+        'default_advanced_variables' : default_advanced_variables,
             'run_start' : start,
             'run_end' : end,
             'minimum_run_start' : max(latest_completed_run, latest_processing_run),
@@ -224,7 +226,7 @@ def run_summary(request, run_number, run_version=0):
         else:
             standard_vars[variable.name] = variable
 
-    default_variables = InstrumentVariablesUtils().get_default_variables(reduction_run.instrument.name)
+    default_variables = InstrumentVariablesUtils().get_variables_for_run(reduction_run.instrument.name, run_number)
     default_standard_variables = {}
     default_advanced_variables = {}
     for variable in default_variables:
@@ -233,6 +235,15 @@ def run_summary(request, run_number, run_version=0):
         else:
             default_standard_variables[variable.name] = variable
 
+    current_variables = InstrumentVariablesUtils().get_default_variables(reduction_run.instrument.name)
+    current_standard_variables = {}
+    current_advanced_variables = {}
+    for variable in current_variables:
+        if variable.is_advanced:
+            current_advanced_variables[variable.name] = variable
+        else:
+            current_standard_variables[variable.name] = variable
+
     context_dictionary = {
         'run_number' : run_number,
         'run_version' : run_version,
@@ -240,6 +251,8 @@ def run_summary(request, run_number, run_version=0):
         'advanced_variables' : advanced_vars,
         'default_standard_variables' : default_standard_variables,
         'default_advanced_variables' : default_advanced_variables,
+        'current_standard_variables' : current_standard_variables,
+        'current_advanced_variables' : current_advanced_variables,
         'instrument' : reduction_run.instrument,
     }
     context_dictionary.update(csrf(request))
@@ -249,16 +262,72 @@ def run_summary(request, run_number, run_version=0):
 @render_with('run_confirmation.html')
 @require_staff
 def run_confirmation(request, run_number, run_version=0):
-    # TODO: Create new reduction run from post variables
-
     reduction_run = ReductionRun.objects.get(run_number=run_number, run_version=run_version)
-    queued_status = StatusUtils().get_queued()
+    instrument = reduction_run.instrument
 
-    context_dictionary = {
-        'run' : reduction_run,
-        'queued' : ReductionRun.objects.filter(instrument=reduction_run.instrument, status=queued_status).count(),
-    }
-    return context_dictionary
+    if request.method == 'POST':
+        highest_version = ReductionRun.objects.filter(run_number=run_number).order_by('-run_version').first().run_version
+        queued_status = StatusUtils().get_queued()
+        new_job = ReductionRun(
+            instrument=instrument,
+            run_number=run_number,
+            run_name=request.POST.get('run_description'),
+            run_version=(highest_version+1),
+            experiment=reduction_run.experiment,
+            started_by=request.user.username,
+            status=queued_status,
+            )
+        new_job.save()
+
+        script_binary = InstrumentVariablesUtils().get_current_script(instrument.name)
+        script = ScriptFile(script=script_binary, file_name='reduce.py')
+        script.save()
+
+        run_variables = reduction_run.run_variables.all()
+        default_variables = InstrumentVariablesUtils().get_variables_for_run(instrument.name, run_number)
+        new_variables = []
+
+        for key,value in request.POST.iteritems():
+            if 'var-' in key:
+                if 'var-advanced-' in key:
+                    name = key.replace('var-advanced-', '').replace('-',' ')
+                    default_var = next((x for x in run_variables if x.name == name), next((x for x in default_variables if x.name == name), None))
+                    if not default_var: continue
+                    variable = RunVariable(
+                        reduction_run=new_job,
+                        name=default_var.name, 
+                        value=value, 
+                        is_advanced=True, 
+                        type=default_var.type
+                    )
+                    variable.save()
+                    variable.scripts.add(script)
+                    variable.save()
+                    new_variables.append(variable)
+                if 'var-standard-' in key:
+                    name = key.replace('var-standard-', '').replace('-',' ')
+                    default_var = next((x for x in run_variables if x.name == name), next((x for x in default_variables if x.name == name), None))
+                    if not default_var: continue
+                    variable = RunVariable(
+                        reduction_run=new_job,
+                        name=default_var.name, 
+                        value=value, 
+                        is_advanced=False, 
+                        type=default_var.type
+                    )
+                    variable.save()
+                    variable.scripts.add(script)
+                    variable.save()
+                    new_variables.append(variable)
+        # TODO: Send message to queue
+        context_dictionary = {
+            'run' : new_job,
+            'variables' : new_variables,
+            'queued' : ReductionRun.objects.filter(instrument=reduction_run.instrument, status=queued_status).count(),
+        }
+        return context_dictionary
+    else:
+        return redirect('instrument_summary', instrument=instrument.name)
 
 @login_and_uows_valid
 def preview_script(request, instrument, run_number):

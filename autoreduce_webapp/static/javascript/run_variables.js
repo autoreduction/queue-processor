@@ -241,7 +241,16 @@
         event.preventDefault();
         var $form = $('#run_variables');
         if($form.length===0) $form = $('#instrument_variables');
-        $form.html($('#default_instrument_variables_form').html());
+        $form.find('.js-variables-container').html($('js-default-variables').html());
+        // We need to enable the popover again as the element is new
+        $('[data-toggle="popover"]').popover();
+    };
+
+    var resetCurrentVariables = function resetCurrentVariables(event){
+        event.preventDefault();
+        var $form = $('#run_variables');
+        if($form.length===0) $form = $('#instrument_variables');
+        $form.find('.js-variables-container').html($('js-current-variables').html());
         // We need to enable the popover again as the element is new
         $('[data-toggle="popover"]').popover();
     };
@@ -252,11 +261,21 @@
         window.location.href = document.referrer;
     };
     
+    var toggleActionExplainations = function toggleActionExplainations(event){
+        if(event.type==='mouseover'){
+            $('.js-action-explaination').text($(this).siblings('.js-explaination').text());
+        }else if(event.type==='mouseleave'){
+            $('.js-action-explaination').text('');
+        }
+    };
+
     var init = function init(){
         $('#run_variables,#instrument_variables').on('click', '#previewScript', previewScript);
         $('#run_variables,#instrument_variables').on('click', '#resetValues', resetDefaultVariables);
+        $('#run_variables,#instrument_variables').on('click', '#currentScript', resetCurrentVariables);
         $('#run_variables,#instrument_variables').on('click', '#variableSubmit', submitForm);
         $('#run_variables,#instrument_variables').on('click', '#cancelForm', cancelForm);
+        $('.js-form-actions li>a').on('mouseover mouseleave', toggleActionExplainations);
         $('#run_end').on('change', triggerAfterRunOptions);
         $('.js-show-default-variables').on('click', showDefaultSriptVariables);
         restrictFinished();
