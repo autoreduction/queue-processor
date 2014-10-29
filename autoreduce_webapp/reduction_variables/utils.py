@@ -89,6 +89,11 @@ class InstrumentVariablesUtils(object):
             variable.scripts.add(script)
             variable.save()
 
+    def get_variables_for_run(self, instrument_name, run_number):
+        instrument = Instrument.objects.get(name=instrument_name)
+        variables_run_start = InstrumentVariable.objects.filter(instrument=instrument,start_run__lte=run_number ).order_by('-start_run').first().start_run
+        return InstrumentVariable.objects.filter(instrument=instrument,start_run=variables_run_start )
+
     def get_current_script(self, instrument_name):
         reduce_script, script_binary =  self.__load_reduction_script(instrument_name)
         return script_binary
