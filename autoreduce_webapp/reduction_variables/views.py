@@ -253,7 +253,7 @@ def run_confirmation(request, run_number, run_version=0):
     instrument = reduction_run.instrument
 
     if request.method == 'POST':
-        highest_version = ReductionRun.objects.get(run_number=run_number).order_by('-run_version').first().run_version
+        highest_version = ReductionRun.objects.filter(run_number=run_number).order_by('-run_version').first().run_version
 
         new_job = ReductionRun(
             instrument=instrument,
