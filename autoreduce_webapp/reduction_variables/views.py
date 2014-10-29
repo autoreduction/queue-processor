@@ -132,6 +132,8 @@ def instrument_variables(request, instrument, start=0, end=0):
                     )
             else:
                 variable = default_var
+                variable.pk = None
+                variable.id = None
                 variable.scripts.clear()
             variable.save()
             variable.scripts.add(script)
@@ -270,32 +272,42 @@ def run_confirmation(request, run_number, run_version=0):
         script = ScriptFile(script=script_binary, file_name='reduce.py')
         script.save()
 
-        default_variables = reduction_run.run_variables.all()
+        run_variables = reduction_run.run_variables.all()
+        default_variables = InstrumentVariablesUtils().get_variables_for_run(instrument.name, run_number)
         new_variables = []
-        for default_var in default_variables:
-            form_name = 'var-'
-            if default_var.is_advanced:
-                form_name += 'advanced-'
-            else:
-                form_name += 'standard-'
-            form_name += default_var.sanitized_name()
 
-            post_variable = request.POST.get(form_name, None)
-            if post_variable:
-                variable = RunVariable(
-                    reduction_run=new_job,
-                    name=default_var.name, 
-                    value=post_variable, 
-                    is_advanced=default_var.is_advanced, 
-                    type=default_var.type
+        for key,value in request.POST.iteritems():
+            if 'var-' in key:
+                if 'var-advanced-' in key:
+                    name = key.replace('var-advanced-', '').replace('-',' ')
+                    default_var = next((x for x in run_variables if x.name == name), next((x for x in default_variables if x.name == name), None))
+                    if not default_var: continue
+                    variable = RunVariable(
+                        reduction_run=new_job,
+                        name=default_var.name, 
+                        value=value, 
+                        is_advanced=True, 
+                        type=default_var.type
                     )
-            else:
-                variable = default_var
-                variable.scripts.clear()
-            variable.save()
-            variable.scripts.add(script)
-            variable.save()
-            new_variables.append(variable)
+                    variable.save()
+                    variable.scripts.add(script)
+                    variable.save()
+                    new_variables.append(variable)
+                if 'var-standard-' in key:
+                    name = key.replace('var-standard-', '').replace('-',' ')
+                    default_var = next((x for x in run_variables if x.name == name), next((x for x in default_variables if x.name == name), None))
+                    if not default_var: continue
+                    variable = RunVariable(
+                        reduction_run=new_job,
+                        name=default_var.name, 
+                        value=value, 
+                        is_advanced=False, 
+                        type=default_var.type
+                    )
+                    variable.save()
+                    variable.scripts.add(script)
+                    variable.save()
+                    new_variables.append(variable)
 
         context_dictionary = {
             'run' : new_job,
