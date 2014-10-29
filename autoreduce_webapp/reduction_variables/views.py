@@ -262,7 +262,7 @@ def run_confirmation(request, run_number, run_version=0):
             run_version=(highest_version+1),
             experiment=reduction_run.experiment,
             started_by=request.user.username,
-            status=StatusUtils.get_queued(),
+            status=StatusUtils().get_queued(),
             )
         new_job.save()
 
