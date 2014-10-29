@@ -30,7 +30,7 @@
                                 <strong>Description:</strong> {% if run.run_name %}{{run.run_name}}{% else %}<em>No description provided</em>{% endif %}
                             </div>
                         </div>
-                        {% for variable in run.run_variables.all %}
+                        {% for variable in variables %}
                             <div class="row">
                                 <div class="col-md-12">
                                     <strong>{{variable.name}}:</strong> {{variable.value}}
