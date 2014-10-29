@@ -125,7 +125,7 @@ class InstrumentVariablesUtils(object):
             variables.append(variable)
         return variables
 
-class ReductionVariablesUtiles(object):
+class ReductionVariablesUtils(object):
     def get_script_path_and_arguments(self, run_variables):
         if not run_variables or len(run_variables) == 0:
             raise Exception("Run variables required")
@@ -165,3 +165,6 @@ class ReductionVariablesUtiles(object):
 
         return (script_path, arguments)
 
+class MessagingUtils(object):
+    def send_pending(self, reduction_run):
+        

@@ -308,7 +308,7 @@ def run_confirmation(request, run_number, run_version=0):
                     variable.scripts.add(script)
                     variable.save()
                     new_variables.append(variable)
-
+        # TODO: Send message to queue
         context_dictionary = {
             'run' : new_job,
             'variables' : new_variables,
