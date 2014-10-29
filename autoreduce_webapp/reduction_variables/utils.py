@@ -167,4 +167,5 @@ class ReductionVariablesUtils(object):
 
 class MessagingUtils(object):
     def send_pending(self, reduction_run):
-        
+        # TODO: Send new reduction run to queue
+        pass
