@@ -36,5 +36,5 @@
 > `State Machine.vsdx` - Microsoft Visio file for updating
 > `State Machine.pdf` - Cross-platform PDF
 > Indicates each of the states along the autoreduction workflow. These relate closely to the ActiveMQ topics 
-
-
+> QueueProcesor is a sub-component of the Web App that runs independently as a daemon but invokes some functionality from the core web app.
+> ICAT Ingest and Autoreduction Server are referenced in the Server Overview document. 
