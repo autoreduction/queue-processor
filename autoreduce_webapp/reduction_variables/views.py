@@ -6,7 +6,7 @@ from django.views.generic.base import View
 from django.http import HttpResponse
 from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, require_staff
 from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFile
-from reduction_variables.utils import InstrumentVariablesUtils, VariableUtils
+from reduction_variables.utils import InstrumentVariablesUtils, VariableUtils, MessagingUtils
 from reduction_viewer.models import Instrument, ReductionRun
 from reduction_viewer.utils import StatusUtils
 from django.http import HttpResponseForbidden
@@ -278,6 +278,7 @@ def run_confirmation(request, run_number, run_version=0):
             status=queued_status,
             )
         new_job.save()
+        new_job.data_location = reduction_run.data_location
 
         script_binary = InstrumentVariablesUtils().get_current_script(instrument.name)
         script = ScriptFile(script=script_binary, file_name='reduce.py')
@@ -319,7 +320,9 @@ def run_confirmation(request, run_number, run_version=0):
                     variable.scripts.add(script)
                     variable.save()
                     new_variables.append(variable)
-        # TODO: Send message to queue
+        
+        MessagingUtils().send_pending(new_job)
+
         context_dictionary = {
             'run' : new_job,
             'variables' : new_variables,

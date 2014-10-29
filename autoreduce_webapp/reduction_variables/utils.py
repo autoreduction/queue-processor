@@ -1,7 +1,8 @@
 import logging, os, sys, imp, uuid, re
 sys.path.append(os.path.join("../", os.path.dirname(os.path.dirname(__file__))))
 os.environ["DJANGO_SETTINGS_MODULE"] = "autoreduce_webapp.settings"
-from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL, BASE_DIR, REDUCTION_SCRIPT_BASE
+from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL, BASE_DIR, REDUCTION_SCRIPT_BASE, ACTIVEMQ
+from autoreduce_webapp.queue_processor import Client as ActiveMQClient
 logging.basicConfig(filename=LOG_FILE,level=LOG_LEVEL)
 from django.db import models
 from reduction_variables.models import InstrumentVariable, ScriptFile
@@ -167,5 +168,21 @@ class ReductionVariablesUtils(object):
 
 class MessagingUtils(object):
     def send_pending(self, reduction_run):
-        # TODO: Send new reduction run to queue
-        pass
+        script_path, arguments = ReductionVariablesUtils().get_script_path_and_arguments(reduction_run.run_variables.all())
+
+        # Currently only support single location
+        data_path = reduction_run.data_location.first()
+
+        message_client = ActiveMQClient(ACTIVEMQ['broker'], ACTIVEMQ['username'], ACTIVEMQ['password'], ACTIVEMQ['topics'], 'Webapp_QueueProcessor', True)
+        message_client.connect()
+        data_dict = {
+            'run_number':reduction_run.run_number,
+            'instrument':reduction_run.instrument.name,
+            'rb_number':reduction_run.experiment.reference_number,
+            'data':'',
+            'reduction_script':script_path,
+            'reduction_arguments':arguments,
+            'run_version':reduction_run.run_version,
+            'message':'',
+        }
+        message_client.send('/queue/ReductionPending', json.dumps(data_dict))    
