@@ -1,5 +1,6 @@
 {% load variable_type %}
 
+<input type="hidden" id="preview_url" value="{% url 'preview_script' instrument=instrument %}"/>
 {% for name,variable in standard_variables.items %}
     <div class="form-group">
         <label for="var-standard-{{variable.sanitized_name}}" class="control-label col-md-2">{{variable.name}}</label>
@@ -25,12 +26,3 @@
         </div>
     </div>    
 {% endif %}
-<div class="form-group variables-buttons">
-    <div class="col-md-12 text-right">
-        <input type="hidden" id="preview_url" value="{% url 'preview_script' instrument=instrument %}"/>
-        <a href="#previewScript" class="btn btn-default " id="previewScript">Preview reduction script</a> 
-        <a href="#resetValues" class="btn btn-default" id="resetValues">Reset to default values</a> 
-        <a href="#cancelForm" class="btn btn-danger" id="cancelForm">Cancel</a> 
-        <input type="submit" value="{{button_text}}" class="btn btn-success" id="variableSubmit" />
-    </div>
-</div>

@@ -199,8 +199,8 @@ def instrument_variables(request, instrument, start=0, end=0):
             'queued' : ReductionRun.objects.filter(instrument=instrument, status=queued_status),
             'standard_variables' : standard_vars,
             'advanced_variables' : advanced_vars,
-            'default_standard_variables' : default_standard_variables,
-            'default_advanced_variables' : default_advanced_variables,
+        'default_standard_variables' : default_standard_variables,
+        'default_advanced_variables' : default_advanced_variables,
             'run_start' : start,
             'run_end' : end,
             'minimum_run_start' : max(latest_completed_run, latest_processing_run),
@@ -226,7 +226,7 @@ def run_summary(request, run_number, run_version=0):
         else:
             standard_vars[variable.name] = variable
 
-    default_variables = InstrumentVariablesUtils().get_default_variables(reduction_run.instrument.name)
+    default_variables = InstrumentVariablesUtils().get_variables_for_run(reduction_run.instrument.name, run_number)
     default_standard_variables = {}
     default_advanced_variables = {}
     for variable in default_variables:
@@ -235,6 +235,15 @@ def run_summary(request, run_number, run_version=0):
         else:
             default_standard_variables[variable.name] = variable
 
+    current_variables = InstrumentVariablesUtils().get_default_variables(reduction_run.instrument.name)
+    current_standard_variables = {}
+    current_advanced_variables = {}
+    for variable in current_variables:
+        if variable.is_advanced:
+            current_advanced_variables[variable.name] = variable
+        else:
+            current_standard_variables[variable.name] = variable
+
     context_dictionary = {
         'run_number' : run_number,
         'run_version' : run_version,
@@ -242,6 +251,8 @@ def run_summary(request, run_number, run_version=0):
         'advanced_variables' : advanced_vars,
         'default_standard_variables' : default_standard_variables,
         'default_advanced_variables' : default_advanced_variables,
+        'current_standard_variables' : current_standard_variables,
+        'current_advanced_variables' : current_advanced_variables,
         'instrument' : reduction_run.instrument,
     }
     context_dictionary.update(csrf(request))
