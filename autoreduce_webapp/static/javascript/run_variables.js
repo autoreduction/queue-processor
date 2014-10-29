@@ -263,7 +263,7 @@
     
     var toggleActionExplainations = function toggleActionExplainations(event){
         if(event.type==='mouseenter'){
-            $('.js-action-explaination').text($(this).siblings().find('.js-explaination').text());
+            $('.js-action-explaination').text($(this).siblings('.js-explaination').text());
         }else if(event.type==='mouseleave'){
             $('.js-action-explaination').text();
         }
