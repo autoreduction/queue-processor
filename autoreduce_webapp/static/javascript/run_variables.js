@@ -261,12 +261,21 @@
         window.location.href = document.referrer;
     };
     
+    var toggleActionExplainations = function toggleActionExplainations(event){
+        if(event.type==='mouseenter'){
+            $('.js-action-explaination').text($(this).siblings().find('.js-explaination').text());
+        }else if(event.type==='mouseleave'){
+            $('.js-action-explaination').text();
+        }
+    };
+
     var init = function init(){
         $('#run_variables,#instrument_variables').on('click', '#previewScript', previewScript);
         $('#run_variables,#instrument_variables').on('click', '#resetValues', resetDefaultVariables);
         $('#run_variables,#instrument_variables').on('click', '#currentScript', resetCurrentVariables);
         $('#run_variables,#instrument_variables').on('click', '#variableSubmit', submitForm);
         $('#run_variables,#instrument_variables').on('click', '#cancelForm', cancelForm);
+        $('.js-form-actions').on('hover', toggleActionExplainations);
         $('#run_end').on('change', triggerAfterRunOptions);
         $('.js-show-default-variables').on('click', showDefaultSriptVariables);
         restrictFinished();
