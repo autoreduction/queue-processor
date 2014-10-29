@@ -262,10 +262,10 @@
     };
     
     var toggleActionExplainations = function toggleActionExplainations(event){
-        if(event.type==='mouseenter'){
+        if(event.type==='mouseover'){
             $('.js-action-explaination').text($(this).siblings('.js-explaination').text());
         }else if(event.type==='mouseleave'){
-            $('.js-action-explaination').text();
+            $('.js-action-explaination').text('');
         }
     };
 
@@ -275,7 +275,7 @@
         $('#run_variables,#instrument_variables').on('click', '#currentScript', resetCurrentVariables);
         $('#run_variables,#instrument_variables').on('click', '#variableSubmit', submitForm);
         $('#run_variables,#instrument_variables').on('click', '#cancelForm', cancelForm);
-        $('.js-form-actions li>a').on('mouseenter mouseleave', toggleActionExplainations);
+        $('.js-form-actions li>a').on('mouseover mouseleave', toggleActionExplainations);
         $('#run_end').on('change', triggerAfterRunOptions);
         $('.js-show-default-variables').on('click', showDefaultSriptVariables);
         restrictFinished();
