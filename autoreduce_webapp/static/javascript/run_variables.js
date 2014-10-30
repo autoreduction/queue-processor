@@ -285,7 +285,7 @@
         $('#run_variables,#instrument_variables').on('click', '#currentScript', resetCurrentVariables);
         $('#run_variables,#instrument_variables').on('click', '#variableSubmit', submitForm);
         $('#run_variables,#instrument_variables').on('click', '#cancelForm', cancelForm);
-        $('#run_variables,#instrument_variables').on('change', 'input[type=checkbox][data-type=boolean]', updateBoolean);
+        $('#run_variables,#instrument_variables').on('click', 'input[type=checkbox][data-type=boolean]', updateBoolean);
         $('.js-form-actions li>a').on('mouseover mouseleave', toggleActionExplainations);
         $('#run_end').on('change', triggerAfterRunOptions);
         $('.js-show-default-variables').on('click', showDefaultSriptVariables);
