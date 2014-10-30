@@ -97,15 +97,15 @@
                     </div>
                     <div class="modal-body">
                         <h5>Standard Variables</h5>
-                        {% for variable in default_standard_variables %}
+                        {% for name,variable in default_standard_variables.items %}
                             <div>
-                                <strong>{{ variable.name }}:</strong> {{ variable.value }}
+                                <strong>{{ name }}:</strong> {{ variable.value }}
                             </div>
                         {% endfor %}
                         <h5>Advanced Variables</h5>
-                        {% for variable in default_advanced_variables %}
+                        {% for name,variable in default_advanced_variables.items %}
                             <div>
-                                <strong>{{ variable.name }}:</strong> {{ variable.value }}
+                                <strong>{{ name }}:</strong> {{ variable.value }}
                             </div>
                         {% endfor %}
                     </div>
