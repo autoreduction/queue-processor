@@ -46,6 +46,12 @@ def instrument_summary(request, instrument):
             }
         upcoming_variables_dict[variables.start_run]['variables'].append(variables)
 
+    # Move the upcoming vars into an ordered list
+    upcoming_variables_ordered = []
+    for key in sorted(upcoming_variables_dict):
+        upcoming_variables_ordered.append(upcoming_variables_dict[key])
+    sorted(upcoming_variables_ordered, key=lambda r: r['run_start'])
+    
     # Fill in the run end nunmbers
     run_end = 0;
     for run_number in sorted(upcoming_variables_dict.iterkeys(), reverse=True):
@@ -72,7 +78,7 @@ def instrument_summary(request, instrument):
     context_dictionary = {
         'instrument' : instrument,
         'current_variables' : current_vars,
-        'upcoming_variables' : upcoming_variables_dict,
+        'upcoming_variables' : upcoming_variables_ordered,
     }
 
     return render_to_response('snippets/instrument_summary_variables.html', context_dictionary, RequestContext(request))
