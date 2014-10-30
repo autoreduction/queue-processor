@@ -230,7 +230,8 @@ def experiment_summary(request, reference_number):
                 if location not in reduced_data:
                     reduced_data.append(location)
         try:
-            with ICATCommunication(AUTH='uows', SESSION={'sessionid':request.session['sessionid']}) as icat:
+            with ICATCommunication() as icat:
+            # TODO: Comment out when released - with ICATCommunication(AUTH='uows', SESSION={'sessionid':request.session['sessionid']}) as icat:
                 experiment_details = icat.get_experiment_details(int(reference_number))
         except Exception as icat_e:
             logging.error(icat_e.message)
