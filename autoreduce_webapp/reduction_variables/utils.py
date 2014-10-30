@@ -5,7 +5,7 @@ from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL, BASE_DIR, REDUCTION_
 from autoreduce_webapp.queue_processor import Client as ActiveMQClient
 logging.basicConfig(filename=LOG_FILE,level=LOG_LEVEL)
 from django.db import models
-from reduction_variables.models import InstrumentVariable, ScriptFile
+from reduction_variables.models import InstrumentVariable, ScriptFile, RunVariable
 from reduction_viewer.models import Instrument
 from reduction_viewer.utils import InstrumentUtils
 
@@ -168,7 +168,7 @@ class ReductionVariablesUtils(object):
 
 class MessagingUtils(object):
     def send_pending(self, reduction_run):
-        script_path, arguments = ReductionVariablesUtils().get_script_path_and_arguments(reduction_run.run_variables.all())
+        script_path, arguments = ReductionVariablesUtils().get_script_path_and_arguments(RunVariable.objects.filter(reduction_run=reduction_run))
 
         # Currently only support single location
         data_path = reduction_run.data_location.first()

@@ -12,9 +12,6 @@ from reduction_viewer.utils import StatusUtils, InstrumentUtils
 from icat_communication import ICATCommunication
 
 class Listener(object):
-    # Import within class to prevent cylindrical imports
-    from reduction_variables.utils import InstrumentVariablesUtils, ReductionVariablesUtils
-
     def __init__(self, client):
         self._client = client
         self._data_dict = {}
@@ -44,6 +41,9 @@ class Listener(object):
             logging.warning("Recieved a message on an unknown topic '%s'" % destination)
 
     def data_ready(self):
+        # Import within method to prevent cylindrical imports
+        from reduction_variables.utils import InstrumentVariablesUtils, ReductionVariablesUtils
+
         logging.info("Data ready for processing run %s on %s" % (str(self._data_dict['run_number']), self._data_dict['instrument']))
         
         instrument = InstrumentUtils().get_instrument(self._data_dict['instrument'])

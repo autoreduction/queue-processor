@@ -278,7 +278,7 @@ def run_confirmation(request, run_number, run_version=0):
             status=queued_status,
             )
         new_job.save()
-        new_job.data_location = reduction_run.data_location
+        new_job.data_location = reduction_run.data_location.all()
 
         script_binary = InstrumentVariablesUtils().get_current_script(instrument.name)
         script = ScriptFile(script=script_binary, file_name='reduce.py')
@@ -321,6 +321,8 @@ def run_confirmation(request, run_number, run_version=0):
                     variable.save()
                     new_variables.append(variable)
         
+        # TODO: Handle missing variables
+
         MessagingUtils().send_pending(new_job)
 
         context_dictionary = {
