@@ -9,7 +9,6 @@ sys.path.insert(0, BASE_DIR)
 from reduction_viewer.models import ReductionRun, Instrument, ReductionLocation, Status, DataLocation, Experiment
 from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFile
 from reduction_viewer.utils import StatusUtils, InstrumentUtils
-from reduction_variables.utils import InstrumentVariablesUtils, ReductionVariablesUtils
 from icat_communication import ICATCommunication
 
 class Listener(object):
@@ -42,6 +41,9 @@ class Listener(object):
             logging.warning("Recieved a message on an unknown topic '%s'" % destination)
 
     def data_ready(self):
+        # Import within method to prevent cylindrical imports
+        from reduction_variables.utils import InstrumentVariablesUtils, ReductionVariablesUtils
+
         logging.info("Data ready for processing run %s on %s" % (str(self._data_dict['run_number']), self._data_dict['instrument']))
         
         instrument = InstrumentUtils().get_instrument(self._data_dict['instrument'])
@@ -175,7 +177,7 @@ class Listener(object):
         
 
 class Client(object):
-    def __init__(self, brokers, user, password, topics=None, consumer_name='QueueProcessor'):
+    def __init__(self, brokers, user, password, topics=None, consumer_name='QueueProcessor', client_only=True):
         self._brokers = brokers
         self._user = user
         self._password = password
@@ -183,12 +185,13 @@ class Client(object):
         self._topics = topics
         self._consumer_name = consumer_name
         self._listener = None
+        self._client_only = client_only
 
     def set_listner(self, listener):
         self._listener = listener
 
     def get_connection(self, listener=None):
-        if listener is None:
+        if listener is None and not self._client_only:
             if self._listener is None:
                 listener = Listener(self)
             else:
@@ -197,7 +200,8 @@ class Client(object):
         logging.info("[%s] Connecting to %s" % (self._consumer_name, str(self._brokers)))
 
         connection = stomp.Connection(host_and_ports=self._brokers)
-        connection.set_listener(self._consumer_name, listener)
+        if not self._client_only:
+            connection.set_listener(self._consumer_name, listener)
         connection.start()
         connection.connect(self._user, self._password, wait=True)
 
@@ -234,7 +238,7 @@ class Client(object):
 
 
 def main():
-    client = Client(ACTIVEMQ['broker'], ACTIVEMQ['username'], ACTIVEMQ['password'], ACTIVEMQ['topics'], 'Autoreduction_QueueProcessor')
+    client = Client(ACTIVEMQ['broker'], ACTIVEMQ['username'], ACTIVEMQ['password'], ACTIVEMQ['topics'], 'Autoreduction_QueueProcessor', False)
     client.connect()
 
 if __name__ == '__main__':

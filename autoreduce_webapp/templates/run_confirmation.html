@@ -7,44 +7,58 @@
 {% load static from staticfiles %}
 
 {% block body %}
-    <div class="row">
-        <div class="col-md-8 col-md-offset-2">
-            <div class="panel panel-success">
-                <div class="panel-heading">
-                    <div class="panel-title">
-                        Successfully submitted run #{{run.run_number}} for reduction
+    {% if run and not error %}
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <div class="panel panel-success">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            Successfully submitted run #{{run.run_number}} for reduction
+                        </div>
                     </div>
-                </div>
-                <div class="panel-body">
-                    {% if queued %}
-                        <div class="row">
-                            <div class="col-md-12 text-center">
-                                There are currently {{queued}} runs queued.
-                            </div>
-                        </div>
-                    {% endif %}
-                    <fieldset>
-                        <legend>Run Variables</legend>
-                        <div class="row">
-                            <div class="col-md-12">
-                                <strong>Description:</strong> {% if run.run_name %}{{run.run_name}}{% else %}<em>No description provided</em>{% endif %}
-                            </div>
-                        </div>
-                        {% for variable in variables %}
+                    <div class="panel-body">
+                        {% if queued %}
                             <div class="row">
-                                <div class="col-md-12">
-                                    <strong>{{variable.name}}:</strong> {{variable.value}}
+                                <div class="col-md-12 text-center">
+                                    There are currently {{queued}} runs queued.
                                 </div>
                             </div>
-                        {% endfor %}
-                    </fieldset>
-                    <div class="row">
-                        <div class="col-md-12 text-center">
-                            <a href="{% url 'run_summary' run_number=run.run_number run_version=run.run_version %}">View this reduction job</a>
+                        {% endif %}
+                        <fieldset>
+                            <legend>Run Variables</legend>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <strong>Description:</strong> {% if run.run_name %}{{run.run_name}}{% else %}<em>No description provided</em>{% endif %}
+                                </div>
+                            </div>
+                            {% for variable in variables %}
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <strong>{{variable.name}}:</strong> {{variable.value}}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </fieldset>
+                        <div class="row">
+                            <div class="col-md-12 text-center">
+                                <a href="{% url 'run_summary' run_number=run.run_number run_version=run.run_version %}">View this reduction job</a>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    {% else %}
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <div class="alert alert-danger">
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            {{ error }} <a href="#back">Go Back</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
 {% endblock %}

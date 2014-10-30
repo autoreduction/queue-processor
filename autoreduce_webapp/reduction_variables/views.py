@@ -6,7 +6,7 @@ from django.views.generic.base import View
 from django.http import HttpResponse
 from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, require_staff
 from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFile
-from reduction_variables.utils import InstrumentVariablesUtils, VariableUtils
+from reduction_variables.utils import InstrumentVariablesUtils, VariableUtils, MessagingUtils
 from reduction_viewer.models import Instrument, ReductionRun
 from reduction_viewer.utils import StatusUtils
 from django.http import HttpResponseForbidden
@@ -278,6 +278,7 @@ def run_confirmation(request, run_number, run_version=0):
             status=queued_status,
             )
         new_job.save()
+        new_job.data_location = reduction_run.data_location.all()
 
         script_binary = InstrumentVariablesUtils().get_current_script(instrument.name)
         script = ScriptFile(script=script_binary, file_name='reduce.py')
@@ -319,12 +320,34 @@ def run_confirmation(request, run_number, run_version=0):
                     variable.scripts.add(script)
                     variable.save()
                     new_variables.append(variable)
-        # TODO: Send message to queue
-        context_dictionary = {
-            'run' : new_job,
-            'variables' : new_variables,
-            'queued' : ReductionRun.objects.filter(instrument=reduction_run.instrument, status=queued_status).count(),
-        }
+        
+        if len(new_variables) == 0:
+            new_job.delete()
+            script.delete()
+            context_dictionary = {
+                'run' : None,
+                'variables' : None,
+                'queued' : ReductionRun.objects.filter(instrument=reduction_run.instrument, status=queued_status).count(),
+                'error' : 'No variables were found to be submitted.'
+            }
+        else:
+            try:
+                MessagingUtils().send_pending(new_job)
+                context_dictionary = {
+                    'run' : new_job,
+                    'variables' : new_variables,
+                    'queued' : ReductionRun.objects.filter(instrument=reduction_run.instrument, status=queued_status).count(),
+                }
+            except Exception, e:
+                new_job.delete()
+                script.delete()
+                context_dictionary = {
+                    'run' : None,
+                    'variables' : None,
+                    'queued' : ReductionRun.objects.filter(instrument=reduction_run.instrument, status=queued_status).count(),
+                    'error' : 'Failed to send new job. (%s)' % str(e),
+                }
+        
         return context_dictionary
     else:
         return redirect('instrument_summary', instrument=instrument.name)
