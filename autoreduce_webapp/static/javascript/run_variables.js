@@ -15,7 +15,7 @@
         };
         event.preventDefault();
         if(validateForm()){
-            checkForConflicts(submitAction);
+            submitAction();
         }else{
             cancelAction();
         }
