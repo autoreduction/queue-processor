@@ -322,14 +322,33 @@ def run_confirmation(request, run_number, run_version=0):
                     new_variables.append(variable)
         
         # TODO: Handle missing variables
-
-        MessagingUtils().send_pending(new_job)
-
-        context_dictionary = {
-            'run' : new_job,
-            'variables' : new_variables,
-            'queued' : ReductionRun.objects.filter(instrument=reduction_run.instrument, status=queued_status).count(),
-        }
+        if len(new_variables) == 0:
+            new_job.delete()
+            script.delete()
+            context_dictionary = {
+                'run' : None,
+                'variables' : None,
+                'queued' : ReductionRun.objects.filter(instrument=reduction_run.instrument, status=queued_status).count(),
+                'error' : 'No variables were found to be submitted.'
+            }
+        else:
+            try:
+                MessagingUtils().send_pending(new_job)
+                context_dictionary = {
+                    'run' : new_job,
+                    'variables' : new_variables,
+                    'queued' : ReductionRun.objects.filter(instrument=reduction_run.instrument, status=queued_status).count(),
+                }
+            except Exception, e:
+                new_job.delete()
+                script.delete()
+                context_dictionary = {
+                    'run' : None,
+                    'variables' : None,
+                    'queued' : ReductionRun.objects.filter(instrument=reduction_run.instrument, status=queued_status).count(),
+                    'error' : 'Failed to send new job. (%s)' % str(e),
+                }
+        
         return context_dictionary
     else:
         return redirect('instrument_summary', instrument=instrument.name)
