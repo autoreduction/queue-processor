@@ -321,7 +321,6 @@ def run_confirmation(request, run_number, run_version=0):
                     variable.save()
                     new_variables.append(variable)
         
-        # TODO: Handle missing variables
         if len(new_variables) == 0:
             new_job.delete()
             script.delete()
