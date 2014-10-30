@@ -124,15 +124,6 @@
             }
         };
 
-        // Populate all boolean values with their checked state
-        $('[data-type="boolean"]').each(function(){
-            if($(this).attr('checked')){
-                $(this).val('True');
-            }else{
-                $(this).val('False');
-            }
-        });
-
         resetValidationStates();
         validateRunRange();
         $('[data-type="text"]').each(validateText);
