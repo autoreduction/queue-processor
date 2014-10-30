@@ -51,12 +51,10 @@
     {% else %}
         <div class="row">
             <div class="col-md-8 col-md-offset-2">
-                <div class="panel panel-danger">
-                    <div class="panel-body">
-                        <div class="row">
-                            <div class="col-md-12 text-center">
-                                {{ error }}
-                            </div>
+                <div class="alert alert-danger">
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            {{ error }} <a href="#back">Go Back</a>
                         </div>
                     </div>
                 </div>

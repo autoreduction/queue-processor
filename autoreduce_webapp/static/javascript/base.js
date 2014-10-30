@@ -43,11 +43,16 @@
         });
     };
 
+    var goBack = function goBack(event){
+        event.preventDefault();
+        history.back();
+    };
+
     var init = function init(){
         $('.alert').on('closed.bs.alert', notificationDismissed);
         $('[data-toggle="popover"]').popover();
         $('body').on('click', '[data-toggle="popover"],[data-toggle="collapse"]', function(e){e.preventDefault(); return true;});
-        
+        $('a[href=#back]').on('click', goBack);
         showNotifications();
         toggleIconOnCollapse();
         if(isIE()){
