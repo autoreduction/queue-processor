@@ -9,10 +9,12 @@ sys.path.insert(0, BASE_DIR)
 from reduction_viewer.models import ReductionRun, Instrument, ReductionLocation, Status, DataLocation, Experiment
 from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFile
 from reduction_viewer.utils import StatusUtils, InstrumentUtils
-from reduction_variables.utils import InstrumentVariablesUtils, ReductionVariablesUtils
 from icat_communication import ICATCommunication
 
 class Listener(object):
+    # Import within class to prevent cylindrical imports
+    from reduction_variables.utils import InstrumentVariablesUtils, ReductionVariablesUtils
+
     def __init__(self, client):
         self._client = client
         self._data_dict = {}
