@@ -276,7 +276,7 @@
         }else{
             isChecked = 'False';
         }
-        $(this).siblings('input[type=hidden]').val(isChecked);
+        $(this).val(isChecked).siblings('input[type=hidden]').val(isChecked);
     };
 
     var init = function init(){
