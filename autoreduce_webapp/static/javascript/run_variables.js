@@ -269,12 +269,23 @@
         }
     };
 
+    var updateBoolean = function updateBoolean(event){
+        var isChecked = $(this).prop('checked');
+        if(isChecked){
+            isChecked = 'True';
+        }else{
+            isChecked = 'False';
+        }
+        $(this).siblings('input[type=hidden]').val(isChecked);
+    };
+
     var init = function init(){
         $('#run_variables,#instrument_variables').on('click', '#previewScript', previewScript);
         $('#run_variables,#instrument_variables').on('click', '#resetValues', resetDefaultVariables);
         $('#run_variables,#instrument_variables').on('click', '#currentScript', resetCurrentVariables);
         $('#run_variables,#instrument_variables').on('click', '#variableSubmit', submitForm);
         $('#run_variables,#instrument_variables').on('click', '#cancelForm', cancelForm);
+        $('#run_variables,#instrument_variables').on('change', '[data-type=boolean]', updateBoolean);
         $('.js-form-actions li>a').on('mouseover mouseleave', toggleActionExplainations);
         $('#run_end').on('change', triggerAfterRunOptions);
         $('.js-show-default-variables').on('click', showDefaultSriptVariables);
