@@ -166,6 +166,10 @@ search#run_search {
     width:90%;
 }
 
+#script-preview-modal pre.prettyprint{
+    max-height: 65vh;
+}
+
 
 /****************
  8. Overrides
