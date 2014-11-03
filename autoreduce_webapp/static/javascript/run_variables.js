@@ -1,7 +1,38 @@
 (function(){
     var formUrl = $('#run_variables').attr('action');
 
-    var previewScript  = function previewScript(event){
+    var previewScript = function previewScript(event){
+        var submitAction = function submitAction(){
+            var url = $('#preview_url').val();
+            var $form = $('#run_variables');
+            if($form.length===0) $form = $('#instrument_variables');
+            $form.attr('action', url);
+
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: $form.serialize(),
+                success: function(data) {
+                    $('.js-script-container').text(data);
+                    $('#script-preview-modal').modal();
+                }
+            });
+        };
+        var cancelAction = function cancelAction(){
+            return false;
+        };
+
+        event.preventDefault();
+        if(validateForm()){
+            $.post( "ajax/test.html", function( data ) {
+              $( ".result" ).html( data );
+            });
+        }else{
+            cancelAction();
+        }
+    };
+
+    var downloadScript  = function downloadScript(event){
         var submitAction = function submitAction(){
             var url = $('#preview_url').val();
             var $form = $('#run_variables');
@@ -272,6 +303,7 @@
 
     var init = function init(){
         $('#run_variables,#instrument_variables').on('click', '#previewScript', previewScript);
+        $('#run_variables,#instrument_variables').on('click', '#downloadScript', downloadScript);
         $('#run_variables,#instrument_variables').on('click', '#resetValues', resetDefaultVariables);
         $('#run_variables,#instrument_variables').on('click', '#currentScript', resetCurrentVariables);
         $('#run_variables,#instrument_variables').on('click', '#variableSubmit', submitForm);

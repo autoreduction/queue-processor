@@ -162,6 +162,10 @@ search#run_search {
     }
 }
 
+#script-preview-modal .modal-dialog{
+    width:90%;
+}
+
 
 /****************
  8. Overrides

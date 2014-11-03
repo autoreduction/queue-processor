@@ -57,6 +57,27 @@
         </form>
     </div>
 </div>
+
+<div class="modal fade" id="script-preview-modal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">Preview Reduction Script</h4>
+            </div>
+            <div class="modal-body">
+                <pre class="prettyprint lang-py js-script-container">
+                </pre>
+            </div>
+            <div class="modal-footer">
+                <div class="col-md-12 pull-right">
+                    <a href="#downloadScript" class="btn btn-primary">Download Script</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="hide">
     <div class="js-default-variables">
         {% include "snippets/edit_variables.html" with standard_variables=default_standard_variables advanced_variables=default_advanced_variables instrument=instrument.name only %}
