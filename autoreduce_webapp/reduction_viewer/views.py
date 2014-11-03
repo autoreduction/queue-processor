@@ -82,8 +82,9 @@ def run_list(request):
             experiments = icat.get_valid_experiments_for_instruments(int(request.user.username), instrument_names)
         owned_instruments = icat.get_owned_instruments(int(request.user.username))
     for instrument_name in instrument_names:
-        instrument = Instrument.objects.get(name=instrument_name)
-        if not instrument:
+        try:
+            instrument = Instrument.objects.get(name=instrument_name)
+        except:
             continue
         instrument_queued_runs = 0
         instrument_processing_runs = 0
