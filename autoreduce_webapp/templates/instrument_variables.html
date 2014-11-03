@@ -142,13 +142,17 @@
                             <h4 class="modal-title">Preview Reduction Script</h4>
                         </div>
                         <div class="modal-body">
+                            <div class="progress">
+                                <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="100" aria-valuemax="100" style="width: 100%">
+                                </div>
+                            </div>
                             <pre class="prettyprint lang-py js-script-container">
                             </pre>
                         </div>
-                    </div>
-                    <div class="modal-footer">
-                        <div class="col-md-12 pull-right">
-                            <a href="#downloadScript" class="btn btn-primary">Download Script</a>
+                        <div class="modal-footer">
+                            <div class="col-md-12 pull-right">
+                                <a href="#downloadScript" class="btn btn-primary">Download Script</a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -171,6 +175,10 @@
     {% endif %}
 {% endblock %}
 
+{% block stylesheets %}
+    <link rel="stylesheet" href="{% static "css/vendor/prettify.css" %}">
+{% endblock %}
 {% block scripts %}
+    <script src="{% static "javascript/vendor/prettify.js" %}"></script>
     <script src="{% static "javascript/run_variables.js" %}"></script>
 {% endblock %}

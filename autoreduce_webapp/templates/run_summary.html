@@ -159,9 +159,17 @@
     {% endif %}
 {% endblock %}
 
+
+
+{% block stylesheets %}
+    {% if reduction_variables_on %}  
+        <link rel="stylesheet" href="{% static "css/vendor/prettify.css" %}">
+    {% endif %}
+{% endblock %}
 {% block scripts %}
     <script src="{% static "javascript/run_summary.js" %}"></script>
     {% if reduction_variables_on %}  
+        <script src="{% static "javascript/vendor/prettify.js" %}"></script>
         <script src="{% static "javascript/run_variables.js" %}"></script>
     {% endif %}
 {% endblock %}

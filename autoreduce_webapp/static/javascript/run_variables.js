@@ -8,13 +8,16 @@
             if($form.length===0) $form = $('#instrument_variables');
             $form.attr('action', url);
 
+            $('.js-script-container').text('');
+            $('#script-preview-modal .progress').show();
+            $('#script-preview-modal').modal();
             $.ajax({
                 type: "POST",
                 url: url,
                 data: $form.serialize(),
                 success: function(data) {
                     $('.js-script-container').text(data);
-                    $('#script-preview-modal').modal();
+                    $('#script-preview-modal .progress').hide();
                 }
             });
         };
@@ -301,7 +304,7 @@
 
     var init = function init(){
         $('#run_variables,#instrument_variables').on('click', '#previewScript', previewScript);
-        $('#run_variables,#instrument_variables').on('click', '#downloadScript', downloadScript);
+        $('#script-preview-modal').on('click', '#downloadScript', downloadScript);
         $('#run_variables,#instrument_variables').on('click', '#resetValues', resetDefaultVariables);
         $('#run_variables,#instrument_variables').on('click', '#currentScript', resetCurrentVariables);
         $('#run_variables,#instrument_variables').on('click', '#variableSubmit', submitForm);
