@@ -23,7 +23,7 @@
                                     <strong>Principal Investigator:</strong> {{ experiment_details.pi }}
                                 </div>
                                 <div>
-                                    <strong>Instrument:</strong> <a href="{% url 'instrument_summary' instrument=experiment_details.instrument %}">{{ experiment_details.instrument }}</a>
+                                    <strong>Instrument:</strong> {% if experiment_details.instrument %}<a href="{% url 'instrument_summary' instrument=experiment_details.instrument %}">{{ experiment_details.instrument }}{% endif %}</a>
                                 </div>
                             </div>
                             <div class="col-md-6">
