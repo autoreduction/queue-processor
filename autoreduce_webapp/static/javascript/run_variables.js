@@ -17,6 +17,7 @@
                 data: $form.serialize(),
                 success: function(data) {
                     $('.js-script-container').text(data);
+                    prettyPrint();
                     $('#script-preview-modal .progress').hide();
                 }
             });
