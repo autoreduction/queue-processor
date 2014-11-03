@@ -11,7 +11,7 @@
 
 > `Class Diagram.vsdx` - Microsoft Visio file for updating
 
-> `Class Diagram.pdf` - Cross-platform PDF
+> `Class Diagram.pdf` - PDF version of `Class Diagram.vsdx` file
 
 > Provides an overview of the classes (Django models) with their relationship to each other
 
@@ -19,7 +19,7 @@
 
 > `ER Diagram.vsdx` - Microsoft Visio file for updating
 
-> `ER Diagram.pdf` - Cross-platform PDF
+> `ER Diagram.pdf` - PDF version of `ER Diagram.vsdx` file
 
 > Provides an overview of the database tables to be used (may vary slightly from what Django auto-generates from the models).
 > Indicated primary keys, relationships and required properties.
@@ -34,7 +34,7 @@
 
 > `Server Overview.vsdx` - Microsoft Visio file for updating
 
-> `Server Overview.pdf` - Cross-platform PDF
+> `Server Overview.pdf` - PDF version of `Server Overview.vsdx` file
 
 > Provides a plan of what hardware will be required, indicating the communication between servers and their position within the network.
 
@@ -42,7 +42,7 @@
 
 > `State Machine.vsdx` - Microsoft Visio file for updating
 
-> `State Machine.pdf` - Cross-platform PDF
+> `State Machine.pdf` - PDF version of `State Machine.vsdx` file
 
 > Indicates each of the states along the autoreduction workflow. These relate closely to the ActiveMQ topics 
 > QueueProcesor is a sub-component of the Web App that runs independently as a daemon but invokes some functionality from the core web app.
