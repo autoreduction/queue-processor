@@ -81,22 +81,23 @@ def run_list(request):
         if instrument_names:
             experiments = icat.get_valid_experiments_for_instruments(int(request.user.username), instrument_names)
         owned_instruments = icat.get_owned_instruments(int(request.user.username))
-    for instrument in instrument_names:
-        if not Instrument.objects.filter(name=instrument):
+    for instrument_name in instrument_names:
+        instrument = Instrument.objects.filter(name=instrument)
+        if not instrument:
             continue
         instrument_queued_runs = 0
         instrument_processing_runs = 0
         instrument_error_runs = 0
 
         instrument_obj = {
-            'name' : instrument,
+            'name' : instrument_name,
             'experiments' : [],
-            'is_instrument_scientist' : (instrument in owned_instruments),
+            'is_instrument_scientist' : (instrument_name in owned_instruments),
             'runs' : [],
             'is_active' : instrument.is_active
         }
         
-        instrument_experiments = experiments[instrument]
+        instrument_experiments = experiments[instrument_name]
         reference_numbers = []
         for experiment in instrument_experiments:
             # Filter out calibration runs
