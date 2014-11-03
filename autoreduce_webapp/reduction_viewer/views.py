@@ -9,6 +9,7 @@ from autoreduce_webapp.icat_communication import ICATCommunication
 from autoreduce_webapp.settings import UOWS_LOGIN_URL, LOG_FILE, LOG_LEVEL
 from reduction_viewer.models import Experiment, ReductionRun, Instrument
 from reduction_viewer.utils import StatusUtils
+from reduction_viewer.view_utils import deactivate_invalid_instruments
 from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, require_staff
 from django.http import HttpResponse
 import operator 
@@ -69,6 +70,7 @@ def run_queue(request):
     return context_dictionary
 
 @login_and_uows_valid
+@deactivate_invalid_instruments
 @render_with('run_list.html')
 def run_list(request):
     context_dictionary = {}
@@ -192,6 +194,7 @@ def run_summary(request, run_number, run_version=0):
     return context_dictionary
 
 @login_and_uows_valid
+@deactivate_invalid_instruments
 @render_with('instrument_summary.html')
 @require_staff
 def instrument_summary(request, instrument):

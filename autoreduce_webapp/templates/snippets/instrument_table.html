@@ -4,7 +4,11 @@
             <a href="#" class="js-toggle-instrument-children" title="Expand/Collapse"><i class="fa fa-lg fa-chevron-right"></i></a>
         </div>
         <div class="col-md-7 col-xs-8">
-            <a href="{% url 'instrument_summary' instrument.name %}">{{ instrument.name }}</a>
+            {% if instrument.is_active %}
+                <a href="{% url 'instrument_summary' instrument.name %}">{{ instrument.name }}</a>
+            {% else %}
+                {{ instrument.name }}
+            {% endif %}
             <div class="progress-summary">
                 {% if instrument.progress_summary.queued %}
                     <span class="text-info">({{ instrument.progress_summary.queued }}) Queued</span> 
@@ -18,7 +22,7 @@
             </div>
         </div>
         <div class="col-md-4 col-xs-2">
-            {% if reduction_variables_on %}
+            {% if reduction_variables_on and instrument.is_active %}
                 {% if instrument.is_instrument_scientist or user.is_superuser %}
                     <a href="{% url 'instrument_variables' instrument.name %}" class="pull-right edit-instrument-variables">Edit<span class="hidden-xs"> Reduction Variables</span></a>
                 {% endif %}

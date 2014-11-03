@@ -4,140 +4,146 @@
 
 {% block body %}
     {% if instrument %}
-        <div class="row">
-            <div class="col-md-12 text-center">
-                <h2>{{ instrument.name }}</h2>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-6 col-md-offset-3">
-                {% include "snippets/instrument_status.html" with processing=processing queued=queued only %}
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-12 text-center">
-                <p>
-                    <a href="{% url 'instrument_summary' instrument=instrument %}">View upcoming saved variable changes</a>
-                </p>
-            </div>
-        </div>
-        <form id="instrument_variables" method="POST" action="{% url 'instrument_variables' instrument=instrument.name start=run_start end=run_end %}" class="form-horizontal">
-            {% csrf_token %}
-            <input type="hidden" id="upcoming_runs" name="upcoming_runs" value="{{upcoming_run_variables}}" />
-            <input type="hidden" id="is_editing" name="is_editing" value="{{editing}}" />
+        {% if instrument.is_active %}
             <div class="row">
-                <div class="col-md-9">
-                    {% include "snippets/form_warnings.html" %}
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="run_start" class="control-label col-md-4">Run Number Start</label> 
-                                <div class="col-md-8">
-                                    <input type="number" id="run_start" name="run_start" value="{% if run_start and run_start > minimum_run_start %}{{run_start}}{%else%}{{minimum_run_start}}{% endif %}" min="{{minimum_run_start}}" class="form-control"/>
+                <div class="col-md-12 text-center">
+                    <h2>{{ instrument.name }}</h2>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 col-md-offset-3">
+                    {% include "snippets/instrument_status.html" with processing=processing queued=queued only %}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <p>
+                        <a href="{% url 'instrument_summary' instrument=instrument %}">View upcoming saved variable changes</a>
+                    </p>
+                </div>
+            </div>
+            <form id="instrument_variables" method="POST" action="{% url 'instrument_variables' instrument=instrument.name start=run_start end=run_end %}" class="form-horizontal">
+                {% csrf_token %}
+                <input type="hidden" id="upcoming_runs" name="upcoming_runs" value="{{upcoming_run_variables}}" />
+                <input type="hidden" id="is_editing" name="is_editing" value="{{editing}}" />
+                <div class="row">
+                    <div class="col-md-9">
+                        {% include "snippets/form_warnings.html" %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="run_start" class="control-label col-md-4">Run Number Start</label> 
+                                    <div class="col-md-8">
+                                        <input type="number" id="run_start" name="run_start" value="{% if run_start and run_start > minimum_run_start %}{{run_start}}{%else%}{{minimum_run_start}}{% endif %}" min="{{minimum_run_start}}" class="form-control"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="run_end" class="control-label col-md-4">Finished <small>(Optional)</small></label>
+                                    <div class="col-md-8">
+                                        <input type="number" id="run_end" name="run_end" value="{% if run_end %}{{run_end}}{% endif %}" class="form-control"/>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="run_end" class="control-label col-md-4">Finished <small>(Optional)</small></label>
-                                <div class="col-md-8">
-                                    <input type="number" id="run_end" name="run_end" value="{% if run_end %}{{run_end}}{% endif %}" class="form-control"/>
+                        <div class="row">
+                            <div class="col-md-10 col-md-offset-1">
+                                <div class="alert alert-warning collapse" id="run_finish_warning">
+                                    <strong>Please Note:</strong> The <a href="#" class="js-show-default-variables">default script values</a> will be used from run <span id="next_run"></span> onwards. You will be able to change this by selecting the appropriate "edit variables" link from the Instrument Summary page.
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-10 col-md-offset-1">
-                            <div class="alert alert-warning collapse" id="run_finish_warning">
-                                <strong>Please Note:</strong> The <a href="#" class="js-show-default-variables">default script values</a> will be used from run <span id="next_run"></span> onwards. You will be able to change this by selecting the appropriate "edit variables" link from the Instrument Summary page.
-                            </div>
+                        <div class="js-variables-container">
+                            {% include "snippets/edit_variables.html" with standard_variables=standard_variables advanced_variables=advanced_variables instrument=instrument.name only %}
                         </div>
                     </div>
-                    <div class="js-variables-container">
-                        {% include "snippets/edit_variables.html" with standard_variables=standard_variables advanced_variables=advanced_variables instrument=instrument.name only %}
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="well well-sm">
+                    <div class="col-md-3">
+                        <div class="well well-sm">
+                            <div class="row">
+                                <div class="col-md-12"><h4>Additional Actions</h4></div>
+                            </div>
+                            <div class="row">
+                                <ul class="js-form-actions">
+                                    <li>
+                                        <a href="#previewScript" id="previewScript">Preview Reduction Script</a>
+                                        <div class="js-explaination visible-xs-block">Download the reduction script with the selected variables inserted.</div>
+                                    </li>
+                                    <li>
+                                        <a href="#resetValues" id="resetValues">Reset to default values</a>
+                                        <div class="js-explaination visible-xs-block">Reset all variable values to those set in the script.</div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
                         <div class="row">
-                            <div class="col-md-12"><h4>Additional Actions</h4></div>
-                        </div>
-                        <div class="row">
-                            <ul class="js-form-actions">
-                                <li>
-                                    <a href="#previewScript" id="previewScript">Preview Reduction Script</a>
-                                    <div class="js-explaination visible-xs-block">Download the reduction script with the selected variables inserted.</div>
-                                </li>
-                                <li>
-                                    <a href="#resetValues" id="resetValues">Reset to default values</a>
-                                    <div class="js-explaination visible-xs-block">Reset all variable values to those set in the script.</div>
-                                </li>
-                            </ul>
+                            <div class="col-md-12 js-action-explaination"></div>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-md-12 js-action-explaination"></div>
+                </div>
+                <div class="form-group variables-buttons">
+                    <div class="col-md-9 text-right">
+                        <a href="#cancelForm" class="btn btn-danger" id="cancelForm">Cancel</a> 
+                        <input type="submit" value="Submit Changes" class="btn btn-success" id="variableSubmit" />
                     </div>
                 </div>
-            </div>
-            <div class="form-group variables-buttons">
-                <div class="col-md-9 text-right">
-                    <a href="#cancelForm" class="btn btn-danger" id="cancelForm">Cancel</a> 
-                    <input type="submit" value="Submit Changes" class="btn btn-success" id="variableSubmit" />
-                </div>
-            </div>
-        </form>
+            </form>
 
-        <div class="modal fade" id="default-variables-modal">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-                        <h4 class="modal-title">Default Variables</h4>
-                    </div>
-                    <div class="modal-body">
-                        <h5>Standard Variables</h5>
-                        {% for name,variable in default_standard_variables.items %}
-                            <div>
-                                <strong>{{ name }}:</strong> {{ variable.value }}
-                            </div>
-                        {% endfor %}
-                        <h5>Advanced Variables</h5>
-                        {% for name,variable in default_advanced_variables.items %}
-                            <div>
-                                <strong>{{ name }}:</strong> {{ variable.value }}
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="modal fade" id="conflicts-modal">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-                        <h4 class="modal-title">Overwrite Existing Variables?</h4>
-                    </div>
-                    <div class="modal-body">
-                        <p>There are already saved values that fall within this run range chosen.</p>
-                        <p>These variables start at the following runs: <span class="js-conflicts-list"></span></p>
-                        <p>Do you want to overwrite these calues with the new values?</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-primary js-conflicts-confirm">Yes, Replace</button>
+            <div class="modal fade" id="default-variables-modal">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                            <h4 class="modal-title">Default Variables</h4>
+                        </div>
+                        <div class="modal-body">
+                            <h5>Standard Variables</h5>
+                            {% for name,variable in default_standard_variables.items %}
+                                <div>
+                                    <strong>{{ name }}:</strong> {{ variable.value }}
+                                </div>
+                            {% endfor %}
+                            <h5>Advanced Variables</h5>
+                            {% for name,variable in default_advanced_variables.items %}
+                                <div>
+                                    <strong>{{ name }}:</strong> {{ variable.value }}
+                                </div>
+                            {% endfor %}
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="hide">
-            <div class="js-default-variables">
-                {% include "snippets/edit_variables.html" with standard_variables=default_standard_variables advanced_variables=default_advanced_variables instrument=instrument.name only %}
+            <div class="modal fade" id="conflicts-modal">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                            <h4 class="modal-title">Overwrite Existing Variables?</h4>
+                        </div>
+                        <div class="modal-body">
+                            <p>There are already saved values that fall within this run range chosen.</p>
+                            <p>These variables start at the following runs: <span class="js-conflicts-list"></span></p>
+                            <p>Do you want to overwrite these calues with the new values?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-primary js-conflicts-confirm">Yes, Replace</button>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
+
+            <div class="hide">
+                <div class="js-default-variables">
+                    {% include "snippets/edit_variables.html" with standard_variables=default_standard_variables advanced_variables=default_advanced_variables instrument=instrument.name only %}
+                </div>
+            </div>
+        {% else %}
+            <div class="text-center col-md-6 col-md-offset-3 well well-small">
+                Instrument is not active.
+            </div>
+        {% endif %}
     {% else %}
         <div class="text-center col-md-6 col-md-offset-3 well well-small">
             Instrument not found.

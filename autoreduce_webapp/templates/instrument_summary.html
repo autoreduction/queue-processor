@@ -3,18 +3,24 @@
 
 {% block body %}
     {% if instrument %}
-        <div class="row">
-            <div class="col-md-12 text-center">
-                <h2>{{ instrument.name }}</h2>
+        {% if instrument.is_active %}
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <h2>{{ instrument.name }}</h2>
+                </div>
             </div>
-        </div>
-        <div class="row">
-            <div class="col-md-6 col-md-offset-3">
-                {% include "snippets/instrument_status.html" with processing=processing queued=queued only %}
+            <div class="row">
+                <div class="col-md-6 col-md-offset-3">
+                    {% include "snippets/instrument_status.html" with processing=processing queued=queued only %}
+                </div>
             </div>
-        </div>
-        {% if reduction_variables_on %}  
-            {% view "reduction_variables.views.instrument_summary" instrument=instrument.name %}
+            {% if reduction_variables_on %}  
+                {% view "reduction_variables.views.instrument_summary" instrument=instrument.name %}
+            {% endif %}
+        {% else %}
+            <div class="text-center col-md-6 col-md-offset-3 well well-small">
+                Instrument is not active.
+            </div>
         {% endif %}
     {% else %}
         <div class="text-center col-md-6 col-md-offset-3 well well-small">
