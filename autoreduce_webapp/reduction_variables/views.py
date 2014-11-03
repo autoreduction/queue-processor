@@ -9,7 +9,6 @@ from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFi
 from reduction_variables.utils import InstrumentVariablesUtils, VariableUtils, MessagingUtils
 from reduction_viewer.models import Instrument, ReductionRun
 from reduction_viewer.utils import StatusUtils
-from django.http import HttpResponseForbidden
 from autoreduce_webapp.icat_communication import ICATCommunication
 from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL
 from reduction_viewer.view_utils import deactivate_invalid_instruments
@@ -22,7 +21,7 @@ logging.basicConfig(filename=LOG_FILE,level=LOG_LEVEL)
 def instrument_summary(request, instrument):
     # Check the user has permission
     if not request.user.is_superuser and instrument not in request.session['owned_instruments']:
-        return HttpResponseForbidden('Access Forbidden')
+        raise PermissionDenied()
 
     instrument = Instrument.objects.get(name=instrument)
     completed_status = StatusUtils().get_completed()
@@ -91,7 +90,7 @@ def instrument_summary(request, instrument):
 def instrument_variables(request, instrument, start=0, end=0):
     # Check the user has permission
     if not request.user.is_superuser and instrument not in request.session['owned_instruments']:
-        return HttpResponseForbidden('Access Forbidden')
+        raise PermissionDenied()
     
     instrument = Instrument.objects.get(name=instrument)
 

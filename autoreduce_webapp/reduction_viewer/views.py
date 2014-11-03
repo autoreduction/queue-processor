@@ -3,7 +3,6 @@ from django.template import RequestContext
 from django.shortcuts import render_to_response, redirect
 from django.contrib.auth import logout as django_logout, authenticate, login
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden
 from autoreduce_webapp.uows_client import UOWSClient
 from autoreduce_webapp.icat_communication import ICATCommunication
 from autoreduce_webapp.settings import UOWS_LOGIN_URL, LOG_FILE, LOG_LEVEL
@@ -185,7 +184,7 @@ def run_summary(request, run_number, run_version=0):
         run = ReductionRun.objects.get(run_number=run_number, run_version=run_version)
         # Check the user has permission
         if not request.user.is_superuser and run.experiment.reference_number not in request.session['experiments'] and run.instrument.name not in request.session['owned_instruments']:
-            return HttpResponseForbidden('Access Forbidden')
+            raise PermissionDenied()
         history = ReductionRun.objects.filter(run_number=run_number).order_by('-run_version')
         context_dictionary = {
             'run' : run,
@@ -203,7 +202,7 @@ def run_summary(request, run_number, run_version=0):
 def instrument_summary(request, instrument):
     # Check the user has permission
     if not request.user.is_superuser and instrument not in request.session['owned_instruments']:
-        return HttpResponseForbidden('Access Forbidden')
+        raise PermissionDenied()
 
     processing_status = StatusUtils().get_processing()
     queued_status = StatusUtils().get_queued()
@@ -263,5 +262,5 @@ def experiment_summary(request, reference_number):
     
     #Check the users permissions
     if not request.user.is_superuser and reference_number not in request.session['experiments'] and experiment_details.instrument not in request.session['owned_instruments']:
-       return HttpResponseForbidden('Access Forbidden')
+       raise PermissionDenied()
     return context_dictionary
