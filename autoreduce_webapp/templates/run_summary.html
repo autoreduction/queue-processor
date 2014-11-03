@@ -10,7 +10,7 @@
     {% if run %}
         <div class="row">
             <div class="col-md-12 text-center">
-                <h2>Run #{{ run.run_number }}{% if run.run_name %}-{{ run.run_name }}{% endif %}</h2>
+                <h2>Run #{{ run.title }}</h2>
                 {% if history.count > 1 %}
                     (This run has been re-reduced, <a href="#" class="js-reduction-run-history">see history</a>)
                 {% endif %}
@@ -130,9 +130,9 @@
                                     <tr>
                                         <td>
                                             {% if job.run_version != run.run_version %}
-                                            <a href="{% url 'run_summary' run_number=job.run_number run_version=job.run_version %}">{{ job.run_number }}{% if job.run_name %}-{{ job.run_name }}{%elif job.run_version > 0 %}-{{ job.run_version }}{% endif %}</a>
+                                            <a href="{% url 'run_summary' run_number=job.run_number run_version=job.run_version %}">{{ job.title }}</a>
                                             {% else %}
-                                                {{ job.run_number }}{% if job.run_name %}-{{ job.run_name }}{%elif job.run_version > 0 %}-{{ job.run_version }}{% endif %}
+                                                {{ job.title }}
                                             {% endif %}
                                         </td>
                                         <td class="text-{% colour_table_row job.status.value %}"><strong>{{ job.status.value }}</strong></td>

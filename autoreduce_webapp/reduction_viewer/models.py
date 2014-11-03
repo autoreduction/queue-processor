@@ -87,6 +87,16 @@ class ReductionRun(models.Model):
         else:
             return u'%s' % self.run_number
 
+    def title(self):
+        if self.run_version > 0:
+            if self.run_name:
+                title = '%s - %s' % (self.run_number, self.run_name)
+            else:
+                title = '%s - %s' % (self.run_number, self.run_version)
+        else:
+            title = '%s' % self.run_number
+        return title
+
 class DataLocation(models.Model):
     file_path = models.CharField(max_length=255)
     reduction_run = models.ForeignKey(ReductionRun, blank=False, related_name='data_location')

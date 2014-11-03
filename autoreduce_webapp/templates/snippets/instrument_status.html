@@ -9,7 +9,7 @@
                         <ul class="list-inline">
                             {% for job in processing %}
                             <li>
-                                <a href="{% url 'run_summary' run_number=job.run_number run_version=job.run_version %}">{{ job.run_number }}{% if job.run_name %}-{{ job.run_name }}{% endif %}</a> 
+                                <a href="{% url 'run_summary' run_number=job.run_number run_version=job.run_version %}">{{ job.title }}</a> 
                             </li>
                             {% endfor %}
                         </ul>
@@ -23,7 +23,7 @@
                         <ul class="list-inline">
                             {% for job in queued %}
                                 <li>
-                                    <a href="{% url 'run_summary' run_number=job.run_number run_version=job.run_version %}">{{ job.run_number }}{% if job.run_name %}-{{ job.run_name }}{% endif %}</a> 
+                                    <a href="{% url 'run_summary' run_number=job.run_number run_version=job.run_version %}">{{ job.title }}</a> 
                                 </li>
                             {% endfor %}
                         </ul>
