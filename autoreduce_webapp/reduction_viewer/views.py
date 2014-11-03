@@ -92,7 +92,8 @@ def run_list(request):
             'name' : instrument,
             'experiments' : [],
             'is_instrument_scientist' : (instrument in owned_instruments),
-            'runs' : []
+            'runs' : [],
+            'is_active' : instrument.is_active
         }
         
         instrument_experiments = experiments[instrument]
