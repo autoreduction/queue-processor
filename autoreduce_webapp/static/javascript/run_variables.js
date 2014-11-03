@@ -24,9 +24,7 @@
 
         event.preventDefault();
         if(validateForm()){
-            $.post( "ajax/test.html", function( data ) {
-              $( ".result" ).html( data );
-            });
+            submitAction();
         }else{
             cancelAction();
         }
