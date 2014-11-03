@@ -265,7 +265,7 @@
         event.preventDefault();
         var $form = $('#run_variables');
         if($form.length===0) $form = $('#instrument_variables');
-        $form.find('.js-variables-container').html($('js-default-variables').html());
+        $form.find('.js-variables-container').html($('.js-default-variables').html());
         // We need to enable the popover again as the element is new
         $('[data-toggle="popover"]').popover();
     };
@@ -274,7 +274,7 @@
         event.preventDefault();
         var $form = $('#run_variables');
         if($form.length===0) $form = $('#instrument_variables');
-        $form.find('.js-variables-container').html($('js-current-variables').html());
+        $form.find('.js-variables-container').html($('.js-current-variables').html());
         // We need to enable the popover again as the element is new
         $('[data-toggle="popover"]').popover();
     };
