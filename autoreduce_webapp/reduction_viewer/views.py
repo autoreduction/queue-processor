@@ -73,11 +73,10 @@ def run_list(request):
     instruments = []
     with ICATCommunication(AUTH='uows',SESSION={'sessionid':request.session.get('sessionid')}) as icat:
         instrument_names = icat.get_valid_instruments(int(request.user.username))
-        owned_instruments = []
+        owned_instruments = request.session.get('owned_instruments', default=[])
         if instrument_names:
-            experiments = icat.get_valid_experiments_for_instruments(int(request.user.username), instrument_names)
-            # We only need to fetch owned instruments if there are some valid instruments returned otherwise this would also return nothing
-            owned_instruments = icat.get_owned_instruments(int(request.user.username))
+            experiments = request.session.get('experiments_to_show', icat.get_valid_experiments_for_instruments(int(request.user.username), instrument_names))
+            request.session['experiments_to_show'] = experiments
     for instrument_name in instrument_names:
         try:
             instrument = Instrument.objects.get(name=instrument_name)
