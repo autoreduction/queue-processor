@@ -6,4 +6,51 @@
             <h2>Help Pages</h2>
         </div>
     </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">
+                <label for="help_search" class="screenreader-only">Search</label>
+                <input type="search" placeholder="Search" name="help_search" id="help_search" class="form-control" autocomplete="off" data-toggle="popover" data-trigger="focus" data-content="Try entering a keyword to filter help topics." data-placement="left">
+            </div>
+        </div>
+    </div>
+
+    <section class="help-topic panel panel-default" data-topics="experiments mine investigations">
+        <div class="panel-heading">
+            <h4>Why cant I see my experiments?</h4>
+        </div>
+        <div class="panel-body">
+            TODO
+        <div>
+    </section>
+    <section class="help-topic panel panel-default" data-topics="mine instruments">
+        <div class="panel-heading">
+            <h4>Why cant I see all instruments I'm responsible for?</h4>
+        </div>
+        <div class="panel-body">
+            TODO
+        <div>
+    </section>
+    <section class="help-topic panel panel-default" data-topics="script change modify alter python">
+        <div class="panel-heading">
+            <h4>How can I change a reduction script?</h4>
+        </div>
+        <div class="panel-body">
+            TODO
+        <div>
+    </section>
+
+
+    <div class="no-results collapse row">
+        <div class="col-md-12 text-center">
+            Sorry, no help topics matched your query.<br/>
+            {% if support_email %}
+            If you still require help, please <a href="mailto{{ support_email }}">Contact Us</a>.
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static "javascript/help.js" %}"></script>
 {% endblock %}
