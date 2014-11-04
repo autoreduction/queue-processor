@@ -1,12 +1,12 @@
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 
-def handler404(request):
+def handler400(request):
     context_dictionary = {
         'admin_email' : ''
     }
     response = render_to_response('400.html', context_dictionary, RequestContext(request))
-    response.status_code = 404
+    response.status_code = 400
     return response
 
 def handler404(request):
