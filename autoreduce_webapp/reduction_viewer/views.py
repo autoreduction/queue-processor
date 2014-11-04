@@ -39,9 +39,7 @@ def index(request):
                 else:
                     return_url = default_next
                 # Cache these for the session as they are used for permission checking
-                #TODO: comment out when ICAT and uows are pointing at same session
-                #with ICATCommunication(AUTH='uows', SESSION={'sessionid':request.session['sessionid']}) as icat:
-                with ICATCommunication() as icat:
+                with ICATCommunication(AUTH='uows', SESSION={'sessionid':request.session['sessionid']}) as icat:
                     request.session['owned_instruments'] = icat.get_owned_instruments(int(request.user.username))
                     request.session['experiments'] = icat.get_associated_experiments(int(request.user.username))
 
@@ -74,8 +72,7 @@ def run_queue(request):
 def run_list(request):
     context_dictionary = {}
     instruments = []
-    # TODO: Uncomment on release: with ICATCommunication(AUTH='uows',SESSION={'sessionid':request.session.get('sessionid')}) as icat:
-    with ICATCommunication() as icat:
+    with ICATCommunication(AUTH='uows',SESSION={'sessionid':request.session.get('sessionid')}) as icat:
         instrument_names = icat.get_valid_instruments(int(request.user.username))
         if instrument_names:
             experiments = icat.get_valid_experiments_for_instruments(int(request.user.username), instrument_names)
@@ -235,8 +232,7 @@ def experiment_summary(request, reference_number):
                 if location not in reduced_data:
                     reduced_data.append(location)
         try:
-            with ICATCommunication() as icat:
-            # TODO: Comment out when released - with ICATCommunication(AUTH='uows', SESSION={'sessionid':request.session['sessionid']}) as icat:
+            with ICATCommunication(AUTH='uows', SESSION={'sessionid':request.session['sessionid']}) as icat:
                 experiment_details = icat.get_experiment_details(int(reference_number))
         except Exception as icat_e:
             logging.error(icat_e.message)
