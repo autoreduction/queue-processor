@@ -61,7 +61,7 @@ def render_with(template):
                 output['reduction_variables_on'] = ('reduction_variables' in INSTALLED_APPS)
             
             if 'support_email' not in output:
-                support_email = Setting.objects.get(name='support_email')
+                support_email = Setting.objects.filter(name='support_email').first()
                 if support_email:
                     output['support_email'] = support_email.value
 
