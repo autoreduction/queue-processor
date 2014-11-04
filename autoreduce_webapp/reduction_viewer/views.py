@@ -260,3 +260,7 @@ def experiment_summary(request, reference_number):
     if not request.user.is_superuser and reference_number not in request.session['experiments'] and experiment_details.instrument not in request.session['owned_instruments']:
        raise PermissionDenied()
     return context_dictionary
+
+@render_with('help.html')
+def help(request):
+    return {}

@@ -4,7 +4,7 @@ from autoreduce_webapp.uows_client import UOWSClient
 from autoreduce_webapp.settings import UOWS_LOGIN_URL, LOGIN_URL, INSTALLED_APPS
 from django.template import RequestContext
 from django.shortcuts import render_to_response
-from reduction_viewer.models import Notification
+from reduction_viewer.models import Notification, Setting
 
 def login_and_uows_valid(fn):
     """
@@ -59,6 +59,12 @@ def render_with(template):
 
             if 'reduction_variables_on' not in output:
                 output['reduction_variables_on'] = ('reduction_variables' in INSTALLED_APPS)
+            
+            if 'support_email' not in output:
+                support_email = Setting.objects.get(name='support_email')
+                if support_email:
+                    output['support_email'] = support_email.value
+
             return output
 
         def wrapper(request, *args, **kw):  
