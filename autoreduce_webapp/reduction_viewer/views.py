@@ -15,6 +15,7 @@ import operator
 import logging
 logging.basicConfig(filename=LOG_FILE,level=LOG_LEVEL)
 
+@deactivate_invalid_instruments
 def index(request):
     return_url = UOWS_LOGIN_URL + request.build_absolute_uri()
     if request.GET.get('next'):
@@ -66,16 +67,17 @@ def run_queue(request):
     return context_dictionary
 
 @login_and_uows_valid
-@deactivate_invalid_instruments
 @render_with('run_list.html')
 def run_list(request):
     context_dictionary = {}
     instruments = []
     with ICATCommunication(AUTH='uows',SESSION={'sessionid':request.session.get('sessionid')}) as icat:
         instrument_names = icat.get_valid_instruments(int(request.user.username))
+        owned_instruments = []
         if instrument_names:
             experiments = icat.get_valid_experiments_for_instruments(int(request.user.username), instrument_names)
-        owned_instruments = icat.get_owned_instruments(int(request.user.username))
+            # We only need to fetch owned instruments if there are some valid instruments returned otherwise this would also return nothing
+            owned_instruments = icat.get_owned_instruments(int(request.user.username))
     for instrument_name in instrument_names:
         try:
             instrument = Instrument.objects.get(name=instrument_name)
@@ -192,7 +194,6 @@ def run_summary(request, run_number, run_version=0):
     return context_dictionary
 
 @require_staff
-@deactivate_invalid_instruments
 @render_with('instrument_summary.html')
 def instrument_summary(request, instrument):
     # Check the user has permission

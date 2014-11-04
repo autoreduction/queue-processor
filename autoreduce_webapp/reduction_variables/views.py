@@ -11,7 +11,6 @@ from reduction_viewer.models import Instrument, ReductionRun
 from reduction_viewer.utils import StatusUtils
 from autoreduce_webapp.icat_communication import ICATCommunication
 from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL
-from reduction_viewer.view_utils import deactivate_invalid_instruments
 import logging, re
 logging.basicConfig(filename=LOG_FILE,level=LOG_LEVEL)
 
@@ -84,7 +83,6 @@ def instrument_summary(request, instrument):
     return render_to_response('snippets/instrument_summary_variables.html', context_dictionary, RequestContext(request))
 
 @require_staff
-@deactivate_invalid_instruments
 @render_with('instrument_variables.html')
 def instrument_variables(request, instrument, start=0, end=0):
     # Check the user has permission
