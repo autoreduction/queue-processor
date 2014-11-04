@@ -17,7 +17,18 @@ Please see: http://www.mantidproject.org/Installing_Mantid_Via_Yum#ISIS_RHEL7_.2
         tar -zxvf autoreduce-mq.tgz
         mv apache-activemq-5.8.0 /opt/
         ln -sf /opt/apache-activemq-5.6.0/ /opt/activemq
-    
+
+3. Configure ActiveMQ to require SSL
+
+        (Create own SSL certificates - keystore and truststore)
+        nano /opt/activemq/conf/activemq.xml
+        Modify the transportConnector tag to be: <transportConnector name="stomp+ssl" uri="stomp+ssl://0.0.0.0:61613?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/>
+        Add the following (making sure to change cert names and passwords):
+        <sslContext>
+                <sslContext keyStore="amq-server.ks" keyStorePassword="changeit"
+                trustStore="amq-server.ts" trustStorePassword="changeit"/>
+        </sslContext>
+
 For option for starting up ActiveMQ type: `/opt/activemq/bin/activemq`
 
 To check that ActiveMQ is listening type e.g. 'lsof –i' or 'netstat –tulpn'. Note in table outputted, 'command' or 'program name' for activemq is 'java'. To check which java is used you may type "ls –l /proc/'PID number'/exe" and to get the working directory of a process "ls –l /proc/'PID number'/cwd"
