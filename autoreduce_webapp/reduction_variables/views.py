@@ -83,10 +83,9 @@ def instrument_summary(request, instrument):
 
     return render_to_response('snippets/instrument_summary_variables.html', context_dictionary, RequestContext(request))
 
-@login_and_uows_valid
+@require_staff
 @deactivate_invalid_instruments
 @render_with('instrument_variables.html')
-@require_staff
 def instrument_variables(request, instrument, start=0, end=0):
     # Check the user has permission
     if not request.user.is_superuser and instrument not in request.session['owned_instruments']:
@@ -265,9 +264,8 @@ def run_summary(request, run_number, run_version=0):
     context_dictionary.update(csrf(request))
     return render_to_response('snippets/run_variables.html', context_dictionary, RequestContext(request))
 
-@login_and_uows_valid
-@render_with('run_confirmation.html')
 @require_staff
+@render_with('run_confirmation.html')
 def run_confirmation(request, run_number, run_version=0):
     reduction_run = ReductionRun.objects.get(run_number=run_number, run_version=run_version)
     instrument = reduction_run.instrument

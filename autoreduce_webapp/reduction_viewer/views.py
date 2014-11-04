@@ -54,9 +54,8 @@ def logout(request):
     request.session.flush()
     return redirect('index')
 
-@login_and_uows_valid
-@render_with('run_queue.html')
 @require_staff
+@render_with('run_queue.html')
 def run_queue(request):
     complete_status = StatusUtils().get_completed()
     error_status = StatusUtils().get_error()
@@ -192,10 +191,9 @@ def run_summary(request, run_number, run_version=0):
         context_dictionary = {}
     return context_dictionary
 
-@login_and_uows_valid
+@require_staff
 @deactivate_invalid_instruments
 @render_with('instrument_summary.html')
-@require_staff
 def instrument_summary(request, instrument):
     # Check the user has permission
     if not request.user.is_superuser and instrument not in request.session['owned_instruments']:
