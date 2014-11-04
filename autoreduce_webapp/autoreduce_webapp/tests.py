@@ -36,7 +36,7 @@ class QueueProcessorTestCase(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._client = Client(ACTIVEMQ['broker'], ACTIVEMQ['username'], ACTIVEMQ['password'], ACTIVEMQ['topics'], 'Autoreduction_QueueProcessor_Test', False)
+        cls._client = Client(ACTIVEMQ['broker'], ACTIVEMQ['username'], ACTIVEMQ['password'], ACTIVEMQ['topics'], 'Autoreduction_QueueProcessor_Test', False, True)
         cls._client.connect()
         cls._rb_number = 0
         cls._timeout_wait = 1

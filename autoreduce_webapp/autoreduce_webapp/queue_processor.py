@@ -177,7 +177,7 @@ class Listener(object):
         
 
 class Client(object):
-    def __init__(self, brokers, user, password, topics=None, consumer_name='QueueProcessor', client_only=True):
+    def __init__(self, brokers, user, password, topics=None, consumer_name='QueueProcessor', client_only=True, use_ssl=False):
         self._brokers = brokers
         self._user = user
         self._password = password
@@ -186,6 +186,7 @@ class Client(object):
         self._consumer_name = consumer_name
         self._listener = None
         self._client_only = client_only
+        self._use_ssl = use_ssl
 
     def set_listner(self, listener):
         self._listener = listener
@@ -199,7 +200,7 @@ class Client(object):
 
         logging.info("[%s] Connecting to %s" % (self._consumer_name, str(self._brokers)))
 
-        connection = stomp.Connection(host_and_ports=self._brokers)
+        connection = stomp.Connection(host_and_ports=self._brokers, use_ssl=self._use_ssl)
         if not self._client_only:
             connection.set_listener(self._consumer_name, listener)
         connection.start()
@@ -238,7 +239,7 @@ class Client(object):
 
 
 def main():
-    client = Client(ACTIVEMQ['broker'], ACTIVEMQ['username'], ACTIVEMQ['password'], ACTIVEMQ['topics'], 'Autoreduction_QueueProcessor', False)
+    client = Client(ACTIVEMQ['broker'], ACTIVEMQ['username'], ACTIVEMQ['password'], ACTIVEMQ['topics'], 'Autoreduction_QueueProcessor', False, True)
     client.connect()
 
 if __name__ == '__main__':

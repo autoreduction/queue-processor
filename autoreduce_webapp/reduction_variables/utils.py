@@ -173,7 +173,7 @@ class MessagingUtils(object):
         # Currently only support single location
         data_path = reduction_run.data_location.first()
 
-        message_client = ActiveMQClient(ACTIVEMQ['broker'], ACTIVEMQ['username'], ACTIVEMQ['password'], ACTIVEMQ['topics'], 'Webapp_QueueProcessor', True)
+        message_client = ActiveMQClient(ACTIVEMQ['broker'], ACTIVEMQ['username'], ACTIVEMQ['password'], ACTIVEMQ['topics'], 'Webapp_QueueProcessor', True, True)
         message_client.connect()
         data_dict = {
             'run_number':reduction_run.run_number,

@@ -108,9 +108,9 @@ ACTIVEMQ = {
         '/queue/ReductionComplete',
         '/queue/ReductionError'
         ],
-    'username' : 'admin',
+    'username' : 'autoreduce',
     'password' : 'pa$$w0rd',
-    'broker' : [("datareducedev.isis.cclrc.ac.uk", 61613)]
+    'broker' : [("autoreduce.isis.cclrc.ac.uk", 61613)]
 }
 
 # File Locations
