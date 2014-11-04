@@ -29,7 +29,7 @@
         if(Math.max(document.documentElement.clientWidth, window.innerWidth || 0) < 767){
             mobileOnly();
         }
-        $('#help_search').on('keyup', run_search).popover();
+        $('#help_search').on('keyup', filterHelpTopics).popover();
 
     };
 
