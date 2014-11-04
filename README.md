@@ -300,3 +300,11 @@ Note: Git Bash is the recommended command line (after step 4). Any command line 
           </configuration>
 
 9. Change the security permissions for the `static` folder and give `IUSR` Read & execute permission.
+
+## Settings to add
+
+There are a few optional settings that the app looks for from the "Settings" table in the database. These are:
+
+`support_email` - Shown in the footer as a "contact us" email link.
+`admin_email` - Shown on error pages as an email link to report issues.
+`ICAT_YEARS_TO_SHOW` - The number of years worth of data to retrieve from ICAT for use in populating the run list. This defaults to 3 years.
