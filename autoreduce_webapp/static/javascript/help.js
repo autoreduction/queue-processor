@@ -5,7 +5,7 @@
             event.preventDefault();
             return;
         }
-        var searchTerms = $(this).val().trim().split(' ');
+        var searchTerms = $(this).val().trim() && $(this).val().trim().split(' ');
         var i, searchTerm;
         if(searchTerms.length>0){
             for(i=0;i<searchTerms.length;i++){
