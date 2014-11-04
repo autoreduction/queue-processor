@@ -10,7 +10,7 @@
         if(searchTerms.length>0){
             for(i=0;i<searchTerms.length;i++){
                 searchTerm = searchTerms[i].toLowerCase();
-                $('section.help-topic .no-results').hide();
+                $('section.help-topic,.no-results').hide();
                 $('section.help-topic[data-topics*="'+searchTerm+'"').show();
                 if($('section.help-topic:visible').length===0){
                     $('.no-results').show();
