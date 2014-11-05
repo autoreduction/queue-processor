@@ -410,7 +410,10 @@ def preview_script(request, instrument, run_number=0, experiment_reference=0):
 
     if request.method == 'GET':
         instrument = Instrument.objects.get(name=instrument)
-        run_variables = InstrumentVariable.objects.filter(start_run=run_number, instrument=instrument)
+        if experiment_reference > 0:
+            run_variables = InstrumentVariable.objects.filter(experiment_reference=experiment_reference, instrument=instrument)
+        else:
+            run_variables = InstrumentVariable.objects.filter(start_run=run_number, instrument=instrument)
         script_file = run_variables[0].scripts.all()[0].script.decode("utf-8")
         for variable in run_variables:
             if variable.is_advanced:
@@ -423,8 +426,17 @@ def preview_script(request, instrument, run_number=0, experiment_reference=0):
             script_file = re.sub(pattern, value, script_file)
 
     elif request.method == 'POST':
-        script_file = InstrumentVariablesUtils().get_current_script_text(instrument).decode("utf-8")
-        default_variables = InstrumentVariablesUtils().get_default_variables(instrument)
+        experiment_reference = request.POST.get('experiment_reference', None)
+        run_number = request.POST.get('start_run', None)
+        if experiment_reference > 0:
+            default_variables = InstrumentVariable.objects.filter(experiment_reference=experiment_reference, instrument=instrument)
+        elif run_number > 0:
+            default_variables = InstrumentVariable.objects.filter(start_run=run_number, instrument=instrument)
+        if default_variables:
+            script_file = run_variables[0].scripts.all()[0].script.decode("utf-8")
+        else:
+            script_file = InstrumentVariablesUtils().get_current_script_text(instrument).decode("utf-8")
+            default_variables = InstrumentVariablesUtils().get_default_variables(instrument)
         for key,value in request.POST.iteritems():
             if 'var-' in key:
                 if 'var-advanced-' in key:
