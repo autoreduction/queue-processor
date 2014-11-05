@@ -309,11 +309,11 @@
         $('input[name="variable-range-toggle"]').bootstrapSwitch();
         $('input[name="variable-range-toggle"]').on('switchChange.bootstrapSwitch', function(event, state) {
             if(state){
-                $('.variable-by-experiment').show();
-                $('.variable-by-run').hide();
-            }else{
                 $('.variable-by-experiment').hide();
                 $('.variable-by-run').show();
+            }else{
+                $('.variable-by-experiment').show();
+                $('.variable-by-run').hide();
             }
         });
     };
