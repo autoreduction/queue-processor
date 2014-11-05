@@ -187,7 +187,7 @@ class InstrumentVariablesUtils(object):
             current_variables_run_start = 1
 
         current_variables = InstrumentVariable.objects.filter(instrument=instrument,start_run=current_variables_run_start)
-        upcoming_variables_by_run = InstrumentVariable.objects.filter(instrument=instrument,start_run__gt=latest_completed_run_number ).order_by('start_run')
+        upcoming_variables_by_run = InstrumentVariable.objects.filter(instrument=instrument, start_run__isnull=False,start_run__gt=latest_completed_run_number ).order_by('start_run')
 
         upcoming_experiments = []
         with ICATCommunication() as icat:

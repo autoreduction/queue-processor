@@ -66,13 +66,13 @@ def instrument_summary(request, instrument):
     # Create a nested dictionary for by-experiment
     upcoming_variables_by_experiment_dict = {}
     for variables in upcoming_variables_by_experiment:
-        if variables.start_run not in upcoming_variables_by_experiment_dict:
-            upcoming_variables_by_experiment_dict[variables.start_run] = {
+        if variables.experiment_reference not in upcoming_variables_by_experiment_dict:
+            upcoming_variables_by_experiment_dict[variables.experiment_reference] = {
                 'experiment' : variables.experiment_reference,
                 'variables' : [],
                 'instrument' : instrument,
             }
-        upcoming_variables_by_experiment_dict[variables.start_run]['variables'].append(variables)
+        upcoming_variables_by_experiment_dict[variables.experiment_reference]['variables'].append(variables)
 
     # Move the upcoming vars into an ordered list
     upcoming_variables_by_experiment_ordered = []
