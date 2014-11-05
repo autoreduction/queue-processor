@@ -151,6 +151,7 @@ search#run_search {
     line-height: 0.9em;
     font-weight: bold;
     padding:5px;
+    height:90px;
     -webkit-transform-style: preserve-3d;
     -moz-transform-style: preserve-3d;
     transform-style: preserve-3d;
