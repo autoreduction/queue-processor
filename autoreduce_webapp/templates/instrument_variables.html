@@ -29,33 +29,52 @@
                 <div class="row">
                     <div class="col-md-9">
                         {% include "snippets/form_warnings.html" %}
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="run_start" class="control-label col-md-4">Run Number Start</label> 
-                                    <div class="col-md-8">
-                                        <input type="number" id="run_start" name="run_start" value="{% if run_start and run_start > minimum_run_start %}{{run_start}}{%else%}{{minimum_run_start}}{% endif %}" min="{{minimum_run_start}}" class="form-control"/>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="run_end" class="control-label col-md-4">Finished <small>(Optional)</small></label>
-                                    <div class="col-md-8">
-                                        <input type="number" id="run_end" name="run_end" value="{% if run_end %}{{run_end}}{% endif %}" class="form-control"/>
+                        <div class="text-center">
+                            <strong>By Experiment Reference Number</strong>
+                            <input type="checkbox" name="variable-range-toggle" checked data-on-text="&nbsp;" data-off-text="&nbsp;" data-off-color="primary" />
+                            <strong>By Run Number Range</strong>
+                        </div>
+                        <div class="variable-by-experiment">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label for="run_start" class="control-label col-md-2">Experiment Reference Number</label> 
+                                        <div class="col-md-10">
+                                            <input type="text" id="experiment_reference_number" name="experiment_reference_number" value="{{experiment_reference_number}}" class="form-control"/>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-md-10 col-md-offset-1">
-                                <div class="alert alert-warning collapse" id="run_finish_warning">
-                                    <strong>Please Note:</strong> The <a href="#" class="js-show-default-variables">default script values</a> will be used from run <span id="next_run"></span> onwards. You will be able to change this by selecting the appropriate "edit variables" link from the Instrument Summary page.
+                        <div class="variables-by-run">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="run_start" class="control-label col-md-4">Run Number Start</label> 
+                                        <div class="col-md-8">
+                                            <input type="number" id="run_start" name="run_start" value="{% if run_start and run_start > minimum_run_start %}{{run_start}}{%else%}{{minimum_run_start}}{% endif %}" min="{{minimum_run_start}}" class="form-control"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="run_end" class="control-label col-md-4">Finished <small>(Optional)</small></label>
+                                        <div class="col-md-8">
+                                            <input type="number" id="run_end" name="run_end" value="{% if run_end %}{{run_end}}{% endif %}" class="form-control"/>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="js-variables-container">
-                            {% include "snippets/edit_variables.html" with standard_variables=standard_variables advanced_variables=advanced_variables instrument=instrument.name only %}
+                            <div class="row">
+                                <div class="col-md-10 col-md-offset-1">
+                                    <div class="alert alert-warning collapse" id="run_finish_warning">
+                                        <strong>Please Note:</strong> The <a href="#" class="js-show-default-variables">default script values</a> will be used from run <span id="next_run"></span> onwards. You will be able to change this by selecting the appropriate "edit variables" link from the Instrument Summary page.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="js-variables-container">
+                                {% include "snippets/edit_variables.html" with standard_variables=standard_variables advanced_variables=advanced_variables instrument=instrument.name only %}
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-3">
@@ -177,8 +196,10 @@
 
 {% block stylesheets %}
     <link rel="stylesheet" href="{% static "css/vendor/prettify.css" %}">
+    <link rel="stylesheet" href="{% static "css/vendor/bootstrap-switch.min.css" %}">
 {% endblock %}
 {% block scripts %}
     <script src="{% static "javascript/vendor/prettify.js" %}"></script>
+    <script src="{% static "javascript/vendor/bootstrap-switch.min.js" %}"></script>
     <script src="{% static "javascript/run_variables.js" %}"></script>
 {% endblock %}

@@ -303,6 +303,21 @@
         $(this).val(isChecked).siblings('input[type=hidden]').val(isChecked);
     };
 
+    var handleToggleSwitch = function handleToggleSwitch(){
+        $('.variable-by-experiment').show();
+        $('.variable-by-run').hide();
+        $('input[name="variable-range-toggle"]').bootstrapSwitch();
+        $('input[name="variable-range-toggle"]').on('switchChange.bootstrapSwitch', function(event, state) {
+            if(state){
+                $('.variable-by-experiment').show();
+                $('.variable-by-run').hide();
+            }else{
+                $('.variable-by-experiment').hide();
+                $('.variable-by-run').show();
+            }
+        });
+    };
+
     var init = function init(){
         $('#run_variables,#instrument_variables').on('click', '#previewScript', previewScript);
         $('#script-preview-modal').on('click', '#downloadScript', downloadScript);
@@ -314,6 +329,9 @@
         $('.js-form-actions li>a').on('mouseover mouseleave', toggleActionExplainations);
         $('#run_end').on('change', triggerAfterRunOptions);
         $('.js-show-default-variables').on('click', showDefaultSriptVariables);
+        if($('input[name="variable-range-toggle"]').length >0){
+            handleToggleSwitch();
+        }
         restrictFinished();
         confirmUnsavedChanges();
     };
