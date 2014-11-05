@@ -159,6 +159,16 @@ class ICATCommunication(object):
 
         return instruments_dict
 
+    def get_upcoming_experiments_for_instrument(self, instrument):
+        logging.debug("Calling ICATCommunication.get_upcoming_experiments_for_instrument")
+        if not instrument:
+            raise Exception("At least one instrument must be supplied")
+
+        experiments = Set()
+        self._add_list_to_set(self.client.search("SELECT i.name FROM Investigation i JOIN i.investigationInstruments inst WHERE i.name NOT LIKE 'CAL%' and i.endDate > CURRENT_TIMESTAMP and inst.instrument.name = '"+instrument+"' INCLUDE i.investigationInstruments.instrument"), experiments)
+        return sorted(experiments, reverse=True)
+
+
     '''
         Check if the user is in the relevant admin group within ICAT for the autoreduction webapp
     '''
