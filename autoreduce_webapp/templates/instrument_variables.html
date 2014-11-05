@@ -30,12 +30,12 @@
                     <div class="col-md-9">
                         {% include "snippets/form_warnings.html" %}
                         <div class="text-center">
-                            <strong>By Experiment Reference Number</strong>
+                            <span class="js-experiment-label">By Experiment Reference Number</span>
                             <input type="checkbox" name="variable-range-toggle" data-on-text="&nbsp;" data-off-text="&nbsp;" data-off-color="default"  data-on-color="default" data-animate="false" data-invert="true" />
-                            <strong>By Run Number Range</strong>
+                            <span class="js-run-label">By Run Number Range</span>
                         </div>
                         <br/>
-                        <div class="variable-by-experiment">
+                        <div class="js-variable-by-experiment">
                             <div class="row">
                                 <div class="col-md-12">
                                     <div class="form-group">
@@ -47,7 +47,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="variables-by-run">
+                        <div class="js-variable-by-run">
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">

@@ -304,16 +304,22 @@
     };
 
     var handleToggleSwitch = function handleToggleSwitch(){
-        $('.variable-by-experiment').show();
-        $('.variable-by-run').hide();
+        $('.js-variable-by-experiment').show();
+        $('.js-experiment-label').css('font-weight', 'bold');
+        $('.js-variable-by-run').hide();
+        $('.js-run-label').css('font-weight', 'normal');
         $('input[name="variable-range-toggle"]').bootstrapSwitch();
         $('input[name="variable-range-toggle"]').on('switchChange.bootstrapSwitch', function(event, state) {
             if(state){
-                $('.variable-by-experiment').hide();
-                $('.variable-by-run').show();
+                $('.js-variable-by-experiment').hide();
+                $('.js-experiment-label').css('font-weight', 'normal');
+                $('.js-variable-by-run').show();
+                $('.js-run-label').css('font-weight', 'bold');
             }else{
-                $('.variable-by-experiment').show();
-                $('.variable-by-run').hide();
+                $('.js-variable-by-experiment').show();
+                $('.js-experiment-label').css('font-weight', 'bold');
+                $('.js-variable-by-run').hide();
+                $('.js-run-label').css('font-weight', 'normal');
             }
         });
     };
