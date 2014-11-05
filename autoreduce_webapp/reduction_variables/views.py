@@ -57,7 +57,7 @@ def instrument_summary(request, instrument):
         next_variable_run_start = 1
     
     current_vars = {
-        'run_start' : current_variables_run_start,
+        'run_start' : current_variables[0].start_run,
         'run_end' : next_variable_run_start-1,
         'variables' : current_variables,
         'instrument' : instrument,
