@@ -65,6 +65,12 @@ class VariableUtils(object):
         return "text"
 
 class InstrumentVariablesUtils(object):
+    """
+        Load the relevant reduction script and return back a tuple containing:
+            - An instance of the python script
+            - The text of the script
+        If the script cannot be loaded (None, None) is returned
+    """
     def __load_reduction_script(self, instrument_name):
         reduction_file = os.path.join(REDUCTION_SCRIPT_BASE, instrument_name, 'reduce.py')
         try:
@@ -76,7 +82,11 @@ class InstrumentVariablesUtils(object):
             logging.error("Unable to load reduction script %s" % reduction_file)
             return None, None
 
-    def set_default_instrument_variables(self, instrument_name, start_run):
+    """
+        Creates and saves a set of variables for the given run number using default values found in the relevant reduce script and returns them.
+        If no start_run is supplied, 1 is assumed.
+    """
+    def set_default_instrument_variables(self, instrument_name, start_run=1):
         if not start_run:
             start_run = 1
         reduce_script, script_binary =  self.__load_reduction_script(instrument_name)
@@ -84,24 +94,48 @@ class InstrumentVariablesUtils(object):
         script = ScriptFile(script=script_binary, file_name='reduce.py')
         script.save()
 
-        instrument_variables = self.get_default_variables(instrument_name)
+        instrument_variables = self.get_default_variables(instrument_name, reduce_script)
+        variables = []
         for variable in instrument_variables:
             variable.start_run = start_run
             variable.save()
             variable.scripts.add(script)
             variable.save()
+            variables.append(variable)
 
-    def get_variables_for_run(self, instrument_name, run_number):
-        instrument = Instrument.objects.get(name=instrument_name)
-        variables_run_start = InstrumentVariable.objects.filter(instrument=instrument,start_run__lte=run_number ).order_by('-start_run').first().start_run
-        return InstrumentVariable.objects.filter(instrument=instrument,start_run=variables_run_start )
+        return variables
 
-    def get_current_script(self, instrument_name):
+    """
+        Fetches the appropriate variables for the given reduction run.
+        If instrument variables with a matchin experiment reference number is found then these will be used
+        otherwise the variables with the closest run start will be used.
+        If no variable are found, default variables are created for the instrument and those are returned.
+    """
+    def get_variables_for_run(self, reduction_run):
+        variables = InstrumentVariable.objects.filter(instrument=reduction_run.instrument, experiment_reference=reduction_run.experiment.reference_number)
+        # No experiment-specific variables, lets look for run number
+        if not variables:
+            variables_run_start = InstrumentVariable.objects.filter(instrument=reduction_run.instrument,start_run__lte=reduction_run.run_number, reference_number=None ).order_by('-start_run').first().start_run
+            variables = InstrumentVariable.objects.filter(instrument=reduction_run.instrument,start_run=variables_run_start)
+        # Still not found any variables, we better create some
+        if not variables:
+            variables = self.set_default_instrument_variables(reduction_run.instrument)
+        return variables
+
+    """
+        Returns the binary text within the reduce script for the provided instrument.
+    """
+    def get_current_script_text(self, instrument_name):
         reduce_script, script_binary =  self.__load_reduction_script(instrument_name)
         return script_binary
 
-    def get_default_variables(self, instrument_name):
-        reduce_script, script_binary =  self.__load_reduction_script(instrument_name)
+    """
+        Creates and returns a list of variables matching those found in the appropriate reduce script.
+        An opptional instance of reduce_script can be passed in to prevent multiple hits to the filesystem.
+    """
+    def get_default_variables(self, instrument_name, reduce_script=None):
+        if not reduce_script:
+            reduce_script, script_binary =  self.__load_reduction_script(instrument_name)
         instrument = InstrumentUtils().get_instrument(instrument_name)
         variables = []
         for key in reduce_script.standard_vars:

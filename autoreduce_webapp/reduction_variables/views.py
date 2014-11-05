@@ -100,7 +100,7 @@ def instrument_variables(request, instrument, start=0, end=0):
             script = old_variables[0].scripts.all()[0]
             default_variables = list(old_variables)
         else:
-            script_binary = InstrumentVariablesUtils().get_current_script(instrument.name)
+            script_binary = InstrumentVariablesUtils().get_current_script_text(instrument.name)
             script = ScriptFile(script=script_binary, file_name='reduce.py')
             script.save()
             default_variables = InstrumentVariablesUtils().get_default_variables(instrument.name)
@@ -230,7 +230,7 @@ def run_summary(request, run_number, run_version=0):
         else:
             standard_vars[variable.name] = variable
 
-    default_variables = InstrumentVariablesUtils().get_variables_for_run(reduction_run.instrument.name, run_number)
+    default_variables = InstrumentVariablesUtils().get_variables_for_run(reduction_run)
     default_standard_variables = {}
     default_advanced_variables = {}
     for variable in default_variables:
@@ -283,12 +283,12 @@ def run_confirmation(request, run_number, run_version=0):
         new_job.save()
         new_job.data_location = reduction_run.data_location.all()
 
-        script_binary = InstrumentVariablesUtils().get_current_script(instrument.name)
+        script_binary = InstrumentVariablesUtils().get_current_script_text(instrument.name)
         script = ScriptFile(script=script_binary, file_name='reduce.py')
         script.save()
 
         run_variables = reduction_run.run_variables.all()
-        default_variables = InstrumentVariablesUtils().get_variables_for_run(instrument.name, run_number)
+        default_variables = InstrumentVariablesUtils().get_variables_for_run(reduction_run)
         new_variables = []
 
         for key,value in request.POST.iteritems():
@@ -384,7 +384,7 @@ def preview_script(request, instrument, run_number):
             script_file = re.sub(pattern, value, script_file)
 
     elif request.method == 'POST':
-        script_file = InstrumentVariablesUtils().get_current_script(instrument).decode("utf-8")
+        script_file = InstrumentVariablesUtils().get_current_script_text(instrument).decode("utf-8")
         default_variables = InstrumentVariablesUtils().get_default_variables(instrument)
         for key,value in request.POST.iteritems():
             if 'var-' in key:
