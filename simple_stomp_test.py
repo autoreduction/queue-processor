@@ -11,10 +11,10 @@ class MyListener(object):
         print 'listener received a message %s' % message
 
 print 'Starting connection'
-connection = stomp.Connection(host_and_ports=[('autoreduce.isis.cclrc.ac.uk', 61613)], use_ssl=True)
+connection = stomp.Connection(host_and_ports=[('localhost', 61613)])
 connection.set_listener('', MyListener())
 connection.start()
-connection.connect('autoreduce', 'pa$$w0rd')
+connection.connect()
 print 'subscribing'
 connection.subscribe(destination='/queue/test', id=1, ack='auto')
 print 'sending'
