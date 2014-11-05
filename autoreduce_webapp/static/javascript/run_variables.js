@@ -73,22 +73,32 @@
         var validateRunRange = function validateRunRange(){
             var $start = $('#run_start');
             var $end = $('#run_end');
-            if($start.length && $end.length){
-                validateNotEmpty.call($start[0]);
-                if(!isNumber($start.val())){
-                    $start.parent().addClass('has-error');
-                    isValid = false;
-                    errorMessages.push('<strong>Run start</strong> must be a number.')
-                }
-                if($end.val() !== '' && !isNumber($end.val())){
-                    $end.parent().addClass('has-error');
-                    isValid = false;
-                    errorMessages.push('<strong>Run finish</strong> can only be a number.')
-                }
-                if(parseInt($end.val()) < parseInt($start.val())){
-                    $end.parent().addClass('has-error');
-                    isValid = false;
-                    errorMessages.push('<strong>Run finish</strong> must be greater than the run start.')
+            var $experiment_reference = $('#experiment_reference');
+            if($start.length && $end.length && $experiment_reference.length){
+                if($('#variable-range-toggle').length >0 && !$('#variable-range-toggle').bootstrapSwitch('state')){
+                    validateNotEmpty.call($experiment_reference[0]);
+                    if(!isNumber($experiment_reference.val())){
+                        $experiment_reference.parent().addClass('has-error');
+                        isValid = false;
+                        errorMessages.push('<strong>Experiment Reference Number</strong> must be a number.')
+                    }
+                }else{
+                    validateNotEmpty.call($start[0]);
+                    if(!isNumber($start.val())){
+                        $start.parent().addClass('has-error');
+                        isValid = false;
+                        errorMessages.push('<strong>Run start</strong> must be a number.')
+                    }
+                    if($end.val() !== '' && !isNumber($end.val())){
+                        $end.parent().addClass('has-error');
+                        isValid = false;
+                        errorMessages.push('<strong>Run finish</strong> can only be a number.')
+                    }
+                    if(parseInt($end.val()) < parseInt($start.val())){
+                        $end.parent().addClass('has-error');
+                        isValid = false;
+                        errorMessages.push('<strong>Run finish</strong> must be greater than the run start.')
+                    }
                 }
             }
         };
