@@ -1,29 +1,34 @@
 <div class="row">
-    <div class="col-md-2 text-center">
+    <div class="col-md-4 text-center">
         <div class="run-numbers">
-            Runs
-            <div>{{ instrument_variables.run_start }}</div>
-                <div>
-                    <i class="fa fa-arrow-down hidden-xs"></i>
-                    <i class="fa fa-arrow-right visible-xs"></i>
+            <div class="middle">
+                {% if instrument_variables.experiment_reference %}
+                    Experiment
+                    <div>#{{ instrument_variables.experiment_reference }}</div>
+                {% else %}
+                    Runs
+                    <div>{{ instrument_variables.run_start }}</div>
+                        <div>
+                            <i class="fa fa-arrow-down hidden-xs"></i>
+                            <i class="fa fa-arrow-right visible-xs"></i>
+                        </div>
+                    {% if instrument_variables.run_end > 0 %}
+                        <div>{{ instrument_variables.run_end }}</div>
+                    {% else %}
+                        <div>Ongoing</div>
+                    {% endif %}
                 </div>
-            {% if instrument_variables.run_end > 0 %}
-                <div>{{ instrument_variables.run_end }}</div>
-            {% else %}
-                <div>Ongoing</div>
             {% endif %}
         </div>
+        <a href="{% url 'preview_script' instrument=instrument.name run_number=instrument_variables.run_start %}">preview reduction script</a>
+        <br/>
+        <a href="{% url 'instrument_variables' instrument=instrument.name start=instrument_variables.run_start end=instrument_variables.run_end %}">edit variables</a>
     </div>
-    <div class="col-md-7">
+    <div class="col-md-8">
         {% for variable in instrument_variables.variables %}
             <div>
                 <strong>{{ variable.name }}:</strong> {{ variable.value }}
             </div>
         {% endfor %}
-    </div>
-    <div class="col-md-3 text-center">
-        <a href="{% url 'preview_script' instrument=instrument.name run_number=instrument_variables.run_start %}">preview reduction script</a>
-        <br/>
-        <a href="{% url 'instrument_variables' instrument=instrument.name start=instrument_variables.run_start end=instrument_variables.run_end %}">edit variables</a>
     </div>
 </div>

@@ -151,6 +151,15 @@ search#run_search {
     line-height: 0.9em;
     font-weight: bold;
     padding:5px;
+    -webkit-transform-style: preserve-3d;
+    -moz-transform-style: preserve-3d;
+    transform-style: preserve-3d;
+}
+.run-numbers .middle{
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
 }
 @media screen and (max-width: 767px) {
     .run-numbers div{

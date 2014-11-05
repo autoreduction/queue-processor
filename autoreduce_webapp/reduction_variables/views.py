@@ -24,49 +24,38 @@ def instrument_summary(request, instrument):
 
     instrument = Instrument.objects.get(name=instrument)
     completed_status = StatusUtils().get_completed()
-    try:
-        latest_completed_run = ReductionRun.objects.filter(instrument=instrument, run_version=0, status=completed_status).order_by('-run_number').first().run_number
-    except AttributeError :
-        latest_completed_run = 0
-    try:
-        current_variables_run_start = InstrumentVariable.objects.filter(instrument=instrument,start_run__lte=latest_completed_run ).order_by('-start_run').first().start_run
-    except AttributeError :
-        current_variables_run_start = 1
-    current_variables = InstrumentVariable.objects.filter(instrument=instrument,start_run=current_variables_run_start )
-    upcoming_variables = InstrumentVariable.objects.filter(instrument=instrument,start_run__gt=latest_completed_run ).order_by('start_run')
-    upcoming_variables_dict = {}
-    for variables in upcoming_variables:
-        if variables.start_run not in upcoming_variables_dict:
-            upcoming_variables_dict[variables.start_run] = {
+    
+    current_variables, upcoming_variables_by_run, upcoming_variables_by_experiment = InstrumentVariablesUtils().get_current_and_upcoming_variables(instrument.name)
+
+    # Create a nested dictionary for by-run
+    upcoming_variables_by_run_dict = {}
+    for variables in upcoming_variables_by_run:
+        if variables.start_run not in upcoming_variables_by_run_dict:
+            upcoming_variables_by_run_dict[variables.start_run] = {
                 'run_start' : variables.start_run,
                 'run_end' : 0, # We'll fill this in after
                 'variables' : [],
                 'instrument' : instrument,
             }
-        upcoming_variables_dict[variables.start_run]['variables'].append(variables)
+        upcoming_variables_by_run_dict[variables.start_run]['variables'].append(variables)
 
     # Move the upcoming vars into an ordered list
-    upcoming_variables_ordered = []
-    for key in sorted(upcoming_variables_dict):
-        upcoming_variables_ordered.append(upcoming_variables_dict[key])
-    sorted(upcoming_variables_ordered, key=lambda r: r['run_start'])
+    upcoming_variables_by_run_ordered = []
+    for key in sorted(upcoming_variables_by_run_dict):
+        upcoming_variables_by_run_ordered.append(upcoming_variables_by_run_dict[key])
+    sorted(upcoming_variables_by_run_ordered, key=lambda r: r['run_start'])
     
     # Fill in the run end nunmbers
     run_end = 0;
-    for run_number in sorted(upcoming_variables_dict.iterkeys(), reverse=True):
-        upcoming_variables_dict[run_number]['run_end'] = run_end
+    for run_number in sorted(upcoming_variables_by_run_dict.iterkeys(), reverse=True):
+        upcoming_variables_by_run_dict[run_number]['run_end'] = run_end
         run_end = run_number-1
 
     try:
-        next_variable_run_start = min(upcoming_variables_dict, key=upcoming_variables_dict.get)
+        next_variable_run_start = min(upcoming_variables_by_run_dict, key=upcoming_variables_by_run_dict.get)
     except ValueError:
         next_variable_run_start = 1
-
-    # If no variables are saved, use the dfault ones from the reduce script
-    if not current_variables:
-        InstrumentVariablesUtils().set_default_instrument_variables(instrument.name, current_variables_run_start)
-        current_variables = InstrumentVariable.objects.filter(instrument=instrument,start_run=current_variables_run_start )
-
+    
     current_vars = {
         'run_start' : current_variables_run_start,
         'run_end' : next_variable_run_start-1,
@@ -74,10 +63,29 @@ def instrument_summary(request, instrument):
         'instrument' : instrument,
     }
 
+    # Create a nested dictionary for by-experiment
+    upcoming_variables_by_experiment_dict = {}
+    for variables in upcoming_variables_by_run:
+        if variables.start_run not in upcoming_variables_by_experiment_dict:
+            upcoming_variables_by_experiment_dict[variables.start_run] = {
+                'experiment' : variables.experiment_reference,
+                'variables' : [],
+                'instrument' : instrument,
+            }
+        upcoming_variables_by_experiment_dict[variables.start_run]['variables'].append(variables)
+
+    # Move the upcoming vars into an ordered list
+    upcoming_variables_by_experiment_ordered = []
+    for key in sorted(upcoming_variables_by_experiment_dict):
+        upcoming_variables_by_experiment_ordered.append(upcoming_variables_by_experiment_dict[key])
+    sorted(upcoming_variables_by_experiment_ordered, key=lambda r: r['experiment'])
+    
+
     context_dictionary = {
         'instrument' : instrument,
         'current_variables' : current_vars,
-        'upcoming_variables' : upcoming_variables_ordered,
+        'upcoming_variables_by_run' : upcoming_variables_by_run_ordered,
+        'upcoming_variables_by_experiment' : upcoming_variables_by_experiment_ordered,
     }
 
     return render_to_response('snippets/instrument_summary_variables.html', context_dictionary, RequestContext(request))

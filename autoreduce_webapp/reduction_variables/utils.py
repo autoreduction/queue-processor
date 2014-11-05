@@ -7,7 +7,8 @@ logging.basicConfig(filename=LOG_FILE,level=LOG_LEVEL)
 from django.db import models
 from reduction_variables.models import InstrumentVariable, ScriptFile, RunVariable
 from reduction_viewer.models import Instrument
-from reduction_viewer.utils import InstrumentUtils
+from reduction_viewer.utils import InstrumentUtils, StatusUtils
+from autoreduce_webapp.icat_communication import ICATCommunication
 
 class VariableUtils(object):
     def wrap_in_type_syntax(self, value, var_type):
@@ -159,6 +160,46 @@ class InstrumentVariablesUtils(object):
                 )
             variables.append(variable)
         return variables
+
+    """
+        Fetches the instrument variables for:
+        - The new run number
+        - Upcoming run numbers
+        - Upcoming known experiments
+        as a tuple of (current_variables, upcoming_variables_by_run, upcoming_variables_by_experiment)
+    """
+    def get_current_and_upcoming_variables(self, instrument_name):
+        instrument = Instrument.objects.get(name=instrument_name)
+        completed_status = StatusUtils().get_completed()
+
+        # Get latest run number and latest experiment reference
+        try:
+            latest_completed_run = ReductionRun.objects.filter(instrument=instrument, run_version=0, status=completed_status).order_by('-run_number').first()
+            latest_completed_run_number = latest_completed_run.run_number
+        except AttributeError :
+            latest_completed_run_number = 1
+
+        # Get the run number of the closest instrument variables
+        try:
+            current_variables_run_start = InstrumentVariable.objects.filter(instrument=instrument,start_run__lte=latest_completed_run_number).order_by('-start_run').first().start_run
+        except AttributeError :
+            current_variables_run_start = 1
+
+        current_variables = InstrumentVariable.objects.filter(instrument=instrument,start_run=current_variables_run_start)
+        upcoming_variables_by_run = InstrumentVariable.objects.filter(instrument=instrument,start_run__gt=latest_completed_run_number ).order_by('start_run')
+
+        upcoming_experiments = []
+        with ICATCommunication() as icat:
+            upcoming_experiments = list(icat.get_upcoming_experiments_for_instrument(instrument_name))
+
+        upcoming_variables_by_experiment = InstrumentVariable.objects.filter(instrument=instrument,experiment_reference__in=upcoming_experiments).order_by('experiment_reference')
+
+        # If no variables are saved, use the dfault ones from the reduce script
+        if not current_variables:
+            self.set_default_instrument_variables(instrument.name, current_variables_run_start)
+            current_variables = InstrumentVariable.objects.filter(instrument=instrument,start_run=current_variables_run_start )
+
+        return current_variables, upcoming_variables_by_run, upcoming_variables_by_experiment
 
 class ReductionVariablesUtils(object):
     def get_script_path_and_arguments(self, run_variables):
