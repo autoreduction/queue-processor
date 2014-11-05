@@ -92,7 +92,7 @@ def instrument_summary(request, instrument):
 
 @require_staff
 @render_with('instrument_variables.html')
-def instrument_variables(request, instrument, start=None, end=None, experiment_reference=None):
+def instrument_variables(request, instrument, start=0, end=0, experiment_reference=0):
     # Check the user has permission
     if not request.user.is_superuser and instrument not in request.session['owned_instruments']:
         raise PermissionDenied()

@@ -337,10 +337,9 @@
             }
         };
 
-        $('.js-variable-by-experiment').show();
-        $('.js-experiment-label').css('cursor','default').css('font-weight', 'bold');
-        $('.js-variable-by-run').hide();
-        $('.js-run-label').css('cursor','default').css('font-weight', 'normal');
+        $('.js-experiment-label,.js-run-label').css('cursor','default').css('font-weight', 'bold');
+        toggleDisplay(undefined, $('#variable-range-toggle-value').val() === 'True');
+        
         $('input[name="variable-range-toggle"]').bootstrapSwitch();
         $('input[name="variable-range-toggle"]').on('switchChange.bootstrapSwitch', toggleDisplay);
 
