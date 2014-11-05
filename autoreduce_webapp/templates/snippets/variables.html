@@ -1,15 +1,15 @@
 <div class="row">
     <div class="col-md-4 text-center">
-        {% if instrument_variables.experiment_reference %}
+        {% if instrument_variables.experiment %}
             <div class="run-numbers">
                 <div class="middle">
                     Experiment
-                    <div>#{{ instrument_variables.experiment_reference }}</div>
+                    <div>#{{ instrument_variables.experiment }}</div>
                 </div>
             </div>
-            <a href="{% url 'preview_script_by_experiment' instrument=instrument.name experiment_reference=instrument_variables.experiment_reference %}">preview reduction script</a>
+            <a href="{% url 'preview_script_by_experiment' instrument=instrument.name experiment_reference=instrument_variables.experiment %}">preview reduction script</a>
             <br/>
-            <a href="{% url 'instrument_variables_by_experiment' instrument=instrument.name experiment_reference=instrument_variables.experiment_reference %}">edit variables</a>
+            <a href="{% url 'instrument_variables_by_experiment' instrument=instrument.name experiment_reference=instrument_variables.experiment %}">edit variables</a>
         {% else %}
             <div class="run-numbers">
                 <div class="middle">
