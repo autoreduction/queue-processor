@@ -226,11 +226,13 @@
 
         event.preventDefault();
         if(validateForm()){
-            if($('input[name="variable-range-toggle"]').length >0 && !$('input[name="variable-range-toggle"]').val()){
+            if($('#variable-range-toggle').length >0 && !$('#variable-range-toggle').bootstrapSwitch('state')){
+                $('#variable-range-toggle').prop('checked', false);
                 $('#run_start').val('');
                 $('#run_end').val('');
                 submitAction();
             }else{
+                $('#variable-range-toggle').prop('checked', true);
                 $('#experiment_reference').val('');
                 checkForConflicts(submitAction);
             }
