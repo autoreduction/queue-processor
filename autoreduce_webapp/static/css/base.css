@@ -156,13 +156,18 @@ search#run_search {
     -moz-transform-style: preserve-3d;
     transform-style: preserve-3d;
 }
-.run-numbers .middle{
-    position: relative;
-    top: 50%;
-    left: 50%;
-    transform: translateX(-50%) translateY(-50%);
+@media screen and (min-width: 767px) {
+    .run-numbers .middle{
+        position: relative;
+        top: 50%;
+        left: 50%;
+        transform: translateX(-50%) translateY(-50%);
+    }
 }
 @media screen and (max-width: 767px) {
+    .run-numbers{
+        height:auto;
+    }
     .run-numbers div{
         display: inline-block;
     }
