@@ -428,6 +428,7 @@ def preview_script(request, instrument, run_number=0, experiment_reference=0):
     elif request.method == 'POST':
         experiment_reference = request.POST.get('experiment_reference', None)
         run_number = request.POST.get('start_run', None)
+        default_variables = None
         if experiment_reference > 0:
             default_variables = InstrumentVariable.objects.filter(experiment_reference=experiment_reference, instrument=instrument)
         elif run_number > 0:
