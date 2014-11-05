@@ -319,9 +319,9 @@
         };
 
         $('.js-variable-by-experiment').show();
-        $('.js-experiment-label').css('font-weight', 'bold');
+        $('.js-experiment-label').css('cursor','default').css('font-weight', 'bold');
         $('.js-variable-by-run').hide();
-        $('.js-run-label').css('font-weight', 'normal');
+        $('.js-run-label').css('cursor','default').css('font-weight', 'normal');
         $('input[name="variable-range-toggle"]').bootstrapSwitch();
         $('input[name="variable-range-toggle"]').on('switchChange.bootstrapSwitch', toggleDisplay);
 
