@@ -6,6 +6,7 @@ from autoreduce_webapp.queue_processor import Client as ActiveMQClient
 logging.basicConfig(filename=LOG_FILE,level=LOG_LEVEL)
 from django.db import models
 from reduction_variables.models import InstrumentVariable, ScriptFile, RunVariable
+from reduction_viewer.models import ReductionRun
 from reduction_viewer.models import Instrument
 from reduction_viewer.utils import InstrumentUtils, StatusUtils
 from autoreduce_webapp.icat_communication import ICATCommunication
