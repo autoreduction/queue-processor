@@ -92,7 +92,7 @@ def instrument_summary(request, instrument):
 
 @require_staff
 @render_with('instrument_variables.html')
-def instrument_variables(request, instrument, start=0, end=0, experiment_reference=0):
+def instrument_variables(request, instrument, start=None, end=None, experiment_reference=None):
     # Check the user has permission
     if not request.user.is_superuser and instrument not in request.session['owned_instruments']:
         raise PermissionDenied()
@@ -100,29 +100,51 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
     instrument = Instrument.objects.get(name=instrument)
 
     if request.method == 'POST':
-        start = request.POST.get("run_start", 1)
-        end = request.POST.get("run_end", None)
 
-        if request.POST.get("is_editing", '') == 'True':
-            old_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run=start)
-            script = old_variables[0].scripts.all()[0]
-            default_variables = list(old_variables)
-        else:
-            script_binary = InstrumentVariablesUtils().get_current_script_text(instrument.name)
-            script = ScriptFile(script=script_binary, file_name='reduce.py')
-            script.save()
-            default_variables = InstrumentVariablesUtils().get_default_variables(instrument.name)
+        is_run_range = request.POST.get("variable-range-toggle", True)
 
-        # Remove any existing variables saved within the provided range
-        if end and int(end) > 0:
-            existing_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run__gte=start, start_run__lte=end)
-            # Create default variables for after the run end if they don't already exist
-            if not InstrumentVariable.objects.filter(instrument=instrument, start_run=int(end)+1):
-                InstrumentVariablesUtils().set_default_instrument_variables(instrument.name, int(end)+1)
+        if is_run_range:
+            start = request.POST.get("run_start", 1)
+            end = request.POST.get("run_end", None)
+
+            if request.POST.get("is_editing", '') == 'True':
+                old_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run=start)
+                script = old_variables[0].scripts.all()[0]
+                default_variables = list(old_variables)
+            else:
+                script_binary = InstrumentVariablesUtils().get_current_script_text(instrument.name)
+                script = ScriptFile(script=script_binary, file_name='reduce.py')
+                script.save()
+                default_variables = InstrumentVariablesUtils().get_default_variables(instrument.name)
+
+            # Remove any existing variables saved within the provided range
+            if end and int(end) > 0:
+                existing_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run__gte=start, start_run__lte=end)
+                # Create default variables for after the run end if they don't already exist
+                if not InstrumentVariable.objects.filter(instrument=instrument, start_run=int(end)+1):
+                    InstrumentVariablesUtils().set_default_instrument_variables(instrument.name, int(end)+1)
+            else:
+                existing_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run__gte=start)
+            for existing in existing_variables:
+                existing.delete()
         else:
-            existing_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run__gte=start)
-        for existing in existing_variables:
-            existing.delete()
+            experiment_reference = request.POST.get("experiment_reference_number", 1)
+
+
+            if request.POST.get("is_editing", '') == 'True':
+                old_variables = InstrumentVariable.objects.filter(instrument=instrument, experiment_reference=experiment_reference)
+                script = old_variables[0].scripts.all()[0]
+                default_variables = list(old_variables)
+            else:
+
+                script_binary = InstrumentVariablesUtils().get_current_script_text(instrument.name)
+                script = ScriptFile(script=script_binary, file_name='reduce.py')
+                script.save()
+                default_variables = InstrumentVariablesUtils().get_default_variables(instrument.name)
+
+            existing_variables = InstrumentVariable.objects.filter(instrument=instrument, experiment_reference=experiment_reference)
+            for existing in existing_variables:
+                existing.delete()
 
         for default_var in default_variables:
             form_name = 'var-'
@@ -140,8 +162,11 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
                     value=post_variable, 
                     is_advanced=default_var.is_advanced, 
                     type=default_var.type,
-                    start_run =start,
                     )
+                if is_run_range:
+                    variable.start_run = start
+                else:
+                    variable.experiment_reference = experiment_reference
             else:
                 variable = default_var
                 variable.pk = None
@@ -153,7 +178,7 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
 
         return redirect('instrument_summary', instrument=instrument.name)
     else:
-        editing = (start>0)
+        editing = (start>0 or experiment_reference>0)
         completed_status = StatusUtils().get_completed()
         processing_status = StatusUtils().get_processing()
         queued_status = StatusUtils().get_queued()
@@ -167,16 +192,19 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
         except AttributeError :
             latest_processing_run = 0
 
-        if not start and not end:
-            try:
-                start = InstrumentVariable.objects.filter(instrument=instrument,start_run__lte=latest_completed_run ).order_by('-start_run').first().start_run
-            except AttributeError :
+        if experiment_reference > 0:
+            variables = InstrumentVariable.objects.filter(instrument=instrument,experiment_reference=experiment_reference)
+        else:
+            if not start and not end:
+                try:
+                    start = InstrumentVariable.objects.filter(instrument=instrument,start_run__lte=latest_completed_run ).order_by('-start_run').first().start_run
+                except AttributeError :
+                    start = 1
+            if not start:
                 start = 1
-        if not start:
-            start = 1
-        if not end:
-            end = 0
-        variables = InstrumentVariable.objects.filter(instrument=instrument,start_run=start)
+            if not end:
+                end = 0
+            variables = InstrumentVariable.objects.filter(instrument=instrument,start_run=start)
         
         if not editing:
             variables = InstrumentVariablesUtils().get_default_variables(instrument.name)
@@ -194,7 +222,9 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
             else:
                 standard_vars[variable.name] = variable
 
-        upcoming_run_variables = ','.join([str(i) for i in InstrumentVariable.objects.filter(instrument=instrument, start_run__gt=start).values_list('start_run', flat=True).distinct()])
+        current_variables, upcoming_variables_by_run, upcoming_variables_by_experiment = InstrumentVariablesUtils().get_current_and_upcoming_variables(instrument.name)
+
+        upcoming_run_variables = ','.join([str(i) for i in upcoming_variables_by_run.values_list('start_run', flat=True).distinct()])
 
         default_variables = InstrumentVariablesUtils().get_default_variables(instrument.name)
         default_standard_variables = {}
@@ -215,6 +245,7 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
             'default_advanced_variables' : default_advanced_variables,
             'run_start' : start,
             'run_end' : end,
+            'experiment_reference' : experiment_reference,
             'minimum_run_start' : max(latest_completed_run, latest_processing_run),
             'upcoming_run_variables' : upcoming_run_variables,
             'editing' : editing,
