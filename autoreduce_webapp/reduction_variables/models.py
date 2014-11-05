@@ -11,7 +11,8 @@ class ScriptFile(models.Model):
 
 class InstrumentVariable(models.Model):
     instrument = models.ForeignKey(Instrument)
-    start_run = models.IntegerField(blank=False)
+    start_run = models.IntegerField(blank=True)
+    experiment_reference = models.IntegerField(blank=True)
     name = models.CharField(max_length=50, blank=False)
     value = models.CharField(max_length=300, blank=False)
     type = models.CharField(max_length=50, blank=False)
