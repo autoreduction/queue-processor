@@ -304,12 +304,7 @@
     };
 
     var handleToggleSwitch = function handleToggleSwitch(){
-        $('.js-variable-by-experiment').show();
-        $('.js-experiment-label').css('font-weight', 'bold');
-        $('.js-variable-by-run').hide();
-        $('.js-run-label').css('font-weight', 'normal');
-        $('input[name="variable-range-toggle"]').bootstrapSwitch();
-        $('input[name="variable-range-toggle"]').on('switchChange.bootstrapSwitch', function(event, state) {
+        var toggleDisplay = function toggleDisplay(event, state){
             if(state){
                 $('.js-variable-by-experiment').hide();
                 $('.js-experiment-label').css('font-weight', 'normal');
@@ -321,7 +316,23 @@
                 $('.js-variable-by-run').hide();
                 $('.js-run-label').css('font-weight', 'normal');
             }
+        };
+
+        $('.js-variable-by-experiment').show();
+        $('.js-experiment-label').css('font-weight', 'bold');
+        $('.js-variable-by-run').hide();
+        $('.js-run-label').css('font-weight', 'normal');
+        $('input[name="variable-range-toggle"]').bootstrapSwitch();
+        $('input[name="variable-range-toggle"]').on('switchChange.bootstrapSwitch', toggleDisplay);
+
+        $('.js-experiment-label').on('click', function(){
+            $('input[name="variable-range-toggle"]').bootstrapSwitch('state', false);
         });
+
+        $('.js-run-label').on('click', function(){
+            $('input[name="variable-range-toggle"]').bootstrapSwitch('state', true);
+        });
+
     };
 
     var init = function init(){
