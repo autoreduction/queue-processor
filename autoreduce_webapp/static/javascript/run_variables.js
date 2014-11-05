@@ -226,7 +226,14 @@
 
         event.preventDefault();
         if(validateForm()){
-            checkForConflicts(submitAction);
+            if($('input[name="variable-range-toggle"]').length >0 && !$('input[name="variable-range-toggle"]').val()){
+                $('#run_start').val('');
+                $('#run_end').val('');
+                submitAction();
+            }else{
+                $('#experiment_reference').val('');
+                checkForConflicts(submitAction);
+            }
         }else{
             cancelAction();
         }
