@@ -101,7 +101,7 @@ def instrument_variables(request, instrument, start=None, end=None, experiment_r
 
     if request.method == 'POST':
 
-        is_run_range = request.POST.get("variable-range-toggle", True)
+        is_run_range = request.POST.get("variable-range-toggle-value", True)
 
         if is_run_range:
             start = request.POST.get("run_start", 1)

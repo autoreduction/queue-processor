@@ -227,12 +227,12 @@
         event.preventDefault();
         if(validateForm()){
             if($('#variable-range-toggle').length >0 && !$('#variable-range-toggle').bootstrapSwitch('state')){
-                $('#variable-range-toggle').prop('checked', false);
+                $('#variable-range-toggle-value').val('False');
                 $('#run_start').val('');
                 $('#run_end').val('');
                 submitAction();
             }else{
-                $('#variable-range-toggle').prop('checked', true);
+                $('#variable-range-toggle-value').val('True');
                 $('#experiment_reference').val('');
                 checkForConflicts(submitAction);
             }
