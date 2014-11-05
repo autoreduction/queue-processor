@@ -326,14 +326,14 @@
         var toggleDisplay = function toggleDisplay(event, state){
             if(state){
                 $('.js-variable-by-experiment').hide();
-                $('.js-experiment-label').css('font-weight', 'normal');
+                $('.js-experiment-label').css('font-weight', 'normal').css('color', '#ccc');
                 $('.js-variable-by-run').show();
-                $('.js-run-label').css('font-weight', 'bold');
+                $('.js-run-label').css('font-weight', 'bold').css('color', '#000');
             }else{
                 $('.js-variable-by-experiment').show();
-                $('.js-experiment-label').css('font-weight', 'bold');
+                $('.js-experiment-label').css('font-weight', 'bold').css('color', '#000');
                 $('.js-variable-by-run').hide();
-                $('.js-run-label').css('font-weight', 'normal');
+                $('.js-run-label').css('font-weight', 'normal').css('color', '#ccc');
             }
         };
 
