@@ -340,16 +340,16 @@
         $('.js-experiment-label,.js-run-label').css('cursor','default').css('font-weight', 'bold');
         toggleDisplay(undefined, $('#variable-range-toggle-value').val() === 'True');
         
-        $('#variable-range-toggle]').bootstrapSwitch();
+        $('#variable-range-toggle').bootstrapSwitch();
         $('#variable-range-toggle').bootstrapSwitch('state', ($('#variable-range-toggle-value').val() === 'True'))
-        $('#variable-range-toggle]').on('switchChange.bootstrapSwitch', toggleDisplay);
+        $('#variable-range-toggle').on('switchChange.bootstrapSwitch', toggleDisplay);
 
         $('.js-experiment-label').on('click', function(){
-            $('#variable-range-toggle]').bootstrapSwitch('state', false);
+            $('#variable-range-toggle').bootstrapSwitch('state', false);
         });
 
         $('.js-run-label').on('click', function(){
-            $('#variable-range-toggle]').bootstrapSwitch('state', true);
+            $('#variable-range-toggle').bootstrapSwitch('state', true);
         });
 
     };
@@ -365,7 +365,7 @@
         $('.js-form-actions li>a').on('mouseover mouseleave', toggleActionExplainations);
         $('#run_end').on('change', triggerAfterRunOptions);
         $('.js-show-default-variables').on('click', showDefaultSriptVariables);
-        if($('#variable-range-toggle]').length >0){
+        if($('#variable-range-toggle').length >0){
             handleToggleSwitch();
         }
         restrictFinished();
