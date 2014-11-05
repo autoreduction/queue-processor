@@ -92,7 +92,7 @@ def instrument_summary(request, instrument):
 
 @require_staff
 @render_with('instrument_variables.html')
-def instrument_variables(request, instrument, start=0, end=0):
+def instrument_variables(request, instrument, start=0, end=0, experiment_reference=0):
     # Check the user has permission
     if not request.user.is_superuser and instrument not in request.session['owned_instruments']:
         raise PermissionDenied()
@@ -364,7 +364,7 @@ def run_confirmation(request, run_number, run_version=0):
         return redirect('instrument_summary', instrument=instrument.name)
 
 @login_and_uows_valid
-def preview_script(request, instrument, run_number):
+def preview_script(request, instrument, run_number=0, experiment_reference=0):
     reduce_script = ''
 
     '''
