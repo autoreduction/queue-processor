@@ -117,7 +117,7 @@ class InstrumentVariablesUtils(object):
         variables = InstrumentVariable.objects.filter(instrument=reduction_run.instrument, experiment_reference=reduction_run.experiment.reference_number)
         # No experiment-specific variables, lets look for run number
         if not variables:
-            variables_run_start = InstrumentVariable.objects.filter(instrument=reduction_run.instrument,start_run__lte=reduction_run.run_number, reference_number=None ).order_by('-start_run').first().start_run
+            variables_run_start = InstrumentVariable.objects.filter(instrument=reduction_run.instrument,start_run__lte=reduction_run.run_number, experiment_reference__isnull=True ).order_by('-start_run').first().start_run
             variables = InstrumentVariable.objects.filter(instrument=reduction_run.instrument,start_run=variables_run_start)
         # Still not found any variables, we better create some
         if not variables:
