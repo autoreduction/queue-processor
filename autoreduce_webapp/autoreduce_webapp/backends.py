@@ -8,7 +8,15 @@ import logging
 logging.basicConfig(filename=LOG_FILE,level=LOG_LEVEL)
 
 class UOWSAuthenticationBackend(object):
+    """
+    Custom authentication for use with the User Office Web Service
+    """
     def authenticate(self, token=None):
+        """
+        Checks that the given session ID (token) is still valid and returns an appropriate user object.
+        If this is the first time a user has logged in a new user object is created.
+        A users permissions (staff/superuser) is also set based on calls to ICAT.
+        """
         with UOWSClient() as client:
             if client.check_session(token):
                 person = client.get_person(token)

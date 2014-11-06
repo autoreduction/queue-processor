@@ -16,38 +16,6 @@ class Instrument(models.Model):
     def __unicode__(self):
         return u'%s' % self.name
 
-    def get_experiments(current_user):
-        reference_numbers = icat_communication.get_associated_experiments(current_user)
-        return Experiment.objects.filter(reference_number__in=reference_numbers)
-
-    def should_show_instrument(current_user):
-        if current_user.is_superuser:
-            ''' Superusers can see everything '''
-            return True
-        elif not is_active:
-            ''' Don't show if it is inactive '''
-            return False
-        elif current_user.is_staff:
-            ''' Staff can see instruments they are the scientist on '''
-            if current_user.instrument_set.filter(name=name):
-                return True
-            else:
-                ''' Get an updated list of associated instruments from ICAT '''
-                current_user.instrument_set = icat_communication.get_owned_instruments(current_user.get_profile().user_number)
-                current_user.save()
-                if current_user.instrument_set.filter(name=name):
-                    return True
-        else:
-            if current_user.experiment_instruments.filter(name=name):
-                return True
-            else:
-                ''' Get an updated list of associated instruments from ICAT '''
-                current_user.experiment_instruments = icat_communication.get_valid_instruments(current_user.get_profile().user_number)
-                current_user.save()
-                if current_user.experiment_instruments.filter(name=name):
-                    return True
-        return False
-
 class Experiment(models.Model):
     reference_number = models.IntegerField()
 
@@ -56,9 +24,6 @@ class Experiment(models.Model):
 
     def get_ICAT_details():
         return icat_communication.get_experiment_details(reference_number)
-
-    def is_team_member(possibleMember):
-        return icat_communication.is_on_experiment_team(reference_number, possibleMember.get_profile().user_number)
 
 class Status(models.Model):
     value = models.CharField(max_length=25)
@@ -88,6 +53,9 @@ class ReductionRun(models.Model):
             return u'%s' % self.run_number
 
     def title(self):
+        """
+        Return a interface-friendly name that identifies this run using either run name or run version
+        """
         if self.run_version > 0:
             if self.run_name:
                 title = '%s - %s' % (self.run_number, self.run_name)
@@ -134,4 +102,7 @@ class Notification(models.Model):
         return u'%s' % self.message
 
     def severity_verbose(self):
+        """
+        Return the severity as its textual value
+        """
         return dict(Notification.SEVERITY_CHOICES)[self.severity]

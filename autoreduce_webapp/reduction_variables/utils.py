@@ -13,6 +13,10 @@ from autoreduce_webapp.icat_communication import ICATCommunication
 
 class VariableUtils(object):
     def wrap_in_type_syntax(self, value, var_type):
+        """
+        Append the appropriate syntax around variables to be wrote to a preview script.
+        E.g. strings will be wrapped in single quotes, lists will be wrapped in brackets, etc.
+        """
         if var_type == 'text':
             return "'%s'" % value.replace("'", "\\'")
         if var_type == 'number':
@@ -28,6 +32,11 @@ class VariableUtils(object):
             return '[%s]' % ','.join(list_values)
 
     def convert_variable_to_type(self, value, var_type):
+        """
+        Convert the given value a type matching that of var_type.
+        Options for var_type: text, number, list_text, list_number, boolean
+        If the var_type isn't recognised, the value is returned unchanged
+        """
         if var_type == "text":
             return str(value)
         if var_type == "number":
@@ -48,10 +57,16 @@ class VariableUtils(object):
                 else:
                     list_val = int(list_val)
             return var_list
-        if var_type == "bool":
+        if var_type == "boolean":
             return value.lower() == 'true'
+        return value
 
     def get_type_string(self, value):
+        """
+        Returns a textual representation of the type of the given value.
+        The possible returned types are: text, number, list_text, list_number, boolean
+        If the type isn't supported, it defaults to text.
+        """
         var_type = type(value).__name__
         if var_type == 'str':
             return "text"
@@ -67,13 +82,13 @@ class VariableUtils(object):
         return "text"
 
 class InstrumentVariablesUtils(object):
-    """
+    def __load_reduction_script(self, instrument_name):
+        """
         Load the relevant reduction script and return back a tuple containing:
             - An instance of the python script
             - The text of the script
         If the script cannot be loaded (None, None) is returned
-    """
-    def __load_reduction_script(self, instrument_name):
+        """
         reduction_file = os.path.join(REDUCTION_SCRIPT_BASE, instrument_name, 'reduce.py')
         try:
             reduce_script = imp.load_source('reduce_script', reduction_file)
@@ -84,11 +99,11 @@ class InstrumentVariablesUtils(object):
             logging.error("Unable to load reduction script %s" % reduction_file)
             return None, None
 
-    """
+    def set_default_instrument_variables(self, instrument_name, start_run=1):
+        """
         Creates and saves a set of variables for the given run number using default values found in the relevant reduce script and returns them.
         If no start_run is supplied, 1 is assumed.
-    """
-    def set_default_instrument_variables(self, instrument_name, start_run=1):
+        """
         if not start_run:
             start_run = 1
         reduce_script, script_binary =  self.__load_reduction_script(instrument_name)
@@ -107,13 +122,13 @@ class InstrumentVariablesUtils(object):
 
         return variables
 
-    """
+    def get_variables_for_run(self, reduction_run):
+        """
         Fetches the appropriate variables for the given reduction run.
         If instrument variables with a matchin experiment reference number is found then these will be used
         otherwise the variables with the closest run start will be used.
         If no variable are found, default variables are created for the instrument and those are returned.
-    """
-    def get_variables_for_run(self, reduction_run):
+        """
         variables = InstrumentVariable.objects.filter(instrument=reduction_run.instrument, experiment_reference=reduction_run.experiment.reference_number)
         # No experiment-specific variables, lets look for run number
         if not variables:
@@ -124,18 +139,18 @@ class InstrumentVariablesUtils(object):
             variables = self.set_default_instrument_variables(reduction_run.instrument)
         return variables
 
-    """
-        Returns the binary text within the reduce script for the provided instrument.
-    """
     def get_current_script_text(self, instrument_name):
+        """
+        Returns the binary text within the reduce script for the provided instrument.
+        """
         reduce_script, script_binary =  self.__load_reduction_script(instrument_name)
         return script_binary
 
-    """
+    def get_default_variables(self, instrument_name, reduce_script=None):
+        """
         Creates and returns a list of variables matching those found in the appropriate reduce script.
         An opptional instance of reduce_script can be passed in to prevent multiple hits to the filesystem.
-    """
-    def get_default_variables(self, instrument_name, reduce_script=None):
+        """
         if not reduce_script:
             reduce_script, script_binary =  self.__load_reduction_script(instrument_name)
         instrument = InstrumentUtils().get_instrument(instrument_name)
@@ -162,14 +177,14 @@ class InstrumentVariablesUtils(object):
             variables.append(variable)
         return variables
 
-    """
+    def get_current_and_upcoming_variables(self, instrument_name):
+        """
         Fetches the instrument variables for:
         - The new run number
         - Upcoming run numbers
         - Upcoming known experiments
         as a tuple of (current_variables, upcoming_variables_by_run, upcoming_variables_by_experiment)
-    """
-    def get_current_and_upcoming_variables(self, instrument_name):
+        """
         instrument = Instrument.objects.get(name=instrument_name)
         completed_status = StatusUtils().get_completed()
 
@@ -204,6 +219,10 @@ class InstrumentVariablesUtils(object):
 
 class ReductionVariablesUtils(object):
     def get_script_path_and_arguments(self, run_variables):
+        """
+        Fetches the reduction script from the given variables, saves it to a temporary location 
+        and returns the path with a dictionary of arguments
+        """
         if not run_variables or len(run_variables) == 0:
             raise Exception("Run variables required")
         reduction_run = None
@@ -244,6 +263,9 @@ class ReductionVariablesUtils(object):
 
 class MessagingUtils(object):
     def send_pending(self, reduction_run):
+        """
+        Sends a message to the queue with the details of the job to run
+        """
         script_path, arguments = ReductionVariablesUtils().get_script_path_and_arguments(RunVariable.objects.filter(reduction_run=reduction_run))
 
         # Currently only support single location

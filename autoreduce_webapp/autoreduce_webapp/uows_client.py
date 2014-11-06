@@ -5,6 +5,9 @@ from suds.client import Client
 import suds
 
 class UOWSClient(object):
+    """
+    A client for interacting with the User Office Web Service
+    """
     def __init__(self, **kwargs):
         url = UOWS_URL
         if 'URL' in kwargs:
@@ -18,6 +21,9 @@ class UOWSClient(object):
         pass
 
     def check_session(self, session_id):
+        """
+        Checks if a session ID is still active and valid
+        """
         try:
             return self.client.service.checkSession(session_id)
         except suds.WebFault:
@@ -25,6 +31,11 @@ class UOWSClient(object):
             return False
 
     def get_person(self, session_id):
+        """
+        Returns a dictionary containing basic person details for the user associated with the session id.
+        Values include, first name, last name, email and unique usernumber.
+        If session_id isn't valid, None is returned.
+        """
         try:
             person = self.client.service.getPersonDetailsFromSessionId(session_id)
             if person:
@@ -43,6 +54,10 @@ class UOWSClient(object):
         return None
 
     def logout(self, session_id):
+        """
+        Ends the session within the User Office Web Service.
+        Note: This doesn't kill the local session.
+        """
         try:
             self.client.service.logout(session_id)
         except suds.WebFault:

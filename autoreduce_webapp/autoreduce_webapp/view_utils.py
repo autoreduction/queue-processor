@@ -6,25 +6,25 @@ from django.template import RequestContext
 from django.shortcuts import render_to_response
 from reduction_viewer.models import Notification, Setting
 
-"""
-    Check that the user is correctly logged in and their session is still considered valid
-"""
 def has_valid_login(request):
+    """
+    Check that the user is correctly logged in and their session is still considered valid
+    """
     if request.user.is_authenticated() and request.session['sessionid'] and UOWSClient().check_session(request.session['sessionid']):
         return True
     return False
 
-"""
-    Redirect the user to either capture the session id or to go and log in
-"""
 def handle_redirect(request):
+    """
+    Redirect the user to either capture the session id or to go and log in
+    """
     if request.GET.get('sessionid'):
         return redirect(request.build_absolute_uri(LOGIN_URL) + "?next=" + request.build_absolute_uri().replace('?sessionid=', '&sessionid=')) 
     return redirect(UOWS_LOGIN_URL + request.build_absolute_uri())
 
 def login_and_uows_valid(fn):
     """
-        Function decorator to check whether a user's session is still valid
+    Function decorator to check whether the user's session is still valid
     """
     def request_processor(request, *args, **kws):
         if has_valid_login(request):
@@ -34,7 +34,7 @@ def login_and_uows_valid(fn):
 
 def require_staff(fn):
     """
-        Function decorator to check whether a user's session is still valid
+    Function decorator to check whether the user is a staff memeber
     """
     def request_processor(request, *args, **kws):
         if has_valid_login(request) and request.user.is_staff:
@@ -46,7 +46,7 @@ def require_staff(fn):
 
 def require_admin(fn):
     """
-        Function decorator to check whether a user's session is still valid
+    Function decorator to check whether the user is a superuser
     """
     def request_processor(request, *args, **kws):
         if has_valid_login(request) and request.user.is_superuser:
@@ -58,8 +58,8 @@ def require_admin(fn):
 
 def render_with(template):
     """
-        Decorator for Django views that sends returned dict to render_to_response function
-        with given template and RequestContext as context instance.
+    Decorator for Django views that sends returned dict to render_to_response function
+    with given template and RequestContext as context instance.
     """
     def renderer(fn):
         def populate_template_dict(request, output):

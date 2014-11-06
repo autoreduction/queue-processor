@@ -1,10 +1,10 @@
 from django.db import models
 
-'''
+class SeparatedValuesField(models.TextField):
+    """
     Provide a list field type to be used by models
     See: http://cramer.io/2008/08/08/custom-fields-in-django/
-'''
-class SeparatedValuesField(models.TextField):
+    """
     __metaclass__ = models.SubfieldBase
 
     def __init__(self, *args, **kwargs):

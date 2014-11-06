@@ -29,6 +29,13 @@ hr {
     padding-bottom:10px;
 }
 
+.comma-seperated-list li a:after{
+    content: ',';
+}
+.comma-seperated-list li:last-of-type a:after{
+    content: '';
+}
+
 /****************
  2. Navbar
 ****************/

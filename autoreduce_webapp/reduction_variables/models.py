@@ -23,6 +23,9 @@ class InstrumentVariable(models.Model):
         return u'%s - %s=%s' % (self.instrument.name, self.name, self.value)
 
     def sanitized_name(self):
+        """
+        Returns a HTMl-friendly name that can be used as element IDs or form input names
+        """
         return self.name.replace(' ', '-')
 
 class RunVariable(models.Model):
@@ -37,4 +40,7 @@ class RunVariable(models.Model):
         return u'%s - %s=%s' % (self.reduction_run, self.name, self.value)
 
     def sanitized_name(self):
+        """
+        Returns a HTMl-friendly name that can be used as element IDs or form input names
+        """
         return self.name.replace(' ', '-')
