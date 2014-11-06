@@ -3,10 +3,11 @@ from django.template import RequestContext
 from reduction_viewer.models import Setting
 
 def get_admin_email():
-    admin_email = Setting.objects.get(name='admin_email')
-    if admin_email:
+    try:
+        admin_email = Setting.objects.get(name='admin_email')
         return admin_email.value
-    return ''
+    except:
+        return ''
 
 def handler400(request):
     response = render_to_response('400.html', {'admin_email' : get_admin_email()}, RequestContext(request))
