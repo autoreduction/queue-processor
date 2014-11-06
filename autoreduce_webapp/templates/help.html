@@ -49,14 +49,6 @@
             </p>
         <div>
     </section>
-    <section class="help-topic panel panel-default" data-topics="script change modify alter python">
-        <div class="panel-heading">
-            <h4>How can I change a reduction script?</h4>
-        </div>
-        <div class="panel-body">
-            TODO
-        <div>
-    </section>
     <section class="help-topic panel panel-default" data-topics="script compatible work">
         <div class="panel-heading">
             <h4>How can I make a reduction script compatible with autoreduction?</h4>
@@ -72,7 +64,9 @@
             <h4>How do I add new instrument variables?</h4>
         </div>
         <div class="panel-body">
-            TODO
+            <p>
+                To add new instrument variables first you must be part of the instrument scientist team within ICAT. When you have this relationship you should see an "Edit Reduction Variables" link on the right of the instrument name on the main run list page or a "Add new run variables" below the status panel on the instrument summary page. Clicking either of these links will take you to a form in which you can set the values of variables exposed by that instruments reduce script.
+            </p>
         <div>
     </section>
     <section class="help-topic panel panel-default" data-topics="invalid variables wrong error value">
@@ -80,7 +74,12 @@
             <h4>Why is value X invalid for variable Y?</h4>
         </div>
         <div class="panel-body">
-            TODO
+            <p>
+                Any value entered for a variable must match the type of the default value already in the reduction script. If any value doesn't match you should see a warning message explaining the reason and you will be prevented from submitting new variables until this is resolved.
+            </p>
+            {% if support_email %}
+                <p>If you feel a value is incorrectly being marked as invalid please <a href="mailto:{{support_email}}">Contact Us</a>.</p>
+            {% endif %}
         <div>
     </section>
 
