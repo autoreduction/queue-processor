@@ -213,7 +213,7 @@ class ReductionVariablesUtils(object):
             if not reduction_run:
                 reduction_run = variables.reduction_run.id
             else:
-                if reduction_run is not variables.reduction_run.id:
+                if reduction_run != variables.reduction_run.id:
                     raise Exception("All run variables must be for the same reduction run")
 
         # Currently only supports a single script file
