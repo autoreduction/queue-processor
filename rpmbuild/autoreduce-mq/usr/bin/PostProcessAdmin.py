@@ -75,6 +75,27 @@ class PostProcessAdmin:
             logging.info('JSON data error', exc_info=True)
             raise
 
+    def parse_input_variable(default, value):
+        varType = type(default)
+        if varType.__name__ == "str":
+            return str(value)
+        if varType.__name__ == "int":
+            return int(value)
+        if varType.__name__ == "list":
+            return value.split(',')
+        if varType.__name__ == "bool":
+            return (value.lower() is 'true')
+        if varType.__name__ == "float":
+            return float(value)
+
+    def replace_variables(reduce_script):
+        for key in reduce_script.standard_vars:
+            if key in self.reduction_arguments:
+                reduce_script.standard_vars[key] = parse_input_variable(reduce_script.standard_vars[key], self.reduction_arguments[key])
+        for key in reduce_script.advanced_vars:
+            if key in self.reduction_arguments:
+                reduce_script.advanced_vars[key] = parse_input_variable(reduce_script.advanced_vars[key], self.reduction_arguments[key])
+        return reduce_script
 
     def reduce(self):
         print "in reduce"
@@ -83,10 +104,7 @@ class PostProcessAdmin:
             self.send(self.conf.reduction_started, json.dumps(self.data))
 
             # specify instrument directory  
-            #instrument_dir = "/isisdatar80/ndx" + self.instrument.lower() + "/user/scripts/autoreduction/"
-            #if os.path.exists(instrument_dir) == False:
-            #    instrument_dir = "/isisdatar55/ndx" + self.instrument.lower() + "/user/scripts/autoreduction/"
-            instrument_dir = "/home/ajm64/tmp/" + self.instrument.lower() + "/"
+            instrument_dir = "/isis/ndx" + self.instrument.upper() + "/user/processed/autoreduction/"
 
             # specify script to run and directory
             reduce_script_dir = self.reduction_script.replace('reduce.py','')
@@ -97,31 +115,16 @@ class PostProcessAdmin:
                 return
             
             # specify directory where autoreduction output goes
-            reduce_result_dir = "/tmp/" + instrument_dir + "results/" + self.proposal + "/"
-            if not os.path.exists(reduce_result_dir):
+            reduce_result_dir = "/tmp" + instrument_dir + "results/" + self.proposal + "/" + self.run_number + "/"
+            if not os.path.isdir(reduce_result_dir):
                 os.makedirs(reduce_result_dir)
 
             log_dir = reduce_result_dir + "reduction_log/"
             if not os.path.exists(log_dir):
                 os.makedirs(log_dir)
-            
-            # cmd = "export set PYTHONPATH=$PYTHONPATH:" + reduce_script_dir + "; python " + self.reduction_script + " data=" + self.data_file + " output=" + reduce_result_dir + " " + input_args
-            # logging.info("reduction subprocess started: " + cmd)
-            # out_log = os.path.join(log_dir, os.path.basename(self.data_file) + ".log")
-            # out_err = os.path.join(reduce_result_dir, os.path.basename(self.data_file) + ".err")
-            # logFile=open(out_log, "w")
-            # errFile=open(out_err, "w")
-            # proc = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE, stdout=logFile, stderr=errFile, universal_newlines = True)
-            # proc.communicate()
-            # logFile.close()
-            # errFile.close()
-            # logging.info("reduction subprocess completed")
 
-            self.reduction_arguments['data'] = self.data_file
-            self.reduction_arguments['output'] = reduce_result_dir
-
+            # Load reduction script 
             reduce_script = imp.load_source('reducescript', self.reduction_script)
-            logging.info("reduction subprocess started: " + cmd)
             out_log = os.path.join(log_dir, os.path.basename(self.data_file) + ".log")
             out_err = os.path.join(reduce_result_dir, os.path.basename(self.data_file) + ".err")
             logFile=open(out_log, "w")
@@ -129,7 +132,10 @@ class PostProcessAdmin:
             # Set the output to be the logfile
             sys.stdout = logFile
             sys.stderr = errFile
-            out_directories = reduce_script.main(**self.reduction_arguments)
+            reduce_script = replace_variables(reduce_script)
+            logging.info("reduction subprocess started.")
+            out_directories = reduce_script.main(data=self.data_file, output=reduce_result_dir)
+            logging.info("reduction subprocess completed.")
             # Reset outputs back to default
             sys.stdout = sys.__stdout__
             sys.stderr = sys.__stderr__
@@ -144,10 +150,10 @@ class PostProcessAdmin:
                             shutil.copy(reduce_result_dir, out_dir)
             
             # Move from tmp directory to actual directory (remove /tmp from start of path)
+            if not os.path.isdir(reduce_result_dir[4:]):
+                os.makedirs(reduce_result_dir[4:])
             shutil.move(reduce_result_dir, reduce_result_dir[4:])
             
-
-
             if os.stat(out_err).st_size == 0:
                 os.remove(out_err)
                 self.send(self.conf.reduction_complete , json.dumps(self.data))  
