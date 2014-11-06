@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% load static from staticfiles %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-md-12 text-center">
+            <h2>Help Pages</h2>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">
+                <label for="help_search" class="screenreader-only">Search</label>
+                <input type="search" placeholder="Search" name="help_search" id="help_search" class="form-control" autocomplete="off" data-toggle="popover" data-trigger="focus" data-content="Try entering a keyword to filter help topics." data-placement="left">
+            </div>
+        </div>
+    </div>
+
+    <section class="help-topic panel panel-default" data-topics="experiments mine investigations">
+        <div class="panel-heading">
+            <h4>Why can't I see my experiments?</h4>
+        </div>
+        <div class="panel-body">
+            <p>
+                You will only see experiments for which you are a member of the experiment team or are an instrument scientist on the associated instrument and an autoreduction job has been performed.
+            </p>
+            <p>
+                Possible reasons you may not see an expected experiment are:
+                <ul>
+                    <li>If you have multiple accounts or changed accounts you may be logged in with the wrong one. To resolve this issue please contact the user office who will be able to recover or merge accounts as needed.</li>
+                    <li>The experiment may not have completed or was completed without an autoreduction job having been recorded.</li>
+                </ul>
+            </p>
+            {% if support_email %}
+                <p>If you still feel you should be able to see an experiment please <a href="mailto:{{support_email}}">Contact Us</a>.</p>
+            {% endif %}
+        <div>
+    </section>
+    <section class="help-topic panel panel-default" data-topics="mine instruments">
+        <div class="panel-heading">
+            <h4>Why can't I see all instruments I'm responsible for?</h4>
+        </div>
+        <div class="panel-body">
+            <p>
+                If no autoreduction jobs have been run yet, the instrument will not show.
+            </p>
+            <p>
+                When a job is triggered on a new instrument, if a valid reduce script is found, it will create a new instrument and run that first job using the reduce script and its default variables. From this point it will be possible to modify variables and re-run experiments on that instrument.
+            </p>
+        <div>
+    </section>
+    <section class="help-topic panel panel-default" data-topics="script compatible work">
+        <div class="panel-heading">
+            <h4>How can I make a reduction script compatible with autoreduction?</h4>
+        </div>
+        <div class="panel-body">
+            <p>
+                For a reduction script to be compatible with the autoreduction web application it must expose what variables can be modified. For an example of this please <a href="https://github.com/mantidproject/autoreduce/blob/master/WebApp/ISIS/example_reduce.py">See Here</a>.
+            </p>
+        <div>
+    </section>
+    <section class="help-topic panel panel-default" data-topics="instrument variables change new">
+        <div class="panel-heading">
+            <h4>How do I add new instrument variables?</h4>
+        </div>
+        <div class="panel-body">
+            <p>
+                To add new instrument variables first you must be part of the instrument scientist team within ICAT. When you have this relationship you should see an "Edit Reduction Variables" link on the right of the instrument name on the main run list page or a "Add new run variables" below the status panel on the instrument summary page. Clicking either of these links will take you to a form in which you can set the values of variables exposed by that instruments reduce script.
+            </p>
+        <div>
+    </section>
+    <section class="help-topic panel panel-default" data-topics="invalid variables wrong error value">
+        <div class="panel-heading">
+            <h4>Why is value X invalid for variable Y?</h4>
+        </div>
+        <div class="panel-body">
+            <p>
+                Any value entered for a variable must match the type of the default value already in the reduction script. If any value doesn't match you should see a warning message explaining the reason and you will be prevented from submitting new variables until this is resolved.
+            </p>
+            {% if support_email %}
+                <p>If you feel a value is incorrectly being marked as invalid please <a href="mailto:{{support_email}}">Contact Us</a>.</p>
+            {% endif %}
+        <div>
+    </section>
+
+
+
+    <div class="no-results collapse row well">
+        <div class="col-md-12 text-center">
+            Sorry, no help topics matched your query.<br/>
+            {% if support_email %}
+            If you still require help, please <a href="mailto{{ support_email }}">Contact Us</a>.
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static "javascript/help.js" %}"></script>
+{% endblock %}
