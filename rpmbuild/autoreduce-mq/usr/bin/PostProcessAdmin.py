@@ -97,6 +97,18 @@ class PostProcessAdmin:
                 reduce_script.advanced_vars[key] = parse_input_variable(reduce_script.advanced_vars[key], self.reduction_arguments[key])
         return reduce_script
 
+    def linux_to_windows_path(path):
+        path = path.replace('/', '\\')
+        # '/isis/' maps to '\\isis\inst$\'
+        path = path.replace('\\isis\\', '\\\\isis\\inst$\\')
+        return path
+
+    def windows_to_linux_path(path):
+        # '\\isis\inst$\' maps to '/isis/'
+        path = path.replace('\\\\isis\\inst$\\', '/isis/')
+        path = path.replace('\\', '/')
+        return path
+
     def reduce(self):
         print "in reduce"
         try:         
@@ -140,18 +152,23 @@ class PostProcessAdmin:
             sys.stdout = sys.__stdout__
             sys.stderr = sys.__stderr__
             
+            self.data['reduction_data'] = []
+
             # If the reduce script specified some additional save directories, copy to there first
             if out_directories:
                 if type(out_directories) is str and os.access(out_directories, os.R_OK):
+                    self.data['reduction_data'].append(linux_to_windows_path(out_directories))
                     shutil.copy(reduce_result_dir, out_directories)
                 elif type(out_directories) is list:
                     for out_dir in out_directories:
+                        self.data['reduction_data'].append(linux_to_windows_path(out_dir))
                         if type(out_dir) is str and os.access(out_dir, os.R_OK):
                             shutil.copy(reduce_result_dir, out_dir)
             
             # Move from tmp directory to actual directory (remove /tmp from start of path)
             if not os.path.isdir(reduce_result_dir[4:]):
                 os.makedirs(reduce_result_dir[4:])
+            self.data['reduction_data'].append(linux_to_windows_path(reduce_result_dir[4:]))
             shutil.move(reduce_result_dir, reduce_result_dir[4:])
             
             if os.stat(out_err).st_size == 0:
