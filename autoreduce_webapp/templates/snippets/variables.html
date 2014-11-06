@@ -1,3 +1,4 @@
+{% load dictsort %}
 <div class="row">
     <div class="col-md-4 text-center">
         {% if instrument_variables.experiment %}
@@ -32,7 +33,7 @@
         {% endif %}
     </div>
     <div class="col-md-8">
-        {% for variable in instrument_variables.variables %}
+        {% for variable in instrument_variables.variables|dictsort:"name" %}
             <div>
                 <strong>{{ variable.name }}:</strong> {{ variable.value }}
             </div>
