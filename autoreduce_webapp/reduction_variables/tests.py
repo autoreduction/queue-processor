@@ -1,6 +1,6 @@
 from django.test import TestCase
 from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL, REDUCTION_SCRIPT_BASE, BASE_DIR
-import logging, os, sys, shutil
+import logging, os, sys, shutil, imp
 logging.basicConfig(filename=LOG_FILE.replace('.log', '.test.log'),level=LOG_LEVEL, format=u'%(message)s',)
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 sys.path.insert(0, BASE_DIR)
@@ -92,6 +92,15 @@ class InstrumentVariablesUtilsTestCase(TestCase):
     def test_get_default_variables_syntax_error(self):
         initial_notification = Notification.objects.filter(is_active=True, is_staff_only=True)
         variables = InstrumentVariablesUtils().get_default_variables('syntax_error')
+        updated_notification = Notification.objects.filter(is_active=True, is_staff_only=True)
+
+        self.assertNotEqual(variables, None, 'Expecting some variables returned')
+        self.assertEqual(variables, [], 'Expecting an empty array returned')
+        self.assertTrue(len(updated_notification) > len(initial_notification), 'Expecting a notification to be created')
+
+    def test_get_default_variables_missing(self):
+        initial_notification = Notification.objects.filter(is_active=True, is_staff_only=True)
+        variables = InstrumentVariablesUtils().get_default_variables('missing')
         updated_notification = Notification.objects.filter(is_active=True, is_staff_only=True)
 
         self.assertNotEqual(variables, None, 'Expecting some variables returned')
