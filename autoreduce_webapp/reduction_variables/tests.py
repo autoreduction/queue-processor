@@ -1,6 +1,6 @@
 from django.test import TestCase
-from settings import LOG_FILE, LOG_LEVEL, REDUCTION_SCRIPT_BASE
-import logging
+from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL, REDUCTION_SCRIPT_BASE, BASE_DIR
+import logging, os, sys, shutil
 logging.basicConfig(filename=LOG_FILE.replace('.log', '.test.log'),level=LOG_LEVEL, format=u'%(message)s',)
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 sys.path.insert(0, BASE_DIR)
@@ -16,7 +16,6 @@ class InstrumentVariablesUtilsTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         test_reduce = os.path.join(os.path.dirname(__file__), '../', 'test_files','reduce.py')
-
         valid_reduction_file = os.path.join(REDUCTION_SCRIPT_BASE, 'valid')
         if not os.path.exists(valid_reduction_file):
             os.makedirs(valid_reduction_file)
@@ -24,7 +23,8 @@ class InstrumentVariablesUtilsTestCase(TestCase):
         if not os.path.isfile(file_path):
             shutil.copyfile(test_reduce, file_path)
 
-        empty_reduction_file = os.path.join(REDUCTION_SCRIPT_BASE, 'empty_script', 'reduce.py')
+        test_reduce = os.path.join(os.path.dirname(__file__), '../', 'test_files','empty_reduce.py')
+        empty_reduction_file = os.path.join(REDUCTION_SCRIPT_BASE, 'empty_script')
         if not os.path.exists(empty_reduction_file):
             os.makedirs(empty_reduction_file)
         file_path = os.path.join(empty_reduction_file, 'reduce.py')
@@ -48,7 +48,7 @@ class InstrumentVariablesUtilsTestCase(TestCase):
         self.assertNotEqual(variables, None, 'Expecting some variables returned')
         self.assertNotEqual(variables, [], 'Expecting some variables returned')
         self.assertTrue(len(variables) > 0, 'Expecting at least 1 variable returned')
-        self.assertEqual(variables[0].instrument, 'valid', 'Expecting instrument to be "valid" but was %s' % variables[0].instrument)
+        self.assertEqual(variables[0].instrument.name, 'valid', 'Expecting instrument to be "valid" but was %s' % variables[0].instrument)
 
     def test_get_default_variables_empty(self):
         variables = InstrumentVariablesUtils().get_default_variables('empty_script')
