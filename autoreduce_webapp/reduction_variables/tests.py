@@ -208,5 +208,5 @@ class InstrumentVariablesUtilsTestCase(TestCase):
 
         current_variables, upcoming_variables_by_run, upcoming_variables_by_experiment = InstrumentVariablesUtils().get_current_and_upcoming_variables('valid')
 
-        self.assertEqual(upcoming_variables_by_experiment, [], "Expecting no upcoming experiment variables to be returned")
+        self.assertTrue(len(upcoming_variables_by_experiment) == 0, "Expecting no upcoming experiment variables to be returned")
         
