@@ -193,7 +193,7 @@ class InstrumentVariablesUtils(object):
         - Upcoming known experiments
         as a tuple of (current_variables, upcoming_variables_by_run, upcoming_variables_by_experiment)
         """
-        instrument = Instrument.objects.get(name=instrument_name)
+        instrument = InstrumentUtils().get_instrument(name=instrument_name)
         completed_status = StatusUtils().get_completed()
 
         # Get latest run number and latest experiment reference
