@@ -148,7 +148,7 @@ class InstrumentVariablesUtilsTestCase(TestCase):
         self.assertEqual(len(variables), len(saved_variables), "Expecting all returned variables to have been saved")
     
     def test_set_default_instrument_variables_no_start_run(self):
-        variables = InstrumentVariablesUtils().set_default_instrument_variables("valid")
+        variables = InstrumentVariablesUtils().set_default_instrument_variables("valid", None)
         
         self.assertNotEqual(variables, None, 'Expecting some variables returned')
         self.assertNotEqual(variables, [], 'Expecting some variables returned')
