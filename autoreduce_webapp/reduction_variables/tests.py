@@ -5,7 +5,7 @@ logging.basicConfig(filename=LOG_FILE.replace('.log', '.test.log'),level=LOG_LEV
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 sys.path.insert(0, BASE_DIR)
 from reduction_variables.utils import InstrumentVariablesUtils
-from reduction_viewer.utils import InstrumentUtils
+from reduction_viewer.utils import InstrumentUtils, StatusUtils
 from reduction_viewer.models import Notification, ReductionRun, Experiment
 from reduction_variables.models import InstrumentVariable
 from mock import patch
