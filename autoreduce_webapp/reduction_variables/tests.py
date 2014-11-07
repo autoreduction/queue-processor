@@ -119,7 +119,7 @@ class InstrumentVariablesUtilsTestCase(TestCase):
 
     def test_get_current_script_text_successful(self):
         script_file = os.path.join(REDUCTION_SCRIPT_BASE, 'valid', 'reduce.py')
-        f = open(reduction_file, 'rb')
+        f = open(script_file, 'rb')
         script_binary = f.read()
         script = InstrumentVariablesUtils().get_current_script_text('valid')
 
