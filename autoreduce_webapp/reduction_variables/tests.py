@@ -527,3 +527,8 @@ class VariableUtilsTestCase(TestCase):
         result = VariableUtils().get_type_string({})
 
         self.assertEqual(result, "text", "Expecting result to be text but was %s" % result)
+
+    def test_get_type_string_boolean_none(self):
+        result = VariableUtils().get_type_string(None)
+
+        self.assertEqual(result, "text", "Expecting result to be text but was %s" % result)
