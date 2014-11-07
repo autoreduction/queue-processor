@@ -79,7 +79,7 @@ class InstrumentVariablesUtilsTestCase(TestCase):
         variables = InstrumentVariablesUtils().get_default_variables('empty_script')
 
         self.assertNotEqual(variables, None, 'Expecting some variables returned')
-        self.assertEqual(variables, [], 'Expecting an empty array returned')
+        self.assertTrue(len(variables) == 0, 'Expecting an empty array returned')
         
     def test_get_default_variables_duplicate_var_name(self):
         variables = InstrumentVariablesUtils().get_default_variables('duplicate_var')
@@ -95,7 +95,7 @@ class InstrumentVariablesUtilsTestCase(TestCase):
         updated_notification = Notification.objects.filter(is_active=True, is_staff_only=True)
 
         self.assertNotEqual(variables, None, 'Expecting some variables returned')
-        self.assertEqual(variables, [], 'Expecting an empty array returned')
+        self.assertTrue(len(variables) == 0, 'Expecting an empty array returned')
         self.assertTrue(len(updated_notification) > len(initial_notification), 'Expecting a notification to be created')
 
     def test_get_default_variables_missing(self):

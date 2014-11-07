@@ -100,7 +100,7 @@ class InstrumentVariablesUtils(object):
             notification.save()
             return None, None
         except SyntaxError:
-            logging.error("Unable to load reduction script %s" % reduction_file)
+            logging.error("Syntax error in reduction script %s" % reduction_file)
             notification = Notification(is_active=True, is_staff_only=True,severity='e', message="Syntax error in reduction script for %s" % instrument_name)
             notification.save()
             return None, None
