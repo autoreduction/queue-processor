@@ -143,7 +143,7 @@ class InstrumentVariablesUtils(object):
                 variables = InstrumentVariable.objects.filter(instrument=reduction_run.instrument,start_run=variables_run_start)
             except AttributeError:
                 # Still not found any variables, we better create some
-                variables = self.set_default_instrument_variables(reduction_run.instrument)
+                variables = self.set_default_instrument_variables(reduction_run.instrument.name)
         return variables
 
     def get_current_script_text(self, instrument_name):
