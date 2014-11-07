@@ -56,7 +56,8 @@ class VariableUtils(object):
         if var_type == "list_text":
             var_list = value.split(',')
             for list_val in var_list:
-                list_val = str(list_val)
+                if list_val and list_val.strip():
+                    list_val = str(list_val.strip())
             return var_list
         if var_type == "list_number":
             var_list = value.split(',')
