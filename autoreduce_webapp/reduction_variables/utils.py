@@ -49,12 +49,12 @@ class VariableUtils(object):
         if var_type == "text":
             return str(value)
         if var_type == "number":
-            if '.' in value:
+            if '.' in str(value):
                 return float(value)
             else:
-                return int(value)
+                return re.sub("[^0-9]+", "", value)
         if var_type == "list_text":
-            var_list = value.split(',')
+            var_list = str(value).split(',')
             for list_val in var_list:
                 if list_val and list_val.strip():
                     list_val = str(list_val.strip())
