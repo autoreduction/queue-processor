@@ -147,6 +147,14 @@ class InstrumentVariablesUtilsTestCase(TestCase):
         self.assertTrue(len(variables[0].scripts.all()) == 1, "Expecting to find a script saved")
         self.assertEqual(len(variables), len(saved_variables), "Expecting all returned variables to have been saved")
     
+    def test_set_default_instrument_variables_no_start_run(self):
+        variables = InstrumentVariablesUtils().set_default_instrument_variables("valid")
+        
+        self.assertNotEqual(variables, None, 'Expecting some variables returned')
+        self.assertNotEqual(variables, [], 'Expecting some variables returned')
+        self.assertTrue(len(variables) > 0, 'Expecting at least 1 variable returned')
+        self.assertEqual(variables[0].start_run, 1, 'Expcting start_run to be set to 1 but was instead %s' % variables[0].start_run)
+        
     def test_set_default_instrument_variables_empty(self):
         variables = InstrumentVariablesUtils().set_default_instrument_variables("empty_script", 1)
         instrument = InstrumentUtils().get_instrument("empty_script")
