@@ -37,11 +37,13 @@ def require_staff(fn):
     Function decorator to check whether the user is a staff memeber
     """
     def request_processor(request, *args, **kws):
-        if has_valid_login(request) and request.user.is_staff:
-            return fn(request, *args, **kws)
-        if request.user.is_authenticated():
-            raise PermissionDenied()
-        return handle_redirect(request)
+        if has_valid_login(request):
+            if request.user.is_staff:
+                return fn(request, *args, **kws)
+            else:
+                raise PermissionDenied()
+        else:
+            return handle_redirect(request)
     return request_processor
 
 def require_admin(fn):
@@ -49,11 +51,13 @@ def require_admin(fn):
     Function decorator to check whether the user is a superuser
     """
     def request_processor(request, *args, **kws):
-        if has_valid_login(request) and request.user.is_superuser:
-            return fn(request, *args, **kws)
-        if request.user.is_authenticated():
-            raise PermissionDenied()
-        return handle_redirect(request)
+        if has_valid_login(request):
+            if login_and_uows_valid request.user.is_superuser:
+                return fn(request, *args, **kws)
+            else:
+                raise PermissionDenied()
+        else:
+            return handle_redirect(request)
     return request_processor
 
 def render_with(template):
