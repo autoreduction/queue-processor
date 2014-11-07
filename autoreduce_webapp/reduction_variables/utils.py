@@ -16,6 +16,7 @@ class VariableUtils(object):
         Append the appropriate syntax around variables to be wrote to a preview script.
         E.g. strings will be wrapped in single quotes, lists will be wrapped in brackets, etc.
         """
+        value = str(value)
         if var_type == 'text':
             return "'%s'" % value.replace("'", "\\'")
         if var_type == 'number':

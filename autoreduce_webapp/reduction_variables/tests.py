@@ -376,3 +376,8 @@ class VariableUtilsTestCase(TestCase):
         result = VariableUtils().wrap_in_type_syntax("test", "unknown")
 
         self.assertEqual(result, "test", "Expecting result to be test but was %s" % result)
+
+    def test_wrap_in_type_syntax_non_string_value(self):
+        result = VariableUtils().wrap_in_type_syntax(123, "text")
+
+        self.assertEqual(result, "'123'", "Expecting result to be '123' but was %s" % result)
