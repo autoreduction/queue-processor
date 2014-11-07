@@ -345,7 +345,7 @@ class VariableUtilsTestCase(TestCase):
     def test_wrap_in_type_syntax_list_text(self):
         result = VariableUtils().wrap_in_type_syntax("this, is, a, list", "list_text")
 
-        self.assertEqual(result, "['this', 'is', 'a', 'list']", "Expecting result to be ['this', 'is', 'a', 'list'] but was %s" % result)
+        self.assertEqual(result, "['this','is','a','list']", "Expecting result to be ['this','is','a','list'] but was %s" % result)
 
     def test_wrap_in_type_syntax_list_text_empty(self):
         result = VariableUtils().wrap_in_type_syntax("", "list_text")
@@ -355,7 +355,7 @@ class VariableUtilsTestCase(TestCase):
     def test_wrap_in_type_syntax_list_text_numbers(self):
         result = VariableUtils().wrap_in_type_syntax("1, 2, 3", "list_text")
 
-        self.assertEqual(result, "['1', '2', '3']", "Expecting result to be ['1', '2', '3'] but was %s" % result)
+        self.assertEqual(result, "['1','2','3']", "Expecting result to be ['1','2','3'] but was %s" % result)
 
     def test_wrap_in_type_syntax_list_number(self):
         result = VariableUtils().wrap_in_type_syntax("1, 2, 3", "list_number")
