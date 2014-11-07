@@ -155,26 +155,28 @@ class InstrumentVariablesUtils(object):
             reduce_script, script_binary =  self.__load_reduction_script(instrument_name)
         instrument = InstrumentUtils().get_instrument(instrument_name)
         variables = []
-        for key in reduce_script.standard_vars:
-            variable = InstrumentVariable(
-                instrument=instrument, 
-                name=key, 
-                value=str(reduce_script.standard_vars[key]).replace('[','').replace(']',''), 
-                is_advanced=False, 
-                type=VariableUtils().get_type_string(reduce_script.standard_vars[key]),
-                start_run = 0,
-                )
-            variables.append(variable)
-        for key in reduce_script.advanced_vars:
-            variable = InstrumentVariable(
-                instrument=instrument, 
-                name=key, 
-                value=str(reduce_script.advanced_vars[key]).replace('[','').replace(']',''), 
-                is_advanced=True, 
-                type=VariableUtils().get_type_string(reduce_script.advanced_vars[key]),
-                start_run = 0,
-                )
-            variables.append(variable)
+        if 'standard_vars' in dir(reduce_script):
+            for key in reduce_script.standard_vars:
+                variable = InstrumentVariable(
+                    instrument=instrument, 
+                    name=key, 
+                    value=str(reduce_script.standard_vars[key]).replace('[','').replace(']',''), 
+                    is_advanced=False, 
+                    type=VariableUtils().get_type_string(reduce_script.standard_vars[key]),
+                    start_run = 0,
+                    )
+                variables.append(variable)
+        if 'advanced_vars' in dir(reduce_script):
+            for key in reduce_script.advanced_vars:
+                variable = InstrumentVariable(
+                    instrument=instrument, 
+                    name=key, 
+                    value=str(reduce_script.advanced_vars[key]).replace('[','').replace(']',''), 
+                    is_advanced=True, 
+                    type=VariableUtils().get_type_string(reduce_script.advanced_vars[key]),
+                    start_run = 0,
+                    )
+                variables.append(variable)
         return variables
 
     def get_current_and_upcoming_variables(self, instrument_name):
