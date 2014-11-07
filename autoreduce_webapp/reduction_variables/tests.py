@@ -167,9 +167,9 @@ class InstrumentVariablesUtilsTestCase(TestCase):
 
         current_variables, upcoming_variables_by_run, upcoming_variables_by_experiment = InstrumentVariablesUtils().get_current_and_upcoming_variables('valid')
 
-        self.assertNotEqual(upcoming_variables_by_run, None, "Expecting some current variables to be returned")
-        self.assertNotEqual(upcoming_variables_by_run, [], "Expecting some current variables to be returned")
-        self.assertTrue(len(upcoming_variables_by_run) > 0, 'Expecting at least 1 current variable returned')
+        self.assertNotEqual(upcoming_variables_by_run, None, "Expecting some upcoming variables to be returned")
+        self.assertNotEqual(upcoming_variables_by_run, [], "Expecting some upcoming variables to be returned")
+        self.assertTrue(len(upcoming_variables_by_run) > 0, 'Expecting at least 1 upcoming variable returned')
         self.assertEqual(len(upcoming), len(upcoming_variables_by_run), "Expecting same variables to be returned as created")
     
     @patch('autoreduce_webapp.icat_communication.ICATCommunication.get_upcoming_experiments_for_instrument')
@@ -188,7 +188,25 @@ class InstrumentVariablesUtilsTestCase(TestCase):
 
         current_variables, upcoming_variables_by_run, upcoming_variables_by_experiment = InstrumentVariablesUtils().get_current_and_upcoming_variables('valid')
 
-        self.assertNotEqual(upcoming_variables_by_experiment, None, "Expecting some current variables to be returned")
-        self.assertNotEqual(upcoming_variables_by_experiment, [], "Expecting some current variables to be returned")
-        self.assertTrue(len(upcoming_variables_by_experiment) > 0, 'Expecting at least 1 current variable returned')
+        self.assertNotEqual(upcoming_variables_by_experiment, None, "Expecting some upcoming experiment variables to be returned")
+        self.assertNotEqual(upcoming_variables_by_experiment, [], "Expecting some upcoming experiment variables to be returned")
+        self.assertTrue(len(upcoming_variables_by_experiment) > 0, 'Expecting at least 1 upcoming experiment variable returned')
+        
+    @patch('autoreduce_webapp.icat_communication.ICATCommunication.get_upcoming_experiments_for_instrument')
+    def test_get_current_and_upcoming_variables_test_upcomming_by_experiment_not_in_ICAT(self, mock_icat_call):
+        mock_icat_call.return_value = []
+        instrument = InstrumentUtils().get_instrument("valid")
+        variable = InstrumentVariable(
+                    instrument=instrument, 
+                    name="test", 
+                    value="test", 
+                    is_advanced=False, 
+                    type="text",
+                    experiment_reference=99999,
+                    )
+        variable.save()
+
+        current_variables, upcoming_variables_by_run, upcoming_variables_by_experiment = InstrumentVariablesUtils().get_current_and_upcoming_variables('valid')
+
+        self.assertEqual(upcoming_variables_by_experiment, [], "Expecting no upcoming experiment variables to be returned")
         
