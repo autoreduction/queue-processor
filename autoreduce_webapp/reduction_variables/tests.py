@@ -466,3 +466,64 @@ class VariableUtilsTestCase(TestCase):
         result = VariableUtils().convert_variable_to_type("test", "unknown")
 
         self.assertEqual(result, "test", "Expecting result to be test but was %s" % result)
+
+    def test_get_type_string_text(self):
+        result = VariableUtils().get_type_string("test")
+
+        self.assertEqual(result, "text", "Expecting result to be text but was %s" % result)        
+
+    def test_get_type_string_integer(self):
+        result = VariableUtils().get_type_string(123)
+
+        self.assertEqual(result, "number", "Expecting result to be number but was %s" % result)
+
+    def test_get_type_string_float(self):
+        result = VariableUtils().get_type_string(5.5)
+
+        self.assertEqual(result, "number", "Expecting result to be number but was %s" % result)
+
+    def test_get_type_string_list_text(self):
+        result = VariableUtils().get_type_string(["test", "test2"])
+
+        self.assertEqual(result, "list_text", "Expecting result to be list_text but was %s" % result)
+
+    def test_get_type_string_list_number_integer(self):
+        result = VariableUtils().get_type_string([1,2,3])
+
+        self.assertEqual(result, "list_number", "Expecting result to be list_number but was %s" % result)
+
+    def test_get_type_string_list_number_float(self):
+        result = VariableUtils().get_type_string([1.1,2.2])
+
+        self.assertEqual(result, "list_number", "Expecting result to be list_number but was %s" % result)
+
+    def test_get_type_string_list_number_mixed(self):
+        result = VariableUtils().get_type_string([1,2.2,3])
+
+        self.assertEqual(result, "list_number", "Expecting result to be list_number but was %s" % result)
+
+
+    def test_get_type_string_list_mixed(self):
+        result = VariableUtils().get_type_string(["test", 2, 5.5])
+
+        self.assertEqual(result, "list_text", "Expecting result to be list_text but was %s" % result)
+
+    def test_get_type_string_list_mixed_number_first(self):
+        result = VariableUtils().get_type_string([2, "test", 5.5])
+
+        self.assertEqual(result, "list_text", "Expecting result to be list_text but was %s" % result)
+
+    def test_get_type_string_boolean_true(self):
+        result = VariableUtils().get_type_string(True)
+
+        self.assertEqual(result, "boolean", "Expecting result to be boolean but was %s" % result)
+
+    def test_get_type_string_boolean_false(self):
+        result = VariableUtils().get_type_string(False)
+
+        self.assertEqual(result, "boolean", "Expecting result to be boolean but was %s" % result)
+
+    def test_get_type_string_boolean_unknown(self):
+        result = VariableUtils().get_type_string({})
+
+        self.assertEqual(result, "text", "Expecting result to be text but was %s" % result)

@@ -89,10 +89,11 @@ class VariableUtils(object):
         if var_type == 'bool':
             return "boolean"
         if var_type == 'list':
-            if len(value) == 0 or type(value[0]).__name__ == 'str':
-                return "list_text"
-            if type(value[0]).__name__ == 'int' or type(value[0]).__name__ == 'float':
-                return "list_number"
+            list_type = "number"
+            for val in value:
+                if type(val).__name__ == 'str':
+                    list_type = "text"
+            return "list_" + list_type
         return "text"
 
 class InstrumentVariablesUtils(object):
