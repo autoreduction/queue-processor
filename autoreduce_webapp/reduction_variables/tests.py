@@ -24,29 +24,29 @@ class InstrumentVariablesUtilsTestCase(TestCase):
         if not os.path.isfile(file_path):
             shutil.copyfile(test_reduce, file_path)
 
-        test_reduce = os.path.join(os.path.dirname(__file__), '../', 'test_files','empty_reduce.py')
+        empty_test_reduce = os.path.join(os.path.dirname(__file__), '../', 'test_files','empty_reduce.py')
         empty_reduction_file = os.path.join(REDUCTION_SCRIPT_BASE, 'empty_script')
         if not os.path.exists(empty_reduction_file):
             os.makedirs(empty_reduction_file)
         file_path = os.path.join(empty_reduction_file, 'reduce.py')
         if not os.path.isfile(file_path):
-            shutil.copyfile(test_reduce, file_path)
+            shutil.copyfile(empty_test_reduce, file_path)
 
-        test_reduce = os.path.join(os.path.dirname(__file__), '../', 'test_files','duplicate_var_reduce.py')
+        duplicate_test_reduce = os.path.join(os.path.dirname(__file__), '../', 'test_files','duplicate_var_reduce.py')
         duplicate_reduction_file = os.path.join(REDUCTION_SCRIPT_BASE, 'duplicate_var')
         if not os.path.exists(duplicate_reduction_file):
             os.makedirs(duplicate_reduction_file)
         file_path = os.path.join(duplicate_reduction_file, 'reduce.py')
         if not os.path.isfile(file_path):
-            shutil.copyfile(test_reduce, file_path)
+            shutil.copyfile(duplicate_test_reduce, file_path)
 
-        test_reduce = os.path.join(os.path.dirname(__file__), '../', 'test_files','syntax_error_reduce.py')
+        syntax_error_test_reduce = os.path.join(os.path.dirname(__file__), '../', 'test_files','syntax_error_reduce.py')
         syntax_error_reduction_file = os.path.join(REDUCTION_SCRIPT_BASE, 'syntax_error')
         if not os.path.exists(syntax_error_reduction_file):
             os.makedirs(syntax_error_reduction_file)
         file_path = os.path.join(syntax_error_reduction_file, 'reduce.py')
         if not os.path.isfile(file_path):
-            shutil.copyfile(test_reduce, file_path)
+            shutil.copyfile(syntax_error_test_reduce, file_path)
     
     @classmethod
     def tearDownClass(cls):
