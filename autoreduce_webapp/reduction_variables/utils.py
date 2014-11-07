@@ -29,6 +29,7 @@ class VariableUtils(object):
             for val in list_values:
                 val = "'%s'" % val.strip().replace("'", "\\'")
             return '[%s]' % ','.join(list_values)
+        return value
 
     def convert_variable_to_type(self, value, var_type):
         """

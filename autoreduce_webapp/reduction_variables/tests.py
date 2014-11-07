@@ -4,7 +4,7 @@ import logging, os, sys, shutil, imp
 logging.basicConfig(filename=LOG_FILE.replace('.log', '.test.log'),level=LOG_LEVEL, format=u'%(message)s',)
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 sys.path.insert(0, BASE_DIR)
-from reduction_variables.utils import InstrumentVariablesUtils
+from reduction_variables.utils import InstrumentVariablesUtils,VariableUtils
 from reduction_viewer.utils import InstrumentUtils, StatusUtils
 from reduction_viewer.models import Notification, ReductionRun, Experiment
 from reduction_variables.models import InstrumentVariable
@@ -276,3 +276,128 @@ class InstrumentVariablesUtilsTestCase(TestCase):
         self.assertTrue(len(variables) > 0, 'Expecting at least 1 variable returned')
         self.assertEqual(variables[0].experiment_reference, None, "Not expecting experiment_reference")
         self.assertEqual(variables[0].start_run, 1, "Expecting start run to be 1 but was %s" % variables[0].start_run)
+
+class VariableUtilsTestCase(TestCase):
+    def setUp(self):
+        pass
+    
+    def tearDown(self):
+        pass
+    
+    @classmethod
+    def setUpClass(cls):
+        pass
+    
+    @classmethod
+    def tearDownClass(cls):
+        pass
+
+    def test_wrap_in_type_syntax_text(self):
+        result = VariableUtils().wrap_in_type_syntax("test", "text")
+
+        self.assertEqual(result, "'test'", "Expecting result to be 'test' but was %s" % result)
+
+    def test_wrap_in_type_syntax_text_empty(self):
+        result = VariableUtils().wrap_in_type_syntax("", "text")
+
+        self.assertEqual(result, "''", "Expecting result to be single quotes")
+
+    def test_wrap_in_type_syntax_text_number(self):
+        result = VariableUtils().wrap_in_type_syntax(1, "text")
+
+        self.assertEqual(result, "'1'", "Expecting result to be '1' but was %s" % result)
+
+    def test_wrap_in_type_syntax_number(self):
+        result = VariableUtils().wrap_in_type_syntax("123", "number")
+
+        self.assertEqual(result, "123", "Expecting result to be 123 but was %s" % result)
+
+    def test_wrap_in_type_syntax_number_number(self):
+        result = VariableUtils().wrap_in_type_syntax(123, "number")
+
+        self.assertEqual(result, "123", "Expecting result to be 123 but was %s" % result)
+
+    def test_wrap_in_type_syntax_number_empty(self):
+        result = VariableUtils().wrap_in_type_syntax("", "number")
+
+        self.assertEqual(result, "", "Expecting result to be empty but was %s" % result)
+
+    def test_wrap_in_type_syntax_number_text(self):
+        result = VariableUtils().wrap_in_type_syntax("test", "number")
+
+        self.assertEqual(result, "", "Expecting result to be empty but was %s" % result)
+
+    def test_wrap_in_type_syntax_boolean_true_lowercase(self):
+        result = VariableUtils().wrap_in_type_syntax("true", "boolean")
+
+        self.assertEqual(result, "True", "Expecting result to be True but was %s" % result)
+    
+    def test_wrap_in_type_syntax_boolean_true_titlecase(self):
+        result = VariableUtils().wrap_in_type_syntax("True", "boolean")
+
+        self.assertEqual(result, "True", "Expecting result to be True but was %s" % result)
+
+    def test_wrap_in_type_syntax_boolean_false_lowercase(self):
+        result = VariableUtils().wrap_in_type_syntax("false", "boolean")
+
+        self.assertEqual(result, "False", "Expecting result to be False but was %s" % result)
+    
+    def test_wrap_in_type_syntax_boolean_false_titlecase(self):
+        result = VariableUtils().wrap_in_type_syntax("False", "boolean")
+
+        self.assertEqual(result, "False", "Expecting result to be False but was %s" % result)
+    
+    def test_wrap_in_type_syntax_boolean_invalid(self):
+        result = VariableUtils().wrap_in_type_syntax("test", "boolean")
+
+        self.assertEqual(result, "False", "Expecting result to be False but was %s" % result)
+
+    def test_wrap_in_type_syntax_boolean_invalid_number(self):
+        result = VariableUtils().wrap_in_type_syntax(123, "boolean")
+
+        self.assertEqual(result, "False", "Expecting result to be False but was %s" % result)
+
+    def test_wrap_in_type_syntax_boolean_boolean_true(self):
+        result = VariableUtils().wrap_in_type_syntax(True, "boolean")
+
+        self.assertEqual(result, "True", "Expecting result to be True but was %s" % result)
+
+    def test_wrap_in_type_syntax_boolean_boolean_false(self):
+        result = VariableUtils().wrap_in_type_syntax(False, "boolean")
+
+        self.assertEqual(result, "False", "Expecting result to be False but was %s" % result)
+
+    def test_wrap_in_type_syntax_list_text(self):
+        result = VariableUtils().wrap_in_type_syntax("this, is, a, list", "list_text")
+
+        self.assertEqual(result, "['this', 'is', 'a', 'list']", "Expecting result to be ['this', 'is', 'a', 'list'] but was %s" % result)
+
+    def test_wrap_in_type_syntax_list_text_empty(self):
+        result = VariableUtils().wrap_in_type_syntax("", "list_text")
+
+        self.assertEqual(result, "[]", "Expecting result to be [] but was %s" % result)
+
+    def test_wrap_in_type_syntax_list_text_numbers(self):
+        result = VariableUtils().wrap_in_type_syntax("1, 2, 3", "list_text")
+
+        self.assertEqual(result, "['1', '2', '3']", "Expecting result to be ['1', '2', '3'] but was %s" % result)
+
+    def test_wrap_in_type_syntax_list_number(self):
+        result = VariableUtils().wrap_in_type_syntax("1, 2, 3", "list_number")
+
+        self.assertEqual(result, "[1, 2, 3]", "Expecting result to be [1, 2, 3] but was %s" % result)
+
+    def test_wrap_in_type_syntax_list_number_empty(self):
+        result = VariableUtils().wrap_in_type_syntax("", "list_number")
+
+        self.assertEqual(result, "[]", "Expecting result to be [] but was %s" % result)
+
+    def test_wrap_in_type_syntax_list_number_text(self):
+        result = VariableUtils().wrap_in_type_syntax("this, is, a, list", "list_number")
+
+        self.assertEqual(result, "[]", "Expecting result to be [] but was %s" % result)
+
+    def test_wrap_in_type_syntax_unknonw_type(self):
+        result = VariableUtils().wrap_in_type_syntax("test", "unknown")
+
+        self.assertEqual(result, "test", "Expecting result to be test but was %s" % result)
