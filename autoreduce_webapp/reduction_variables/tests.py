@@ -112,7 +112,7 @@ class InstrumentVariablesUtilsTestCase(TestCase):
 
     def test_get_default_variables_pass_in_reduce_script(self):
         reduction_file = os.path.join(REDUCTION_SCRIPT_BASE, 'valid', 'reduce.py')
-        reduce_script = imp.load_source('reduce_script', reduction_file)
+        reduce_script = imp.load_source('reduce_script_test', reduction_file)
         variables = InstrumentVariablesUtils().get_default_variables('valid', reduce_script)
 
         self.assertNotEqual(variables, None, 'Expecting some variables returned')
@@ -144,7 +144,7 @@ class InstrumentVariablesUtilsTestCase(TestCase):
         self.assertNotEqual(saved_variables, [], 'Expecting some variables saved')
         self.assertTrue(len(variables) > 0, 'Expecting at least 1 variable returned')
         self.assertEqual(variables[0].instrument.name, 'valid', 'Expecting instrument to be "valid" but was %s' % variables[0].instrument)
-        self.assertTrue(len(variables[0].scripts) == 1, "Expecting to find a script saved")
+        self.assertTrue(len(list(variables[0].scripts)) == 1, "Expecting to find a script saved")
         self.assertEqual(len(variables), len(saved_variables), "Expecting all returned variables to have been saved")
     
     def test_set_default_instrument_variables_empty(self):
