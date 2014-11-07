@@ -26,15 +26,16 @@ class VariableUtils(object):
             list_values = value.split(',')
             number_list = []
             for val in list_values:
-                if re.match("[0-9]+", val):
+                if re.match("[0-9]+", val.strip()):
                     number_list.append(val)
             return '[%s]' % ','.join(number_list)
         if var_type == 'list_text':
             list_values = value.split(',')
             text_list = []
             for val in list_values:
-                val = "'%s'" % val.strip().replace("'", "\\'")
-                text_list.append(val)
+                if val:
+                    val = "'%s'" % val.strip().replace("'", "\\'")
+                    text_list.append(val)
             return '[%s]' % ','.join(text_list)
         return value
 
