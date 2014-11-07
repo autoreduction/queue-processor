@@ -381,3 +381,83 @@ class VariableUtilsTestCase(TestCase):
         result = VariableUtils().wrap_in_type_syntax(123, "text")
 
         self.assertEqual(result, "'123'", "Expecting result to be '123' but was %s" % result)
+
+    def test_convert_variable_to_type_text_to_text(self):
+        result = VariableUtils().convert_variable_to_type("test", "text")
+
+        self.assertEqual(result, "test", "Expecting result to be test but was %s" % result)        
+
+    def test_convert_variable_to_type_number_to_text(self):
+        result = VariableUtils().convert_variable_to_type(123, "text")
+
+        self.assertEqual(result, "123", "Expecting result to be 123 but was %s" % result)
+
+    def test_convert_variable_to_type_boolean_to_text(self):
+        result = VariableUtils().convert_variable_to_type(True, "text")
+
+        self.assertEqual(result, "True", "Expecting result to be True but was %s" % result)
+
+    def test_convert_variable_to_type_number_to_number(self):
+        result = VariableUtils().convert_variable_to_type(123, "number")
+
+        self.assertEqual(result, 123, "Expecting result to be 123 but was %s" % result)
+
+    def test_convert_variable_to_type_text_to_number(self):
+        result = VariableUtils().convert_variable_to_type("123", "number")
+
+        self.assertEqual(result, 123, "Expecting result to be 123 but was %s" % result)
+
+    def test_convert_variable_to_type_text_to_number_float(self):
+        result = VariableUtils().convert_variable_to_type("1.23", "number")
+
+        self.assertEqual(result, 1.23, "Expecting result to be 1.23 but was %s" % result)
+
+    def test_convert_variable_to_type_text_to_number_invalid(self):
+        result = VariableUtils().convert_variable_to_type("test", "number")
+
+        self.assertEqual(result, None, "Expecting result to be None but was %s" % result)
+
+    def test_convert_variable_to_type_text_to_list_text(self):
+        result = VariableUtils().convert_variable_to_type("this, is, a, list", "list_text")
+
+        self.assertEqual(result, ['this', 'is', 'a', 'list'], "Expecting result to be ['this', 'is', 'a', 'list'] but was %s" % result)
+
+    def test_convert_variable_to_type_text_to_list_text_empty(self):
+        result = VariableUtils().convert_variable_to_type("", "list_text")
+
+        self.assertEqual(result, [], "Expecting result to be [] but was %s" % result)
+
+    def test_convert_variable_to_type_number_to_list_text(self):
+        result = VariableUtils().convert_variable_to_type(123, "list_text")
+
+        self.assertEqual(result, ['123'], "Expecting result to be ['123'] but was %s" % result)
+
+    def test_convert_variable_to_type_text_to_list_number(self):
+        result = VariableUtils().convert_variable_to_type("123, 456", "list_number")
+
+        self.assertEqual(result, [123, 456], "Expecting result to be [123, 456] but was %s" % result)
+
+    def test_convert_variable_to_type_text_to_boolean_true_lowercase(self):
+        result = VariableUtils().convert_variable_to_type("true", "boolean")
+
+        self.assertEqual(result, True, "Expecting result to be True but was %s" % result)
+
+    def test_convert_variable_to_type_text_to_boolean_true_titlecase(self):
+        result = VariableUtils().convert_variable_to_type("True", "boolean")
+
+        self.assertEqual(result, True, "Expecting result to be True but was %s" % result)
+
+    def test_convert_variable_to_type_text_to_boolean_false_lowercase(self):
+        result = VariableUtils().convert_variable_to_type("false", "boolean")
+
+        self.assertEqual(result, False, "Expecting result to be False but was %s" % result)
+
+    def test_convert_variable_to_type_text_to_boolean_false_titlecase(self):
+        result = VariableUtils().convert_variable_to_type("False", "boolean")
+
+        self.assertEqual(result, False, "Expecting result to be False but was %s" % result)
+
+    def test_convert_variable_to_type_unknown_type(self):
+        result = VariableUtils().convert_variable_to_type("test", "unknown")
+
+        self.assertEqual(result, "test", "Expecting result to be test but was %s" % result)
