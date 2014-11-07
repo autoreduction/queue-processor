@@ -52,7 +52,7 @@ class VariableUtils(object):
             if '.' in str(value):
                 return float(value)
             else:
-                return re.sub("[^0-9]+", "", value)
+                return int(re.sub("[^0-9]+", "", str(value)))
         if var_type == "list_text":
             var_list = str(value).split(',')
             list_text = []
