@@ -131,7 +131,7 @@ class InstrumentVariablesUtils(object):
     def get_variables_for_run(self, reduction_run):
         """
         Fetches the appropriate variables for the given reduction run.
-        If instrument variables with a matchin experiment reference number is found then these will be used
+        If instrument variables with a matching experiment reference number is found then these will be used
         otherwise the variables with the closest run start will be used.
         If no variable are found, default variables are created for the instrument and those are returned.
         """

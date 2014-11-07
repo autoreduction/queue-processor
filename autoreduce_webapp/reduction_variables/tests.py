@@ -6,7 +6,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 sys.path.insert(0, BASE_DIR)
 from reduction_variables.utils import InstrumentVariablesUtils
 from reduction_viewer.utils import InstrumentUtils
-from reduction_viewer.models import Notification
+from reduction_viewer.models import Notification, ReductionRun, Experiment
 from reduction_variables.models import InstrumentVariable
 from mock import patch
 
@@ -218,3 +218,61 @@ class InstrumentVariablesUtilsTestCase(TestCase):
 
         self.assertTrue(len(upcoming_variables_by_experiment) == 0, "Expecting no upcoming experiment variables to be returned")
         
+    def test_get_variables_for_run_experiment_reference(self):
+        instrument = InstrumentUtils().get_instrument("valid")
+        variable = InstrumentVariable(
+                    instrument=instrument, 
+                    name="test", 
+                    value="test", 
+                    is_advanced=False, 
+                    type="text",
+                    experiment_reference=99999,
+                    )
+        variable.save()
+
+        experiment = Experiment(reference_number=99999)
+        reduction_run = ReductionRun(run_number=1, instrument=instrument, experiment=experiment, run_version=1, status=StatusUtils().get_queued())
+
+        variables = InstrumentVariablesUtils().get_variables_for_run(reduction_run)
+
+        self.assertNotEqual(variables, None, "Expecting some variables to be returned")
+        self.assertNotEqual(variables, [], "Expecting some variables to be returned")
+        self.assertTrue(len(variables) > 0, 'Expecting at least 1 variable returned')
+        self.assertEqual(variables[0].experiment_reference, 99999, "Expecting instrument variables to match with experiment reference number")
+    
+    def test_get_variables_for_run_run_number(self):
+        instrument = InstrumentUtils().get_instrument("valid")
+        variable = InstrumentVariable(
+                    instrument=instrument, 
+                    name="test", 
+                    value="test", 
+                    is_advanced=False, 
+                    type="text",
+                    start_run=99999,
+                    )
+        variable.save()
+
+        experiment = Experiment(reference_number=1)
+        reduction_run = ReductionRun(run_number=100000, instrument=instrument, experiment=experiment, run_version=1, status=StatusUtils().get_queued())
+
+        variables = InstrumentVariablesUtils().get_variables_for_run(reduction_run)
+
+        self.assertNotEqual(variables, None, "Expecting some variables to be returned")
+        self.assertNotEqual(variables, [], "Expecting some variables to be returned")
+        self.assertTrue(len(variables) > 0, 'Expecting at least 1 variable returned')
+        self.assertEqual(variables[0].experiment_reference, None, "Not expecting experiment_reference")
+        self.assertEqual(variables[0].start_run, 99999, "Expecting start run to be 99999 but was %s" % variables[0].start_run)
+    
+    def test_get_variables_for_run_default_variables(self):
+        instrument = InstrumentUtils().get_instrument("valid")
+        
+        experiment = Experiment(reference_number=1)
+        reduction_run = ReductionRun(run_number=123, instrument=instrument, experiment=experiment, run_version=1, status=StatusUtils().get_queued())
+
+        variables = InstrumentVariablesUtils().get_variables_for_run(reduction_run)
+
+        self.assertNotEqual(variables, None, "Expecting some variables to be returned")
+        self.assertNotEqual(variables, [], "Expecting some variables to be returned")
+        self.assertTrue(len(variables) > 0, 'Expecting at least 1 variable returned')
+        self.assertEqual(variables[0].experiment_reference, None, "Not expecting experiment_reference")
+        self.assertEqual(variables[0].start_run, 1, "Expecting start run to be 1 but was %s" % variables[0].start_run)
