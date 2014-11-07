@@ -152,8 +152,8 @@ class InstrumentVariablesUtilsTestCase(TestCase):
         instrument = InstrumentUtils().get_instrument("empty_script")
         saved_variables = list(InstrumentVariable.objects.filter(instrument=instrument, start_run=1))
         
-        self.assertEqual(variables, None, 'Expecting no variables returned')
-        self.assertEqual(saved_variables, None, 'Expecting no variables saved')
+        self.assertEqual(variables, [], 'Expecting no variables returned')
+        self.assertEqual(saved_variables, [], 'Expecting no variables saved')
         
     def test_get_current_and_upcoming_variables_test_current(self):
         current_variables, upcoming_variables_by_run, upcoming_variables_by_experiment = InstrumentVariablesUtils().get_current_and_upcoming_variables('valid')
