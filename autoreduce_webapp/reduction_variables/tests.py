@@ -437,6 +437,11 @@ class VariableUtilsTestCase(TestCase):
 
         self.assertEqual(result, [123, 456], "Expecting result to be [123, 456] but was %s" % result)
 
+    def test_convert_variable_to_type_text_to_list_number_with_float(self):
+        result = VariableUtils().convert_variable_to_type("123, 456, 5.5", "list_number")
+
+        self.assertEqual(result, [123, 456, 5.5], "Expecting result to be [123, 456, 5.5] but was %s" % result)
+
     def test_convert_variable_to_type_text_to_boolean_true_lowercase(self):
         result = VariableUtils().convert_variable_to_type("true", "boolean")
 
