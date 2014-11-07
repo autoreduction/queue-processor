@@ -52,7 +52,7 @@ def require_admin(fn):
     """
     def request_processor(request, *args, **kws):
         if has_valid_login(request):
-            if login_and_uows_valid request.user.is_superuser:
+            if request.user.is_superuser:
                 return fn(request, *args, **kws)
             else:
                 raise PermissionDenied()
