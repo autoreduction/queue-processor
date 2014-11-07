@@ -6,8 +6,7 @@ from autoreduce_webapp.queue_processor import Client as ActiveMQClient
 logging.basicConfig(filename=LOG_FILE,level=LOG_LEVEL)
 from django.db import models
 from reduction_variables.models import InstrumentVariable, ScriptFile, RunVariable
-from reduction_viewer.models import ReductionRun
-from reduction_viewer.models import Instrument
+from reduction_viewer.models import ReductionRun, Instrument, Notification
 from reduction_viewer.utils import InstrumentUtils, StatusUtils
 from autoreduce_webapp.icat_communication import ICATCommunication
 
@@ -97,6 +96,8 @@ class InstrumentVariablesUtils(object):
             return reduce_script, script_binary
         except IOError:
             logging.error("Unable to load reduction script %s" % reduction_file)
+            notification = Notification(is_active=True, is_staff_only=True,severity='e', message="Syntax error in reduction script for %s" % instrument_name)
+            notification.save()
             return None, None
 
     def set_default_instrument_variables(self, instrument_name, start_run=1):
