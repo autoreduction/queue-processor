@@ -172,7 +172,7 @@ class InstrumentVariablesUtilsTestCase(TestCase):
         self.assertTrue(len(upcoming_variables_by_run) > 0, 'Expecting at least 1 current variable returned')
         self.assertEqual(len(upcoming), len(upcoming_variables_by_run), "Expecting same variables to be returned as created")
     
-    @patch(' autoreduce_webapp.icat_communication.ICATCommunication.get_upcoming_experiments_for_instrument')
+    @patch('autoreduce_webapp.icat_communication.ICATCommunication.get_upcoming_experiments_for_instrument')
     def test_get_current_and_upcoming_variables_test_upcomming_by_experiment(self, mock_icat_call):
         mock_icat_call.return_value = [99999]
         instrument = InstrumentUtils().get_instrument("valid")
