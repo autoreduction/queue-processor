@@ -21,14 +21,21 @@ class VariableUtils(object):
         if var_type == 'number':
             return re.sub("[^0-9.]", "", value)
         if var_type == 'boolean':
-            return value.lower() == 'true'
+            return str(value.lower() == 'true')
         if var_type == 'list_number':
-            return '[%s]' % value
+            list_values = value.split(',')
+            number_list = []
+            for val in list_values:
+                if re.match("[0-9]+", val):
+                    number_list.append(val)
+            return '[%s]' % ','.join(number_list)
         if var_type == 'list_text':
             list_values = value.split(',')
+            text_list = []
             for val in list_values:
                 val = "'%s'" % val.strip().replace("'", "\\'")
-            return '[%s]' % ','.join(list_values)
+                text_list.append(val)
+            return '[%s]' % ','.join(text_list)
         return value
 
     def convert_variable_to_type(self, value, var_type):
