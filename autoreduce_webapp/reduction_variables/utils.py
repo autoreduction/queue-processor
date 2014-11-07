@@ -90,7 +90,7 @@ class InstrumentVariablesUtils(object):
         """
         reduction_file = os.path.join(REDUCTION_SCRIPT_BASE, instrument_name, 'reduce.py')
         try:
-            reduce_script = imp.load_source('reduce_script', reduction_file)
+            reduce_script = imp.load_source(instrument_name + 'reduce_script', reduction_file)
             f = open(reduction_file, 'rb')
             script_binary = f.read()
             return reduce_script, script_binary
