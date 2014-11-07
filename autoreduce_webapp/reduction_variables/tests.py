@@ -90,18 +90,18 @@ class InstrumentVariablesUtilsTestCase(TestCase):
         self.assertEqual(variables[0].instrument.name, 'duplicate_var', 'Expecting instrument to be "duplicate_var" but was %s' % variables[0].instrument)
 
     def test_get_default_variables_syntax_error(self):
-        initial_notification = Notification.objects.filter(is_active=True, is_staff_only=True)
+        initial_notification = list(Notification.objects.filter(is_active=True, is_staff_only=True))
         variables = InstrumentVariablesUtils().get_default_variables('syntax_error')
-        updated_notification = Notification.objects.filter(is_active=True, is_staff_only=True)
+        updated_notification = list(Notification.objects.filter(is_active=True, is_staff_only=True))
 
         self.assertNotEqual(variables, None, 'Expecting some variables returned')
         self.assertTrue(len(variables) == 0, 'Expecting an empty array returned')
         self.assertTrue(len(updated_notification) > len(initial_notification), 'Expecting a notification to be created')
 
     def test_get_default_variables_missing(self):
-        initial_notification = Notification.objects.filter(is_active=True, is_staff_only=True)
+        initial_notification = list(Notification.objects.filter(is_active=True, is_staff_only=True))
         variables = InstrumentVariablesUtils().get_default_variables('missing')
-        updated_notification = Notification.objects.filter(is_active=True, is_staff_only=True)
+        updated_notification = list(Notification.objects.filter(is_active=True, is_staff_only=True))
 
         self.assertNotEqual(variables, None, 'Expecting some variables returned')
         self.assertEqual(variables, [], 'Expecting an empty array returned')
