@@ -302,18 +302,8 @@ class VariableUtilsTestCase(TestCase):
 
         self.assertEqual(result, "''", "Expecting result to be single quotes")
 
-    def test_wrap_in_type_syntax_text_number(self):
-        result = VariableUtils().wrap_in_type_syntax(1, "text")
-
-        self.assertEqual(result, "'1'", "Expecting result to be '1' but was %s" % result)
-
     def test_wrap_in_type_syntax_number(self):
         result = VariableUtils().wrap_in_type_syntax("123", "number")
-
-        self.assertEqual(result, "123", "Expecting result to be 123 but was %s" % result)
-
-    def test_wrap_in_type_syntax_number_number(self):
-        result = VariableUtils().wrap_in_type_syntax(123, "number")
 
         self.assertEqual(result, "123", "Expecting result to be 123 but was %s" % result)
 
@@ -349,21 +339,6 @@ class VariableUtilsTestCase(TestCase):
     
     def test_wrap_in_type_syntax_boolean_invalid(self):
         result = VariableUtils().wrap_in_type_syntax("test", "boolean")
-
-        self.assertEqual(result, "False", "Expecting result to be False but was %s" % result)
-
-    def test_wrap_in_type_syntax_boolean_invalid_number(self):
-        result = VariableUtils().wrap_in_type_syntax(123, "boolean")
-
-        self.assertEqual(result, "False", "Expecting result to be False but was %s" % result)
-
-    def test_wrap_in_type_syntax_boolean_boolean_true(self):
-        result = VariableUtils().wrap_in_type_syntax(True, "boolean")
-
-        self.assertEqual(result, "True", "Expecting result to be True but was %s" % result)
-
-    def test_wrap_in_type_syntax_boolean_boolean_false(self):
-        result = VariableUtils().wrap_in_type_syntax(False, "boolean")
 
         self.assertEqual(result, "False", "Expecting result to be False but was %s" % result)
 
