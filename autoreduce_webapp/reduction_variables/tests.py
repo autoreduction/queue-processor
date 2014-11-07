@@ -5,7 +5,10 @@ logging.basicConfig(filename=LOG_FILE.replace('.log', '.test.log'),level=LOG_LEV
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 sys.path.insert(0, BASE_DIR)
 from reduction_variables.utils import InstrumentVariablesUtils
+from reduction_viewer.utils import InstrumentUtils
 from reduction_viewer.models import Notification
+from reduction_variables.models import InstrumentVariable
+from mock import patch
 
 class InstrumentVariablesUtilsTestCase(TestCase):
     def setUp(self):
@@ -130,4 +133,62 @@ class InstrumentVariablesUtilsTestCase(TestCase):
         script = InstrumentVariablesUtils().get_current_script_text('missing')
 
         self.assertEqual(script, None, "Expecting script to be None")
+        
+    def test_set_default_instrument_variables_successful(self):
+        variables = InstrumentVariablesUtils().set_default_instrument_variables("valid", 1)
+        instrument = InstrumentUtils().get_instrument("valid")
+        saved_variables = list(InstrumentVariable.objects.filter(instrument=instrument, start_run=1))
+        self.assertNotEqual(variables, None, 'Expecting some variables returned')
+        self.assertNotEqual(saved_variables, None, 'Expecting some variables saved')
+        self.assertNotEqual(variables, [], 'Expecting some variables returned')
+        self.assertNotEqual(saved_variables, [], 'Expecting some variables saved')
+        self.assertTrue(len(variables) > 0, 'Expecting at least 1 variable returned')
+        self.assertEqual(variables[0].instrument.name, 'valid', 'Expecting instrument to be "valid" but was %s' % variables[0].instrument)
+        self.assertTrue(len(variables[0].scripts) == 1, "Expecting to find a script saved")
+        self.assertEqual(len(variables), len(saved_variables), "Expecting all returned variables to have been saved")
+    
+    def test_set_default_instrument_variables_empty(self):
+        variables = InstrumentVariablesUtils().set_default_instrument_variables("empty_script", 1)
+        instrument = InstrumentUtils().get_instrument("empty_script")
+        saved_variables = list(InstrumentVariable.objects.filter(instrument=instrument, start_run=1))
+        
+        self.assertEqual(variables, None, 'Expecting no variables returned')
+        self.assertEqual(saved_variables, None, 'Expecting no variables saved')
+        
+    def test_get_current_and_upcoming_variables_test_current(self):
+        current_variables, upcoming_variables_by_run, upcoming_variables_by_experiment = InstrumentVariablesUtils().get_current_and_upcoming_variables('valid')
+
+        self.assertNotEqual(current_variables, None, "Expecting some current variables to be returned")
+        self.assertNotEqual(current_variables, [], "Expecting some current variables to be returned")
+        self.assertTrue(len(current_variables) > 0, 'Expecting at least 1 current variable returned')
+
+    def test_get_current_and_upcoming_variables_test_upcomming(self):
+        upcoming = InstrumentVariablesUtils().set_default_instrument_variables('valid', 99999)
+
+        current_variables, upcoming_variables_by_run, upcoming_variables_by_experiment = InstrumentVariablesUtils().get_current_and_upcoming_variables('valid')
+
+        self.assertNotEqual(upcoming_variables_by_run, None, "Expecting some current variables to be returned")
+        self.assertNotEqual(upcoming_variables_by_run, [], "Expecting some current variables to be returned")
+        self.assertTrue(len(upcoming_variables_by_run) > 0, 'Expecting at least 1 current variable returned')
+        self.assertEqual(len(upcoming), len(upcoming_variables_by_run), "Expecting same variables to be returned as created")
+    
+    @patch(' autoreduce_webapp.icat_communication.ICATCommunication.get_upcoming_experiments_for_instrument')
+    def test_get_current_and_upcoming_variables_test_upcomming_by_experiment(self, mock_icat_call):
+        mock_icat_call.return_value = [99999]
+        instrument = InstrumentUtils().get_instrument("valid")
+        variable = InstrumentVariable(
+                    instrument=instrument, 
+                    name="test", 
+                    value="test", 
+                    is_advanced=False, 
+                    type="text",
+                    experiment_reference=99999,
+                    )
+        variable.save()
+
+        current_variables, upcoming_variables_by_run, upcoming_variables_by_experiment = InstrumentVariablesUtils().get_current_and_upcoming_variables('valid')
+
+        self.assertNotEqual(upcoming_variables_by_experiment, None, "Expecting some current variables to be returned")
+        self.assertNotEqual(upcoming_variables_by_experiment, [], "Expecting some current variables to be returned")
+        self.assertTrue(len(upcoming_variables_by_experiment) > 0, 'Expecting at least 1 current variable returned')
         

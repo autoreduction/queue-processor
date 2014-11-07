@@ -188,7 +188,7 @@ class InstrumentVariablesUtils(object):
     def get_current_and_upcoming_variables(self, instrument_name):
         """
         Fetches the instrument variables for:
-        - The new run number
+        - The next run number
         - Upcoming run numbers
         - Upcoming known experiments
         as a tuple of (current_variables, upcoming_variables_by_run, upcoming_variables_by_experiment)
