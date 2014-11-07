@@ -49,7 +49,7 @@ class VariableUtils(object):
         if var_type == "text":
             return str(value)
         if var_type == "number":
-            if not value:
+            if not value or not re.match('[0-9]+', str(value)):
                 return None
             if '.' in str(value):
                 return float(value)
