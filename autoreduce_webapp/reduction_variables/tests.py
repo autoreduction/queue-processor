@@ -116,3 +116,18 @@ class InstrumentVariablesUtilsTestCase(TestCase):
         self.assertNotEqual(variables, [], 'Expecting some variables returned')
         self.assertTrue(len(variables) > 0, 'Expecting at least 1 variable returned')
         self.assertEqual(variables[0].instrument.name, 'valid', 'Expecting instrument to be "valid" but was %s' % variables[0].instrument)
+
+    def test_get_current_script_text_successful(self):
+        script_file = os.path.join(REDUCTION_SCRIPT_BASE, 'valid', 'reduce.py')
+        f = open(reduction_file, 'rb')
+        script_binary = f.read()
+        script = InstrumentVariablesUtils().get_current_script_text('valid')
+
+        self.assertNotEqual(script, None, "Expecting a script to be returned")
+        self.assertEqual(script, script_binary, "Expecting files to match")
+
+    def test_get_current_script_text_missing(self):
+        script = InstrumentVariablesUtils().get_current_script_text('missing')
+
+        self.assertEqual(script, None, "Expecting script to be None")
+        
