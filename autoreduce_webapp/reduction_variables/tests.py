@@ -135,7 +135,7 @@ class InstrumentVariablesUtilsTestCase(TestCase):
         self.assertEqual(script, None, "Expecting script to be None")
         
     def test_set_default_instrument_variables_successful(self):
-        variables = InstrumentVariablesUtils().set_default_instrument_variables("valid", 1)
+        variables = list(InstrumentVariablesUtils().set_default_instrument_variables("valid", 1))
         instrument = InstrumentUtils().get_instrument("valid")
         saved_variables = list(InstrumentVariable.objects.filter(instrument=instrument, start_run=1))
         self.assertNotEqual(variables, None, 'Expecting some variables returned')
