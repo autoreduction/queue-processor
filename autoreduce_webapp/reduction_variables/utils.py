@@ -49,6 +49,8 @@ class VariableUtils(object):
         if var_type == "text":
             return str(value)
         if var_type == "number":
+            if not value:
+                return None
             if '.' in str(value):
                 return float(value)
             else:
