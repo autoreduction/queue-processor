@@ -785,7 +785,7 @@ class MessagingUtilsTestCase(TestCase):
 
     def test_MessagingUtils_no_variables(self):
         reduction_run = self.get_reduction_run()
-        reduction_run.run_variables = None
+        reduction_run.run_variables.clear()
         data_location = DataLocation(file_path="/test/data/path", reduction_run=reduction_run)
         data_location.save()
         reduction_run.data_location.add(data_location)
