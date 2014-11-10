@@ -35,16 +35,6 @@ class ICATCommunication(object):
         [my_set.add(each) for each in my_list]
         return my_set
 
-    def _build_in_clause(self, field, values):
-        clause = field + " IN ("
-        for item in values:
-            if isinstance(item, (int, long)):
-                clause += "" + str(item) + ","
-            else:
-                clause += "'" + str(item) + "',"
-        clause = clause[:-1] + ")"
-        return clause
-
     '''
         Returns experiment details for the given reference number
     '''
