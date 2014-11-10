@@ -560,7 +560,6 @@ class ReductionVariablesUtilsTestCase(TestCase):
     def get_valid_script(self):
         reduction_file = os.path.join(REDUCTION_SCRIPT_BASE, 'valid', 'reduce.py')
         try:
-            reduce_script = imp.load_source(instrument_name + 'reduce_script', reduction_file)
             f = open(reduction_file, 'rb')
             script_binary = f.read()
             return script_binary
@@ -570,7 +569,7 @@ class ReductionVariablesUtilsTestCase(TestCase):
     def get_reduction_run(self):
         instrument = InstrumentUtils().get_instrument('valid')
         experiment = Experiment(reference_number=1)
-        reduction_run = ReductionRun(instrument=instrument, run_number=1, experiment=experiment)
+        reduction_run = ReductionRun(instrument=instrument, run_number=1, experiment=experiment, run_version=0)
         reduction_run.save()
         return reduction_run
 
