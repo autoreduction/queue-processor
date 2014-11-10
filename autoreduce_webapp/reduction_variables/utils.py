@@ -302,7 +302,7 @@ class MessagingUtils(object):
             'run_number':reduction_run.run_number,
             'instrument':reduction_run.instrument.name,
             'rb_number':reduction_run.experiment.reference_number,
-            'data':'',
+            'data':data_path,
             'reduction_script':script_path,
             'reduction_arguments':arguments,
             'run_version':reduction_run.run_version,

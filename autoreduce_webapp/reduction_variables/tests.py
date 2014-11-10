@@ -1,10 +1,10 @@
 from django.test import TestCase
 from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL, REDUCTION_SCRIPT_BASE, BASE_DIR
-import logging, os, sys, shutil, imp, re
+import logging, os, sys, shutil, imp, re, json
 logging.basicConfig(filename=LOG_FILE.replace('.log', '.test.log'),level=LOG_LEVEL, format=u'%(message)s',)
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 sys.path.insert(0, BASE_DIR)
-from reduction_variables.utils import InstrumentVariablesUtils,VariableUtils, ReductionVariablesUtils
+from reduction_variables.utils import InstrumentVariablesUtils,VariableUtils, ReductionVariablesUtils, MessagingUtils
 from reduction_viewer.utils import InstrumentUtils, StatusUtils
 from reduction_viewer.models import Notification, ReductionRun, Experiment
 from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFile
@@ -686,3 +686,94 @@ class ReductionVariablesUtilsTestCase(TestCase):
         self.assertTrue("reduction_script_temp" in script_path, "Expecting script_path to point to 'reduction_script_temp'.")
         self.assertTrue(re.search('(\w{8}-\w{4}-\w{4}-\w{4}-\w{12}\.py$)', script_path), "Expecting script_path to contain a uuid filename but was %s." % script_path)
         self.assertTrue(isfile_calls[0] > 1, "Expecting at least 2 calls to isfile")
+
+class MessagingUtilsTestCase(TestCase):
+    def setUp(self):
+        pass
+    
+    def tearDown(self):
+        pass
+        
+    @classmethod
+    def setUpClass(cls):
+        test_reduce = os.path.join(os.path.dirname(__file__), '../', 'test_files','reduce.py')
+        valid_reduction_file = os.path.join(REDUCTION_SCRIPT_BASE, 'valid')
+        if not os.path.exists(valid_reduction_file):
+            os.makedirs(valid_reduction_file)
+        file_path = os.path.join(valid_reduction_file, 'reduce.py')
+        if not os.path.isfile(file_path):
+            shutil.copyfile(test_reduce, file_path)
+
+    @classmethod
+    def tearDownClass(cls):
+        directory = os.path.join(REDUCTION_SCRIPT_BASE, 'valid')
+        logging.warning("About to remove %s" % directory)
+        if os.path.exists(directory):
+            shutil.rmtree(directory)
+
+    def get_valid_script(self):
+        reduction_file = os.path.join(REDUCTION_SCRIPT_BASE, 'valid', 'reduce.py')
+        try:
+            f = open(reduction_file, 'rb')
+            script_binary = f.read()
+            return script_binary
+        except:
+            return None
+
+    def get_reduction_run(self):
+        instrument = InstrumentUtils().get_instrument('valid')
+        experiment = Experiment(reference_number=1)
+        experiment.save()
+        reduction_run = ReductionRun(instrument=instrument, run_number=1, experiment=experiment, run_version=0)
+        reduction_run.save()        
+
+        script = ScriptFile(script=self.get_valid_script(), file_name='reduce.py')
+        script.save()
+        
+        variable = RunVariable(reduction_run=reduction_run,name='test',value='testvalue1',type='text',is_advanced=False)
+        variable.save()
+        variable.scripts.add(script)
+        variable.save()
+        reduction_run.run_variables.add(variable)
+
+        variable = RunVariable(reduction_run=reduction_run,name='advanced_test',value='testvalue2',type='text',is_advanced=True)
+        variable.save()
+        variable.scripts.add(script)
+        variable.save()
+        reduction_run.run_variables.add(variable)
+
+        reduction_run.save()
+
+        return reduction_run
+
+    def test_MessagingUtils_successful(self):
+        reduction_run = self.get_reduction_run()
+
+        reduction_run.data = "/test/data/path"
+
+        send_called = [False]
+
+        class mock_client(object):
+            def __init__(self, brokers, user, password, topics=None, consumer_name='QueueProcessor', client_only=True, use_ssl=False):
+                pass
+
+            def connect(self):
+                pass
+
+            def send(self, destination, message, persistent='true'):
+                send_called[0] = True
+                data_dict = json.loads(message)
+                self.assertEqual(destination, '/queue/ReductionPending', "Expecting the destination to be '/queue/ReductionPending' but was '%s'." % destination)
+                self.assertEqual(data_dict['data'], '/test/data/path', "Expecting the data path to be '/test/data/path' but was '%s'." % data_dict['data'])
+                self.assertEqual(data_dict['run_number'], reduction_run.run_number, "Expecting the run number to be '%s' but was '%s'." % (reduction_run.run_number, data_dict['run_number']))
+                self.assertEqual(data_dict['run_version'], reduction_run.run_version, "Expecting the run version to be '%s' but was '%s'." % (reduction_run.run_version, data_dict['run_version']))
+                self.assertEqual(data_dict['instrument'], reduction_run.instrument.name, "Expecting the run number to be '%s' but was '%s'." % (reduction_run.instrument.name, data_dict['instrument']))
+                self.assertNotEqual(data_dict['reduction_arguments'], None, "Expecting to find some arguments")
+                self.assertNotEqual(data_dict['reduction_arguments'], {}, "Expecting to find some arguments")
+                self.assertTrue('standard_vars' in data_dict['reduction_arguments'], "Expecting to find some standard_vars.")
+                self.assertTrue('advanced_vars' in data_dict['reduction_arguments'], "Expecting to find some advanced_vars.")
+
+        with patch('reduction_variables.utils.ActiveMQClient', mock_client):
+            MessagingUtils().send_pending(reduction_run)
+
+        self.assertTrue(send_called[0], "Expecting send to be called")
