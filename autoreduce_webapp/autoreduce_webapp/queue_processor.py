@@ -16,6 +16,13 @@ class Listener(object):
         self._client = client
         self._data_dict = {}
 
+    def clean_up_reduction_script(self, script_path):
+        if os.path.isfile(script_path):
+            try:
+                os.remove(script_path)
+            except:
+                logging.error("Unable to delete temporary reduction script at: %s" % script_path)
+
     def on_error(self, headers, message):
         logging.error("Error recieved - %s" % str(message))
 
@@ -152,6 +159,9 @@ class Listener(object):
         else:
             logging.error("A reduction run completed that wasn't found in the database. Experiment: %s, Run Number: %s, Run Version %s" % (self._data_dict['rb_number'], self._data_dict['run_number'], self._data_dict['run_version']))
 
+        self.clean_up_reduction_script(self._data_dict['reduction_script'])
+
+
     def reduction_error(self):
         if 'message' in self._data_dict:
             logging.info("Run %s has encountered an error - %s" % (self._data_dict['run_number'], self._data_dict['message']))
@@ -172,6 +182,8 @@ class Listener(object):
             reduction_run.save()
         else:
             logging.error("A reduction run that caused an error wasn't found in the database. Experiment: %s, Run Number: %s, Run Version %s" % (self._data_dict['rb_number'], self._data_dict['run_number'], self._data_dict['run_version']))
+
+        self.clean_up_reduction_script(self._data_dict['reduction_script'])
         
 
 class Client(object):
