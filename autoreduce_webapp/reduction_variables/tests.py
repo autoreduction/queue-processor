@@ -749,7 +749,8 @@ class MessagingUtilsTestCase(TestCase):
     def test_MessagingUtils_successful(self):
         reduction_run = self.get_reduction_run()
 
-        reduction_run.data = "/test/data/path"
+        reduction_run.data_location.add("/test/data/path")
+        reduction_run.save()
 
         send_called = [False]
 
