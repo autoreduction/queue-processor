@@ -8,7 +8,7 @@ from reduction_variables.utils import InstrumentVariablesUtils,VariableUtils, Re
 from reduction_viewer.utils import InstrumentUtils, StatusUtils
 from reduction_viewer.models import Notification, ReductionRun, Experiment
 from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFile
-from mock import patch
+from mock import patch, Mock
 
 class InstrumentVariablesUtilsTestCase(TestCase):
     def setUp(self):
@@ -586,6 +586,12 @@ class ReductionVariablesUtilsTestCase(TestCase):
         variable.save()
         run_variables.append(variable)
 
+        variable = RunVariable(reduction_run=self.get_reduction_run(),name='advanced_test',value='testvalue2',type='text',is_advanced=True)
+        variable.save()
+        variable.scripts.add(script)
+        variable.save()
+        run_variables.append(variable)
+
         script_path, arguments = ReductionVariablesUtils().get_script_path_and_arguments(run_variables)
 
         self.assertNotEqual(script_path, None, "Expecting to get a script path back.")
@@ -595,6 +601,7 @@ class ReductionVariablesUtilsTestCase(TestCase):
         self.assertTrue('standard_vars' in arguments, "Expecting arguments to have a 'standard_vars' key.")
         self.assertTrue('advanced_vars' in arguments, "Expecting arguments to have a 'advanced_vars' key.")
         self.assertEqual(arguments['standard_vars']['test'], 'testvalue1', "Expecting to find testvalue1 in standard_vars.")
+        self.assertEqual(arguments['advanced_vars']['advanced_test'], 'testvalue2', "Expecting to find testvalue2 in advanced_vars.")
         self.assertTrue("reduction_script_temp" in script_path, "Expecting script_path to point to 'reduction_script_temp'.")
         self.assertTrue(re.search('(\w{8}-\w{4}-\w{4}-\w{4}-\w{12}\.py$)', script_path), "Expecting script_path to contain a uuid filename but was %s." % script_path)
 
@@ -644,3 +651,37 @@ class ReductionVariablesUtilsTestCase(TestCase):
             script_path, arguments = ReductionVariablesUtils().get_script_path_and_arguments(run_variables)
 
         self.assertEqual(e.exception.message, "All run variables must be for the same reduction run", "Expected an exception with message 'All run variables must be for the same reduction run' but was '%s'." % e.exception.message)
+
+    def test_get_script_path_and_arguments_file_name_exists(self):
+        run_variables = []
+
+        script = ScriptFile(script=self.get_valid_script(), file_name='reduce.py')
+        script.save()
+
+        variable = RunVariable(reduction_run=self.get_reduction_run(),name='test',value='testvalue1',type='text',is_advanced=False)
+        variable.save()
+        variable.scripts.add(script)
+        variable.save()
+        run_variables.append(variable)
+
+        isfile_calls = [0]
+        def mock_isfile(path):
+            isfile_calls[0] +=1 
+            if isfile_calls[0] == 1:
+                return True
+            else:
+                return False
+
+        with patch('os.path.isfile', mock_isfile):
+            script_path, arguments = ReductionVariablesUtils().get_script_path_and_arguments(run_variables)
+
+        self.assertNotEqual(script_path, None, "Expecting to get a script path back.")
+        self.assertNotEqual(script_path, "", "Expecting to get a script path back.")
+        self.assertNotEqual(arguments, None, "Expecting to get some arguments path back.")
+        self.assertNotEqual(arguments, {}, "Expecting to get some arguments path back.")
+        self.assertTrue('standard_vars' in arguments, "Expecting arguments to have a 'standard_vars' key.")
+        self.assertTrue('advanced_vars' in arguments, "Expecting arguments to have a 'advanced_vars' key.")
+        self.assertEqual(arguments['standard_vars']['test'], 'testvalue1', "Expecting to find testvalue1 in standard_vars.")
+        self.assertTrue("reduction_script_temp" in script_path, "Expecting script_path to point to 'reduction_script_temp'.")
+        self.assertTrue(re.search('(\w{8}-\w{4}-\w{4}-\w{4}-\w{12}\.py$)', script_path), "Expecting script_path to contain a uuid filename but was %s." % script_path)
+        self.assertTrue(isfile_calls[0] > 1, "Expecting at least 2 calls to isfile")
