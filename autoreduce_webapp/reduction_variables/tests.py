@@ -782,3 +782,24 @@ class MessagingUtilsTestCase(TestCase):
             MessagingUtils().send_pending(reduction_run)
 
         self.assertTrue(send_called[0], "Expecting send to be called")
+
+    def test_MessagingUtils_no_variables(self):
+        reduction_run = self.get_reduction_run()
+        reduction_run.run_variables = None
+        data_location = DataLocation(file_path="/test/data/path", reduction_run=reduction_run)
+        data_location.save()
+        reduction_run.data_location.add(data_location)
+        reduction_run.save()
+
+        with self.assertRaises(Exception) as e:
+            MessagingUtils().send_pending(reduction_run)
+
+        self.assertEqual(e.exception.message, "Run variables required", "Expecting exception to be raised")
+
+    def test_MessagingUtils_no_data(self):
+        reduction_run = self.get_reduction_run()
+
+        with self.assertRaises(Exception) as e:
+            MessagingUtils().send_pending(reduction_run)
+
+        self.assertEqual(e.exception.message, "No data path found for reduction run", "Expecting exception to be raised")

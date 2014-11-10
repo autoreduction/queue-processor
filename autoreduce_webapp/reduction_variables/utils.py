@@ -298,6 +298,8 @@ class MessagingUtils(object):
         data_location = reduction_run.data_location.first()
         if data_location:
             data_path = data_location.file_path
+        else:
+            raise Exception("No data path found for reduction run")
 
         message_client = ActiveMQClient(ACTIVEMQ['broker'], ACTIVEMQ['username'], ACTIVEMQ['password'], ACTIVEMQ['topics'], 'Webapp_QueueProcessor', True, True)
         message_client.connect()
