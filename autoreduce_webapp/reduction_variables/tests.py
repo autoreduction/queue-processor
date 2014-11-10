@@ -720,29 +720,30 @@ class MessagingUtilsTestCase(TestCase):
         except:
             return None
 
-    def get_reduction_run(self):
+    def get_reduction_run(self, with_variables=True):
         instrument = InstrumentUtils().get_instrument('valid')
         experiment = Experiment(reference_number=1)
         experiment.save()
         reduction_run = ReductionRun(instrument=instrument, run_number=1, experiment=experiment, run_version=0)
         reduction_run.save()        
 
-        script = ScriptFile(script=self.get_valid_script(), file_name='reduce.py')
-        script.save()
-        
-        variable = RunVariable(reduction_run=reduction_run,name='test',value='testvalue1',type='text',is_advanced=False)
-        variable.save()
-        variable.scripts.add(script)
-        variable.save()
-        reduction_run.run_variables.add(variable)
+        if with_variables:
+            script = ScriptFile(script=self.get_valid_script(), file_name='reduce.py')
+            script.save()
+            
+            variable = RunVariable(reduction_run=reduction_run,name='test',value='testvalue1',type='text',is_advanced=False)
+            variable.save()
+            variable.scripts.add(script)
+            variable.save()
+            reduction_run.run_variables.add(variable)
 
-        variable = RunVariable(reduction_run=reduction_run,name='advanced_test',value='testvalue2',type='text',is_advanced=True)
-        variable.save()
-        variable.scripts.add(script)
-        variable.save()
-        reduction_run.run_variables.add(variable)
+            variable = RunVariable(reduction_run=reduction_run,name='advanced_test',value='testvalue2',type='text',is_advanced=True)
+            variable.save()
+            variable.scripts.add(script)
+            variable.save()
+            reduction_run.run_variables.add(variable)
 
-        reduction_run.save()
+            reduction_run.save()
 
         return reduction_run
 
@@ -784,8 +785,8 @@ class MessagingUtilsTestCase(TestCase):
         self.assertTrue(send_called[0], "Expecting send to be called")
 
     def test_MessagingUtils_no_variables(self):
-        reduction_run = self.get_reduction_run()
-        reduction_run.run_variables.clear()
+        reduction_run = self.get_reduction_run(with_variables=False)
+
         data_location = DataLocation(file_path="/test/data/path", reduction_run=reduction_run)
         data_location.save()
         reduction_run.data_location.add(data_location)
