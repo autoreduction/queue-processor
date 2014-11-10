@@ -569,6 +569,7 @@ class ReductionVariablesUtilsTestCase(TestCase):
     def get_reduction_run(self):
         instrument = InstrumentUtils().get_instrument('valid')
         experiment = Experiment(reference_number=1)
+        experiment.save()
         reduction_run = ReductionRun(instrument=instrument, run_number=1, experiment=experiment, run_version=0)
         reduction_run.save()
         return reduction_run
