@@ -56,22 +56,6 @@ class Consumer(object):
             if i.poll() is not None:
                 self.procList.remove(i)
 
-class HeartBeat(object):
-
-    def __init__(self, config):
-        self.stompConfig = StompConfig(config.brokers, config.amq_user, config.amq_pwd)
-        self.config = config
-
-
-    def count(self):
-        logging.info("In HeartBeat.count")
-        stomp = sync.Stomp(self.stompConfig)
-        stomp.connect()
-        data_dict = {"src_name": socket.gethostname(), "status": "0"}
-        stomp.send(self.config.heart_beat, json.dumps(data_dict))
-        logging.info("called " + self.config.heart_beat + " --- " + json.dumps(data_dict))
-        stomp.disconnect() 
-    
 
 if __name__ == '__main__':
     
@@ -82,9 +66,6 @@ if __name__ == '__main__':
         
     logging.info("Start post process asynchronous listener!")
     
-    #l = task.LoopingCall(HeartBeat(config).count)
-    #l.start(5.0) # call every second
-
     reactor.callWhenRunning(Consumer(config).run)
     reactor.run()
     logging.info("Stop post process asynchronous listener!")
