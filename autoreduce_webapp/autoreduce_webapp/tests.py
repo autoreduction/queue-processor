@@ -283,7 +283,7 @@ class QueueProcessorTestCase(TestCase):
         if not os.path.isfile(file_path):
             shutil.copyfile(test_reduce, file_path)
 
-        headers { 
+        headers = { 
             "destination" : '/queue/DataReady'
         }
         message = {
