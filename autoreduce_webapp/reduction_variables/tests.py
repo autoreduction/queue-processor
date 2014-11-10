@@ -753,6 +753,8 @@ class MessagingUtilsTestCase(TestCase):
 
         send_called = [False]
 
+        parent = self
+
         class mock_client(object):
             def __init__(self, brokers, user, password, topics=None, consumer_name='QueueProcessor', client_only=True, use_ssl=False):
                 pass
@@ -763,15 +765,15 @@ class MessagingUtilsTestCase(TestCase):
             def send(self, destination, message, persistent='true'):
                 send_called[0] = True
                 data_dict = json.loads(message)
-                self.assertEqual(destination, '/queue/ReductionPending', "Expecting the destination to be '/queue/ReductionPending' but was '%s'." % destination)
-                self.assertEqual(data_dict['data'], '/test/data/path', "Expecting the data path to be '/test/data/path' but was '%s'." % data_dict['data'])
-                self.assertEqual(data_dict['run_number'], reduction_run.run_number, "Expecting the run number to be '%s' but was '%s'." % (reduction_run.run_number, data_dict['run_number']))
-                self.assertEqual(data_dict['run_version'], reduction_run.run_version, "Expecting the run version to be '%s' but was '%s'." % (reduction_run.run_version, data_dict['run_version']))
-                self.assertEqual(data_dict['instrument'], reduction_run.instrument.name, "Expecting the run number to be '%s' but was '%s'." % (reduction_run.instrument.name, data_dict['instrument']))
-                self.assertNotEqual(data_dict['reduction_arguments'], None, "Expecting to find some arguments")
-                self.assertNotEqual(data_dict['reduction_arguments'], {}, "Expecting to find some arguments")
-                self.assertTrue('standard_vars' in data_dict['reduction_arguments'], "Expecting to find some standard_vars.")
-                self.assertTrue('advanced_vars' in data_dict['reduction_arguments'], "Expecting to find some advanced_vars.")
+                parent.assertEqual(destination, '/queue/ReductionPending', "Expecting the destination to be '/queue/ReductionPending' but was '%s'." % destination)
+                parent.assertEqual(data_dict['data'], '/test/data/path', "Expecting the data path to be '/test/data/path' but was '%s'." % data_dict['data'])
+                parent.assertEqual(data_dict['run_number'], reduction_run.run_number, "Expecting the run number to be '%s' but was '%s'." % (reduction_run.run_number, data_dict['run_number']))
+                parent.assertEqual(data_dict['run_version'], reduction_run.run_version, "Expecting the run version to be '%s' but was '%s'." % (reduction_run.run_version, data_dict['run_version']))
+                parent.assertEqual(data_dict['instrument'], reduction_run.instrument.name, "Expecting the run number to be '%s' but was '%s'." % (reduction_run.instrument.name, data_dict['instrument']))
+                parent.assertNotEqual(data_dict['reduction_arguments'], None, "Expecting to find some arguments")
+                parent.assertNotEqual(data_dict['reduction_arguments'], {}, "Expecting to find some arguments")
+                parent.assertTrue('standard_vars' in data_dict['reduction_arguments'], "Expecting to find some standard_vars.")
+                parent.assertTrue('advanced_vars' in data_dict['reduction_arguments'], "Expecting to find some advanced_vars.")
 
         with patch('reduction_variables.utils.ActiveMQClient', mock_client):
             MessagingUtils().send_pending(reduction_run)
