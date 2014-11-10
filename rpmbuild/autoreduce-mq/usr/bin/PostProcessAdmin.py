@@ -90,10 +90,10 @@ class PostProcessAdmin:
 
     def replace_variables(reduce_script):
         for key in reduce_script.standard_vars:
-            if key in self.reduction_arguments:
+            if 'standard_vars' in self.reduction_arguments and key in self.reduction_arguments['standard_vars']:
                 reduce_script.standard_vars[key] = parse_input_variable(reduce_script.standard_vars[key], self.reduction_arguments[key])
         for key in reduce_script.advanced_vars:
-            if key in self.reduction_arguments:
+            if 'advanced_vars' in self.reduction_arguments and key in self.reduction_arguments['advanced_vars']:
                 reduce_script.advanced_vars[key] = parse_input_variable(reduce_script.advanced_vars[key], self.reduction_arguments[key])
         return reduce_script
 
