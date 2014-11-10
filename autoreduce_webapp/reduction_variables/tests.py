@@ -596,7 +596,7 @@ class ReductionVariablesUtilsTestCase(TestCase):
         self.assertTrue('advanced_vars' in arguments, "Expecting arguments to have a 'advanced_vars' key.")
         self.assertEqual(arguments['standard_vars']['test'], 'testvalue1', "Expecting to find testvalue1 in standard_vars.")
         self.assertTrue("reduction_script_temp" in script_path, "Expecting script_path to point to 'reduction_script_temp'.")
-        self.assertTrue(re.match('\w{8}-\w{4}-\w{4}-\w{13}\.py$', script_path), "Expecting script_path to contain a uuid filename.")
+        self.assertTrue(re.match('\w{8}-\w{4}-\w{4}-\w{4}-\w{12}\.py$', script_path), "Expecting script_path to contain a uuid filename but was %s." % script_path)
 
     def test_get_script_path_and_arguments_empty(self):
         with self.assertRaises(Exception) as e:
