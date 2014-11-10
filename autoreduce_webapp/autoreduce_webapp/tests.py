@@ -295,7 +295,7 @@ class QueueProcessorTestCase(TestCase):
         }
 
         parent = self
-
+        send_called = [False]
         class mock_client(object):
             def __init__(self, brokers, user, password, topics=None, consumer_name='QueueProcessor', client_only=True, use_ssl=False):
                 pass
@@ -304,6 +304,7 @@ class QueueProcessorTestCase(TestCase):
                 pass
 
             def send(self, destination, message, persistent='true'):
+                send_called[0] = True
                 data_dict = json.loads(message)
                 parent.assertEqual(destination, '/queue/ReductionPending', "Expecting destination to be '/queue/ReductionPending' but was %s" % destination)
                 parent.assertNotEqual(data_dict['reduction_script'], None, "Expecting a reduction script.")
@@ -311,7 +312,8 @@ class QueueProcessorTestCase(TestCase):
                 parent.assertEqual(data_dict['reduction_arguments'], {}, "Expecting arguments to be an empty dictionary.")
 
         listener = Listener(mock_client)
-        listener.on_message(headers, message)
+        listener.on_message(headers, json.dumps(message))
+        self.assertTrue(send_called[0], "Expecting send to be called")
         
     '''
         Change an existing reduction run from Queued to Started
