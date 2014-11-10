@@ -6,7 +6,7 @@ from sets import Set
 logging.basicConfig(filename=LOG_FILE.replace('.log', '.test.log'),level=LOG_LEVEL, format=u'%(message)s',)
 from daemon import Daemon
 from queue_processor_daemon import QueueProcessorDaemon
-from queue_processor import Client
+from queue_processor import Client, Listener
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 sys.path.insert(0, BASE_DIR)
 from reduction_viewer.models import ReductionRun, Instrument, ReductionLocation, Status, Experiment, DataLocation
@@ -17,6 +17,7 @@ from icat.exception import ICATSessionError
 from urllib2 import URLError
 from uows_client import UOWSClient
 from suds.client import Client as suds_client
+from mock import patch
 
 class QueueProcessorTestCase(TestCase):
     '''
@@ -269,6 +270,48 @@ class QueueProcessorTestCase(TestCase):
             self.assertEqual(str(runs[1].status), "Queued", "Expecting status to be 'Queued' but was '%s'" % runs[1].status)
         finally:
             self.remove_dummy_reduce_script(instrument_name)
+
+    def test_data_ready_no_vaiables_in_script(self):
+        rb_number = self.get_rb_number()
+        instrument_name = "test_data_ready_multiple_runs-TestInstrument"
+        
+        directory = os.path.join(REDUCTION_SCRIPT_BASE, instrument_name)
+        test_reduce = os.path.join(os.path.dirname(__file__), '../', 'test_files','empty_reduce.py')
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        file_path = os.path.join(directory, 'reduce.py')
+        if not os.path.isfile(file_path):
+            shutil.copyfile(test_reduce, file_path)
+
+        headers { 
+            "destination" : '/queue/DataReady'
+        }
+        message = {
+            "run_number" : 1,
+            "instrument" : instrument_name,
+            "rb_number" : rb_number,
+            "data" : "/false/path",
+            "run_version" : 0
+        }
+
+        parent = self
+
+        class mock_client(object):
+            def __init__(self, brokers, user, password, topics=None, consumer_name='QueueProcessor', client_only=True, use_ssl=False):
+                pass
+
+            def connect(self):
+                pass
+
+            def send(self, destination, message, persistent='true'):
+                data_dict = json.loads(message)
+                parent.assertEqual(destination, '/queue/ReductionPending', "Expecting destination to be '/queue/ReductionPending' but was %s" % destination)
+                parent.assertNotEqual(data_dict['reduction_script'], None, "Expecting a reduction script.")
+                parent.assertNotEqual(data_dict['reduction_script'], '', "Expecting a reduction script.")
+                parent.assertEqual(data_dict['reduction_arguments'], {}, "Expecting arguments to be an empty dictionary.")
+
+        listener = Listener(mock_client)
+        listener.on_message(headers, message)
         
     '''
         Change an existing reduction run from Queued to Started
