@@ -6,7 +6,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 sys.path.insert(0, BASE_DIR)
 from reduction_variables.utils import InstrumentVariablesUtils,VariableUtils, ReductionVariablesUtils, MessagingUtils
 from reduction_viewer.utils import InstrumentUtils, StatusUtils
-from reduction_viewer.models import Notification, ReductionRun, Experiment
+from reduction_viewer.models import Notification, ReductionRun, Experiment, DataLocation
 from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFile
 from mock import patch, Mock
 
@@ -749,7 +749,9 @@ class MessagingUtilsTestCase(TestCase):
     def test_MessagingUtils_successful(self):
         reduction_run = self.get_reduction_run()
 
-        reduction_run.data_location.add("/test/data/path")
+        data_location = DataLocation(file_path="/test/data/path", reduction_run=reduction_run)
+        data_location.save()
+        reduction_run.data_location.add(data_location)
         reduction_run.save()
 
         send_called = [False]
