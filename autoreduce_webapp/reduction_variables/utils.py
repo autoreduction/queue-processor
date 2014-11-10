@@ -293,8 +293,11 @@ class MessagingUtils(object):
         """
         script_path, arguments = ReductionVariablesUtils().get_script_path_and_arguments(RunVariable.objects.filter(reduction_run=reduction_run))
 
+        data_path = ''
         # Currently only support single location
-        data_path = reduction_run.data_location.first()
+        data_location = reduction_run.data_location.first()
+        if data_location:
+            data_path = data_location.file_path
 
         message_client = ActiveMQClient(ACTIVEMQ['broker'], ACTIVEMQ['username'], ACTIVEMQ['password'], ACTIVEMQ['topics'], 'Webapp_QueueProcessor', True, True)
         message_client.connect()
