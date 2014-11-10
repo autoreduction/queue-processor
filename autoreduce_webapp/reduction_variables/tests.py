@@ -299,7 +299,6 @@ class InstrumentVariablesUtilsTestCase(TestCase):
 
         self.assertNotEqual(script_path, None, "Expecting to get a script path back.")
         self.assertNotEqual(script_path, "", "Expecting to get a script path back.")
-        self.assertNotEqual(arguments, None, "Expecting to get some arguments path back.")
         self.assertTrue("reduction_script_temp" in script_path, "Expecting script_path to point to 'reduction_script_temp'.")
         self.assertTrue(re.search('(\w{8}-\w{4}-\w{4}-\w{4}-\w{12}\.py$)', script_path), "Expecting script_path to contain a uuid filename but was %s." % script_path)
         self.assertTrue(isfile_calls[0] > 1, "Expecting at least 2 calls to isfile")
