@@ -602,7 +602,7 @@ class ReductionVariablesUtilsTestCase(TestCase):
         with self.assertRaises(Exception) as e:
             script_path, arguments = ReductionVariablesUtils().get_script_path_and_arguments([])
         
-        self.assertEqual(e.exception.message, "Run variables required", "Expected an exception with message 'Run variables required' but was '%s'." % e.message)
+        self.assertEqual(e.exception.message, "Run variables required", "Expected an exception with message 'Run variables required' but was '%s'." % e.exception.message)
         
 
     def test_get_script_path_and_arguments_empty_script(self):
@@ -615,7 +615,7 @@ class ReductionVariablesUtilsTestCase(TestCase):
         with self.assertRaises(Exception) as e:
             script_path, arguments = ReductionVariablesUtils().get_script_path_and_arguments(run_variables)
 
-        self.assertEqual(e.exception.message, "Run variables missing scripts", "Expected an exception with message 'Run variables missing scripts' but was '%s'." % e.message)
+        self.assertEqual(e.exception.message, "Run variables missing scripts", "Expected an exception with message 'Run variables missing scripts' but was '%s'." % e.exception.message)
 
     def test_get_script_path_and_arguments_multiple_reduction_runs(self):
         run_variables = []
@@ -643,4 +643,4 @@ class ReductionVariablesUtilsTestCase(TestCase):
         with self.assertRaises(Exception) as e:
             script_path, arguments = ReductionVariablesUtils().get_script_path_and_arguments(run_variables)
 
-        self.assertEqual(e.exception.message, "All run variables must be for the same reduction run", "Expected an exception with message 'All run variables must be for the same reduction run' but was '%s'." % e.message)
+        self.assertEqual(e.exception.message, "All run variables must be for the same reduction run", "Expected an exception with message 'All run variables must be for the same reduction run' but was '%s'." % e.exception.message)
