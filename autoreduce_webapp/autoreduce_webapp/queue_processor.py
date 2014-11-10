@@ -132,6 +132,7 @@ class Listener(object):
                         reduction_run.reduction_location.add(reduction_location)
                         
                         # Get any .png files and store them as base64 strings
+                        # Currently doesn't check sub-directories
                         graphs = glob.glob(location + '*.[pP][nN][gG]')
                         for graph in graphs:
                             with open(graph, "rb") as image_file:
