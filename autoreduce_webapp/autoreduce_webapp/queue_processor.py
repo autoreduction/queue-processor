@@ -52,14 +52,6 @@ class Listener(object):
             instrument.is_active = True
             instrument.save()
 
-        instrument_variables_start_run = 0
-        try:
-            instrument_variables_start_run =  InstrumentVariable.objects.filter(instrument=instrument, start_run__lte=self._data_dict['run_number']).latest('start_run').start_run
-        except:
-            instrument_variables_start_run = 1
-            InstrumentVariablesUtils().set_default_instrument_variables(instrument.name, instrument_variables_start_run)
-
-        instrument_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run=instrument_variables_start_run)
         experiment, experiment_created = Experiment.objects.get_or_create(reference_number=self._data_dict['rb_number'], )
         reduction_run, created = ReductionRun.objects.get_or_create(run_number=self._data_dict['run_number'],
                                     run_version=0, 
@@ -67,15 +59,14 @@ class Listener(object):
                                     instrument=instrument
                                     )
         reduction_run.status = StatusUtils().get_queued()
+        variables = InstrumentVariablesUtils().get_variables_for_run(reduction_run)
         data_location = DataLocation(file_path=self._data_dict['data'], reduction_run=reduction_run)
+
         if created:
-            if not instrument_variables:
-                logging.error("No instrument variables found on %s for run %s" % (instrument.name, self._data_dict['run_number']))
-                
-                reduction_run.message = "No instrument variables found on %s for run %s" % (instrument.name, self._data_dict['run_number'])
-                reduction_run.status = StatusUtils().get_error()
+            if not variables:
+                logging.warning("No instrument variables found on %s for run %s" % (instrument.name, self._data_dict['run_number']))
             else:
-                for variables in instrument_variables:
+                for variables in variables:
                     reduction_run_variables = RunVariable(name=variables.name, value=variables.value, type=variables.type)
                     reduction_run_variables.reduction_run = reduction_run
                     reduction_run.run_variables.add(reduction_run_variables)
@@ -86,13 +77,19 @@ class Listener(object):
             reduction_run.save()
             data_location.save()
 
-            if instrument_variables:
+            if variables:
                 script_path, arguments = ReductionVariablesUtils().get_script_path_and_arguments(reduction_run.run_variables.all())
                 self._data_dict['reduction_script'] = script_path
                 self._data_dict['reduction_arguments'] = arguments
                 self._client.send('/queue/ReductionPending', json.dumps(self._data_dict))     
                 logging.info("Run %s ready for reduction" % self._data_dict['run_number'])
                 logging.info("Reduction file: %s" % self._data_dict['reduction_script'])   
+            else:
+                self._data_dict['reduction_script'] = InstrumentVariablesUtils().get_temporary_script(instrument.name)
+                self._data_dict['reduction_arguments'] = {}
+                self._client.send('/queue/ReductionPending', json.dumps(self._data_dict))
+                logging.info("Run %s ready for reduction" % self._data_dict['run_number'])
+                logging.info("Reduction file: %s" % self._data_dict['reduction_script'])
         else:
             logging.error("An invalid attempt to queue an existing reduction run was captured. Experiment: %s, Run Number: %s, Run Version %s" % (self._data_dict['rb_number'], self._data_dict['run_number'], self._data_dict['run_version']))
 

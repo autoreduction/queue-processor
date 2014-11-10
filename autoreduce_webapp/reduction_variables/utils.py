@@ -146,6 +146,24 @@ class InstrumentVariablesUtils(object):
         reduce_script, script_binary =  self.__load_reduction_script(instrument_name)
         return script_binary
 
+    def get_temporary_script(self, instrument_name):
+        """
+        Fetches the reduction script for the given instument, saves it to a temporary location
+        and returns the path.
+        This is for use when a reduction script doesn't expose any variables
+        """
+        unique_name = str(uuid.uuid4()) + '.py'
+        script_path = os.path.join(REDUCTION_SCRIPT_BASE, 'reduction_script_temp', unique_name)
+        # Make sure we don't accidently overwrite a file
+        while os.path.isfile(script_path):
+            unique_name = str(uuid.uuid4()) + '.py'
+            script_path = os.path.join(REDUCTION_SCRIPT_BASE, 'reduction_script_temp', unique_name)
+        f = open(script_path, 'wb')
+        f.write(self.get_current_script_text(instrument_name))
+        f.close()
+
+        return script_path
+
     def get_default_variables(self, instrument_name, reduce_script=None):
         """
         Creates and returns a list of variables matching those found in the appropriate reduce script.
