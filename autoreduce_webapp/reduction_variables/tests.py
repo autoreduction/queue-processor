@@ -7,7 +7,7 @@ sys.path.insert(0, BASE_DIR)
 from reduction_variables.utils import InstrumentVariablesUtils,VariableUtils, ReductionVariablesUtils
 from reduction_viewer.utils import InstrumentUtils, StatusUtils
 from reduction_viewer.models import Notification, ReductionRun, Experiment
-from reduction_variables.models import InstrumentVariable, RunVariable
+from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFile
 from mock import patch
 
 class InstrumentVariablesUtilsTestCase(TestCase):
@@ -570,7 +570,7 @@ class ReductionVariablesUtilsTestCase(TestCase):
     def get_reduction_run(self):
         instrument = InstrumentUtils().get_instrument('valid')
         experiment = Experiment(reference_number=1)
-        redcuction_run = ReductionRun(instrument=instrument, run_number=1, experiment=experiment)
+        reduction_run = ReductionRun(instrument=instrument, run_number=1, experiment=experiment)
         reduction_run.save()
         return reduction_run
 
@@ -603,7 +603,7 @@ class ReductionVariablesUtilsTestCase(TestCase):
             script_path, arguments = ReductionVariablesUtils().get_script_path_and_arguments([])
         except Exception, e:
             self.assertEqual(e.message, "Run variables required", "Expected an exception with message 'Run variables required' but was '%s'." % e.message)
-        self.assertFail("Expecting an exception to be raised.")
+        self.fail("Expecting an exception to be raised.")
 
     def test_get_script_path_and_arguments_empty_script(self):
         run_variables = []
@@ -616,7 +616,7 @@ class ReductionVariablesUtilsTestCase(TestCase):
             script_path, arguments = ReductionVariablesUtils().get_script_path_and_arguments(run_variables)
         except Exception, e:
             self.assertEqual(e.message, "Run variables missing scripts", "Expected an exception with message 'Run variables missing scripts' but was '%s'." % e.message)
-        self.assertFail("Expecting an exception to be raised.")
+        self.fail("Expecting an exception to be raised.")
 
     def test_get_script_path_and_arguments_multiple_reduction_runs(self):
         run_variables = []
@@ -644,4 +644,4 @@ class ReductionVariablesUtilsTestCase(TestCase):
             script_path, arguments = ReductionVariablesUtils().get_script_path_and_arguments(run_variables)
         except Exception, e:
             self.assertEqual(e.message, "All run variables must be for the same reduction run", "Expected an exception with message 'All run variables must be for the same reduction run' but was '%s'." % e.message)
-        self.assertFail("Expecting an exception to be raised.")
+        self.fail("Expecting an exception to be raised.")
