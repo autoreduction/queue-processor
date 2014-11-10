@@ -277,6 +277,34 @@ class InstrumentVariablesUtilsTestCase(TestCase):
         self.assertEqual(variables[0].experiment_reference, None, "Not expecting experiment_reference")
         self.assertEqual(variables[0].start_run, 1, "Expecting start run to be 1 but was %s" % variables[0].start_run)
 
+    def test_get_temporary_script_successful(self):        
+        script_path = InstrumentVariablesUtils().get_temporary_script("valid")
+
+        self.assertNotEqual(script_path, None, "Expecting a script path to be returned")
+        self.assertNotEqual(script_path, "", "Expecting a script path to be returned")
+        self.assertTrue("reduction_script_temp" in script_path, "Expecting script_path to point to 'reduction_script_temp'.")
+        self.assertTrue(re.search('(\w{8}-\w{4}-\w{4}-\w{4}-\w{12}\.py$)', script_path), "Expecting script_path to contain a uuid filename but was %s." % script_path)
+
+    def test_get_temporary_script_file_name_exists(self):
+        isfile_calls = [0]
+        def mock_isfile(path):
+            isfile_calls[0] +=1 
+            if isfile_calls[0] == 1:
+                return True
+            else:
+                return False
+
+        with patch('os.path.isfile', mock_isfile):
+            script_path = InstrumentVariablesUtils().get_temporary_script("valid")
+
+        self.assertNotEqual(script_path, None, "Expecting to get a script path back.")
+        self.assertNotEqual(script_path, "", "Expecting to get a script path back.")
+        self.assertNotEqual(arguments, None, "Expecting to get some arguments path back.")
+        self.assertTrue("reduction_script_temp" in script_path, "Expecting script_path to point to 'reduction_script_temp'.")
+        self.assertTrue(re.search('(\w{8}-\w{4}-\w{4}-\w{4}-\w{12}\.py$)', script_path), "Expecting script_path to contain a uuid filename but was %s." % script_path)
+        self.assertTrue(isfile_calls[0] > 1, "Expecting at least 2 calls to isfile")
+
+    
 class VariableUtilsTestCase(TestCase):
     def setUp(self):
         pass
