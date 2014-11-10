@@ -297,7 +297,7 @@ class QueueProcessorTestCase(TestCase):
         parent = self
         send_called = [False]
         class mock_client(object):
-            def __init__(self, brokers, user, password, topics=None, consumer_name='QueueProcessor', client_only=True, use_ssl=False):
+            def __init__(self):
                 pass
 
             def connect(self):
