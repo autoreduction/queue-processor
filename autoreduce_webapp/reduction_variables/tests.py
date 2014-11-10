@@ -564,7 +564,8 @@ class ReductionVariablesUtilsTestCase(TestCase):
             f = open(reduction_file, 'rb')
             script_binary = f.read()
             return script_binary
-        return None
+        except:
+            return None
 
     def get_reduction_run(self):
         instrument = InstrumentUtils().get_instrument('valid')
@@ -642,5 +643,5 @@ class ReductionVariablesUtilsTestCase(TestCase):
         try:
             script_path, arguments = ReductionVariablesUtils().get_script_path_and_arguments(run_variables)
         except Exception, e:
-            self.assertEqual(e.message, "Run variables missing scripts", "Expected an exception with message 'Run variables missing scripts' but was '%s'." % e.message)
+            self.assertEqual(e.message, "All run variables must be for the same reduction run", "Expected an exception with message 'All run variables must be for the same reduction run' but was '%s'." % e.message)
         self.assertFail("Expecting an exception to be raised.")
