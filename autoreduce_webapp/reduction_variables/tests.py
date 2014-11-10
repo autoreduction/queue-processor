@@ -579,14 +579,15 @@ class ReductionVariablesUtilsTestCase(TestCase):
 
         script = ScriptFile(script=self.get_valid_script(), file_name='reduce.py')
         script.save()
-
-        variable = RunVariable(reduction_run=self.get_reduction_run(),name='test',value='testvalue1',type='text',is_advanced=False)
+        
+        reduction_run = self.get_reduction_run()
+        variable = RunVariable(reduction_run=reduction_run,name='test',value='testvalue1',type='text',is_advanced=False)
         variable.save()
         variable.scripts.add(script)
         variable.save()
         run_variables.append(variable)
 
-        variable = RunVariable(reduction_run=self.get_reduction_run(),name='advanced_test',value='testvalue2',type='text',is_advanced=True)
+        variable = RunVariable(reduction_run=reduction_run,name='advanced_test',value='testvalue2',type='text',is_advanced=True)
         variable.save()
         variable.scripts.add(script)
         variable.save()
