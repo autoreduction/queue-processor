@@ -93,7 +93,7 @@ class Notification(models.Model):
         ('e', 'error')
     );
 
-    message = models.CharField(max_length=50, blank=False)
+    message = models.CharField(max_length=255, blank=False)
     is_active = models.BooleanField(default=True)
     severity = models.CharField(max_length=1,choices=SEVERITY_CHOICES,default='i')
     is_staff_only = models.BooleanField(default=False)
