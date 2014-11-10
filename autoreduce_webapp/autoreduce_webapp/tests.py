@@ -311,7 +311,7 @@ class QueueProcessorTestCase(TestCase):
                 parent.assertNotEqual(data_dict['reduction_script'], '', "Expecting a reduction script.")
                 parent.assertEqual(data_dict['reduction_arguments'], {}, "Expecting arguments to be an empty dictionary.")
 
-        listener = Listener(mock_client)
+        listener = Listener(mock_client())
         listener.on_message(headers, json.dumps(message))
         self.assertTrue(send_called[0], "Expecting send to be called")
         
