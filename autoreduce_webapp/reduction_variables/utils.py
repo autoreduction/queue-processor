@@ -10,6 +10,22 @@ from reduction_viewer.models import ReductionRun, Instrument, Notification
 from reduction_viewer.utils import InstrumentUtils, StatusUtils
 from autoreduce_webapp.icat_communication import ICATCommunication
 
+def write_script_to_temp(script):
+    """
+    Write the given script binary to a unique filename in the reduction_script_temp directory.
+    """
+    unique_name = str(uuid.uuid4()) + '.py'
+    script_path = os.path.join(REDUCTION_SCRIPT_BASE, 'reduction_script_temp', unique_name)
+    # Make sure we don't accidently overwrite a file
+    while os.path.isfile(script_path):
+        unique_name = str(uuid.uuid4()) + '.py'
+        script_path = os.path.join(REDUCTION_SCRIPT_BASE, 'reduction_script_temp', unique_name)
+    f = open(script_path, 'wb')
+    f.write(script)
+    f.close()
+
+    return script_path
+
 class VariableUtils(object):
     def wrap_in_type_syntax(self, value, var_type):
         """
@@ -175,17 +191,7 @@ class InstrumentVariablesUtils(object):
         and returns the path.
         This is for use when a reduction script doesn't expose any variables
         """
-        unique_name = str(uuid.uuid4()) + '.py'
-        script_path = os.path.join(REDUCTION_SCRIPT_BASE, 'reduction_script_temp', unique_name)
-        # Make sure we don't accidently overwrite a file
-        while os.path.isfile(script_path):
-            unique_name = str(uuid.uuid4()) + '.py'
-            script_path = os.path.join(REDUCTION_SCRIPT_BASE, 'reduction_script_temp', unique_name)
-        f = open(script_path, 'wb')
-        f.write(self.get_current_script_text(instrument_name))
-        f.close()
-
-        return script_path
+        return write_script_to_temp(self.get_current_script_text(instrument_name))
 
     def get_default_variables(self, instrument_name, reduce_script=None):
         """
@@ -281,15 +287,7 @@ class ReductionVariablesUtils(object):
         # Currently only supports a single script file
         script_file = run_variables[0].scripts.all()[0]
 
-        unique_name = str(uuid.uuid4()) + '.py'
-        script_path = os.path.join(REDUCTION_SCRIPT_BASE, 'reduction_script_temp', unique_name)
-        # Make sure we don't accidently overwrite a file
-        while os.path.isfile(script_path):
-            unique_name = str(uuid.uuid4()) + '.py'
-            script_path = os.path.join(REDUCTION_SCRIPT_BASE, 'reduction_script_temp', unique_name)
-        f = open(script_path, 'wb')
-        f.write(script_file.script)
-        f.close()
+        script_path = write_script_to_temp(script_file.script)
 
         standard_vars = {}
         advanced_vars = {}
