@@ -6,8 +6,7 @@ from autoreduce_webapp.queue_processor import Client as ActiveMQClient
 logging.basicConfig(filename=LOG_FILE,level=LOG_LEVEL)
 from django.db import models
 from reduction_variables.models import InstrumentVariable, ScriptFile, RunVariable
-from reduction_viewer.models import ReductionRun
-from reduction_viewer.models import Instrument
+from reduction_viewer.models import ReductionRun, Instrument, Notification
 from reduction_viewer.utils import InstrumentUtils, StatusUtils
 from autoreduce_webapp.icat_communication import ICATCommunication
 
@@ -17,19 +16,29 @@ class VariableUtils(object):
         Append the appropriate syntax around variables to be wrote to a preview script.
         E.g. strings will be wrapped in single quotes, lists will be wrapped in brackets, etc.
         """
+        value = str(value)
         if var_type == 'text':
             return "'%s'" % value.replace("'", "\\'")
         if var_type == 'number':
             return re.sub("[^0-9.]", "", value)
         if var_type == 'boolean':
-            return value.lower() == 'true'
+            return str(value.lower() == 'true')
         if var_type == 'list_number':
-            return '[%s]' % value
+            list_values = value.split(',')
+            number_list = []
+            for val in list_values:
+                if re.match("[0-9.]+", val.strip()):
+                    number_list.append(val)
+            return '[%s]' % ','.join(number_list)
         if var_type == 'list_text':
             list_values = value.split(',')
+            text_list = []
             for val in list_values:
-                val = "'%s'" % val.strip().replace("'", "\\'")
-            return '[%s]' % ','.join(list_values)
+                if val:
+                    val = "'%s'" % val.strip().replace("'", "\\'")
+                    text_list.append(val)
+            return '[%s]' % ','.join(text_list)
+        return value
 
     def convert_variable_to_type(self, value, var_type):
         """
@@ -40,23 +49,28 @@ class VariableUtils(object):
         if var_type == "text":
             return str(value)
         if var_type == "number":
-            if '.' in value:
+            if not value or not re.match('[0-9]+', str(value)):
+                return None
+            if '.' in str(value):
                 return float(value)
             else:
-                return int(value)
+                return int(re.sub("[^0-9]+", "", str(value)))
         if var_type == "list_text":
-            var_list = value.split(',')
+            var_list = str(value).split(',')
+            list_text = []
             for list_val in var_list:
-                list_val = str(list_val)
-            return var_list
+                if list_val and list_val.strip():
+                    list_text.append(str(list_val.strip()))
+            return list_text
         if var_type == "list_number":
             var_list = value.split(',')
+            list_number = []
             for list_val in var_list:
-                if '.' in value:
-                    list_val = float(list_val)
+                if '.' in str(list_val):
+                    list_number.append(float(list_val))
                 else:
-                    list_val = int(list_val)
-            return var_list
+                    list_number.append(int(list_val))
+            return list_number
         if var_type == "boolean":
             return value.lower() == 'true'
         return value
@@ -75,10 +89,11 @@ class VariableUtils(object):
         if var_type == 'bool':
             return "boolean"
         if var_type == 'list':
-            if len(value) == 0 or type(value[0]).__name__ == 'str':
-                return "list_text"
-            if type(value[0]).__name__ == 'int' or type(value[0]).__name__ == 'float':
-                return "list_number"
+            list_type = "number"
+            for val in value:
+                if type(val).__name__ == 'str':
+                    list_type = "text"
+            return "list_" + list_type
         return "text"
 
 class InstrumentVariablesUtils(object):
@@ -91,12 +106,19 @@ class InstrumentVariablesUtils(object):
         """
         reduction_file = os.path.join(REDUCTION_SCRIPT_BASE, instrument_name, 'reduce.py')
         try:
-            reduce_script = imp.load_source('reduce_script', reduction_file)
+            reduce_script = imp.load_source(instrument_name + 'reduce_script', reduction_file)
             f = open(reduction_file, 'rb')
             script_binary = f.read()
             return reduce_script, script_binary
         except IOError:
             logging.error("Unable to load reduction script %s" % reduction_file)
+            notification = Notification(is_active=True, is_staff_only=True,severity='e', message="Unable to open reduction script for %s" % instrument_name)
+            notification.save()
+            return None, None
+        except SyntaxError:
+            logging.error("Syntax error in reduction script %s" % reduction_file)
+            notification = Notification(is_active=True, is_staff_only=True,severity='e', message="Syntax error in reduction script for %s" % instrument_name)
+            notification.save()
             return None, None
 
     def set_default_instrument_variables(self, instrument_name, start_run=1):
@@ -125,18 +147,19 @@ class InstrumentVariablesUtils(object):
     def get_variables_for_run(self, reduction_run):
         """
         Fetches the appropriate variables for the given reduction run.
-        If instrument variables with a matchin experiment reference number is found then these will be used
+        If instrument variables with a matching experiment reference number is found then these will be used
         otherwise the variables with the closest run start will be used.
         If no variable are found, default variables are created for the instrument and those are returned.
         """
         variables = InstrumentVariable.objects.filter(instrument=reduction_run.instrument, experiment_reference=reduction_run.experiment.reference_number)
         # No experiment-specific variables, lets look for run number
         if not variables:
-            variables_run_start = InstrumentVariable.objects.filter(instrument=reduction_run.instrument,start_run__lte=reduction_run.run_number, experiment_reference__isnull=True ).order_by('-start_run').first().start_run
-            variables = InstrumentVariable.objects.filter(instrument=reduction_run.instrument,start_run=variables_run_start)
-        # Still not found any variables, we better create some
-        if not variables:
-            variables = self.set_default_instrument_variables(reduction_run.instrument)
+            try:
+                variables_run_start = InstrumentVariable.objects.filter(instrument=reduction_run.instrument,start_run__lte=reduction_run.run_number, experiment_reference__isnull=True ).order_by('-start_run').first().start_run
+                variables = InstrumentVariable.objects.filter(instrument=reduction_run.instrument,start_run=variables_run_start)
+            except AttributeError:
+                # Still not found any variables, we better create some
+                variables = self.set_default_instrument_variables(reduction_run.instrument.name)
         return variables
 
     def get_current_script_text(self, instrument_name):
@@ -173,37 +196,39 @@ class InstrumentVariablesUtils(object):
             reduce_script, script_binary =  self.__load_reduction_script(instrument_name)
         instrument = InstrumentUtils().get_instrument(instrument_name)
         variables = []
-        for key in reduce_script.standard_vars:
-            variable = InstrumentVariable(
-                instrument=instrument, 
-                name=key, 
-                value=str(reduce_script.standard_vars[key]).replace('[','').replace(']',''), 
-                is_advanced=False, 
-                type=VariableUtils().get_type_string(reduce_script.standard_vars[key]),
-                start_run = 0,
-                )
-            variables.append(variable)
-        for key in reduce_script.advanced_vars:
-            variable = InstrumentVariable(
-                instrument=instrument, 
-                name=key, 
-                value=str(reduce_script.advanced_vars[key]).replace('[','').replace(']',''), 
-                is_advanced=True, 
-                type=VariableUtils().get_type_string(reduce_script.advanced_vars[key]),
-                start_run = 0,
-                )
-            variables.append(variable)
+        if 'standard_vars' in dir(reduce_script):
+            for key in reduce_script.standard_vars:
+                variable = InstrumentVariable(
+                    instrument=instrument, 
+                    name=key, 
+                    value=str(reduce_script.standard_vars[key]).replace('[','').replace(']',''), 
+                    is_advanced=False, 
+                    type=VariableUtils().get_type_string(reduce_script.standard_vars[key]),
+                    start_run = 0,
+                    )
+                variables.append(variable)
+        if 'advanced_vars' in dir(reduce_script):
+            for key in reduce_script.advanced_vars:
+                variable = InstrumentVariable(
+                    instrument=instrument, 
+                    name=key, 
+                    value=str(reduce_script.advanced_vars[key]).replace('[','').replace(']',''), 
+                    is_advanced=True, 
+                    type=VariableUtils().get_type_string(reduce_script.advanced_vars[key]),
+                    start_run = 0,
+                    )
+                variables.append(variable)
         return variables
 
     def get_current_and_upcoming_variables(self, instrument_name):
         """
         Fetches the instrument variables for:
-        - The new run number
+        - The next run number
         - Upcoming run numbers
         - Upcoming known experiments
         as a tuple of (current_variables, upcoming_variables_by_run, upcoming_variables_by_experiment)
         """
-        instrument = Instrument.objects.get(name=instrument_name)
+        instrument = InstrumentUtils().get_instrument(instrument_name)
         completed_status = StatusUtils().get_completed()
 
         # Get latest run number and latest experiment reference
@@ -286,8 +311,13 @@ class MessagingUtils(object):
         """
         script_path, arguments = ReductionVariablesUtils().get_script_path_and_arguments(RunVariable.objects.filter(reduction_run=reduction_run))
 
+        data_path = ''
         # Currently only support single location
-        data_path = reduction_run.data_location.first()
+        data_location = reduction_run.data_location.first()
+        if data_location:
+            data_path = data_location.file_path
+        else:
+            raise Exception("No data path found for reduction run")
 
         message_client = ActiveMQClient(ACTIVEMQ['broker'], ACTIVEMQ['username'], ACTIVEMQ['password'], ACTIVEMQ['topics'], 'Webapp_QueueProcessor', True, True)
         message_client.connect()
@@ -295,7 +325,7 @@ class MessagingUtils(object):
             'run_number':reduction_run.run_number,
             'instrument':reduction_run.instrument.name,
             'rb_number':reduction_run.experiment.reference_number,
-            'data':'',
+            'data':data_path,
             'reduction_script':script_path,
             'reduction_arguments':arguments,
             'run_version':reduction_run.run_version,
