@@ -3,10 +3,6 @@ from django.contrib.auth.models import User
 from autoreduce_webapp.utils import SeparatedValuesField
 import autoreduce_webapp.icat_communication
 
-class UserProfile(models.Model):
-    user_number = models.IntegerField()
-    user = models.ForeignKey(User, unique=True)
-
 class Instrument(models.Model):
     name = models.CharField(max_length=80)
     is_active = models.BooleanField(default=False)

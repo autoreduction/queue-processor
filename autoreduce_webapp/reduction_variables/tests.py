@@ -303,7 +303,6 @@ class InstrumentVariablesUtilsTestCase(TestCase):
         self.assertTrue(re.search('(\w{8}-\w{4}-\w{4}-\w{4}-\w{12}\.py$)', script_path), "Expecting script_path to contain a uuid filename but was %s." % script_path)
         self.assertTrue(isfile_calls[0] > 1, "Expecting at least 2 calls to isfile")
 
-    
 class VariableUtilsTestCase(TestCase):
     def setUp(self):
         pass

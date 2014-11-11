@@ -1,3 +1,6 @@
+"""
+Taken from: https://djangosnippets.org/snippets/1568/
+"""
 from django.template import Library, Node, TemplateSyntaxError, Variable
 from django.conf import settings
 from django.core import urlresolvers

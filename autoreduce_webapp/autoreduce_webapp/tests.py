@@ -864,7 +864,6 @@ class QueueProcessorTestCase(TestCase):
 
         self.assertFalse(os.path.isfile(file_path), "Expecting file to be deleted after call.")
 
-
 class ICATCommunicationTestCase(TestCase):
 
     @classmethod
