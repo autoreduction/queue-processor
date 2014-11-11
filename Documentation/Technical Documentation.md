@@ -176,7 +176,14 @@ This contains most of the models and logic for the web app itself. Everything no
 
 Models are the instances of database records. Each model matches against a table in the database.
 
-
+* **Instrument** - A simple model containing the instrument name and whether it is active in the web app.
+* **Experiment** - A record containing only the experiment reference number, used to link reduction runs together.
+* **Status** - Status of the reduction run, either Queued, Processing, Completed or Error.
+* **ReductionRun** - The main model that contains most information about a reduction run job. Run_version will begin at 0 for an initial reduction triggered when coming off the instrument. This is important as it is used to indicate in the UI that the job was started by "Autoreduction Service" 
+* **DataLocation** - Stores the file path of the data for a reduction run.
+* **ReductionLocation** - Stored the output directories of a completed reduction job.
+* **Setting** - Key/Value pair of settings to be used throughout the web app and can be quickly and easily changed through the admin interface. Current settings are: `support_email`, `admin_email` and `ICAT_YEARS_TO_SHOW`.
+* **Notification** - A model for showing notifications at the top of pages. These have various severities (info, warning and error) that determine the colour of the notification. It is possible to limit notifications to only be shown to staff using the `is_staff_only` boolean and notifications can be enabled/disabled by setting the `is_active` boolean. Some notifications are created and shown on-the-fly in the `view_utils.py` 
 
 #### utils.py
 
@@ -229,6 +236,9 @@ Depending on usage, a cache may be needed to sit between the web app and the ICA
 ### Reduced Data Size
 **Ticket:** [#10459](http://trac.mantidproject.org/mantid/ticket/10459)
 It would be nice to display how much disk space reduced files are taking up at the run, experiment and instrument level.
+
+### Refactor DataLocation and ReductionLocation
+DataLocation and ReductionLocation could be reduced into a single Location model with a 'type' property to specify which a path relates to. These were implemented as two models as it was easy to call `reduction_run.data_location.all()` to get data location. I have since learned you should be able to call `filter()` on the relation, E.g. `reduction_run.location.filter(type='data')`
 
 ## Possible Problems & Solutions
 
