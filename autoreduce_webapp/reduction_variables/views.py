@@ -320,7 +320,7 @@ def run_confirmation(request, run_number, run_version=0):
             status=queued_status,
             )
         new_job.save()
-        new_job.data_location = reduction_run.data_location.all()
+        new_job.data_location = list(reduction_run.data_location.all())
 
         script_binary = InstrumentVariablesUtils().get_current_script_text(instrument.name)
         script = ScriptFile(script=script_binary, file_name='reduce.py')
