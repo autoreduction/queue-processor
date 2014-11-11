@@ -7,7 +7,7 @@ from django.http import HttpResponse
 from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, require_staff
 from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFile
 from reduction_variables.utils import InstrumentVariablesUtils, VariableUtils, MessagingUtils
-from reduction_viewer.models import Instrument, ReductionRun
+from reduction_viewer.models import Instrument, ReductionRun, DataLocation
 from reduction_viewer.utils import StatusUtils
 from autoreduce_webapp.icat_communication import ICATCommunication
 from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL
@@ -320,7 +320,10 @@ def run_confirmation(request, run_number, run_version=0):
             status=queued_status,
             )
         new_job.save()
-        new_job.data_location = list(reduction_run.data_location.all())
+        for data_location in reduction_run.data_location.all()
+            new_data_location = DataLocation(file_path=data_location.file_path, reduction_run=new_job)
+            new_data_location.save()
+            new_job.data_location.add(new_data_location)
 
         script_binary = InstrumentVariablesUtils().get_current_script_text(instrument.name)
         script = ScriptFile(script=script_binary, file_name='reduce.py')
