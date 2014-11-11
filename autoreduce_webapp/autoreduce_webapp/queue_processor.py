@@ -159,7 +159,8 @@ class Listener(object):
         else:
             logging.error("A reduction run completed that wasn't found in the database. Experiment: %s, Run Number: %s, Run Version %s" % (self._data_dict['rb_number'], self._data_dict['run_number'], self._data_dict['run_version']))
 
-        self.clean_up_reduction_script(self._data_dict['reduction_script'])
+        if 'reduction_script' in self._data_dict:
+            self.clean_up_reduction_script(self._data_dict['reduction_script'])
 
     def reduction_error(self):
         if 'message' in self._data_dict:
@@ -185,7 +186,8 @@ class Listener(object):
         else:
             logging.error("A reduction run that caused an error wasn't found in the database. Experiment: %s, Run Number: %s, Run Version %s" % (self._data_dict['rb_number'], self._data_dict['run_number'], self._data_dict['run_version']))
 
-        self.clean_up_reduction_script(self._data_dict['reduction_script'])
+        if 'reduction_script' in self._data_dict:
+            self.clean_up_reduction_script(self._data_dict['reduction_script'])
         
 
 class Client(object):
