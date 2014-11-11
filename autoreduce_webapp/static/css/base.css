@@ -177,6 +177,7 @@ search#run_search {
         top: 50%;
         left: 50%;
         transform: translateX(-50%) translateY(-50%);
+        -ms-transform: translateX(-50%) translateY(-50%);
     }
 }
 @media screen and (max-width: 767px) {
