@@ -6,8 +6,6 @@ import autoreduce_webapp.icat_communication
 class Instrument(models.Model):
     name = models.CharField(max_length=80)
     is_active = models.BooleanField(default=False)
-    scientists = models.ManyToManyField(User)
-    experimenters = models.ManyToManyField(User, related_name='experiment_instruments')
 
     def __unicode__(self):
         return u'%s' % self.name
