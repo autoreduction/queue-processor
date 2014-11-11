@@ -320,7 +320,7 @@ def run_confirmation(request, run_number, run_version=0):
             status=queued_status,
             )
         new_job.save()
-        for data_location in reduction_run.data_location.all()
+        for data_location in reduction_run.data_location.all():
             new_data_location = DataLocation(file_path=data_location.file_path, reduction_run=new_job)
             new_data_location.save()
             new_job.data_location.add(new_data_location)
