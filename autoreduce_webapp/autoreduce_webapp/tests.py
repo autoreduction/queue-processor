@@ -273,7 +273,7 @@ class QueueProcessorTestCase(TestCase):
 
     def test_data_ready_no_vaiables_in_script(self):
         rb_number = self.get_rb_number()
-        instrument_name = "test_data_ready_multiple_runs-TestInstrument"
+        instrument_name = "test_data_ready_no_vaiables_in_script-TestInstrument"
         
         directory = os.path.join(REDUCTION_SCRIPT_BASE, instrument_name)
         test_reduce = os.path.join(os.path.dirname(__file__), '../', 'test_files','empty_reduce.py')
