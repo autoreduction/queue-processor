@@ -832,6 +832,38 @@ class QueueProcessorTestCase(TestCase):
         finally:
             self.remove_dummy_reduce_script(instrument_name)
 
+    def test_script_deleted(self):
+        rb_number = self.get_rb_number()
+        instrument_name = "test_data_ready_multiple_runs-TestInstrument"
+        
+        directory = os.path.join(REDUCTION_SCRIPT_BASE, instrument_name)
+        test_reduce = os.path.join(os.path.dirname(__file__), '../', 'test_files','empty_reduce.py')
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        file_path = os.path.join(directory, 'reduce.py')
+        if not os.path.isfile(file_path):
+            shutil.copyfile(test_reduce, file_path)
+
+        headers = { 
+            "destination" : '/queue/ReductionError'
+        }
+        message = {
+            "run_number" : 1,
+            "instrument" : instrument_name,
+            "rb_number" : rb_number,
+            "data" : "/false/path",
+            "run_version" : 0,
+            "reduction_script" : file_path
+        }
+        listener = Listener(None)
+
+        self.assertTrue(os.path.isfile(file_path), "Expecting file to exist before call.")
+
+        listener.on_message(headers, json.dumps(message))
+
+        self.assertFalse(os.path.isfile(file_path), "Expecting file to be deleted after call.")
+
+
 class ICATCommunicationTestCase(TestCase):
 
     @classmethod
