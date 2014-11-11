@@ -171,8 +171,11 @@ class Listener(object):
         if not experiment:
             logging.error("Unable to find experiment %s" % self._data_dict['rb_number'])
             return
-        reduction_run = ReductionRun.objects.get(experiment=experiment, run_number=self._data_dict['run_number'], run_version=self._data_dict['run_version'])
-                
+        try:
+            reduction_run = ReductionRun.objects.get(experiment=experiment, run_number=self._data_dict['run_number'], run_version=self._data_dict['run_version'])
+        except:
+            reduction_run = None
+                    
         if reduction_run:
             reduction_run.status = StatusUtils().get_error()
             reduction_run.finished = timezone.now().replace(microsecond=0)
