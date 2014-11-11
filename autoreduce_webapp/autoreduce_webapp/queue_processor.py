@@ -161,7 +161,6 @@ class Listener(object):
 
         self.clean_up_reduction_script(self._data_dict['reduction_script'])
 
-
     def reduction_error(self):
         if 'message' in self._data_dict:
             logging.info("Run %s has encountered an error - %s" % (self._data_dict['run_number'], self._data_dict['message']))

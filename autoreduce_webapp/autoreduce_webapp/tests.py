@@ -834,6 +834,7 @@ class QueueProcessorTestCase(TestCase):
 
     def test_script_deleted(self):
         rb_number = self.get_rb_number()
+        Experiment(reference_number=rb_number).save()
         instrument_name = "test_data_ready_multiple_runs-TestInstrument"
         
         directory = os.path.join(REDUCTION_SCRIPT_BASE, instrument_name)
