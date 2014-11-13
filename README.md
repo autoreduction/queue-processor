@@ -268,8 +268,9 @@ Note: Git Bash is the recommended command line (after step 4). Any command line 
 2. Open IIS Manager and double click on `FastCGI Settings`
 3. Click `Add application` and enter the following:
         
-  Full Path: C:\Python27\python.exe
-  Arguments: C:\[PATH TO WEBAPP]\autoreduce_webapp\manage.py fcgi --pythonpath=C:\[PATH TO WEBAPP]\autoreduce_webapp --settings=autoreduce_webapp.settings
+Full Path: `C:\Python27\python.exe`
+
+Arguments: `C:\[PATH TO WEBAPP]\autoreduce_webapp\manage.py fcgi --pythonpath=C:\[PATH TO WEBAPP]\autoreduce_webapp --settings=autoreduce_webapp.settings`
 
 4. Create a new web application pointing at the root of the web app 
 5. Create `web.config` in the root of the web application and enter the following:
