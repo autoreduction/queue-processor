@@ -18,9 +18,10 @@
     2. [reduction_viewer](#reduction_viewer)
     3. [reduction_variables](#reduction_variables)
 4. [Templates](#templates)
-3. [Tests](#test#)
-4. [Areas for Improvement](#areas-for-improvement)
-5. [Possible Problems & Solutions](#possible-problems-&-solutions)
+5. [Tests](#test)
+6. [Other Notes](#other-notes)
+7. [Areas for Improvement](#areas-for-improvement)
+8. [Possible Problems & Solutions](#possible-problems-&-solutions)
 
 ## Technologies
 
@@ -73,7 +74,7 @@ The web application is split into 3 components, known as apps in Django. These a
 * reduction_variables
 
 ### autoreduce_webapp
-This is the core of the web app. It handles the application-wide settings, utilities and shared services.
+This is the core of the web app. It handles the application-wide settings, utilities and services.
 
 #### queue_processor.py
 The `queue_processor.py` isn't strictly part of the web application but runs separately as a service but makes use of the modules made available by autoreduce_webapp (such as models and utilities). This contains a Stomp Client and Listener that sits and listens for messages from ActiveMQ on the following queues:
@@ -187,13 +188,29 @@ Models are the instances of database records. Each model matches against a table
 
 #### utils.py
 
+This contains utilities related to the models found within reduction_viewer.
+
+* **StatusUtils** - A helper function to get status models back for either Queue, Processing, Completed or Error. This utility wraps all calls in a `get_or_create` call to remove the need of pre-populating the database with these values.
+* **InstrumentUtils** - A helper function to get Instrument models back for the provided name. If an instrument matching the name isn't found, one is created prior to return.
+
 ### reduction_variables
 
 All models and logic related to run/instrument variables are found within this app.
 
 #### models.py
 
+* **ScriptFile** - Contains the binary text and filename of a reduction script.  
+* **InstrumentVariable** - Stores variables for a single instrument with either a starting run number or an experiment reference number. Variables can either be standard or advanced, as indicated by the `is_advanced` boolean.
+* **RunVariable** - Stored variable for a specific run job, upon first reduction run version these will be populated by the matching instrument variables (based on either experiment reference number or run number, in that order), re-run jobs will use the values the user enters.
+
 #### utils.py
+
+This contains utilities related to the models found within reduction_variables.
+
+* **VariableUtils** - 
+* **InstrumentVariablesUtils** - 
+* **ReductionVariablesUtils** - 
+* **MessagingUtils** - 
 
 ## Templates
 
@@ -227,6 +244,43 @@ python manage.py test reduction_variables.tests.MessagingUtilsTestCase
 
 Note: UOWSClientTestCase requires you enter a valid username and password for the User Office Web Service.
 
+## Other Notes
+
+### Selecting run variables
+
+Run variables (for initial runs that come off the instrument) are selected in the `get_variables_for_run` utils method. Appropriate variables are chosen in the following order:
+* First, check if there are instrument variables for the associated experiment reference number
+* Next, check instrument variables for those with the closest run start prior to the current run number
+* If no variables are found, default variables are created from the reduction script and those are used.
+
+### Script Preview Regex
+
+```python
+standard_pattern = "(?P<before>(\s)standard_vars\s*=\s*\{(([\s\S])+)['|\"]%s['|\"]\s*:\s*)(?P<value>((?!,\n)[\S\s])+)"
+advanced_pattern = "(?P<before>(\s)advanced_vars\s*=\s*\{(([\s\S])+)['|\"]%s['|\"]\s*:\s*)(?P<value>((?!,\n)[\S\s])+)"
+```
+
+This regular expression is used to match and replace variables within the `standard_vars` and `advanced_vars` dictionaries. Breaking it down:
+
+`(?P<before>...)` - This is a named capture group used by the regex replace.
+`\s` - This matches any whitespace character. `\s*` optional matches multiple whitespace characters (0-many).
+`\{` and `\}` matches the characters `{` and `}` literally.
+`['|\"]` matches either `'` or `"`.
+`%s` is replaced by the varaible name to be matched against.
+`(?!,\n)` makes sure it DOES NOT match `,` or a newline.
+`[\S\s]` matches any whitespace or non-whitespace character.
+
+Example usage:
+
+```python
+pattern = standard_pattern % name   # Replace '%s' in the regex with the value in 'name'
+value = "test_var"                  #
+value = '\g<before>%s' % value      # Make sure everything before the replaced value is kept. '\g<Before>' inserts everything that matches the '(?P<before>)' capture group
+re.sub(pattern, value, script_file) # Replace the matched pattern in 'script_file' with value
+```
+
+For a live example see: http://regex101.com/r/oJ7iY5/2
+
 ## Areas for Improvement
 
 ### Caching
@@ -239,6 +293,10 @@ It would be nice to display how much disk space reduced files are taking up at t
 
 ### Refactor DataLocation and ReductionLocation
 DataLocation and ReductionLocation could be reduced into a single Location model with a 'type' property to specify which a path relates to. These were implemented as two models as it was easy to call `reduction_run.data_location.all()` to get data location. I have since learned you should be able to call `filter()` on the relation, E.g. `reduction_run.location.filter(type='data')`
+
+### Better handling of script variables in preview
+Currently, default variables need to be hard coded into the reduction script for them to be replaced as part of the preview function. It would be nice if this could handle scenarios where default variables are set using other variables or function calls, for example. 
+Note: This is currently handled when pulling out the default value for use in instrument variables, just not in the preview function (due to the regex used).
 
 ## Possible Problems & Solutions
 
