@@ -1,7 +1,7 @@
 # ISIS Autoreduction WebApp
 
-- [Linux installation](#Linux-Installation)
-- [Windows Installation](#Windows-Installation)
+- [Linux installation](#linux-installation)
+- [Windows Installation](#windows-installation)
 
 ## Linux Installation
 
@@ -259,7 +259,7 @@ Note: Git Bash is the recommended command line (after step 4). Any command line 
 
 ### Install application
 
-1. `git clone https://github.com/mantidproject/autoreduce.git /usr/src/autoreduce`
+1. `git clone https://github.com/mantidproject/autoreduce.git`
 2. Copy `C:\Python27\Lib\site-packages\django\contrib\admin\static\admin` into `autoreduce_webapp\static\`
 
 ### Configure IIS
