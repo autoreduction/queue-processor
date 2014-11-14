@@ -273,6 +273,26 @@ Note: UOWSClientTestCase requires you enter a valid username and password for th
 
 ## Other Notes
 
+### Expected message format
+
+Messages that are sent to the ActiveMQ broker are send as JSON. And example of what is expected to be included is below:
+```json
+{
+    'run_number' : 123456,
+    'instrument' : 'GEM',
+    'rb_number' : 1234567,
+    'data' : '/path/to/data/',
+    'reduction_script' : '/path/to/script/reduce.py',
+    'arguments' : { ... },
+    'message' : 'Some form of feedback, possible an error message',
+    'reduction_data' : ['/path/1', '/path/2']
+}
+``` 
+`'reduction_script'` and `'arguments'` is added by the `data_ready` function in queue_processor.py.
+`'reduction_data'` is added by the `reduction_complete` function in the queue_processor.py.
+`'message'` will usually be empty unless
+
+
 ### Selecting run variables
 
 Run variables (for initial runs that come off the instrument) are selected in the `get_variables_for_run` utils method. Appropriate variables are chosen in the following order:
