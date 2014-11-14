@@ -91,6 +91,11 @@ This actions this script takes are:
 * `ReductionComplete` - This updates the status and performs post-processing. ICAT is updated with the reduction details. The reduced data is checked for .png files and these converted to a [base64](http://css-tricks.com/data-uris/) encoded string and saved in the database to be shown via the web application.
 * `ReductionError` - This logs the error that was retrieved and updated the status of the ReductionRun.
 
+When using the `Client` there are some optional arguments that could cause problems is not correctly set.
+`topics` - a list stating what queues/topics to subscribe to (Default: None)
+`client_only` - Set this True if you only require sending a message to the message queue (for example in `MessagingUtils.send_pending`).
+`use_ssl` - This needs to be set to True is connecting to the messaging queue over SSL (recommended). (Default: False)
+
 #### icat_communication.py
 
 This handles all communication to [ICAT](http://icatproject.org/) and acts as a wrapper to the icat python client. 
@@ -207,12 +212,34 @@ All models and logic related to run/instrument variables are found within this a
 
 This contains utilities related to the models found within reduction_variables.
 
-* **VariableUtils** - 
-* **InstrumentVariablesUtils** - 
-* **ReductionVariablesUtils** - 
-* **MessagingUtils** - 
+* **VariableUtils** - Contains utilities relating to individual variables. E.g. `wrap_in_type_syntax` takes in a value and adds the appropriate syntax around it to match the type provided. For example, a `1,2,3` with type of `list_number` would return `[1,2,3]` as a string to be used in the preview script.
+* **InstrumentVariablesUtils** - Provides utilities for setting and fetching InstrumentVariables and scripts. Of particular note is the `get_variables_for_run` function that is [mentioned below](#selecting-run-variables) and `get_current_and_upcoming_variables` that is also [mentioned below](#upcoming-instrumentvariables).
+* **ReductionVariablesUtils** - Currently only contains `get_script_path_and_arguments` which takes in a list of run numbers and returns back a file path and a dictionary of variables to be passed in. The file path point to a temporary copy of the reduction script that is later removed.
+* **MessagingUtils** - Currently only contains `send_pending` which takes in a ReductionRun and sends it to the messaging queue for processing.
 
 ## Templates
+
+All templates use the [Django template language](https://docs.djangoproject.com/en/1.7/topics/templates/).
+
+Templates are split into pages and snippets.
+
+There is a `base.html` that all pages extend from. This contains the main structure of the page and the head. It includes multiple blocks that child pages can use to insert markup at the correct location (stylesheets, scripts, body etc.).
+
+Pages can include imports (E.g. `{% load colour_table_rows %}`) that provide template tags and helpers. See the note above about [custom template tags](#templatetags).
+
+Many pages also include snippets that are reused in multiple places. Snippets can be found in the `snippets` directory and contain just a small portion of markup with now `extends` tag. 
+
+Example of using a snippet:
+```
+{% include "snippets/instrument_table.html" with instrument=instrument reduction_variables_on=reduction_variables_on by="experiment" user=user only %}
+```
+
+As shown above, snippets can be passed variables that will then be available in its scope. The final, optional, argument shown above, `only`, indicates that the snippet with only have access to the variables passed in an none of the rest of the page's context dictionary.
+
+`header.html` - contains anything that needs to go at the top of every page. This includes the title and notifications.
+`navbar.html` - contains the navigation bar that is shown at the top of every page.
+`footer.html` - contains the help text shown at the bottom of every page.
+
 
 ## Tests
 
@@ -253,6 +280,14 @@ Run variables (for initial runs that come off the instrument) are selected in th
 * Next, check instrument variables for those with the closest run start prior to the current run number
 * If no variables are found, default variables are created from the reduction script and those are used.
 
+### Upcoming InstrumentVariables
+
+Upcoming InstrumentVaraibles are fetched in two ways.
+
+The first is by run number. Any instrument variables with a start run larger than the last processed run number for that instrument are returned.
+
+The second is by experiment reference number. This checks with ICAT for any experiments on that instrument where the end date is in the future. These are then used to return all instrument variables with a matching reference number. It is possible that this may not return all that is expected as the experiments may not have been loaded into ICAT yet.
+
 ### Script Preview Regex
 
 ```python
@@ -281,6 +316,56 @@ re.sub(pattern, value, script_file) # Replace the matched pattern in 'script_fil
 
 For a live example see: http://regex101.com/r/oJ7iY5/2
 
+### Base64 Images
+
+When a reduction job output some .png files the `reduction_complete` method of the queue_processor will read these and convert them to base64 encoded text to be stored in the database. The following code achieves this:
+
+```python
+graphs = glob.glob(location + '*.[pP][nN][gG]')
+for graph in graphs:
+    with open(graph, "rb") as image_file:
+        encoded_string = 'data:image/png;base64,' + base64.b64encode(image_file.read())
+        if reduction_run.graph is None:
+            reduction_run.graph = [encoded_string]
+        else:
+            reduction_run.graph.append(encoded_string)
+```
+`glob.glob` will search for any file ending in .png (case-insensitive) and return their paths as a list. Each file is then iterated over, read in and encoded to base64. `'data:image/png;base64,'` is prepended to the encoded string as this is required to tell the browser what to expect in the encoded text.
+
+When it comes to displaying these in the browser all major browsers can handle the encoded text in the `src` attribute of an `<img>` tag.
+
+Internet Explorer doesn't have support for Data URI navigation (loading a page via an encoded string) so this makes opening the image in a new tab difficult. To resolve this there is a `fixIeDataURILinks` function in `base.js` that will take any `<a>` tags that have a `href` attribute starting with `data:image/jpeg;base64` and set an onclick handler that instead of opening the encoded string as a new tab it creates a new popup window and sets the body of the popup as the image.
+
+```javascript
+var fixIeDataURILinks = function fixIeDataURILinks(){
+    $("a[href]").each(function(){
+        if($(this).attr('href').indexOf('data:image/jpeg;base64') === 0){
+            var output = this.innerHTML;    // This returns the '<img>' tag with the encoded string
+            $(this).on('click', function openDataURIImage(event){
+                event.preventDefault();
+                var win = window.open("about:blank");
+                win.document.body.innerHTML = output;
+                win.document.title = document.title;
+            });
+        }
+    });
+};
+```
+
+### Error pages
+
+There are 4 HTTP error pages supplied in the application. These handle [400](http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1), [403](http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.4), [404](http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.5) and [500](http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1) HTTP error codes, each having a corresponding template file.
+
+The logic for these can be found in `views.py` of the autoreduce_webapp application and included in `urls.py` as the following:
+```python
+handler400 = 'autoreduce_webapp.views.handler400'
+handler403 = 'autoreduce_webapp.views.handler403'
+handler404 = 'autoreduce_webapp.views.handler404'
+handler500 = 'autoreduce_webapp.views.handler500'
+```
+
+If the `admin_email` setting has been set in the database this will be shown to the user for additional help.
+
 ## Areas for Improvement
 
 ### Caching
@@ -300,3 +385,15 @@ Note: This is currently handled when pulling out the default value for use in in
 
 ## Possible Problems & Solutions
 
+### Queue processor unable to connect to ActiveMQ
+
+First check that the details in `settings.py` are correct and that the broker is set as a list of tuples. (E.g. `'broker' : [("queue.example.com", 61613)]`)
+
+If these details look correct, next check if ActiveMQ is using SSL or not. If it is, make sure the `use_ssl` property of the queue_processor client is set to True, otherise ensure it is set to False.
+
+To set ActiveMQ to use SSL edit the activemq.xml with something similar to:
+```xml
+<transportConnectors>
+    <transportConnector name="stomp+ssl" uri="stomp+ssl://0.0.0.0:61613?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/>
+</transportConnectors>
+```
