@@ -290,7 +290,7 @@ Messages that are sent to the ActiveMQ broker are send as JSON. And example of w
 ``` 
 `'reduction_script'` and `'arguments'` is added by the `data_ready` function in queue_processor.py.
 `'reduction_data'` is added by the `reduction_complete` function in the queue_processor.py.
-`'message'` will usually be empty unless
+`'message'` will usually be empty unless an error has been caught and passed back.
 
 
 ### Selecting run variables
