@@ -1,7 +1,7 @@
 # Autoreduction Web App Technical Documentation
 
 ## Overview
-
+The autoreduction web app is a user interface for the autoreduction system that takes experiment data and runs it through a reduction script without the need for user prompt. This interface is made available through a web browser, on any internet connected device, and gives the status of reduction jobs that have been submitted. It also provides the ability to change variables and re-run experiment data with new variables and/or reduction script.
 
 ## Contents
 
@@ -272,6 +272,26 @@ python manage.py test reduction_variables.tests.MessagingUtilsTestCase
 Note: UOWSClientTestCase requires you enter a valid username and password for the User Office Web Service.
 
 ## Other Notes
+
+### Expected message format
+
+Messages that are sent to the ActiveMQ broker are send as JSON. And example of what is expected to be included is below:
+```json
+{
+    'run_number' : 123456,
+    'instrument' : 'GEM',
+    'rb_number' : 1234567,
+    'data' : '/path/to/data/',
+    'reduction_script' : '/path/to/script/reduce.py',
+    'arguments' : { ... },
+    'message' : 'Some form of feedback, possible an error message',
+    'reduction_data' : ['/path/1', '/path/2']
+}
+``` 
+`'reduction_script'` and `'arguments'` is added by the `data_ready` function in queue_processor.py.
+`'reduction_data'` is added by the `reduction_complete` function in the queue_processor.py.
+`'message'` will usually be empty unless an error has been caught and passed back.
+
 
 ### Selecting run variables
 
