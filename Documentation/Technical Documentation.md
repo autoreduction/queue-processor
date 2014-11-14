@@ -1,7 +1,7 @@
 # Autoreduction Web App Technical Documentation
 
 ## Overview
-
+The autoreduction web app is a user interface for the autoreduction system that takes experiment data and runs it through a reduction script without the need for user prompt. This interface is made available through a web browser, on any internet connected device, and gives the status of reduction jobs that have been submitted. It also provides the ability to change variables and re-run experiment data with new variables and/or reduction script.
 
 ## Contents
 
