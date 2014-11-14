@@ -44,7 +44,7 @@
                                             {{ location }}<br/>
                                         {% endfor %}
                                     {% else %}
-                                        <em>No reduced data found</em>
+                                        <em>No experiment data found</em>
                                     {% endif %}
                                 </div>
                             </div>
@@ -68,11 +68,11 @@
         <div class="row">
             <div class="col-md-12">
                 {% if runs %}
-                    <h4>Runs ({{ runs.count }})</h4>
+                    <h4>Reduction Jobs ({{ runs.count }})</h4>
                     <table class="table table-striped table-bordered">
                         <thead>
                             <tr>
-                                <th>Run Number</th>
+                                <th>Job Number</th>
                                 <th>Status</th>
                                 <th>Last Updated</th>
                                 <th>Submitted By</th>
