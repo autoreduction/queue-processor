@@ -232,9 +232,10 @@ Note: Git Bash is the recommended command line (after step 4). Any command line 
 5. Download and install Git from: http://git-scm.com/download/win
 6. Download and install MySQL-Python from: http://www.lfd.uci.edu/~gohlke/pythonlibs/4y6heurj/MySQL-python-1.2.5.win-amd64-py2.7.exe
 7. Download and install Mercurial from: https://bitbucket.org/tortoisehg/files/downloads/mercurial-3.1.2-x64.msi
-8. Download https://raw.github.com/pypa/pip/master/contrib/get-pip.py and run `python get-pip.py`
-9. Add `c:\python27\scripts` to the path environmental variable.
-10. `pip install django`
+8. Download and install http://downloads.sourceforge.net/project/pywin32/pywin32/Build%20219/pywin32-219.win-amd64-py2.7.exe?r=http%3A%2F%2Fsourceforge.net%2Fprojects%2Fpywin32%2Ffiles%2Fpywin32%2FBuild%2520219%2F&ts=1416304230&use_mirror=garr
+9. Download https://raw.github.com/pypa/pip/master/contrib/get-pip.py and run `python get-pip.py`
+10. Add `c:\python27\scripts` to the path environmental variable.
+11. `pip install django`
 
 ### Configuring MySQL
 
@@ -309,3 +310,11 @@ There are a few optional settings that the app looks for from the "Settings" tab
 `support_email` - Shown in the footer as a "contact us" email link.
 `admin_email` - Shown on error pages as an email link to report issues.
 `ICAT_YEARS_TO_SHOW` - The number of years worth of data to retrieve from ICAT for use in populating the run list. This defaults to 3 years.
+
+## Installing the Queue Processor service
+
+1. In an administrative command prompt navigate to the autoreduce_webapp folder
+2. `python queue_processor_win_service.py install`
+3. Open Services, right click on "Autoreduce Queue Processor" and select Properties
+4. Change Startup Type to Automatic
+5. Click Start
