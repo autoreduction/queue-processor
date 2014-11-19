@@ -4,6 +4,18 @@ Post Process Administrator. It kicks off cataloging and reduction jobs.
 """
 import logging, json, socket, os, sys, subprocess, time, shutil, imp, stomp
 
+def linux_to_windows_path(path):
+    path = path.replace('/', '\\')
+    # '/isis/' maps to '\\isis\inst$\'
+    path = path.replace('\\isis\\', '\\\\isis\\inst$\\')
+    return path
+
+def windows_to_linux_path(path):
+    # '\\isis\inst$\' maps to '/isis/'
+    path = path.replace('\\\\isis\\inst$\\', '/isis/')
+    path = path.replace('\\', '/')
+    return path
+
 class PostProcessAdmin:
     def __init__(self, data, conf, connection):
 
@@ -58,7 +70,7 @@ class PostProcessAdmin:
                 raise ValueError("reduction_script is missing")
                 
             if data.has_key('reduction_arguments'):
-                self.reduction_arguments = str(data['reduction_arguments'])
+                self.reduction_arguments = windows_to_linux_apth(str(data['reduction_arguments']))
                 logging.info("reduction_arguments: " + self.reduction_arguments)
             else:
                 raise ValueError("reduction_arguments is missing")
@@ -67,7 +79,7 @@ class PostProcessAdmin:
             logging.info('JSON data error', exc_info=True)
             raise
 
-    def parse_input_variable(default, value):
+    def parse_input_variable(self, default, value):
         varType = type(default)
         if varType.__name__ == "str":
             return str(value)
@@ -80,26 +92,14 @@ class PostProcessAdmin:
         if varType.__name__ == "float":
             return float(value)
 
-    def replace_variables(reduce_script):
+    def replace_variables(self, reduce_script):
         for key in reduce_script.standard_vars:
             if 'standard_vars' in self.reduction_arguments and key in self.reduction_arguments['standard_vars']:
-                reduce_script.standard_vars[key] = parse_input_variable(reduce_script.standard_vars[key], self.reduction_arguments[key])
+                reduce_script.standard_vars[key] = self.parse_input_variable(reduce_script.standard_vars[key], self.reduction_arguments[key])
         for key in reduce_script.advanced_vars:
             if 'advanced_vars' in self.reduction_arguments and key in self.reduction_arguments['advanced_vars']:
-                reduce_script.advanced_vars[key] = parse_input_variable(reduce_script.advanced_vars[key], self.reduction_arguments[key])
+                reduce_script.advanced_vars[key] = self.parse_input_variable(reduce_script.advanced_vars[key], self.reduction_arguments[key])
         return reduce_script
-
-    def linux_to_windows_path(path):
-        path = path.replace('/', '\\')
-        # '/isis/' maps to '\\isis\inst$\'
-        path = path.replace('\\isis\\', '\\\\isis\\inst$\\')
-        return path
-
-    def windows_to_linux_path(path):
-        # '\\isis\inst$\' maps to '/isis/'
-        path = path.replace('\\\\isis\\inst$\\', '/isis/')
-        path = path.replace('\\', '/')
-        return path
 
     def reduce(self):
         print "in reduce"
@@ -136,7 +136,7 @@ class PostProcessAdmin:
             # Set the output to be the logfile
             sys.stdout = logFile
             sys.stderr = errFile
-            reduce_script = replace_variables(reduce_script)
+            reduce_script = self.replace_variables(reduce_script)
             logging.info("reduction subprocess started.")
             out_directories = reduce_script.main(data=self.data_file, output=reduce_result_dir)
             logging.info("reduction subprocess completed.")
@@ -180,7 +180,7 @@ class PostProcessAdmin:
         except Exception, e:
             self.data["error"] = "REDUCTION Error: %s " % e
             logging.error("called "+self.conf['reduction_error']  + " --- " + json.dumps(self.data))
-            self.send(self.conf['reduction_error'] , json.dumps(self.data))
+            self.client.send(self.conf['reduction_error'] , json.dumps(self.data))
             
 
     def send(self, destination, data):
