@@ -2,24 +2,16 @@
 """
 Post Process Administrator. It kicks off cataloging and reduction jobs.
 """
-import logging, json, socket, os, sys, subprocess, time, shutil, imp
-
-#from ingestNexus_mq import IngestNexus
-#from ingestReduced_mq import IngestReduced
-from Configuration import Configuration
-from stompest.config import StompConfig
-from stompest.sync import Stomp
+import logging, json, socket, os, sys, subprocess, time, shutil, imp, stomp
 
 class PostProcessAdmin:
-    def __init__(self, data, conf):
+    def __init__(self, data, conf, connection):
 
         logging.info("json data: " + str(data))
         data["information"] = socket.gethostname()
         self.data = data
         self.conf = conf
-        
-        stompConfig = StompConfig(self.conf.brokers, self.conf.amq_user, self.conf.amq_pwd)
-        self.client = Stomp(stompConfig)
+        self.client = connection
 
         try:
             if data.has_key('data'):
@@ -112,8 +104,8 @@ class PostProcessAdmin:
     def reduce(self):
         print "in reduce"
         try:         
-            logging.info("called " + self.conf.reduction_started + " --- " + json.dumps(self.data))  
-            self.send(self.conf.reduction_started, json.dumps(self.data))
+            logging.info("called " + self.conf['reduction_started'] + " --- " + json.dumps(self.data))  
+            self.send(self.conf['reduction_started'], json.dumps(self.data))
 
             # specify instrument directory  
             instrument_dir = "/isis/ndx" + self.instrument.upper() + "/user/processed/autoreduction/"
@@ -122,8 +114,8 @@ class PostProcessAdmin:
             reduce_script_dir = self.reduction_script.replace('reduce.py','')
             if os.path.exists(self.reduction_script) == False:
                 self.data['message'] = "Reduce script doesn't exist"
-                self.send(self.conf.reduction_error , json.dumps(self.data))  
-                logging.info("called "+self.conf.reduction_error + " --- " + json.dumps(self.data))  
+                self.send(self.conf['reduction_error'] , json.dumps(self.data))  
+                logging.info("called "+self.conf['reduction_error'] + " --- " + json.dumps(self.data))  
                 return
             
             # specify directory where autoreduction output goes
@@ -173,8 +165,8 @@ class PostProcessAdmin:
             
             if os.stat(out_err).st_size == 0:
                 os.remove(out_err)
-                self.send(self.conf.reduction_complete , json.dumps(self.data))  
-                logging.info("called "+self.conf.reduction_complete + " --- " + json.dumps(self.data))     
+                self.send(self.conf['reduction_complete'] , json.dumps(self.data))  
+                logging.info("called "+self.conf['reduction_complete'] + " --- " + json.dumps(self.data))     
             else:
                 maxLineLength=80
                 fp=file(out_err, "r")
@@ -182,17 +174,16 @@ class PostProcessAdmin:
                 lastLine = fp.readlines()[-1]
                 errMsg = lastLine.strip() + ", see reduction_log/" + os.path.basename(out_log) + " or " + os.path.basename(out_err) + " for details."
                 self.data["error"] = "REDUCTION: %s" % errMsg
-                self.send(self.conf.reduction_error , json.dumps(self.data))
-                logging.error("called "+self.conf.reduction_error  + " --- " + json.dumps(self.data))       
+                self.send(self.conf['reduction_error'] , json.dumps(self.data))
+                logging.error("called "+self.conf['reduction_error']  + " --- " + json.dumps(self.data))       
 
         except Exception, e:
             self.data["error"] = "REDUCTION Error: %s " % e
-            logging.error("called "+self.conf.reduction_error  + " --- " + json.dumps(self.data))
-            self.send(self.conf.reduction_error , json.dumps(self.data))
+            logging.error("called "+self.conf['reduction_error']  + " --- " + json.dumps(self.data))
+            self.send(self.conf['reduction_error'] , json.dumps(self.data))
             
 
     def send(self, destination, data):
-        self.client.connect()
         self.client.send(destination, data)
         self.client.disconnect()
         
@@ -205,25 +196,30 @@ if __name__ == "__main__":
     print "\nIn PostProcessAdmin.py\n"
 
     try:
-        conf = Configuration('/etc/autoreduce/post_process_consumer.conf')
+        brokers = []
+        brokers.append((self.config['brokers'].split(':')[0],int(self.config['brokers'].split(':')[1])))
+        connection = stomp.Connection(host_and_ports=brokers, use_ssl=True)
+        connection.start()
+        connection.connect(self.config['amq_user'], self.config['amq_pwd'], wait=True, header={'activemq.prefetchSize': '1',})
+
+        conf = json.load(open('/etc/autoreduce/post_process_consumer.conf'))
         destination, message = sys.argv[1:3]
         logging.info("destination: " + destination)
         logging.info("message: " + message)
         data = json.loads(message)
         
         try:  
-            pp = PostProcessAdmin(data, conf)
+            pp = PostProcessAdmin(data, conf, connection)
             if destination == '/queue/ReductionPending':
                 pp.reduce()
 
         except ValueError as e:
             data["error"] = str(e)
             logging.error("JSON data error: " + json.dumps(data))
-            stomp = Stomp(StompConfig(conf.brokers, conf.amq_user, conf.amq_pwd))
-            stomp.connect()
-            stomp.send(conf.postprocess_error, json.dumps(data))
-            stomp.disconnect() 
-            logging.info("Called " + conf.postprocess_error + "----" + json.dumps(data))
+
+            connection.send(conf['postprocess_error'], json.dumps(data))
+            connection.disconnect() 
+            logging.info("Called " + conf['postprocess_error'] + "----" + json.dumps(data))
             raise
         
         except:
