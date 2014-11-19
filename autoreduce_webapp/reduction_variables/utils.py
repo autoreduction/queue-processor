@@ -20,6 +20,7 @@ def write_script_to_temp(script, script_vars_file):
     while os.path.exists(script_path):
         unique_name = str(uuid.uuid4())
         script_path = os.path.join(REDUCTION_SCRIPT_BASE, 'reduction_script_temp', unique_name)
+    os.makedirs(script_path)
     f = open(os.path.join(script_path, 'reduce.py'), 'wb')
     f.write(script)
     f.close()
@@ -119,31 +120,29 @@ class InstrumentVariablesUtils(object):
     def __load_reduction_script(self, instrument_name):
         """
         Load the relevant reduction script and return back a tuple containing:
-            - An instance of the python script
             - The text of the script
         If the script cannot be loaded (None, None) is returned
         """
         reduction_file = os.path.join(REDUCTION_SCRIPT_BASE, "NDX"+instrument_name, 'user', 'scripts', 'autoreduction', 'reduce.py')
         try:
-            reduce_script = imp.load_source(instrument_name + 'reduce_script', reduction_file)
             f = open(reduction_file, 'rb')
             script_binary = f.read()
-            return reduce_script, script_binary
+            return  script_binary
         except ImportError, e:
             logging.error("Unable to load reduction script %s due to missing import. (%s)" % (reduction_file, e.message))
             notification = Notification(is_active=True, is_staff_only=True,severity='e', message="Unable to open reduction script for %s due to import error. (%s)" % (instrument_name, e.message))
             notification.save()
-            return None, None
+            return None
         except IOError:
             logging.error("Unable to load reduction script %s" % reduction_file)
             notification = Notification(is_active=True, is_staff_only=True,severity='e', message="Unable to open reduction script for %s" % instrument_name)
             notification.save()
-            return None, None
+            return None
         except SyntaxError:
             logging.error("Syntax error in reduction script %s" % reduction_file)
             notification = Notification(is_active=True, is_staff_only=True,severity='e', message="Syntax error in reduction script for %s" % instrument_name)
             notification.save()
-            return None, None
+            return None
 
     def __load_reduction_vars_script(self, instrument_name):
         """
@@ -181,7 +180,7 @@ class InstrumentVariablesUtils(object):
         """
         if not start_run:
             start_run = 1
-        reduce_script, script_binary =  self.__load_reduction_script(instrument_name)
+        script_binary =  self.__load_reduction_script(instrument_name)
         reduce_vars_script, vars_script_binary =  self.__load_reduction_vars_script(instrument_name)
 
         script = ScriptFile(script=script_binary, file_name='reduce.py')
@@ -223,7 +222,7 @@ class InstrumentVariablesUtils(object):
         """
         Returns the binary text within the reduce script for the provided instrument.
         """
-        reduce_script, script_binary =  self.__load_reduction_script(instrument_name)
+        script_binary =  self.__load_reduction_script(instrument_name)
         reduce_vars_script, vars_script_binary =  self.__load_reduction_vars_script(instrument_name)
         return script_binary, vars_script_binary
 
