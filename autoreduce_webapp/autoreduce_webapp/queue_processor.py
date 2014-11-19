@@ -19,7 +19,7 @@ class Listener(object):
         self._data_dict = {}
 
     def clean_up_reduction_script(self, script_path):
-        if os.path.isfile(script_path):
+        if os.path.isdirectory(script_path):
             try:
                 os.remove(script_path)
             except:
@@ -37,17 +37,19 @@ class Listener(object):
             logging.error("Could not decode message from %s" % destination)
             logging.error(sys.exc_value)
             return
-
-        if destination == '/queue/DataReady':
-            self.data_ready()
-        elif destination == '/queue/ReductionStarted':
-            self.reduction_started()
-        elif destination == '/queue/ReductionComplete':
-            self.reduction_complete()
-        elif destination == '/queue/ReductionError':
-            self.reduction_error()
-        else:
-            logging.warning("Recieved a message on an unknown topic '%s'" % destination)
+        try:
+            if destination == '/queue/DataReady':
+                self.data_ready()
+            elif destination == '/queue/ReductionStarted':
+                self.reduction_started()
+            elif destination == '/queue/ReductionComplete':
+                self.reduction_complete()
+            elif destination == '/queue/ReductionError':
+                self.reduction_error()
+            else:
+                logging.warning("Recieved a message on an unknown topic '%s'" % destination)
+        except Exception, e:
+            logging.error("UNCAUGHT ERROR: %s" % e.message)
 
     def data_ready(self):
         # Import within method to prevent cylindrical imports

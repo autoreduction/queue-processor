@@ -6,7 +6,7 @@ from django.views.generic.base import View
 from django.http import HttpResponse
 from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, require_staff
 from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFile
-from reduction_variables.utils import InstrumentVariablesUtils, VariableUtils, MessagingUtils
+from reduction_variables.utils import InstrumentVariablesUtils, VariableUtils, MessagingUtils, ScriptUtils
 from reduction_viewer.models import Instrument, ReductionRun, DataLocation
 from reduction_viewer.utils import StatusUtils
 from autoreduce_webapp.icat_communication import ICATCommunication
@@ -109,12 +109,14 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
 
             if request.POST.get("is_editing", '') == 'True':
                 old_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run=start)
-                script = old_variables[0].scripts.all()[0]
+                script, script_vars = ScriptUtils().get_reduce_scripts(old_variables[0].scripts.all())
                 default_variables = list(old_variables)
             else:
-                script_binary = InstrumentVariablesUtils().get_current_script_text(instrument.name)
+                script_binary, script_vars_binary = InstrumentVariablesUtils().get_current_script_text(instrument.name)
                 script = ScriptFile(script=script_binary, file_name='reduce.py')
                 script.save()
+                script_vars = ScriptFile(script=script_vars_binary, file_name='reduce_vars.py')
+                script_vars.save()
                 default_variables = InstrumentVariablesUtils().get_default_variables(instrument.name)
 
             # Remove any existing variables saved within the provided range
@@ -133,13 +135,14 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
 
             if request.POST.get("is_editing", '') == 'True':
                 old_variables = InstrumentVariable.objects.filter(instrument=instrument, experiment_reference=experiment_reference)
-                script = old_variables[0].scripts.all()[0]
+                script, script_vars = ScriptUtils().get_reduce_scripts(old_variables[0].scripts.all())
                 default_variables = list(old_variables)
             else:
-
-                script_binary = InstrumentVariablesUtils().get_current_script_text(instrument.name)
+                script_binary, script_vars_binary = InstrumentVariablesUtils().get_current_script_text(instrument.name)
                 script = ScriptFile(script=script_binary, file_name='reduce.py')
                 script.save()
+                script_vars = ScriptFile(script=script_vars_binary, file_name='reduce_vars.py')
+                script_vars.save()
                 default_variables = InstrumentVariablesUtils().get_default_variables(instrument.name)
 
             existing_variables = InstrumentVariable.objects.filter(instrument=instrument, experiment_reference=experiment_reference)
@@ -174,6 +177,7 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
                 variable.scripts.clear()
             variable.save()
             variable.scripts.add(script)
+            variable.scripts.add(script_vars)
             variable.save()
 
         return redirect('instrument_summary', instrument=instrument.name)
@@ -325,9 +329,11 @@ def run_confirmation(request, run_number, run_version=0):
             new_data_location.save()
             new_job.data_location.add(new_data_location)
 
-        script_binary = InstrumentVariablesUtils().get_current_script_text(instrument.name)
+        script_binary, script_vars_binary = InstrumentVariablesUtils().get_current_script_text(instrument.name)
         script = ScriptFile(script=script_binary, file_name='reduce.py')
         script.save()
+        script_vars = ScriptFile(script=script_vars_binary, file_name='reduce_vars.py')
+        script_vars.save()
 
         run_variables = reduction_run.run_variables.all()
         default_variables = InstrumentVariablesUtils().get_variables_for_run(reduction_run)
@@ -348,6 +354,7 @@ def run_confirmation(request, run_number, run_version=0):
                     )
                     variable.save()
                     variable.scripts.add(script)
+                    variable.scripts.add(script_vars)
                     variable.save()
                     new_variables.append(variable)
                 if 'var-standard-' in key:
@@ -363,12 +370,14 @@ def run_confirmation(request, run_number, run_version=0):
                     )
                     variable.save()
                     variable.scripts.add(script)
+                    variable.scripts.add(script_vars)
                     variable.save()
                     new_variables.append(variable)
         
         if len(new_variables) == 0:
             new_job.delete()
             script.delete()
+            script_vars.delete()
             context_dictionary = {
                 'run' : None,
                 'variables' : None,
@@ -386,6 +395,7 @@ def run_confirmation(request, run_number, run_version=0):
             except Exception, e:
                 new_job.delete()
                 script.delete()
+                script_vars.delete()
                 context_dictionary = {
                     'run' : None,
                     'variables' : None,
@@ -417,7 +427,10 @@ def preview_script(request, instrument, run_number=0, experiment_reference=0):
             run_variables = InstrumentVariable.objects.filter(experiment_reference=experiment_reference, instrument=instrument)
         else:
             run_variables = InstrumentVariable.objects.filter(start_run=run_number, instrument=instrument)
-        script_file = run_variables[0].scripts.all()[0].script.decode("utf-8")
+        script, script_vars = ScriptUtils().get_reduce_scripts(old_variables[0].scripts.all())
+        script_file = script.decode("utf-8")
+        script_vars_file = script_vars.decode("utf-8")
+
         for variable in run_variables:
             if variable.is_advanced:
                 pattern = advanced_pattern % variable.name
@@ -426,7 +439,7 @@ def preview_script(request, instrument, run_number=0, experiment_reference=0):
             # Wrap the value in the correct syntax to indicate the type
             value = VariableUtils().wrap_in_type_syntax(variable.value, variable.type)
             value = '\g<before>%s' % value
-            script_file = re.sub(pattern, value, script_file)
+            script_vars_file = re.sub(pattern, value, script_vars_file)
 
     elif request.method == 'POST':
         experiment_reference = request.POST.get('experiment_reference', None)
@@ -437,9 +450,13 @@ def preview_script(request, instrument, run_number=0, experiment_reference=0):
         elif run_number > 0:
             default_variables = InstrumentVariable.objects.filter(start_run=run_number, instrument=instrument)
         if default_variables:
-            script_file = run_variables[0].scripts.all()[0].script.decode("utf-8")
+            script, script_vars = ScriptUtils().get_reduce_scripts(old_variables[0].scripts.all())
+            script_file = script.decode("utf-8")
+            script_vars_file = script_vars.decode("utf-8")
         else:
-            script_file = InstrumentVariablesUtils().get_current_script_text(instrument).decode("utf-8")
+            script_binary, script_vars_binary = InstrumentVariablesUtils().get_current_script_text(instrument)
+            script_file = script_binary.decode("utf-8")
+            script_vars_file = script_vars_binary.decode("utf-8")
             default_variables = InstrumentVariablesUtils().get_default_variables(instrument)
         for key,value in request.POST.iteritems():
             if 'var-' in key:
@@ -457,9 +474,11 @@ def preview_script(request, instrument, run_number=0, experiment_reference=0):
                 # Wrap the value in the correct syntax to indicate the type
                 value = VariableUtils().wrap_in_type_syntax(value, default_var.type)
                 value = '\g<before>%s' % value
-                script_file = re.sub(pattern, value, script_file)
+                script_vars_file = re.sub(pattern, value, script_vars_file)
 
     reduce_script = script_file
+
+    """ TODO: Merge both scripts 
 
     response = HttpResponse(content_type='application/x-python')
     response['Content-Disposition'] = 'attachment; filename=reduce.py'

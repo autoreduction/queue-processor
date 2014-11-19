@@ -10,18 +10,21 @@ from reduction_viewer.models import ReductionRun, Instrument, Notification
 from reduction_viewer.utils import InstrumentUtils, StatusUtils
 from autoreduce_webapp.icat_communication import ICATCommunication
 
-def write_script_to_temp(script):
+def write_script_to_temp(script, script_vars_file):
     """
     Write the given script binary to a unique filename in the reduction_script_temp directory.
     """
-    unique_name = str(uuid.uuid4()) + '.py'
+    unique_name = str(uuid.uuid4())
     script_path = os.path.join(REDUCTION_SCRIPT_BASE, 'reduction_script_temp', unique_name)
     # Make sure we don't accidently overwrite a file
-    while os.path.isfile(script_path):
-        unique_name = str(uuid.uuid4()) + '.py'
+    while os.path.isdirectory(script_path):
+        unique_name = str(uuid.uuid4())
         script_path = os.path.join(REDUCTION_SCRIPT_BASE, 'reduction_script_temp', unique_name)
-    f = open(script_path, 'wb')
+    f = open(os.path.join(script_path, 'reduce.py'), 'wb')
     f.write(script)
+    f.close()
+    f = open(os.path.join(script_path, 'reduce_vars.py'), 'wb')
+    f.write(script_vars_file)
     f.close()
 
     return script_path
@@ -122,7 +125,36 @@ class InstrumentVariablesUtils(object):
         """
         reduction_file = os.path.join(REDUCTION_SCRIPT_BASE, "NDX"+instrument_name, 'user', 'scripts', 'autoreduction', 'reduce.py')
         try:
-            reduce_script = imp.load_source(instrument_name + 'reduce_script', reduction_file.replace('reduce.py', 'reduce_vars.py'))
+            reduce_script = imp.load_source(instrument_name + 'reduce_script', reduction_file)
+            f = open(reduction_file, 'rb')
+            script_binary = f.read()
+            return reduce_script, script_binary
+        except ImportError, e:
+            logging.error("Unable to load reduction script %s due to missing import. (%s)" % (reduction_file, e.message))
+            notification = Notification(is_active=True, is_staff_only=True,severity='e', message="Unable to open reduction script for %s due to import error. (%s)" % (instrument_name, e.message))
+            notification.save()
+            return None, None
+        except IOError:
+            logging.error("Unable to load reduction script %s" % reduction_file)
+            notification = Notification(is_active=True, is_staff_only=True,severity='e', message="Unable to open reduction script for %s" % instrument_name)
+            notification.save()
+            return None, None
+        except SyntaxError:
+            logging.error("Syntax error in reduction script %s" % reduction_file)
+            notification = Notification(is_active=True, is_staff_only=True,severity='e', message="Syntax error in reduction script for %s" % instrument_name)
+            notification.save()
+            return None, None
+
+    def __load_reduction_vars_script(self, instrument_name):
+        """
+        Load the relevant reduction script and return back a tuple containing:
+            - An instance of the python script
+            - The text of the script
+        If the script cannot be loaded (None, None) is returned
+        """
+        reduction_file = os.path.join(REDUCTION_SCRIPT_BASE, "NDX"+instrument_name, 'user', 'scripts', 'autoreduction', 'reduce_vars.py')
+        try:
+            reduce_script = imp.load_source(instrument_name + 'reduce_script', reduction_file)
             f = open(reduction_file, 'rb')
             script_binary = f.read()
             return reduce_script, script_binary
@@ -150,16 +182,20 @@ class InstrumentVariablesUtils(object):
         if not start_run:
             start_run = 1
         reduce_script, script_binary =  self.__load_reduction_script(instrument_name)
+        reduce_vars_script, vars_script_binary =  self.__load_reduction_vars_script(instrument_name)
 
         script = ScriptFile(script=script_binary, file_name='reduce.py')
         script.save()
+        script_vars = ScriptFile(script=vars_script_binary, file_name='reduce_vars.py')
+        script_vars.save()
 
-        instrument_variables = self.get_default_variables(instrument_name, reduce_script)
+        instrument_variables = self.get_default_variables(instrument_name, reduce_vars_script)
         variables = []
         for variable in instrument_variables:
             variable.start_run = start_run
             variable.save()
             variable.scripts.add(script)
+            variable.scripts.add(script_vars)
             variable.save()
             variables.append(variable)
 
@@ -188,7 +224,8 @@ class InstrumentVariablesUtils(object):
         Returns the binary text within the reduce script for the provided instrument.
         """
         reduce_script, script_binary =  self.__load_reduction_script(instrument_name)
-        return script_binary
+        reduce_vars_script, vars_script_binary =  self.__load_reduction_vars_script(instrument_name)
+        return script_binary, vars_script_binary
 
     def get_temporary_script(self, instrument_name):
         """
@@ -196,7 +233,8 @@ class InstrumentVariablesUtils(object):
         and returns the path.
         This is for use when a reduction script doesn't expose any variables
         """
-        return write_script_to_temp(self.get_current_script_text(instrument_name))
+        script_binary, vars_script_binary = self.get_current_script_text(instrument_name)
+        return write_script_to_temp(script_binary, vars_script_binary)
 
     def get_default_variables(self, instrument_name, reduce_script=None):
         """
@@ -204,7 +242,7 @@ class InstrumentVariablesUtils(object):
         An opptional instance of reduce_script can be passed in to prevent multiple hits to the filesystem.
         """
         if not reduce_script:
-            reduce_script, script_binary =  self.__load_reduction_script(instrument_name)
+            reduce_script, script_binary =  self.__load_reduction_vars_script(instrument_name)
         instrument = InstrumentUtils().get_instrument(instrument_name)
         variables = []
         if 'standard_vars' in dir(reduce_script):
@@ -288,11 +326,10 @@ class ReductionVariablesUtils(object):
             else:
                 if reduction_run != variables.reduction_run.id:
                     raise Exception("All run variables must be for the same reduction run")
+        
+        script_binary, script_vars_binary = ScriptUtils().get_reduce_scripts(run_variables[0].scripts.all())
 
-        # Currently only supports a single script file
-        script_file = run_variables[0].scripts.all()[0]
-
-        script_path = write_script_to_temp(script_file.script)
+        script_path = write_script_to_temp(script_binary, script_vars_binary)
 
         standard_vars = {}
         advanced_vars = {}
@@ -335,3 +372,14 @@ class MessagingUtils(object):
             'message':'',
         }
         message_client.send('/queue/ReductionPending', json.dumps(data_dict))    
+
+class ScriptUtils(object):
+    def get_reduce_scripts(self, scripts):
+        script_binary = None
+        script_vars_binary = None
+        for script in run_variables[0].scripts.all():
+            if script.file_name == "reduce.py":
+                script_binary = script.script
+            elif script.file_name == "reduce_vars.py":
+                script_vars_binary = script.script
+        return script_binary, script_vars_binary
