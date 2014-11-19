@@ -377,7 +377,7 @@ class ScriptUtils(object):
     def get_reduce_scripts(self, scripts):
         script_binary = None
         script_vars_binary = None
-        for script in run_variables[0].scripts.all():
+        for script in scripts:
             if script.file_name == "reduce.py":
                 script_binary = script.script
             elif script.file_name == "reduce_vars.py":
