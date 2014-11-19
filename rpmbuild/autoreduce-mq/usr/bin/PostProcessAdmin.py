@@ -64,13 +64,13 @@ class PostProcessAdmin:
                 raise ValueError("run_number is missing")
                 
             if data.has_key('reduction_script'):
-                self.reduction_script = str(data['reduction_script'])
+                self.reduction_script = windows_to_linux_apth(str(data['reduction_script']))
                 logging.info("reduction_script: " + self.reduction_script)
             else:
                 raise ValueError("reduction_script is missing")
                 
             if data.has_key('reduction_arguments'):
-                self.reduction_arguments = windows_to_linux_apth(str(data['reduction_arguments']))
+                self.reduction_arguments = str(data['reduction_arguments'])
                 logging.info("reduction_arguments: " + self.reduction_arguments)
             else:
                 raise ValueError("reduction_arguments is missing")
@@ -111,8 +111,8 @@ class PostProcessAdmin:
             instrument_dir = "/isis/ndx" + self.instrument.upper() + "/user/processed/autoreduction/"
 
             # specify script to run and directory
-            reduce_script_dir = self.reduction_script.replace('reduce.py','')
-            if os.path.exists(self.reduction_script) == False:
+            reduce_script_dir = self.reduction_script
+            if os.path.exists(os.path.join(self.reduction_script, "reduce.py")) == False:
                 self.data['message'] = "Reduce script doesn't exist"
                 self.send(self.conf['reduction_error'] , json.dumps(self.data))  
                 logging.info("called "+self.conf['reduction_error'] + " --- " + json.dumps(self.data))  
@@ -128,7 +128,7 @@ class PostProcessAdmin:
                 os.makedirs(log_dir)
 
             # Load reduction script 
-            reduce_script = imp.load_source('reducescript', self.reduction_script)
+            reduce_script = imp.load_source('reducescript', os.path.join(self.reduction_script, "reduce.py"))
             out_log = os.path.join(log_dir, os.path.basename(self.data_file) + ".log")
             out_err = os.path.join(reduce_result_dir, os.path.basename(self.data_file) + ".err")
             logFile=open(out_log, "w")
