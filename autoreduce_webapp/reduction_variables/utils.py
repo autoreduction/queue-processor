@@ -17,7 +17,7 @@ def write_script_to_temp(script, script_vars_file):
     unique_name = str(uuid.uuid4())
     script_path = os.path.join(REDUCTION_SCRIPT_BASE, 'reduction_script_temp', unique_name)
     # Make sure we don't accidently overwrite a file
-    while os.path.isdirectory(script_path):
+    while os.path.exists(script_path):
         unique_name = str(uuid.uuid4())
         script_path = os.path.join(REDUCTION_SCRIPT_BASE, 'reduction_script_temp', unique_name)
     f = open(os.path.join(script_path, 'reduce.py'), 'wb')

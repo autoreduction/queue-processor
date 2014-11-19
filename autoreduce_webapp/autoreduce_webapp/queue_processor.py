@@ -19,7 +19,7 @@ class Listener(object):
         self._data_dict = {}
 
     def clean_up_reduction_script(self, script_path):
-        if os.path.isdirectory(script_path):
+        if os.path.exists(script_path):
             try:
                 os.remove(script_path)
             except:
