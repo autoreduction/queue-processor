@@ -1,43 +1,18 @@
 import json, logging, time, subprocess, sys, socket
-
-from twisted.internet import reactor, defer, task
-from stompest import async, sync
-from stompest.config import StompConfig
-from stompest.async.listener import SubscriptionListener
-from stompest.protocol import StompSpec, StompFailoverUri
+import stomp
+from twisted.internet import reactor
 from Configuration import Configuration
 
-
-class Consumer(object):
-        
-    def __init__(self, config):
-        self.stompConfig = StompConfig(config.brokers, config.amq_user, config.amq_pwd)
-        self.config = config
+class Listener(object):
+    def __init__(self, client):
+        self._client = client
         self.procList = []
-        
-    @defer.inlineCallbacks
-    def run(self):
-        client = yield async.Stomp(self.stompConfig).connect()
-        headers = {
-            # client-individual mode is necessary for concurrent processing
-            # (requires ActiveMQ >= 5.2)
-            StompSpec.ACK_HEADER: StompSpec.ACK_CLIENT_INDIVIDUAL,
-            # the maximal number of messages the broker will let you work on at the same time
-            'activemq.prefetchSize': '1',
-        }
 
-        for q in self.config.queues:
-            client.subscribe(q, headers, listener=SubscriptionListener(self.consume, errorDestination=self.config.postprocess_error))
-        
-        #print "finished run"
-    
-    def consume(self, client, frame):
-        """
-        NOTE: you can return a Deferred here
-        """
-        headers = frame.headers
+    def on_error(self, headers, message):
+        logging.error("Error recieved - %s" % str(message))
+
+    def on_message(self, headers, data):
         destination = headers['destination']
-        data = frame.body
 
         logging.info("Received frame destination: " + destination)
         logging.info("Received frame body (data)" + data) 
@@ -55,6 +30,22 @@ class Consumer(object):
         for i in self.procList:
             if i.poll() is not None:
                 self.procList.remove(i)
+
+class Consumer(object):
+        
+    def __init__(self, config):
+        self.config = config
+        self.consumer_name = "queueProcessor"
+        
+    def run(self):
+        connection = stomp.Connection(host_and_ports=self.config.brokers, use_ssl=True)
+        connection.set_listener(self.consumer_name, Listener(self))
+        connection.start()
+        connection.connect(self.config.amq_user, self.config.amq_pwd, wait=True, header={StompSpec.ACK_HEADER: StompSpec.ACK_CLIENT_INDIVIDUAL,'activemq.prefetchSize': '1',})
+
+        for queue in self.config.amq_queues:
+            logging.info("[%s] Subscribing to %s" % (self.consumer_name, queue))
+            connection.subscribe(destination=queue, id=1, ack='auto')
 
 
 if __name__ == '__main__':
