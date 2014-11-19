@@ -478,7 +478,7 @@ def preview_script(request, instrument, run_number=0, experiment_reference=0):
 
     reduce_script = script_file
 
-    """ TODO: Merge both scripts 
+    # TODO: Merge both scripts 
 
     response = HttpResponse(content_type='application/x-python')
     response['Content-Disposition'] = 'attachment; filename=reduce.py'
