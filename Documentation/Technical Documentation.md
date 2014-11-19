@@ -22,6 +22,7 @@ The autoreduction web app is a user interface for the autoreduction system that 
 6. [Other Notes](#other-notes)
 7. [Areas for Improvement](#areas-for-improvement)
 8. [Possible Problems & Solutions](#possible-problems-&-solutions)
+9. [Updating](#updating)
 
 ## Technologies
 
@@ -403,6 +404,10 @@ DataLocation and ReductionLocation could be reduced into a single Location model
 Currently, default variables need to be hard coded into the reduction script for them to be replaced as part of the preview function. It would be nice if this could handle scenarios where default variables are set using other variables or function calls, for example. 
 Note: This is currently handled when pulling out the default value for use in instrument variables, just not in the preview function (due to the regex used).
 
+### Multiple Mantid version
+
+Currently it is only possible to run scripts against a single version of Mantid. It may be useful in the future to be able to specify the Mantid version or, at the very least, make the version number apparent to users.
+
 ## Possible Problems & Solutions
 
 ### Queue processor unable to connect to ActiveMQ
@@ -417,3 +422,13 @@ To set ActiveMQ to use SSL edit the activemq.xml with something similar to:
     <transportConnector name="stomp+ssl" uri="stomp+ssl://0.0.0.0:61613?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/>
 </transportConnectors>
 ```
+### Import Errors in reduction script
+
+As the reduction script will be loaded on both the web server and autoreduction server (to access the variables) it is possible that an ImportError exception is thrown.
+An error in the log will be recorded with the missing module and a notification should be created with the same message. 
+
+To resolve this you will need to either modify the reduction script not to use the module or install the missing module on both servers (and make sure it is added to the appropriate system path).
+
+## Updating
+
+TODO: 
