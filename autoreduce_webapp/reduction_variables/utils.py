@@ -120,7 +120,7 @@ class InstrumentVariablesUtils(object):
             - The text of the script
         If the script cannot be loaded (None, None) is returned
         """
-        reduction_file = os.path.join(REDUCTION_SCRIPT_BASE, instrument_name, 'reduce.py')
+        reduction_file = os.path.join(REDUCTION_SCRIPT_BASE, "NDX"+instrument_name, 'user', 'scripts', 'autoreduction', 'reduce.py')
         try:
             reduce_script = imp.load_source(instrument_name + 'reduce_script', reduction_file)
             f = open(reduction_file, 'rb')
