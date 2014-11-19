@@ -1,7 +1,6 @@
 import json, logging, time, subprocess, sys, socket
 import stomp
 from twisted.internet import reactor
-from Configuration import Configuration
 
 class Listener(object):
     def __init__(self, client):
@@ -38,12 +37,14 @@ class Consumer(object):
         self.consumer_name = "queueProcessor"
         
     def run(self):
-        connection = stomp.Connection(host_and_ports=self.config.brokers, use_ssl=True)
+        brokers = []
+        brokers.append((self.config['brokers'].split(':')[0],int(self.config['brokers'].split(':')[1])))
+        connection = stomp.Connection(host_and_ports=brokers, use_ssl=True)
         connection.set_listener(self.consumer_name, Listener(self))
         connection.start()
-        connection.connect(self.config.amq_user, self.config.amq_pwd, wait=True, header={StompSpec.ACK_HEADER: StompSpec.ACK_CLIENT_INDIVIDUAL,'activemq.prefetchSize': '1',})
+        connection.connect(self.config['amq_user'], self.config['amq_pwd'], wait=True, header={'activemq.prefetchSize': '1',})
 
-        for queue in self.config.amq_queues:
+        for queue in self.config['amq_queues']:
             logging.info("[%s] Subscribing to %s" % (self.consumer_name, queue))
             connection.subscribe(destination=queue, id=1, ack='auto')
 
@@ -51,7 +52,7 @@ class Consumer(object):
 if __name__ == '__main__':
     
     try:
-        config = Configuration('/etc/autoreduce/post_process_consumer.conf')
+        config = json.load(open('/etc/autoreduce/post_process_consumer.conf'))
     except:
         sys.exit()
         
