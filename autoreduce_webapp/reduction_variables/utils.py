@@ -122,10 +122,15 @@ class InstrumentVariablesUtils(object):
         """
         reduction_file = os.path.join(REDUCTION_SCRIPT_BASE, "NDX"+instrument_name, 'user', 'scripts', 'autoreduction', 'reduce.py')
         try:
-            reduce_script = imp.load_source(instrument_name + 'reduce_script', reduction_file)
+            reduce_script = imp.load_source(instrument_name + 'reduce_script', reduction_file.replace('reduce.py', 'reduce_vars.py'))
             f = open(reduction_file, 'rb')
             script_binary = f.read()
             return reduce_script, script_binary
+        except ImportError, e:
+            logging.error("Unable to load reduction script %s due to missing import. (%s)" % (reduction_file, e.message))
+            notification = Notification(is_active=True, is_staff_only=True,severity='e', message="Unable to open reduction script for %s due to import error. (%s)" % (instrument_name, e.message))
+            notification.save()
+            return None, None
         except IOError:
             logging.error("Unable to load reduction script %s" % reduction_file)
             notification = Notification(is_active=True, is_staff_only=True,severity='e', message="Unable to open reduction script for %s" % instrument_name)
