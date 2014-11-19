@@ -27,15 +27,8 @@ class PostProcessAdmin:
 
         try:
             if data.has_key('data'):
-                self.data_file = str(data['data'])
+                self.data_file = windows_to_linux_path(str(data['data']))
                 logging.info("data_file: " + self.data_file)
-                if os.access(self.data_file, os.R_OK) == False:
-                    if 'isisdatar80' in self.data_file:
-                        self.data_file = self.data_file.replace('isisdatar80', 'isisdatar55')
-                    else:
-                        self.data_file = self.data_file.replace('isisdatar55', 'isisdatar80')
-                    if os.access(self.data_file, os.R_OK) == False:
-                        raise ValueError("data path (" + self.data_file + ") doesn't exist or file not readable")
             else:
                 raise ValueError("data is missing")
 
@@ -64,7 +57,7 @@ class PostProcessAdmin:
                 raise ValueError("run_number is missing")
                 
             if data.has_key('reduction_script'):
-                self.reduction_script = windows_to_linux_apth(str(data['reduction_script']))
+                self.reduction_script = windows_to_linux_path(str(data['reduction_script']))
                 logging.info("reduction_script: " + self.reduction_script)
             else:
                 raise ValueError("reduction_script is missing")
