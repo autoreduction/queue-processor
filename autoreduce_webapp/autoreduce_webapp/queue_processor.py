@@ -10,6 +10,8 @@ from reduction_viewer.models import ReductionRun, Instrument, ReductionLocation,
 from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFile
 from reduction_viewer.utils import StatusUtils, InstrumentUtils
 from icat_communication import ICATCommunication
+import django
+django.setup()
 
 class Listener(object):
     def __init__(self, client):
