@@ -55,6 +55,8 @@ class Listener(object):
 
         logging.info("Data ready for processing run %s on %s" % (str(self._data_dict['run_number']), self._data_dict['instrument']))
         
+        self._data_dict['run_version'] = 0
+        
         instrument = InstrumentUtils().get_instrument(self._data_dict['instrument'])
         # Activate the instrument if it is currently set to inactive
         if not instrument.is_active:
