@@ -58,12 +58,12 @@ class PostProcessAdmin:
                 
             if data.has_key('reduction_script'):
                 self.reduction_script = windows_to_linux_path(str(data['reduction_script']))
-                logging.info("reduction_script: " + self.reduction_script)
+                logging.info("reduction_script: " + str(self.reduction_script))
             else:
                 raise ValueError("reduction_script is missing")
                 
             if data.has_key('reduction_arguments'):
-                self.reduction_arguments = str(data['reduction_arguments'])
+                self.reduction_arguments = data['reduction_arguments']
                 logging.info("reduction_arguments: " + self.reduction_arguments)
             else:
                 raise ValueError("reduction_arguments is missing")
@@ -88,10 +88,10 @@ class PostProcessAdmin:
     def replace_variables(self, reduce_script):
         for key in reduce_script.standard_vars:
             if 'standard_vars' in self.reduction_arguments and key in self.reduction_arguments['standard_vars']:
-                reduce_script.standard_vars[key] = self.parse_input_variable(reduce_script.standard_vars[key], self.reduction_arguments[key])
+                reduce_script.standard_vars[key] = self.reduction_arguments['standard_vars'][key]
         for key in reduce_script.advanced_vars:
             if 'advanced_vars' in self.reduction_arguments and key in self.reduction_arguments['advanced_vars']:
-                reduce_script.advanced_vars[key] = self.parse_input_variable(reduce_script.advanced_vars[key], self.reduction_arguments[key])
+                reduce_script.advanced_vars[key] = self.reduction_arguments['advanced_vars'][key]
         return reduce_script
 
     def reduce(self):
@@ -121,6 +121,7 @@ class PostProcessAdmin:
                 os.makedirs(log_dir)
 
             # Load reduction script 
+            sys.path.append(self.reduction_script)
             reduce_script = imp.load_source('reducescript', os.path.join(self.reduction_script, "reduce.py"))
             out_log = os.path.join(log_dir, os.path.basename(self.data_file) + ".log")
             out_err = os.path.join(reduce_result_dir, os.path.basename(self.data_file) + ".err")
@@ -158,7 +159,7 @@ class PostProcessAdmin:
             
             if os.stat(out_err).st_size == 0:
                 os.remove(out_err)
-                self.send(self.conf['reduction_complete'] , json.dumps(self.data))  
+                self.client.send(self.conf['reduction_complete'] , json.dumps(self.data))  
                 logging.info("called "+self.conf['reduction_complete'] + " --- " + json.dumps(self.data))     
             else:
                 maxLineLength=80
@@ -166,20 +167,15 @@ class PostProcessAdmin:
                 fp.seek(-maxLineLength-1, 2) # 2 means "from the end of the file"
                 lastLine = fp.readlines()[-1]
                 errMsg = lastLine.strip() + ", see reduction_log/" + os.path.basename(out_log) + " or " + os.path.basename(out_err) + " for details."
-                self.data["error"] = "REDUCTION: %s" % errMsg
-                self.send(self.conf['reduction_error'] , json.dumps(self.data))
+                self.data["message"] = "REDUCTION: %s" % errMsg
+                self.client.send(self.conf['reduction_error'] , json.dumps(self.data))
                 logging.error("called "+self.conf['reduction_error']  + " --- " + json.dumps(self.data))       
 
         except Exception, e:
-            self.data["error"] = "REDUCTION Error: %s " % e
+            self.data["message"] = "REDUCTION Error: %s " % e
             logging.error("called "+self.conf['reduction_error']  + " --- " + json.dumps(self.data))
             self.client.send(self.conf['reduction_error'] , json.dumps(self.data))
-            
-
-    def send(self, destination, data):
-        self.client.send(destination, data)
-        self.client.disconnect()
-        
+                    
     def getData(self):
         return self.data
     
@@ -212,7 +208,6 @@ if __name__ == "__main__":
             logging.error("JSON data error: " + json.dumps(data))
 
             connection.send(conf['postprocess_error'], json.dumps(data))
-            connection.disconnect() 
             logging.info("Called " + conf['postprocess_error'] + "----" + json.dumps(data))
             raise
         
