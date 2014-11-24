@@ -79,17 +79,19 @@ class VariableUtils(object):
             var_list = str(value).split(',')
             list_text = []
             for list_val in var_list:
-                if list_val and list_val.strip():
-                    list_text.append(str(list_val.strip()))
+                if list_val:
+                    if list_val and list_val.strip():
+                        list_text.append(str(list_val.strip()))
             return list_text
         if var_type == "list_number":
             var_list = value.split(',')
             list_number = []
             for list_val in var_list:
-                if '.' in str(list_val):
-                    list_number.append(float(list_val))
-                else:
-                    list_number.append(int(list_val))
+                if list_val:
+                    if '.' in str(list_val):
+                        list_number.append(float(list_val))
+                    else:
+                        list_number.append(int(list_val))
             return list_number
         if var_type == "boolean":
             return value.lower() == 'true'
