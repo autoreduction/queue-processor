@@ -80,7 +80,7 @@ class Listener(object):
                 logging.warning("No instrument variables found on %s for run %s" % (instrument.name, self._data_dict['run_number']))
             else:
                 for variables in variables:
-                    reduction_run_variables = RunVariable(name=variables.name, value=variables.value, type=variables.type)
+                    reduction_run_variables = RunVariable(name=variables.name, value=variables.value, type=variables.type, is_advanced=variable.is_advanced)
                     reduction_run_variables.reduction_run = reduction_run
                     reduction_run.run_variables.add(reduction_run_variables)
                     reduction_run_variables.save()
