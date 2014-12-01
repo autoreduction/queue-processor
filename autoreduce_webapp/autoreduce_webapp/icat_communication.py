@@ -144,7 +144,7 @@ class ICATCommunication(object):
 
         for instrument in instruments:
             experiments = Set()
-            self._add_list_to_set(self.client.search("SELECT i.name FROM Investigation i JOIN i.investigationInstruments inst WHERE i.name NOT LIKE 'CAL%' and i.endDate > '"+str(years_back)+"' and inst.instrument.name = '"+instrument+"' INCLUDE i.investigationInstruments.instrument"), experiments)
+            self._add_list_to_set(self.client.search("SELECT i.name FROM Investigation i JOIN i.investigationInstruments inst WHERE i.name NOT LIKE 'CAL%' and i.endDate > '"+str(years_back)+"' and (inst.instrument.name = '"+instrument+"' OR inst.instrument.fullName = '"+instrument+"') INCLUDE i.investigationInstruments.instrument"), experiments)
             instruments_dict[instrument] = sorted(experiments, reverse=True)
 
         return instruments_dict
@@ -155,7 +155,7 @@ class ICATCommunication(object):
             raise Exception("At least one instrument must be supplied")
 
         experiments = Set()
-        self._add_list_to_set(self.client.search("SELECT i.name FROM Investigation i JOIN i.investigationInstruments inst WHERE i.name NOT LIKE 'CAL%' and i.endDate > CURRENT_TIMESTAMP and inst.instrument.name = '"+instrument+"' INCLUDE i.investigationInstruments.instrument"), experiments)
+        self._add_list_to_set(self.client.search("SELECT i.name FROM Investigation i JOIN i.investigationInstruments inst WHERE i.name NOT LIKE 'CAL%' and i.endDate > CURRENT_TIMESTAMP and (inst.instrument.name = '"+instrument+"' OR inst.instrument.fullName = '"+instrument+"') INCLUDE i.investigationInstruments.instrument"), experiments)
         return sorted(experiments, reverse=True)
 
 
