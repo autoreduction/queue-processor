@@ -2,7 +2,7 @@
 """
 Post Process Administrator. It kicks off cataloging and reduction jobs.
 """
-import logging, json, socket, os, sys, subprocess, time, shutil, imp, stomp
+import logging, json, socket, os, sys, subprocess, time, shutil, imp, stomp, re
 REDUCTION_DIRECTORY = '/isis/NDX%s/user/scripts/autoreduction' # %(instrument)
 ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s' # %(instrument, cycle, experiment_number, run_number)
 
@@ -30,43 +30,43 @@ class PostProcessAdmin:
         try:
             if data.has_key('data'):
                 self.data_file = windows_to_linux_path(str(data['data']))
-                logging.info("data_file: " + self.data_file)
+                logging.info("data_file: %s" % self.data_file)
             else:
                 raise ValueError("data is missing")
 
             if data.has_key('facility'):
                 self.facility = str(data['facility']).upper()
-                logging.info("facility: " + self.facility)
+                logging.info("facility: %s" % self.facility)
             else: 
                 raise ValueError("facility is missing")
 
             if data.has_key('instrument'):
                 self.instrument = str(data['instrument']).upper()
-                logging.info("instrument: " + self.instrument)
+                logging.info("instrument: %s" % self.instrument)
             else:
                 raise ValueError("instrument is missing")
 
             if data.has_key('rb_number'):
                 self.proposal = str(data['rb_number']).upper()
-                logging.info("rb_number: " + self.proposal)
+                logging.info("rb_number: %s" % self.proposal)
             else:
                 raise ValueError("rb_number is missing")
                 
             if data.has_key('run_number'):
                 self.run_number = str(data['run_number'])
-                logging.info("run_number: " + self.run_number)
+                logging.info("run_number: %s" % self.run_number)
             else:
                 raise ValueError("run_number is missing")
                 
             if data.has_key('reduction_script'):
                 self.reduction_script = windows_to_linux_path(str(data['reduction_script']))
-                logging.info("reduction_script: " + str(self.reduction_script))
+                logging.info("reduction_script: %s" % str(self.reduction_script))
             else:
                 raise ValueError("reduction_script is missing")
                 
             if data.has_key('reduction_arguments'):
                 self.reduction_arguments = data['reduction_arguments']
-                logging.info("reduction_arguments: " + self.reduction_arguments)
+                logging.info("reduction_arguments: %s" % self.reduction_arguments)
             else:
                 raise ValueError("reduction_arguments is missing")
 
@@ -104,16 +104,16 @@ class PostProcessAdmin:
         print "in reduce"
         try:         
             logging.info("called " + self.conf['reduction_started'] + " --- " + json.dumps(self.data))  
-            self.send(self.conf['reduction_started'], json.dumps(self.data))
+            self.client.send(self.conf['reduction_started'], json.dumps(self.data))
 
             # specify instrument directory  
-            cycle = self.data['data'].match('cycle_(\d\d_\d)')
+            cycle = re.match('.*cycle_(\d\d_\d).*', self.data['data']).group(1)
             instrument_dir = ARCHIVE_DIRECTORY % (self.instrument.upper(), cycle, self.data['rb_number'], self.data['run_number'])
 
             # specify script to run and directory
-            if os.path.exists(os.path.join(reduce_script_dir, "reduce.py")) == False:
+            if os.path.exists(os.path.join(self.reduction_script, "reduce.py")) == False:
                 self.data['message'] = "Reduce script doesn't exist"
-                self.send(self.conf['reduction_error'] , json.dumps(self.data))  
+                self.client.send(self.conf['reduction_error'] , json.dumps(self.data))  
                 logging.info("called "+self.conf['reduction_error'] + " --- " + json.dumps(self.data))  
                 return
             
