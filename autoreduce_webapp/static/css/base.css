@@ -155,6 +155,9 @@ search#run_search {
 #graphs img{
     max-width: 100%;
 }
+.file-path{
+    word-wrap: break-word;
+}
 
 /****************
  7. Variables
