@@ -142,6 +142,7 @@ class Listener(object):
                 if 'reduction_data' in self._data_dict:
                     for location in self._data_dict['reduction_data']:
                         reduction_location = ReductionLocation(file_path=location)
+                        reduction_location.save()
                         reduction_run.reduction_location.add(reduction_location)
                         
                         # Get any .png files and store them as base64 strings
