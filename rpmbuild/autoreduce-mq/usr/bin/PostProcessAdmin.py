@@ -3,6 +3,8 @@
 Post Process Administrator. It kicks off cataloging and reduction jobs.
 """
 import logging, json, socket, os, sys, subprocess, time, shutil, imp, stomp
+REDUCTION_DIRECTORY = '/isis/NDX%s/user/scripts/autoreduction' # %(instrument)
+ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s' # %(instrument, cycle, experiment_number, run_number)
 
 def linux_to_windows_path(path):
     path = path.replace('/', '\\')
@@ -105,18 +107,18 @@ class PostProcessAdmin:
             self.send(self.conf['reduction_started'], json.dumps(self.data))
 
             # specify instrument directory  
-            instrument_dir = "/isis/ndx" + self.instrument.upper() + "/user/processed/autoreduction/"
+            cycle = self.data['data'].match('cycle_(\d\d_\d)')
+            instrument_dir = ARCHIVE_DIRECTORY % (self.instrument.upper(), cycle, self.data['rb_number'], self.data['run_number'])
 
             # specify script to run and directory
-            reduce_script_dir = self.reduction_script
-            if os.path.exists(os.path.join(self.reduction_script, "reduce.py")) == False:
+            if os.path.exists(os.path.join(reduce_script_dir, "reduce.py")) == False:
                 self.data['message'] = "Reduce script doesn't exist"
                 self.send(self.conf['reduction_error'] , json.dumps(self.data))  
                 logging.info("called "+self.conf['reduction_error'] + " --- " + json.dumps(self.data))  
                 return
             
             # specify directory where autoreduction output goes
-            reduce_result_dir = "/tmp" + instrument_dir + "results/" + self.proposal + "/" + self.run_number + "/"
+            reduce_result_dir = "/tmp" + instrument_dir + "/results/"
             if not os.path.isdir(reduce_result_dir):
                 os.makedirs(reduce_result_dir)
 
