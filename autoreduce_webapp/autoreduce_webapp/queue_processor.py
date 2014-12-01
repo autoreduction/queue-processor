@@ -1,5 +1,5 @@
 import stomp
-from settings import LOG_FILE, LOG_LEVEL, ACTIVEMQ, BASE_DIR, ARCHIVE_BASE, REDUCTION_SCRIPT_BASE
+from settings import LOG_FILE, LOG_LEVEL, ACTIVEMQ, BASE_DIR, REDUCTION_SCRIPT_BASE
 import logging
 logging.basicConfig(filename=LOG_FILE,level=LOG_LEVEL)
 import time, sys, os, json, glob, base64

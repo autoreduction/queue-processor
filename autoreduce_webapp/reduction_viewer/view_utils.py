@@ -9,8 +9,8 @@ def deactivate_invalid_instruments(fn):
     """
     def request_processor(request, *args, **kws):
         instruments = Instrument.objects.filter(is_active=True)
-        reduction_path = REDUCTION_DIRECTORY % (instrument.name)
         for instrument in instruments:
+            reduction_path = REDUCTION_DIRECTORY % (instrument.name)
             if not os.path.isfile(os.path.join(reduction_path, 'reduce.py')):
                 instrument.is_active = False
                 instrument.save()
