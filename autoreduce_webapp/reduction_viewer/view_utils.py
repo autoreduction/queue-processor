@@ -1,6 +1,6 @@
 import os.path
 from reduction_viewer.models import Instrument
-from autoreduce_webapp.settings import REDUCTION_SCRIPT_BASE
+from autoreduce_webapp.settings import REDUCTION_DIRECTORY
 
 def deactivate_invalid_instruments(fn):
     """
@@ -9,8 +9,9 @@ def deactivate_invalid_instruments(fn):
     """
     def request_processor(request, *args, **kws):
         instruments = Instrument.objects.filter(is_active=True)
+        reduction_path = REDUCTION_DIRECTORY % (instrument.name)
         for instrument in instruments:
-            if not os.path.isfile(os.path.join(REDUCTION_SCRIPT_BASE, "NDX"+instrument.name, 'user', 'scripts', 'autoreduction', 'reduce.py')):
+            if not os.path.isfile(os.path.join(reduction_path, 'reduce.py')):
                 instrument.is_active = False
                 instrument.save()
 

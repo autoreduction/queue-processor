@@ -1,7 +1,7 @@
 import logging, os, sys, imp, uuid, re, json
 sys.path.append(os.path.join("../", os.path.dirname(os.path.dirname(__file__))))
 os.environ["DJANGO_SETTINGS_MODULE"] = "autoreduce_webapp.settings"
-from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL, BASE_DIR, REDUCTION_SCRIPT_BASE, ACTIVEMQ
+from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL, BASE_DIR, ACTIVEMQ, TEMP_OUTPUT_DIRECTORY
 from autoreduce_webapp.queue_processor import Client as ActiveMQClient
 logging.basicConfig(filename=LOG_FILE,level=LOG_LEVEL)
 from django.db import models
@@ -15,11 +15,11 @@ def write_script_to_temp(script, script_vars_file):
     Write the given script binary to a unique filename in the reduction_script_temp directory.
     """
     unique_name = str(uuid.uuid4())
-    script_path = os.path.join(REDUCTION_SCRIPT_BASE, 'reduction_script_temp', unique_name)
+    script_path = os.path.join(TEMP_OUTPUT_DIRECTORY, 'scripts', unique_name)
     # Make sure we don't accidently overwrite a file
     while os.path.exists(script_path):
         unique_name = str(uuid.uuid4())
-        script_path = os.path.join(REDUCTION_SCRIPT_BASE, 'reduction_script_temp', unique_name)
+        script_path = os.path.join(TEMP_OUTPUT_DIRECTORY, 'scripts', unique_name)
     os.makedirs(script_path)
     f = open(os.path.join(script_path, 'reduce.py'), 'wb')
     f.write(script)
@@ -125,7 +125,7 @@ class InstrumentVariablesUtils(object):
             - The text of the script
         If the script cannot be loaded (None, None) is returned
         """
-        reduction_file = os.path.join(REDUCTION_SCRIPT_BASE, "NDX"+instrument_name, 'user', 'scripts', 'autoreduction', 'reduce.py')
+        reduction_file = os.path.join((REDUCTION_DIRECTORY % (instrument_name)), 'reduce.py')
         try:
             f = open(reduction_file, 'rb')
             script_binary = f.read()
@@ -153,7 +153,7 @@ class InstrumentVariablesUtils(object):
             - The text of the script
         If the script cannot be loaded (None, None) is returned
         """
-        reduction_file = os.path.join(REDUCTION_SCRIPT_BASE, "NDX"+instrument_name, 'user', 'scripts', 'autoreduction', 'reduce_vars.py')
+        reduction_file = os.path.join((REDUCTION_DIRECTORY % (instrument_name)), 'reduce_vars.py')
         try:
             reduce_script = imp.load_source(instrument_name + 'reduce_script', reduction_file)
             f = open(reduction_file, 'rb')
