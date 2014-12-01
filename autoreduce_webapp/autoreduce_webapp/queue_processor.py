@@ -71,11 +71,12 @@ class Listener(object):
                                     experiment=experiment,
                                     instrument=instrument
                                     )
-        reduction_run.status = StatusUtils().get_queued()
-        variables = InstrumentVariablesUtils().get_variables_for_run(reduction_run)
-        data_location = DataLocation(file_path=self._data_dict['data'], reduction_run=reduction_run)
-
+        
         if created or reduction_run.status == StatusUtils().get_error():
+            reduction_run.status = StatusUtils().get_queued()
+            variables = InstrumentVariablesUtils().get_variables_for_run(reduction_run)
+            data_location = DataLocation(file_path=self._data_dict['data'], reduction_run=reduction_run)
+
             if not variables:
                 logging.warning("No instrument variables found on %s for run %s" % (instrument.name, self._data_dict['run_number']))
             else:
