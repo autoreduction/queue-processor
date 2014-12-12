@@ -73,7 +73,7 @@ def run_list(request):
     instruments = []
     with ICATCommunication(AUTH='uows',SESSION={'sessionid':request.session.get('sessionid')}) as icat:
         if request.user.is_superuser:
-            instrument_names = Instrument.objects.values_list('name', flat=true)
+            instrument_names = Instrument.objects.values_list('name', flat=True)
         else:
             instrument_names = icat.get_valid_instruments(int(request.user.username))
         owned_instruments = request.session.get('owned_instruments', default=[])
