@@ -1,6 +1,8 @@
 import os.path
 from reduction_viewer.models import Instrument
-from autoreduce_webapp.settings import REDUCTION_DIRECTORY
+from autoreduce_webapp.settings import REDUCTION_DIRECTORY, LOG_FILE, LOG_LEVEL
+import logging
+logging.basicConfig(filename=LOG_FILE,level=LOG_LEVEL)
 
 def deactivate_invalid_instruments(fn):
     """
