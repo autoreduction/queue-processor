@@ -72,7 +72,10 @@ def run_list(request):
     context_dictionary = {}
     instruments = []
     with ICATCommunication(AUTH='uows',SESSION={'sessionid':request.session.get('sessionid')}) as icat:
-        instrument_names = icat.get_valid_instruments(int(request.user.username))
+        if request.user.is_superuser:
+            instrument_names = instrument.objects.values_list('name', flat=true)
+        else:
+            instrument_names = icat.get_valid_instruments(int(request.user.username))
         owned_instruments = request.session.get('owned_instruments', default=[])
         if instrument_names:
             experiments = request.session.get('experiments_to_show', icat.get_valid_experiments_for_instruments(int(request.user.username), instrument_names))
