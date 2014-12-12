@@ -10,8 +10,9 @@ def deactivate_invalid_instruments(fn):
     def request_processor(request, *args, **kws):
         instruments = Instrument.objects.filter(is_active=True)
         for instrument in instruments:
-            reduction_path = REDUCTION_DIRECTORY % (instrument.name)
-            if not os.path.isfile(os.path.join(reduction_path, 'reduce.py')):
+            reduction_path = os.path.join(REDUCTION_DIRECTORY % (instrument.name), 'reduce.py')
+            if not os.path.isfile(reduction_path):
+                logging.warn("Could not find runduction file: %s" % reduction_path)
                 instrument.is_active = False
                 instrument.save()
 
