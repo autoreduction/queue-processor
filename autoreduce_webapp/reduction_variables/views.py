@@ -418,8 +418,8 @@ def preview_script(request, instrument, run_number=0, experiment_reference=0):
         %s is later replaced with the variable name
         A live example can be found at: http://regex101.com/r/oJ7iY5/1
     '''
-    standard_pattern = "(?P<before>(\s)standard_vars\s*=\s*\{(([\s\S])+)['|\"]%s['|\"]\s*:\s*)(?P<value>((?!,\n)[\S\s])+)"
-    advanced_pattern = "(?P<before>(\s)advanced_vars\s*=\s*\{(([\s\S])+)['|\"]%s['|\"]\s*:\s*)(?P<value>((?!,\n)[\S\s])+)"
+    standard_pattern = "(?P<before>(\s)standard_vars\s*=\s*\{(([\s\S])+)['|\"]%s['|\"]\s*:\s*)(?P<value>((?!,\n|\n)[\S\s])+)"
+    advanced_pattern = "(?P<before>(\s)advanced_vars\s*=\s*\{(([\s\S])+)['|\"]%s['|\"]\s*:\s*)(?P<value>((?!,\n|\n)[\S\s])+)"
 
     if request.method == 'GET':
         instrument = Instrument.objects.get(name=instrument)
