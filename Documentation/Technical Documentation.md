@@ -387,6 +387,12 @@ handler500 = 'autoreduce_webapp.views.handler500'
 
 If the `admin_email` setting has been set in the database this will be shown to the user for additional help.
 
+### Notifications
+
+The system provides a mechanism to display messages to the users using notifications at the top of pages. These notification can have varying severity (info, warning or error) and there is the option to display to all users or only staff members (instrument scientists). Notifications can be manually added by admins of the system using the built in django admin database portal. It is possible from within here to create, delete and modify notifications as well as activate/deactivate.
+
+Some notifications are displayed automatically, such as when there is a failed reduction job, and these are not stored in the database as they are dependant on the displayed data.
+
 ## Areas for Improvement
 
 ### Caching
