@@ -15,6 +15,7 @@ def linux_to_windows_path(path):
 def windows_to_linux_path(path):
     # '\\isis\inst$\' maps to '/isis/'
     path = path.replace('\\\\isis\\inst$\\', '/isis/')
+    path = path.replace('\\\\autoreduce\\data\\', '/run/temp/data/')
     path = path.replace('\\', '/')
     return path
 
@@ -101,9 +102,9 @@ class PostProcessAdmin:
         return reduce_script
 
     def reduce(self):
-        print "in reduce"
+        print "\n> In reduce()\n"
         try:         
-            logging.info("called " + self.conf['reduction_started'] + " --- " + json.dumps(self.data))  
+            print "\nCalling: " + self.conf['reduction_started'] + "\n" + json.dumps(self.data) + "\n"
             self.client.send(self.conf['reduction_started'], json.dumps(self.data))
 
             # specify instrument directory  
@@ -114,7 +115,7 @@ class PostProcessAdmin:
             if os.path.exists(os.path.join(self.reduction_script, "reduce.py")) == False:
                 self.data['message'] = "Reduce script doesn't exist"
                 self.client.send(self.conf['reduction_error'] , json.dumps(self.data))  
-                logging.info("called "+self.conf['reduction_error'] + " --- " + json.dumps(self.data))  
+                print "\nCalling: "+self.conf['reduction_error'] + "\n" + json.dumps(self.data) + "\n"
                 return
             
             # specify directory where autoreduction output goes
@@ -129,20 +130,29 @@ class PostProcessAdmin:
             # Load reduction script 
             sys.path.append(self.reduction_script)
             reduce_script = imp.load_source('reducescript', os.path.join(self.reduction_script, "reduce.py"))
-            out_log = os.path.join(log_dir, os.path.basename(self.data_file) + ".log")
-            out_err = os.path.join(reduce_result_dir, os.path.basename(self.data_file) + ".err")
+            out_log = os.path.join(log_dir, self.data['rb_number'] + ".log")
+            out_err = os.path.join(reduce_result_dir, self.data['rb_number'] + ".err")
+
+            print "----------------"
+            print "Reduction script: %s" % self.reduction_script
+            print "Result dir: %s" % reduce_result_dir
+            print "Log dir: %s" % log_dir
+            print "Out log: %s" % out_log
+            print "Error log: %s" % out_err
+            print "----------------"
+
+            print "\n> Reduction subprocess started.\n"
             logFile=open(out_log, "w")
             errFile=open(out_err, "w")
             # Set the output to be the logfile
             sys.stdout = logFile
             sys.stderr = errFile
             reduce_script = self.replace_variables(reduce_script)
-            logging.info("reduction subprocess started.")
             out_directories = reduce_script.main(data=self.data_file, output=reduce_result_dir)
-            logging.info("reduction subprocess completed.")
             # Reset outputs back to default
             sys.stdout = sys.__stdout__
             sys.stderr = sys.__stderr__
+            print "\n> Reduction subprocess completed.\n"
             
             self.data['reduction_data'] = []
 
@@ -160,13 +170,15 @@ class PostProcessAdmin:
             # Move from tmp directory to actual directory (remove /tmp from start of path)
             if not os.path.isdir(reduce_result_dir[4:]):
                 os.makedirs(reduce_result_dir[4:])
-            self.data['reduction_data'].append(linux_to_windows_path(reduce_result_dir[4:]))
+            # [4,-8] is used to remove the prepending '/tmp' and the trailing 'results/' from the destination
+            self.data['reduction_data'].append(linux_to_windows_path(reduce_result_dir[4:-8]))
+            print "Moving %s to %s" % (reduce_result_dir, reduce_result_dir[4:-8])
             shutil.move(reduce_result_dir, reduce_result_dir[4:])
             
             if os.stat(out_err).st_size == 0:
                 os.remove(out_err)
                 self.client.send(self.conf['reduction_complete'] , json.dumps(self.data))  
-                logging.info("called "+self.conf['reduction_complete'] + " --- " + json.dumps(self.data))     
+                print "\nCalling: "+self.conf['reduction_complete'] + "\n" + json.dumps(self.data) + "\n"
             else:
                 maxLineLength=80
                 fp=file(out_err, "r")
@@ -183,12 +195,12 @@ class PostProcessAdmin:
                 logging.error("called "+self.conf['reduction_error']  + " --- " + json.dumps(self.data))
                 self.client.send(self.conf['reduction_error'] , json.dumps(self.data))
             except BaseException, e:
-                print "Failed to send to queue! - %s - %s" % (e, repr(e))
+                print "\nFailed to send to queue!\n%s\n%s" % (e, repr(e))
                 logging.error("Failed to send to queue! - %s - %s" % (e, repr(e)))
           
 if __name__ == "__main__":
 
-    print "\nIn PostProcessAdmin.py\n"
+    print "\n> In PostProcessAdmin.py\n"
 
     try:
         conf = json.load(open('/etc/autoreduce/post_process_consumer.conf'))
@@ -200,8 +212,8 @@ if __name__ == "__main__":
         connection.connect(conf['amq_user'], conf['amq_pwd'], wait=True, header={'activemq.prefetchSize': '1',})
 
         destination, message = sys.argv[1:3]
-        logging.info("destination: " + destination)
-        logging.info("message: " + message)
+        print("destination: " + destination)
+        print("message: " + message)
         data = json.loads(message)
         
         try:  
@@ -214,7 +226,7 @@ if __name__ == "__main__":
             logging.error("JSON data error: " + json.dumps(data))
 
             connection.send(conf['postprocess_error'], json.dumps(data))
-            logging.info("Called " + conf['postprocess_error'] + "----" + json.dumps(data))
+            print("Called " + conf['postprocess_error'] + "----" + json.dumps(data))
             raise
         
         except:
