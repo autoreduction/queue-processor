@@ -2,7 +2,7 @@ import os.path
 from reduction_viewer.models import Instrument
 from autoreduce_webapp.settings import REDUCTION_DIRECTORY, LOG_FILE, LOG_LEVEL
 import logging
-logging.basicConfig(filename=LOG_FILE,level=LOG_LEVEL)
+logger = logging.getLogger(__name__)
 
 def deactivate_invalid_instruments(fn):
     """
@@ -14,7 +14,7 @@ def deactivate_invalid_instruments(fn):
         for instrument in instruments:
             reduction_path = os.path.join(REDUCTION_DIRECTORY % (instrument.name), 'reduce.py')
             if not os.path.isfile(reduction_path):
-                logging.warn("Could not find runduction file: %s" % reduction_path)
+                logger.warn("Could not find runduction file: %s" % reduction_path)
                 instrument.is_active = False
                 instrument.save()
 

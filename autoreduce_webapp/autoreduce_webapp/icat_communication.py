@@ -1,6 +1,6 @@
 from settings import LOG_FILE, LOG_LEVEL, ICAT, BASE_DIR
 import logging, os, sys, datetime
-logging.basicConfig(filename=LOG_FILE,level=LOG_LEVEL)
+logger = logging.getLogger(__name__)
 from sets import Set
 import icat
 sys.path.insert(0, BASE_DIR)
@@ -17,7 +17,7 @@ class ICATCommunication(object):
             kwargs['PASSWORD'] = ICAT['PASSWORD']
         if 'SESSION' not in kwargs:
             kwargs['SESSION'] = { 'username' : kwargs['USER'], 'password' : kwargs['PASSWORD']}
-        logging.debug("Logging in to ICAT at %s" % kwargs['URL'])
+        logger.debug("Logging in to ICAT at %s" % kwargs['URL'])
         self.client = icat.Client(url=kwargs['URL'])
         self.sessionId = self.client.login(kwargs['AUTH'], kwargs['SESSION'])
     
@@ -25,7 +25,7 @@ class ICATCommunication(object):
         return self
 
     def __exit__(self, type, value, traceback):
-        logging.debug("Logging out of ICAT")
+        logger.debug("Logging out of ICAT")
         self.client.logout()
     
     '''
@@ -39,7 +39,7 @@ class ICATCommunication(object):
         Returns experiment details for the given reference number
     '''
     def get_experiment_details(self, reference_number):
-        logging.debug("Calling ICATCommunication.get_experiment_details")
+        logger.debug("Calling ICATCommunication.get_experiment_details")
         if not isinstance(reference_number, (int, long)):
             raise TypeError("Reference number must be a number")
 
@@ -65,7 +65,7 @@ class ICATCommunication(object):
         This includes instruments they own and are an experimenter on.
     '''
     def get_valid_instruments(self, user_number):
-        logging.debug("Calling ICATCommunication.get_valid_instruments")
+        logger.debug("Calling ICATCommunication.get_valid_instruments")
         if not isinstance(user_number, (int, long)):
             raise TypeError("User number must be a number")
 
@@ -81,7 +81,7 @@ class ICATCommunication(object):
         Returns all instruments for which the given user is an instrument scientist
     '''
     def get_owned_instruments(self, user_number):
-        logging.debug("Calling ICATCommunication.get_owned_instruments")
+        logger.debug("Calling ICATCommunication.get_owned_instruments")
         if not isinstance(user_number, (int, long)):
             raise TypeError("User number must be a number")
 
@@ -93,7 +93,7 @@ class ICATCommunication(object):
         Checks if a user has any owned instruments and thus an instrument scientist
     '''
     def is_instrument_scientist(self, user_number):
-        logging.debug("Calling ICATCommunication.is_instrument_scientist")
+        logger.debug("Calling ICATCommunication.is_instrument_scientist")
         if self.get_owned_instruments(user_number):
             return True
         return False
@@ -102,7 +102,7 @@ class ICATCommunication(object):
         Returns True is the given user is part of the experiment team for the given reference number.
     '''
     def is_on_experiment_team(self, reference_number, user_number):
-        logging.debug("Calling ICATCommunication.is_on_experiment_team")
+        logger.debug("Calling ICATCommunication.is_on_experiment_team")
         if not isinstance(user_number, (int, long)) or not isinstance(reference_number, (int, long)):
             raise TypeError("User number and reference number must be a number")
 
@@ -115,7 +115,7 @@ class ICATCommunication(object):
         Returns a set of experiment reference numbers for which the given user is on the experiment team.
     '''
     def get_associated_experiments(self, user_number):
-        logging.debug("Calling ICATCommunication.get_associated_experiments")
+        logger.debug("Calling ICATCommunication.get_associated_experiments")
         if not isinstance(user_number, (int, long)):
             raise TypeError("User number must be a number")
 
@@ -127,7 +127,7 @@ class ICATCommunication(object):
         Returns all experiments allowed for a given list of instruments
     '''
     def get_valid_experiments_for_instruments(self, user_number, instruments):
-        logging.debug("Calling ICATCommunication.get_valid_experiments_for_instruments")
+        logger.debug("Calling ICATCommunication.get_valid_experiments_for_instruments")
         from reduction_viewer.models import Setting
         if not isinstance(user_number, (int, long)):
             raise TypeError("User number must be a number")
@@ -150,7 +150,7 @@ class ICATCommunication(object):
         return instruments_dict
 
     def get_upcoming_experiments_for_instrument(self, instrument):
-        logging.debug("Calling ICATCommunication.get_upcoming_experiments_for_instrument")
+        logger.debug("Calling ICATCommunication.get_upcoming_experiments_for_instrument")
         if not instrument:
             raise Exception("At least one instrument must be supplied")
 
@@ -163,7 +163,7 @@ class ICATCommunication(object):
         Check if the user is in the relevant admin group within ICAT for the autoreduction webapp
     '''
     def is_admin(self, user_number):
-        logging.debug("Calling ICATCommunication.is_admin")
+        logger.debug("Calling ICATCommunication.is_admin")
         admin_group = 'Autoreduce Admins'
         if self.client.search("SELECT g FROM Grouping g JOIN g.userGroups ug WHERE g.name = '"+ admin_group +"' and ug.user.name = 'uows/"+ str(user_number) +"'"):
             return True
@@ -174,6 +174,6 @@ class ICATCommunication(object):
         Currenty a placeholder. Not sure yet what this may contain.
     '''
     def post_process(self, reduction_run):
-        logging.debug("Calling ICATCommunication.post_process")
+        logger.debug("Calling ICATCommunication.post_process")
         # TODO: ICAT post-processing
         pass

@@ -3,7 +3,7 @@ sys.path.append(os.path.join("../", os.path.dirname(os.path.dirname(__file__))))
 os.environ["DJANGO_SETTINGS_MODULE"] = "autoreduce_webapp.settings"
 from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL, BASE_DIR, ACTIVEMQ, TEMP_OUTPUT_DIRECTORY, REDUCTION_DIRECTORY
 from autoreduce_webapp.queue_processor import Client as ActiveMQClient
-logging.basicConfig(filename=LOG_FILE,level=LOG_LEVEL)
+logger = logging.getLogger(__name__)
 from django.db import models
 from reduction_variables.models import InstrumentVariable, ScriptFile, RunVariable
 from reduction_viewer.models import ReductionRun, Instrument, Notification
@@ -131,17 +131,17 @@ class InstrumentVariablesUtils(object):
             script_binary = f.read()
             return  script_binary
         except ImportError, e:
-            logging.error("Unable to load reduction script %s due to missing import. (%s)" % (reduction_file, e.message))
+            logger.error("Unable to load reduction script %s due to missing import. (%s)" % (reduction_file, e.message))
             notification = Notification(is_active=True, is_staff_only=True,severity='e', message="Unable to open reduction script for %s due to import error. (%s)" % (instrument_name, e.message))
             notification.save()
             return None
         except IOError:
-            logging.error("Unable to load reduction script %s" % reduction_file)
+            logger.error("Unable to load reduction script %s" % reduction_file)
             notification = Notification(is_active=True, is_staff_only=True,severity='e', message="Unable to open reduction script for %s" % instrument_name)
             notification.save()
             return None
         except SyntaxError:
-            logging.error("Syntax error in reduction script %s" % reduction_file)
+            logger.error("Syntax error in reduction script %s" % reduction_file)
             notification = Notification(is_active=True, is_staff_only=True,severity='e', message="Syntax error in reduction script for %s" % instrument_name)
             notification.save()
             return None
@@ -160,17 +160,17 @@ class InstrumentVariablesUtils(object):
             script_binary = f.read()
             return reduce_script, script_binary
         except ImportError, e:
-            logging.error("Unable to load reduction script %s due to missing import. (%s)" % (reduction_file, e.message))
+            logger.error("Unable to load reduction script %s due to missing import. (%s)" % (reduction_file, e.message))
             notification = Notification(is_active=True, is_staff_only=True,severity='e', message="Unable to open reduction script for %s due to import error. (%s)" % (instrument_name, e.message))
             notification.save()
             return None, None
         except IOError:
-            logging.error("Unable to load reduction script %s" % reduction_file)
+            logger.error("Unable to load reduction script %s" % reduction_file)
             notification = Notification(is_active=True, is_staff_only=True,severity='e', message="Unable to open reduction script for %s" % instrument_name)
             notification.save()
             return None, None
         except SyntaxError:
-            logging.error("Syntax error in reduction script %s" % reduction_file)
+            logger.error("Syntax error in reduction script %s" % reduction_file)
             notification = Notification(is_active=True, is_staff_only=True,severity='e', message="Syntax error in reduction script for %s" % instrument_name)
             notification.save()
             return None, None

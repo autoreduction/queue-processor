@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from urllib2 import URLError
 from settings import LOG_FILE, LOG_LEVEL, UOWS_URL
 import logging
-logging.basicConfig(filename=LOG_FILE,level=LOG_LEVEL)
+logger = logging.getLogger(__name__)
 
 class UOWSAuthenticationBackend(object):
     """
@@ -30,7 +30,7 @@ class UOWSAuthenticationBackend(object):
                     user.is_superuser = ICATCommunication().is_admin(int(person['usernumber']))
                     user.is_staff = (ICATCommunication().is_instrument_scientist(int(person['usernumber'])) or user.is_superuser)
                 except URLError:
-                    logging.error("Unable to connect to ICAT. Cannot update user's permission levels.")
+                    logger.error("Unable to connect to ICAT. Cannot update user's permission levels.")
                 user.save()
                 return user
 

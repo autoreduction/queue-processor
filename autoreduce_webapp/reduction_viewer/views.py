@@ -13,7 +13,7 @@ from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, requ
 from django.http import HttpResponse
 import operator 
 import logging
-logging.basicConfig(filename=LOG_FILE,level=LOG_LEVEL)
+logger = logging.getLogger(__name__)
 
 @deactivate_invalid_instruments
 def index(request):
@@ -202,7 +202,7 @@ def run_summary(request, run_number, run_version=0):
             'history' : history,
         }
     except Exception as e:
-        logging.error(e.message)
+        logger.error(e.message)
         context_dictionary = {}
     return context_dictionary
 
@@ -223,7 +223,7 @@ def instrument_summary(request, instrument):
             'queued' : ReductionRun.objects.filter(instrument=instrument_obj, status=queued_status),
         }
     except Exception as e:
-        logging.error(e.message)
+        logger.error(e.message)
         context_dictionary = {}
 
     return context_dictionary
@@ -247,7 +247,7 @@ def experiment_summary(request, reference_number):
             with ICATCommunication(AUTH='uows', SESSION={'sessionid':request.session['sessionid']}) as icat:
                 experiment_details = icat.get_experiment_details(int(reference_number))
         except Exception as icat_e:
-            logging.error(icat_e.message)
+            logger.error(icat_e.message)
             experiment_details = {
                 'reference_number' : '',
                 'start_date' : '',
@@ -265,7 +265,7 @@ def experiment_summary(request, reference_number):
             'reduced_data' : reduced_data,
         }
     except Exception as e:
-        logging.error(e.message)
+        logger.error(e.message)
         context_dictionary = {}
     
     #Check the users permissions

@@ -1,7 +1,7 @@
 import stomp
 from settings import LOG_FILE, LOG_LEVEL, ACTIVEMQ, BASE_DIR, REDUCTION_SCRIPT_BASE
 import logging
-logging.basicConfig(filename=LOG_FILE,level=LOG_LEVEL)
+logger = logging.getLogger(__name__)
 import time, sys, os, json, glob, base64
 from django.utils import timezone
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
@@ -23,10 +23,10 @@ class Listener(object):
             try:
                 os.remove(script_path)
             except:
-                logging.error("Unable to delete temporary reduction script at: %s" % script_path)
+                logger.error("Unable to delete temporary reduction script at: %s" % script_path)
 
     def on_error(self, headers, message):
-        logging.error("Error recieved - %s" % str(message))
+        logger.error("Error recieved - %s" % str(message))
 
     def on_message(self, headers, message):
         destination = headers["destination"]
@@ -34,8 +34,8 @@ class Listener(object):
         try:
             self._data_dict = json.loads(message)
         except:
-            logging.error("Could not decode message from %s" % destination)
-            logging.error(sys.exc_value)
+            logger.error("Could not decode message from %s" % destination)
+            logger.error(sys.exc_value)
             return
         try:
             if destination == '/queue/DataReady':
@@ -47,15 +47,15 @@ class Listener(object):
             elif destination == '/queue/ReductionError':
                 self.reduction_error()
             else:
-                logging.warning("Recieved a message on an unknown topic '%s'" % destination)
+                logger.warning("Recieved a message on an unknown topic '%s'" % destination)
         except BaseException, e:
-            logging.error("UNCAUGHT ERROR: %s" % e)
+            logger.error("UNCAUGHT ERROR: %s" % e)
 
     def data_ready(self):
         # Import within method to prevent cylindrical imports
         from reduction_variables.utils import InstrumentVariablesUtils, ReductionVariablesUtils
 
-        logging.info("Data ready for processing run %s on %s" % (str(self._data_dict['run_number']), self._data_dict['instrument']))
+        logger.info("Data ready for processing run %s on %s" % (str(self._data_dict['run_number']), self._data_dict['instrument']))
         
         self._data_dict['run_version'] = 0
         
@@ -78,7 +78,7 @@ class Listener(object):
             data_location = DataLocation(file_path=self._data_dict['data'], reduction_run=reduction_run)
 
             if not variables:
-                logging.warning("No instrument variables found on %s for run %s" % (instrument.name, self._data_dict['run_number']))
+                logger.warning("No instrument variables found on %s for run %s" % (instrument.name, self._data_dict['run_number']))
             else:
                 for variable in variables:
                     reduction_run_variables = RunVariable(name=variable.name, value=variable.value, type=variable.type, is_advanced=variable.is_advanced)
@@ -96,23 +96,23 @@ class Listener(object):
                 self._data_dict['reduction_script'] = script_path
                 self._data_dict['reduction_arguments'] = arguments
                 self._client.send('/queue/ReductionPending', json.dumps(self._data_dict))     
-                logging.info("Run %s ready for reduction" % self._data_dict['run_number'])
-                logging.info("Reduction file: %s" % self._data_dict['reduction_script'])   
+                logger.info("Run %s ready for reduction" % self._data_dict['run_number'])
+                logger.info("Reduction file: %s" % self._data_dict['reduction_script'])   
             else:
                 self._data_dict['reduction_script'] = InstrumentVariablesUtils().get_temporary_script(instrument.name)
                 self._data_dict['reduction_arguments'] = {}
                 self._client.send('/queue/ReductionPending', json.dumps(self._data_dict))
-                logging.info("Run %s ready for reduction" % self._data_dict['run_number'])
-                logging.info("Reduction file: %s" % self._data_dict['reduction_script'])
+                logger.info("Run %s ready for reduction" % self._data_dict['run_number'])
+                logger.info("Reduction file: %s" % self._data_dict['reduction_script'])
         else:
-            logging.error("An invalid attempt to queue an existing reduction run was captured. Experiment: %s, Run Number: %s, Run Version %s" % (self._data_dict['rb_number'], self._data_dict['run_number'], self._data_dict['run_version']))
+            logger.error("An invalid attempt to queue an existing reduction run was captured. Experiment: %s, Run Number: %s, Run Version %s" % (self._data_dict['rb_number'], self._data_dict['run_number'], self._data_dict['run_version']))
 
     def reduction_started(self):
-        logging.info("Run %s has started reduction" % self._data_dict['run_number'])
+        logger.info("Run %s has started reduction" % self._data_dict['run_number'])
         
         experiment = Experiment.objects.filter(reference_number=self._data_dict['rb_number']).first()
         if not experiment:
-            logging.error("Unable to find experiment %s" % self._data_dict['rb_number'])
+            logger.error("Unable to find experiment %s" % self._data_dict['rb_number'])
             return
 
         reduction_run = ReductionRun.objects.get(experiment=experiment, run_number=self._data_dict['run_number'], run_version=self._data_dict['run_version'])
@@ -122,16 +122,16 @@ class Listener(object):
                 reduction_run.started = timezone.now().replace(microsecond=0)
                 reduction_run.save()
             else:
-                logging.error("An invalid attempt to re-start a reduction run was captured. Experiment: %s, Run Number: %s, Run Version %s" % (self._data_dict['rb_number'], self._data_dict['run_number'], self._data_dict['run_version']))
+                logger.error("An invalid attempt to re-start a reduction run was captured. Experiment: %s, Run Number: %s, Run Version %s" % (self._data_dict['rb_number'], self._data_dict['run_number'], self._data_dict['run_version']))
         else:
-            logging.error("A reduction run started that wasn't found in the database. Experiment: %s, Run Number: %s, Run Version %s" % (self._data_dict['rb_number'], self._data_dict['run_number'], self._data_dict['run_version']))
+            logger.error("A reduction run started that wasn't found in the database. Experiment: %s, Run Number: %s, Run Version %s" % (self._data_dict['rb_number'], self._data_dict['run_number'], self._data_dict['run_version']))
 
     def reduction_complete(self):
         try:
-            logging.info("Run %s has completed reduction" % self._data_dict['run_number'])
+            logger.info("Run %s has completed reduction" % self._data_dict['run_number'])
             experiment = Experiment.objects.filter(reference_number=self._data_dict['rb_number']).first()
             if not experiment:
-                logging.error("Unable to find experiment %s" % self._data_dict['rb_number'])
+                logger.error("Unable to find experiment %s" % self._data_dict['rb_number'])
                 return
             reduction_run = ReductionRun.objects.get(experiment=experiment, run_number=self._data_dict['run_number'], run_version=self._data_dict['run_version'])
             
@@ -164,25 +164,25 @@ class Listener(object):
                     with ICATCommunication() as icat:
                         icat.post_process(reduction_run)                    
                 else:
-                    logging.error("An invalid attempt to complete a reduction run that wasn't processing has been captured. Experiment: %s, Run Number: %s, Run Version %s" % (self._data_dict['rb_number'], self._data_dict['run_number'], self._data_dict['run_version']))
+                    logger.error("An invalid attempt to complete a reduction run that wasn't processing has been captured. Experiment: %s, Run Number: %s, Run Version %s" % (self._data_dict['rb_number'], self._data_dict['run_number'], self._data_dict['run_version']))
             else:
-                logging.error("A reduction run completed that wasn't found in the database. Experiment: %s, Run Number: %s, Run Version %s" % (self._data_dict['rb_number'], self._data_dict['run_number'], self._data_dict['run_version']))
+                logger.error("A reduction run completed that wasn't found in the database. Experiment: %s, Run Number: %s, Run Version %s" % (self._data_dict['rb_number'], self._data_dict['run_number'], self._data_dict['run_version']))
 
             if 'reduction_script' in self._data_dict:
                 self.clean_up_reduction_script(self._data_dict['reduction_script'])
         except BaseException, e:
-            logging.error("Error: %s" % e)
+            logger.error("Error: %s" % e)
                     
 
     def reduction_error(self):
         if 'message' in self._data_dict:
-            logging.info("Run %s has encountered an error - %s" % (self._data_dict['run_number'], self._data_dict['message']))
+            logger.info("Run %s has encountered an error - %s" % (self._data_dict['run_number'], self._data_dict['message']))
         else:
-            logging.info("Run %s has encountered an error - No error message was found" % (self._data_dict['run_number']))
+            logger.info("Run %s has encountered an error - No error message was found" % (self._data_dict['run_number']))
         
         experiment = Experiment.objects.filter(reference_number=self._data_dict['rb_number']).first()
         if not experiment:
-            logging.error("Unable to find experiment %s" % self._data_dict['rb_number'])
+            logger.error("Unable to find experiment %s" % self._data_dict['rb_number'])
             return
         try:
             reduction_run = ReductionRun.objects.get(experiment=experiment, run_number=self._data_dict['run_number'], run_version=self._data_dict['run_version'])
@@ -196,7 +196,7 @@ class Listener(object):
                 reduction_run.message = self._data_dict['message']
             reduction_run.save()
         else:
-            logging.error("A reduction run that caused an error wasn't found in the database. Experiment: %s, Run Number: %s, Run Version %s" % (self._data_dict['rb_number'], self._data_dict['run_number'], self._data_dict['run_version']))
+            logger.error("A reduction run that caused an error wasn't found in the database. Experiment: %s, Run Number: %s, Run Version %s" % (self._data_dict['rb_number'], self._data_dict['run_number'], self._data_dict['run_version']))
 
         if 'reduction_script' in self._data_dict:
             self.clean_up_reduction_script(self._data_dict['reduction_script'])
@@ -224,7 +224,7 @@ class Client(object):
             else:
                 listener = self._listener
 
-        logging.info("[%s] Connecting to %s" % (self._consumer_name, str(self._brokers)))
+        logger.info("[%s] Connecting to %s" % (self._consumer_name, str(self._brokers)))
 
         connection = stomp.Connection(host_and_ports=self._brokers, use_ssl=self._use_ssl)
         if not self._client_only:
@@ -241,14 +241,14 @@ class Client(object):
             self._connection = self.get_connection()
         
         for queue in self._topics:
-            logging.info("[%s] Subscribing to %s" % (self._consumer_name, queue))
+            logger.info("[%s] Subscribing to %s" % (self._consumer_name, queue))
             self._connection.subscribe(destination=queue, id=1, ack='auto')
 
     def _disconnect(self):
         if self._connection is not None and self._connection.is_connected():
             self._connection.disconnect()
         self._connection = None
-        logging.info("[%s] Disconnected" % (self._consumer_name))
+        logger.info("[%s] Disconnected" % (self._consumer_name))
 
     def stop(self):
         self._disconnect()
@@ -261,7 +261,7 @@ class Client(object):
             self._disconnect()
             self._connection = self.get_connection()
         self._connection.send(destination, message, persistent=persistent)
-        logging.debug("[%s] send message to %s" % (self._consumer_name, destination))
+        logger.debug("[%s] send message to %s" % (self._consumer_name, destination))
 
 
 def main():

@@ -12,7 +12,7 @@ from reduction_viewer.utils import StatusUtils
 from autoreduce_webapp.icat_communication import ICATCommunication
 from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL
 import logging, re
-logging.basicConfig(filename=LOG_FILE,level=LOG_LEVEL)
+logger = logging.getLogger(__name__)
 
 '''
     Imported into another view, thus no middlewear

@@ -1,6 +1,6 @@
 from settings import LOG_FILE, LOG_LEVEL, UOWS_URL
 import logging
-logging.basicConfig(filename=LOG_FILE,level=LOG_LEVEL)
+logger = logging.getLogger(__name__)
 from suds.client import Client
 import suds
 
@@ -27,7 +27,7 @@ class UOWSClient(object):
         try:
             return self.client.service.checkSession(session_id)
         except suds.WebFault:
-            logging.warn("Session ID is not valid: %s" % session_id)
+            logger.warn("Session ID is not valid: %s" % session_id)
             return False
 
     def get_person(self, session_id):
@@ -50,7 +50,7 @@ class UOWSClient(object):
                 }
                 return trimmed_person
         except suds.WebFault:
-            logging.warn("Session ID is not valid: %s" % session_id)
+            logger.warn("Session ID is not valid: %s" % session_id)
         return None
 
     def logout(self, session_id):
@@ -61,4 +61,4 @@ class UOWSClient(object):
         try:
             self.client.service.logout(session_id)
         except suds.WebFault:
-            logging.warn("Failed to logout Session ID %s" % session_id)
+            logger.warn("Failed to logout Session ID %s" % session_id)
