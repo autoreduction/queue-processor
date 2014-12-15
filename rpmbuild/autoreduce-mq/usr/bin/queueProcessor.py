@@ -49,8 +49,7 @@ class Consumer(object):
             connection.subscribe(destination=queue, id=1, ack='auto')
 
 
-if __name__ == '__main__':
-    
+def main():
     try:
         config = json.load(open('/etc/autoreduce/post_process_consumer.conf'))
     except:
@@ -61,3 +60,6 @@ if __name__ == '__main__':
     reactor.callWhenRunning(Consumer(config).run)
     reactor.run()
     logging.info("Stop post process asynchronous listener!")
+
+if __name__ == '__main__':
+    main()
