@@ -409,7 +409,7 @@ def run_confirmation(request, run_number, run_version=0):
 
 @login_and_uows_valid
 def preview_script(request, instrument, run_number=0, experiment_reference=0):
-    reduce_script = ''
+    reduce_script = '"""\nreduce_vars.py\n"""\n\n'
 
     '''
         Regular expressions to find the values of the exposed variables
@@ -476,10 +476,10 @@ def preview_script(request, instrument, run_number=0, experiment_reference=0):
                 value = '\g<before>%s' % value
                 script_vars_file = re.sub(pattern, value, script_vars_file)
 
-    reduce_script = script_file
-
-    # TODO: Merge both scripts 
-
+    reduce_script += script_vars_file
+    reduce_script += '\n\n"""\nreduce.py\n""""\n\n'
+    reduce_script += script_file
+    
     response = HttpResponse(content_type='application/x-python')
     response['Content-Disposition'] = 'attachment; filename=reduce.py'
     response.write(reduce_script)
