@@ -1,0 +1,13 @@
+standard_vars = {
+    'Minimum Extents' : '-3,-5,-4,-5.0',
+    'Maximum Extents' : '5,2,4,30.0',
+    'UB Matrix' : [2.87, 2.87, 2.87], # a, b, c
+    'Run Range Starts' : [22413, 22450],
+    'Run Range Ends' : [],
+    'Psi Starts' : [0, 7],
+    'Psi Increments' : [2, 0.5]
+}
+advanced_vars = {
+    'Number of Runs to Merge' : [5],
+    'Filenames' : []
+}

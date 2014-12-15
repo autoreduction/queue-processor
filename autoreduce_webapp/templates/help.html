@@ -29,6 +29,8 @@
                 <ul>
                     <li>If you have multiple accounts or changed accounts you may be logged in with the wrong one. To resolve this issue please contact the user office who will be able to recover or merge accounts as needed.</li>
                     <li>The experiment may not have completed or was completed without an autoreduction job having been recorded.</li>
+                    <li>The experiment was not found in ICAT.</li>
+                    <li>The experiment is now too old.</li>
                 </ul>
             </p>
             {% if support_email %}
@@ -47,16 +49,11 @@
             <p>
                 When a job is triggered on a new instrument, if a valid reduce script is found, it will create a new instrument and run that first job using the reduce script and its default variables. From this point it will be possible to modify variables and re-run experiments on that instrument.
             </p>
-        <div>
-    </section>
-    <section class="help-topic panel panel-default" data-topics="script compatible work">
-        <div class="panel-heading">
-            <h4>How can I make a reduction script compatible with autoreduction?</h4>
-        </div>
-        <div class="panel-body">
-            <p>
-                For a reduction script to be compatible with the autoreduction web application it must expose what variables can be modified. For an example of this please <a href="https://github.com/mantidproject/autoreduce/blob/master/WebApp/ISIS/example_reduce.py">See Here</a>.
-            </p>
+            {% if support_email %}
+                <p>
+                    It is also possible that the experiment wasn't found in ICAT. If you belive a reduction job should have run for your instrument and you are not seeing any results please <a href="mailto:{{support_email}}">Contact Us</a>.
+                </p>
+            {% endif %}
         <div>
     </section>
     <section class="help-topic panel panel-default" data-topics="instrument variables change new">
@@ -82,7 +79,40 @@
             {% endif %}
         <div>
     </section>
-
+    {% if request.user.is_staff %}
+        <section class="help-topic panel panel-default" data-topics="script compatible work">
+            <div class="panel-heading">
+                <h4>How can I make a reduction script compatible with autoreduction?</h4>
+            </div>
+            <div class="panel-body">
+                <p>
+                    For a reduction script to be compatible with the autoreduction web application it must be named <code>reduce.py</code> expose what variables can be modified. 
+                    These variables must be made available in a file named <code>reduce_vars.py</code>. For an example of this please <a href="https://github.com/mantidproject/autoreduce/blob/master/WebApp/ISIS/example_reduce.py">See Here</a> <a href="https://github.com/mantidproject/autoreduce/blob/master/WebApp/ISIS/example_reduce_vars.py">and Here</a>.
+                    Autoreduction expects the reduction script to have a <code>main()</code> method that takes in two arguments, data and output. These are passed in a kwargs but it may be desirable for these to also be accepted from the command line, for an example of how to do this please <a href="https://github.com/mantidproject/autoreduce/blob/master/WebApp/ISIS/example_reduce.py">See Here</a>.
+                    The reduction script should perform all operation on the provided data file and save the output to the output directory proivded to the script. The output will be copied to the cache upon completion. If additional save locations are required these can be returned as a list of system paths from the main method. 
+                </p>
+                {% if support_email %}
+                    <p>If you feel your script will need to save to additional locations please <a href="mailto:{{support_email}}">Contact Us</a> to ensure the locations are accessible from the autoreduction machine.</p>
+                {% endif %}
+            <div>
+        </section>
+        <section class="help-topic panel panel-default" data-topics="reduction script file location directory">
+            <div class="panel-heading">
+                <h4>Where should I put reduction scripts?</h4>
+            </div>
+            <div class="panel-body">
+                <p>
+                    When you have made sure your reduction script is in the correct format and varaibles exposed it must be placed within the autoreduction directory within the user script directory of the appropriate instrument.
+                </p>
+                <p>
+                    For example, the reduction script for MERLIN would be located at:
+                    <code>\\isis\inst$\NDXMERLIN\user\scripts\autoreduction\reduce.py</code> <br/>
+                    and the variables at: 
+                    <code>\\isis\inst$\NDXMERLIN\user\scripts\autoreduction\reduce_vars.py</code>
+                </p>
+            <div>
+        </section>
+    {% endif %}
 
 
     <div class="no-results collapse row well">
