@@ -481,6 +481,6 @@ def preview_script(request, instrument, run_number=0, experiment_reference=0):
     reduce_script += script_file
     
     response = HttpResponse(content_type='application/x-python')
-    response['Content-Disposition'] = 'attachment; filename=reduce.py'
+    response['Content-Disposition'] = 'attachment; filename=reduce & reduce_vars.py'
     response.write(reduce_script)
     return response
