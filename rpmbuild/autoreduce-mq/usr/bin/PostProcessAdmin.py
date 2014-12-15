@@ -161,21 +161,23 @@ class PostProcessAdmin:
             if out_directories:
                 if type(out_directories) is str and os.access(out_directories, os.R_OK):
                     self.data['reduction_data'].append(linux_to_windows_path(out_directories))
-                    shutil.copy(reduce_result_dir, out_directories)
+                    shutil.copytree(reduce_result_dir[:-1], out_directories)
                 elif type(out_directories) is list:
                     for out_dir in out_directories:
                         self.data['reduction_data'].append(linux_to_windows_path(out_dir))
                         if type(out_dir) is str and os.access(out_dir, os.R_OK):
-                            shutil.copy(reduce_result_dir, out_dir)
+                            shutil.copytree(reduce_result_dir[:-1], out_dir)
             
             # Move from tmp directory to actual directory (remove /tmp from start of path)
             if not os.path.isdir(reduce_result_dir[len(TEMP_ROOT_DIRECTORY):]):
-                os.makedirs(reduce_result_dir[len(TEMP_ROOT_DIRECTORY):])
+                os.makedirs(reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-8])
             # [4,-8] is used to remove the prepending '/tmp' and the trailing 'results/' from the destination
             self.data['reduction_data'].append(linux_to_windows_path(reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-8]))
-            print "Moving %s to %s" % (reduce_result_dir, reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-8])
-            shutil.move(reduce_result_dir, reduce_result_dir[len(TEMP_ROOT_DIRECTORY):])
+            print "Moving %s to %s" % (reduce_result_dir[:-1], reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-8])
+            shutil.copytree(reduce_result_dir[:-1], reduce_result_dir[len(TEMP_ROOT_DIRECTORY):])
             
+            # TODO: remove temp directory
+
             if os.stat(out_err).st_size == 0:
                 os.remove(out_err)
                 self.client.send(self.conf['reduction_complete'] , json.dumps(self.data))  
