@@ -81,7 +81,7 @@ def run_list(request):
                 experiments = {}
                 for instrument_name in instrument_names:
                     instrument = Instrument.objects.get(name=instrument_name)
-                    experiments[instrument_name] = ReductionRun.objects.filter(instrument=instrument).values_list('experiment.reference_number', flat=True)
+                    experiments[instrument_name] = Experiment.objects.filter(reduction_runs__instrument=instrument).values_list('reference_number', flat=True)
                 request.session['experiments_to_show'] = experiments
         else:
             instrument_names = icat.get_valid_instruments(int(request.user.username))
@@ -109,7 +109,7 @@ def run_list(request):
         reference_numbers = []
         for experiment in instrument_experiments:
             # Filter out calibration runs
-            if experiment.isdigit():
+            if isinstance(experiment, (int,long)) or experiment.isdigit():
                 reference_numbers.append(experiment)
 
         matching_experiments = Experiment.objects.filter(reference_number__in=reference_numbers)
