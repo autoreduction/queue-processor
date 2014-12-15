@@ -112,6 +112,23 @@
                 </p>
             <div>
         </section>
+        <section class="help-topic panel panel-default" data-topics="reduction data file location directory output reduced">
+            <div class="panel-heading">
+                <h4>Where does my reduced data go?</h4>
+            </div>
+            <div class="panel-body">
+                <p>
+                    When a reduction job has completed the reduced data is moved to the cache under the appropriate cycle.
+                </p>
+                <p>
+                    For example, for MERLIN the reduced data would be located at:
+                    <code>\\isis\inst$\NDXMERLIN\Instrument\data\[CYCLE]\autoreduced\[RB NUMBER]\[RUN NUMBER]</code>.
+                </p>
+                <p>
+                    Optionally the reduction script may specify additional locations for the reduced data to be saved to. These can be found either within the reduction script or on the run summary page where a list of all reduction locations can be found withing the summary panel.
+                </p>
+            <div>
+        </section>
     {% endif %}
 
 
