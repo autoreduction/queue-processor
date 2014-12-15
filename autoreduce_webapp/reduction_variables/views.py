@@ -427,7 +427,7 @@ def preview_script(request, instrument, run_number=0, experiment_reference=0):
             run_variables = InstrumentVariable.objects.filter(experiment_reference=experiment_reference, instrument=instrument)
         else:
             run_variables = InstrumentVariable.objects.filter(start_run=run_number, instrument=instrument)
-        script, script_vars = ScriptUtils().get_reduce_scripts(old_variables[0].scripts.all())
+        script, script_vars = ScriptUtils().get_reduce_scripts(run_variables[0].scripts.all())
         script_file = script.decode("utf-8")
         script_vars_file = script_vars.decode("utf-8")
 
@@ -450,7 +450,7 @@ def preview_script(request, instrument, run_number=0, experiment_reference=0):
         elif run_number > 0:
             default_variables = InstrumentVariable.objects.filter(start_run=run_number, instrument=instrument)
         if default_variables:
-            script, script_vars = ScriptUtils().get_reduce_scripts(old_variables[0].scripts.all())
+            script, script_vars = ScriptUtils().get_reduce_scripts(default_variables[0].scripts.all())
             script_file = script.decode("utf-8")
             script_vars_file = script_vars.decode("utf-8")
         else:
