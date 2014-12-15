@@ -1,7 +1,7 @@
 import logging, os, sys, imp, uuid, re, json
 sys.path.append(os.path.join("../", os.path.dirname(os.path.dirname(__file__))))
 os.environ["DJANGO_SETTINGS_MODULE"] = "autoreduce_webapp.settings"
-from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL, BASE_DIR, ACTIVEMQ, TEMP_OUTPUT_DIRECTORY, REDUCTION_DIRECTORY
+from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL, BASE_DIR, ACTIVEMQ, TEMP_OUTPUT_DIRECTORY, REDUCTION_DIRECTORY, FACILITY
 from autoreduce_webapp.queue_processor import Client as ActiveMQClient
 logger = logging.getLogger(__name__)
 from django.db import models
@@ -383,6 +383,7 @@ class MessagingUtils(object):
             'reduction_script':script_path,
             'reduction_arguments':arguments,
             'run_version':reduction_run.run_version,
+            'facility':FACILITY,
             'message':'',
         }
         message_client.send('/queue/ReductionPending', json.dumps(data_dict))    
