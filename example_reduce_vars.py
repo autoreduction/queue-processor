@@ -11,3 +11,11 @@ advanced_vars = {
     'Number of Runs to Merge' : [5],
     'Filenames' : []
 }
+variable_help = {
+    'standard_vars' = {
+        'UB Matrix' : "The list of a, b, c"
+    },
+    'advanced_vars' = {
+        'Number of Runs to Merge' : "The total number of runs that should be merged."
+    },
+}

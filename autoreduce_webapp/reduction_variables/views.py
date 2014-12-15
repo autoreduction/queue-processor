@@ -350,7 +350,8 @@ def run_confirmation(request, run_number, run_version=0):
                         name=default_var.name, 
                         value=value, 
                         is_advanced=True, 
-                        type=default_var.type
+                        type=default_var.type,
+                        help_text=default_var.help_text
                     )
                     variable.save()
                     variable.scripts.add(script)
@@ -366,7 +367,8 @@ def run_confirmation(request, run_number, run_version=0):
                         name=default_var.name, 
                         value=value, 
                         is_advanced=False, 
-                        type=default_var.type
+                        type=default_var.type,
+                        help_text=default_var.help_text
                     )
                     variable.save()
                     variable.scripts.add(script)

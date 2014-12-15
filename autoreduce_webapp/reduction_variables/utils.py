@@ -255,6 +255,7 @@ class InstrumentVariablesUtils(object):
                     is_advanced=False, 
                     type=VariableUtils().get_type_string(reduce_script.standard_vars[key]),
                     start_run = 0,
+                    help_text=self.get_help_text('standard_vars', key, reduce_script),
                     )
                 variables.append(variable)
         if 'advanced_vars' in dir(reduce_script):
@@ -266,9 +267,21 @@ class InstrumentVariablesUtils(object):
                     is_advanced=True, 
                     type=VariableUtils().get_type_string(reduce_script.advanced_vars[key]),
                     start_run = 0,
+                    help_text=self.get_help_text('advanced_vars', key, reduce_script),
                     )
                 variables.append(variable)
         return variables
+
+    def get_help_text(self, dictionary, key, reduce_script=None):
+        if not dictionary or not key:
+            return ""
+        if not reduce_script:
+            reduce_script, script_binary =  self.__load_reduction_vars_script(instrument_name)
+        if 'variable_help' in dir(reduce_script):
+            if dictionary in reduce_script.variable_help:
+                if key in reduce_script.variable_help[dictionary]:
+                    return reduce_script.variable_help[dictionary][key]
+        return ""
 
     def get_current_and_upcoming_variables(self, instrument_name):
         """
