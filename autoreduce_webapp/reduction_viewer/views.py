@@ -155,7 +155,7 @@ def run_list(request):
         }
 
         # Sort lists before appending
-        instrument_obj['runs'] = sorted(instrument_obj['runs'], key=operator.attrgetter('created'), reverse=True)
+        instrument_obj['runs'] = sorted(instrument_obj['runs'], key=operator.attrgetter('last_updated'), reverse=True)
         instrument_obj['experiments'] = sorted(instrument_obj['experiments'], key=lambda k: k['reference_number'], reverse=True)
         instruments.append(instrument_obj)
     
