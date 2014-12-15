@@ -4,7 +4,7 @@ import logging
 import logging.config
 logging.config.dictConfig(LOGGING)
 logger = logging.getLogger("django")
-import time, sys, os, json, glob, base64
+import time, sys, os, json, glob, base64, shutil
 from django.utils import timezone
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 sys.path.insert(0, BASE_DIR)
@@ -23,7 +23,7 @@ class Listener(object):
     def clean_up_reduction_script(self, script_path):
         if os.path.exists(script_path):
             try:
-                os.remove(script_path)
+                shutil.rmtree(script_path, ignore_errors=True)
             except:
                 logger.error("Unable to delete temporary reduction script at: %s" % script_path)
 
