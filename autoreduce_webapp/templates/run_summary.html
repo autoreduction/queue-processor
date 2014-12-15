@@ -3,6 +3,7 @@
 {% load colour_table_rows %}
 {% load natural_time_difference %}
 {% load get_user_name %}
+{% load replace %}
 {% load naturaltime from humanize %}
 {% load static from staticfiles %}
 
@@ -17,8 +18,8 @@
             </div>
         </div>
         {% if run.message %}
-            <div class="alert alert-{% run.status  %}" role="alert">
-                <i class="fa fa-{% run.status %} fa-{% run.status %}-circle fa-lg"></i> {{ run.message }}
+            <div class="alert alert-{% replace run.status.value 'Error' 'danger' %}" role="alert">
+                <i class="fa fa-{% replace run.status.value 'Error' 'exclamation' %} fa-{% replace run.status.value 'Error' 'exclamation' %}-circle fa-lg"></i> {{ run.message }}
             </div>
         {% endif %}
         <div class="row">
