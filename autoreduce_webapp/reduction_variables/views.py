@@ -477,7 +477,7 @@ def preview_script(request, instrument, run_number=0, experiment_reference=0):
                 script_vars_file = re.sub(pattern, value, script_vars_file)
 
     reduce_script += script_vars_file
-    reduce_script += '\n\n"""\nreduce.py\n""\n\n'
+    reduce_script += '\n\n"""\nreduce.py\n"""\n\n'
     reduce_script += script_file
     
     response = HttpResponse(content_type='application/x-python')
