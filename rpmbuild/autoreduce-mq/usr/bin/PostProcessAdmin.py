@@ -169,8 +169,10 @@ class PostProcessAdmin:
                             shutil.copytree(reduce_result_dir[:-1], out_dir)
             
             # Move from tmp directory to actual directory (remove /tmp from start of path)
-            if not os.path.isdir(reduce_result_dir[len(TEMP_ROOT_DIRECTORY):]):
-                os.makedirs(reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-8])
+            if os.path.isdir(reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-8]):
+                shutil.rmtree(reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-8], ignore_errors=True)
+            os.makedirs(reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-8])
+            
             # [4,-8] is used to remove the prepending '/tmp' and the trailing 'results/' from the destination
             self.data['reduction_data'].append(linux_to_windows_path(reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-8]))
             print "Moving %s to %s" % (reduce_result_dir[:-1], reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-8])
