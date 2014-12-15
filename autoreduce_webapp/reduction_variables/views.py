@@ -416,7 +416,7 @@ def preview_script(request, instrument, run_number=0, experiment_reference=0):
         Each is seperated into two named groups, before & value.
         \s* is used to allow for unlimited spaces
         %s is later replaced with the variable name
-        A live example can be found at: http://regex101.com/r/oJ7iY5/1
+        A live example can be found at: https://regex101.com/r/oJ7iY5/3
     '''
     standard_pattern = "(?P<before>(\s)standard_vars\s*=\s*\{(([\s\S])+)['|\"]%s['|\"]\s*:\s*)(?P<value>((?!,(\s+)\n|\n)[\S\s])+)"
     advanced_pattern = "(?P<before>(\s)advanced_vars\s*=\s*\{(([\s\S])+)['|\"]%s['|\"]\s*:\s*)(?P<value>((?!,(\s+)\n|\n)[\S\s])+)"
@@ -477,7 +477,7 @@ def preview_script(request, instrument, run_number=0, experiment_reference=0):
                 script_vars_file = re.sub(pattern, value, script_vars_file)
 
     reduce_script += script_vars_file
-    reduce_script += '\n\n"""\nreduce.py\n""""\n\n'
+    reduce_script += '\n\n"""\nreduce.py\n""\n\n'
     reduce_script += script_file
     
     response = HttpResponse(content_type='application/x-python')
