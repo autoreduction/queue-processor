@@ -117,7 +117,7 @@ class Listener(object):
             logger.error("Unable to find experiment %s" % self._data_dict['rb_number'])
             return
 
-        reduction_run = ReductionRun.objects.get(experiment=experiment, run_number=self._data_dict['run_number'], run_version=self._data_dict['run_version'])
+        reduction_run = ReductionRun.objects.get(experiment=experiment, run_number=int(self._data_dict['run_number']), run_version=int(self._data_dict['run_version']))
         if reduction_run:
             if str(reduction_run.status) == "Error" or str(reduction_run.status) == "Queued":
                 reduction_run.status = StatusUtils().get_processing()
