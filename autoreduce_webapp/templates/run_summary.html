@@ -18,7 +18,7 @@
             </div>
         </div>
         {% if run.message %}
-            <div class="alert alert-{% replace run.status.value 'Error' 'danger' %}" role="alert">
+            <div class="alert alert-{% replace run.status.value 'Error' 'danger' %} word-wrap" role="alert">
                 <i class="fa fa-{% replace run.status.value 'Error' 'exclamation' %} fa-{% replace run.status.value 'Error' 'exclamation' %}-circle fa-lg"></i> {{ run.message }}
             </div>
         {% endif %}

@@ -36,6 +36,10 @@ hr {
     content: '';
 }
 
+.word-wrap{
+    word-wrap: break-word;
+}
+
 /****************
  2. Navbar
 ****************/
