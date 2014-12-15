@@ -4,6 +4,9 @@
 {% for name,variable in standard_variables.items %}
     <div class="form-group">
         <label for="var-standard-{{variable.sanitized_name}}" class="control-label col-md-3">{{variable.name}}</label>
+        {% if variable.help_text %}
+            <a href="#" data-toggle="popover" data-content="{{ variable.help_text }}" data-trigger="hover click focus" data-placement="top" data-container="body"><i class="fa fa-info-circle"></i></a>
+        {% endif %}
         <div class="col-md-9">
             {% if variable.type == 'boolean' %}
                 <input id="var-standard-{{variable.sanitized_name}}" name="checkbox-{{variable.sanitized_name}}" type="{% variable_type variable.type %}" data-type="{{variable.type}}" value="{{variable.value}}" {% if variable.value.lower == 'true' %}checked{%endif%}/>
@@ -23,6 +26,9 @@
             {% for name,variable in advanced_variables.items %}
                 <div class="form-group">
                     <label for="var-advanced-{{variable.sanitized_name}}" class="control-label col-md-3">{{variable.name}}</label>
+                    {% if variable.help_text %}
+                        <a href="#" data-toggle="popover" data-content="{{ variable.help_text }}" data-trigger="hover click focus" data-placement="top" data-container="body"><i class="fa fa-info-circle"></i></a>
+                    {% endif %}
                     <div class="col-md-9">
                         {% if variable.type == 'boolean' %}
                             <input id="var-advanced-{{variable.sanitized_name}}" name="checkbox-{{variable.sanitized_name}}" type="{% variable_type variable.type %}" data-type="{{variable.type}}" value="{{variable.value}}" {% if variable.value.lower == 'true' %}checked{%endif%}/>
