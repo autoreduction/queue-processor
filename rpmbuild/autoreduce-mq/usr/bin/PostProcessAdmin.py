@@ -5,6 +5,7 @@ Post Process Administrator. It kicks off cataloging and reduction jobs.
 import logging, json, socket, os, sys, subprocess, time, shutil, imp, stomp, re
 REDUCTION_DIRECTORY = '/isis/NDX%s/user/scripts/autoreduction' # %(instrument)
 ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s' # %(instrument, cycle, experiment_number, run_number)
+TEMP_ROOT_DIRECTORY = '/tmp'
 
 def linux_to_windows_path(path):
     path = path.replace('/', '\\')
@@ -15,7 +16,7 @@ def linux_to_windows_path(path):
 def windows_to_linux_path(path):
     # '\\isis\inst$\' maps to '/isis/'
     path = path.replace('\\\\isis\\inst$\\', '/isis/')
-    path = path.replace('\\\\autoreduce\\data\\', '/run/temp/data/')
+    path = path.replace('\\\\autoreduce\\data\\', TEMP_ROOT_DIRECTORY+'/data/')
     path = path.replace('\\', '/')
     return path
 
@@ -119,7 +120,7 @@ class PostProcessAdmin:
                 return
             
             # specify directory where autoreduction output goes
-            reduce_result_dir = "/tmp" + instrument_dir + "/results/"
+            reduce_result_dir = TEMP_ROOT_DIRECTORY + instrument_dir + "/results/"
             if not os.path.isdir(reduce_result_dir):
                 os.makedirs(reduce_result_dir)
 
@@ -168,12 +169,12 @@ class PostProcessAdmin:
                             shutil.copy(reduce_result_dir, out_dir)
             
             # Move from tmp directory to actual directory (remove /tmp from start of path)
-            if not os.path.isdir(reduce_result_dir[4:]):
-                os.makedirs(reduce_result_dir[4:])
+            if not os.path.isdir(reduce_result_dir[len(TEMP_ROOT_DIRECTORY):]):
+                os.makedirs(reduce_result_dir[len(TEMP_ROOT_DIRECTORY):])
             # [4,-8] is used to remove the prepending '/tmp' and the trailing 'results/' from the destination
-            self.data['reduction_data'].append(linux_to_windows_path(reduce_result_dir[4:-8]))
-            print "Moving %s to %s" % (reduce_result_dir, reduce_result_dir[4:-8])
-            shutil.move(reduce_result_dir, reduce_result_dir[4:])
+            self.data['reduction_data'].append(linux_to_windows_path(reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-8]))
+            print "Moving %s to %s" % (reduce_result_dir, reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-8])
+            shutil.move(reduce_result_dir, reduce_result_dir[len(TEMP_ROOT_DIRECTORY):])
             
             if os.stat(out_err).st_size == 0:
                 os.remove(out_err)
