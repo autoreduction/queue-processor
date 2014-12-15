@@ -18,7 +18,7 @@ class InstrumentVariable(models.Model):
     type = models.CharField(max_length=50, blank=False)
     is_advanced = models.BooleanField(default=False)
     scripts = models.ManyToManyField(ScriptFile)
-    help_text = models.CharField(max_length=300, blank=True, null=True)
+    help_text = models.CharField(max_length=300, blank=True, null=True, default='')
 
     def __unicode__(self):
         return u'%s - %s=%s' % (self.instrument.name, self.name, self.value)
@@ -36,7 +36,7 @@ class RunVariable(models.Model):
     type = models.CharField(max_length=50, blank=False)
     scripts = models.ManyToManyField(ScriptFile)
     is_advanced = models.BooleanField(default=False)
-    help_text = models.CharField(max_length=300, blank=True, null=True)
+    help_text = models.CharField(max_length=300, blank=True, null=True, default='')
 
     def __unicode__(self):
         return u'%s - %s=%s' % (self.reduction_run, self.name, self.value)
