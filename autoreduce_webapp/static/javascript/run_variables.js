@@ -169,11 +169,11 @@
 
         resetValidationStates();
         validateRunRange();
-        $('[data-type="text"]').each(validateText);
-        $('[data-type="number"]').each(validateNumber);
-        $('[data-type="boolean"]').each(validateBoolean);
-        $('[data-type="list_number"]').each(validateListNumber);
-        $('[data-type="list_text"]').each(validateListText);
+        $form.find('[data-type="text"]').each(validateText);
+        $form.find('[data-type="number"]').each(validateNumber);
+        $form.find('[data-type="boolean"]').each(validateBoolean);
+        $form.find('[data-type="list_number"]').each(validateListNumber);
+        $form.find('[data-type="list_text"]').each(validateListText);
 
         if(!isValid){
             $('.js-form-validation-message').html('');
