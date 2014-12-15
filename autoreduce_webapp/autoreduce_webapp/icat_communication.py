@@ -86,7 +86,7 @@ class ICATCommunication(object):
             raise TypeError("User number must be a number")
 
         instruments = Set()
-        self._add_list_to_set(self.client.search("SELECT ins.instrument.name from InstrumentScientist ins WHERE ins.user.name = 'uows/" + str(user_number) + "'"), instruments)
+        self._add_list_to_set(self.client.search("SELECT ins.instrument.fullName from InstrumentScientist ins WHERE ins.user.name = 'uows/" + str(user_number) + "'"), instruments)
         return sorted(instruments)
 
     '''
