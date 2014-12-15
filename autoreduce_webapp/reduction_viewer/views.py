@@ -3,6 +3,7 @@ from django.template import RequestContext
 from django.shortcuts import render_to_response, redirect
 from django.contrib.auth import logout as django_logout, authenticate, login
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from autoreduce_webapp.uows_client import UOWSClient
 from autoreduce_webapp.icat_communication import ICATCommunication
 from autoreduce_webapp.settings import UOWS_LOGIN_URL, LOG_FILE, LOG_LEVEL
