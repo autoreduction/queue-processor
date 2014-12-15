@@ -259,7 +259,7 @@ def experiment_summary(request, reference_number):
             }
         context_dictionary = {
             'experiment' : experiment,
-            'runs' : runs,
+            'runs' :  sorted(runs, key=operator.attrgetter('last_updated'), reverse=True),
             'experiment_details' : experiment_details,
             'data' : data,
             'reduced_data' : reduced_data,
