@@ -387,6 +387,7 @@ class MessagingUtils(object):
             'message':'',
         }
         message_client.send('/queue/ReductionPending', json.dumps(data_dict))    
+        message_client.disconnect()
 
 class ScriptUtils(object):
     def get_reduce_scripts(self, scripts):
