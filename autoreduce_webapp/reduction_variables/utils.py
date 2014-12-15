@@ -378,7 +378,7 @@ class MessagingUtils(object):
         data_dict = {
             'run_number':reduction_run.run_number,
             'instrument':reduction_run.instrument.name,
-            'rb_number':reduction_run.experiment.reference_number,
+            'rb_number':str(reduction_run.experiment.reference_number),
             'data':data_path,
             'reduction_script':script_path,
             'reduction_arguments':arguments,
