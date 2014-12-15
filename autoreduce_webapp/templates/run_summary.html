@@ -16,6 +16,11 @@
                 {% endif %}
             </div>
         </div>
+        {% if run.message %}
+            <div class="alert alert-{% replace run.status  %} hide" role="alert">
+                <i class="fa fa-{% replace run.status %} fa-{% replace run.status %}-circle fa-lg"></i> {{ run.message }}
+            </div>
+        {% endif %}
         <div class="row">
             <div class="col-md-8 col-md-offset-2">
                 <div class="panel panel-primary panel-small panel-2-column">
@@ -36,11 +41,6 @@
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                {% if run.message %}
-                                    <div>
-                                        <strong>Message:</strong> <strong>{{ run.message }}</strong>
-                                    </div>
-                                {% endif %}
                                 <div>
                                     <strong>Start:</strong> 
                                     {% if run.started %}
