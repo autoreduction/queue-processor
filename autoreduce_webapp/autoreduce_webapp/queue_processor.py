@@ -1,7 +1,6 @@
 import stomp
 from settings import LOG_FILE, LOG_LEVEL, ACTIVEMQ, BASE_DIR, REDUCTION_SCRIPT_BASE, LOGGING
 import logging
-logging.config.dictConfig(LOGGING)
 logger = logging.getLogger(__name__)
 import time, sys, os, json, glob, base64
 from django.utils import timezone
