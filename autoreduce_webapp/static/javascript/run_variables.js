@@ -16,7 +16,7 @@
                 url: url,
                 data: $form.serialize(),
                 success: function(data) {
-                    $('.js-script-container').text(data);
+                    $('.js-script-container').removeClass('prettyprinted').text(data);
                     prettyPrint();
                     $('#script-preview-modal .progress').hide();
                 }
