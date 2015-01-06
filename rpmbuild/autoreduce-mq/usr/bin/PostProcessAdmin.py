@@ -208,12 +208,6 @@ class PostProcessAdmin:
                 logging.error("Unable to copy to %s - %s" % (reduce_result_dir[len(TEMP_ROOT_DIRECTORY):], e))
                 self.data["message"] += "Unable to copy to %s - %s. " % (reduce_result_dir[len(TEMP_ROOT_DIRECTORY):], e)
             
-            # Remove temporary working directory
-            try:
-                shutil.rmtree(reduce_result_dir, ignore_errors=True)
-            except Exception, e:
-                logging.error("Unable to remove temporary directory %s - %s" % reduce_result_dir)
-
             if os.stat(out_err).st_size == 0:
                 os.remove(out_err)
                 self.client.send(self.conf['reduction_complete'] , json.dumps(self.data))  
@@ -227,6 +221,12 @@ class PostProcessAdmin:
                 self.data["message"] = "REDUCTION: %s" % errMsg
                 self.client.send(self.conf['reduction_error'] , json.dumps(self.data))
                 logging.error("Called "+self.conf['reduction_error']  + " --- " + json.dumps(self.data))       
+            
+            # Remove temporary working directory
+            try:
+                shutil.rmtree(reduce_result_dir[:-reduce_result_dir_tail_length], ignore_errors=True)
+            except Exception, e:
+                logging.error("Unable to remove temporary directory %s - %s" % reduce_result_dir)
 
             logging.info("Reduction job complete")
         except Exception, e:
