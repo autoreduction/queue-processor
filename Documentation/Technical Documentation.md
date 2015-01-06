@@ -393,6 +393,14 @@ The system provides a mechanism to display messages to the users using notificat
 
 Some notifications are displayed automatically, such as when there is a failed reduction job, and these are not stored in the database as they are dependant on the displayed data.
 
+### Log Files
+
+The WebApp saves all log messages to `[WebAppRoot]/autoreduction.log`.
+
+The autoreduction service saves all log messages to `/var/log/autoreduction.log`.
+
+Note: Currently these logs aren't rotated so watch file sizes!
+
 ## Areas for Improvement
 
 ### Caching
