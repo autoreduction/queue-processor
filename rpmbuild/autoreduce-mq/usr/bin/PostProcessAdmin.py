@@ -3,7 +3,10 @@
 Post Process Administrator. It kicks off cataloging and reduction jobs.
 """
 import logging, json, socket, os, sys, subprocess, time, shutil, imp, stomp, re
-logging.basicConfig(filename='/var/log/autoreduction.log', level=logging.INFO)
+logging.basicConfig(filename='/var/log/autoreduction.log', level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+# Quite the Stomp logs as they are quite chatty
+logging.getLogger('stomp').setLevel(logging.WARNING)
+
 REDUCTION_DIRECTORY = '/isis/NDX%s/user/scripts/autoreduction' # %(instrument)
 ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s' # %(instrument, cycle, experiment_number, run_number)
 TEMP_ROOT_DIRECTORY = '/tmp'
@@ -205,7 +208,11 @@ class PostProcessAdmin:
                 logging.error("Unable to copy to %s - %s" % (reduce_result_dir[len(TEMP_ROOT_DIRECTORY):], e))
                 self.data["message"] += "Unable to copy to %s - %s. " % (reduce_result_dir[len(TEMP_ROOT_DIRECTORY):], e)
             
-            # TODO: remove temp directory
+            # Remove temporary working directory
+            try:
+                shutil.rmtree(reduce_result_dir, ignore_errors=True)
+            except Exception, e:
+                logging.error("Unable to remove temporary directory %s - %s" % reduce_result_dir)
 
             if os.stat(out_err).st_size == 0:
                 os.remove(out_err)

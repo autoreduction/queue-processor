@@ -1,7 +1,9 @@
 import json, logging, time, subprocess, sys, socket
 import stomp
 from twisted.internet import reactor
-logging.basicConfig(filename='/var/log/autoreduction.log', level=logging.INFO)
+logging.basicConfig(filename='/var/log/autoreduction.log', level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+# Quite the Stomp logs as they are quite chatty
+logging.getLogger('stomp').setLevel(logging.WARNING)
 
 class Listener(object):
     def __init__(self, client):
