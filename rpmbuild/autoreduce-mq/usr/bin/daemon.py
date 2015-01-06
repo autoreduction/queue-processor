@@ -4,7 +4,7 @@
     http://www.jejik.com/articles/2007/02/a_simple_unix_linux_daemon_in_python/
 """
 import sys, os, time, atexit
-from signal import SIGTERM 
+from signal import SIGKILL 
 import logging
 
 class Daemon(object):
@@ -112,7 +112,7 @@ class Daemon(object):
         # Try killing the daemon process    
         try:
             while 1:
-                os.kill(pid, SIGTERM)
+                os.kill(pid, SIGKILL)
                 time.sleep(0.1)
         except OSError, err:
             err = str(err)

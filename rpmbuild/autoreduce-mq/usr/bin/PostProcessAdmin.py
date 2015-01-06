@@ -3,6 +3,7 @@
 Post Process Administrator. It kicks off cataloging and reduction jobs.
 """
 import logging, json, socket, os, sys, subprocess, time, shutil, imp, stomp, re
+logging.basicConfig(filename='/var/log/autoreduction.log', level=logging.INFO)
 REDUCTION_DIRECTORY = '/isis/NDX%s/user/scripts/autoreduction' # %(instrument)
 ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s' # %(instrument, cycle, experiment_number, run_number)
 TEMP_ROOT_DIRECTORY = '/tmp'
@@ -23,7 +24,7 @@ def windows_to_linux_path(path):
 class PostProcessAdmin:
     def __init__(self, data, conf, connection):
 
-        logging.info("json data: " + str(data))
+        logging.debug("json data: " + str(data))
         data["information"] = socket.gethostname()
         self.data = data
         self.conf = conf
@@ -32,48 +33,48 @@ class PostProcessAdmin:
         try:
             if data.has_key('data'):
                 self.data_file = windows_to_linux_path(str(data['data']))
-                logging.info("data_file: %s" % self.data_file)
+                logging.debug("data_file: %s" % self.data_file)
             else:
                 raise ValueError("data is missing")
 
             if data.has_key('facility'):
                 self.facility = str(data['facility']).upper()
-                logging.info("facility: %s" % self.facility)
+                logging.debug("facility: %s" % self.facility)
             else: 
                 raise ValueError("facility is missing")
 
             if data.has_key('instrument'):
                 self.instrument = str(data['instrument']).upper()
-                logging.info("instrument: %s" % self.instrument)
+                logging.debug("instrument: %s" % self.instrument)
             else:
                 raise ValueError("instrument is missing")
 
             if data.has_key('rb_number'):
                 self.proposal = str(data['rb_number']).upper()
-                logging.info("rb_number: %s" % self.proposal)
+                logging.debug("rb_number: %s" % self.proposal)
             else:
                 raise ValueError("rb_number is missing")
                 
             if data.has_key('run_number'):
                 self.run_number = str(data['run_number'])
-                logging.info("run_number: %s" % self.run_number)
+                logging.debug("run_number: %s" % self.run_number)
             else:
                 raise ValueError("run_number is missing")
                 
             if data.has_key('reduction_script'):
                 self.reduction_script = windows_to_linux_path(str(data['reduction_script']))
-                logging.info("reduction_script: %s" % str(self.reduction_script))
+                logging.debug("reduction_script: %s" % str(self.reduction_script))
             else:
                 raise ValueError("reduction_script is missing")
                 
             if data.has_key('reduction_arguments'):
                 self.reduction_arguments = data['reduction_arguments']
-                logging.info("reduction_arguments: %s" % self.reduction_arguments)
+                logging.debug("reduction_arguments: %s" % self.reduction_arguments)
             else:
                 raise ValueError("reduction_arguments is missing")
 
         except ValueError:
-            logging.info('JSON data error', exc_info=True)
+            logging.error('JSON data error', exc_info=True)
             raise
 
     def parse_input_variable(self, default, value):
@@ -106,6 +107,7 @@ class PostProcessAdmin:
         print "\n> In reduce()\n"
         try:         
             print "\nCalling: " + self.conf['reduction_started'] + "\n" + json.dumps(self.data) + "\n"
+            logging.debug("Calling: " + self.conf['reduction_started'] + "\n" + json.dumps(self.data))
             self.client.send(self.conf['reduction_started'], json.dumps(self.data))
 
             # specify instrument directory  
@@ -114,13 +116,16 @@ class PostProcessAdmin:
 
             # specify script to run and directory
             if os.path.exists(os.path.join(self.reduction_script, "reduce.py")) == False:
-                self.data['message'] = "Reduce script doesn't exist"
+                self.data['message'] = "Reduce script doesn't exist within %s" % self.reduction_script
+                logging.error("Reduction script not found within %s" % self.reduction_script)
                 self.client.send(self.conf['reduction_error'] , json.dumps(self.data))  
                 print "\nCalling: "+self.conf['reduction_error'] + "\n" + json.dumps(self.data) + "\n"
+                logging.debug("Calling: "+self.conf['reduction_error'] + "\n" + json.dumps(self.data))
                 return
             
             # specify directory where autoreduction output goes
             reduce_result_dir = TEMP_ROOT_DIRECTORY + instrument_dir + "/results/"
+            reduce_result_dir_tail_length = len("/results")
             if not os.path.isdir(reduce_result_dir):
                 os.makedirs(reduce_result_dir)
 
@@ -134,15 +139,15 @@ class PostProcessAdmin:
             out_log = os.path.join(log_dir, self.data['rb_number'] + ".log")
             out_err = os.path.join(reduce_result_dir, self.data['rb_number'] + ".err")
 
-            print "----------------"
-            print "Reduction script: %s" % self.reduction_script
-            print "Result dir: %s" % reduce_result_dir
-            print "Log dir: %s" % log_dir
-            print "Out log: %s" % out_log
-            print "Error log: %s" % out_err
-            print "----------------"
+            logging.info("----------------")
+            logging.info("Reduction script: %s" % self.reduction_script)
+            logging.info("Result dir: %s" % reduce_result_dir)
+            logging.info("Log dir: %s" % log_dir)
+            logging.info("Out log: %s" % out_log)
+            logging.info("Error log: %s" % out_err)
+            logging.info("----------------")
 
-            print "\n> Reduction subprocess started.\n"
+            logging.info("Reduction subprocess started.")
             logFile=open(out_log, "w")
             errFile=open(out_err, "w")
             # Set the output to be the logfile
@@ -153,30 +158,52 @@ class PostProcessAdmin:
             # Reset outputs back to default
             sys.stdout = sys.__stdout__
             sys.stderr = sys.__stderr__
-            print "\n> Reduction subprocess completed.\n"
+            logging.info("Reduction subprocess completed.")
+            logging.info("Additional save directories: %s" % out_directories)
             
             self.data['reduction_data'] = []
+            if "message" not in self.data:
+                self.data["message"] = ""
 
             # If the reduce script specified some additional save directories, copy to there first
             if out_directories:
                 if type(out_directories) is str and os.access(out_directories, os.R_OK):
                     self.data['reduction_data'].append(linux_to_windows_path(out_directories))
-                    shutil.copytree(reduce_result_dir[:-1], out_directories)
+                    try:
+                        shutil.copytree(reduce_result_dir[:-1], out_directories)
+                    except Exception, e:
+                        logging.error("Unable to copy to %s - %s" % (out_directories, e))
+                        self.data["message"] += "Unable to copy to %s - %s. " % (out_directories, e)
                 elif type(out_directories) is list:
                     for out_dir in out_directories:
                         self.data['reduction_data'].append(linux_to_windows_path(out_dir))
                         if type(out_dir) is str and os.access(out_dir, os.R_OK):
-                            shutil.copytree(reduce_result_dir[:-1], out_dir)
+                            try:
+                                shutil.copytree(reduce_result_dir[:-1], out_dir)
+                            except Exception, e:
+                                logging.error("Unable to copy to %s - %s" % (out_dir, e))
+                                self.data["message"] += "Unable to copy to %s - %s. " % (out_dir, e)
             
             # Move from tmp directory to actual directory (remove /tmp from start of path)
-            if os.path.isdir(reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-8]):
-                shutil.rmtree(reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-8], ignore_errors=True)
-            os.makedirs(reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-8])
+            if os.path.isdir(reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-reduce_result_dir_tail_length]):
+                try:
+                    shutil.rmtree(reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-reduce_result_dir_tail_length], ignore_errors=True)
+                except Exception, e:
+                    logging.error("Unable to remove existing directory %s - %s" % (reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-reduce_result_dir_tail_length], e))
+            try:
+                os.makedirs(reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-reduce_result_dir_tail_length])
+            except Exception, e:
+                logging.error("Unable to create %s - %s" % (reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-reduce_result_dir_tail_length], e))
+                self.data["message"] += "Unable to create %s - %s. " % (reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-reduce_result_dir_tail_length], e)
             
             # [4,-8] is used to remove the prepending '/tmp' and the trailing 'results/' from the destination
-            self.data['reduction_data'].append(linux_to_windows_path(reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-8]))
-            print "Moving %s to %s" % (reduce_result_dir[:-1], reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-8])
-            shutil.copytree(reduce_result_dir[:-1], reduce_result_dir[len(TEMP_ROOT_DIRECTORY):])
+            self.data['reduction_data'].append(linux_to_windows_path(reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-reduce_result_dir_tail_length]))
+            print "Moving %s to %s" % (reduce_result_dir[:-1], reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-reduce_result_dir_tail_length])
+            try:
+                shutil.copytree(reduce_result_dir[:-1], reduce_result_dir[len(TEMP_ROOT_DIRECTORY):])
+            except Exception, e:
+                logging.error("Unable to copy to %s - %s" % (reduce_result_dir[len(TEMP_ROOT_DIRECTORY):], e))
+                self.data["message"] += "Unable to copy to %s - %s. " % (reduce_result_dir[len(TEMP_ROOT_DIRECTORY):], e)
             
             # TODO: remove temp directory
 
@@ -192,12 +219,13 @@ class PostProcessAdmin:
                 errMsg = lastLine.strip() + ", see reduction_log/" + os.path.basename(out_log) + " or " + os.path.basename(out_err) + " for details."
                 self.data["message"] = "REDUCTION: %s" % errMsg
                 self.client.send(self.conf['reduction_error'] , json.dumps(self.data))
-                logging.error("called "+self.conf['reduction_error']  + " --- " + json.dumps(self.data))       
+                logging.error("Called "+self.conf['reduction_error']  + " --- " + json.dumps(self.data))       
 
+            logging.info("Reduction job complete")
         except Exception, e:
             try:
                 self.data["message"] = "REDUCTION Error: %s " % e
-                logging.error("called "+self.conf['reduction_error']  + " --- " + json.dumps(self.data))
+                logging.error("Called "+self.conf['reduction_error']  + "\nException: " + str(e) + "\nJSON: " + json.dumps(self.data))
                 self.client.send(self.conf['reduction_error'] , json.dumps(self.data))
             except BaseException, e:
                 print "\nFailed to send to queue!\n%s\n%s" % (e, repr(e))

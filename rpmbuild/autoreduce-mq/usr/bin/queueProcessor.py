@@ -1,6 +1,7 @@
 import json, logging, time, subprocess, sys, socket
 import stomp
 from twisted.internet import reactor
+logging.basicConfig(filename='/var/log/autoreduction.log', level=logging.INFO)
 
 class Listener(object):
     def __init__(self, client):
@@ -8,13 +9,13 @@ class Listener(object):
         self.procList = []
 
     def on_error(self, headers, message):
-        logging.error("Error recieved - %s" % str(message))
+        logging.error("Error message recieved - %s" % str(message))
 
     def on_message(self, headers, data):
         destination = headers['destination']
 
-        logging.info("Received frame destination: " + destination)
-        logging.info("Received frame body (data)" + data) 
+        logging.debug("Received frame destination: " + destination)
+        logging.debug("Received frame body (data)" + data) 
         proc = subprocess.Popen(["python", "/usr/bin/PostProcessAdmin.py", destination, data])
         self.procList.append(proc)
 
