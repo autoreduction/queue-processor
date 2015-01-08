@@ -98,7 +98,8 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
         raise PermissionDenied()
     
     instrument = Instrument.objects.get(name=instrument)
-
+    script = None
+    script_vars = None
     if request.method == 'POST':
         # Truthy value comes back as text so we'll compare it to a string of "True"
         is_run_range = request.POST.get("variable-range-toggle-value", "True") == "True"
