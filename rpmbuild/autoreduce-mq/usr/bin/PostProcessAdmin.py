@@ -121,7 +121,7 @@ class PostProcessAdmin:
             self.client.send(self.conf['reduction_started'], json.dumps(self.data))
 
             # specify instrument directory  
-            cycle = re.match('.*cycle_(\d\d_\d).*', self.data['data']).group(1)
+            cycle = re.match('.*cycle_(\d\d_\d).*', self.data['data'].lower()).group(1)
             instrument_dir = ARCHIVE_DIRECTORY % (self.instrument.upper(), cycle, self.data['rb_number'], self.data['run_number'])
 
             # specify script to run and directory
