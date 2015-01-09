@@ -101,16 +101,19 @@ class PostProcessAdmin:
             return float(value)
 
     def replace_variables(self, reduce_script):
-        for key in reduce_script.standard_vars:
-            if 'standard_vars' in self.reduction_arguments and key in self.reduction_arguments['standard_vars']:
-                if type(self.reduction_arguments['standard_vars'][key]).__name__ == 'unicode':
-                    self.reduction_arguments['standard_vars'][key] = self.reduction_arguments['standard_vars'][key].encode('ascii','ignore')
-                reduce_script.standard_vars[key] = self.reduction_arguments['standard_vars'][key]
-        for key in reduce_script.advanced_vars:
-            if 'advanced_vars' in self.reduction_arguments and key in self.reduction_arguments['advanced_vars']:
-                if type(self.reduction_arguments['advanced_vars'][key]).__name__ == 'unicode':
-                    self.reduction_arguments['advanced_vars'][key] = self.reduction_arguments['advanced_vars'][key].encode('ascii','ignore')
-                reduce_script.advanced_vars[key] = self.reduction_arguments['advanced_vars'][key]
+        if hasattr(reduce_script, 'web_var'):
+            if hasattr(reduce_script.web_var, 'standard_vars'):
+                for key in reduce_script.web_var.standard_vars:
+                    if 'standard_vars' in self.reduction_arguments and key in self.reduction_arguments['standard_vars']:
+                        if type(self.reduction_arguments['standard_vars'][key]).__name__ == 'unicode':
+                            self.reduction_arguments['standard_vars'][key] = self.reduction_arguments['standard_vars'][key].encode('ascii','ignore')
+                        reduce_script.web_var.standard_vars[key] = self.reduction_arguments['standard_vars'][key]
+            if hasattr(reduce_script.web_var, 'advanced_vars'):
+                for key in reduce_script.web_var.advanced_vars:
+                    if 'advanced_vars' in self.reduction_arguments and key in self.reduction_arguments['advanced_vars']:
+                        if type(self.reduction_arguments['advanced_vars'][key]).__name__ == 'unicode':
+                            self.reduction_arguments['advanced_vars'][key] = self.reduction_arguments['advanced_vars'][key].encode('ascii','ignore')
+                        reduce_script.web_var.advanced_vars[key] = self.reduction_arguments['advanced_vars'][key]
         return reduce_script
 
     def reduce(self):
@@ -239,7 +242,7 @@ class PostProcessAdmin:
         except Exception, e:
             try:
                 self.data["message"] = "REDUCTION Error: %s " % e
-                logger.error("Called "+self.conf['reduction_error']  + "\nException: " + str(e) + "\nJSON: " + json.dumps(self.data))
+                logger.exception("Called "+self.conf['reduction_error']  + "\nException: " + str(e) + "\nJSON: " + json.dumps(self.data))
                 self.client.send(self.conf['reduction_error'] , json.dumps(self.data))
             except BaseException, e:
                 print "\nFailed to send to queue!\n%s\n%s" % (e, repr(e))
