@@ -443,6 +443,10 @@ An error in the log will be recorded with the missing module and a notification 
 
 To resolve this you will need to either modify the reduction script not to use the module or install the missing module on both servers (and make sure it is added to the appropriate system path).
 
+### AttributeError: 'module' object has no attribute 'standard_vars'
+
+This indicates that the `reduce.py` script doesn't contain a `standard_vars` variable. The most likely cause of this is either the `reduce.py` doesn't import `reduce_vars.py` or the `reduce.py` imports the variables as a different name. E.g. `from reduce_vars import * as rv`
+
 ## Updating
 
 TODO: 
