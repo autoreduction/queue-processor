@@ -527,6 +527,12 @@ To resolve this you will need to either modify the reduction script not to use t
 
 This indicates that the `reduce.py` script doesn't contain a `standard_vars` variable. The most likely cause of this is either the `reduce.py` doesn't import `reduce_vars.py` or the `reduce.py` imports the variables as a different name. E.g. `from reduce_vars import * as rv`
 
+### MySQL server has gone away
+
+This happens when the connection to MySQL has been idle for longer than the wait period (default 8 hours). A fix should now be included but if it presents itself again restarting the 'AutoreduceQueueProcessor" service should resolve the issue.
+
+See: https://code.djangoproject.com/ticket/21597#comment:29 
+
 ## Updating
 
 TODO: 
