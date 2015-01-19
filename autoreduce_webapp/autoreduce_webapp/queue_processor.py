@@ -12,6 +12,7 @@ from reduction_viewer.models import ReductionRun, Instrument, ReductionLocation,
 from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFile
 from reduction_viewer.utils import StatusUtils, InstrumentUtils
 from icat_communication import ICATCommunication
+from django.db import connection; connection.close()
 import django
 django.setup()
 
