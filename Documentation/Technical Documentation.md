@@ -18,11 +18,15 @@ The autoreduction web app is a user interface for the autoreduction system that 
     2. [reduction_viewer](#reduction_viewer)
     3. [reduction_variables](#reduction_variables)
 4. [Templates](#templates)
-5. [Tests](#test)
-6. [Other Notes](#other-notes)
-7. [Areas for Improvement](#areas-for-improvement)
-8. [Possible Problems & Solutions](#possible-problems-&-solutions)
-9. [Updating](#updating)
+5. [Managing the Services](#managing_the_services)
+    1. [Autoreduction Backend](#autoreduction_backend)
+    2. [Autoreduction Webapp](#autoreduction_webapp)
+    3. [MySQL Database](#mysql_database)
+6. [Tests](#test)
+7. [Other Notes](#other-notes)
+8. [Areas for Improvement](#areas-for-improvement)
+9. [Possible Problems & Solutions](#possible-problems-&-solutions)
+10. [Updating](#updating)
 
 ## Technologies
 
@@ -241,6 +245,82 @@ As shown above, snippets can be passed variables that will then be available in 
 `navbar.html` - contains the navigation bar that is shown at the top of every page.
 `footer.html` - contains the help text shown at the bottom of every page.
 
+
+## Managing the Services
+
+### Autoreduction Backend
+
+**Starting the service**
+
+1. Log on to the autoreduction server
+2. `su autoreduce`
+3. `python /usr/bin/queueProcessor_daemon.py start`
+
+**Stopping the service**
+
+1. Log on to the autoreduction server
+2. `su autoreduce`
+3. `python /usr/bin/queueProcessor_daemon.py stop`
+
+**Viewing Logs**
+
+1. Log on to the autoreduction server
+2. `su autoreduce`
+3. For an updating log view: `tail -f /var/log/autoreduction.log`
+
+### Autoreduction WebApp
+
+**Starting the web app**
+
+1. Remote desktop onto the reduce server
+2. Open "Internet Information Services (IIS) Manager"
+3. Expand the tree under "connections" until you see "Autoreduction"
+4. Right-click "Autoreduction" -> Manage Website -> Start
+
+**Stopping the web app**
+
+1. Remote desktop onto the reduce server
+2. Open "Internet Information Services (IIS) Manager"
+3. Expand the tree under "connections" until you see "Autoreduction"
+4. Right-click "Autoreduction" -> Manage Website -> Stop
+
+**Starting the queue processor service**
+
+1. Remote desktop onto the reduce server
+2. Open "Services"
+3. Right-click "Autoreduce Queue Processor" -> Start
+
+**Stopping the queue processor service**
+
+1. Remote desktop onto the reduce server
+2. Open "Services"
+3. Right-click "Autoreduce Queue Processor" -> Stop
+
+**Viewing Logs**
+
+1. Remote desktop onto the reduce server
+2. Navigate to `C:\autoreduce\WebApp\ISIS\autoreduce_webapp`
+3. Open `autoreduction.log`
+
+### MySQL Database
+
+**Starting the queue processor service**
+
+1. Remote desktop onto the reduce server
+2. Open "Services"
+3. Right-click "MySQL" -> Start
+
+**Stopping the queue processor service**
+
+1. Remote desktop onto the reduce server
+2. Open "Services"
+3. Right-click "MySQL" -> Stop
+
+**Viewing Logs**
+
+1. Remote desktop onto the reduce server
+2. Navigate to `C:\ProgramData\MySQL\MySQL Server 5.6\data`
+3. Open `REDUCE.err`
 
 ## Tests
 
