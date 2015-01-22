@@ -12,7 +12,7 @@ from reduction_viewer.models import ReductionRun, Instrument, ReductionLocation,
 from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFile
 from reduction_viewer.utils import StatusUtils, InstrumentUtils
 from icat_communication import ICATCommunication
-from django.db import connection; connection.close()
+from django.db import connection
 import django
 django.setup()
 
@@ -32,6 +32,9 @@ class Listener(object):
         logger.error("Error recieved - %s" % str(message))
 
     def on_message(self, headers, message):
+        # Slight hack to avoid the MySQL wait timeout limit (default 8 hours) that causes "MySQL has gone away"
+        connection.close()
+
         destination = headers["destination"]
         # Load the JSON message into a dictionary
         try:
