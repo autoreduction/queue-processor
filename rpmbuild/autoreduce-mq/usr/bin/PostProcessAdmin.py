@@ -18,6 +18,18 @@ REDUCTION_DIRECTORY = '/isis/NDX%s/user/scripts/autoreduction' # %(instrument)
 ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s' # %(instrument, cycle, experiment_number, run_number)
 TEMP_ROOT_DIRECTORY = '/tmp'
 
+def copytree(src, dst):
+    if not os.path.exists(dst):
+        os.makedirs(dst)
+    for item in os.listdir(src):
+        s = os.path.join(src, item)
+        d = os.path.join(dst, item)
+        if os.path.isdir(s):
+            copytree(s, d)
+        else:
+            if not os.path.exists(d) or os.stat(src).st_mtime - os.stat(dst).st_mtime > 1:
+                shutil.copy2(s, d)
+
 def linux_to_windows_path(path):
     path = path.replace('/', '\\')
     # '/isis/' maps to '\\isis\inst$\'
@@ -137,6 +149,7 @@ class PostProcessAdmin:
                 return
             
             # specify directory where autoreduction output goes
+            run_output_dir = TEMP_ROOT_DIRECTORY + instrument_dir[:instrument_dir.find('/'+ self.data['run_number'])+1]
             reduce_result_dir = TEMP_ROOT_DIRECTORY + instrument_dir + "/results/"
             reduce_result_dir_tail_length = len("/results")
             if not os.path.isdir(reduce_result_dir):
@@ -155,6 +168,7 @@ class PostProcessAdmin:
             logger.info("----------------")
             logger.info("Reduction script: %s" % self.reduction_script)
             logger.info("Result dir: %s" % reduce_result_dir)
+            logger.info("Run Output dir: %s" % run_output_dir)
             logger.info("Log dir: %s" % log_dir)
             logger.info("Out log: %s" % out_log)
             logger.info("Error log: %s" % out_err)
@@ -182,21 +196,27 @@ class PostProcessAdmin:
             if out_directories:
                 if type(out_directories) is str and os.access(out_directories, os.R_OK):
                     self.data['reduction_data'].append(linux_to_windows_path(out_directories))
+                    if not os.path.exists(out_directories):
+                        os.makedirs(out_directories)
                     try:
-                        shutil.copytree(reduce_result_dir[:-1], out_directories)
+                        copytree(run_output_dir[:-1], out_directories)
                     except Exception, e:
-                        logger.error("Unable to copy to %s - %s" % (out_directories, e))
+                        logger.error("Unable to copy %s to %s - %s" % (run_output_dir[:-1], out_directories, e))
                         self.data["message"] += "Unable to copy to %s - %s. " % (out_directories, e)
                 elif type(out_directories) is list:
                     for out_dir in out_directories:
                         self.data['reduction_data'].append(linux_to_windows_path(out_dir))
+                        if not os.path.exists(out_dir):
+                            os.makedirs(out_dir)
                         if type(out_dir) is str and os.access(out_dir, os.R_OK):
                             try:
-                                shutil.copytree(reduce_result_dir[:-1], out_dir)
+                                copytree(run_output_dir[:-1], out_dir)
                             except Exception, e:
-                                logger.error("Unable to copy to %s - %s" % (out_dir, e))
+                                logger.error("Unable to copy %s to %s - %s" % (run_output_dir[:-1], out_dir, e))
                                 self.data["message"] += "Unable to copy to %s - %s. " % (out_dir, e)
-            
+                        else:
+                            logger.error("Unable to access directory: %s" % out_dir)
+
             # Move from tmp directory to actual directory (remove /tmp from start of path)
             if os.path.isdir(reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-reduce_result_dir_tail_length]):
                 try:
