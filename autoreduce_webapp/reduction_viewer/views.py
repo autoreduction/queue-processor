@@ -109,8 +109,13 @@ def run_list(request):
             'is_active' : instrument.is_active
         }
         
-        instrument_experiments = experiments[instrument_name] #add check here
+        if instrument_name not in experiments:
+            experiments[instrument_name] = []
+            
+        instrument_experiments = experiments[instrument_name] 
         reference_numbers = []
+        
+            
         for experiment in instrument_experiments:
             # Filter out calibration runs
             if experiment.isdigit():
