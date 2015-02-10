@@ -109,7 +109,7 @@ def run_list(request):
             'is_active' : instrument.is_active
         }
         
-        instrument_experiments = experiments[instrument_name]
+        instrument_experiments = experiments[instrument_name] #add check here
         reference_numbers = []
         for experiment in instrument_experiments:
             # Filter out calibration runs
