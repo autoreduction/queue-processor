@@ -136,7 +136,7 @@ def run_list(request):
                 if run.status == StatusUtils().get_processing():
                     experiment_processing_runs += 1
 
-            # Add exepriment stats to instrument
+            # Add experiment stats to instrument
             instrument_queued_runs += experiment_queued_runs
             instrument_processing_runs += experiment_processing_runs
             instrument_error_runs += experiment_error_runs
