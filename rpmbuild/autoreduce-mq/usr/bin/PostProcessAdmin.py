@@ -149,7 +149,7 @@ class PostProcessAdmin:
                 return
             
             # specify directory where autoreduction output goes
-            run_output_dir = TEMP_ROOT_DIRECTORY + instrument_dir[:instrument_dir.find('/'+ self.data['run_number'])+1]
+            run_output_dir = TEMP_ROOT_DIRECTORY + instrument_dir[:instrument_dir.find('/'+ str(self.data['run_number']))+1]
             reduce_result_dir = TEMP_ROOT_DIRECTORY + instrument_dir + "/results/"
             reduce_result_dir_tail_length = len("/results")
             if not os.path.isdir(reduce_result_dir):
