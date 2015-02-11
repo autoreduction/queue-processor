@@ -1,5 +1,5 @@
 import stomp
-from settings import LOG_FILE, LOG_LEVEL, ACTIVEMQ, BASE_DIR, REDUCTION_SCRIPT_BASE, LOGGING
+from settings import LOG_FILE, LOG_LEVEL, ACTIVEMQ, BASE_DIR, LOGGING
 import logging
 import logging.config
 logging.config.dictConfig(LOGGING)
