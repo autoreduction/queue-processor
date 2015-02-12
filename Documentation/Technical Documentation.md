@@ -533,6 +533,9 @@ This happens when the connection to MySQL has been idle for longer than the wait
 
 See: https://code.djangoproject.com/ticket/21597#comment:29 
 
+### Mantid unicode errors
+The mantid program does not work well with unicode format, so any file path names passed to the scripts need to be in Ascii. 
+
 ## Updating
 
 TODO: 
