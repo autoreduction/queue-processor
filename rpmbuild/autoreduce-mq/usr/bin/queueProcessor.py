@@ -27,9 +27,11 @@ class Listener(object):
         logger.debug("Received frame body (data)" + data) 
         proc = subprocess.Popen(["python", "/usr/bin/PostProcessAdmin.py", destination, data])
         self.procList.append(proc)
-
+        
+        if len(self.procList) > 4:
+          logger.info("There are " + str(len(self.procList)) + " processors running at the moment, wait for a second")
+        
         while len(self.procList) > 4:
-            logger.info("There are " + str(len(self.procList)) + " processors running at the moment, wait for a second")
             time.sleep(1.0)
             self.updateChildProcessList()
 
