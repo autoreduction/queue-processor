@@ -181,8 +181,7 @@ class PostProcessAdmin:
             sys.stdout = logFile
             sys.stderr = errFile
             reduce_script = self.replace_variables(reduce_script)
-            out_directories = reduce_script.main(data=self.data_file, output=reduce_result_dir)
-            out_directories = str(out_directories)
+            out_directories = reduce_script.main(data=str(self.data_file), output=str(reduce_result_dir))
             # Reset outputs back to default
             sys.stdout = sys.__stdout__
             sys.stderr = sys.__stderr__
