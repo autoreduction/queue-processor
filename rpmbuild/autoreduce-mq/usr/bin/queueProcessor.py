@@ -29,7 +29,7 @@ class Listener(object):
         self.procList.append(proc)
         
         if len(self.procList) > 4:
-          logger.info("There are " + str(len(self.procList)) + " processors running at the moment, wait for a second")
+          logger.info("There are " + str(len(self.procList)) + " processes running at the moment, wait for a second")
         
         while len(self.procList) > 4:
             time.sleep(1.0)
