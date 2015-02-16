@@ -3,7 +3,7 @@ sys.path.append(os.path.join("../", os.path.dirname(os.path.dirname(__file__))))
 os.environ["DJANGO_SETTINGS_MODULE"] = "autoreduce_webapp.settings"
 from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL, BASE_DIR, ACTIVEMQ, TEMP_OUTPUT_DIRECTORY, REDUCTION_DIRECTORY, FACILITY
 from autoreduce_webapp.queue_processor import Client as ActiveMQClient
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('django')
 from django.db import models
 from reduction_variables.models import InstrumentVariable, ScriptFile, RunVariable
 from reduction_viewer.models import ReductionRun, Instrument, Notification
@@ -14,20 +14,26 @@ def write_script_to_temp(script, script_vars_file):
     """
     Write the given script binary to a unique filename in the reduction_script_temp directory.
     """
-    unique_name = str(uuid.uuid4())
-    script_path = os.path.join(TEMP_OUTPUT_DIRECTORY, 'scripts', unique_name)
-    # Make sure we don't accidently overwrite a file
-    while os.path.exists(script_path):
+    try:
         unique_name = str(uuid.uuid4())
         script_path = os.path.join(TEMP_OUTPUT_DIRECTORY, 'scripts', unique_name)
-    os.makedirs(script_path)
-    f = open(os.path.join(script_path, 'reduce.py'), 'wb')
-    f.write(script)
-    f.close()
-    f = open(os.path.join(script_path, 'reduce_vars.py'), 'wb')
-    f.write(script_vars_file)
-    f.close()
-
+        # Make sure we don't accidently overwrite a file
+        while os.path.exists(script_path):
+            unique_name = str(uuid.uuid4())
+            script_path = os.path.join(TEMP_OUTPUT_DIRECTORY, 'scripts', unique_name)
+        os.makedirs(script_path)
+        logger.error("Made dir")
+        f = open(os.path.join(script_path, 'reduce.py'), 'wb')
+        f.write(script)
+        f.close()
+        f = open(os.path.join(script_path, 'reduce_vars.py'), 'wb')
+        f.write(script_vars_file)
+        f.close()
+    except Exception, e:
+        logger.error("Couldn't write temporary script - %s" % e)
+        type, value, traceback = sys.exc_info()
+        logger.error('Error opening %s: %s' % (value.filename, value.strerror))
+        raise e
     return script_path
 
 class VariableUtils(object):
