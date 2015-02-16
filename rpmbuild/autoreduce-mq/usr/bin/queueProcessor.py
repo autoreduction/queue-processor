@@ -21,6 +21,7 @@ class Listener(object):
         logger.error("Error message recieved - %s" % str(message))
 
     def on_message(self, headers, data):
+        processNum = 4 #processes allowed to run at one time
         destination = headers['destination']
 
         logger.debug("Received frame destination: " + destination)
@@ -28,10 +29,10 @@ class Listener(object):
         proc = subprocess.Popen(["python", "/usr/bin/PostProcessAdmin.py", destination, data])
         self.procList.append(proc)
         
-        if len(self.procList) > 4:
-          logger.info("There are " + str(len(self.procList)) + " processes running at the moment, wait for a second")
+        if len(self.procList) > processNum:
+          logger.info("There are " + str(len(self.procList)) + " processes running at the moment, waiting until one is available")
         
-        while len(self.procList) > 4:
+        while len(self.procList) > processNum:
             time.sleep(1.0)
             self.updateChildProcessList()
 
