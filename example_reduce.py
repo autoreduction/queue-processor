@@ -1,7 +1,7 @@
 import sys
 import os
 import shutil
-from reduce_vars import *
+import reduce_vars as web_var
 
 def reduce(data, output_dir):
     shutil.copy(data, output_dir)

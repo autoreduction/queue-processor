@@ -18,11 +18,15 @@ The autoreduction web app is a user interface for the autoreduction system that 
     2. [reduction_viewer](#reduction_viewer)
     3. [reduction_variables](#reduction_variables)
 4. [Templates](#templates)
-5. [Tests](#test)
-6. [Other Notes](#other-notes)
-7. [Areas for Improvement](#areas-for-improvement)
-8. [Possible Problems & Solutions](#possible-problems-&-solutions)
-9. [Updating](#updating)
+5. [Managing the Services](#managing_the_services)
+    1. [Autoreduction Backend](#autoreduction_backend)
+    2. [Autoreduction Webapp](#autoreduction_webapp)
+    3. [MySQL Database](#mysql_database)
+6. [Tests](#test)
+7. [Other Notes](#other-notes)
+8. [Areas for Improvement](#areas-for-improvement)
+9. [Possible Problems & Solutions](#possible-problems-&-solutions)
+10. [Updating](#updating)
 
 ## Technologies
 
@@ -242,6 +246,82 @@ As shown above, snippets can be passed variables that will then be available in 
 `footer.html` - contains the help text shown at the bottom of every page.
 
 
+## Managing the Services
+
+### Autoreduction Backend
+
+**Starting the service**
+
+1. Log on to the autoreduction server
+2. `su autoreduce`
+3. `python /usr/bin/queueProcessor_daemon.py start`
+
+**Stopping the service**
+
+1. Log on to the autoreduction server
+2. `su autoreduce`
+3. `python /usr/bin/queueProcessor_daemon.py stop`
+
+**Viewing Logs**
+
+1. Log on to the autoreduction server
+2. `su autoreduce`
+3. For an updating log view: `tail -f /var/log/autoreduction.log`
+
+### Autoreduction WebApp
+
+**Starting the web app**
+
+1. Remote desktop onto the reduce server
+2. Open "Internet Information Services (IIS) Manager"
+3. Expand the tree under "connections" until you see "Autoreduction"
+4. Right-click "Autoreduction" -> Manage Website -> Start
+
+**Stopping the web app**
+
+1. Remote desktop onto the reduce server
+2. Open "Internet Information Services (IIS) Manager"
+3. Expand the tree under "connections" until you see "Autoreduction"
+4. Right-click "Autoreduction" -> Manage Website -> Stop
+
+**Starting the queue processor service**
+
+1. Remote desktop onto the reduce server
+2. Open "Services"
+3. Right-click "Autoreduce Queue Processor" -> Start
+
+**Stopping the queue processor service**
+
+1. Remote desktop onto the reduce server
+2. Open "Services"
+3. Right-click "Autoreduce Queue Processor" -> Stop
+
+**Viewing Logs**
+
+1. Remote desktop onto the reduce server
+2. Navigate to `C:\autoreduce\WebApp\ISIS\autoreduce_webapp`
+3. Open `autoreduction.log`
+
+### MySQL Database
+
+**Starting the queue processor service**
+
+1. Remote desktop onto the reduce server
+2. Open "Services"
+3. Right-click "MySQL" -> Start
+
+**Stopping the queue processor service**
+
+1. Remote desktop onto the reduce server
+2. Open "Services"
+3. Right-click "MySQL" -> Stop
+
+**Viewing Logs**
+
+1. Remote desktop onto the reduce server
+2. Navigate to `C:\ProgramData\MySQL\MySQL Server 5.6\data`
+3. Open `REDUCE.err`
+
 ## Tests
 
 All tests are run using `manage.py test` from the root of the web application. Please see: https://docs.djangoproject.com/en/1.7/topics/testing/ for more info.
@@ -442,6 +522,19 @@ As the reduction script will be loaded on both the web server and autoreduction 
 An error in the log will be recorded with the missing module and a notification should be created with the same message. 
 
 To resolve this you will need to either modify the reduction script not to use the module or install the missing module on both servers (and make sure it is added to the appropriate system path).
+
+### AttributeError: 'module' object has no attribute 'standard_vars'
+
+This indicates that the `reduce.py` script doesn't contain a `standard_vars` variable. The most likely cause of this is either the `reduce.py` doesn't import `reduce_vars.py` or the `reduce.py` imports the variables as a different name. E.g. `from reduce_vars import * as rv`
+
+### MySQL server has gone away
+
+This happens when the connection to MySQL has been idle for longer than the wait period (default 8 hours). A fix should now be included but if it presents itself again restarting the 'AutoreduceQueueProcessor" service should resolve the issue.
+
+See: https://code.djangoproject.com/ticket/21597#comment:29 
+
+### Mantid unicode errors
+The mantid program does not work well with unicode format, so any file path names passed to the scripts need to be in Ascii. 
 
 ## Updating
 

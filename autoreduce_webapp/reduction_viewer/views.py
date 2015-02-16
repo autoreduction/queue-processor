@@ -109,8 +109,13 @@ def run_list(request):
             'is_active' : instrument.is_active
         }
         
-        instrument_experiments = experiments[instrument_name]
+        if instrument_name not in experiments:
+            experiments[instrument_name] = []
+            
+        instrument_experiments = experiments[instrument_name] 
         reference_numbers = []
+        
+            
         for experiment in instrument_experiments:
             # Filter out calibration runs
             if experiment.isdigit():
@@ -131,7 +136,7 @@ def run_list(request):
                 if run.status == StatusUtils().get_processing():
                     experiment_processing_runs += 1
 
-            # Add exepriment stats to instrument
+            # Add experiment stats to instrument
             instrument_queued_runs += experiment_queued_runs
             instrument_processing_runs += experiment_processing_runs
             instrument_error_runs += experiment_error_runs
