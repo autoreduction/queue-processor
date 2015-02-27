@@ -33,11 +33,11 @@ To start up ActiveMQ, ensure you are in root and type: `/opt/activemq/bin/active
 
 To stop, type: `/opt/activemq/bin/activemq stop`
 
+To check that ActiveMQ is running e.g. type 
 
-To check that ActiveMQ is listening type e.g. 'lsof –i' or 'netstat –tulpn'. Note in table outputted, 'command' or 'program name' for activemq is 'java'. To check which java is used you may type "ls –l /proc/'PID number'/exe" and to get the working directory of a process "ls –l /proc/'PID number'/cwd"
-ActiveMQ should be listening on ports **61616** and **61613**
-
-Use a URL like http://autoreduce.isis.cclrc.ac.uk:8161/admin/index.jsp to check ActiveMQ. This should be tested from localhost first (due to firewall restrictions). Note the factory username/password is admin/admin. 
+* ```netstat –tulpn``` and check if port **61613** is listed. 
+* or ```ps ax | grep activemq``` and look for java entry running activemq.jar 
+* or check if http://localhost:8161/admin/index.jsp is running. Note the factory username/password is admin/admin. 
 
 ### Setting up a worker on linux (redhat) 
 
