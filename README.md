@@ -35,8 +35,8 @@ To stop, type: `/opt/activemq/bin/activemq stop`
 
 To check that ActiveMQ is running e.g. type 
 
-* ```netstat –tulpn``` and check if port **61613** is listed. 
-* or ```ps ax | grep activemq``` and look for java entry running activemq.jar 
+* `netstat –tulpn` and check if port **61613** is listed. 
+* or `ps ax | grep activemq` and look for java entry running activemq.jar 
 * or check if http://localhost:8161/admin/index.jsp is running. Note the factory username/password is admin/admin. 
 
 ### Setting up a worker on linux (redhat) 
@@ -58,8 +58,7 @@ To check that ActiveMQ is running e.g. type
 
 5.  At present specify the location where the script and reduced data get stored by modifying the instrument_dir variable in the method reduce() of python file /usr/bin/PostProcessAdmin.py
 
-6.  Type: `sudo python /usr/bin/queueProcessor.py`
-
+6.  Type: `sudo python /usr/bin/queueProcessor.py` or to start this as a daemon type `python /usr/bin/queueProcessor_daemon.py start`
 
 Logging associated with the Logger used in the python worker script gets stored in `/var/log/mantid_autoreduce_worker.log` (optionally change this in `/usr/bin/Configuration.py`).  
 
