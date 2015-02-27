@@ -30,6 +30,7 @@ Please see: http://www.mantidproject.org/Installing_Mantid_Via_Yum#ISIS_RHEL7_.2
         </sslContext>
 
 To start up ActiveMQ, ensure you are in root and type: `/opt/activemq/bin/activemq start`
+
 To stop, type: `/opt/activemq/bin/activemq stop`
 
 
