@@ -29,7 +29,9 @@ Please see: http://www.mantidproject.org/Installing_Mantid_Via_Yum#ISIS_RHEL7_.2
                 trustStore="amq-server.ts" trustStorePassword="changeit"/>
         </sslContext>
 
-For option for starting up ActiveMQ type: `/opt/activemq/bin/activemq`
+To start up ActiveMQ, ensure you are in root and type: `/opt/activemq/bin/activemq start`
+To stop, type: `/opt/activemq/bin/activemq stop`
+
 
 To check that ActiveMQ is listening type e.g. 'lsof –i' or 'netstat –tulpn'. Note in table outputted, 'command' or 'program name' for activemq is 'java'. To check which java is used you may type "ls –l /proc/'PID number'/exe" and to get the working directory of a process "ls –l /proc/'PID number'/cwd"
 ActiveMQ should be listening on ports **61616** and **61613**
