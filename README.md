@@ -39,6 +39,8 @@ To check that ActiveMQ is running e.g. type
 * or `ps ax | grep activemq` and look for java entry running activemq.jar 
 * or check if http://localhost:8161/admin/index.jsp is running. Note the factory username/password is admin/admin. 
 
+ActiveMQ logs can by default be found in /activemq-install-dir/data.
+
 ### Setting up a worker on linux (redhat) 
 
 1. Clone the autoreduce repository
