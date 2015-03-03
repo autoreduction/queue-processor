@@ -232,11 +232,11 @@ class Client(object):
 
         logger.info("[%s] Connecting to %s" % (self._consumer_name, str(self._brokers)))
 
-        connection = stomp.Connection(host_and_ports=self._brokers, use_ssl=self._use_ssl)
+        connection = stomp.Connection(host_and_ports=self._brokers, use_ssl=self._use_ssl, ssl_version=3)
         if not self._client_only:
             connection.set_listener(self._consumer_name, listener)
         connection.start()
-        connection.connect(self._user, self._password, wait=True)
+        connection.connect(self._user, self._password, wait=False)
 
         time.sleep(0.5)
         return connection

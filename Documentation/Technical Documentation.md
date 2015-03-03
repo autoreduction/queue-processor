@@ -100,6 +100,7 @@ When using the `Client` there are some optional arguments that could cause probl
 `topics` - a list stating what queues/topics to subscribe to (Default: None)
 `client_only` - Set this True if you only require sending a message to the message queue (for example in `MessagingUtils.send_pending`).
 `use_ssl` - This needs to be set to True is connecting to the messaging queue over SSL (recommended). (Default: False)
+`ssl_version=3` - Dependent on what version of Java is being run, but the default is considered to have security issues which using TLS fixes.
 
 #### icat_communication.py
 
