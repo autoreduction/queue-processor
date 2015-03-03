@@ -52,10 +52,10 @@ class Consumer(object):
     def run(self):
         brokers = []
         brokers.append((self.config['brokers'].split(':')[0],int(self.config['brokers'].split(':')[1])))
-        connection = stomp.Connection(host_and_ports=brokers, use_ssl=True)
+        connection = stomp.Connection(host_and_ports=brokers, use_ssl=True, ssl_version=3)
         connection.set_listener(self.consumer_name, Listener(self))
         connection.start()
-        connection.connect(self.config['amq_user'], self.config['amq_pwd'], wait=True, header={'activemq.prefetchSize': '1',})
+        connection.connect(self.config['amq_user'], self.config['amq_pwd'], wait=False, header={'activemq.prefetchSize': '1',})
 
         for queue in self.config['amq_queues']:
             logger.info("[%s] Subscribing to %s" % (self.consumer_name, queue))
