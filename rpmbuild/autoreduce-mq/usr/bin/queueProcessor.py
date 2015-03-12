@@ -59,7 +59,7 @@ class Consumer(object):
         connection.start()
         connection.connect(self.config['amq_user'], self.config['amq_pwd'], wait=False, header={'activemq.prefetchSize': '1',})
         
-	for queue in self.config['amq_queues']:
+        for queue in self.config['amq_queues']:
             connection.subscribe(destination=queue, id=1, ack='auto')
             logger.info("[%s] Subscribing to %s" % (self.consumer_name, queue))
 

@@ -298,7 +298,7 @@ if __name__ == "__main__":
         brokers.append((conf['brokers'].split(':')[0],int(conf['brokers'].split(':')[1])))
         connection = stomp.Connection(host_and_ports=brokers, use_ssl=True, ssl_version=3 )
         connection.start()
-        connection.connect(conf['amq_user'], conf['amq_pwd'], wait=True, header={'activemq.prefetchSize': '1',})
+        connection.connect(conf['amq_user'], conf['amq_pwd'], wait=False, header={'activemq.prefetchSize': '1',})
 
         destination, message = sys.argv[1:3]
         print("destination: " + destination)
