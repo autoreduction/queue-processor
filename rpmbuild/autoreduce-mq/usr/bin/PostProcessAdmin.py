@@ -5,18 +5,22 @@ Post Process Administrator. It kicks off cataloging and reduction jobs.
 import logging, json, socket, os, sys, subprocess, time, shutil, imp, stomp, re
 import logging.handlers
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 handler = logging.handlers.RotatingFileHandler('/var/log/autoreduction.log', maxBytes=104857600, backupCount=20)
-handler.setLevel(logging.INFO)
+handler.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 # Quite the Stomp logs as they are quite chatty
-logging.getLogger('stomp').setLevel(logging.WARNING)
+logging.getLogger('stomp').setLevel(logging.DEBUG)
 
 REDUCTION_DIRECTORY = '/isis/NDX%s/user/scripts/autoreduction' # %(instrument)
-ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s' # %(instrument, cycle, experiment_number, run_number)
-TEMP_ROOT_DIRECTORY = '/tmp'
+#ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s' # %(instrument, cycle, experiment_number, run_number)
+#actually ceph directory
+#/instrument/MAPS/CYCLE20142/RB1410068
+
+ARCHIVE_DIRECTORY = '/instrument/%s/CYCLE%s/RB%s/autoreduced/%s' # %(instrument, cycle, experiment_number, run_number)
+TEMP_ROOT_DIRECTORY = '/autoreducetmp'
 
 def copytree(src, dst):
     if not os.path.exists(dst):
@@ -138,7 +142,7 @@ class PostProcessAdmin:
             # specify instrument directory  
             cycle = re.match('.*cycle_(\d\d_\d).*', self.data['data'].lower()).group(1)
             instrument_dir = ARCHIVE_DIRECTORY % (self.instrument.upper(), cycle, self.data['rb_number'], self.data['run_number'])
-
+	    
             # specify script to run and directory
             if os.path.exists(os.path.join(self.reduction_script, "reduce.py")) == False:
                 self.data['message'] = "Reduce script doesn't exist within %s" % self.reduction_script
@@ -160,6 +164,7 @@ class PostProcessAdmin:
                 os.makedirs(log_dir)
 
             # Load reduction script 
+
             sys.path.append(self.reduction_script)
             reduce_script = imp.load_source('reducescript', os.path.join(self.reduction_script, "reduce.py"))
             out_log = os.path.join(log_dir, self.data['rb_number'] + ".log")
@@ -181,10 +186,23 @@ class PostProcessAdmin:
             sys.stdout = logFile
             sys.stderr = errFile
             reduce_script = self.replace_variables(reduce_script)
-            out_directories = reduce_script.main(data=str(self.data_file), output=str(reduce_result_dir))
+            out_directories = reduce_script.main(input_file=str(self.data_file), output_dir=str(reduce_result_dir))
+	    logger.info("this is the reduce results directory %s" % str(reduce_result_dir))
+	    logger.info("this is the entire outdirectories %s" % str(out_directories))
+
             # Reset outputs back to default
             sys.stdout = sys.__stdout__
             sys.stderr = sys.__stderr__
+            logFile.close()
+            errFile.close()
+
+            # if errFile is empty don't output it to the user
+            #if (os.stat(out_err).st_size == 0):
+            #    logger.debug("No output errors from reduce.py")
+            #    os.remove(out_err)
+            #else:
+            #    logger.debug("Output errors from reduce.py")
+
             logger.info("Reduction subprocess completed.")
             logger.info("Additional save directories: %s" % out_directories)
             
@@ -217,7 +235,8 @@ class PostProcessAdmin:
                         else:
                             logger.error("Unable to access directory: %s" % out_dir)
 
-            # Move from tmp directory to actual directory (remove /tmp from start of path)
+            # Move from tmp directory to actual directory (remove /tmp from 
+            # replace old data if they exist
             if os.path.isdir(reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-reduce_result_dir_tail_length]):
                 try:
                     shutil.rmtree(reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-reduce_result_dir_tail_length], ignore_errors=True)
@@ -231,7 +250,7 @@ class PostProcessAdmin:
             
             # [4,-8] is used to remove the prepending '/tmp' and the trailing 'results/' from the destination
             self.data['reduction_data'].append(linux_to_windows_path(reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-reduce_result_dir_tail_length]))
-            print "Moving %s to %s" % (reduce_result_dir[:-1], reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-reduce_result_dir_tail_length])
+            logger.info("Moving %s to %s" % (reduce_result_dir[:-1], reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-reduce_result_dir_tail_length]))
             try:
                 shutil.copytree(reduce_result_dir[:-1], reduce_result_dir[len(TEMP_ROOT_DIRECTORY):])
             except Exception, e:
@@ -277,7 +296,7 @@ if __name__ == "__main__":
 
         brokers = []
         brokers.append((conf['brokers'].split(':')[0],int(conf['brokers'].split(':')[1])))
-        connection = stomp.Connection(host_and_ports=brokers, use_ssl=True)
+        connection = stomp.Connection(host_and_ports=brokers, use_ssl=True, ssl_version=3 )
         connection.start()
         connection.connect(conf['amq_user'], conf['amq_pwd'], wait=True, header={'activemq.prefetchSize': '1',})
 
@@ -302,7 +321,8 @@ if __name__ == "__main__":
         except:
             raise
         
-    except:
+    except Error as er:
+	logger.error("Something went wrong: " + str(er))
         sys.exit()
 
 

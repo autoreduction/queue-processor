@@ -3,14 +3,14 @@ import logging.handlers
 import stomp
 from twisted.internet import reactor
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 handler = logging.handlers.RotatingFileHandler('/var/log/autoreduction.log', maxBytes=104857600, backupCount=20)
-handler.setLevel(logging.INFO)
+handler.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 # Quite the Stomp logs as they are quite chatty
-logging.getLogger('stomp').setLevel(logging.WARNING)
+logging.getLogger('stomp').setLevel(logging.DEBUG)
 
 class Listener(object):
     def __init__(self, client):
@@ -24,8 +24,10 @@ class Listener(object):
         processNum = 4 #processes allowed to run at one time
         destination = headers['destination']
 
-        logger.debug("Received frame destination: " + destination)
+        logger.info("Received frame destination: " + destination)
         logger.debug("Received frame body (data)" + data) 
+	logger.debug("Calling: %s %s %s %s" % ("python", "/usr/bin/PostProcessAdmin.py", destination, data))
+
         proc = subprocess.Popen(["python", "/usr/bin/PostProcessAdmin.py", destination, data])
         self.procList.append(proc)
         
@@ -52,24 +54,23 @@ class Consumer(object):
     def run(self):
         brokers = []
         brokers.append((self.config['brokers'].split(':')[0],int(self.config['brokers'].split(':')[1])))
-        connection = stomp.Connection(host_and_ports=brokers, use_ssl=True)
+        connection = stomp.Connection(host_and_ports=brokers, use_ssl=True, ssl_version=3)
         connection.set_listener(self.consumer_name, Listener(self))
         connection.start()
-        connection.connect(self.config['amq_user'], self.config['amq_pwd'], wait=True, header={'activemq.prefetchSize': '1',})
-
-        for queue in self.config['amq_queues']:
-            logger.info("[%s] Subscribing to %s" % (self.consumer_name, queue))
+        connection.connect(self.config['amq_user'], self.config['amq_pwd'], wait=False, header={'activemq.prefetchSize': '1',})
+        
+	for queue in self.config['amq_queues']:
             connection.subscribe(destination=queue, id=1, ack='auto')
-
+            logger.info("[%s] Subscribing to %s" % (self.consumer_name, queue))
 
 def main():
     try:
         config = json.load(open('/etc/autoreduce/post_process_consumer.conf'))
     except:
+        logger.info("Can't open post_process_consumer.conf")
         sys.exit()
         
     logger.info("Start post process asynchronous listener!")
-    
     reactor.callWhenRunning(Consumer(config).run)
     reactor.run()
     logger.info("Stop post process asynchronous listener!")
