@@ -24,7 +24,7 @@ class Listener(object):
         processNum = 4 #processes allowed to run at one time
         destination = headers['destination']
 
-        logger.info("Received frame destination: " + destination)
+        logger.debug("Received frame destination: " + destination)
         logger.debug("Received frame body (data)" + data) 
 	logger.debug("Calling: %s %s %s %s" % ("python", "/usr/bin/PostProcessAdmin.py", destination, data))
 
