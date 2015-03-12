@@ -5,14 +5,14 @@ Post Process Administrator. It kicks off cataloging and reduction jobs.
 import logging, json, socket, os, sys, subprocess, time, shutil, imp, stomp, re
 import logging.handlers
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 handler = logging.handlers.RotatingFileHandler('/var/log/autoreduction.log', maxBytes=104857600, backupCount=20)
-handler.setLevel(logging.DEBUG)
+handler.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 # Quite the Stomp logs as they are quite chatty
-logging.getLogger('stomp').setLevel(logging.DEBUG)
+logging.getLogger('stomp').setLevel(logging.INFO)
 
 REDUCTION_DIRECTORY = '/isis/NDX%s/user/scripts/autoreduction' # %(instrument)
 #ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s' # %(instrument, cycle, experiment_number, run_number)
