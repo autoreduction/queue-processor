@@ -38,7 +38,7 @@ Web framework for python. Abstracts away various tasks such as database access, 
 **Updating:** Django is installed through `pip` or `easy_install`. Update using these tools for best results. Make sure to check https://docs.djangoproject.com/en/1.7/releases/ for any breaking changes before updating.
 
 ### [ActiveMQ](http://activemq.apache.org/) 
-**Version:** 5.10.0
+**Version:** 5.11.1
 
 ActiveMQ is a messaging server that supports publish/subscribe to both queues and topics. It handles multiple protocols but only Stomp is being used in this web app. It should be ensured that the server is restricted to SSL and with credentials (See installation instructions).
 
