@@ -19,7 +19,7 @@ REDUCTION_DIRECTORY = '/isis/NDX%s/user/scripts/autoreduction' # %(instrument)
 #actually ceph directory
 #/instrument/MAPS/CYCLE20142/RB1410068
 
-ARCHIVE_DIRECTORY = '/instrument/%s/CYCLE%s/RB%s/autoreduced/%s' # %(instrument, cycle, experiment_number, run_number)
+ARCHIVE_DIRECTORY = '/instrument/%s/CYCLE20%s/RB%s/autoreduced/%s' # %(instrument, cycle, experiment_number, run_number)
 TEMP_ROOT_DIRECTORY = '/autoreducetmp'
 
 def copytree(src, dst):
@@ -140,7 +140,7 @@ class PostProcessAdmin:
             self.client.send(self.conf['reduction_started'], json.dumps(self.data))
 
             # specify instrument directory  
-            cycle = re.match('.*cycle_(\d\d_\d).*', self.data['data'].lower()).group(1)
+            cycle = re.sub('[_]','',(re.match('.*cycle_(\d\d_\d).*', self.data['data'].lower()).group(1)))
             instrument_dir = ARCHIVE_DIRECTORY % (self.instrument.upper(), cycle, self.data['rb_number'], self.data['run_number'])
 	    
             # specify script to run and directory
