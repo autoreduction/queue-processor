@@ -11,12 +11,12 @@ Please see: http://www.mantidproject.org/Installing_Mantid_Via_Yum#ISIS_RHEL7_.2
         export http_proxy=http://wwwcache.rl.ac.uk
         export https_proxy=http://wwwcache.rl.ac.uk
 
-2.  Downloaded apache-activemq-5.8.0-bin.tar.gz and unpack (https://activemq.apache.org/activemq-580-release.html)
+2.  Downloaded apache-activemq-5.8.0-bin.tar.gz and unpack (https://activemq.apache.org/activemq-5111-release.html)
 
-        wget http://archive.apache.org/dist/activemq/apache-activemq/5.8.0/apache-activemq-5.8.0-bin.tar.gz -o autoreduce-mq.tgz
-        tar -zxvf autoreduce-mq.tgz
-        mv apache-activemq-5.8.0 /opt/
-        ln -sf /opt/apache-activemq-5.6.0/ /opt/activemq
+        wget http://www.apache.org/dyn/closer.cgi?path=/activemq/5.11.1/apache-activemq-5.11.1-bin.tar.gz
+        tar -zxvf apache-activemq-5.11.1-bin.tar.gz
+        mv apache-activemq-5.11.1 /opt/
+        ln -sf /opt/apache-activemq-5.11.1/ /opt/activemq
 
 3. Configure ActiveMQ to require SSL
 
