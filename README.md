@@ -18,15 +18,24 @@ Please see: http://www.mantidproject.org/Installing_Mantid_Via_Yum#ISIS_RHEL7_.2
         mv apache-activemq-5.8.0 /opt/
         ln -sf /opt/apache-activemq-5.6.0/ /opt/activemq
 
-3. Configure ActiveMQ to require SSL
+3. Create/renew SSL certificates - keystore and truststore (http://activemq.apache.org/how-do-i-use-ssl.html)
 
-        (Create own SSL certificates - keystore and truststore)
+        keytool -genkey -alias broker -keyalg RSA -keystore broker.ks -validity 2160
+        keytool -export -alias broker -keystore broker.ks -file broker_cert
+        keytool -genkey -alias client -keyalg RSA -keystore client.ks -validity 2160
+        keytool -import -alias broker -keystore client.ts -file broker_cert
+        keytool -export -alias client -keystore client.ks -file client_cert -validity 2160
+        keytool -import -alias client -keystore broker.ts -file client_cert
+        cp all of above created files into activemq/conf
+                
+4. Configure ActiveMQ to require SSL
+
         nano /opt/activemq/conf/activemq.xml
         Modify the transportConnector tag to be: <transportConnector name="stomp+ssl" uri="stomp+ssl://0.0.0.0:61613?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/>
         Add the following (making sure to change cert names and passwords):
         <sslContext>
-                <sslContext keyStore="amq-server.ks" keyStorePassword="changeit"
-                trustStore="amq-server.ts" trustStorePassword="changeit"/>
+                <sslContext keyStore="broker.ks" keyStorePassword="changeit"
+                trustStore="client.ts" trustStorePassword="changeit"/>
         </sslContext>
 
 To start up ActiveMQ, ensure you are in root and type: `/opt/activemq/bin/activemq start`
