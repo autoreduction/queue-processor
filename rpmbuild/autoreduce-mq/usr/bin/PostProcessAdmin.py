@@ -16,10 +16,8 @@ logging.getLogger('stomp').setLevel(logging.INFO)
 
 REDUCTION_DIRECTORY = '/isis/NDX%s/user/scripts/autoreduction' # %(instrument)
 #ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s' # %(instrument, cycle, experiment_number, run_number)
-#actually ceph directory
-#/instrument/MAPS/CYCLE20142/RB1410068
-
-ARCHIVE_DIRECTORY = '/instrument/%s/CYCLE20%s/RB%s/autoreduced/%s' # %(instrument, cycle, experiment_number, run_number)
+#Archive not being used for any instruments currently.
+CEPH_DIRECTORY = '/instrument/%s/CYCLE20%s/RB%s/autoreduced/%s' # %(instrument, cycle, experiment_number, run_number)
 TEMP_ROOT_DIRECTORY = '/autoreducetmp'
 
 def copytree(src, dst):
@@ -141,7 +139,7 @@ class PostProcessAdmin:
 
             # specify instrument directory  
             cycle = re.sub('[_]','',(re.match('.*cycle_(\d\d_\d).*', self.data['data'].lower()).group(1)))
-            instrument_dir = ARCHIVE_DIRECTORY % (self.instrument.upper(), cycle, self.data['rb_number'], self.data['run_number'])
+            instrument_dir = CEPH_DIRECTORY % (self.instrument.upper(), cycle, self.data['rb_number'], self.data['run_number'])
 	    
             # specify script to run and directory
             if os.path.exists(os.path.join(self.reduction_script, "reduce.py")) == False:
