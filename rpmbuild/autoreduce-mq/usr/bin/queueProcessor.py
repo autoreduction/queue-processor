@@ -21,7 +21,7 @@ class Listener(object):
         logger.error("Error message recieved - %s" % str(message))
 
     def on_message(self, headers, data):
-        processNum = 4 #processes allowed to run at one time
+        processNum = 6 #processes allowed to run at one time
         destination = headers['destination']
 
         logger.debug("Received frame destination: " + destination)
