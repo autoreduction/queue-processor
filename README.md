@@ -5,7 +5,7 @@
 
 ## Linux Installation
 
-Recommended Server OS: Red Hat 6 / Red Hat 7
+Recommended Server OS: Red Hat Enterprise Linux (RHEL) 6 / 7
 
 ***Note: Most, if not all, commands will need to be run as root. If using `sudo` please check the python note below***
 
@@ -18,7 +18,7 @@ Recommended Server OS: Red Hat 6 / Red Hat 7
 2. `yum groupinstall 'development tools'`
 3. `yum install zlib-devel bzip2-devel openssl-devel xz-libs wget httpd mod_wsgi mysql-devel python-devel httpd-devel.x86_64 mercurial`
 
-### Install Python 2.7 (Not required for Red Hat 7)
+### Install Python 2.7 (Not required for RHEL7)
 **Note: Do not remove python 2.6! Ensure that you specify python 2.7 correctly when using sudo commands as it will default to the installed.**
 
 1. `wget http://www.python.org/ftp/python/2.7.6/Python-2.7.6.tar.xz`
@@ -58,7 +58,7 @@ Recommended Server OS: Red Hat 6 / Red Hat 7
 1. `git clone https://github.com/mantidproject/autoreduce.git /usr/src/autoreduce`
 2. `ln -s /usr/src/autoreduce/WebApp/ISIS/autoreduce_webapp /var/www/autoreduce_webapp`
 3. `ln -s /usr/local/lib/python2.7/site-packages/django/contrib/admin/static/admin/ /var/www/autoreduce_webapp/static/admin` Red Hat 6 Only
-3. `ln -s /usr/lib/python2.7/site-packages/Django-1.7.1-py2.7.egg/django/contrib/admin/static/admin/ /var/www/autoreduce_webapp/static/admin` Red Hat 7 Only
+3. `ln -s /usr/lib/python2.7/site-packages/Django-1.7.1-py2.7.egg/django/contrib/admin/static/admin/ /var/www/autoreduce_webapp/static/admin` RHEL7 Only
 
 ### Install ActiveMQ and stomp.py
 1. `wget http://mirror.gopotato.co.uk/apache/activemq/5.9.1/apache-activemq-5.9.1-bin.tar.gz`
@@ -158,7 +158,7 @@ Recommended Server OS: Red Hat 6 / Red Hat 7
 11. `/opt/apache-activemq-5.9.1/bin/activemq setup /etc/default/activemq`
 12. `chown root /etc/default/activemq`
 13. `chmod 600 /etc/default/activemq`
-14. `lokkit --port=61613:tcp` Red Hat 6 Only
+14. `lokkit --port=61613:tcp` RHEL6 Only
     `firewall-cmd --add-port=61613/tcp --permanent && firewall-cmd --reload && firewall-cmd --add-port=61613/tcp` Read Hat 7 Only (Ignore the warning)
 
 ### Checking everything is working
