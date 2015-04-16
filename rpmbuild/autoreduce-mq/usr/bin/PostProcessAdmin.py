@@ -4,19 +4,20 @@ Post Process Administrator. It kicks off cataloging and reduction jobs.
 """
 import logging, json, socket, os, sys, subprocess, time, shutil, imp, stomp, re
 import logging.handlers
+
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 handler = logging.handlers.RotatingFileHandler('/var/log/autoreduction.log', maxBytes=104857600, backupCount=20)
-handler.setLevel(logging.INFO)
+handler.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 # Quite the Stomp logs as they are quite chatty
-logging.getLogger('stomp').setLevel(logging.INFO)
+logging.getLogger('stomp').setLevel(logging.DEBUG)
+
 
 REDUCTION_DIRECTORY = '/isis/NDX%s/user/scripts/autoreduction' # %(instrument)
-#ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s' # %(instrument, cycle, experiment_number, run_number)
-#Archive not being used for any instruments currently.
+ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s' # %(instrument, cycle, experiment_number, run_number)
 CEPH_DIRECTORY = '/instrument/%s/CYCLE20%s/RB%s/autoreduced/%s' # %(instrument, cycle, experiment_number, run_number)
 TEMP_ROOT_DIRECTORY = '/autoreducetmp'
 
@@ -33,16 +34,21 @@ def copytree(src, dst):
                 shutil.copy2(s, d)
 
 def linux_to_windows_path(path):
+
+    logger.info("linux_to_win_path start")
     path = path.replace('/', '\\')
     # '/isis/' maps to '\\isis\inst$\'
     path = path.replace('\\isis\\', '\\\\isis\\inst$\\')
+    logger.info("linux_to_win_path complete")
     return path
 
 def windows_to_linux_path(path):
     # '\\isis\inst$\' maps to '/isis/'
+    logger.info("win_to_lin_path start")
     path = path.replace('\\\\isis\\inst$\\', '/isis/')
     path = path.replace('\\\\autoreduce\\data\\', TEMP_ROOT_DIRECTORY+'/data/')
     path = path.replace('\\', '/')
+    logger.info("win_to_lin_path complete")
     return path
 
 class PostProcessAdmin:
@@ -132,14 +138,21 @@ class PostProcessAdmin:
 
     def reduce(self):
         print "\n> In reduce()\n"
+        ARCHIVE_INSTRUMENTS = ['WISH']
         try:         
             print "\nCalling: " + self.conf['reduction_started'] + "\n" + json.dumps(self.data) + "\n"
             logger.debug("Calling: " + self.conf['reduction_started'] + "\n" + json.dumps(self.data))
             self.client.send(self.conf['reduction_started'], json.dumps(self.data))
 
-            # specify instrument directory  
-            cycle = re.sub('[_]','',(re.match('.*cycle_(\d\d_\d).*', self.data['data'].lower()).group(1)))
-            instrument_dir = CEPH_DIRECTORY % (self.instrument.upper(), cycle, self.data['rb_number'], self.data['run_number'])
+            # specify instrument directory
+            if self.instrument.upper() in ARCHIVE_INSTRUMENTS:
+                cycle = re.match('.*cycle_(\d\d_\d).*', self.data['data'].lower()).group(1)))
+                instrument_dir = ARCHIVE_DIRECTORY % (self.instrument.upper(), cycle, self.data['rb_number'], self.data['run_number'])
+
+            else:
+                cycle = re.sub('[_]','',(re.match('.*cycle_(\d\d_\d).*', self.data['data'].lower()).group(1)))
+                instrument_dir = CEPH_DIRECTORY % (self.instrument.upper(), cycle, self.data['rb_number'], self.data['run_number'])
+  
 	    
             # specify script to run and directory
             if os.path.exists(os.path.join(self.reduction_script, "reduce.py")) == False:
@@ -162,7 +175,7 @@ class PostProcessAdmin:
                 os.makedirs(log_dir)
 
             # Load reduction script 
-
+	    logger.debug("Paths current %s" % str(sys.path)) 	
             sys.path.append(self.reduction_script)
             reduce_script = imp.load_source('reducescript', os.path.join(self.reduction_script, "reduce.py"))
             out_log = os.path.join(log_dir, self.data['rb_number'] + ".log")
@@ -183,7 +196,9 @@ class PostProcessAdmin:
             # Set the output to be the logfile
             sys.stdout = logFile
             sys.stderr = errFile
+
             reduce_script = self.replace_variables(reduce_script)
+
             out_directories = reduce_script.main(input_file=str(self.data_file), output_dir=str(reduce_result_dir))
 	    logger.info("this is the reduce results directory %s" % str(reduce_result_dir))
 	    logger.info("this is the entire outdirectories %s" % str(out_directories))
@@ -270,10 +285,10 @@ class PostProcessAdmin:
                 logger.error("Called "+self.conf['reduction_error']  + " --- " + json.dumps(self.data))       
             
             # Remove temporary working directory
-            try:
-                shutil.rmtree(reduce_result_dir[:-reduce_result_dir_tail_length], ignore_errors=True)
-            except Exception, e:
-                logger.error("Unable to remove temporary directory %s - %s" % reduce_result_dir)
+            #try:
+            #    shutil.rmtree(reduce_result_dir[:-reduce_result_dir_tail_length], ignore_errors=True)
+            #except Exception, e:
+            #    logger.error("Unable to remove temporary directory %s - %s" % reduce_result_dir)
 
             logger.info("Reduction job complete")
         except Exception, e:
@@ -286,7 +301,7 @@ class PostProcessAdmin:
                 logger.error("Failed to send to queue! - %s - %s" % (e, repr(e)))
           
 if __name__ == "__main__":
-
+    logger.debug("Paths current %s" % str(sys.path)) 	
     print "\n> In PostProcessAdmin.py\n"
 
     try:
@@ -296,7 +311,7 @@ if __name__ == "__main__":
         brokers.append((conf['brokers'].split(':')[0],int(conf['brokers'].split(':')[1])))
         connection = stomp.Connection(host_and_ports=brokers, use_ssl=True, ssl_version=3 )
         connection.start()
-        connection.connect(conf['amq_user'], conf['amq_pwd'], wait=False, header={'activemq.prefetchSize': '1',})
+        connection.connect(conf['amq_user'], conf['amq_pwd'], wait=True, header={'activemq.prefetchSize': '1',})
 
         destination, message = sys.argv[1:3]
         print("destination: " + destination)
