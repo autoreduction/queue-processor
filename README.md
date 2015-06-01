@@ -8,8 +8,8 @@ Please see: http://www.mantidproject.org/Installing_Mantid_Via_Yum#ISIS_RHEL7_.2
 
 1.  Ensure http proxy is set.
 
-        export http_proxy=http://wwwcache.rl.ac.uk
-        export https_proxy=http://wwwcache.rl.ac.uk
+        export http_proxy=http://wwwcache.rl.ac.uk:8080
+        export https_proxy=http://wwwcache.rl.ac.uk:8080
 
 2.  Downloaded apache-activemq-5.11.1-bin.tar.gz and unpack (https://activemq.apache.org/activemq-5111-release.html)
 
