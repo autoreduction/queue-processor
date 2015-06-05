@@ -114,6 +114,11 @@
         var validateText = function validateText(){
             validateNotEmpty.call(this);
         };
+		var validateDescriptionText = function validateDescriptionText(){
+            if($(this).val().length() > 100) {
+                errorMessages.push(getVarName('Re-run description must be less than 100 characters.')
+            }
+        };
         var validateNumber = function validateNumber(){
             validateNotEmpty.call(this);
             if(!isNumber($(this).val())){
@@ -174,6 +179,7 @@
         $form.find('[data-type="boolean"]').each(validateBoolean);
         $form.find('[data-type="list_number"]').each(validateListNumber);
         $form.find('[data-type="list_text"]').each(validateListText);
+		$form.find('[nodeValue="run_description').each(validateDescriptionText);
 
         if(!isValid){
             $('.js-form-validation-message').html('');
