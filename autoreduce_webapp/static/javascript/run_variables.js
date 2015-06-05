@@ -116,7 +116,7 @@
         };
 		var validateDescriptionText = function validateDescriptionText(){
             if($(this).val().length() > 100) {
-                errorMessages.push(getVarName('Re-run description must be less than 100 characters.')
+                errorMessages.push('Re-run description must be less than 100 characters.')
             }
         };
         var validateNumber = function validateNumber(){
