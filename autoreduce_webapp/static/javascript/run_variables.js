@@ -115,8 +115,10 @@
             validateNotEmpty.call(this);
         };
 		var validateDescriptionText = function validateDescriptionText(){
-            if($(this).val().length() > 100) {
-                errorMessages.push('Re-run description must be less than 100 characters.')
+			var max_length = 50;
+            if($(this).val().length > max_length) {
+				isValid = false;
+                errorMessages.push('Re-run description must be less than ' + max_length.toString() + ' characters.')
             }
         };
         var validateNumber = function validateNumber(){
@@ -179,7 +181,7 @@
         $form.find('[data-type="boolean"]').each(validateBoolean);
         $form.find('[data-type="list_number"]').each(validateListNumber);
         $form.find('[data-type="list_text"]').each(validateListText);
-		$form.find('[nodeValue="run_description').each(validateDescriptionText);
+		$form.find('[name="run_description"]').each(validateDescriptionText);
 
         if(!isValid){
             $('.js-form-validation-message').html('');
