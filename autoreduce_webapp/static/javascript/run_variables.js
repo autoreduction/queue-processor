@@ -114,10 +114,10 @@
         var validateText = function validateText(){
             validateNotEmpty.call(this);
         };
-		var validateDescriptionText = function validateDescriptionText(){
-			var max_length = 50;
+        var validateDescriptionText = function validateDescriptionText(){
+            var max_length = 50;
             if($(this).val().length > max_length) {
-				isValid = false;
+                isValid = false;
                 errorMessages.push('Re-run description must be less than ' + max_length.toString() + ' characters.')
             }
         };
@@ -181,7 +181,7 @@
         $form.find('[data-type="boolean"]').each(validateBoolean);
         $form.find('[data-type="list_number"]').each(validateListNumber);
         $form.find('[data-type="list_text"]').each(validateListText);
-		$form.find('[name="run_description"]').each(validateDescriptionText);
+        $form.find('[name="run_description"]').each(validateDescriptionText);
 
         if(!isValid){
             $('.js-form-validation-message').html('');
