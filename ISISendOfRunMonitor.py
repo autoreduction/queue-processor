@@ -1,4 +1,4 @@
-import time, json, os, logging
+import time, json, os, logging, sys
 from Stomp_Client import StompClient
 import threading
 
@@ -93,18 +93,15 @@ class InstrumentMonitor(threading.Thread):
         """
         with self.lock:
             data_dict = self.build_dict(last_run_data)
-        # self.client.send('/queue/DataReady', json.dumps(data_dict))
+        if not DEBUG:
+            self.client.send('/queue/DataReady', json.dumps(data_dict))
         logging.info("Data sent: " + str(data_dict))
 
-activemq_client = StompClient([("autoreduce.isis.cclrc.ac.uk", 61613)], 'autoreduce', '1^G8r2b$(6', 'RUN_BACKLOG')
-activemq_client.connect()
+if __name__ == "__main__":
+    activemq_client = StompClient([("autoreduce.isis.cclrc.ac.uk", 61613)], 'autoreduce', '1^G8r2b$(6', 'RUN_BACKLOG')
+    activemq_client.connect()
 
-message_lock = threading.Lock()
-monitors = []
-for inst in INSTRUMENTS:
-    file_monitor = InstrumentMonitor(inst, activemq_client, message_lock)
-    file_monitor.start()
-    monitors.append(file_monitor)
-
-while 1:
-    pass
+    message_lock = threading.Lock()
+    for inst in INSTRUMENTS:
+        file_monitor = InstrumentMonitor(inst, activemq_client, message_lock)
+        file_monitor.start()
