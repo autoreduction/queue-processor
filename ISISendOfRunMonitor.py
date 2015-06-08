@@ -1,5 +1,6 @@
-import time, json, datetime
+import time, json, datetime, os
 from Stomp_Client import StompClient
+import threading
 
 # Config settings for cycle number, and instrument file arrangement
 CYCLE_NUM = "14_3"
@@ -9,7 +10,9 @@ SUMMARY_LOC = "\logs\journal\SUMMARY.txt"
 LAST_RUN_LOC = "\logs\lastrun.txt"
 LOG_FILE = "monitor_log.txt"
 USE_NXS = True
+INSTRUMENTS = ['MERLIN', 'WISH', 'LET']
 TIME_CONSTANT = 1  # Time between file reads (in seconds)
+DEBUG = True
 
 
 def get_file_extension():
@@ -23,20 +26,24 @@ def get_file_extension():
 def write_to_log_file(message):
     """ Works as logger of dict files
     """
-    with open(LOG_FILE, 'w') as log:
+    with open(LOG_FILE, "a") as log:
         log.write(str(datetime.datetime.now()) + ": ")
-        log.write(str(message))
+        log.write(str(message) + "\n")
 
 
-class InstrumentMonitor(object):
-    def __init__(self, instrument_name, client):
+class InstrumentMonitor(threading.Thread):
+    def __init__(self, instrument_name, client, lock):
+        super(InstrumentMonitor, self).__init__()
         self.client = client
         self.instrumentName = instrument_name
-        self.instrumentFolder = '.'
-        # self.instrumentFolder = INST_FOLDER % self.instrumentName
+        if DEBUG:
+            self.instrumentFolder = '.'
+        else:
+            self.instrumentFolder = INST_FOLDER % self.instrumentName
         self.instrumentSummaryLoc = self.instrumentFolder + SUMMARY_LOC
         self.instrumentLastRunLoc = self.instrumentFolder + LAST_RUN_LOC
         self.instrumentDataFolderLoc = self.instrumentFolder + DATA_LOC
+        self.lock = lock
         
     def build_dict(self, last_run_data):
         """ Uses information from lastRun file, 
@@ -60,7 +67,7 @@ class InstrumentMonitor(object):
             last_line = st.readlines()[-1]
             return last_line.split()[-1]
 
-    def monitor(self):
+    def run(self):
         """ Works to actually monitor the last run file
         """
         with open(self.instrumentLastRunLoc) as lr:
@@ -72,7 +79,8 @@ class InstrumentMonitor(object):
                 data = line.split()
                 if (data[1] != last_run) and (int(data[2]) == 0):
                     last_run = data[1]
-                    self.send_message(data)
+                    with self.lock:
+                        self.send_message(data)
 
     def send_message(self, last_run_data):
         """Puts message together and sends it, along with logging
@@ -84,5 +92,13 @@ class InstrumentMonitor(object):
 
 activemq_client = StompClient([("autoreduce.isis.cclrc.ac.uk", 61613)], 'autoreduce', '1^G8r2b$(6', 'RUN_BACKLOG')
 activemq_client.connect()
-file_monitor = InstrumentMonitor('MERLIN', activemq_client)
-file_monitor.monitor()
+
+message_lock = threading.Lock()
+monitors = []
+for inst in INSTRUMENTS:
+    file_monitor = InstrumentMonitor(inst, activemq_client, message_lock)
+    file_monitor.start()
+    monitors.append(file_monitor)
+
+while (1):
+    pass
