@@ -1,22 +1,22 @@
-import time, Stomp_Client, json, twisted
+import time, json, datetime
+from Stomp_Client import Stomp_Client
+
 #Config settings for cycle number, and instrument file arrangement
-cycleNum = "14_3"
-instrumentFile = "\\isis\inst$\NDXMERLIN\Instrument\data\cycle_14_3\%s.nxs"
-activemq_client = Stomp_Client([("autoreduce.isis.cclrc.ac.uk", 61613)], 'autoreduce', '1^G8r2b$(6', 'RUN_BACKLOG')
-activemq_client.connect()
-        
-        
+CYCLE_NUM = "14_3"
+INST_FOLDER = "\\isis\inst$\NDX%s\Instrument"
+DATA_LOC = "\data\cycle_%s\\" % CYCLE_NUM
+SUMMARY_LOC = "\logs\journal\SUMMARY.txt"
+LAST_RUN_LOC = "\logs\lastrun.txt"
 
 class ISIS_Instrument_Monitor(object):
-    def __init__(self, instrumType):
-        self.InstrumentType = instrumType
-        self.instrumentFile = self.setInstrumFile()
-        self.instrumentSummaryLocat = self.instrumentFile + "\logs\journal\SUMMARY.txt"
-        self.instrumentLastRunLocat = self.instrumentFile + "\logs\lastrun.txt"    
-        
-    def setInstrumFile(self):
-        instrumentFolder = "\\isis\inst$\NDX%s\Instrument" % self.InstrumentType
-        return instrumentFolder
+    def __init__(self, instrumentName, client):
+        self.client = client
+        self.instrumentName = instrumentName
+        self.instrumentFolder = '.'
+        #self.instrumentFolder = INST_FOLDER % self.instrumentName
+        self.instrumentSummaryLocat = self.instrumentFolder + SUMMARY_LOC
+        self.instrumentLastRunLocat = self.instrumentFolder + LAST_RUN_LOC
+        self.instrumentDataFolderLoc = self.instrumentFolder + DATA_LOC
         
     def queryBuilder(self):
         """ Uses information from lastRun file, 
@@ -24,61 +24,54 @@ class ISIS_Instrument_Monitor(object):
         """ 
         lastRun = self.lastRunData.split()
         self.runNum = lastRun[1]
-        lastSummary = self.lastSummary.split()
-        self.RBNum = lastSummary[7]
+        self.RBNum = self._getRBNum()
         fileName = ''.join(lastRun[0:2]) #so MER111 etc
-        self.runDataLocat = instrumentFile % fileName # need to chnge this
+        self.runDataLocat = self.instrumentDataFolderLoc + fileName + ".nxs"
 
-        
-    def getRBNum(self):
-        """ Reads last line of summary.txt file 
+    def _getRBNum(self):
+        """ Reads last line of summary.txt file and returns the RB number
         """
         summaryTxt = self.instrumentSummaryLocat
         with open(summaryTxt, 'rb') as st:
-            for line in st:
-                pass
-            self.lastSummary = line
-        
+            last_line = st.readlines()[-1]
+            return last_line.split()[-1]
 
-    
-    def writeToFile(self, dicto):
+    def writeToFile(self, message):
         """ Works as logger of dict files
         """
-        with open("test.txt", 'w') as testtxt:
-            testtxt.write(str(dicto))
-    
-        
+        with open("monitor_log.txt", 'w') as log:
+            log.write(str(datetime.datetime.now()) + ": ")
+            log.write(str(message))
+
+    def monitor(self):
+        """ Works to actually monitor the file, like 'tail -f'
+        """
+        with open(self.instrumentLastRunLocat) as file:
+            file.seek(0, 2) #Go to end of file
+            while True: #send thread to sleep, use Timer objects
+                line = file.readline()
+                if not line:
+                    time.sleep(1)
+                    continue
+                self.lastRunData = line
+                self.messager()
+
     def messager(self):
         """Puts message together and sends it, along with logging
         """
         self.queryBuilder()
         data_dict = {
-      "rb_number": self.RBNum,
-      "instrument": "MERLIN",
-      "data": self.runDataLocat,
-      "run_number": self.runNum,
-      "facility": "ISIS"
+            "rb_number": self.RBNum,
+            "instrument": self.instrumentName,
+            "data": self.runDataLocat,
+            "run_number": self.runNum,
+            "facility": "ISIS"
         }
-        #activemq_client.send('/queue/DataReady', json.dumps(data_dict))
+        #self.client.send('/queue/DataReady', json.dumps(data_dict))
         print data_dict
         self.writeToFile(data_dict)
-    
-    def monitor(self):
-        """ Works to actually monitor the file, like 'tail -f'
-        """
-        file = self.instrumentLastRunLocat
-        file.seek(0,2)
-        while True: #send thread to sleep, use Timer objects
-            line = file.readline()
-            if not line:
-                time.sleep(0.1) 
-                continue
-            yield line
-            line = self.lastRunData
-            self.messager()
-#instrumentName = "MERLIN"  
-#lastSummary = "MER25101Adroja,             CeFe2Al10 40meV 200Hz 5K04-MAY-2015 16:52:39     6.9 1510145"  
-#lastRun = "MER 25101 0"
-logfile = open('lastrun.txt', 'r')
-lastRun = monitor(logfile)    
 
+activemq_client = Stomp_Client([("autoreduce.isis.cclrc.ac.uk", 61613)], 'autoreduce', '1^G8r2b$(6', 'RUN_BACKLOG')
+activemq_client.connect()
+file_monitor = ISIS_Instrument_Monitor('', activemq_client)
+file_monitor.monitor()

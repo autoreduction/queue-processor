@@ -41,7 +41,5 @@ class Stomp_Client(object):
         self._connection = None
 
     def send(self, destination, message, persistent='true'):
-        if self._connection is None or not self._connection.is_connected():
-            self._disconnect()
-            self._connection = self.get_connection()
+        self.connect()
         self._connection.send(destination, message, persistent=persistent)
