@@ -53,21 +53,19 @@ class ISIS_Instrument_Monitor(object):
             log.write(str(message))
 
     def monitor(self):
-        """ Works to actually monitor the file, like 'tail -f'
+        """ Works to actually monitor the file
         """
         with open(self.instrumentLastRunLocat) as file:
-            file.seek(0, 2)  # Go to end of file
+            last_run = file.readline().split()[1]
             while True:  # send thread to sleep, use Timer objects
+                time.sleep(TIME_CONSTANT)
+                file.seek(0, 0)
                 line = file.readline()
-                if not line:
-                    time.sleep(TIME_CONSTANT)
-                    continue
-                if not self._has_ended(line):
-                    file.seek(-len(line), 2)  # Move back a line
-                    time.sleep(TIME_CONSTANT)
-                    continue
-                self.lastRunData = line
-                self.send_message()
+                data = line.split()
+                if (data[1] != last_run) and (int(data[2]) == 0):
+                    last_run = data[1]
+                    self.lastRunData = line
+                    self.send_message()
 
     def _has_ended(self, line):
         """ Function to check that the run has actually ended (runs with >0 in the line have only updated/stored)
