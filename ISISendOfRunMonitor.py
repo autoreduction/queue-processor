@@ -1,18 +1,19 @@
-import time, json, datetime, os
+import time, json, os, logging
 from Stomp_Client import StompClient
 import threading
 
 # Config settings for cycle number, and instrument file arrangement
 CYCLE_NUM = "14_3"
-INST_FOLDER = "\\isis\inst$\NDX%s\Instrument"
+INST_FOLDER = "\\\\isis\inst$\NDX%s\Instrument"
 DATA_LOC = "\data\cycle_%s\\" % CYCLE_NUM
 SUMMARY_LOC = "\logs\journal\SUMMARY.txt"
 LAST_RUN_LOC = "\logs\lastrun.txt"
 LOG_FILE = "monitor_log.txt"
 USE_NXS = True
-INSTRUMENTS = ['MERLIN', 'WISH', 'LET']
+INSTRUMENTS = ['MERLIN', 'WISH', 'LET', 'MAPS']
 TIME_CONSTANT = 1  # Time between file reads (in seconds)
 DEBUG = True
+logging.basicConfig(filename=LOG_FILE, level=logging.INFO, format='%(asctime)s %(message)s')
 
 
 def get_file_extension():
@@ -23,12 +24,12 @@ def get_file_extension():
         return ".raw"
 
 
-def write_to_log_file(message):
-    """ Works as logger of dict files
-    """
-    with open(LOG_FILE, "a") as log:
-        log.write(str(datetime.datetime.now()) + ": ")
-        log.write(str(message) + "\n")
+def get_data_and_check(last_run_file):
+    """ Gets the data from the last run file and checks it's format """
+    data = last_run_file.readline().split()
+    if len(data) != 3:
+        raise Exception("Unexpected last run file format")
+    return data
 
 
 class InstrumentMonitor(threading.Thread):
@@ -70,25 +71,30 @@ class InstrumentMonitor(threading.Thread):
     def run(self):
         """ Works to actually monitor the last run file
         """
-        with open(self.instrumentLastRunLoc) as lr:
-            last_run = lr.readline().split()[1]
+        try:
+            with open(self.instrumentLastRunLoc) as lr:
+                data = get_data_and_check(lr)
+                last_run = data[1]
+
             while True:  # send thread to sleep, use Timer objects
                 time.sleep(TIME_CONSTANT)
-                lr.seek(0, 0)
-                line = lr.readline()
-                data = line.split()
-                if (data[1] != last_run) and (int(data[2]) == 0):
-                    last_run = data[1]
-                    with self.lock:
+                with open(self.instrumentLastRunLoc) as lr:
+                    data = get_data_and_check(lr)
+                    if (data[1] != last_run) and (int(data[2]) == 0):
+                        last_run = data[1]
                         self.send_message(data)
+
+        except Exception as e:
+            logging.exception("Error on loading file: ")
+            raise e
 
     def send_message(self, last_run_data):
         """Puts message together and sends it, along with logging
         """
-        data_dict = self.build_dict(last_run_data)
+        with self.lock:
+            data_dict = self.build_dict(last_run_data)
         # self.client.send('/queue/DataReady', json.dumps(data_dict))
-        print data_dict
-        write_to_log_file(data_dict)
+        logging.info("Data sent: " + str(data_dict))
 
 activemq_client = StompClient([("autoreduce.isis.cclrc.ac.uk", 61613)], 'autoreduce', '1^G8r2b$(6', 'RUN_BACKLOG')
 activemq_client.connect()
@@ -100,5 +106,5 @@ for inst in INSTRUMENTS:
     file_monitor.start()
     monitors.append(file_monitor)
 
-while (1):
+while 1:
     pass
