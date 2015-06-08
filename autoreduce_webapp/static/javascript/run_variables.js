@@ -116,7 +116,7 @@
         };
         var validateDescriptionText = function validateDescriptionText(){
             var max_length = 50;
-            if($(this).val().length > max_length) {
+            if($(this).val().length >= max_length) {
                 isValid = false;
                 errorMessages.push('Re-run description must be less than ' + max_length.toString() + ' characters.')
             }
