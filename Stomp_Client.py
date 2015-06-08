@@ -6,7 +6,8 @@ Created on Wed May 27 14:37:59 2015
 """
 import time, stomp
 
-class Stomp_Client(object):
+
+class StompClient(object):
     def __init__(self, brokers, user, password, topics=None, consumer_name='QueueProcessor'):
         self._brokers = brokers
         self._user = user

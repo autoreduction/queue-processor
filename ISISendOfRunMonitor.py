@@ -1,5 +1,5 @@
 import time, json, datetime
-from Stomp_Client import Stomp_Client
+from Stomp_Client import StompClient
 
 # Config settings for cycle number, and instrument file arrangement
 CYCLE_NUM = "14_3"
@@ -7,91 +7,82 @@ INST_FOLDER = "\\isis\inst$\NDX%s\Instrument"
 DATA_LOC = "\data\cycle_%s\\" % CYCLE_NUM
 SUMMARY_LOC = "\logs\journal\SUMMARY.txt"
 LAST_RUN_LOC = "\logs\lastrun.txt"
+LOG_FILE = "monitor_log.txt"
 USE_NXS = True
 TIME_CONSTANT = 1  # Time between file reads (in seconds)
 
-class ISIS_Instrument_Monitor(object):
-    def __init__(self, instrumentName, client):
+
+def get_file_extension():
+    """ Choose the data extension based on the global boolean"""
+    if USE_NXS:
+        return ".nxs"
+    else:
+        return ".raw"
+
+
+def write_to_log_file(message):
+    """ Works as logger of dict files
+    """
+    with open(LOG_FILE, 'w') as log:
+        log.write(str(datetime.datetime.now()) + ": ")
+        log.write(str(message))
+
+
+class InstrumentMonitor(object):
+    def __init__(self, instrument_name, client):
         self.client = client
-        self.instrumentName = instrumentName
+        self.instrumentName = instrument_name
         self.instrumentFolder = '.'
         # self.instrumentFolder = INST_FOLDER % self.instrumentName
-        self.instrumentSummaryLocat = self.instrumentFolder + SUMMARY_LOC
-        self.instrumentLastRunLocat = self.instrumentFolder + LAST_RUN_LOC
+        self.instrumentSummaryLoc = self.instrumentFolder + SUMMARY_LOC
+        self.instrumentLastRunLoc = self.instrumentFolder + LAST_RUN_LOC
         self.instrumentDataFolderLoc = self.instrumentFolder + DATA_LOC
         
-    def queryBuilder(self):
+    def build_dict(self, last_run_data):
         """ Uses information from lastRun file, 
         and last line of the summary text file to build the query 
-        """ 
-        lastRun = self.lastRunData.split()
-        self.runNum = lastRun[1]
-        self.RBNum = self._getRBNum()
-        fileName = ''.join(lastRun[0:2])  # so MER111 etc
-        self.runDataLocat = self.instrumentDataFolderLoc + fileName + self._get_file_extension()
+        """
+        filename = ''.join(last_run_data[0:2])  # so MER111 etc
+        run_data_loc = self.instrumentDataFolderLoc + filename + get_file_extension()
+        return {
+            "rb_number": self._get_RB_num(),
+            "instrument": self.instrumentName,
+            "data": run_data_loc,
+            "run_number": last_run_data[1],
+            "facility": "ISIS"
+        }
 
-    def _get_file_extension(self):
-        """ Choose the data extension based on the global boolean"""
-        if USE_NXS:
-            return ".nxs"
-        else:
-            return ".raw"
-
-    def _getRBNum(self):
+    def _get_RB_num(self):
         """ Reads last line of summary.txt file and returns the RB number
         """
-        summaryTxt = self.instrumentSummaryLocat
-        with open(summaryTxt, 'rb') as st:
+        summary = self.instrumentSummaryLoc
+        with open(summary, 'rb') as st:
             last_line = st.readlines()[-1]
             return last_line.split()[-1]
 
-    def writeToFile(self, message):
-        """ Works as logger of dict files
-        """
-        with open("monitor_log.txt", 'w') as log:
-            log.write(str(datetime.datetime.now()) + ": ")
-            log.write(str(message))
-
     def monitor(self):
-        """ Works to actually monitor the file
+        """ Works to actually monitor the last run file
         """
-        with open(self.instrumentLastRunLocat) as file:
-            last_run = file.readline().split()[1]
+        with open(self.instrumentLastRunLoc) as lr:
+            last_run = lr.readline().split()[1]
             while True:  # send thread to sleep, use Timer objects
                 time.sleep(TIME_CONSTANT)
-                file.seek(0, 0)
-                line = file.readline()
+                lr.seek(0, 0)
+                line = lr.readline()
                 data = line.split()
                 if (data[1] != last_run) and (int(data[2]) == 0):
                     last_run = data[1]
-                    self.lastRunData = line
-                    self.send_message()
+                    self.send_message(data)
 
-    def _has_ended(self, line):
-        """ Function to check that the run has actually ended (runs with >0 in the line have only updated/stored)
-        These are ignored for now but could be autoreduced eventually
-        """
-        if int(line.split()[-1]) == 0:
-            return True
-        else:
-            return False
-
-    def send_message(self):
+    def send_message(self, last_run_data):
         """Puts message together and sends it, along with logging
         """
-        self.queryBuilder()
-        data_dict = {
-            "rb_number": self.RBNum,
-            "instrument": self.instrumentName,
-            "data": self.runDataLocat,
-            "run_number": self.runNum,
-            "facility": "ISIS"
-        }
+        data_dict = self.build_dict(last_run_data)
         # self.client.send('/queue/DataReady', json.dumps(data_dict))
         print data_dict
-        self.writeToFile(data_dict)
+        write_to_log_file(data_dict)
 
-activemq_client = Stomp_Client([("autoreduce.isis.cclrc.ac.uk", 61613)], 'autoreduce', '1^G8r2b$(6', 'RUN_BACKLOG')
+activemq_client = StompClient([("autoreduce.isis.cclrc.ac.uk", 61613)], 'autoreduce', '1^G8r2b$(6', 'RUN_BACKLOG')
 activemq_client.connect()
-file_monitor = ISIS_Instrument_Monitor('MERLIN', activemq_client)
+file_monitor = InstrumentMonitor('MERLIN', activemq_client)
 file_monitor.monitor()
