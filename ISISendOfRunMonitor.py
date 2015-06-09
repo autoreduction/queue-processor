@@ -8,11 +8,11 @@ INST_FOLDER = "\\\\isis\inst$\NDX%s\Instrument"
 DATA_LOC = "\data\cycle_%s\\" % CYCLE_NUM
 SUMMARY_LOC = "\logs\journal\SUMMARY.txt"
 LAST_RUN_LOC = "\logs\lastrun.txt"
-LOG_FILE = "monitor_log.txt"
+LOG_FILE = "C:\\autoreduce\\scripts\\EndOfRunMonitor\\monitor_log.txt"
 USE_NXS = True
-INSTRUMENTS = ['MERLIN', 'WISH', 'LET', 'MAPS']
+INSTRUMENTS = ['LET']
 TIME_CONSTANT = 1  # Time between file reads (in seconds)
-DEBUG = True
+DEBUG = False
 logging.basicConfig(filename=LOG_FILE, level=logging.INFO, format='%(asctime)s %(message)s')
 
 
