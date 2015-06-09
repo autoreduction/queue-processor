@@ -26,17 +26,16 @@ class QueueService(win32serviceutil.ServiceFramework):
         servicemanager.LogMsg(servicemanager.EVENTLOG_INFORMATION_TYPE,servicemanager.PYS_SERVICE_STARTED,(self._svc_name_, '')) 
 
         self.timeout = 3000
-        client = ISISendOfRunMonitor.main()
-        
+        ISISendOfRunMonitor.main()
         while 1:
             # Wait for service stop signal, if I timeout, loop again
             rc = win32event.WaitForSingleObject(self.hWaitStop, self.timeout)
             # Check to see if self.hWaitStop happened
             if rc == win32event.WAIT_OBJECT_0:
-                client.stop()
                 # Stop signal encountered
                 servicemanager.LogInfoMsg(self._svc_name_ + " - STOPPED")
                 break
+
 
 def ctrlHandler(ctrlType):
     return True

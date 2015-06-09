@@ -97,7 +97,8 @@ class InstrumentMonitor(threading.Thread):
             self.client.send('/queue/DataReady', json.dumps(data_dict))
         logging.info("Data sent: " + str(data_dict))
 
-if __name__ == "__main__":
+
+def main():
     activemq_client = StompClient([("autoreduce.isis.cclrc.ac.uk", 61613)], 'autoreduce', '1^G8r2b$(6', 'RUN_BACKLOG')
     activemq_client.connect()
 
@@ -105,3 +106,6 @@ if __name__ == "__main__":
     for inst in INSTRUMENTS:
         file_monitor = InstrumentMonitor(inst, activemq_client, message_lock)
         file_monitor.start()
+
+if __name__ == "__main__":
+    main()
