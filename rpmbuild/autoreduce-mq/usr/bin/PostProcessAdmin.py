@@ -20,6 +20,7 @@ REDUCTION_DIRECTORY = '/isis/NDX%s/user/scripts/autoreduction' # %(instrument)
 ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s' # %(instrument, cycle, experiment_number, run_number)
 CEPH_DIRECTORY = '/instrument/%s/CYCLE20%s/RB%s/autoreduced/%s' # %(instrument, cycle, experiment_number, run_number)
 TEMP_ROOT_DIRECTORY = '/autoreducetmp'
+CEPH_INSTRUMENTS = ['LET', 'MARI', 'MAPS', 'MERLIN'] # A list of instruments which should save reduced data to CEPH, rather than the archive
 
 def copytree(src, dst):
     if not os.path.exists(dst):
@@ -138,22 +139,19 @@ class PostProcessAdmin:
 
     def reduce(self):
         print "\n> In reduce()\n"
-        ARCHIVE_INSTRUMENTS = ['WISH']
         try:         
             print "\nCalling: " + self.conf['reduction_started'] + "\n" + json.dumps(self.data) + "\n"
             logger.debug("Calling: " + self.conf['reduction_started'] + "\n" + json.dumps(self.data))
             self.client.send(self.conf['reduction_started'], json.dumps(self.data))
 
             # specify instrument directory
-            if self.instrument.upper() in ARCHIVE_INSTRUMENTS:
-                cycle = re.match('.*cycle_(\d\d_\d).*', self.data['data'].lower()).group(1)))
+            cycle = re.match(r'.*cycle_(\d\d_\d).*', self.data_file.lower()).group(1)
+            if self.instrument.upper() in CEPH_INSTRUMENTS:
+                cycle = re.sub('[_]', '', cycle)
+                instrument_dir = CEPH_DIRECTORY % (self.instrument.upper(), cycle, self.data['rb_number'], self.data['run_number'])
+            else:
                 instrument_dir = ARCHIVE_DIRECTORY % (self.instrument.upper(), cycle, self.data['rb_number'], self.data['run_number'])
 
-            else:
-                cycle = re.sub('[_]','',(re.match('.*cycle_(\d\d_\d).*', self.data['data'].lower()).group(1)))
-                instrument_dir = CEPH_DIRECTORY % (self.instrument.upper(), cycle, self.data['rb_number'], self.data['run_number'])
-  
-	    
             # specify script to run and directory
             if os.path.exists(os.path.join(self.reduction_script, "reduce.py")) == False:
                 self.data['message'] = "Reduce script doesn't exist within %s" % self.reduction_script
@@ -250,20 +248,21 @@ class PostProcessAdmin:
 
             # Move from tmp directory to actual directory (remove /tmp from 
             # replace old data if they exist
-            if os.path.isdir(reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-reduce_result_dir_tail_length]):
+            copy_destination = reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-reduce_result_dir_tail_length]
+            if os.path.isdir(copy_destination):
                 try:
-                    shutil.rmtree(reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-reduce_result_dir_tail_length], ignore_errors=True)
+                    shutil.rmtree(copy_destination, ignore_errors=True)
                 except Exception, e:
-                    logger.error("Unable to remove existing directory %s - %s" % (reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-reduce_result_dir_tail_length], e))
+                    logger.error("Unable to remove existing directory %s - %s" % (copy_destination, e))
             try:
-                os.makedirs(reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-reduce_result_dir_tail_length])
+                os.makedirs(copy_destination)
             except Exception, e:
-                logger.error("Unable to create %s - %s" % (reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-reduce_result_dir_tail_length], e))
-                self.data["message"] += "Unable to create %s - %s. " % (reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-reduce_result_dir_tail_length], e)
+                logger.error("Unable to create %s - %s" % (copy_destination, e))
+                self.data["message"] += "Unable to create %s - %s. " % (copy_destination, e)
             
             # [4,-8] is used to remove the prepending '/tmp' and the trailing 'results/' from the destination
-            self.data['reduction_data'].append(linux_to_windows_path(reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-reduce_result_dir_tail_length]))
-            logger.info("Moving %s to %s" % (reduce_result_dir[:-1], reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-reduce_result_dir_tail_length]))
+            self.data['reduction_data'].append(linux_to_windows_path(copy_destination))
+            logger.info("Moving %s to %s" % (reduce_result_dir[:-1], copy_destination))
             try:
                 shutil.copytree(reduce_result_dir[:-1], reduce_result_dir[len(TEMP_ROOT_DIRECTORY):])
             except Exception, e:
@@ -334,7 +333,7 @@ if __name__ == "__main__":
         except:
             raise
         
-    except Error as er:
+    except Exception as er:
 	logger.error("Something went wrong: " + str(er))
         sys.exit()
 
