@@ -210,8 +210,7 @@ class PostProcessAdmin:
                     try:
                         copytree(run_output_dir[:-1], out_directories)
                     except Exception, e:
-                        logger.info("Unable to copy %s to %s - %s" % (run_output_dir[:-1], out_directories, e))
-                        self.data["message"] += "Unable to copy to %s - %s. " % (out_directories, e)
+                        self.log_and_message("Unable to copy %s to %s - %s" % (run_output_dir[:-1], out_directories, e))
                 elif type(out_directories) is list:
                     for out_dir in out_directories:
                         self.data['reduction_data'].append(linux_to_windows_path(out_dir))
@@ -221,8 +220,7 @@ class PostProcessAdmin:
                             try:
                                 copytree(run_output_dir[:-1], out_dir)
                             except Exception, e:
-                                logger.info("Unable to copy %s to %s - %s" % (run_output_dir[:-1], out_dir, e))
-                                self.data["message"] += "Unable to copy to %s - %s. " % (out_dir, e)
+                                self.log_and_message("Unable to copy %s to %s - %s" % (run_output_dir[:-1], out_dir, e))
                         else:
                             logger.info("Unable to access directory: %s" % out_dir)
 
@@ -264,8 +262,7 @@ class PostProcessAdmin:
         try:
             os.makedirs(copy_destination)
         except Exception, e:
-            logger.info("Unable to create %s - %s" % (copy_destination, e))
-            self.data["message"] += "Unable to create %s - %s. " % (copy_destination, e)
+            self.log_and_message("Unable to create %s - %s. " % (copy_destination, e))
 
         # [4,-8] is used to remove the prepending '/tmp' and the trailing 'results/' from the destination
         self.data['reduction_data'].append(linux_to_windows_path(copy_destination))
@@ -273,14 +270,18 @@ class PostProcessAdmin:
         try:
             shutil.copytree(reduce_result_dir[:-1], reduce_result_dir[len(TEMP_ROOT_DIRECTORY):])
         except Exception, e:
-            logger.info("Unable to copy to %s - %s" % (reduce_result_dir[len(TEMP_ROOT_DIRECTORY):], e))
-            self.data["message"] += "Unable to copy to %s - %s. " % (reduce_result_dir[len(TEMP_ROOT_DIRECTORY):], e)
+            self.log_and_message("Unable to copy to %s - %s" % (reduce_result_dir[len(TEMP_ROOT_DIRECTORY):], e))
 
         # Remove temporary working directory
         try:
             shutil.rmtree(reduce_result_dir[:-reduce_result_dir_tail_length], ignore_errors=True)
         except Exception, e:
             logger.info("Unable to remove temporary directory %s - %s" % reduce_result_dir)
+
+    def log_and_message(self, message):
+        """Helper function to add text to the outgoing activemq message and to the info logs """
+        logger.info(message)
+        self.data["message"] += message
 
 if __name__ == "__main__":
 
