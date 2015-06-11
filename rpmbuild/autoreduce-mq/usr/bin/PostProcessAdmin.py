@@ -6,14 +6,14 @@ import logging, json, socket, os, sys, subprocess, time, shutil, imp, stomp, re
 import logging.handlers
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 handler = logging.handlers.RotatingFileHandler('/var/log/autoreduction.log', maxBytes=104857600, backupCount=20)
-handler.setLevel(logging.DEBUG)
+handler.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 # Quite the Stomp logs as they are quite chatty
-logging.getLogger('stomp').setLevel(logging.DEBUG)
+logging.getLogger('stomp').setLevel(logging.INFO)
 
 
 REDUCTION_DIRECTORY = '/isis/NDX%s/user/scripts/autoreduction' # %(instrument)
@@ -35,21 +35,16 @@ def copytree(src, dst):
                 shutil.copy2(s, d)
 
 def linux_to_windows_path(path):
-
-    logger.info("linux_to_win_path start")
     path = path.replace('/', '\\')
     # '/isis/' maps to '\\isis\inst$\'
     path = path.replace('\\isis\\', '\\\\isis\\inst$\\')
-    logger.info("linux_to_win_path complete")
     return path
 
 def windows_to_linux_path(path):
     # '\\isis\inst$\' maps to '/isis/'
-    logger.info("win_to_lin_path start")
     path = path.replace('\\\\isis\\inst$\\', '/isis/')
     path = path.replace('\\\\autoreduce\\data\\', TEMP_ROOT_DIRECTORY+'/data/')
     path = path.replace('\\', '/')
-    logger.info("win_to_lin_path complete")
     return path
 
 class PostProcessAdmin:
@@ -172,8 +167,7 @@ class PostProcessAdmin:
             if not os.path.exists(log_dir):
                 os.makedirs(log_dir)
 
-            # Load reduction script 
-	    logger.debug("Paths current %s" % str(sys.path)) 	
+            # Load reduction script
             sys.path.append(self.reduction_script)
             reduce_script = imp.load_source('reducescript', os.path.join(self.reduction_script, "reduce.py"))
             out_log = os.path.join(log_dir, self.data['rb_number'] + ".log")
@@ -194,9 +188,7 @@ class PostProcessAdmin:
             # Set the output to be the logfile
             sys.stdout = logFile
             sys.stderr = errFile
-
             reduce_script = self.replace_variables(reduce_script)
-
             out_directories = reduce_script.main(input_file=str(self.data_file), output_dir=str(reduce_result_dir))
 	    logger.info("this is the reduce results directory %s" % str(reduce_result_dir))
 	    logger.info("this is the entire outdirectories %s" % str(out_directories))
@@ -284,10 +276,10 @@ class PostProcessAdmin:
                 logger.error("Called "+self.conf['reduction_error']  + " --- " + json.dumps(self.data))       
             
             # Remove temporary working directory
-            #try:
-            #    shutil.rmtree(reduce_result_dir[:-reduce_result_dir_tail_length], ignore_errors=True)
-            #except Exception, e:
-            #    logger.error("Unable to remove temporary directory %s - %s" % reduce_result_dir)
+            try:
+                shutil.rmtree(reduce_result_dir[:-reduce_result_dir_tail_length], ignore_errors=True)
+            except Exception, e:
+                logger.error("Unable to remove temporary directory %s - %s" % reduce_result_dir)
 
             logger.info("Reduction job complete")
         except Exception, e:
@@ -300,7 +292,6 @@ class PostProcessAdmin:
                 logger.error("Failed to send to queue! - %s - %s" % (e, repr(e)))
           
 if __name__ == "__main__":
-    logger.debug("Paths current %s" % str(sys.path)) 	
     print "\n> In PostProcessAdmin.py\n"
 
     try:
