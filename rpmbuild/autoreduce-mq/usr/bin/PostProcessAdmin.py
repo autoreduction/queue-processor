@@ -161,8 +161,11 @@ class PostProcessAdmin:
             if not os.path.exists(log_dir):
                 os.makedirs(log_dir)
 
-            # Load reduction script 
+            self.data['reduction_data'] = []
+            if "message" not in self.data:
+                self.data["message"] = ""
 
+            # Load reduction script
             sys.path.append(self.reduction_script)
             reduce_script = imp.load_source('reducescript', os.path.join(self.reduction_script, "reduce.py"))
             out_log = os.path.join(log_dir, self.data['rb_number'] + ".log")
@@ -181,21 +184,22 @@ class PostProcessAdmin:
             errFile=open(out_err, "w")
             # Set the output to be the logfile
             sys.stdout = logFile
+            sys.stderr = errFile
             reduce_script = self.replace_variables(reduce_script)
-            out_directories = reduce_script.main(input_file=str(self.data_file), output_dir=str(reduce_result_dir))
-	    logger.info("this is the reduce results directory %s" % str(reduce_result_dir))
-	    logger.info("this is the entire outdirectories %s" % str(out_directories))
-
-            # Reset outputs back to default
-            sys.stdout = sys.__stdout__
-            logFile.close()
+            try:
+                out_directories = reduce_script.main(input_file=str(self.data_file), output_dir=str(reduce_result_dir))
+            except Exception as e:
+                self.copy_temp_directory(reduce_result_dir, reduce_result_dir_tail_length)
+                raise
+            finally:
+                # Reset outputs back to default
+                sys.stdout = sys.__stdout__
+                sys.stderr = sys.__stderr__
+                logFile.close()
+                errFile.close()
 
             logger.info("Reduction subprocess completed.")
             logger.info("Additional save directories: %s" % out_directories)
-            
-            self.data['reduction_data'] = []
-            if "message" not in self.data:
-                self.data["message"] = ""
 
             # If the reduce script specified some additional save directories, copy to there first
             if out_directories:
@@ -222,31 +226,11 @@ class PostProcessAdmin:
                         else:
                             logger.info("Unable to access directory: %s" % out_dir)
 
-            # Move from tmp directory to actual directory (remove /tmp from 
-            # replace old data if they exist
-            if os.path.isdir(reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-reduce_result_dir_tail_length]):
-                try:
-                    shutil.rmtree(reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-reduce_result_dir_tail_length], ignore_errors=True)
-                except Exception, e:
-                    logger.info("Unable to remove existing directory %s - %s" % (reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-reduce_result_dir_tail_length], e))
-            try:
-                os.makedirs(reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-reduce_result_dir_tail_length])
-            except Exception, e:
-                logger.info("Unable to create %s - %s" % (reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-reduce_result_dir_tail_length], e))
-                self.data["message"] += "Unable to create %s - %s. " % (reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-reduce_result_dir_tail_length], e)
-            
-            # [4,-8] is used to remove the prepending '/tmp' and the trailing 'results/' from the destination
-            self.data['reduction_data'].append(linux_to_windows_path(reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-reduce_result_dir_tail_length]))
-            logger.info("Moving %s to %s" % (reduce_result_dir[:-1], reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-reduce_result_dir_tail_length]))
-            try:
-                shutil.copytree(reduce_result_dir[:-1], reduce_result_dir[len(TEMP_ROOT_DIRECTORY):])
-            except Exception, e:
-                logger.info("Unable to copy to %s - %s" % (reduce_result_dir[len(TEMP_ROOT_DIRECTORY):], e))
-                self.data["message"] += "Unable to copy to %s - %s. " % (reduce_result_dir[len(TEMP_ROOT_DIRECTORY):], e)
-            
+            self.copy_temp_directory(reduce_result_dir, reduce_result_dir_tail_length)
+
             if os.stat(out_err).st_size == 0:
                 os.remove(out_err)
-                self.client.send(self.conf['reduction_complete'] , json.dumps(self.data))  
+                self.client.send(self.conf['reduction_complete'] , json.dumps(self.data))
                 print "\nCalling: "+self.conf['reduction_complete'] + "\n" + json.dumps(self.data) + "\n"
             else:
                 maxLineLength=80
@@ -255,14 +239,8 @@ class PostProcessAdmin:
                 lastLine = fp.readlines()[-1]
                 errMsg = lastLine.strip() + ", see reduction_log/" + os.path.basename(out_log) + " or " + os.path.basename(out_err) + " for details."
                 self.data["message"] = "REDUCTION: %s" % errMsg
-                self.client.send(self.conf['reduction_error'] , json.dumps(self.data))
-                logger.info("Called "+self.conf['reduction_error']  + " --- " + json.dumps(self.data))       
-            
-            # Remove temporary working directory
-            try:
-                shutil.rmtree(reduce_result_dir[:-reduce_result_dir_tail_length], ignore_errors=True)
-            except Exception, e:
-                logger.info("Unable to remove temporary directory %s - %s" % reduce_result_dir)
+                self.client.send(self.conf['reduction_error'], json.dumps(self.data))
+                logger.info("Called "+self.conf['reduction_error'] + " --- " + json.dumps(self.data))
 
             logger.info("Reduction job complete")
         except Exception, e:
@@ -273,7 +251,37 @@ class PostProcessAdmin:
             except BaseException, e:
                 print "\nFailed to send to queue!\n%s\n%s" % (e, repr(e))
                 logger.info("Failed to send to queue! - %s - %s" % (e, repr(e)))
-          
+
+    def copy_temp_directory(self, reduce_result_dir, reduce_result_dir_tail_length):
+        """ Method that copies the temporary files held in results_directory to CEPH/archive, replacing old data if it
+        exists"""
+        copy_destination = reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-reduce_result_dir_tail_length]
+        if os.path.isdir(copy_destination):
+            try:
+                shutil.rmtree(copy_destination, ignore_errors=True)
+            except Exception, e:
+                logger.info("Unable to remove existing directory %s - %s" % (copy_destination, e))
+        try:
+            os.makedirs(copy_destination)
+        except Exception, e:
+            logger.info("Unable to create %s - %s" % (copy_destination, e))
+            self.data["message"] += "Unable to create %s - %s. " % (copy_destination, e)
+
+        # [4,-8] is used to remove the prepending '/tmp' and the trailing 'results/' from the destination
+        self.data['reduction_data'].append(linux_to_windows_path(copy_destination))
+        logger.info("Moving %s to %s" % (reduce_result_dir[:-1], copy_destination))
+        try:
+            shutil.copytree(reduce_result_dir[:-1], reduce_result_dir[len(TEMP_ROOT_DIRECTORY):])
+        except Exception, e:
+            logger.info("Unable to copy to %s - %s" % (reduce_result_dir[len(TEMP_ROOT_DIRECTORY):], e))
+            self.data["message"] += "Unable to copy to %s - %s. " % (reduce_result_dir[len(TEMP_ROOT_DIRECTORY):], e)
+
+        # Remove temporary working directory
+        try:
+            shutil.rmtree(reduce_result_dir[:-reduce_result_dir_tail_length], ignore_errors=True)
+        except Exception, e:
+            logger.info("Unable to remove temporary directory %s - %s" % reduce_result_dir)
+
 if __name__ == "__main__":
 
     print "\n> In PostProcessAdmin.py\n"
