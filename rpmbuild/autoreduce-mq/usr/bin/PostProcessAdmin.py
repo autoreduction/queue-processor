@@ -16,11 +16,12 @@ logger.addHandler(handler)
 logging.getLogger('stomp').setLevel(logging.INFO)
 
 
-REDUCTION_DIRECTORY = '/isis/NDX%s/user/scripts/autoreduction' # %(instrument)
-ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s' # %(instrument, cycle, experiment_number, run_number)
-CEPH_DIRECTORY = '/instrument/%s/CYCLE20%s/RB%s/autoreduced/%s' # %(instrument, cycle, experiment_number, run_number)
+REDUCTION_DIRECTORY = '/isis/NDX%s/user/scripts/autoreduction'  # %(instrument)
+ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s'  # %(instrument, cycle, experiment_number, run_number)
+CEPH_DIRECTORY = '/instrument/%s/CYCLE20%s/RB%s/autoreduced/%s'  # %(instrument, cycle, experiment_number, run_number)
 TEMP_ROOT_DIRECTORY = '/autoreducetmp'
-CEPH_INSTRUMENTS = ['LET', 'MARI', 'MAPS', 'MERLIN'] # A list of instruments which should save reduced data to CEPH, rather than the archive
+CEPH_INSTRUMENTS = ['LET', 'MARI', 'MAPS', 'MERLIN']  # A list of instruments which should save reduced data to CEPH, rather than the archive
+
 
 def copytree(src, dst):
     if not os.path.exists(dst):
@@ -34,11 +35,13 @@ def copytree(src, dst):
             if not os.path.exists(d) or os.stat(src).st_mtime - os.stat(dst).st_mtime > 1:
                 shutil.copy2(s, d)
 
+
 def linux_to_windows_path(path):
     path = path.replace('/', '\\')
     # '/isis/' maps to '\\isis\inst$\'
     path = path.replace('\\isis\\', '\\\\isis\\inst$\\')
     return path
+
 
 def windows_to_linux_path(path):
     # '\\isis\inst$\' maps to '/isis/'
@@ -46,6 +49,7 @@ def windows_to_linux_path(path):
     path = path.replace('\\\\autoreduce\\data\\', TEMP_ROOT_DIRECTORY+'/data/')
     path = path.replace('\\', '/')
     return path
+
 
 class PostProcessAdmin:
     def __init__(self, data, conf, connection):
@@ -148,16 +152,16 @@ class PostProcessAdmin:
                 instrument_dir = ARCHIVE_DIRECTORY % (self.instrument.upper(), cycle, self.data['rb_number'], self.data['run_number'])
 
             # specify script to run and directory
-            if os.path.exists(os.path.join(self.reduction_script, "reduce.py")) == False:
+            if os.path.exists(os.path.join(self.reduction_script, "reduce.py")) is False:
                 self.data['message'] = "Reduce script doesn't exist within %s" % self.reduction_script
                 logger.error("Reduction script not found within %s" % self.reduction_script)
-                self.client.send(self.conf['reduction_error'] , json.dumps(self.data))  
+                self.client.send(self.conf['reduction_error'], json.dumps(self.data))
                 print "\nCalling: "+self.conf['reduction_error'] + "\n" + json.dumps(self.data) + "\n"
                 logger.debug("Calling: "+self.conf['reduction_error'] + "\n" + json.dumps(self.data))
                 return
             
             # specify directory where autoreduction output goes
-            run_output_dir = TEMP_ROOT_DIRECTORY + instrument_dir[:instrument_dir.find('/'+ str(self.data['run_number']))+1]
+            run_output_dir = TEMP_ROOT_DIRECTORY + instrument_dir[:instrument_dir.find('/' + str(self.data['run_number']))+1]
             reduce_result_dir = TEMP_ROOT_DIRECTORY + instrument_dir + "/results/"
             reduce_result_dir_tail_length = len("/results")
             if not os.path.isdir(reduce_result_dir):
@@ -190,8 +194,8 @@ class PostProcessAdmin:
             sys.stderr = errFile
             reduce_script = self.replace_variables(reduce_script)
             out_directories = reduce_script.main(input_file=str(self.data_file), output_dir=str(reduce_result_dir))
-	    logger.info("this is the reduce results directory %s" % str(reduce_result_dir))
-	    logger.info("this is the entire outdirectories %s" % str(out_directories))
+            logger.info("this is the reduce results directory %s" % str(reduce_result_dir))
+            logger.info("this is the entire outdirectories %s" % str(out_directories))
 
             # Reset outputs back to default
             sys.stdout = sys.__stdout__
@@ -272,8 +276,8 @@ class PostProcessAdmin:
                 lastLine = fp.readlines()[-1]
                 errMsg = lastLine.strip() + ", see reduction_log/" + os.path.basename(out_log) + " or " + os.path.basename(out_err) + " for details."
                 self.data["message"] = "REDUCTION: %s" % errMsg
-                self.client.send(self.conf['reduction_error'] , json.dumps(self.data))
-                logger.error("Called "+self.conf['reduction_error']  + " --- " + json.dumps(self.data))       
+                self.client.send(self.conf['reduction_error'], json.dumps(self.data))
+                logger.error("Called "+self.conf['reduction_error'] + " --- " + json.dumps(self.data))
             
             # Remove temporary working directory
             try:
@@ -285,8 +289,8 @@ class PostProcessAdmin:
         except Exception, e:
             try:
                 self.data["message"] = "REDUCTION Error: %s " % e
-                logger.exception("Called "+self.conf['reduction_error']  + "\nException: " + str(e) + "\nJSON: " + json.dumps(self.data))
-                self.client.send(self.conf['reduction_error'] , json.dumps(self.data))
+                logger.exception("Called "+self.conf['reduction_error'] + "\nException: " + str(e) + "\nJSON: " + json.dumps(self.data))
+                self.client.send(self.conf['reduction_error'], json.dumps(self.data))
             except BaseException, e:
                 print "\nFailed to send to queue!\n%s\n%s" % (e, repr(e))
                 logger.error("Failed to send to queue! - %s - %s" % (e, repr(e)))
@@ -299,7 +303,7 @@ if __name__ == "__main__":
 
         brokers = []
         brokers.append((conf['brokers'].split(':')[0],int(conf['brokers'].split(':')[1])))
-        connection = stomp.Connection(host_and_ports=brokers, use_ssl=True, ssl_version=3 )
+        connection = stomp.Connection(host_and_ports=brokers, use_ssl=True, ssl_version=3)
         connection.start()
         connection.connect(conf['amq_user'], conf['amq_pwd'], wait=True, header={'activemq.prefetchSize': '1',})
 
@@ -325,7 +329,5 @@ if __name__ == "__main__":
             raise
         
     except Exception as er:
-	logger.error("Something went wrong: " + str(er))
+        logger.error("Something went wrong: " + str(er))
         sys.exit()
-
-
