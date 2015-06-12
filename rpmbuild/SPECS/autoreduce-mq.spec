@@ -9,7 +9,6 @@ License: Unknown
 Source: autoreduce-mq.tgz
 Requires: libNeXus.so.0()(64bit) libc.so.6()(64bit) libc.so.6(GLIBC_2.2.5)(64bit)
 Requires: mantid 
-Requires: python-suds 
 Requires: python-stompest 
 Requires: python-stompest.async
 Requires: python-requests
