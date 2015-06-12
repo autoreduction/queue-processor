@@ -9,16 +9,15 @@ DATA_LOC = "\data\cycle_%s\\" % CYCLE_NUM
 SUMMARY_LOC = "\logs\journal\SUMMARY.txt"
 LAST_RUN_LOC = "\logs\lastrun.txt"
 LOG_FILE = "C:\\autoreduce\\scripts\\EndOfRunMonitor\\monitor_log.txt"
-USE_NXS = True
-INSTRUMENTS = ['LET']
+INSTRUMENTS = [{'name': 'LET', 'use_nexus': True}, {'name': 'MERLIN', 'use_nexus': False}]
 TIME_CONSTANT = 1  # Time between file reads (in seconds)
 DEBUG = False
 logging.basicConfig(filename=LOG_FILE, level=logging.INFO, format='%(asctime)s %(message)s')
 
 
-def get_file_extension():
-    """ Choose the data extension based on the global boolean"""
-    if USE_NXS:
+def get_file_extension(use_nxs):
+    """ Choose the data extension based on the boolean"""
+    if use_nxs:
         return ".nxs"
     else:
         return ".raw"
@@ -33,12 +32,13 @@ def get_data_and_check(last_run_file):
 
 
 class InstrumentMonitor(threading.Thread):
-    def __init__(self, instrument_name, client, lock):
+    def __init__(self, instrument_name, use_nexus, client, lock):
         super(InstrumentMonitor, self).__init__()
         self.client = client
+        self.use_nexus = use_nexus
         self.instrumentName = instrument_name
         if DEBUG:
-            self.instrumentFolder = '.'
+            self.instrumentFolder = '.\\' + self.instrumentName
         else:
             self.instrumentFolder = INST_FOLDER % self.instrumentName
         self.instrumentSummaryLoc = self.instrumentFolder + SUMMARY_LOC
@@ -51,7 +51,7 @@ class InstrumentMonitor(threading.Thread):
         and last line of the summary text file to build the query 
         """
         filename = ''.join(last_run_data[0:2])  # so MER111 etc
-        run_data_loc = self.instrumentDataFolderLoc + filename + get_file_extension()
+        run_data_loc = self.instrumentDataFolderLoc + filename + get_file_extension(self.use_nexus)
         return {
             "rb_number": self._get_RB_num(),
             "instrument": self.instrumentName,
@@ -104,7 +104,7 @@ def main():
 
     message_lock = threading.Lock()
     for inst in INSTRUMENTS:
-        file_monitor = InstrumentMonitor(inst, activemq_client, message_lock)
+        file_monitor = InstrumentMonitor(inst['name'], inst['use_nexus'], activemq_client, message_lock)
         file_monitor.start()
 
 if __name__ == "__main__":
