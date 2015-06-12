@@ -5,6 +5,8 @@ This script periodically checks the lastrun.txt file on selected instruments and
 
 ## Windows Installation as a service
 
+Python modules required: pywin32 and stomp.py
+
 1. In an administrative command prompt navigate to the autoreduce_webapp folder
 2. `python ISIS_monitor_win_service.py install`
 3. Open Services, right click on "Autoreduce Instrument Monitor" and select Properties
