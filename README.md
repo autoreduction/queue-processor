@@ -62,7 +62,8 @@ ActiveMQ logs can by default be found in /activemq-install-dir/data.
 
 3.  Create and install the RPM
 
-        sudo ISISPostProcessRPM/rpmbuild/make-autoreduce-rpm.sh
+        cd ISISPostProcessRPM/rpmbuild/
+        sudo ./make-autoreduce-rpm.sh
         sudo rpm -i ~/rpmbuild/RPMS/x86_64/autoreduce-mq-1.3-16.x86_64.rpm
 
 4.  Modify the address "brokers" in /etc/autoreduce/post_process_consumer.conf to point to ActiveMQ address 
