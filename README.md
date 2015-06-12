@@ -2,7 +2,7 @@
 
 ## Red Hat 7
 
-Please see: http://download.mantidproject.org/redhat.html
+First install Mantid using: http://download.mantidproject.org/redhat.html
 
 ### ActiveMQ
 
