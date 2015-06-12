@@ -2,7 +2,7 @@
 
 ## Red Hat 7
 
-Please see: http://www.mantidproject.org/Installing_Mantid_Via_Yum#ISIS_RHEL7_.28beta.29
+Please see: http://download.mantidproject.org/redhat.html
 
 ### ActiveMQ
 
