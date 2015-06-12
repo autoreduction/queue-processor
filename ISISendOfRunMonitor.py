@@ -99,7 +99,7 @@ class InstrumentMonitor(threading.Thread):
 
 
 def main():
-    activemq_client = StompClient([("autoreduce.isis.cclrc.ac.uk", 61613)], 'autoreduce', '1^G8r2b$(6', 'RUN_BACKLOG')
+    activemq_client = StompClient([("autoreduce.isis.cclrc.ac.uk", 61613)], 'autoreduce', 'xxxxxxxxx', 'RUN_BACKLOG')
     activemq_client.connect()
 
     message_lock = threading.Lock()
