@@ -4,6 +4,7 @@ Post Process Administrator. It kicks off cataloging and reduction jobs.
 """
 import logging, json, socket, os, sys, subprocess, time, shutil, imp, stomp, re
 import logging.handlers
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 handler = logging.handlers.RotatingFileHandler('/var/log/autoreduction.log', maxBytes=104857600, backupCount=20)
@@ -14,11 +15,13 @@ logger.addHandler(handler)
 # Quite the Stomp logs as they are quite chatty
 logging.getLogger('stomp').setLevel(logging.INFO)
 
-REDUCTION_DIRECTORY = '/isis/NDX%s/user/scripts/autoreduction' # %(instrument)
-#ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s' # %(instrument, cycle, experiment_number, run_number)
-#Archive not being used for any instruments currently.
-CEPH_DIRECTORY = '/instrument/%s/CYCLE20%s/RB%s/autoreduced/%s' # %(instrument, cycle, experiment_number, run_number)
+
+REDUCTION_DIRECTORY = '/isis/NDX%s/user/scripts/autoreduction'  # %(instrument)
+ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s'  # %(instrument, cycle, experiment_number, run_number)
+CEPH_DIRECTORY = '/instrument/%s/CYCLE20%s/RB%s/autoreduced/%s'  # %(instrument, cycle, experiment_number, run_number)
 TEMP_ROOT_DIRECTORY = '/autoreducetmp'
+CEPH_INSTRUMENTS = ['LET', 'MARI', 'MAPS', 'MERLIN']  # A list of instruments which should save reduced data to CEPH, rather than the archive
+
 
 def copytree(src, dst):
     if not os.path.exists(dst):
@@ -32,11 +35,13 @@ def copytree(src, dst):
             if not os.path.exists(d) or os.stat(src).st_mtime - os.stat(dst).st_mtime > 1:
                 shutil.copy2(s, d)
 
+
 def linux_to_windows_path(path):
     path = path.replace('/', '\\')
     # '/isis/' maps to '\\isis\inst$\'
     path = path.replace('\\isis\\', '\\\\isis\\inst$\\')
     return path
+
 
 def windows_to_linux_path(path):
     # '\\isis\inst$\' maps to '/isis/'
@@ -44,6 +49,7 @@ def windows_to_linux_path(path):
     path = path.replace('\\\\autoreduce\\data\\', TEMP_ROOT_DIRECTORY+'/data/')
     path = path.replace('\\', '/')
     return path
+
 
 class PostProcessAdmin:
     def __init__(self, data, conf, connection):
@@ -137,21 +143,25 @@ class PostProcessAdmin:
             logger.debug("Calling: " + self.conf['reduction_started'] + "\n" + json.dumps(self.data))
             self.client.send(self.conf['reduction_started'], json.dumps(self.data))
 
-            # specify instrument directory  
-            cycle = re.sub('[_]','',(re.match('.*cycle_(\d\d_\d).*', self.data['data'].lower()).group(1)))
-            instrument_dir = CEPH_DIRECTORY % (self.instrument.upper(), cycle, self.data['rb_number'], self.data['run_number'])
-	    
+            # specify instrument directory
+            cycle = re.match(r'.*cycle_(\d\d_\d).*', self.data_file.lower()).group(1)
+            if self.instrument.upper() in CEPH_INSTRUMENTS:
+                cycle = re.sub('[_]', '', cycle)
+                instrument_dir = CEPH_DIRECTORY % (self.instrument.upper(), cycle, self.data['rb_number'], self.data['run_number'])
+            else:
+                instrument_dir = ARCHIVE_DIRECTORY % (self.instrument.upper(), cycle, self.data['rb_number'], self.data['run_number'])
+
             # specify script to run and directory
-            if os.path.exists(os.path.join(self.reduction_script, "reduce.py")) == False:
+            if os.path.exists(os.path.join(self.reduction_script, "reduce.py")) is False:
                 self.data['message'] = "Reduce script doesn't exist within %s" % self.reduction_script
                 logger.info("Reduction script not found within %s" % self.reduction_script)
-                self.client.send(self.conf['reduction_error'] , json.dumps(self.data))  
+                self.client.send(self.conf['reduction_error'], json.dumps(self.data))
                 print "\nCalling: "+self.conf['reduction_error'] + "\n" + json.dumps(self.data) + "\n"
                 logger.debug("Calling: "+self.conf['reduction_error'] + "\n" + json.dumps(self.data))
                 return
             
             # specify directory where autoreduction output goes
-            run_output_dir = TEMP_ROOT_DIRECTORY + instrument_dir[:instrument_dir.find('/'+ str(self.data['run_number']))+1]
+            run_output_dir = TEMP_ROOT_DIRECTORY + instrument_dir[:instrument_dir.find('/' + str(self.data['run_number']))+1]
             reduce_result_dir = TEMP_ROOT_DIRECTORY + instrument_dir + "/results/"
             reduce_result_dir_tail_length = len("/results")
             if not os.path.isdir(reduce_result_dir):
@@ -223,9 +233,7 @@ class PostProcessAdmin:
                                 self.log_and_message("Unable to copy %s to %s - %s" % (run_output_dir[:-1], out_dir, e))
                         else:
                             logger.info("Unable to access directory: %s" % out_dir)
-
-            self.copy_temp_directory(reduce_result_dir, reduce_result_dir_tail_length)
-
+                            
             if os.stat(out_err).st_size == 0:
                 os.remove(out_err)
                 self.client.send(self.conf['reduction_complete'] , json.dumps(self.data))
@@ -240,12 +248,14 @@ class PostProcessAdmin:
                 self.client.send(self.conf['reduction_error'], json.dumps(self.data))
                 logger.info("Called "+self.conf['reduction_error'] + " --- " + json.dumps(self.data))
 
+            self.copy_temp_directory(reduce_result_dir, reduce_result_dir_tail_length)
+
             logger.info("Reduction job complete")
         except Exception, e:
             try:
                 self.data["message"] = "REDUCTION Error: %s " % e
-                logger.exception("Called "+self.conf['reduction_error']  + "\nException: " + str(e) + "\nJSON: " + json.dumps(self.data))
-                self.client.send(self.conf['reduction_error'] , json.dumps(self.data))
+                logger.exception("Called "+self.conf['reduction_error'] + "\nException: " + str(e) + "\nJSON: " + json.dumps(self.data))
+                self.client.send(self.conf['reduction_error'], json.dumps(self.data))
             except BaseException, e:
                 print "\nFailed to send to queue!\n%s\n%s" % (e, repr(e))
                 logger.info("Failed to send to queue! - %s - %s" % (e, repr(e)))
@@ -284,7 +294,6 @@ class PostProcessAdmin:
         self.data["message"] += message
 
 if __name__ == "__main__":
-
     print "\n> In PostProcessAdmin.py\n"
 
     try:
@@ -292,9 +301,9 @@ if __name__ == "__main__":
 
         brokers = []
         brokers.append((conf['brokers'].split(':')[0],int(conf['brokers'].split(':')[1])))
-        connection = stomp.Connection(host_and_ports=brokers, use_ssl=True, ssl_version=3 )
+        connection = stomp.Connection(host_and_ports=brokers, use_ssl=True, ssl_version=3)
         connection.start()
-        connection.connect(conf['amq_user'], conf['amq_pwd'], wait=False, header={'activemq.prefetchSize': '1',})
+        connection.connect(conf['amq_user'], conf['amq_pwd'], wait=True, header={'activemq.prefetchSize': '1',})
 
         destination, message = sys.argv[1:3]
         print("destination: " + destination)
@@ -317,8 +326,6 @@ if __name__ == "__main__":
         except:
             raise
         
-    except Error as er:
-	logger.info("Something went wrong: " + str(er))
+    except Exception as er:
+        logger.info("Something went wrong: " + str(er))
         sys.exit()
-
-
