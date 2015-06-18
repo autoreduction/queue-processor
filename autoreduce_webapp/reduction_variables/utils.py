@@ -181,6 +181,29 @@ class InstrumentVariablesUtils(object):
             notification.save()
             return None, None
 
+    def __check_script_up_to_date(self, variables):
+        """
+        Reloads script in variables to match that on disk (inefficient)
+        """
+        variable = variables[0]  # Script will be the same for all variables
+
+        #script_mod, script_vars_mod = ScriptUtils.get_script_modified(variable.scripts)
+
+        script_binary = self.__load_reduction_script(variable.instrument.name)
+        reduce_vars_script, vars_script_binary = self.__load_reduction_vars_script(variable.instrument.name)
+
+        script = ScriptFile(script=script_binary, file_name='reduce.py')
+        script.save()
+        script_vars = ScriptFile(script=vars_script_binary, file_name='reduce_vars.py')
+        script_vars.save()
+
+        for variable in variables:
+            variable.scripts.add(script)
+            variable.scripts.add(script_vars)
+            variable.save()
+
+        return variables
+
     def set_default_instrument_variables(self, instrument_name, start_run=1):
         """
         Creates and saves a set of variables for the given run number using default values found in the relevant reduce script and returns them.
@@ -224,6 +247,7 @@ class InstrumentVariablesUtils(object):
             except AttributeError:
                 # Still not found any variables, we better create some
                 variables = self.set_default_instrument_variables(reduction_run.instrument.name)
+        variables = self.__check_script_up_to_date(variables)  # For the moment reload script on all new runs
         return variables
 
     def get_current_script_text(self, instrument_name):
@@ -405,3 +429,13 @@ class ScriptUtils(object):
             elif script.file_name == "reduce_vars.py":
                 script_vars_binary = script.script
         return script_binary, script_vars_binary
+
+    def get_script_modified(self, scripts):
+        script_modified = None
+        script_vars_modified = None
+        for script in scripts:
+            if script.file_name == "reduce.py":
+                script_modified = script.created
+            elif script.file_name == "reduce_vars.py":
+                script_vars_modified = script.created
+        return script_modified, script_vars_modified
