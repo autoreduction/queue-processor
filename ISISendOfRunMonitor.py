@@ -3,13 +3,18 @@ from Stomp_Client import StompClient
 import threading
 
 # Config settings for cycle number, and instrument file arrangement
-CYCLE_NUM = "14_3"
+CYCLE_NUM = ""
 INST_FOLDER = "\\\\isis\inst$\NDX%s\Instrument"
-DATA_LOC = "\data\cycle_%s\\" % CYCLE_NUM
+DATA_LOC = "\data\cycle_%s\\"
 SUMMARY_LOC = "\logs\journal\SUMMARY.txt"
 LAST_RUN_LOC = "\logs\lastrun.txt"
-LOG_FILE = "C:\\autoreduce\\scripts\\EndOfRunMonitor\\monitor_log.txt"
-INSTRUMENTS = [{'name': 'LET', 'use_nexus': True}, {'name': 'MERLIN', 'use_nexus': False}]
+LOG_FILE = "C:\\monitor_log.txt"
+INSTRUMENTS = [{'name': 'LET', 'use_nexus': True},
+               {'name': 'MERLIN', 'use_nexus': False},
+               {'name': 'MARI', 'use_nexus': False},
+               {'name': 'MAPS', 'use_nexus': True},
+               {'name': 'WISH', 'use_nexus': True},
+               {'name': 'GEM', 'use_nexus': True}]
 TIME_CONSTANT = 1  # Time between file reads (in seconds)
 DEBUG = False
 logging.basicConfig(filename=LOG_FILE, level=logging.INFO, format='%(asctime)s %(message)s')
@@ -43,9 +48,17 @@ class InstrumentMonitor(threading.Thread):
             self.instrumentFolder = INST_FOLDER % self.instrumentName
         self.instrumentSummaryLoc = self.instrumentFolder + SUMMARY_LOC
         self.instrumentLastRunLoc = self.instrumentFolder + LAST_RUN_LOC
-        self.instrumentDataFolderLoc = self.instrumentFolder + DATA_LOC
+        self.instrumentDataFolderLoc = self.instrumentFolder + DATA_LOC % self._get_most_recent_cycle()
         self.lock = lock
-        
+
+    def _get_most_recent_cycle(self):
+        folders = os.listdir(self.instrumentFolder + '\logs\\')
+        cycle_folders = [f for f in folders if f.startswith('cycle')]
+
+        # List should have most recent cycle at the end
+        most_recent = cycle_folders[-1]
+        return most_recent[most_recent.find('_')+1:]
+
     def build_dict(self, last_run_data):
         """ Uses information from lastRun file, 
         and last line of the summary text file to build the query 
