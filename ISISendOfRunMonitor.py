@@ -3,7 +3,6 @@ from Stomp_Client import StompClient
 import threading
 
 # Config settings for cycle number, and instrument file arrangement
-CYCLE_NUM = ""
 INST_FOLDER = "\\\\isis\inst$\NDX%s\Instrument"
 DATA_LOC = "\data\cycle_%s\\"
 SUMMARY_LOC = "\logs\journal\SUMMARY.txt"
