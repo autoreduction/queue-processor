@@ -187,6 +187,7 @@ class InstrumentVariablesUtils(object):
         """
 
         logging.info("Reloading script from disk")
+        logger.info("Reloading script from disk")
 
         variable = variables[0]  # Script will be the same for all variables
 
