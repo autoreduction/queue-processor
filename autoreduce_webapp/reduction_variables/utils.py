@@ -191,6 +191,16 @@ class InstrumentVariablesUtils(object):
         script_vars_mod_time = os.path.getmtime(reduction_file)
         return script_mod_time, script_vars_mod_time
 
+    def __add_new_script_to_variables(self, variables, script_binary, script_name):
+        """
+        Helper method to save a new script into the database and update a set of instrument variables with the script
+        """
+        script = ScriptFile(script=script_binary, file_name=script_name)
+        script.save()
+        for variable in variables:
+            variable.scripts.add(script)
+            variable.save()
+
     def __check_script_up_to_date(self, variables):
         """
         Reloads script in variables to match that on disk (inefficient)
@@ -210,18 +220,15 @@ class InstrumentVariablesUtils(object):
         logging.info("Vars cache modded %s" % script_vars_cache_mod)
         logging.info("Vars file modded %s" % script_vars_file_mod)
 
-        script_binary = self.__load_reduction_script(variable.instrument.name)
-        reduce_vars_script, vars_script_binary = self.__load_reduction_vars_script(variable.instrument.name)
+        if script_cache_mod < script_file_mod:
+            logging.info("Reduce.py script out of date, reloading")
+            script_binary = self.__load_reduction_script(variable.instrument.name)
+            self.__add_new_script_to_variables(variables, script_binary, 'reduce.py')
 
-        script = ScriptFile(script=script_binary, file_name='reduce.py')
-        script.save()
-        script_vars = ScriptFile(script=vars_script_binary, file_name='reduce_vars.py')
-        script_vars.save()
-
-        for variable in variables:
-            variable.scripts.add(script)
-            variable.scripts.add(script_vars)
-            variable.save()
+        if script_vars_cache_mod < script_vars_file_mod:
+            logging.info("Reduce_vars.py script out of date, reloading")
+            reduce_vars_script, vars_script_binary = self.__load_reduction_vars_script(variable.instrument.name)
+            self.__add_new_script_to_variables(variables, vars_script_binary, 'reduce_vars.py')
 
         return variables
 
