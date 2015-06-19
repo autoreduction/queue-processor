@@ -36,6 +36,16 @@ def write_script_to_temp(script, script_vars_file):
         raise e
     return script_path
 
+
+def log_error_and_notify(message):
+    """
+    Helper method to log an error and save a notifcation
+    """
+    logger.error(message)
+    notification = Notification(is_active=True, is_staff_only=True, severity='e', message=message)
+    notification.save()
+
+
 class VariableUtils(object):
     def wrap_in_type_syntax(self, value, var_type):
         """
@@ -124,6 +134,7 @@ class VariableUtils(object):
             return "list_" + list_type
         return "text"
 
+
 class InstrumentVariablesUtils(object):
     def __load_reduction_script(self, instrument_name):
         """
@@ -135,21 +146,15 @@ class InstrumentVariablesUtils(object):
         try:
             f = open(reduction_file, 'rb')
             script_binary = f.read()
-            return  script_binary
+            return script_binary
         except ImportError, e:
-            logger.error("Unable to load reduction script %s due to missing import. (%s)" % (reduction_file, e.message))
-            notification = Notification(is_active=True, is_staff_only=True,severity='e', message="Unable to open reduction script for %s due to import error. (%s)" % (instrument_name, e.message))
-            notification.save()
+            log_error_and_notify("Unable to load reduction script %s due to missing import. (%s)" % (reduction_file, e.message))
             return None
         except IOError:
-            logger.error("Unable to load reduction script %s" % reduction_file)
-            notification = Notification(is_active=True, is_staff_only=True,severity='e', message="Unable to open reduction script for %s" % instrument_name)
-            notification.save()
+            log_error_and_notify("Unable to load reduction script %s" % reduction_file)
             return None
         except SyntaxError:
-            logger.error("Syntax error in reduction script %s" % reduction_file)
-            notification = Notification(is_active=True, is_staff_only=True,severity='e', message="Syntax error in reduction script for %s" % instrument_name)
-            notification.save()
+            log_error_and_notify("Syntax error in reduction script %s" % reduction_file)
             return None
 
     def __load_reduction_vars_script(self, instrument_name):
@@ -166,28 +171,22 @@ class InstrumentVariablesUtils(object):
             script_binary = f.read()
             return reduce_script, script_binary
         except ImportError, e:
-            logger.error("Unable to load reduction script %s due to missing import. (%s)" % (reduction_file, e.message))
-            notification = Notification(is_active=True, is_staff_only=True,severity='e', message="Unable to open reduction script for %s due to import error. (%s)" % (instrument_name, e.message))
-            notification.save()
+            log_error_and_notify("Unable to load reduction script %s due to missing import. (%s)" % (reduction_file, e.message))
             return None, None
         except IOError:
-            logger.error("Unable to load reduction script %s" % reduction_file)
-            notification = Notification(is_active=True, is_staff_only=True,severity='e', message="Unable to open reduction script for %s" % instrument_name)
-            notification.save()
+            log_error_and_notify("Unable to load reduction script %s" % reduction_file)
             return None, None
         except SyntaxError:
-            logger.error("Syntax error in reduction script %s" % reduction_file)
-            notification = Notification(is_active=True, is_staff_only=True,severity='e', message="Syntax error in reduction script for %s" % instrument_name)
-            notification.save()
+            log_error_and_notify("Syntax error in reduction script %s" % reduction_file)
             return None, None
 
     def __get_scripts_modified(self, instrument_name):
         """
         Returns the last modification time of the scripts located in the filesystem
         """
-        reduction_file = os.path.join((REDUCTION_DIRECTORY % (instrument_name)), "reduce.py")
+        reduction_file = os.path.join((REDUCTION_DIRECTORY % instrument_name), "reduce.py")
         script_mod_time = os.path.getmtime(reduction_file)
-        reduction_file = os.path.join((REDUCTION_DIRECTORY % (instrument_name)), "reduce_vars.py")
+        reduction_file = os.path.join((REDUCTION_DIRECTORY % instrument_name), "reduce_vars.py")
         script_vars_mod_time = os.path.getmtime(reduction_file)
         return script_mod_time, script_vars_mod_time
 
