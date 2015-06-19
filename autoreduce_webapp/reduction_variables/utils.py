@@ -209,23 +209,13 @@ class InstrumentVariablesUtils(object):
         script_cache_mod, script_vars_cache_mod = ScriptUtils().get_cache_scripts_modified(variable.scripts.all())
         script_file_mod, script_vars_file_mod = self.__get_scripts_modified(variable.instrument.name)
 
-        logger.info("Reduce cache modded %s" % script_cache_mod)
-        logger.info("Reduce file modded %s" % script_file_mod)
-        logging.info("Reduce cache modded %s" % script_cache_mod)
-        logging.info("Reduce file modded %s" % script_file_mod)
-
-        logger.info("Vars cache modded %s" % script_vars_cache_mod)
-        logger.info("Vars file modded %s" % script_vars_file_mod)
-        logging.info("Vars cache modded %s" % script_vars_cache_mod)
-        logging.info("Vars file modded %s" % script_vars_file_mod)
-
         if script_cache_mod < script_file_mod:
-            logging.info("Reduce.py script out of date, reloading")
+            logger.info("Reduce.py script out of date, reloading")
             script_binary = self.__load_reduction_script(variable.instrument.name)
             self.__add_new_script_to_variables(variables, script_binary, 'reduce.py')
 
         if script_vars_cache_mod < script_vars_file_mod:
-            logging.info("Reduce_vars.py script out of date, reloading")
+            logger.info("Reduce_vars.py script out of date, reloading")
             reduce_vars_script, vars_script_binary = self.__load_reduction_vars_script(variable.instrument.name)
             self.__add_new_script_to_variables(variables, vars_script_binary, 'reduce_vars.py')
 
