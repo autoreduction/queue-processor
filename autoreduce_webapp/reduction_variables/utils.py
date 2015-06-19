@@ -181,17 +181,30 @@ class InstrumentVariablesUtils(object):
             notification.save()
             return None, None
 
+    def __get_scripts_modified(self, instrument_name):
+        """
+        Returns the last modification time of the scripts located in the filesystem
+        """
+        reduction_file = os.path.join((REDUCTION_DIRECTORY % (instrument_name)), "reduce.py")
+        script_mod_time = os.path.getmtime(reduction_file)
+        reduction_file = os.path.join((REDUCTION_DIRECTORY % (instrument_name)), "reduce_vars.py")
+        script_vars_mod_time = os.path.getmtime(reduction_file)
+        return script_mod_time, script_vars_mod_time
+
     def __check_script_up_to_date(self, variables):
         """
         Reloads script in variables to match that on disk (inefficient)
         """
+        variable = variables[0]  # Assume script will be the same for all variables
 
-        logging.info("Reloading script from disk")
-        logger.info("Reloading script from disk")
+        script_cache_mod, script_vars_cache_mod = ScriptUtils.get_script_modified(variable.scripts)
+        script_file_mod, script_vars_file_mod = self.__get_script_modified(variable.instrument.name)
 
-        variable = variables[0]  # Script will be the same for all variables
+        logger.info("Reduce cache modded %s" % script_cache_mod)
+        logger.info("Reduce file modded %s" % script_file_mod)
 
-        #script_mod, script_vars_mod = ScriptUtils.get_script_modified(variable.scripts)
+        logger.info("Vars cache modded %s" % script_vars_cache_mod)
+        logger.info("Vars file modded %s" % script_vars_file_mod)
 
         script_binary = self.__load_reduction_script(variable.instrument.name)
         reduce_vars_script, vars_script_binary = self.__load_reduction_vars_script(variable.instrument.name)
