@@ -457,10 +457,15 @@ class ScriptUtils(object):
         """
         script_modified = None
         script_vars_modified = None
-        time_format = "%Y-%m-%d %H:%M:%S"
+
         for script in scripts:
             if script.file_name == "reduce.py":
-                script_modified = int(time.mktime(time.strptime(script.created, time_format)))
+                script_modified = self._convert_time_from_string(str(script.created))
             elif script.file_name == "reduce_vars.py":
-                script_vars_modified = int(time.mktime(time.strptime(script.created, time_format)))
+                script_vars_modified = self._convert_time_from_string(str(script.created))
         return script_modified, script_vars_modified
+
+    def _convert_time_from_string(self, string_time):
+        time_format = "%Y-%m-%d %H:%M:%S"
+        string_time = string_time[:string_time.find('+')]
+        return int(time.mktime(time.strptime(string_time, time_format)))
