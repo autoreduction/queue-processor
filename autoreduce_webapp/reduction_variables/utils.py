@@ -1,4 +1,4 @@
-import logging, os, sys, imp, uuid, re, json
+import logging, os, sys, imp, uuid, re, json, time
 sys.path.append(os.path.join("../", os.path.dirname(os.path.dirname(__file__))))
 os.environ["DJANGO_SETTINGS_MODULE"] = "autoreduce_webapp.settings"
 from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL, BASE_DIR, ACTIVEMQ, TEMP_OUTPUT_DIRECTORY, REDUCTION_DIRECTORY, FACILITY
@@ -197,8 +197,8 @@ class InstrumentVariablesUtils(object):
         """
         variable = variables[0]  # Assume script will be the same for all variables
 
-        script_cache_mod, script_vars_cache_mod = ScriptUtils.get_script_modified(variable.scripts)
-        script_file_mod, script_vars_file_mod = self.__get_script_modified(variable.instrument.name)
+        script_cache_mod, script_vars_cache_mod = ScriptUtils().get_cache_scripts_modified(variable.scripts.all())
+        script_file_mod, script_vars_file_mod = self.__get_scripts_modified(variable.instrument.name)
 
         logger.info("Reduce cache modded %s" % script_cache_mod)
         logger.info("Reduce file modded %s" % script_file_mod)
@@ -451,12 +451,16 @@ class ScriptUtils(object):
                 script_vars_binary = script.script
         return script_binary, script_vars_binary
 
-    def get_script_modified(self, scripts):
+    def get_cache_scripts_modified(self, scripts):
+        """
+        Returns the last time the scripts in the database were modified (in seconds since epoch).
+        """
         script_modified = None
         script_vars_modified = None
+        time_format = "%Y-%m-%d %H:%M:%S"
         for script in scripts:
             if script.file_name == "reduce.py":
-                script_modified = script.created
+                script_modified = int(time.mktime(time.strptime(script.created, time_format)))
             elif script.file_name == "reduce_vars.py":
-                script_vars_modified = script.created
+                script_vars_modified = int(time.mktime(time.strptime(script.created, time_format)))
         return script_modified, script_vars_modified
