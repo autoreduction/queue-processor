@@ -185,6 +185,9 @@ class InstrumentVariablesUtils(object):
         """
         Reloads script in variables to match that on disk (inefficient)
         """
+
+        logging.info("Reloading script from disk")
+
         variable = variables[0]  # Script will be the same for all variables
 
         #script_mod, script_vars_mod = ScriptUtils.get_script_modified(variable.scripts)
