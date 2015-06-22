@@ -2,7 +2,7 @@
 """
 Post Process Administrator. It kicks off cataloging and reduction jobs.
 """
-import logging, json, socket, os, sys, subprocess, time, shutil, imp, stomp, re
+import logging, json, socket, os, sys, subprocess, time, shutil, imp, stomp, re, errno
 import logging.handlers
 
 logger = logging.getLogger(__name__)
@@ -269,24 +269,8 @@ class PostProcessAdmin:
         exists"""
         copy_destination = reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-reduce_result_dir_tail_length]
 
-        # Confirm the directory has been deleted (rmtree was taking some time if the folder was open elsewhere)
-        retry_delete = True
-        for sleep in [0, 0.1, 0.2, 0.5, 1, 2, 5, 10]:
-            time.sleep(sleep)
-            if os.path.isdir(copy_destination):
-                # Limit number of delete retries as don't want to queue too many
-                if retry_delete:
-                    try:
-                        shutil.rmtree(copy_destination)
-                        retry_delete = False
-                    except Exception, e:
-                        retry_delete = True
-            else:
-                logger.info("Path deleted after sleeping %s" % sleep)
-                break
-        else:
-            # File has still not been deleted
-            self.log_and_message("Unable to remove existing directory %s" % copy_destination)
+        if os.path.isdir(copy_destination):
+            self._remove_directory(copy_destination)
 
         try:
             os.makedirs(copy_destination)
@@ -312,6 +296,37 @@ class PostProcessAdmin:
         if self.data["message"] == "":
             # Only send back first message as there is a char limit
             self.data["message"] = message
+
+    def _remove_with_wait(self, remove_folder, full_path):
+        """ Removes a folder or file and waits for it to be removed
+        """
+        for sleep in [0, 0.1, 0.2, 0.5, 1]:
+            try:
+                if remove_folder:
+                    os.removedirs(full_path)
+                else:
+                    os.remove(full_path)
+            except Exception as e:
+                if e.errno == errno.ENOENT:
+                    # File has been deleted
+                    logger.info("%s deleted after sleeping %s" % (full_path, sleep))
+                    break
+            time.sleep(sleep)
+
+    def _remove_directory(self, directory):
+        """ Helper function to remove a directory. shutil.rmtree cannot be used as it is not robust enough when folders
+        are open over the network.
+        """
+        try:
+            for file in os.listdir(directory):
+                full_path = os.path.join(directory, file)
+                if os.path.isdir(full_path):
+                    self._remove_directory(full_path)
+                else:
+                    self._remove_with_wait(False, full_path)
+            self._remove_with_wait(True, directory)
+        except Exception as e:
+            self.log_and_message("Unable to remove existing directory %s - %s" % (directory, e))
 
 if __name__ == "__main__":
     print "\n> In PostProcessAdmin.py\n"
