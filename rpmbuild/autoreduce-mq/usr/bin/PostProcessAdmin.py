@@ -266,23 +266,25 @@ class PostProcessAdmin:
         copy_destination = reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-reduce_result_dir_tail_length]
 
         # Repeat to confirm the directory has been deleted (rmtree was taking some time if the folder was open elsewhere)
-        for sleep in [0.1, 0.2, 0.5, 1]:
+        for sleep in [0, 0.1, 0.2, 0.5, 1]:
+            time.sleep(sleep)
             if os.path.isdir(copy_destination):
                 try:
                     shutil.rmtree(copy_destination, ignore_errors=True)
                 except Exception, e:
-                    logger.info("Unable to remove existing directory %s - %s" % (copy_destination, e))
+                    self.log_and_message("Unable to remove existing directory %s - %s" % (copy_destination, e))
                     break
             else:
                 break
-            time.sleep(sleep)
+        else:
+            # File has still not been deleted and no exceptions have been thrown
+            self.log_and_message("Unable to remove existing directory %s" % copy_destination)
 
         try:
             os.makedirs(copy_destination)
         except Exception, e:
             self.log_and_message("Unable to create %s - %s. " % (copy_destination, e))
 
-        # [4,-8] is used to remove the prepending '/tmp' and the trailing 'results/' from the destination
         self.data['reduction_data'].append(linux_to_windows_path(copy_destination))
         logger.info("Moving %s to %s" % (reduce_result_dir[:-1], copy_destination))
         try:
