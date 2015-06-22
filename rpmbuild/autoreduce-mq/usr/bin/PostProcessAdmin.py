@@ -264,11 +264,19 @@ class PostProcessAdmin:
         """ Method that copies the temporary files held in results_directory to CEPH/archive, replacing old data if it
         exists"""
         copy_destination = reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-reduce_result_dir_tail_length]
-        if os.path.isdir(copy_destination):
-            try:
-                shutil.rmtree(copy_destination, ignore_errors=True)
-            except Exception, e:
-                logger.info("Unable to remove existing directory %s - %s" % (copy_destination, e))
+
+        # Repeat to confirm the directory has been deleted (rmtree was taking some time if the folder was open elsewhere)
+        for sleep in [0.1, 0.2, 0.5, 1]:
+            if os.path.isdir(copy_destination):
+                try:
+                    shutil.rmtree(copy_destination, ignore_errors=True)
+                except Exception, e:
+                    logger.info("Unable to remove existing directory %s - %s" % (copy_destination, e))
+                    break
+            else:
+                break
+            time.sleep(sleep)
+
         try:
             os.makedirs(copy_destination)
         except Exception, e:
