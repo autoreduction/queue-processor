@@ -300,7 +300,7 @@ class PostProcessAdmin:
     def _remove_with_wait(self, remove_folder, full_path):
         """ Removes a folder or file and waits for it to be removed
         """
-        for sleep in [0, 0.1, 0.2, 0.5, 1]:
+        for sleep in [0, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20]:
             try:
                 if remove_folder:
                     os.removedirs(full_path)
@@ -309,9 +309,10 @@ class PostProcessAdmin:
             except Exception as e:
                 if e.errno == errno.ENOENT:
                     # File has been deleted
-                    logger.info("%s deleted after sleeping %s" % (full_path, sleep))
                     break
             time.sleep(sleep)
+        else:
+            self.log_and_message("Failed to delete %s" % full_path)
 
     def _remove_directory(self, directory):
         """ Helper function to remove a directory. shutil.rmtree cannot be used as it is not robust enough when folders
