@@ -269,16 +269,19 @@ class PostProcessAdmin:
         exists"""
         copy_destination = reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-reduce_result_dir_tail_length]
 
-        if os.path.isdir(copy_destination):
-            try:
-                shutil.rmtree(copy_destination, ignore_errors=True)
-            except Exception, e:
-                self.log_and_message("Unable to remove existing directory %s - %s" % (copy_destination, e))
-
         # Confirm the directory has been deleted (rmtree was taking some time if the folder was open elsewhere)
+        retry_delete = True
         for sleep in [0, 0.1, 0.2, 0.5, 1, 2, 5, 10]:
             time.sleep(sleep)
-            if not os.path.isdir(copy_destination):
+            if os.path.isdir(copy_destination):
+                # Limit number of delete retries as don't want to queue too many
+                if retry_delete:
+                    try:
+                        shutil.rmtree(copy_destination)
+                        retry_delete = False
+                    except Exception, e:
+                        retry_delete = True
+            else:
                 logger.info("Path deleted after sleeping %s" % sleep)
                 break
         else:
