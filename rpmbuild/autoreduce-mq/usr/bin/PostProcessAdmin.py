@@ -270,7 +270,7 @@ class PostProcessAdmin:
         copy_destination = reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-reduce_result_dir_tail_length]
 
         # Repeat to confirm the directory has been deleted (rmtree was taking some time if the folder was open elsewhere)
-        for sleep in [0, 0.1, 0.2, 0.5, 1]:
+        for sleep in [0, 0.1, 0.2, 0.5, 1, 2, 5, 10]:
             time.sleep(sleep)
             if os.path.isdir(copy_destination):
                 try:
