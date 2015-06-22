@@ -305,7 +305,9 @@ class PostProcessAdmin:
     def log_and_message(self, message):
         """Helper function to add text to the outgoing activemq message and to the info logs """
         logger.info(message)
-        self.data["message"] += message + "\n"
+        if self.data["message"] == "":
+            # Only send back first message as there is a char limit
+            self.data["message"] = message
 
 if __name__ == "__main__":
     print "\n> In PostProcessAdmin.py\n"
