@@ -33,6 +33,7 @@ INSTALLED_APPS = (
 )
 
 MIDDLEWARE_CLASSES = (
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -44,9 +45,6 @@ MIDDLEWARE_CLASSES = (
 
 if DEBUG:
     INTERNAL_IPS = ('127.0.0.1',)
-    MIDDLEWARE_CLASSES += (
-        'debug_toolbar.middleware.DebugToolbarMiddleware',
-    )
 
     INSTALLED_APPS += (
         'debug_toolbar',
@@ -66,11 +64,14 @@ if DEBUG:
         'debug_toolbar.panels.logger.LoggingPanel',
     )
 
+    DEBUG_TOOLBAR_PATCH_SETTINGS = False
+
     def show_toolbar(request):
         return True
 
     DEBUG_TOOLBAR_CONFIG = {
         "SHOW_TOOLBAR_CALLBACK": show_toolbar,
+        "RENDER_PANELS": True,
     }
 
 AUTHENTICATION_BACKENDS = (
