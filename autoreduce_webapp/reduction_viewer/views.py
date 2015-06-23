@@ -72,26 +72,27 @@ def run_queue(request):
 def run_list(request):
     context_dictionary = {}
     instruments = []
-    with ICATCommunication(AUTH='uows',SESSION={'sessionid':request.session.get('sessionid')}) as icat:
-        # Owned instruments is populated on login
-        owned_instruments = request.session.get('owned_instruments', default=[])
-        # Superuser sees everything
-        if request.user.is_superuser:
-            instrument_names = Instrument.objects.values_list('name', flat=True)
-            if instrument_names:
-                experiments = {}
-                for instrument_name in instrument_names:
-                    experiments[instrument_name] = []
-                    instrument = Instrument.objects.get(name=instrument_name)
-                    instrument_experiments = Experiment.objects.filter(reduction_runs__instrument=instrument).values_list('reference_number', flat=True)
-                    for experiment in instrument_experiments:
-                        experiments[instrument_name].append(str(experiment))
-                request.session['experiments_to_show'] = experiments
-        else:
+    # Owned instruments is populated on login
+    owned_instruments = request.session.get('owned_instruments', default=[])
+    # Superuser sees everything
+    if request.user.is_superuser:
+        instrument_names = Instrument.objects.values_list('name', flat=True)
+        if instrument_names:
+            experiments = {}
+            for instrument_name in instrument_names:
+                experiments[instrument_name] = []
+                instrument = Instrument.objects.get(name=instrument_name)
+                instrument_experiments = Experiment.objects.filter(reduction_runs__instrument=instrument).values_list('reference_number', flat=True)
+                for experiment in instrument_experiments:
+                    experiments[instrument_name].append(str(experiment))
+            request.session['experiments_to_show'] = experiments
+    else:
+        with ICATCommunication(AUTH='uows',SESSION={'sessionid':request.session.get('sessionid')}) as icat:
             instrument_names = icat.get_valid_instruments(int(request.user.username))
             if instrument_names:
                 experiments = request.session.get('experiments_to_show', icat.get_valid_experiments_for_instruments(int(request.user.username), instrument_names))
                 request.session['experiments_to_show'] = experiments
+                
     for instrument_name in instrument_names:
         try:
             instrument = Instrument.objects.get(name=instrument_name)
