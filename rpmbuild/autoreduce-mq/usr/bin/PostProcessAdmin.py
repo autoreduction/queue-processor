@@ -175,7 +175,7 @@ class PostProcessAdmin:
 
             # Load reduction script
             sys.path.append(self.reduction_script)
-            reduce_script = imp.load_source('reducescript', os.path.join(self.reduction_script, "reduce.py"))
+
             out_log = os.path.join(log_dir, self.data['rb_number'] + ".log")
             out_err = os.path.join(reduce_result_dir, self.data['rb_number'] + ".err")
 
@@ -193,8 +193,9 @@ class PostProcessAdmin:
             # Set the output to be the logfile
             sys.stdout = logFile
             sys.stderr = errFile
-            reduce_script = self.replace_variables(reduce_script)
             try:
+                reduce_script = imp.load_source('reducescript', os.path.join(self.reduction_script, "reduce.py"))
+                reduce_script = self.replace_variables(reduce_script)
                 out_directories = reduce_script.main(input_file=str(self.data_file), output_dir=str(reduce_result_dir))
             except Exception as e:
                 self.copy_temp_directory(reduce_result_dir, reduce_result_dir_tail_length)
@@ -208,6 +209,19 @@ class PostProcessAdmin:
 
             logger.info("Reduction subprocess completed.")
             logger.info("Additional save directories: %s" % out_directories)
+
+            if os.stat(out_err).st_size == 0:
+                os.remove(out_err)
+            else:
+                # Reply with the last line (assuming the line is less than 80 chars)
+                max_line_length = 80
+                fp = file(out_err, "r")
+                fp.seek(-max_line_length, 2)  # 2 means "from the end of the file"
+                last_line = fp.readlines()[-1]
+                err_msg = last_line.strip() + ", see reduction_log/" + os.path.basename(out_log) + " for details."
+                raise Exception(err_msg)
+
+            self.copy_temp_directory(reduce_result_dir, reduce_result_dir_tail_length)
 
             # If the reduce script specified some additional save directories, copy to there first
             if out_directories:
@@ -242,7 +256,8 @@ class PostProcessAdmin:
                 errMsg = lastLine.strip() + ", see reduction_log/" + os.path.basename(out_log) + " or " + os.path.basename(out_err) + " for details."
                 self.data["message"] = "REDUCTION: %s" % errMsg
 
-            self.copy_temp_directory(reduce_result_dir, reduce_result_dir_tail_length)
+            self.client.send(self.conf['reduction_complete'] , json.dumps(self.data))
+            logging.info("\nCalling: "+self.conf['reduction_complete'] + "\n" + json.dumps(self.data) + "\n")
 
         except Exception, e:
             self.data["message"] = "REDUCTION Error: %s " % e
