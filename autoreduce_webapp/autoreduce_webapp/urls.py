@@ -1,5 +1,4 @@
 from django.conf.urls import include, url, patterns
-from django.conf import settings
 from django.contrib import admin
 from reduction_viewer import views as reduction_viewer_views
 from reduction_variables import views as reduction_variables_views
@@ -31,9 +30,3 @@ urlpatterns = patterns('',
 
     url(r'^help/$', reduction_viewer_views.help, name='help'),
 )
-
-if settings.DEBUG:
-    import debug_toolbar
-    urlpatterns += patterns('',
-        url(r'^__debug__/', include(debug_toolbar.urls)),
-    )
