@@ -355,6 +355,10 @@ Note: UOWSClientTestCase requires you enter a valid username and password for th
 
 ## Other Notes
 
+### Before going live with app
+
+To improve security: In the django settings.py generate a new `SECRET_KEY`. See: https://gist.github.com/ndarville/3452907.
+
 ### Expected message format
 
 Messages that are sent to the ActiveMQ broker are send as JSON. And example of what is expected to be included is below:
