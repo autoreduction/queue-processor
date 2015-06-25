@@ -17,11 +17,13 @@ logging.getLogger('stomp').setLevel(logging.INFO)
 
 
 REDUCTION_DIRECTORY = '/isis/NDX%s/user/scripts/autoreduction'  # %(instrument)
-ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s/'  # %(instrument, cycle, experiment_number, run_number)
-CEPH_DIRECTORY = '/instrument/%s/CYCLE20%s/RB%s/autoreduced/%s/'  # %(instrument, cycle, experiment_number, run_number)
+ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s'  # %(instrument, cycle, experiment_number, run_number)
+CEPH_DIRECTORY = '/instrument/%s/CYCLE20%s/RB%s/autoreduced/%s'  # %(instrument, cycle, experiment_number, run_number)
 TEMP_ROOT_DIRECTORY = '/autoreducetmp'
-CEPH_INSTRUMENTS = ['LET', 'MARI', 'MAPS', 'MERLIN']  # A list of instruments which should save reduced data to CEPH, rather than the archive
+CEPH_INSTRUMENTS = ['EMU']   # A list of instruments, other than the excitation ones, which should save reduced data to CEPH
+EXCITATION_INSTRUMENTS = ['LET', 'MARI', 'MAPS', 'MERLIN']  # These are all saved into CEPH slightly differently
 
+CEPH_INSTRUMENTS.extend(EXCITATION_INSTRUMENTS)  # Excitations also saved in CEPH
 
 def copytree(src, dst):
     if not os.path.exists(dst):
@@ -148,6 +150,9 @@ class PostProcessAdmin:
             if self.instrument.upper() in CEPH_INSTRUMENTS:
                 cycle = re.sub('[_]', '', cycle)
                 instrument_dir = CEPH_DIRECTORY % (self.instrument.upper(), cycle, self.data['rb_number'], self.data['run_number'])
+                if self.instrument.upper() in EXCITATION_INSTRUMENTS:
+                    #Excitations would like to remove the run number folder at the end
+                    instrument_dir = instrument_dir[:instrument_dir.rfind('/')+1]
             else:
                 instrument_dir = ARCHIVE_DIRECTORY % (self.instrument.upper(), cycle, self.data['rb_number'], self.data['run_number'])
 
@@ -159,8 +164,11 @@ class PostProcessAdmin:
                 return
             
             # specify directory where autoreduction output goes
-            run_output_dir = os.path.join(TEMP_ROOT_DIRECTORY, instrument_dir[:instrument_dir.find('/' + str(self.data['run_number']))+1])
             reduce_result_dir = os.path.join(TEMP_ROOT_DIRECTORY, instrument_dir)
+            if self.instrument.upper() not in EXCITATION_INSTRUMENTS:
+                run_output_dir = os.path.join(TEMP_ROOT_DIRECTORY, instrument_dir[:instrument_dir.find('/')+1])
+            else:
+                run_output_dir = reduce_result_dir
 
             if not os.path.isdir(reduce_result_dir):
                 os.makedirs(reduce_result_dir)
