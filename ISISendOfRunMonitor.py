@@ -106,7 +106,7 @@ class InstrumentMonitor(threading.Thread):
         with self.lock:
             data_dict = self.build_dict(last_run_data)
         if not DEBUG:
-            self.client.send('/queue/DataReady', json.dumps(data_dict))
+            self.client.send('/queue/DataReady', json.dumps(data_dict), priority='9')
         logging.info("Data sent: " + str(data_dict))
 
 
