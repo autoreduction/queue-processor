@@ -211,16 +211,17 @@ class PostProcessAdmin:
             logger.info("Reduction subprocess completed.")
             logger.info("Additional save directories: %s" % out_directories)
 
-            if os.stat(out_err).st_size == 0:
-                os.remove(out_err)
-            else:
-                # Reply with the last line (assuming the line is less than 80 chars)
-                max_line_length = 80
-                fp = file(out_err, "r")
-                fp.seek(-max_line_length, 2)  # 2 means "from the end of the file"
-                last_line = fp.readlines()[-1]
-                err_msg = last_line.strip() + ", see reduction_log/" + os.path.basename(out_log) + " for details."
-                raise Exception(err_msg)
+            if os.path.exists(out_err):
+                if os.stat(out_err).st_size == 0:
+                    os.remove(out_err)
+                else:
+                    # Reply with the last line (assuming the line is less than 80 chars)
+                    max_line_length = 80
+                    fp = file(out_err, "r")
+                    fp.seek(-max_line_length, 2)  # 2 means "from the end of the file"
+                    last_line = fp.readlines()[-1]
+                    err_msg = last_line.strip() + ", see reduction_log/" + os.path.basename(out_log) + " for details."
+                    raise Exception(err_msg)
 
             self.copy_temp_directory(reduce_result_dir, reduce_result_dir_tail_length)
 
@@ -246,16 +247,6 @@ class PostProcessAdmin:
                                 self.log_and_message("Unable to copy %s to %s - %s" % (run_output_dir[:-1], out_dir, e))
                         else:
                             self.log_and_message("Unable to access directory: %s" % out_dir)
-                            
-            if os.stat(out_err).st_size == 0:
-                os.remove(out_err)
-            else:
-                maxLineLength=80
-                fp=file(out_err, "r")
-                fp.seek(-maxLineLength-1, 2) # 2 means "from the end of the file"
-                lastLine = fp.readlines()[-1]
-                errMsg = lastLine.strip() + ", see reduction_log/" + os.path.basename(out_log) + " or " + os.path.basename(out_err) + " for details."
-                self.data["message"] = "REDUCTION: %s" % errMsg
 
             self.client.send(self.conf['reduction_complete'] , json.dumps(self.data))
             logging.info("\nCalling: "+self.conf['reduction_complete'] + "\n" + json.dumps(self.data) + "\n")
