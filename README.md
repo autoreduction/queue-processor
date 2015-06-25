@@ -69,8 +69,8 @@ Recommended Server OS: Red Hat Enterprise Linux (RHEL) 6 / 7
 
 ### Configure ActiveMQ
 1. `adduser --system activemq`
-2. `chown -R activemq: /opt/apache-activemq-5.9.1/`
-3. `nano /opt/apache-activemq-5.9.1/conf/activemq.xml`
+2. `chown -R activemq: /opt/activemq/`
+3. `nano /opt/activemq/conf/activemq.xml`
 4. Change 
 
 
@@ -155,7 +155,7 @@ Recommended Server OS: Red Hat Enterprise Linux (RHEL) 6 / 7
 8. `chmod +x /etc/init.d/activemqstart.sh && chmod +x /etc/init.d/activemqstop.sh && chmod +x /etc/init.d/activemq`
 9. `chkconfig --add activemq`
 10. `chkconfig activemq on`
-11. `/opt/apache-activemq-5.9.1/bin/activemq setup /etc/default/activemq`
+11. `/opt/activemq/bin/activemq setup /etc/default/activemq`
 12. `chown root /etc/default/activemq`
 13. `chmod 600 /etc/default/activemq`
 14. `lokkit --port=61613:tcp` RHEL6 Only
@@ -173,7 +173,7 @@ Recommended Server OS: Red Hat Enterprise Linux (RHEL) 6 / 7
         received a message
 
 ### Setting credentials for ActiveMQ
-1. `nano /opt/apache-activemq-5.9.1/conf/activemq.xml`
+1. `nano /opt/activemq/conf/activemq.xml`
 2. Include the following within the `<broker>` tag with the desired values
         
         <plugins>
@@ -185,6 +185,9 @@ Recommended Server OS: Red Hat Enterprise Linux (RHEL) 6 / 7
             </simpleAuthenticationPlugin>
         </plugins>
 
+### Setting up Priority Queues for ActiveMQ
+1. `nano /opt/activemq/conf/activemq.xml`
+2. Within the `<policyEntries>` tag include `<policyEntry queue=">" queuePrefetch="1" prioritizedMessages="true" useCache="false" expireMessagesPeriod="0"/>`
 
 ### Installing ICAT support
 1. `hg clone https://AverageMarcus@bitbucket.org/AverageMarcus/suds -u release-0.6.1`
