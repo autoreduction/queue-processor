@@ -17,8 +17,8 @@ logging.getLogger('stomp').setLevel(logging.INFO)
 
 
 REDUCTION_DIRECTORY = '/isis/NDX%s/user/scripts/autoreduction'  # %(instrument)
-ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s'  # %(instrument, cycle, experiment_number, run_number)
-CEPH_DIRECTORY = '/instrument/%s/CYCLE20%s/RB%s/autoreduced/%s'  # %(instrument, cycle, experiment_number, run_number)
+ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s/'  # %(instrument, cycle, experiment_number, run_number)
+CEPH_DIRECTORY = '/instrument/%s/CYCLE20%s/RB%s/autoreduced/%s/'  # %(instrument, cycle, experiment_number, run_number)
 TEMP_ROOT_DIRECTORY = '/autoreducetmp'
 CEPH_INSTRUMENTS = ['LET', 'MARI', 'MAPS', 'MERLIN']  # A list of instruments which should save reduced data to CEPH, rather than the archive
 
@@ -159,13 +159,13 @@ class PostProcessAdmin:
                 return
             
             # specify directory where autoreduction output goes
-            run_output_dir = TEMP_ROOT_DIRECTORY + instrument_dir[:instrument_dir.find('/' + str(self.data['run_number']))+1]
-            reduce_result_dir = TEMP_ROOT_DIRECTORY + instrument_dir + "/results/"
-            reduce_result_dir_tail_length = len("/results")
+            run_output_dir = os.path.join(TEMP_ROOT_DIRECTORY, instrument_dir[:instrument_dir.find('/' + str(self.data['run_number']))+1])
+            reduce_result_dir = os.path.join(TEMP_ROOT_DIRECTORY, instrument_dir)
+
             if not os.path.isdir(reduce_result_dir):
                 os.makedirs(reduce_result_dir)
 
-            log_dir = reduce_result_dir + "reduction_log/"
+            log_dir = os.path.join(reduce_result_dir, "/reduction_log/")
             if not os.path.exists(log_dir):
                 os.makedirs(log_dir)
 
@@ -199,7 +199,7 @@ class PostProcessAdmin:
                 reduce_script = self.replace_variables(reduce_script)
                 out_directories = reduce_script.main(input_file=str(self.data_file), output_dir=str(reduce_result_dir))
             except Exception as e:
-                self.copy_temp_directory(reduce_result_dir, reduce_result_dir_tail_length)
+                self.copy_temp_directory(reduce_result_dir)
                 raise
             finally:
                 # Reset outputs back to default
@@ -223,7 +223,7 @@ class PostProcessAdmin:
                     err_msg = last_line.strip() + ", see reduction_log/" + os.path.basename(out_log) + " for details."
                     raise Exception(err_msg)
 
-            self.copy_temp_directory(reduce_result_dir, reduce_result_dir_tail_length)
+            self.copy_temp_directory(reduce_result_dir)
 
             # If the reduce script specified some additional save directories, copy to there first
             if out_directories:
@@ -271,10 +271,10 @@ class PostProcessAdmin:
         logger.info("Called " + self.conf['reduction_error'] + " --- " + json.dumps(self.data))
         self.client.send(self.conf['reduction_error'], json.dumps(self.data))
 
-    def copy_temp_directory(self, reduce_result_dir, reduce_result_dir_tail_length):
+    def copy_temp_directory(self, temp_result_dir):
         """ Method that copies the temporary files held in results_directory to CEPH/archive, replacing old data if it
         exists"""
-        copy_destination = reduce_result_dir[len(TEMP_ROOT_DIRECTORY):-reduce_result_dir_tail_length]
+        copy_destination = temp_result_dir[len(TEMP_ROOT_DIRECTORY):]
 
         if os.path.isdir(copy_destination):
             self._remove_directory(copy_destination)
@@ -285,17 +285,17 @@ class PostProcessAdmin:
             self.log_and_message("Unable to create %s - %s. " % (copy_destination, e))
 
         self.data['reduction_data'].append(linux_to_windows_path(copy_destination))
-        logger.info("Moving %s to %s" % (reduce_result_dir[:-1], copy_destination))
+        logger.info("Moving %s to %s" % (temp_result_dir[:-1], copy_destination))
         try:
-            shutil.copytree(reduce_result_dir[:-1], reduce_result_dir[len(TEMP_ROOT_DIRECTORY):])
+            shutil.copytree(temp_result_dir[:-1], copy_destination)
         except Exception, e:
-            self.log_and_message("Unable to copy to %s - %s" % (reduce_result_dir[len(TEMP_ROOT_DIRECTORY):], e))
+            self.log_and_message("Unable to copy to %s - %s" % (copy_destination, e))
 
         # Remove temporary working directory
         try:
-            shutil.rmtree(reduce_result_dir[:-reduce_result_dir_tail_length], ignore_errors=True)
+            shutil.rmtree(temp_result_dir, ignore_errors=True)
         except Exception, e:
-            logger.info("Unable to remove temporary directory %s - %s" % reduce_result_dir)
+            logger.info("Unable to remove temporary directory %s - %s" % temp_result_dir)
 
     def log_and_message(self, message):
         """Helper function to add text to the outgoing activemq message and to the info logs """
