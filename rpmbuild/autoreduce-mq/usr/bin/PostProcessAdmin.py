@@ -176,8 +176,9 @@ class PostProcessAdmin:
             # Load reduction script
             sys.path.append(self.reduction_script)
 
-            out_log = os.path.join(log_dir, self.data['rb_number'] + ".log")
-            out_err = os.path.join(reduce_result_dir, self.data['rb_number'] + ".err")
+            log_and_err_name = "RB" + self.data['rb_number'] + "Run" + self.data['run_number']
+            out_log = os.path.join(log_dir, log_and_err_name + ".log")
+            out_err = os.path.join(reduce_result_dir, log_and_err_name + ".err")
 
             logger.info("----------------")
             logger.info("Reduction script: %s" % self.reduction_script)
