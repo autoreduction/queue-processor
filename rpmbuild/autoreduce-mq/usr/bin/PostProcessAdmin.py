@@ -166,14 +166,14 @@ class PostProcessAdmin:
             # specify directory where autoreduction output goes
             reduce_result_dir = os.path.join(TEMP_ROOT_DIRECTORY, instrument_dir)
             if self.instrument.upper() not in EXCITATION_INSTRUMENTS:
-                run_output_dir = os.path.join(TEMP_ROOT_DIRECTORY, instrument_dir[:instrument_dir.find('/')+1])
+                run_output_dir = os.path.join(TEMP_ROOT_DIRECTORY, instrument_dir[:instrument_dir.rfind('/')+1])
             else:
                 run_output_dir = reduce_result_dir
 
             if not os.path.isdir(reduce_result_dir):
                 os.makedirs(reduce_result_dir)
 
-            log_dir = os.path.join(reduce_result_dir, "/reduction_log/")
+            log_dir = reduce_result_dir + "reduction_log/"
             if not os.path.exists(log_dir):
                 os.makedirs(log_dir)
 
@@ -293,9 +293,9 @@ class PostProcessAdmin:
             self.log_and_message("Unable to create %s - %s. " % (copy_destination, e))
 
         self.data['reduction_data'].append(linux_to_windows_path(copy_destination))
-        logger.info("Moving %s to %s" % (temp_result_dir[:-1], copy_destination))
+        logger.info("Moving %s to %s" % (temp_result_dir, copy_destination))
         try:
-            shutil.copytree(temp_result_dir[:-1], copy_destination)
+            shutil.copytree(temp_result_dir, copy_destination)
         except Exception, e:
             self.log_and_message("Unable to copy to %s - %s" % (copy_destination, e))
 
