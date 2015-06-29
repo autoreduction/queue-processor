@@ -199,6 +199,7 @@ class PostProcessAdmin:
                 reduce_script = self.replace_variables(reduce_script)
                 out_directories = reduce_script.main(input_file=str(self.data_file), output_dir=str(reduce_result_dir))
             except Exception as e:
+                errFile.write(e)
                 self.copy_temp_directory(reduce_result_dir, reduce_result_dir_tail_length)
                 raise
             finally:
