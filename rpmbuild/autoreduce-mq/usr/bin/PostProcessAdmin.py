@@ -177,52 +177,40 @@ class PostProcessAdmin:
             sys.path.append(self.reduction_script)
 
             log_and_err_name = "RB" + self.data['rb_number'] + "Run" + self.data['run_number']
-            out_log = os.path.join(log_dir, log_and_err_name + ".log")
-            out_err = os.path.join(reduce_result_dir, log_and_err_name + ".err")
+            script_out = os.path.join(log_dir, log_and_err_name + "Script.out")
+            mantid_log = os.path.join(log_dir, log_and_err_name + "Mantid.log")
+            script_err = os.path.join(reduce_result_dir, log_and_err_name + "Script.err")
 
             logger.info("----------------")
             logger.info("Reduction script: %s" % self.reduction_script)
             logger.info("Result dir: %s" % reduce_result_dir)
             logger.info("Run Output dir: %s" % run_output_dir)
             logger.info("Log dir: %s" % log_dir)
-            logger.info("Out log: %s" % out_log)
+            logger.info("Out log: %s" % script_out)
             logger.info("----------------")
 
             logger.info("Reduction subprocess started.")
-            logFile=open(out_log, "w")
-            errFile=open(out_err, "w")
+            out_file = open(script_out, "w")
+
             # Set the output to be the logfile
-            sys.stdout = logFile
-            sys.stderr = errFile
+            sys.stdout = out_file
             try:
                 reduce_script = imp.load_source('reducescript', os.path.join(self.reduction_script, "reduce.py"))
                 reduce_script = self.replace_variables(reduce_script)
                 out_directories = reduce_script.main(input_file=str(self.data_file), output_dir=str(reduce_result_dir))
             except Exception as e:
-                errFile.write(e)
+                with open(script_err) as f:
+                    f.write(str(e))
                 self.copy_temp_directory(reduce_result_dir, reduce_result_dir_tail_length)
                 raise
             finally:
                 # Reset outputs back to default
                 sys.stdout = sys.__stdout__
                 sys.stderr = sys.__stderr__
-                logFile.close()
-                errFile.close()
+                out_file.close()
 
             logger.info("Reduction subprocess completed.")
             logger.info("Additional save directories: %s" % out_directories)
-
-            if os.path.exists(out_err):
-                if os.stat(out_err).st_size == 0:
-                    os.remove(out_err)
-                else:
-                    # Reply with the last line (assuming the line is less than 80 chars)
-                    max_line_length = 80
-                    fp = file(out_err, "r")
-                    fp.seek(-max_line_length, 2)  # 2 means "from the end of the file"
-                    last_line = fp.readlines()[-1]
-                    err_msg = last_line.strip() + ", see reduction_log/" + os.path.basename(out_log) + " for details."
-                    raise Exception(err_msg)
 
             self.copy_temp_directory(reduce_result_dir, reduce_result_dir_tail_length)
 
