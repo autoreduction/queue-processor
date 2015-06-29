@@ -2,7 +2,7 @@
 """
 Post Process Administrator. It kicks off cataloging and reduction jobs.
 """
-import logging, json, socket, os, sys, subprocess, time, shutil, imp, stomp, re, errno
+import logging, json, socket, os, sys, time, shutil, imp, stomp, re, errno, traceback
 import logging.handlers
 
 logger = logging.getLogger(__name__)
@@ -199,8 +199,8 @@ class PostProcessAdmin:
                 reduce_script = self.replace_variables(reduce_script)
                 out_directories = reduce_script.main(input_file=str(self.data_file), output_dir=str(reduce_result_dir))
             except Exception as e:
-                with open(script_err) as f:
-                    f.write(str(e))
+                with open(script_err, "w") as f:
+                    f.write(traceback.print_exc())
                 self.copy_temp_directory(reduce_result_dir, reduce_result_dir_tail_length)
                 raise
             finally:
