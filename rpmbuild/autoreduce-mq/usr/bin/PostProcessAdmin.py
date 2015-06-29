@@ -164,7 +164,7 @@ class PostProcessAdmin:
                 return
             
             # specify directory where autoreduction output goes
-            reduce_result_dir = os.path.join(TEMP_ROOT_DIRECTORY, instrument_dir)
+            reduce_result_dir = TEMP_ROOT_DIRECTORY + instrument_dir
             if self.instrument.upper() not in EXCITATION_INSTRUMENTS:
                 run_output_dir = os.path.join(TEMP_ROOT_DIRECTORY, instrument_dir[:instrument_dir.rfind('/')+1])
             else:
@@ -286,11 +286,6 @@ class PostProcessAdmin:
 
         if os.path.isdir(copy_destination):
             self._remove_directory(copy_destination)
-
-        try:
-            os.makedirs(copy_destination)
-        except Exception, e:
-            self.log_and_message("Unable to create %s - %s. " % (copy_destination, e))
 
         self.data['reduction_data'].append(linux_to_windows_path(copy_destination))
         logger.info("Moving %s to %s" % (temp_result_dir, copy_destination))
