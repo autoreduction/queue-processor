@@ -173,7 +173,7 @@ class PostProcessAdmin:
             if not os.path.isdir(reduce_result_dir):
                 os.makedirs(reduce_result_dir)
 
-            log_dir = reduce_result_dir + "reduction_log/"
+            log_dir = reduce_result_dir + "/reduction_log/"
             if not os.path.exists(log_dir):
                 os.makedirs(log_dir)
 
