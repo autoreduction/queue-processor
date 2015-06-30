@@ -41,6 +41,6 @@ class StompClient(object):
             self._connection.stop()
         self._connection = None
 
-    def send(self, destination, message, persistent='true'):
+    def send(self, destination, message, persistent='true', priority='4'):
         self.connect()
-        self._connection.send(destination, message, persistent=persistent)
+        self._connection.send(destination, message, persistent=persistent, priority=priority)
