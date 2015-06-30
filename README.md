@@ -38,9 +38,9 @@ First install Mantid using: http://download.mantidproject.org/redhat.html
                 trustStore="client.ts" trustStorePassword="changeit"/>
         </sslContext>
 
-To start up ActiveMQ, ensure you are in root and type: `/opt/activemq/bin/activemq start`
+Start ActiveMQ as root: `sudo /opt/activemq/bin/activemq start`
 
-To stop, type: `/opt/activemq/bin/activemq stop`
+To stop, type: `sudo /opt/activemq/bin/activemq stop`
 
 To check that ActiveMQ is running e.g. type 
 
