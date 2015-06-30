@@ -79,9 +79,11 @@ ActiveMQ logs can by default be found in /activemq-install-dir/data.
 
 4.  Modify the address "brokers" in /etc/autoreduce/post_process_consumer.conf to point to ActiveMQ address and username and password for submitting jobs to activemq
 
-5.  At present specify the location where the script and reduced data get stored by modifying the instrument_dir variable in the method reduce() of python file /usr/bin/PostProcessAdmin.py
+5. At present create /autoreducetmp folder can change owner and group to user that will be used to run queueProcessor (to store temporary created reduction files)
 
-6.  Type: `sudo python /usr/bin/queueProcessor.py` or to start this as a daemon type `python /usr/bin/queueProcessor_daemon.py start`
+6.  At present specify the location where the script and reduced data get stored by modifying the instrument_dir variable in the method reduce() of python file /usr/bin/PostProcessAdmin.py
+
+7.  Type: `sudo python /usr/bin/queueProcessor.py` or to start this as a daemon type `python /usr/bin/queueProcessor_daemon.py start`
 
 Logging associated with the Logger used in the python worker script gets stored in `/var/log/mantid_autoreduce_worker.log` (optionally change this in `/usr/bin/Configuration.py`).  
 
