@@ -3,9 +3,37 @@ from Stomp_Client import StompClient
 
 # Config settings for cycle number, and instrument file arrangement
 DATA_LOC = "\isis\NDX%s\Instrument\data\cycle_%s\\"
-SUMMARY_LOC = "\logs\journal\SUMMARY.txt"
+SUMMARY_LOC = "\\\\isis\inst$\NDX%s\Instrument\logs\journal\SUMMARY.txt"
 LAST_RUN_LOC = "\\\\isis\inst$\NDX%s\Instrument\logs\lastrun.txt"
 
+
+def lookup_rb_number(instrument, run_number):
+    """ Uses the summary.txt file to attempt to lookup the run's RB number.
+    Beware that there are issues with summary.txt:
+    * RB numbers changed in ICAT after the fact are not updated here
+    * Run numbers are truncated to 5 digits and so are modulo 100000
+    To be safe this function is written to fail as much as possible
+    """
+    print "Attempting to lookup RB number"
+
+    try:
+        run_number_mod = run_number % 100000
+        rb_number = -1
+
+        with open(SUMMARY_LOC % instrument) as f:
+            for line in f.readlines():
+                summary_run = int(line[3:8])
+                if summary_run == run_number_mod:
+                    if rb_number != -1:
+                        # Run not unique in file, fail
+                        return -1
+                    else:
+                        rb_number = line[-8:-1]
+    except Exception as e:
+        print "RB not found (%s)" % e
+        rb_number = -1
+
+    return rb_number
 
 def get_file_extension(use_nxs):
     """ Choose the data extension based on the boolean"""
@@ -24,6 +52,8 @@ def get_data_and_check(last_run_file):
 
 
 def validate_input(inp):
+    if not inp["inst_name"].isalpha():
+        raise ValueError("Invalid instrument name")
     if not inp["max_run"] > inp["min_run"]:
         raise ValueError("Max run must be greater than min run")
     if not re.match(r"^\d\d_\d$", inp["cycle"]):
@@ -58,7 +88,12 @@ def main():
         inp["min_run"] = int(raw_input('Start run number: '))
         inp["max_run"] = int(raw_input('End run number: '))
         inp["rename"] = raw_input('Use .nxs file? [Y/N]: ').lower()
-        inp["rbnum"] = int(raw_input('RB Number: '))
+        inp["rbnum"] = lookup_rb_number(inp["inst_name"], inp["min_run"])  # Assume all RBs are the same as the first
+        if inp["rbnum"] == -1:
+            print "Lookup failed"
+            inp["rbnum"] = int(raw_input('RB Number: '))
+        else:
+            print "Found " + str(inp["rbnum"])
         inp["cycle"] = raw_input('Enter cycle number in format [14_3]: ')
     else:
         inp["inst_name"] = str(sys.argv[1]).upper()
