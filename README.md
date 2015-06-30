@@ -31,7 +31,7 @@ First install Mantid using: http://download.mantidproject.org/redhat.html
 4. Configure ActiveMQ to require SSL
 
         nano /opt/activemq/conf/activemq.xml
-        Modify the transportConnector tag to be: <transportConnector name="stomp+ssl" uri="stomp+ssl://0.0.0.0:61613?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/>
+        Modify the transportConnector tag to be: <transportConnector name="stomp+ssl" uri="stomp+ssl://0.0.0.0:61613?transport.enabledProtocols=TLSv1,TLSv1.1,TLSv1.2&amp;maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/>
         Add the following (making sure to change cert names and passwords):
         <sslContext>
                 <sslContext keyStore="broker.ks" keyStorePassword="changeit"
