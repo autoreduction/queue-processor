@@ -37,6 +37,17 @@ First install Mantid using: http://download.mantidproject.org/redhat.html
                 <sslContext keyStore="broker.ks" keyStorePassword="changeit"
                 trustStore="client.ts" trustStorePassword="changeit"/>
         </sslContext>
+        
+5. Username and password for submiting jobs by adding to the <broker> section (with XXXXXXXXXX substitued by suitable password):
+
+        <plugins>
+            <simpleAuthenticationPlugin>
+                <users>
+                    <authenticationUser username="autoreduce" password="XXXXXXXXXX" groups="users,admins"/>
+                </users>
+            </simpleAuthenticationPlugin>
+        </plugins>
+
 
 Start ActiveMQ as root: `sudo /opt/activemq/bin/activemq start`
 
@@ -66,7 +77,7 @@ ActiveMQ logs can by default be found in /activemq-install-dir/data.
         sudo ./make-autoreduce-rpm.sh
         sudo rpm -i ~/rpmbuild/RPMS/x86_64/autoreduce-mq-1.3-16.x86_64.rpm
 
-4.  Modify the address "brokers" in /etc/autoreduce/post_process_consumer.conf to point to ActiveMQ address 
+4.  Modify the address "brokers" in /etc/autoreduce/post_process_consumer.conf to point to ActiveMQ address and username and password for submitting jobs to activemq
 
 5.  At present specify the location where the script and reduced data get stored by modifying the instrument_dir variable in the method reduce() of python file /usr/bin/PostProcessAdmin.py
 
