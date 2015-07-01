@@ -25,25 +25,36 @@ CEPH_INSTRUMENTS = ['LET', 'MARI', 'MAPS', 'MERLIN']  # A list of instruments wh
 
 
 @contextmanager
-def stderr_redirected(output):
+def channels_redirected(out_file, err_file):
     """
-    This context manager copies the file descriptor(fd) of stderr to the stream given in output.
-    The fd is at the C level and so picks up Mantid logs.
+    This context manager copies the file descriptor(fd) of stdout and stderr to the files given in out_file and err_file
+    respectively. The fd is at the C level and so picks up data sent via Mantid.
     """
-    fd = sys.stderr.fileno()
+    out_fd = sys.stdout.fileno()
+    err_fd = sys.stderr.fileno()
 
-    def _redirect_stderr(output):
-        sys.stderr.close()  # + implicit flush()
-        os.dup2(output.fileno(), fd)  # fd writes to 'to' file
-        sys.stderr = os.fdopen(fd, 'w')  # Python writes to fd
+    def _redirect_channels(out_file, err_file):
+        # Close and flush
+        sys.stdout.close()
+        sys.stderr.close()
 
-    with os.fdopen(os.dup(fd), 'w') as old_stderr:
-        with open(output, 'w') as file:
-            _redirect_stderr(file)
-        try:
-            yield  # allow code to be run with the redirected stderr
-        finally:
-            _redirect_stderr(old_stderr)  # restore stderr.
+        # Copy fds
+        os.dup2(out_file.fileno(), out_fd)
+        os.dup2(err_file.fileno(), err_fd)
+
+        # Python writes to fds
+        sys.stdout = os.fdopen(out_fd, 'w')
+        sys.stderr = os.fdopen(err_fd, 'w')
+
+    with os.fdopen(os.dup(out_fd), 'w') as old_stdout:
+        with os.fdopen(os.dup(err_fd), 'w') as old_stderr:
+            with open(out_file, 'w') as out:
+                with open(err_file, 'w') as err:
+                    _redirect_channels(out, err)
+                    try:
+                        yield  # allow code to be run with the redirected channels
+                    finally:
+                        _redirect_channels(old_stdout, old_stderr)  # restore stderr.
 
 
 def copytree(src, dst):
@@ -213,12 +224,9 @@ class PostProcessAdmin:
             logger.info("----------------")
 
             logger.info("Reduction subprocess started.")
-            out_file = open(script_out, "w")
 
-            # Set the output to be the logfile
-            sys.stdout = out_file
             try:
-                with stderr_redirected(mantid_log):
+                with channels_redirected(script_out, mantid_log):
                     reduce_script = imp.load_source('reducescript', os.path.join(self.reduction_script, "reduce.py"))
                     reduce_script = self.replace_variables(reduce_script)
                     out_directories = reduce_script.main(input_file=str(self.data_file), output_dir=str(reduce_result_dir))
@@ -228,10 +236,6 @@ class PostProcessAdmin:
                     f.write(traceback.format_exc())
                 self.copy_temp_directory(reduce_result_dir, reduce_result_dir_tail_length)
                 raise
-            finally:
-                # Reset output back to default
-                sys.stdout = sys.__stdout__
-                out_file.close()
 
             logger.info("Reduction subprocess completed.")
             logger.info("Additional save directories: %s" % out_directories)
