@@ -221,7 +221,6 @@ class PostProcessAdmin:
             log_and_err_name = "RB" + self.data['rb_number'] + "Run" + self.data['run_number']
             script_out = os.path.join(log_dir, log_and_err_name + "Script.out")
             mantid_log = os.path.join(log_dir, log_and_err_name + "Mantid.log")
-            script_err = os.path.join(reduce_result_dir, log_and_err_name + "Script.err")
 
             logger.info("----------------")
             logger.info("Reduction script: %s" % self.reduction_script)
@@ -239,7 +238,7 @@ class PostProcessAdmin:
                     reduce_script = self.replace_variables(reduce_script)
                     out_directories = reduce_script.main(input_file=str(self.data_file), output_dir=str(reduce_result_dir))
             except Exception as e:
-                with open(script_err, "w") as f:
+                with open(script_out, "a") as f:
                     f.writelines(str(e) + "\n")
                     f.write(traceback.format_exc())
                 self.copy_temp_directory(reduce_result_dir)
