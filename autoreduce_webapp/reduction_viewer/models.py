@@ -28,16 +28,16 @@ class Status(models.Model):
 class ReductionRun(models.Model):
     instrument = models.ForeignKey(Instrument, related_name='reduction_runs', null=True)
     run_number = models.IntegerField(blank=False)
-    run_name = models.CharField(max_length=50,blank=True)
+    run_name = models.CharField(max_length=200, blank=True)
     run_version = models.IntegerField(blank=False)
-    experiment = models.ForeignKey(Experiment,blank=False, related_name='reduction_runs')
-    created = models.DateTimeField(auto_now_add=True,blank=False)
+    experiment = models.ForeignKey(Experiment, blank=False, related_name='reduction_runs')
+    created = models.DateTimeField(auto_now_add=True, blank=False)
     started_by = models.IntegerField(null=True, blank=True)
-    last_updated = models.DateTimeField(auto_now=True,blank=False)
+    last_updated = models.DateTimeField(auto_now=True, blank=False)
     status = models.ForeignKey(Status, blank=False, related_name='+', default=1)
     started = models.DateTimeField(null=True, blank=True)
     finished = models.DateTimeField(null=True, blank=True)
-    message = models.CharField(max_length=255,blank=True)
+    message = models.CharField(max_length=255, blank=True)
     graph = SeparatedValuesField(null=True, blank=True)
 
     def __unicode__(self):
