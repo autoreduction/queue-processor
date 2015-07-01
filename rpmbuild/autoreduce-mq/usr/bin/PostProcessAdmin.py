@@ -204,8 +204,16 @@ class PostProcessAdmin:
             sys.stderr = errFile
             try:
                 reduce_script = imp.load_source('reducescript', os.path.join(self.reduction_script, "reduce.py"))
-                reduce_script = self.replace_variables(reduce_script)
-                out_directories = reduce_script.main(input_file=str(self.data_file), output_dir=str(reduce_result_dir))
+                try:
+                    skip_numbers = reduce_script.SKIP_RUNS
+                except:
+                    skip_numbers = []
+                    pass
+                if self.data['run_number'] not in skip_numbers:
+                    reduce_script = self.replace_variables(reduce_script)
+                    out_directories = reduce_script.main(input_file=str(self.data_file), output_dir=str(reduce_result_dir))
+                else:
+                    self.data['message'] = "Run has been skipped in script"
             except Exception as e:
                 self.copy_temp_directory(reduce_result_dir)
                 raise
