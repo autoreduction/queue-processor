@@ -54,8 +54,8 @@ def get_data_and_check(last_run_file):
 def validate_input(inp):
     if not inp["inst_name"].isalpha():
         raise ValueError("Invalid instrument name")
-    if not inp["max_run"] > inp["min_run"]:
-        raise ValueError("Max run must be greater than min run")
+    if not inp["max_run"] >= inp["min_run"]:
+        raise ValueError("Max run must be greater or equal to min run")
     if not re.match(r"^\d\d_\d$", inp["cycle"]):
         raise ValueError("Cycle is not in the correct format")
     if not (inp["rename"] == "y" or inp["rename"] == "n"):
