@@ -4,6 +4,7 @@ Post Process Administrator. It kicks off cataloging and reduction jobs.
 """
 import logging, json, socket, os, sys, time, shutil, imp, stomp, re, errno, traceback
 import logging.handlers
+from contextlib import contextmanager
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -16,11 +17,33 @@ logger.addHandler(handler)
 logging.getLogger('stomp').setLevel(logging.INFO)
 
 
-REDUCTION_DIRECTORY = '/isis/NDX%s/user/scripts/autoreduction'  # %(instrument)
+REDUCTION_DIRECTORY = '/isis/NDX%s/user/scripts/autoreduction'  # %(instrument) This is where scripts are stored
 ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s'  # %(instrument, cycle, experiment_number, run_number)
 CEPH_DIRECTORY = '/instrument/%s/CYCLE20%s/RB%s/autoreduced/%s'  # %(instrument, cycle, experiment_number, run_number)
 TEMP_ROOT_DIRECTORY = '/autoreducetmp'
 CEPH_INSTRUMENTS = ['LET', 'MARI', 'MAPS', 'MERLIN']  # A list of instruments which should save reduced data to CEPH, rather than the archive
+
+
+@contextmanager
+def stderr_redirected(output):
+    """
+    This context manager copies the file descriptor(fd) of stderr to the stream given in output.
+    The fd is at the C level and so picks up Mantid logs.
+    """
+    fd = sys.stderr.fileno()
+
+    def _redirect_stderr(output):
+        sys.stderr.close()  # + implicit flush()
+        os.dup2(output.fileno(), fd)  # fd writes to 'to' file
+        sys.stderr = os.fdopen(fd, 'w')  # Python writes to fd
+
+    with os.fdopen(os.dup(fd), 'w') as old_stderr:
+        with open(output, 'w') as file:
+            _redirect_stderr(file)
+        try:
+            yield  # allow code to be run with the redirected stderr
+        finally:
+            _redirect_stderr(old_stderr)  # restore stderr.
 
 
 def copytree(src, dst):
@@ -195,9 +218,10 @@ class PostProcessAdmin:
             # Set the output to be the logfile
             sys.stdout = out_file
             try:
-                reduce_script = imp.load_source('reducescript', os.path.join(self.reduction_script, "reduce.py"))
-                reduce_script = self.replace_variables(reduce_script)
-                out_directories = reduce_script.main(input_file=str(self.data_file), output_dir=str(reduce_result_dir))
+                with stderr_redirected(mantid_log):
+                    reduce_script = imp.load_source('reducescript', os.path.join(self.reduction_script, "reduce.py"))
+                    reduce_script = self.replace_variables(reduce_script)
+                    out_directories = reduce_script.main(input_file=str(self.data_file), output_dir=str(reduce_result_dir))
             except Exception as e:
                 with open(script_err, "w") as f:
                     f.writelines(str(e) + "\n")
@@ -205,9 +229,8 @@ class PostProcessAdmin:
                 self.copy_temp_directory(reduce_result_dir, reduce_result_dir_tail_length)
                 raise
             finally:
-                # Reset outputs back to default
+                # Reset output back to default
                 sys.stdout = sys.__stdout__
-                sys.stderr = sys.__stderr__
                 out_file.close()
 
             logger.info("Reduction subprocess completed.")
