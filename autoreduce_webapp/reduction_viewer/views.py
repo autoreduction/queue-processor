@@ -1,18 +1,14 @@
-from django.shortcuts import render
-from django.template import RequestContext
-from django.shortcuts import render_to_response, redirect
+from django.shortcuts import redirect
 from django.contrib.auth import logout as django_logout, authenticate, login
-from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from autoreduce_webapp.uows_client import UOWSClient
 from autoreduce_webapp.icat_communication import ICATCommunication
-from autoreduce_webapp.settings import UOWS_LOGIN_URL, LOG_FILE, LOG_LEVEL
+from autoreduce_webapp.settings import UOWS_LOGIN_URL
 from reduction_viewer.models import Experiment, ReductionRun, Instrument
 from reduction_viewer.utils import StatusUtils
 from reduction_viewer.view_utils import deactivate_invalid_instruments
 from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, require_staff
-from django.http import HttpResponse
-import operator 
+import operator
 import logging
 logger = logging.getLogger(__name__)
 
