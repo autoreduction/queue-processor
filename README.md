@@ -81,16 +81,16 @@ ActiveMQ logs can by default be found in /activemq-install-dir/data.
 
 5. At present create /autoreducetmp folder can change owner and group to user that will be used to run queueProcessor (to store temporary created reduction files)
 
-6.  At present specify the location where the script and reduced data get stored by modifying the instrument_dir variable in the method reduce() of python file /usr/bin/PostProcessAdmin.py
+6.  At present specify the location where the script and reduced data get stored by modifying REDUCTION_DIRECTORY, ARCHIVE_DIRECTORY and CEPH_DIRECTORY of python file /usr/bin/PostProcessAdmin.py
 
-7.  Type: `sudo python /usr/bin/queueProcessor.py` or to start this as a daemon type `python /usr/bin/queueProcessor_daemon.py start`
+7.  To start this as a daemon type `python /usr/bin/queueProcessor_daemon.py start` as the user you want to use to run queueProcessor
 
-Logging associated with the Logger used in the python worker script gets stored in `/var/log/mantid_autoreduce_worker.log` (optionally change this in `/usr/bin/Configuration.py`).  
+Logging associated with the Logger used in the python worker script gets stored in `/var/log/autoreduction.log`, at present in PostProcessAdmin.py.  
 
 To check rpm and uninstall do `rpm -qa | grep autoreduce` and `rpm -evv name-of-rpm-package`.
 
 In step 4 if the key python line reads: `instrument_dir = "/home/autoreducetmp/" + self.instrument.lower() + "/"` then it is assumed that the reduce.py for a given instrument is located at `reduce_script_path = instrument_dir + "scripts/reduce.py"` and the output will be stored at `reduce_result_dir = instrument_dir + "results/" + self.proposal + "/"`
 
-To test that it works copy content of folder https://github.com/mantidproject/autoreduce/tree/master/ISISPostProcessRPM/rpmbuild/autoreduce-mq/test into "~/tmp/". 
+To test that it works copy content of folder /ISISPostProcessRPM/rpmbuild/autoreduce-mq/test into "~/tmp/". 
 Edit the sendMessage.py file and change the message1 data_file property to point at the testData.txt within the tmp folder you have chosen.
 Then in this directory type: `python sendMessage.py`. A file ./hrpd/results/RB-1310123/result_hrpd.txt should appear containing just the text string "something".
