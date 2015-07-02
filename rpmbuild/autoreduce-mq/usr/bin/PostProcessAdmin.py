@@ -5,6 +5,7 @@ Post Process Administrator. It kicks off cataloging and reduction jobs.
 import logging, json, socket, os, sys, time, shutil, imp, stomp, re, errno, traceback
 import logging.handlers
 from contextlib import contextmanager
+from distutils.dir_util import copy_tree
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -181,14 +182,14 @@ class PostProcessAdmin:
 
             # specify instrument directory
             cycle = re.match(r'.*cycle_(\d\d_\d).*', self.data_file.lower()).group(1)
-            if self.instrument.upper() in CEPH_INSTRUMENTS:
+            if self.instrument in CEPH_INSTRUMENTS:
                 cycle = re.sub('[_]', '', cycle)
-                instrument_dir = CEPH_DIRECTORY % (self.instrument.upper(), cycle, self.data['rb_number'], self.data['run_number'])
-                if self.instrument.upper() in EXCITATION_INSTRUMENTS:
+                instrument_dir = CEPH_DIRECTORY % (self.instrument, cycle, self.data['rb_number'], self.data['run_number'])
+                if self.instrument in EXCITATION_INSTRUMENTS:
                     #Excitations would like to remove the run number folder at the end
                     instrument_dir = instrument_dir[:instrument_dir.rfind('/')+1]
             else:
-                instrument_dir = ARCHIVE_DIRECTORY % (self.instrument.upper(), cycle, self.data['rb_number'], self.data['run_number'])
+                instrument_dir = ARCHIVE_DIRECTORY % (self.instrument, cycle, self.data['rb_number'], self.data['run_number'])
 
             # specify script to run and directory
             if os.path.exists(os.path.join(self.reduction_script, "reduce.py")) is False:
@@ -199,7 +200,7 @@ class PostProcessAdmin:
             
             # specify directory where autoreduction output goes
             reduce_result_dir = TEMP_ROOT_DIRECTORY + instrument_dir
-            if self.instrument.upper() not in EXCITATION_INSTRUMENTS:
+            if self.instrument not in EXCITATION_INSTRUMENTS:
                 run_output_dir = os.path.join(TEMP_ROOT_DIRECTORY, instrument_dir[:instrument_dir.rfind('/')+1])
             else:
                 run_output_dir = reduce_result_dir
@@ -300,13 +301,13 @@ class PostProcessAdmin:
         exists"""
         copy_destination = temp_result_dir[len(TEMP_ROOT_DIRECTORY):]
 
-        if os.path.isdir(copy_destination):
+        if os.path.isdir(copy_destination) and self.instrument not in EXCITATION_INSTRUMENTS:
             self._remove_directory(copy_destination)
 
         self.data['reduction_data'].append(linux_to_windows_path(copy_destination))
         logger.info("Moving %s to %s" % (temp_result_dir, copy_destination))
         try:
-            shutil.copytree(temp_result_dir, copy_destination)
+            copy_tree(temp_result_dir, copy_destination)
         except Exception, e:
             self.log_and_message("Unable to copy to %s - %s" % (copy_destination, e))
 
