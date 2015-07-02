@@ -123,8 +123,8 @@ class PostProcessAdmin:
                 raise ValueError("rb_number is missing")
                 
             if data.has_key('run_number'):
-                self.run_number = str(data['run_number'])
-                logger.debug("run_number: %s" % self.run_number)
+                self.run_number = str(int(data['run_number']))  # Cast to int to remove trailing zeros
+                logger.debug("run_number: %s" % str(self.run_number))
             else:
                 raise ValueError("run_number is missing")
                 
@@ -184,12 +184,12 @@ class PostProcessAdmin:
             cycle = re.match(r'.*cycle_(\d\d_\d).*', self.data_file.lower()).group(1)
             if self.instrument in CEPH_INSTRUMENTS:
                 cycle = re.sub('[_]', '', cycle)
-                instrument_dir = CEPH_DIRECTORY % (self.instrument, cycle, self.data['rb_number'], self.data['run_number'])
+                instrument_dir = CEPH_DIRECTORY % (self.instrument, cycle, self.proposal, self.run_number)
                 if self.instrument in EXCITATION_INSTRUMENTS:
                     #Excitations would like to remove the run number folder at the end
                     instrument_dir = instrument_dir[:instrument_dir.rfind('/')+1]
             else:
-                instrument_dir = ARCHIVE_DIRECTORY % (self.instrument, cycle, self.data['rb_number'], self.data['run_number'])
+                instrument_dir = ARCHIVE_DIRECTORY % (self.instrument, cycle, self.proposal, self.run_number)
 
             # specify script to run and directory
             if os.path.exists(os.path.join(self.reduction_script, "reduce.py")) is False:
@@ -219,7 +219,7 @@ class PostProcessAdmin:
             # Load reduction script
             sys.path.append(self.reduction_script)
 
-            log_and_err_name = "RB" + self.data['rb_number'] + "Run" + self.data['run_number']
+            log_and_err_name = "RB" + self.proposal + "Run" + self.run_number
             script_out = os.path.join(log_dir, log_and_err_name + "Script.out")
             mantid_log = os.path.join(log_dir, log_and_err_name + "Mantid.log")
 
