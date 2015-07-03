@@ -204,19 +204,21 @@ class InstrumentVariablesUtils(object):
         """
         Reloads script in variables to match that on disk (inefficient)
         """
-        variable = variables[0]  # Assume script will be the same for all variables
+        variable = variables[0]  # Assume old script will be the same for all variables
+        instrument_name = variable.instrument.name
 
         script_cache_mod, script_vars_cache_mod = ScriptUtils().get_cache_scripts_modified(variable.scripts.all())
-        script_file_mod, script_vars_file_mod = self.__get_scripts_modified(variable.instrument.name)
+        script_file_mod, script_vars_file_mod = self.__get_scripts_modified(instrument_name)
 
         if script_cache_mod < script_file_mod:
             logger.info("Reduce.py script out of date, reloading")
-            script_binary = self.__load_reduction_script(variable.instrument.name)
+            script_binary = self.__load_reduction_script(instrument_name)
             self.__add_new_script_to_variables(variables, script_binary, 'reduce.py')
 
         if script_vars_cache_mod < script_vars_file_mod:
             logger.info("Reduce_vars.py script out of date, reloading")
-            reduce_vars_script, vars_script_binary = self.__load_reduction_vars_script(variable.instrument.name)
+            reduce_vars_script, vars_script_binary = self.__load_reduction_vars_script(instrument_name)
+            variables = self.get_default_variables(instrument_name, reduce_vars_script)
             self.__add_new_script_to_variables(variables, vars_script_binary, 'reduce_vars.py')
 
         return variables
