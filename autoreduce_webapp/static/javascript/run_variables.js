@@ -1,5 +1,6 @@
 (function(){
     var formUrl = $('#run_variables').attr('action');
+    var use_current_script = false;
 
     var previewScript = function previewScript(event){
         var submitAction = function submitAction(){
@@ -235,6 +236,8 @@
             var $form = $('#run_variables');
             if($form.length===0) $form = $('#instrument_variables');
             $form.attr('action', formUrl);
+            $form.createElement("use_current_script");
+            $form.elements["use_current_script"].value = use_current_script;
             window.onbeforeunload = undefined;
             $form.submit();
         };
