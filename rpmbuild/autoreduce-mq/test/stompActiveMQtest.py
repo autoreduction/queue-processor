@@ -29,7 +29,7 @@ conn.start()
 
 # if you have setup simpleAuthentication in /opt/activemq/conf/activemq.xml
 # then put in username and password 
-conn.connect('autoreduce', 'l4d3sJfKS4', wait=False)
+conn.connect('autoreduce', 'xxxxxxxx', wait=False)
 
 conn.subscribe(destination='/queue/test', id=1, ack='auto')
 
