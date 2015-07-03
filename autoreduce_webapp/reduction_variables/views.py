@@ -274,7 +274,7 @@ def run_summary(request, run_number, run_version=0):
         else:
             standard_vars[variable.name] = variable
 
-    default_variables = InstrumentVariablesUtils().get_variables_for_run(reduction_run)
+    default_variables = InstrumentVariablesUtils().get_variables_for_run(reduction_run, False)
     default_standard_variables = {}
     default_advanced_variables = {}
     for variable in default_variables:
@@ -337,7 +337,7 @@ def run_confirmation(request, run_number, run_version=0):
         script_vars.save()
 
         run_variables = reduction_run.run_variables.all()
-        default_variables = InstrumentVariablesUtils().get_variables_for_run(reduction_run)
+        default_variables = InstrumentVariablesUtils().get_variables_for_run(reduction_run, False)
         new_variables = []
 
         for key,value in request.POST.iteritems():

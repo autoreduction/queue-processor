@@ -250,9 +250,10 @@ class InstrumentVariablesUtils(object):
 
         return variables
 
-    def get_variables_for_run(self, reduction_run):
+    def get_variables_for_run(self, reduction_run, use_up_to_date):
         """
         Fetches the appropriate variables for the given reduction run.
+        If use_up_to_date is on the scripts that are currently on the server are used.
         If instrument variables with a matching experiment reference number is found then these will be used
         otherwise the variables with the closest run start will be used.
         If no variable are found, default variables are created for the instrument and those are returned.
@@ -266,7 +267,10 @@ class InstrumentVariablesUtils(object):
             except AttributeError:
                 # Still not found any variables, we better create some
                 variables = self.set_default_instrument_variables(reduction_run.instrument.name)
-        variables = self.__check_script_up_to_date(variables)  # For the moment reload script on all new runs
+
+        if use_up_to_date:
+            variables = self.__check_script_up_to_date(variables)
+
         return variables
 
     def get_current_script_text(self, instrument_name):
