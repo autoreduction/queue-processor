@@ -448,13 +448,14 @@ def preview_script(request, instrument, run_number=0, experiment_reference=0):
         experiment_reference = request.POST.get('experiment_reference', None)
         start_run = request.POST.get('start_run', None)
         lookup_run_number = request.POST.get('run_number', None)
+        lookup_run_version = request.POST.get('run_version', None)
         use_current_script = request.POST.get('use_current_script', u"false").lower() == u"true"
         default_variables = None
         if not use_current_script:
             if lookup_run_number is not None:
                 try:
-                    run = ReductionRun.objects.get(run_number=lookup_run_number)
-                    default_variables = RunVariable.objects.filter(reduction_run=run)
+                    run = ReductionRun.objects.get(run_number=lookup_run_number, run_version=lookup_run_version)
+                    default_variables = RunVariable.objects.filter(reduction_run=run, )
                 except Exception as e:
                     logger.info("Run not found :" + str(e))
             else:
