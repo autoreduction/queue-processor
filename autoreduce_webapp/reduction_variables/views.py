@@ -446,21 +446,32 @@ def preview_script(request, instrument, run_number=0, experiment_reference=0):
 
     elif request.method == 'POST':
         experiment_reference = request.POST.get('experiment_reference', None)
-        run_number = request.POST.get('start_run', None)
+        start_run = request.POST.get('start_run', None)
+        lookup_run_number = request.POST.get('run_number', None)
+        use_current_script = request.POST.get('use_current_script', u"false").lower() == u"true"
         default_variables = None
-        if experiment_reference > 0:
-            default_variables = InstrumentVariable.objects.filter(experiment_reference=experiment_reference, instrument=instrument)
-        elif run_number > 0:
-            default_variables = InstrumentVariable.objects.filter(start_run=run_number, instrument=instrument)
+        if not use_current_script:
+            if lookup_run_number is not None:
+                try:
+                    run = ReductionRun.objects.get(run_number=lookup_run_number)
+                    default_variables = RunVariable.objects.filter(reduction_run=run)
+                except Exception as e:
+                    logger.info("Run not found :" + str(e))
+            else:
+                if experiment_reference > 0:
+                    default_variables = InstrumentVariable.objects.filter(experiment_reference=experiment_reference, instrument=instrument)
+                elif start_run > 0:
+                    default_variables = InstrumentVariable.objects.filter(start_run=start_run, instrument=instrument)
+
         if default_variables:
-            script, script_vars = ScriptUtils().get_reduce_scripts(default_variables[0].scripts.all())
-            script_file = script.decode("utf-8")
-            script_vars_file = script_vars.decode("utf-8")
+            script_binary, script_vars_binary = ScriptUtils().get_reduce_scripts(default_variables[0].scripts.all())
         else:
             script_binary, script_vars_binary = InstrumentVariablesUtils().get_current_script_text(instrument)
-            script_file = script_binary.decode("utf-8")
-            script_vars_file = script_vars_binary.decode("utf-8")
             default_variables = InstrumentVariablesUtils().get_default_variables(instrument)
+
+        script_file = script_binary.decode("utf-8")
+        script_vars_file = script_vars_binary.decode("utf-8")
+
         for key,value in request.POST.iteritems():
             if 'var-' in key:
                 if 'var-advanced-' in key:

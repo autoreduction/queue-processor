@@ -6,6 +6,7 @@
         <form id="run_variables" method="POST" action="{% url 'run_confirmation' run_number=run_number run_version=run_version %}" class="form-horizontal">
             {% csrf_token %}
             <input type="hidden" name="use_current_script" id="use_current_script" value="false">
+            <input type="hidden" name="run_number" value="{{ run_number }} ">
             <div class="row">
                 <div class="col-md-9">
                     {% include "snippets/form_warnings.html" %}
