@@ -20,6 +20,7 @@ class Listener(object):
     def __init__(self, client):
         self._client = client
         self._data_dict = {}
+        self._priority = ''
 
     def clean_up_reduction_script(self, script_path):
         if os.path.exists(script_path):
@@ -36,7 +37,9 @@ class Listener(object):
         connection.close()
 
         destination = headers["destination"]
-        # Load the JSON message into a dictionary
+        self._priority = headers["priority"]
+        logger.info("Dest: %s Prior: %s" % (destination, self._priority))
+        # Load the JSON message and header into dictionaries
         try:
             self._data_dict = json.loads(message)
         except:
@@ -101,15 +104,13 @@ class Listener(object):
                 script_path, arguments = ReductionVariablesUtils().get_script_path_and_arguments(reduction_run.run_variables.all())
                 self._data_dict['reduction_script'] = script_path
                 self._data_dict['reduction_arguments'] = arguments
-                self._client.send('/queue/ReductionPending', json.dumps(self._data_dict))     
-                logger.info("Run %s ready for reduction" % self._data_dict['run_number'])
-                logger.info("Reduction file: %s" % self._data_dict['reduction_script'])   
             else:
                 self._data_dict['reduction_script'] = InstrumentVariablesUtils().get_temporary_script(instrument.name)
                 self._data_dict['reduction_arguments'] = {}
-                self._client.send('/queue/ReductionPending', json.dumps(self._data_dict))
-                logger.info("Run %s ready for reduction" % self._data_dict['run_number'])
-                logger.info("Reduction file: %s" % self._data_dict['reduction_script'])
+
+            self._client.send('/queue/ReductionPending', json.dumps(self._data_dict), priority=self._priority)
+            logger.info("Run %s ready for reduction" % self._data_dict['run_number'])
+            logger.info("Reduction file: %s" % self._data_dict['reduction_script'])
         else:
             logger.error("An invalid attempt to queue an existing reduction run was captured. Experiment: %s, Run Number: %s, Run Version %s" % (self._data_dict['rb_number'], self._data_dict['run_number'], self._data_dict['run_version']))
 
@@ -262,11 +263,11 @@ class Client(object):
             self._connection.stop()
         self._connection = None
 
-    def send(self, destination, message, persistent='true'):
+    def send(self, destination, message, persistent='true', priority='4'):
         if self._connection is None or not self._connection.is_connected():
             self._disconnect()
             self._connection = self.get_connection()
-        self._connection.send(destination, message, persistent=persistent)
+        self._connection.send(destination, message, persistent=persistent, priority=priority)
         logger.debug("[%s] send message to %s" % (self._consumer_name, destination))
 
 

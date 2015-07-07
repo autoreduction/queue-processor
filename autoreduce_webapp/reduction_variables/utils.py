@@ -433,7 +433,7 @@ class MessagingUtils(object):
             'facility':FACILITY,
             'message':'',
         }
-        message_client.send('/queue/ReductionPending', json.dumps(data_dict))    
+        message_client.send('/queue/ReductionPending', json.dumps(data_dict), priority='0')
         message_client.stop()
 
 class ScriptUtils(object):
