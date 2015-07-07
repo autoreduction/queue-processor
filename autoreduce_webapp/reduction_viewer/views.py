@@ -66,7 +66,6 @@ def run_queue(request):
 @login_and_uows_valid
 @render_with('run_list.html')
 def run_list(request):
-    logger.info("Start run_list")
     context_dictionary = {}
     instruments = []
     # Owned instruments is populated on login
@@ -89,8 +88,6 @@ def run_list(request):
             if instrument_names:
                 experiments = request.session.get('experiments_to_show', icat.get_valid_experiments_for_instruments(int(request.user.username), instrument_names))
                 request.session['experiments_to_show'] = experiments
-
-    logger.info("Get Experiments to show")
 
     for instrument_name in instrument_names:
         try:
@@ -164,8 +161,6 @@ def run_list(request):
         instrument_obj['experiments'] = sorted(instrument_obj['experiments'], key=lambda k: k['reference_number'], reverse=True)
         instruments.append(instrument_obj)
 
-    logger.info("Show experiments")
-
     # Generate notification for any errored runs    
     error_runs = ReductionRun.objects.filter(status=StatusUtils().get_error())
     if error_runs:
@@ -186,8 +181,6 @@ def run_list(request):
             }
             notifications.append(error_notification)
         context_dictionary['notifications'] = notifications
-
-    logger.info("Show error notifications")
 
     context_dictionary['instrument_list'] = instruments
     if owned_instruments:
