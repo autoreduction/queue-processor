@@ -274,14 +274,15 @@ def run_summary(request, run_number, run_version=0):
         else:
             standard_vars[variable.name] = variable
 
-    default_variables = InstrumentVariablesUtils().get_variables_for_run(reduction_run, False)
-    default_standard_variables = {}
-    default_advanced_variables = {}
-    for variable in default_variables:
-        if variable.is_advanced:
-            default_advanced_variables[variable.name] = variable
-        else:
-            default_standard_variables[variable.name] = variable
+    # Commented out as no button to update to Instrument specified variables yet
+    # default_variables = InstrumentVariablesUtils().get_variables_for_run(reduction_run, False)
+    # default_standard_variables = {}
+    # default_advanced_variables = {}
+    # for variable in default_variables:
+    #     if variable.is_advanced:
+    #         default_advanced_variables[variable.name] = variable
+    #     else:
+    #         default_standard_variables[variable.name] = variable
 
     current_variables = InstrumentVariablesUtils().get_default_variables(reduction_run.instrument.name)
     current_standard_variables = {}
@@ -297,8 +298,8 @@ def run_summary(request, run_number, run_version=0):
         'run_version' : run_version,
         'standard_variables' : standard_vars,
         'advanced_variables' : advanced_vars,
-        'default_standard_variables' : default_standard_variables,
-        'default_advanced_variables' : default_advanced_variables,
+        'default_standard_variables' : standard_vars,
+        'default_advanced_variables' : advanced_vars,
         'current_standard_variables' : current_standard_variables,
         'current_advanced_variables' : current_advanced_variables,
         'instrument' : reduction_run.instrument,
