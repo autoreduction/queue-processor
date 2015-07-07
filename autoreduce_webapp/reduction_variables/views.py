@@ -330,14 +330,20 @@ def run_confirmation(request, run_number, run_version=0):
             new_data_location.save()
             new_job.data_location.add(new_data_location)
 
-        script_binary, script_vars_binary = InstrumentVariablesUtils().get_current_script_text(instrument.name)
+        use_current_script = request.POST.get('use_current_script', u"false").lower() == u"true"
+        run_variables = reduction_run.run_variables.all()
+
+        if use_current_script:
+            script_binary, script_vars_binary = InstrumentVariablesUtils().get_current_script_text(instrument.name)
+        else:
+            script_binary, script_vars_binary = ScriptUtils().get_reduce_scripts(run_variables[0].scripts.all())
+
         script = ScriptFile(script=script_binary, file_name='reduce.py')
         script.save()
         script_vars = ScriptFile(script=script_vars_binary, file_name='reduce_vars.py')
         script_vars.save()
 
-        run_variables = reduction_run.run_variables.all()
-        default_variables = InstrumentVariablesUtils().get_variables_for_run(reduction_run, False)
+        default_variables = InstrumentVariablesUtils().get_variables_for_run(reduction_run, use_current_script)
         new_variables = []
 
         for key,value in request.POST.iteritems():
@@ -455,7 +461,7 @@ def preview_script(request, instrument, run_number=0, experiment_reference=0):
             if lookup_run_number is not None:
                 try:
                     run = ReductionRun.objects.get(run_number=lookup_run_number, run_version=lookup_run_version)
-                    default_variables = RunVariable.objects.filter(reduction_run=run, )
+                    default_variables = RunVariable.objects.filter(reduction_run=run)
                 except Exception as e:
                     logger.info("Run not found :" + str(e))
             else:

@@ -197,6 +197,7 @@ class InstrumentVariablesUtils(object):
         script = ScriptFile(script=script_binary, file_name=script_name)
         script.save()
         for variable in variables:
+            variable.save()
             variable.scripts.add(script)
             variable.save()
 
@@ -210,16 +211,16 @@ class InstrumentVariablesUtils(object):
         script_cache_mod, script_vars_cache_mod = ScriptUtils().get_cache_scripts_modified(variable.scripts.all())
         script_file_mod, script_vars_file_mod = self.__get_scripts_modified(instrument_name)
 
-        if script_cache_mod < script_file_mod:
-            logger.info("Reduce.py script out of date, reloading")
-            script_binary = self.__load_reduction_script(instrument_name)
-            self.__add_new_script_to_variables(variables, script_binary, 'reduce.py')
-
         if script_vars_cache_mod < script_vars_file_mod:
             logger.info("Reduce_vars.py script out of date, reloading")
             reduce_vars_script, vars_script_binary = self.__load_reduction_vars_script(instrument_name)
             variables = self.get_default_variables(instrument_name, reduce_vars_script)
             self.__add_new_script_to_variables(variables, vars_script_binary, 'reduce_vars.py')
+
+        if script_cache_mod < script_file_mod:
+            logger.info("Reduce.py script out of date, reloading")
+            script_binary = self.__load_reduction_script(instrument_name)
+            self.__add_new_script_to_variables(variables, script_binary, 'reduce.py')
 
         return variables
 
