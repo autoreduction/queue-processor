@@ -92,6 +92,12 @@ def run_list(request):
             if instrument_names:
                 experiments = request.session.get('experiments_to_show', icat.get_valid_experiments_for_instruments(int(request.user.username), instrument_names))
                 request.session['experiments_to_show'] = experiments
+
+    # get database status labels up front to reduce queries to database
+    status_error = StatusUtils().get_error()
+    status_queued = StatusUtils().get_queued()
+    status_processing = StatusUtils().get_processing()
+
     for instrument_name in instrument_names:
         try:
             instrument = Instrument.objects.get(name=instrument_name)
@@ -127,14 +133,13 @@ def run_list(request):
             experiment_processing_runs = 0
             experiment_error_runs = 0
 
+            # get all runs for experiment
             runs = ReductionRun.objects.filter(experiment=experiment).order_by('-created')
-            for run in runs:
-                if run.status == StatusUtils().get_error():
-                    experiment_error_runs += 1
-                if run.status == StatusUtils().get_queued():
-                    experiment_queued_runs += 1
-                if run.status == StatusUtils().get_processing():
-                    experiment_processing_runs += 1
+
+            # count how many are in status error, queued and processing
+            experiment_error_runs = runs.filter(status__exact=status_error).count()
+            experiment_queued_runs = runs.filter(status__exact=status_queued).count()
+            experiment_processing_runs = runs.filter(status__exact=status_processing).count()
 
             # Add experiment stats to instrument
             instrument_queued_runs += experiment_queued_runs
