@@ -129,10 +129,6 @@ def run_list(request):
 
         matching_experiments = Experiment.objects.filter(reference_number__in=reference_numbers)
         for experiment in matching_experiments:
-            experiment_queued_runs = 0
-            experiment_processing_runs = 0
-            experiment_error_runs = 0
-
             # get all runs for experiment
             runs = ReductionRun.objects.filter(experiment=experiment).order_by('-created')
 
@@ -171,7 +167,7 @@ def run_list(request):
         instruments.append(instrument_obj)
     
     # Generate notification for any errored runs    
-    error_runs = ReductionRun.objects.filter(status=StatusUtils().get_error())
+    error_runs = ReductionRun.objects.filter(status=status_error)
     if error_runs:
         notifications = []
         for run in error_runs:
