@@ -1,16 +1,15 @@
-from django.shortcuts import render,redirect
+from django.shortcuts import redirect
 from django.core.context_processors import csrf
 from django.template import RequestContext
 from django.shortcuts import render_to_response
-from django.views.generic.base import View
+from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
 from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, require_staff
 from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFile
 from reduction_variables.utils import InstrumentVariablesUtils, VariableUtils, MessagingUtils, ScriptUtils
 from reduction_viewer.models import Instrument, ReductionRun, DataLocation
 from reduction_viewer.utils import StatusUtils
-from autoreduce_webapp.icat_communication import ICATCommunication
-from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL
+
 import logging, re
 logger = logging.getLogger(__name__)
 

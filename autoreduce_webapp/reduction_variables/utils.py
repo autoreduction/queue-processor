@@ -1,12 +1,11 @@
 import logging, os, sys, imp, uuid, re, json, time
 sys.path.append(os.path.join("../", os.path.dirname(os.path.dirname(__file__))))
 os.environ["DJANGO_SETTINGS_MODULE"] = "autoreduce_webapp.settings"
-from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL, BASE_DIR, ACTIVEMQ, TEMP_OUTPUT_DIRECTORY, REDUCTION_DIRECTORY, FACILITY
+from autoreduce_webapp.settings import ACTIVEMQ, TEMP_OUTPUT_DIRECTORY, REDUCTION_DIRECTORY, FACILITY
 from autoreduce_webapp.queue_processor import Client as ActiveMQClient
 logger = logging.getLogger('django')
-from django.db import models
 from reduction_variables.models import InstrumentVariable, ScriptFile, RunVariable
-from reduction_viewer.models import ReductionRun, Instrument, Notification
+from reduction_viewer.models import ReductionRun, Notification
 from reduction_viewer.utils import InstrumentUtils, StatusUtils
 from autoreduce_webapp.icat_communication import ICATCommunication
 
@@ -309,7 +308,7 @@ class InstrumentVariablesUtils(object):
                     is_advanced=False, 
                     type=VariableUtils().get_type_string(reduce_script.standard_vars[key]),
                     start_run = 0,
-                    help_text=self.get_help_text('standard_vars', key, reduce_script),
+                    help_text=self.get_help_text('standard_vars', key, instrument_name, reduce_script),
                     )
                 variables.append(variable)
         if 'advanced_vars' in dir(reduce_script):
@@ -321,12 +320,12 @@ class InstrumentVariablesUtils(object):
                     is_advanced=True, 
                     type=VariableUtils().get_type_string(reduce_script.advanced_vars[key]),
                     start_run = 0,
-                    help_text=self.get_help_text('advanced_vars', key, reduce_script),
+                    help_text=self.get_help_text('advanced_vars', key, instrument_name, reduce_script),
                     )
                 variables.append(variable)
         return variables
 
-    def get_help_text(self, dictionary, key, reduce_script=None):
+    def get_help_text(self, dictionary, key, instrument_name, reduce_script=None):
         if not dictionary or not key:
             return ""
         if not reduce_script:
