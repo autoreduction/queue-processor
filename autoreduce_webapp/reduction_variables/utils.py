@@ -200,26 +200,16 @@ class InstrumentVariablesUtils(object):
             variable.scripts.add(script)
             variable.save()
 
-    def __check_script_up_to_date(self, variables):
+    def __get_variables_from_script(self, instrument_name):
         """
-        Reloads script in variables to match that on disk (inefficient)
+        Reloads script in variables to match that on disk. For now ignore modification time check.
         """
-        variable = variables[0]  # Assume old script will be the same for all variables
-        instrument_name = variable.instrument.name
+        reduce_vars_script, vars_script_binary = self.__load_reduction_vars_script(instrument_name)
+        variables = self.get_default_variables(instrument_name, reduce_vars_script)
+        self.__add_new_script_to_variables(variables, vars_script_binary, 'reduce_vars.py')
 
-        script_cache_mod, script_vars_cache_mod = ScriptUtils().get_cache_scripts_modified(variable.scripts.all())
-        script_file_mod, script_vars_file_mod = self.__get_scripts_modified(instrument_name)
-
-        if script_vars_cache_mod < script_vars_file_mod:
-            logger.info("Reduce_vars.py script out of date, reloading")
-            reduce_vars_script, vars_script_binary = self.__load_reduction_vars_script(instrument_name)
-            variables = self.get_default_variables(instrument_name, reduce_vars_script)
-            self.__add_new_script_to_variables(variables, vars_script_binary, 'reduce_vars.py')
-
-        if script_cache_mod < script_file_mod:
-            logger.info("Reduce.py script out of date, reloading")
-            script_binary = self.__load_reduction_script(instrument_name)
-            self.__add_new_script_to_variables(variables, script_binary, 'reduce.py')
+        script_binary = self.__load_reduction_script(instrument_name)
+        self.__add_new_script_to_variables(variables, script_binary, 'reduce.py')
 
         return variables
 
@@ -258,18 +248,19 @@ class InstrumentVariablesUtils(object):
         otherwise the variables with the closest run start will be used.
         If no variable are found, default variables are created for the instrument and those are returned.
         """
-        variables = InstrumentVariable.objects.filter(instrument=reduction_run.instrument, experiment_reference=reduction_run.experiment.reference_number)
-        # No experiment-specific variables, lets look for run number
-        if not variables:
-            try:
-                variables_run_start = InstrumentVariable.objects.filter(instrument=reduction_run.instrument,start_run__lte=reduction_run.run_number, experiment_reference__isnull=True ).order_by('-start_run').first().start_run
-                variables = InstrumentVariable.objects.filter(instrument=reduction_run.instrument,start_run=variables_run_start)
-            except AttributeError:
-                # Still not found any variables, we better create some
-                variables = self.set_default_instrument_variables(reduction_run.instrument.name)
-
+        instrument_name = reduction_run.instrument.name
         if use_up_to_date:
-            variables = self.__check_script_up_to_date(variables)
+            variables = self.__get_variables_from_script(instrument_name)
+        else:
+            variables = InstrumentVariable.objects.filter(instrument=reduction_run.instrument, experiment_reference=reduction_run.experiment.reference_number)
+            # No experiment-specific variables, lets look for run number
+            if not variables:
+                try:
+                    variables_run_start = InstrumentVariable.objects.filter(instrument=reduction_run.instrument,start_run__lte=reduction_run.run_number, experiment_reference__isnull=True ).order_by('-start_run').first().start_run
+                    variables = InstrumentVariable.objects.filter(instrument=reduction_run.instrument,start_run=variables_run_start)
+                except AttributeError:
+                    # Still not found any variables, we better create some
+                    variables = self.set_default_instrument_variables(instrument_name)
 
         return variables
 
