@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load view %}
+{% load static from staticfiles %}
 
 {% block body %}
     {% if instrument %}
@@ -27,4 +28,8 @@
             Instrument not found.
         </div>
     {% endif %}
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static "javascript/instrument_variables.js" %}"></script>
 {% endblock %}

@@ -79,7 +79,6 @@ def instrument_summary(request, instrument):
     for key in sorted(upcoming_variables_by_experiment_dict):
         upcoming_variables_by_experiment_ordered.append(upcoming_variables_by_experiment_dict[key])
     sorted(upcoming_variables_by_experiment_ordered, key=lambda r: r['experiment'])
-    
 
     context_dictionary = {
         'instrument' : instrument,
@@ -89,6 +88,12 @@ def instrument_summary(request, instrument):
     }
 
     return render_to_response('snippets/instrument_summary_variables.html', context_dictionary, RequestContext(request))
+
+@require_staff
+@render_with('instrument_summary.html')
+def delete_instrument_variables(request, instrument, start=0, end=0, experiment_reference=0):
+    logger.info("In delete method")
+
 
 @require_staff
 @render_with('instrument_variables.html')

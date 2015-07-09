@@ -15,7 +15,7 @@
                             <div class="panel-title">Current Variables</div>
                         </div>
                         <div class="panel-body">
-                            {% include "snippets/variables.html" with instrument_variables=current_variables instrument=instrument only %}
+                            {% include "snippets/variables.html" with instrument_variables=current_variables instrument=instrument upcoming=False only %}
                         </div>
                     </div>
                 </div>
@@ -36,7 +36,7 @@
                         </div>
                         <div class="panel-body zebra-rows">
                             {% for upcoming_variable in upcoming_variables_by_run %}
-                                {% include "snippets/variables.html" with instrument_variables=upcoming_variable instrument=instrument only %}
+                                {% include "snippets/variables.html" with instrument_variables=upcoming_variable instrument=instrument upcoming=True only %}
                             {% endfor %}
                         </div>
                     </div>

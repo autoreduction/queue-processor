@@ -10,6 +10,10 @@
             <a href="{% url 'preview_script_by_experiment' instrument=instrument.name experiment_reference=instrument_variables.experiment %}">preview reduction script</a>
             <br/>
             <a href="{% url 'instrument_variables_by_experiment' instrument=instrument.name experiment_reference=instrument_variables.experiment %}">edit variables</a>
+            {% if upcoming %}
+                <br/>
+                <a href="{% url 'delete_instrument_variables_by_experiment' instrument=instrument.name experiment_reference=instrument_variables.experiment %}">delete variables</a>
+            {% endif %}
         {% else %}
             <div class="run-numbers">
                 <div class="middle">
@@ -29,6 +33,16 @@
             <a href="{% url 'preview_script' instrument=instrument.name run_number=instrument_variables.run_start %}">preview reduction script</a>
             <br/>
             <a href="{% url 'instrument_variables' instrument=instrument.name start=instrument_variables.run_start end=instrument_variables.run_end %}">edit variables</a>
+            {% if upcoming %}
+                <br/>
+                <form id="delete_variables" method="POST" action="#">
+                    {% csrf_token %}
+                    <input type="hidden" id="delete_url" value="{% url 'delete_instrument_variables' instrument=instrument.name start=instrument_variables.run_start end=instrument_variables.run_end %}"/>
+                    <ul class="js-form-actions">
+                        <a href="#deleteVariables" id="deleteVariables">delete variables</a>
+                    </ul>
+                </form>
+            {% endif %}
         {% endif %}
     </div>
     <div class="col-md-8">
