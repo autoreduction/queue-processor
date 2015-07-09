@@ -18,6 +18,7 @@ class InstrumentVariable(models.Model):
     type = models.CharField(max_length=50, blank=False)
     is_advanced = models.BooleanField(default=False)
     scripts = models.ManyToManyField(ScriptFile)
+    tracks_script = models.BooleanField(default=True)
     help_text = models.CharField(max_length=300, blank=True, null=True, default='')
 
     def __unicode__(self):

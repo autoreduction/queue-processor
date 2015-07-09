@@ -102,6 +102,8 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
         # Truth value comes back as text so we'll compare it to a string of "True"
         is_run_range = request.POST.get("variable-range-toggle-value", "True") == "True"
 
+        track_scripts = request.POST.get("track_script_checkbox") == "on"
+
         if is_run_range:
             start = request.POST.get("run_start", 1)
             end = request.POST.get("run_end", None)
@@ -165,6 +167,7 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
                     value=post_variable, 
                     is_advanced=default_var.is_advanced, 
                     type=default_var.type,
+                    tracks_script=track_scripts,
                     )
                 if is_run_range:
                     variable.start_run = start
