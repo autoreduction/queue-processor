@@ -1,7 +1,16 @@
+{% load colour_table_rows %}
+
 <div class="panel panel-primary panel-small">
     <div class="panel-heading">Status</div>
     <div class="panel-body">
         {% if processing or queued %}
+            <div class="row">
+                <div class="col-md-4"><strong>Last run:</strong></div>
+                <div class="col-md-8">
+                    <a href="{% url 'run_summary' run_number=last_instrument_run.run_number run_version=last_instrument_run.run_version %}">{{ last_instrument_run.title }}</a>
+                    <strong class="text-{% colour_table_row last_instrument_run.status.value %}"> ({{ last_instrument_run.status }})</strong>
+                </div>
+            </div>
             {% if processing %}
                 <div class="row">
                     <div class="col-md-4"><strong>Currently processing:</strong></div>
@@ -31,6 +40,11 @@
                 </div>
             {% endif %}
         {% else %}
+            <div class="text-center">
+                <strong>Last run: </strong>
+                <a href="{% url 'run_summary' run_number=last_instrument_run.run_number run_version=last_instrument_run.run_version %}">{{ last_instrument_run.title }}</a>
+                <strong class="text-{% colour_table_row last_instrument_run.status.value %}"> ({{ last_instrument_run.status }})</strong>
+            </div>
             <div class="text-center">
                 All reduction jobs complete.
             </div>

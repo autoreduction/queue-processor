@@ -200,6 +200,7 @@ def instrument_summary(request, instrument):
         instrument_obj = Instrument.objects.get(name=instrument)
         context_dictionary = {
             'instrument' : instrument_obj,
+            'last_instrument_run' : ReductionRun.objects.filter(instrument=instrument_obj).order_by('-run_number')[0],
             'processing' : ReductionRun.objects.filter(instrument=instrument_obj, status=processing_status),
             'queued' : ReductionRun.objects.filter(instrument=instrument_obj, status=queued_status),
         }

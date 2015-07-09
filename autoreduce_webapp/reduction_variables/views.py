@@ -239,6 +239,7 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
 
         context_dictionary = {
             'instrument' : instrument,
+            'last_instrument_run' : ReductionRun.objects.filter(instrument=instrument).order_by('-run_number')[0],
             'processing' : ReductionRun.objects.filter(instrument=instrument, status=processing_status),
             'queued' : ReductionRun.objects.filter(instrument=instrument, status=queued_status),
             'standard_variables' : standard_vars,
