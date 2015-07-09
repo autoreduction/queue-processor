@@ -33,6 +33,7 @@ def instrument_summary(request, instrument):
             upcoming_variables_by_run_dict[variables.start_run] = {
                 'run_start': variables.start_run,
                 'run_end': 0, # We'll fill this in after
+                'tracks_script': variables.tracks_script,
                 'variables': [],
                 'instrument': instrument,
             }
@@ -58,6 +59,7 @@ def instrument_summary(request, instrument):
     current_vars = {
         'run_start': current_variables[0].start_run,
         'run_end': next_variable_run_start-1,
+        'tracks_script': current_variables[0].tracks_script,
         'variables': current_variables,
         'instrument': instrument,
     }
