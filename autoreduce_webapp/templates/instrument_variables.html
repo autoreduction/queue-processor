@@ -7,7 +7,7 @@
         {% if instrument.is_active %}
             <div class="row">
                 <div class="col-md-12 text-center">
-                    <h2>{{ instrument.name }}</h2>
+                    <h2>{{ instrument.name }} - Edit Future Configuration</h2>
                 </div>
             </div>
             <div class="row">
@@ -18,7 +18,7 @@
             <div class="row">
                 <div class="col-md-12 text-center">
                     <p>
-                        <a href="{% url 'instrument_summary' instrument=instrument %}">View upcoming saved variable changes</a>
+                        <a href="{% url 'instrument_summary' instrument=instrument %}">View upcoming saved configurations</a>
                     </p>
                 </div>
             </div>
