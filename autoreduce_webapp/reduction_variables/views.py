@@ -257,6 +257,7 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
             'minimum_run_start' : max(latest_completed_run, latest_processing_run),
             'upcoming_run_variables' : upcoming_run_variables,
             'editing' : editing,
+            'tracks_script' : variables[0].tracks_script,
         }
         context_dictionary.update(csrf(request))
 
