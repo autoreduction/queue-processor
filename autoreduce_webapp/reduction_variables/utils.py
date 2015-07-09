@@ -1,12 +1,11 @@
 import logging, os, sys, imp, uuid, re, json, time
 sys.path.append(os.path.join("../", os.path.dirname(os.path.dirname(__file__))))
 os.environ["DJANGO_SETTINGS_MODULE"] = "autoreduce_webapp.settings"
-from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL, BASE_DIR, ACTIVEMQ, TEMP_OUTPUT_DIRECTORY, REDUCTION_DIRECTORY, FACILITY
+from autoreduce_webapp.settings import ACTIVEMQ, TEMP_OUTPUT_DIRECTORY, REDUCTION_DIRECTORY, FACILITY
 from autoreduce_webapp.queue_processor import Client as ActiveMQClient
 logger = logging.getLogger('django')
-from django.db import models
 from reduction_variables.models import InstrumentVariable, ScriptFile, RunVariable
-from reduction_viewer.models import ReductionRun, Instrument, Notification
+from reduction_viewer.models import ReductionRun, Notification
 from reduction_viewer.utils import InstrumentUtils, StatusUtils
 from autoreduce_webapp.icat_communication import ICATCommunication
 
@@ -197,6 +196,7 @@ class InstrumentVariablesUtils(object):
         script = ScriptFile(script=script_binary, file_name=script_name)
         script.save()
         for variable in variables:
+            variable.save()
             variable.scripts.add(script)
             variable.save()
 
@@ -204,20 +204,22 @@ class InstrumentVariablesUtils(object):
         """
         Reloads script in variables to match that on disk (inefficient)
         """
-        variable = variables[0]  # Assume script will be the same for all variables
+        variable = variables[0]  # Assume old script will be the same for all variables
+        instrument_name = variable.instrument.name
 
         script_cache_mod, script_vars_cache_mod = ScriptUtils().get_cache_scripts_modified(variable.scripts.all())
-        script_file_mod, script_vars_file_mod = self.__get_scripts_modified(variable.instrument.name)
-
-        if script_cache_mod < script_file_mod:
-            logger.info("Reduce.py script out of date, reloading")
-            script_binary = self.__load_reduction_script(variable.instrument.name)
-            self.__add_new_script_to_variables(variables, script_binary, 'reduce.py')
+        script_file_mod, script_vars_file_mod = self.__get_scripts_modified(instrument_name)
 
         if script_vars_cache_mod < script_vars_file_mod:
             logger.info("Reduce_vars.py script out of date, reloading")
-            reduce_vars_script, vars_script_binary = self.__load_reduction_vars_script(variable.instrument.name)
+            reduce_vars_script, vars_script_binary = self.__load_reduction_vars_script(instrument_name)
+            variables = self.get_default_variables(instrument_name, reduce_vars_script)
             self.__add_new_script_to_variables(variables, vars_script_binary, 'reduce_vars.py')
+
+        if script_cache_mod < script_file_mod:
+            logger.info("Reduce.py script out of date, reloading")
+            script_binary = self.__load_reduction_script(instrument_name)
+            self.__add_new_script_to_variables(variables, script_binary, 'reduce.py')
 
         return variables
 
@@ -248,9 +250,10 @@ class InstrumentVariablesUtils(object):
 
         return variables
 
-    def get_variables_for_run(self, reduction_run):
+    def get_variables_for_run(self, reduction_run, use_up_to_date):
         """
         Fetches the appropriate variables for the given reduction run.
+        If use_up_to_date is on the scripts that are currently on the server are used.
         If instrument variables with a matching experiment reference number is found then these will be used
         otherwise the variables with the closest run start will be used.
         If no variable are found, default variables are created for the instrument and those are returned.
@@ -264,7 +267,10 @@ class InstrumentVariablesUtils(object):
             except AttributeError:
                 # Still not found any variables, we better create some
                 variables = self.set_default_instrument_variables(reduction_run.instrument.name)
-        variables = self.__check_script_up_to_date(variables)  # For the moment reload script on all new runs
+
+        if use_up_to_date:
+            variables = self.__check_script_up_to_date(variables)
+
         return variables
 
     def get_current_script_text(self, instrument_name):
@@ -302,7 +308,7 @@ class InstrumentVariablesUtils(object):
                     is_advanced=False, 
                     type=VariableUtils().get_type_string(reduce_script.standard_vars[key]),
                     start_run = 0,
-                    help_text=self.get_help_text('standard_vars', key, reduce_script),
+                    help_text=self.get_help_text('standard_vars', key, instrument_name, reduce_script),
                     )
                 variables.append(variable)
         if 'advanced_vars' in dir(reduce_script):
@@ -314,12 +320,12 @@ class InstrumentVariablesUtils(object):
                     is_advanced=True, 
                     type=VariableUtils().get_type_string(reduce_script.advanced_vars[key]),
                     start_run = 0,
-                    help_text=self.get_help_text('advanced_vars', key, reduce_script),
+                    help_text=self.get_help_text('advanced_vars', key, instrument_name, reduce_script),
                     )
                 variables.append(variable)
         return variables
 
-    def get_help_text(self, dictionary, key, reduce_script=None):
+    def get_help_text(self, dictionary, key, instrument_name, reduce_script=None):
         if not dictionary or not key:
             return ""
         if not reduce_script:

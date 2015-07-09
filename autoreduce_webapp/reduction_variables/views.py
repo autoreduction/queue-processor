@@ -1,16 +1,15 @@
-from django.shortcuts import render,redirect
+from django.shortcuts import redirect
 from django.core.context_processors import csrf
 from django.template import RequestContext
 from django.shortcuts import render_to_response
-from django.views.generic.base import View
+from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
 from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, require_staff
 from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFile
 from reduction_variables.utils import InstrumentVariablesUtils, VariableUtils, MessagingUtils, ScriptUtils
 from reduction_viewer.models import Instrument, ReductionRun, DataLocation
 from reduction_viewer.utils import StatusUtils
-from autoreduce_webapp.icat_communication import ICATCommunication
-from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL
+
 import logging, re
 logger = logging.getLogger(__name__)
 
@@ -32,10 +31,10 @@ def instrument_summary(request, instrument):
     for variables in upcoming_variables_by_run:
         if variables.start_run not in upcoming_variables_by_run_dict:
             upcoming_variables_by_run_dict[variables.start_run] = {
-                'run_start' : variables.start_run,
-                'run_end' : 0, # We'll fill this in after
-                'variables' : [],
-                'instrument' : instrument,
+                'run_start': variables.start_run,
+                'run_end': 0, # We'll fill this in after
+                'variables': [],
+                'instrument': instrument,
             }
         upcoming_variables_by_run_dict[variables.start_run]['variables'].append(variables)
 
@@ -45,8 +44,8 @@ def instrument_summary(request, instrument):
         upcoming_variables_by_run_ordered.append(upcoming_variables_by_run_dict[key])
     sorted(upcoming_variables_by_run_ordered, key=lambda r: r['run_start'])
     
-    # Fill in the run end nunmbers
-    run_end = 0;
+    # Fill in the run end numbers
+    run_end = 0
     for run_number in sorted(upcoming_variables_by_run_dict.iterkeys(), reverse=True):
         upcoming_variables_by_run_dict[run_number]['run_end'] = run_end
         run_end = run_number-1
@@ -57,10 +56,10 @@ def instrument_summary(request, instrument):
         next_variable_run_start = 1
     
     current_vars = {
-        'run_start' : current_variables[0].start_run,
-        'run_end' : next_variable_run_start-1,
-        'variables' : current_variables,
-        'instrument' : instrument,
+        'run_start': current_variables[0].start_run,
+        'run_end': next_variable_run_start-1,
+        'variables': current_variables,
+        'instrument': instrument,
     }
 
     # Create a nested dictionary for by-experiment
@@ -68,9 +67,9 @@ def instrument_summary(request, instrument):
     for variables in upcoming_variables_by_experiment:
         if variables.experiment_reference not in upcoming_variables_by_experiment_dict:
             upcoming_variables_by_experiment_dict[variables.experiment_reference] = {
-                'experiment' : variables.experiment_reference,
-                'variables' : [],
-                'instrument' : instrument,
+                'experiment': variables.experiment_reference,
+                'variables': [],
+                'instrument': instrument,
             }
         upcoming_variables_by_experiment_dict[variables.experiment_reference]['variables'].append(variables)
 
@@ -79,13 +78,12 @@ def instrument_summary(request, instrument):
     for key in sorted(upcoming_variables_by_experiment_dict):
         upcoming_variables_by_experiment_ordered.append(upcoming_variables_by_experiment_dict[key])
     sorted(upcoming_variables_by_experiment_ordered, key=lambda r: r['experiment'])
-    
 
     context_dictionary = {
-        'instrument' : instrument,
-        'current_variables' : current_vars,
-        'upcoming_variables_by_run' : upcoming_variables_by_run_ordered,
-        'upcoming_variables_by_experiment' : upcoming_variables_by_experiment_ordered,
+        'instrument': instrument,
+        'current_variables': current_vars,
+        'upcoming_variables_by_run': upcoming_variables_by_run_ordered,
+        'upcoming_variables_by_experiment': upcoming_variables_by_experiment_ordered,
     }
 
     return render_to_response('snippets/instrument_summary_variables.html', context_dictionary, RequestContext(request))
@@ -101,7 +99,7 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
     script = None
     script_vars = None
     if request.method == 'POST':
-        # Truthy value comes back as text so we'll compare it to a string of "True"
+        # Truth value comes back as text so we'll compare it to a string of "True"
         is_run_range = request.POST.get("variable-range-toggle-value", "True") == "True"
 
         if is_run_range:
@@ -112,7 +110,7 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
                 old_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run=start)
                 script, script_vars = ScriptUtils().get_reduce_scripts(old_variables[0].scripts.all())
                 default_variables = list(old_variables)
-            if script == None or request.POST.get("is_editing", '') != 'True':
+            if script is None or request.POST.get("is_editing", '') != 'True':
                 script_binary, script_vars_binary = InstrumentVariablesUtils().get_current_script_text(instrument.name)
                 script = ScriptFile(script=script_binary, file_name='reduce.py')
                 script.save()
@@ -133,12 +131,11 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
         else:
             experiment_reference = request.POST.get("experiment_reference_number", 1)
 
-
             if request.POST.get("is_editing", '') == 'True':
                 old_variables = InstrumentVariable.objects.filter(instrument=instrument, experiment_reference=experiment_reference)
                 script, script_vars = ScriptUtils().get_reduce_scripts(old_variables[0].scripts.all())
                 default_variables = list(old_variables)
-            if script == None or request.POST.get("is_editing", '') != 'True':
+            if script is None or request.POST.get("is_editing", '') != 'True':
                 script_binary, script_vars_binary = InstrumentVariablesUtils().get_current_script_text(instrument.name)
                 script = ScriptFile(script=script_binary, file_name='reduce.py')
                 script.save()
@@ -183,18 +180,18 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
 
         return redirect('instrument_summary', instrument=instrument.name)
     else:
-        editing = (start>0 or experiment_reference>0)
+        editing = (start > 0 or experiment_reference > 0)
         completed_status = StatusUtils().get_completed()
         processing_status = StatusUtils().get_processing()
         queued_status = StatusUtils().get_queued()
 
         try:
             latest_completed_run = ReductionRun.objects.filter(instrument=instrument, run_version=0, status=completed_status).order_by('-run_number').first().run_number
-        except AttributeError :
+        except AttributeError:
             latest_completed_run = 0
         try:
             latest_processing_run = ReductionRun.objects.filter(instrument=instrument, run_version=0, status=processing_status).order_by('-run_number').first().run_number
-        except AttributeError :
+        except AttributeError:
             latest_processing_run = 0
 
         if experiment_reference > 0:
@@ -214,7 +211,7 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
         if not editing:
             variables = InstrumentVariablesUtils().get_default_variables(instrument.name)
         elif not variables:
-            # If no variables are saved, use the dfault ones from the reduce script
+            # If no variables are saved, use the default ones from the reduce script
             editing = False
             InstrumentVariablesUtils().set_default_instrument_variables(instrument.name, start)
             variables = InstrumentVariable.objects.filter(instrument=instrument,start_run=start )
@@ -274,15 +271,6 @@ def run_summary(request, run_number, run_version=0):
         else:
             standard_vars[variable.name] = variable
 
-    default_variables = InstrumentVariablesUtils().get_variables_for_run(reduction_run)
-    default_standard_variables = {}
-    default_advanced_variables = {}
-    for variable in default_variables:
-        if variable.is_advanced:
-            default_advanced_variables[variable.name] = variable
-        else:
-            default_standard_variables[variable.name] = variable
-
     current_variables = InstrumentVariablesUtils().get_default_variables(reduction_run.instrument.name)
     current_standard_variables = {}
     current_advanced_variables = {}
@@ -297,8 +285,8 @@ def run_summary(request, run_number, run_version=0):
         'run_version' : run_version,
         'standard_variables' : standard_vars,
         'advanced_variables' : advanced_vars,
-        'default_standard_variables' : default_standard_variables,
-        'default_advanced_variables' : default_advanced_variables,
+        'default_standard_variables' : standard_vars,
+        'default_advanced_variables' : advanced_vars,
         'current_standard_variables' : current_standard_variables,
         'current_advanced_variables' : current_advanced_variables,
         'instrument' : reduction_run.instrument,
@@ -330,44 +318,41 @@ def run_confirmation(request, run_number, run_version=0):
             new_data_location.save()
             new_job.data_location.add(new_data_location)
 
-        script_binary, script_vars_binary = InstrumentVariablesUtils().get_current_script_text(instrument.name)
+        use_current_script = request.POST.get('use_current_script', u"false").lower() == u"true"
+        run_variables = reduction_run.run_variables.all()
+
+        if use_current_script:
+            script_binary, script_vars_binary = InstrumentVariablesUtils().get_current_script_text(instrument.name)
+        else:
+            script_binary, script_vars_binary = ScriptUtils().get_reduce_scripts(run_variables[0].scripts.all())
+
         script = ScriptFile(script=script_binary, file_name='reduce.py')
         script.save()
         script_vars = ScriptFile(script=script_vars_binary, file_name='reduce_vars.py')
         script_vars.save()
 
-        run_variables = reduction_run.run_variables.all()
-        default_variables = InstrumentVariablesUtils().get_variables_for_run(reduction_run)
+        default_variables = InstrumentVariablesUtils().get_variables_for_run(reduction_run, use_current_script)
         new_variables = []
 
         for key,value in request.POST.iteritems():
             if 'var-' in key:
+                name = None
                 if 'var-advanced-' in key:
-                    name = key.replace('var-advanced-', '').replace('-',' ')
-                    default_var = next((x for x in run_variables if x.name == name), next((x for x in default_variables if x.name == name), None))
-                    if not default_var: continue
-                    variable = RunVariable(
-                        reduction_run=new_job,
-                        name=default_var.name, 
-                        value=value, 
-                        is_advanced=True, 
-                        type=default_var.type,
-                        help_text=default_var.help_text
-                    )
-                    variable.save()
-                    variable.scripts.add(script)
-                    variable.scripts.add(script_vars)
-                    variable.save()
-                    new_variables.append(variable)
+                    name = key.replace('var-advanced-', '').replace('-', ' ')
+                    is_advanced = True
                 if 'var-standard-' in key:
-                    name = key.replace('var-standard-', '').replace('-',' ')
+                    name = key.replace('var-standard-', '').replace('-', ' ')
+                    is_advanced = False
+                    
+                if name is not None:
                     default_var = next((x for x in run_variables if x.name == name), next((x for x in default_variables if x.name == name), None))
-                    if not default_var: continue
+                    if not default_var:
+                        continue
                     variable = RunVariable(
                         reduction_run=new_job,
-                        name=default_var.name, 
-                        value=value, 
-                        is_advanced=False, 
+                        name=default_var.name,
+                        value=value,
+                        is_advanced=is_advanced,
                         type=default_var.type,
                         help_text=default_var.help_text
                     )
@@ -376,36 +361,31 @@ def run_confirmation(request, run_number, run_version=0):
                     variable.scripts.add(script_vars)
                     variable.save()
                     new_variables.append(variable)
-        
+
+        queue_count = ReductionRun.objects.filter(instrument=reduction_run.instrument, status=queued_status).count()
+
+        context_dictionary = {
+            'run' : None,
+            'variables' : None,
+            'queued' : queue_count,
+        }
+
         if len(new_variables) == 0:
             new_job.delete()
             script.delete()
             script_vars.delete()
-            context_dictionary = {
-                'run' : None,
-                'variables' : None,
-                'queued' : ReductionRun.objects.filter(instrument=reduction_run.instrument, status=queued_status).count(),
-                'error' : 'No variables were found to be submitted.'
-            }
+            context_dictionary['error'] = 'No variables were found to be submitted.'
         else:
             try:
                 MessagingUtils().send_pending(new_job)
-                context_dictionary = {
-                    'run' : new_job,
-                    'variables' : new_variables,
-                    'queued' : ReductionRun.objects.filter(instrument=reduction_run.instrument, status=queued_status).count(),
-                }
+                context_dictionary['run'] = new_job
+                context_dictionary['variables'] = new_variables
             except Exception, e:
                 new_job.delete()
                 script.delete()
                 script_vars.delete()
-                context_dictionary = {
-                    'run' : None,
-                    'variables' : None,
-                    'queued' : ReductionRun.objects.filter(instrument=reduction_run.instrument, status=queued_status).count(),
-                    'error' : 'Failed to send new job. (%s)' % str(e),
-                }
-        
+                context_dictionary['error'] = 'Failed to send new job. (%s)' % str(e),
+
         return context_dictionary
     else:
         return redirect('instrument_summary', instrument=instrument.name)
@@ -446,38 +426,55 @@ def preview_script(request, instrument, run_number=0, experiment_reference=0):
 
     elif request.method == 'POST':
         experiment_reference = request.POST.get('experiment_reference', None)
-        run_number = request.POST.get('start_run', None)
+        start_run = request.POST.get('start_run', None)
+        lookup_run_number = request.POST.get('run_number', None)
+        lookup_run_version = request.POST.get('run_version', None)
+        use_current_script = request.POST.get('use_current_script', u"false").lower() == u"true"
         default_variables = None
-        if experiment_reference > 0:
-            default_variables = InstrumentVariable.objects.filter(experiment_reference=experiment_reference, instrument=instrument)
-        elif run_number > 0:
-            default_variables = InstrumentVariable.objects.filter(start_run=run_number, instrument=instrument)
+        if not use_current_script:
+            if lookup_run_number is not None:
+                try:
+                    run = ReductionRun.objects.get(run_number=lookup_run_number, run_version=lookup_run_version)
+                    default_variables = RunVariable.objects.filter(reduction_run=run)
+                except Exception as e:
+                    logger.info("Run not found :" + str(e))
+            else:
+                if experiment_reference > 0:
+                    default_variables = InstrumentVariable.objects.filter(experiment_reference=experiment_reference, instrument=instrument)
+                elif start_run > 0:
+                    default_variables = InstrumentVariable.objects.filter(start_run=start_run, instrument=instrument)
+
         if default_variables:
-            script, script_vars = ScriptUtils().get_reduce_scripts(default_variables[0].scripts.all())
-            script_file = script.decode("utf-8")
-            script_vars_file = script_vars.decode("utf-8")
+            script_binary, script_vars_binary = ScriptUtils().get_reduce_scripts(default_variables[0].scripts.all())
         else:
             script_binary, script_vars_binary = InstrumentVariablesUtils().get_current_script_text(instrument)
-            script_file = script_binary.decode("utf-8")
-            script_vars_file = script_vars_binary.decode("utf-8")
             default_variables = InstrumentVariablesUtils().get_default_variables(instrument)
+
+        script_file = script_binary.decode("utf-8")
+        script_vars_file = script_vars_binary.decode("utf-8")
+
         for key,value in request.POST.iteritems():
             if 'var-' in key:
+                pattern = None
                 if 'var-advanced-' in key:
                     name = key.replace('var-advanced-', '').replace('-',' ')
                     default_var = next((x for x in default_variables if x.name == name), None)
-                    if not default_var: continue
+                    if not default_var:
+                        continue
                     pattern = advanced_pattern % name
 
                 if 'var-standard-' in key:
                     name = key.replace('var-standard-', '').replace('-',' ')
                     default_var = next((x for x in default_variables if x.name == name), None)
-                    if not default_var: continue
+                    if not default_var:
+                        continue
                     pattern = standard_pattern % name
-                # Wrap the value in the correct syntax to indicate the type
-                value = VariableUtils().wrap_in_type_syntax(value, default_var.type)
-                value = '\g<before>%s' % value
-                script_vars_file = re.sub(pattern, value, script_vars_file)
+
+                if pattern is not None:
+                    # Wrap the value in the correct syntax to indicate the type
+                    value = VariableUtils().wrap_in_type_syntax(value, default_var.type)
+                    value = '\g<before>%s' % value
+                    script_vars_file = re.sub(pattern, value, script_vars_file)
 
     reduce_script += script_vars_file
     reduce_script += '\n\n"""\nreduce.py\n"""\n\n'

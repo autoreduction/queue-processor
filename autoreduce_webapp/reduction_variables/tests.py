@@ -233,7 +233,7 @@ class InstrumentVariablesUtilsTestCase(TestCase):
         experiment = Experiment(reference_number=99999)
         reduction_run = ReductionRun(run_number=1, instrument=instrument, experiment=experiment, run_version=1, status=StatusUtils().get_queued())
 
-        variables = InstrumentVariablesUtils().get_variables_for_run(reduction_run)
+        variables = InstrumentVariablesUtils().get_variables_for_run(reduction_run, False)
 
         self.assertNotEqual(variables, None, "Expecting some variables to be returned")
         self.assertNotEqual(variables, [], "Expecting some variables to be returned")
@@ -255,7 +255,7 @@ class InstrumentVariablesUtilsTestCase(TestCase):
         experiment = Experiment(reference_number=1)
         reduction_run = ReductionRun(run_number=100000, instrument=instrument, experiment=experiment, run_version=1, status=StatusUtils().get_queued())
 
-        variables = InstrumentVariablesUtils().get_variables_for_run(reduction_run)
+        variables = InstrumentVariablesUtils().get_variables_for_run(reduction_run, False)
 
         self.assertNotEqual(variables, None, "Expecting some variables to be returned")
         self.assertNotEqual(variables, [], "Expecting some variables to be returned")
@@ -269,7 +269,7 @@ class InstrumentVariablesUtilsTestCase(TestCase):
         experiment = Experiment(reference_number=1)
         reduction_run = ReductionRun(run_number=123, instrument=instrument, experiment=experiment, run_version=1, status=StatusUtils().get_queued())
 
-        variables = InstrumentVariablesUtils().get_variables_for_run(reduction_run)
+        variables = InstrumentVariablesUtils().get_variables_for_run(reduction_run, False)
 
         self.assertNotEqual(variables, None, "Expecting some variables to be returned")
         self.assertNotEqual(variables, [], "Expecting some variables to be returned")

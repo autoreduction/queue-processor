@@ -293,6 +293,7 @@
         var $form = $('#run_variables');
         if($form.length===0) $form = $('#instrument_variables');
         $form.find('.js-variables-container').html($('.js-default-variables').html());
+        $('#use_current_script').val("false");
         // We need to enable the popover again as the element is new
         $('[data-toggle="popover"]').popover();
     };
@@ -302,6 +303,7 @@
         var $form = $('#run_variables');
         if($form.length===0) $form = $('#instrument_variables');
         $form.find('.js-variables-container').html($('.js-current-variables').html());
+        $('#use_current_script').val("true");
         // We need to enable the popover again as the element is new
         $('[data-toggle="popover"]').popover();
     };
