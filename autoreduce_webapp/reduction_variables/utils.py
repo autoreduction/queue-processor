@@ -385,7 +385,7 @@ class ReductionVariablesUtils(object):
                 if reduction_run != variables.reduction_run.id:
                     raise Exception("All run variables must be for the same reduction run")
         
-        script_binary, script_vars_binary = ScriptUtils().get_reduce_scripts(run_variables[0].scripts.all())
+        script_binary, script_vars_binary = ScriptUtils().get_reduce_scripts_binary(run_variables[0].scripts.all())
 
         script_path = write_script_to_temp(script_binary, script_vars_binary)
 
@@ -435,14 +435,18 @@ class MessagingUtils(object):
 
 class ScriptUtils(object):
     def get_reduce_scripts(self, scripts):
-        script_binary = None
-        script_vars_binary = None
+        script_out = None
+        script_vars_out = None
         for script in scripts:
             if script.file_name == "reduce.py":
-                script_binary = script.script
+                script_out = script
             elif script.file_name == "reduce_vars.py":
-                script_vars_binary = script.script
-        return script_binary, script_vars_binary
+                script_vars_out = script
+        return script_out, script_vars_out
+
+    def get_reduce_scripts_binary(self, scripts):
+        script, script_vars = self.get_reduce_scripts(scripts)
+        return script.script, script_vars.script
 
     def get_cache_scripts_modified(self, scripts):
         """

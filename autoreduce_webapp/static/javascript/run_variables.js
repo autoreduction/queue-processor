@@ -233,8 +233,11 @@
     var submitForm = function submitForm(event){
         var submitAction = function submitAction(){
             var $form = $('#run_variables');
-            if($form.length===0) $form = $('#instrument_variables');
-            $form.attr('action', formUrl);
+            if($form.length===0) {
+                $form = $('#instrument_variables');
+            } else {
+                $form.attr('action', formUrl);
+            }
             window.onbeforeunload = undefined;
             $form.submit();
         };

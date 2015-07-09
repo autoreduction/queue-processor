@@ -108,8 +108,9 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
 
             if request.POST.get("is_editing", '') == 'True':
                 old_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run=start)
-                script, script_vars = ScriptUtils().get_reduce_scripts(old_variables[0].scripts.all())
-                default_variables = list(old_variables)
+                if old_variables:
+                    script, script_vars = ScriptUtils().get_reduce_scripts(old_variables[0].scripts.all())
+                    default_variables = list(old_variables)
             if script is None or request.POST.get("is_editing", '') != 'True':
                 script_binary, script_vars_binary = InstrumentVariablesUtils().get_current_script_text(instrument.name)
                 script = ScriptFile(script=script_binary, file_name='reduce.py')
@@ -133,8 +134,9 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
 
             if request.POST.get("is_editing", '') == 'True':
                 old_variables = InstrumentVariable.objects.filter(instrument=instrument, experiment_reference=experiment_reference)
-                script, script_vars = ScriptUtils().get_reduce_scripts(old_variables[0].scripts.all())
-                default_variables = list(old_variables)
+                if old_variables:
+                    script, script_vars = ScriptUtils().get_reduce_scripts(old_variables[0].scripts.all())
+                    default_variables = list(old_variables)
             if script is None or request.POST.get("is_editing", '') != 'True':
                 script_binary, script_vars_binary = InstrumentVariablesUtils().get_current_script_text(instrument.name)
                 script = ScriptFile(script=script_binary, file_name='reduce.py')
@@ -325,7 +327,7 @@ def run_confirmation(request, run_number, run_version=0):
         if use_current_script:
             script_binary, script_vars_binary = InstrumentVariablesUtils().get_current_script_text(instrument.name)
         else:
-            script_binary, script_vars_binary = ScriptUtils().get_reduce_scripts(run_variables[0].scripts.all())
+            script_binary, script_vars_binary = ScriptUtils().get_reduce_scripts_binary(run_variables[0].scripts.all())
 
         script = ScriptFile(script=script_binary, file_name='reduce.py')
         script.save()
@@ -411,7 +413,7 @@ def preview_script(request, instrument, run_number=0, experiment_reference=0):
             run_variables = InstrumentVariable.objects.filter(experiment_reference=experiment_reference, instrument=instrument)
         else:
             run_variables = InstrumentVariable.objects.filter(start_run=run_number, instrument=instrument)
-        script, script_vars = ScriptUtils().get_reduce_scripts(run_variables[0].scripts.all())
+        script, script_vars = ScriptUtils().get_reduce_scripts_binary(run_variables[0].scripts.all())
         script_file = script.decode("utf-8")
         script_vars_file = script_vars.decode("utf-8")
 
@@ -446,7 +448,7 @@ def preview_script(request, instrument, run_number=0, experiment_reference=0):
                     default_variables = InstrumentVariable.objects.filter(start_run=start_run, instrument=instrument)
 
         if default_variables:
-            script_binary, script_vars_binary = ScriptUtils().get_reduce_scripts(default_variables[0].scripts.all())
+            script_binary, script_vars_binary = ScriptUtils().get_reduce_scripts_binary(default_variables[0].scripts.all())
         else:
             script_binary, script_vars_binary = InstrumentVariablesUtils().get_current_script_text(instrument)
             default_variables = InstrumentVariablesUtils().get_default_variables(instrument)
