@@ -5,7 +5,7 @@
     <div class="panel-body">
         {% if processing or queued %}
             <div class="row">
-                <div class="col-md-4"><strong>Last run:</strong></div>
+                <div class="col-md-4"><strong>Last run on instrument:</strong></div>
                 <div class="col-md-8">
                     <a href="{% url 'run_summary' run_number=last_instrument_run.run_number run_version=last_instrument_run.run_version %}">{{ last_instrument_run.title }}</a>
                     <strong class="text-{% colour_table_row last_instrument_run.status.value %}"> ({{ last_instrument_run.status }})</strong>
@@ -41,7 +41,7 @@
             {% endif %}
         {% else %}
             <div class="text-center">
-                <strong>Last run: </strong>
+                <strong>Last run on instrument: </strong>
                 <a href="{% url 'run_summary' run_number=last_instrument_run.run_number run_version=last_instrument_run.run_version %}">{{ last_instrument_run.title }}</a>
                 <strong class="text-{% colour_table_row last_instrument_run.status.value %}"> ({{ last_instrument_run.status }})</strong>
             </div>
