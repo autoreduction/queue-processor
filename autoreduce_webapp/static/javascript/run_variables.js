@@ -308,6 +308,11 @@
         $('[data-toggle="popover"]').popover();
     };
 
+    var toggleTrackScript = function toggleTrackScript(event) {
+        var checkBox = $('#track_script_checkbox');
+        checkBox.prop("checked", !checkBox.prop("checked"));
+    };
+
     var cancelForm = function cancelForm(event){
         event.preventDefault();
         window.onbeforeunload = undefined;
@@ -372,6 +377,8 @@
         $('#run_variables,#instrument_variables').on('click', '#variableSubmit', submitForm);
         $('#run_variables,#instrument_variables').on('click', '#cancelForm', cancelForm);
         $('#run_variables,#instrument_variables').on('click', 'input[type=checkbox][data-type=boolean]', updateBoolean);
+        $('#instrument_variables').on('click', '#track_script', toggleTrackScript);
+        $('#instrument_variables').on('mouseover mouseleave', '#track_script', toggleActionExplainations);
         $('.js-form-actions li>a').on('mouseover mouseleave', toggleActionExplainations);
         $('#run_end').on('change', triggerAfterRunOptions);
         $('.js-show-default-variables').on('click', showDefaultSriptVariables);
