@@ -79,6 +79,19 @@
             {% endif %}
         <div>
     </section>
+    <section class="help-topic panel panel-default" data-topics="reduction data file location directory output reduced">
+        <div class="panel-heading">
+            <h4>I've modified my reduction scripts, why aren't my new runs using it?</h4>
+        </div>
+        <div class="panel-body">
+            <p>
+                To make sure that reductions coming straight from the machine use new reduce.py scripts automatically go to the Upcoming Configurations page, click 'edit variables' in the currently used variables box and then ensure the 'Track script changes' checkbox is ticked. For runs that are being re-run click the 'Reset to current script and values' link under Additional Actions when re-running.
+            </p>
+            <p>
+                To update instrument variables to new ones entered into the reduce_vars.py script go to the Edit Future Configuration page and click 'Reset to default values', this must be done any time reduce_vars.py is modified.
+            </p>
+        <div>
+    </section>
     {% if request.user.is_staff %}
         <section class="help-topic panel panel-default" data-topics="script compatible work">
             <div class="panel-heading">
