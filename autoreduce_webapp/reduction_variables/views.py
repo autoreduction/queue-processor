@@ -22,7 +22,6 @@ def instrument_summary(request, instrument):
         raise PermissionDenied()
 
     instrument = Instrument.objects.get(name=instrument)
-    completed_status = StatusUtils().get_completed()
     
     current_variables, upcoming_variables_by_run, upcoming_variables_by_experiment = InstrumentVariablesUtils().get_current_and_upcoming_variables(instrument.name)
 
@@ -332,15 +331,16 @@ def run_confirmation(request, run_number, run_version=0):
 
         if use_current_script:
             script_binary, script_vars_binary = InstrumentVariablesUtils().get_current_script_text(instrument.name)
+            default_variables = InstrumentVariablesUtils().get_variables_from_current_script(reduction_run.instrument.name)
         else:
             script_binary, script_vars_binary = ScriptUtils().get_reduce_scripts_binary(run_variables[0].scripts.all())
+            default_variables = run_variables
 
         script = ScriptFile(script=script_binary, file_name='reduce.py')
         script.save()
         script_vars = ScriptFile(script=script_vars_binary, file_name='reduce_vars.py')
         script_vars.save()
 
-        default_variables = InstrumentVariablesUtils().get_variables_for_run(reduction_run, use_current_script)
         new_variables = []
 
         for key,value in request.POST.iteritems():

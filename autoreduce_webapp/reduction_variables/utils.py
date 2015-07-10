@@ -200,7 +200,7 @@ class InstrumentVariablesUtils(object):
             variable.scripts.add(script)
             variable.save()
 
-    def __get_variables_from_script(self, instrument_name):
+    def get_variables_from_current_script(self, instrument_name):
         """
         Reloads script in variables to match that on disk. For now ignore modification time check.
         """
@@ -240,17 +240,18 @@ class InstrumentVariablesUtils(object):
 
         return variables
 
-    def get_variables_for_run(self, reduction_run, use_up_to_date):
+    def get_variables_for_run(self, reduction_run, check_script_tracking):
         """
         Fetches the appropriate variables for the given reduction run.
-        If use_up_to_date is on the scripts that are currently on the server are used.
         If instrument variables with a matching experiment reference number is found then these will be used
         otherwise the variables with the closest run start will be used.
+        If check_script_tracking is on the track_changes field of the instrument variables is used and so scripts that
+        are currently on the instrument may be used.
         If no variable are found, default variables are created for the instrument and those are returned.
         """
         instrument_name = reduction_run.instrument.name
-        if use_up_to_date:
-            variables = self.__get_variables_from_script(instrument_name)
+        if check_script_tracking:
+            variables = self.get_variables_from_current_script(instrument_name)
         else:
             variables = InstrumentVariable.objects.filter(instrument=reduction_run.instrument, experiment_reference=reduction_run.experiment.reference_number)
             # No experiment-specific variables, lets look for run number
