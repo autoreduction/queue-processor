@@ -296,7 +296,10 @@
     var resetDefaultVariables = function resetDefaultVariables(event){
         event.preventDefault();
         var $form = $('#run_variables');
-        if($form.length===0) $form = $('#instrument_variables');
+        if($form.length===0){
+            $("#is_editing").val("false") //Set this so new reduce_vars are picked up from script
+            $form = $('#instrument_variables');
+        }
         $form.find('.js-variables-container').html($('.js-default-variables').html());
         $('#use_current_script').val("false");
         // We need to enable the popover again as the element is new
