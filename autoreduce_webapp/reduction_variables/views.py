@@ -413,13 +413,17 @@ def preview_script(request, instrument, run_number=0, experiment_reference=0):
     standard_pattern = "(?P<before>(\s)standard_vars\s*=\s*\{(([\s\S])+)['|\"]%s['|\"]\s*:\s*)(?P<value>((?!,(\s+)\n|\n)[\S\s])+)"
     advanced_pattern = "(?P<before>(\s)advanced_vars\s*=\s*\{(([\s\S])+)['|\"]%s['|\"]\s*:\s*)(?P<value>((?!,(\s+)\n|\n)[\S\s])+)"
 
+    instrument_object = Instrument.objects.get(name=instrument)
+
     if request.method == 'GET':
-        instrument = Instrument.objects.get(name=instrument)
-        if experiment_reference > 0:
-            run_variables = InstrumentVariable.objects.filter(experiment_reference=experiment_reference, instrument=instrument)
+        if int(experiment_reference) > 0:
+            run_variables = InstrumentVariable.objects.filter(experiment_reference=experiment_reference, instrument=instrument_object)
         else:
-            run_variables = InstrumentVariable.objects.filter(start_run=run_number, instrument=instrument)
-        script, script_vars = ScriptUtils().get_reduce_scripts_binary(run_variables[0].scripts.all())
+            run_variables = InstrumentVariable.objects.filter(start_run=run_number, instrument=instrument_object)
+        if run_variables[0].tracks_script:
+            script, script_vars = InstrumentVariablesUtils().get_current_script_text(instrument)
+        else:
+            script, script_vars = ScriptUtils().get_reduce_scripts_binary(run_variables[0].scripts.all())
         script_file = script.decode("utf-8")
         script_vars_file = script_vars.decode("utf-8")
 
@@ -434,11 +438,15 @@ def preview_script(request, instrument, run_number=0, experiment_reference=0):
             script_vars_file = re.sub(pattern, value, script_vars_file)
 
     elif request.method == 'POST':
-        experiment_reference = request.POST.get('experiment_reference', None)
-        start_run = request.POST.get('start_run', None)
+        experiment_reference = request.POST.get('experiment_reference_number', None)
+        start_run = request.POST.get('run_start', None)
         lookup_run_number = request.POST.get('run_number', None)
         lookup_run_version = request.POST.get('run_version', None)
-        use_current_script = request.POST.get('use_current_script', u"false").lower() == u"true"
+        if 'use_current_script' in request.POST:
+            use_current_script = request.POST.get('use_current_script', u"false").lower() == u"true"
+        else:
+            use_current_script = request.POST.get("track_script_checkbox") == "on"
+
         default_variables = None
         if not use_current_script:
             if lookup_run_number is not None:
@@ -448,10 +456,10 @@ def preview_script(request, instrument, run_number=0, experiment_reference=0):
                 except Exception as e:
                     logger.info("Run not found :" + str(e))
             else:
-                if experiment_reference > 0:
-                    default_variables = InstrumentVariable.objects.filter(experiment_reference=experiment_reference, instrument=instrument)
-                elif start_run > 0:
-                    default_variables = InstrumentVariable.objects.filter(start_run=start_run, instrument=instrument)
+                if int(experiment_reference) > 0:
+                    default_variables = InstrumentVariable.objects.filter(experiment_reference=experiment_reference, instrument=instrument_object)
+                elif int(start_run) > 0:
+                    default_variables = InstrumentVariable.objects.filter(start_run=start_run, instrument=instrument_object)
 
         if default_variables:
             script_binary, script_vars_binary = ScriptUtils().get_reduce_scripts_binary(default_variables[0].scripts.all())
