@@ -189,15 +189,20 @@ class InstrumentVariablesUtils(object):
         script_vars_mod_time = os.path.getmtime(reduction_file)
         return script_mod_time, script_vars_mod_time
 
-    def __add_new_script_to_variables(self, variables, script_binary, script_name):
+    def __update_variable_scripts(self, variables, script_binary, script_vars_binary):
         """
-        Helper method to save a new script into the database and update a set of instrument variables with the script
+        Helper method to save a new script into the database and update a set of variables with the script
         """
-        script = ScriptFile(script=script_binary, file_name=script_name)
+        script = ScriptFile(script=script_binary, file_name='reduce.py')
         script.save()
+        script_vars = ScriptFile(script=script_vars_binary, file_name='reduce_vars.py')
+        script_vars.save()
+
         for variable in variables:
             variable.save()
+            variable.scripts.clear()
             variable.scripts.add(script)
+            variable.scripts.add(script_vars)
             variable.save()
 
     def get_variables_from_current_script(self, instrument_name):
@@ -206,10 +211,8 @@ class InstrumentVariablesUtils(object):
         """
         reduce_vars_script, vars_script_binary = self.__load_reduction_vars_script(instrument_name)
         variables = self.get_default_variables(instrument_name, reduce_vars_script)
-        self.__add_new_script_to_variables(variables, vars_script_binary, 'reduce_vars.py')
-
         script_binary = self.__load_reduction_script(instrument_name)
-        self.__add_new_script_to_variables(variables, script_binary, 'reduce.py')
+        self.__update_variable_scripts(variables, script_binary, vars_script_binary)
 
         return variables
 
@@ -240,28 +243,28 @@ class InstrumentVariablesUtils(object):
 
         return variables
 
-    def get_variables_for_run(self, reduction_run, check_script_tracking):
+    def get_variables_for_run(self, reduction_run):
         """
         Fetches the appropriate variables for the given reduction run.
         If instrument variables with a matching experiment reference number is found then these will be used
         otherwise the variables with the closest run start will be used.
-        If check_script_tracking is on the track_changes field of the instrument variables is used and so scripts that
-        are currently on the instrument may be used.
         If no variable are found, default variables are created for the instrument and those are returned.
         """
         instrument_name = reduction_run.instrument.name
-        if check_script_tracking:
-            variables = self.get_variables_from_current_script(instrument_name)
-        else:
-            variables = InstrumentVariable.objects.filter(instrument=reduction_run.instrument, experiment_reference=reduction_run.experiment.reference_number)
-            # No experiment-specific variables, lets look for run number
-            if not variables:
-                try:
-                    variables_run_start = InstrumentVariable.objects.filter(instrument=reduction_run.instrument,start_run__lte=reduction_run.run_number, experiment_reference__isnull=True ).order_by('-start_run').first().start_run
-                    variables = InstrumentVariable.objects.filter(instrument=reduction_run.instrument,start_run=variables_run_start)
-                except AttributeError:
-                    # Still not found any variables, we better create some
-                    variables = self.set_default_instrument_variables(instrument_name)
+        variables = InstrumentVariable.objects.filter(instrument=reduction_run.instrument, experiment_reference=reduction_run.experiment.reference_number)
+        # No experiment-specific variables, lets look for run number
+        if not variables:
+            try:
+                variables_run_start = InstrumentVariable.objects.filter(instrument=reduction_run.instrument,start_run__lte=reduction_run.run_number, experiment_reference__isnull=True ).order_by('-start_run').first().start_run
+                variables = InstrumentVariable.objects.filter(instrument=reduction_run.instrument,start_run=variables_run_start)
+            except AttributeError:
+                # Still not found any variables, we better create some
+                variables = self.set_default_instrument_variables(instrument_name)
+
+        if variables[0].tracks_script:
+            script_binary = self.__load_reduction_script(instrument_name)
+            reduce_vars_script, vars_script_binary = self.__load_reduction_vars_script(instrument_name)
+            self.__update_variable_scripts(variables, script_binary, vars_script_binary)
 
         return variables
 
