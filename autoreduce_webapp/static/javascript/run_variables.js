@@ -1,5 +1,9 @@
 (function(){
-    var formUrl = $('#run_variables').attr('action');
+    if ($('#run_variables').length == 0) {
+        var originalFormUrl = $('#instrument_variables').attr('action');
+    }else {
+        var originalFormUrl = $('#run_variables').attr('action');
+    }
 
     var previewScript = function previewScript(event){
         var submitAction = function submitAction(){
@@ -233,11 +237,9 @@
     var submitForm = function submitForm(event){
         var submitAction = function submitAction(){
             var $form = $('#run_variables');
-            if($form.length===0) {
-                $form = $('#instrument_variables');
-            } else {
-                $form.attr('action', formUrl);
-            }
+            if($form.length===0) $form = $('#instrument_variables');
+
+            $form.attr('action', originalFormUrl);
             window.onbeforeunload = undefined;
             $form.submit();
         };
