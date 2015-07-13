@@ -22,7 +22,7 @@ REDUCTION_DIRECTORY = '/isis/NDX%s/user/scripts/autoreduction'  # %(instrument) 
 ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s'  # %(instrument, cycle, experiment_number, run_number)
 CEPH_DIRECTORY = '/instrument/%s/CYCLE20%s/RB%s/autoreduced/%s'  # %(instrument, cycle, experiment_number, run_number)
 TEMP_ROOT_DIRECTORY = '/autoreducetmp'
-CEPH_INSTRUMENTS = ['EMU']   # A list of instruments, other than the excitation ones, which should save reduced data to CEPH
+CEPH_INSTRUMENTS = []   # A list of instruments, other than the excitation ones, which should save reduced data to CEPH
 EXCITATION_INSTRUMENTS = ['LET', 'MARI', 'MAPS', 'MERLIN']  # These are all saved into CEPH slightly differently
 
 CEPH_INSTRUMENTS.extend(EXCITATION_INSTRUMENTS)  # Excitations also saved in CEPH
