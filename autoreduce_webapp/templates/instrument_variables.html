@@ -97,6 +97,7 @@
                                     </li>
                                     <li>
                                         <a href="#resetValues" id="resetValues">Reset to default values</a>
+                                        <input type="hidden" id="updateURL" value="{% url 'current_default_variables' instrument=instrument %}">
                                         <div class="js-explaination visible-xs-block">Reset all variables to those set in the script. This will pick up any changes made to the reduce_vars.py script.</div>
                                     </li>
                                     <div>

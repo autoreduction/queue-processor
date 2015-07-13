@@ -9,6 +9,7 @@ from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFi
 from reduction_variables.utils import InstrumentVariablesUtils, VariableUtils, MessagingUtils, ScriptUtils
 from reduction_viewer.models import Instrument, ReductionRun, DataLocation
 from reduction_viewer.utils import StatusUtils
+import json
 
 import logging, re
 logger = logging.getLogger(__name__)
@@ -263,6 +264,25 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
         context_dictionary.update(csrf(request))
 
         return context_dictionary
+
+@require_staff
+@render_with('snippets/edit_variables.html')
+def current_default_variables(request, instrument):
+    variables = InstrumentVariablesUtils().get_default_variables(instrument)
+    standard_vars = {}
+    advanced_vars = {}
+    for variable in variables:
+        if variable.is_advanced:
+            advanced_vars[variable.name] = variable
+        else:
+            standard_vars[variable.name] = variable
+    context_dictionary = {
+        'instrument' : instrument,
+        'standard_variables' : standard_vars,
+        'advanced_variables' : advanced_vars,
+    }
+    context_dictionary.update(csrf(request))
+    return context_dictionary
 
 '''
     Imported into another view, thus no middlewear
