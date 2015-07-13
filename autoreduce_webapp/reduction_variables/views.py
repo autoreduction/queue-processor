@@ -265,6 +265,92 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
         return context_dictionary
 
 @require_staff
+@render_with('submit_runs.html')
+def submit_runs(request, instrument):
+    # Check the user has permission
+    if not request.user.is_superuser and instrument not in request.session['owned_instruments']:
+        raise PermissionDenied()
+
+    instrument = Instrument.objects.get(name=instrument)
+
+    if request.method == 'POST':
+        start = request.POST.get("run_start", 1)
+        end = request.POST.get("run_end", None)
+
+        # script_binary, script_vars_binary = InstrumentVariablesUtils().get_current_script_text(instrument.name)
+        # script = ScriptFile(script=script_binary, file_name='reduce.py')
+        # script.save()
+        # script_vars = ScriptFile(script=script_vars_binary, file_name='reduce_vars.py')
+        # script_vars.save()
+        # default_variables = InstrumentVariablesUtils().get_default_variables(instrument.name)
+        #
+        # for default_var in default_variables:
+        #     form_name = 'var-'
+        #     if default_var.is_advanced:
+        #         form_name += 'advanced-'
+        #     else:
+        #         form_name += 'standard-'
+        #     form_name += default_var.sanitized_name()
+        #
+        #     post_variable = request.POST.get(form_name, None)
+        #     if post_variable:
+        #         variable = RunVariable(
+        #             instrument=instrument,
+        #             name=default_var.name,
+        #             value=post_variable,
+        #             is_advanced=default_var.is_advanced,
+        #             type=default_var.type,
+        #             tracks_script=track_scripts,
+        #             )
+        #         if is_run_range:
+        #             variable.start_run = start
+        #         else:
+        #             variable.experiment_reference = experiment_reference
+        #     else:
+        #         variable = default_var
+        #         variable.pk = None
+        #         variable.id = None
+        #         variable.scripts.clear()
+        #     variable.save()
+        #     variable.scripts.add(script)
+        #     variable.scripts.add(script_vars)
+        #     variable.save()
+
+        return redirect('instrument_summary', instrument=instrument.name)
+    else:
+        processing_status = StatusUtils().get_processing()
+        queued_status = StatusUtils().get_queued()
+
+        standard_vars = {}
+        advanced_vars = {}
+
+        default_variables = InstrumentVariablesUtils().get_default_variables(instrument.name)
+        default_standard_variables = {}
+        default_advanced_variables = {}
+        for variable in default_variables:
+            if variable.is_advanced:
+                advanced_vars[variable.name] = variable
+                default_advanced_variables[variable.name] = variable
+            else:
+                standard_vars[variable.name] = variable
+                default_standard_variables[variable.name] = variable
+
+        context_dictionary = {
+            'instrument' : instrument,
+            'last_instrument_run' : ReductionRun.objects.filter(instrument=instrument).order_by('-run_number')[0],
+            'processing' : ReductionRun.objects.filter(instrument=instrument, status=processing_status),
+            'queued' : ReductionRun.objects.filter(instrument=instrument, status=queued_status),
+            'standard_variables' : standard_vars,
+            'advanced_variables' : advanced_vars,
+            'default_standard_variables' : default_standard_variables,
+            'default_advanced_variables' : default_advanced_variables,
+        }
+        context_dictionary.update(csrf(request))
+
+        return context_dictionary
+
+
+@require_staff
 @render_with('snippets/edit_variables.html')
 def current_default_variables(request, instrument):
     variables = InstrumentVariablesUtils().get_default_variables(instrument)

@@ -19,7 +19,7 @@ urlpatterns = patterns('',
     url(r'^runs/(?P<run_number>[0-9]+)(?:/(?P<run_version>[0-9]+))?/confirmation/$', reduction_variables_views.run_confirmation, name='run_confirmation'),  
 
     url(r'^instrument/(?P<instrument>\w+)/$', reduction_viewer_views.instrument_summary, name='instrument_summary'),
-    url(r'^instrument/(?P<instrument>\w+)/perform_runs/$', reduction_variables_views.instrument_variables, name='instrument_perform_runs'),
+    url(r'^instrument/(?P<instrument>\w+)/submit_runs/$', reduction_variables_views.submit_runs, name='instrument_submit_runs'),
     url(r'^instrument/(?P<instrument>\w+)/variables(?:/(?P<start>[0-9]+))?(?:/(?P<end>[0-9]+))?/$', reduction_variables_views.instrument_variables, name='instrument_variables'),       
     url(r'^instrument/(?P<instrument>\w+)/variables/experiment/(?P<experiment_reference>[0-9]+)/$', reduction_variables_views.instrument_variables, name='instrument_variables_by_experiment'),
 

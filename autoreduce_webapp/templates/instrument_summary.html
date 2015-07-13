@@ -14,6 +14,11 @@
                     {% include "snippets/instrument_status.html" with processing=processing queued=queued last_instrument_run=last_instrument_run only %}
                 </div>
             </div>
+            <div class="row">
+                <div class="col-md-4 col-md-offset-4 text-center">
+                    <p><a href="{% url 'instrument_submit_runs' instrument=instrument %}" class="btn btn-success btn-block"><i class="fa fa-plus"></i> Submit new runs</a></p>
+                </div>
+            </div>
             {% if reduction_variables_on %}  
                 {% view "reduction_variables.views.instrument_summary" instrument=instrument.name %}
             {% endif %}
