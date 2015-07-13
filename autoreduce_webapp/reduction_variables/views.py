@@ -9,7 +9,6 @@ from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFi
 from reduction_variables.utils import InstrumentVariablesUtils, VariableUtils, MessagingUtils, ScriptUtils
 from reduction_viewer.models import Instrument, ReductionRun, DataLocation
 from reduction_viewer.utils import StatusUtils
-import json
 
 import logging, re
 logger = logging.getLogger(__name__)
