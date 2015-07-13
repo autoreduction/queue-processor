@@ -28,8 +28,8 @@ brokers = [("localhost", 61613)]
 # depending on which <transportConnectors> you have setup in
 # /opt/activemq/conf/activemq.xml
 # you may access activemq with or without ssl
-#conn = stomp.Connection(host_and_ports=brokers)
-conn = stomp.Connection(host_and_ports=brokers, use_ssl=True, ssl_version=3)
+conn = stomp.Connection(host_and_ports=brokers)
+#conn = stomp.Connection(host_and_ports=brokers, use_ssl=True, ssl_version=3)
 
 conn.set_listener('', MyListener())
 conn.start()
