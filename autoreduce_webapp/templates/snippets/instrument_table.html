@@ -29,7 +29,7 @@
         <div class="col-md-3 col-xs-2">
             {% if reduction_variables_on and instrument.is_active %}
                 {% if instrument.is_instrument_scientist or user.is_superuser %}
-                    <a href="{% url 'instrument_variables' instrument.name %}" class="pull-right edit-instrument-variables">Edit<span class="hidden-xs hidden-sm"> Reduction Variables</span></a>
+                    <a href="{% url 'instrument_variables' instrument.name %}" class="pull-right edit-instrument-variables">Configure<span class="hidden-xs hidden-sm"> Future Variables</span></a>
                 {% endif %}
             {% endif %}
         </div>

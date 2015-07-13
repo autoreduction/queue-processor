@@ -2,7 +2,6 @@ from django.conf.urls import include, url, patterns
 from django.contrib import admin
 from reduction_viewer import views as reduction_viewer_views
 from reduction_variables import views as reduction_variables_views
-from . import views as autoreduce_webapp_views
 
 handler400 = 'autoreduce_webapp.views.handler400'
 handler403 = 'autoreduce_webapp.views.handler403'
