@@ -296,10 +296,8 @@
     var resetDefaultVariables = function resetDefaultVariables(event){
         event.preventDefault();
         var $form = $('#run_variables');
-        if($form.length===0){
-            $("#is_editing").val("false") //Set this so new reduce_vars are picked up from script
+        if($form.length===0)
             $form = $('#instrument_variables');
-        }
         $form.find('.js-variables-container').html($('.js-default-variables').html());
         $('#use_current_script').val("false");
         // We need to enable the popover again as the element is new
@@ -309,8 +307,21 @@
     var resetCurrentVariables = function resetCurrentVariables(event){
         event.preventDefault();
         var $form = $('#run_variables');
-        if($form.length===0) $form = $('#instrument_variables');
-        $form.find('.js-variables-container').html($('.js-current-variables').html());
+        //Set cursor to waiting
+        $("body").css("cursor", "wait");
+        $("#currentScript").css("cursor", "wait");
+
+        if($form.length===0) {
+            $form = $('#instrument_variables');
+            $("#is_editing").val("false"); //Set this so new reduce_vars are picked up from script
+        }
+
+        //Update variables to those in reduce_vars
+        $.get($('#updateURL').val(), function( data ) {
+            $form.find('.js-variables-container').html(data);
+            $("body").css("cursor", "default");
+            $("#currentScript").css("cursor", "pointer");
+        });
         $('#use_current_script').val("true");
         // We need to enable the popover again as the element is new
         $('[data-toggle="popover"]').popover();
