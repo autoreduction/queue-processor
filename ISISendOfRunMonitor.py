@@ -13,7 +13,7 @@ INSTRUMENTS = [{'name': 'LET', 'use_nexus': True},
                {'name': 'MARI', 'use_nexus': False},
                {'name': 'MAPS', 'use_nexus': True},
                {'name': 'WISH', 'use_nexus': True},
-               {'name': 'GEM', 'use_nexus': True}]
+               {'name': 'HRPD', 'use_nexus': True}]
 TIME_CONSTANT = 1  # Time between file reads (in seconds)
 DEBUG = False
 logging.basicConfig(filename=LOG_FILE, level=logging.INFO, format='%(asctime)s %(message)s')
