@@ -7,12 +7,17 @@
         var originalFormUrl = $('#submit_jobs').attr('action');
     }
 
+    var getForm = function getForm(){
+        var $form = $('#run_variables');
+        if($form.length===0) $form = $('#instrument_variables');
+        if($form.length===0) $form = $('#submit_jobs');
+        return $form;
+    }
+
     var previewScript = function previewScript(event){
         var submitAction = function submitAction(){
             var url = $('#preview_url').val();
-            var $form = $('#run_variables');
-            if($form.length===0) $form = $('#instrument_variables');
-            if($form.length===0) $form = $('#submit_jobs');
+            $form = getForm();
             $form.attr('action', url);
 
             $('.js-script-container').text('');
@@ -44,8 +49,7 @@
     var downloadScript  = function downloadScript(event){
         var submitAction = function submitAction(){
             var url = $('#preview_url').val();
-            var $form = $('#run_variables');
-            if($form.length===0) $form = $('#instrument_variables');
+            $form = getForm();
             $form.attr('action', url);
             window.onbeforeunload = undefined;
             $form.submit();
@@ -65,9 +69,7 @@
         var isValid = true;
         var errorMessages = [];
         var $errorList;
-        var $form = $('#run_variables');
-        if($form.length===0) $form = $('#instrument_variables');
-        if($form.length===0) $form = $('#submit_jobs');
+        $form = getForm();
 
         var resetValidationStates = function resetValidationStates(){
             $('.has-error').removeClass('has-error');
@@ -266,9 +268,7 @@
 
     var submitForm = function submitForm(event){
         var submitAction = function submitAction(){
-            var $form = $('#run_variables');
-            if($form.length===0) $form = $('#instrument_variables');
-
+            $form = getForm();
             $form.attr('action', originalFormUrl);
             window.onbeforeunload = undefined;
             $form.submit();
@@ -305,9 +305,7 @@
     };
 
     var confirmUnsavedChanges = function confirmUnsavedChanges(){
-        var $form = $('#run_variables');
-        if($form.length===0) $form = $('#instrument_variables');
-
+        $form = getForm();
         $form.on('change', function(){
             $form.unbind('change');
             window.onbeforeunload = function confirmLeave(event) {
@@ -325,9 +323,7 @@
 
     var resetDefaultVariables = function resetDefaultVariables(event){
         event.preventDefault();
-        var $form = $('#run_variables');
-        if($form.length===0)
-            $form = $('#instrument_variables');
+        $form = getForm();
         $form.find('.js-variables-container').html($('.js-default-variables').html());
         $('#use_current_script').val("false");
         // We need to enable the popover again as the element is new
@@ -336,14 +332,13 @@
 
     var resetCurrentVariables = function resetCurrentVariables(event){
         event.preventDefault();
-        var $form = $('#run_variables');
+        $form = getForm();
         //Set cursor to waiting
         $("body").css("cursor", "wait");
         $("#currentScript").css("cursor", "wait");
 
-        if($form.length===0) {
-            $form = $('#instrument_variables');
-            $("#is_editing").val("false"); //Set this so new reduce_vars are picked up from script
+        if($("#is_editing").length != 0) {
+            $("#is_editing").val("false"); //Set this so new reduce_vars are picked up from script (bit of a hack)
         }
 
         //Update variables to those in reduce_vars
@@ -421,7 +416,7 @@
     var init = function init(){
         $('#run_variables,#instrument_variables,#submit_jobs').on('click', '#previewScript', previewScript);
         $('#script-preview-modal').on('click', '#downloadScript', downloadScript);
-        $('#run_variables,#instrument_variables,#submit_jobs').on('click', '#resetValues', resetDefaultVariables);
+        $('#run_variables,#instrument_variables').on('click', '#resetValues', resetDefaultVariables);
         $('#run_variables,#instrument_variables,#submit_jobs').on('click', '#currentScript', resetCurrentVariables);
         $('#run_variables,#instrument_variables,#submit_jobs').on('click', '#variableSubmit', submitForm);
         $('#run_variables,#instrument_variables,#submit_jobs').on('click', '#cancelForm', cancelForm);

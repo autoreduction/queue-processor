@@ -321,6 +321,8 @@ def submit_runs(request, instrument):
         processing_status = StatusUtils().get_processing()
         queued_status = StatusUtils().get_queued()
 
+        last_run = ReductionRun.objects.filter(instrument=instrument).order_by('-run_number')[0]
+
         standard_vars = {}
         advanced_vars = {}
 
@@ -337,7 +339,7 @@ def submit_runs(request, instrument):
 
         context_dictionary = {
             'instrument' : instrument,
-            'last_instrument_run' : ReductionRun.objects.filter(instrument=instrument).order_by('-run_number')[0],
+            'last_instrument_run' : last_run,
             'processing' : ReductionRun.objects.filter(instrument=instrument, status=processing_status),
             'queued' : ReductionRun.objects.filter(instrument=instrument, status=queued_status),
             'standard_variables' : standard_vars,
