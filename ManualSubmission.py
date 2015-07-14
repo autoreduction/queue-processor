@@ -62,7 +62,7 @@ def validate_input(inp):
         raise ValueError("Nexus file rename requires y/n input")
 
 
-def get_file_name_digits(instrument):
+def get_file_name_data(instrument):
     """ This method scrapes the 'lastrun.txt' file on the instrument to find out the filenames of data files on that
     machine.
     """
@@ -70,11 +70,11 @@ def get_file_name_digits(instrument):
         instrument_last_run = LAST_RUN_LOC % instrument
         with open(instrument_last_run) as f:
             data = get_data_and_check(f)
-            return len(data[1])
+            return (data[0], len(data[1]))
     except Exception as e:
         print "Error reading last run file (%s)" % e
-        print "Assuming eight numbers"
-        return 8
+        print "Assuming eight numbers and first three chars of instrument"
+        return (instrument[0:3], 8)
 
 
 def main():
@@ -93,7 +93,7 @@ def main():
             print "Lookup failed"
             inp["rbnum"] = int(raw_input('RB Number: '))
         else:
-            print "Found " + str(inp["rbnum"])
+            print "Found rb number: " + str(inp["rbnum"])
         inp["cycle"] = raw_input('Enter cycle number in format [14_3]: ')
     else:
         inp["inst_name"] = str(sys.argv[1]).upper()
@@ -105,12 +105,12 @@ def main():
 
     validate_input(inp)
 
-    data_filename_length = get_file_name_digits(inp["inst_name"])
+    data_file_prefix, data_filename_length = get_file_name_data(inp["inst_name"])
 
     data_location = DATA_LOC % (inp["inst_name"], inp["cycle"])
 
     for run in range(inp["min_run"], inp["max_run"]+1):
-        data_file = inp["inst_name"] + str(run).zfill(data_filename_length) + get_file_extension(inp["rename"])
+        data_file = data_file_prefix + str(run).zfill(data_filename_length) + get_file_extension(inp["rename"])
         data_dict = {
             "rb_number": str(inp["rbnum"]),
             "instrument": inp["inst_name"],
