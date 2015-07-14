@@ -16,19 +16,27 @@
                 </div>
             </div>
             <br/>
+            <input type="hidden" id="last_run_number" value="{{last_instrument_run.run_number}}"/>
             <form id="submit_jobs" method="POST" action="{% url 'instrument_submit_runs' instrument=instrument.name %}" class="form-horizontal">
                 {% csrf_token %}
                 <div class="row">
                     <div class="col-md-9">
                         {% include "snippets/form_warnings.html" %}
                         <br/>
+                        <div class="row">
+                            <div class="col-md-10 col-md-offset-1">
+                                <div class="alert alert-warning collapse" id="run_range_warning">
+                                    <strong>Warning:</strong> a maximum of 20 runs can be submitted at one time.
+                                </div>
+                            </div>
+                        </div>
                         <div class="js-variable-by-run">
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="run_start" class="control-label col-md-6">Run Number Start</label>
                                         <div class="col-md-6">
-                                            <input type="number" id="run_start" name="run_start" class="form-control"/>
+                                            <input type="number" id="run_start" name="run_start" value="{{last_instrument_run.run_number|add:"-20"}}" class="form-control"/>
                                         </div>
                                     </div>
                                 </div>
@@ -36,15 +44,8 @@
                                     <div class="form-group">
                                         <label for="run_end" class="control-label col-md-6">Finished</label>
                                         <div class="col-md-6">
-                                            <input type="number" id="run_end" name="run_end" class="form-control"/>
+                                            <input type="number" id="run_end" name="run_end" value="{{last_instrument_run.run_number}}" class="form-control"/>
                                         </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-10 col-md-offset-1">
-                                    <div class="alert alert-warning collapse" id="run_finish_warning">
-                                        <strong>Please Note:</strong> The <a href="#" class="js-show-default-variables">default script values</a> will be used from run <span id="next_run"></span> onwards. You will be able to change this by selecting the appropriate "edit variables" link from the Instrument Summary page.
                                     </div>
                                 </div>
                             </div>
@@ -67,6 +68,10 @@
                                     <li>
                                         <a href="#currentScript" id="currentScript">Reset to values in current script</a>
                                         <div class="js-explaination visible-xs-block">Reset all variables to those set in the script. This will pick up any changes made to the reduce_vars.py script.</div>
+                                    </li>
+                                    <li>
+                                        <a href="#resetValues" id="resetValues">Reset to values in instrument variables</a>
+                                        <div class="js-explaination visible-xs-block">Reset all variables to those set in the current instrument variables. This will also reset the reduce.py script to that specified in the instrument variables, if the variables are not tracking script changes this script may be out of date.</div>
                                     </li>
                                 </ul>
                             </div>
