@@ -346,10 +346,11 @@
             $form.find('.js-variables-container').html(data);
             $("body").css("cursor", "default");
             $("#currentScript").css("cursor", "pointer");
+
+            // We need to enable the popover again as the element is new
+            $('[data-toggle="popover"]').popover();
         });
         $('#use_current_script').val("true");
-        // We need to enable the popover again as the element is new
-        $('[data-toggle="popover"]').popover();
     };
 
     var toggleTrackScript = function toggleTrackScript(event) {
