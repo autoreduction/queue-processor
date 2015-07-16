@@ -17,8 +17,6 @@ logger.addHandler(handler)
 # Quite the Stomp logs as they are quite chatty
 logging.getLogger('stomp').setLevel(logging.INFO)
 
-
-REDUCTION_DIRECTORY = '/isis/NDX%s/user/scripts/autoreduction'  # %(instrument) This is where scripts are stored
 ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s'  # %(instrument, cycle, experiment_number, run_number)
 CEPH_DIRECTORY = '/instrument/%s/CYCLE20%s/RB%s/autoreduced/%s'  # %(instrument, cycle, experiment_number, run_number)
 TEMP_ROOT_DIRECTORY = '/autoreducetmp'
