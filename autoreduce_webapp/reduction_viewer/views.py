@@ -251,7 +251,7 @@ def experiment_summary(request, reference_number):
         context_dictionary = {}
     
     #Check the users permissions
-    if not request.user.is_superuser and reference_number not in request.session['experiments'] and experiment_details.instrument not in request.session['owned_instruments']:
+    if not request.user.is_superuser and reference_number not in request.session['experiments'] and experiment_details['instrument'] not in request.session['owned_instruments']:
        raise PermissionDenied()
     return context_dictionary
 
