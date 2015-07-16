@@ -50,6 +50,15 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="form-group">
+                            <label for="run_description" class="control-label col-md-3">
+                                Re-run description
+                                <a href="#" data-toggle="popover" data-content="This will be appended onto the run number for you and others to identify the reason for re-submitting." data-trigger="hover click focus" data-placement="top" data-container="body"><i class="fa fa-info-circle"></i></a>
+                            </label>
+                            <div class="col-md-9">
+                                <input type="text" id="run_description" name="run_description" class="form-control"/>
+                            </div>
+                        </div>
                         <div class="js-variables-container">
                             {% include "snippets/edit_variables.html" with standard_variables=standard_variables advanced_variables=advanced_variables instrument=instrument.name only %}
                         </div>
