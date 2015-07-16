@@ -17,18 +17,13 @@ First install Mantid using: http://download.mantidproject.org/redhat.html
         tar -zxvf apache-activemq-5.11.1-bin.tar.gz
         mv apache-activemq-5.11.1 /opt/
         ln -sf /opt/apache-activemq-5.11.1/ /opt/activemq
-
-3. Create/renew SSL certificates - keystore and truststore (http://activemq.apache.org/how-do-i-use-ssl.html)
-
-        keytool -genkey -alias broker -keyalg RSA -keystore broker.ks -validity 2160
-        keytool -export -alias broker -keystore broker.ks -file broker_cert
-        keytool -genkey -alias client -keyalg RSA -keystore client.ks -validity 2160
-        keytool -import -alias broker -keystore client.ts -file broker_cert
-        keytool -export -alias client -keystore client.ks -file client_cert -validity 2160
-        keytool -import -alias client -keystore broker.ts -file client_cert
-        cp all of above created files into activemq/conf
                 
-4. Configure ActiveMQ to require SSL
+3a. Configure ActiveMQ to communicate with stomp over port 61613. Default
+
+        nano /opt/activemq/conf/activemq.xml
+        Modify the transportConnector tag to be: <transportConnector name="stomp" uri="stomp://0.0.0.0:61613?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/>
+
+3b. Default is to setup stomp/activemq as in 3a, but where additional security may be required: steps to configure ActiveMQ to communicate with stomp + SSL is
 
         nano /opt/activemq/conf/activemq.xml
         Modify the transportConnector tag to be: <transportConnector name="stomp+ssl" uri="stomp+ssl://0.0.0.0:61613?transport.enabledProtocols=TLSv1,TLSv1.1,TLSv1.2&amp;maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/>
@@ -38,7 +33,17 @@ First install Mantid using: http://download.mantidproject.org/redhat.html
                 trustStore="client.ts" trustStorePassword="changeit"/>
         </sslContext>
         
-5. Username and password for submiting jobs by adding to the <broker> section (with XXXXXXXXXX substitued by suitable password):
+Create/renew SSL certificates - keystore and truststore (http://activemq.apache.org/how-do-i-use-ssl.html)
+
+        keytool -genkey -alias broker -keyalg RSA -keystore broker.ks -validity 2160
+        keytool -export -alias broker -keystore broker.ks -file broker_cert
+        keytool -genkey -alias client -keyalg RSA -keystore client.ks -validity 2160
+        keytool -import -alias broker -keystore client.ts -file broker_cert
+        keytool -export -alias client -keystore client.ks -file client_cert -validity 2160
+        keytool -import -alias client -keystore broker.ts -file client_cert
+        cp all of above created files into activemq/conf        
+        
+4. Username and password for submiting jobs by adding to the <broker> section (with XXXXXXXXXX substitued by suitable password):
 
         <plugins>
             <simpleAuthenticationPlugin>
