@@ -9,8 +9,9 @@ handler.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
-# Quite the Stomp logs as they are quite chatty
+# Quiet the Stomp logs as they are quite chatty
 logging.getLogger('stomp').setLevel(logging.DEBUG)
+
 
 class Listener(object):
     def __init__(self, client):
@@ -21,29 +22,31 @@ class Listener(object):
         logger.error("Error message recieved - %s" % str(message))
 
     def on_message(self, headers, data):
-        processNum = 6 #processes allowed to run at one time
+        self._client.ack(headers['message-id'], headers['subscription'])  # Remove message from queue
+
+        process_num = 5  # processes allowed to run at one time
         destination = headers['destination']
 
         logger.debug("Received frame destination: " + destination)
-        logger.debug("Received frame body (data)" + data) 
-	logger.debug("Calling: %s %s %s %s" % ("python", "/usr/bin/PostProcessAdmin.py", destination, data))
+        logger.debug("Recieved frame priority: " + headers["priority"])
+        logger.debug("Calling: %s %s %s %s" % ("python", "/usr/bin/PostProcessAdmin.py", destination, data))
 
         proc = subprocess.Popen(["python", "/usr/bin/PostProcessAdmin.py", destination, data])
         self.procList.append(proc)
         
-        if len(self.procList) > processNum:
-          logger.info("There are " + str(len(self.procList)) + " processes running at the moment, waiting until one is available")
+        if len(self.procList) >= process_num:
+            logger.info("There are " + str(len(self.procList)) + " processes running at the moment, "
+                                                                 "waiting until one is available")
         
-        while len(self.procList) > processNum:
+        while len(self.procList) >= process_num:
             time.sleep(1.0)
             self.updateChildProcessList()
-
-        self.updateChildProcessList()
         
     def updateChildProcessList(self):
         for i in self.procList:
             if i.poll() is not None:
                 self.procList.remove(i)
+
 
 class Consumer(object):
         
@@ -52,15 +55,14 @@ class Consumer(object):
         self.consumer_name = "queueProcessor"
         
     def run(self):
-        brokers = []
-        brokers.append((self.config['brokers'].split(':')[0],int(self.config['brokers'].split(':')[1])))
+        brokers = [(self.config['brokers'].split(':')[0],int(self.config['brokers'].split(':')[1]))]
         connection = stomp.Connection(host_and_ports=brokers, use_ssl=True, ssl_version=3)
-        connection.set_listener(self.consumer_name, Listener(self))
+        connection.set_listener(self.consumer_name, Listener(connection))
         connection.start()
-        connection.connect(self.config['amq_user'], self.config['amq_pwd'], wait=False, header={'activemq.prefetchSize': '1',})
+        connection.connect(self.config['amq_user'], self.config['amq_pwd'], wait=False, header={'activemq.prefetchSize': '1'})
         
         for queue in self.config['amq_queues']:
-            connection.subscribe(destination=queue, id=1, ack='auto')
+            connection.subscribe(destination=queue, id=1, ack='client-individual', header={'activemq.prefetchSize': '1'})
             logger.info("[%s] Subscribing to %s" % (self.consumer_name, queue))
 
 def main():
