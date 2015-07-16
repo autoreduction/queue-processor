@@ -169,6 +169,7 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
                     is_advanced=default_var.is_advanced, 
                     type=default_var.type,
                     tracks_script=track_scripts,
+                    help_text=default_var.help_text,
                     )
                 if is_run_range:
                     variable.start_run = start
