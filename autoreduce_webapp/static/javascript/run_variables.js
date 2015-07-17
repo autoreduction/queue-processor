@@ -83,9 +83,9 @@
         var validateRunRange = function validateRunRange(){
             var $start = $('#run_start');
             var $end = $('#run_end');
-            var $experiment_reference = $('#experiment_reference');
-            if($start.length && $end.length){
-                if($('#variable-range-toggle').length >0 && !$('#variable-range-toggle').bootstrapSwitch('state') && $experiment_reference.length){
+            var $experiment_reference = $('#experiment_reference_number');
+            if($start.length && $end.length && $experiment_reference.length){
+                if($('#variable-range-toggle').length >0 && !$('#variable-range-toggle').bootstrapSwitch('state')){
                     validateNotEmpty.call($experiment_reference[0]);
                     if(!isNumber($experiment_reference.val())){
                         $experiment_reference.parent().addClass('has-error');
@@ -94,17 +94,19 @@
                     }
                 }else{
                     validateNotEmpty.call($start[0]);
-                    if(!isNumber($start.val())){
+                    var start_val = $start.val();
+                    var end_val = $end.val();
+                    if(!isNumber(start_val)){
                         $start.parent().addClass('has-error');
                         isValid = false;
                         errorMessages.push('<strong>Run start</strong> must be a number.')
                     }
-                    if($end.val() !== '' && !isNumber($end.val())){
+                    if(end_val !== '' && !isNumber(end_val)){
                         $end.parent().addClass('has-error');
                         isValid = false;
                         errorMessages.push('<strong>Run finish</strong> can only be a number.')
                     }
-                    if(parseInt($end.val()) < parseInt($start.val())){
+                    if(parseInt(end_val) < parseInt(start_val) && parseInt(end_val) != 0){
                         $end.parent().addClass('has-error');
                         isValid = false;
                         errorMessages.push('<strong>Run finish</strong> must be greater than the run start.')
