@@ -95,8 +95,5 @@ Logging associated with the Logger used in the python worker script gets stored 
 
 To check rpm and uninstall do `rpm -qa | grep autoreduce` and `rpm -evv name-of-rpm-package`.
 
-In step 4 if the key python line reads: `instrument_dir = "/home/autoreducetmp/" + self.instrument.lower() + "/"` then it is assumed that the reduce.py for a given instrument is located at `reduce_script_path = instrument_dir + "scripts/reduce.py"` and the output will be stored at `reduce_result_dir = instrument_dir + "results/" + self.proposal + "/"`
-
-To test that it works copy content of folder /ISISPostProcessRPM/rpmbuild/autoreduce-mq/test into "~/tmp/". 
-Edit the sendMessage.py file and change the message1 data_file property to point at the testData.txt within the tmp folder you have chosen.
-Then in this directory type: `python sendMessage.py`. A file ./hrpd/results/RB-1310123/result_hrpd.txt should appear containing just the text string "something".
+To test that it works copy content of folder /ISISPostProcessRPM/rpmbuild/autoreduce-mq/test into a folder of your choice. 
+Assuming the worker can see the ISIS archive, then in this directory type: `python sendMessage.py`.
