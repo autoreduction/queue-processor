@@ -172,9 +172,8 @@ class PostProcessAdmin:
         return reduce_script
 
     def reduce(self):
-        print "\n> In reduce()\n"
+        logger.debug("In reduce() method")
         try:         
-            print "\nCalling: " + self.conf['reduction_started'] + "\n" + json.dumps(self.data) + "\n"
             logger.debug("Calling: " + self.conf['reduction_started'] + "\n" + json.dumps(self.data))
             self.client.send(self.conf['reduction_started'], json.dumps(self.data))
 
@@ -192,7 +191,7 @@ class PostProcessAdmin:
             # specify script to run and directory
             if os.path.exists(os.path.join(self.reduction_script, "reduce.py")) is False:
                 self.data['message'] = "Reduce script doesn't exist within %s" % self.reduction_script
-                print "\nCalling: "+self.conf['reduction_error'] + "\n" + json.dumps(self.data) + "\n"
+                logger.debug(self.data['message'])
                 self._send_error_and_log()
                 return
             
