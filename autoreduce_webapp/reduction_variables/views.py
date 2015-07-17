@@ -18,8 +18,8 @@ logger = logging.getLogger(__name__)
 '''
 def instrument_summary(request, instrument):
     # Check the user has permission
-    if not request.user.is_superuser and instrument not in request.session['owned_instruments']:
-        raise PermissionDenied()
+    #if not request.user.is_superuser and instrument not in request.session['owned_instruments']:
+    #    raise PermissionDenied()
 
     instrument = Instrument.objects.get(name=instrument)
     
@@ -89,12 +89,13 @@ def instrument_summary(request, instrument):
 
     return render_to_response('snippets/instrument_summary_variables.html', context_dictionary, RequestContext(request))
 
-@require_staff
+#@require_staff
+@login_and_uows_valid
 @render_with('instrument_variables.html')
 def instrument_variables(request, instrument, start=0, end=0, experiment_reference=0):
     # Check the user has permission
-    if not request.user.is_superuser and instrument not in request.session['owned_instruments']:
-        raise PermissionDenied()
+    #if not request.user.is_superuser and instrument not in request.session['owned_instruments']:
+    #    raise PermissionDenied()
     
     instrument = Instrument.objects.get(name=instrument)
     script = None
@@ -265,7 +266,8 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
 
         return context_dictionary
 
-@require_staff
+#@require_staff
+@login_and_uows_valid
 @render_with('snippets/edit_variables.html')
 def current_default_variables(request, instrument):
     variables = InstrumentVariablesUtils().get_default_variables(instrument)
@@ -322,7 +324,8 @@ def run_summary(request, run_number, run_version=0):
     context_dictionary.update(csrf(request))
     return render_to_response('snippets/run_variables.html', context_dictionary, RequestContext(request))
 
-@require_staff
+#@require_staff
+@login_and_uows_valid
 @render_with('run_confirmation.html')
 def run_confirmation(request, run_number, run_version=0):
     reduction_run = ReductionRun.objects.get(run_number=run_number, run_version=run_version)

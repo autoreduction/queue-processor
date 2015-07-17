@@ -52,7 +52,8 @@ def logout(request):
     request.session.flush()
     return redirect('index')
 
-@require_staff
+#@require_staff
+@login_and_uows_valid
 @render_with('run_queue.html')
 def run_queue(request):
     complete_status = StatusUtils().get_completed()
@@ -106,7 +107,7 @@ def run_list(request):
         instrument_obj = {
             'name' : instrument_name,
             'experiments' : [],
-            'is_instrument_scientist' : (instrument_name in owned_instruments),
+            'is_instrument_scientist' : True,#(instrument_name in owned_instruments),
             'runs' : [],
             'is_active' : instrument.is_active
         }
@@ -175,7 +176,7 @@ def run_summary(request, run_number, run_version=0):
     try:
         run = ReductionRun.objects.get(run_number=run_number, run_version=run_version)
         # Check the user has permission
-        if not request.user.is_superuser and run.experiment.reference_number not in request.session['experiments'] and run.instrument.name not in request.session['owned_instruments']:
+        if not request.user.is_superuser and str(run.experiment.reference_number) not in request.session['experiments']:
             raise PermissionDenied()
         history = ReductionRun.objects.filter(run_number=run_number).order_by('-run_version')
         context_dictionary = {
@@ -187,12 +188,13 @@ def run_summary(request, run_number, run_version=0):
         context_dictionary = {}
     return context_dictionary
 
-@require_staff
+#@require_staff
+@login_and_uows_valid
 @render_with('instrument_summary.html')
 def instrument_summary(request, instrument):
     # Check the user has permission
-    if not request.user.is_superuser and instrument not in request.session['owned_instruments']:
-        raise PermissionDenied()
+    #if not request.user.is_superuser and instrument not in request.session['owned_instruments']:
+    #    raise PermissionDenied()
 
     processing_status = StatusUtils().get_processing()
     queued_status = StatusUtils().get_queued()
@@ -251,7 +253,7 @@ def experiment_summary(request, reference_number):
         context_dictionary = {}
     
     #Check the users permissions
-    if not request.user.is_superuser and reference_number not in request.session['experiments'] and experiment_details['instrument'] not in request.session['owned_instruments']:
+    if not request.user.is_superuser and str(reference_number) not in request.session['experiments']:
        raise PermissionDenied()
     return context_dictionary
 
