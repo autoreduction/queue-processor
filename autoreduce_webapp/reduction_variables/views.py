@@ -281,16 +281,14 @@ def submit_runs(request, instrument):
 
         for run_number in range(start, end):
             old_reduction_run = ReductionRun.objects.filter(run_number=run_number).order_by('-run_version').first()
-            if old_reduction_run:
-                highest_version = old_reduction_run.run_version
-            else:
-                highest_version = -1
+            if not old_reduction_run:
+                continue
             queued_status = StatusUtils().get_queued()
             new_job = ReductionRun(
                 instrument=instrument,
                 run_number=run_number,
                 run_name=request.POST.get('run_description'),
-                run_version=(highest_version+1),
+                run_version=old_reduction_run.run_version+1,
                 experiment=old_reduction_run.experiment, #TODO: Get from ICAT
                 started_by=request.user.username,
                 status=queued_status,

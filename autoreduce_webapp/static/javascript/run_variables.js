@@ -273,6 +273,10 @@
             $form = getForm();
             $form.attr('action', originalFormUrl);
             window.onbeforeunload = undefined;
+
+            //Set cursor to waiting
+            $("body").css("cursor", "wait");
+            $("#variableSubmit").css("cursor", "wait");
             $form.submit();
         };
         var cancelAction = function cancelAction(){
