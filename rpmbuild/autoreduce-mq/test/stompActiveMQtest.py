@@ -10,7 +10,7 @@ import sys
 import stomp
 
 import logging
-LOG_FILENAME = 'logging_example.out'
+LOG_FILENAME = 'stompActiveMQtest_logging.out'
 logging.basicConfig(filename=LOG_FILENAME,
                     level=logging.DEBUG,
                     )
