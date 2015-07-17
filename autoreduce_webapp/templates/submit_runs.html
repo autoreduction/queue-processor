@@ -32,19 +32,25 @@
                         </div>
                         <div class="js-variable-by-run">
                             <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="run_start" class="control-label col-md-6">Run Number Start</label>
-                                        <div class="col-md-6">
+                                <label class="control-label col-md-3">Run Numbers</label>
+                                <div class="col-md-5">
+                                    <div class="col-md-5">
+                                        <div class="form-group">
                                             <input type="number" id="run_start" name="run_start" value="{{last_instrument_run.run_number|add:"-20"}}" class="form-control"/>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="run_end" class="control-label col-md-6">Finished</label>
-                                        <div class="col-md-6">
+                                    <label class="control-label col-md-2">to</label>
+                                    <div class="col-md-5">
+                                        <div class="form-group">
                                             <input type="number" id="run_end" name="run_end" value="{{last_instrument_run.run_number}}" class="form-control"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="only_re_runs" class="control-label col-md-10">Only submit re-runs</label>
+                                        <div class="col-md-2">
+                                            <input type="checkbox" id="only_re_runs" name="only_re_runs" checked disabled/>
                                         </div>
                                     </div>
                                 </div>

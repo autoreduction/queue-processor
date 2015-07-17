@@ -266,7 +266,6 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
 
         return context_dictionary
 
-
 #@require_staff
 @login_and_uows_valid
 @render_with('submit_runs.html')
@@ -280,7 +279,7 @@ def submit_runs(request, instrument):
     if request.method == 'POST':
         # TODO: Need to check ICAT credentials
         start = int(request.POST.get("run_start", 1))
-        end = int(request.POST.get("run_end", None))
+        end = int(request.POST.get("run_end", start))
 
         for run_number in range(start, end):
             old_reduction_run = ReductionRun.objects.filter(run_number=run_number).order_by('-run_version').first()
