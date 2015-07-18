@@ -250,16 +250,16 @@ class PostProcessAdmin:
 
             # If the reduce script specified some additional save directories, copy to there first
             if out_directories:
-                if type(out_directories) is str and not os.access(out_directories, os.R_OK):
-                    self.log_and_message("Unable to access directory: %s" % out_directories)
-                if type(out_directories) is str and os.access(out_directories, os.R_OK):
+                if type(out_directories) is str:
                     self.copy_temp_directory(reduce_result_dir, out_directories)
                 elif type(out_directories) is list:
                     for out_dir in out_directories:
-                        if type(out_dir) is str and os.access(out_dir, os.R_OK):
+                        if type(out_dir) is str:
                             self.copy_temp_directory(reduce_result_dir, out_directories)
                         else:
-                            self.log_and_message("Unable to access directory: %s" % out_dir)
+                            self.log_and_message("Optional output directories of reduce.py must be strings: %s" % out_dir)
+                else:
+                    self.log_and_message("Optional output directories of reduce.py must be a string or list of stings: %s" % out_directories)
 
             # no longer a need for the temp directory used for temporary storing of reduction results
             self.delete_temp_directory(reduce_result_dir)
