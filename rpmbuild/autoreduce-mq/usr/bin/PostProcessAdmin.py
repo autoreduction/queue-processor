@@ -239,36 +239,30 @@ class PostProcessAdmin:
                 with open(script_out, "a") as f:
                     f.writelines(str(e) + "\n")
                     f.write(traceback.format_exc())
-                self.copy_temp_directory(reduce_result_dir)
+                self.copy_temp_directory(reduce_result_dir, reduce_result_dir[len(TEMP_ROOT_DIRECTORY):])
+                self.delete_temp_directory(reduce_result_dir)
                 raise
 
             logger.info("Reduction subprocess completed.")
             logger.info("Additional save directories: %s" % out_directories)
 
-            self.copy_temp_directory(reduce_result_dir)
+            self.copy_temp_directory(reduce_result_dir, reduce_result_dir[len(TEMP_ROOT_DIRECTORY):])
 
             # If the reduce script specified some additional save directories, copy to there first
             if out_directories:
+                if type(out_directories) is str and not os.access(out_directories, os.R_OK):
+                    self.log_and_message("Unable to access directory: %s" % out_directories)
                 if type(out_directories) is str and os.access(out_directories, os.R_OK):
-                    self.data['reduction_data'].append(linux_to_windows_path(out_directories))
-                    if not os.path.exists(out_directories):
-                        os.makedirs(out_directories)
-                    try:
-                        copytree(run_output_dir[:-1], out_directories)
-                    except Exception, e:
-                        self.log_and_message("Unable to copy %s to %s - %s" % (run_output_dir[:-1], out_directories, e))
+                    self.copy_temp_directory(reduce_result_dir, out_directories)
                 elif type(out_directories) is list:
                     for out_dir in out_directories:
-                        self.data['reduction_data'].append(linux_to_windows_path(out_dir))
-                        if not os.path.exists(out_dir):
-                            os.makedirs(out_dir)
                         if type(out_dir) is str and os.access(out_dir, os.R_OK):
-                            try:
-                                copytree(run_output_dir[:-1], out_dir)
-                            except Exception, e:
-                                self.log_and_message("Unable to copy %s to %s - %s" % (run_output_dir[:-1], out_dir, e))
+                            self.copy_temp_directory(reduce_result_dir, out_directories)
                         else:
                             self.log_and_message("Unable to access directory: %s" % out_dir)
+
+            # no longer a need for the temp directory used for temporary storing of reduction results
+            self.delete_temp_directory(reduce_result_dir)
 
             self.client.send(self.conf['reduction_complete'] , json.dumps(self.data))
             logging.info("\nCalling: "+self.conf['reduction_complete'] + "\n" + json.dumps(self.data) + "\n")
@@ -293,11 +287,11 @@ class PostProcessAdmin:
         logger.info("Called " + self.conf['reduction_error'] + " --- " + json.dumps(self.data))
         self.client.send(self.conf['reduction_error'], json.dumps(self.data))
 
-    def copy_temp_directory(self, temp_result_dir):
+    def copy_temp_directory(self, temp_result_dir, copy_destination):
         """ Method that copies the temporary files held in results_directory to CEPH/archive, replacing old data if it
         exists"""
-        copy_destination = temp_result_dir[len(TEMP_ROOT_DIRECTORY):]
 
+        # EXCITATION instrument are treated as a special case because they done what run number subfolders
         if os.path.isdir(copy_destination) and self.instrument not in EXCITATION_INSTRUMENTS:
             self._remove_directory(copy_destination)
 
@@ -308,11 +302,16 @@ class PostProcessAdmin:
         except Exception, e:
             self.log_and_message("Unable to copy to %s - %s" % (copy_destination, e))
 
-        # Remove temporary working directory
+
+    def delete_temp_directory(self, temp_result_dir):
+        """ Remove temporary working directory """
+        logger.info("Remove temp dir %s " % temp_result_dir)
         try:
             shutil.rmtree(temp_result_dir, ignore_errors=True)
         except Exception, e:
             logger.info("Unable to remove temporary directory %s - %s" % temp_result_dir)
+
+
 
     def log_and_message(self, message):
         """Helper function to add text to the outgoing activemq message and to the info logs """
