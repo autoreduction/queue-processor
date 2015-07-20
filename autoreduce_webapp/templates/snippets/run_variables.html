@@ -5,6 +5,9 @@
     <div class="panel-body collapse" id="rerun_form">
         <form id="run_variables" method="POST" action="{% url 'run_confirmation' run_number=run_number run_version=run_version %}" class="form-horizontal">
             {% csrf_token %}
+            <input type="hidden" name="use_current_script" id="use_current_script" value="false">
+            <input type="hidden" name="run_number" value="{{ run_number }} ">
+            <input type="hidden" name="run_version" value="{{ run_version }} ">
             <div class="row">
                 <div class="col-md-9">
                     {% include "snippets/form_warnings.html" %}
@@ -33,12 +36,12 @@
                                     <div class="js-explaination visible-xs-block">Download the reduction script with the selected variables inserted.</div>
                                 </li>
                                 <li>
-                                    <a href="#resetValues" id="resetValues">Reset to default values</a>
-                                    <div class="js-explaination visible-xs-block">Reset all variable values to those set in the script.</div>
+                                    <a href="#resetValues" id="resetValues">Reset to original script and values</a>
+                                    <div class="js-explaination visible-xs-block">Reset to the script and variables previously specified for the run.</div>
                                 </li>
                                 <li>
                                     <a href="#currentScript" id="currentScript">Reset to current script and values</a>
-                                    <div class="js-explaination visible-xs-block">Ignore the script specified for the run and use the current script and variables.</div>
+                                    <div class="js-explaination visible-xs-block">Reset to use the current script and the default variables that it contains.</div>
                                 </li>
                             </ul>
                         </div>

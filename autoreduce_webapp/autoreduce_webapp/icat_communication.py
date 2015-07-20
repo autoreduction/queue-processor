@@ -158,7 +158,6 @@ class ICATCommunication(object):
         self._add_list_to_set(self.client.search("SELECT i.name FROM Investigation i JOIN i.investigationInstruments inst WHERE i.name NOT LIKE 'CAL%' and i.endDate > CURRENT_TIMESTAMP and (inst.instrument.name = '"+instrument+"' OR inst.instrument.fullName = '"+instrument+"') INCLUDE i.investigationInstruments.instrument"), experiments)
         return sorted(experiments, reverse=True)
 
-
     '''
         Check if the user is in the relevant admin group within ICAT for the autoreduction webapp
     '''
@@ -168,6 +167,20 @@ class ICATCommunication(object):
         if self.client.search("SELECT g FROM Grouping g JOIN g.userGroups ug WHERE g.name = '"+ admin_group +"' and ug.user.name = 'uows/"+ str(user_number) +"'"):
             return True
         return False
+
+    '''
+        Return a list of runs from ICAT given a start and end run number
+    '''
+    def get_run_details(self, instrument, start_run_number, end_run_number):
+        logger.debug("Calling ICATCommunication.get_run_details")
+        if not instrument:
+            raise Exception("At least one instrument must be supplied")
+        if not start_run_number:
+            raise Exception("At least one run_number must be supplied")
+        if not end_run_number:
+            raise Exception("At least one run_number must be supplied")
+
+        return self.client.search("SELECT dfp FROM DatafileParameter dfp JOIN dfp.datafile.dataset.investigation.investigationInstruments ii WHERE dfp.type.name='run_number' and dfp.numericValue >= "+str(start_run_number)+" and dfp.numericValue <= "+str(end_run_number)+" and ii.instrument.fullName = '"+instrument+"' and dfp.datafile.dataset.investigation.name not LIKE 'CAL%%' include dfp.datafile.dataset.investigation")
 
     '''
         Performs any post-processing actions required once reduction is complete.

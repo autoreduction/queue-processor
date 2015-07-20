@@ -22,11 +22,9 @@
                      <li>
                         <a href="{% url 'run_list' %}">All Jobs</a>
                     </li>
-                    {% if user.is_staff or user.is_superuser %}
                     <li>
                         <a href="{% url 'run_queue' %}">Job Queue</a>
                     </li>
-                    {% endif %}                    
                     {% if user.is_superuser %}
                     <li>
                         <a href="{% url 'admin:index' %}">Admin</a>

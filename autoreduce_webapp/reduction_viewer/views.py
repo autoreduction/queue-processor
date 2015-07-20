@@ -1,18 +1,14 @@
-from django.shortcuts import render
-from django.template import RequestContext
-from django.shortcuts import render_to_response, redirect
+from django.shortcuts import redirect
 from django.contrib.auth import logout as django_logout, authenticate, login
-from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from autoreduce_webapp.uows_client import UOWSClient
 from autoreduce_webapp.icat_communication import ICATCommunication
-from autoreduce_webapp.settings import UOWS_LOGIN_URL, LOG_FILE, LOG_LEVEL
+from autoreduce_webapp.settings import UOWS_LOGIN_URL
 from reduction_viewer.models import Experiment, ReductionRun, Instrument
 from reduction_viewer.utils import StatusUtils
 from reduction_viewer.view_utils import deactivate_invalid_instruments
 from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, require_staff
-from django.http import HttpResponse
-import operator 
+import operator
 import logging
 logger = logging.getLogger(__name__)
 
@@ -56,7 +52,8 @@ def logout(request):
     request.session.flush()
     return redirect('index')
 
-@require_staff
+#@require_staff
+@login_and_uows_valid
 @render_with('run_queue.html')
 def run_queue(request):
     complete_status = StatusUtils().get_completed()
@@ -72,26 +69,32 @@ def run_queue(request):
 def run_list(request):
     context_dictionary = {}
     instruments = []
-    with ICATCommunication(AUTH='uows',SESSION={'sessionid':request.session.get('sessionid')}) as icat:
-        # Owned instruments is populated on login
-        owned_instruments = request.session.get('owned_instruments', default=[])
-        # Superuser sees everything
-        if request.user.is_superuser:
-            instrument_names = Instrument.objects.values_list('name', flat=True)
-            if instrument_names:
-                experiments = {}
-                for instrument_name in instrument_names:
-                    experiments[instrument_name] = []
-                    instrument = Instrument.objects.get(name=instrument_name)
-                    instrument_experiments = Experiment.objects.filter(reduction_runs__instrument=instrument).values_list('reference_number', flat=True)
-                    for experiment in instrument_experiments:
-                        experiments[instrument_name].append(str(experiment))
-                request.session['experiments_to_show'] = experiments
-        else:
+    # Owned instruments is populated on login
+    owned_instruments = request.session.get('owned_instruments', default=[])
+    # Superuser sees everything
+    if request.user.is_superuser:
+        instrument_names = Instrument.objects.values_list('name', flat=True)
+        if instrument_names:
+            experiments = {}
+            for instrument_name in instrument_names:
+                experiments[instrument_name] = []
+                instrument = Instrument.objects.get(name=instrument_name)
+                instrument_experiments = Experiment.objects.filter(reduction_runs__instrument=instrument).values_list('reference_number', flat=True)
+                for experiment in instrument_experiments:
+                    experiments[instrument_name].append(str(experiment))
+            request.session['experiments_to_show'] = experiments
+    else:
+        with ICATCommunication(AUTH='uows',SESSION={'sessionid':request.session.get('sessionid')}) as icat:
             instrument_names = icat.get_valid_instruments(int(request.user.username))
             if instrument_names:
                 experiments = request.session.get('experiments_to_show', icat.get_valid_experiments_for_instruments(int(request.user.username), instrument_names))
                 request.session['experiments_to_show'] = experiments
+
+    # get database status labels up front to reduce queries to database
+    status_error = StatusUtils().get_error()
+    status_queued = StatusUtils().get_queued()
+    status_processing = StatusUtils().get_processing()
+
     for instrument_name in instrument_names:
         try:
             instrument = Instrument.objects.get(name=instrument_name)
@@ -104,7 +107,7 @@ def run_list(request):
         instrument_obj = {
             'name' : instrument_name,
             'experiments' : [],
-            'is_instrument_scientist' : (instrument_name in owned_instruments),
+            'is_instrument_scientist' : True,#(instrument_name in owned_instruments),
             'runs' : [],
             'is_active' : instrument.is_active
         }
@@ -114,8 +117,7 @@ def run_list(request):
             
         instrument_experiments = experiments[instrument_name] 
         reference_numbers = []
-        
-            
+
         for experiment in instrument_experiments:
             # Filter out calibration runs
             if experiment.isdigit():
@@ -123,18 +125,13 @@ def run_list(request):
 
         matching_experiments = Experiment.objects.filter(reference_number__in=reference_numbers)
         for experiment in matching_experiments:
-            experiment_queued_runs = 0
-            experiment_processing_runs = 0
-            experiment_error_runs = 0
-
+            # get all runs for experiment
             runs = ReductionRun.objects.filter(experiment=experiment).order_by('-created')
-            for run in runs:
-                if run.status == StatusUtils().get_error():
-                    experiment_error_runs += 1
-                if run.status == StatusUtils().get_queued():
-                    experiment_queued_runs += 1
-                if run.status == StatusUtils().get_processing():
-                    experiment_processing_runs += 1
+
+            # count how many are in status error, queued and processing
+            experiment_error_runs = runs.filter(status__exact=status_error).count()
+            experiment_queued_runs = runs.filter(status__exact=status_queued).count()
+            experiment_processing_runs = runs.filter(status__exact=status_processing).count()
 
             # Add experiment stats to instrument
             instrument_queued_runs += experiment_queued_runs
@@ -164,27 +161,6 @@ def run_list(request):
         instrument_obj['runs'] = sorted(instrument_obj['runs'], key=operator.attrgetter('last_updated'), reverse=True)
         instrument_obj['experiments'] = sorted(instrument_obj['experiments'], key=lambda k: k['reference_number'], reverse=True)
         instruments.append(instrument_obj)
-    
-    # Generate notification for any errored runs    
-    error_runs = ReductionRun.objects.filter(status=StatusUtils().get_error())
-    if error_runs:
-        notifications = []
-        for run in error_runs:
-            if run.run_name:
-                message = 'Reduction run %s-%s has reported an error.' % (run.run_number, run.run_name)
-            elif run.run_version > 0:
-                message = 'Reduction run %s-%s has reported an error.' % (run.run_number, run.run_version)
-            else:
-                message = 'Reduction run %s has reported an error.' % run.run_number
-            error_notification = {
-                'message': message,
-                'severity_verbose': 'error',
-                'is_staff_only': False,
-                'is_active': True,
-                'id' : 'error-%s-%s' % (run.run_number, run.run_version),
-            }
-            notifications.append(error_notification)
-        context_dictionary['notifications'] = notifications
 
     context_dictionary['instrument_list'] = instruments
     if owned_instruments:
@@ -200,7 +176,7 @@ def run_summary(request, run_number, run_version=0):
     try:
         run = ReductionRun.objects.get(run_number=run_number, run_version=run_version)
         # Check the user has permission
-        if not request.user.is_superuser and run.experiment.reference_number not in request.session['experiments'] and run.instrument.name not in request.session['owned_instruments']:
+        if not request.user.is_superuser and str(run.experiment.reference_number) not in request.session['experiments']:
             raise PermissionDenied()
         history = ReductionRun.objects.filter(run_number=run_number).order_by('-run_version')
         context_dictionary = {
@@ -212,12 +188,13 @@ def run_summary(request, run_number, run_version=0):
         context_dictionary = {}
     return context_dictionary
 
-@require_staff
+#@require_staff
+@login_and_uows_valid
 @render_with('instrument_summary.html')
 def instrument_summary(request, instrument):
     # Check the user has permission
-    if not request.user.is_superuser and instrument not in request.session['owned_instruments']:
-        raise PermissionDenied()
+    #if not request.user.is_superuser and instrument not in request.session['owned_instruments']:
+    #    raise PermissionDenied()
 
     processing_status = StatusUtils().get_processing()
     queued_status = StatusUtils().get_queued()
@@ -225,6 +202,7 @@ def instrument_summary(request, instrument):
         instrument_obj = Instrument.objects.get(name=instrument)
         context_dictionary = {
             'instrument' : instrument_obj,
+            'last_instrument_run' : ReductionRun.objects.filter(instrument=instrument_obj).order_by('-run_number')[0],
             'processing' : ReductionRun.objects.filter(instrument=instrument_obj, status=processing_status),
             'queued' : ReductionRun.objects.filter(instrument=instrument_obj, status=queued_status),
         }
@@ -275,7 +253,7 @@ def experiment_summary(request, reference_number):
         context_dictionary = {}
     
     #Check the users permissions
-    if not request.user.is_superuser and reference_number not in request.session['experiments'] and experiment_details.instrument not in request.session['owned_instruments']:
+    if not request.user.is_superuser and str(reference_number) not in request.session['experiments']:
        raise PermissionDenied()
     return context_dictionary
 

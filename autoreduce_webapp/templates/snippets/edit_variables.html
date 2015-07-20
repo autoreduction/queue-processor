@@ -1,6 +1,7 @@
 {% load variable_type %}
 
 <input type="hidden" id="preview_url" value="{% url 'preview_script' instrument=instrument %}"/>
+<input type="hidden" id="updateURL" value="{% url 'current_default_variables' instrument=instrument %}"/>
 {% for name,variable in standard_variables.items %}
     <div class="form-group">
         <label for="var-standard-{{variable.sanitized_name}}" class="control-label col-md-3">

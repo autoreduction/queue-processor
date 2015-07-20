@@ -2,7 +2,6 @@ from django.conf.urls import include, url, patterns
 from django.contrib import admin
 from reduction_viewer import views as reduction_viewer_views
 from reduction_variables import views as reduction_variables_views
-from . import views as autoreduce_webapp_views
 
 handler400 = 'autoreduce_webapp.views.handler400'
 handler403 = 'autoreduce_webapp.views.handler403'
@@ -19,11 +18,13 @@ urlpatterns = patterns('',
     url(r'^runs/(?P<run_number>[0-9]+)(?:/(?P<run_version>[0-9]+))?/$', reduction_viewer_views.run_summary, name='run_summary'),  
     url(r'^runs/(?P<run_number>[0-9]+)(?:/(?P<run_version>[0-9]+))?/confirmation/$', reduction_variables_views.run_confirmation, name='run_confirmation'),  
 
-    url(r'^instrument/(?P<instrument>\w+)/$', reduction_viewer_views.instrument_summary, name='instrument_summary'),       
-    url(r'^instrument/(?P<instrument>\w+)/variables(?:/(?P<start>[0-9]+))?(?:/(?P<end>[0-9]+))?/$', reduction_variables_views.instrument_variables, name='instrument_variables'),
-    url(r'^instrument/(?P<instrument>\w+)/variables(?:/(?P<start>[0-9]+))?(?:/(?P<end>[0-9]+))?/delete$', reduction_variables_views.delete_instrument_variables, name='delete_instrument_variables'),
+    url(r'^instrument/(?P<instrument>\w+)/$', reduction_viewer_views.instrument_summary, name='instrument_summary'),
+    url(r'^instrument/(?P<instrument>\w+)/submit_runs/$', reduction_variables_views.submit_runs, name='instrument_submit_runs'),
+    url(r'^instrument/(?P<instrument>\w+)/variables(?:/(?P<start>[0-9]+))?(?:/(?P<end>[0-9]+))?/$', reduction_variables_views.instrument_variables, name='instrument_variables'),       
     url(r'^instrument/(?P<instrument>\w+)/variables/experiment/(?P<experiment_reference>[0-9]+)/$', reduction_variables_views.instrument_variables, name='instrument_variables_by_experiment'),
     url(r'^instrument/(?P<instrument>\w+)/variables/experiment/(?P<experiment_reference>[0-9]+)/delete$', reduction_variables_views.delete_instrument_variables, name='delete_instrument_variables_by_experiment'),
+
+    url(r'^instrument/(?P<instrument>\w+)/default_variables/$', reduction_variables_views.current_default_variables, name='current_default_variables'),
 
     url(r'^experiment/(?P<reference_number>[0-9]+)/$', reduction_viewer_views.experiment_summary, name='experiment_summary'),       
 
