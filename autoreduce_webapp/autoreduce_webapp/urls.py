@@ -20,7 +20,8 @@ urlpatterns = patterns('',
 
     url(r'^instrument/(?P<instrument>\w+)/$', reduction_viewer_views.instrument_summary, name='instrument_summary'),
     url(r'^instrument/(?P<instrument>\w+)/submit_runs/$', reduction_variables_views.submit_runs, name='instrument_submit_runs'),
-    url(r'^instrument/(?P<instrument>\w+)/variables(?:/(?P<start>[0-9]+))?(?:/(?P<end>[0-9]+))?/$', reduction_variables_views.instrument_variables, name='instrument_variables'),       
+    url(r'^instrument/(?P<instrument>\w+)/variables(?:/(?P<start>[0-9]+))?(?:/(?P<end>[0-9]+))?/$', reduction_variables_views.instrument_variables, name='instrument_variables'),
+    url(r'^instrument/(?P<instrument>\w+)/variables(?:/(?P<start>[0-9]+))?(?:/(?P<end>[0-9]+))?/delete$', reduction_variables_views.delete_instrument_variables, name='delete_instrument_variables'),
     url(r'^instrument/(?P<instrument>\w+)/variables/experiment/(?P<experiment_reference>[0-9]+)/$', reduction_variables_views.instrument_variables, name='instrument_variables_by_experiment'),
     url(r'^instrument/(?P<instrument>\w+)/variables/experiment/(?P<experiment_reference>[0-9]+)/delete$', reduction_variables_views.delete_instrument_variables, name='delete_instrument_variables_by_experiment'),
 

@@ -7,6 +7,7 @@ from autoreduce_webapp.settings import UOWS_LOGIN_URL
 from reduction_viewer.models import Experiment, ReductionRun, Instrument
 from reduction_viewer.utils import StatusUtils
 from reduction_viewer.view_utils import deactivate_invalid_instruments
+from django.core.context_processors import csrf
 from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, require_staff
 import operator
 import logging
@@ -209,6 +210,8 @@ def instrument_summary(request, instrument):
     except Exception as e:
         logger.error(e.message)
         context_dictionary = {}
+
+    context_dictionary.update(csrf(request))
 
     return context_dictionary
 
