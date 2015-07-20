@@ -255,7 +255,7 @@ class PostProcessAdmin:
                 elif type(out_directories) is list:
                     for out_dir in out_directories:
                         if type(out_dir) is str:
-                            self.copy_temp_directory(reduce_result_dir, out_directories)
+                            self.copy_temp_directory(reduce_result_dir, out_dir)
                         else:
                             self.log_and_message("Optional output directories of reduce.py must be strings: %s" % out_dir)
                 else:
