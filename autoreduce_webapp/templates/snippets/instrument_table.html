@@ -3,7 +3,7 @@
         <div class="col-md-1 col-xs-1">
             <a href="#" class="js-toggle-instrument-children" title="Expand/Collapse"><i class="fa fa-lg fa-chevron-right"></i></a>
         </div>
-        <div class="col-md-6 col-xs-6">
+        <div class="col-md-5 col-sm-7 col-xs-5">
             {% if instrument.is_active %}
                 <a href="{% url 'instrument_summary' instrument.name %}">{{ instrument.name }}</a>
             {% else %}
@@ -22,14 +22,14 @@
             </div>
         </div>
 
-        <div class="col-md-2 col-xs-2">
-            <a href="{% url 'instrument_submit_runs' instrument.name %}" class="pull-right edit-instrument-variables">Submit<span class="hidden-xs hidden-sm"> New Jobs</span></a>
+        <div class="col-md-3 col-sm-2 hidden-xs">
+            <a href="{% url 'instrument_submit_runs' instrument.name %}" class="pull-right edit-instrument-variables">Re-run<span class="hidden-xs hidden-sm"> Past Jobs</span></a>
         </div>
 
-        <div class="col-md-3 col-xs-2">
+        <div class="col-md-3 col-sm-2 hidden-xs">
             {% if reduction_variables_on and instrument.is_active %}
                 {% if instrument.is_instrument_scientist or user.is_superuser %}
-                    <a href="{% url 'instrument_variables' instrument.name %}" class="pull-right edit-instrument-variables">Configure<span class="hidden-xs hidden-sm"> Future Variables</span></a>
+                    <a href="{% url 'instrument_variables' instrument.name %}" class="pull-right edit-instrument-variables">Configure<span class="hidden-xs hidden-sm"> New Jobs</span></a>
                 {% endif %}
             {% endif %}
         </div>
