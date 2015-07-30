@@ -31,6 +31,7 @@
                     <li>The experiment may not have completed or was completed without an autoreduction job having been recorded.</li>
                     <li>The experiment was not found in ICAT.</li>
                     <li>The experiment is now too old.</li>
+                </ul>
             </p>
             {% if support_email %}
                 <p>If you still feel you should be able to see an experiment please <a href="mailto:{{support_email}}">Contact Us</a>.</p>
@@ -50,7 +51,7 @@
             </p>
             {% if support_email %}
                 <p>
-                    It is also possible that the experiment wasn't found in ICAT. If you belive a reduction job should have run for your instrument and you are not seeing any results please <a href="mailto:{{support_email}}">Contact Us</a>.
+                    It is also possible that the experiment wasn't found in ICAT. If you believe a reduction job should have run for your instrument and you are not seeing any results please <a href="mailto:{{support_email}}">Contact Us</a>.
                 </p>
             {% endif %}
         <div>
@@ -76,7 +77,7 @@
             {% if support_email %}
                 <p>If you feel a value is incorrectly being marked as invalid please <a href="mailto:{{support_email}}">Contact Us</a>.</p>
             {% endif %}
-        <div>
+        </div>
     </section>
     <section class="help-topic panel panel-default" data-topics="reduction data file location directory output reduced">
         <div class="panel-heading">
@@ -92,7 +93,6 @@
                 <br>
                 <img src="../static/images/Edit variables.png" class="img-responsive" alt="Variables">
                 <br>
-                <br>
                 and then ensure the 'Track script changes' checkbox is ticked.
                 <br>
                 <img src="../static/images/Track script changes.png" class="img-responsive" alt="Track script">
@@ -101,13 +101,14 @@
                 <br>
                 <img src="../static/images/1.png" class="img-responsive" alt="Script and values">
             </p>
-            <br>
-                To update instrument variables to new ones entered into the reduce_vars.py script go to the Edit Future Configuration page and click 'Reset to default values', this must be done any time reduce_vars.py is modified.
+            <p>
+                <br>
+                To update instrument variables to the new ones entered into the reduce_vars.py script go to the Configure New Jobs page and click 'Reset to values in current script', this must be done any time reduce_vars.py is modified.
                 <br>
                 <img src="../static/images/2.png" class="img-responsive" alt="Values in current script">
                 <br>
             </p>
-        <div>
+        </div>
     </section>
     {% if request.user.is_staff %}
         <section class="help-topic panel panel-default" data-topics="script compatible work">
