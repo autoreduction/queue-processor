@@ -99,13 +99,13 @@
                 <br>
                 For runs that are being re-run click the 'Reset to current script and values' link under Additional Actions when re-running.
                 <br>
-                <img src="../static/images/1.png" class="img-responsive" alt="Script and values">
+                <img src="../static/images/Reset to current script and values.png" class="img-responsive" alt="Script and values">
             </p>
             <p>
                 <br>
                 To update instrument variables to the new ones entered into the reduce_vars.py script go to the Configure New Jobs page and click 'Reset to values in current script', this must be done any time reduce_vars.py is modified.
                 <br>
-                <img src="../static/images/2.png" class="img-responsive" alt="Values in current script">
+                <img src="../static/images/Reset to values in current script.png" class="img-responsive" alt="Values in current script" style="max-width:900px">
                 <br>
             </p>
         </div>
@@ -118,7 +118,7 @@
             <div class="panel-body">
                 <p>
                     For a reduction script to be compatible with the autoreduction web application it must be named <code>reduce.py</code> expose what variables can be modified. 
-                    These variables must be made available in a file named <code>reduce_vars.py</code>. For an example of this please <a href="https://github.com/mantidproject/autoreduce/blob/master/WebApp/ISIS/example_reduce.py">See Here</a> <a href="https://github.com/mantidproject/autoreduce/blob/master/WebApp/ISIS/example_reduce_vars.py">and Here</a>.
+                    These variables must be made available in a file named <code>reduce_vars.py</code>. For an example of this please See <a href="https://github.com/mantidproject/autoreduce/blob/master/WebApp/ISIS/example_reduce.py"> Here</a> and <a href="https://github.com/mantidproject/autoreduce/blob/master/WebApp/ISIS/example_reduce_vars.py"> Here</a>.
                     Autoreduction expects the reduction script to have a <code>main()</code> method that takes in two arguments, data and output. These are passed in a kwargs but it may be desirable for these to also be accepted from the command line, for an example of how to do this please <a href="https://github.com/mantidproject/autoreduce/blob/master/WebApp/ISIS/example_reduce.py">See Here</a>.
                     The reduction script should perform all operation on the provided data file and save the output to the output directory proivded to the script. The output will be copied to the cache upon completion. If additional save locations are required these can be returned as a list of system paths from the main method. 
                 </p>
@@ -133,7 +133,7 @@
             </div>
             <div class="panel-body">
                 <p>
-                    When you have made sure your reduction script is in the correct format and varaibles exposed it must be placed within the autoreduction directory within the user script directory of the appropriate instrument.
+                    When you have made sure your reduction script is in the correct format and the variables are exposed it must be placed within the autoreduction directory within the user script directory of the appropriate instrument.
                 </p>
                 <p>
                     For example, the reduction script for MERLIN would be located at:
@@ -156,7 +156,7 @@
                     <code>\\isis\inst$\NDXMERLIN\Instrument\data\[CYCLE]\autoreduced\[RB NUMBER]\[RUN NUMBER]</code>.
                 </p>
                 <p>
-                    Optionally the reduction script may specify additional locations for the reduced data to be saved to. These can be found either within the reduction script or on the run summary page where a list of all reduction locations can be found withing the summary panel.
+                    Optionally the reduction script may specify additional locations for the reduced data to be saved to. These can be found either within the reduction script or on the run summary page where a list of all reduction locations can be found within the summary panel.
                 </p>
             <div>
         </section>
