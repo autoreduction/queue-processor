@@ -86,11 +86,15 @@ class InstrumentMonitor(threading.Thread):
                 data = get_data_and_check(lr)
                 last_run = data[1]
 
-            while True:  # send thread to sleep, use Timer objects
+            while True:# send thread to sleep, use Timer objects
+                filepath = self.instrumentLastRunLoc
+                old_modified_time = os.path.getmtime(filepath)
                 time.sleep(TIME_CONSTANT)
-                with open(self.instrumentLastRunLoc) as lr:
-                    data = get_data_and_check(lr)
-                    if (data[1] != last_run) and (int(data[2]) == 0):
+                new_modified_time = os.path.getmtime(filepath)
+                if old_modified_time != new_modified_time:
+                    with open(self.instrumentLastRunLoc) as lr:
+                        data = get_data_and_check(lr)
+                    if (data[1] != last_run) and (int (data[2]) ==0):
                         last_run = data[1]
                         self.send_message(data)
 
