@@ -70,10 +70,10 @@ def linux_to_windows_path(path):
     return path
 
 
-def windows_to_linux_path(path):
+def windows_to_linux_path(path, temp_root_directory):
     # '\\isis\inst$\' maps to '/isis/'
     path = path.replace('\\\\isis\\inst$\\', '/isis/')
-    path = path.replace('\\\\autoreduce\\data\\', conf["temp_root_directory"]+'/data/')
+    path = path.replace('\\\\autoreduce\\data\\', temp_root_directory+'/data/')
     path = path.replace('\\', '/')
     return path
 
@@ -89,7 +89,7 @@ class PostProcessAdmin:
 
         try:
             if data.has_key('data'):
-                self.data_file = windows_to_linux_path(str(data['data']))
+                self.data_file = windows_to_linux_path(str(data['data']), self.conf["temp_root_directory"])
                 logger.debug("data_file: %s" % self.data_file)
             else:
                 raise ValueError("data is missing")
@@ -119,7 +119,7 @@ class PostProcessAdmin:
                 raise ValueError("run_number is missing")
                 
             if data.has_key('reduction_script'):
-                self.reduction_script = windows_to_linux_path(str(data['reduction_script']))
+                self.reduction_script = windows_to_linux_path(str(data['reduction_script']), self.conf["temp_root_directory"])
                 logger.debug("reduction_script: %s" % str(self.reduction_script))
             else:
                 raise ValueError("reduction_script is missing")
@@ -171,14 +171,14 @@ class PostProcessAdmin:
 
             # specify instrument directory
             cycle = re.match(r'.*cycle_(\d\d_\d).*', self.data_file.lower()).group(1)
-            if self.instrument in conf["ceph_instruments"].extend(conf["excitation_instruments"]):
+            if self.instrument in self.conf["ceph_instruments"].extend(self.conf["excitation_instruments"]):
                 cycle = re.sub('[_]', '', cycle)
-                instrument_dir = conf["ceph_directory"] % (self.instrument, cycle, self.proposal, self.run_number)
-                if self.instrument in conf["excitation_instruments"]:
+                instrument_dir = self.conf["ceph_directory"] % (self.instrument, cycle, self.proposal, self.run_number)
+                if self.instrument in self.conf["excitation_instruments"]:
                     #Excitations would like to remove the run number folder at the end
                     instrument_dir = instrument_dir[:instrument_dir.rfind('/')+1]
             else:
-                instrument_dir = conf["archive_directory"] % (self.instrument, cycle, self.proposal, self.run_number)
+                instrument_dir = self.conf["archive_directory"] % (self.instrument, cycle, self.proposal, self.run_number)
 
             # specify script to run and directory
             if os.path.exists(os.path.join(self.reduction_script, "reduce.py")) is False:
@@ -188,9 +188,9 @@ class PostProcessAdmin:
                 return
             
             # specify directory where autoreduction output goes
-            reduce_result_dir = conf["temp_root_directory"] + instrument_dir
-            if self.instrument not in conf["excitation_instruments"]:
-                run_output_dir = os.path.join(conf["temp_root_directory"], instrument_dir[:instrument_dir.rfind('/')+1])
+            reduce_result_dir = self.conf["temp_root_directory"] + instrument_dir
+            if self.instrument not in self.conf["excitation_instruments"]:
+                run_output_dir = os.path.join(self.conf["temp_root_directory"], instrument_dir[:instrument_dir.rfind('/')+1])
             else:
                 run_output_dir = reduce_result_dir
 
@@ -231,14 +231,14 @@ class PostProcessAdmin:
                 with open(script_out, "a") as f:
                     f.writelines(str(e) + "\n")
                     f.write(traceback.format_exc())
-                self.copy_temp_directory(reduce_result_dir, reduce_result_dir[len(conf["temp_root_directory"]):])
+                self.copy_temp_directory(reduce_result_dir, reduce_result_dir[len(self.conf["temp_root_directory"]):])
                 self.delete_temp_directory(reduce_result_dir)
                 raise
 
             logger.info("Reduction subprocess completed.")
             logger.info("Additional save directories: %s" % out_directories)
 
-            self.copy_temp_directory(reduce_result_dir, reduce_result_dir[len(conf["temp_root_directory"]):])
+            self.copy_temp_directory(reduce_result_dir, reduce_result_dir[len(self.conf["temp_root_directory"]):])
 
             # If the reduce script specified some additional save directories, copy to there first
             if out_directories:
@@ -284,7 +284,7 @@ class PostProcessAdmin:
         exists"""
 
         # EXCITATION instrument are treated as a special case because they done what run number subfolders
-        if os.path.isdir(copy_destination) and self.instrument not in conf["excitation_instruments"]:
+        if os.path.isdir(copy_destination) and self.instrument not in self.conf["excitation_instruments"]:
             self._remove_directory(copy_destination)
 
         self.data['reduction_data'].append(linux_to_windows_path(copy_destination))
