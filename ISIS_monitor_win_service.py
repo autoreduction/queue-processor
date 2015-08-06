@@ -34,6 +34,7 @@ class QueueService(win32serviceutil.ServiceFramework):
             if rc == win32event.WAIT_OBJECT_0:
                 # Stop signal encountered
                 servicemanager.LogInfoMsg(self._svc_name_ + " - STOPPED")
+                ISISendOfRunMonitor.stop()
                 break
 
 
