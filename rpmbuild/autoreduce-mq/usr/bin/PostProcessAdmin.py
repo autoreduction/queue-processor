@@ -171,7 +171,7 @@ class PostProcessAdmin:
 
             # specify instrument directory
             cycle = re.match(r'.*cycle_(\d\d_\d).*', self.data_file.lower()).group(1)
-            if self.instrument in self.conf["ceph_instruments"].extend(self.conf["excitation_instruments"]):
+            if self.instrument in (self.conf["ceph_instruments"] + self.conf["excitation_instruments"]):
                 cycle = re.sub('[_]', '', cycle)
                 instrument_dir = self.conf["ceph_directory"] % (self.instrument, cycle, self.proposal, self.run_number)
                 if self.instrument in self.conf["excitation_instruments"]:
