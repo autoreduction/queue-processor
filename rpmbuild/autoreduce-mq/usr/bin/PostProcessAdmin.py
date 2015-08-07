@@ -2,20 +2,10 @@
 """
 Post Process Administrator. It kicks off cataloging and reduction jobs.
 """
-import logging, json, socket, os, sys, time, shutil, imp, stomp, re, errno, traceback
-import logging.handlers
+import json, socket, os, sys, time, shutil, imp, stomp, re, errno, traceback
 from contextlib import contextmanager
 from distutils.dir_util import copy_tree
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-handler = logging.handlers.RotatingFileHandler('/var/log/autoreduction.log', maxBytes=104857600, backupCount=20)
-handler.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
-# Quite the Stomp logs as they are quite chatty
-logging.getLogger('stomp').setLevel(logging.INFO)
+from logging_setup import logger
 
 @contextmanager
 def channels_redirected(out_file, err_file):

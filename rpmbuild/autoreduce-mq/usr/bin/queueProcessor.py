@@ -1,17 +1,7 @@
-import json, logging, time, subprocess, sys, socket
-import logging.handlers
+import json, time, subprocess, sys
 import stomp
 from twisted.internet import reactor
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-handler = logging.handlers.RotatingFileHandler('/var/log/autoreduction.log', maxBytes=104857600, backupCount=20)
-handler.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
-# Quiet the Stomp logs as they are quite chatty
-logging.getLogger('stomp').setLevel(logging.DEBUG)
-
+from logging_setup import logger
 
 class Listener(object):
     def __init__(self, client):
