@@ -91,7 +91,7 @@ changed in `/activemq-install-dir/log4j.properties`.
 
 7.  To start this as a daemon type `python /usr/bin/queueProcessor_daemon.py start` as the user you want to use to run queueProcessor
 
-Logging associated with the Logger used in the python worker script gets stored in `/var/log/autoreduction.log`, at present in PostProcessAdmin.py.  
+Logging associated with the Logger used in the python worker script gets stored in `/var/log/autoreduction.log`. To modify logging setting edit `/usr/bin/autoreduction_logging_setup.py`.  
 
 To check rpm and uninstall do `rpm -qa | grep autoreduce` and `rpm -evv name-of-rpm-package`.
 
