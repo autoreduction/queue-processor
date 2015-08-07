@@ -5,7 +5,7 @@ Post Process Administrator. It kicks off cataloging and reduction jobs.
 import json, socket, os, sys, time, shutil, imp, stomp, re, errno, traceback
 from contextlib import contextmanager
 from distutils.dir_util import copy_tree
-from logging_setup import logger
+from autoreduction_logging_setup import logger
 
 @contextmanager
 def channels_redirected(out_file, err_file):

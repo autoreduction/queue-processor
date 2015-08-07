@@ -1,7 +1,7 @@
 import json, time, subprocess, sys
 import stomp
 from twisted.internet import reactor
-from logging_setup import logger
+from autoreduction_logging_setup import logger
 
 class Listener(object):
     def __init__(self, client):
