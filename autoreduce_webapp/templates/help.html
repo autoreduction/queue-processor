@@ -12,7 +12,7 @@
         <div class="col-md-12">
             <div class="form-group">
                 <label for="help_search" class="screenreader-only">Search</label>
-                <input type="search" placeholder="Search" name="help_search" id="help_search" class="form-control" autocomplete="off" data-toggle="popover" data-trigger="focus" data-content="Try entering a keyword to filter help topics." data-placement="left">
+                <input type="search" placeholder="Search" name="help_search" id="help_search" class="form-control" autocomplete="off" data-toggle="popover" data-trigger="focus" data-content="Try entering a keyword to filter help topics." data-placement="top">
             </div>
         </div>
     </div>
@@ -28,7 +28,7 @@
             <p>
                 Possible reasons you may not see an expected experiment are:
                 <ul>
-                    <li>If you have multiple accounts or changed accounts you may be logged in with the wrong one. To resolve this issue please contact the user office who will be able to recover or merge accounts as needed.</li>
+                    <li>If you have multiple accounts or changed accounts you may be logged in with the wrong one. To resolve this issue please <a href="http://www.isis.stfc.ac.uk/user-office/">contact</a> the user office who will be able to recover or merge accounts as needed.</li>
                     <li>The experiment may not have completed or was completed without an autoreduction job having been recorded.</li>
                     <li>The experiment was not found in ICAT.</li>
                     <li>The experiment is now too old.</li>
@@ -52,7 +52,7 @@
             </p>
             {% if support_email %}
                 <p>
-                    It is also possible that the experiment wasn't found in ICAT. If you belive a reduction job should have run for your instrument and you are not seeing any results please <a href="mailto:{{support_email}}">Contact Us</a>.
+                    It is also possible that the experiment wasn't found in ICAT. If you believe a reduction job should have run for your instrument and you are not seeing any results please <a href="mailto:{{support_email}}">Contact Us</a>.
                 </p>
             {% endif %}
         <div>
@@ -63,13 +63,13 @@
         </div>
         <div class="panel-body">
             <p>
-                To add new instrument variables first you must be part of the instrument scientist team within ICAT. When you have this relationship you should see an "Edit Reduction Variables" link on the right of the instrument name on the main run list page or a "Add new run variables" below the status panel on the instrument summary page. Clicking either of these links will take you to a form in which you can set the values of variables exposed by that instruments reduce script.
+                To add new instrument variables first you must be part of the instrument scientist team within ICAT. Once you are part of this team you should see an "Edit Reduction Variables" link on the right of the instrument name on the main run list page or a "Add new run variables" below the status panel on the instrument summary page. Clicking either of these links will take you to a form in which you can set the values of variables exposed by that instruments reduce script.
             </p>
         <div>
     </section>
     <section class="help-topic panel panel-default" data-topics="invalid variables wrong error value">
         <div class="panel-heading">
-            <h4>Why is value X invalid for variable Y?</h4>
+            <h4>When changing variables why is value X invalid for variable Y?</h4>
         </div>
         <div class="panel-body">
             <p>
@@ -78,7 +78,7 @@
             {% if support_email %}
                 <p>If you feel a value is incorrectly being marked as invalid please <a href="mailto:{{support_email}}">Contact Us</a>.</p>
             {% endif %}
-        <div>
+        </div>
     </section>
     <section class="help-topic panel panel-default" data-topics="reduction data file location directory output reduced">
         <div class="panel-heading">
@@ -86,12 +86,18 @@
         </div>
         <div class="panel-body">
             <p>
-                To make sure that reductions coming straight from the machine use new reduce.py scripts automatically go to the Upcoming Configurations page, click 'edit variables' in the currently used variables box and then ensure the 'Track script changes' checkbox is ticked. For runs that are being re-run click the 'Reset to current script and values' link under Additional Actions when re-running.
+                To make sure that reductions coming straight from the instrument use new reduce.py scripts automatically, on the All Jobs page
+                click on one of the instrument name, which brings up the Upcoming Configurations page. Then on the left hand side of this page
+                click on 'edit variables' in the Current Variables section on this page. This brings up a Configure New Jobs page. Here ensure
+                that the 'Track script changes' checkbox is ticked.
             </p>
             <p>
-                To update instrument variables to new ones entered into the reduce_vars.py script go to the Edit Future Configuration page and click 'Reset to default values', this must be done any time reduce_vars.py is modified.
+                When re-running a job, if you want the re-run to use the current reduce.py script click the 'Reset to current script and values' link under Additional Actions.
             </p>
-        <div>
+            <p>
+                To update instrument variables to the new ones entered into the reduce_vars.py script go to the Configure New Jobs page and click 'Reset to values in current script', this must be done any time reduce_vars.py is modified.
+            </p>
+        </div>
     </section>
     {% if request.user.is_staff %}
         <section class="help-topic panel panel-default" data-topics="script compatible work">
@@ -101,7 +107,7 @@
             <div class="panel-body">
                 <p>
                     For a reduction script to be compatible with the autoreduction web application it must be named <code>reduce.py</code> expose what variables can be modified. 
-                    These variables must be made available in a file named <code>reduce_vars.py</code>. For an example of this please <a href="https://github.com/mantidproject/autoreduce/blob/master/WebApp/ISIS/example_reduce.py">See Here</a> <a href="https://github.com/mantidproject/autoreduce/blob/master/WebApp/ISIS/example_reduce_vars.py">and Here</a>.
+                    These variables must be made available in a file named <code>reduce_vars.py</code>. For an example of this please See <a href="https://github.com/mantidproject/autoreduce/blob/master/WebApp/ISIS/example_reduce.py"> Here</a> and <a href="https://github.com/mantidproject/autoreduce/blob/master/WebApp/ISIS/example_reduce_vars.py"> Here</a>.
                     Autoreduction expects the reduction script to have a <code>main()</code> method that takes in two arguments, data and output. These are passed in a kwargs but it may be desirable for these to also be accepted from the command line, for an example of how to do this please <a href="https://github.com/mantidproject/autoreduce/blob/master/WebApp/ISIS/example_reduce.py">See Here</a>.
                     The reduction script should perform all operation on the provided data file and save the output to the output directory proivded to the script. The output will be copied to the cache upon completion. If additional save locations are required these can be returned as a list of system paths from the main method. 
                 </p>
@@ -116,7 +122,7 @@
             </div>
             <div class="panel-body">
                 <p>
-                    When you have made sure your reduction script is in the correct format and varaibles exposed it must be placed within the autoreduction directory within the user script directory of the appropriate instrument.
+                    When you have made sure your reduction script is in the correct format and the variables are exposed it must be placed within the autoreduction directory within the user script directory of the appropriate instrument.
                 </p>
                 <p>
                     For example, the reduction script for MERLIN would be located at:
@@ -139,7 +145,7 @@
                     <code>\\isis\inst$\NDXMERLIN\Instrument\data\[CYCLE]\autoreduced\[RB NUMBER]\[RUN NUMBER]</code>.
                 </p>
                 <p>
-                    Optionally the reduction script may specify additional locations for the reduced data to be saved to. These can be found either within the reduction script or on the run summary page where a list of all reduction locations can be found withing the summary panel.
+                    Optionally the reduction script may specify additional locations for the reduced data to be saved to. These can be found either within the reduction script or on the run summary page where a list of all reduction locations can be found within the summary panel.
                 </p>
             <div>
         </section>
