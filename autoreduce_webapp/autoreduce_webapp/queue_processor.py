@@ -77,12 +77,17 @@ class Listener(object):
         highest_version = ReductionRun.objects.filter(run_number=self._data_dict['run_number']).order_by('-run_version').first().run_version
         experiment, experiment_created = Experiment.objects.get_or_create(reference_number=self._data_dict['rb_number'])
 
+        if instrument.is_paused:
+            status=StatusUtils().get_skipped()
+        else:
+            status=StatusUtils().get_queued()
+
         run_version = highest_version+1
         reduction_run = ReductionRun(run_number=self._data_dict['run_number'],
                                      run_version=run_version,
                                      experiment=experiment,
                                      instrument=instrument,
-                                     status=StatusUtils().get_queued()
+                                     status=status
                                      )
         reduction_run.save()
         self._data_dict['run_version'] = reduction_run.run_version
@@ -112,9 +117,12 @@ class Listener(object):
             self._data_dict['reduction_script'] = InstrumentVariablesUtils().get_temporary_script(instrument.name)
             self._data_dict['reduction_arguments'] = {}
 
-        self._client.send('/queue/ReductionPending', json.dumps(self._data_dict), priority=self._priority)
-        logger.info("Run %s ready for reduction" % self._data_dict['run_number'])
-        logger.info("Reduction file: %s" % self._data_dict['reduction_script'])
+        if instrument.is_paused:
+            logger.info("Run %s has been skipped" % self._data_dict['run_number'])
+        else:
+            self._client.send('/queue/ReductionPending', json.dumps(self._data_dict), priority=self._priority)
+            logger.info("Run %s ready for reduction" % self._data_dict['run_number'])
+            logger.info("Reduction file: %s" % self._data_dict['reduction_script'])
 
     def reduction_started(self):
         logger.info("Run %s has started reduction" % self._data_dict['run_number'])

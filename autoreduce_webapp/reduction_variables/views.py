@@ -247,7 +247,7 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
 
         context_dictionary = {
             'instrument' : instrument,
-            'last_instrument_run' : ReductionRun.objects.filter(instrument=instrument).order_by('-run_number')[0],
+            'last_instrument_run' : ReductionRun.objects.filter(instrument=instrument).exclude(status=StatusUtils.get_skipped()).order_by('-run_number')[0],
             'processing' : ReductionRun.objects.filter(instrument=instrument, status=processing_status),
             'queued' : ReductionRun.objects.filter(instrument=instrument, status=queued_status),
             'standard_variables' : standard_vars,
@@ -368,8 +368,9 @@ def submit_runs(request, instrument):
     else:
         processing_status = StatusUtils().get_processing()
         queued_status = StatusUtils().get_queued()
+        skipped_status = StatusUtils.get_skipped()
 
-        last_run = ReductionRun.objects.filter(instrument=instrument).order_by('-run_number')[0]
+        last_run = ReductionRun.objects.filter(instrument=instrument).exclude(status=skipped_status).order_by('-run_number')[0],
 
         standard_vars = {}
         advanced_vars = {}

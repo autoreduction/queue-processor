@@ -1,6 +1,7 @@
 from django.shortcuts import redirect
 from django.contrib.auth import logout as django_logout, authenticate, login
 from django.core.exceptions import PermissionDenied
+from django.db.models import Q
 from autoreduce_webapp.uows_client import UOWSClient
 from autoreduce_webapp.icat_communication import ICATCommunication
 from autoreduce_webapp.settings import UOWS_LOGIN_URL
@@ -56,9 +57,9 @@ def logout(request):
 @login_and_uows_valid
 @render_with('run_queue.html')
 def run_queue(request):
-    complete_status = StatusUtils().get_completed()
-    error_status = StatusUtils().get_error()
-    pending_jobs = ReductionRun.objects.all().exclude(status=complete_status).exclude(status=error_status).order_by('created')
+    queued_status = StatusUtils().get_queued()
+    processing_status = StatusUtils().get_processing()
+    pending_jobs = ReductionRun.objects.filter(Q(status=queued_status) | Q(status=processing_status)).order_by('created')
     context_dictionary = {
         'queue' : pending_jobs
     }
@@ -201,11 +202,12 @@ def instrument_summary(request, instrument):
 
     processing_status = StatusUtils().get_processing()
     queued_status = StatusUtils().get_queued()
+    skipped_status = StatusUtils.get_skipped()
     try:
         instrument_obj = Instrument.objects.get(name=instrument)
         context_dictionary = {
             'instrument' : instrument_obj,
-            'last_instrument_run' : ReductionRun.objects.filter(instrument=instrument_obj).order_by('-run_number')[0],
+            'last_instrument_run' : ReductionRun.objects.filter(instrument=instrument_obj).exclude(skipped_status).order_by('-run_number')[0],
             'processing' : ReductionRun.objects.filter(instrument=instrument_obj, status=processing_status),
             'queued' : ReductionRun.objects.filter(instrument=instrument_obj, status=queued_status),
         }
