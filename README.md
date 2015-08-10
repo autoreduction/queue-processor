@@ -17,8 +17,23 @@ First install Mantid using: http://download.mantidproject.org/redhat.html
         tar -zxvf apache-activemq-5.11.1-bin.tar.gz
         mv apache-activemq-5.11.1 /opt/
         ln -sf /opt/apache-activemq-5.11.1/ /opt/activemq
+                
+3a. Configure ActiveMQ to communicate with stomp over port 61613. Default
 
-3. Create/renew SSL certificates - keystore and truststore (http://activemq.apache.org/how-do-i-use-ssl.html)
+        nano /opt/activemq/conf/activemq.xml
+        Modify the transportConnector tag to be: <transportConnector name="stomp" uri="stomp://0.0.0.0:61613?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/>
+
+3b. Default is to setup stomp/activemq as in 3a, but where additional security may be required: steps to configure ActiveMQ to communicate with stomp + SSL is
+
+        nano /opt/activemq/conf/activemq.xml
+        Modify the transportConnector tag to be: <transportConnector name="stomp+ssl" uri="stomp+ssl://0.0.0.0:61613?transport.enabledProtocols=TLSv1,TLSv1.1,TLSv1.2&amp;maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/>
+        Add the following (making sure to change cert names and passwords):
+        <sslContext>
+                <sslContext keyStore="broker.ks" keyStorePassword="changeit"
+                trustStore="client.ts" trustStorePassword="changeit"/>
+        </sslContext>
+        
+Create/renew SSL certificates - keystore and truststore (http://activemq.apache.org/how-do-i-use-ssl.html)
 
         keytool -genkey -alias broker -keyalg RSA -keystore broker.ks -validity 2160
         keytool -export -alias broker -keystore broker.ks -file broker_cert
@@ -26,21 +41,22 @@ First install Mantid using: http://download.mantidproject.org/redhat.html
         keytool -import -alias broker -keystore client.ts -file broker_cert
         keytool -export -alias client -keystore client.ks -file client_cert -validity 2160
         keytool -import -alias client -keystore broker.ts -file client_cert
-        cp all of above created files into activemq/conf
-                
-4. Configure ActiveMQ to require SSL
+        cp all of above created files into activemq/conf        
+        
+4. Username and password for submiting jobs by adding to the <broker> section (with XXXXXXXXXX substitued by suitable password):
 
-        nano /opt/activemq/conf/activemq.xml
-        Modify the transportConnector tag to be: <transportConnector name="stomp+ssl" uri="stomp+ssl://0.0.0.0:61613?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/>
-        Add the following (making sure to change cert names and passwords):
-        <sslContext>
-                <sslContext keyStore="broker.ks" keyStorePassword="changeit"
-                trustStore="client.ts" trustStorePassword="changeit"/>
-        </sslContext>
+        <plugins>
+            <simpleAuthenticationPlugin>
+                <users>
+                    <authenticationUser username="autoreduce" password="XXXXXXXXXX" groups="users,admins"/>
+                </users>
+            </simpleAuthenticationPlugin>
+        </plugins>
 
-To start up ActiveMQ, ensure you are in root and type: `/opt/activemq/bin/activemq start`
 
-To stop, type: `/opt/activemq/bin/activemq stop`
+Start ActiveMQ as root: `sudo /opt/activemq/bin/activemq start`
+
+To stop, type: `sudo /opt/activemq/bin/activemq stop`
 
 To check that ActiveMQ is running e.g. type 
 
@@ -48,7 +64,8 @@ To check that ActiveMQ is running e.g. type
 * or `ps ax | grep activemq` and look for java entry running activemq.jar 
 * or check if http://localhost:8161/admin/index.jsp is running. Note the factory username/password is admin/admin. 
 
-ActiveMQ logs can by default be found in /activemq-install-dir/data.
+ActiveMQ logs can by default be found in /activemq-install-dir/data. By default the log level is INFO, this can be
+changed in `/activemq-install-dir/log4j.properties`.
 
 ### Setting up a worker on linux (redhat) 
 
@@ -66,18 +83,17 @@ ActiveMQ logs can by default be found in /activemq-install-dir/data.
         sudo ./make-autoreduce-rpm.sh
         sudo rpm -i ~/rpmbuild/RPMS/x86_64/autoreduce-mq-1.3-16.x86_64.rpm
 
-4.  Modify the address "brokers" in /etc/autoreduce/post_process_consumer.conf to point to ActiveMQ address 
+4.  Modify the address "brokers" in /etc/autoreduce/post_process_consumer.conf to point to ActiveMQ address and username and password for submitting jobs to activemq
 
-5.  At present specify the location where the script and reduced data get stored by modifying the instrument_dir variable in the method reduce() of python file /usr/bin/PostProcessAdmin.py
+5. At present create /autoreducetmp folder can change owner and group to user that will be used to run queueProcessor (to store temporary created reduction files)
 
-6.  Type: `sudo python /usr/bin/queueProcessor.py` or to start this as a daemon type `python /usr/bin/queueProcessor_daemon.py start`
+6.  At present specify the location where the script and reduced data get stored by modifying REDUCTION_DIRECTORY, ARCHIVE_DIRECTORY and CEPH_DIRECTORY of python file /usr/bin/PostProcessAdmin.py
 
-Logging associated with the Logger used in the python worker script gets stored in `/var/log/mantid_autoreduce_worker.log` (optionally change this in `/usr/bin/Configuration.py`).  
+7.  To start this as a daemon type `python /usr/bin/queueProcessor_daemon.py start` as the user you want to use to run queueProcessor
+
+Logging associated with the Logger used in the python worker script gets stored in `/var/log/autoreduction.log`, at present in PostProcessAdmin.py.  
 
 To check rpm and uninstall do `rpm -qa | grep autoreduce` and `rpm -evv name-of-rpm-package`.
 
-In step 4 if the key python line reads: `instrument_dir = "/home/autoreducetmp/" + self.instrument.lower() + "/"` then it is assumed that the reduce.py for a given instrument is located at `reduce_script_path = instrument_dir + "scripts/reduce.py"` and the output will be stored at `reduce_result_dir = instrument_dir + "results/" + self.proposal + "/"`
-
-To test that it works copy content of folder https://github.com/mantidproject/autoreduce/tree/master/ISISPostProcessRPM/rpmbuild/autoreduce-mq/test into "~/tmp/". 
-Edit the sendMessage.py file and change the message1 data_file property to point at the testData.txt within the tmp folder you have chosen.
-Then in this directory type: `python sendMessage.py`. A file ./hrpd/results/RB-1310123/result_hrpd.txt should appear containing just the text string "something".
+To test that it works copy content of folder /ISISPostProcessRPM/rpmbuild/autoreduce-mq/test into a folder of your choice. 
+Assuming the worker can see the ISIS archive, then in this directory type: `python sendMessage.py`.
