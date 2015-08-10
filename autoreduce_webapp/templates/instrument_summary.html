@@ -4,7 +4,7 @@
 {% block body %}
     {% if instrument %}
         {% if instrument.is_active %}
-<title>{{ instrument.name }} - Upcoming Configurations</title>
+            <title>{{ instrument.name }} - Upcoming Configurations</title>
             <div class="row">
                 <div class="col-md-12 text-center">
                     <h2>{{ instrument.name }} - Upcoming Configurations</h2>
@@ -15,6 +15,19 @@
                     {% include "snippets/instrument_status.html" with processing=processing queued=queued last_instrument_run=last_instrument_run only %}
                 </div>
             </div>
+            {% if instrument.is_paused %}
+                <div class="row">
+                    <div class="col-md-4 col-md-offset-4 text-center">
+                        <p><a class="btn btn-success btn-block"><i class="fa fa-play"></i>   Resume instrument</a></p>
+                    </div>
+                </div>
+            {% else %}
+                <div class="row">
+                    <div class="col-md-4 col-md-offset-4 text-center">
+                        <p><a class="btn btn-danger btn-block"><i class="fa fa-pause"></i>   Pause instrument</a></p>
+                    </div>
+                </div>
+            {% endif %}
             <div class="row">
                 <div class="col-md-4 col-md-offset-4 text-center">
                     <p><a href="{% url 'instrument_submit_runs' instrument=instrument %}" class="btn btn-success btn-block"><i class="fa fa-plus"></i> Re-run past jobs</a></p>

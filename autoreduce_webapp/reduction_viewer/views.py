@@ -110,7 +110,8 @@ def run_list(request):
             'experiments' : [],
             'is_instrument_scientist' : True,#(instrument_name in owned_instruments),
             'runs' : [],
-            'is_active' : instrument.is_active
+            'is_active' : instrument.is_active,
+            'is_paused' : instrument.is_paused
         }
         
         if instrument_name not in experiments:
@@ -202,12 +203,12 @@ def instrument_summary(request, instrument):
 
     processing_status = StatusUtils().get_processing()
     queued_status = StatusUtils().get_queued()
-    skipped_status = StatusUtils.get_skipped()
+    skipped_status = StatusUtils().get_skipped()
     try:
         instrument_obj = Instrument.objects.get(name=instrument)
         context_dictionary = {
             'instrument' : instrument_obj,
-            'last_instrument_run' : ReductionRun.objects.filter(instrument=instrument_obj).exclude(skipped_status).order_by('-run_number')[0],
+            'last_instrument_run' : ReductionRun.objects.filter(instrument=instrument_obj).exclude(status=skipped_status).order_by('-run_number')[0],
             'processing' : ReductionRun.objects.filter(instrument=instrument_obj, status=processing_status),
             'queued' : ReductionRun.objects.filter(instrument=instrument_obj, status=queued_status),
         }
