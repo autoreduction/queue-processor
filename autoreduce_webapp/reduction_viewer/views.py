@@ -1,5 +1,6 @@
 from django.shortcuts import redirect
 from django.contrib.auth import logout as django_logout, authenticate, login
+from django.core.context_processors import csrf
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from autoreduce_webapp.uows_client import UOWSClient
@@ -170,6 +171,8 @@ def run_list(request):
     else:
         context_dictionary['default_tab'] = 'experiment'
 
+    context_dictionary.update(csrf(request))
+
     return context_dictionary
 
 @login_and_uows_valid
@@ -266,3 +269,11 @@ def experiment_summary(request, reference_number):
 @render_with('help.html')
 def help(request):
     return {}
+
+@login_and_uows_valid
+def instrument_pause(request, instrument):
+    #TODO: Check ICAT credentials
+    instrument_obj = Instrument.objects.get(name=instrument)
+    instrument_obj.is_paused = (request.POST.get("currently_paused").lower() == "false")
+    instrument_obj.save()
+    return redirect('run_list')
