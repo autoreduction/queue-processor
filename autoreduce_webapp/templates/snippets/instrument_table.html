@@ -26,17 +26,19 @@
 
         <div class="col-lg-7 col-md-6 col-sm-5 col-xs-2">
             <div class="col-lg-4 col-md-2 col-sm-4">
-                {% if instrument.is_paused %}
-                    <a id='play' href='' class="pull-left edit-instrument-variables">
-                        <span class="hidden-xs ">Resume<span class="hidden-sm hidden-md"> Instrument</span></span>
+                <a id='pause-{{ instrument.name }}' href='#' class="pull-left edit-instrument-variables">
+                    {% if instrument.is_paused %}
+                        <span class="hidden-xs">Resume<span class="hidden-sm hidden-md"> Instrument</span></span>
                         <span class="hidden-lg hidden-md hidden-sm"> <i class="fa fa-lg fa-play"></i></span>
-                    </a>
-                {% else %}
-                    <a id='pause' href='' class="pull-left edit-instrument-variables">
-                        <span class="hidden-xs ">Pause<span class="hidden-sm hidden-md"> Instrument</span></span>
+                    {% else %}
+                        <span class="hidden-xs">Pause<span class="hidden-sm hidden-md"> Instrument</span></span>
                         <span class="hidden-lg hidden-md hidden-sm"> <i class="fa fa-lg fa-pause"></i></span>
-                    </a>
-                {% endif %}
+                    {% endif %}
+                </a>
+                <form id="form-pause-{{ instrument.name }}" method="POST" action="{% url 'instrument_pause' instrument.name %}">
+                    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                    <input type="hidden" name="currently_paused" id="currently_paused" value="{{ instrument.is_paused }}">
+                </form>
             </div>
 
             <div class="col-lg-4 col-md-5 col-sm-4 hidden-xs">
