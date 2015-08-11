@@ -1,5 +1,6 @@
 from django.shortcuts import redirect
 from django.contrib.auth import logout as django_logout, authenticate, login
+from django.http import JsonResponse
 from django.core.context_processors import csrf
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
@@ -274,6 +275,7 @@ def help(request):
 def instrument_pause(request, instrument):
     #TODO: Check ICAT credentials
     instrument_obj = Instrument.objects.get(name=instrument)
-    instrument_obj.is_paused = (request.POST.get("currently_paused").lower() == "false")
+    currently_paused = (request.POST.get("currently_paused").lower() == u"false")
+    instrument_obj.is_paused = currently_paused
     instrument_obj.save()
-    return redirect('run_list')
+    return JsonResponse({'currently_paused': str(currently_paused)})  #Blank response
