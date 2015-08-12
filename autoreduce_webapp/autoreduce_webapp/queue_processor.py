@@ -66,15 +66,18 @@ class Listener(object):
 
         logger.info("Data ready for processing run %s on %s" % (str(self._data_dict['run_number']), self._data_dict['instrument']))
         
-        self._data_dict['run_version'] = 0
-        
         instrument = InstrumentUtils().get_instrument(self._data_dict['instrument'])
         # Activate the instrument if it is currently set to inactive
         if not instrument.is_active:
             instrument.is_active = True
             instrument.save()
 
-        highest_version = ReductionRun.objects.filter(run_number=self._data_dict['run_number']).order_by('-run_version').first().run_version
+        last_run = ReductionRun.objects.filter(run_number=self._data_dict['run_number']).order_by('-run_version').first()
+        if last_run is not None:
+            highest_version = last_run.run_version
+        else:
+            highest_version = 0
+
         experiment, experiment_created = Experiment.objects.get_or_create(reference_number=self._data_dict['rb_number'])
 
         if instrument.is_paused:
