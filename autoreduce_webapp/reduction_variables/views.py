@@ -87,12 +87,19 @@ def instrument_summary(request, instrument):
         'upcoming_variables_by_experiment': upcoming_variables_by_experiment_ordered,
     }
 
+    context_dictionary.update(csrf(request))
+
     return render_to_response('snippets/instrument_summary_variables.html', context_dictionary, RequestContext(request))
 
 @login_and_uows_valid
-@render_with('instrument_summary.html')
-def delete_instrument_variables(request, instrument, start=0, end=0, experiment_reference=0):
-    logger.info("In delete method")
+def delete_instrument_variables(request, instrument, start=0, end=0, experiment_reference=None):
+    instrument = Instrument.objects.get(name=instrument)
+    if experiment_reference is None:
+        InstrumentVariable.objects.filter(instrument=instrument, start_run=start).delete()
+    else:
+        InstrumentVariable.objects.filter(instrument=instrument, experiment_reference=experiment_reference).delete()
+
+    return redirect('instrument_summary', instrument=instrument.name)
 
 #@require_staff
 @login_and_uows_valid

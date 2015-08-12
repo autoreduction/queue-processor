@@ -21,7 +21,7 @@
                 </div>
             </div>
             {% if reduction_variables_on %}  
-                {% view "reduction_variables.views.instrument_summary" instrument=instrument.name csrf_token=csrf_token %}
+                {% view "reduction_variables.views.instrument_summary" instrument=instrument.name %}
             {% endif %}
         {% else %}
             <div class="text-center col-md-6 col-md-offset-3 well well-small">
