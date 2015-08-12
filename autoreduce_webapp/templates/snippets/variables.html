@@ -40,7 +40,7 @@
             {% if upcoming %}
                 <br/>
                 <form id="delete_variables" method="POST" action="#">
-                    {% csrf_token %}
+                    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
                     <input type="hidden" id="delete_url" value="{% url 'delete_instrument_variables' instrument=instrument.name start=instrument_variables.run_start end=instrument_variables.run_end %}"/>
                     <a href="#deleteVariables" id="deleteVariables">delete variables</a>
                 </form>
