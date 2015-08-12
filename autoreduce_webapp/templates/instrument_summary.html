@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load view %}
+{% load static from staticfiles %}
 
 {% block body %}
     {% if instrument %}
@@ -15,19 +16,20 @@
                     {% include "snippets/instrument_status.html" with processing=processing queued=queued last_instrument_run=last_instrument_run only %}
                 </div>
             </div>
-            {% if instrument.is_paused %}
                 <div class="row">
                     <div class="col-md-4 col-md-offset-4 text-center">
-                        <p><a class="btn btn-success btn-block"><i class="fa fa-play"></i>   Resume instrument</a></p>
+                        {% if instrument.is_paused %}
+                            <a class="btn btn-success btn-block" id="pause"><i class="fa fa-play"></i>   Resume Instrument</a>
+                        {% else %}
+                            <a class="btn btn-danger btn-block" id="pause"><i class="fa fa-pause"></i>   Pause Instrument</a>
+                        {% endif %}
+                        <form id="form-pause" method="POST" action="{% url 'instrument_pause' instrument.name %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="currently_paused" id="currently_paused" value="{{ instrument.is_paused }}">
+                        </form>
+                        <p></p>
                     </div>
                 </div>
-            {% else %}
-                <div class="row">
-                    <div class="col-md-4 col-md-offset-4 text-center">
-                        <p><a class="btn btn-danger btn-block"><i class="fa fa-pause"></i>   Pause instrument</a></p>
-                    </div>
-                </div>
-            {% endif %}
             <div class="row">
                 <div class="col-md-4 col-md-offset-4 text-center">
                     <p><a href="{% url 'instrument_submit_runs' instrument=instrument %}" class="btn btn-success btn-block"><i class="fa fa-plus"></i> Re-run past jobs</a></p>
@@ -46,4 +48,8 @@
             Instrument not found.
         </div>
     {% endif %}
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static "javascript/pause_instrument.js" %}"></script>
 {% endblock %}

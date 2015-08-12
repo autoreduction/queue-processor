@@ -1,30 +1,35 @@
 (function(){
 
-    var resume_html = 'Resume<span class="hidden-sm hidden-md"> Instrument</span>';
-    var pause_html = 'Pause<span class="hidden-sm hidden-md"> Instrument</span>';
-
     var toggleInstrument = function toggleInstrument(event){
         var $form = $(event.currentTarget.nextElementSibling);
+        var $current_target = $(event.currentTarget);
         $("body").css("cursor", "wait");
+        $current_target.css("cursor", "wait");
         event.stopImmediatePropagation();
-        $(event.currentTarget).css("cursor", "wait");
         $.ajax({
             url : $form.attr('action'),
             type: "POST",
             data: $form.serialize(),
             success: function (data) {
                 $form.find("#currently_paused").val(data["currently_paused"]);
-                $(event.currentTarget).find("i.fa").toggleClass("fa-pause fa-play");
+                var currently_paused = (data["currently_paused"].toLowerCase() == "true");
 
-                var current_text_obj = $(event.currentTarget).find("span.hidden-xs");
-                if (current_text_obj.html() == resume_html) {
-                    current_text_obj.html(pause_html);
+                $current_target.find("i.fa").toggleClass("fa-pause fa-play");
+
+                //For instrument_summary.html
+                var btn = $current_target.hasClass("btn");
+                if ($current_target.hasClass("btn")) {
+                    $current_target.toggleClass("btn-success btn-danger");
+                };
+
+                if (currently_paused) {
+                    $current_target.html($current_target.html().replace("Pause", "Resume"));
                 } else {
-                    current_text_obj.html(resume_html);
+                    $current_target.html($current_target.html().replace("Resume", "Pause"));
                 };
 
                 $("body").css("cursor", "default");
-                $(event.currentTarget).css("cursor", "pointer");
+                $current_target.css("cursor", "pointer");
             }
         })
     };
