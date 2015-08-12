@@ -279,3 +279,4 @@ def instrument_pause(request, instrument):
     instrument_obj.is_paused = currently_paused
     instrument_obj.save()
     return JsonResponse({'currently_paused': str(currently_paused)})  #Blank response
+
