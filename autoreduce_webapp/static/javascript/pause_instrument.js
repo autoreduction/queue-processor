@@ -16,11 +16,7 @@
 
                 $current_target.find("i.fa").toggleClass("fa-pause fa-play");
 
-                //For instrument_summary.html
-                var btn = $current_target.hasClass("btn");
-                if ($current_target.hasClass("btn")) {
-                    $current_target.toggleClass("btn-success btn-danger");
-                };
+                $current_target.toggleClass("btn-success btn-danger");
 
                 if (currently_paused) {
                     $current_target.html($current_target.html().replace("Pause", "Resume"));
