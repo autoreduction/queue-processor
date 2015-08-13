@@ -1,6 +1,9 @@
 from django.shortcuts import redirect
 from django.contrib.auth import logout as django_logout, authenticate, login
+from django.http import JsonResponse
+from django.core.context_processors import csrf
 from django.core.exceptions import PermissionDenied
+from django.db.models import Q
 from autoreduce_webapp.uows_client import UOWSClient
 from autoreduce_webapp.icat_communication import ICATCommunication
 from autoreduce_webapp.settings import UOWS_LOGIN_URL
@@ -56,9 +59,9 @@ def logout(request):
 @login_and_uows_valid
 @render_with('run_queue.html')
 def run_queue(request):
-    complete_status = StatusUtils().get_completed()
-    error_status = StatusUtils().get_error()
-    pending_jobs = ReductionRun.objects.all().exclude(status=complete_status).exclude(status=error_status).order_by('created')
+    queued_status = StatusUtils().get_queued()
+    processing_status = StatusUtils().get_processing()
+    pending_jobs = ReductionRun.objects.filter(Q(status=queued_status) | Q(status=processing_status)).order_by('created')
     context_dictionary = {
         'queue' : pending_jobs
     }
@@ -109,7 +112,8 @@ def run_list(request):
             'experiments' : [],
             'is_instrument_scientist' : True,#(instrument_name in owned_instruments),
             'runs' : [],
-            'is_active' : instrument.is_active
+            'is_active' : instrument.is_active,
+            'is_paused' : instrument.is_paused
         }
         
         if instrument_name not in experiments:
@@ -168,6 +172,8 @@ def run_list(request):
     else:
         context_dictionary['default_tab'] = 'experiment'
 
+    context_dictionary.update(csrf(request))
+
     return context_dictionary
 
 @login_and_uows_valid
@@ -201,11 +207,12 @@ def instrument_summary(request, instrument):
 
     processing_status = StatusUtils().get_processing()
     queued_status = StatusUtils().get_queued()
+    skipped_status = StatusUtils().get_skipped()
     try:
         instrument_obj = Instrument.objects.get(name=instrument)
         context_dictionary = {
             'instrument' : instrument_obj,
-            'last_instrument_run' : ReductionRun.objects.filter(instrument=instrument_obj).order_by('-run_number')[0],
+            'last_instrument_run' : ReductionRun.objects.filter(instrument=instrument_obj).exclude(status=skipped_status).order_by('-run_number')[0],
             'processing' : ReductionRun.objects.filter(instrument=instrument_obj, status=processing_status),
             'queued' : ReductionRun.objects.filter(instrument=instrument_obj, status=queued_status),
         }
@@ -263,3 +270,13 @@ def experiment_summary(request, reference_number):
 @render_with('help.html')
 def help(request):
     return {}
+
+@login_and_uows_valid
+def instrument_pause(request, instrument):
+    #TODO: Check ICAT credentials
+    instrument_obj = Instrument.objects.get(name=instrument)
+    currently_paused = (request.POST.get("currently_paused").lower() == u"false")
+    instrument_obj.is_paused = currently_paused
+    instrument_obj.save()
+    return JsonResponse({'currently_paused': str(currently_paused)})  #Blank response
+

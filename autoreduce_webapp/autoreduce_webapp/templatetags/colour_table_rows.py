@@ -10,6 +10,6 @@ def colour_table_row(status):
         return 'warning'
     if status == 'Queued':
         return 'info'
-    if status == 'Completed':
+    if status == 'Completed' or status == 'Skipped':
         return 'success'
     return status

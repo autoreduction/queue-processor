@@ -30,15 +30,17 @@
     };
 
     var toggleInstrumentsExperimentsClickAction = function toggleInstrumentsExperimentsClickAction(event){
-        if(($(event.target).is('a') && $(event.target).attr('href')==='#') || ($(event.target).parent().is('a') && $(event.target).parent().attr('href')==='#')|| $(event.target).is(':not(a)') && ($(event.target).parent().is(':not(a)'))){
+        var $target = $(event.target);
+        if(($target.is('a') && $target.attr('href')==='#') || ($target.parent().is('a') && $target.parent().attr('href')==='#') || $target.is(':not(a)') && ($target.parent().is(':not(a)'))){
             event.preventDefault();
-            $(this).find('i.fa').toggleClass('fa-chevron-right fa-chevron-down');
+            $(this).find("i[class*='fa-chevron']").toggleClass('fa-chevron-right fa-chevron-down');
             $(this).parents('.instrument').find('.experiment,.run').toggleClass('hide');
         }
     };
     var toggleExperimentRunsClickAction = function toggleExperimentRunsClickAction(event){
-        if(($(event.target).is('a') && $(event.target).attr('href')==='#') || ($(event.target).parent().is('a') && $(event.target).parent().attr('href')==='#')|| $(event.target).is(':not(a)') && ($(event.target).parent().is(':not(a)'))){
-            $(this).find('i.fa').toggleClass('fa-chevron-right fa-chevron-down');
+        var $target = $(event.target);
+        if(($target.is('a') && $target.attr('href')==='#') || ($target.parent().is('a') && $target.parent().attr('href')==='#') || $target.is(':not(a)') && ($.target.parent().is(':not(a)'))){
+            $(this).find("i[class*='fa-chevron']").toggleClass('fa-chevron-right fa-chevron-down');
             $(this).parents('.experiment').find('.experiment-runs').toggleClass('hide');
         }
     };
@@ -68,16 +70,16 @@
         fastdom.write(function(){
             $('.experiment-heading:visible').each(function(){
                 if($(this).parent().find('.experiment-runs:visible').length > 0){
-                    $(this).find('.fa.fa-lg').addClass('fa-chevron-down').removeClass('fa-chevron-right')
+                    $(this).find('#chevron').addClass('fa-chevron-down').removeClass('fa-chevron-right')
                 }else{
-                    $(this).find('.fa.fa-lg').addClass('fa-chevron-right').removeClass('fa-chevron-down')
+                    $(this).find('#chevron').addClass('fa-chevron-right').removeClass('fa-chevron-down')
                 }
             });
             $('.instrument-heading:visible').each(function(){
                 if($(this).parent().find('.experiment:visible').length > 0){
-                    $(this).find('.fa.fa-lg').addClass('fa-chevron-down').removeClass('fa-chevron-right')
+                    $(this).find('#chevron').addClass('fa-chevron-down').removeClass('fa-chevron-right')
                 }else{
-                    $(this).find('.fa.fa-lg').addClass('fa-chevron-right').removeClass('fa-chevron-down')
+                    $(this).find('#chevron').addClass('fa-chevron-right').removeClass('fa-chevron-down')
                 }
             });
         });
