@@ -177,13 +177,16 @@ def run_summary(request, run_number, run_version=0):
     try:
         run = ReductionRun.objects.get(run_number=run_number, run_version=run_version)
         # Check the user has permission
-        if not request.user.is_superuser and str(run.experiment.reference_number) not in request.session['experiments']:
+        if not request.user.is_superuser and str(run.experiment.reference_number) not in request.session['experiments']\
+                and str(run.instrument) not in request.session['owned_instruments']:
             raise PermissionDenied()
         history = ReductionRun.objects.filter(run_number=run_number).order_by('-run_version')
         context_dictionary = {
             'run' : run,
             'history' : history,
         }
+    except PermissionDenied:
+        raise
     except Exception as e:
         logger.error(e.message)
         context_dictionary = {}
