@@ -9,6 +9,9 @@ from reduction_viewer.models import ReductionRun, Notification
 from reduction_viewer.utils import InstrumentUtils, StatusUtils
 from autoreduce_webapp.icat_communication import ICATCommunication
 
+class DataTooLong(ValueError):
+    pass
+
 def write_script_to_temp(script, script_vars_file):
     """
     Write the given script binary to a unique filename in the reduction_script_temp directory.
@@ -284,6 +287,24 @@ class InstrumentVariablesUtils(object):
         script_binary, vars_script_binary = self.get_current_script_text(instrument_name)
         return write_script_to_temp(script_binary, vars_script_binary)
 
+    def _create_variables(self, instrument, script, variable_dict, is_advanced):
+        variables = []
+        for key, value in variable_dict.iteritems():
+            str_value = str(value).replace('[','').replace(']','')
+            if len(str_value) > InstrumentVariable._meta.get_field('value').max_length:
+                raise DataTooLong
+            variable = InstrumentVariable(
+                instrument=instrument,
+                name=key,
+                value=str_value,
+                is_advanced=is_advanced,
+                type=VariableUtils().get_type_string(value),
+                start_run = 0,
+                help_text=self.get_help_text('standard_vars', key, instrument.name, script),
+                )
+            variables.append(variable)
+        return variables
+
     def get_default_variables(self, instrument_name, reduce_script=None):
         """
         Creates and returns a list of variables matching those found in the appropriate reduce script.
@@ -294,29 +315,9 @@ class InstrumentVariablesUtils(object):
         instrument = InstrumentUtils().get_instrument(instrument_name)
         variables = []
         if 'standard_vars' in dir(reduce_script):
-            for key in reduce_script.standard_vars:
-                variable = InstrumentVariable(
-                    instrument=instrument, 
-                    name=key, 
-                    value=str(reduce_script.standard_vars[key]).replace('[','').replace(']',''), 
-                    is_advanced=False, 
-                    type=VariableUtils().get_type_string(reduce_script.standard_vars[key]),
-                    start_run = 0,
-                    help_text=self.get_help_text('standard_vars', key, instrument_name, reduce_script),
-                    )
-                variables.append(variable)
+            variables.extend(self._create_variables(instrument, reduce_script, reduce_script.standard_vars, False))
         if 'advanced_vars' in dir(reduce_script):
-            for key in reduce_script.advanced_vars:
-                variable = InstrumentVariable(
-                    instrument=instrument, 
-                    name=key, 
-                    value=str(reduce_script.advanced_vars[key]).replace('[','').replace(']',''), 
-                    is_advanced=True, 
-                    type=VariableUtils().get_type_string(reduce_script.advanced_vars[key]),
-                    start_run = 0,
-                    help_text=self.get_help_text('advanced_vars', key, instrument_name, reduce_script),
-                    )
-                variables.append(variable)
+            variables.extend(self._create_variables(instrument, reduce_script, reduce_script.advanced_vars, True))
         return variables
 
     def get_help_text(self, dictionary, key, instrument_name, reduce_script=None):

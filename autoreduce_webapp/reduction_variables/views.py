@@ -6,7 +6,7 @@ from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
 from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, require_staff
 from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFile
-from reduction_variables.utils import InstrumentVariablesUtils, VariableUtils, MessagingUtils, ScriptUtils
+from reduction_variables.utils import InstrumentVariablesUtils, VariableUtils, MessagingUtils, ScriptUtils, DataTooLong
 from reduction_viewer.models import Instrument, ReductionRun, DataLocation
 from reduction_viewer.utils import StatusUtils
 
@@ -322,6 +322,8 @@ def submit_runs(request, instrument):
             script_vars = ScriptFile(script=script_vars_binary, file_name='reduce_vars.py')
             script_vars.save()
 
+            #TODO: Share code with run_confirmation
+
             new_variables = []
 
             for key,value in request.POST.iteritems():
@@ -338,6 +340,8 @@ def submit_runs(request, instrument):
                         default_var = next((x for x in default_variables if x.name == name), None)
                         if not default_var:
                             continue
+                        if len(value) > InstrumentVariable._meta.get_field('value').max_length:
+                            raise DataTooLong #TODO: Should not save any variables
                         variable = RunVariable(
                             reduction_run=new_job,
                             name=default_var.name,
@@ -527,6 +531,8 @@ def run_confirmation(request, run_number, run_version=0):
                     default_var = next((x for x in run_variables if x.name == name), next((x for x in default_variables if x.name == name), None))
                     if not default_var:
                         continue
+                    if len(value) > InstrumentVariable._meta.get_field('value').max_length:
+                        raise DataTooLong
                     variable = RunVariable(
                         reduction_run=new_job,
                         name=default_var.name,
