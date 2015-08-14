@@ -76,7 +76,7 @@ class Listener(object):
         if last_run is not None:
             highest_version = last_run.run_version
         else:
-            highest_version = 0
+            highest_version = -1
 
         experiment, experiment_created = Experiment.objects.get_or_create(reference_number=self._data_dict['rb_number'])
 
