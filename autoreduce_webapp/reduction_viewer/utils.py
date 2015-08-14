@@ -27,6 +27,9 @@ class StatusUtils(object):
 
     def get_queued(self):
         return self._get_status("Queued")
+
+    def get_skipped(self):
+        return self._get_status("Skipped")
             
 class InstrumentUtils(object):
     def get_instrument(self, instrument_name):

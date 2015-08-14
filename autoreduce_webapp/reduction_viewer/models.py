@@ -6,6 +6,7 @@ import autoreduce_webapp.icat_communication
 class Instrument(models.Model):
     name = models.CharField(max_length=80)
     is_active = models.BooleanField(default=False)
+    is_paused = models.BooleanField(default=False)
 
     def __unicode__(self):
         return u'%s' % self.name

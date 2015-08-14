@@ -21,7 +21,6 @@ def write_script_to_temp(script, script_vars_file):
             unique_name = str(uuid.uuid4())
             script_path = os.path.join(TEMP_OUTPUT_DIRECTORY, 'scripts', unique_name)
         os.makedirs(script_path)
-        logger.error("Made dir")
         f = open(os.path.join(script_path, 'reduce.py'), 'wb')
         f.write(script)
         f.close()
