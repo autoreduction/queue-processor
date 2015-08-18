@@ -505,8 +505,8 @@ def preview_script(request, instrument, run_number=0, experiment_reference=0):
         %s is later replaced with the variable name
         A live example can be found at: https://regex101.com/r/oJ7iY5/3
     '''
-    standard_pattern = "(?P<before>(\s)standard_vars\s*=\s*\{(([\s\S])+)['|\"]%s['|\"]\s*:\s*)(?P<value>((?!,(\s+)\n|\n)[\S\s])+)"
-    advanced_pattern = "(?P<before>(\s)advanced_vars\s*=\s*\{(([\s\S])+)['|\"]%s['|\"]\s*:\s*)(?P<value>((?!,(\s+)\n|\n)[\S\s])+)"
+    standard_pattern = "(?P<before>(\s*)standard_vars\s*=\s*\{(([^}])+)['|\"]%s['|\"]\s*:\s*)(?P<value>((?!,(\s+)\n|\n)[\S\s])+)"
+    advanced_pattern = "(?P<before>(\s*)advanced_vars\s*=\s*\{(([^}])+)['|\"]%s['|\"]\s*:\s*)(?P<value>((?!,(\s+)\n|\n)[\S\s])+)"
 
     instrument_object = Instrument.objects.get(name=instrument)
 
@@ -533,7 +533,7 @@ def preview_script(request, instrument, run_number=0, experiment_reference=0):
             script_vars_file = re.sub(pattern, value, script_vars_file)
 
     elif request.method == 'POST':
-        experiment_reference = request.POST.get('experiment_reference_number', None)
+        experiment_reference = request.POST.get('experiment_reference_number', 0)
         start_run = request.POST.get('run_start', None)
         lookup_run_number = request.POST.get('run_number', None)
         lookup_run_version = request.POST.get('run_version', None)
