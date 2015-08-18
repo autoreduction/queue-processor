@@ -7,14 +7,23 @@
 {% load static from staticfiles %}
 
 {% block body %}
-    {% if run and not error %}
+    {% if runs and not error %}
         <title>Run Confirmation</title>
         <div class="row">
             <div class="col-md-8 col-md-offset-2">
                 <div class="panel panel-success">
                     <div class="panel-heading">
                         <div class="panel-title">
-                            Successfully submitted run #{{run.run_number}} for reduction
+
+                            {% if runs|length = 1 %}
+                            Successfully submitted run #{{runs.0.run_number}} for reduction
+                            {% else %}
+                                Successfully submitted runs for reduction: <br>
+                                {% for run in runs %}
+                                    <a href="{% url 'run_summary' run_number=run.run_number run_version=run.run_version %}">#{{ run.run_number }}</a>,
+                                {% endfor %}
+                            {% endif%}
+
                         </div>
                     </div>
                     <div class="panel-body">
@@ -29,7 +38,7 @@
                             <legend>Run Variables</legend>
                             <div class="row">
                                 <div class="col-md-12">
-                                    <strong>Description:</strong> {% if run.run_name %}{{run.run_name}}{% else %}<em>No description provided</em>{% endif %}
+                                    <strong>Description:</strong> {% if runs.0.run_name %}{{runs.0.run_name}}{% else %}<em>No description provided</em>{% endif %}
                                 </div>
                             </div>
                             {% for variable in variables %}
@@ -40,11 +49,13 @@
                                 </div>
                             {% endfor %}
                         </fieldset>
-                        <div class="row">
-                            <div class="col-md-12 text-center">
-                                <a href="{% url 'run_summary' run_number=run.run_number run_version=run.run_version %}">View this reduction job</a>
+                        {% if runs|length = 1 %}
+                            <div class="row">
+                                <div class="col-md-12 text-center">
+                                    <a href="{% url 'run_summary' run_number=runs.0.run_number run_version=runs.0.run_version %}">View this reduction job</a>
+                                </div>
                             </div>
-                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>

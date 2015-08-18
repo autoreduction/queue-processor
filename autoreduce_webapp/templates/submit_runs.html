@@ -18,7 +18,7 @@
             </div>
             <br/>
             <input type="hidden" id="last_run_number" value="{{last_instrument_run.run_number}}"/>
-            <form id="submit_jobs" method="POST" action="{% url 'instrument_submit_runs' instrument=instrument.name %}" class="form-horizontal">
+            <form id="submit_jobs" method="POST" action="{% url 'run_confirmation' instrument=instrument.name %}" class="form-horizontal">
                 {% csrf_token %}
                 <div class="row">
                     <div class="col-md-9">
