@@ -3,14 +3,14 @@ from django.core.context_processors import csrf
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.core.exceptions import PermissionDenied
-from django.http import HttpResponse
-from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, require_staff
+from django.http import HttpResponse, HttpResponseForbidden
+from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, has_valid_login, handle_redirect
 from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFile
 from reduction_variables.utils import InstrumentVariablesUtils, VariableUtils, MessagingUtils, ScriptUtils, DataTooLong
 from reduction_viewer.models import Instrument, ReductionRun, DataLocation
 from reduction_viewer.utils import StatusUtils
 
-import logging, re
+import logging, re, json
 logger = logging.getLogger(__name__)
 
 '''
@@ -494,8 +494,17 @@ def run_confirmation(request, instrument):
     else:
         return redirect('instrument_summary', instrument=instrument.name)
 
-@login_and_uows_valid
 def preview_script(request, instrument, run_number=0, experiment_reference=0):
+
+    # Can't use login decorator as need to return AJAX error message if fails
+    if not has_valid_login(request):
+        redirect_response = handle_redirect(request)
+        if request.method == 'GET':
+            return redirect_response
+        else:
+            error = {'redirect_url': redirect_response.url}
+            return HttpResponseForbidden(json.dumps(error))
+
     reduce_script = '"""\nreduce_vars.py\n"""\n\n'
 
     '''
