@@ -33,19 +33,12 @@
                         </div>
                         <div class="js-variable-by-run">
                             <div class="row">
-                                <label class="control-label col-md-3">Run Numbers</label>
+                                <label for="run_range" class="control-label col-md-3">
+                                    Run Numbers
+                                    <a href="#" data-toggle="popover" data-content="A list of runs to re-run, the list can include ranges e.g. 1, 4-6" data-trigger="hover click focus" data-placement="top" data-container="body"><i class="fa fa-info-circle"></i></a>
+                                </label>
                                 <div class="col-md-5">
-                                    <div class="col-md-5">
-                                        <div class="form-group">
-                                            <input type="number" id="run_start" name="run_start" value="{{last_instrument_run.run_number|add:"-20"}}" class="form-control"/>
-                                        </div>
-                                    </div>
-                                    <label class="control-label col-md-2">to</label>
-                                    <div class="col-md-5">
-                                        <div class="form-group">
-                                            <input type="number" id="run_end" name="run_end" value="{{last_instrument_run.run_number}}" class="form-control"/>
-                                        </div>
-                                    </div>
+                                    <input type="text" id="run_range" name="run_range" value="{{last_instrument_run.run_number|add:"-20"}}-{{last_instrument_run.run_number}}" class="form-control"/>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="form-group">
