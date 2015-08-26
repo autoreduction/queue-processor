@@ -109,14 +109,6 @@
                     if(parseInt(end_val) < parseInt(start_val) && parseInt(end_val) != 0){
                         addInvalid($end, '<strong>Run finish</strong> must be greater than the run start.')
                     }
-                    if($('#submit_jobs').length != 0) {
-                        if (!checkRangeValid()) {
-                            addInvalid($end, 'A maximum of 20 runs can be submitted at one time.')
-                        }
-                        if ($end.val() > $('#last_run_number').val()) {
-                            addInvalid($end, '<strong>Run finish</strong> must be less than or equal to the latest run.')
-                        }
-                    }
                 }
             }
         };
@@ -152,8 +144,7 @@
             var items, i;
             validateNotEmpty.call(this);
             if($(this).val().trim().endsWith(',')){
-                $(this).parent().addClass('has-error');
-                isValid = false;
+                addInvalid($(this), getVarName($(this)) + ' must be a comma seperated list.')
             }else{
                 items = $(this).val().split(',');
                 for(i=0;i<items.length;i++){
