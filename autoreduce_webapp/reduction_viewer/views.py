@@ -131,7 +131,7 @@ def run_list(request):
         matching_experiments = Experiment.objects.filter(reference_number__in=reference_numbers)
         for experiment in matching_experiments:
             # get all runs for experiment
-            runs = ReductionRun.objects.filter(experiment=experiment).order_by('-created')
+            runs = ReductionRun.objects.filter(experiment=experiment, instrument=instrument).order_by('-created')
 
             # count how many are in status error, queued and processing
             experiment_error_runs = runs.filter(status__exact=status_error).count()
