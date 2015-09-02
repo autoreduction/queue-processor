@@ -255,7 +255,7 @@ class PostProcessAdmin:
             self.delete_temp_directory(reduce_result_dir)
 
             self.client.send(self.conf['reduction_complete'] , json.dumps(self.data))
-            logging.info("\nCalling: "+self.conf['reduction_complete'] + "\n" + json.dumps(self.data) + "\n")
+            logger.info("\nCalling: "+self.conf['reduction_complete'] + "\n" + json.dumps(self.data) + "\n")
 
         except Exception, e:
             self.data["message"] = "REDUCTION Error: %s " % e
