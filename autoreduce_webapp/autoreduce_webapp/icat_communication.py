@@ -43,20 +43,32 @@ class ICATCommunication(object):
         if not isinstance(reference_number, (int, long)):
             raise TypeError("Reference number must be a number")
 
-        investigation = self.client.search("SELECT i from Investigation i where i.name = '" + str(reference_number) + "' INCLUDE i.investigationInstruments.instrument, i.investigationUsers.user")
-        if investigation and investigation[0]:
+        if reference_number > 0:
+            investigation = self.client.search("SELECT i from Investigation i where i.name = '" + str(reference_number) + "' INCLUDE i.investigationInstruments.instrument, i.investigationUsers.user")
+            if investigation and investigation[0]:
+                trimmed_investigation = {
+                    'reference_number' : investigation[0].name,
+                    'start_date' : investigation[0].startDate,
+                    'end_date' : investigation[0].endDate,
+                    'title' : investigation[0].title,
+                    'summary' : u''+investigation[0].summary,
+                    'instrument' : investigation[0].investigationInstruments[0].instrument.fullName,
+                    'pi' : ''
+                }
+                for investigationUser in investigation[0].investigationUsers:
+                    if investigationUser.role == 'principal_experimenter':
+                        trimmed_investigation['pi'] = investigationUser.user.fullName
+                return trimmed_investigation
+        else:
             trimmed_investigation = {
-                'reference_number' : investigation[0].name,
-                'start_date' : investigation[0].startDate,
-                'end_date' : investigation[0].endDate,
-                'title' : investigation[0].title,
-                'summary' : u''+investigation[0].summary,
-                'instrument' : investigation[0].investigationInstruments[0].instrument.fullName,
+                'reference_number' : str(reference_number),
+                'start_date' : 'N/A',
+                'end_date' : 'N/A',
+                'title' : 'N/A',
+                'summary' : u'N/A',
                 'pi' : ''
-            }
-            for investigationUser in investigation[0].investigationUsers:
-                if investigationUser.role == 'principal_experimenter':
-                    trimmed_investigation['pi'] = investigationUser.user.fullName
+                }
+
             return trimmed_investigation
         return None
 
