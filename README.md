@@ -6,24 +6,19 @@ First install Mantid using: http://download.mantidproject.org/redhat.html
 
 ### ActiveMQ
 
-1.  Ensure http proxy is set.
+1.  Downloaded apache-activemq-5.11.1-bin.tar.gz and unpack (https://activemq.apache.org/activemq-5111-release.html)
 
-        export http_proxy=http://wwwcache.rl.ac.uk:8080
-        export https_proxy=http://wwwcache.rl.ac.uk:8080
-
-2.  Downloaded apache-activemq-5.11.1-bin.tar.gz and unpack (https://activemq.apache.org/activemq-5111-release.html)
-
-        wget http://www.apache.org/dyn/closer.cgi?path=/activemq/5.11.1/apache-activemq-5.11.1-bin.tar.gz
+        wget http://archive.apache.org/dist/activemq/5.11.1/apache-activemq-5.11.1-bin.tar.gz
         tar -zxvf apache-activemq-5.11.1-bin.tar.gz
-        mv apache-activemq-5.11.1 /opt/
-        ln -sf /opt/apache-activemq-5.11.1/ /opt/activemq
+        sudo mv apache-activemq-5.11.1 /opt/
+        sudo ln -sf /opt/apache-activemq-5.11.1/ /opt/activemq
                 
-3a. Configure ActiveMQ to communicate with stomp over port 61613. Default
+2a. Configure ActiveMQ to communicate with stomp over port 61613. Default
 
         nano /opt/activemq/conf/activemq.xml
-        Modify the transportConnector tag to be: <transportConnector name="stomp" uri="stomp://0.0.0.0:61613?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/>
+        Modify the transportConnector tag to be: <transportConnector name="stomp" uri="stomp://0.0.0.0:61613?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/> 
 
-3b. Default is to setup stomp/activemq as in 3a, but where additional security may be required: steps to configure ActiveMQ to communicate with stomp + SSL is
+2b. Default is to setup stomp/activemq as in 3a, but where additional security may be required: steps to configure ActiveMQ to communicate with stomp + SSL is
 
         nano /opt/activemq/conf/activemq.xml
         Modify the transportConnector tag to be: <transportConnector name="stomp+ssl" uri="stomp+ssl://0.0.0.0:61613?transport.enabledProtocols=TLSv1,TLSv1.1,TLSv1.2&amp;maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/>
@@ -43,7 +38,7 @@ Create/renew SSL certificates - keystore and truststore (http://activemq.apache.
         keytool -import -alias client -keystore broker.ts -file client_cert
         cp all of above created files into activemq/conf        
         
-4. Username and password for submiting jobs by adding to the <broker> section (with XXXXXXXXXX substitued by suitable password):
+3. Username and password for submiting jobs by adding to the <broker> section (with XXXXXXXXXX substitued by suitable password):
 
         <plugins>
             <simpleAuthenticationPlugin>
