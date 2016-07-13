@@ -24,13 +24,17 @@ Autoreduce program to automatically catalog and reduce neutron data
 %build
 
 %install
-mkdir -p %{_sysconfdir}/autoreduce
-install -m 664 ../autoreduce-mq/etc/autoreduce/post_process_consumer.conf  %{_sysconfdir}/autoreduce/post_process_consumer.conf
-install -m 755 -d 	 ../autoreduce-mq/usr	 /usr
-install -m 755	 ../autoreduce-mq/usr/bin/autoreduction_logging_setup.py	 %{_bindir}/autoreduction_logging_setup.py
-install -m 755	 ../autoreduce-mq/usr/bin/queueProcessor.py	 %{_bindir}/queueProcessor.py
-install -m 755	 ../autoreduce-mq/usr/bin/Configuration.py	 %{_bindir}/Configuration.py
-install -m 755	 ../autoreduce-mq/usr/bin/PostProcessAdmin.py	 %{_bindir}/PostProcessAdmin.py
+rm -rf %{buildroot}
+mkdir -p %{buildroot}%{_sysconfdir}/autoreduce
+install -m 664 ../autoreduce-mq/etc/autoreduce/post_process_consumer.conf  %{buildroot}%{_sysconfdir}/autoreduce/post_process_consumer.conf
+install -m 755 -d 	 ../autoreduce-mq/usr	 %{buildroot}/usr
+mkdir -p %{buildroot}%{_bindir}
+install -m 755	 ../autoreduce-mq/usr/bin/autoreduction_logging_setup.py	 %{buildroot}%{_bindir}/autoreduction_logging_setup.py
+install -m 755	 ../autoreduce-mq/usr/bin/queueProcessor.py	 %{buildroot}%{_bindir}/queueProcessor.py
+install -m 755	 ../autoreduce-mq/usr/bin/queueProcessor_daemon.py	 %{buildroot}%{_bindir}/queueProcessor_daemon.py
+install -m 755	 ../autoreduce-mq/usr/bin/Configuration.py	 %{buildroot}%{_bindir}/Configuration.py
+install -m 755	 ../autoreduce-mq/usr/bin/PostProcessAdmin.py	 %{buildroot}%{_bindir}/PostProcessAdmin.py
+
 
 %post
 
@@ -38,5 +42,7 @@ install -m 755	 ../autoreduce-mq/usr/bin/PostProcessAdmin.py	 %{_bindir}/PostPro
 %config %{_sysconfdir}/autoreduce/post_process_consumer.conf
 %attr(755, -, -) %{_bindir}/autoreduction_logging_setup.py
 %attr(755, -, -) %{_bindir}/queueProcessor.py
+%attr(755, -, -) %{_bindir}/queueProcessor_daemon.py
+
 %attr(755, -, -) %{_bindir}/Configuration.py
 %attr(755, -, -) %{_bindir}/PostProcessAdmin.py
