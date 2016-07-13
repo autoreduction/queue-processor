@@ -86,6 +86,7 @@ changed in `/activemq-install-dir/log4j.properties`.
 
         cd ~
         git clone https://github.com/mantidproject/autoreduce.git
+        cd autoreduce
 
 2.  Install the libraries located under `SNSPostProcessRPM/rpmbuild/libs`. 
 
@@ -97,13 +98,18 @@ changed in `/activemq-install-dir/log4j.properties`.
         sudo ./make-autoreduce-rpm.sh
         sudo rpm -i ~/rpmbuild/RPMS/x86_64/autoreduce-mq-1.3-16.x86_64.rpm
 
-4.  Modify the address "brokers" in `/etc/autoreduce/post_process_consumer.conf` to point to ActiveMQ address and username and password for submitting jobs to activemq
+4.  Modify the address "brokers" in `/etc/autoreduce/post_process_consumer.conf` to point to ActiveMQ address and username and password for submitting jobs to ActiveMQ - the credentials set above in the `<simpleAuthenticationPlugin>` section.
+  
+5.  Specify the location where the script and reduced data get stored by modifying `reduction_directory`, `archive_directory` and `ceph_directory` in the same file (`/etc/autoreduce/post_process_consumer.conf`).
 
-5. At present create `/autoreducetmp` folder can change owner and group to user that will be used to run queueProcessor (to store temporary created reduction files)
+6. At present create `/autoreducetmp` folder - `mkdir /autoreduce`. It's possble to change owner and group to user that will be used to run queueProcessor (to store temporary created reduction files) using chmod.
 
-6.  At present specify the location where the script and reduced data get stored by modifying `reduction_directory`, `archive_directory` and `ceph_directory` in `/etc/autoreduce/post_process_consumer.conf`
+7. Install the dependendencies required by the package:
+    
+        yum install python-pip
+        pip install stomp.py daemon twisted service_identity
 
-7.  To start this as a daemon type `python /usr/bin/queueProcessor_daemon.py start` as the user you want to use to run queueProcessor (for some default directories, it may need to be `sudo python /usr/bin/queueProcessor_daemon.py start`)
+8.  To start this as a daemon type `python /usr/bin/queueProcessor_daemon.py start` as the user you want to use to run queueProcessor (for some default directories, it may need to be `sudo python /usr/bin/queueProcessor_daemon.py start`).
 
 To modify the software to use plaintext (non-SSL) connections, the Python scripts (`/usr/bin/queueProcessor.py`, `/usr/bin/PostProcessAdmin.py`, `sendMessage.py`) require a slight modification, changing `use_ssl=True, ssl_version=3)` to `use_ssl=False)` in lines of the form `stomp.Connection( ...`
 
