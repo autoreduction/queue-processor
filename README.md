@@ -22,9 +22,9 @@ First install Mantid using: http://download.mantidproject.org/redhat.html
     
         <transportConnector name="stomp+ssl" uri="stomp+ssl://0.0.0.0:61613?transport.enabledProtocols=TLSv1,TLSv1.1,TLSv1.2&amp;maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/>
         
-    or add it in the <transportConnectors> section if no stomp line exists already.
+    or add it in the `<transportConnectors>` section if no stomp line exists already.
         
-    Add the following directly below the <broker> tag (making sure to change cert names and passwords):
+    Add the following directly below the `<broker>` tag (making sure to change cert names and passwords):
         
         <sslContext>
                 <sslContext keyStore="broker.ks" keyStorePassword="changeit"
@@ -56,7 +56,7 @@ First install Mantid using: http://download.mantidproject.org/redhat.html
     or add it in the <transportConnectors> section if no stomp line exists already. But autoreduce relies on SSL connections; see below to fix this.
         
         
-4. Username and password for submiting jobs by adding to the <broker> section directly below the <sslContext>...</sslContext> entry, or directly below the <broker> tag if there's no such entry (with XXXXXXXXXX substitued by suitable password):
+4. Username and password for submiting jobs by adding to the `<broker>` section directly below the `<sslContext>...</sslContext>` entry, or directly below the `<broker>` tag if there's no such entry (with XXXXXXXXXX substitued by suitable password):
 
         <plugins>
             <simpleAuthenticationPlugin>
