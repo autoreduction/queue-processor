@@ -16,7 +16,7 @@ class MyListener(object):
         print 'listener received a message %s' % message
 
 print 'Starting connection'
-connection = stomp.Connection(host_and_ports=[(host,port])
+connection = stomp.Connection(host_and_ports=[(host,port)], use_ssl=True, ssl_version=3))
 connection.set_listener('', MyListener())
 connection.start()
 connection.connect(uname, upass)
