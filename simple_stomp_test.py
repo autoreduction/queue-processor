@@ -3,6 +3,11 @@ import sys
 
 import stomp
 
+uname = ""
+upass = ""
+
+(host,port) = ('localhost',61613)
+
 class MyListener(object):
     def on_error(self, headers, message):
         print 'listener received an error %s' % message
@@ -11,10 +16,10 @@ class MyListener(object):
         print 'listener received a message %s' % message
 
 print 'Starting connection'
-connection = stomp.Connection(host_and_ports=[('localhost', 61613)])
+connection = stomp.Connection(host_and_ports=[(host,port])
 connection.set_listener('', MyListener())
 connection.start()
-connection.connect()
+connection.connect(uname, upass)
 print 'subscribing'
 connection.subscribe(destination='/queue/test', id=1, ack='auto')
 print 'sending'
