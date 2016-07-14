@@ -18,7 +18,7 @@ Recommended Server OS: Red Hat Enterprise Linux (RHEL) 6 / 7
 
 1. `yum update`
 2. `yum groupinstall 'development tools'`
-3. `yum install zlib-devel bzip2-devel openssl-devel xz-libs wget httpd mod_wsgi mysql-devel python-devel python-pip httpd-devel.x86_64 mercurial`
+3. `yum install zlib-devel bzip2-devel openssl-devel xz-libs wget httpd mod_wsgi mysql-devel python-devel python-pip httpd-devel.x86_64`
 
 ### Install mod_wsgi
 1. `wget https://github.com/GrahamDumpleton/mod_wsgi/archive/4.3.0.tar.gz`
@@ -135,8 +135,14 @@ Set up ActiveMQ as in the backend (`ISISPostProcessRPM`)
 10. `chkconfig activemq on`
 11. `firewall-cmd --add-port=61613/tcp --permanent && firewall-cmd --reload && firewall-cmd --add-port=61613/tcp` (Ignore the warning)
 
+### Configure the web app for ActiveMQ
+
+1. `nano /var/www/autoreduce_webapp/autoreduce_webapp/settings.py`
+2. In the `ACTIVEMQ` section, change the `'username'` and `'password'` fields to the credentials configured in `/opt/activemq/conf/activemq.xml`.
+3. In the same section, change the `'broker'` field to the correct address and port, if necessary.
+
 ### Checking everything is working
-1. Modify `simple_stop_test.py` by changing `localhost` to the correct hostname, and the credentials `uname` and `upass` as were set in `nano /opt/activemq/conf/activemq.xml` under `<simpleAuthenticationPlugin>`
+1. Modify `simple_stop_test.py` by changing `localhost` to the correct hostname, and the credentials `uname` and `upass` as were set in `/opt/activemq/conf/activemq.xml` under `<simpleAuthenticationPlugin>`
 2. `python simple_stomp_test.py`
 3. Expected output:
 
@@ -168,9 +174,10 @@ Set up ActiveMQ as in the backend (`ISISPostProcessRPM`)
 6. `GRANT ALL ON autoreduction.* TO 'autoreduce'@'localhost' IDENTIFIED BY 'password';`
 7. `GRANT ALL ON test_autoreduction.* TO 'autoreduce'@'localhost' IDENTIFIED BY 'password';`
 8. `exit`
-8. `python /var/www/autoreduce_webapp/manage.py migrate`
 9. Add `max_allowed_packet=64M` to `/etc/my.cnf`
 10. `service mysqld restart`
+11. `python /var/www/autoreduce_webapp/manage.py makemigrations`
+12. `python /var/www/autoreduce_webapp/manage.py migrate`
 
 ### Setting up Apache
 1. `firewall-cmd --add-port=80/tcp --permanent && firewall-cmd --reload && firewall-cmd --add-port=80/tcp`
@@ -178,7 +185,7 @@ Set up ActiveMQ as in the backend (`ISISPostProcessRPM`)
 3. Enable autostart: `systemctl enable httpd`
 4. `service httpd restart`
 
-500 errors can be caused by SELinux policies restricting Apache's access to files and the network. `setsebool -P httpd_can_network_connect 1` will allow it to connect to MySQL. You may need to run `chcon -v --type=httpd_sys_ra_content_t yourlogfile.log` for the log file set in `/usr/src/autoreduce/WebApp/ISIS/autoreduce_webapp/autoreduce_webapp/settings.py` (`LOG_FILE`). All errors can be fixed automatically by
+500 errors can be caused by SELinux policies restricting Apache's access to files and the network. `setsebool -P httpd_can_network_connect 1` will allow it to connect to MySQL. You may need to run `chcon -v --type=httpd_sys_ra_content_t yourlogfile.log` for the log file set in `/usr/src/autoreduce/WebApp/ISIS/autoreduce_webapp/autoreduce_webapp/settings.py` (`LOG_FILE`). All errors can be fixed automatically after they've occurred by
 
     grep httpd /var/log/audit/audit.log | audit2allow -M httpd-policy
     semodule -i httpd-policy
@@ -188,16 +195,17 @@ Set up ActiveMQ as in the backend (`ISISPostProcessRPM`)
 The frontend needs its daemon running - `python /var/www/autoreduce_webapp/autoreduce_webapp/queue_processor_daemon.py restart` - along with Apache and ActiveMQ. The backend also needs ActiveMQ, along with its daemon - `python /usr/bin/queueProcessor_daemon.py restart`.
 
 With everything running, try accessing `http://localhost/autoreduce_webapp`. If you need to bypass the authentication, there are several files to modify:
+
 1. In `autoreduce_webapp/settings.py` under `AUTHENTICATION_BACKENDS`, replace `'autoreduce_webapp.backends.UOWSAuthenticationBackend'` with `'django.contrib.auth.backends.ModelBackend'`. This switches out the remote authentication server with Django's admin authentication.
 2. In the directory with `manage.py`, type `python manage.py createsuperuser` and create a user there. Those credentials can be used to log on.
 3. In `autoreduce_webapp/view_utils.py`, replace the body of `has_valid_login(request)` with `return True`. 
 4. In `reduction_viewer/views.py` replace the authentication check around line 30 (`if request.user.is_authenticated() and 'sessionid' in request.session and UOWSClient().check_session(request.session['sessionid']):`) with `if True:`
 
-The last two steps bypass authentication entirely for large parts of the webapp.
+The last two steps bypass authentication entirely for large parts of the webapp. In doing this you must first visit `http://localhost/autoreduce_webapp/admin` and log in there before you can visit the main page.
 
 ### Testing the setup
 
-The complete setup can be tested by modifying `WebApp/ISIS/full_test.py` to contain valid credentials for ActiveMQ and valid locations to reduction scripts and test data. Then `python full_test.py` should put a reduction request in at the start of the pipeline, which will be processed and eventually appear as completed in the web app. The instrument that the data came from may need to be added manually via the web app admin page.
+The complete setup can be tested by modifying `WebApp/ISIS/full_test.py` to contain valid credentials for ActiveMQ and valid locations to test data. Then `python full_test.py` should put a reduction request in at the start of the pipeline, which will be processed and eventually appear as completed in the web app. The reduction script location is autogenerated, and the frontend will notify via popup if it's not found, along with where it expected it. The instrument that the data came from may need to be added manually via the web app admin page.
 
 
 
