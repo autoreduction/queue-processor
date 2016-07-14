@@ -9,63 +9,41 @@ Recommended Server OS: Red Hat Enterprise Linux (RHEL) 6 / 7
 
 ***Note: Most, if not all, commands will need to be run as root. If using `sudo` please check the python note below***
 
-### Red Hat 7 Only
-1. `wget http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm`
-2. `rpm -ivh mysql-community-release-el7-5.noarch.rpm`
+## Red Hat 7
+    
+    wget http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm
+    rpm -ivh mysql-community-release-el7-5.noarch.rpm
 
 ### Install prerequisites
+
 1. `yum update`
 2. `yum groupinstall 'development tools'`
-3. `yum install zlib-devel bzip2-devel openssl-devel xz-libs wget httpd mod_wsgi mysql-devel python-devel httpd-devel.x86_64 mercurial`
-
-### Install Python 2.7 (Not required for RHEL7)
-**Note: Do not remove python 2.6! Ensure that you specify python 2.7 correctly when using sudo commands as it will default to the installed.**
-
-1. `wget http://www.python.org/ftp/python/2.7.6/Python-2.7.6.tar.xz`
-2. `xz -d Python-2.7.6.tar.xz`
-3. `tar -xvf Python-2.7.6.tar`
-4. `cd Python-2.7.6`
-5. `./configure --prefix=/usr/local --enable-shared`
-6. `make && make install`
-7. `ln -s /usr/local/lib/libpython2.7.so.1.0 /usr/lib/libpython2.7.so.1.0`
-8. `ldconfig /usr/local/bin/python`
-9. `export PATH="/usr/local/bin:$PATH"`
+3. `yum install zlib-devel bzip2-devel openssl-devel xz-libs wget httpd mod_wsgi mysql-devel python-devel python-pip httpd-devel.x86_64 mercurial
 
 ### Install mod_wsgi
 1. `wget https://github.com/GrahamDumpleton/mod_wsgi/archive/4.3.0.tar.gz`
 2. `tar xvfz 4.3.0.tar.gz`
 3. `cd mod_wsgi-4.3.0/`
-4. `./configure --with-python=/usr/local/bin/python`
+4. `./configure --with-python=/usr/bin/python`
 5. `make && make install`
-
-### Install Pip and easy_install
-1. `wget --no-check-certificate https://pypi.python.org/packages/source/s/setuptools/setuptools-1.4.2.tar.gz`
-2. `tar -xvf setuptools-1.4.2.tar.gz`
-3. `cd setuptools-1.4.2`
-4. `python setup.py install`
-5. `wget https://raw.github.com/pypa/pip/master/contrib/get-pip.py`
-6. `python get-pip.py`
 
 ### Install MySQL
 1. `yum install mysql mysql-server MySQL-python`
 2. `pip install mysql-python`
 
 ### Install Django
-1. `easy_install Django`
+1. `pip install django==1.7.1`
 2. `pip install pytz`
 
 ### Installing application
-1. `git clone https://github.com/mantidproject/autoreduce.git /usr/src/autoreduce`
-2. `ln -s /usr/src/autoreduce/WebApp/ISIS/autoreduce_webapp /var/www/autoreduce_webapp`
-3. `ln -s /usr/local/lib/python2.7/site-packages/django/contrib/admin/static/admin/ /var/www/autoreduce_webapp/static/admin` Red Hat 6 Only
-3. `ln -s /usr/lib/python2.7/site-packages/Django-1.7.1-py2.7.egg/django/contrib/admin/static/admin/ /var/www/autoreduce_webapp/static/admin` RHEL7 Only
+
+    git clone https://github.com/mantidproject/autoreduce.git /usr/src/autoreduce
+    ln -s /usr/src/autoreduce/WebApp/ISIS/autoreduce_webapp /var/www/autoreduce_webapp
+    ln -s /usr/lib/python2.7/site-packages/Django-1.7.1-py2.7.egg/django/contrib/admin/static/admin/ /var/www/autoreduce_webapp/static/admin
 
 ### Install ActiveMQ and stomp.py
-1. `wget http://mirror.gopotato.co.uk/apache/activemq/5.9.1/apache-activemq-5.9.1-bin.tar.gz`
-2. `tar xzf apache-activemq-5.9.1-bin.tar.gz`
-3. `mv apache-activemq-5.9.1 /opt`
-4. `ln -sf /opt/apache-activemq-5.6.0/ /opt/activemq`
-5. `easy_install stomp.py`
+    
+Set up ActiveMQ as in the backend (`ISISPostProcessRPM`)
 
 ### Configure ActiveMQ
 1. `adduser --system activemq`
@@ -89,13 +67,13 @@ Recommended Server OS: Red Hat Enterprise Linux (RHEL) 6 / 7
 
         #!/bin/bash
         export JAVA_HOME=/usr
-        /opt/apache-activemq-5.9.1/bin/activemq start &
+        /opt/activemq/bin/activemq start &
 
 6. `nano /etc/init.d/activemqstop.sh`
 
         #!/bin/bash
         export JAVA_HOME=/usr
-        /opt/apache-activemq-5.9.1/bin/activemq-admin stop
+        /opt/activemq/bin/activemq-admin stop
 
 7. `nano /etc/init.d/activemq`
         
@@ -155,14 +133,10 @@ Recommended Server OS: Red Hat Enterprise Linux (RHEL) 6 / 7
 8. `chmod +x /etc/init.d/activemqstart.sh && chmod +x /etc/init.d/activemqstop.sh && chmod +x /etc/init.d/activemq`
 9. `chkconfig --add activemq`
 10. `chkconfig activemq on`
-11. `/opt/activemq/bin/activemq setup /etc/default/activemq`
-12. `chown root /etc/default/activemq`
-13. `chmod 600 /etc/default/activemq`
-14. `lokkit --port=61613:tcp` RHEL6 Only
-    `firewall-cmd --add-port=61613/tcp --permanent && firewall-cmd --reload && firewall-cmd --add-port=61613/tcp` Read Hat 7 Only (Ignore the warning)
+11. `firewall-cmd --add-port=61613/tcp --permanent && firewall-cmd --reload && firewall-cmd --add-port=61613/tcp` (Ignore the warning)
 
 ### Checking everything is working
-1. Modify `simple_stop_test.py` by changing `localhost` to the correct hostname.
+1. Modify `simple_stop_test.py` by changing `localhost` to the correct hostname, and the credentials `uname` and `upass` as were set in `nano /opt/activemq/conf/activemq.xml` under `<simpleAuthenticationPlugin>`
 2. `python simple_stomp_test.py`
 3. Expected output:
 
@@ -171,53 +145,46 @@ Recommended Server OS: Red Hat Enterprise Linux (RHEL) 6 / 7
         sending
         sent
         received a message
-
-### Setting credentials for ActiveMQ
-1. `nano /opt/activemq/conf/activemq.xml`
-2. Include the following within the `<broker>` tag with the desired values
         
-        <plugins>
-            <simpleAuthenticationPlugin>
-                <users>
-                    <authenticationUser username="admin" password="pa$$w0rd"
-                        groups="users,admins"/>
-                </users>
-            </simpleAuthenticationPlugin>
-        </plugins>
-
 ### Setting up Priority Queues for ActiveMQ
 1. `nano /opt/activemq/conf/activemq.xml`
 2. Within the `<policyEntries>` tag include `<policyEntry queue=">" queuePrefetch="1" prioritizedMessages="true" useCache="false" expireMessagesPeriod="0"/>`
 
 ### Installing ICAT support
-1. `hg clone https://AverageMarcus@bitbucket.org/AverageMarcus/suds -u release-0.6.1`
-2. `cd suds`
-3. `python setup.py install`
-4. `wget http://icatproject.googlecode.com/svn/contrib/python-icat/python-icat-0.5.1.tar.gz`
+1. `pip install suds-jurko==0.6` (this may require `easy_install -U setuptools`).
+4. `wget https://icatproject.org/misc/python-icat/download/python-icat-0.5.1.tar.gz`
 5. `tar xzf python-icat-0.5.1.tar.gz`
 6. `cd python-icat-0.5.1`
 7. `python setup.py build`
 8. `python setup.py install`
-9. Set the correct values for ICAT in `autoreduce_webapp/autoreduce_webapp/settings.py`
+9. Set the correct values for ICAT in `autoreduce_webapp/autoreduce_webapp/settings.py` -- ? also activemq creds
 
 ### Setting up MySQL
 1. `service mysqld start`
 2. `/usr/bin/mysql_secure_installation`
-3. `mysql -u admin -p` on Red Hat 6. `mysql -u root -p` on Red Hat 7
+3. `mysql -u root -p`
 4. `CREATE DATABASE autoreduction;`
 5. `CREATE USER 'autoreduce'@'*' IDENTIFIED BY 'password';`
 6. `GRANT ALL ON autoreduction.* TO 'autoreduce'@'localhost' IDENTIFIED BY 'password';`
 7. `GRANT ALL ON test_autoreduction.* TO 'autoreduce'@'localhost' IDENTIFIED BY 'password';`
 8. `exit`
-8. `python /var/www/autoreduce_webapp/manage.py syncdb`
+8. `python /var/www/autoreduce_webapp/manage.py migrate`
 9. Add `max_allowed_packet=64M` to `/etc/my.cnf`
 10. `service mysqld restart`
 
 ### Setting up Apache
-1. `lokkit --port=80:tcp` Red Hat 6 Only
-1. `firewall-cmd --add-port=80/tcp --permanent && firewall-cmd --reload && firewall-cmd --add-port=80/tcp` Red Hat 7 Only
-2. Copy `apache_auto_reduce_webapp.conf` to `/etc/httpd/conf.d/`
+1. `firewall-cmd --add-port=80/tcp --permanent && firewall-cmd --reload && firewall-cmd --add-port=80/tcp`
+2. `cp ~/autoreduce/WebApp/ISIS/apache_autoreduce_webapp.conf /etc/httpd/conf.d/`
 3. `service httpd restart`
+4. Enable autostart: `systemctl enable httpd`
+
+500 errors can be caused by SELinux policies restricting Apache's access to files and the network. `setsebool -P httpd_can_network_connect 1` will allow it to connect to MySQL. You may need to run `chcon -v --type=httpd_sys_ra_content_t yourlogfile.log` for the log file set in `/usr/src/autoreduce/WebApp/ISIS/autoreduce_webapp/autoreduce_webapp/settings.py` (`LOG_FILE`). All errors can be fixed automatically by
+
+    grep httpd /var/log/audit/audit.log | audit2allow -M httpd-policy
+    semodule -i httpd-policy
+
+
+
 
 
 ## Windows Installation
