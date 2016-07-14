@@ -18,7 +18,7 @@ Recommended Server OS: Red Hat Enterprise Linux (RHEL) 6 / 7
 
 1. `yum update`
 2. `yum groupinstall 'development tools'`
-3. `yum install zlib-devel bzip2-devel openssl-devel xz-libs wget httpd mod_wsgi mysql-devel python-devel python-pip httpd-devel.x86_64 mercurial
+3. `yum install zlib-devel bzip2-devel openssl-devel xz-libs wget httpd mod_wsgi mysql-devel python-devel python-pip httpd-devel.x86_64 mercurial`
 
 ### Install mod_wsgi
 1. `wget https://github.com/GrahamDumpleton/mod_wsgi/archive/4.3.0.tar.gz`
