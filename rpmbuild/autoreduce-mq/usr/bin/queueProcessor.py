@@ -7,7 +7,7 @@ class Listener(object):
     def __init__(self, client):
         self._client = client
         self.procList = []
-        self.RBList = []
+        self.RBList = [] # list of RB numbers of active reduction runs
         self.max_subprocesses = 5  # processes allowed to run at one time
 
     def on_error(self, headers, message):
@@ -20,12 +20,12 @@ class Listener(object):
 
         logger.debug("Received frame destination: " + destination)
         logger.debug("Recieved frame priority: " + headers["priority"])
-        logger.debug("Calling: %s %s %s %s" % ("python", "/usr/bin/PostProcessAdmin.py", destination, data))
                 
-        while !self.shouldProceed(data):
+        while !self.shouldProceed(data): # wait while the run shouldn't proceed
             self.updateChildProcessList()
             time.sleep(10.0)
             
+        logger.debug("Calling: %s %s %s %s" % ("python", "/usr/bin/PostProcessAdmin.py", destination, data))
         proc = subprocess.Popen(["python", "/usr/bin/PostProcessAdmin.py", destination, data])
         addProc(proc, data)        
         
