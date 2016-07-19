@@ -1,7 +1,7 @@
 import logging
 import logging.handlers
 
-LOGGING_LEVEL = logging.INFO
+LOGGING_LEVEL = logging.DEBUG
 LOGGING_LOC = '/var/log/autoreduction.log'
 
 logger = logging.getLogger(__name__)
