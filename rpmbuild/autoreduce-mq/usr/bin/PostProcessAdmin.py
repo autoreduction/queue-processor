@@ -320,15 +320,15 @@ class PostProcessAdmin:
             self.log_and_message("Failed to delete %s" % full_path)
             
     def _copy_tree(self, source, dest):
-    if not os.path.exists(dest):
-        os.makedirs(dest)
-    for item in os.listdir(source):
-        s = os.path.join(source, item)
-        d = os.path.join(dest, item)
-        if os.path.isdir(s):
-            copy_tree(s, d)
-        elif not os.path.exists(d) or os.stat(src).st_mtime - os.stat(dst).st_mtime > 1:
-            shutil.copyfile(s, d)
+        if not os.path.exists(dest):
+            os.makedirs(dest)
+        for item in os.listdir(source):
+            s = os.path.join(source, item)
+            d = os.path.join(dest, item)
+            if os.path.isdir(s):
+                copy_tree(s, d)
+            elif not os.path.exists(d) or os.stat(src).st_mtime - os.stat(dst).st_mtime > 1:
+                shutil.copyfile(s, d)
 
     def _remove_directory(self, directory):
         """ Helper function to remove a directory. shutil.rmtree cannot be used as it is not robust enough when folders
