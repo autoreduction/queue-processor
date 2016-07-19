@@ -43,9 +43,10 @@ MIDDLEWARE_CLASSES = (
 )
 
 AUTHENTICATION_BACKENDS = (
-    'autoreduce_webapp.backends.UOWSAuthenticationBackend',
+    #'autoreduce_webapp.backends.UOWSAuthenticationBackend',
+    'django.contrib.auth.backends.ModelBackend',
 )
-LOGIN_URL = '/autoreduce_webapp/'
+LOGIN_URL = '/'
 
 TEMPLATE_PATH = os.path.join(BASE_DIR, 'templates')
 TEMPLATE_DIRS = (
@@ -125,10 +126,6 @@ LOGGING = {
             'propagate': True,
             'level':LOG_LEVEL,
         },
-        'MYAPP': {
-            'handlers': ['file'],
-            'level': LOG_LEVEL,
-        },
     }
 }
 
@@ -149,12 +146,12 @@ ACTIVEMQ = {
 
 # File Locations
 
-#REDUCTION_SCRIPT_BASE = '/reduction_data/'
-#ARCHIVE_BASE = ''
+REDUCTION_SCRIPT_BASE = ''
+ARCHIVE_BASE = ''
 if os.name == 'nt':
-    REDUCTION_DIRECTORY = '\\\\isis\\inst$\\NDX%s\\user\\scripts\\autoreduction' # %(instrument)
-    TEMP_OUTPUT_DIRECTORY = '\\\\autoreduce\\data\\reduction_script_temp'
-    ARCHIVE_DIRECTORY = '\\\\isis\\inst$\\NDX%s\\Instrument\\data\\cycle_%s\\autoreduced\\%s\\%s' # %(instrument, cycle, experiment_number, run_number)
+    REDUCTION_DIRECTORY = '\\\\reducedev\\isis\\output\\NDX%s\\user\\scripts\\autoreduction' # %(instrument)
+    TEMP_OUTPUT_DIRECTORY = '\\\\reducedev\\isis\\data\\reduction_script_temp'
+    ARCHIVE_DIRECTORY = '\\\\reducedev\\isis\\output\\NDX%s\\Instrument\\data\\cycle_%s\\autoreduced\\%s\\%s' # %(instrument, cycle, experiment_number, run_number)
 else:
     REDUCTION_DIRECTORY = '/isis/NDX%s/user/scripts/autoreduction' # %(instrument)
     TEMP_OUTPUT_DIRECTORY = '/tmp/autoreduce'
@@ -164,15 +161,15 @@ else:
 
 ICAT = {
     'AUTH' : 'simple',
-    'URL' : 'https://icatdev.isis.cclrc.ac.uk/ICATService/ICAT?wsdl',
+    'URL' : 'https://icatisis.esc.rl.ac.uk/ICATService/ICAT?wsdl',
     'USER' : 'autoreduce',
     'PASSWORD' : 'icat'
 }
 
 # UserOffice WebService
 
-UOWS_URL = 'https://fitbawebdev.isis.cclrc.ac.uk:8181/UserOfficeWebService/UserOfficeWebService?wsdl'
-UOWS_LOGIN_URL = 'https://devusers.facilities.rl.ac.uk/auth/?service=http://datareducedev.isis.cclrc.ac.uk&redirecturl='
+UOWS_URL = 'https://fitbaweb1.isis.cclrc.ac.uk:8443/UserOfficeWebService/UserOfficeWebService?wsdl'
+UOWS_LOGIN_URL = 'https://users.facilities.rl.ac.uk/auth/?service=http://reduce.isis.cclrc.ac.uk&redirecturl='
 
 # Constant vars
 
