@@ -21,7 +21,7 @@ class Listener(object):
         logger.debug("Received frame destination: " + destination)
         logger.debug("Recieved frame priority: " + headers["priority"])
                 
-        while !self.shouldProceed(data): # wait while the run shouldn't proceed
+        while not self.shouldProceed(data): # wait while the run shouldn't proceed
             self.updateChildProcessList()
             time.sleep(10.0)
             
