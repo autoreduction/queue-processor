@@ -7,35 +7,51 @@ class Listener(object):
     def __init__(self, client):
         self._client = client
         self.procList = []
+        self.RBList = [] # list of RB numbers of active reduction runs
+        self.max_subprocesses = 5  # processes allowed to run at one time
 
     def on_error(self, headers, message):
         logger.error("Error message recieved - %s" % str(message))
 
     def on_message(self, headers, data):
         self._client.ack(headers['message-id'], headers['subscription'])  # Remove message from queue
-
-        process_num = 5  # processes allowed to run at one time
+        
         destination = headers['destination']
 
         logger.debug("Received frame destination: " + destination)
         logger.debug("Recieved frame priority: " + headers["priority"])
-        logger.debug("Calling: %s %s %s %s" % ("python", "/usr/bin/PostProcessAdmin.py", destination, data))
-
-        proc = subprocess.Popen(["python", "/usr/bin/PostProcessAdmin.py", destination, data])
-        self.procList.append(proc)
-        
-        if len(self.procList) >= process_num:
-            logger.info("There are " + str(len(self.procList)) + " processes running at the moment, "
-                                                                 "waiting until one is available")
-        
-        while len(self.procList) >= process_num:
-            time.sleep(1.0)
+                
+        while !self.shouldProceed(data): # wait while the run shouldn't proceed
             self.updateChildProcessList()
+            time.sleep(10.0)
+            
+        logger.debug("Calling: %s %s %s %s" % ("python", "/usr/bin/PostProcessAdmin.py", destination, data))
+        proc = subprocess.Popen(["python", "/usr/bin/PostProcessAdmin.py", destination, data])
+        addProc(proc, data)        
+        
+        
         
     def updateChildProcessList(self):
         for i in self.procList:
             if i.poll() is not None:
                 self.procList.remove(i)
+                self.RBList.remove(i)
+                
+    def addProc(proc, data):
+        self.procList.append(proc)
+        self.RBList.append(data["rb_number"])
+        
+    def shouldProceed(data):
+        if data["rb_number"] in self.RBList:
+            logger.info("Duplicate RB run #" + data["rb_number"] + ", waiting for the first to finish.")
+            return False
+            
+        # elif len(self.procList) >= process_num:
+            # logger.info("There are " + str(len(self.procList)) + " processes running at the moment, max is " + self.max_subprocesses "+ . Waiting until one is available.")
+            # return False
+            
+        else:   
+            return True
 
 
 class Consumer(object):
