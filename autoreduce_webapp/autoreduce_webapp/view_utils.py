@@ -7,7 +7,6 @@ from django.shortcuts import render_to_response
 from reduction_viewer.models import Notification, Setting
 
 def has_valid_login(request):
-    return True
     """
     Check that the user is correctly logged in and their session is still considered valid
     """
