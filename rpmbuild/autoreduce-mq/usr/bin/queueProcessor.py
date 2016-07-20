@@ -8,7 +8,6 @@ class Listener(object):
         self._client = client
         self.procList = []
         self.RBList = [] # list of RB numbers of active reduction runs
-        self.max_subprocesses = 5  # processes allowed to run at one time
 
     def on_error(self, headers, message):
         logger.error("Error message recieved - %s" % str(message))
@@ -50,10 +49,6 @@ class Listener(object):
         if data["rb_number"] in self.RBList:
             logger.info("Duplicate RB run #" + data["rb_number"] + ", waiting for the first to finish.")
             return False
-            
-        # elif len(self.procList) >= process_num:
-            # logger.info("There are " + str(len(self.procList)) + " processes running at the moment, max is " + self.max_subprocesses "+ . Waiting until one is available.")
-            # return False
             
         else:   
             return True
