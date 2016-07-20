@@ -51,10 +51,6 @@ class Listener(object):
             logger.info("Duplicate RB run #" + data_dict["rb_number"] + ", waiting for the first to finish.")
             return False
             
-        # elif len(self.procList) >= process_num:
-            # logger.info("There are " + str(len(self.procList)) + " processes running at the moment, max is " + self.max_subprocesses "+ . Waiting until one is available.")
-            # return False
-            
         else:
             logger.debug("proceeding")
             return True

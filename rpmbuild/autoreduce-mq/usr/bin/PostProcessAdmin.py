@@ -4,7 +4,6 @@ Post Process Administrator. It kicks off cataloging and reduction jobs.
 """
 import json, socket, os, sys, time, shutil, imp, stomp, re, errno, traceback
 from contextlib import contextmanager
-from distutils.dir_util import copy_tree
 from autoreduction_logging_setup import logger
 
 @contextmanager
@@ -326,8 +325,8 @@ class PostProcessAdmin:
             s = os.path.join(source, item)
             d = os.path.join(dest, item)
             if os.path.isdir(s):
-                copy_tree(s, d)
-            elif not os.path.exists(d) or os.stat(src).st_mtime - os.stat(dst).st_mtime > 1:
+                self._copy_tree(s, d)
+            elif not os.path.exists(d) or os.stat(s).st_mtime - os.stat(d).st_mtime > 1:
                 shutil.copyfile(s, d)
 
     def _remove_directory(self, directory):
