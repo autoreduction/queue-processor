@@ -43,14 +43,12 @@ def linux_to_windows_path(path):
     path = path.replace('/', '\\')
     # '/isis/' maps to '\\isis\inst$\'
     path = path.replace('\\isis\\', '\\\\isis\\inst$\\')
-    path = path.replace('\\reducedev\\', '\\\\reducedev\\isis\\')
     return path
 
 
 def windows_to_linux_path(path, temp_root_directory):
     # '\\isis\inst$\' maps to '/isis/'
     path = path.replace('\\\\isis\\inst$\\', '/isis/')
-    path = path.replace('\\\\reducedev\\isis', '/reducedev/')
     path = path.replace('\\\\autoreduce\\data\\', temp_root_directory+'/data/')
     path = path.replace('\\', '/')
     return path
@@ -352,7 +350,7 @@ if __name__ == "__main__":
 
         brokers = []
         brokers.append((conf['brokers'].split(':')[0],int(conf['brokers'].split(':')[1])))
-        connection = stomp.Connection(host_and_ports=brokers, use_ssl=False, ssl_version=3)
+        connection = stomp.Connection(host_and_ports=brokers, use_ssl=True, ssl_version=3)
         connection.start()
         connection.connect(conf['amq_user'], conf['amq_pwd'], wait=True, header={'activemq.prefetchSize': '1',})
 
