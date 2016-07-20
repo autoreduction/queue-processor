@@ -41,13 +41,13 @@ class Listener(object):
                 self.procList.pop(index)
                 self.RBList.pop(index)
                 
-    def addProc(proc, data):
+    def addProc(self, proc, data_dict):
         self.procList.append(proc)
-        self.RBList.append(data["rb_number"])
+        self.RBList.append(data_dict["rb_number"])
         
-    def shouldProceed(data):
-        if data["rb_number"] in self.RBList:
-            logger.info("Duplicate RB run #" + data["rb_number"] + ", waiting for the first to finish.")
+    def shouldProceed(self, data_dict):
+        if data_dict["rb_number"] in self.RBList:
+            logger.info("Duplicate RB run #" + data_dict["rb_number"] + ", waiting for the first to finish.")
             return False
             
         else:   
