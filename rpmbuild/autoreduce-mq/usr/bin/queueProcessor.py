@@ -14,36 +14,31 @@ class Listener(object):
         logger.error("Error message recieved - %s" % str(message))
 
     def on_message(self, headers, data):
-        try:
-            self._client.ack(headers['message-id'], headers['subscription'])  # Remove message from queue
+        self._client.ack(headers['message-id'], headers['subscription'])  # Remove message from queue
 
-            destination = headers['destination']
-
-            logger.debug("Received frame destination: " + destination)
-            logger.debug("Recieved frame priority: " + headers["priority"])
-            logger.debug("DATA: %s" % data)
-
-            data_dict = json.loads(data)
-
-            while not self.shouldProceed(data_dict): # wait while the run shouldn't proceed
-                logger.debug("waiting")
-                self.updateChildProcessList()
-                time.sleep(10.0)
-
-            logger.debug("Calling: %s %s %s %s" % ("python", "/usr/bin/PostProcessAdmin.py", destination, data))
-            proc = subprocess.Popen(["python", "/usr/bin/PostProcessAdmin.py", destination, data])
-            self.addProc(proc, data_dict)
-
-        except e:
-            logger.info("Exception in queueProcessor message handling: %s - %s" % (type(e).__name__, e))
+        logger.debug("Received frame destination: " + destination)
+        logger.debug("Recieved frame priority: " + headers["priority"])
+                
+        reactor.callInThread(self.holdMessage, destination, data) # no loop here, to prevent blocking the consumer
         
+    def holdMessage(self, destination, data):
+        logger.debug("holding thread")
+        data_dict = json.loads(data)
+        while not self.shouldProceed(data_dict): # wait while the run shouldn't proceed
+            reactor.callFromThread(self.updateChildProcessList) # update in the reactor thread, for thread safety
+            time.sleep(10.0)
+            
+        logger.debug("Calling: %s %s %s %s" % ("python", "/usr/bin/PostProcessAdmin.py", destination, data))
+        proc = subprocess.Popen(["python", "/usr/bin/PostProcessAdmin.py", destination, data])
+        reactor.callFromThread(self.addProc, proc, data_dict)
+
         
     def updateChildProcessList(self):
-        for i in self.procList:
-            if i.poll() is not None:
-                index = self.procList.index(i)
-                del self.procList[i]
-                del self.RBList[i]
+        for process in self.procList:
+            if process.poll() is not None:
+                index = self.procList.index(process)
+                self.procList.pop(index)
+                self.RBList.pop(index)
                 
     def addProc(self, proc, data_dict):
         self.procList.append(proc)
