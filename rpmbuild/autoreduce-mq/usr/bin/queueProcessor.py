@@ -21,21 +21,26 @@ class Listener(object):
         logger.debug("Received frame destination: " + destination)
         logger.debug("Recieved frame priority: " + headers["priority"])
                 
-        while not self.shouldProceed(data): # wait while the run shouldn't proceed
-            self.updateChildProcessList()
+        reactor.callInThread(self.holdMessage, destination, data) # no loop here, to prevent blocking the consumer
+        
+    def holdMessage(self, destination, data):
+        logger.debug("holding thread")
+        data_dict = json.loads(data)
+        while not self.shouldProceed(data_dict): # wait while the run shouldn't proceed
+            reactor.callFromThread(self.updateChildProcessList) # update in the reactor thread, for thread safety
             time.sleep(10.0)
             
         logger.debug("Calling: %s %s %s %s" % ("python", "/usr/bin/PostProcessAdmin.py", destination, data))
         proc = subprocess.Popen(["python", "/usr/bin/PostProcessAdmin.py", destination, data])
-        addProc(proc, data)        
-        
-        
+        reactor.callFromThread(self.addProc, proc, data_dict)
+
         
     def updateChildProcessList(self):
-        for i in self.procList:
-            if i.poll() is not None:
-                self.procList.remove(i)
-                self.RBList.remove(i)
+        for process in self.procList:
+            if process.poll() is not None:
+                index = self.procList.index(process)
+                self.procList.pop(index)
+                self.RBList.pop(index)
                 
     def addProc(proc, data):
         self.procList.append(proc)
