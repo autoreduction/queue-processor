@@ -15,6 +15,8 @@ class Listener(object):
 
     def on_message(self, headers, data):
         self._client.ack(headers['message-id'], headers['subscription'])  # Remove message from queue
+        
+        destination = headers['destination']
 
         logger.debug("Received frame destination: " + destination)
         logger.debug("Recieved frame priority: " + headers["priority"])
