@@ -40,19 +40,6 @@ def channels_redirected(out_file, err_file):
                         _redirect_channels(old_stdout, old_stderr)  # restore stderr.
 
 
-def copytree(src, dst):
-    if not os.path.exists(dst):
-        os.makedirs(dst)
-    for item in os.listdir(src):
-        s = os.path.join(src, item)
-        d = os.path.join(dst, item)
-        if os.path.isdir(s):
-            copytree(s, d)
-        else:
-            if not os.path.exists(d) or os.stat(src).st_mtime - os.stat(dst).st_mtime > 1:
-                shutil.copy2(s, d)
-
-
 def linux_to_windows_path(path):
     path = path.replace('/', '\\')
     # '/isis/' maps to '\\isis\inst$\'
@@ -231,7 +218,10 @@ class PostProcessAdmin:
                     f.write(traceback.format_exc())
                 self.copy_temp_directory(reduce_result_dir, reduce_result_dir[len(self.conf["temp_root_directory"]):])
                 self.delete_temp_directory(reduce_result_dir)
-                raise
+                
+                errorStr = "Error in user reduction script: %s - %s" % (type(e).__name__, e)
+                raise Exception(errorStr) # parent except block will discard exception type, so format the type as a string now
+
 
             logger.info("Reduction subprocess completed.")
             logger.info("Additional save directories: %s" % out_directories)
@@ -288,7 +278,7 @@ class PostProcessAdmin:
         self.data['reduction_data'].append(linux_to_windows_path(copy_destination))
         logger.info("Moving %s to %s" % (temp_result_dir, copy_destination))
         try:
-            copy_tree(temp_result_dir, copy_destination)
+            self._copy_tree(temp_result_dir, copy_destination)
         except Exception, e:
             self.log_and_message("Unable to copy to %s - %s" % (copy_destination, e))
 
@@ -326,6 +316,17 @@ class PostProcessAdmin:
             time.sleep(sleep)
         else:
             self.log_and_message("Failed to delete %s" % full_path)
+            
+    def _copy_tree(self, source, dest):
+        if not os.path.exists(dest):
+            os.makedirs(dest)
+        for item in os.listdir(source):
+            s = os.path.join(source, item)
+            d = os.path.join(dest, item)
+            if os.path.isdir(s):
+                copy_tree(s, d)
+            elif not os.path.exists(d) or os.stat(src).st_mtime - os.stat(dst).st_mtime > 1:
+                shutil.copyfile(s, d)
 
     def _remove_directory(self, directory):
         """ Helper function to remove a directory. shutil.rmtree cannot be used as it is not robust enough when folders
