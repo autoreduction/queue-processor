@@ -32,10 +32,11 @@ class Listener(object):
         
         
     def updateChildProcessList(self):
-        for i in self.procList:
-            if i.poll() is not None:
-                self.procList.remove(i)
-                self.RBList.remove(i)
+        for process in self.procList:
+            if process.poll() is not None:
+                index = self.procList.index(process)
+                self.procList.pop(index)
+                self.RBList.pop(index)
                 
     def addProc(proc, data):
         self.procList.append(proc)
