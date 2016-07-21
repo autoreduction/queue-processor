@@ -240,12 +240,14 @@ class PostProcessAdmin:
                 else:
                     self.log_and_message("Optional output directories of reduce.py must be a string or list of stings: %s" % out_directories)
 
+                    
             # no longer a need for the temp directory used for temporary storing of reduction results
             self.delete_temp_directory(reduce_result_dir)
 
-        except Exception, e:
+        except Exception as e:
             self.data["message"] = "REDUCTION Error: %s " % e
 
+            
         if self.data["message"] != "":
             # This means an error has been produced somewhere
             try:
@@ -256,7 +258,7 @@ class PostProcessAdmin:
                 logger.info("Reduction job failed")
         else:
             self.client.send(self.conf['reduction_complete'], json.dumps(self.data))
-            print "\nCalling: " + self.conf['reduction_complete'] + "\n" + json.dumps(self.data) + "\n"
+            print("\nCalling: " + self.conf['reduction_complete'] + "\n" + json.dumps(self.data) + "\n")
             logger.info("Reduction job successfully complete")
 
     def _send_error_and_log(self):
@@ -275,7 +277,7 @@ class PostProcessAdmin:
         logger.info("Moving %s to %s" % (temp_result_dir, copy_destination))
         try:
             self._copy_tree(temp_result_dir, copy_destination)
-        except Exception, e:
+        except Exception as e:
             self.log_and_message("Unable to copy to %s - %s" % (copy_destination, e))
 
 
@@ -284,7 +286,7 @@ class PostProcessAdmin:
         logger.info("Remove temp dir %s " % temp_result_dir)
         try:
             shutil.rmtree(temp_result_dir, ignore_errors=True)
-        except Exception, e:
+        except Exception as e:
             logger.info("Unable to remove temporary directory %s - %s" % temp_result_dir)
 
 
@@ -340,7 +342,7 @@ class PostProcessAdmin:
             self.log_and_message("Unable to remove existing directory %s - %s" % (directory, e))
 
 if __name__ == "__main__":
-    print "\n> In PostProcessAdmin.py\n"
+    print("\n> In PostProcessAdmin.py\n")
 
     try:
         conf = json.load(open('/etc/autoreduce/post_process_consumer.conf'))
