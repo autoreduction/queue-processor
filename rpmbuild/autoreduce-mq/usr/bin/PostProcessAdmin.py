@@ -161,10 +161,7 @@ class PostProcessAdmin:
                 
             # specify script to run and directory
             if os.path.exists(os.path.join(self.reduction_script, "reduce.py")) is False:
-                self.data['message'] = "Reduce script doesn't exist within %s" % self.reduction_script
-                logger.debug(self.data['message'])
-                self._send_error_and_log()
-                return
+                raise Exception("Reduce script doesn't exist within %s" % self.reduction_script)
             
             
             # specify directories where autoreduction output will go
@@ -190,11 +187,24 @@ class PostProcessAdmin:
                 if not os.path.exists(log_dir):
                     os.makedirs(log_dir)
                     
+                               
+                doesNotExist = lambda path : not os.access(path, os.F_OK)
+                notReadable = lambda path : not os.access(path, os.R_OK)
+                notWritable = lambda path : not os.access(path, os.W_OK)
+                               
                 # we want write access to these directories, plus the final output paths
                 shouldBeWritablePaths = [reduce_result_dir, log_dir, final_result_dir, final_log_dir]
-                notWritable = lambda path : not os.access(path, os.W_OK)
                 if filter(notWritable, shouldBeWritablePaths) != []:
-                    raise Exception("Couldn't write to path: %s" % filter(notWritable, shouldBeWritablePaths)[0])
+                    failPath = filter(notWritable, shouldBeWritablePaths)[0]
+                    problem = "does not exist" if doesNotExist(failPath) else "no write access"
+                    raise Exception("Couldn't write to path %s  -  %s" % (failPath, problem))
+                    
+                # we also want read access to the input data file
+                shouldBeReadableFiles = [self.data_file]
+                if filter(notReadable, shouldBeReadableFiles) != []:
+                    failPath = filter(notReadable, shouldBeReadableFiles)[0]
+                    problem = "does not exist" if doesNotExist(failPath) else "no read access"
+                    raise Exception("Couldn't read data file %s  -  %s" % (failPath, problem))
             
             except Exception as e:
                 # if we can't write now, we should abort the run, and tell the server that it should be re-run at a later time
@@ -280,14 +290,17 @@ class PostProcessAdmin:
                 logger.info("Failed to send to queue! - %s - %s" % (e, repr(e)))
             finally:
                 logger.info("Reduction job failed")
+                
         else:
+            # reduction has successfully completed
             self.client.send(self.conf['reduction_complete'], json.dumps(self.data))
             print("\nCalling: " + self.conf['reduction_complete'] + "\n" + json.dumps(self.data) + "\n")
             logger.info("Reduction job successfully complete")
 
+            
     def _send_error_and_log(self):
-        logger.info("Called " + self.conf['reduction_error'] + " --- " + json.dumps(self.data))
-        self.client.send(self.conf['reduction_error'], json.dumps(self.data))
+        logger.info("\nCalling " + self.conf['reduction_error'] + " --- " + json.dumps(self.data))
+        self.client.send(self.conf['reduction_error'], json.dumps(self.data)) 
 
     def copy_temp_directory(self, temp_result_dir, copy_destination):
         """ Method that copies the temporary files held in results_directory to CEPH/archive, replacing old data if it
