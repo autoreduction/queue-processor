@@ -27,6 +27,9 @@
                     </li>
                     {% if user.is_superuser %}
                     <li>
+                        <a href="{% url 'fail_queue' %}">Failed Jobs</a>
+                    </li>
+                    <li>
                         <a href="{% url 'admin:index' %}">Admin</a>
                     </li>
                     {% endif %}

@@ -11,10 +11,11 @@ from reduction_viewer.models import Experiment, ReductionRun, Instrument
 from reduction_viewer.utils import StatusUtils
 from reduction_viewer.view_utils import deactivate_invalid_instruments
 from django.core.context_processors import csrf
-from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, require_staff
+from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, require_staff, require_admin
 import operator
+import json
 import logging
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('app')
 
 @deactivate_invalid_instruments
 def index(request):
@@ -67,7 +68,51 @@ def run_queue(request):
         'queue' : pending_jobs
     }
     return context_dictionary
+    
+    
+@require_admin
+@login_and_uows_valid
+@render_with('fail_queue.html')
+def fail_queue(request):
 
+    if request.method == 'POST':
+        # perform the specified action
+        action = request.POST.get("action", "default")
+        logger.info("%s" % action)
+        selectedRunString = request.POST.get("selectedRuns", [])
+        logger.info("%s" % selectedRunString)
+        selectedRuns = json.loads(selectedRunString)
+        try:
+            logger.info(selectedRuns[0])
+            for run in selectedRuns:
+                runNumber = int(run[0])
+                runVersion = int(run[1])
+                RBNumber = int(run[2])
+                
+                experiment = Experiment.objects.filter(reference_number=RBNumber).first()
+                reductionRun = ReductionRun.objects.get(experiment=experiment, run_number=runNumber, run_version=runVersion)
+
+                if action == "hide":
+                    reductionRun.hidden_in_failviewer = True
+                elif action == "rerun":
+                    pass
+
+                reductionRun.save()
+        except:
+            logger.info("Failed")
+
+        return redirect('fail_queue')
+            
+    else:
+        # render the page
+        error_status = StatusUtils().get_error()
+        failed_jobs = ReductionRun.objects.filter(Q(status=error_status) & Q(hidden_in_failviewer=False)).order_by('-created')
+        context_dictionary = {
+            'queue' : failed_jobs
+        }
+        return context_dictionary
+
+    
 @login_and_uows_valid
 @render_with('run_list.html')
 def run_list(request):

@@ -95,7 +95,8 @@ STATICFILES_DIRS = (
 
 LOG_FILE = os.path.join(BASE_DIR, 'autoreduction.log')
 if DEBUG:
-    LOG_LEVEL = 'DEBUG'
+    #LOG_LEVEL = 'DEBUG' 
+    LOG_LEVEL = 'INFO'
 else:
     LOG_LEVEL = 'INFO'
 
@@ -125,9 +126,10 @@ LOGGING = {
             'propagate': True,
             'level':LOG_LEVEL,
         },
-        'MYAPP': {
-            'handlers': ['file'],
-            'level': LOG_LEVEL,
+        'app' : {
+            'handlers':['file'],
+            'propagate': True,
+            'level':'DEBUG',
         },
     }
 }
