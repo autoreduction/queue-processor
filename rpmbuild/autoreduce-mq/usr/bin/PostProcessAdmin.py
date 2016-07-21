@@ -243,9 +243,6 @@ class PostProcessAdmin:
             # no longer a need for the temp directory used for temporary storing of reduction results
             self.delete_temp_directory(reduce_result_dir)
 
-            self.client.send(self.conf['reduction_complete'] , json.dumps(self.data))
-            logger.info("\nCalling: "+self.conf['reduction_complete'] + "\n" + json.dumps(self.data) + "\n")
-
         except Exception, e:
             self.data["message"] = "REDUCTION Error: %s " % e
 
