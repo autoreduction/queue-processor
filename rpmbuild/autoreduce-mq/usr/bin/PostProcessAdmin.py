@@ -141,10 +141,12 @@ class PostProcessAdmin:
 
     def reduce(self):
         logger.debug("In reduce() method")
-        try:         
+        try:     
+        
             logger.debug("Calling: " + self.conf['reduction_started'] + "\n" + json.dumps(self.data))
             self.client.send(self.conf['reduction_started'], json.dumps(self.data))
 
+            
             # specify instrument directory
             cycle = re.match(r'.*cycle_(\d\d_\d).*', self.data_file.lower()).group(1)
             if self.instrument in (self.conf["ceph_instruments"] + self.conf["excitation_instruments"]):
@@ -156,6 +158,7 @@ class PostProcessAdmin:
             else:
                 instrument_dir = self.conf["archive_directory"] % (self.instrument, cycle, self.proposal, self.run_number)
 
+                
             # specify script to run and directory
             if os.path.exists(os.path.join(self.reduction_script, "reduce.py")) is False:
                 self.data['message'] = "Reduce script doesn't exist within %s" % self.reduction_script
@@ -163,30 +166,50 @@ class PostProcessAdmin:
                 self._send_error_and_log()
                 return
             
-            # specify directory where autoreduction output goes
+            
+            # specify directories where autoreduction output will go
             reduce_result_dir = self.conf["temp_root_directory"] + instrument_dir
             if self.instrument not in self.conf["excitation_instruments"]:
                 run_output_dir = os.path.join(self.conf["temp_root_directory"], instrument_dir[:instrument_dir.rfind('/')+1])
             else:
                 run_output_dir = reduce_result_dir
-
-            if not os.path.isdir(reduce_result_dir):
-                os.makedirs(reduce_result_dir)
-
+                
             log_dir = reduce_result_dir + "/reduction_log/"
-            if not os.path.exists(log_dir):
-                os.makedirs(log_dir)
+            log_and_err_name = "RB" + self.proposal + "Run" + self.run_number
+            script_out = os.path.join(log_dir, log_and_err_name + "Script.out")
+            mantid_log = os.path.join(log_dir, log_and_err_name + "Mantid.log")
+                
+            final_result_dir = reduce_result_dir[len(self.conf["temp_root_directory"]):] # strip the temp path off the front of the temp directory to get the final archive directory
+            final_log_dir = log_dir[len(self.conf["temp_root_directory"]):]
 
+            # test for access to result paths
+            try:
+                if not os.path.isdir(reduce_result_dir):
+                    os.makedirs(reduce_result_dir)
+
+                if not os.path.exists(log_dir):
+                    os.makedirs(log_dir)
+                    
+                # we want write access to these directories, plus the final output paths
+                shouldBeWritablePaths = [reduce_result_dir, log_dir, final_result_dir, final_log_dir]
+                notWritable = lambda path : not os.access(path, os.W_OK)
+                if filter(notWritable, shouldBeWritablePaths) != []:
+                    raise Exception("Couldn't write to path: %s" % filter(notWritable, shouldBeWritablePaths)[0])
+            
+            except Exception as e:
+                # if we can't write now, we should abort the run, and tell the server that it should be re-run at a later time
+                self.data["message"] = "Permission error: %s" % e
+                self.data["retry_in"] = 6 * 60 * 60 # 6 hours
+                raise e
+
+                
             self.data['reduction_data'] = []
             if "message" not in self.data:
                 self.data["message"] = ""
 
+                
             # Load reduction script
             sys.path.append(self.reduction_script)
-
-            log_and_err_name = "RB" + self.proposal + "Run" + self.run_number
-            script_out = os.path.join(log_dir, log_and_err_name + "Script.out")
-            mantid_log = os.path.join(log_dir, log_and_err_name + "Mantid.log")
 
             logger.info("----------------")
             logger.info("Reduction script: %s" % self.reduction_script)
@@ -215,7 +238,7 @@ class PostProcessAdmin:
                 with open(script_out, "a") as f:
                     f.writelines(str(e) + "\n")
                     f.write(traceback.format_exc())
-                self.copy_temp_directory(reduce_result_dir, reduce_result_dir[len(self.conf["temp_root_directory"]):])
+                self.copy_temp_directory(reduce_result_dir, final_result_dir)
                 self.delete_temp_directory(reduce_result_dir)
                 
                 errorStr = "Error in user reduction script: %s - %s" % (type(e).__name__, e)
@@ -225,8 +248,9 @@ class PostProcessAdmin:
             logger.info("Reduction subprocess completed.")
             logger.info("Additional save directories: %s" % out_directories)
 
-            self.copy_temp_directory(reduce_result_dir, reduce_result_dir[len(self.conf["temp_root_directory"]):])
+            self.copy_temp_directory(reduce_result_dir, final_result_dir)
 
+            
             # If the reduce script specified some additional save directories, copy to there first
             if out_directories:
                 if type(out_directories) is str:
