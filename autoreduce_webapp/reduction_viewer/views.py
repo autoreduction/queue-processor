@@ -7,10 +7,11 @@ from django.db.models import Q
 from autoreduce_webapp.uows_client import UOWSClient
 from autoreduce_webapp.icat_communication import ICATCommunication
 from autoreduce_webapp.settings import UOWS_LOGIN_URL
-from reduction_viewer.models import Experiment, ReductionRun, Instrument
+from reduction_viewer.models import Experiment, ReductionRun, Instrument, DataLocation
 from reduction_viewer.utils import StatusUtils
 from reduction_viewer.view_utils import deactivate_invalid_instruments
-from django.core.context_processors import csrf
+from reduction_variables.models import RunVariable
+from reduction_variables.utils import MessagingUtils, InstrumentVariablesUtils
 from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, require_staff, require_admin
 import operator
 import json
@@ -92,16 +93,63 @@ def fail_queue(request):
                 experiment = Experiment.objects.filter(reference_number=RBNumber).first()
                 reductionRun = ReductionRun.objects.get(experiment=experiment, run_number=runNumber, run_version=runVersion)
 
+                
                 if action == "hide":
                     reductionRun.hidden_in_failviewer = True
+                    reductionRun.save()
+                    
+                    
                 elif action == "rerun":
-                    pass
+                
+                    highest_version = max([int(runL[1]) for runL in selectedRuns if int(runL[0]) == runNumber])
+                    if runVersion != highest_version:
+                        continue # do not run multiples of the same run
+                
+                    last_version = -1
+                    for run in ReductionRun.objects.filter(experiment=experiment, run_number=runNumber):
+                        last_version = max(last_version, run.run_version)
+                        
+                    new_job = ReductionRun(
+                        instrument = reductionRun.instrument,
+                        run_number = reductionRun.run_number,
+                        run_name = "",
+                        run_version = last_version+1,
+                        experiment = reductionRun.experiment,
+                        #started_by=request.user.username,
+                        status = StatusUtils().get_queued()
+                        )
+                    new_job.save()
+                    
+                    for data_location in reductionRun.data_location.all():
+                        new_data_location = DataLocation(file_path=data_location.file_path, reduction_run=new_job)
+                        new_data_location.save()
+                        new_job.data_location.add(new_data_location)
+                        
+                    for var in InstrumentVariablesUtils().get_variables_for_run(new_job):
+                        new_var = RunVariable(name=var.name, value=var.value, type=var.type, is_advanced=var.is_advanced, help_text=var.help_text)
+                        new_var.reduction_run = new_job
+                        new_job.run_variables.add(new_var)
+                        new_var.save()
+                        
+                        for script in var.scripts.all():
+                            new_var.scripts.add(script)          
+                    
+                    try:
+                        MessagingUtils().send_pending(new_job)
+                    except Exception as e:
+                        new_job.delete()
+                        raise e
 
-                reductionRun.save()
-        except:
-            logger.info("Failed")
+                        
+                elif action == "default":
+                    pass
+                        
+        except Exception as e:
+            logger.info("Failed : %s %s" % (type(e).__name__, e))
 
         return redirect('fail_queue')
+            
+            
             
     else:
         # render the page
