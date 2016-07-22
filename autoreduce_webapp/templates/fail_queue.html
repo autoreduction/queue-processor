@@ -16,8 +16,9 @@
             <div>
                 <select id="runAction">
                     <option value="default">Select action to apply to selected runs</option>
-                    <option value="rerun">Re-run selected</option>
-                    <option value="hide">Hide selected</option>
+                    <option value="rerun">Re-run </option>
+                    <option value="hide">Hide </option>
+                    <option value="cancel">Stop retrying</option>
                 </select>
                 <button type="button" id="runActionButton">Apply</button>
             </div>
@@ -29,12 +30,16 @@
                         <th>Instrument</th>
                         <th>Message</th>
                         <th>Submitted</th>
-                        <th>Will retry</th>
+                        <th>Retrying</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for job in queue %}
+                      {% if job.retry_run %}
+                        <tr name='runRow' class="{% colour_table_row job.retry_run.status.value %}">
+                      {% else %}
                         <tr name='runRow' class="{% colour_table_row job.status.value %}">
+                      {% endif %}
                             <td><input type='checkbox' name='runCheckbox' data-run_number='{{job.run_number}}' data-run_version='{{job.run_version}}' data-rb_number='{{job.experiment.reference_number}}'></td>
                             <td>
                                 <a href="{% url 'run_summary' run_number=job.run_number run_version=job.run_version %}">{{ job.title }}</a>
@@ -45,6 +50,12 @@
                             <td>
                                 {% if job.retry_when %}
                                     {{ job.retry_when|naturaltime }}
+                                    {% if job.cancel %}
+                                        <span> (Last attempt)</span>
+                                    {% endif %}
+                                    {% if job.retry_run %}
+                                        <a href="{% url 'run_summary' run_number=job.retry_run.run_number run_version=job.retry_run.run_version %}"> ({{ job.retry_run.status }})</a>
+                                    {% endif %}
                                 {% else %}
                                     Never
                                 {% endif %}

@@ -427,6 +427,9 @@ class ReductionVariablesUtils(object):
             )
         new_job.save()
         
+        reductionRun.retry_run = new_job
+        reductionRun.save()
+        
         # copy the previous data locations
         for data_location in reductionRun.data_location.all():
             new_data_location = DataLocation(file_path=data_location.file_path, reduction_run=new_job)

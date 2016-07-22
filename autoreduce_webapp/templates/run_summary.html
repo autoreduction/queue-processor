@@ -67,6 +67,24 @@
                                         <em>Not yet finished</em>
                                     {% endif %}
                                 </div>
+                                <div>
+                                    <strong>Retrying:</strong> 
+                                    {% if run.finished %}
+                                        {% if run.retry_when %}
+                                            {{ run.retry_when|naturaltime }}
+                                            {% if run.cancel %}
+                                                <span> (Last attempt)</span>
+                                            {% endif %}
+                                            {% if run.retry_run %}
+                                                <a href="{% url 'run_summary' run_number=run.retry_run.run_number run_version=run.retry_run.run_version %}"> ({{ run.retry_run.status }})</a>
+                                            {% endif %}
+                                        {% else %}
+                                            Never
+                                        {% endif %}
+                                    {% else %}
+                                        <em>Not yet finished</em>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                         <div class="row">

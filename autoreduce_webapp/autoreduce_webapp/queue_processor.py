@@ -4,14 +4,14 @@ import logging
 import logging.config
 logging.config.dictConfig(LOGGING)
 logger = logging.getLogger("django")
-import time, sys, os, json, glob, base64, shutil
+import time, datetime, sys, os, json, glob, base64, shutil
 from django.utils import timezone
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 sys.path.insert(0, BASE_DIR)
 from reduction_viewer.models import ReductionRun, ReductionLocation, DataLocation, Experiment
 from reduction_viewer.utils import StatusUtils, InstrumentUtils
 from reduction_variables.models import RunVariable
-from reduction_variables.utils import ReductionVariablesUtils
+from reduction_variables.utils import ReductionVariablesUtils, MessagingUtils
 from icat_communication import ICATCommunication
 from django.db import connection
 import django
@@ -212,11 +212,10 @@ class Listener(object):
             reduction_run.message = self._data_dict['message']
         reduction_run.save()
         
-        notifyRunFailure(reduction_run)
+        self.notifyRunFailure(reduction_run)
         
         if 'retry_in' in self._data_dict:
-            
-            retryRun(reduction_run, self._data_dict["retry_in"])
+            self.retryRun(reduction_run, self._data_dict["retry_in"])
         
         
     def find_run(self):
@@ -233,7 +232,15 @@ class Listener(object):
         pass
         
     def retryRun(self, reductionRun, retryIn):
+    
+        if (reductionRun.cancel):
+            logger.info("Cancelling run retry")
+            return
+            
+        logger.info("Retrying run in %i seconds" % retryIn)
+    
         reductionRun.retry_when = timezone.now().replace(microsecond=0) + datetime.timedelta(seconds=retryIn)
+        reductionRun.save()
         
         new_job = ReductionVariablesUtils().createRetryRun(reductionRun)          
         try:

@@ -4,6 +4,7 @@ from django.http import JsonResponse
 from django.core.context_processors import csrf
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
+from django.utils import timezone
 from autoreduce_webapp.uows_client import UOWSClient
 from autoreduce_webapp.icat_communication import ICATCommunication
 from autoreduce_webapp.settings import UOWS_LOGIN_URL
@@ -111,6 +112,19 @@ def fail_queue(request):
                         new_job.delete()
                         raise e
                         
+                    reductionRun.retry_when = timezone.now().replace(microsecond=0)
+                    reductionRun.save()
+                    
+                        
+                elif action == "cancel":
+                    reductionRun.cancel = True
+                    reductionRun.save()
+                    
+                    if reductionRun.retry_run:
+                        reductionRun.retry_run.cancel = True
+                        reductionRun.retry_run.save()
+                       
+                       
                 elif action == "default":
                     pass
                         
@@ -125,9 +139,11 @@ def fail_queue(request):
         # render the page
         error_status = StatusUtils().get_error()
         failed_jobs = ReductionRun.objects.filter(Q(status=error_status) & Q(hidden_in_failviewer=False)).order_by('-created')
-        context_dictionary = {
-            'queue' : failed_jobs
-        }
+        context_dictionary = { 
+              'queue' : failed_jobs
+            , 'status_success' : StatusUtils().get_completed()
+            , 'status_failed' : StatusUtils().get_error()
+            }
         return context_dictionary
 
     
