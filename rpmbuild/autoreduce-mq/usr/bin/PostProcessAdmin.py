@@ -157,12 +157,6 @@ class PostProcessAdmin:
                     instrument_dir = instrument_dir[:instrument_dir.rfind('/')+1]
             else:
                 instrument_dir = self.conf["archive_directory"] % (self.instrument, cycle, self.proposal, self.run_number)
-
-                
-            # specify script to run and directory
-            if os.path.exists(os.path.join(self.reduction_script, "reduce.py")) is False:
-                raise Exception("Reduce script doesn't exist within %s" % self.reduction_script)
-            
             
             # specify directories where autoreduction output will go
             reduce_result_dir = self.conf["temp_root_directory"] + instrument_dir
@@ -193,21 +187,21 @@ class PostProcessAdmin:
                 notWritable = lambda path : not os.access(path, os.W_OK)
                                
                 # we want write access to these directories, plus the final output paths
-                shouldBeWritablePaths = [reduce_result_dir, log_dir, final_result_dir, final_log_dir]
-                if filter(notWritable, shouldBeWritablePaths) != []:
-                    failPath = filter(notWritable, shouldBeWritablePaths)[0]
+                shouldBeWritable = [reduce_result_dir, log_dir, final_result_dir, final_log_dir]
+                if filter(notWritable, shouldBeWritable) != []:
+                    failPath = filter(notWritable, shouldBeWritable)[0]
                     problem = "does not exist" if doesNotExist(failPath) else "no write access"
-                    raise Exception("Couldn't write to path %s  -  %s" % (failPath, problem))
+                    raise Exception("Couldn't write to %s  -  %s" % (failPath, problem))
                     
-                # we also want read access to the input data file
-                shouldBeReadableFiles = [self.data_file]
-                if filter(notReadable, shouldBeReadableFiles) != []:
-                    failPath = filter(notReadable, shouldBeReadableFiles)[0]
+                # we also want read access to the input data file and the scripts
+                shouldBeReadable = [self.data_file, self.reduction_script]
+                if filter(notReadable, shouldBeReadable) != []:
+                    failPath = filter(notReadable, shouldBeReadable)[0]
                     problem = "does not exist" if doesNotExist(failPath) else "no read access"
-                    raise Exception("Couldn't read data file %s  -  %s" % (failPath, problem))
+                    raise Exception("Couldn't read %s  -  %s" % (failPath, problem))
             
             except Exception as e:
-                # if we can't write now, we should abort the run, and tell the server that it should be re-run at a later time
+                # if we can't access now, we should abort the run, and tell the server that it should be re-run at a later time
                 self.data["message"] = "Permission error: %s" % e
                 self.data["retry_in"] = 6 * 60 * 60 # 6 hours
                 raise e
@@ -219,6 +213,8 @@ class PostProcessAdmin:
 
                 
             # Load reduction script
+            if os.path.exists(os.path.join(self.reduction_script, "reduce.py")) is False:
+                raise Exception("Reduce script doesn't exist within %s" % self.reduction_script)
             sys.path.append(self.reduction_script)
 
             logger.info("----------------")
