@@ -4,10 +4,10 @@ from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
-from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, require_staff
+from autoreduce_webapp.view_utils import login_and_uows_valid, render_with
 from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFile
-from reduction_variables.utils import InstrumentVariablesUtils, VariableUtils, MessagingUtils, ScriptUtils, DataTooLong
-from reduction_viewer.models import Instrument, ReductionRun, DataLocation
+from reduction_variables.utils import InstrumentVariablesUtils, ReductionVariablesUtils, VariableUtils, MessagingUtils, ScriptUtils
+from reduction_viewer.models import Instrument, ReductionRun
 from reduction_viewer.utils import StatusUtils
 
 import logging, re
@@ -409,20 +409,6 @@ def run_confirmation(request, instrument):
         for run_number in range(start, end+1):
             old_reduction_run = ReductionRun.objects.filter(run_number=run_number).order_by('-run_version').first()
 
-            new_job = ReductionRun(
-                instrument=instrument,
-                run_number=run_number,
-                run_name=request.POST.get('run_description'),
-                run_version=(old_reduction_run.run_version+1),
-                experiment=old_reduction_run.experiment,
-                started_by=request.user.username,
-                status=queued_status,
-                )
-            new_job.save()
-            for data_location in old_reduction_run.data_location.all():
-                new_data_location = DataLocation(file_path=data_location.file_path, reduction_run=new_job)
-                new_data_location.save()
-                new_job.data_location.add(new_data_location)
 
             use_current_script = request.POST.get('use_current_script', u"true").lower() == u"true"
 
@@ -433,10 +419,11 @@ def run_confirmation(request, instrument):
                 run_variables = old_reduction_run.run_variables.all()
                 script_binary, script_vars_binary = ScriptUtils().get_reduce_scripts_binary(run_variables[0].scripts.all())
                 default_variables = run_variables
-
+                
             script = ScriptFile(script=script_binary, file_name='reduce.py')
             script_vars = ScriptFile(script=script_vars_binary, file_name='reduce_vars.py')
 
+            
             new_variables = []
 
             for key,value in request.POST.iteritems():
@@ -456,7 +443,6 @@ def run_confirmation(request, instrument):
                         if len(value) > InstrumentVariable._meta.get_field('value').max_length:
                             context_dictionary['error'] = 'Value given in ' + str(name) + ' is too long.'
                         variable = RunVariable(
-                            reduction_run=new_job,
                             name=default_var.name,
                             value=value,
                             is_advanced=is_advanced,
@@ -468,26 +454,24 @@ def run_confirmation(request, instrument):
             if len(new_variables) == 0:
                 context_dictionary['error'] = 'No variables were found to be submitted.'
 
+                
             if 'error' not in context_dictionary:
                 script.save()
                 script_vars.save()
-                for variable in new_variables:
-                    variable.save()
-                    variable.scripts.add(script)
-                    variable.scripts.add(script_vars)
-                    variable.save()
+                new_job = ReductionVariablesUtils().createRetryRun(old_reduction_run, scripts=[script, script_vars], variables=new_variables)
 
                 try:
                     MessagingUtils().send_pending(new_job)
                     context_dictionary['runs'].append(new_job)
                     context_dictionary['variables'] = new_variables
-                except Exception, e:
+                    
+                except Exception as e:
                     new_job.delete()
                     script.delete()
                     script_vars.delete()
                     context_dictionary['error'] = 'Failed to send new job. (%s)' % str(e)
+                    
             else:
-                new_job.delete()
                 return context_dictionary
 
         return context_dictionary

@@ -2,10 +2,9 @@ import logging, os, sys, imp, uuid, re, json, time
 sys.path.append(os.path.join("../", os.path.dirname(os.path.dirname(__file__))))
 os.environ["DJANGO_SETTINGS_MODULE"] = "autoreduce_webapp.settings"
 from autoreduce_webapp.settings import ACTIVEMQ, TEMP_OUTPUT_DIRECTORY, REDUCTION_DIRECTORY, FACILITY
-from autoreduce_webapp.queue_processor import Client as ActiveMQClient
 logger = logging.getLogger('django')
 from reduction_variables.models import InstrumentVariable, ScriptFile, RunVariable
-from reduction_viewer.models import ReductionRun, Notification
+from reduction_viewer.models import ReductionRun, Notification, DataLocation
 from reduction_viewer.utils import InstrumentUtils, StatusUtils
 from autoreduce_webapp.icat_communication import ICATCommunication
 
@@ -30,7 +29,7 @@ def write_script_to_temp(script, script_vars_file):
         f = open(os.path.join(script_path, 'reduce_vars.py'), 'wb')
         f.write(script_vars_file)
         f.close()
-    except Exception, e:
+    except Exception as e:
         logger.error("Couldn't write temporary script - %s" % e)
         type, value, traceback = sys.exc_info()
         logger.error('Error opening %s: %s' % (value.filename, value.strerror))
@@ -148,7 +147,7 @@ class InstrumentVariablesUtils(object):
             f = open(reduction_file, 'rb')
             script_binary = f.read()
             return script_binary
-        except ImportError, e:
+        except ImportError as e:
             log_error_and_notify("Unable to load reduction script %s due to missing import. (%s)" % (reduction_file, e.message))
             return None
         except IOError:
@@ -171,7 +170,7 @@ class InstrumentVariablesUtils(object):
             f = open(reduction_file, 'rb')
             script_binary = f.read()
             return reduce_script, script_binary
-        except ImportError, e:
+        except ImportError as e:
             log_error_and_notify("Unable to load reduction script %s due to missing import. (%s)" % (reduction_file, e.message))
             return None, None
         except IOError:
@@ -405,12 +404,61 @@ class ReductionVariablesUtils(object):
         arguments = { 'standard_vars' : standard_vars, 'advanced_vars': advanced_vars }
 
         return (script_path, arguments)
+        
+                 
+    def createRetryRun(self, reductionRun, scripts=None, variables=None):
+        """
+        Create a run ready for re-running based on the run provided. If variables are provided, copy them and associate them with the new one, otherwise generate variables based on the previous run. If ScriptFile objects are supplied, use them, otherwise use the previous run's.
+        """
+        # find the previous run version, so we don't create a duplicate
+        last_version = -1
+        for run in ReductionRun.objects.filter(experiment=reductionRun.experiment, run_number=reductionRun.run_number):
+            last_version = max(last_version, run.run_version)
+            
+        # create the run object and save it
+        new_job = ReductionRun(
+            instrument = reductionRun.instrument,
+            run_number = reductionRun.run_number,
+            run_name = "",
+            run_version = last_version+1,
+            experiment = reductionRun.experiment,
+            #started_by=request.user.username, # commented out for the test server only
+            status = StatusUtils().get_queued()
+            )
+        new_job.save()
+        
+        # copy the previous data locations
+        for data_location in reductionRun.data_location.all():
+            new_data_location = DataLocation(file_path=data_location.file_path, reduction_run=new_job)
+            new_data_location.save()
+            new_job.data_location.add(new_data_location)
+            
+        if not variables: # provide variables if they aren't already
+            variables = InstrumentVariablesUtils().get_variables_for_run(new_job)
+        for var in variables:
+            new_var = RunVariable(name=var.name, value=var.value, type=var.type, is_advanced=var.is_advanced, help_text=var.help_text) # copy variable
+            new_var.reduction_run = new_job # associate it with the new run
+            new_job.run_variables.add(new_var)
+            
+            # add scripts based on whether some were supplied
+            if not scripts:
+                scripts = var.scripts.all()
+            for script in scripts:
+                new_var.scripts.add(script)
+                
+            new_var.save()
+                
+        return new_job
+        
+
 
 class MessagingUtils(object):
-    def send_pending(self, reduction_run):
+    def send_pending(self, reduction_run, delay=None):
         """
         Sends a message to the queue with the details of the job to run
         """
+        from autoreduce_webapp.queue_processor import Client as ActiveMQClient # to prevent circular dependencies
+
         script_path, arguments = ReductionVariablesUtils().get_script_path_and_arguments(RunVariable.objects.filter(reduction_run=reduction_run))
 
         data_path = ''
@@ -434,7 +482,7 @@ class MessagingUtils(object):
             'facility':FACILITY,
             'message':'',
         }
-        message_client.send('/queue/ReductionPending', json.dumps(data_dict), priority='0')
+        message_client.send('/queue/ReductionPending', json.dumps(data_dict), priority='0', delay=delay)
         message_client.stop()
 
 class ScriptUtils(object):

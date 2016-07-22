@@ -9,8 +9,9 @@ from django.utils import timezone
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 sys.path.insert(0, BASE_DIR)
 from reduction_viewer.models import ReductionRun, ReductionLocation, DataLocation, Experiment
-from reduction_variables.models import RunVariable
 from reduction_viewer.utils import StatusUtils, InstrumentUtils
+from reduction_variables.models import RunVariable
+from reduction_variables.utils import ReductionVariablesUtils
 from icat_communication import ICATCommunication
 from django.db import connection
 import django
@@ -195,20 +196,27 @@ class Listener(object):
             logger.info("Run %s has encountered an error - %s" % (self._data_dict['run_number'], self._data_dict['message']))
         else:
             logger.info("Run %s has encountered an error - No error message was found" % (self._data_dict['run_number']))
+            
+        if 'reduction_script' in self._data_dict:
+            self.clean_up_reduction_script(self._data_dict['reduction_script'])
         
         reduction_run = self.find_run()
                     
-        if reduction_run:
-            reduction_run.status = StatusUtils().get_error()
-            reduction_run.finished = timezone.now().replace(microsecond=0)
-            if 'message' in self._data_dict:
-                reduction_run.message = self._data_dict['message']
-            reduction_run.save()
-        else:
+        if not reduction_run:
             logger.error("A reduction run that caused an error wasn't found in the database. Experiment: %s, Run Number: %s, Run Version %s" % (self._data_dict['rb_number'], self._data_dict['run_number'], self._data_dict['run_version']))
-
-        if 'reduction_script' in self._data_dict:
-            self.clean_up_reduction_script(self._data_dict['reduction_script'])
+            return
+        
+        reduction_run.status = StatusUtils().get_error()
+        reduction_run.finished = timezone.now().replace(microsecond=0)
+        if 'message' in self._data_dict:
+            reduction_run.message = self._data_dict['message']
+        reduction_run.save()
+        
+        notifyRunFailure(reduction_run)
+        
+        if 'retry_in' in self._data_dict:
+            
+            retryRun(reduction_run, self._data_dict["retry_in"])
         
         
     def find_run(self):
@@ -219,6 +227,20 @@ class Listener(object):
 
         reduction_run = ReductionRun.objects.get(experiment=experiment, run_number=int(self._data_dict['run_number']), run_version=int(self._data_dict['run_version']))
         return reduction_run
+        
+        
+    def notifyRunFailure(self, reductionRun):
+        pass
+        
+    def retryRun(self, reductionRun, retryIn):
+        reductionRun.retry_when = timezone.now().replace(microsecond=0) + datetime.timedelta(seconds=retryIn)
+        
+        new_job = ReductionVariablesUtils().createRetryRun(reductionRun)          
+        try:
+            MessagingUtils().send_pending(new_job, delay=retryIn*1000) # seconds to ms
+        except Exception as e:
+            new_job.delete()
+            raise e
         
 
 class Client(object):
@@ -275,11 +297,15 @@ class Client(object):
             self._connection.stop()
         self._connection = None
 
-    def send(self, destination, message, persistent='true', priority='4'):
+    def send(self, destination, message, persistent='true', priority='4', delay=None):
         if self._connection is None or not self._connection.is_connected():
             self._disconnect()
             self._connection = self.get_connection()
-        self._connection.send(destination, message, persistent=persistent, priority=priority)
+            
+        headers = {}
+        if delay:
+            headers['AMQ_SCHEDULED_DELAY'] = str(delay)
+        self._connection.send(destination, message, persistent=persistent, priority=priority, headers=headers)
         logger.debug("[%s] send message to %s" % (self._consumer_name, destination))
 
 
