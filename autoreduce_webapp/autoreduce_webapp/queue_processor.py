@@ -1,10 +1,10 @@
 import stomp
-from settings import ACTIVEMQ, BASE_DIR, LOGGING
+from settings import ACTIVEMQ, BASE_DIR, LOGGING, ERROR_EMAILS
 import logging
 import logging.config
 logging.config.dictConfig(LOGGING)
 logger = logging.getLogger("django")
-import time, datetime, sys, os, json, glob, base64, shutil
+import time, sys, os, json, glob, base64, shutil
 from django.utils import timezone
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 sys.path.insert(0, BASE_DIR)
@@ -14,6 +14,7 @@ from reduction_variables.models import RunVariable
 from reduction_variables.utils import ReductionVariablesUtils, MessagingUtils
 from icat_communication import ICATCommunication
 from django.db import connection
+import smtplib
 import django
 django.setup()
 
@@ -212,10 +213,10 @@ class Listener(object):
             reduction_run.message = self._data_dict['message']
         reduction_run.save()
         
-        self.notifyRunFailure(reduction_run)
-        
         if 'retry_in' in self._data_dict:
             self.retryRun(reduction_run, self._data_dict["retry_in"])
+            
+        self.notifyRunFailure(reduction_run)
         
         
     def find_run(self):
@@ -229,7 +230,26 @@ class Listener(object):
         
         
     def notifyRunFailure(self, reductionRun):
-        pass
+    
+        receivers = filter(lambda addr: addr.split('@')[-1] != 'autoreduce.isis.rl.ac.uk', ERROR_EMAILS) # don't send local emails
+    
+        senderAddress = "autoreduce@reducedev.isis.cclrc.ac.uk"
+        
+        errorMsg = "A reduction run - experiment %s, run %s, version %s - has failed:\n%s\n\n" % (reductionRun.experiment.reference_number, reductionRun.run_number, reductionRun.run_version, reductionRun.message)
+        errorMsg += "The run will not retry automatically.\n" if not reductionRun.retry_when else "The run will automatically retry on %s.\n" % reductionRun.retry_when
+        errorMsg += "Retry manually at http://reducedev.isis.cclrc.ac.uk/runs/%i/%i/ or on %s." % (reductionRun.run_number, reductionRun.run_version, "http://reducedev.isis.cclrc.ac.uk/runs/failed/")
+        
+        emailContent = "From: %s\nTo: %s\nSubject:Autoreduction error\n\n%s" % (senderAddress, ", ".join(receivers), errorMsg)
+
+        logger.info("Sending email: %s" % emailContent)
+                       
+        try:
+            s = smtplib.SMTP('exchsmtp.stfc.ac.uk', 25)
+            s.sendmail(senderAddress, receivers, emailContent)
+            s.close()
+        except Exception as e:
+            logger.error("Failed to send emails %s" % emailContent)
+        
         
     def retryRun(self, reductionRun, retryIn):
     
@@ -238,11 +258,8 @@ class Listener(object):
             return
             
         logger.info("Retrying run in %i seconds" % retryIn)
-    
-        reductionRun.retry_when = timezone.now().replace(microsecond=0) + datetime.timedelta(seconds=retryIn)
-        reductionRun.save()
         
-        new_job = ReductionVariablesUtils().createRetryRun(reductionRun)          
+        new_job = ReductionVariablesUtils().createRetryRun(reductionRun, delay=retryIn)          
         try:
             MessagingUtils().send_pending(new_job, delay=retryIn*1000) # seconds to ms
         except Exception as e:

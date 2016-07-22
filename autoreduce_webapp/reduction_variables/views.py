@@ -411,7 +411,7 @@ def run_confirmation(request, instrument):
 
 
             use_current_script = request.POST.get('use_current_script', u"true").lower() == u"true"
-
+                
             if use_current_script:
                 script_binary, script_vars_binary = InstrumentVariablesUtils().get_current_script_text(instrument.name)
                 default_variables = InstrumentVariablesUtils().get_variables_from_current_script(instrument.name)
@@ -419,7 +419,7 @@ def run_confirmation(request, instrument):
                 run_variables = old_reduction_run.run_variables.all()
                 script_binary, script_vars_binary = ScriptUtils().get_reduce_scripts_binary(run_variables[0].scripts.all())
                 default_variables = run_variables
-                
+
             script = ScriptFile(script=script_binary, file_name='reduce.py')
             script_vars = ScriptFile(script=script_vars_binary, file_name='reduce_vars.py')
 

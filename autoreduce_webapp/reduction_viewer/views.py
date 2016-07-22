@@ -4,7 +4,6 @@ from django.http import JsonResponse
 from django.core.context_processors import csrf
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
-from django.utils import timezone
 from autoreduce_webapp.uows_client import UOWSClient
 from autoreduce_webapp.icat_communication import ICATCommunication
 from autoreduce_webapp.settings import UOWS_LOGIN_URL
@@ -12,7 +11,7 @@ from reduction_viewer.models import Experiment, ReductionRun, Instrument
 from reduction_viewer.utils import StatusUtils
 from reduction_viewer.view_utils import deactivate_invalid_instruments
 from reduction_variables.utils import MessagingUtils, ReductionVariablesUtils
-from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, require_staff, require_admin
+from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, require_admin
 import operator
 import json
 import logging
@@ -111,9 +110,6 @@ def fail_queue(request):
                     except Exception as e:
                         new_job.delete()
                         raise e
-                        
-                    reductionRun.retry_when = timezone.now().replace(microsecond=0)
-                    reductionRun.save()
                     
                         
                 elif action == "cancel":
