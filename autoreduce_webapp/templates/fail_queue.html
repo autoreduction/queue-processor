@@ -13,14 +13,24 @@
                     <h2>Failed Jobs</h2>
                 </div>
             </div>
+        {% if message %}
+            <div class="alert alert-danger word-wrap" role="alert">
+                <i class="fa fa-exclamation fa-exclamation-circle fa-lg"></i> {{ message }}
+            </div>
+        {% endif %}
             <div>
-                <select id="runAction">
+                <select id="runAction" style="float: left;">
                     <option value="default">Select action to apply to selected runs</option>
                     <option value="rerun">Re-run </option>
                     <option value="hide">Hide </option>
                     <option value="cancel">Stop retrying</option>
                 </select>
-                <button type="button" id="runActionButton">Apply</button>
+                <form id="actionForm" method="POST" action="{% url 'fail_queue' %}" style="float: left; padding-left: 5px;">
+                    <input type='hidden' name='csrfmiddlewaretoken' value='{{ csrf_token }}' />
+                    <input type="hidden" name="selectedRuns">
+                    <input type="hidden" name="action">
+                    <input type="submit" id="runActionButton" value="Apply">
+                </form>
             </div>
             <table class="table table-striped table-bordered">
                 <thead>
@@ -74,6 +84,5 @@
 {% endblock %}
 
 {% block scripts %}
-    <script type="text/javascript"> window.CSRF_TOKEN = "{{ csrf_token }}"; </script>
     <script src='{% static "javascript/fail_queue.js" %}'> </script>
 {% endblock %}

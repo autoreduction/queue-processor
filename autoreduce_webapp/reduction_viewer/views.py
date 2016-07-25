@@ -74,16 +74,23 @@ def run_queue(request):
 @login_and_uows_valid
 @render_with('fail_queue.html')
 def fail_queue(request):
+            
+    # render the page
+    error_status = StatusUtils().get_error()
+    failed_jobs = ReductionRun.objects.filter(Q(status=error_status) & Q(hidden_in_failviewer=False)).order_by('-created')
+    context_dictionary = { 
+                  'queue' : failed_jobs
+                , 'status_success' : StatusUtils().get_completed()
+                , 'status_failed' : StatusUtils().get_error()
+                }
+
 
     if request.method == 'POST':
         # perform the specified action
         action = request.POST.get("action", "default")
-        logger.info("%s" % action)
         selectedRunString = request.POST.get("selectedRuns", [])
-        logger.info("%s" % selectedRunString)
         selectedRuns = json.loads(selectedRunString)
         try:
-            logger.info(selectedRuns[0])
             for run in selectedRuns:
                 runNumber = int(run[0])
                 runVersion = int(run[1])
@@ -103,6 +110,7 @@ def fail_queue(request):
                     if runVersion != highest_version:
                         continue # do not run multiples of the same run
                 
+                    reductionRun.cancel = False
                     new_job = ReductionVariablesUtils().createRetryRun(reductionRun)
                     
                     try:
@@ -125,23 +133,14 @@ def fail_queue(request):
                     pass
                         
         except Exception as e:
-            logger.info("Failed : %s %s" % (type(e).__name__, e))
+            failStr = "Selected action failed: %s %s" % (type(e).__name__, e)
+            logger.info("Failed to carry out fail_queue action - " + failStr)
+            context_dictionary["message"] = failStr
 
-        return redirect('fail_queue')
-            
-            
-            
-    else:
-        # render the page
-        error_status = StatusUtils().get_error()
-        failed_jobs = ReductionRun.objects.filter(Q(status=error_status) & Q(hidden_in_failviewer=False)).order_by('-created')
-        context_dictionary = { 
-              'queue' : failed_jobs
-            , 'status_success' : StatusUtils().get_completed()
-            , 'status_failed' : StatusUtils().get_error()
-            }
-        return context_dictionary
+    
+    return context_dictionary
 
+    
     
 @login_and_uows_valid
 @render_with('run_list.html')

@@ -2,21 +2,30 @@
     
     var runAction = function runAction()
     {
+        
+        // set form values
+        var action = $('#runAction').val();
+        $("[name='action']").attr('value', action);
+        
         var selectedRuns = $("[name='runCheckbox']").filter(':checked').map( function() {
             return [[$(this).attr('data-run_number'), $(this).attr('data-run_version'), $(this).attr('data-rb_number')]];
         }).get(); // a list of checked runs, each element of the form [run number, run version, RB number]
+        $("[name='selectedRuns']").attr('value', JSON.stringify(selectedRuns));
+        
+        
+        //Set cursor to waiting
+        $("body").css("cursor", "wait");
+        $("#variableSubmit").css("cursor", "wait");
+        
         
         // send POST to server to perform action
+        window.onbeforeunload = undefined;
         var url = $(location).attr('href');
-        var action = $('#runAction').val();
-        var data = { "selectedRuns": JSON.stringify(selectedRuns), "action": action, csrfmiddlewaretoken: window.CSRF_TOKEN};
-        $.post(url, data, postResponse);
-    }
-
-    var postResponse = function postResponse(data)
-    {
-        location.reload();
-    }
+        var aForm = $("#actionForm")
+        aForm.attr("action", url);
+        aForm.submit();
+    };
+    
     
     
     var toggleAllRuns = function toggleAllRuns()
