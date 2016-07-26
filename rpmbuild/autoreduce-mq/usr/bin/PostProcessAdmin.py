@@ -95,8 +95,8 @@ class PostProcessAdmin:
                 raise ValueError("run_number is missing")
                 
             if data.has_key('reduction_script'):
-                self.reduction_script = windows_to_linux_path(str(data['reduction_script']), self.conf["temp_root_directory"])
-                logger.debug("reduction_script: %s" % str(self.reduction_script))
+                self.reduction_script = data['reduction_script']
+                logger.debug("reduction_script: %s ..." % self.reduction_script[:50])
             else:
                 raise ValueError("reduction_script is missing")
                 
@@ -193,8 +193,8 @@ class PostProcessAdmin:
                     problem = "does not exist" if doesNotExist(failPath) else "no write access"
                     raise Exception("Couldn't write to %s  -  %s" % (failPath, problem))
                     
-                # we also want read access to the input data file and the scripts
-                shouldBeReadable = [self.data_file, self.reduction_script]
+                # we also want read access to the input data file
+                shouldBeReadable = [self.data_file]
                 if filter(notReadable, shouldBeReadable) != []:
                     failPath = filter(notReadable, shouldBeReadable)[0]
                     problem = "does not exist" if doesNotExist(failPath) else "no read access"
@@ -212,11 +212,6 @@ class PostProcessAdmin:
                 self.data["message"] = ""
 
                 
-            # Load reduction script
-            if os.path.exists(os.path.join(self.reduction_script, "reduce.py")) is False:
-                raise Exception("Reduce script doesn't exist within %s" % self.reduction_script)
-            sys.path.append(self.reduction_script)
-
             logger.info("----------------")
             logger.info("Reduction script: %s" % self.reduction_script)
             logger.info("Result dir: %s" % reduce_result_dir)
@@ -229,7 +224,10 @@ class PostProcessAdmin:
 
             try:
                 with channels_redirected(script_out, mantid_log):
-                    reduce_script = imp.load_source('reducescript', os.path.join(self.reduction_script, "reduce.py"))
+                    # load reduction script as a module
+                    reduce_script = imp.new_module('reducescript')
+                    exec self.reduction_script in reduce_script.__dict__
+                    
                     try:
                         skip_numbers = reduce_script.SKIP_RUNS
                     except:
