@@ -220,7 +220,7 @@ This contains utilities related to the models found within reduction_variables.
 
 * **VariableUtils** - Contains utilities relating to individual variables. E.g. `wrap_in_type_syntax` takes in a value and adds the appropriate syntax around it to match the type provided. For example, a `1,2,3` with type of `list_number` would return `[1,2,3]` as a string to be used in the preview script.
 * **InstrumentVariablesUtils** - Provides utilities for setting and fetching InstrumentVariables and scripts. Of particular note is the `get_variables_for_run` function that is [mentioned below](#selecting-run-variables) and `get_current_and_upcoming_variables` that is also [mentioned below](#upcoming-instrumentvariables).
-* **ReductionVariablesUtils** - Currently only contains `get_script_path_and_arguments` which takes in a list of run numbers and returns back a file path and a dictionary of variables to be passed in. The file path point to a temporary copy of the reduction script that is later removed.
+* **ReductionVariablesUtils** - Contains `get_script_and_arguments` which takes in a list of run numbers and returns back a script as a string and a dictionary of variables to be passed in. Also contains `createRetryRun`, which takes a ReductionRun and creates, essentially, a copy of it, suitable for sending to be run again.
 * **MessagingUtils** - Currently only contains `send_pending` which takes in a ReductionRun and sends it to the messaging queue for processing.
 
 ## Templates

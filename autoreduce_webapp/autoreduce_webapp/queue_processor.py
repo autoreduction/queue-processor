@@ -24,13 +24,6 @@ class Listener(object):
         self._data_dict = {}
         self._priority = ''
 
-    def clean_up_reduction_script(self, script_path):
-        if os.path.exists(script_path):
-            try:
-                shutil.rmtree(script_path, ignore_errors=True)
-            except:
-                logger.error("Unable to delete temporary reduction script at: %s" % script_path)
-
     def on_error(self, headers, message):
         logger.error("Error recieved - %s" % str(message))
 

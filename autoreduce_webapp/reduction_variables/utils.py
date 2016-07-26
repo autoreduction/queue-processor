@@ -413,42 +413,7 @@ class ReductionVariablesUtils(object):
         arguments = { 'standard_vars' : standard_vars, 'advanced_vars': advanced_vars }
 
         return (script, arguments)
-        
-
-    def get_script_path_and_arguments(self, run_variables):
-        """
-        Fetches the reduction script from the given variables, saves it to a temporary location 
-        and returns the path with a dictionary of arguments
-        """
-        if not run_variables or len(run_variables) == 0:
-            raise Exception("Run variables required")
-        reduction_run = None
-        for variables in run_variables:
-            if variables.scripts is None or len(variables.scripts.all()) == 0:
-                raise Exception("Run variables missing scripts")
-            if not reduction_run:
-                reduction_run = variables.reduction_run.id
-            else:
-                if reduction_run != variables.reduction_run.id:
-                    raise Exception("All run variables must be for the same reduction run")
-        
-        script_binary, script_vars_binary = ScriptUtils().get_reduce_scripts_binary(run_variables[0].scripts.all())
-
-        script_path = write_script_to_temp(script_binary, script_vars_binary)
-
-        standard_vars = {}
-        advanced_vars = {}
-        for variables in run_variables:
-            value = VariableUtils().convert_variable_to_type(variables.value, variables.type)
-            if variables.is_advanced:
-                advanced_vars[variables.name] = value
-            else:
-                standard_vars[variables.name] = value
-
-        arguments = { 'standard_vars' : standard_vars, 'advanced_vars': advanced_vars }
-
-        return (script_path, arguments)
-        
+      
                  
     def createRetryRun(self, reductionRun, scripts=None, variables=None, delay=0):
         """
