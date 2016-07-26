@@ -29,7 +29,9 @@ class Listener(object):
             reactor.callFromThread(self.updateChildProcessList) # update in the reactor thread, for thread safety
             time.sleep(10.0)
             
-        logger.debug("Calling: %s %s %s %s" % ("python", "/usr/bin/PostProcessAdmin.py", destination, data))
+        print_dict = data_dict.copy()
+        print_dict.pop("reduction_script")
+        logger.debug("Calling: %s %s %s %s" % ("python", "/usr/bin/PostProcessAdmin.py", destination, print_dict))
         proc = subprocess.Popen(["python", "/usr/bin/PostProcessAdmin.py", destination, data])
         reactor.callFromThread(self.addProc, proc, data_dict)
 

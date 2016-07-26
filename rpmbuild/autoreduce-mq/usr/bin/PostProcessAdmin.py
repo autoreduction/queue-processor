@@ -179,7 +179,8 @@ class PostProcessAdmin:
                 shouldBeReadable = [self.data_file]
                 
                 # try to make directories which should exist
-                for path in filter( lambda p: not os.path.isdir(p), shouldBeWritable )                    
+                for path in filter( lambda p: not os.path.isdir(p), shouldBeWritable ):                
+                    os.makedirs(path)
                                
                                
                 doesNotExist = lambda path : not os.access(path, os.F_OK)
