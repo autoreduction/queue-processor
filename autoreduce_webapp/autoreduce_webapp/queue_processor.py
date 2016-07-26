@@ -116,11 +116,11 @@ class Listener(object):
         data_location.save()
 
         if variables:
-            script_path, arguments = ReductionVariablesUtils().get_script_path_and_arguments(reduction_run.run_variables.all())
-            self._data_dict['reduction_script'] = script_path
+            reduction_script, arguments = ReductionVariablesUtils().get_script_and_arguments(reduction_run.run_variables.all())
+            self._data_dict['reduction_script'] = reduction_script
             self._data_dict['reduction_arguments'] = arguments
         else:
-            self._data_dict['reduction_script'] = InstrumentVariablesUtils().get_temporary_script(instrument.name)
+            self._data_dict['reduction_script'] = InstrumentVariablesUtils().get_script(instrument.name)
             self._data_dict['reduction_arguments'] = {}
 
         if instrument.is_paused:
@@ -128,7 +128,7 @@ class Listener(object):
         else:
             self._client.send('/queue/ReductionPending', json.dumps(self._data_dict), priority=self._priority)
             logger.info("Run %s ready for reduction" % self._data_dict['run_number'])
-            logger.info("Reduction file: %s" % self._data_dict['reduction_script'])
+            logger.info("Reduction script: %s" % self._data_dict['reduction_script'][:50])
 
             
     def reduction_started(self):
@@ -186,8 +186,6 @@ class Listener(object):
             else:
                 logger.error("A reduction run completed that wasn't found in the database. Experiment: %s, Run Number: %s, Run Version %s" % (self._data_dict['rb_number'], self._data_dict['run_number'], self._data_dict['run_version']))
 
-            if 'reduction_script' in self._data_dict:
-                self.clean_up_reduction_script(self._data_dict['reduction_script'])
         except BaseException as e:
             logger.error("Error: %s" % e)
                     
@@ -197,9 +195,6 @@ class Listener(object):
             logger.info("Run %s has encountered an error - %s" % (self._data_dict['run_number'], self._data_dict['message']))
         else:
             logger.info("Run %s has encountered an error - No error message was found" % (self._data_dict['run_number']))
-            
-        if 'reduction_script' in self._data_dict:
-            self.clean_up_reduction_script(self._data_dict['reduction_script'])
         
         reduction_run = self.find_run()
                     

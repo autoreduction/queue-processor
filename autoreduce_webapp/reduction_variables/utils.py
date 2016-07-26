@@ -286,6 +286,14 @@ class InstrumentVariablesUtils(object):
         """
         script_binary, vars_script_binary = self.get_current_script_text(instrument_name)
         return write_script_to_temp(script_binary, vars_script_binary)
+        
+    def get_script(self, instrument_name):
+        """
+        Fetches the reduction script for the given instument, and returns it as a string.
+        This is for use when a reduction script doesn't expose any variables
+        """
+        script_binary =  self.__load_reduction_script(instrument_name)
+        return ScriptUtils().read_binary(script_binary)
 
     def _create_variables(self, instrument, script, variable_dict, is_advanced):
         variables = []
@@ -372,6 +380,41 @@ class InstrumentVariablesUtils(object):
         return current_variables, upcoming_variables_by_run, upcoming_variables_by_experiment
 
 class ReductionVariablesUtils(object):
+
+    def get_script_and_arguments(self, run_variables):
+        """
+        Fetches the reduction script from the given variables and returns it as a string, along with a dictionary of arguments.
+        """
+        if not run_variables or len(run_variables) == 0:
+            raise Exception("Run variables required")
+        reduction_run = None
+        for variables in run_variables:
+            if variables.scripts is None or len(variables.scripts.all()) == 0:
+                raise Exception("Run variables missing scripts")
+            if not reduction_run:
+                reduction_run = variables.reduction_run.id
+            else:
+                if reduction_run != variables.reduction_run.id:
+                    raise Exception("All run variables must be for the same reduction run")
+        
+        script_binary, script_vars_binary = ScriptUtils().get_reduce_scripts_binary(run_variables[0].scripts.all())
+
+        script = ScriptUtils().read_binary(script_binary)
+
+        standard_vars = {}
+        advanced_vars = {}
+        for variables in run_variables:
+            value = VariableUtils().convert_variable_to_type(variables.value, variables.type)
+            if variables.is_advanced:
+                advanced_vars[variables.name] = value
+            else:
+                standard_vars[variables.name] = value
+
+        arguments = { 'standard_vars' : standard_vars, 'advanced_vars': advanced_vars }
+
+        return (script, arguments)
+        
+
     def get_script_path_and_arguments(self, run_variables):
         """
         Fetches the reduction script from the given variables, saves it to a temporary location 
@@ -469,7 +512,7 @@ class MessagingUtils(object):
         """
         from autoreduce_webapp.queue_processor import Client as ActiveMQClient # to prevent circular dependencies
 
-        script_path, arguments = ReductionVariablesUtils().get_script_path_and_arguments(RunVariable.objects.filter(reduction_run=reduction_run))
+        script, arguments = ReductionVariablesUtils().get_script_and_arguments(RunVariable.objects.filter(reduction_run=reduction_run))
 
         data_path = ''
         # Currently only support single location
@@ -486,7 +529,7 @@ class MessagingUtils(object):
             'instrument':reduction_run.instrument.name,
             'rb_number':str(reduction_run.experiment.reference_number),
             'data':data_path,
-            'reduction_script':script_path,
+            'reduction_script':script,
             'reduction_arguments':arguments,
             'run_version':reduction_run.run_version,
             'facility':FACILITY,
@@ -509,6 +552,12 @@ class ScriptUtils(object):
     def get_reduce_scripts_binary(self, scripts):
         script, script_vars = self.get_reduce_scripts(scripts)
         return script.script, script_vars.script
+        
+    def read_binary(self, bin_script):
+        """
+        Takes a binary script and returns its Python string form. It assumes that the encoding of the binary is UTF-8.
+        """
+        return bin_script.decode("utf-8")
 
     def get_cache_scripts_modified(self, scripts):
         """
