@@ -277,15 +277,6 @@ class InstrumentVariablesUtils(object):
         script_binary =  self.__load_reduction_script(instrument_name)
         reduce_vars_script, vars_script_binary =  self.__load_reduction_vars_script(instrument_name)
         return script_binary, vars_script_binary
-
-    def get_temporary_script(self, instrument_name):
-        """
-        Fetches the reduction script for the given instument, saves it to a temporary location
-        and returns the path.
-        This is for use when a reduction script doesn't expose any variables
-        """
-        script_binary, vars_script_binary = self.get_current_script_text(instrument_name)
-        return write_script_to_temp(script_binary, vars_script_binary)
         
     def get_script(self, instrument_name):
         """
