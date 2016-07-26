@@ -1,7 +1,7 @@
-import logging, os, sys, imp, uuid, re, json, time, datetime
+import logging, os, sys, imp, re, json, time, datetime
 sys.path.append(os.path.join("../", os.path.dirname(os.path.dirname(__file__))))
 os.environ["DJANGO_SETTINGS_MODULE"] = "autoreduce_webapp.settings"
-from autoreduce_webapp.settings import ACTIVEMQ, TEMP_OUTPUT_DIRECTORY, REDUCTION_DIRECTORY, FACILITY
+from autoreduce_webapp.settings import ACTIVEMQ, REDUCTION_DIRECTORY, FACILITY
 logger = logging.getLogger('django')
 from django.utils import timezone
 from reduction_variables.models import InstrumentVariable, ScriptFile, RunVariable
@@ -11,31 +11,6 @@ from autoreduce_webapp.icat_communication import ICATCommunication
 
 class DataTooLong(ValueError):
     pass
-
-def write_script_to_temp(script, script_vars_file):
-    """
-    Write the given script binary to a unique filename in the reduction_script_temp directory.
-    """
-    try:
-        unique_name = str(uuid.uuid4())
-        script_path = os.path.join(TEMP_OUTPUT_DIRECTORY, 'scripts', unique_name)
-        # Make sure we don't accidently overwrite a file
-        while os.path.exists(script_path):
-            unique_name = str(uuid.uuid4())
-            script_path = os.path.join(TEMP_OUTPUT_DIRECTORY, 'scripts', unique_name)
-        os.makedirs(script_path)
-        f = open(os.path.join(script_path, 'reduce.py'), 'wb')
-        f.write(script)
-        f.close()
-        f = open(os.path.join(script_path, 'reduce_vars.py'), 'wb')
-        f.write(script_vars_file)
-        f.close()
-    except Exception as e:
-        logger.error("Couldn't write temporary script - %s" % e)
-        type, value, traceback = sys.exc_info()
-        logger.error('Error opening %s: %s' % (value.filename, value.strerror))
-        raise e
-    return script_path
 
 
 def log_error_and_notify(message):
