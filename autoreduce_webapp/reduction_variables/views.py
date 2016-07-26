@@ -399,7 +399,7 @@ def run_confirmation(request, instrument):
             for item in range_string:
                 if '-' in item:
                     split_range = item.split('-')
-                    run_numbers.extend(range(int(split_range[0]), int(split_range[1])))
+                    run_numbers.extend(range(int(split_range[0]), int(split_range[1])+1)) # because this is a range, the end bound is exclusive!
                 else:
                     run_numbers.append(int(item))
             # Make sure run numbers are distinct
