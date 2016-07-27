@@ -421,9 +421,10 @@ def run_confirmation(request, instrument):
             context_dictionary['error'] = 'Runs span multiple experiment numbers (' + ','.join(str(i) for i in rb_number) + ') please select a different range.'
 
         # Check that RB numbers are allowed
-        experiments_allowed = request.session['experiments_to_show'].get(instrument.name)
-        if (experiments_allowed is not None) and (str(rb_number[0]) not in experiments_allowed):
-            context_dictionary['error'] = "Permission denied. You do not have permission to request re-runs on the associated experiment number."
+        if not request.user.is_superuser:
+            experiments_allowed = request.session['experiments_to_show'].get(instrument.name)
+            if (experiments_allowed is not None) and (str(rb_number[0]) not in experiments_allowed):
+                context_dictionary['error'] = "Permission denied. You do not have permission to request re-runs on the associated experiment number."
 
         for run_number in run_numbers:
             old_reduction_run = ReductionRun.objects.filter(run_number=run_number).order_by('-run_version').first()
