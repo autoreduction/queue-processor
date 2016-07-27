@@ -86,8 +86,7 @@ class Listener(object):
     def cancelRun(self, data_dict):
         tup = self.runTuple(data_dict)
         self.cancelList.remove(tup) # don't cancel next time
-        data_dict["message"] = "Run cancelled by user"
-        self._client.send(self._conf['postprocess_error'], json.dumps(data_dict)) # send the error back
+        # don't send any message; it'll be handled on the frontend
         
 
 class Consumer(object):
