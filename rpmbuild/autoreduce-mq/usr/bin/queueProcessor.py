@@ -4,10 +4,12 @@ from twisted.internet import reactor
 from autoreduction_logging_setup import logger
 
 class Listener(object):
-    def __init__(self, client):
+    def __init__(self, client, config):
         self._client = client
+        self._conf = config
         self.procList = []
         self.RBList = [] # list of RB numbers of active reduction runs
+        self.cancelList = [] # list of (run number, run version)s to drop (once) when we get them
 
     def on_error(self, headers, message):
         logger.error("Error message recieved - %s" % str(message))
@@ -20,6 +22,13 @@ class Listener(object):
         logger.debug("Received frame destination: " + destination)
         logger.debug("Recieved frame priority: " + headers["priority"])
                 
+        self.updateChildProcessList()
+        data_dict = json.loads(data)
+        
+        if "cancel" in data_dict and data_dict["cancel"]:
+            self.addCancel(data_dict)
+            return    
+                
         reactor.callInThread(self.holdMessage, destination, data) # no loop here, to prevent blocking the consumer
         
     def holdMessage(self, destination, data):
@@ -28,6 +37,10 @@ class Listener(object):
         while not self.shouldProceed(data_dict): # wait while the run shouldn't proceed
             reactor.callFromThread(self.updateChildProcessList) # update in the reactor thread, for thread safety
             time.sleep(10.0)
+            
+        if self.shouldCancel(data_dict):
+            self.cancelRun(data_dict)
+            return
             
         print_dict = data_dict.copy()
         print_dict.pop("reduction_script")
@@ -54,7 +67,28 @@ class Listener(object):
             
         else:   
             return True
-
+            
+            
+    def runTuple(self, data_dict):
+        runNumber = data_dict["run_number"]
+        runVersion = data_dict["run_version"] if data_dict["run_version"] is not None else 0
+        return (runNumber, runVersion)
+            
+    def addCancel(self, data_dict): # add this run to the cancel list, to cancel it next time it comes up
+        tup = self.runTuple(data_dict)
+        if tup not in self.cancelList:
+            self.cancelList.append(tup)
+            
+    def shouldCancel(self, data_dict):
+        tup = self.runTuple(data_dict)
+        return tup in self.cancelList
+            
+    def cancelRun(self, data_dict):
+        tup = self.runTuple(data_dict)
+        self.cancelList.remove(tup) # don't cancel next time
+        data_dict["message"] = "Run cancelled by user"
+        self._client.send(self._conf['postprocess_error'], json.dumps(data_dict)) # send the error back
+        
 
 class Consumer(object):
         
@@ -65,7 +99,7 @@ class Consumer(object):
     def run(self):
         brokers = [(self.config['brokers'].split(':')[0],int(self.config['brokers'].split(':')[1]))]
         connection = stomp.Connection(host_and_ports=brokers, use_ssl=True, ssl_version=3)
-        connection.set_listener(self.consumer_name, Listener(connection))
+        connection.set_listener(self.consumer_name, Listener(connection, self.config))
         connection.start()
         connection.connect(self.config['amq_user'], self.config['amq_pwd'], wait=False, header={'activemq.prefetchSize': '1'})
         
