@@ -31,6 +31,11 @@
                     $('.js-script-container').removeClass('prettyprinted').text(data);
                     prettyPrint();
                     $('#script-preview-modal .progress').hide();
+                },
+                error: function(data) {
+                    //Redirect to login page
+                    var redirect = $.parseJSON(data.responseText).redirect_url;
+                    window.location = redirect;
                 }
             });
         };
