@@ -388,14 +388,22 @@ def run_summary(request, run_number, run_version=0):
 def run_confirmation(request, instrument):
     if request.method == 'POST':
         instrument = Instrument.objects.get(name=instrument)
+        run_numbers = []
 
         if 'run_number' in request.POST:
-            start = int(request.POST.get('run_number'))
-            end = int(request.POST.get('run_number'))
+            run_numbers.append(int(request.POST.get('run_number')))
         else:
             # TODO: Check ICAT credentials
-            start = int(request.POST.get('run_start'))
-            end = int(request.POST.get('run_end'))
+            range_string = request.POST.get('run_range').split(',')
+            # Expand list
+            for item in range_string:
+                if '-' in item:
+                    split_range = item.split('-')
+                    run_numbers.extend(range(int(split_range[0]), int(split_range[1])+1)) # because this is a range, the end bound is exclusive!
+                else:
+                    run_numbers.append(int(item))
+            # Make sure run numbers are distinct
+            run_numbers = set(run_numbers)
 
         queued_status = StatusUtils().get_queued()
         queue_count = ReductionRun.objects.filter(instrument=instrument, status=queued_status).count()
@@ -406,7 +414,7 @@ def run_confirmation(request, instrument):
             'queued' : queue_count,
         }
 
-        for run_number in range(start, end+1):
+        for run_number in run_numbers:
             old_reduction_run = ReductionRun.objects.filter(run_number=run_number).order_by('-run_version').first()
 
 
