@@ -110,6 +110,7 @@ def fail_queue(request):
                     if runVersion != highest_version:
                         continue # do not run multiples of the same run
                 
+                    ReductionRunUtils().cancelRun(reductionRun)    
                     reductionRun.cancel = False
                     new_job = ReductionRunUtils().createRetryRun(reductionRun)
                     
@@ -121,12 +122,7 @@ def fail_queue(request):
                     
                         
                 elif action == "cancel":
-                    reductionRun.cancel = True
-                    reductionRun.save()
-                    
-                    if reductionRun.retry_run:
-                        reductionRun.retry_run.cancel = True
-                        reductionRun.retry_run.save()
+                    ReductionRunUtils().cancelRun(reductionRun)                       
                        
                        
                 elif action == "default":

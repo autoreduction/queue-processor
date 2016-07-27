@@ -386,12 +386,11 @@ class ReductionVariablesUtils(object):
         
 
 class MessagingUtils(object):
-    def send_pending(self, reduction_run, delay=None):
-        """
-        Sends a message to the queue with the details of the job to run
-        """
-        from autoreduce_webapp.queue_processor import Client as ActiveMQClient # to prevent circular dependencies
 
+    def _make_pending_msg(self, reduction_run):
+        """
+        Creates a dict message from the given run, ready to be sent to ReductionPending
+        """
         script, arguments = ReductionVariablesUtils().get_script_and_arguments(RunVariable.objects.filter(reduction_run=reduction_run))
 
         data_path = ''
@@ -402,8 +401,6 @@ class MessagingUtils(object):
         else:
             raise Exception("No data path found for reduction run")
 
-        message_client = ActiveMQClient(ACTIVEMQ['broker'], ACTIVEMQ['username'], ACTIVEMQ['password'], ACTIVEMQ['topics'], 'Webapp_QueueProcessor', True, True)
-        message_client.connect()
         data_dict = {
             'run_number':reduction_run.run_number,
             'instrument':reduction_run.instrument.name,
@@ -415,8 +412,37 @@ class MessagingUtils(object):
             'facility':FACILITY,
             'message':'',
         }
+        
+        return data_dict
+        
+    
+    def _send_pending_msg(self, data_dict, delay=None):
+        """
+        Sends data_dict to ReductionPending (with the specified delay)
+        """
+        from autoreduce_webapp.queue_processor import Client as ActiveMQClient # to prevent circular dependencies
+
+        message_client = ActiveMQClient(ACTIVEMQ['broker'], ACTIVEMQ['username'], ACTIVEMQ['password'], ACTIVEMQ['topics'], 'Webapp_QueueProcessor', True, True)
+        message_client.connect()
         message_client.send('/queue/ReductionPending', json.dumps(data_dict), priority='0', delay=delay)
         message_client.stop()
+        
+
+    def send_pending(self, reduction_run, delay=None):
+        """
+        Sends a message to the queue with the details of the job to run
+        """
+        data_dict = self._make_pending_msg(reduction_run)
+        self._send_pending_msg(data_dict, delay)
+        
+    def send_cancel(self, reduction_run):
+        """
+        Sends a message to the queue telling it to cancel any reruns of the job
+        """
+        data_dict = self._make_pending_msg(reduction_run)
+        data_dict["cancel"] = True
+        self._send_pending_msg(data_dict)
+        
 
 class ScriptUtils(object):
     def get_reduce_scripts(self, scripts):

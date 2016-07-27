@@ -5,7 +5,6 @@ logger = logging.getLogger(__name__)
 from django.utils import timezone
 from reduction_viewer.models import Instrument, Status, ReductionRun, DataLocation
 from reduction_variables.models import RunVariable
-from reduction_variables.utils import InstrumentVariablesUtils
 
 class StatusUtils(object):
     def _get_status(self, status_value):
@@ -45,13 +44,40 @@ class InstrumentUtils(object):
         return instrument
         
 class ReductionRunUtils(object):
-    # def cancelRun(self, reductionRun):
-        # undefined
+
+    def cancelRun(self, reductionRun):
+        from reduction_variables.utils import MessagingUtils
+        
+        if reductionRun.status == StatusUtils().get_queued(): # this is the queued run, send the message to queueProcessor to cancel it
+            MessagingUtils().send_cancel(reductionRun)
+            
+        # otherwise this run has already failed, and we're looking at a scheduled rerun of it
+        elif not reductionRun.retry_run: # we don't actually have a rerun, so just ensure the retry time is set to "Never" (None)
+            reductionRun.retry_when = None
+        
+        elif reductionRun.retry_run.status == StatusUtils().get_queued(): # this run is being queued to retry, so send the message to queueProcessor to cancel it
+            reductionRun.retry_when = None
+            MessagingUtils().send_cancel(reductionRun.retry_run)
+        
+        elif reductionRun.retry_run.status == StatusUtils().get_processing(): # we have a run that's retrying, so just make sure it doesn't retry next time
+            reductionRun.cancel = True
+            reductionRun.retry_run.cancel = True
+            
+        else: # the retry run already completed, so do nothing
+            pass
+            
+        # save the run states we modified
+        reductionRun.save()
+        if reductionRun.retry_run:
+            reductionRun.retry_run.save()
+            
 
     def createRetryRun(self, reductionRun, scripts=None, variables=None, delay=0):
         """
         Create a run ready for re-running based on the run provided. If variables are provided, copy them and associate them with the new one, otherwise generate variables based on the previous run. If ScriptFile objects are supplied, use them, otherwise use the previous run's.
         """
+        from reduction_variables.utils import InstrumentVariablesUtils
+        
         # find the previous run version, so we don't create a duplicate
         last_version = -1
         for run in ReductionRun.objects.filter(experiment=reductionRun.experiment, run_number=reductionRun.run_number):
