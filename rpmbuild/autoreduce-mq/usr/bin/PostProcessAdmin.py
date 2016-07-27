@@ -52,12 +52,21 @@ def windows_to_linux_path(path, temp_root_directory):
     path = path.replace('\\\\autoreduce\\data\\', temp_root_directory+'/data/')
     path = path.replace('\\', '/')
     return path
-
+    
+def prettify(data):
+    if type(data).__name__ == "str":
+        data_dict = json.loads(data)
+    else:
+        data_dict = data.copy()
+        
+    if "reduction_script" in data_dict:
+        data_dict["reduction_script"] = data_dict["reduction_script"][:50]
+    return json.dumps(data_dict)
 
 class PostProcessAdmin:
     def __init__(self, data, conf, connection):
 
-        logger.debug("json data: " + str(data))
+        logger.debug("json data: " + prettify(data))
         data["information"] = socket.gethostname()
         self.data = data
         self.conf = conf
@@ -145,7 +154,7 @@ class PostProcessAdmin:
         logger.debug("In reduce() method")
         try:     
         
-            logger.debug("Calling: " + self.conf['reduction_started'] + "\n" + json.dumps(self.data))
+            logger.debug("Calling: " + self.conf['reduction_started'] + "\n" + prettify(self.data))
             self.client.send(self.conf['reduction_started'], json.dumps(self.data))
 
             
@@ -213,7 +222,7 @@ class PostProcessAdmin:
 
                 
             logger.info("----------------")
-            logger.info("Reduction script: %s" % self.reduction_script)
+            logger.info("Reduction script: %s ..." % self.reduction_script[:50])
             logger.info("Result dir: %s" % reduce_result_dir)
             logger.info("Run Output dir: %s" % run_output_dir)
             logger.info("Log dir: %s" % log_dir)
@@ -289,12 +298,12 @@ class PostProcessAdmin:
         else:
             # reduction has successfully completed
             self.client.send(self.conf['reduction_complete'], json.dumps(self.data))
-            print("\nCalling: " + self.conf['reduction_complete'] + "\n" + json.dumps(self.data) + "\n")
+            print("\nCalling: " + self.conf['reduction_complete'] + "\n" + prettify(self.data) + "\n")
             logger.info("Reduction job successfully complete")
 
             
     def _send_error_and_log(self):
-        logger.info("\nCalling " + self.conf['reduction_error'] + " --- " + json.dumps(self.data))
+        logger.info("\nCalling " + self.conf['reduction_error'] + " --- " + prettify(self.data))
         self.client.send(self.conf['reduction_error'], json.dumps(self.data)) 
 
     def copy_temp_directory(self, temp_result_dir, copy_destination):
@@ -387,7 +396,7 @@ if __name__ == "__main__":
 
         destination, message = sys.argv[1:3]
         print("destination: " + destination)
-        print("message: " + message)
+        print("message: " + prettify(message))
         data = json.loads(message)
         
         try:  
@@ -397,10 +406,10 @@ if __name__ == "__main__":
 
         except ValueError as e:
             data["error"] = str(e)
-            logger.info("JSON data error: " + json.dumps(data))
+            logger.info("JSON data error: " + prettify(data))
 
             connection.send(conf['postprocess_error'], json.dumps(data))
-            print("Called " + conf['postprocess_error'] + "----" + json.dumps(data))
+            print("Called " + conf['postprocess_error'] + "----" + prettify(data))
             raise
         
         except Exception as e:
