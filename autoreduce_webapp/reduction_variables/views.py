@@ -6,9 +6,9 @@ from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, HttpResponseForbidden
 from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, has_valid_login, handle_redirect
 from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFile
-from reduction_variables.utils import InstrumentVariablesUtils, ReductionVariablesUtils, VariableUtils, MessagingUtils, ScriptUtils
+from reduction_variables.utils import InstrumentVariablesUtils, VariableUtils, MessagingUtils, ScriptUtils
 from reduction_viewer.models import Instrument, ReductionRun
-from reduction_viewer.utils import StatusUtils
+from reduction_viewer.utils import StatusUtils, ReductionRunUtils
 
 import logging, re, json
 logger = logging.getLogger(__name__)
@@ -478,7 +478,7 @@ def run_confirmation(request, instrument):
             if 'error' not in context_dictionary:
                 script.save()
                 script_vars.save()
-                new_job = ReductionVariablesUtils().createRetryRun(old_reduction_run, scripts=[script, script_vars], variables=new_variables)
+                new_job = ReductionRunUtils().createRetryRun(old_reduction_run, scripts=[script, script_vars], variables=new_variables)
 
                 try:
                     MessagingUtils().send_pending(new_job)
