@@ -55,9 +55,12 @@ class ReductionRunUtils(object):
         elif not reductionRun.retry_run: # we don't actually have a rerun, so just ensure the retry time is set to "Never" (None)
             reductionRun.retry_when = None
         
-        elif reductionRun.retry_run.status == StatusUtils().get_queued(): # this run is being queued to retry, so send the message to queueProcessor to cancel it
+        elif reductionRun.retry_run.status == StatusUtils().get_queued(): # this run is being queued to retry, so send the message to queueProcessor to cancel it, and set it as cancelled
             reductionRun.retry_when = None
             MessagingUtils().send_cancel(reductionRun.retry_run)
+            reductionRun.retry_run.message = "Run cancelled by user"
+            reductionRun.retry_run.status = StatusUtils().get_error()
+            reductionRun.retry_run.finished = timezone.now().replace(microsecond=0)
         
         elif reductionRun.retry_run.status == StatusUtils().get_processing(): # we have a run that's retrying, so just make sure it doesn't retry next time
             reductionRun.cancel = True
