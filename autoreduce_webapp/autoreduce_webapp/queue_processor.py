@@ -240,7 +240,7 @@ class Listener(object):
         
         errorMsg = "A reduction run - experiment %s, run %s, version %s - has failed:\n%s\n\n" % (reductionRun.experiment.reference_number, reductionRun.run_number, reductionRun.run_version, reductionRun.message)
         errorMsg += "The run will not retry automatically.\n" if not reductionRun.retry_when else "The run will automatically retry on %s.\n" % reductionRun.retry_when
-        errorMsg += "Retry manually at %s/%i/%i/ or on %s/runs/failed/." % (BASE_URL, reductionRun.run_number, reductionRun.run_version, BASE_URL)
+        errorMsg += "Retry manually at %s%i/%i/ or on %sruns/failed/." % (BASE_URL, reductionRun.run_number, reductionRun.run_version, BASE_URL)
         
         emailContent = "From: %s\nTo: %s\nSubject:Autoreduction error\n\n%s" % (senderAddress, ", ".join(recipients), errorMsg)
 
