@@ -31,6 +31,11 @@
                     $('.js-script-container').removeClass('prettyprinted').text(data);
                     prettyPrint();
                     $('#script-preview-modal .progress').hide();
+                },
+                error: function(data) {
+                    //Redirect to login page
+                    var redirect = $.parseJSON(data.responseText).redirect_url;
+                    window.location = redirect;
                 }
             });
         };
@@ -80,6 +85,12 @@
             return '<strong>' + $input.attr('id').replace('var-standard-','').replace('var-advanced-','').replace('-',' ') + '</strong>';
         };
 
+        var addInvalid = function addInvalid($control, message) {
+            $control.parent().addClass('has-error');
+            isValid = false;
+            errorMessages.push(message)
+        };
+
         var validateRunRange = function validateRunRange(){
             var $start = $('#run_start');
             var $end = $('#run_end');
@@ -88,38 +99,20 @@
                 if($('#variable-range-toggle').length >0 && !$('#variable-range-toggle').bootstrapSwitch('state')){
                     validateNotEmpty.call($experiment_reference[0]);
                     if(!isNumber($experiment_reference.val())){
-                        $experiment_reference.parent().addClass('has-error');
-                        isValid = false;
-                        errorMessages.push('<strong>Experiment Reference Number</strong> must be a number.')
+                        addInvalid($experiment_reference, '<strong>Experiment Reference Number</strong> must be a number.')
                     }
                 }else{
                     validateNotEmpty.call($start[0]);
                     var start_val = $start.val();
                     var end_val = $end.val();
                     if(!isNumber(start_val)){
-                        $start.parent().addClass('has-error');
-                        isValid = false;
-                        errorMessages.push('<strong>Run start</strong> must be a number.')
+                        addInvalid($start, '<strong>Run start</strong> must be a number.')
                     }
                     if(end_val !== '' && !isNumber(end_val)){
-                        $end.parent().addClass('has-error');
-                        isValid = false;
-                        errorMessages.push('<strong>Run finish</strong> can only be a number.')
+                        addInvalid($end, '<strong>Run finish</strong> can only be a number.')
                     }
                     if(parseInt(end_val) < parseInt(start_val) && parseInt(end_val) != 0){
-                        $end.parent().addClass('has-error');
-                        isValid = false;
-                        errorMessages.push('<strong>Run finish</strong> must be greater than the run start.')
-                    }
-                    if($('#submit_jobs').length != 0) {
-                        if (!checkRangeValid()) {
-                            isValid = false;
-                            errorMessages.push('A maximum of 20 runs can be submitted at one time.')
-                        }
-                        if ($end.val() > $('#last_run_number').val()) {
-                            isValid = false;
-                            errorMessages.push('<strong>Run finish</strong> must be less than or equal to the latest run.')
-                        }
+                        addInvalid($end, '<strong>Run finish</strong> must be greater than the run start.')
                     }
                 }
             }
@@ -128,9 +121,7 @@
         var validateNotEmpty = function validateNotEmpty(){
             
             if($(this).val().trim() === ''){
-                $(this).parent().addClass('has-error');
-                isValid = false;
-                errorMessages.push(getVarName($(this)) + ' is required.')
+                addInvalid($(this), getVarName($(this)) + ' is required.')
             }
         };
         var validateText = function validateText(){
@@ -139,39 +130,31 @@
         var validateDescriptionText = function validateDescriptionText(){
             var max_length = 200;
             if($(this).val().length >= max_length) {
-                isValid = false;
-                errorMessages.push('Re-run description must be less than ' + max_length.toString() + ' characters.')
+                addInvalid($(this), 'Re-run description must be less than ' + max_length.toString() + ' characters.')
             }
         };
         var validateNumber = function validateNumber(){
             validateNotEmpty.call(this);
             if(!isNumber($(this).val())){
-                $(this).parent().addClass('has-error');
-                isValid = false;
-                errorMessages.push(getVarName($(this)) + ' must be a number.')
+                addInvalid($(this), getVarName($(this)) + ' must be a number.')
             }
         };
         var validateBoolean = function validateBoolean(){
             validateNotEmpty.call(this);
             if($(this).val().toLowerCase() !== 'true' && $(this).val().toLowerCase() !== 'false'){
-                $(this).parent().addClass('has-error');
-                isValid = false;
-                errorMessages.push(getVarName($(this)) + ' must be a boolean.')
+                addInvalid($(this), getVarName($(this)) + ' must be a boolean.')
             }
         };
         var validateListNumber = function validateListNumber(){
             var items, i;
             validateNotEmpty.call(this);
             if($(this).val().trim().endsWith(',')){
-                $(this).parent().addClass('has-error');
-                isValid = false;
+                addInvalid($(this), getVarName($(this)) + ' must be a comma seperated list.')
             }else{
                 items = $(this).val().split(',');
                 for(i=0;i<items.length;i++){
                     if(!isNumber(items[i])){
-                        $(this).parent().addClass('has-error');
-                        isValid = false;
-                        errorMessages.push(getVarName($(this)) + ' must be a comma seperated list of numbers.')
+                        addInvalid($(this), getVarName($(this)) + ' must be a comma seperated list of numbers.')
                         break;
                     }
                 }
@@ -181,23 +164,56 @@
             var items, i;
             validateNotEmpty.call(this);
             if($(this).val().trim().endsWith(',')){
-                $(this).parent().addClass('has-error');
-                isValid = false;
+                addInvalid($(this), getVarName($(this)) + ' must be a comma seperated list.')
             }else{
                 items = $(this).val().split(',');
                 for(i=0;i<items.length;i++){
                     if(items[i].trim() === ''){
-                        $(this).parent().addClass('has-error');
-                        isValid = false;
-                        errorMessages.push(getVarName($(this)) + ' must be a comma seperated list.')
+                        addInvalid($(this), getVarName($(this)) + ' must be a comma seperated list.')
                         break;
                     }
+                }
+            }
+        };
+        var validateBatchRunRange = function validateBatchRunRange() {
+            // Validates the batch re-run text
+            validateNotEmpty.call(this);
+            if($(this).val().trim().endsWith(',')){
+                addInvalid($(this), '<strong>Run Numbers</strong> must be a comma seperated list of either numbers or ranges.');
+                return;
+            }else{
+                items = $(this).val().split(',');
+                var totalRange = 0;
+                for(i=0;i<items.length;i++){
+                    if(!isNumber(items[i])){
+                        // Might be range
+                        var range = items[i].split('-');
+                        if(range.length != 2) {
+                            addInvalid($(this), '<strong>Run Numbers</strong> must be a comma seperated list of either numbers or ranges.');
+                            break;
+                        }else{
+                            var rangeSubTot = range[1]-range[0];
+                            if(rangeSubTot<0) {
+                                addInvalid($(this), '<strong>Run Numbers</strong> ranges must begin with a small number.');
+                                break;
+                            }else {
+                                totalRange += rangeSubTot;
+                            }
+                        }
+                    } else {
+                        totalRange += 1;
+                    }
+                }
+
+                if (totalRange > 20) {
+                    addInvalid($(this), 'To minimise load a maximum of 20 re-runs can be submitted at a time.');
                 }
             }
         };
 
         resetValidationStates();
         validateRunRange();
+        $('#run_range').each(validateBatchRunRange);
         $form.find('[data-type="text"]').each(validateText);
         $form.find('[data-type="number"]').each(validateNumber);
         $form.find('[data-type="boolean"]').each(validateBoolean);
@@ -219,15 +235,11 @@
     };
 
     var triggerAfterRunOptions = function triggerAfterRunOptions(){
-        if($('#submit_jobs').length != 0){
-            checkRangeValid();
-        } else {
-            if($(this).val().trim() !== ''){
-                $('#next_run').text(parseInt($(this).val())+1);
-                $('#run_finish_warning').show();
-            }else{
-                $('#run_finish_warning').hide();
-            }
+        if($(this).val().trim() !== ''){
+            $('#next_run').text(parseInt($(this).val())+1);
+            $('#run_finish_warning').show();
+        }else{
+            $('#run_finish_warning').hide();
         }
     };
 
@@ -254,18 +266,6 @@
             $('#conflicts-modal .js-conflicts-confirm').unbind('click').on('click', successCallback);
             $('#conflicts-modal').modal();
         }
-    };
-
-    var checkRangeValid = function checkRangeValid() {
-        var start = parseInt($('#run_start').val());
-        var end = parseInt($('#run_end').val());
-        var valid = (end-start <= 20);
-        if (valid) {
-            $('#run_range_warning').hide();
-        } else {
-            $('#run_range_warning').show();
-        }
-        return valid;
     };
 
     var submitForm = function submitForm(event){
@@ -432,7 +432,6 @@
         $('#instrument_variables').on('mouseover mouseleave', '#track_script', toggleActionExplainations);
         $('.js-form-actions li>a').on('mouseover mouseleave', toggleActionExplainations);
         $('#run_end').on('change', triggerAfterRunOptions);
-        $('#run_start').on('change', checkRangeValid);
         $('.js-show-default-variables').on('click', showDefaultSriptVariables);
         if($('#variable-range-toggle').length >0){
             handleToggleSwitch();

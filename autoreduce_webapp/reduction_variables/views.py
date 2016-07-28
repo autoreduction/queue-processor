@@ -3,14 +3,14 @@ from django.core.context_processors import csrf
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.core.exceptions import PermissionDenied
-from django.http import HttpResponse
-from autoreduce_webapp.view_utils import login_and_uows_valid, render_with
+from django.http import HttpResponse, HttpResponseForbidden
+from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, has_valid_login, handle_redirect
 from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFile
 from reduction_variables.utils import InstrumentVariablesUtils, ReductionVariablesUtils, VariableUtils, MessagingUtils, ScriptUtils
 from reduction_viewer.models import Instrument, ReductionRun
 from reduction_viewer.utils import StatusUtils
 
-import logging, re
+import logging, re, json
 logger = logging.getLogger(__name__)
 
 '''
@@ -388,14 +388,22 @@ def run_summary(request, run_number, run_version=0):
 def run_confirmation(request, instrument):
     if request.method == 'POST':
         instrument = Instrument.objects.get(name=instrument)
+        run_numbers = []
 
         if 'run_number' in request.POST:
-            start = int(request.POST.get('run_number'))
-            end = int(request.POST.get('run_number'))
+            run_numbers.append(int(request.POST.get('run_number')))
         else:
             # TODO: Check ICAT credentials
-            start = int(request.POST.get('run_start'))
-            end = int(request.POST.get('run_end'))
+            range_string = request.POST.get('run_range').split(',')
+            # Expand list
+            for item in range_string:
+                if '-' in item:
+                    split_range = item.split('-')
+                    run_numbers.extend(range(int(split_range[0]), int(split_range[1])+1)) # because this is a range, the end bound is exclusive!
+                else:
+                    run_numbers.append(int(item))
+            # Make sure run numbers are distinct
+            run_numbers = set(run_numbers)
 
         queued_status = StatusUtils().get_queued()
         queue_count = ReductionRun.objects.filter(instrument=instrument, status=queued_status).count()
@@ -406,7 +414,19 @@ def run_confirmation(request, instrument):
             'queued' : queue_count,
         }
 
-        for run_number in range(start, end+1):
+
+        # Check that RB numbers are the same
+        rb_number = ReductionRun.objects.filter(instrument=instrument, run_number__in=run_numbers).values_list('experiment__reference_number', flat=True).distinct()
+        if len(rb_number) > 1:
+            context_dictionary['error'] = 'Runs span multiple experiment numbers (' + ','.join(str(i) for i in rb_number) + ') please select a different range.'
+
+        # Check that RB numbers are allowed
+        if not request.user.is_superuser:
+            experiments_allowed = request.session['experiments_to_show'].get(instrument.name)
+            if (experiments_allowed is not None) and (str(rb_number[0]) not in experiments_allowed):
+                context_dictionary['error'] = "Permission denied. You do not have permission to request re-runs on the associated experiment number."
+
+        for run_number in run_numbers:
             old_reduction_run = ReductionRun.objects.filter(run_number=run_number).order_by('-run_version').first()
 
 
@@ -478,8 +498,17 @@ def run_confirmation(request, instrument):
     else:
         return redirect('instrument_summary', instrument=instrument.name)
 
-@login_and_uows_valid
 def preview_script(request, instrument, run_number=0, experiment_reference=0):
+
+    # Can't use login decorator as need to return AJAX error message if fails
+    if not has_valid_login(request):
+        redirect_response = handle_redirect(request)
+        if request.method == 'GET':
+            return redirect_response
+        else:
+            error = {'redirect_url': redirect_response.url}
+            return HttpResponseForbidden(json.dumps(error))
+
     reduce_script = '"""\nreduce_vars.py\n"""\n\n'
 
     '''

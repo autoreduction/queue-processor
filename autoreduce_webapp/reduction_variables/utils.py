@@ -1,4 +1,4 @@
-import logging, os, sys, imp, re, json, time, datetime
+import logging, os, sys, imp, re, json, time, datetime, cgi
 sys.path.append(os.path.join("../", os.path.dirname(os.path.dirname(__file__))))
 os.environ["DJANGO_SETTINGS_MODULE"] = "autoreduce_webapp.settings"
 from autoreduce_webapp.settings import ACTIVEMQ, REDUCTION_DIRECTORY, FACILITY
@@ -294,15 +294,20 @@ class InstrumentVariablesUtils(object):
             variables.extend(self._create_variables(instrument, reduce_script, reduce_script.advanced_vars, True))
         return variables
 
+    def _replace_special_chars(self, help_text):
+        help_text = cgi.escape(help_text)  # Remove any HTML already in the help string
+        help_text = help_text.replace('\n', '<br>').replace('\t', '&nbsp;&nbsp;&nbsp;&nbsp;')
+        return help_text
+
     def get_help_text(self, dictionary, key, instrument_name, reduce_script=None):
         if not dictionary or not key:
             return ""
         if not reduce_script:
-            reduce_script, script_binary =  self.__load_reduction_vars_script(instrument_name)
+            reduce_script, script_binary = self.__load_reduction_vars_script(instrument_name)
         if 'variable_help' in dir(reduce_script):
             if dictionary in reduce_script.variable_help:
                 if key in reduce_script.variable_help[dictionary]:
-                    return reduce_script.variable_help[dictionary][key]
+                    return self._replace_special_chars(reduce_script.variable_help[dictionary][key])
         return ""
 
     def get_current_and_upcoming_variables(self, instrument_name):
