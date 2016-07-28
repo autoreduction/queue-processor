@@ -175,26 +175,24 @@ class PostProcessAdmin:
 
             # test for access to result paths
             try:
-                if not os.path.isdir(reduce_result_dir):
-                    os.makedirs(reduce_result_dir)
-
-                if not os.path.exists(log_dir):
-                    os.makedirs(log_dir)
-                    
+                shouldBeWritable = [reduce_result_dir, log_dir, final_result_dir, final_log_dir]
+                shouldBeReadable = [self.data_file]
+                
+                # try to make directories which should exist
+                for path in filter( lambda p: not os.path.isdir(p), shouldBeWritable ):                
+                    os.makedirs(path)
+                               
                                
                 doesNotExist = lambda path : not os.access(path, os.F_OK)
                 notReadable = lambda path : not os.access(path, os.R_OK)
                 notWritable = lambda path : not os.access(path, os.W_OK)
                                
                 # we want write access to these directories, plus the final output paths
-                shouldBeWritable = [reduce_result_dir, log_dir, final_result_dir, final_log_dir]
                 if filter(notWritable, shouldBeWritable) != []:
                     failPath = filter(notWritable, shouldBeWritable)[0]
                     problem = "does not exist" if doesNotExist(failPath) else "no write access"
                     raise Exception("Couldn't write to %s  -  %s" % (failPath, problem))
                     
-                # we also want read access to the input data file
-                shouldBeReadable = [self.data_file]
                 if filter(notReadable, shouldBeReadable) != []:
                     failPath = filter(notReadable, shouldBeReadable)[0]
                     problem = "does not exist" if doesNotExist(failPath) else "no read access"
