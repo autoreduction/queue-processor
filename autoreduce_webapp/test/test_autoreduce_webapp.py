@@ -1,23 +1,28 @@
+import sys, time, logging, os, datetime, json, shutil, getpass
+from sets import Set
+from mock import patch
+from urllib2 import URLError
+
 from django.test import TestCase
 from django.utils import timezone
 from settings import LOG_FILE, LOG_LEVEL, ACTIVEMQ, BASE_DIR, REDUCTION_SCRIPT_BASE, ICAT
-import sys, time, logging, os, datetime, json, shutil, getpass
-from sets import Set
 logging.basicConfig(filename=LOG_FILE.replace('.log', '.test.log'),level=LOG_LEVEL, format=u'%(message)s',)
-from daemon import Daemon
-from queue_processor_daemon import QueueProcessorDaemon
-from queue_processor import Client, Listener
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 sys.path.insert(0, BASE_DIR)
+
+from icat.exception import ICATSessionError
+from suds.client import Client as suds_client
+
 from reduction_viewer.models import ReductionRun, Instrument, ReductionLocation, Status, Experiment, DataLocation
 from reduction_viewer.utils import StatusUtils
 from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFile
-from icat_communication import ICATCommunication
-from icat.exception import ICATSessionError
-from urllib2 import URLError
-from uows_client import UOWSClient
-from suds.client import Client as suds_client
-from mock import patch
+
+from autoreduce_webapp.icat_communication import ICATCommunication
+from autoreduce_webapp.uows_client import UOWSClient
+from autoreduce_webapp.daemon import Daemon
+from autoreduce_webapp.queue_processor_daemon import QueueProcessorDaemon
+from autoreduce_webapp.queue_processor import Client, Listener
+
 
 class QueueProcessorTestCase(TestCase):
     '''

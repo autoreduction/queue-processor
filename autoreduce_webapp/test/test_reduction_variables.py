@@ -1,14 +1,18 @@
+import logging, os, sys, shutil, imp, re, json
+from mock import patch, Mock
+
 from django.test import TestCase
 from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL, REDUCTION_SCRIPT_BASE, BASE_DIR
-import logging, os, sys, shutil, imp, re, json
 logging.basicConfig(filename=LOG_FILE.replace('.log', '.test.log'),level=LOG_LEVEL, format=u'%(message)s',)
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 sys.path.insert(0, BASE_DIR)
-from reduction_variables.utils import InstrumentVariablesUtils,VariableUtils, ReductionVariablesUtils, MessagingUtils
+
 from reduction_viewer.utils import InstrumentUtils, StatusUtils
 from reduction_viewer.models import Notification, ReductionRun, Experiment, DataLocation
+
+from reduction_variables.utils import InstrumentVariablesUtils,VariableUtils, ReductionVariablesUtils, MessagingUtils
 from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFile
-from mock import patch, Mock
+
 
 class InstrumentVariablesUtilsTestCase(TestCase):
     def setUp(self):
