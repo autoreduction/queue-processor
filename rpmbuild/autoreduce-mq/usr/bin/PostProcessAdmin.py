@@ -124,20 +124,33 @@ class PostProcessAdmin:
             return float(value)
 
     def replace_variables(self, reduce_script):
-        if hasattr(reduce_script, 'web_var'):
-            if hasattr(reduce_script.web_var, 'standard_vars'):
-                for key in reduce_script.web_var.standard_vars:
-                    if 'standard_vars' in self.reduction_arguments and key in self.reduction_arguments['standard_vars']:
-                        if type(self.reduction_arguments['standard_vars'][key]).__name__ == 'unicode':
-                            self.reduction_arguments['standard_vars'][key] = self.reduction_arguments['standard_vars'][key].encode('ascii','ignore')
-                        reduce_script.web_var.standard_vars[key] = self.reduction_arguments['standard_vars'][key]
-            if hasattr(reduce_script.web_var, 'advanced_vars'):
-                for key in reduce_script.web_var.advanced_vars:
-                    if 'advanced_vars' in self.reduction_arguments and key in self.reduction_arguments['advanced_vars']:
-                        if type(self.reduction_arguments['advanced_vars'][key]).__name__ == 'unicode':
-                            self.reduction_arguments['advanced_vars'][key] = self.reduction_arguments['advanced_vars'][key].encode('ascii','ignore')
-                        reduce_script.web_var.advanced_vars[key] = self.reduction_arguments['advanced_vars'][key]
+        """We mock up the web_var module according to what's expected. The scripts want standard_vars and advanced_vars, e.g. https://github.com/mantidproject/mantid/blob/master/scripts/Inelastic/Direct/ReductionWrapper.py"""
+        def asciiEncode(var): return var.encode('ascii','ignore') if type(var).name == "unicode" else var
+        (standardVars, advancedVars) = map(lambda varList: {k: asciiEncode(v) for k, v in varList.items()}, # map asciiEncode onto each variable in each of the dicts
+                                           [ self.reduction_arguments['standard_vars']
+                                           ,  self.reduction_arguments['advanced_vars']
+                                           ])
+        reduce_script.web_var = { 'standard_vars':standardVars, 'advanced_vars':advancedVars }
+        
         return reduce_script
+        
+    def replace_imports(self):
+        """reduce.py might want to import reduce_vars, but this doesn't exist in this context.
+        We wrap the __import__ built-in function (!!!!) to ensure "import reduce_vars" loads an empty module, which we'll replace later with replace_variables.
+        This will not work more than once in a row, since __import__ will resolve to new_import the second time. 
+        This works because scoping for loaded submodules takes references to the parent module's builtins."""
+        if self.importsReplaced:
+            raise Exception("Please don't call replace_imports more than once.")
+        global __import__2
+        __import__2 = __import__
+        def new_import(name, *args, **kwargs):
+            if name == "reduce_vars":
+                return __import__2("imp").new_module("reduce_vars") # create a null module and return that
+            else:
+                return __import__2(name, *args, **kwargs) # otherwise just use the usual imports
+        __builtins__.__import__ = new_import
+        self.importsReplaced = True
+        
 
     def reduce(self):
         logger.debug("In reduce() method")
@@ -222,9 +235,10 @@ class PostProcessAdmin:
 
             try:
                 with channels_redirected(script_out, mantid_log):
-                    # load reduction script as a module
+                    # load reduction script as a module 
                     reduce_script = imp.new_module('reducescript')
-                    exec self.reduction_script in reduce_script.__dict__
+                    self.replace_imports() # mock the reduce_vars module for loading
+                    exec(self.reduction_script, reduce_script.__dict__) # loads the string as a module into reduce_script
                     
                     try:
                         skip_numbers = reduce_script.SKIP_RUNS
