@@ -133,24 +133,6 @@ class PostProcessAdmin:
         reduce_script.web_var = { 'standard_vars':standardVars, 'advanced_vars':advancedVars }
         
         return reduce_script
-        
-    def replace_imports(self):
-        """reduce.py might want to import reduce_vars, but this doesn't exist in this context.
-        We wrap the __import__ built-in function (!!!!) to ensure "import reduce_vars" loads an empty module, which we'll replace later with replace_variables.
-        This will not work more than once in a row, since __import__ will resolve to new_import the second time. 
-        This works because scoping for loaded submodules takes references to the parent module's builtins."""
-        if self.importsReplaced:
-            raise Exception("Please don't call replace_imports more than once.")
-        global __import__2
-        __import__2 = __import__
-        def new_import(name, *args, **kwargs):
-            if name == "reduce_vars":
-                return __import__2("imp").new_module("reduce_vars") # create a null module and return that
-            else:
-                return __import__2(name, *args, **kwargs) # otherwise just use the usual imports
-        __builtins__.__import__ = new_import
-        self.importsReplaced = True
-        
 
     def reduce(self):
         logger.debug("In reduce() method")
@@ -235,9 +217,9 @@ class PostProcessAdmin:
 
             try:
                 with channels_redirected(script_out, mantid_log):
-                    # load reduction script as a module 
+                    # Load reduction script as a module. This works as long as reduce.py makes no assumption that it is in the same directory as reduce_vars, 
+                    # i.e., either it does not import it at all, or adds its location to os.path explicitly.
                     reduce_script = imp.new_module('reducescript')
-                    self.replace_imports() # mock the reduce_vars module for loading
                     exec(self.reduction_script, reduce_script.__dict__) # loads the string as a module into reduce_script
                     
                     try:
