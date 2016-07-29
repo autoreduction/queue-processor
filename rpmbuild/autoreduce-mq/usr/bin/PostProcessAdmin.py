@@ -124,16 +124,23 @@ class PostProcessAdmin:
             return float(value)
 
     def replace_variables(self, reduce_script):
-        """We mock up the web_var module according to what's expected. The scripts want standard_vars and advanced_vars, e.g. https://github.com/mantidproject/mantid/blob/master/scripts/Inelastic/Direct/ReductionWrapper.py"""
-        def asciiEncode(var): return var.encode('ascii','ignore') if type(var).name == "unicode" else var
-        (standardVars, advancedVars) = map(lambda varList: {k: asciiEncode(v) for k, v in varList.items()}, # map asciiEncode onto each variable in each of the dicts
-                                           [ self.reduction_arguments['standard_vars']
-                                           ,  self.reduction_arguments['advanced_vars']
-                                           ])
-        reduce_script.web_var = { 'standard_vars':standardVars, 'advanced_vars':advancedVars }
-        
+        """We mock up the web_var module according to what's expected. The scripts want standard_vars and advanced_vars, e.g. https://github.com/mantidproject/mantid/blob/master/scripts/Inelastic/Direct/ReductionWrapper.py"""                                           
+        def mergeDicts(dictName): 
+            """ Merge self.reduction_arguments[dictName] into reduce_script.web_var[dictName], overwriting any key that exists in both with the value from sourceDict. """
+            def mergeDictToName(dictName, sourceDict): 
+                oldDict = getattr(reduce_script.web_var, dictName) if hasattr(reduce_script.web_var, dictName) else {}
+                oldDict.update(sourceDict)
+                setattr(reduce_script.web_var, dictName, oldDict)
+            def asciiEncode(var): return var.encode('ascii','ignore') if type(var).__name__ == "unicode" else var
+            
+            encodedDict = {k: asciiEncode(v) for k, v in self.reduction_arguments[dictName].items()}
+            mergeDictToName(dictName, encodedDict)
+            
+        if not hasattr(reduce_script, "web_var"): reduce_script.web_var = imp.new_module("reduce_vars") 
+        map(mergeDicts, ["standard_vars", "advanced_vars"])
         return reduce_script
 
+    
     def reduce(self):
         logger.debug("In reduce() method")
         try:     
@@ -220,7 +227,7 @@ class PostProcessAdmin:
                     # Load reduction script as a module. This works as long as reduce.py makes no assumption that it is in the same directory as reduce_vars, 
                     # i.e., either it does not import it at all, or adds its location to os.path explicitly.
                     reduce_script = imp.new_module('reducescript')
-                    exec(self.reduction_script, reduce_script.__dict__) # loads the string as a module into reduce_script
+                    exec self.reduction_script in reduce_script.__dict__ # loads the string as a module into reduce_script
                     
                     try:
                         skip_numbers = reduce_script.SKIP_RUNS
@@ -396,7 +403,8 @@ if __name__ == "__main__":
             print("Called " + conf['postprocess_error'] + "----" + json.dumps(data))
             raise
         
-        except:
+        except Exception as e:
+            logger.info("PostProcessAdmin error: %s" % e)
             raise
         
     except Exception as er:
