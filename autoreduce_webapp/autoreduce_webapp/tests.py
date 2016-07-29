@@ -812,10 +812,14 @@ class QueueProcessorTestCase(TestCase):
             iterations = 0
             while 1:
                 after = dict ([(f, None) for f in os.listdir (directory)])
-                if [f for f in after if not f in before]:
+                diff = [f for f in after if not f in before]
+                try:
+                    temp_reduce_file = diff[0]
                     before = after
-                    temp_reduce_file = f
                     break
+                except IndexError:
+                    pass
+                    
                 if iterations == 5000:
                     self.fail("Could not find temporary reduction script.")
                 iterations += 1
@@ -1250,7 +1254,7 @@ class UOWSClientTestCase(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        print '\nThese tests require that you have a user account on the dev user office system. https://devusers.facilities.rl.ac.uk/auth/'
+        print('\nThese tests require that you have a user account on the dev user office system. https://devusers.facilities.rl.ac.uk/auth/')
         cls._username = raw_input('UserOffice WebService Username: ')
         cls._password = getpass.getpass('UserOffice WebService Password: ')
         
