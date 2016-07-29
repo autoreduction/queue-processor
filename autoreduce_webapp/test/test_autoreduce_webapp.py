@@ -5,7 +5,7 @@ from urllib2 import URLError
 
 from django.test import TestCase
 from django.utils import timezone
-from settings import LOG_FILE, LOG_LEVEL, ACTIVEMQ, BASE_DIR, REDUCTION_SCRIPT_BASE, ICAT
+from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL, ACTIVEMQ, BASE_DIR, REDUCTION_DIRECTORY, ICAT
 logging.basicConfig(filename=LOG_FILE.replace('.log', '.test.log'),level=LOG_LEVEL, format=u'%(message)s',)
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 sys.path.insert(0, BASE_DIR)
@@ -22,6 +22,9 @@ from autoreduce_webapp.uows_client import UOWSClient
 from autoreduce_webapp.daemon import Daemon
 from autoreduce_webapp.queue_processor_daemon import QueueProcessorDaemon
 from autoreduce_webapp.queue_processor import Client, Listener
+
+
+REDUCTION_SCRIPT_BASE = REDUCTION_DIRECTORY
 
 
 class QueueProcessorTestCase(TestCase):

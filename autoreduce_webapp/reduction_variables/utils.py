@@ -139,9 +139,8 @@ class VariableUtils(object):
 class InstrumentVariablesUtils(object):
     def __load_reduction_script(self, instrument_name):
         """
-        Load the relevant reduction script and return back a tuple containing:
-            - The text of the script
-        If the script cannot be loaded (None, None) is returned
+        Load the relevant reduction script and return back the text of the script
+        If the script cannot be loaded None is returned
         """
         reduction_file = os.path.join((REDUCTION_DIRECTORY % (instrument_name)), 'reduce.py')
         try:

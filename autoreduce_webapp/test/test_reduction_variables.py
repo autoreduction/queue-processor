@@ -2,7 +2,7 @@ import logging, os, sys, shutil, imp, re, json
 from mock import patch, Mock
 
 from django.test import TestCase
-from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL, REDUCTION_SCRIPT_BASE, BASE_DIR
+from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL, REDUCTION_DIRECTORY, BASE_DIR
 logging.basicConfig(filename=LOG_FILE.replace('.log', '.test.log'),level=LOG_LEVEL, format=u'%(message)s',)
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 sys.path.insert(0, BASE_DIR)
@@ -14,6 +14,10 @@ from reduction_variables.utils import InstrumentVariablesUtils,VariableUtils, Re
 from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFile
 
 
+REDUCTION_SCRIPT_BASE = REDUCTION_DIRECTORY
+testInstrument = 'valid'
+
+
 class InstrumentVariablesUtilsTestCase(TestCase):
     def setUp(self):
         pass
@@ -23,64 +27,50 @@ class InstrumentVariablesUtilsTestCase(TestCase):
     
     @classmethod
     def setUpClass(cls):
-        test_reduce = os.path.join(os.path.dirname(__file__), '../', 'test_files','reduce.py')
-        valid_reduction_file = os.path.join(REDUCTION_SCRIPT_BASE, 'valid')
-        if not os.path.exists(valid_reduction_file):
-            os.makedirs(valid_reduction_file)
-        file_path = os.path.join(valid_reduction_file, 'reduce.py')
-        if not os.path.isfile(file_path):
-            shutil.copyfile(test_reduce, file_path)
-
-        empty_test_reduce = os.path.join(os.path.dirname(__file__), '../', 'test_files','empty_reduce.py')
-        empty_reduction_file = os.path.join(REDUCTION_SCRIPT_BASE, 'empty_script')
-        if not os.path.exists(empty_reduction_file):
-            os.makedirs(empty_reduction_file)
-        file_path = os.path.join(empty_reduction_file, 'reduce.py')
-        if not os.path.isfile(file_path):
-            shutil.copyfile(empty_test_reduce, file_path)
-
-        duplicate_test_reduce = os.path.join(os.path.dirname(__file__), '../', 'test_files','duplicate_var_reduce.py')
-        duplicate_reduction_file = os.path.join(REDUCTION_SCRIPT_BASE, 'duplicate_var')
-        if not os.path.exists(duplicate_reduction_file):
-            os.makedirs(duplicate_reduction_file)
-        file_path = os.path.join(duplicate_reduction_file, 'reduce.py')
-        if not os.path.isfile(file_path):
-            shutil.copyfile(duplicate_test_reduce, file_path)
-
-        syntax_error_test_reduce = os.path.join(os.path.dirname(__file__), '../', 'test_files','syntax_error_reduce.py')
-        syntax_error_reduction_file = os.path.join(REDUCTION_SCRIPT_BASE, 'syntax_error')
-        if not os.path.exists(syntax_error_reduction_file):
-            os.makedirs(syntax_error_reduction_file)
-        file_path = os.path.join(syntax_error_reduction_file, 'reduce.py')
-        if not os.path.isfile(file_path):
-            shutil.copyfile(syntax_error_test_reduce, file_path)
+    
+        def copyScripts(instrument):
+            reduce_script = os.path.join(os.path.dirname(__file__), '../', 'test_files',instrument,'reduce.py')
+            reduce_vars = os.path.join(os.path.dirname(__file__), '../', 'test_files',instrument,'reduce_vars.py')
+            
+            valid_reduction_file = REDUCTION_SCRIPT_BASE % instrument
+            if not os.path.exists(valid_reduction_file):
+                os.makedirs(valid_reduction_file)
+            file_path = os.path.join(valid_reduction_file, 'reduce.py')
+            if not os.path.isfile(file_path):
+                shutil.copyfile(reduce_script, file_path)
+            file_path = os.path.join(valid_reduction_file, 'reduce_vars.py')
+            if not os.path.isfile(file_path):
+                shutil.copyfile(reduce_vars, file_path)
+            
+    
+        map(copyScripts, ['valid', 'empty_script', 'duplicate_var_reduce', 'syntax_error'] )
     
     @classmethod
     def tearDownClass(cls):
-        directory = os.path.join(REDUCTION_SCRIPT_BASE, 'valid')
+        directory = REDUCTION_SCRIPT_BASE % testInstrument
         logging.warning("About to remove %s" % directory)
         if os.path.exists(directory):
             shutil.rmtree(directory)
-        directory = os.path.join(REDUCTION_SCRIPT_BASE, 'empty_script')
+        directory = REDUCTION_SCRIPT_BASE % 'empty_script'
         logging.warning("About to remove %s" % directory)
         if os.path.exists(directory):
             shutil.rmtree(directory)
-        directory = os.path.join(REDUCTION_SCRIPT_BASE, 'duplicate_var')
+        directory = REDUCTION_SCRIPT_BASE % 'duplicate_var'
         logging.warning("About to remove %s" % directory)
         if os.path.exists(directory):
             shutil.rmtree(directory)
-        directory = os.path.join(REDUCTION_SCRIPT_BASE, 'syntax_error')
+        directory = REDUCTION_SCRIPT_BASE % 'syntax_error'
         logging.warning("About to remove %s" % directory)
         if os.path.exists(directory):
             shutil.rmtree(directory)
 
     def test_get_default_variables_successfull(self):
-        variables = InstrumentVariablesUtils().get_default_variables('valid')
+        variables = InstrumentVariablesUtils().get_default_variables(testInstrument)
 
         self.assertNotEqual(variables, None, 'Expecting some variables returned')
         self.assertNotEqual(variables, [], 'Expecting some variables returned')
         self.assertTrue(len(variables) > 0, 'Expecting at least 1 variable returned')
-        self.assertEqual(variables[0].instrument.name, 'valid', 'Expecting instrument to be "valid" but was %s' % variables[0].instrument)
+        self.assertEqual(variables[0].instrument.name, testInstrument, 'Expecting instrument to be "valid" but was %s' % variables[0].instrument)
 
     def test_get_default_variables_empty(self):
         variables = InstrumentVariablesUtils().get_default_variables('empty_script')
@@ -115,20 +105,20 @@ class InstrumentVariablesUtilsTestCase(TestCase):
         self.assertTrue(len(updated_notification) > len(initial_notification), 'Expecting a notification to be created')
 
     def test_get_default_variables_pass_in_reduce_script(self):
-        reduction_file = os.path.join(REDUCTION_SCRIPT_BASE, 'valid', 'reduce.py')
+        reduction_file = os.path.join(REDUCTION_SCRIPT_BASE % testInstrument, 'reduce.py')
         reduce_script = imp.load_source('reduce_script_test', reduction_file)
-        variables = InstrumentVariablesUtils().get_default_variables('valid', reduce_script)
+        variables = InstrumentVariablesUtils().get_default_variables(testInstrument, reduce_script)
 
         self.assertNotEqual(variables, None, 'Expecting some variables returned')
         self.assertNotEqual(variables, [], 'Expecting some variables returned')
         self.assertTrue(len(variables) > 0, 'Expecting at least 1 variable returned')
-        self.assertEqual(variables[0].instrument.name, 'valid', 'Expecting instrument to be "valid" but was %s' % variables[0].instrument)
+        self.assertEqual(variables[0].instrument.name, testInstrument, 'Expecting instrument to be "valid" but was %s' % variables[0].instrument)
 
     def test_get_current_script_text_successful(self):
-        script_file = os.path.join(REDUCTION_SCRIPT_BASE, 'valid', 'reduce.py')
+        script_file = os.path.join(REDUCTION_SCRIPT_BASE % testInstrument, 'reduce.py')
         f = open(script_file, 'rb')
         script_binary = f.read()
-        script = InstrumentVariablesUtils().get_current_script_text('valid')
+        script = InstrumentVariablesUtils().get_current_script_text(testInstrument)
 
         self.assertNotEqual(script, None, "Expecting a script to be returned")
         self.assertEqual(script, script_binary, "Expecting files to match")
@@ -147,7 +137,7 @@ class InstrumentVariablesUtilsTestCase(TestCase):
         self.assertNotEqual(variables, [], 'Expecting some variables returned')
         self.assertNotEqual(saved_variables, [], 'Expecting some variables saved')
         self.assertTrue(len(variables) > 0, 'Expecting at least 1 variable returned')
-        self.assertEqual(variables[0].instrument.name, 'valid', 'Expecting instrument to be "valid" but was %s' % variables[0].instrument)
+        self.assertEqual(variables[0].instrument.name, testInstrument, 'Expecting instrument to be "valid" but was %s' % variables[0].instrument)
         self.assertTrue(len(variables[0].scripts.all()) == 1, "Expecting to find a script saved")
         self.assertEqual(len(variables), len(saved_variables), "Expecting all returned variables to have been saved")
     
@@ -168,16 +158,16 @@ class InstrumentVariablesUtilsTestCase(TestCase):
         self.assertEqual(saved_variables, [], 'Expecting no variables saved')
         
     def test_get_current_and_upcoming_variables_test_current(self):
-        current_variables, upcoming_variables_by_run, upcoming_variables_by_experiment = InstrumentVariablesUtils().get_current_and_upcoming_variables('valid')
+        current_variables, upcoming_variables_by_run, upcoming_variables_by_experiment = InstrumentVariablesUtils().get_current_and_upcoming_variables(testInstrument)
 
         self.assertNotEqual(current_variables, None, "Expecting some current variables to be returned")
         self.assertNotEqual(current_variables, [], "Expecting some current variables to be returned")
         self.assertTrue(len(current_variables) > 0, 'Expecting at least 1 current variable returned')
 
-    def test_get_current_and_upcoming_variables_test_upcomming(self):
-        upcoming = InstrumentVariablesUtils().set_default_instrument_variables('valid', 99999)
+    def test_get_current_and_upcoming_variables_test_upcoming(self):
+        upcoming = InstrumentVariablesUtils().set_default_instrument_variables(testInstrument, 99999)
 
-        current_variables, upcoming_variables_by_run, upcoming_variables_by_experiment = InstrumentVariablesUtils().get_current_and_upcoming_variables('valid')
+        current_variables, upcoming_variables_by_run, upcoming_variables_by_experiment = InstrumentVariablesUtils().get_current_and_upcoming_variables(testInstrument)
 
         self.assertNotEqual(upcoming_variables_by_run, None, "Expecting some upcoming variables to be returned")
         self.assertNotEqual(upcoming_variables_by_run, [], "Expecting some upcoming variables to be returned")
@@ -198,7 +188,7 @@ class InstrumentVariablesUtilsTestCase(TestCase):
                     )
         variable.save()
 
-        current_variables, upcoming_variables_by_run, upcoming_variables_by_experiment = InstrumentVariablesUtils().get_current_and_upcoming_variables('valid')
+        current_variables, upcoming_variables_by_run, upcoming_variables_by_experiment = InstrumentVariablesUtils().get_current_and_upcoming_variables(testInstrument)
 
         self.assertNotEqual(upcoming_variables_by_experiment, None, "Expecting some upcoming experiment variables to be returned")
         self.assertNotEqual(upcoming_variables_by_experiment, [], "Expecting some upcoming experiment variables to be returned")
@@ -218,7 +208,7 @@ class InstrumentVariablesUtilsTestCase(TestCase):
                     )
         variable.save()
 
-        current_variables, upcoming_variables_by_run, upcoming_variables_by_experiment = InstrumentVariablesUtils().get_current_and_upcoming_variables('valid')
+        current_variables, upcoming_variables_by_run, upcoming_variables_by_experiment = InstrumentVariablesUtils().get_current_and_upcoming_variables(testInstrument)
 
         self.assertTrue(len(upcoming_variables_by_experiment) == 0, "Expecting no upcoming experiment variables to be returned")
         
@@ -281,31 +271,6 @@ class InstrumentVariablesUtilsTestCase(TestCase):
         self.assertEqual(variables[0].experiment_reference, None, "Not expecting experiment_reference")
         self.assertEqual(variables[0].start_run, 1, "Expecting start run to be 1 but was %s" % variables[0].start_run)
 
-    def test_get_temporary_script_successful(self):        
-        script_path = InstrumentVariablesUtils().get_temporary_script("valid")
-
-        self.assertNotEqual(script_path, None, "Expecting a script path to be returned")
-        self.assertNotEqual(script_path, "", "Expecting a script path to be returned")
-        self.assertTrue("reduction_script_temp" in script_path, "Expecting script_path to point to 'reduction_script_temp'.")
-        self.assertTrue(re.search('(\w{8}-\w{4}-\w{4}-\w{4}-\w{12}\.py$)', script_path), "Expecting script_path to contain a uuid filename but was %s." % script_path)
-
-    def test_get_temporary_script_file_name_exists(self):
-        isfile_calls = [0]
-        def mock_isfile(path):
-            isfile_calls[0] +=1 
-            if isfile_calls[0] == 1:
-                return True
-            else:
-                return False
-
-        with patch('os.path.isfile', mock_isfile):
-            script_path = InstrumentVariablesUtils().get_temporary_script("valid")
-
-        self.assertNotEqual(script_path, None, "Expecting to get a script path back.")
-        self.assertNotEqual(script_path, "", "Expecting to get a script path back.")
-        self.assertTrue("reduction_script_temp" in script_path, "Expecting script_path to point to 'reduction_script_temp'.")
-        self.assertTrue(re.search('(\w{8}-\w{4}-\w{4}-\w{4}-\w{12}\.py$)', script_path), "Expecting script_path to contain a uuid filename but was %s." % script_path)
-        self.assertTrue(isfile_calls[0] > 1, "Expecting at least 2 calls to isfile")
 
 class VariableUtilsTestCase(TestCase):
     def setUp(self):
@@ -573,7 +538,7 @@ class ReductionVariablesUtilsTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         test_reduce = os.path.join(os.path.dirname(__file__), '../', 'test_files','reduce.py')
-        valid_reduction_file = os.path.join(REDUCTION_SCRIPT_BASE, 'valid')
+        valid_reduction_file = REDUCTION_SCRIPT_BASE % testInstrument
         if not os.path.exists(valid_reduction_file):
             os.makedirs(valid_reduction_file)
         file_path = os.path.join(valid_reduction_file, 'reduce.py')
@@ -582,13 +547,13 @@ class ReductionVariablesUtilsTestCase(TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        directory = os.path.join(REDUCTION_SCRIPT_BASE, 'valid')
+        directory = REDUCTION_SCRIPT_BASE % testInstrument
         logging.warning("About to remove %s" % directory)
         if os.path.exists(directory):
             shutil.rmtree(directory)
 
     def get_valid_script(self):
-        reduction_file = os.path.join(REDUCTION_SCRIPT_BASE, 'valid', 'reduce.py')
+        reduction_file = os.path.join(REDUCTION_SCRIPT_BASE % testInstrument, 'reduce.py')
         try:
             f = open(reduction_file, 'rb')
             script_binary = f.read()
@@ -597,10 +562,10 @@ class ReductionVariablesUtilsTestCase(TestCase):
             return None
 
     def get_reduction_run(self):
-        instrument = InstrumentUtils().get_instrument('valid')
+        instrument = InstrumentUtils().get_instrument(testInstrument)
         experiment = Experiment(reference_number=1)
         experiment.save()
-        reduction_run = ReductionRun(instrument=instrument, run_number=1, experiment=experiment, run_version=0)
+        reduction_run = ReductionRun(instrument=instrument, run_number=1, experiment=experiment, run_version=0, status=StatusUtils().get_queued())
         reduction_run.save()
         return reduction_run
 
@@ -727,7 +692,7 @@ class MessagingUtilsTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         test_reduce = os.path.join(os.path.dirname(__file__), '../', 'test_files','reduce.py')
-        valid_reduction_file = os.path.join(REDUCTION_SCRIPT_BASE, 'valid')
+        valid_reduction_file = REDUCTION_SCRIPT_BASE % testInstrument
         if not os.path.exists(valid_reduction_file):
             os.makedirs(valid_reduction_file)
         file_path = os.path.join(valid_reduction_file, 'reduce.py')
@@ -736,13 +701,14 @@ class MessagingUtilsTestCase(TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        directory = os.path.join(REDUCTION_SCRIPT_BASE, 'valid')
+        directory = REDUCTION_SCRIPT_BASE % testInstrument
         logging.warning("About to remove %s" % directory)
         if os.path.exists(directory):
             shutil.rmtree(directory)
+            
 
-    def get_valid_script(self):
-        reduction_file = os.path.join(REDUCTION_SCRIPT_BASE, 'valid', 'reduce.py')
+    def get_valid_script(self, name):
+        reduction_file = os.path.join(REDUCTION_SCRIPT_BASE % testInstrument, name)
         try:
             f = open(reduction_file, 'rb')
             script_binary = f.read()
@@ -750,26 +716,31 @@ class MessagingUtilsTestCase(TestCase):
         except:
             return None
 
+
     def get_reduction_run(self, with_variables=True):
-        instrument = InstrumentUtils().get_instrument('valid')
+        instrument = InstrumentUtils().get_instrument(testInstrument)
         experiment = Experiment(reference_number=1)
         experiment.save()
-        reduction_run = ReductionRun(instrument=instrument, run_number=1, experiment=experiment, run_version=0)
+        reduction_run = ReductionRun(instrument=instrument, run_number=1, experiment=experiment, run_version=0, status=StatusUtils().get_queued())
         reduction_run.save()        
 
         if with_variables:
-            script = ScriptFile(script=self.get_valid_script(), file_name='reduce.py')
+            script = ScriptFile(script=self.get_valid_script('reduce.py'), file_name='reduce.py')
             script.save()
+            script2 = ScriptFile(script=self.get_valid_script('reduce_vars.py'), file_name='reduce_vars.py')
+            script2.save()
             
             variable = RunVariable(reduction_run=reduction_run,name='test',value='testvalue1',type='text',is_advanced=False)
             variable.save()
             variable.scripts.add(script)
+            variable.scripts.add(script2)
             variable.save()
             reduction_run.run_variables.add(variable)
 
             variable = RunVariable(reduction_run=reduction_run,name='advanced_test',value='testvalue2',type='text',is_advanced=True)
             variable.save()
             variable.scripts.add(script)
+            variable.scripts.add(script2)
             variable.save()
             reduction_run.run_variables.add(variable)
 
@@ -809,7 +780,7 @@ class MessagingUtilsTestCase(TestCase):
                 parent.assertTrue('standard_vars' in data_dict['reduction_arguments'], "Expecting to find some standard_vars.")
                 parent.assertTrue('advanced_vars' in data_dict['reduction_arguments'], "Expecting to find some advanced_vars.")
 
-        with patch('reduction_variables.utils.ActiveMQClient', mock_client):
+        with patch('autoreduce_webapp.queue_processor.Client', mock_client):
             MessagingUtils().send_pending(reduction_run)
 
         self.assertTrue(send_called[0], "Expecting send to be called")

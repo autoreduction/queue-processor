@@ -151,7 +151,6 @@ ACTIVEMQ = {
 
 # File Locations
 
-#REDUCTION_SCRIPT_BASE = '/reduction_data/'
 #ARCHIVE_BASE = ''
 if os.name == 'nt':
     REDUCTION_DIRECTORY = '\\\\isis\\inst$\\NDX%s\\user\\scripts\\autoreduction' # %(instrument)
