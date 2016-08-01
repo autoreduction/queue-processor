@@ -876,6 +876,13 @@ class QueueProcessorTestCase(TestCase):
 
         self.assertFalse(os.path.isfile(file_path), "Expecting file to be deleted after call.")
 
+        
+        
+        
+"""
+   
+
+   
 class ICATCommunicationTestCase(TestCase):
 
     @classmethod
@@ -1410,3 +1417,14 @@ class UOWSClientTestCase(TestCase):
             person = self.uows.logout(session_id)
         except:
             self.fail("Wasn't expecting an exception")
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+"""
