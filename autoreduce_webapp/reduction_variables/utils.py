@@ -496,6 +496,18 @@ class MessagingUtils(object):
             'facility':FACILITY,
             'message':'',
         }
+        
+        return data_dict
+        
+    
+    def _send_pending_msg(self, data_dict, delay=None):
+        """
+        Sends data_dict to ReductionPending (with the specified delay)
+        """
+        from autoreduce_webapp.queue_processor import Client as ActiveMQClient # to prevent circular dependencies
+
+        message_client = ActiveMQClient(ACTIVEMQ['broker'], ACTIVEMQ['username'], ACTIVEMQ['password'], ACTIVEMQ['topics'], 'Webapp_QueueProcessor', False, ACTIVEMQ['SSL'])
+        message_client.connect()
         message_client.send('/queue/ReductionPending', json.dumps(data_dict), priority='0', delay=delay)
         message_client.stop()
 

@@ -268,7 +268,7 @@ class Listener(object):
         
 
 class Client(object):
-    def __init__(self, brokers, user, password, topics=None, consumer_name='QueueProcessor', client_only=True, use_ssl=False):
+    def __init__(self, brokers, user, password, topics=None, consumer_name='QueueProcessor', client_only=True, use_ssl=ACTIVEMQ['broker']):
         self._brokers = brokers
         self._user = user
         self._password = password
@@ -334,7 +334,7 @@ class Client(object):
 
 
 def main():
-    client = Client(ACTIVEMQ['broker'], ACTIVEMQ['username'], ACTIVEMQ['password'], ACTIVEMQ['topics'], 'Autoreduction_QueueProcessor', False, True)
+    client = Client(ACTIVEMQ['broker'], ACTIVEMQ['username'], ACTIVEMQ['password'], ACTIVEMQ['topics'], 'Autoreduction_QueueProcessor', False, ACTIVEMQ['SSL'])
     client.connect()
     return client
 

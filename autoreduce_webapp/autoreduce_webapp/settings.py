@@ -146,7 +146,8 @@ ACTIVEMQ = {
         ],
     'username' : 'autoreduce',
     'password' : 'pa$$w0rd',
-    'broker' : [("autoreduce.isis.cclrc.ac.uk", 61613)]
+    'broker' : [("autoreduce.isis.cclrc.ac.uk", 61613)],
+    'SSL' : True
 }
 
 # File Locations
