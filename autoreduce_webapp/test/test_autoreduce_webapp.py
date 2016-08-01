@@ -23,10 +23,11 @@ from autoreduce_webapp.daemon import Daemon
 from autoreduce_webapp.queue_processor_daemon import QueueProcessorDaemon
 from autoreduce_webapp.queue_processor import Client, Listener
 
+from utils import copyScripts, removeScripts
+
 import pdb
 
 rb_number = 2
-REDUCTION_SCRIPT_BASE = REDUCTION_DIRECTORY
 
 
 class QueueProcessorTestCase(TransactionTestCase):
@@ -56,33 +57,12 @@ class QueueProcessorTestCase(TransactionTestCase):
         cls._client.send = mockSend
         
         cls._timeout_wait = 1
-    
-        def copyScripts(instrument):
-            reduce_script = os.path.join(os.path.dirname(__file__), '../', 'test_files',instrument,'reduce.py')
-            reduce_vars = os.path.join(os.path.dirname(__file__), '../', 'test_files',instrument,'reduce_vars.py')
-            
-            valid_reduction_file = REDUCTION_SCRIPT_BASE % instrument
-            if not os.path.exists(valid_reduction_file):
-                os.makedirs(valid_reduction_file)
-            file_path = os.path.join(valid_reduction_file, 'reduce.py')
-            if not os.path.isfile(file_path):
-                shutil.copyfile(reduce_script, file_path)
-            file_path = os.path.join(valid_reduction_file, 'reduce_vars.py')
-            if not os.path.isfile(file_path):
-                shutil.copyfile(reduce_vars, file_path)
-            
-        map(copyScripts, ['valid', 'empty_script', 'duplicate_var_reduce', 'syntax_error'] )
+
+        map(copyScripts, ['valid', 'empty_script', 'duplicate_var_reduce', 'syntax_error', 'new_instrument'] )
     
     @classmethod
     def tearDownClass(cls):
-    
-        def rmdir(name):
-            directory = REDUCTION_SCRIPT_BASE % name
-            logging.warning("About to remove %s" % directory)
-            if os.path.exists(directory):
-                shutil.rmtree(directory)
-                
-        map(rmdir, ['valid', 'empty_script', 'duplicate_var', 'syntax_error'])
+        map(removeScripts, ['valid', 'empty_script', 'duplicate_var', 'syntax_error'])
 
     '''
         Insert a reduction run to ensure the QueueProcessor can find one when recieving a topic message
@@ -116,7 +96,7 @@ class QueueProcessorTestCase(TransactionTestCase):
     '''
     def create_instrument_variables(self, instrument_name):
         instrument, created = Instrument.objects.get_or_create(name=instrument_name)
-        reduction_file = os.path.join(REDUCTION_SCRIPT_BASE % instrument_name, 'reduce.py')
+        reduction_file = os.path.join(REDUCTION_DIRECTORY % instrument_name, 'reduce.py')
         f = open(reduction_file, 'rb')
         script_binary = f.read()
         script, created2 = ScriptFile.objects.get_or_create(file_name='reduce.py', script=script_binary)
@@ -130,7 +110,7 @@ class QueueProcessorTestCase(TransactionTestCase):
         Copy a test reduce.py script to the correct location for use in the tests
     '''
     def save_dummy_reduce_script(self, instrument_name):
-        directory = REDUCTION_SCRIPT_BASE % instrument_name
+        directory = REDUCTION_DIRECTORY % instrument_name
         test_reduce = os.path.join(os.path.dirname(__file__), '../', 'test_files','reduce.py')
         if not os.path.exists(directory):
             os.makedirs(directory)
@@ -143,7 +123,7 @@ class QueueProcessorTestCase(TransactionTestCase):
         WARNING!!!! Destructive!!!
     '''
     def remove_dummy_reduce_script(self, instrument_name):
-        directory = REDUCTION_SCRIPT_BASE % instrument_name
+        directory = REDUCTION_DIRECTORY % instrument_name
         logging.warning("About to remove %s" % directory)
         if os.path.exists(directory):
             shutil.rmtree(directory)
@@ -184,7 +164,7 @@ class QueueProcessorTestCase(TransactionTestCase):
     '''
     def test_data_ready_new_instrument_instrument_variables(self):
         rb_number = self.get_rb_number()
-        instrument_name = "test_data_ready_new_instrument-TestInstrument"
+        instrument_name = "new_instrument"
         self.save_dummy_reduce_script(instrument_name)
         try:
             self.assertEqual(Instrument.objects.filter(name=instrument_name).first(), None, "Wasn't expecting to find %s" % instrument_name)
@@ -310,51 +290,6 @@ class QueueProcessorTestCase(TransactionTestCase):
         finally:
             self.remove_dummy_reduce_script(instrument_name)
 
-    def test_data_ready_no_variables_in_script(self):
-        rb_number = self.get_rb_number()
-        instrument_name = "empty_script"
-        
-        directory = REDUCTION_SCRIPT_BASE % instrument_name
-        test_reduce = os.path.join(os.path.dirname(__file__), '../', 'test_files','empty_script','reduce.py')
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-        file_path = os.path.join(directory, 'reduce.py')
-        if not os.path.isfile(file_path):
-            shutil.copyfile(test_reduce, file_path)
-
-        headers = { 
-            "destination" : '/queue/DataReady',
-            "priority": 4
-        }
-        message = {
-            "run_number" : 1,
-            "instrument" : instrument_name,
-            "rb_number" : rb_number,
-            "data" : "/false/path",
-            "run_version" : 0
-        }
-
-        parent = self
-        send_called = [False]
-        class mock_client(object):
-            def __init__(self):
-                pass
-
-            def connect(self):
-                pass
-
-            def send(self, destination, message, persistent='true'):
-                send_called[0] = True
-                data_dict = json.loads(message)
-                parent.assertEqual(destination, '/queue/ReductionPending', "Expecting destination to be '/queue/ReductionPending' but was %s" % destination)
-                parent.assertNotEqual(data_dict['reduction_script'], None, "Expecting a reduction script.")
-                parent.assertNotEqual(data_dict['reduction_script'], '', "Expecting a reduction script.")
-                parent.assertEqual(data_dict['reduction_arguments'], {}, "Expecting arguments to be an empty dictionary.")
-
-        listener = Listener(mock_client())
-        self._client.send('/queue/ReductionError', json.dumps(message))
-        listener.on_message(headers, json.dumps(message))
-        self.assertTrue(send_called[0], "Expecting send to be called")
         
     '''
         Change an existing reduction run from Queued to Started
@@ -366,7 +301,7 @@ class QueueProcessorTestCase(TransactionTestCase):
 
         test_data = {
             "run_number" : 1,
-            "instrument" : "test_reduction_started-TestInstrument",
+            "instrument" : "valid",
             "rb_number" : rb_number,
             "data" : "/false/path",
             "run_version" : 0
@@ -828,35 +763,6 @@ class QueueProcessorTestCase(TransactionTestCase):
         self.assertTrue(len(runs[0].graph) == 1, "Expected to find 1 graph but instead found %s" % len(runs[0].graph))
         self.assertTrue('base64' in runs[0].graph[0], "Expected to find 'base64' in graph text")
 
-
-    def test_script_deleted(self):
-        rb_number = self.get_rb_number()
-        Experiment(reference_number=rb_number).save()
-        instrument_name = "valid"
-        
-        directory = REDUCTION_SCRIPT_BASE % instrument_name
-        test_reduce = os.path.join(os.path.dirname(__file__), '../', 'test_files','empty_script','reduce.py')
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-        file_path = os.path.join(directory, 'reduce.py')
-        if not os.path.isfile(file_path):
-            shutil.copyfile(test_reduce, file_path)
-
-        message = {
-            "run_number" : 1,
-            "instrument" : instrument_name,
-            "rb_number" : rb_number,
-            "data" : "/false/path",
-            "run_version" : 0,
-            "reduction_script" : file_path
-        }
-        listener = Listener(None)
-
-        self.assertTrue(os.path.isfile(file_path), "Expecting file to exist before call.")
-        
-        self._client.send('/queue/ReductionError', json.dumps(message))
-
-        self.assertFalse(os.path.isfile(file_path), "Expecting file to be deleted after call.")
 
         
         

@@ -147,14 +147,8 @@ class InstrumentVariablesUtils(object):
             f = open(reduction_file, 'rb')
             script_binary = f.read()
             return script_binary
-        except ImportError as e:
-            log_error_and_notify("Unable to load reduction script %s due to missing import. (%s)" % (reduction_file, e.message))
-            return None
-        except IOError:
-            log_error_and_notify("Unable to load reduction script %s" % reduction_file)
-            return None
-        except SyntaxError:
-            log_error_and_notify("Syntax error in reduction script %s" % reduction_file)
+        except Exception as e:
+            log_error_and_notify("Unable to load reduction script %s - %s" % (reduction_file, e))
             return None
 
     def __load_reduction_vars_script(self, instrument_name):
