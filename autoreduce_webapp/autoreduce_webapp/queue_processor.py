@@ -82,6 +82,8 @@ class Listener(object):
             highest_version = -1
 
         experiment, experiment_created = Experiment.objects.get_or_create(reference_number=self._data_dict['rb_number'])
+        if experiment_created:
+            experiment.save()
 
         if instrument.is_paused:
             status=StatusUtils().get_skipped()
@@ -268,7 +270,7 @@ class Listener(object):
         
 
 class Client(object):
-    def __init__(self, brokers, user, password, topics=None, consumer_name='QueueProcessor', client_only=True, use_ssl=ACTIVEMQ['broker']):
+    def __init__(self, brokers, user, password, topics=None, consumer_name='QueueProcessor', client_only=True, use_ssl=ACTIVEMQ['SSL']):
         self._brokers = brokers
         self._user = user
         self._password = password
@@ -279,13 +281,14 @@ class Client(object):
         self._client_only = client_only
         self._use_ssl = use_ssl
 
-    def set_listner(self, listener):
+    def set_listener(self, listener):
         self._listener = listener
 
     def get_connection(self, listener=None):
         if listener is None and not self._client_only:
             if self._listener is None:
                 listener = Listener(self)
+                self._listener = listener
             else:
                 listener = self._listener
 

@@ -2,7 +2,7 @@ import logging, os, sys, shutil, imp, re, json
 from mock import patch, Mock
 
 from django.test import TestCase
-from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL, REDUCTION_DIRECTORY, BASE_DIR
+from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL, REDUCTION_DIRECTORY, BASE_DIR, ACTIVEMQ
 logging.basicConfig(filename=LOG_FILE.replace('.log', '.test.log'),level=LOG_LEVEL, format=u'%(message)s',)
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 sys.path.insert(0, BASE_DIR)
@@ -42,27 +42,19 @@ class InstrumentVariablesUtilsTestCase(TestCase):
             if not os.path.isfile(file_path):
                 shutil.copyfile(reduce_vars, file_path)
             
-    
         map(copyScripts, ['valid', 'empty_script', 'duplicate_var_reduce', 'syntax_error'] )
     
     @classmethod
     def tearDownClass(cls):
-        directory = REDUCTION_SCRIPT_BASE % testInstrument
-        logging.warning("About to remove %s" % directory)
-        if os.path.exists(directory):
-            shutil.rmtree(directory)
-        directory = REDUCTION_SCRIPT_BASE % 'empty_script'
-        logging.warning("About to remove %s" % directory)
-        if os.path.exists(directory):
-            shutil.rmtree(directory)
-        directory = REDUCTION_SCRIPT_BASE % 'duplicate_var'
-        logging.warning("About to remove %s" % directory)
-        if os.path.exists(directory):
-            shutil.rmtree(directory)
-        directory = REDUCTION_SCRIPT_BASE % 'syntax_error'
-        logging.warning("About to remove %s" % directory)
-        if os.path.exists(directory):
-            shutil.rmtree(directory)
+    
+        def rmdir(name):
+            directory = REDUCTION_SCRIPT_BASE % name
+            logging.warning("About to remove %s" % directory)
+            if os.path.exists(directory):
+                shutil.rmtree(directory)
+                
+        map(rmdir, ['valid', 'empty_script', 'duplicate_var', 'syntax_error'])
+        
 
     def test_get_default_variables_successfull(self):
         variables = InstrumentVariablesUtils().get_default_variables(testInstrument)
@@ -124,9 +116,10 @@ class InstrumentVariablesUtilsTestCase(TestCase):
         self.assertEqual(script, script_binary, "Expecting files to match")
 
     def test_get_current_script_text_missing(self):
-        script = InstrumentVariablesUtils().get_current_script_text('missing')
+        script, script_vars = InstrumentVariablesUtils().get_current_script_text('missing')
 
         self.assertEqual(script, None, "Expecting script to be None")
+        self.assertEqual(script_vars, None, "Expecting script_vars to be None")
         
     def test_set_default_instrument_variables_successful(self):
         variables = InstrumentVariablesUtils().set_default_instrument_variables("valid", 1)
@@ -691,20 +684,32 @@ class MessagingUtilsTestCase(TestCase):
         
     @classmethod
     def setUpClass(cls):
-        test_reduce = os.path.join(os.path.dirname(__file__), '../', 'test_files','reduce.py')
-        valid_reduction_file = REDUCTION_SCRIPT_BASE % testInstrument
-        if not os.path.exists(valid_reduction_file):
-            os.makedirs(valid_reduction_file)
-        file_path = os.path.join(valid_reduction_file, 'reduce.py')
-        if not os.path.isfile(file_path):
-            shutil.copyfile(test_reduce, file_path)
-
+        def copyScripts(instrument):
+            reduce_script = os.path.join(os.path.dirname(__file__), '../', 'test_files',instrument,'reduce.py')
+            reduce_vars = os.path.join(os.path.dirname(__file__), '../', 'test_files',instrument,'reduce_vars.py')
+            
+            valid_reduction_file = REDUCTION_SCRIPT_BASE % instrument
+            if not os.path.exists(valid_reduction_file):
+                os.makedirs(valid_reduction_file)
+            file_path = os.path.join(valid_reduction_file, 'reduce.py')
+            if not os.path.isfile(file_path):
+                shutil.copyfile(reduce_script, file_path)
+            file_path = os.path.join(valid_reduction_file, 'reduce_vars.py')
+            if not os.path.isfile(file_path):
+                shutil.copyfile(reduce_vars, file_path)
+            
+        map(copyScripts, ['valid'])
+    
     @classmethod
     def tearDownClass(cls):
-        directory = REDUCTION_SCRIPT_BASE % testInstrument
-        logging.warning("About to remove %s" % directory)
-        if os.path.exists(directory):
-            shutil.rmtree(directory)
+    
+        def rmdir(name):
+            directory = REDUCTION_SCRIPT_BASE % name
+            logging.warning("About to remove %s" % directory)
+            if os.path.exists(directory):
+                shutil.rmtree(directory)
+                
+        map(rmdir, ['valid'])
             
 
     def get_valid_script(self, name):
@@ -767,7 +772,7 @@ class MessagingUtilsTestCase(TestCase):
             def connect(self):
                 pass
 
-            def send(self, destination, message, persistent='true'):
+            def send(self, destination, message, persistent='true', priority=4, delay=None):
                 send_called[0] = True
                 data_dict = json.loads(message)
                 parent.assertEqual(destination, '/queue/ReductionPending', "Expecting the destination to be '/queue/ReductionPending' but was '%s'." % destination)
