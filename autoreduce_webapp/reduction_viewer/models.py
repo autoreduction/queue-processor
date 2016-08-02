@@ -42,7 +42,7 @@ class ReductionRun(models.Model):
     graph = SeparatedValuesField(null=True, blank=True)
     hidden_in_failviewer = models.BooleanField(default=False)
     retry_when = models.DateTimeField(null=True, blank=True)
-    retry_run = models.ForeignKey('self', on_delete=models.CASCADE, null=True)
+    retry_run = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
     cancel = models.BooleanField(default=False)
 
     def __unicode__(self):
