@@ -1,5 +1,5 @@
-import logging, os, sys, shutil, imp, re, json
-from mock import patch, Mock
+import logging, os, sys, shutil, imp, json
+from mock import patch
 
 from django.test import TestCase
 from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL, REDUCTION_DIRECTORY, BASE_DIR, ACTIVEMQ
@@ -742,6 +742,34 @@ class MessagingUtilsTestCase(TestCase):
 
         with patch('autoreduce_webapp.queue_processor.Client', mock_client):
             MessagingUtils().send_pending(reduction_run)
+
+        self.assertTrue(send_called[0], "Expecting send to be called")
+
+    def test_MessagingUtils_cancel(self):
+        reduction_run = self.get_reduction_run()
+
+        data_location = DataLocation(file_path="/test/data/path", reduction_run=reduction_run)
+        data_location.save()
+        reduction_run.data_location.add(data_location)
+        reduction_run.save()
+
+        send_called = [False]
+
+        parent = self
+
+        class mock_client(object):
+            def __init__(self, brokers, user, password, topics=None, consumer_name='QueueProcessor', client_only=True, use_ssl=ACTIVEMQ['SSL'], ssl_version=3):  pass
+            def connect(self): pass
+            def stop(self): pass
+
+            def send(self, destination, message, persistent='true', priority=4, delay=None):
+                send_called[0] = True
+                data_dict = json.loads(message)
+                parent.assertTrue('cancel' in data_dict, "Expecting 'cancel' in message")
+                parent.assertEqual(data_dict['cancel'], True, "Expecting 'cancel' to be true")
+
+        with patch('autoreduce_webapp.queue_processor.Client', mock_client):
+            MessagingUtils().send_cancel(reduction_run)
 
         self.assertTrue(send_called[0], "Expecting send to be called")
 

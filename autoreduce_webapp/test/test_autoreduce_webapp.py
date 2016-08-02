@@ -25,10 +25,10 @@ from autoreduce_webapp.queue_processor import Client, Listener
 
 from utils import copyScripts, removeScripts
 
-import pdb
-
 rb_number = 2
 
+       
+            
 
 class QueueProcessorTestCase(TransactionTestCase):
     '''
@@ -63,6 +63,22 @@ class QueueProcessorTestCase(TransactionTestCase):
     @classmethod
     def tearDownClass(cls):
         map(removeScripts, ['valid', 'empty_script', 'duplicate_var', 'syntax_error'])
+        
+        
+    def createMockSMTP(self):
+        self.sentEmails = []
+        parent = self
+        
+        class mockSMTP:
+            def __init__(self, *args, **kwargs):
+                pass
+            def sendmail(self, *args, **kwargs):
+                parent.sentEmails.append(args)
+            def close(self):
+                pass
+                
+        return mockSMTP
+        
 
     '''
         Insert a reduction run to ensure the QueueProcessor can find one when recieving a topic message
@@ -579,8 +595,9 @@ class QueueProcessorTestCase(TransactionTestCase):
             "run_version" : 0,
             "message" : error_message
         }
-        self._client.send('/queue/ReductionError', json.dumps(test_data))
-        time.sleep(self._timeout_wait)
+        
+        with patch('smtplib.SMTP', self.createMockSMTP()):
+            self._client.send('/queue/ReductionError', json.dumps(test_data))
 
         runs = ReductionRun.objects.filter(experiment=experiment)
 
@@ -588,6 +605,7 @@ class QueueProcessorTestCase(TransactionTestCase):
         self.assert_run_match(test_data, runs[0])
         self.assertEqual(str(runs[0].status), "Error", "Expecting status to be 'Error' but was '%s'" % runs[0].status)
         self.assertEqual(runs[0].message, error_message, "Expecting the error message to be populated")
+        self.assertNotEqual(self.sentEmails, [], "Expected a notification email to be sent")
 
     '''
         Set a reduction run as having an error
@@ -604,8 +622,9 @@ class QueueProcessorTestCase(TransactionTestCase):
             "data" : "/false/path",
             "run_version" : 0
         }
-        self._client.send('/queue/ReductionError', json.dumps(test_data))
-        time.sleep(self._timeout_wait)
+        
+        with patch('smtplib.SMTP', self.createMockSMTP()):
+            self._client.send('/queue/ReductionError', json.dumps(test_data))
 
         runs = ReductionRun.objects.filter(experiment=experiment)
 
@@ -627,8 +646,9 @@ class QueueProcessorTestCase(TransactionTestCase):
             "data" : "/false/path",
             "run_version" : 0
         }
-        self._client.send('/queue/ReductionError', json.dumps(test_data))
-        time.sleep(self._timeout_wait)
+        
+        with patch('smtplib.SMTP', self.createMockSMTP()):
+            self._client.send('/queue/ReductionError', json.dumps(test_data))
 
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
         runs = ReductionRun.objects.filter(experiment=experiment)

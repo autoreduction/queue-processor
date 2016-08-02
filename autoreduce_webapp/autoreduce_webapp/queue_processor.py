@@ -251,6 +251,7 @@ class Listener(object):
             s.close()
         except Exception as e:
             logger.error("Failed to send emails %s" % emailContent)
+            logger.error("Exception %s - %s" % (type(e).__name__, str(e)))
         
         
     def retryRun(self, reductionRun, retryIn):
