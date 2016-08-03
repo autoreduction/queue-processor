@@ -3,6 +3,8 @@
 import sys
 import os
 import shutil
+
+sys.path.append("/isis/NDXTEST/user/scripts/autoreduction") 
 import reduce_vars as web_var
 
 from mantid.simpleapi import *
