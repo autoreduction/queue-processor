@@ -81,6 +81,11 @@ The web application is split into 3 components, known as apps in Django. These a
 ### autoreduce_webapp
 This is the core of the web app. It handles the application-wide settings, utilities and services.
 
+#### settings.py
+This contains the settings for all three components, most importantly credentials - `ACTIVEMQ` and `ICAT` - and data directories for reduction - `REDUCTION_DIRECTORY` and `ARCHIVE_DIRECTORY`.
+It also contains the settings for Django itself.
+
+
 #### queue_processor.py
 The `queue_processor.py` isn't strictly part of the web application but runs separately as a service but makes use of the modules made available by autoreduce_webapp (such as models and utilities). This contains a Stomp Client and Listener that sits and listens for messages from ActiveMQ on the following queues:
 * `/queue/DataReady`
@@ -94,7 +99,7 @@ This actions this script takes are:
 * `DataReady` - Create a new ReductionRun record representing the data that has come off the instrument. This then sends a message to the `/queue/ReductionPending` queue for it to be picked up by the autoreduction service.
 * `ReductionStarted` - This simply updated the status of the saved ReductionRun to note that the reduction job is now being performed by the autoreduction service.
 * `ReductionComplete` - This updates the status and performs post-processing. ICAT is updated with the reduction details. The reduced data is checked for .png files and these converted to a [base64](http://css-tricks.com/data-uris/) encoded string and saved in the database to be shown via the web application.
-* `ReductionError` - This logs the error that was retrieved and updated the status of the ReductionRun.
+* `ReductionError` - This logs the error that was retrieved and updated the status of the ReductionRun. If the run should be retried, it will schedule a retry.
 
 When using the `Client` there are some optional arguments that could cause problems is not correctly set.
 `topics` - a list stating what queues/topics to subscribe to (Default: None)
@@ -212,7 +217,7 @@ All models and logic related to run/instrument variables are found within this a
 
 * **ScriptFile** - Contains the binary text and filename of a reduction script.  
 * **InstrumentVariable** - Stores variables for a single instrument with either a starting run number or an experiment reference number. Variables can either be standard or advanced, as indicated by the `is_advanced` boolean.
-* **RunVariable** - Stored variable for a specific run job, upon first reduction run version these will be populated by the matching instrument variables (based on either experiment reference number or run number, in that order), re-run jobs will use the values the user enters.
+* **RunVariable** - Stored variable for a specific run job, upon first reduction run version these will be populated by the matching instrument variables (based on either experiment reference number or run number, in that order), re-run jobs will use the values the user enters. These are associated with the scripts that were used for reduction runs - if a ReductionRun is re-run, it will look at its variables to find the script to use.
 
 #### utils.py
 
