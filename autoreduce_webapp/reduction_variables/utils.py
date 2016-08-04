@@ -114,23 +114,16 @@ class VariableUtils(object):
 class InstrumentVariablesUtils(object):
     def __load_reduction_script(self, instrument_name):
         """
-        Load the relevant reduction script and return back a tuple containing:
-            - The text of the script
-        If the script cannot be loaded (None, None) is returned
+        Load the relevant reduction script and return back the text of the script
+        If the script cannot be loaded None is returned
         """
         reduction_file = os.path.join((REDUCTION_DIRECTORY % (instrument_name)), 'reduce.py')
         try:
             f = open(reduction_file, 'rb')
             script_binary = f.read()
             return script_binary
-        except ImportError as e:
-            log_error_and_notify("Unable to load reduction script %s due to missing import. (%s)" % (reduction_file, e.message))
-            return None
-        except IOError:
-            log_error_and_notify("Unable to load reduction script %s" % reduction_file)
-            return None
-        except SyntaxError:
-            log_error_and_notify("Syntax error in reduction script %s" % reduction_file)
+        except Exception as e:
+            log_error_and_notify("Unable to load reduction script %s - %s" % (reduction_file, e))
             return None
 
     def __load_reduction_vars_script(self, instrument_name):
@@ -471,6 +464,18 @@ class MessagingUtils(object):
             'facility':FACILITY,
             'message':'',
         }
+        
+        return data_dict
+        
+    
+    def _send_pending_msg(self, data_dict, delay=None):
+        """
+        Sends data_dict to ReductionPending (with the specified delay)
+        """
+        from autoreduce_webapp.queue_processor import Client as ActiveMQClient # to prevent circular dependencies
+
+        message_client = ActiveMQClient(ACTIVEMQ['broker'], ACTIVEMQ['username'], ACTIVEMQ['password'], ACTIVEMQ['topics'], 'Webapp_QueueProcessor', False, ACTIVEMQ['SSL'])
+        message_client.connect()
         message_client.send('/queue/ReductionPending', json.dumps(data_dict), priority='0', delay=delay)
         message_client.stop()
 

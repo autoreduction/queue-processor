@@ -146,12 +146,12 @@ ACTIVEMQ = {
         ],
     'username' : 'autoreduce',
     'password' : 'pa$$w0rd',
-    'broker' : [("autoreduce.isis.cclrc.ac.uk", 61613)]
+    'broker' : [("autoreduce.isis.cclrc.ac.uk", 61613)],
+    'SSL' : True
 }
 
 # File Locations
 
-#REDUCTION_SCRIPT_BASE = '/reduction_data/'
 #ARCHIVE_BASE = ''
 if os.name == 'nt':
     REDUCTION_DIRECTORY = '\\\\isis\\inst$\\NDX%s\\user\\scripts\\autoreduction' # %(instrument)
