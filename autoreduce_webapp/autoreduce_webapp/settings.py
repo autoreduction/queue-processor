@@ -179,7 +179,9 @@ UOWS_LOGIN_URL = 'https://devusers.facilities.rl.ac.uk/auth/?service=http://data
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'exchsmtp.stfc.ac.uk'
 EMAIL_PORT = 25
-ERROR_EMAILS = ['isisreduce@stfc.ac.uk']
+EMAIL_ERROR_RECIPIENTS = ['isisreduce@stfc.ac.uk']
+EMAIL_ERROR_SENDER = 'autoreduce@reduce.isis.cclrc.ac.uk'
+BASE_URL = 'http://reduce.isis.cclrc.ac.uk/'
 
 # Constant vars
 

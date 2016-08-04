@@ -1,5 +1,5 @@
 import stomp
-from settings import ACTIVEMQ, BASE_DIR, LOGGING, ERROR_EMAILS
+from settings import ACTIVEMQ, BASE_DIR, LOGGING, EMAIL_HOST, EMAIL_PORT, EMAIL_ERROR_RECIPIENTS, EMAIL_ERROR_SENDER, BASE_URL
 import logging
 import logging.config
 logging.config.dictConfig(LOGGING)
@@ -219,21 +219,24 @@ class Listener(object):
         
     def notifyRunFailure(self, reductionRun):
     
-        receivers = filter(lambda addr: addr.split('@')[-1] != 'autoreduce.isis.rl.ac.uk', ERROR_EMAILS) # don't send local emails
+        recipients = EMAIL_ERROR_RECIPIENTS
+        localRecipients = filter(lambda addr: addr.split('@')[-1] == BASE_URL, recipients) # this does not parse esoteric (but RFC-compliant) email addresses correctly
+        if localRecipients: # don't send local emails
+            raise Exception("Local email address specified in ERROR_EMAILS - %s match %s" % (localRecipients, BASE_URL))
     
-        senderAddress = "autoreduce@reducedev.isis.cclrc.ac.uk"
+        senderAddress = EMAIL_ERROR_SENDER
         
         errorMsg = "A reduction run - experiment %s, run %s, version %s - has failed:\n%s\n\n" % (reductionRun.experiment.reference_number, reductionRun.run_number, reductionRun.run_version, reductionRun.message)
         errorMsg += "The run will not retry automatically.\n" if not reductionRun.retry_when else "The run will automatically retry on %s.\n" % reductionRun.retry_when
-        errorMsg += "Retry manually at http://reducedev.isis.cclrc.ac.uk/runs/%i/%i/ or on %s." % (reductionRun.run_number, reductionRun.run_version, "http://reducedev.isis.cclrc.ac.uk/runs/failed/")
+        errorMsg += "Retry manually at %s%i/%i/ or on %sruns/failed/." % (BASE_URL, reductionRun.run_number, reductionRun.run_version, BASE_URL)
         
-        emailContent = "From: %s\nTo: %s\nSubject:Autoreduction error\n\n%s" % (senderAddress, ", ".join(receivers), errorMsg)
+        emailContent = "From: %s\nTo: %s\nSubject:Autoreduction error\n\n%s" % (senderAddress, ", ".join(recipients), errorMsg)
 
         logger.info("Sending email: %s" % emailContent)
                        
         try:
-            s = smtplib.SMTP('exchsmtp.stfc.ac.uk', 25)
-            s.sendmail(senderAddress, receivers, emailContent)
+            s = smtplib.SMTP(EMAIL_HOST, EMAIL_PORT)
+            s.sendmail(senderAddress, recipients, emailContent)
             s.close()
         except Exception as e:
             logger.error("Failed to send emails %s" % emailContent)
