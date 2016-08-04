@@ -3,9 +3,8 @@ sys.path.append(os.path.join("../", os.path.dirname(os.path.dirname(__file__))))
 os.environ["DJANGO_SETTINGS_MODULE"] = "autoreduce_webapp.settings"
 from autoreduce_webapp.settings import ACTIVEMQ, REDUCTION_DIRECTORY, FACILITY
 logger = logging.getLogger('django')
-from django.utils import timezone
 from reduction_variables.models import InstrumentVariable, ScriptFile, RunVariable
-from reduction_viewer.models import ReductionRun, Notification, DataLocation
+from reduction_viewer.models import ReductionRun, Notification
 from reduction_viewer.utils import InstrumentUtils, StatusUtils
 from autoreduce_webapp.icat_communication import ICATCommunication
 
@@ -377,70 +376,14 @@ class ReductionVariablesUtils(object):
         arguments = { 'standard_vars' : standard_vars, 'advanced_vars': advanced_vars }
 
         return (script, arguments)
-      
-                 
-    def createRetryRun(self, reductionRun, scripts=None, variables=None, delay=0):
-        """
-        Create a run ready for re-running based on the run provided. If variables are provided, copy them and associate them with the new one, otherwise generate variables based on the previous run. If ScriptFile objects are supplied, use them, otherwise use the previous run's.
-        """
-        # find the previous run version, so we don't create a duplicate
-        last_version = -1
-        for run in ReductionRun.objects.filter(experiment=reductionRun.experiment, run_number=reductionRun.run_number):
-            last_version = max(last_version, run.run_version)
-            
-        try:
-            # create the run object and save it
-            new_job = ReductionRun(
-                instrument = reductionRun.instrument,
-                run_number = reductionRun.run_number,
-                run_name = "",
-                run_version = last_version+1,
-                experiment = reductionRun.experiment,
-                #started_by=request.user.username, # commented out for the test server only
-                status = StatusUtils().get_queued()
-                )
-            new_job.save()
-            
-            reductionRun.retry_run = new_job
-            reductionRun.retry_when = timezone.now().replace(microsecond=0) + datetime.timedelta(seconds=delay if delay else 0)
-            reductionRun.save()
-            
-            # copy the previous data locations
-            for data_location in reductionRun.data_location.all():
-                new_data_location = DataLocation(file_path=data_location.file_path, reduction_run=new_job)
-                new_data_location.save()
-                new_job.data_location.add(new_data_location)
-                
-            if not variables: # provide variables if they aren't already
-                variables = InstrumentVariablesUtils().get_variables_for_run(new_job)
-            for var in variables:
-                new_var = RunVariable(name=var.name, value=var.value, type=var.type, is_advanced=var.is_advanced, help_text=var.help_text) # copy variable
-                new_var.reduction_run = new_job # associate it with the new run
-                new_job.run_variables.add(new_var)
-                
-                # add scripts based on whether some were supplied
-                if not scripts:
-                    scripts = var.scripts.all()
-                for script in scripts:
-                    new_var.scripts.add(script)
-                    
-                new_var.save()
-                    
-            return new_job
-            
-        except:
-            new_job.delete()
-            raise
         
 
-
 class MessagingUtils(object):
-    def send_pending(self, reduction_run, delay=None):
-        """
-        Sends a message to the queue with the details of the job to run
-        """
-        from autoreduce_webapp.queue_processor import Client as ActiveMQClient # to prevent circular dependencies
 
+    def _make_pending_msg(self, reduction_run):
+        """
+        Creates a dict message from the given run, ready to be sent to ReductionPending
+        """
         script, arguments = ReductionVariablesUtils().get_script_and_arguments(RunVariable.objects.filter(reduction_run=reduction_run))
 
         data_path = ''
@@ -451,8 +394,6 @@ class MessagingUtils(object):
         else:
             raise Exception("No data path found for reduction run")
 
-        message_client = ActiveMQClient(ACTIVEMQ['broker'], ACTIVEMQ['username'], ACTIVEMQ['password'], ACTIVEMQ['topics'], 'Webapp_QueueProcessor', True, True)
-        message_client.connect()
         data_dict = {
             'run_number':reduction_run.run_number,
             'instrument':reduction_run.instrument.name,
@@ -478,6 +419,23 @@ class MessagingUtils(object):
         message_client.connect()
         message_client.send('/queue/ReductionPending', json.dumps(data_dict), priority='0', delay=delay)
         message_client.stop()
+        
+
+    def send_pending(self, reduction_run, delay=None):
+        """
+        Sends a message to the queue with the details of the job to run
+        """
+        data_dict = self._make_pending_msg(reduction_run)
+        self._send_pending_msg(data_dict, delay)
+        
+    def send_cancel(self, reduction_run):
+        """
+        Sends a message to the queue telling it to cancel any reruns of the job
+        """
+        data_dict = self._make_pending_msg(reduction_run)
+        data_dict["cancel"] = True
+        self._send_pending_msg(data_dict)
+        
 
 class ScriptUtils(object):
     def get_reduce_scripts(self, scripts):

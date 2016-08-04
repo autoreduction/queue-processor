@@ -4,14 +4,14 @@ import logging
 import logging.config
 logging.config.dictConfig(LOGGING)
 logger = logging.getLogger("django")
-import time, sys, os, json, glob, base64, shutil
+import time, sys, os, json, glob, base64
 from django.utils import timezone
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 sys.path.insert(0, BASE_DIR)
 from reduction_viewer.models import ReductionRun, ReductionLocation, DataLocation, Experiment
-from reduction_viewer.utils import StatusUtils, InstrumentUtils
+from reduction_viewer.utils import StatusUtils, InstrumentUtils, ReductionRunUtils
 from reduction_variables.models import RunVariable
-from reduction_variables.utils import ReductionVariablesUtils, MessagingUtils
+from reduction_variables.utils import MessagingUtils
 from icat_communication import ICATCommunication
 from django.db import connection
 import smtplib
@@ -253,7 +253,7 @@ class Listener(object):
             
         logger.info("Retrying run in %i seconds" % retryIn)
         
-        new_job = ReductionVariablesUtils().createRetryRun(reductionRun, delay=retryIn)          
+        new_job = ReductionRunUtils().createRetryRun(reductionRun, delay=retryIn)          
         try:
             MessagingUtils().send_pending(new_job, delay=retryIn*1000) # seconds to ms
         except Exception as e:
