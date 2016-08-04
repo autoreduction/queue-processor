@@ -220,7 +220,7 @@ This contains utilities related to the models found within reduction_variables.
 
 * **VariableUtils** - Contains utilities relating to individual variables. E.g. `wrap_in_type_syntax` takes in a value and adds the appropriate syntax around it to match the type provided. For example, a `1,2,3` with type of `list_number` would return `[1,2,3]` as a string to be used in the preview script.
 * **InstrumentVariablesUtils** - Provides utilities for setting and fetching InstrumentVariables and scripts. Of particular note is the `get_variables_for_run` function that is [mentioned below](#selecting-run-variables) and `get_current_and_upcoming_variables` that is also [mentioned below](#upcoming-instrumentvariables).
-* **ReductionVariablesUtils** - Currently only contains `get_script_path_and_arguments` which takes in a list of run numbers and returns back a file path and a dictionary of variables to be passed in. The file path point to a temporary copy of the reduction script that is later removed.
+* **ReductionVariablesUtils** - Contains `get_script_and_arguments` which takes in a list of run numbers and returns back a script as a string and a dictionary of variables to be passed in. Also contains `createRetryRun`, which takes a ReductionRun and creates, essentially, a copy of it, suitable for sending to be run again.
 * **MessagingUtils** - Currently only contains `send_pending` which takes in a ReductionRun and sends it to the messaging queue for processing.
 
 ## Templates
@@ -368,12 +368,13 @@ Messages that are sent to the ActiveMQ broker are send as JSON. And example of w
     'instrument' : 'GEM',
     'rb_number' : 1234567,
     'data' : '/path/to/data/',
-    'reduction_script' : '/path/to/script/reduce.py',
+    'reduction_script' : 'import module\nfor x in ...',
     'arguments' : { ... },
     'message' : 'Some form of feedback, possible an error message',
     'reduction_data' : ['/path/1', '/path/2']
 }
 ``` 
+`reduction_script` is a string of the reduction script.
 `'reduction_script'` and `'arguments'` is added by the `data_ready` function in queue_processor.py.
 `'reduction_data'` is added by the `reduction_complete` function in the queue_processor.py.
 `'message'` will usually be empty unless an error has been caught and passed back.

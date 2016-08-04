@@ -155,11 +155,9 @@ ACTIVEMQ = {
 #ARCHIVE_BASE = ''
 if os.name == 'nt':
     REDUCTION_DIRECTORY = '\\\\isis\\inst$\\NDX%s\\user\\scripts\\autoreduction' # %(instrument)
-    TEMP_OUTPUT_DIRECTORY = '\\\\autoreduce\\data\\reduction_script_temp'
     ARCHIVE_DIRECTORY = '\\\\isis\\inst$\\NDX%s\\Instrument\\data\\cycle_%s\\autoreduced\\%s\\%s' # %(instrument, cycle, experiment_number, run_number)
 else:
     REDUCTION_DIRECTORY = '/isis/NDX%s/user/scripts/autoreduction' # %(instrument)
-    TEMP_OUTPUT_DIRECTORY = '/tmp/autoreduce'
     ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s' # %(instrument, cycle, experiment_number, run_number)
 
 # ICAT 

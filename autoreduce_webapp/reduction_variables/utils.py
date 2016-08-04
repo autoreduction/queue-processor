@@ -1,7 +1,7 @@
-import logging, os, sys, imp, uuid, re, json, time, datetime, cgi
+import logging, os, sys, imp, re, json, time, datetime, cgi
 sys.path.append(os.path.join("../", os.path.dirname(os.path.dirname(__file__))))
 os.environ["DJANGO_SETTINGS_MODULE"] = "autoreduce_webapp.settings"
-from autoreduce_webapp.settings import ACTIVEMQ, TEMP_OUTPUT_DIRECTORY, REDUCTION_DIRECTORY, FACILITY
+from autoreduce_webapp.settings import ACTIVEMQ, REDUCTION_DIRECTORY, FACILITY
 logger = logging.getLogger('django')
 from django.utils import timezone
 from reduction_variables.models import InstrumentVariable, ScriptFile, RunVariable
@@ -11,31 +11,6 @@ from autoreduce_webapp.icat_communication import ICATCommunication
 
 class DataTooLong(ValueError):
     pass
-
-def write_script_to_temp(script, script_vars_file):
-    """
-    Write the given script binary to a unique filename in the reduction_script_temp directory.
-    """
-    try:
-        unique_name = str(uuid.uuid4())
-        script_path = os.path.join(TEMP_OUTPUT_DIRECTORY, 'scripts', unique_name)
-        # Make sure we don't accidently overwrite a file
-        while os.path.exists(script_path):
-            unique_name = str(uuid.uuid4())
-            script_path = os.path.join(TEMP_OUTPUT_DIRECTORY, 'scripts', unique_name)
-        os.makedirs(script_path)
-        f = open(os.path.join(script_path, 'reduce.py'), 'wb')
-        f.write(script)
-        f.close()
-        f = open(os.path.join(script_path, 'reduce_vars.py'), 'wb')
-        f.write(script_vars_file)
-        f.close()
-    except Exception as e:
-        logger.error("Couldn't write temporary script - %s" % e)
-        type, value, traceback = sys.exc_info()
-        logger.error('Error opening %s: %s' % (value.filename, value.strerror))
-        raise e
-    return script_path
 
 
 def log_error_and_notify(message):
@@ -277,15 +252,14 @@ class InstrumentVariablesUtils(object):
         script_binary =  self.__load_reduction_script(instrument_name)
         reduce_vars_script, vars_script_binary =  self.__load_reduction_vars_script(instrument_name)
         return script_binary, vars_script_binary
-
-    def get_temporary_script(self, instrument_name):
+        
+    def get_script(self, instrument_name):
         """
-        Fetches the reduction script for the given instument, saves it to a temporary location
-        and returns the path.
+        Fetches the reduction script for the given instument, and returns it as a string.
         This is for use when a reduction script doesn't expose any variables
         """
-        script_binary, vars_script_binary = self.get_current_script_text(instrument_name)
-        return write_script_to_temp(script_binary, vars_script_binary)
+        script_binary =  self.__load_reduction_script(instrument_name)
+        return ScriptUtils().read_binary(script_binary)
 
     def _create_variables(self, instrument, script, variable_dict, is_advanced):
         variables = []
@@ -377,10 +351,10 @@ class InstrumentVariablesUtils(object):
         return current_variables, upcoming_variables_by_run, upcoming_variables_by_experiment
 
 class ReductionVariablesUtils(object):
-    def get_script_path_and_arguments(self, run_variables):
+
+    def get_script_and_arguments(self, run_variables):
         """
-        Fetches the reduction script from the given variables, saves it to a temporary location 
-        and returns the path with a dictionary of arguments
+        Fetches the reduction script from the given variables and returns it as a string, along with a dictionary of arguments.
         """
         if not run_variables or len(run_variables) == 0:
             raise Exception("Run variables required")
@@ -396,7 +370,7 @@ class ReductionVariablesUtils(object):
         
         script_binary, script_vars_binary = ScriptUtils().get_reduce_scripts_binary(run_variables[0].scripts.all())
 
-        script_path = write_script_to_temp(script_binary, script_vars_binary)
+        script = ScriptUtils().read_binary(script_binary)
 
         standard_vars = {}
         advanced_vars = {}
@@ -409,8 +383,8 @@ class ReductionVariablesUtils(object):
 
         arguments = { 'standard_vars' : standard_vars, 'advanced_vars': advanced_vars }
 
-        return (script_path, arguments)
-        
+        return (script, arguments)
+      
                  
     def createRetryRun(self, reductionRun, scripts=None, variables=None, delay=0):
         """
@@ -474,7 +448,7 @@ class MessagingUtils(object):
         """
         from autoreduce_webapp.queue_processor import Client as ActiveMQClient # to prevent circular dependencies
 
-        script_path, arguments = ReductionVariablesUtils().get_script_path_and_arguments(RunVariable.objects.filter(reduction_run=reduction_run))
+        script, arguments = ReductionVariablesUtils().get_script_and_arguments(RunVariable.objects.filter(reduction_run=reduction_run))
 
         data_path = ''
         # Currently only support single location
@@ -491,7 +465,7 @@ class MessagingUtils(object):
             'instrument':reduction_run.instrument.name,
             'rb_number':str(reduction_run.experiment.reference_number),
             'data':data_path,
-            'reduction_script':script_path,
+            'reduction_script':script,
             'reduction_arguments':arguments,
             'run_version':reduction_run.run_version,
             'facility':FACILITY,
@@ -514,6 +488,12 @@ class ScriptUtils(object):
     def get_reduce_scripts_binary(self, scripts):
         script, script_vars = self.get_reduce_scripts(scripts)
         return script.script, script_vars.script
+        
+    def read_binary(self, bin_script):
+        """
+        Takes a binary script and returns its Python string form. It assumes that the encoding of the binary is UTF-8.
+        """
+        return bin_script.decode("utf-8")
 
     def get_cache_scripts_modified(self, scripts):
         """
