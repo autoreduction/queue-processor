@@ -71,6 +71,14 @@ class ReductionRun(models.Model):
         return title
 
         
+class ScriptFile(models.Model):
+    script = models.BinaryField(blank=False)
+    file_name = models.CharField(max_length=50, blank=False)
+    created = models.DateTimeField(auto_now_add=True,blank=True)
+
+    def __unicode__(self):
+        return u'%s' % self.file_name
+        
 class DataLocation(models.Model):
     file_path = models.CharField(max_length=255)
     reduction_run = models.ForeignKey(ReductionRun, blank=False, related_name='data_location')
