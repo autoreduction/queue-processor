@@ -14,7 +14,7 @@ import logging, re, json
 logger = logging.getLogger(__name__)
 
 '''
-    Imported into another view, thus no middlewear
+    Imported into another view, thus no middleware
 '''
 def instrument_summary(request, instrument):
     # Check the user has permission
@@ -345,7 +345,7 @@ def current_default_variables(request, instrument):
     return context_dictionary
 
 '''
-    Imported into another view, thus no middlewear
+    Imported into another view, thus no middleware
 '''
 def run_summary(request, run_number, run_version=0):
     reduction_run = ReductionRun.objects.get(run_number=run_number, run_version=run_version)
