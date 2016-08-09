@@ -1,5 +1,4 @@
 from django.db import models
-from django.contrib.auth.models import User
 from autoreduce_webapp.utils import SeparatedValuesField
 import autoreduce_webapp.icat_communication
 
@@ -17,15 +16,14 @@ class Experiment(models.Model):
     def __unicode__(self):
         return u'%s' % self.reference_number
 
-    def get_ICAT_details():
-        return icat_communication.get_experiment_details(reference_number)
+    def get_ICAT_details(self):
+        return autoreduce_webapp.icat_communication.get_experiment_details(self.reference_number)
 
 class Status(models.Model):
     value = models.CharField(max_length=25)
 
     def __unicode__(self):
-        return u'%s' % self.value
-
+        return u'%s' % self.value        
         
 class ReductionRun(models.Model):
     run_number = models.IntegerField(blank=False)
@@ -34,7 +32,7 @@ class ReductionRun(models.Model):
     experiment = models.ForeignKey(Experiment, blank=False, related_name='reduction_runs')
     instrument = models.ForeignKey(Instrument, related_name='reduction_runs', null=True)
     
-    script = models.ForeignKey(ScriptFile)
+    script = models.TextField(blank=False)
     
     status = models.ForeignKey(Status, blank=False, related_name='+')
     created = models.DateTimeField(auto_now_add=True, blank=False)
@@ -69,15 +67,7 @@ class ReductionRun(models.Model):
         else:
             title = '%s' % self.run_number
         return title
-
         
-class ScriptFile(models.Model):
-    script = models.CharField(blank=False)
-    file_name = models.CharField(max_length=50, blank=False)
-    created = models.DateTimeField(auto_now_add=True,blank=True)
-
-    def __unicode__(self):
-        return u'%s' % self.file_name
         
 class DataLocation(models.Model):
     file_path = models.CharField(max_length=255)

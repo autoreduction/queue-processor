@@ -1,4 +1,4 @@
-import logging, os, sys, datetime
+import logging, os, sys, time, datetime
 sys.path.append(os.path.join("../", os.path.dirname(os.path.dirname(__file__))))
 os.environ["DJANGO_SETTINGS_MODULE"] = "autoreduce_webapp.settings"
 logger = logging.getLogger(__name__)
@@ -83,9 +83,9 @@ class ReductionRunUtils(object):
             reductionRun.retry_run.save()
             
 
-    def createRetryRun(self, reductionRun, scripts=None, variables=None, delay=0):
+    def createRetryRun(self, reductionRun, script=None, variables=None, delay=0):
         """
-        Create a run ready for re-running based on the run provided. If variables are provided, copy them and associate them with the new one, otherwise generate variables based on the previous run. If ScriptFile objects are supplied, use them, otherwise use the previous run's.
+        Create a run ready for re-running based on the run provided. If variables are provided, copy them and associate them with the new one, otherwise generate variables based on the previous run. If a script (as a string) is supplied then use it, otherwise use the previous run's.
         """
         from reduction_variables.utils import InstrumentVariablesUtils
         
@@ -95,16 +95,19 @@ class ReductionRunUtils(object):
             last_version = max(last_version, run.run_version)
             
         try:
+            # get the script to use:
+            script_text = script if script is not None else reductionRun.script
+        
             # create the run object and save it
-            new_job = ReductionRun(
-                instrument = reductionRun.instrument,
-                run_number = reductionRun.run_number,
-                run_name = "",
-                run_version = last_version+1,
-                experiment = reductionRun.experiment,
-                #started_by=request.user.username, # commented out for the test server only
-                status = StatusUtils().get_queued()
-                )
+            new_job = ReductionRun( instrument = reductionRun.instrument
+                                  , run_number = reductionRun.run_number
+                                  , run_name = ""
+                                  , run_version = last_version+1
+                                  , experiment = reductionRun.experiment
+                                  #, started_by=request.user.username # commented out for the test server only
+                                  , status = StatusUtils().get_queued()
+                                  , script = script_text
+                                  )
             new_job.save()
             
             reductionRun.retry_run = new_job
@@ -133,6 +136,8 @@ class ReductionRunUtils(object):
         """
         Fetch the reduction script from the given run and return it as a string, along with a dictionary of arguments.
         """
+        from reduction_variables.utils import VariableUtils
+        
         script = reductionRun.script
 
         run_variables = RunVariable.objects.filter(reduction_run=ReductionRun)

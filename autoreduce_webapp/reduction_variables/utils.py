@@ -1,9 +1,9 @@
-import logging, os, sys, imp, re, json, time, datetime, cgi
+import logging, os, sys, re, json, cgi
 sys.path.append(os.path.join("../", os.path.dirname(os.path.dirname(__file__))))
 os.environ["DJANGO_SETTINGS_MODULE"] = "autoreduce_webapp.settings"
 from autoreduce_webapp.settings import ACTIVEMQ, REDUCTION_DIRECTORY, FACILITY
 logger = logging.getLogger('django')
-from reduction_variables.models import InstrumentVariable, ScriptFile, RunVariable
+from reduction_variables.models import InstrumentVariable, RunVariable
 from reduction_viewer.models import ReductionRun, Notification
 from reduction_viewer.utils import InstrumentUtils, StatusUtils, ReductionRunUtils
 from autoreduce_webapp.icat_communication import ICATCommunication
@@ -23,17 +23,16 @@ def log_error_and_notify(message):
 
 class VariableUtils(object):
     def derive_run_variable(self, instrument_var, reduction_run):
-        return RunVariable( name=instrument_var.name
-                          , value=instrument_var.value
-                          , is_advanced=instrument_var.is_advanced
-                          , type=instrument_var.type
-                          , help_text=instrument_var.help_text
-                          
-                          , reduction_run=reduction_run
+        return RunVariable( name = instrument_var.name
+                          , value = instrument_var.value
+                          , is_advanced = instrument_var.is_advanced
+                          , type = instrument_var.type
+                          , help_text = instrument_var.help_text
+                          , reduction_run = reduction_run
                           )
                           
     def save_run_variables(self, instrument_vars, reduction_run):
-        runVariables = map(lambda iVar: derive_run_variable(iVar, reduction_run), instrument_vars)
+        runVariables = map(lambda iVar: self.derive_run_variable(iVar, reduction_run), instrument_vars)
         map(lambda rVar: rVar.save(), runVariables)
         reduction_run.run_variables.extend(runVariables)
         reduction_run.save()
@@ -218,7 +217,22 @@ class InstrumentVariablesUtils(object):
             except AttributeError:
                 # Still not found any variables, we better create some
                 variables = self.set_default_instrument_variables(instrument_name)
-
+        
+        
+        # make sure variables are up to date if they need to be
+        defaults = self.get_default_variables(instrument_name)
+        
+        def updateVariable(oldVar, defaultVars):
+            matchingVars = filter(lambda var: var.name == oldVar.name, defaultVars)
+            try:
+                newVar = matchingVars[0]
+                map(lambda name: setattr(oldVar, name, getattr(newVar, name)),
+                    ["value", "type", "is_advanced", "help_text"])
+                oldVar.save()
+            except:
+                pass
+                
+        map(lambda var: updateVariable(var, defaults) if var.tracks_script else None, variables)
         return variables
         
     def get_variables_from_current_script(self, instrument_name):

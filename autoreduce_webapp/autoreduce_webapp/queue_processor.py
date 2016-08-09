@@ -10,7 +10,6 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 sys.path.insert(0, BASE_DIR)
 from reduction_viewer.models import ReductionRun, ReductionLocation, DataLocation, Experiment
 from reduction_viewer.utils import StatusUtils, InstrumentUtils, ReductionRunUtils
-from reduction_variables.models import RunVariable
 from reduction_variables.utils import MessagingUtils
 from icat_communication import ICATCommunication
 from django.db import connection
@@ -77,7 +76,7 @@ class Listener(object):
         if experiment_created:
             experiment.save()
             
-        script_text = InstrumentVariablesUtils().get_current_script_text(instrument_name)[0]
+        script_text = InstrumentVariablesUtils().get_current_script_text(instrument.name)[0]
 
 
         run_version = highest_version+1

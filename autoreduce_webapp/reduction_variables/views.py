@@ -5,13 +5,13 @@ from django.shortcuts import render_to_response
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, HttpResponseForbidden
 from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, has_valid_login, handle_redirect
-from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFile
-from reduction_variables.utils import InstrumentVariablesUtils, VariableUtils, MessagingUtils, ScriptUtils
+from reduction_variables.models import InstrumentVariable, RunVariable
+from reduction_variables.utils import InstrumentVariablesUtils, MessagingUtils
 from reduction_viewer.models import Instrument, ReductionRun
 from reduction_viewer.utils import StatusUtils, ReductionRunUtils
 
-import logging, re, json
-logger = logging.getLogger(__name__)
+import logging, json
+logger = logging.getLogger("app")
 
 '''
     Imported into another view, thus no middleware
@@ -110,12 +110,9 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
     #    raise PermissionDenied()
     
     instrument = Instrument.objects.get(name=instrument)
-    script = None
-    script_vars = None
     if request.method == 'POST':
         # Truth value comes back as text so we'll compare it to a string of "True"
         is_run_range = request.POST.get("variable-range-toggle-value", "True") == "True"
-
         track_scripts = request.POST.get("track_script_checkbox") == "on"
 
         if is_run_range:
@@ -123,16 +120,8 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
             end = request.POST.get("run_end", None)
 
             if request.POST.get("is_editing", '') == 'True':
-                old_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run=start)
-                if old_variables:
-                    ###script, script_vars = ScriptUtils().get_reduce_scripts(old_variables[0].scripts.all())
-                    default_variables = list(old_variables)
-            if script is None or request.POST.get("is_editing", '') != 'True':
-                script_binary, script_vars_binary = InstrumentVariablesUtils().get_current_script_text(instrument.name)
-                script = ScriptFile(script=script_binary, file_name='reduce.py')
-                script.save()
-                script_vars = ScriptFile(script=script_vars_binary, file_name='reduce_vars.py')
-                script_vars.save()
+                default_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run=start)
+            else:
                 default_variables = InstrumentVariablesUtils().get_default_variables(instrument.name)
 
             # Remove any existing variables saved within the provided range
@@ -145,26 +134,20 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
                 existing_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run__gte=start)
             for existing in existing_variables:
                 existing.delete()
+                
         else:
             experiment_reference = request.POST.get("experiment_reference_number", 1)
 
             if request.POST.get("is_editing", '') == 'True':
-                old_variables = InstrumentVariable.objects.filter(instrument=instrument, experiment_reference=experiment_reference)
-                if old_variables:
-                    ###script, script_vars = ScriptUtils().get_reduce_scripts(old_variables[0].scripts.all())
-                    default_variables = list(old_variables)
-            if script is None or request.POST.get("is_editing", '') != 'True':
-                script_binary, script_vars_binary = InstrumentVariablesUtils().get_current_script_text(instrument.name)
-                script = ScriptFile(script=script_binary, file_name='reduce.py')
-                script.save()
-                script_vars = ScriptFile(script=script_vars_binary, file_name='reduce_vars.py')
-                script_vars.save()
+                default_variables = list(old_variables = InstrumentVariable.objects.filter(instrument=instrument, experiment_reference=experiment_reference))
+            else:
                 default_variables = InstrumentVariablesUtils().get_default_variables(instrument.name)
 
             existing_variables = InstrumentVariable.objects.filter(instrument=instrument, experiment_reference=experiment_reference)
             for existing in existing_variables:
                 existing.delete()
 
+                
         for default_var in default_variables:
             form_name = 'var-'
             if default_var.is_advanced:
@@ -175,15 +158,14 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
 
             post_variable = request.POST.get(form_name, None)
             if post_variable:
-                variable = InstrumentVariable(
-                    instrument=instrument, 
-                    name=default_var.name, 
-                    value=post_variable, 
-                    is_advanced=default_var.is_advanced, 
-                    type=default_var.type,
-                    tracks_script=track_scripts,
-                    help_text=default_var.help_text,
-                    )
+                variable = InstrumentVariable( instrument = instrument
+                                             , name = default_var.name
+                                             , value = post_variable
+                                             , is_advanced = default_var.is_advanced
+                                             , type = default_var.type
+                                             , tracks_script = track_scripts
+                                             , help_text = default_var.help_text
+                                             )
                 if is_run_range:
                     variable.start_run = start
                 else:
@@ -192,13 +174,11 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
                 variable = default_var
                 variable.pk = None
                 variable.id = None
-                variable.scripts.clear()
-            variable.save()
-            variable.scripts.add(script)
-            variable.scripts.add(script_vars)
             variable.save()
 
         return redirect('instrument_summary', instrument=instrument.name)
+        
+        
     else:
         editing = (start > 0 or experiment_reference > 0)
         completed_status = StatusUtils().get_completed()
@@ -386,118 +366,108 @@ def run_summary(request, run_number, run_version=0):
 @login_and_uows_valid
 @render_with('run_confirmation.html')
 def run_confirmation(request, instrument):
-    if request.method == 'POST':
-        instrument = Instrument.objects.get(name=instrument)
-        run_numbers = []
+    if request.method != 'POST':
+        return redirect('instrument_summary', instrument=instrument.name)
+        
+    # POST
+    instrument = Instrument.objects.get(name=instrument)
+    run_numbers = []
 
-        if 'run_number' in request.POST:
-            run_numbers.append(int(request.POST.get('run_number')))
-        else:
-            # TODO: Check ICAT credentials
-            range_string = request.POST.get('run_range').split(',')
-            # Expand list
-            for item in range_string:
-                if '-' in item:
-                    split_range = item.split('-')
-                    run_numbers.extend(range(int(split_range[0]), int(split_range[1])+1)) # because this is a range, the end bound is exclusive!
-                else:
-                    run_numbers.append(int(item))
-            # Make sure run numbers are distinct
-            run_numbers = set(run_numbers)
-
-        queued_status = StatusUtils().get_queued()
-        queue_count = ReductionRun.objects.filter(instrument=instrument, status=queued_status).count()
-
-        context_dictionary = {
-            'runs' : [],
-            'variables' : None,
-            'queued' : queue_count,
-        }
-
-
-        # Check that RB numbers are the same
-        rb_number = ReductionRun.objects.filter(instrument=instrument, run_number__in=run_numbers).values_list('experiment__reference_number', flat=True).distinct()
-        if len(rb_number) > 1:
-            context_dictionary['error'] = 'Runs span multiple experiment numbers (' + ','.join(str(i) for i in rb_number) + ') please select a different range.'
-
-        # Check that RB numbers are allowed
-        if not request.user.is_superuser:
-            experiments_allowed = request.session['experiments_to_show'].get(instrument.name)
-            if (experiments_allowed is not None) and (str(rb_number[0]) not in experiments_allowed):
-                context_dictionary['error'] = "Permission denied. You do not have permission to request re-runs on the associated experiment number."
-
-        for run_number in run_numbers:
-            old_reduction_run = ReductionRun.objects.filter(run_number=run_number).order_by('-run_version').first()
-
-
-            use_current_script = request.POST.get('use_current_script', u"true").lower() == u"true"
-                
-            if use_current_script:
-                script_binary, script_vars_binary = InstrumentVariablesUtils().get_current_script_text(instrument.name)
-                default_variables = InstrumentVariablesUtils().get_variables_from_current_script(instrument.name)
+    if 'run_number' in request.POST:
+        run_numbers.append(int(request.POST.get('run_number')))
+    else:
+        # TODO: Check ICAT credentials
+        range_string = request.POST.get('run_range').split(',')
+        # Expand list
+        for item in range_string:
+            if '-' in item:
+                split_range = item.split('-')
+                run_numbers.extend(range(int(split_range[0]), int(split_range[1])+1)) # because this is a range, the end bound is exclusive!
             else:
-                run_variables = old_reduction_run.run_variables.all()
-                script_binary, script_vars_binary = ScriptUtils().get_reduce_scripts_binary(run_variables[0].scripts.all())
-                default_variables = run_variables
+                run_numbers.append(int(item))
+        # Make sure run numbers are distinct
+        run_numbers = set(run_numbers)
 
-            script = ScriptFile(script=script_binary, file_name='reduce.py')
-            script_vars = ScriptFile(script=script_vars_binary, file_name='reduce_vars.py')
+    queued_status = StatusUtils().get_queued()
+    queue_count = ReductionRun.objects.filter(instrument=instrument, status=queued_status).count()
+
+    context_dictionary = {
+        'runs' : [],
+        'variables' : None,
+        'queued' : queue_count,
+    }
+
+
+    # Check that RB numbers are the same
+    rb_number = ReductionRun.objects.filter(instrument=instrument, run_number__in=run_numbers).values_list('experiment__reference_number', flat=True).distinct()
+    if len(rb_number) > 1:
+        context_dictionary['error'] = 'Runs span multiple experiment numbers (' + ','.join(str(i) for i in rb_number) + ') please select a different range.'
+
+    # Check that RB numbers are allowed
+    if not request.user.is_superuser:
+        experiments_allowed = request.session['experiments_to_show'].get(instrument.name)
+        if (experiments_allowed is not None) and (str(rb_number[0]) not in experiments_allowed):
+            context_dictionary['error'] = "Permission denied. You do not have permission to request re-runs on the associated experiment number."
+
+    for run_number in run_numbers:
+        old_reduction_run = ReductionRun.objects.filter(run_number=run_number).order_by('-run_version').first()
+
+
+        use_current_script = request.POST.get('use_current_script', u"true").lower() == u"true"
+        if use_current_script:
+            script_text = InstrumentVariablesUtils().get_current_script_text(instrument.name)[0]
+            default_variables = InstrumentVariablesUtils().get_variables_from_current_script(instrument.name)
+        else:
+            script_text = old_reduction_run.script
+            default_variables = old_reduction_run.run_variables.all()
+        
+        new_variables = []
+
+        for key,value in request.POST.iteritems():
+            if 'var-' in key:
+                name = None
+                if 'var-advanced-' in key:
+                    name = key.replace('var-advanced-', '').replace('-', ' ')
+                    is_advanced = True
+                if 'var-standard-' in key:
+                    name = key.replace('var-standard-', '').replace('-', ' ')
+                    is_advanced = False
+
+                if name is not None:
+                    default_var = next((x for x in default_variables if x.name == name), None)
+                    if not default_var:
+                        continue
+                    if len(value) > InstrumentVariable._meta.get_field('value').max_length:
+                        context_dictionary['error'] = 'Value given in ' + str(name) + ' is too long.'
+                    variable = RunVariable( name = default_var.name
+                                          , value = value
+                                          , is_advanced = is_advanced
+                                          , type = default_var.type
+                                          , help_text = default_var.help_text
+                                          )
+                    new_variables.append(variable)
+
+        if len(new_variables) == 0:
+            context_dictionary['error'] = 'No variables were found to be submitted.'
 
             
-            new_variables = []
+        if 'error' in context_dictionary:
+            return context_dictionary
+        
+        new_job = ReductionRunUtils().createRetryRun(old_reduction_run, script=script_text, variables=new_variables)
 
-            for key,value in request.POST.iteritems():
-                if 'var-' in key:
-                    name = None
-                    if 'var-advanced-' in key:
-                        name = key.replace('var-advanced-', '').replace('-', ' ')
-                        is_advanced = True
-                    if 'var-standard-' in key:
-                        name = key.replace('var-standard-', '').replace('-', ' ')
-                        is_advanced = False
+        try:
+            MessagingUtils().send_pending(new_job)
+            context_dictionary['runs'].append(new_job)
+            context_dictionary['variables'] = new_variables
+            
+        except Exception as e:
+            new_job.delete()
+            context_dictionary['error'] = 'Failed to send new job. (%s)' % str(e)
+            
+    return context_dictionary
 
-                    if name is not None:
-                        default_var = next((x for x in default_variables if x.name == name), None)
-                        if not default_var:
-                            continue
-                        if len(value) > InstrumentVariable._meta.get_field('value').max_length:
-                            context_dictionary['error'] = 'Value given in ' + str(name) + ' is too long.'
-                        variable = RunVariable(
-                            name=default_var.name,
-                            value=value,
-                            is_advanced=is_advanced,
-                            type=default_var.type,
-                            help_text=default_var.help_text
-                        )
-                        new_variables.append(variable)
-
-            if len(new_variables) == 0:
-                context_dictionary['error'] = 'No variables were found to be submitted.'
-
-                
-            if 'error' not in context_dictionary:
-                script.save()
-                script_vars.save()
-                new_job = ReductionRunUtils().createRetryRun(old_reduction_run, scripts=[script, script_vars], variables=new_variables)
-
-                try:
-                    MessagingUtils().send_pending(new_job)
-                    context_dictionary['runs'].append(new_job)
-                    context_dictionary['variables'] = new_variables
-                    
-                except Exception as e:
-                    new_job.delete()
-                    script.delete()
-                    script_vars.delete()
-                    context_dictionary['error'] = 'Failed to send new job. (%s)' % str(e)
-                    
-            else:
-                return context_dictionary
-
-        return context_dictionary
-    else:
-        return redirect('instrument_summary', instrument=instrument.name)
-
+    
 def preview_script(request, instrument, run_number=0, experiment_reference=0):
 
     # Can't use login decorator as need to return AJAX error message if fails
@@ -509,103 +479,26 @@ def preview_script(request, instrument, run_number=0, experiment_reference=0):
             error = {'redirect_url': redirect_response.url}
             return HttpResponseForbidden(json.dumps(error))
 
-    reduce_script = '"""\nreduce_vars.py\n"""\n\n'
-
-    '''
-        Regular expressions to find the values of the exposed variables
-        Each is seperated into two named groups, before & value.
-        \s* is used to allow for unlimited spaces
-        %s is later replaced with the variable name
-        A live example can be found at: https://regex101.com/r/oJ7iY5/3
-    '''
-    standard_pattern = "(?P<before>(\s*)standard_vars\s*=\s*\{(([^}])+)['|\"]%s['|\"]\s*:\s*)(?P<value>((?!,(\s+)\n|\n)[\S\s])+)"
-    advanced_pattern = "(?P<before>(\s*)advanced_vars\s*=\s*\{(([^}])+)['|\"]%s['|\"]\s*:\s*)(?P<value>((?!,(\s+)\n|\n)[\S\s])+)"
-
-    instrument_object = Instrument.objects.get(name=instrument)
-
     if request.method == 'GET':
-        if int(experiment_reference) > 0:
-            run_variables = InstrumentVariable.objects.filter(experiment_reference=experiment_reference, instrument=instrument_object)
+        reduction_run = ReductionRun.objects.filter(run_number=run_number)
+        if reduction_run:
+            script_text = reduction_run[0].script
         else:
-            run_variables = InstrumentVariable.objects.filter(start_run=run_number, instrument=instrument_object)
-        if run_variables[0].tracks_script:
-            script, script_vars = InstrumentVariablesUtils().get_current_script_text(instrument)
-        else:
-            script, script_vars = ScriptUtils().get_reduce_scripts_binary(run_variables[0].scripts.all())
-        script_file = script.decode("utf-8")
-        script_vars_file = script_vars.decode("utf-8")
-
-        for variable in run_variables:
-            if variable.is_advanced:
-                pattern = advanced_pattern % variable.name
-            else:
-                pattern = standard_pattern % variable.name
-            # Wrap the value in the correct syntax to indicate the type
-            value = VariableUtils().wrap_in_type_syntax(variable.value, variable.type)
-            value = '\g<before>%s' % value
-            script_vars_file = re.sub(pattern, value, script_vars_file)
+            script_text = InstrumentVariablesUtils().get_current_script_text(instrument)[0]
 
     elif request.method == 'POST':
-        experiment_reference = request.POST.get('experiment_reference_number', 0)
-        start_run = request.POST.get('run_start', None)
         lookup_run_number = request.POST.get('run_number', None)
         lookup_run_version = request.POST.get('run_version', None)
-        if 'use_current_script' in request.POST:
-            use_current_script = request.POST.get('use_current_script', u"false").lower() == u"true"
+        use_current_script = request.POST.get('use_current_script', default=u"false").lower() == u"true"
+
+        reduction_run = ReductionRun.objects.filter(run_number=lookup_run_number, run_version=lookup_run_version)
+        if reduction_run and not use_current_script:
+            script_text = reduction_run[0].script
         else:
-            use_current_script = request.POST.get("track_script_checkbox") == "on"
-
-        default_variables = None
-        if not use_current_script:
-            if lookup_run_number is not None:
-                try:
-                    run = ReductionRun.objects.get(run_number=lookup_run_number, run_version=lookup_run_version)
-                    default_variables = RunVariable.objects.filter(reduction_run=run)
-                except Exception as e:
-                    logger.info("Run not found :" + str(e))
-            else:
-                if int(experiment_reference) > 0:
-                    default_variables = InstrumentVariable.objects.filter(experiment_reference=experiment_reference, instrument=instrument_object)
-                elif int(start_run) > 0:
-                    default_variables = InstrumentVariable.objects.filter(start_run=start_run, instrument=instrument_object)
-
-        if default_variables:
-            script_binary, script_vars_binary = ScriptUtils().get_reduce_scripts_binary(default_variables[0].scripts.all())
-        else:
-            script_binary, script_vars_binary = InstrumentVariablesUtils().get_current_script_text(instrument)
-            default_variables = InstrumentVariablesUtils().get_default_variables(instrument)
-
-        script_file = script_binary.decode("utf-8")
-        script_vars_file = script_vars_binary.decode("utf-8")
-
-        for key,value in request.POST.iteritems():
-            if 'var-' in key:
-                pattern = None
-                if 'var-advanced-' in key:
-                    name = key.replace('var-advanced-', '').replace('-',' ')
-                    default_var = next((x for x in default_variables if x.name == name), None)
-                    if not default_var:
-                        continue
-                    pattern = advanced_pattern % name
-
-                if 'var-standard-' in key:
-                    name = key.replace('var-standard-', '').replace('-',' ')
-                    default_var = next((x for x in default_variables if x.name == name), None)
-                    if not default_var:
-                        continue
-                    pattern = standard_pattern % name
-
-                if pattern is not None:
-                    # Wrap the value in the correct syntax to indicate the type
-                    value = VariableUtils().wrap_in_type_syntax(value, default_var.type)
-                    value = '\g<before>%s' % value
-                    script_vars_file = re.sub(pattern, value, script_vars_file)
-
-    reduce_script += script_vars_file
-    reduce_script += '\n\n"""\nreduce.py\n"""\n\n'
-    reduce_script += script_file
+            script_text = InstrumentVariablesUtils().get_current_script_text(instrument)[0]
+        
     
     response = HttpResponse(content_type='application/x-python')
     response['Content-Disposition'] = 'attachment; filename=reduce & reduce_vars.py'
-    response.write(reduce_script)
+    response.write(script_text)
     return response

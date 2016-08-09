@@ -1,5 +1,5 @@
 from django.db import models
-from reduction_viewer.models import Instrument, ReductionRun
+from reduction_viewer.models import Instrument, Experiment, ReductionRun
         
 class Variable(models.Model):
     name = models.CharField(max_length=50, blank=False)
@@ -20,8 +20,9 @@ class Variable(models.Model):
         
 class InstrumentVariable(Variable):
     instrument = models.ForeignKey(Instrument)
-    experiment = models.ForeignKey(blank=True, null=True)
+    experiment = models.ForeignKey(Experiment, blank=True, null=True)
     start_run = models.IntegerField(blank=True, null=True)
+    tracks_script = models.BooleanField(default=True)
         
 class RunVariable(Variable):
     reduction_run = models.ForeignKey(ReductionRun, related_name="run_variables")
