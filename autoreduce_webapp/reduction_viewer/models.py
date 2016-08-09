@@ -72,7 +72,7 @@ class ReductionRun(models.Model):
 
         
 class ScriptFile(models.Model):
-    script = models.BinaryField(blank=False)
+    script = models.CharField(blank=False)
     file_name = models.CharField(max_length=50, blank=False)
     created = models.DateTimeField(auto_now_add=True,blank=True)
 

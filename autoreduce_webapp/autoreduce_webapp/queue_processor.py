@@ -58,7 +58,7 @@ class Listener(object):
             
     def data_ready(self):
         # Import within method to prevent cylindrical imports
-        from reduction_variables.utils import InstrumentVariablesUtils, ReductionVariablesUtils
+        from reduction_variables.utils import InstrumentVariablesUtils
 
         logger.info("Data ready for processing run %s on %s" % (str(self._data_dict['run_number']), self._data_dict['instrument']))
         
@@ -76,6 +76,8 @@ class Listener(object):
         experiment, experiment_created = Experiment.objects.get_or_create(reference_number=self._data_dict['rb_number'])
         if experiment_created:
             experiment.save()
+            
+        script_text = InstrumentVariablesUtils().get_current_script_text(instrument_name)[0]
 
 
         run_version = highest_version+1
@@ -84,6 +86,7 @@ class Listener(object):
                                     , experiment=experiment
                                     , instrument=instrument
                                     , status=status
+                                    , script=script_text
                                     )
         reduction_run.save()
         self._data_dict['run_version'] = reduction_run.run_version
@@ -92,31 +95,20 @@ class Listener(object):
         data_location.save()
 
         variables = InstrumentVariablesUtils().get_variables_for_run(reduction_run)
+        InstrumentVariablesUtils().save_run_variables(variables, reduction_run)
         if not variables:
             logger.warning("No instrument variables found on %s for run %s" % (instrument.name, self._data_dict['run_number']))
-        else:
-            for variable in variables:
-                reduction_run_variables = RunVariable(name=variable.name, value=variable.value, type=variable.type, is_advanced=variable.is_advanced, help_text=variable.help_text)
-                reduction_run_variables.reduction_run = reduction_run
-                reduction_run.run_variables.add(reduction_run_variables)
-                reduction_run_variables.save()
-
-        reduction_run.save()
-
-        if variables:
-            reduction_script, arguments = ReductionVariablesUtils().get_script_and_arguments(reduction_run.run_variables.all())
-            self._data_dict['reduction_script'] = reduction_script
-            self._data_dict['reduction_arguments'] = arguments
-        else:
-            self._data_dict['reduction_script'] = InstrumentVariablesUtils().get_script(instrument.name)
-            self._data_dict['reduction_arguments'] = {}
+        
+        
+        reduction_script, arguments = ReductionRunUtils().get_script_and_arguments(reduction_run)
+        self._data_dict['reduction_script'] = reduction_script
+        self._data_dict['reduction_arguments'] = arguments
 
         if instrument.is_paused:
             logger.info("Run %s has been skipped" % self._data_dict['run_number'])
         else:
             self._client.send('/queue/ReductionPending', json.dumps(self._data_dict), priority=self._priority)
             logger.info("Run %s ready for reduction" % self._data_dict['run_number'])
-            logger.info("Reduction script: %s" % self._data_dict['reduction_script'][:50])
 
             
     def reduction_started(self):

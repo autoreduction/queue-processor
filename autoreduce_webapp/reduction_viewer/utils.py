@@ -119,21 +119,65 @@ class ReductionRunUtils(object):
                 
             if not variables: # provide variables if they aren't already
                 variables = InstrumentVariablesUtils().get_variables_for_run(new_job)
-            for var in variables:
-                new_var = RunVariable(name=var.name, value=var.value, type=var.type, is_advanced=var.is_advanced, help_text=var.help_text) # copy variable
-                new_var.reduction_run = new_job # associate it with the new run
-                new_job.run_variables.add(new_var)
-                
-                # add scripts based on whether some were supplied
-                if not scripts:
-                    scripts = var.scripts.all()
-                for script in scripts:
-                    new_var.scripts.add(script)
-                    
-                new_var.save()
+            
+            InstrumentVariablesUtils().save_run_variables(variables, new_job)
                     
             return new_job
             
         except:
             new_job.delete()
             raise
+            
+            
+    def get_script_and_arguments(self, reductionRun):
+        """
+        Fetch the reduction script from the given run and return it as a string, along with a dictionary of arguments.
+        """
+        script = reductionRun.script
+
+        run_variables = RunVariable.objects.filter(reduction_run=ReductionRun)
+        standard_vars, advanced_vars = {}, {}
+        for variables in run_variables:
+            value = VariableUtils().convert_variable_to_type(variables.value, variables.type)
+            if variables.is_advanced:
+                advanced_vars[variables.name] = value
+            else:
+                standard_vars[variables.name] = value
+
+        arguments = { 'standard_vars' : standard_vars, 'advanced_vars': advanced_vars }
+
+        return (script, arguments)
+        
+        
+class ScriptUtils(object):
+    def get_reduce_scripts(self, scripts):
+        """
+        Returns a tuple of (reduction script, reduction vars script), each one a string of the contents of the script, given a list of script objects. 
+        """
+        script_out = None
+        script_vars_out = None
+        for script in scripts:
+            if script.file_name == "reduce.py":
+                script_out = script
+            elif script.file_name == "reduce_vars.py":
+                script_vars_out = script
+        return script_out, script_vars_out
+
+    def get_cache_scripts_modified(self, scripts):
+        """
+        Returns the last time the scripts in the database were modified (in seconds since epoch).
+        """
+        script_modified = None
+        script_vars_modified = None
+
+        for script in scripts:
+            if script.file_name == "reduce.py":
+                script_modified = self._convert_time_from_string(str(script.created))
+            elif script.file_name == "reduce_vars.py":
+                script_vars_modified = self._convert_time_from_string(str(script.created))
+        return script_modified, script_vars_modified
+
+    def _convert_time_from_string(self, string_time):
+        time_format = "%Y-%m-%d %H:%M:%S"
+        string_time = string_time[:string_time.find('+')]
+        return int(time.mktime(time.strptime(string_time, time_format)))

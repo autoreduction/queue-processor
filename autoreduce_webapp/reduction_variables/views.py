@@ -125,7 +125,7 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
             if request.POST.get("is_editing", '') == 'True':
                 old_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run=start)
                 if old_variables:
-                    script, script_vars = ScriptUtils().get_reduce_scripts(old_variables[0].scripts.all())
+                    ###script, script_vars = ScriptUtils().get_reduce_scripts(old_variables[0].scripts.all())
                     default_variables = list(old_variables)
             if script is None or request.POST.get("is_editing", '') != 'True':
                 script_binary, script_vars_binary = InstrumentVariablesUtils().get_current_script_text(instrument.name)
@@ -151,7 +151,7 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
             if request.POST.get("is_editing", '') == 'True':
                 old_variables = InstrumentVariable.objects.filter(instrument=instrument, experiment_reference=experiment_reference)
                 if old_variables:
-                    script, script_vars = ScriptUtils().get_reduce_scripts(old_variables[0].scripts.all())
+                    ###script, script_vars = ScriptUtils().get_reduce_scripts(old_variables[0].scripts.all())
                     default_variables = list(old_variables)
             if script is None or request.POST.get("is_editing", '') != 'True':
                 script_binary, script_vars_binary = InstrumentVariablesUtils().get_current_script_text(instrument.name)
