@@ -1,4 +1,4 @@
-import logging, os, sys, re, json, cgi
+import logging, os, sys, re, json, cgi, imp
 sys.path.append(os.path.join("../", os.path.dirname(os.path.dirname(__file__))))
 os.environ["DJANGO_SETTINGS_MODULE"] = "autoreduce_webapp.settings"
 from autoreduce_webapp.settings import ACTIVEMQ, REDUCTION_DIRECTORY, FACILITY
@@ -34,8 +34,6 @@ class VariableUtils(object):
     def save_run_variables(self, instrument_vars, reduction_run):
         runVariables = map(lambda iVar: self.derive_run_variable(iVar, reduction_run), instrument_vars)
         map(lambda rVar: rVar.save(), runVariables)
-        reduction_run.run_variables.extend(runVariables)
-        reduction_run.save()
 
     def wrap_in_type_syntax(self, value, var_type):
         """
@@ -131,14 +129,21 @@ class InstrumentVariablesUtils(object):
         Creates and returns a list of variables matching those found in the appropriate reduce script.
         An opptional instance of reduce_script can be passed in to prevent multiple hits to the filesystem.
         """
+        logger.info("on get_default_variables")
         if not reduce_script:
             reduce_script =  self._load_reduction_vars_script(instrument_name)
+            
+        reduce_vars_module = imp.new_module("reduce_vars")
+        exec reduce_script in reduce_vars_module.__dict__
+        
         instrument = InstrumentUtils().get_instrument(instrument_name)
         variables = []
-        if 'standard_vars' in dir(reduce_script):
-            variables.extend(self._create_variables(instrument, reduce_script, reduce_script.standard_vars, False))
-        if 'advanced_vars' in dir(reduce_script):
-            variables.extend(self._create_variables(instrument, reduce_script, reduce_script.advanced_vars, True))
+        if 'standard_vars' in dir(reduce_vars_module):
+            logger.info("a")
+            variables.extend(self._create_variables(instrument, reduce_vars_module, reduce_vars_module.standard_vars, False))
+        if 'advanced_vars' in dir(reduce_vars_module):
+            logger.info("b")
+            variables.extend(self._create_variables(instrument, reduce_vars_module, reduce_vars_module.advanced_vars, True))
         return variables
 
     def set_default_instrument_variables(self, instrument_name, start_run=1):
@@ -146,6 +151,7 @@ class InstrumentVariablesUtils(object):
         Creates and saves a set of variables for the given run number using default values found in the relevant reduce script and returns them.
         If no start_run is supplied, 1 is assumed.
         """
+        logger.info("on set_default_variables")
         if not start_run:
             start_run = 1
             
@@ -209,14 +215,18 @@ class InstrumentVariablesUtils(object):
         """
         instrument_name = reduction_run.instrument.name
         variables = InstrumentVariable.objects.filter(instrument=reduction_run.instrument, experiment_reference=reduction_run.experiment.reference_number)
-        # No experiment-specific variables, lets look for run number
+        
         if not variables:
+            # No experiment-specific variables, lets look for run number
             try:
                 variables_run_start = InstrumentVariable.objects.filter(instrument=reduction_run.instrument,start_run__lte=reduction_run.run_number, experiment_reference__isnull=True ).order_by('-start_run').first().start_run
                 variables = InstrumentVariable.objects.filter(instrument=reduction_run.instrument,start_run=variables_run_start)
-            except AttributeError:
-                # Still not found any variables, we better create some
-                variables = self.set_default_instrument_variables(instrument_name)
+            except:
+                pass
+                
+        if not variables:
+            # Still not found any variables, we better create some
+            variables = self.set_default_instrument_variables(instrument_name)
         
         
         # make sure variables are up to date if they need to be

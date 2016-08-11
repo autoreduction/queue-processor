@@ -20,7 +20,7 @@ class Variable(models.Model):
         
 class InstrumentVariable(Variable):
     instrument = models.ForeignKey(Instrument)
-    experiment = models.ForeignKey(Experiment, blank=True, null=True)
+    experiment_reference = models.IntegerField(blank=True, null=True)
     start_run = models.IntegerField(blank=True, null=True)
     tracks_script = models.BooleanField(default=True)
         

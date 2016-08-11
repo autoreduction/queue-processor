@@ -87,7 +87,7 @@ class ReductionRunUtils(object):
         """
         Create a run ready for re-running based on the run provided. If variables are provided, copy them and associate them with the new one, otherwise generate variables based on the previous run. If a script (as a string) is supplied then use it, otherwise use the previous run's.
         """
-        from reduction_variables.utils import InstrumentVariablesUtils
+        from reduction_variables.utils import InstrumentVariablesUtils, VariableUtils
         
         # find the previous run version, so we don't create a duplicate
         last_version = -1
@@ -123,7 +123,7 @@ class ReductionRunUtils(object):
             if not variables: # provide variables if they aren't already
                 variables = InstrumentVariablesUtils().get_variables_for_run(new_job)
             
-            InstrumentVariablesUtils().save_run_variables(variables, new_job)
+            VariableUtils().save_run_variables(variables, new_job)
                     
             return new_job
             

@@ -57,7 +57,7 @@ class Listener(object):
             
     def data_ready(self):
         # Import within method to prevent cylindrical imports
-        from reduction_variables.utils import InstrumentVariablesUtils
+        from reduction_variables.utils import InstrumentVariablesUtils, VariableUtils
 
         logger.info("Data ready for processing run %s on %s" % (str(self._data_dict['run_number']), self._data_dict['instrument']))
         
@@ -94,7 +94,7 @@ class Listener(object):
         data_location.save()
 
         variables = InstrumentVariablesUtils().get_variables_for_run(reduction_run)
-        InstrumentVariablesUtils().save_run_variables(variables, reduction_run)
+        VariableUtils().save_run_variables(variables, reduction_run)
         if not variables:
             logger.warning("No instrument variables found on %s for run %s" % (instrument.name, self._data_dict['run_number']))
         
