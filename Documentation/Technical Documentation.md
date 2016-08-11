@@ -24,9 +24,7 @@ The autoreduction web app is a user interface for the autoreduction system that 
     3. [MySQL Database](#mysql_database)
 6. [Tests](#test)
 7. [Other Notes](#other-notes)
-8. [Areas for Improvement](#areas-for-improvement)
 9. [Possible Problems & Solutions](#possible-problems-&-solutions)
-10. [Updating](#updating)
 
 ## Technologies
 
@@ -71,6 +69,10 @@ Database to store all information about the web app (users, reduction runs, noti
 * [Prettify](https://code.google.com/p/google-code-prettify/) - Provides syntax highlighting for the script preview window.
 * [Font Awesome](http://fortawesome.github.io/Font-Awesome/) - Icon Font used for the icons on the sight to make them scalable and clear on all displays.
 
+
+
+
+
 ## Components
 
 The web application is split into 3 components, known as apps in Django. These are:
@@ -78,8 +80,17 @@ The web application is split into 3 components, known as apps in Django. These a
 * reduction_viewer
 * reduction_variables
 
+
+
+
+
 ### autoreduce_webapp
 This is the core of the web app. It handles the application-wide settings, utilities and services.
+
+#### settings.py
+This contains the settings for all three components, most importantly credentials - `ACTIVEMQ` and `ICAT` - and data directories for reduction - `REDUCTION_DIRECTORY` and `ARCHIVE_DIRECTORY`.
+It also contains the settings for Django itself.
+
 
 #### queue_processor.py
 The `queue_processor.py` isn't strictly part of the web application but runs separately as a service but makes use of the modules made available by autoreduce_webapp (such as models and utilities). This contains a Stomp Client and Listener that sits and listens for messages from ActiveMQ on the following queues:
@@ -94,7 +105,7 @@ This actions this script takes are:
 * `DataReady` - Create a new ReductionRun record representing the data that has come off the instrument. This then sends a message to the `/queue/ReductionPending` queue for it to be picked up by the autoreduction service.
 * `ReductionStarted` - This simply updated the status of the saved ReductionRun to note that the reduction job is now being performed by the autoreduction service.
 * `ReductionComplete` - This updates the status and performs post-processing. ICAT is updated with the reduction details. The reduced data is checked for .png files and these converted to a [base64](http://css-tricks.com/data-uris/) encoded string and saved in the database to be shown via the web application.
-* `ReductionError` - This logs the error that was retrieved and updated the status of the ReductionRun.
+* `ReductionError` - This logs the error that was retrieved and updated the status of the ReductionRun. If the run should be retried, it will schedule a retry.
 
 When using the `Client` there are some optional arguments that could cause problems is not correctly set.
 `topics` - a list stating what queues/topics to subscribe to (Default: None)
@@ -190,8 +201,15 @@ Models are the instances of database records. Each model matches against a table
 
 * **Instrument** - A simple model containing the instrument name and whether it is active in the web app.
 * **Experiment** - A record containing only the experiment reference number, used to link reduction runs together.
-* **Status** - Status of the reduction run, either Queued, Processing, Completed or Error.
-* **ReductionRun** - The main model that contains most information about a reduction run job. Run_version will begin at 0 for an initial reduction triggered when coming off the instrument. This is important as it is used to indicate in the UI that the job was started by "Autoreduction Service" 
+* **Status** - Status of the reduction run, either Queued, Processing, Completed, Skipped or Error.
+* **ReductionRun** - The main model that contains most information about a reduction run job. 
+    The important fields are
+    * `run_number` - the integer ID for the data run that this is processing.
+    * `run_version` - will begin at 0 for an initial reduction triggered when coming off the instrument, and will subsequently be greater if the run is a rerun (of another run with the same `run_number`).
+    * `instrument` and `experiment` - referencing the instrument and experiment that this run is associated with.
+    * `status` and `message` - the `Status` of the run as above, and a string that will be displayed as, e.g., the failure message of the run if it has failed.
+    * `retry_run` and `retry_when` - if this run has been scheduled to be retried, this will point to the new run, and the time at which it's scheduled to be processed.
+    Note that most processing on a `ReductionRun` won't work without having valid `RunVariable`s associated with it; the `ReductionRun` has no variables field, but `RunVariable`s in the database will reference the run .
 * **DataLocation** - Stores the file path of the data for a reduction run.
 * **ReductionLocation** - Stored the output directories of a completed reduction job.
 * **Setting** - Key/Value pair of settings to be used throughout the web app and can be quickly and easily changed through the admin interface. Current settings are: `support_email`, `admin_email` and `ICAT_YEARS_TO_SHOW`.
@@ -203,6 +221,16 @@ This contains utilities related to the models found within reduction_viewer.
 
 * **StatusUtils** - A helper function to get status models back for either Queue, Processing, Completed or Error. This utility wraps all calls in a `get_or_create` call to remove the need of pre-populating the database with these values.
 * **InstrumentUtils** - A helper function to get Instrument models back for the provided name. If an instrument matching the name isn't found, one is created prior to return.
+* **ReductionRunUtils** - Contains helper functions for `ReductionRun`s. `cancelRun()` provides cancellation functionality for runs that are being or will be retried. `createRetryRun()` 'copies' the provided run, suitable for retrying (e.g., it ensures that the `run_version` field is incremented as necessary).
+
+
+#### views.py
+
+This contains the source for some of the web pages and front-end functionality provided by the webapp. Functions which are run to render pages typically have a decorator of the form `@render_with('template.html')`. Notable pages include
+* `run_queue()` - displays the pending/running jobs list.
+* `fail_queue()` - displays the failed jobs list on GET, and handles actions sent to it (e.g., retry these jobs) on POST.
+* `run_list()` - populates the front page with all the runs that the user can see.
+
 
 ### reduction_variables
 
@@ -212,7 +240,7 @@ All models and logic related to run/instrument variables are found within this a
 
 * **ScriptFile** - Contains the binary text and filename of a reduction script.  
 * **InstrumentVariable** - Stores variables for a single instrument with either a starting run number or an experiment reference number. Variables can either be standard or advanced, as indicated by the `is_advanced` boolean.
-* **RunVariable** - Stored variable for a specific run job, upon first reduction run version these will be populated by the matching instrument variables (based on either experiment reference number or run number, in that order), re-run jobs will use the values the user enters.
+* **RunVariable** - Stored variable for a specific run job; upon first reduction run version these will be populated by the matching instrument variables (based on either experiment reference number or run number, in that order). Re-run jobs will use the values the user enters, or the same ones as the previous run. These variables are associated with the scripts that were used for reduction runs - if a `ReductionRun` is re-run, it will look at its variables to find the script to use.
 
 #### utils.py
 
@@ -220,8 +248,17 @@ This contains utilities related to the models found within reduction_variables.
 
 * **VariableUtils** - Contains utilities relating to individual variables. E.g. `wrap_in_type_syntax` takes in a value and adds the appropriate syntax around it to match the type provided. For example, a `1,2,3` with type of `list_number` would return `[1,2,3]` as a string to be used in the preview script.
 * **InstrumentVariablesUtils** - Provides utilities for setting and fetching InstrumentVariables and scripts. Of particular note is the `get_variables_for_run` function that is [mentioned below](#selecting-run-variables) and `get_current_and_upcoming_variables` that is also [mentioned below](#upcoming-instrumentvariables).
-* **ReductionVariablesUtils** - Currently only contains `get_script_path_and_arguments` which takes in a list of run numbers and returns back a file path and a dictionary of variables to be passed in. The file path point to a temporary copy of the reduction script that is later removed.
-* **MessagingUtils** - Currently only contains `send_pending` which takes in a ReductionRun and sends it to the messaging queue for processing.
+* **ReductionVariablesUtils** - Contains `get_script_and_arguments` which takes in a list of run numbers and returns back a script as a string and a dictionary of variables to be passed in.
+* **MessagingUtils** - Contains `send_pending`, which takes in a ReductionRun and sends it to the messaging queue for processing (with an optional delay), and `send_cancel`, which sends the run to the queue processor to be cancelled if it is rerun.
+
+#### views.py
+
+This contains the source for the rest of the web pages and front-end functionality. Notable pages include
+* `instrument_summary` and `instrument_variables`, which render the instrument view pages.
+* `run_summary`, which is used to submit rerun requests from the summary page for a run, on POST.
+
+
+
 
 ## Templates
 
@@ -245,6 +282,9 @@ As shown above, snippets can be passed variables that will then be available in 
 `header.html` - contains anything that needs to go at the top of every page. This includes the title and notifications.
 `navbar.html` - contains the navigation bar that is shown at the top of every page.
 `footer.html` - contains the help text shown at the bottom of every page.
+
+
+
 
 
 ## Managing the Services
@@ -323,35 +363,41 @@ As shown above, snippets can be passed variables that will then be available in 
 2. Navigate to `C:\ProgramData\MySQL\MySQL Server 5.6\data`
 3. Open `REDUCE.err`
 
+
+
+
 ## Tests
 
 All tests are run using `manage.py test` from the root of the web application. Please see: https://docs.djangoproject.com/en/1.7/topics/testing/ for more info.
 
-Tests are split across 3 files (tests.py in each application) and these have sub-classes that split the tests up into testing different utilities (such as the queue processor). All test method names must begin with test.
+Tests are split across 3 files in the `test` directory, beginnig with `test_`. Each of these has sub-classes that split the tests up into testing different utilities (such as the queue processor). All test method names must begin with test.
 
 ```
-python manage.py test autoreduce_webapp.tests.QueueProcessorTestCase
+python manage.py test test.test_autoreduce_webapp.QueueProcessorTestCase
 ```
 ```
-python manage.py test autoreduce_webapp.tests.ICATCommunicationTestCase
+python manage.py test test.test_autoreduce_webapp.ICATCommunicationTestCase
 ```
 ```
-python manage.py test autoreduce_webapp.tests.UOWSClientTestCase
+python manage.py test test.test_autoreduce_webapp.UOWSClientTestCase
 ```
 ```
-python manage.py test reduction_variables.tests.InstrumentVariablesUtilsTestCase
+python manage.py test test.test_reduction_variables.InstrumentVariablesUtilsTestCase
 ```
 ```
-python manage.py test reduction_variables.tests.VariableUtilsTestCase
+python manage.py test test.test_reduction_variables.VariableUtilsTestCase
 ```
 ```
-python manage.py test reduction_variables.tests.ReductionVariablesUtilsTestCase
+python manage.py test test.test_reduction_variables.ReductionVariablesUtilsTestCase
 ```
 ```
-python manage.py test reduction_variables.tests.MessagingUtilsTestCase
+python manage.py test test.test_reduction_variables.MessagingUtilsTestCase
 ```
 
 Note: UOWSClientTestCase requires you enter a valid username and password for the User Office Web Service.
+
+
+
 
 ## Other Notes
 
@@ -368,13 +414,14 @@ Messages that are sent to the ActiveMQ broker are send as JSON. And example of w
     'instrument' : 'GEM',
     'rb_number' : 1234567,
     'data' : '/path/to/data/',
-    'reduction_script' : '/path/to/script/reduce.py',
+    'reduction_script' : 'import module\nfor x in ...',
     'arguments' : { ... },
     'message' : 'Some form of feedback, possible an error message',
     'reduction_data' : ['/path/1', '/path/2']
 }
 ``` 
-`'reduction_script'` and `'arguments'` is added by the `data_ready` function in queue_processor.py.
+`'reduction_script'` is a string of the reduction script.
+`'reduction_script'` and `'arguments'` are added by the `data_ready` function in queue_processor.py.
 `'reduction_data'` is added by the `reduction_complete` function in the queue_processor.py.
 `'message'` will usually be empty unless an error has been caught and passed back.
 
@@ -388,7 +435,7 @@ Run variables (for initial runs that come off the instrument) are selected in th
 
 ### Upcoming InstrumentVariables
 
-Upcoming InstrumentVaraibles are fetched in two ways.
+Upcoming InstrumentVariables are fetched in two ways.
 
 The first is by run number. Any instrument variables with a start run larger than the last processed run number for that instrument are returned.
 
@@ -486,26 +533,6 @@ The autoreduction service saves all log messages to `/var/log/autoreduction.log`
 
 Note: Currently these logs aren't rotated so watch file sizes!
 
-## Areas for Improvement
-
-### Caching
-**Ticket:** [#10252](http://trac.mantidproject.org/mantid/ticket/10252)
-Depending on usage, a cache may be needed to sit between the web app and the ICAT server to prevent repeat calls for the same information. During testing this hadn't yet shown to be an issue but having multiple users may require it. 
-
-### Reduced Data Size
-**Ticket:** [#10459](http://trac.mantidproject.org/mantid/ticket/10459)
-It would be nice to display how much disk space reduced files are taking up at the run, experiment and instrument level.
-
-### Refactor DataLocation and ReductionLocation
-DataLocation and ReductionLocation could be reduced into a single Location model with a 'type' property to specify which a path relates to. These were implemented as two models as it was easy to call `reduction_run.data_location.all()` to get data location. I have since learned you should be able to call `filter()` on the relation, E.g. `reduction_run.location.filter(type='data')`
-
-### Better handling of script variables in preview
-Currently, default variables need to be hard coded into the reduction script for them to be replaced as part of the preview function. It would be nice if this could handle scenarios where default variables are set using other variables or function calls, for example. 
-Note: This is currently handled when pulling out the default value for use in instrument variables, just not in the preview function (due to the regex used).
-
-### Multiple Mantid version
-
-Currently it is only possible to run scripts against a single version of Mantid. It may be useful in the future to be able to specify the Mantid version or, at the very least, make the version number apparent to users.
 
 ## Possible Problems & Solutions
 
@@ -540,7 +567,3 @@ See: https://code.djangoproject.com/ticket/21597#comment:29
 
 ### Mantid unicode errors
 The mantid program does not work well with unicode format, so any file path names passed to the scripts need to be in Ascii. 
-
-## Updating
-
-TODO: 

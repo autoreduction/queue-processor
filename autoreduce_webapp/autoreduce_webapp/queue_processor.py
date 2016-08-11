@@ -1,17 +1,17 @@
 import stomp
-from settings import ACTIVEMQ, BASE_DIR, LOGGING, ERROR_EMAILS
+from settings import ACTIVEMQ, BASE_DIR, LOGGING, EMAIL_HOST, EMAIL_PORT, EMAIL_ERROR_RECIPIENTS, EMAIL_ERROR_SENDER, BASE_URL
 import logging
 import logging.config
 logging.config.dictConfig(LOGGING)
 logger = logging.getLogger("django")
-import time, sys, os, json, glob, base64, shutil
+import time, sys, os, json, glob, base64
 from django.utils import timezone
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 sys.path.insert(0, BASE_DIR)
 from reduction_viewer.models import ReductionRun, ReductionLocation, DataLocation, Experiment
-from reduction_viewer.utils import StatusUtils, InstrumentUtils
+from reduction_viewer.utils import StatusUtils, InstrumentUtils, ReductionRunUtils
 from reduction_variables.models import RunVariable
-from reduction_variables.utils import ReductionVariablesUtils, MessagingUtils
+from reduction_variables.utils import MessagingUtils
 from icat_communication import ICATCommunication
 from django.db import connection
 import smtplib
@@ -23,13 +23,6 @@ class Listener(object):
         self._client = client
         self._data_dict = {}
         self._priority = ''
-
-    def clean_up_reduction_script(self, script_path):
-        if os.path.exists(script_path):
-            try:
-                shutil.rmtree(script_path, ignore_errors=True)
-            except:
-                logger.error("Unable to delete temporary reduction script at: %s" % script_path)
 
     def on_error(self, headers, message):
         logger.error("Error recieved - %s" % str(message))
@@ -82,6 +75,8 @@ class Listener(object):
             highest_version = -1
 
         experiment, experiment_created = Experiment.objects.get_or_create(reference_number=self._data_dict['rb_number'])
+        if experiment_created:
+            experiment.save()
 
         if instrument.is_paused:
             status=StatusUtils().get_skipped()
@@ -116,11 +111,11 @@ class Listener(object):
         data_location.save()
 
         if variables:
-            script_path, arguments = ReductionVariablesUtils().get_script_path_and_arguments(reduction_run.run_variables.all())
-            self._data_dict['reduction_script'] = script_path
+            reduction_script, arguments = ReductionVariablesUtils().get_script_and_arguments(reduction_run.run_variables.all())
+            self._data_dict['reduction_script'] = reduction_script
             self._data_dict['reduction_arguments'] = arguments
         else:
-            self._data_dict['reduction_script'] = InstrumentVariablesUtils().get_temporary_script(instrument.name)
+            self._data_dict['reduction_script'] = InstrumentVariablesUtils().get_script(instrument.name)
             self._data_dict['reduction_arguments'] = {}
 
         if instrument.is_paused:
@@ -128,7 +123,7 @@ class Listener(object):
         else:
             self._client.send('/queue/ReductionPending', json.dumps(self._data_dict), priority=self._priority)
             logger.info("Run %s ready for reduction" % self._data_dict['run_number'])
-            logger.info("Reduction file: %s" % self._data_dict['reduction_script'])
+            logger.info("Reduction script: %s" % self._data_dict['reduction_script'][:50])
 
             
     def reduction_started(self):
@@ -186,8 +181,6 @@ class Listener(object):
             else:
                 logger.error("A reduction run completed that wasn't found in the database. Experiment: %s, Run Number: %s, Run Version %s" % (self._data_dict['rb_number'], self._data_dict['run_number'], self._data_dict['run_version']))
 
-            if 'reduction_script' in self._data_dict:
-                self.clean_up_reduction_script(self._data_dict['reduction_script'])
         except BaseException as e:
             logger.error("Error: %s" % e)
                     
@@ -197,9 +190,6 @@ class Listener(object):
             logger.info("Run %s has encountered an error - %s" % (self._data_dict['run_number'], self._data_dict['message']))
         else:
             logger.info("Run %s has encountered an error - No error message was found" % (self._data_dict['run_number']))
-            
-        if 'reduction_script' in self._data_dict:
-            self.clean_up_reduction_script(self._data_dict['reduction_script'])
         
         reduction_run = self.find_run()
                     
@@ -231,24 +221,28 @@ class Listener(object):
         
     def notifyRunFailure(self, reductionRun):
     
-        receivers = filter(lambda addr: addr.split('@')[-1] != 'autoreduce.isis.rl.ac.uk', ERROR_EMAILS) # don't send local emails
+        recipients = EMAIL_ERROR_RECIPIENTS
+        localRecipients = filter(lambda addr: addr.split('@')[-1] == BASE_URL, recipients) # this does not parse esoteric (but RFC-compliant) email addresses correctly
+        if localRecipients: # don't send local emails
+            raise Exception("Local email address specified in ERROR_EMAILS - %s match %s" % (localRecipients, BASE_URL))
     
-        senderAddress = "autoreduce@reducedev.isis.cclrc.ac.uk"
+        senderAddress = EMAIL_ERROR_SENDER
         
         errorMsg = "A reduction run - experiment %s, run %s, version %s - has failed:\n%s\n\n" % (reductionRun.experiment.reference_number, reductionRun.run_number, reductionRun.run_version, reductionRun.message)
         errorMsg += "The run will not retry automatically.\n" if not reductionRun.retry_when else "The run will automatically retry on %s.\n" % reductionRun.retry_when
-        errorMsg += "Retry manually at http://reducedev.isis.cclrc.ac.uk/runs/%i/%i/ or on %s." % (reductionRun.run_number, reductionRun.run_version, "http://reducedev.isis.cclrc.ac.uk/runs/failed/")
+        errorMsg += "Retry manually at %s%i/%i/ or on %sruns/failed/." % (BASE_URL, reductionRun.run_number, reductionRun.run_version, BASE_URL)
         
-        emailContent = "From: %s\nTo: %s\nSubject:Autoreduction error\n\n%s" % (senderAddress, ", ".join(receivers), errorMsg)
+        emailContent = "From: %s\nTo: %s\nSubject:Autoreduction error\n\n%s" % (senderAddress, ", ".join(recipients), errorMsg)
 
         logger.info("Sending email: %s" % emailContent)
                        
         try:
-            s = smtplib.SMTP('exchsmtp.stfc.ac.uk', 25)
-            s.sendmail(senderAddress, receivers, emailContent)
+            s = smtplib.SMTP(EMAIL_HOST, EMAIL_PORT)
+            s.sendmail(senderAddress, recipients, emailContent)
             s.close()
         except Exception as e:
             logger.error("Failed to send emails %s" % emailContent)
+            logger.error("Exception %s - %s" % (type(e).__name__, str(e)))
         
         
     def retryRun(self, reductionRun, retryIn):
@@ -259,7 +253,7 @@ class Listener(object):
             
         logger.info("Retrying run in %i seconds" % retryIn)
         
-        new_job = ReductionVariablesUtils().createRetryRun(reductionRun, delay=retryIn)          
+        new_job = ReductionRunUtils().createRetryRun(reductionRun, delay=retryIn)          
         try:
             MessagingUtils().send_pending(new_job, delay=retryIn*1000) # seconds to ms
         except Exception as e:
@@ -268,7 +262,7 @@ class Listener(object):
         
 
 class Client(object):
-    def __init__(self, brokers, user, password, topics=None, consumer_name='QueueProcessor', client_only=True, use_ssl=False):
+    def __init__(self, brokers, user, password, topics=None, consumer_name='QueueProcessor', client_only=True, use_ssl=ACTIVEMQ['SSL']):
         self._brokers = brokers
         self._user = user
         self._password = password
@@ -279,13 +273,14 @@ class Client(object):
         self._client_only = client_only
         self._use_ssl = use_ssl
 
-    def set_listner(self, listener):
+    def set_listener(self, listener):
         self._listener = listener
 
     def get_connection(self, listener=None):
         if listener is None and not self._client_only:
             if self._listener is None:
                 listener = Listener(self)
+                self._listener = listener
             else:
                 listener = self._listener
 
@@ -334,7 +329,7 @@ class Client(object):
 
 
 def main():
-    client = Client(ACTIVEMQ['broker'], ACTIVEMQ['username'], ACTIVEMQ['password'], ACTIVEMQ['topics'], 'Autoreduction_QueueProcessor', False, True)
+    client = Client(ACTIVEMQ['broker'], ACTIVEMQ['username'], ACTIVEMQ['password'], ACTIVEMQ['topics'], 'Autoreduction_QueueProcessor', False, ACTIVEMQ['SSL'])
     client.connect()
     return client
 

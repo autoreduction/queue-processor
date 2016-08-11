@@ -8,9 +8,9 @@ from autoreduce_webapp.uows_client import UOWSClient
 from autoreduce_webapp.icat_communication import ICATCommunication
 from autoreduce_webapp.settings import UOWS_LOGIN_URL
 from reduction_viewer.models import Experiment, ReductionRun, Instrument
-from reduction_viewer.utils import StatusUtils
+from reduction_viewer.utils import StatusUtils, ReductionRunUtils
 from reduction_viewer.view_utils import deactivate_invalid_instruments
-from reduction_variables.utils import MessagingUtils, ReductionVariablesUtils
+from reduction_variables.utils import MessagingUtils
 from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, require_admin
 import operator
 import json
@@ -110,8 +110,9 @@ def fail_queue(request):
                     if runVersion != highest_version:
                         continue # do not run multiples of the same run
                 
+                    ReductionRunUtils().cancelRun(reductionRun)    
                     reductionRun.cancel = False
-                    new_job = ReductionVariablesUtils().createRetryRun(reductionRun)
+                    new_job = ReductionRunUtils().createRetryRun(reductionRun)
                     
                     try:
                         MessagingUtils().send_pending(new_job)
@@ -121,12 +122,7 @@ def fail_queue(request):
                     
                         
                 elif action == "cancel":
-                    reductionRun.cancel = True
-                    reductionRun.save()
-                    
-                    if reductionRun.retry_run:
-                        reductionRun.retry_run.cancel = True
-                        reductionRun.retry_run.save()
+                    ReductionRunUtils().cancelRun(reductionRun)                       
                        
                        
                 elif action == "default":

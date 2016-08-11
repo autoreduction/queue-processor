@@ -146,20 +146,18 @@ ACTIVEMQ = {
         ],
     'username' : 'autoreduce',
     'password' : 'pa$$w0rd',
-    'broker' : [("autoreduce.isis.cclrc.ac.uk", 61613)]
+    'broker' : [("autoreduce.isis.cclrc.ac.uk", 61613)],
+    'SSL' : True
 }
 
 # File Locations
 
-#REDUCTION_SCRIPT_BASE = '/reduction_data/'
 #ARCHIVE_BASE = ''
 if os.name == 'nt':
     REDUCTION_DIRECTORY = '\\\\isis\\inst$\\NDX%s\\user\\scripts\\autoreduction' # %(instrument)
-    TEMP_OUTPUT_DIRECTORY = '\\\\autoreduce\\data\\reduction_script_temp'
     ARCHIVE_DIRECTORY = '\\\\isis\\inst$\\NDX%s\\Instrument\\data\\cycle_%s\\autoreduced\\%s\\%s' # %(instrument, cycle, experiment_number, run_number)
 else:
     REDUCTION_DIRECTORY = '/isis/NDX%s/user/scripts/autoreduction' # %(instrument)
-    TEMP_OUTPUT_DIRECTORY = '/tmp/autoreduce'
     ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s' # %(instrument, cycle, experiment_number, run_number)
 
 # ICAT 
@@ -181,7 +179,9 @@ UOWS_LOGIN_URL = 'https://devusers.facilities.rl.ac.uk/auth/?service=http://data
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'exchsmtp.stfc.ac.uk'
 EMAIL_PORT = 25
-ERROR_EMAILS = ['isisreduce@stfc.ac.uk']
+EMAIL_ERROR_RECIPIENTS = ['isisreduce@stfc.ac.uk']
+EMAIL_ERROR_SENDER = 'autoreduce@reduce.isis.cclrc.ac.uk'
+BASE_URL = 'http://reduce.isis.cclrc.ac.uk/'
 
 # Constant vars
 

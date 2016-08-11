@@ -1,25 +1,36 @@
-from django.test import TestCase
-from django.utils import timezone
-from settings import LOG_FILE, LOG_LEVEL, ACTIVEMQ, BASE_DIR, REDUCTION_SCRIPT_BASE, ICAT
 import sys, time, logging, os, datetime, json, shutil, getpass
 from sets import Set
+from mock import patch
+from urllib2 import URLError
+
+from django.test import TestCase, TransactionTestCase 
+from django.utils import timezone
+from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL, ACTIVEMQ, BASE_DIR, REDUCTION_DIRECTORY, ICAT
 logging.basicConfig(filename=LOG_FILE.replace('.log', '.test.log'),level=LOG_LEVEL, format=u'%(message)s',)
-from daemon import Daemon
-from queue_processor_daemon import QueueProcessorDaemon
-from queue_processor import Client, Listener
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 sys.path.insert(0, BASE_DIR)
+
+from icat.exception import ICATSessionError
+from suds.client import Client as suds_client
+
 from reduction_viewer.models import ReductionRun, Instrument, ReductionLocation, Status, Experiment, DataLocation
 from reduction_viewer.utils import StatusUtils
 from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFile
-from icat_communication import ICATCommunication
-from icat.exception import ICATSessionError
-from urllib2 import URLError
-from uows_client import UOWSClient
-from suds.client import Client as suds_client
-from mock import patch
 
-class QueueProcessorTestCase(TestCase):
+from autoreduce_webapp.icat_communication import ICATCommunication
+from autoreduce_webapp.uows_client import UOWSClient
+from autoreduce_webapp.daemon import Daemon
+from autoreduce_webapp.queue_processor_daemon import QueueProcessorDaemon
+from autoreduce_webapp.queue_processor import Client, Listener
+
+from utils import copyScripts, removeScripts
+
+rb_number = 2
+
+       
+            
+
+class QueueProcessorTestCase(TransactionTestCase):
     '''
         Insert any data that is needed for tests
     '''
@@ -37,14 +48,37 @@ class QueueProcessorTestCase(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._client = Client(ACTIVEMQ['broker'], ACTIVEMQ['username'], ACTIVEMQ['password'], ACTIVEMQ['topics'], 'Autoreduction_QueueProcessor_Test', False, True)
+        cls._client = Client(ACTIVEMQ['broker'], ACTIVEMQ['username'], ACTIVEMQ['password'], ACTIVEMQ['topics'], 'Autoreduction_QueueProcessor_Test', False, ACTIVEMQ['SSL'])
         cls._client.connect()
-        cls._rb_number = 0
+        
+        def mockSend(destination, message, persistent='true', priority='4', delay=None):
+            headers = {'destination':destination, 'persistent':persistent, 'priority':priority}
+            cls._client._listener.on_message(headers, message)
+        cls._client.send = mockSend
+        
         cls._timeout_wait = 1
 
+        map(copyScripts, ['valid', 'empty_script', 'duplicate_var_reduce', 'syntax_error', 'new_instrument'] )
+    
     @classmethod
     def tearDownClass(cls):
-        pass
+        map(removeScripts, ['valid', 'empty_script', 'duplicate_var', 'syntax_error'])
+        
+        
+    def createMockSMTP(self):
+        self.sentEmails = []
+        parent = self
+        
+        class mockSMTP:
+            def __init__(self, *args, **kwargs):
+                pass
+            def sendmail(self, *args, **kwargs):
+                parent.sentEmails.append(args)
+            def close(self):
+                pass
+                
+        return mockSMTP
+        
 
     '''
         Insert a reduction run to ensure the QueueProcessor can find one when recieving a topic message
@@ -69,15 +103,16 @@ class QueueProcessorTestCase(TestCase):
         Get a new RB Number to prevent conflicts
     '''
     def get_rb_number(self):
-        self._rb_number -= 1
-        return self._rb_number
+        global rb_number
+        rb_number += 1
+        return rb_number
 
     '''
         Create dummy variables for a given instrument
     '''
     def create_instrument_variables(self, instrument_name):
         instrument, created = Instrument.objects.get_or_create(name=instrument_name)
-        reduction_file = os.path.join(REDUCTION_SCRIPT_BASE, instrument_name, 'reduce.py')
+        reduction_file = os.path.join(REDUCTION_DIRECTORY % instrument_name, 'reduce.py')
         f = open(reduction_file, 'rb')
         script_binary = f.read()
         script, created2 = ScriptFile.objects.get_or_create(file_name='reduce.py', script=script_binary)
@@ -91,7 +126,7 @@ class QueueProcessorTestCase(TestCase):
         Copy a test reduce.py script to the correct location for use in the tests
     '''
     def save_dummy_reduce_script(self, instrument_name):
-        directory = os.path.join(REDUCTION_SCRIPT_BASE, instrument_name)
+        directory = REDUCTION_DIRECTORY % instrument_name
         test_reduce = os.path.join(os.path.dirname(__file__), '../', 'test_files','reduce.py')
         if not os.path.exists(directory):
             os.makedirs(directory)
@@ -104,7 +139,7 @@ class QueueProcessorTestCase(TestCase):
         WARNING!!!! Destructive!!!
     '''
     def remove_dummy_reduce_script(self, instrument_name):
-        directory = os.path.join(REDUCTION_SCRIPT_BASE, instrument_name)
+        directory = REDUCTION_DIRECTORY % instrument_name
         logging.warning("About to remove %s" % directory)
         if os.path.exists(directory):
             shutil.rmtree(directory)
@@ -145,7 +180,7 @@ class QueueProcessorTestCase(TestCase):
     '''
     def test_data_ready_new_instrument_instrument_variables(self):
         rb_number = self.get_rb_number()
-        instrument_name = "test_data_ready_new_instrument-TestInstrument"
+        instrument_name = "new_instrument"
         self.save_dummy_reduce_script(instrument_name)
         try:
             self.assertEqual(Instrument.objects.filter(name=instrument_name).first(), None, "Wasn't expecting to find %s" % instrument_name)
@@ -184,7 +219,7 @@ class QueueProcessorTestCase(TestCase):
     '''
     def test_data_ready_existing_instrument(self):
         rb_number = self.get_rb_number()
-        instrument_name = "ExistingTestInstrument1"
+        instrument_name = "valid"
         self.create_instrument_variables(instrument_name)
         self.assertNotEqual(Instrument.objects.filter(name=instrument_name).first(), None, "Was expecting to find %s" % instrument_name)
         test_data = {
@@ -239,7 +274,7 @@ class QueueProcessorTestCase(TestCase):
     '''
     def test_data_ready_multiple_runs(self):
         rb_number = self.get_rb_number()
-        instrument_name = "test_data_ready_multiple_runs-TestInstrument"
+        instrument_name = "valid"
         self.save_dummy_reduce_script(instrument_name)
         try:
             test_data_run_1 = {
@@ -271,49 +306,6 @@ class QueueProcessorTestCase(TestCase):
         finally:
             self.remove_dummy_reduce_script(instrument_name)
 
-    def test_data_ready_no_vaiables_in_script(self):
-        rb_number = self.get_rb_number()
-        instrument_name = "test_data_ready_no_vaiables_in_script-TestInstrument"
-        
-        directory = os.path.join(REDUCTION_SCRIPT_BASE, instrument_name)
-        test_reduce = os.path.join(os.path.dirname(__file__), '../', 'test_files','empty_reduce.py')
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-        file_path = os.path.join(directory, 'reduce.py')
-        if not os.path.isfile(file_path):
-            shutil.copyfile(test_reduce, file_path)
-
-        headers = { 
-            "destination" : '/queue/DataReady'
-        }
-        message = {
-            "run_number" : 1,
-            "instrument" : instrument_name,
-            "rb_number" : rb_number,
-            "data" : "/false/path",
-            "run_version" : 0
-        }
-
-        parent = self
-        send_called = [False]
-        class mock_client(object):
-            def __init__(self):
-                pass
-
-            def connect(self):
-                pass
-
-            def send(self, destination, message, persistent='true'):
-                send_called[0] = True
-                data_dict = json.loads(message)
-                parent.assertEqual(destination, '/queue/ReductionPending', "Expecting destination to be '/queue/ReductionPending' but was %s" % destination)
-                parent.assertNotEqual(data_dict['reduction_script'], None, "Expecting a reduction script.")
-                parent.assertNotEqual(data_dict['reduction_script'], '', "Expecting a reduction script.")
-                parent.assertEqual(data_dict['reduction_arguments'], {}, "Expecting arguments to be an empty dictionary.")
-
-        listener = Listener(mock_client())
-        listener.on_message(headers, json.dumps(message))
-        self.assertTrue(send_called[0], "Expecting send to be called")
         
     '''
         Change an existing reduction run from Queued to Started
@@ -321,11 +313,11 @@ class QueueProcessorTestCase(TestCase):
     def test_reduction_started_reduction_run_exists(self):
         rb_number = self.get_rb_number()
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
-        self.insert_run(run_number=1, instrument="test_reduction_started-TestInstrument", experiment=experiment)
+        self.insert_run(run_number=1, instrument="valid", experiment=experiment)
 
         test_data = {
             "run_number" : 1,
-            "instrument" : "test_reduction_started-TestInstrument",
+            "instrument" : "valid",
             "rb_number" : rb_number,
             "data" : "/false/path",
             "run_version" : 0
@@ -346,7 +338,7 @@ class QueueProcessorTestCase(TestCase):
         rb_number = self.get_rb_number()
         test_data = {
             "run_number" : 1,
-            "instrument" : "test_reduction_started-TestInstrument",
+            "instrument" : "valid",
             "rb_number" : rb_number,
             "data" : "/false/path",
             "run_version" : 0
@@ -366,14 +358,14 @@ class QueueProcessorTestCase(TestCase):
         rb_number = self.get_rb_number()
         started_time = timezone.now().replace(microsecond=0)
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
-        run = self.insert_run(run_number=1, instrument="test_reduction_started_reduction_run_already_started-TestInstrument", experiment=experiment)
+        run = self.insert_run(run_number=1, instrument="valid", experiment=experiment)
         run.status = StatusUtils().get_processing()
         run.started = started_time
         run.save()
 
         test_data = {
             "run_number" : 1,
-            "instrument" : "test_reduction_started_reduction_run_already_started-TestInstrument",
+            "instrument" : "valid",
             "rb_number" : rb_number,
             "data" : "/false/path",
             "run_version" : 0
@@ -395,14 +387,14 @@ class QueueProcessorTestCase(TestCase):
         rb_number = self.get_rb_number()
         started_time = timezone.now().replace(microsecond=0)
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
-        run = self.insert_run(run_number=1, instrument="test_reduction_started_reduction_run_already_completed-TestInstrument", experiment=experiment)
+        run = self.insert_run(run_number=1, instrument="valid", experiment=experiment)
         run.status = StatusUtils().get_completed()
         run.started = started_time
         run.save()
 
         test_data = {
             "run_number" : 1,
-            "instrument" : "test_reduction_started_reduction_run_already_completed-TestInstrument",
+            "instrument" : "valid",
             "rb_number" : rb_number,
             "data" : "/false/path",
             "run_version" : 0
@@ -424,7 +416,7 @@ class QueueProcessorTestCase(TestCase):
         rb_number = self.get_rb_number()
         started_time = timezone.now().replace(microsecond=0)
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
-        run = self.insert_run(run_number=1, instrument="test_reduction_started_reduction_run_error-TestInstrument", experiment=experiment)
+        run = self.insert_run(run_number=1, instrument="valid", experiment=experiment)
         run.status = StatusUtils().get_error()
         run.started = started_time
         run.save()
@@ -433,7 +425,7 @@ class QueueProcessorTestCase(TestCase):
 
         test_data = {
             "run_number" : 1,
-            "instrument" : "test_reduction_started_reduction_run_error-TestInstrument",
+            "instrument" : "valid",
             "rb_number" : rb_number,
             "data" : "/false/path",
             "run_version" : 0
@@ -455,14 +447,14 @@ class QueueProcessorTestCase(TestCase):
         rb_number = self.get_rb_number()
         started_time = timezone.now().replace(microsecond=0)
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
-        run = self.insert_run(run_number=1, instrument="test_reduction_complete_reduction_run_exists-TestInstrument", experiment=experiment)
+        run = self.insert_run(run_number=1, instrument="valid", experiment=experiment)
         run.status = StatusUtils().get_processing()
         run.started = started_time
         run.save()
 
         test_data = {
             "run_number" : 1,
-            "instrument" : "test_reduction_complete_reduction_run_exists-TestInstrument",
+            "instrument" : "valid",
             "rb_number" : rb_number,
             "data" : "/false/path",
             "run_version" : 0
@@ -485,7 +477,7 @@ class QueueProcessorTestCase(TestCase):
 
         test_data = {
             "run_number" : 1,
-            "instrument" : "test_reduction_complete_reduction_run_doesnt_exists-TestInstrument",
+            "instrument" : "valid",
             "rb_number" : rb_number,
             "data" : "/false/path",
             "run_version" : 0
@@ -504,13 +496,13 @@ class QueueProcessorTestCase(TestCase):
     def test_reduction_complete_reduction_run_queued(self):
         rb_number = self.get_rb_number()
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
-        run = self.insert_run(run_number=1, instrument="test_reduction_complete_reduction_run_queued-TestInstrument", experiment=experiment)
+        run = self.insert_run(run_number=1, instrument="valid", experiment=experiment)
         run.status = StatusUtils().get_queued()
         run.save()
 
         test_data = {
             "run_number" : 1,
-            "instrument" : "test_reduction_complete_reduction_run_queued-TestInstrument",
+            "instrument" : "valid",
             "rb_number" : rb_number,
             "data" : "/false/path",
             "run_version" : 0
@@ -534,7 +526,7 @@ class QueueProcessorTestCase(TestCase):
         started_time = timezone.now().replace(microsecond = 0)
         finished_time = timezone.now().replace(microsecond = 0)
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
-        run = self.insert_run(run_number=1, instrument="test_reduction_complete_reduction_run_complete-TestInstrument", experiment=experiment)
+        run = self.insert_run(run_number=1, instrument="valid", experiment=experiment)
         run.status = StatusUtils().get_completed()
         run.started = started_time
         run.finished = finished_time
@@ -542,7 +534,7 @@ class QueueProcessorTestCase(TestCase):
 
         test_data = {
             "run_number" : 1,
-            "instrument" : "test_reduction_complete_reduction_run_complete-TestInstrument",
+            "instrument" : "valid",
             "rb_number" : rb_number,
             "data" : "/false/path",
             "run_version" : 0
@@ -564,13 +556,13 @@ class QueueProcessorTestCase(TestCase):
     def test_reduction_complete_reduction_run_error(self):
         rb_number = self.get_rb_number()
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
-        run = self.insert_run(run_number=1, instrument="test_reduction_complete_reduction_run_error-TestInstrument", experiment=experiment)
+        run = self.insert_run(run_number=1, instrument="valid", experiment=experiment)
         run.status = StatusUtils().get_error()
         run.save()
 
         test_data = {
             "run_number" : 1,
-            "instrument" : "test_reduction_complete_reduction_run_error-TestInstrument",
+            "instrument" : "valid",
             "rb_number" : rb_number,
             "data" : "/false/path",
             "run_version" : 0
@@ -592,19 +584,20 @@ class QueueProcessorTestCase(TestCase):
     def test_reduction_error_reduction_run_exists(self):
         rb_number = self.get_rb_number()
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
-        self.insert_run(run_number=1, instrument="test_reduction_error_reduction_run_exists-TestInstrument", experiment=experiment)
+        self.insert_run(run_number=1, instrument="valid", experiment=experiment)
         error_message = "We have an error here"
 
         test_data = {
             "run_number" : 1,
-            "instrument" : "test_reduction_error_reduction_run_exists-TestInstrument",
+            "instrument" : "valid",
             "rb_number" : rb_number,
             "data" : "/false/path",
             "run_version" : 0,
             "message" : error_message
         }
-        self._client.send('/queue/ReductionError', json.dumps(test_data))
-        time.sleep(self._timeout_wait)
+        
+        with patch('smtplib.SMTP', self.createMockSMTP()):
+            self._client.send('/queue/ReductionError', json.dumps(test_data))
 
         runs = ReductionRun.objects.filter(experiment=experiment)
 
@@ -612,6 +605,7 @@ class QueueProcessorTestCase(TestCase):
         self.assert_run_match(test_data, runs[0])
         self.assertEqual(str(runs[0].status), "Error", "Expecting status to be 'Error' but was '%s'" % runs[0].status)
         self.assertEqual(runs[0].message, error_message, "Expecting the error message to be populated")
+        self.assertNotEqual(self.sentEmails, [], "Expected a notification email to be sent")
 
     '''
         Set a reduction run as having an error
@@ -619,17 +613,18 @@ class QueueProcessorTestCase(TestCase):
     def test_reduction_error_reduction_run_exists_no_message(self):
         rb_number = self.get_rb_number()
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
-        self.insert_run(run_number=1, instrument="test_reduction_error_reduction_run_exists_no_message-TestInstrument", experiment=experiment)
+        self.insert_run(run_number=1, instrument="valid", experiment=experiment)
 
         test_data = {
             "run_number" : 1,
-            "instrument" : "test_reduction_error_reduction_run_exists_no_message-TestInstrument",
+            "instrument" : "valid",
             "rb_number" : rb_number,
             "data" : "/false/path",
             "run_version" : 0
         }
-        self._client.send('/queue/ReductionError', json.dumps(test_data))
-        time.sleep(self._timeout_wait)
+        
+        with patch('smtplib.SMTP', self.createMockSMTP()):
+            self._client.send('/queue/ReductionError', json.dumps(test_data))
 
         runs = ReductionRun.objects.filter(experiment=experiment)
 
@@ -646,13 +641,14 @@ class QueueProcessorTestCase(TestCase):
 
         test_data = {
             "run_number" : 1,
-            "instrument" : "test_reduction_error_reduction_run_doesnt_exists-TestInstrument",
+            "instrument" : "valid",
             "rb_number" : rb_number,
             "data" : "/false/path",
             "run_version" : 0
         }
-        self._client.send('/queue/ReductionError', json.dumps(test_data))
-        time.sleep(self._timeout_wait)
+        
+        with patch('smtplib.SMTP', self.createMockSMTP()):
+            self._client.send('/queue/ReductionError', json.dumps(test_data))
 
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
         runs = ReductionRun.objects.filter(experiment=experiment)
@@ -674,14 +670,14 @@ class QueueProcessorTestCase(TestCase):
         rb_number = self.get_rb_number()
         started_time = timezone.now().replace(microsecond=0)
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
-        run = self.insert_run(run_number=1, instrument="test_graphs_correctly_read_single-TestInstrument", experiment=experiment)
+        run = self.insert_run(run_number=1, instrument="valid", experiment=experiment)
         run.status = StatusUtils().get_processing()
         run.started = started_time
         run.save()
 
         test_data = {
             "run_number" : 1,
-            "instrument" : "test_graphs_correctly_read_single-TestInstrument",
+            "instrument" : "valid",
             "rb_number" : rb_number,
             "data" : "/false/path",
             "run_version" : 0,
@@ -718,14 +714,14 @@ class QueueProcessorTestCase(TestCase):
             rb_number = self.get_rb_number()
             started_time = timezone.now().replace(microsecond=0)
             experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
-            run = self.insert_run(run_number=1, instrument="test_graphs_correctly_read_multiple-TestInstrument", experiment=experiment)
+            run = self.insert_run(run_number=1, instrument="valid", experiment=experiment)
             run.status = StatusUtils().get_processing()
             run.started = started_time
             run.save()
 
             test_data = {
                 "run_number" : 1,
-                "instrument" : "test_graphs_correctly_read_multiple-TestInstrument",
+                "instrument" : "valid",
                 "rb_number" : rb_number,
                 "data" : "/false/path",
                 "run_version" : 0,
@@ -762,14 +758,14 @@ class QueueProcessorTestCase(TestCase):
         rb_number = self.get_rb_number()
         started_time = timezone.now().replace(microsecond=0)
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
-        run = self.insert_run(run_number=1, instrument="test_graphs_correctly_read_case_sensitive-TestInstrument", experiment=experiment)
+        run = self.insert_run(run_number=1, instrument="valid", experiment=experiment)
         run.status = StatusUtils().get_processing()
         run.started = started_time
         run.save()
 
         test_data = {
             "run_number" : 1,
-            "instrument" : "test_graphs_correctly_read_case_sensitive-TestInstrument",
+            "instrument" : "valid",
             "rb_number" : rb_number,
             "data" : "/false/path",
             "run_version" : 0,
@@ -787,83 +783,14 @@ class QueueProcessorTestCase(TestCase):
         self.assertTrue(len(runs[0].graph) == 1, "Expected to find 1 graph but instead found %s" % len(runs[0].graph))
         self.assertTrue('base64' in runs[0].graph[0], "Expected to find 'base64' in graph text")
 
-    '''
-        Check that a reduction script gets created in the temporary directory
-    '''
-    def test_temporary_reduction_script_is_created(self):
-        rb_number = self.get_rb_number()
-        instrument_name = "test_temporary_reduction_script_is_created-TestInstrument"
-        self.save_dummy_reduce_script(instrument_name)
-        try:
-            self.assertEqual(Instrument.objects.filter(name=instrument_name).first(), None, "Wasn't expecting to find %s" % instrument_name)
-            test_data = {
-                "run_number" : 1,
-                "instrument" : instrument_name,
-                "rb_number" : rb_number,
-                "data" : "/false/path",
-                "run_version" : 0
-            }
-            directory = os.path.join(REDUCTION_SCRIPT_BASE, 'reduction_script_temp')
-            before = dict ([(f, None) for f in os.listdir (directory)])
-            
-            self._client.send('/queue/DataReady', json.dumps(test_data))
-            
-            # Check it is created
-            iterations = 0
-            while 1:
-                after = dict ([(f, None) for f in os.listdir (directory)])
-                if [f for f in after if not f in before]:
-                    before = after
-                    temp_reduce_file = f
-                    break
-                if iterations == 5000:
-                    self.fail("Could not find temporary reduction script.")
-                iterations += 1
 
-            # Check it is whats expected 
-            test_reduce = os.path.join(os.path.dirname(__file__), '../', 'test_files','reduce.py')
-            f = open(test_reduce, 'r')
-            test_reduce_text = f.read()
-            temp_reduce = os.path.join(directory, temp_reduce_file)
-            f = open(temp_reduce, 'r')
-            temp_reduce_text = f.read()
-            if test_reduce_text != temp_reduce_text:
-                self.fail("Scripts do not match.")
-        finally:
-            self.remove_dummy_reduce_script(instrument_name)
-
-    def test_script_deleted(self):
-        rb_number = self.get_rb_number()
-        Experiment(reference_number=rb_number).save()
-        instrument_name = "test_data_ready_multiple_runs-TestInstrument"
         
-        directory = os.path.join(REDUCTION_SCRIPT_BASE, instrument_name)
-        test_reduce = os.path.join(os.path.dirname(__file__), '../', 'test_files','empty_reduce.py')
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-        file_path = os.path.join(directory, 'reduce.py')
-        if not os.path.isfile(file_path):
-            shutil.copyfile(test_reduce, file_path)
+        
+        
+"""
+   
 
-        headers = { 
-            "destination" : '/queue/ReductionError'
-        }
-        message = {
-            "run_number" : 1,
-            "instrument" : instrument_name,
-            "rb_number" : rb_number,
-            "data" : "/false/path",
-            "run_version" : 0,
-            "reduction_script" : file_path
-        }
-        listener = Listener(None)
-
-        self.assertTrue(os.path.isfile(file_path), "Expecting file to exist before call.")
-
-        listener.on_message(headers, json.dumps(message))
-
-        self.assertFalse(os.path.isfile(file_path), "Expecting file to be deleted after call.")
-
+   
 class ICATCommunicationTestCase(TestCase):
 
     @classmethod
@@ -1250,7 +1177,7 @@ class UOWSClientTestCase(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        print '\nThese tests require that you have a user account on the dev user office system. https://devusers.facilities.rl.ac.uk/auth/'
+        print('\nThese tests require that you have a user account on the dev user office system. https://devusers.facilities.rl.ac.uk/auth/')
         cls._username = raw_input('UserOffice WebService Username: ')
         cls._password = getpass.getpass('UserOffice WebService Password: ')
         
@@ -1398,3 +1325,14 @@ class UOWSClientTestCase(TestCase):
             person = self.uows.logout(session_id)
         except:
             self.fail("Wasn't expecting an exception")
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+"""

@@ -35,7 +35,7 @@ class ReductionRun(models.Model):
     created = models.DateTimeField(auto_now_add=True, blank=False)
     started_by = models.IntegerField(null=True, blank=True)
     last_updated = models.DateTimeField(auto_now=True, blank=False)
-    status = models.ForeignKey(Status, blank=False, related_name='+', default=1)
+    status = models.ForeignKey(Status, blank=False, related_name='+')
     started = models.DateTimeField(null=True, blank=True)
     finished = models.DateTimeField(null=True, blank=True)
     message = models.CharField(max_length=255, blank=True)
