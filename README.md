@@ -65,6 +65,14 @@ First install Mantid using: http://download.mantidproject.org/redhat.html
                 </users>
             </simpleAuthenticationPlugin>
         </plugins>
+        
+5. The queue scheduler should be enabled with the `schedulerSupport="true"` directive in the broker, e.g., change
+
+        <broker xmlns="http://activemq.apache.org/schema/core" brokerName="localhost" dataDirectory="${activemq.data}">
+    
+    to
+
+        <broker xmlns="http://activemq.apache.org/schema/core" brokerName="localhost" dataDirectory="${activemq.data}" schedulerSupport="true">
 
 
 Start ActiveMQ as root: `sudo /opt/activemq/bin/activemq start`

@@ -52,12 +52,21 @@ def windows_to_linux_path(path, temp_root_directory):
     path = path.replace('\\\\autoreduce\\data\\', temp_root_directory+'/data/')
     path = path.replace('\\', '/')
     return path
-
+    
+def prettify(data):
+    if type(data).__name__ == "str":
+        data_dict = json.loads(data)
+    else:
+        data_dict = data.copy()
+        
+    if "reduction_script" in data_dict:
+        data_dict["reduction_script"] = data_dict["reduction_script"][:50]
+    return json.dumps(data_dict)
 
 class PostProcessAdmin:
     def __init__(self, data, conf, connection):
 
-        logger.debug("json data: " + str(data))
+        logger.debug("json data: " + prettify(data))
         data["information"] = socket.gethostname()
         self.data = data
         self.conf = conf
@@ -95,8 +104,8 @@ class PostProcessAdmin:
                 raise ValueError("run_number is missing")
                 
             if data.has_key('reduction_script'):
-                self.reduction_script = windows_to_linux_path(str(data['reduction_script']), self.conf["temp_root_directory"])
-                logger.debug("reduction_script: %s" % str(self.reduction_script))
+                self.reduction_script = data['reduction_script']
+                logger.debug("reduction_script: %s ..." % self.reduction_script[:50])
             else:
                 raise ValueError("reduction_script is missing")
                 
@@ -124,26 +133,28 @@ class PostProcessAdmin:
             return float(value)
 
     def replace_variables(self, reduce_script):
-        if hasattr(reduce_script, 'web_var'):
-            if hasattr(reduce_script.web_var, 'standard_vars'):
-                for key in reduce_script.web_var.standard_vars:
-                    if 'standard_vars' in self.reduction_arguments and key in self.reduction_arguments['standard_vars']:
-                        if type(self.reduction_arguments['standard_vars'][key]).__name__ == 'unicode':
-                            self.reduction_arguments['standard_vars'][key] = self.reduction_arguments['standard_vars'][key].encode('ascii','ignore')
-                        reduce_script.web_var.standard_vars[key] = self.reduction_arguments['standard_vars'][key]
-            if hasattr(reduce_script.web_var, 'advanced_vars'):
-                for key in reduce_script.web_var.advanced_vars:
-                    if 'advanced_vars' in self.reduction_arguments and key in self.reduction_arguments['advanced_vars']:
-                        if type(self.reduction_arguments['advanced_vars'][key]).__name__ == 'unicode':
-                            self.reduction_arguments['advanced_vars'][key] = self.reduction_arguments['advanced_vars'][key].encode('ascii','ignore')
-                        reduce_script.web_var.advanced_vars[key] = self.reduction_arguments['advanced_vars'][key]
+        """We mock up the web_var module according to what's expected. The scripts want standard_vars and advanced_vars, e.g. https://github.com/mantidproject/mantid/blob/master/scripts/Inelastic/Direct/ReductionWrapper.py"""                                           
+        def mergeDicts(dictName): 
+            """ Merge self.reduction_arguments[dictName] into reduce_script.web_var[dictName], overwriting any key that exists in both with the value from sourceDict. """
+            def mergeDictToName(dictName, sourceDict): 
+                oldDict = getattr(reduce_script.web_var, dictName) if hasattr(reduce_script.web_var, dictName) else {}
+                oldDict.update(sourceDict)
+                setattr(reduce_script.web_var, dictName, oldDict)
+            def asciiEncode(var): return var.encode('ascii','ignore') if type(var).__name__ == "unicode" else var
+            
+            encodedDict = {k: asciiEncode(v) for k, v in self.reduction_arguments[dictName].items()}
+            mergeDictToName(dictName, encodedDict)
+            
+        if not hasattr(reduce_script, "web_var"): reduce_script.web_var = imp.new_module("reduce_vars") 
+        map(mergeDicts, ["standard_vars", "advanced_vars"])
         return reduce_script
 
+    
     def reduce(self):
         logger.debug("In reduce() method")
         try:     
         
-            logger.debug("Calling: " + self.conf['reduction_started'] + "\n" + json.dumps(self.data))
+            logger.debug("Calling: " + self.conf['reduction_started'] + "\n" + prettify(self.data))
             self.client.send(self.conf['reduction_started'], json.dumps(self.data))
 
             
@@ -193,7 +204,6 @@ class PostProcessAdmin:
                     problem = "does not exist" if doesNotExist(failPath) else "no write access"
                     raise Exception("Couldn't write to %s  -  %s" % (failPath, problem))
                     
-                # we also want read access to the input data file
                 if filter(notReadable, shouldBeReadable) != []:
                     failPath = filter(notReadable, shouldBeReadable)[0]
                     problem = "does not exist" if doesNotExist(failPath) else "no read access"
@@ -211,13 +221,8 @@ class PostProcessAdmin:
                 self.data["message"] = ""
 
                 
-            # Load reduction script
-            if os.path.exists(os.path.join(self.reduction_script, "reduce.py")) is False:
-                raise Exception("Reduce script doesn't exist within %s" % self.reduction_script)
-            sys.path.append(self.reduction_script)
-
             logger.info("----------------")
-            logger.info("Reduction script: %s" % self.reduction_script)
+            logger.info("Reduction script: %s ..." % self.reduction_script[:50])
             logger.info("Result dir: %s" % reduce_result_dir)
             logger.info("Run Output dir: %s" % run_output_dir)
             logger.info("Log dir: %s" % log_dir)
@@ -228,7 +233,11 @@ class PostProcessAdmin:
 
             try:
                 with channels_redirected(script_out, mantid_log):
-                    reduce_script = imp.load_source('reducescript', os.path.join(self.reduction_script, "reduce.py"))
+                    # Load reduction script as a module. This works as long as reduce.py makes no assumption that it is in the same directory as reduce_vars, 
+                    # i.e., either it does not import it at all, or adds its location to os.path explicitly.
+                    reduce_script = imp.new_module('reducescript')
+                    exec self.reduction_script in reduce_script.__dict__ # loads the string as a module into reduce_script
+                    
                     try:
                         skip_numbers = reduce_script.SKIP_RUNS
                     except:
@@ -289,12 +298,12 @@ class PostProcessAdmin:
         else:
             # reduction has successfully completed
             self.client.send(self.conf['reduction_complete'], json.dumps(self.data))
-            print("\nCalling: " + self.conf['reduction_complete'] + "\n" + json.dumps(self.data) + "\n")
+            print("\nCalling: " + self.conf['reduction_complete'] + "\n" + prettify(self.data) + "\n")
             logger.info("Reduction job successfully complete")
 
             
     def _send_error_and_log(self):
-        logger.info("\nCalling " + self.conf['reduction_error'] + " --- " + json.dumps(self.data))
+        logger.info("\nCalling " + self.conf['reduction_error'] + " --- " + prettify(self.data))
         self.client.send(self.conf['reduction_error'], json.dumps(self.data)) 
 
     def copy_temp_directory(self, temp_result_dir, copy_destination):
@@ -387,7 +396,7 @@ if __name__ == "__main__":
 
         destination, message = sys.argv[1:3]
         print("destination: " + destination)
-        print("message: " + message)
+        print("message: " + prettify(message))
         data = json.loads(message)
         
         try:  
@@ -397,13 +406,14 @@ if __name__ == "__main__":
 
         except ValueError as e:
             data["error"] = str(e)
-            logger.info("JSON data error: " + json.dumps(data))
+            logger.info("JSON data error: " + prettify(data))
 
             connection.send(conf['postprocess_error'], json.dumps(data))
-            print("Called " + conf['postprocess_error'] + "----" + json.dumps(data))
+            print("Called " + conf['postprocess_error'] + "----" + prettify(data))
             raise
         
-        except:
+        except Exception as e:
+            logger.info("PostProcessAdmin error: %s" % e)
             raise
         
     except Exception as er:
