@@ -15,7 +15,7 @@ from suds.client import Client as suds_client
 
 from reduction_viewer.models import ReductionRun, Instrument, ReductionLocation, Status, Experiment, DataLocation
 from reduction_viewer.utils import StatusUtils
-from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFile
+from reduction_variables.models import InstrumentVariable, RunVariable
 
 from autoreduce_webapp.icat_communication import ICATCommunication
 from autoreduce_webapp.uows_client import UOWSClient
@@ -44,7 +44,7 @@ class QueueProcessorTestCase(TransactionTestCase):
         Remove InactiveInstrument dummy script
     '''
     def tearDown(self):
-        self.remove_dummy_reduce_script("InactiveInstrument")
+        pass#self.remove_dummy_reduce_script("InactiveInstrument")
 
     @classmethod
     def setUpClass(cls):
@@ -63,7 +63,7 @@ class QueueProcessorTestCase(TransactionTestCase):
     @classmethod
     def tearDownClass(cls):
         map(removeScripts, ['valid', 'empty_script', 'duplicate_var', 'syntax_error'])
-        
+        pass
         
     def createMockSMTP(self):
         self.sentEmails = []
@@ -112,14 +112,7 @@ class QueueProcessorTestCase(TransactionTestCase):
     '''
     def create_instrument_variables(self, instrument_name):
         instrument, created = Instrument.objects.get_or_create(name=instrument_name)
-        reduction_file = os.path.join(REDUCTION_DIRECTORY % instrument_name, 'reduce.py')
-        f = open(reduction_file, 'rb')
-        script_binary = f.read()
-        script, created2 = ScriptFile.objects.get_or_create(file_name='reduce.py', script=script_binary)
-        script.save()
         instrument_variables = InstrumentVariable(instrument=instrument, start_run=0,name='TEST_NAME',value='TEST_VALUE', type='String')
-        instrument_variables.save()
-        instrument_variables.scripts.add(script)
         instrument_variables.save()
 
     '''
@@ -149,71 +142,61 @@ class QueueProcessorTestCase(TransactionTestCase):
     '''
     def test_data_ready_new_instrument(self):
         rb_number = self.get_rb_number()
-        instrument_name = "test_data_ready_new_instrument-TestInstrument"
-        self.save_dummy_reduce_script(instrument_name)
-        try:
-            self.assertEqual(Instrument.objects.filter(name=instrument_name).first(), None, "Wasn't expecting to find %s" % instrument_name)
-            test_data = {
-                "run_number" : 1,
-                "instrument" : instrument_name,
-                "rb_number" : rb_number,
-                "data" : "/false/path",
-                "run_version" : 0
-            }
-            self._client.send('/queue/DataReady', json.dumps(test_data))
-            time.sleep(self._timeout_wait)
+        instrument_name = "valid"
+        self.assertEqual(Instrument.objects.filter(name=instrument_name).first(), None, "Wasn't expecting to find %s" % instrument_name)
+        test_data = {
+            "run_number" : 1,
+            "instrument" : instrument_name,
+            "rb_number" : rb_number,
+            "data" : "/false/path",
+            "run_version" : 0
+        }
+        self._client.send('/queue/DataReady', json.dumps(test_data))
+        #time.sleep(self._timeout_wait)
 
-            experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
-            runs = ReductionRun.objects.filter(experiment=experiment, run_number=1)
+        experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
+        runs = ReductionRun.objects.filter(experiment=experiment, run_number=1)
 
-            self.assertEqual(len(runs), 1, "Should only return 1 reduction run but returned %s" % len(runs))
-            self.assert_run_match(test_data, runs[0])
-            self.assertEqual(str(runs[0].status), "Queued", "Expecting status to be 'Queued' but was '%s'" % runs[0].status)
-            instrument = Instrument.objects.filter(name=instrument_name).first()
-            self.assertNotEqual(instrument, None, "Was expecting to find %s" % instrument_name)
-            self.assertTrue(instrument.is_active, "Was expecting instrument to be active")
-        finally:
-            self.remove_dummy_reduce_script(instrument_name)
+        self.assertFalse(created, "Experiment should already exist.")
+        self.assertEqual(len(runs), 1, "Should only return 1 reduction run but returned %s" % len(runs))
+        self.assert_run_match(test_data, runs[0])
+        self.assertEqual(str(runs[0].status), "Queued", "Expecting status to be 'Queued' but was '%s'" % runs[0].status)
+        instrument = Instrument.objects.filter(name=instrument_name).first()
+        self.assertNotEqual(instrument, None, "Was expecting to find %s" % instrument_name)
+        self.assertTrue(instrument.is_active, "Was expecting instrument to be active")
 
     '''
         Create a new reduction run and check that it auto-creates an instrument and its variables
     '''
     def test_data_ready_new_instrument_instrument_variables(self):
         rb_number = self.get_rb_number()
-        instrument_name = "new_instrument"
-        self.save_dummy_reduce_script(instrument_name)
-        try:
-            self.assertEqual(Instrument.objects.filter(name=instrument_name).first(), None, "Wasn't expecting to find %s" % instrument_name)
-            test_data = {
-                "run_number" : 1,
-                "instrument" : instrument_name,
-                "rb_number" : rb_number,
-                "data" : "/false/path",
-                "run_version" : 0
-            }
-            self._client.send('/queue/DataReady', json.dumps(test_data))
-            time.sleep(self._timeout_wait)
+        instrument_name = "valid"
+        self.assertEqual(Instrument.objects.filter(name=instrument_name).first(), None, "Wasn't expecting to find %s" % instrument_name)
+        test_data = {
+            "run_number" : 1,
+            "instrument" : instrument_name,
+            "rb_number" : rb_number,
+            "data" : "/false/path",
+            "run_version" : 0
+        }
+        self._client.send('/queue/DataReady', json.dumps(test_data))
+        #time.sleep(self._timeout_wait)
 
-            experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
-            runs = ReductionRun.objects.filter(experiment=experiment, run_number=1)
+        experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
+        runs = ReductionRun.objects.filter(experiment=experiment, run_number=1)
 
-            self.assertEqual(len(runs), 1, "Should only return 1 reduction run but returned %s" % len(runs))
-            self.assert_run_match(test_data, runs[0])
-            self.assertEqual(str(runs[0].status), "Queued", "Expecting status to be 'Queued' but was '%s'" % runs[0].status)
-            instrument = Instrument.objects.filter(name=instrument_name).first()
-            self.assertNotEqual(instrument, None, "Was expecting to find %s" % instrument_name)
-            self.assertTrue(instrument.is_active, "Was expecting instrument to be active")
-            instrument_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run__lte=1)
-            self.assertNotEqual(instrument_variables, None, "Was expecting to find some instrument variables")
-            self.assertTrue(len(instrument_variables) > 0, "Was expecting to find some instrument variables")
-            self.assertNotEqual(instrument_variables[0].name, None, "Was expecting to find an instrument variable name")
-            self.assertNotEqual(instrument_variables[0].value, None, "Was expecting to find an instrument variable value")
-            self.assertNotEqual(instrument_variables[0].type, None, "Was expecting to find an instrument variable type")
-            self.assertNotEqual(instrument_variables[0].scripts.all(), None, "Was expecting to find an instrument variable scripts")
-            self.assertTrue(len(instrument_variables[0].scripts.all()) > 0, "Was expecting to find an instrument variable scripts")
-        finally:
-            self.remove_dummy_reduce_script(instrument_name)
-
+        self.assertEqual(len(runs), 1, "Should only return 1 reduction run but returned %s" % len(runs))
+        self.assert_run_match(test_data, runs[0])
+        self.assertEqual(str(runs[0].status), "Queued", "Expecting status to be 'Queued' but was '%s'" % runs[0].status)
+        instrument = Instrument.objects.filter(name=instrument_name).first()
+        self.assertNotEqual(instrument, None, "Was expecting to find %s" % instrument_name)
+        self.assertTrue(instrument.is_active, "Was expecting instrument to be active")
+        instrument_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run__lte=1)
+        self.assertNotEqual(instrument_variables, None, "Was expecting to find some instrument variables")
+        self.assertTrue(len(instrument_variables) > 0, "Was expecting to find some instrument variables")
+        self.assertNotEqual(instrument_variables[0].name, None, "Was expecting to find an instrument variable name")
+        self.assertNotEqual(instrument_variables[0].value, None, "Was expecting to find an instrument variable value")
+        self.assertNotEqual(instrument_variables[0].type, None, "Was expecting to find an instrument variable type")
     '''
         Create a new reduction run on an instrument that already exists
     '''
@@ -230,7 +213,7 @@ class QueueProcessorTestCase(TransactionTestCase):
             "run_version" : 0
         }
         self._client.send('/queue/DataReady', json.dumps(test_data))
-        time.sleep(self._timeout_wait)
+        #time.sleep(self._timeout_wait)
 
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
         runs = ReductionRun.objects.filter(experiment=experiment, run_number=1)
@@ -257,7 +240,7 @@ class QueueProcessorTestCase(TransactionTestCase):
             "run_version" : 0
         }
         self._client.send('/queue/DataReady', json.dumps(test_data))
-        time.sleep(self._timeout_wait)
+        #time.sleep(self._timeout_wait)
 
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
         runs = ReductionRun.objects.filter(experiment=experiment, run_number=1)
@@ -275,36 +258,32 @@ class QueueProcessorTestCase(TransactionTestCase):
     def test_data_ready_multiple_runs(self):
         rb_number = self.get_rb_number()
         instrument_name = "valid"
-        self.save_dummy_reduce_script(instrument_name)
-        try:
-            test_data_run_1 = {
-                "run_number" : 1,
-                "instrument" : instrument_name,
-                "rb_number" : rb_number,
-                "data" : "/false/path",
-                "run_version" : 0
-            }
-            test_data_run_2 = {
-                "run_number" : -2,
-                "instrument" : instrument_name,
-                "rb_number" : rb_number,
-                "data" : "/false/path",
-                "run_version" : 0
-            }
-            self._client.send('/queue/DataReady', json.dumps(test_data_run_1))
-            self._client.send('/queue/DataReady', json.dumps(test_data_run_2))
-            time.sleep(self._timeout_wait)
+        test_data_run_1 = {
+            "run_number" : 1,
+            "instrument" : instrument_name,
+            "rb_number" : rb_number,
+            "data" : "/false/path",
+            "run_version" : 0
+        }
+        test_data_run_2 = {
+            "run_number" : -2,
+            "instrument" : instrument_name,
+            "rb_number" : rb_number,
+            "data" : "/false/path",
+            "run_version" : 0
+        }
+        self._client.send('/queue/DataReady', json.dumps(test_data_run_1))
+        self._client.send('/queue/DataReady', json.dumps(test_data_run_2))
+        #time.sleep(self._timeout_wait)
 
-            experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
-            runs = ReductionRun.objects.filter(experiment=experiment)
+        experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
+        runs = ReductionRun.objects.filter(experiment=experiment)
 
-            self.assertEqual(len(runs), 2, "Should only return 2 reduction runs but returned %s" % len(runs))
-            self.assert_run_match(test_data_run_1, runs[0])
-            self.assertEqual(str(runs[0].status), "Queued", "Expecting status to be 'Queued' but was '%s'" % runs[0].status)
-            self.assert_run_match(test_data_run_2, runs[1])
-            self.assertEqual(str(runs[1].status), "Queued", "Expecting status to be 'Queued' but was '%s'" % runs[1].status)
-        finally:
-            self.remove_dummy_reduce_script(instrument_name)
+        self.assertEqual(len(runs), 2, "Should only return 2 reduction runs but returned %s" % len(runs))
+        self.assert_run_match(test_data_run_1, runs[0])
+        self.assertEqual(str(runs[0].status), "Queued", "Expecting status to be 'Queued' but was '%s'" % runs[0].status)
+        self.assert_run_match(test_data_run_2, runs[1])
+        self.assertEqual(str(runs[1].status), "Queued", "Expecting status to be 'Queued' but was '%s'" % runs[1].status)
 
         
     '''
@@ -323,7 +302,7 @@ class QueueProcessorTestCase(TransactionTestCase):
             "run_version" : 0
         }
         self._client.send('/queue/ReductionStarted', json.dumps(test_data))
-        time.sleep(self._timeout_wait)
+        #time.sleep(self._timeout_wait)
 
         runs = ReductionRun.objects.filter(experiment=experiment)
 
@@ -344,7 +323,7 @@ class QueueProcessorTestCase(TransactionTestCase):
             "run_version" : 0
         }
         self._client.send('/queue/ReductionStarted', json.dumps(test_data))
-        time.sleep(self._timeout_wait)
+        #time.sleep(self._timeout_wait)
 
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
         runs = ReductionRun.objects.filter(experiment=experiment)
@@ -371,7 +350,7 @@ class QueueProcessorTestCase(TransactionTestCase):
             "run_version" : 0
         }
         self._client.send('/queue/ReductionStarted', json.dumps(test_data))
-        time.sleep(self._timeout_wait)
+        #time.sleep(self._timeout_wait)
 
         runs = ReductionRun.objects.filter(experiment=experiment)
 
@@ -400,7 +379,7 @@ class QueueProcessorTestCase(TransactionTestCase):
             "run_version" : 0
         }
         self._client.send('/queue/ReductionStarted', json.dumps(test_data))
-        time.sleep(self._timeout_wait)
+        #time.sleep(self._timeout_wait)
 
         runs = ReductionRun.objects.filter(experiment=experiment)
 
@@ -431,7 +410,7 @@ class QueueProcessorTestCase(TransactionTestCase):
             "run_version" : 0
         }
         self._client.send('/queue/ReductionStarted', json.dumps(test_data))
-        time.sleep(self._timeout_wait)
+        #time.sleep(self._timeout_wait)
 
         runs = ReductionRun.objects.filter(experiment=experiment)
 
@@ -460,7 +439,7 @@ class QueueProcessorTestCase(TransactionTestCase):
             "run_version" : 0
         }
         self._client.send('/queue/ReductionComplete', json.dumps(test_data))
-        time.sleep(self._timeout_wait)
+        #time.sleep(self._timeout_wait)
 
         runs = ReductionRun.objects.filter(experiment=experiment)
 
@@ -483,7 +462,7 @@ class QueueProcessorTestCase(TransactionTestCase):
             "run_version" : 0
         }
         self._client.send('/queue/ReductionComplete', json.dumps(test_data))
-        time.sleep(self._timeout_wait)
+        #time.sleep(self._timeout_wait)
 
         experiment, created = Experiment.objects.get_or_create(reference_number=rb_number)
         runs = ReductionRun.objects.filter(experiment=experiment)
@@ -508,7 +487,7 @@ class QueueProcessorTestCase(TransactionTestCase):
             "run_version" : 0
         }
         self._client.send('/queue/ReductionComplete', json.dumps(test_data))
-        time.sleep(self._timeout_wait)
+        #time.sleep(self._timeout_wait)
 
         runs = ReductionRun.objects.filter(experiment=experiment)
 
@@ -540,7 +519,7 @@ class QueueProcessorTestCase(TransactionTestCase):
             "run_version" : 0
         }
         self._client.send('/queue/ReductionComplete', json.dumps(test_data))
-        time.sleep(self._timeout_wait)
+        #time.sleep(self._timeout_wait)
 
         runs = ReductionRun.objects.filter(experiment=experiment)
 
@@ -568,7 +547,7 @@ class QueueProcessorTestCase(TransactionTestCase):
             "run_version" : 0
         }
         self._client.send('/queue/ReductionComplete', json.dumps(test_data))
-        time.sleep(self._timeout_wait)
+        #time.sleep(self._timeout_wait)
 
         runs = ReductionRun.objects.filter(experiment=experiment)
 
@@ -684,7 +663,7 @@ class QueueProcessorTestCase(TransactionTestCase):
             "reduction_data" : [data_path]
         }
         self._client.send('/queue/ReductionComplete', json.dumps(test_data))
-        time.sleep(self._timeout_wait)
+        #time.sleep(self._timeout_wait)
 
         runs = ReductionRun.objects.filter(experiment=experiment)
 
@@ -728,7 +707,7 @@ class QueueProcessorTestCase(TransactionTestCase):
                 "reduction_data" : [data_path]
             }
             self._client.send('/queue/ReductionComplete', json.dumps(test_data))
-            time.sleep(self._timeout_wait)
+            #time.sleep(self._timeout_wait)
 
             runs = ReductionRun.objects.filter(experiment=experiment)
 
@@ -772,7 +751,7 @@ class QueueProcessorTestCase(TransactionTestCase):
             "reduction_data" : [data_path]
         }
         self._client.send('/queue/ReductionComplete', json.dumps(test_data))
-        time.sleep(self._timeout_wait)
+        #time.sleep(self._timeout_wait)
 
         runs = ReductionRun.objects.filter(experiment=experiment)
 

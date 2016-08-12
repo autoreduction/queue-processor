@@ -130,10 +130,11 @@ class InstrumentVariablesUtils(object):
         An opptional instance of reduce_script can be passed in to prevent multiple hits to the filesystem.
         """
         if not reduce_script:
-            reduce_script =  self._load_reduction_vars_script(instrument_name)
+            reduce_script = self._load_reduction_vars_script(instrument_name)
             
-        reduce_vars_module = imp.new_module("reduce_vars")
-        exec reduce_script in reduce_vars_module.__dict__
+        reduce_vars_module = self._read_script(reduce_script, os.path.join(self._reduction_script_location(instrument_name), 'reduce_vars.py'))
+        if not reduce_vars_module:
+            return []
         
         instrument = InstrumentUtils().get_instrument(instrument_name)
         variables = []
@@ -258,6 +259,27 @@ class InstrumentVariablesUtils(object):
         return (script_text, script_vars_text)
         
         
+    def _read_script(self, script_text, script_path):
+        """
+        Takes a python script as a text string, and returns it loaded as a module. Failure will return None, and notify.
+        """
+        if not script_text or not script_path:
+            return None
+            
+        module_name = os.path.basename(script_path).split(".")[0] # file name without extension
+        script_module = imp.new_module(module_name)
+        try:
+            exec script_text in script_module.__dict__
+            return script_module
+        except ImportError as e:
+            log_error_and_notify("Unable to load reduction script %s due to missing import. (%s)" % (script_path, e.message))
+            return None
+        except SyntaxError:
+            log_error_and_notify("Syntax error in reduction script %s" % script_path)
+            return None
+        
+        
+        
     def _load_script(self, path):
         """
         Load the relevant reduction script and return back the text of the script. If the script cannot be loaded, None is returned.
@@ -269,12 +291,15 @@ class InstrumentVariablesUtils(object):
         except Exception as e:
             log_error_and_notify("Unable to load reduction script %s - %s" % (path, e))
             return None
+            
+    def _reduction_script_location(self, instrument_name):
+        return REDUCTION_DIRECTORY % instrument_name
         
     def _load_reduction_script(self, instrument_name):
-        return self._load_script(os.path.join(REDUCTION_DIRECTORY % instrument_name, 'reduce.py'))
+        return self._load_script(os.path.join(self._reduction_script_location(instrument_name), 'reduce.py'))
 
     def _load_reduction_vars_script(self, instrument_name):
-        return self._load_script(os.path.join(REDUCTION_DIRECTORY % instrument_name, 'reduce_vars.py'))
+        return self._load_script(os.path.join(self._reduction_script_location(instrument_name), 'reduce_vars.py'))
         
     def _create_variables(self, instrument, script, variable_dict, is_advanced):
         variables = []

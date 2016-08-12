@@ -10,8 +10,8 @@ sys.path.insert(0, BASE_DIR)
 from reduction_viewer.utils import InstrumentUtils, StatusUtils
 from reduction_viewer.models import Notification, ReductionRun, Experiment, DataLocation
 
-from reduction_variables.utils import InstrumentVariablesUtils,VariableUtils, ReductionVariablesUtils, MessagingUtils
-from reduction_variables.models import InstrumentVariable, RunVariable, ScriptFile
+from reduction_variables.utils import VariableUtils, InstrumentVariablesUtils, MessagingUtils
+from reduction_variables.models import InstrumentVariable, RunVariable
 
 from utils import copyScripts, removeScripts
 
@@ -33,7 +33,7 @@ class InstrumentVariablesUtilsTestCase(TestCase):
     @classmethod
     def tearDownClass(cls):
         map(removeScripts, ['valid', 'empty_script', 'duplicate_var_reduce', 'syntax_error'])
-        
+        pass
 
     def test_get_default_variables_successfull(self):
         variables = InstrumentVariablesUtils().get_default_variables(testInstrument)
@@ -77,7 +77,7 @@ class InstrumentVariablesUtilsTestCase(TestCase):
 
     def test_get_default_variables_pass_in_reduce_script(self):
         reduction_file = os.path.join(REDUCTION_SCRIPT_BASE % testInstrument, 'reduce_vars.py')
-        reduce_script = imp.load_source('reduce_vars', reduction_file)
+        reduce_script = open(reduction_file, "r").read()
         variables = InstrumentVariablesUtils().get_default_variables(testInstrument, reduce_script)
 
         self.assertNotEqual(variables, None, 'Expecting some variables returned')
@@ -110,7 +110,6 @@ class InstrumentVariablesUtilsTestCase(TestCase):
         self.assertNotEqual(saved_variables, [], 'Expecting some variables saved')
         self.assertTrue(len(variables) > 0, 'Expecting at least 1 variable returned')
         self.assertEqual(variables[0].instrument.name, testInstrument, 'Expecting instrument to be "valid" but was %s' % variables[0].instrument)
-        self.assertTrue(len(variables[0].scripts.all()) > 0, "Expecting to find a script saved")
         self.assertEqual(len(variables), len(saved_variables), "Expecting all returned variables to have been saved")
     
     def test_set_default_instrument_variables_no_start_run(self):
@@ -469,7 +468,6 @@ class VariableUtilsTestCase(TestCase):
 
         self.assertEqual(result, "list_number", "Expecting result to be list_number but was %s" % result)
 
-
     def test_get_type_string_list_mixed(self):
         result = VariableUtils().get_type_string(["test", 2, 5.5])
 
@@ -506,6 +504,7 @@ class ReductionVariablesUtilsTestCase(TestCase):
     
     def tearDown(self):
         removeScripts(testInstrument)
+        pass
     
     @classmethod
     def setUpClass(cls):
@@ -523,6 +522,7 @@ class ReductionVariablesUtilsTestCase(TestCase):
         logging.warning("About to remove %s" % directory)
         if os.path.exists(directory):
             shutil.rmtree(directory)
+        pass
 
     def get_valid_script(self, name):
         reduction_file = os.path.join(REDUCTION_SCRIPT_BASE % testInstrument, name)
@@ -538,115 +538,6 @@ class ReductionVariablesUtilsTestCase(TestCase):
         reduction_run.save()
         return reduction_run
 
-    def test_get_script_and_arguments_successful(self):
-        run_variables = []
-
-        script = ScriptFile(script=self.get_valid_script('reduce.py'), file_name='reduce.py')
-        script.save()
-        script2 = ScriptFile(script=self.get_valid_script('reduce_vars.py'), file_name='reduce_vars.py')
-        script2.save()
-
-        reduction_run = self.get_reduction_run()
-        variable = RunVariable(reduction_run=reduction_run,name='test',value='testvalue1',type='text',is_advanced=False)
-        variable.save()
-        variable.scripts.add(script)
-        variable.scripts.add(script2)
-        variable.save()
-        run_variables.append(variable)
-
-        variable = RunVariable(reduction_run=reduction_run,name='advanced_test',value='testvalue2',type='text',is_advanced=True)
-        variable.save()
-        variable.scripts.add(script)
-        variable.scripts.add(script2)
-        variable.save()
-        run_variables.append(variable)
-
-        script, arguments = ReductionVariablesUtils().get_script_and_arguments(run_variables)
-
-        self.assertNotEqual(script, None, "Expecting to get a script path back.")
-        self.assertNotEqual(script, "", "Expecting to get a script path back.")
-        self.assertNotEqual(arguments, None, "Expecting to get some arguments path back.")
-        self.assertNotEqual(arguments, {}, "Expecting to get some arguments path back.")
-        self.assertTrue('standard_vars' in arguments, "Expecting arguments to have a 'standard_vars' key.")
-        self.assertTrue('advanced_vars' in arguments, "Expecting arguments to have a 'advanced_vars' key.")
-        self.assertEqual(arguments['standard_vars']['test'], 'testvalue1', "Expecting to find testvalue1 in standard_vars.")
-        self.assertEqual(arguments['advanced_vars']['advanced_test'], 'testvalue2', "Expecting to find testvalue2 in advanced_vars.")
-
-    def test_get_script_and_arguments_empty(self):
-        with self.assertRaises(Exception) as e:
-            script, arguments = ReductionVariablesUtils().get_script_and_arguments([])
-        
-        self.assertEqual(e.exception.message, "Run variables required", "Expected an exception with message 'Run variables required' but was '%s'." % e.exception.message)
-        
-
-    def test_get_script_and_arguments_empty_script(self):
-        run_variables = []
-
-        variable = RunVariable(reduction_run=self.get_reduction_run(),name='test',value='testvalue1',type='text',is_advanced=False)
-        variable.save()
-        run_variables.append(variable)
-
-        with self.assertRaises(Exception) as e:
-            script, arguments = ReductionVariablesUtils().get_script_and_arguments(run_variables)
-
-        self.assertEqual(e.exception.message, "Run variables missing scripts", "Expected an exception with message 'Run variables missing scripts' but was '%s'." % e.exception.message)
-
-    def test_get_script_and_arguments_multiple_reduction_runs(self):
-        run_variables = []
-
-        script = ScriptFile(script=self.get_valid_script('reduce.py'), file_name='reduce.py')
-        script.save()
-        script2 = ScriptFile(script=self.get_valid_script('reduce_vars.py'), file_name='reduce_vars.py')
-        script2.save()
-
-        variable = RunVariable(reduction_run=self.get_reduction_run(),name='test',value='testvalue1',type='text',is_advanced=False)
-        variable.save()
-        variable.scripts.add(script)
-        variable.scripts.add(script2)
-        variable.save()
-        run_variables.append(variable)
-
-        other_reduction_run = self.get_reduction_run()
-        other_reduction_run.pk = 999
-        other_reduction_run.id = 999
-        other_reduction_run.save()
-        variable = RunVariable(reduction_run=other_reduction_run, name='test',value='testvalue1',type='text',is_advanced=False)
-        variable.save()
-        variable.scripts.add(script)
-        variable.scripts.add(script2)
-        variable.save()
-        run_variables.append(variable)
-
-
-        with self.assertRaises(Exception) as e:
-            script, arguments = ReductionVariablesUtils().get_script_and_arguments(run_variables)
-
-        self.assertEqual(e.exception.message, "All run variables must be for the same reduction run", "Expected an exception with message 'All run variables must be for the same reduction run' but was '%s'." % e.exception.message)
-
-    def test_get_script_and_arguments_file_name_exists(self):
-        run_variables = []
-
-        script = ScriptFile(script=self.get_valid_script('reduce.py'), file_name='reduce.py')
-        script.save()
-        script2 = ScriptFile(script=self.get_valid_script('reduce_vars.py'), file_name='reduce_vars.py')
-        script2.save()
-
-        variable = RunVariable(reduction_run=self.get_reduction_run(),name='test',value='testvalue1',type='text',is_advanced=False)
-        variable.save()
-        variable.scripts.add(script)
-        variable.scripts.add(script2)
-        variable.save()
-        run_variables.append(variable)
-        
-        script, arguments = ReductionVariablesUtils().get_script_and_arguments(run_variables)
-
-        self.assertNotEqual(script, None, "Expecting to get a script back.")
-        self.assertNotEqual(script, "", "Expecting to get a script back.")
-        self.assertNotEqual(arguments, None, "Expecting to get some arguments back.")
-        self.assertNotEqual(arguments, {}, "Expecting to get some arguments back.")
-        self.assertTrue('standard_vars' in arguments, "Expecting arguments to have a 'standard_vars' key.")
-        self.assertTrue('advanced_vars' in arguments, "Expecting arguments to have a 'advanced_vars' key.")
-        self.assertEqual(arguments['standard_vars']['test'], 'testvalue1', "Expecting to find testvalue1 in standard_vars.")
 
 class MessagingUtilsTestCase(TestCase):
     def setUp(self):
@@ -662,6 +553,7 @@ class MessagingUtilsTestCase(TestCase):
     @classmethod
     def tearDownClass(cls):
         map(removeScripts, ['valid'])
+        pass
             
 
     def get_valid_script(self, name):
@@ -681,23 +573,12 @@ class MessagingUtilsTestCase(TestCase):
         reduction_run = ReductionRun(instrument=instrument, run_number=1, experiment=experiment, run_version=0, status=StatusUtils().get_queued())
         reduction_run.save()        
 
-        if with_variables:
-            script = ScriptFile(script=self.get_valid_script('reduce.py'), file_name='reduce.py')
-            script.save()
-            script2 = ScriptFile(script=self.get_valid_script('reduce_vars.py'), file_name='reduce_vars.py')
-            script2.save()
-            
+        if with_variables:            
             variable = RunVariable(reduction_run=reduction_run,name='test',value='testvalue1',type='text',is_advanced=False)
-            variable.save()
-            variable.scripts.add(script)
-            variable.scripts.add(script2)
             variable.save()
             reduction_run.run_variables.add(variable)
 
             variable = RunVariable(reduction_run=reduction_run,name='advanced_test',value='testvalue2',type='text',is_advanced=True)
-            variable.save()
-            variable.scripts.add(script)
-            variable.scripts.add(script2)
             variable.save()
             reduction_run.run_variables.add(variable)
 
@@ -772,19 +653,6 @@ class MessagingUtilsTestCase(TestCase):
             MessagingUtils().send_cancel(reduction_run)
 
         self.assertTrue(send_called[0], "Expecting send to be called")
-
-    def test_MessagingUtils_no_variables(self):
-        reduction_run = self.get_reduction_run(with_variables=False)
-
-        data_location = DataLocation(file_path="/test/data/path", reduction_run=reduction_run)
-        data_location.save()
-        reduction_run.data_location.add(data_location)
-        reduction_run.save()
-
-        with self.assertRaises(Exception) as e:
-            MessagingUtils().send_pending(reduction_run)
-
-        self.assertEqual(e.exception.message, "Run variables required", "Expecting exception to be raised")
 
     def test_MessagingUtils_no_data(self):
         reduction_run = self.get_reduction_run()
