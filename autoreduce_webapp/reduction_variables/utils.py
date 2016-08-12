@@ -129,7 +129,6 @@ class InstrumentVariablesUtils(object):
         Creates and returns a list of variables matching those found in the appropriate reduce script.
         An opptional instance of reduce_script can be passed in to prevent multiple hits to the filesystem.
         """
-        logger.info("on get_default_variables")
         if not reduce_script:
             reduce_script =  self._load_reduction_vars_script(instrument_name)
             
@@ -139,10 +138,8 @@ class InstrumentVariablesUtils(object):
         instrument = InstrumentUtils().get_instrument(instrument_name)
         variables = []
         if 'standard_vars' in dir(reduce_vars_module):
-            logger.info("a")
             variables.extend(self._create_variables(instrument, reduce_vars_module, reduce_vars_module.standard_vars, False))
         if 'advanced_vars' in dir(reduce_vars_module):
-            logger.info("b")
             variables.extend(self._create_variables(instrument, reduce_vars_module, reduce_vars_module.advanced_vars, True))
         return variables
 
@@ -151,7 +148,6 @@ class InstrumentVariablesUtils(object):
         Creates and saves a set of variables for the given run number using default values found in the relevant reduce script and returns them.
         If no start_run is supplied, 1 is assumed.
         """
-        logger.info("on set_default_variables")
         if not start_run:
             start_run = 1
             
