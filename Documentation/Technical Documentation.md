@@ -14,7 +14,7 @@ The autoreduction web app is a user interface for the autoreduction system that 
     5. [JavaScript](#javascript)
     6. [CSS](#css)
 3. [Components](#components)
-    1. [autoreduce_webapp](#)
+    1. [autoreduce_webapp](#autoreduce_webapp)
     2. [reduction_viewer](#reduction_viewer)
     3. [reduction_variables](#reduction_variables)
 4. [Templates](#templates)
@@ -207,9 +207,9 @@ Models are the instances of database records. Each model matches against a table
     * `run_number` - the integer ID for the data run that this is processing.
     * `run_version` - will begin at 0 for an initial reduction triggered when coming off the instrument, and will subsequently be greater if the run is a rerun (of another run with the same `run_number`).
     * `instrument` and `experiment` - referencing the instrument and experiment that this run is associated with.
+    * `script` - a string of the `reduce.py` script that the run will be/was reduced with.
     * `status` and `message` - the `Status` of the run as above, and a string that will be displayed as, e.g., the failure message of the run if it has failed.
     * `retry_run` and `retry_when` - if this run has been scheduled to be retried, this will point to the new run, and the time at which it's scheduled to be processed.
-    Note that most processing on a `ReductionRun` won't work without having valid `RunVariable`s associated with it; the `ReductionRun` has no variables field, but `RunVariable`s in the database will reference the run .
 * **DataLocation** - Stores the file path of the data for a reduction run.
 * **ReductionLocation** - Stored the output directories of a completed reduction job.
 * **Setting** - Key/Value pair of settings to be used throughout the web app and can be quickly and easily changed through the admin interface. Current settings are: `support_email`, `admin_email` and `ICAT_YEARS_TO_SHOW`.
@@ -237,10 +237,9 @@ This contains the source for some of the web pages and front-end functionality p
 All models and logic related to run/instrument variables are found within this app.
 
 #### models.py
-
-* **ScriptFile** - Contains the binary text and filename of a reduction script.  
-* **InstrumentVariable** - Stores variables for a single instrument with either a starting run number or an experiment reference number. Variables can either be standard or advanced, as indicated by the `is_advanced` boolean.
-* **RunVariable** - Stored variable for a specific run job; upon first reduction run version these will be populated by the matching instrument variables (based on either experiment reference number or run number, in that order). Re-run jobs will use the values the user enters, or the same ones as the previous run. These variables are associated with the scripts that were used for reduction runs - if a `ReductionRun` is re-run, it will look at its variables to find the script to use.
+* **Variable** - The base class for reduction variables variables. Variables can either be standard or advanced, as indicated by the `is_advanced` boolean. This model isn't registered with Django in `admin.py`.
+* **InstrumentVariable** - Stores variables for a single instrument with either a starting run number or an experiment reference number. 
+* **RunVariable** - Stored variable for a specific run job; upon first reduction run version these will be populated by the matching instrument variables (based on either experiment reference number or run number, in that order). Re-run jobs will use the values the user enters, or the same ones as the previous run. 
 
 #### utils.py
 
@@ -248,7 +247,6 @@ This contains utilities related to the models found within reduction_variables.
 
 * **VariableUtils** - Contains utilities relating to individual variables. E.g. `wrap_in_type_syntax` takes in a value and adds the appropriate syntax around it to match the type provided. For example, a `1,2,3` with type of `list_number` would return `[1,2,3]` as a string to be used in the preview script.
 * **InstrumentVariablesUtils** - Provides utilities for setting and fetching InstrumentVariables and scripts. Of particular note is the `get_variables_for_run` function that is [mentioned below](#selecting-run-variables) and `get_current_and_upcoming_variables` that is also [mentioned below](#upcoming-instrumentvariables).
-* **ReductionVariablesUtils** - Contains `get_script_and_arguments` which takes in a list of run numbers and returns back a script as a string and a dictionary of variables to be passed in.
 * **MessagingUtils** - Contains `send_pending`, which takes in a ReductionRun and sends it to the messaging queue for processing (with an optional delay), and `send_cancel`, which sends the run to the queue processor to be cancelled if it is rerun.
 
 #### views.py
