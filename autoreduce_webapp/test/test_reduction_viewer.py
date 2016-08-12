@@ -6,7 +6,7 @@ from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL
 logging.basicConfig(filename=LOG_FILE.replace('.log', '.test.log'),level=LOG_LEVEL, format=u'%(message)s',)
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 
-from utils import copyScripts, removeScripts
+from utils import copyScripts, removeScripts, getReductionRun, getValidScript
 
 from reduction_variables.models import RunVariable
 from reduction_variables.utils import VariableUtils, InstrumentVariablesUtils
@@ -72,14 +72,14 @@ class ReductionRunUtilsTestCase(TestCase):
     @classmethod
     def tearDownClass(cls):
         map(removeScripts, ['valid'])
-                
+
     def createReductionRun(self):
         instrument = InstrumentUtils().get_instrument("valid")
         instrument.save()
         experiment = Experiment(reference_number=1)
         experiment.save()
         
-        reduction_run = ReductionRun(run_number=self.run_number, instrument=instrument, experiment=experiment, run_version=1, status=StatusUtils().get_queued())
+        reduction_run = ReductionRun(run_number=self.run_number, instrument=instrument, experiment=experiment, run_version=1, status=StatusUtils().get_queued(), script=getValidScript('reduce.py'))
         self.run_number += 1
         reduction_run.save()
         
@@ -167,17 +167,27 @@ class ReductionRunUtilsTestCase(TestCase):
         self.assertEqual(retryRun1.run_version+1, retryRun2.run_version, "Expected run version to be correctly incremented, was %i vs %i" % (retryRun1.run_version, retryRun2.run_version))
         
         
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    def test_get_script_and_arguments_successful(self):
+        run_variables = []
+
+        reduction_run = getReductionRun()
+        reduction_run.script = getValidScript("reduce.py")
         
-        
+        variable = RunVariable(reduction_run=reduction_run,name='test',value='testvalue1',type='text',is_advanced=False)
+        variable.save()
+        run_variables.append(variable)
+        variable = RunVariable(reduction_run=reduction_run,name='advanced_test',value='testvalue2',type='text',is_advanced=True)
+        variable.save()
+        run_variables.append(variable)
+
+        script, arguments = ReductionRunUtils().get_script_and_arguments(reduction_run)
+
+        self.assertNotEqual(script, None, "Expecting to get a script path back.")
+        self.assertNotEqual(script, "", "Expecting to get a script path back.")
+        self.assertNotEqual(arguments, None, "Expecting to get some arguments path back.")
+        self.assertNotEqual(arguments, {}, "Expecting to get some arguments path back.")
+        self.assertTrue('standard_vars' in arguments, "Expecting arguments to have a 'standard_vars' key.")
+        self.assertTrue('advanced_vars' in arguments, "Expecting arguments to have a 'advanced_vars' key.")
+        self.assertEqual(arguments['standard_vars']['test'], 'testvalue1', "Expecting to find testvalue1 in standard_vars.")
+        self.assertEqual(arguments['advanced_vars']['advanced_test'], 'testvalue2', "Expecting to find testvalue2 in advanced_vars.")
         

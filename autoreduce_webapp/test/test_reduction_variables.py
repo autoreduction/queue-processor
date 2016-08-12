@@ -13,7 +13,7 @@ from reduction_viewer.models import Notification, ReductionRun, Experiment, Data
 from reduction_variables.utils import VariableUtils, InstrumentVariablesUtils, MessagingUtils
 from reduction_variables.models import InstrumentVariable, RunVariable
 
-from utils import copyScripts, removeScripts
+from utils import copyScripts, removeScripts, getValidScript, getReductionRun
 
 REDUCTION_SCRIPT_BASE = REDUCTION_DIRECTORY
 testInstrument = 'valid'
@@ -498,46 +498,6 @@ class VariableUtilsTestCase(TestCase):
 
         self.assertEqual(result, "text", "Expecting result to be text but was %s" % result)
 
-class ReductionVariablesUtilsTestCase(TestCase):
-    def setUp(self):
-        copyScripts(testInstrument)
-    
-    def tearDown(self):
-        removeScripts(testInstrument)
-        pass
-    
-    @classmethod
-    def setUpClass(cls):
-        test_reduce = os.path.join(os.path.dirname(__file__), '../', 'test_files','reduce.py')
-        valid_reduction_file = REDUCTION_SCRIPT_BASE % testInstrument
-        if not os.path.exists(valid_reduction_file):
-            os.makedirs(valid_reduction_file)
-        file_path = os.path.join(valid_reduction_file, 'reduce.py')
-        if not os.path.isfile(file_path):
-            shutil.copyfile(test_reduce, file_path)
-
-    @classmethod
-    def tearDownClass(cls):
-        directory = REDUCTION_SCRIPT_BASE % testInstrument
-        logging.warning("About to remove %s" % directory)
-        if os.path.exists(directory):
-            shutil.rmtree(directory)
-        pass
-
-    def get_valid_script(self, name):
-        reduction_file = os.path.join(REDUCTION_SCRIPT_BASE % testInstrument, name)
-        f = open(reduction_file, 'rb')
-        script_binary = f.read()
-        return script_binary
-
-    def get_reduction_run(self):
-        instrument = InstrumentUtils().get_instrument(testInstrument)
-        experiment = Experiment(reference_number=1)
-        experiment.save()
-        reduction_run = ReductionRun(instrument=instrument, run_number=1, experiment=experiment, run_version=0, status=StatusUtils().get_queued())
-        reduction_run.save()
-        return reduction_run
-
 
 class MessagingUtilsTestCase(TestCase):
     def setUp(self):
@@ -554,40 +514,11 @@ class MessagingUtilsTestCase(TestCase):
     def tearDownClass(cls):
         map(removeScripts, ['valid'])
         pass
-            
-
-    def get_valid_script(self, name):
-        reduction_file = os.path.join(REDUCTION_SCRIPT_BASE % testInstrument, name)
-        try:
-            f = open(reduction_file, 'rb')
-            script_binary = f.read()
-            return script_binary
-        except:
-            return None
 
 
-    def get_reduction_run(self, with_variables=True):
-        instrument = InstrumentUtils().get_instrument(testInstrument)
-        experiment = Experiment(reference_number=1)
-        experiment.save()
-        reduction_run = ReductionRun(instrument=instrument, run_number=1, experiment=experiment, run_version=0, status=StatusUtils().get_queued())
-        reduction_run.save()        
-
-        if with_variables:            
-            variable = RunVariable(reduction_run=reduction_run,name='test',value='testvalue1',type='text',is_advanced=False)
-            variable.save()
-            reduction_run.run_variables.add(variable)
-
-            variable = RunVariable(reduction_run=reduction_run,name='advanced_test',value='testvalue2',type='text',is_advanced=True)
-            variable.save()
-            reduction_run.run_variables.add(variable)
-
-            reduction_run.save()
-
-        return reduction_run
 
     def test_MessagingUtils_successful(self):
-        reduction_run = self.get_reduction_run()
+        reduction_run = getReductionRun()
 
         data_location = DataLocation(file_path="/test/data/path", reduction_run=reduction_run)
         data_location.save()
@@ -627,7 +558,7 @@ class MessagingUtilsTestCase(TestCase):
         self.assertTrue(send_called[0], "Expecting send to be called")
 
     def test_MessagingUtils_cancel(self):
-        reduction_run = self.get_reduction_run()
+        reduction_run = getReductionRun()
 
         data_location = DataLocation(file_path="/test/data/path", reduction_run=reduction_run)
         data_location.save()
@@ -655,7 +586,7 @@ class MessagingUtilsTestCase(TestCase):
         self.assertTrue(send_called[0], "Expecting send to be called")
 
     def test_MessagingUtils_no_data(self):
-        reduction_run = self.get_reduction_run()
+        reduction_run = getReductionRun()
 
         with self.assertRaises(Exception) as e:
             MessagingUtils().send_pending(reduction_run)

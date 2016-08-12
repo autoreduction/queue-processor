@@ -140,7 +140,7 @@ class ReductionRunUtils(object):
         
         script = reductionRun.script
 
-        run_variables = RunVariable.objects.filter(reduction_run=ReductionRun)
+        run_variables = RunVariable.objects.filter(reduction_run=reductionRun)
         standard_vars, advanced_vars = {}, {}
         for variables in run_variables:
             value = VariableUtils().convert_variable_to_type(variables.value, variables.type)
