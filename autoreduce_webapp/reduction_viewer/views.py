@@ -247,6 +247,24 @@ def run_list(request):
 
     return context_dictionary
 
+    
+@login_and_uows_valid
+@render_with('load_runs.html')
+def load_runs(request, rb_number):
+    experiments = Experiment.objects.filter(rb_number=rb_number)
+    if length(experiments) == 0:
+        context_dictionary['no_runs'] = True
+    else:
+        runs = ReductionRun.objects.filter(experiment=experiment).order_by('-created')
+        if length(runs) == 0:
+            context_dictionary['no_runs'] = True
+        else
+            context_dictionary['no_runs'] = False
+            context_dictionary['runs'] = runs
+            
+    return context_dictionary
+
+    
 @login_and_uows_valid
 @render_with('run_summary.html')
 def run_summary(request, run_number, run_version=0):
