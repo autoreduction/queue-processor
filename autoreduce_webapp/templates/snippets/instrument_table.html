@@ -39,21 +39,21 @@
         </div>
     </div>
     {% if by == "experiment" %}
-        <div class="experiment hide">
-            {% if instrument.experiments %}
-                {% for experiment in instrument.experiments %}
-                    <div class="experiment hide">
-                        {% include "snippets/experiment_table.html" with experiment=experiment only %}
-                    </div>
-                {% endfor %}
-            {% else %}
-                <div class="row">
-                    <div class="col-md-12 text-center no-results">
-                        No experiments found.
-                    </div>
+        {% if instrument.experiments %}
+            {% for experiment in instrument.experiments %}
+                <div class="experiment hide">
+                    {% include "snippets/experiment_table.html" with experiment=experiment only %}
                 </div>
-            {% endif %}
-        </div>
+            {% endfor %}
+        {% else %}
+            <div class="experiment hide">
+                    <div class="row">
+                        <div class="col-md-12 text-center no-results">
+                            No experiments found.
+                        </div>
+                    </div>
+            </div>
+        {% endif %}
     {% elif by == "run" %}
         <div class="run hide" id="{{ instrument.name }}-list" >
         </div>

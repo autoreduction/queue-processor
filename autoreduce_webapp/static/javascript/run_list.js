@@ -46,8 +46,9 @@
     };
     
     var load_all_runs = function load_all_runs(event) {
-        $(".js-toggle-experiment-children").click(); // trigger loading of all unloaded runs
-        $(".js-toggle-experiment-children").click(); // click again to reset open/closed status
+        $(".js-toggle-experiment-children,.js-toggle-instrument-children").click(); // trigger loading of all unloaded runs
+        $(".js-toggle-experiment-children,.js-toggle-instrument-children").click(); // click again to reset open/closed status
+        
         $('#run_search').prop('onfocus',null).off('focus'); // unregister load trigger
     };
 
@@ -124,19 +125,20 @@ function expandItem(el) {
     // indicate that we're loading
     expandItem.counter++;
     $("*").css("cursor", "wait");
-    $("#run_search").addClass("has-warning");
+    $("#search-parent").addClass("has-warning");
+    
+    // unregister the load trigger
+    $(el).prop('onclick',null).off('click');
         
     var name = el.id;
     $("#"+name+"-list").load("list/"+name, 
         function () {
-            $(el).prop('onclick',null).off('click');
-            expandItem.counter--;
-            
             // remove loading indicators if we should
+            expandItem.counter--;
             if (expandItem.counter <= 0)
             {
                 $("*").css("cursor", "default");
-                $("#run_search").removeClass("has-warning");
+                $("#search-parent").removeClass("has-warning");
             }
         });
 };
