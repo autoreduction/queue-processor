@@ -6,7 +6,7 @@ class Variable(models.Model):
     value = models.CharField(max_length=300, blank=False)
     type = models.CharField(max_length=50, blank=False)
     is_advanced = models.BooleanField(default=False)
-    help_text = models.CharField(max_length=300, blank=True, null=True, default='')
+    help_text = models.TextField(blank=True, null=True, default='')
 
     def __unicode__(self):
         return u'%s - %s=%s' % (self.instrument.name, self.name, self.value)
