@@ -109,8 +109,8 @@
         $('#run_search').on('focus', load_all_runs); // load all items
         $('#by-run-number-tab a,#by-experiment-tab a').on('click', tabClickAction);
         $('#by-tabs-mobile').on('change', mobileTabChangeAction);
-        $('.instrument-heading').on('click', toggleInstrumentsExperimentsClickAction)
-        $('.experiment-heading').on('click', toggleExperimentRunsClickAction)
+        $('.instrument-heading').on('click', toggleInstrumentsExperimentsClickAction);
+        $('.experiment-heading').on('click', toggleExperimentRunsClickAction);
     };
 
     init();
@@ -119,11 +119,24 @@
 
 // Put this in the global namespace for various snippets to use.
 function expandItem(el) {
-    var name = el.id;
+    expandItem.counter = expandItem.counter || 0; // keep track of how many items we're currently loading
+    
+    // indicate that we're loading
+    expandItem.counter++;
     $("*").css("cursor", "wait");
+    $("#run_search").addClass("has-warning");
+        
+    var name = el.id;
     $("#"+name+"-list").load("list/"+name, 
         function () {
-            $("*").css("cursor", "default");
             $(el).prop('onclick',null).off('click');
+            expandItem.counter--;
+            
+            // remove loading indicators if we should
+            if (expandItem.counter <= 0)
+            {
+                $("*").css("cursor", "default");
+                $("#run_search").removeClass("has-warning");
+            }
         });
 };
