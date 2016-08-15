@@ -16,7 +16,7 @@ urlpatterns = patterns('',
     url(r'^runs/$', reduction_viewer_views.run_list, name='run_list'),   
     url(r'^runs/queue/$', reduction_viewer_views.run_queue, name='run_queue'), 
     url(r'^runs/failed/$', reduction_viewer_views.fail_queue, name='fail_queue'),
-    url(r'^runs/list/(?P<rb_number>[0-9]+)/$', reduction_viewer_views.load_runs, name='load_runs'),
+    url(r'^runs/list/(?P<reference_number>[0-9]+)/$', reduction_viewer_views.load_runs, name='load_runs'),
     url(r'^runs/(?P<run_number>[0-9]+)(?:/(?P<run_version>[0-9]+))?/$', reduction_viewer_views.run_summary, name='run_summary'),
     url(r'^runs/(?P<instrument>\w+)/confirmation/$', reduction_variables_views.run_confirmation, name='run_confirmation'),
 

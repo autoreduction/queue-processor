@@ -250,15 +250,17 @@ def run_list(request):
     
 @login_and_uows_valid
 @render_with('load_runs.html')
-def load_runs(request, rb_number):
-    experiments = Experiment.objects.filter(rb_number=rb_number)
-    if length(experiments) == 0:
+def load_runs(request, reference_number):
+    context_dictionary = {}
+    experiments = Experiment.objects.filter(reference_number=reference_number)
+    if len(experiments) == 0:
         context_dictionary['no_runs'] = True
     else:
+        experiment = experiments[0]
         runs = ReductionRun.objects.filter(experiment=experiment).order_by('-created')
-        if length(runs) == 0:
+        if len(runs) == 0:
             context_dictionary['no_runs'] = True
-        else
+        else:
             context_dictionary['no_runs'] = False
             context_dictionary['runs'] = runs
             

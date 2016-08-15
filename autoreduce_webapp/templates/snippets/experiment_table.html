@@ -2,7 +2,11 @@
 function expandExperiment(el) {
     var rb_number = el.id;
     $("*").css("cursor", "wait");
-    $(rb_number+"-list").load(rb_number, function () {$("*").css("cursor", "default");})
+    $("#"+rb_number+"-list").load("list/"+rb_number, 
+        function () {
+            $("*").css("cursor", "default");
+            $(el).prop('onclick',null).off('click');
+        })
 };
 </script>
 

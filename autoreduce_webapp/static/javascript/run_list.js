@@ -39,7 +39,7 @@
     };
     var toggleExperimentRunsClickAction = function toggleExperimentRunsClickAction(event){
         var $target = $(event.target);
-        if(($target.is('a') && $target.attr('href')==='#') || ($target.parent().is('a') && $target.parent().attr('href')==='#') || $target.is(':not(a)') && ($.target.parent().is(':not(a)'))){
+        if(($target.is('a') && $target.attr('href')==='#') || ($target.parent().is('a') && $target.parent().attr('href')==='#') || $target.is(':not(a)') && ($target.parent().is(':not(a)'))){
             $(this).find("i[class*='fa-chevron']").toggleClass('fa-chevron-right fa-chevron-down');
             $(this).parents('.experiment').find('.experiment-runs').toggleClass('hide');
         }
