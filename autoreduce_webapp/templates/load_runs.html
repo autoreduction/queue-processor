@@ -1,5 +1,5 @@
 {% block body %}
-    {% if not no_runs %}
+    {% if runs %}
         {% for run in runs %}
             {% include "snippets/run_table.html" with run=run only %}
         {% endfor %}

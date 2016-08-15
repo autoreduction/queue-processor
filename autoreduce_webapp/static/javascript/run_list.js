@@ -44,6 +44,12 @@
             $(this).parents('.experiment').find('.experiment-runs').toggleClass('hide');
         }
     };
+    
+    var load_all_runs = function load_all_runs(event) {
+        $(".js-toggle-experiment-children").click(); // trigger loading of all unloaded runs
+        $(".js-toggle-experiment-children").click(); // click again to reset open/closed status
+        $('#run_search').prop('onfocus',null).off('focus'); // unregister load trigger
+    };
 
     var run_search = function run_search(event){
         if((event.keyCode || event.which || event.charCode) === 13){
@@ -100,6 +106,7 @@
         }
 
         $('#run_search').on('keyup', run_search).popover();
+        $('#run_search').on('focus', load_all_runs); // load all items
         $('#by-run-number-tab a,#by-experiment-tab a').on('click', tabClickAction);
         $('#by-tabs-mobile').on('change', mobileTabChangeAction);
         $('.instrument-heading').on('click', toggleInstrumentsExperimentsClickAction)
@@ -108,3 +115,15 @@
 
     init();
 }());
+
+
+// Put this in the global namespace for various snippets to use.
+function expandItem(el) {
+    var name = el.id;
+    $("*").css("cursor", "wait");
+    $("#"+name+"-list").load("list/"+name, 
+        function () {
+            $("*").css("cursor", "default");
+            $(el).prop('onclick',null).off('click');
+        });
+};

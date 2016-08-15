@@ -182,7 +182,6 @@ def run_list(request):
             'name' : instrument_name,
             'experiments' : [],
             'is_instrument_scientist' : True,#(instrument_name in owned_instruments),
-            'runs' : [],
             'is_active' : instrument.is_active,
             'is_paused' : instrument.is_paused
         }
@@ -200,10 +199,8 @@ def run_list(request):
 
         matching_experiments = Experiment.objects.filter(reference_number__in=reference_numbers)
         for experiment in matching_experiments:
-            # get all runs for experiment
+            # count how many runs are in status error, queued and processing
             runs = ReductionRun.objects.filter(experiment=experiment, instrument=instrument).order_by('-created')
-
-            # count how many are in status error, queued and processing
             experiment_error_runs = runs.filter(status__exact=status_error).count()
             experiment_queued_runs = runs.filter(status__exact=status_queued).count()
             experiment_processing_runs = runs.filter(status__exact=status_processing).count()
@@ -215,15 +212,12 @@ def run_list(request):
 
             experiment_obj = {
                 'reference_number' : experiment.reference_number,
-                'runs' : runs,
                 'progress_summary' : {
                     'processing' : experiment_processing_runs,
                     'queued' : experiment_queued_runs,
                     'error' : experiment_error_runs,
                 }
             }
-            # Add all runs to instrument object as well to be used by the "view by run number" layout
-            instrument_obj['runs'].extend(runs)
             instrument_obj['experiments'].append(experiment_obj)
 
         instrument_obj['progress_summary']= {
@@ -233,7 +227,6 @@ def run_list(request):
         }
 
         # Sort lists before appending
-        instrument_obj['runs'] = sorted(instrument_obj['runs'], key=operator.attrgetter('last_updated'), reverse=True)
         instrument_obj['experiments'] = sorted(instrument_obj['experiments'], key=lambda k: k['reference_number'], reverse=True)
         instruments.append(instrument_obj)
 
@@ -250,20 +243,22 @@ def run_list(request):
     
 @login_and_uows_valid
 @render_with('load_runs.html')
-def load_runs(request, reference_number):
-    context_dictionary = {}
-    experiments = Experiment.objects.filter(reference_number=reference_number)
-    if len(experiments) == 0:
-        context_dictionary['no_runs'] = True
-    else:
-        experiment = experiments[0]
-        runs = ReductionRun.objects.filter(experiment=experiment).order_by('-created')
-        if len(runs) == 0:
-            context_dictionary['no_runs'] = True
-        else:
-            context_dictionary['no_runs'] = False
-            context_dictionary['runs'] = runs
+def load_runs(request, reference_number=None, instrument_name=None):
+    runs = []
+    
+    if reference_number:
+        experiments = Experiment.objects.filter(reference_number=reference_number)
+        if len(experiments) != 0:
+            experiment = experiments[0]
+            runs = ReductionRun.objects.filter(experiment=experiment).order_by('-created')
+                
+    elif instrument_name:
+        instruments = Instrument.objects.filter(name=instrument_name)
+        if len(instruments) != 0:
+            instrument = instruments[0]
+            runs = ReductionRun.objects.filter(instrument=instrument).order_by('-created')
             
+    context_dictionary = { "runs": runs }
     return context_dictionary
 
     
