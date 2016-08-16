@@ -40,7 +40,7 @@ class ReductionRun(models.Model):
     started = models.DateTimeField(null=True, blank=True)
     finished = models.DateTimeField(null=True, blank=True)
     started_by = models.IntegerField(null=True, blank=True)
-    message = models.CharField(max_length=255, blank=True)
+    message = models.TextField(blank=True)
     graph = SeparatedValuesField(null=True, blank=True)
     
     retry_run = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)

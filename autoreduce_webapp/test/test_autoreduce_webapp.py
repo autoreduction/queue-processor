@@ -44,7 +44,7 @@ class QueueProcessorTestCase(TransactionTestCase):
         Remove InactiveInstrument dummy script
     '''
     def tearDown(self):
-        pass#self.remove_dummy_reduce_script("InactiveInstrument")
+        pass
 
     @classmethod
     def setUpClass(cls):
@@ -58,11 +58,11 @@ class QueueProcessorTestCase(TransactionTestCase):
         
         cls._timeout_wait = 1
 
-        map(copyScripts, ['valid', 'empty_script', 'duplicate_var_reduce', 'syntax_error', 'new_instrument'] )
+        map(copyScripts, ['valid', 'empty_script', 'duplicate_var_reduce', 'syntax_error', 'new_instrument', 'InactiveInstrument', 'ExistingTestInstrument1'] )
     
     @classmethod
     def tearDownClass(cls):
-        map(removeScripts, ['valid', 'empty_script', 'duplicate_var', 'syntax_error'])
+        map(removeScripts, ['valid', 'empty_script', 'duplicate_var', 'syntax_error', 'new_instrument', 'InactiveInstrument', 'ExistingTestInstrument1'])
         pass
         
     def createMockSMTP(self):

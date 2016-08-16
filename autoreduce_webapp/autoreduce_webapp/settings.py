@@ -9,11 +9,11 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 SECRET_KEY = 'rjjklyhpxrtrandbxx8s4m@aigiw&!i6d2=g&$b-)lueruz!aw'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-TEMPLATE_DEBUG = True
+TEMPLATE_DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['reduce.isis.cclrc.ac.uk', 'reduce.rl.ac.uk','localhost']
 
 ADMINS = ()
 
@@ -45,7 +45,7 @@ MIDDLEWARE_CLASSES = (
 AUTHENTICATION_BACKENDS = (
     'autoreduce_webapp.backends.UOWSAuthenticationBackend',
 )
-LOGIN_URL = '/autoreduce_webapp/'
+LOGIN_URL = '/'
 
 TEMPLATE_PATH = os.path.join(BASE_DIR, 'templates')
 TEMPLATE_DIRS = (
@@ -164,15 +164,15 @@ else:
 
 ICAT = {
     'AUTH' : 'simple',
-    'URL' : 'https://icatdev.isis.cclrc.ac.uk/ICATService/ICAT?wsdl',
+    'URL' : 'https://icatisis.esc.rl.ac.uk/ICATService/ICAT?wsdl',
     'USER' : 'autoreduce',
-    'PASSWORD' : 'icat'
+    'PASSWORD' : '2LzZWdds^QENuBw'
 }
 
 # UserOffice WebService
 
-UOWS_URL = 'https://fitbawebdev.isis.cclrc.ac.uk:8181/UserOfficeWebService/UserOfficeWebService?wsdl'
-UOWS_LOGIN_URL = 'https://devusers.facilities.rl.ac.uk/auth/?service=http://datareducedev.isis.cclrc.ac.uk&redirecturl='
+UOWS_URL = 'https://fitbaweb1.isis.cclrc.ac.uk:8443/UserOfficeWebService/UserOfficeWebService?wsdl'
+UOWS_LOGIN_URL = 'https://users.facilities.rl.ac.uk/auth/?service=http://reduce.isis.cclrc.ac.uk&redirecturl='
 
 
 # Email for notifications
