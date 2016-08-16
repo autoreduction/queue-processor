@@ -2,22 +2,22 @@ import logging, os, sys, shutil, imp, json
 from mock import patch
 
 from django.test import TestCase
-from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL, REDUCTION_DIRECTORY, BASE_DIR, ACTIVEMQ
+from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL, TEST_REDUCTION_DIRECTORY, BASE_DIR, ACTIVEMQ
 logging.basicConfig(filename=LOG_FILE.replace('.log', '.test.log'),level=LOG_LEVEL, format=u'%(message)s',)
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 sys.path.insert(0, BASE_DIR)
 
-from reduction_viewer.utils import InstrumentUtils, StatusUtils
-from reduction_viewer.models import Notification, ReductionRun, Experiment, DataLocation
+with patch('autoreduce_webapp.settings.REDUCTION_DIRECTORY', TEST_REDUCTION_DIRECTORY):
+    from reduction_viewer.utils import InstrumentUtils, StatusUtils
+    from reduction_viewer.models import Notification, ReductionRun, Experiment, DataLocation
 
-from reduction_variables.utils import VariableUtils, InstrumentVariablesUtils, MessagingUtils
-from reduction_variables.models import InstrumentVariable, RunVariable
+    from reduction_variables.utils import VariableUtils, InstrumentVariablesUtils, MessagingUtils
+    from reduction_variables.models import InstrumentVariable, RunVariable
 
 from utils import copyScripts, removeScripts, getValidScript, getReductionRun
 
-REDUCTION_SCRIPT_BASE = REDUCTION_DIRECTORY
+REDUCTION_SCRIPT_BASE = TEST_REDUCTION_DIRECTORY
 testInstrument = 'valid'
-
 
 class InstrumentVariablesUtilsTestCase(TestCase):
     def setUp(self):
@@ -242,7 +242,7 @@ class InstrumentVariablesUtilsTestCase(TestCase):
         self.assertEqual(variables[0].experiment_reference, None, "Not expecting experiment_reference")
         self.assertEqual(variables[0].start_run, 1, "Expecting start run to be 1 but was %s" % variables[0].start_run)
 
-
+        
 class VariableUtilsTestCase(TestCase):
     def setUp(self):
         pass
@@ -498,7 +498,7 @@ class VariableUtilsTestCase(TestCase):
 
         self.assertEqual(result, "text", "Expecting result to be text but was %s" % result)
 
-
+        
 class MessagingUtilsTestCase(TestCase):
     def setUp(self):
         pass

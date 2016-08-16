@@ -2,17 +2,18 @@ import logging, os
 from mock import patch
 
 from django.test import TestCase 
-from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL
+from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL, TEST_REDUCTION_DIRECTORY
 logging.basicConfig(filename=LOG_FILE.replace('.log', '.test.log'),level=LOG_LEVEL, format=u'%(message)s',)
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 
 from utils import copyScripts, removeScripts, getReductionRun, getValidScript
 
-from reduction_variables.models import RunVariable
-from reduction_variables.utils import VariableUtils, InstrumentVariablesUtils
+with patch('autoreduce_webapp.settings.REDUCTION_DIRECTORY', TEST_REDUCTION_DIRECTORY):
+    from reduction_variables.models import RunVariable
+    from reduction_variables.utils import VariableUtils, InstrumentVariablesUtils
 
-from reduction_viewer.models import Instrument, Experiment, ReductionRun
-from reduction_viewer.utils import StatusUtils, InstrumentUtils, ReductionRunUtils
+    from reduction_viewer.models import Instrument, Experiment, ReductionRun
+    from reduction_viewer.utils import StatusUtils, InstrumentUtils, ReductionRunUtils
 
 
 class StatusUtilsTestCase(TestCase):
@@ -37,8 +38,7 @@ class StatusUtilsTestCase(TestCase):
             
         self.assertEqual(len(list(set(statuses))), len(statuses), "Expected all statuses to be unique")
 
-        
-        
+            
 class InstrumentUtilsTestCase(TestCase):
     def test_get_instrument_create_new_instrument(self):
         newName = "new_instrument_4785937498"
@@ -61,8 +61,7 @@ class InstrumentUtilsTestCase(TestCase):
         instrumentObject = InstrumentUtils().get_instrument(casedName)
         self.assertEqual(instrumentObject, newInstrument, "Expected instrument objects to match")
         
-        
-        
+           
 class ReductionRunUtilsTestCase(TestCase):
     @classmethod
     def setUpClass(cls):

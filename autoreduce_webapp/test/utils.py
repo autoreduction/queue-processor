@@ -1,5 +1,5 @@
 import os, logging, shutil
-from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL, REDUCTION_DIRECTORY
+from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL, TEST_REDUCTION_DIRECTORY
 from reduction_viewer.utils import InstrumentUtils, StatusUtils
 from reduction_viewer.models import Experiment, ReductionRun
 from reduction_variables.models import RunVariable
@@ -10,7 +10,7 @@ def copyScripts(name):
     reduce_script = os.path.join(os.path.dirname(__file__), '../', 'test_files',name,'reduce.py')
     reduce_vars = os.path.join(os.path.dirname(__file__), '../', 'test_files',name,'reduce_vars.py')
     
-    valid_reduction_file = REDUCTION_DIRECTORY % name
+    valid_reduction_file = TEST_REDUCTION_DIRECTORY % name
     if not os.path.exists(valid_reduction_file):
         os.makedirs(valid_reduction_file)
     file_path = os.path.join(valid_reduction_file, 'reduce.py')
@@ -22,14 +22,14 @@ def copyScripts(name):
         
 
 def removeScripts(name):
-    directory = REDUCTION_DIRECTORY % name
+    directory = TEST_REDUCTION_DIRECTORY % name
     logging.warning("About to remove %s" % directory)
     if os.path.exists(directory):
         shutil.rmtree(directory)
         
 
 def getValidScript(name):
-    reduction_file = os.path.join(REDUCTION_DIRECTORY % 'valid', name)
+    reduction_file = os.path.join(TEST_REDUCTION_DIRECTORY % 'valid', name)
     try:
         f = open(reduction_file, 'r')
         script_text = f.read()
