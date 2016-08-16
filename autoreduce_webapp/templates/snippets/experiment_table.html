@@ -1,6 +1,6 @@
-<div class="row experiment-heading">
+<div class="row experiment-heading" id="{{ experiment.reference_number }}">
     <div class="col-md-1 col-xs-1">
-        <a href="#" class="js-toggle-experiment-children" title="Expand/Collapse" id="{{ experiment.reference_number }}" onclick="expandItem(this);"><i class="fa fa-lg fa-chevron-right"></i></a>
+        <a href="#" class="js-toggle-experiment-children" title="Expand/Collapse"><i class="fa fa-lg fa-chevron-right"></i></a>
     </div>
     <div class="col-md-11 col-xs-10">
         <a href="{% url 'experiment_summary' experiment.reference_number %}">{{ experiment.reference_number }}</a>
