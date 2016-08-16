@@ -1149,24 +1149,28 @@ class UOWSClientTestCase(TestCase):
 
     @classmethod
     def setUpClass(cls):
+        cls.uows = UOWSClient(URL=UOWS_URL)
+        
         print('\nThese tests require that you have a user account on the user office system.')
         cls._username = raw_input('UserOffice WebService Username: ')
         cls._password = getpass.getpass('UserOffice WebService Password: ')
+        client = suds_client(UOWS_URL)
+        cls._session_id = client.service.login(cls._username, cls._password)
+        
+    @classmethod
+    def tearDownClass(cls):
+        client = suds_client(UOWS_URL)
+        try:
+            client.service.logout(cls._session_id)
+        except:
+            pass        
         
     def setUp(self):
-        url = UOWS_URL
-        self.uows = UOWSClient(URL=url)
-        client = suds_client(url)
-        self._session_id = client.service.login(self._username, self._password)
-
+        pass
+        
     def tearDown(self):
-        url = UOWS_URL
-        client = suds_client(url)
-        try:
-            client.service.logout(self._session_id)
-        except:
-            pass
-
+        pass
+        
     '''
         Check that a valid session is correctly identified
     '''
