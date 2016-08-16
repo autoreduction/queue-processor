@@ -44,13 +44,6 @@
             $(this).parents('.experiment').find('.experiment-runs').toggleClass('hide');
         }
     };
-    
-    var load_all_runs = function load_all_runs(event) {
-        $(".js-toggle-experiment-children,.js-toggle-instrument-children").click(); // trigger loading of all unloaded runs
-        $(".js-toggle-experiment-children,.js-toggle-instrument-children").click(); // click again to reset open/closed status
-        
-        $('#run_search').prop('onfocus',null).off('focus'); // unregister load trigger
-    };
 
     var run_search = function run_search(event){
         if((event.keyCode || event.which || event.charCode) === 13){
@@ -118,7 +111,9 @@
 }());
 
 
-// Put this in the global namespace for various snippets to use.
+
+/// Put these in the global namespace for various snippets to use.
+
 function expandItem(el) {
     expandItem.counter = expandItem.counter || 0; // keep track of how many items we're currently loading
     
@@ -141,4 +136,11 @@ function expandItem(el) {
                 $("#search-parent").removeClass("has-warning");
             }
         });
+};
+
+var load_all_runs = function load_all_runs(event) {
+    $(".js-toggle-experiment-children,.js-toggle-instrument-children").click(); // trigger loading of all unloaded runs
+    $(".js-toggle-experiment-children,.js-toggle-instrument-children").click(); // click again to reset open/closed status
+    
+    $('#run_search').prop('onfocus',null).off('focus'); // unregister load trigger
 };

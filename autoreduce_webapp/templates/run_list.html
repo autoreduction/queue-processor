@@ -57,4 +57,7 @@
 {% block scripts %}
     <script src="{% static "javascript/vendor/fastdom.js" %}"></script>
     <script src="{% static "javascript/run_list.js" %}"></script>
+    {% if preload_runs %}
+        <script>load_all_runs(null);</script>
+    {% endif %}
 {% endblock %}

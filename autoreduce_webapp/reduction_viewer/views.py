@@ -6,7 +6,7 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from autoreduce_webapp.uows_client import UOWSClient
 from autoreduce_webapp.icat_communication import ICATCommunication
-from autoreduce_webapp.settings import UOWS_LOGIN_URL
+from autoreduce_webapp.settings import UOWS_LOGIN_URL, PRELOAD_RUNS_UNDER
 from reduction_viewer.models import Experiment, ReductionRun, Instrument
 from reduction_viewer.utils import StatusUtils, ReductionRunUtils
 from reduction_viewer.view_utils import deactivate_invalid_instruments
@@ -168,6 +168,9 @@ def run_list(request):
     status_error = StatusUtils().get_error()
     status_queued = StatusUtils().get_queued()
     status_processing = StatusUtils().get_processing()
+    
+    # Keep count of the total number of runs, to preload if there aren't too many.
+    total_runs = 0
 
     for instrument_name in instrument_names:
         try:
@@ -199,8 +202,10 @@ def run_list(request):
 
         matching_experiments = Experiment.objects.filter(reference_number__in=reference_numbers)
         for experiment in matching_experiments:
-            # count how many runs are in status error, queued and processing
             runs = ReductionRun.objects.filter(experiment=experiment, instrument=instrument).order_by('-created')
+            total_runs += runs.count()
+
+            # count how many runs are in status error, queued and processing
             experiment_error_runs = runs.filter(status__exact=status_error).count()
             experiment_queued_runs = runs.filter(status__exact=status_queued).count()
             experiment_processing_runs = runs.filter(status__exact=status_processing).count()
@@ -231,6 +236,7 @@ def run_list(request):
         instruments.append(instrument_obj)
 
     context_dictionary['instrument_list'] = instruments
+    context_dictionary['preload_runs'] = (total_runs < PRELOAD_RUNS_UNDER)
     if owned_instruments:
         context_dictionary['default_tab'] = 'run_number'
     else:

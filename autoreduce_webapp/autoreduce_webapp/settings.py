@@ -193,3 +193,4 @@ BASE_URL = 'http://reduce.isis.cclrc.ac.uk/'
 # Constant vars
 
 FACILITY = "ISIS"
+PRELOAD_RUNS_UNDER = 100 # If the index run list has fewer than this many runs to show the user, preload them all.
