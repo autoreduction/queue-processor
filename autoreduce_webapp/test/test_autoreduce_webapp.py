@@ -764,9 +764,6 @@ class QueueProcessorTestCase(TransactionTestCase):
 
 
         
-        
-        
-"""
    
 
    
@@ -1313,5 +1310,3 @@ class UOWSClientTestCase(TestCase):
             
             
             
-            
-"""
