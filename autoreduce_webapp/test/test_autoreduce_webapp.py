@@ -1,11 +1,11 @@
 import sys, time, logging, os, datetime, json, shutil, getpass
 from sets import Set
 from mock import patch
-from urllib2 import URLError
+from xml.sax import SAXParseException
 
 from django.test import TestCase, TransactionTestCase 
 from django.utils import timezone
-from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL, ACTIVEMQ, BASE_DIR, REDUCTION_DIRECTORY, ICAT
+from autoreduce_webapp.settings import LOG_FILE, LOG_LEVEL, ACTIVEMQ, BASE_DIR, REDUCTION_DIRECTORY, ICAT, UOWS_URL, UOWS_LOGIN_URL
 logging.basicConfig(filename=LOG_FILE.replace('.log', '.test.log'),level=LOG_LEVEL, format=u'%(message)s',)
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 sys.path.insert(0, BASE_DIR)
@@ -797,7 +797,7 @@ class ICATCommunicationTestCase(TestCase):
     def test_icat_login_with_invalid_credentials(self):
         try:
             with ICATCommunication(USER='MadeUp') as icat:
-                self.fail("Expecting login to fail")
+                self.assertEqual(icat, None, "Expecting login to fail")
         except ICATSessionError:
             pass
     
@@ -807,17 +807,14 @@ class ICATCommunicationTestCase(TestCase):
     def test_icat_login_with_invalid_url(self):
         try:
             with ICATCommunication(URL='https://www.example.com/') as icat:
-                self.fail("Expecting login to fail")
-        except URLError:
+                self.assertEqual(icat, None, "Expecting login to fail")
+        except SAXParseException:
             pass
 
     '''
         Check that ICAT can login when passed in credentials
     '''
     def test_icat_login_with_valid_values_passed_in(self):
-        import settings
-        reload(settings)
-        from settings import ICAT
         with ICATCommunication(**ICAT) as icat:
             pass
         
@@ -837,9 +834,11 @@ class ICATCommunicationTestCase(TestCase):
     '''
     def test_get_experiment_details_invalid_experiment(self):
         with ICATCommunication() as icat:
-            experiment = icat.get_experiment_details(-123)
+            reference_number = -123333
+            shouldBeReturned = {'reference_number': str(reference_number), 'end_date': 'N/A', 'title': 'N/A', 'summary': u'N/A', 'pi':'', 'start_date': 'N/A'}
             
-            self.assertEqual(experiment, None, 'Not expecting an experiment to be returned')
+            experiment = icat.get_experiment_details(reference_number)            
+            self.assertEqual(experiment, shouldBeReturned, 'Expecting %s to be returned, but got %s' % (str(shouldBeReturned), str(experiment)))
 
     '''
         Check that an error is raised when passing in invalid values
@@ -1104,10 +1103,10 @@ class ICATCommunicationTestCase(TestCase):
             found_experiment = False
             for instrument in instruments:
                 for experiment in instruments[instrument]:
-                    if experiment == str(1290062):
+                    if experiment == str(1290075):
                         found_experiment = True
                         break
-            self.assertTrue(found_experiment, "Expecting to find experiment %s" % 1290062)
+            self.assertTrue(found_experiment, "Expecting to find experiment %s, but only received %s" % (1290075, str(instruments)))
               
     '''
         Check that an exception is raised when no instruments are passed in
@@ -1153,19 +1152,18 @@ class UOWSClientTestCase(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        print('\nThese tests require that you have a user account on the dev user office system. https://devusers.facilities.rl.ac.uk/auth/')
+        print('\nThese tests require that you have a user account on the user office system.')
         cls._username = raw_input('UserOffice WebService Username: ')
         cls._password = getpass.getpass('UserOffice WebService Password: ')
         
     def setUp(self):
-        url = 'https://fitbawebdev.isis.cclrc.ac.uk:8181/UserOfficeWebService/UserOfficeWebService?wsdl'
+        url = UOWS_URL
+        self.uows = UOWSClient(URL=url)
         client = suds_client(url)
         self._session_id = client.service.login(self._username, self._password)
-        url = 'https://fitbawebdev.isis.cclrc.ac.uk:8181/UserOfficeWebService/UserOfficeWebService?wsdl'
-        self.uows = UOWSClient(URL=url)
 
     def tearDown(self):
-        url = 'https://fitbawebdev.isis.cclrc.ac.uk:8181/UserOfficeWebService/UserOfficeWebService?wsdl'
+        url = UOWS_URL
         client = suds_client(url)
         try:
             client.service.logout(self._session_id)
