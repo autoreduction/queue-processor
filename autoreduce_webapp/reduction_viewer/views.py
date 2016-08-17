@@ -61,12 +61,17 @@ def logout(request):
 @login_and_uows_valid
 @render_with('run_queue.html')
 def run_queue(request):
+    # Get all runs that should be shown
     queued_status = StatusUtils().get_queued()
     processing_status = StatusUtils().get_processing()
     pending_jobs = ReductionRun.objects.filter(Q(status=queued_status) | Q(status=processing_status)).order_by('created')
-    context_dictionary = {
-        'queue' : pending_jobs
-    }
+    
+    # Filter those which the user shouldn't be able to see
+    if not request.user.is_superuser:
+        pending_jobs = filter(lambda job: job.experiment.reference_number in request.session['experiments'], pending_jobs) # check RB numbers
+        pending_jobs = filter(lambda job: job.instrument.name in request.session['owned_instruments'], pending_jobs) # check instrument
+    
+    context_dictionary = { 'queue' : pending_jobs }
     return context_dictionary
     
     
@@ -78,12 +83,10 @@ def fail_queue(request):
     # render the page
     error_status = StatusUtils().get_error()
     failed_jobs = ReductionRun.objects.filter(Q(status=error_status) & Q(hidden_in_failviewer=False)).order_by('-created')
-    context_dictionary = { 
-                  'queue' : failed_jobs
-                , 'status_success' : StatusUtils().get_completed()
-                , 'status_failed' : StatusUtils().get_error()
-                }
-
+    context_dictionary = { 'queue' : failed_jobs
+                         , 'status_success' : StatusUtils().get_completed()
+                         , 'status_failed' : StatusUtils().get_error()
+                         }
 
     if request.method == 'POST':
         # perform the specified action
@@ -250,6 +253,12 @@ def run_list(request):
 @login_and_uows_valid
 @render_with('load_runs.html')
 def load_runs(request, reference_number=None, instrument_name=None):
+    # Check permissions
+    if not request.user.is_superuser\
+            and   ((reference_number and reference_number not in request.session['experiments'])\
+                or (instrument_name  and instrument_name  not in request.session['owned_instruments'])):
+        raise PermissionDenied()
+
     runs = []
     
     if reference_number:
@@ -278,15 +287,13 @@ def run_summary(request, run_number, run_version=0):
                 and str(run.instrument) not in request.session['owned_instruments']:
             raise PermissionDenied()
         history = ReductionRun.objects.filter(run_number=run_number).order_by('-run_version')
-        context_dictionary = {
-            'run' : run,
-            'history' : history,
-        }
+        context_dictionary = { 'run' : run, 'history' : history }
     except PermissionDenied:
         raise
     except Exception as e:
         logger.error(e.message)
         context_dictionary = {}
+        
     return context_dictionary
 
 #@require_staff
@@ -294,8 +301,8 @@ def run_summary(request, run_number, run_version=0):
 @render_with('instrument_summary.html')
 def instrument_summary(request, instrument):
     # Check the user has permission
-    #if not request.user.is_superuser and instrument not in request.session['owned_instruments']:
-    #    raise PermissionDenied()
+    if not request.user.is_superuser and instrument not in request.session['owned_instruments']:
+        raise PermissionDenied()
 
     processing_status = StatusUtils().get_processing()
     queued_status = StatusUtils().get_queued()
@@ -319,6 +326,10 @@ def instrument_summary(request, instrument):
 @login_and_uows_valid
 @render_with('experiment_summary.html')
 def experiment_summary(request, reference_number):
+    # Check the user's permissions
+    if not request.user.is_superuser and str(reference_number) not in request.session['experiments']:
+       raise PermissionDenied()
+
     try:
         experiment = Experiment.objects.get(reference_number=reference_number)
         runs = ReductionRun.objects.filter(experiment=experiment).order_by('-run_version')
@@ -355,10 +366,7 @@ def experiment_summary(request, reference_number):
     except Exception as e:
         logger.error(e.message)
         context_dictionary = {}
-    
-    #Check the users permissions
-    if not request.user.is_superuser and str(reference_number) not in request.session['experiments']:
-       raise PermissionDenied()
+
     return context_dictionary
 
 @render_with('help.html')

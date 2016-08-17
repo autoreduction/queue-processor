@@ -17,10 +17,6 @@ logger = logging.getLogger("app")
     Imported into another view, thus no middleware
 '''
 def instrument_summary(request, instrument):
-    # Check the user has permission
-    #if not request.user.is_superuser and instrument not in request.session['owned_instruments']:
-    #    raise PermissionDenied()
-
     instrument = Instrument.objects.get(name=instrument)
     
     current_variables, upcoming_variables_by_run, upcoming_variables_by_experiment = InstrumentVariablesUtils().get_current_and_upcoming_variables(instrument.name)
@@ -106,8 +102,8 @@ def delete_instrument_variables(request, instrument, start=0, end=0, experiment_
 @render_with('instrument_variables.html')
 def instrument_variables(request, instrument, start=0, end=0, experiment_reference=0):
     # Check the user has permission
-    #if not request.user.is_superuser and instrument not in request.session['owned_instruments']:
-    #    raise PermissionDenied()
+    if not request.user.is_superuser and instrument not in request.session['owned_instruments']:
+        raise PermissionDenied()
     
     instrument = Instrument.objects.get(name=instrument)
     if request.method == 'POST':
@@ -369,6 +365,7 @@ def run_confirmation(request, instrument):
     if request.method != 'POST':
         return redirect('instrument_summary', instrument=instrument.name)
         
+        
     # POST
     instrument = Instrument.objects.get(name=instrument)
     run_numbers = []
@@ -376,7 +373,6 @@ def run_confirmation(request, instrument):
     if 'run_number' in request.POST:
         run_numbers.append(int(request.POST.get('run_number')))
     else:
-        # TODO: Check ICAT credentials
         range_string = request.POST.get('run_range').split(',')
         # Expand list
         for item in range_string:
@@ -409,9 +405,12 @@ def run_confirmation(request, instrument):
         if (experiments_allowed is not None) and (str(rb_number[0]) not in experiments_allowed):
             context_dictionary['error'] = "Permission denied. You do not have permission to request re-runs on the associated experiment number."
 
+    # Quit on error.
+    if 'error' in context_dictionary:
+        return context_dictionary
+            
     for run_number in run_numbers:
         old_reduction_run = ReductionRun.objects.filter(run_number=run_number).order_by('-run_version').first()
-
 
         use_current_script = request.POST.get('use_current_script', u"true").lower() == u"true"
         if use_current_script:
@@ -469,7 +468,6 @@ def run_confirmation(request, instrument):
 
     
 def preview_script(request, instrument, run_number=0, experiment_reference=0):
-
     # Can't use login decorator as need to return AJAX error message if fails
     if not has_valid_login(request):
         redirect_response = handle_redirect(request)
@@ -478,6 +476,12 @@ def preview_script(request, instrument, run_number=0, experiment_reference=0):
         else:
             error = {'redirect_url': redirect_response.url}
             return HttpResponseForbidden(json.dumps(error))
+            
+    # Check permissions
+    if not request.user.is_superuser\
+            and   ((experiment_reference and experiment_reference not in request.session['experiments'])\
+                or (instrument           and instrument           not in request.session['owned_instruments'])):
+        raise PermissionDenied()
 
     if request.method == 'GET':
         reduction_run = ReductionRun.objects.filter(run_number=run_number)
