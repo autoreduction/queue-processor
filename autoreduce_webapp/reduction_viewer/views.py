@@ -6,7 +6,7 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from autoreduce_webapp.uows_client import UOWSClient
 from autoreduce_webapp.icat_communication import ICATCommunication
-from autoreduce_webapp.settings import UOWS_LOGIN_URL, PRELOAD_RUNS_UNDER
+from autoreduce_webapp.settings import UOWS_LOGIN_URL, PRELOAD_RUNS_UNDER, USER_ACCESS_CHECKS
 from reduction_viewer.models import Experiment, ReductionRun, Instrument
 from reduction_viewer.utils import StatusUtils, ReductionRunUtils
 from reduction_viewer.view_utils import deactivate_invalid_instruments
@@ -67,7 +67,7 @@ def run_queue(request):
     pending_jobs = ReductionRun.objects.filter(Q(status=queued_status) | Q(status=processing_status)).order_by('created')
     
     # Filter those which the user shouldn't be able to see
-    if not request.user.is_superuser:
+    if USER_ACCESS_CHECKS and not request.user.is_superuser:
         pending_jobs = filter(lambda job: job.experiment.reference_number in request.session['experiments'], pending_jobs) # check RB numbers
         pending_jobs = filter(lambda job: job.instrument.name in request.session['owned_instruments'], pending_jobs) # check instrument
     
@@ -149,7 +149,7 @@ def run_list(request):
     # Owned instruments is populated on login
     owned_instruments = request.session.get('owned_instruments', default=[])
     # Superuser sees everything
-    if request.user.is_superuser:
+    if request.user.is_superuser or not USER_ACCESS_CHECKS:
         instrument_names = Instrument.objects.values_list('name', flat=True)
         if instrument_names:
             experiments = {}
@@ -254,7 +254,7 @@ def run_list(request):
 @render_with('load_runs.html')
 def load_runs(request, reference_number=None, instrument_name=None):
     # Check permissions
-    if not request.user.is_superuser\
+    if USER_ACCESS_CHECKS and not request.user.is_superuser\
             and   ((reference_number and reference_number not in request.session['experiments'])\
                 or (instrument_name  and instrument_name  not in request.session['owned_instruments'])):
         raise PermissionDenied()
@@ -283,7 +283,7 @@ def run_summary(request, run_number, run_version=0):
     try:
         run = ReductionRun.objects.get(run_number=run_number, run_version=run_version)
         # Check the user has permission
-        if not request.user.is_superuser and str(run.experiment.reference_number) not in request.session['experiments']\
+        if USER_ACCESS_CHECKS and not request.user.is_superuser and str(run.experiment.reference_number) not in request.session['experiments']\
                 and str(run.instrument) not in request.session['owned_instruments']:
             raise PermissionDenied()
         history = ReductionRun.objects.filter(run_number=run_number).order_by('-run_version')
@@ -301,7 +301,7 @@ def run_summary(request, run_number, run_version=0):
 @render_with('instrument_summary.html')
 def instrument_summary(request, instrument):
     # Check the user has permission
-    if not request.user.is_superuser and instrument not in request.session['owned_instruments']:
+    if USER_ACCESS_CHECKS and not request.user.is_superuser and instrument not in request.session['owned_instruments']:
         raise PermissionDenied()
 
     processing_status = StatusUtils().get_processing()
@@ -327,7 +327,7 @@ def instrument_summary(request, instrument):
 @render_with('experiment_summary.html')
 def experiment_summary(request, reference_number):
     # Check the user's permissions
-    if not request.user.is_superuser and str(reference_number) not in request.session['experiments']:
+    if USER_ACCESS_CHECKS and not request.user.is_superuser and str(reference_number) not in request.session['experiments']:
        raise PermissionDenied()
 
     try:

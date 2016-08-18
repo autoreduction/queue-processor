@@ -194,3 +194,4 @@ BASE_URL = 'http://reduce.isis.cclrc.ac.uk/'
 
 FACILITY = "ISIS"
 PRELOAD_RUNS_UNDER = 100 # If the index run list has fewer than this many runs to show the user, preload them all.
+USER_ACCESS_CHECKS = True # Should the webapp prevent users from accessing runs/instruments they're not allowed to?

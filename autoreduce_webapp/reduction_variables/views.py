@@ -102,7 +102,7 @@ def delete_instrument_variables(request, instrument, start=0, end=0, experiment_
 @render_with('instrument_variables.html')
 def instrument_variables(request, instrument, start=0, end=0, experiment_reference=0):
     # Check the user has permission
-    if not request.user.is_superuser and instrument not in request.session['owned_instruments']:
+    if USER_ACCESS_CHECKS and not request.user.is_superuser and instrument not in request.session['owned_instruments']:
         raise PermissionDenied()
     
     instrument = Instrument.objects.get(name=instrument)
@@ -259,7 +259,7 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
 @render_with('submit_runs.html')
 def submit_runs(request, instrument):
     # Check the user has permission
-    if not request.user.is_superuser and instrument not in request.session['owned_instruments']:
+    if USER_ACCESS_CHECKS and not request.user.is_superuser and instrument not in request.session['owned_instruments']:
         raise PermissionDenied()
 
     instrument = Instrument.objects.get(name=instrument)
