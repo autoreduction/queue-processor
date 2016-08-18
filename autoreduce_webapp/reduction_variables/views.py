@@ -4,6 +4,7 @@ from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, HttpResponseForbidden
+from autoreduce_webapp.settings import USER_ACCESS_CHECKS
 from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, has_valid_login, handle_redirect
 from reduction_variables.models import InstrumentVariable, RunVariable
 from reduction_variables.utils import InstrumentVariablesUtils, MessagingUtils
