@@ -2,45 +2,19 @@
 cd ~
 
 isInstalled() {
+    echo "Checking installed packages."
     yum list installed "$1" >/dev/null 2>&1  || command -v "$1" >/dev/null 2>&1
 }
 
-isis_rhel="[isis-rhel]
-name=ISIS Software Repository for Redhat Enterprise Linux $releasever - $basearch
-baseurl=http://yum.isis.rl.ac.uk/rhel/$releasever/$basearch
-failovermethod=priority
-enabled=1
-gpgcheck=0
-
-[isis-rhel-noarch]
-name=ISIS Software Repository for Redhat Enterprise Linux $releasever - noarch
-baseurl=http://yum.isis.rl.ac.uk/rhel/$releasever/noarch
-failovermethod=priority
-enabled=1
-gpgcheck=0
-
-[isis-rhel-debuginfo]
-name=ISIS Software Repository for Redhat Enterprise Linux $releasever - $basearch - Debug
-baseurl=http://yum.isis.rl.ac.uk/rhel/$releasever/$basearch/debug
-failovermethod=priority
-enabled=1
-gpgcheck=0
-
-[isis-rhel-source]
-name=ISIS Software Repository for Redhat Enterprise Linux $releasever - $basearch - Source
-baseurl=http://yum.isis.rl.ac.uk/rhel/$releasever/SRPMS
-failovermethod=priority
-enabled=0
-gpgcheck=0"
-
 
 # Install Mantid
-if [ ! isInstalled mantid ]
+if ! isInstalled mantid
 then
     echo "Installing mantid..."
+    yum install -y "epel-release"
     if [ ! -e /etc/yum.repos.d/isis-rhel.repo ] 
     then
-        $isis_rhel > /etc/yum.repos.d/isis-rhel.repo
+        cp autoreduce/ISISPostProcessRPM/isis-rhel.repo /etc/yum.repos.d/isis-rhel.repo
     fi
     yum install -y mantid
 fi
@@ -68,6 +42,7 @@ then
     cd /opt/activemq/conf
     read -s -p "Enter a password for the keystore password (at least 6 characters:" storepass
     echo ""
+    rm -f {client,broker}.{ks,ts}
     keytool -genkey -noprompt -alias broker -dname "CN=reduce.isis.cclrc.ac.uk" -keyalg RSA -keystore broker.ks -validity 2160 -keypass $storepass -storepass $storepass
     keytool -genkey -noprompt -alias client -dname "CN=reduce.isis.cclrc.ac.uk" -keyalg RSA -keystore client.ks -validity 2160 -keypass $storepass -storepass $storepass
     keytool -export -noprompt -alias broker -keystore broker.ks -file broker_cert -storepass $storepass
@@ -86,6 +61,7 @@ then
     cd ~/autoreduce
 
     # Install RPMs
+    yum install -y "rpm-build"
     rpm -i SNSPostProcessRPM/rpmbuild/libs/* 
     cd ISISPostProcessRPM/rpmbuild/
     ./make-autoreduce-rpm.sh
@@ -100,13 +76,10 @@ then
     mkdir /autoreducetmp
     chown "ISISautoreduce@fed.cclrc.ac.uk" /autoreducetmp
 fi
-if [ ! isInstalled "python-pip" ]
-then
-    yum install -y "python-pip"
-fi
+yum install -y "python-pip" "python-dev"
 pip install stomp.py daemon twisted service_identity
 
 
-echo "Setup complete. ActiveMQ credentials should be changed in '$activemq_conf' and '/etc/autoreduce/post_process_consumer.conf'. ActiveMQ can be started by running '/opt/activemq/bin/activemq start', the queue processor by 'python /usr/bin/queueProcessor_daemon.py start' and the monitor by 'python /usr/bin/statusMonitor_daemon_daemon.py start'."
+echo "Setup complete. ActiveMQ credentials should be changed in '$activemq_conf' and '/etc/autoreduce/post_process_consumer.conf'. ActiveMQ can be started by running '/opt/activemq/bin/activemq start', the queue processor by 'python /usr/bin/queueProcessor_daemon.py start' and the monitor by 'python /usr/bin/statusMonitor_daemon.py start'."
 
 
