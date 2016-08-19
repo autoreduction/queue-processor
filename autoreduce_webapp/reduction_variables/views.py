@@ -90,6 +90,9 @@ def instrument_summary(request, instrument):
 
 @login_and_uows_valid
 def delete_instrument_variables(request, instrument, start=0, end=0, experiment_reference=None):
+    # Check the user has permission
+    if USER_ACCESS_CHECKS and not request.user.is_superuser and instrument not in request.session['owned_instruments']:
+        raise PermissionDenied()
     instrument = Instrument.objects.get(name=instrument)
     if experiment_reference is None:
         InstrumentVariable.objects.filter(instrument=instrument, start_run=start).delete()
