@@ -29,7 +29,7 @@ then
 
     rm -rf apache-activemq-5.11.1*
     wget http://archive.apache.org/dist/activemq/5.11.1/apache-activemq-5.11.1-bin.tar.gz
-    tar -zxvf apache-activemq-5.11.1-bin.tar.gz
+    tar -zxf apache-activemq-5.11.1-bin.tar.gz
     sudo mv apache-activemq-5.11.1 /opt/
     sudo ln -sf /opt/apache-activemq-5.11.1/ /opt/activemq
 
@@ -57,9 +57,11 @@ fi
 # Install autoreduce
 if [ ! -e /usr/bin/queueProcessor_daemon.py ]
 then
-    # Get the autoreduce repository
     echo "Installing autoreduction..."
     cd ~/autoreduce
+    
+    # Insert keystore password into ActiveMQ conf
+    sed -i "s/KEY_STORE_PASSWORD/$storepass/" ISISPostProcessRPM/rpmbuild/autoreduce-mq/opt/activemq/conf/activemq.xml
 
     # Install RPMs
     yum install -y "rpm-build"
@@ -77,8 +79,8 @@ then
     mkdir /autoreducetmp
     chown "ISISautoreduce@fed.cclrc.ac.uk" /autoreducetmp
 fi
-yum install -y "python-pip" "python-dev"
-pip install stomp.py daemon twisted service_identity
+yum install -y "python-pip" "python-devel"
+pip install stomp.py twisted service_identity
 
 
 echo "Setup complete. ActiveMQ credentials should be changed in '$activemq_conf' and '/etc/autoreduce/post_process_consumer.conf'. ActiveMQ can be started by running '/opt/activemq/bin/activemq start', the queue processor by 'python /usr/bin/queueProcessor_daemon.py start' and the monitor by 'python /usr/bin/statusMonitor_daemon.py start'."

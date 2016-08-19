@@ -26,7 +26,9 @@ Autoreduce program to automatically catalog and reduce neutron data
 %install
 rm -rf %{buildroot}
 mkdir -p %{buildroot}%{_sysconfdir}/autoreduce
+mkdir -p %{buildroot}/opt/activemq/conf
 install -m 664 ../autoreduce-mq/etc/autoreduce/post_process_consumer.conf  %{buildroot}%{_sysconfdir}/autoreduce/post_process_consumer.conf
+install -m 664 ../autoreduce-mq/opt/activemq/conf/activemq.xml  %{buildroot}/opt/activemq/conf/activemq.xml
 install -m 755 -d 	 ../autoreduce-mq/usr	 %{buildroot}/usr
 mkdir -p %{buildroot}%{_bindir}
 install -m 755	 ../autoreduce-mq/usr/bin/autoreduction_logging_setup.py	 %{buildroot}%{_bindir}/autoreduction_logging_setup.py
@@ -43,6 +45,7 @@ install -m 755	 ../autoreduce-mq/usr/bin/statusMonitor_daemon.py	 %{buildroot}%{
 
 %files
 %config %{_sysconfdir}/autoreduce/post_process_consumer.conf
+%config /opt/activemq/conf/activemq.xml
 %attr(755, -, -) %{_bindir}/autoreduction_logging_setup.py
 %attr(755, -, -) %{_bindir}/queueProcessor.py
 %attr(755, -, -) %{_bindir}/queueProcessor_daemon.py
