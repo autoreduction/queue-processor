@@ -1,5 +1,7 @@
 #!/bin/bash
 cd ~
+read -s -p "Enter a password for the ActiveMQ certificate keystore (at least 6 characters):" storepass
+echo ""
 
 isInstalled() {
     echo "Checking installed packages."
@@ -25,6 +27,7 @@ if [ ! -d /opt/activemq ]
 then
     echo "Installing ActiveMQ..."
 
+    rm -rf apache-activemq-5.11.1*
     wget http://archive.apache.org/dist/activemq/5.11.1/apache-activemq-5.11.1-bin.tar.gz
     tar -zxvf apache-activemq-5.11.1-bin.tar.gz
     sudo mv apache-activemq-5.11.1 /opt/
@@ -40,8 +43,6 @@ then
 
     # Configure ActiveMQ certs
     cd /opt/activemq/conf
-    read -s -p "Enter a password for the keystore password (at least 6 characters:" storepass
-    echo ""
     rm -f {client,broker}.{ks,ts}
     keytool -genkey -noprompt -alias broker -dname "CN=reduce.isis.cclrc.ac.uk" -keyalg RSA -keystore broker.ks -validity 2160 -keypass $storepass -storepass $storepass
     keytool -genkey -noprompt -alias client -dname "CN=reduce.isis.cclrc.ac.uk" -keyalg RSA -keystore client.ks -validity 2160 -keypass $storepass -storepass $storepass
