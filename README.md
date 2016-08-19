@@ -1,6 +1,33 @@
 # Autoreduction setup at ISIS
 
-## Red Hat 7
+## Red Hat 7 - automated installation
+
+The install script will prompt for an ActiveMQ keystore password at the start of the installation, but otherwise will run by itself.
+
+    sudo -i
+    cd ~
+    git clone https://github.com/mantidproject/autoreduce.git
+    ./autoreduce/ISISPostProcessRPM/setup.sh
+    
+After it has run, 
+
+1. ActiveMQ credentials should be changed in `/opt/activemq/conf/activemq.xml` - in the `<authenticationUser>` tag - and in `/etc/autoreduce/post_process_consumer.conf`.
+
+2. ActiveMQ can be started by running `/opt/activemq/bin/activemq start` and the monitor by `python /usr/bin/statusMonitor_daemon.py start`. These expect to run as root.
+
+3. The queue processor can be started by `python /usr/bin/queueProcessor_daemon.py start`; by default the setup expects this to be run as the user `ISISautoreduce@fed.cclrc.ac.uk`.
+
+4. The setup can be tested by
+
+        cd ~/autoreduce/ISISPostProcessRPM/rpmbuild/autoreduce-mq/test
+        nano testconfig.py # Enter the correct address and credentials for ActiveMQ
+        python stompActiveMQtest.py
+        python sendMessage.py
+
+    The first test should exit after printing `received a message`, and the second should put a message into ActiveMQ's queue.
+
+
+## Red Hat 7 - manual (old)
 
 First install Mantid using: http://download.mantidproject.org/redhat.html
 
