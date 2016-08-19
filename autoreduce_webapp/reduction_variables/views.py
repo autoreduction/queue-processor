@@ -109,6 +109,8 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
     if USER_ACCESS_CHECKS and not request.user.is_superuser and instrument not in request.session['owned_instruments']:
         raise PermissionDenied()
     
+    instrument_name = instrument
+    
     instrument = Instrument.objects.get(name=instrument)
     if request.method == 'POST':
         # Truth value comes back as text so we'll compare it to a string of "True"
@@ -124,38 +126,28 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
             else:
                 default_variables = InstrumentVariablesUtils().get_default_variables(instrument.name)
 
-            # Remove any existing variables saved within the provided range
+            # Remove any existing variables saved within the provided range; we'll delete them after we use them to initialise new ones.
             if end and int(end) > 0:
-                existing_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run__gte=start, start_run__lte=end)
+                existing_variables = list(InstrumentVariable.objects.filter(instrument=instrument, start_run__gte=start, start_run__lte=end))
                 # Create default variables for after the run end if they don't already exist
                 if not InstrumentVariable.objects.filter(instrument=instrument, start_run=int(end)+1):
                     InstrumentVariablesUtils().set_default_instrument_variables(instrument.name, int(end)+1)
             else:
-                existing_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run__gte=start)
-            for existing in existing_variables:
-                existing.delete()
+                existing_variables = list(InstrumentVariable.objects.filter(instrument=instrument, start_run__gte=start))
                 
         else:
             experiment_reference = request.POST.get("experiment_reference_number", 1)
 
             if request.POST.get("is_editing", '') == 'True':
-                default_variables = list(old_variables = InstrumentVariable.objects.filter(instrument=instrument, experiment_reference=experiment_reference))
+                default_variables = InstrumentVariable.objects.filter(instrument=instrument, experiment_reference=experiment_reference)
             else:
                 default_variables = InstrumentVariablesUtils().get_default_variables(instrument.name)
 
-            existing_variables = InstrumentVariable.objects.filter(instrument=instrument, experiment_reference=experiment_reference)
-            for existing in existing_variables:
-                existing.delete()
-
+            existing_variables = list(InstrumentVariable.objects.filter(instrument=instrument, experiment_reference=experiment_reference))
                 
+               
         for default_var in default_variables:
-            form_name = 'var-'
-            if default_var.is_advanced:
-                form_name += 'advanced-'
-            else:
-                form_name += 'standard-'
-            form_name += default_var.sanitized_name()
-
+            form_name = 'var-' + ('advanced-' if default_var.is_advanced else 'standard-') + default_var.sanitized_name()
             post_variable = request.POST.get(form_name, None)
             if post_variable:
                 variable = InstrumentVariable( instrument = instrument
@@ -175,6 +167,10 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
                 variable.pk = None
                 variable.id = None
             variable.save()
+            
+        # Delete old variables.
+        for existing in existing_variables:
+            existing.delete()
 
         return redirect('instrument_summary', instrument=instrument.name)
         
