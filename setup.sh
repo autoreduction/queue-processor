@@ -1,5 +1,5 @@
 #!/bin/bash
-cd ~
+basedir=$(pwd)
 read -s -p "Enter a password for the ActiveMQ certificate keystore (at least 6 characters):" storepass
 echo ""
 
@@ -50,7 +50,7 @@ then
     keytool -export -noprompt -alias client -keystore client.ks -file client_cert -storepass $storepass
     keytool -import -noprompt -alias broker -keystore client.ts -file broker_cert -keypass $storepass -storepass $storepass
     keytool -import -noprompt -alias client -keystore broker.ts -file client_cert -keypass $storepass -storepass $storepass
-    cd ~
+    cd $basedir
 fi
 
 
@@ -58,7 +58,7 @@ fi
 if [ ! -e /usr/bin/queueProcessor_daemon.py ]
 then
     echo "Installing autoreduction..."
-    cd ~/autoreduce
+    cd $basedir/autoreduce
     
     # Insert keystore password into ActiveMQ conf
     sed -i "s/KEY_STORE_PASSWORD/$storepass/" ISISPostProcessRPM/rpmbuild/autoreduce-mq/opt/activemq/conf/activemq.xml
@@ -68,9 +68,9 @@ then
     rpm -i SNSPostProcessRPM/rpmbuild/libs/* 
     cd ISISPostProcessRPM/rpmbuild/
     ./make-autoreduce-rpm.sh
-    rpm -i ~/rpmbuild/RPMS/x86_64/autoreduce-mq-*.rpm
+    rpm -i $basedir/rpmbuild/RPMS/x86_64/autoreduce-mq-*.rpm
     
-    cd ~
+    cd $basedir
 fi
 
 # Additional setup
