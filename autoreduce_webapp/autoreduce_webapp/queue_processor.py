@@ -93,8 +93,7 @@ class Listener(object):
         data_location = DataLocation(file_path=self._data_dict['data'], reduction_run=reduction_run)
         data_location.save()
 
-        variables = InstrumentVariablesUtils().get_variables_for_run(reduction_run)
-        VariableUtils().save_run_variables(variables, reduction_run)
+        variables = InstrumentVariablesUtils().create_variables_for_run(reduction_run)
         if not variables:
             logger.warning("No instrument variables found on %s for run %s" % (instrument.name, self._data_dict['run_number']))
         

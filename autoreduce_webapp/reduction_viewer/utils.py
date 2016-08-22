@@ -83,9 +83,11 @@ class ReductionRunUtils(object):
             reductionRun.retry_run.save()
             
 
-    def createRetryRun(self, reductionRun, script=None, variables=None, delay=0):
+    def createRetryRun(self, reductionRun, script=None, variables=None, delay=0, username=None):
         """
-        Create a run ready for re-running based on the run provided. If variables are provided, copy them and associate them with the new one, otherwise generate variables based on the previous run. If a script (as a string) is supplied then use it, otherwise use the previous run's.
+        Create a run ready for re-running based on the run provided. 
+        If variables are provided, copy them and associate them with the new one, otherwise use the previous run's.
+        If a script (as a string) is supplied then use it, otherwise use the previous run's.
         """
         from reduction_variables.utils import InstrumentVariablesUtils, VariableUtils
         
@@ -104,7 +106,7 @@ class ReductionRunUtils(object):
                                   , run_name = ""
                                   , run_version = last_version+1
                                   , experiment = reductionRun.experiment
-                                  #, started_by=request.user.username # commented out for the test server only
+                                  , started_by = username
                                   , status = StatusUtils().get_queued()
                                   , script = script_text
                                   )
@@ -121,9 +123,7 @@ class ReductionRunUtils(object):
                 new_job.data_location.add(new_data_location)
                 
             if not variables: # provide variables if they aren't already
-                variables = InstrumentVariablesUtils().get_variables_for_run(new_job)
-            
-            VariableUtils().save_run_variables(variables, new_job)
+                InstrumentVariablesUtils.create_variables_for_run(new_job)
                     
             return new_job
             
