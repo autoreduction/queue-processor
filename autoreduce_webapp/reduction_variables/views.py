@@ -89,7 +89,8 @@ def instrument_summary(request, instrument):
     return render_to_response('snippets/instrument_summary_variables.html', context_dictionary, RequestContext(request))
 
 @login_and_uows_valid
-def delete_instrument_variables(request, instrument_name, start=0, end=0, experiment_reference=None):
+def delete_instrument_variables(request, instrument, start=0, end=0, experiment_reference=None):
+    instrument_name = instrument
     # Check the user has permission
     if USER_ACCESS_CHECKS and not request.user.is_superuser and instrument_name not in request.session['owned_instruments']:
         raise PermissionDenied()
@@ -114,7 +115,7 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
     
     if request.method == 'POST':
         # Submission to modify variables.
-        varList = [t for t in request.POST.items() if t[0].beginsWith("var-")] # [("var-standard-"+name, value) or ("var-advanced-"+name, value)]
+        varList = [t for t in request.POST.items() if t[0].startswith("var-")] # [("var-standard-"+name, value) or ("var-advanced-"+name, value)]
         newVarDict = {"".join(t[0].split("-")[2:]) : t[1] for t in varList} # Remove the first two prefixes from the names to give {name: value}
          
         tracks_script = request.POST.get("track_script_checkbox") == "on"
@@ -135,20 +136,20 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
         if is_run_range:
             # Get the variables for the first run, modify them, and set them for the given range.
             instrVars = InstrumentVariablesUtils().show_variables_for_run(instrument_name, start)
-            newVars = modifyVars(instrVars, newVarDict)
-            InstrumentVariablesUtils().set_variables_for_runs(instrument_name, newVars, start, end)
+            modifyVars(instrVars, newVarDict)
+            InstrumentVariablesUtils().set_variables_for_runs(instrument_name, instrVars, start, end)
         else:
             # Get the variables for the experiment, modify them, and set them for the experiment.
             instrVars = InstrumentVariablesUtils().show_variables_for_experiment(instrument_name, experiment_reference)
             if not instrVars: instrVars = InstrumentVariablesUtils().get_default_variables(instrument_name)
-            newVars = modifyVars(instrVars, newVarDict)
-            InstrumentVariablesUtils().set_variables_for_experiment(instrument_name, newVars, experiment_reference)
+            modifyVars(instrVars, newVarDict)
+            InstrumentVariablesUtils().set_variables_for_experiment(instrument_name, instrVars, experiment_reference)
 
         return redirect('instrument_summary', instrument=instrument_name)
         
         
     else:
-        instrument = InstrumentUtils.get_instrument(instrument_name)
+        instrument = InstrumentUtils().get_instrument(instrument_name)
         
         editing = (start > 0 or experiment_reference > 0)
         completed_status = StatusUtils().get_completed()

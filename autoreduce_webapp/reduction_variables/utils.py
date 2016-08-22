@@ -38,9 +38,16 @@ class VariableUtils(object):
         
     def copy_variable(self, variable):
         """ Return a temporary copy (unsaved) of the variable, which can be modified and then saved without modifying the original. """
-        newvar = copy.deepcopy(variable)
-        newvar.id = None
-        newvar.pk = None
+        return InstrumentVariable( name = variable.name
+                                 , value = variable.value
+                                 , is_advanced = variable.is_advanced
+                                 , type = variable.type
+                                 , help_text = variable.help_text
+                                 , instrument = variable.instrument
+                                 , experiment_reference = variable.experiment_reference
+                                 , start_run = variable.start_run
+                                 , tracks_script = variable.tracks_script
+                                 )
 
     def wrap_in_type_syntax(self, value, var_type):
         """
@@ -141,7 +148,6 @@ class InstrumentVariablesUtils(object):
         """
         instrument_name = reduction_run.instrument.name
         variables = []
-        
         # Check whether this run is a re-run.
         previousRuns = ReductionRun.objects.filter(run_number = reduction_run.run_number, run_version__lt = reduction_run.run_version).order_by('-run_version')
         if previousRuns:
@@ -195,7 +201,6 @@ class InstrumentVariablesUtils(object):
             # If no variables are saved, we'll use the default ones, and set them while we're at it.
             current_variables = self.get_default_variables(instrument_name)
             self.set_variables_for_runs(instrument_name, current_variables)
-
         # Get the upcoming variables; first, we find the latest run number to determine what's upcoming.
         try:
             latest_completed_run_number = ReductionRun.objects.filter(instrument = instrument, run_version = 0, status = completed_status).order_by('-run_number').first().run_number
@@ -203,21 +208,22 @@ class InstrumentVariablesUtils(object):
             latest_completed_run_number = 1
         # And then select the variables for all subsequent run numbers.
         upcoming_variables_by_run = InstrumentVariable.objects.filter(instrument = instrument, start_run__isnull = False, start_run__gt = latest_completed_run_number).order_by('start_run')
-
         # Get the upcoming experiments, and then select all variables for these experiments.
         upcoming_experiments = []
         with ICATCommunication() as icat:
             upcoming_experiments = list(icat.get_upcoming_experiments_for_instrument(instrument_name))
         upcoming_variables_by_experiment = InstrumentVariable.objects.filter(instrument = instrument, experiment_reference__in = upcoming_experiments).order_by('experiment_reference')
-
+        
         return current_variables, upcoming_variables_by_run, upcoming_variables_by_experiment
 
 
     def set_variables_for_experiment(self, instrument_name, variables, experiment_reference):
         """ Given a list of variables, we set them to be the variables used for subsequent runs under the given experiment reference. """
-        variables = [VariableUtils().copy_variable(var) for var in variables] # Copy the variables, so we don't overwrite old ones or delete the new ones before we save them.
         map(lambda var: var.delete(), self.show_variables_for_experiment(instrument_name, experiment_reference)) # Delete old instrument variables if they exist.
-        map(lambda var: var.save(), variables) # Save the new ones.
+        # Save the new ones.
+        for var in variables:
+            var.experiment_reference = experiment_reference
+            var.save()
 
 
     def set_variables_for_runs(self, instrument_name, variables, start_run=0, end_run=None):
@@ -227,25 +233,26 @@ class InstrumentVariablesUtils(object):
         If start_run is not supplied, these variables will be set for all run numbers going backwards.
         """
         instrument = InstrumentUtils().get_instrument(instrument_name)
-        variables = [VariableUtils().copy_variable(var) for var in variables] # Copy the variables, so we don't overwrite old ones or delete the new ones before we save them.
 
         # In this case we need to make sure that the variables we set will be the only ones used for the range given.
         # First, delete all currently saved variables that apply to the range.
         applicable_variables = InstrumentVariable.objects.filter(instrument = instrument, start_run__gte = start_run)
         if end_run:
             applicable_variables = applicable_variables.filter(start_run__lte = end_run)
+        logger.info("%i" % len(applicable_variables))
         map(lambda var: var.delete(), applicable_variables)
 
         # Then save the new ones.
-        for var in variables:
-            var.start_run = start_run
-            var.save()
+        # for var in variables:
+            # var.start_run = start_run
+            # var.save()
 
 
     def show_variables_for_experiment(self, instrument_name, experiment_reference):
         """ Look for currently set variables for the experiment. If none are set, return an empty list (or QuerySet) anyway. """
         instrument = InstrumentUtils().get_instrument(instrument_name)
-        return InstrumentVariable.objects.filter(instrument=instrument, experiment_reference=experiment_reference)
+        vars = InstrumentVariable.objects.filter(instrument=instrument, experiment_reference=experiment_reference)
+        return [VariableUtils().copy_variable(var) for var in vars]
 
 
     def show_variables_for_run(self, instrument_name, run_number=None):
@@ -264,7 +271,8 @@ class InstrumentVariablesUtils(object):
         if len(applicable_variables) != 0:
             variable_run_number = applicable_variables.first().start_run
             # Select all variables with that run number.
-            return InstrumentVariable.objects.filter(instrument=reduction_run.instrument, start_run=variables_run_start)
+            vars = InstrumentVariable.objects.filter(instrument=instrument, start_run=variable_run_number)
+            return [VariableUtils().copy_variable(var) for var in vars]
         else:
             return []
 
