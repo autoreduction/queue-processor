@@ -172,7 +172,7 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
             variables = InstrumentVariablesUtils().show_variables_for_run(instrument_name, start)
         
         if not editing or not variables:
-            variables = InstrumentVariablesUtils().get_default_variables(instrument.name)
+            variables = InstrumentVariablesUtils().show_variables_for_run(instrument.name)
             editing = False
 
         standard_vars = {}
