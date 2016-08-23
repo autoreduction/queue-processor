@@ -22,7 +22,7 @@ class InstrumentVariable(Variable):
     instrument = models.ForeignKey(Instrument)
     experiment_reference = models.IntegerField(blank=True, null=True)
     start_run = models.IntegerField(blank=True, null=True)
-    tracks_script = models.BooleanField(default=True)
+    tracks_script = models.BooleanField(default=False)
         
 class RunVariable(Variable):
     reduction_run = models.ForeignKey(ReductionRun, related_name="run_variables")

@@ -169,7 +169,7 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
         if experiment_reference > 0:
             variables = InstrumentVariablesUtils().show_variables_for_experiment(instrument_name, experiment_reference)
         else:
-            variables = InstrumentVariablesUtils().show_variables_for_run(instrument_name)
+            variables = InstrumentVariablesUtils().show_variables_for_run(instrument_name, start)
         
         if not editing or not variables:
             variables = InstrumentVariablesUtils().get_default_variables(instrument.name)
@@ -195,7 +195,7 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
                 default_advanced_variables[variable.name] = variable
             else:
                 default_standard_variables[variable.name] = variable
-
+                
         context_dictionary = {
             'instrument' : instrument,
             'last_instrument_run' : ReductionRun.objects.filter(instrument=instrument).exclude(status=StatusUtils().get_skipped()).order_by('-run_number')[0],

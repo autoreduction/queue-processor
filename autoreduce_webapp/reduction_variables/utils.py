@@ -168,17 +168,7 @@ class InstrumentVariablesUtils(object):
             self.set_variables_for_runs(instrument_name, variables, reduction_run.run_number)
 
         # Make sure the variables are up to date if they should be tracking the script.
-        defaults = self.get_default_variables(instrument_name)
-
-        def updateVariable(oldVar):
-            matchingVars = filter(lambda var: var.name == oldVar.name, defaults) # Find the new variable from the script.
-            if matchingVars and oldVar.tracks_script: # Check whether we should and can update the old one.
-                newVar = matchingVars[0]
-                map(lambda name: setattr(oldVar, name, getattr(newVar, name)),
-                    ["value", "type", "is_advanced", "help_text"]) # Copy the new one's important attributes onto the old variable.
-                oldVar.save()
-
-        map(lambda var: updateVariable(var), variables)
+        self._update_variables(variables)
 
         # Create run variables from these instrument variables, and return them.
         return VariableUtils().save_run_variables(self, variables, reduction_run)
@@ -218,6 +208,9 @@ class InstrumentVariablesUtils(object):
             upcoming_experiments = list(icat.get_upcoming_experiments_for_instrument(instrument_name))
         upcoming_variables_by_experiment = InstrumentVariable.objects.filter(instrument = instrument, experiment_reference__in = upcoming_experiments).order_by('experiment_reference')
         
+        # Keep the variables up to date if they should be.
+        map(self._update_variables, [current_variables, upcoming_variables_by_run, upcoming_variables_by_experiment])
+        
         return current_variables, upcoming_variables_by_run, upcoming_variables_by_experiment
 
 
@@ -241,12 +234,8 @@ class InstrumentVariablesUtils(object):
         # In this case we need to make sure that the variables we set will be the only ones used for the range given.
         # First, delete all currently saved variables that apply to the range.
         applicable_variables = InstrumentVariable.objects.filter(instrument = instrument, start_run__gte = start_run)
-        logger.info("%s %s %s" % (instrument_name, str(start_run), str(end_run)))
-        logger.info("%i" % len(applicable_variables))
         if end_run:
-            print("End run: %i" % end_run)
             applicable_variables = applicable_variables.filter(start_run__lte = end_run)
-        logger.info("%i" % len(applicable_variables))
         map(lambda var: var.delete(), applicable_variables)
 
         # Then save the new ones.
@@ -259,6 +248,7 @@ class InstrumentVariablesUtils(object):
         """ Look for currently set variables for the experiment. If none are set, return an empty list (or QuerySet) anyway. """
         instrument = InstrumentUtils().get_instrument(instrument_name)
         vars = InstrumentVariable.objects.filter(instrument=instrument, experiment_reference=experiment_reference)
+        self._update_variables(vars)
         return [VariableUtils().copy_variable(var) for var in vars]
 
 
@@ -279,6 +269,7 @@ class InstrumentVariablesUtils(object):
             variable_run_number = applicable_variables.first().start_run
             # Select all variables with that run number.
             vars = InstrumentVariable.objects.filter(instrument=instrument, start_run=variable_run_number)
+            self._update_variables(vars)
             return [VariableUtils().copy_variable(var) for var in vars]
         else:
             return []
@@ -312,6 +303,21 @@ class InstrumentVariablesUtils(object):
         script_text = self._load_reduction_script(instrument_name)
         script_vars_text = self._load_reduction_vars_script(instrument_name)
         return (script_text, script_vars_text)
+        
+        
+    def _update_variables(self, variables):
+        """ Updates all variables with tracks_script to their value in the script. This assumes that the variables all belong to the same instrument. """
+        defaults = self.get_default_variables(variables[0].instrument.name) if variables else []
+        
+        def updateVariable(oldVar):
+            matchingVars = filter(lambda var: var.name == oldVar.name, defaults) # Find the new variable from the script.
+            if matchingVars and oldVar.tracks_script: # Check whether we should and can update the old one.
+                newVar = matchingVars[0]
+                map(lambda name: setattr(oldVar, name, getattr(newVar, name)),
+                    ["value", "type", "is_advanced", "help_text"]) # Copy the new one's important attributes onto the old variable.
+                oldVar.save()
+
+        map(lambda var: updateVariable(var), variables)
 
 
     def _read_script(self, script_text, script_path):
