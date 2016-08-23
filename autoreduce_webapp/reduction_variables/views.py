@@ -24,41 +24,40 @@ def instrument_summary(request, instrument):
 
     # Create a nested dictionary for by-run
     upcoming_variables_by_run_dict = {}
-    for variables in upcoming_variables_by_run:
-        if variables.start_run not in upcoming_variables_by_run_dict:
-            upcoming_variables_by_run_dict[variables.start_run] = {
-                'run_start': variables.start_run,
+    for variable in upcoming_variables_by_run:
+        if variable.start_run not in upcoming_variables_by_run_dict:
+            upcoming_variables_by_run_dict[variable.start_run] = {
+                'run_start': variable.start_run,
                 'run_end': 0, # We'll fill this in after
-                'tracks_script': variables.tracks_script,
+                'tracks_script': variable.tracks_script,
                 'variables': [],
                 'instrument': instrument,
             }
-        upcoming_variables_by_run_dict[variables.start_run]['variables'].append(variables)
+        upcoming_variables_by_run_dict[variable.start_run]['variables'].append(variable)
 
-    # Move the upcoming vars into an ordered list
-    upcoming_variables_by_run_ordered = []
-    for key in sorted(upcoming_variables_by_run_dict):
-        upcoming_variables_by_run_ordered.append(upcoming_variables_by_run_dict[key])
-    sorted(upcoming_variables_by_run_ordered, key=lambda r: r['run_start'])
-    
     # Fill in the run end numbers
     run_end = 0
     for run_number in sorted(upcoming_variables_by_run_dict.iterkeys(), reverse=True):
         upcoming_variables_by_run_dict[run_number]['run_end'] = run_end
         run_end = max(run_number-1, 0)
 
-    try:
-        next_variable_run_start = min(upcoming_variables_by_run_dict, key=upcoming_variables_by_run_dict.get)
-    except ValueError:
-        next_variable_run_start = 1
+    current_start = current_variables[0].start_run
+    next_run_starts = filter( lambda start: start > current_start
+                            , sorted(upcoming_variables_by_run_dict.keys()) )
+    current_end = next_run_starts[0] - 1 if next_run_starts else 0
     
     current_vars = {
-        'run_start': current_variables[0].start_run,
-        'run_end': max(next_variable_run_start-1, 0),
+        'run_start': current_start,
+        'run_end': current_end,
         'tracks_script': current_variables[0].tracks_script,
         'variables': current_variables,
         'instrument': instrument,
     }
+    
+    # Move the upcoming vars into an ordered list
+    upcoming_variables_by_run_ordered = []
+    for key in sorted(upcoming_variables_by_run_dict):
+        upcoming_variables_by_run_ordered.append(upcoming_variables_by_run_dict[key])
 
     # Create a nested dictionary for by-experiment
     upcoming_variables_by_experiment_dict = {}
