@@ -45,7 +45,7 @@ def instrument_summary(request, instrument):
     run_end = 0
     for run_number in sorted(upcoming_variables_by_run_dict.iterkeys(), reverse=True):
         upcoming_variables_by_run_dict[run_number]['run_end'] = run_end
-        run_end = run_number-1
+        run_end = max(run_number-1, 0)
 
     try:
         next_variable_run_start = min(upcoming_variables_by_run_dict, key=upcoming_variables_by_run_dict.get)
@@ -54,7 +54,7 @@ def instrument_summary(request, instrument):
     
     current_vars = {
         'run_start': current_variables[0].start_run,
-        'run_end': next_variable_run_start-1,
+        'run_end': max(next_variable_run_start-1, 0),
         'tracks_script': current_variables[0].tracks_script,
         'variables': current_variables,
         'instrument': instrument,
@@ -91,6 +91,7 @@ def instrument_summary(request, instrument):
 @login_and_uows_valid
 def delete_instrument_variables(request, instrument, start=0, end=0, experiment_reference=None):
     instrument_name = instrument
+    start, end = int(start), int(end)
     # Check the user has permission
     if USER_ACCESS_CHECKS and not request.user.is_superuser and instrument_name not in request.session['owned_instruments']:
         raise PermissionDenied()
@@ -99,7 +100,6 @@ def delete_instrument_variables(request, instrument, start=0, end=0, experiment_
     if experiment_reference is not None:
         InstrumentVariablesUtils().set_variables_for_experiment(instrument_name, [], experiment_reference)
     else:
-        if end == 0: end = None
         InstrumentVariablesUtils().set_variables_for_runs(instrument_name, [], start, end)
 
     return redirect('instrument_summary', instrument=instrument_name)
@@ -110,8 +110,9 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
     # Check that the user has permission.
     if USER_ACCESS_CHECKS and not request.user.is_superuser and instrument not in request.session['owned_instruments']:
         raise PermissionDenied()
-    
+        
     instrument_name = instrument
+    start, end = int(start), int(end)
     
     if request.method == 'POST':
         # Submission to modify variables.
@@ -184,7 +185,7 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
 
         current_variables, upcoming_variables_by_run, upcoming_variables_by_experiment = InstrumentVariablesUtils().get_current_and_upcoming_variables(instrument.name)
 
-        upcoming_run_variables = ','.join([str(i) for i in upcoming_variables_by_run.values_list('start_run', flat=True).distinct()])
+        upcoming_run_variables = ','.join(list(set([str(var.start_run) for var in upcoming_variables_by_run]))) # Unique, comma-joined list of all start runs belonging to the upcoming variables.
 
         default_variables = InstrumentVariablesUtils().get_default_variables(instrument.name)
         default_standard_variables = {}

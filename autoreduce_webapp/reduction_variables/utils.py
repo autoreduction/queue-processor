@@ -194,20 +194,24 @@ class InstrumentVariablesUtils(object):
         """
         instrument = InstrumentUtils().get_instrument(instrument_name)
         completed_status = StatusUtils().get_completed()
-
-        # Get the most recent run variables.
-        current_variables = self.show_variables_for_run(instrument_name)
-        if not current_variables:
-            # If no variables are saved, we'll use the default ones, and set them while we're at it.
-            current_variables = self.get_default_variables(instrument_name)
-            self.set_variables_for_runs(instrument_name, current_variables)
-        # Get the upcoming variables; first, we find the latest run number to determine what's upcoming.
+        
+        # First, we find the latest run number to determine what's upcoming.
         try:
             latest_completed_run_number = ReductionRun.objects.filter(instrument = instrument, run_version = 0, status = completed_status).order_by('-run_number').first().run_number
         except AttributeError:
             latest_completed_run_number = 1
-        # And then select the variables for all subsequent run numbers.
-        upcoming_variables_by_run = InstrumentVariable.objects.filter(instrument = instrument, start_run__isnull = False, start_run__gt = latest_completed_run_number).order_by('start_run')
+
+        # Get the most recent run variables.
+        current_variables = self.show_variables_for_run(instrument_name, latest_completed_run_number)
+        if not current_variables:
+            # If no variables are saved, we'll use the default ones, and set them while we're at it.
+            current_variables = self.get_default_variables(instrument_name)
+            self.set_variables_for_runs(instrument_name, current_variables)
+            
+        # And then select the variables for all subsequent run numbers; collect the immediate upcoming variables and all subsequent sets.
+        upcoming_variables_by_run = self.show_variables_for_run(instrument_name, latest_completed_run_number+1)
+        upcoming_variables_by_run += list(InstrumentVariable.objects.filter(instrument = instrument, start_run__isnull = False, start_run__gt = latest_completed_run_number+1).order_by('start_run'))
+        
         # Get the upcoming experiments, and then select all variables for these experiments.
         upcoming_experiments = []
         with ICATCommunication() as icat:
@@ -237,15 +241,18 @@ class InstrumentVariablesUtils(object):
         # In this case we need to make sure that the variables we set will be the only ones used for the range given.
         # First, delete all currently saved variables that apply to the range.
         applicable_variables = InstrumentVariable.objects.filter(instrument = instrument, start_run__gte = start_run)
+        logger.info("%s %s %s" % (instrument_name, str(start_run), str(end_run)))
+        logger.info("%i" % len(applicable_variables))
         if end_run:
+            print("End run: %i" % end_run)
             applicable_variables = applicable_variables.filter(start_run__lte = end_run)
         logger.info("%i" % len(applicable_variables))
         map(lambda var: var.delete(), applicable_variables)
 
         # Then save the new ones.
-        # for var in variables:
-            # var.start_run = start_run
-            # var.save()
+        for var in variables:
+            var.start_run = start_run
+            var.save()
 
 
     def show_variables_for_experiment(self, instrument_name, experiment_reference):
