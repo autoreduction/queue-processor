@@ -207,10 +207,7 @@ class InstrumentVariablesUtils(object):
         with ICATCommunication() as icat:
             upcoming_experiments = list(icat.get_upcoming_experiments_for_instrument(instrument_name))
         upcoming_variables_by_experiment = InstrumentVariable.objects.filter(instrument = instrument, experiment_reference__in = upcoming_experiments).order_by('experiment_reference')
-        
-        # Keep the variables up to date if they should be.
-        map(self._update_variables, [current_variables, upcoming_variables_by_run, upcoming_variables_by_experiment])
-        
+                
         return current_variables, upcoming_variables_by_run, upcoming_variables_by_experiment
 
 
@@ -317,7 +314,7 @@ class InstrumentVariablesUtils(object):
                     ["value", "type", "is_advanced", "help_text"]) # Copy the new one's important attributes onto the old variable.
                 oldVar.save()
 
-        map(lambda var: updateVariable(var), variables)
+        map(updateVariable, variables)
 
 
     def _read_script(self, script_text, script_path):
