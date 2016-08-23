@@ -229,10 +229,37 @@ class InstrumentVariablesUtils(object):
         instrument = InstrumentUtils().get_instrument(instrument_name)
 
         # In this case we need to make sure that the variables we set will be the only ones used for the range given.
-        # First, delete all currently saved variables that apply to the range.
+        # If there are variables which apply after the given range ends, we want to create/modify a set to have a start_run after this end_run, with the right values.
+        # First, find all variables that are in the range.
         applicable_variables = InstrumentVariable.objects.filter(instrument = instrument, start_run__gte = start_run)
         if end_run:
             applicable_variables = applicable_variables.filter(start_run__lte = end_run)
+            after_variables = InstrumentVariable.objects.filter(start_run = end_run).order_by('start_run')
+            previous_variables = InstrumentVariable.objects.filter(start_run__lt = start_run)
+            final_variables = []
+            
+            if applicable_variables and not after_variables:
+                # The last set of applicable variables extends outside our range.
+                final_start = applicable_variables.order_by('-start_run').first().start_run # Find the last set.
+                final_variables = list(applicable_variables.filter(start_run = final_start))
+                applicable_variables = applicable_variables.exclude(start_run = final_start) # Don't delete the final set.
+                
+            elif not applicable_variables and not after_variables and previous_variables:
+                # There is a previous set that applies but doesn't start or end in the range.
+                final_start = previous_variables.order_by('-start_run').first().start_run # Find the last set.
+                final_variables = previous_variables.filter(start_run = final_start) # Set them to apply after our variables.
+                [VariableUtils().copy_variable(var).save() for var in final_variables] # Also copy them to apply before our variables.
+                
+            elif not applicable_variables and not after_variables and not previous_variables:
+                # There are instrument defaults which apply after our range.
+                final_variables = self.get_default_variables(instrument_name)
+       
+            # Modify the range of the final set to after the specified range, if there is one.
+            for var in final_variables:
+                var.start_run = end_run + 1
+                var.save()
+                
+        # Delete all currently saved variables that apply to the range.
         map(lambda var: var.delete(), applicable_variables)
 
         # Then save the new ones.
@@ -290,6 +317,10 @@ class InstrumentVariablesUtils(object):
             variables.extend(self._create_variables(instrument, reduce_vars_module, reduce_vars_module.standard_vars, False))
         if 'advanced_vars' in dir(reduce_vars_module):
             variables.extend(self._create_variables(instrument, reduce_vars_module, reduce_vars_module.advanced_vars, True))
+            
+        for var in variables:
+            var.tracks_script = True
+            
         return variables
 
 

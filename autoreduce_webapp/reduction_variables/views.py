@@ -122,7 +122,8 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
         
         # Which variables should we modify?
         is_run_range = request.POST.get("variable-range-toggle-value", "True") == "True"
-        start, end = request.POST.get("run_start", 1), request.POST.get("run_end", None)
+        start = int(request.POST.get("run_start", 1))
+        end = int(request.POST.get("run_end", None)) if request.POST.get("run_end", None) else None
         
         experiment_reference = request.POST.get("experiment_reference_number", 1)
         
