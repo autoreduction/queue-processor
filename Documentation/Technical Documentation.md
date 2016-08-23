@@ -246,7 +246,7 @@ All models and logic related to run/instrument variables are found within this a
 This contains utilities related to the models found within reduction_variables.
 
 * **VariableUtils** - Contains utilities relating to individual variables. E.g. `wrap_in_type_syntax` takes in a value and adds the appropriate syntax around it to match the type provided. For example, a `1,2,3` with type of `list_number` would return `[1,2,3]` as a string to be used in the preview script.
-* **InstrumentVariablesUtils** - Provides utilities for setting and fetching InstrumentVariables and scripts. Of particular note is the `get_variables_for_run` function that is [mentioned below](#selecting-run-variables) and `get_current_and_upcoming_variables` that is also [mentioned below](#upcoming-instrumentvariables).
+* **InstrumentVariablesUtils** - Provides utilities for setting and fetching InstrumentVariables and scripts. Of particular note is the `create_variables_for_run` function that is [mentioned below](#selecting-run-variables) and `get_current_and_upcoming_variables` that is also [mentioned below](#upcoming-instrumentvariables). Methods of the form `show_` return copies of `InstrumentVariable`s given the conditions; `set_` will delete old `InstrumentVariable`s for the conditions and save the ones provided. All methods will keep variables with `tracks_script` set up to date when they're called.
 * **MessagingUtils** - Contains `send_pending`, which takes in a ReductionRun and sends it to the messaging queue for processing (with an optional delay), and `send_cancel`, which sends the run to the queue processor to be cancelled if it is rerun.
 
 #### views.py
@@ -426,9 +426,9 @@ Messages that are sent to the ActiveMQ broker are send as JSON. And example of w
 
 ### Selecting run variables
 
-Run variables (for initial runs that come off the instrument) are selected in the `get_variables_for_run` utils method. Appropriate variables are chosen in the following order:
-* First, check if there are instrument variables for the associated experiment reference number
-* Next, check instrument variables for those with the closest run start prior to the current run number
+Run variables (for initial runs that come off the instrument) are selected in the `create_variables_for_run` utils method. Appropriate variables are chosen in the following order:
+* First, check if there are instrument variables for the associated experiment reference number.
+* If not, check for instrument variables set with a `start_run` before the associated run number; if there are any, choose the most recent set.
 * If no variables are found, default variables are created from the reduction script and those are used.
 
 ### Upcoming InstrumentVariables
