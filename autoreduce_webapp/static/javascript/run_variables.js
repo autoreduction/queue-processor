@@ -125,7 +125,6 @@
             }
         };
         var validateText = function validateText(){
-            validateNotEmpty.call(this);
         };
         var validateDescriptionText = function validateDescriptionText(){
             var max_length = 200;
@@ -147,14 +146,13 @@
         };
         var validateListNumber = function validateListNumber(){
             var items, i;
-            validateNotEmpty.call(this);
             if($(this).val().trim().endsWith(',')){
-                addInvalid($(this), getVarName($(this)) + ' must be a comma seperated list.')
-            }else{
+                addInvalid($(this), getVarName($(this)) + ' must be a comma separated list.')
+            }else if($(this).val() !== ''){
                 items = $(this).val().split(',');
                 for(i=0;i<items.length;i++){
                     if(!isNumber(items[i])){
-                        addInvalid($(this), getVarName($(this)) + ' must be a comma seperated list of numbers.')
+                        addInvalid($(this), getVarName($(this)) + ' must be a comma separated list of numbers.')
                         break;
                     }
                 }
@@ -162,14 +160,13 @@
         };
         var validateListText = function validateListText(){
             var items, i;
-            validateNotEmpty.call(this);
             if($(this).val().trim().endsWith(',')){
-                addInvalid($(this), getVarName($(this)) + ' must be a comma seperated list.')
-            }else{
+                addInvalid($(this), getVarName($(this)) + ' must be a comma separated list.')
+            }else if($(this).val() !== ''){
                 items = $(this).val().split(',');
                 for(i=0;i<items.length;i++){
                     if(items[i].trim() === ''){
-                        addInvalid($(this), getVarName($(this)) + ' must be a comma seperated list.')
+                        addInvalid($(this), getVarName($(this)) + ' must be a comma separated list.')
                         break;
                     }
                 }
@@ -179,7 +176,7 @@
             // Validates the batch re-run text
             validateNotEmpty.call(this);
             if($(this).val().trim().endsWith(',')){
-                addInvalid($(this), '<strong>Run Numbers</strong> must be a comma seperated list of either numbers or ranges.');
+                addInvalid($(this), '<strong>Run Numbers</strong> must be a comma separated list of either numbers or ranges.');
                 return;
             }else{
                 items = $(this).val().split(',');
@@ -189,7 +186,7 @@
                         // Might be range
                         var range = items[i].split('-');
                         if(range.length != 2) {
-                            addInvalid($(this), '<strong>Run Numbers</strong> must be a comma seperated list of either numbers or ranges.');
+                            addInvalid($(this), '<strong>Run Numbers</strong> must be a comma separated list of either numbers or ranges.');
                             break;
                         }else{
                             var rangeSubTot = range[1]-range[0];
