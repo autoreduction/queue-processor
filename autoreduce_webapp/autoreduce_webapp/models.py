@@ -1,30 +1,29 @@
 from django.db import models
-from reduction_viewer.models import Instrument, Experiment, ReductionRun
 
 
-class Cache(model.Model):
+class Cache(models.Model):
     created = models.DateTimeField(auto_now_add=True, blank=False)
 
     def __unicode__(self):
-        return u'%s' % self.name
+        return u'%s' % self.id_name
     
 
 class UserCache(Cache):
-    name = models.IntegerField(blank=False)
-    associated_experiments = models.ManyToManyField(Experiment)
-    owned_instruments = models.ManyToManyField(Instrument)
-    valid_instruments = models.ManyToManyField(Instrument)
+    id_name = models.IntegerField(blank=False)
+    associated_experiments = models.TextField(blank=True)
+    owned_instruments = models.TextField(blank=True)
+    valid_instruments = models.TextField(blank=True)
     is_admin = models.BooleanField(default=False)
     is_instrument_scientist = models.BooleanField(default=False)
 
 
 class InstrumentCache(Cache):
-    name = models.CharField(max_length=80)
-    upcoming_experiments = models.ManyToManyField(Experiment)
+    id_name = models.CharField(max_length=80)
+    upcoming_experiments = models.TextField(blank=True)
 
 
 class ExperimentCache(Cache):
-    reference_number = models.IntegerField(blank=False)
+    id_name = models.IntegerField(blank=False)
     start_date = models.TextField(default='')
     end_date = models.TextField(default='')
     title = models.TextField(default='')
