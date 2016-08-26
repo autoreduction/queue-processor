@@ -59,18 +59,17 @@ class ICATCommunication(object):
                     if investigationUser.role == 'principal_experimenter':
                         trimmed_investigation['pi'] = investigationUser.user.fullName
                 return trimmed_investigation
-        else:
-            trimmed_investigation = {
-                'reference_number' : str(reference_number),
-                'start_date' : 'N/A',
-                'end_date' : 'N/A',
-                'title' : 'N/A',
-                'summary' : u'N/A',
-                'pi' : ''
-                }
+                
+        trimmed_investigation = {
+            'reference_number' : str(reference_number),
+            'start_date' : 'N/A',
+            'end_date' : 'N/A',
+            'title' : 'N/A',
+            'summary' : u'N/A',
+            'pi' : ''
+            }
 
-            return trimmed_investigation
-        return None
+        return trimmed_investigation
 
     '''
         Returns a set of all instruments a given user can see.

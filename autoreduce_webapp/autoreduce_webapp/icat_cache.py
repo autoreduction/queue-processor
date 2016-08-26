@@ -37,14 +37,25 @@ class ICATCache(object):
     def update_cache(self, obj_type, obj_id):
         self.open_icat()
         
-        new_obj = obj_type(**{attr:(getattr(self.icat, func)(obj_id) if typ is None else self.to_list(getattr(self.icat, func)(obj_id))) for (func, model, attr, typ) in func_list if model == obj_type})
+        if obj_type != ExperimentCache:
+            new_obj = obj_type(**{attr:(getattr(self.icat, func)(obj_id) if typ is None else self.to_list(getattr(self.icat, func)(obj_id))) for (func, model, attr, typ) in func_list if model == obj_type})
+        else:
+            new_obj = obj_type(**{attr:str(val) for attr,val in self.icat.get_experiment_details(obj_id).iteritems() if attr is not "reference_number"})
         new_obj.id_name = obj_id
         new_obj.save()
         return new_obj
         
+    def check_cache(self, obj_type, obj_id):
+        in_cache = self.cull_invalid(obj_type.objects.filter(id_name = obj_id).order_by("-created"))
+        new_obj = in_cache[0] if in_cache else self.update_cache(obj_type, obj_id)
+        return new_obj
         
     def get_valid_experiments_for_instruments(self, user_number, instruments):
         return {instrument: self.get_valid_experiments_for_instrument(instrument) for instrument in instruments}
+        
+    def get_experiment_details(self, experiment_number):
+        experiment = self.check_cache(ExperimentCache, experiment_number)
+        return experiment.__dict__
     
             
 
@@ -56,15 +67,12 @@ func_list = [ ("get_owned_instruments", UserCache, "owned_instruments", str)
             
             , ("get_upcoming_experiments_for_instrument", InstrumentCache, "upcoming_experiments", int)
             , ("get_valid_experiments_for_instrument", InstrumentCache, "valid_experiments", int)
-            
-            , ("get_experiment_details", ExperimentCache, "__dict__", None)
             ]
             
 def make_member_func(member_name, obj_type, cache_attr, list_type):
-    def member_func(self, object_id):
+    def member_func(self, obj_id):
         # Remove expired objects, then check if the relevant object is in the cache, putting it in if it isn't.
-        in_cache = self.cull_invalid(obj_type.objects.filter(id_name = object_id).order_by("-created"))
-        new_obj = in_cache[0] if in_cache else self.update_cache(obj_type, object_id)
+        new_obj = self.check_cache(obj_type, obj_id)
         
         # Get the attribute we want, parsing it as a list if we should.
         attr = getattr(new_obj, cache_attr)
@@ -85,7 +93,6 @@ for t in func_list:
 # get_upcoming_experiments_for_instrument
 # is_admin(int(person['usernumber']))
 # is_instrument_scientist(int(person['usernumber']))
-# get_experiment_details(int(reference_number))
 
-
+### get_experiment_details(int(reference_number))
 ### get_valid_experiments_for_instruments(int(request.user.username), instrument_names))
