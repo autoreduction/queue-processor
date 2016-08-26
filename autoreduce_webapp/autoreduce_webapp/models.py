@@ -20,6 +20,7 @@ class UserCache(Cache):
 class InstrumentCache(Cache):
     id_name = models.CharField(max_length=80)
     upcoming_experiments = models.TextField(blank=True)
+    valid_experiments = models.TextField(blank=True)
 
 
 class ExperimentCache(Cache):
