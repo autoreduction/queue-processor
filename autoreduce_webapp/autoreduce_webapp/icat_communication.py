@@ -44,8 +44,9 @@ class ICATCommunication(object):
             raise TypeError("Reference number must be a number")
 
         if reference_number > 0:
-            investigation = self.client.search("SELECT i from Investigation i where i.name = '" + str(reference_number) + "' INCLUDE i.investigationInstruments.instrument, i.investigationUsers.user")
-            if investigation and investigation[0]:
+            try:
+                investigation = self.client.search("SELECT i from Investigation i where i.name = '" + str(reference_number) + "' INCLUDE i.investigationInstruments.instrument, i.investigationUsers.user")
+                
                 trimmed_investigation = {
                     'reference_number' : investigation[0].name,
                     'start_date' : investigation[0].startDate,
@@ -59,6 +60,9 @@ class ICATCommunication(object):
                     if investigationUser.role == 'principal_experimenter':
                         trimmed_investigation['pi'] = investigationUser.user.fullName
                 return trimmed_investigation
+                
+            except:
+                pass
                 
         trimmed_investigation = {
             'reference_number' : str(reference_number),
