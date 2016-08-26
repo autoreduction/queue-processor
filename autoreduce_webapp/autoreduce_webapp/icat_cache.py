@@ -1,10 +1,9 @@
 import datetime, logging
 logger = logging.getLogger("app")
 from django.utils import timezone
+from autoreduce_webapp.settings import CACHE_LIFETIME
 from autoreduce_webapp.icat_communication import ICATCommunication
 from autoreduce_webapp.models import UserCache, InstrumentCache, ExperimentCache
-
-CACHE_LIFETIME = 3600
 
 
 class ICATConnectionException(Exception):
