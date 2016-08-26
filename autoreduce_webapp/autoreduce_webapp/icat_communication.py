@@ -161,6 +161,23 @@ class ICATCommunication(object):
 
         return instruments_dict
 
+    '''
+        Returns all experiments allowed for a given instrument
+    '''
+    def get_valid_experiments_for_instrument(self, instrument):
+        logger.debug("Calling ICATCommunication.get_valid_experiments_for_instrument")
+        from reduction_viewer.models import Setting
+
+        try:
+            number_of_years = int(Setting.objects.get(name='ICAT_YEARS_TO_SHOW').value)
+        except:
+            number_of_years = 3
+        years_back = datetime.datetime.now() - datetime.timedelta(days=(number_of_years*365.24))
+
+        experiments = Set()
+        self._add_list_to_set(self.client.search("SELECT i.name FROM Investigation i JOIN i.investigationInstruments inst WHERE i.name NOT LIKE 'CAL%' and i.endDate > '"+str(years_back)+"' and (inst.instrument.name = '"+instrument+"' OR inst.instrument.fullName = '"+instrument+"')"), experiments)
+        return sorted(experiments, reverse=True)
+
     def get_upcoming_experiments_for_instrument(self, instrument):
         logger.debug("Calling ICATCommunication.get_upcoming_experiments_for_instrument")
         if not instrument:
