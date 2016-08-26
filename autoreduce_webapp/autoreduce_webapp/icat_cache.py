@@ -60,7 +60,7 @@ func_list = [ ("get_owned_instruments", UserCache, "owned_instruments", str)
             , ("get_experiment_details", ExperimentCache, "__dict__", None)
             ]
             
-for (member_name, obj_type, cache_attr, list_type) in func_list:
+def make_member_func(member_name, obj_type, cache_attr, list_type):
     def member_func(self, object_id):
         # Remove expired objects, then check if the relevant object is in the cache, putting it in if it isn't.
         in_cache = self.cull_invalid(obj_type.objects.filter(id_name = object_id).order_by("-created"))
@@ -74,6 +74,10 @@ for (member_name, obj_type, cache_attr, list_type) in func_list:
         return attr
         
     setattr(ICATCache, member_name, member_func)
+    
+for t in func_list:
+    make_member_func(*t)
+        
             
 # get_owned_instruments(int(request.user.username))
 # get_valid_instruments(int(request.user.username))
