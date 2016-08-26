@@ -1,4 +1,5 @@
-import datetime
+import datetime, logging
+logger = logging.getLogger("app")
 from django.utils import timezone
 from autoreduce_webapp.icat_communication import ICATCommunication
 from autoreduce_webapp.models import UserCache, InstrumentCache, ExperimentCache
@@ -6,10 +7,19 @@ from autoreduce_webapp.models import UserCache, InstrumentCache, ExperimentCache
 CACHE_LIFETIME = 3600
 
 
+class ICATConnectionException(Exception):
+    pass
+
 class ICATCache(object):
+    """
+    A wrapper for ICATCommunication that caches information, and in the case of ICAT failure will try to use this cache.
+    It stores Cache models in the database, and will get all fields from ICATCommunication if a model is requested but has expired or doesn't exist.
+    Most of the methods it wraps from ICATCommunication are templated rather than declared explicitly; see below.    
+    """
     def __init__(self, **kwargs):
         self.kwargs = kwargs
         self.icat = None
+        self.cache_lifetime = CACHE_LIFETIME
     
     def __enter__(self):
         return self
@@ -19,36 +29,62 @@ class ICATCache(object):
             self.icat.__exit__()
             
     def open_icat(self):
-        if self.icat is None:
-            self.icat = ICATCommunication(**self.kwargs)
+        """ Try to open an ICAT session, if we don't have one already. """
+        try:
+            if self.icat is None:
+                self.icat = ICATCommunication(**self.kwargs)
+        except Exception as e:
+            logger.error("Failed to connect to ICAT: %s - %s" % (type(e).__name, e))
+            raise ICATConnectionException()
             
     def is_valid(self, cache_obj):
-        return cache_obj.created + datetime.timedelta(seconds=CACHE_LIFETIME) > timezone.now()
+        """ Check whether a cache object is fresh and is not None. """
+        return cache_obj and cache_obj.created + datetime.timedelta(seconds=self.cache_lifetime) > timezone.now()
         
     def to_list(self, l):
         return ",".join(map(str, l))
             
     def cull_invalid(self, list):
+        """ Removes all objects in the list that have expired. """
         rlist = []
         for obj in list:
             obj.delete() if not self.is_valid(obj) else rlist.append(obj)
         return rlist
         
     def update_cache(self, obj_type, obj_id):
-        self.open_icat()
+        """
+        Adds an object of type obj_type and id obj_id to the cache - querying ICAT - and returns the object.
+        E.g., obj_type = InstrumentCache, obj_id = "WISH".
+        """
+        self.open_icat() # Open an ICAT session if we don't have one open.
         
         if obj_type != ExperimentCache:
+            # Check func_list for the attributes that each model should have, and the corresponding ICATCommunication function to query for it; call it for each, building a dict, and then splice it into the constructor kwargs.
             new_obj = obj_type(**{attr:(getattr(self.icat, func)(obj_id) if typ is None else self.to_list(getattr(self.icat, func)(obj_id))) for (func, model, attr, typ) in func_list if model == obj_type})
         else:
+            # In this case, ICATCommunication returns all the ExperimentCache fields in one query, so we splice that into the constructor.
             new_obj = obj_type(**{attr:str(val) for attr,val in self.icat.get_experiment_details(obj_id).iteritems() if attr is not "reference_number"})
         new_obj.id_name = obj_id
         new_obj.save()
         return new_obj
         
     def check_cache(self, obj_type, obj_id):
-        in_cache = self.cull_invalid(obj_type.objects.filter(id_name = obj_id).order_by("-created"))
-        new_obj = in_cache[0] if in_cache else self.update_cache(obj_type, obj_id)
-        return new_obj
+        """
+        Checks the cache for an object of type obj_type and id obj_id -  querying for a new one if there isn't a fresh copy - and returns it.
+        If ICAT is unavailable, use a local copy if it exists. If we can't use anything, return None.
+        """
+        in_cache = obj_type.objects.filter(id_name = obj_id).order_by("-created")
+        ret_obj = None
+        if in_cache:
+            ret_obj = in_cache[0]
+        if not self.is_valid(ret_obj):
+            try:
+                ret_obj = self.update_cache(obj_type, obj_id)
+                self.cull_invalid(in_cache)
+            except ICATConnectionException:
+                pass
+                
+        return ret_obj
         
     def get_valid_experiments_for_instruments(self, user_number, instruments):
         return {instrument: self.get_valid_experiments_for_instrument(instrument) for instrument in instruments}
@@ -56,9 +92,9 @@ class ICATCache(object):
     def get_experiment_details(self, experiment_number):
         experiment = self.check_cache(ExperimentCache, experiment_number)
         return experiment.__dict__
-    
-            
 
+
+# Here we define (ICATCommunication function to wrap, Cache object type, field of object to get, type of list element if the field is a list)
 func_list = [ ("get_owned_instruments", UserCache, "owned_instruments", str)
             , ("get_valid_instruments", UserCache, "valid_instruments", str)
             , ("is_admin", UserCache, "is_admin", None)
@@ -68,8 +104,9 @@ func_list = [ ("get_owned_instruments", UserCache, "owned_instruments", str)
             , ("get_upcoming_experiments_for_instrument", InstrumentCache, "upcoming_experiments", int)
             , ("get_valid_experiments_for_instrument", InstrumentCache, "valid_experiments", int)
             ]
-            
-def make_member_func(member_name, obj_type, cache_attr, list_type):
+
+# From the list we make a wrapping function for each ICATCommunication function. We create a make_ function to enclose the scope of the member function so that obj_type, etc., are local to the function and not globals; i.e., these are closures.
+def make_member_func(obj_type, cache_attr, list_type):
     def member_func(self, obj_id):
         # Remove expired objects, then check if the relevant object is in the cache, putting it in if it isn't.
         new_obj = self.check_cache(obj_type, obj_id)
@@ -80,19 +117,8 @@ def make_member_func(member_name, obj_type, cache_attr, list_type):
             attr = map(list_type, attr.split(","))
         
         return attr
-        
-    setattr(ICATCache, member_name, member_func)
-    
-for t in func_list:
-    make_member_func(*t)
-        
-            
-# get_owned_instruments(int(request.user.username))
-# get_valid_instruments(int(request.user.username))
-# get_associated_experiments(int(request.user.username))
-# get_upcoming_experiments_for_instrument
-# is_admin(int(person['usernumber']))
-# is_instrument_scientist(int(person['usernumber']))
+    return member_func
 
-### get_experiment_details(int(reference_number))
-### get_valid_experiments_for_instruments(int(request.user.username), instrument_names))
+# We add each of these functions as a member function to ICATCache.
+for t in func_list:
+    setattr(ICATCache, t[0], make_member_func(*t[1:]))
