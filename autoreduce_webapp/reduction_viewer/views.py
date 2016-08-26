@@ -5,7 +5,7 @@ from django.core.context_processors import csrf
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from autoreduce_webapp.uows_client import UOWSClient
-from autoreduce_webapp.icat_communication import ICATCommunication
+from autoreduce_webapp.icat_cache import ICATCache
 from autoreduce_webapp.settings import UOWS_LOGIN_URL, PRELOAD_RUNS_UNDER, USER_ACCESS_CHECKS
 from reduction_viewer.models import Experiment, ReductionRun, Instrument
 from reduction_viewer.utils import StatusUtils, ReductionRunUtils
@@ -42,7 +42,7 @@ def index(request):
                 else:
                     return_url = default_next
                 # Cache these for the session as they are used for permission checking
-                with ICATCommunication(AUTH='uows', SESSION={'sessionid':request.session['sessionid']}) as icat:
+                with ICATCache(AUTH='uows', SESSION={'sessionid':request.session['sessionid']}) as icat:
                     request.session['owned_instruments'] = icat.get_owned_instruments(int(request.user.username))
                     request.session['experiments'] = icat.get_associated_experiments(int(request.user.username))
 
@@ -161,7 +161,7 @@ def run_list(request):
                     experiments[instrument_name].append(str(experiment))
             request.session['experiments_to_show'] = experiments
     else:
-        with ICATCommunication(AUTH='uows',SESSION={'sessionid':request.session.get('sessionid')}) as icat:
+        with ICATCache(AUTH='uows',SESSION={'sessionid':request.session.get('sessionid')}) as icat:
             instrument_names = icat.get_valid_instruments(int(request.user.username))
             if instrument_names:
                 experiments = request.session.get('experiments_to_show', icat.get_valid_experiments_for_instruments(int(request.user.username), instrument_names))
@@ -343,7 +343,7 @@ def experiment_summary(request, reference_number):
                 if location not in reduced_data:
                     reduced_data.append(location)
         try:
-            with ICATCommunication(AUTH='uows', SESSION={'sessionid':request.session['sessionid']}) as icat:
+            with ICATCache(AUTH='uows', SESSION={'sessionid':request.session['sessionid']}) as icat:
                 experiment_details = icat.get_experiment_details(int(reference_number))
         except Exception as icat_e:
             logger.error(icat_e.message)
