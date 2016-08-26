@@ -114,7 +114,7 @@ def make_member_func(obj_type, cache_attr, list_type):
         # Get the attribute we want, parsing it as a list if we should.
         attr = getattr(new_obj, cache_attr)
         if list_type is not None:
-            attr = map(list_type, attr.split(","))
+            attr = map(list_type, filter(bool, attr.split(",")))
         
         return attr
     return member_func
