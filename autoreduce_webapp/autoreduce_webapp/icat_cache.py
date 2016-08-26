@@ -26,7 +26,7 @@ class ICATCache(object):
 
     def __exit__(self, type, value, traceback):
         if self.icat is not None:
-            self.icat.__exit__()
+            self.icat.__exit__(type, value, traceback)
             
     def open_icat(self):
         """ Try to open an ICAT session, if we don't have one already. """
