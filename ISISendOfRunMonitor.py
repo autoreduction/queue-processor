@@ -103,8 +103,7 @@ class InstrumentMonitor(FileSystemEventHandler):
                     self.send_message(data)
         except Exception as e:
             # if this code can't be executed it will raise a logging error towards the user.
-            logging.exception("Error on loading file: ")
-            raise e
+            logging.exception("Error on loading file: ", exc_info=True)
 
     def send_message(self, last_run_data):
         # Puts message together and sends it, along with logging.
