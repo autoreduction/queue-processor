@@ -1,7 +1,9 @@
 from django.shortcuts import redirect
 from django.core.exceptions import PermissionDenied
 from autoreduce_webapp.uows_client import UOWSClient
-from autoreduce_webapp.settings import UOWS_LOGIN_URL, LOGIN_URL, INSTALLED_APPS
+from autoreduce_webapp.settings import UOWS_LOGIN_URL, LOGIN_URL, INSTALLED_APPS, USER_ACCESS_CHECKS
+from autoreduce_webapp.icat_cache import ICATCache
+from reduction_viewer.models import ReductionRun
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from reduction_viewer.models import Notification, Setting
@@ -94,3 +96,36 @@ def render_with(template):
             return output
         return wrapper
     return renderer
+    
+def check_permissions(fn):
+    """
+    Checks that the user has permission to access the given experiment and/or instrument.
+    Queries ICATCache to check owned instruments and experiments.
+    """
+    def request_processor(request, *args, **kwargs):
+        if USER_ACCESS_CHECKS and not request.user.is_superuser:
+            # Get the things to check by from the arguments supplied.
+            experiment_reference, instrument_name = None, None
+            if "run_number" in kwargs:
+                # Get the experiment and instrument from the given run number.
+                run = ReductionRun.objects.filter(run_number=kwargs["run_number"]).first()
+                experiment_reference, instrument_name = run.experiment.reference_number, run.instrument.name
+            else:
+                # Get the experiment reference if it's supplied.
+                experiment_reference = kwargs.get("reference_number")
+                # Look for an instrument name under 'instrument_name', or, failing that, 'instrument'.
+                instrument_name = kwargs.get("instrument_name", kwargs.get("instrument"))
+            
+            with ICATCache(AUTH='uows', SESSION={'sessionid':request.session['sessionid']}) as icat:
+                # Check for access to the experiment.
+                if experiment_reference is not None and experiment_reference not in icat.get_associated_experiments(int(request.user.username)):
+                    raise PermissionDenied()
+                
+                # Check for access to the instrument.
+                if instrument_name is not None and instrument_name not in icat.get_owned_instruments(int(request.user.username)):
+                    raise PermissionDenied()
+        
+        # If we're here, the access checks have passed.
+        return fn(request, *args, **kwargs)
+    
+    return request_processor
