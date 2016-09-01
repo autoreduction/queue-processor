@@ -97,9 +97,9 @@ class VariableUtils(object):
             var_list = str(value).split(',')
             list_text = []
             for list_val in var_list:
-                if list_val:
-                    if list_val and list_val.strip():
-                        list_text.append(str(list_val.strip()))
+                item = list_val.strip().strip("'")
+                if item:
+                    list_text.append(item)
             return list_text
         if var_type == "list_number":
             var_list = value.split(',')

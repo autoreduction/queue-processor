@@ -473,7 +473,7 @@ def preview_script(request, instrument, run_number=0, experiment_reference=0):
         lines = ["#"*(len(string)+8)]*4
         lines[2:2] = ["##" + " "*(len(string)+4) + "##"]*3
         lines[3] = lines[3][:4] + string + lines[3][-4:]
-        lines += [""]*2
+        lines += [""]*1
         return lines
         
     def format_class(variables, name, indent):
@@ -482,12 +482,12 @@ def preview_script(request, instrument, run_number=0, experiment_reference=0):
         standard_vars, advanced_vars = filter(lambda var: not var.is_advanced, variables), filter(lambda var: var.is_advanced, variables)
         
         def make_dict(variables, name): 
-            var_dict = {v.name: VariableUtils().wrap_in_type_syntax(v.value, v.type) for v in variables}
+            var_dict = {v.name: VariableUtils().convert_variable_to_type(v.value, v.type) for v in variables}
             return indent + name + " = " + str(var_dict)
         
-        lines += make_dict(standard_vars, "standard_vars")
-        lines += make_dict(advanced_vars, "advanced_vars")
-        lines += [""*3]
+        lines.append(make_dict(standard_vars, "standard_vars"))
+        lines.append(make_dict(advanced_vars, "advanced_vars"))
+        lines += [""]*3
         
         return lines
     
@@ -502,7 +502,7 @@ def preview_script(request, instrument, run_number=0, experiment_reference=0):
         lines = format_header("Reduction script - reduce.py") + lines
         
         # Figure out space/tabs
-        indent = "    " # Defaults to PEP-8 standard!
+        indent = "    " # Defaults to PEP 8 standard!
         if filter(lambda line: line.startswith("\t"), lines):
             indent = "\t"
         
