@@ -190,7 +190,12 @@ class InstrumentVariablesUtils(object):
             latest_completed_run_number = ReductionRun.objects.filter(instrument = instrument, run_version = 0, status = completed_status).order_by('-run_number').first().run_number
         except AttributeError:
             latest_completed_run_number = 1
-
+            
+        # Then we find all the upcoming runs and force updating of all subsequent variables.
+        upcoming_run_variables = InstrumentVariable.objects.filter(instrument = instrument, start_run__isnull = False, start_run__gt = latest_completed_run_number+1).order_by('start_run')
+        upcoming_run_numbers = set([var.start_run for var in upcoming_run_variables])
+        [self.show_variables_for_run(instrument_name, run_number) for run_number in upcoming_run_numbers]
+        
         # Get the most recent run variables.
         current_variables = self.show_variables_for_run(instrument_name, latest_completed_run_number)
         if not current_variables:
@@ -200,7 +205,8 @@ class InstrumentVariablesUtils(object):
             
         # And then select the variables for all subsequent run numbers; collect the immediate upcoming variables and all subsequent sets.
         upcoming_variables_by_run = self.show_variables_for_run(instrument_name, latest_completed_run_number+1)
-        upcoming_variables_by_run += list(InstrumentVariable.objects.filter(instrument = instrument, start_run__isnull = False, start_run__gt = latest_completed_run_number+1).order_by('start_run'))
+        upcoming_variables_by_run += list(InstrumentVariable.objects.filter(instrument = instrument, start_run__in = upcoming_run_numbers).order_by('start_run'))
+
         
         # Get the upcoming experiments, and then select all variables for these experiments.
         upcoming_experiments = []
@@ -271,7 +277,7 @@ class InstrumentVariablesUtils(object):
     def show_variables_for_experiment(self, instrument_name, experiment_reference):
         """ Look for currently set variables for the experiment. If none are set, return an empty list (or QuerySet) anyway. """
         instrument = InstrumentUtils().get_instrument(instrument_name)
-        vars = InstrumentVariable.objects.filter(instrument=instrument, experiment_reference=experiment_reference)
+        vars = list(InstrumentVariable.objects.filter(instrument=instrument, experiment_reference=experiment_reference))
         self._update_variables(vars)
         return [VariableUtils().copy_variable(var) for var in vars]
 
@@ -292,7 +298,7 @@ class InstrumentVariablesUtils(object):
         if len(applicable_variables) != 0:
             variable_run_number = applicable_variables.first().start_run
             # Select all variables with that run number.
-            vars = InstrumentVariable.objects.filter(instrument=instrument, start_run=variable_run_number)
+            vars = list(InstrumentVariable.objects.filter(instrument=instrument, start_run=variable_run_number))
             self._update_variables(vars)
             return [VariableUtils().copy_variable(var) for var in vars]
         else:
@@ -338,6 +344,7 @@ class InstrumentVariablesUtils(object):
         Updates all variables with tracks_script to their value in the script, and append any new ones. 
         This assumes that the variables all belong to the same instrument, and that the list supplied is complete.
         If no variables have tracks_script set, we won't do anything at all.
+        variables should be a list; it needs to be mutable so that this function can add/remove variables.
         """
         if not any([var.tracks_script for var in variables]):
             return       
@@ -347,6 +354,7 @@ class InstrumentVariablesUtils(object):
         
         # Update the existing variables
         def updateVariable(oldVar):
+            oldVar.keep = True
             matchingVars = filter(lambda var: var.name == oldVar.name, defaults) # Find the new variable from the script.
             if matchingVars and oldVar.tracks_script: # Check whether we should and can update the old one.
                 newVar = matchingVars[0]
@@ -355,7 +363,9 @@ class InstrumentVariablesUtils(object):
                 oldVar.save()
             elif not matchingVars:
                 oldVar.delete() # Or remove the variable if it doesn't exist any more.
+                oldVar.keep = False
         map(updateVariable, variables)
+        variables[:] = [var for var in variables if var.keep]
         
         # Add any new ones
         current_names = [var.name for var in variables]
@@ -371,6 +381,7 @@ class InstrumentVariablesUtils(object):
             else: return
             newVar.save()
         map(copyMetadata, new_vars)
+        variables += list(new_vars)
         
 
     def _read_script(self, script_text, script_path):
