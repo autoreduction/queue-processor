@@ -334,9 +334,14 @@ class InstrumentVariablesUtils(object):
         
         
     def _update_variables(self, variables):
-        """ Updates all variables with tracks_script to their value in the script. This assumes that the variables all belong to the same instrument. """
+        """ 
+        Updates all variables with tracks_script to their value in the script, and append any new ones. 
+        This assumes that the variables all belong to the same instrument, and that the list supplied is complete.
+        """
+        # New variable set from the script
         defaults = self.get_default_variables(variables[0].instrument.name) if variables else []
         
+        # Update the existing variables
         def updateVariable(oldVar):
             matchingVars = filter(lambda var: var.name == oldVar.name, defaults) # Find the new variable from the script.
             if matchingVars and oldVar.tracks_script: # Check whether we should and can update the old one.
@@ -344,9 +349,24 @@ class InstrumentVariablesUtils(object):
                 map(lambda name: setattr(oldVar, name, getattr(newVar, name)),
                     ["value", "type", "is_advanced", "help_text"]) # Copy the new one's important attributes onto the old variable.
                 oldVar.save()
-
+            elif not matchingVars:
+                oldVar.delete() # Or remove the variable if it doesn't exist any more.
         map(updateVariable, variables)
-
+        
+        # Add any new ones
+        current_names = [var.name for var in variables]
+        new_vars = [var for var in defaults if var.name not in current_names]
+        def copyMetadata(newVar):
+            if isinstance(newVar, InstrumentVariable):
+                attrs = ["instrument", "experiment_reference", "start_run", "tracks_script"]
+            elif isinstance(newVar, RunVariable):
+                attrs = ["reduction_run"]
+            else:
+                attrs = []
+            map(lambda name: setattr(newVar, name, getattr(variables[0], name)), attrs) # Copy the source variable's metadata to the new one.
+            newVar.save()
+        map(copyMetadata, new_vars)
+        
 
     def _read_script(self, script_text, script_path):
         """ Takes a python script as a text string, and returns it loaded as a module. Failure will return None, and notify. """
