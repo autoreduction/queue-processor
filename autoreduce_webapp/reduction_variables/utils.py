@@ -337,7 +337,11 @@ class InstrumentVariablesUtils(object):
         """ 
         Updates all variables with tracks_script to their value in the script, and append any new ones. 
         This assumes that the variables all belong to the same instrument, and that the list supplied is complete.
+        If no variables have tracks_script set, we won't do anything at all.
         """
+        if not any([var.tracks_script for var in variables]):
+            return       
+        
         # New variable set from the script
         defaults = self.get_default_variables(variables[0].instrument.name) if variables else []
         
@@ -357,13 +361,14 @@ class InstrumentVariablesUtils(object):
         current_names = [var.name for var in variables]
         new_vars = [var for var in defaults if var.name not in current_names]
         def copyMetadata(newVar):
-            if isinstance(newVar, InstrumentVariable):
-                attrs = ["instrument", "experiment_reference", "start_run", "tracks_script"]
-            elif isinstance(newVar, RunVariable):
-                attrs = ["reduction_run"]
-            else:
-                attrs = []
-            map(lambda name: setattr(newVar, name, getattr(variables[0], name)), attrs) # Copy the source variable's metadata to the new one.
+            sourceVar = variables[0]
+            if isinstance(sourceVar, InstrumentVariable):
+                # Copy the source variable's metadata to the new one.
+                map(lambda name: setattr(newVar, name, getattr(sourceVar, name)), ["instrument", "experiment_reference", "start_run"])
+            elif isinstance(sourceVar, RunVariable):
+                # Create a run variable.
+                VariableUtils().derive_run_variable(newVar, sourceVar.reduction_run)
+            else: return
             newVar.save()
         map(copyMetadata, new_vars)
         
