@@ -20,7 +20,7 @@
         </div>
         {% if run.message %}
             <div class="alert alert-{% replace run.status.value 'Error' 'danger' %} word-wrap" role="alert">
-                <i class="fa fa-{% replace run.status.value 'Error' 'exclamation' %} fa-{% replace run.status.value 'Error' 'exclamation' %}-circle fa-lg"></i> {{ run.message }}
+                <i class="fa fa-{% replace run.status.value 'Error' 'exclamation' %} fa-{% replace run.status.value 'Error' 'exclamation' %}-circle fa-lg"></i> <a href="#" class="js-log-display">{{ run.message }}</a>
             </div>
         {% endif %}
         <div class="row">
