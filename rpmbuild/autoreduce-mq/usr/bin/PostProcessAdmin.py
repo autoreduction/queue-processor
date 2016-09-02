@@ -13,8 +13,7 @@ def channels_redirected(out_file, err_file, out_stream):
     respectively. The fd is at the C level and so picks up data sent via Mantid. Both output streams are additionally also 
     sent to out_stream.
     """
-    out_fd = sys.stdout.fileno()
-    err_fd = sys.stderr.fileno()
+    old_stdout, old_stderr = sys.stdout, sys.stderr
     
     class _multiple_channels(object): # Behaves like a stream object, but outputs to multiple streams.
         def __init__(self, *streams):
@@ -25,20 +24,10 @@ def channels_redirected(out_file, err_file, out_stream):
             [stream.flush() for stream in self.streams]
 
     def _redirect_channels(out_file, err_file):
-        # Close and flush
-        sys.stdout.close()
-        sys.stderr.close()
+        sys.stdout.flush(), sys.stderr.flush()
+        sys.stdout, sys.stderr = out_file, err_file
 
-        # Copy fds
-        os.dup2(out_file.fileno(), out_fd)
-        os.dup2(err_file.fileno(), err_fd)
-
-        # Python writes to fds
-        sys.stdout = os.fdopen(out_fd, 'w')
-        sys.stderr = os.fdopen(err_fd, 'w')
-
-    with os.fdopen(os.dup(out_fd), 'w') as old_stdout, os.fdopen(os.dup(err_fd), 'w') as old_stderr,\
-            open(out_file, 'w') as out, open(err_file, 'w') as err:
+    with open(out_file, 'w') as out, open(err_file, 'w') as err:
         _redirect_channels(_multiple_channels(out, out_stream), _multiple_channels(err, out_stream))
         try:
             yield  # allow code to be run with the redirected channels
