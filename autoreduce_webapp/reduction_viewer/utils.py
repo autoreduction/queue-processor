@@ -86,7 +86,7 @@ class ReductionRunUtils(object):
     def createRetryRun(self, reductionRun, script=None, variables=None, delay=0, username=None):
         """
         Create a run ready for re-running based on the run provided. 
-        If variables are provided, copy them and associate them with the new one, otherwise use the previous run's.
+        If variables (RunVariable) are provided, copy them and associate them with the new one, otherwise use the previous run's.
         If a script (as a string) is supplied then use it, otherwise use the previous run's.
         """
         from reduction_variables.utils import InstrumentVariablesUtils, VariableUtils
@@ -122,8 +122,15 @@ class ReductionRunUtils(object):
                 new_data_location.save()
                 new_job.data_location.add(new_data_location)
                 
-            if not variables: # provide variables if they aren't already
+            if variables is not None:
+                # associate the variables with the new run
+                for var in variables:
+                    var.reduction_run = new_job
+                    var.save()
+            else:
+                # provide variables if they aren't already
                 InstrumentVariablesUtils.create_variables_for_run(new_job)
+            
                     
             return new_job
             
