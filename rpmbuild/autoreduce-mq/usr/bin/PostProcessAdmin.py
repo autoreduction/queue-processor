@@ -2,18 +2,27 @@
 """
 Post Process Administrator. It kicks off cataloging and reduction jobs.
 """
-import json, socket, os, sys, time, shutil, imp, stomp, re, errno, traceback
+import json, socket, os, sys, time, shutil, imp, stomp, re, errno, traceback, cStringIO
 from contextlib import contextmanager
 from autoreduction_logging_setup import logger
 
 @contextmanager
-def channels_redirected(out_file, err_file):
+def channels_redirected(out_file, err_file, out_stream):
     """
     This context manager copies the file descriptor(fd) of stdout and stderr to the files given in out_file and err_file
-    respectively. The fd is at the C level and so picks up data sent via Mantid.
+    respectively. The fd is at the C level and so picks up data sent via Mantid. Both output streams are additionally also 
+    sent to out_stream.
     """
     out_fd = sys.stdout.fileno()
     err_fd = sys.stderr.fileno()
+    
+    class _multiple_channels(object): # Behaves like a stream object, but outputs to multiple streams.
+        def __init__(self, *streams):
+            self.streams = streams
+        def write(self, message):
+            [stream.write(message) for stream in self.streams]
+        def flush(self):
+            [stream.flush() for stream in self.streams]
 
     def _redirect_channels(out_file, err_file):
         # Close and flush
@@ -28,15 +37,13 @@ def channels_redirected(out_file, err_file):
         sys.stdout = os.fdopen(out_fd, 'w')
         sys.stderr = os.fdopen(err_fd, 'w')
 
-    with os.fdopen(os.dup(out_fd), 'w') as old_stdout:
-        with os.fdopen(os.dup(err_fd), 'w') as old_stderr:
-            with open(out_file, 'w') as out:
-                with open(err_file, 'w') as err:
-                    _redirect_channels(out, err)
-                    try:
-                        yield  # allow code to be run with the redirected channels
-                    finally:
-                        _redirect_channels(old_stdout, old_stderr)  # restore stderr.
+    with os.fdopen(os.dup(out_fd), 'w') as old_stdout, os.fdopen(os.dup(err_fd), 'w') as old_stderr,\
+            open(out_file, 'w') as out, open(err_file, 'w') as err:
+        _redirect_channels(_multiple_channels(out, out_stream), _multiple_channels(err, out_stream))
+        try:
+            yield  # allow code to be run with the redirected channels
+        finally:
+            _redirect_channels(old_stdout, old_stderr)  # restore stderr.
 
 
 def linux_to_windows_path(path):
@@ -71,6 +78,8 @@ class PostProcessAdmin:
         self.data = data
         self.conf = conf
         self.client = connection
+        
+        self.out_stream = cStringIO.StringIO()
 
         try:
             if data.has_key('data'):
@@ -232,7 +241,7 @@ class PostProcessAdmin:
             logger.info("Reduction subprocess started.")
 
             try:
-                with channels_redirected(script_out, mantid_log):
+                with channels_redirected(script_out, mantid_log, self.out_stream):
                     # Load reduction script as a module. This works as long as reduce.py makes no assumption that it is in the same directory as reduce_vars, 
                     # i.e., either it does not import it at all, or adds its location to os.path explicitly.
                     reduce_script = imp.new_module('reducescript')
@@ -246,6 +255,7 @@ class PostProcessAdmin:
                     if self.data['run_number'] not in skip_numbers:
                         reduce_script = self.replace_variables(reduce_script)
                         out_directories = reduce_script.main(input_file=str(self.data_file), output_dir=str(reduce_result_dir))
+                        self.data['reduction_log'] = self.out_stream.getvalue()
                     else:
                         self.data['message'] = "Run has been skipped in script"
             except Exception as e:
