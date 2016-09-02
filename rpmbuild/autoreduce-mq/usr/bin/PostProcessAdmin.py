@@ -2,7 +2,7 @@
 """
 Post Process Administrator. It kicks off cataloging and reduction jobs.
 """
-import json, socket, os, sys, time, shutil, imp, stomp, re, errno, traceback, cStringIO
+import json, socket, os, sys, time, shutil, imp, stomp, re, errno, traceback, logging, cStringIO
 from contextlib import contextmanager
 from autoreduction_logging_setup import logger
 
@@ -68,7 +68,8 @@ class PostProcessAdmin:
         self.conf = conf
         self.client = connection
         
-        self.out_stream = cStringIO.StringIO()
+        self.reduction_log_stream = cStringIO.StringIO()
+        self.admin_log_stream = cStringIO.StringIO()
 
         try:
             if data.has_key('data'):
@@ -230,7 +231,7 @@ class PostProcessAdmin:
             logger.info("Reduction subprocess started.")
 
             try:
-                with channels_redirected(script_out, mantid_log, self.out_stream):
+                with channels_redirected(script_out, mantid_log, self.reduction_log_stream):
                     # Load reduction script as a module. This works as long as reduce.py makes no assumption that it is in the same directory as reduce_vars, 
                     # i.e., either it does not import it at all, or adds its location to os.path explicitly.
                     reduce_script = imp.new_module('reducescript')
@@ -244,7 +245,7 @@ class PostProcessAdmin:
                     if self.data['run_number'] not in skip_numbers:
                         reduce_script = self.replace_variables(reduce_script)
                         out_directories = reduce_script.main(input_file=str(self.data_file), output_dir=str(reduce_result_dir))
-                        self.data['reduction_log'] = self.out_stream.getvalue()
+                        self.data['reduction_log'] = self.reduction_log_stream.getvalue()
                     else:
                         self.data['message'] = "Run has been skipped in script"
             except Exception as e:
@@ -284,6 +285,7 @@ class PostProcessAdmin:
         except Exception as e:
             self.data["message"] = "REDUCTION Error: %s " % e
 
+        self.data["admin_log"] = self.admin_log_stream.getvalue()
             
         if self.data["message"] != "":
             # This means an error has been produced somewhere
@@ -400,21 +402,30 @@ if __name__ == "__main__":
         
         try:  
             pp = PostProcessAdmin(data, conf, connection)
+            log_stream_handler = logging.StreamHandler(pp.admin_log_stream)
+            logger.addHandler(log_stream_handler)
             if destination == '/queue/ReductionPending':
                 pp.reduce()
 
         except ValueError as e:
             data["error"] = str(e)
             logger.info("JSON data error: " + prettify(data))
-
-            connection.send(conf['postprocess_error'], json.dumps(data))
-            print("Called " + conf['postprocess_error'] + "----" + prettify(data))
             raise
         
         except Exception as e:
             logger.info("PostProcessAdmin error: %s" % e)
             raise
+            
+        finally:
+            try:
+                logger.removeHandler(log_stream_handler)
+            except:
+                pass
         
     except Exception as er:
         logger.info("Something went wrong: " + str(er))
-        sys.exit()
+        try:
+            connection.send(conf['postprocess_error'], json.dumps(data))
+            print("Called " + conf['postprocess_error'] + "----" + prettify(data))
+        finally:
+            sys.exit()
