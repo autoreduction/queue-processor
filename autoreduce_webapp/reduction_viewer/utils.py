@@ -123,7 +123,7 @@ class ReductionRunUtils(object):
                 new_job.data_location.add(new_data_location)
                 
             if not variables: # provide variables if they aren't already
-                InstrumentVariablesUtils.create_variables_for_run(new_job)
+                InstrumentVariablesUtils().create_variables_for_run(new_job)
                     
             return new_job
             
