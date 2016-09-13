@@ -183,6 +183,7 @@ UOWS_LOGIN_URL = 'https://users.facilities.rl.ac.uk/auth/?service=http://reduce.
 
 
 # Email for notifications
+
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'exchsmtp.stfc.ac.uk'
 EMAIL_PORT = 25
@@ -190,8 +191,10 @@ EMAIL_ERROR_RECIPIENTS = ['isisreduce@stfc.ac.uk']
 EMAIL_ERROR_SENDER = 'autoreduce@reduce.isis.cclrc.ac.uk'
 BASE_URL = 'http://reduce.isis.cclrc.ac.uk/'
 
+
 # Constant vars
 
 FACILITY = "ISIS"
 PRELOAD_RUNS_UNDER = 100 # If the index run list has fewer than this many runs to show the user, preload them all.
+CACHE_LIFETIME = 3600 # Objects in ICATCache live this many seconds when ICAT is available to update them.
 USER_ACCESS_CHECKS = True # Should the webapp prevent users from accessing runs/instruments they're not allowed to?

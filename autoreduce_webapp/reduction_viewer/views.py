@@ -5,13 +5,13 @@ from django.core.context_processors import csrf
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from autoreduce_webapp.uows_client import UOWSClient
-from autoreduce_webapp.icat_communication import ICATCommunication
+from autoreduce_webapp.icat_cache import ICATCache
 from autoreduce_webapp.settings import UOWS_LOGIN_URL, PRELOAD_RUNS_UNDER, USER_ACCESS_CHECKS
 from reduction_viewer.models import Experiment, ReductionRun, Instrument
 from reduction_viewer.utils import StatusUtils, ReductionRunUtils
 from reduction_viewer.view_utils import deactivate_invalid_instruments
 from reduction_variables.utils import MessagingUtils
-from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, require_admin
+from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, require_admin, check_permissions
 import operator
 import json
 import logging
@@ -41,10 +41,6 @@ def index(request):
                     return_url = use_query_next
                 else:
                     return_url = default_next
-                # Cache these for the session as they are used for permission checking
-                with ICATCommunication(AUTH='uows', SESSION={'sessionid':request.session['sessionid']}) as icat:
-                    request.session['owned_instruments'] = icat.get_owned_instruments(int(request.user.username))
-                    request.session['experiments'] = icat.get_associated_experiments(int(request.user.username))
 
     return redirect(return_url)
 
@@ -57,7 +53,6 @@ def logout(request):
     request.session.flush()
     return redirect('index')
 
-#@require_staff
 @login_and_uows_valid
 @render_with('run_queue.html')
 def run_queue(request):
@@ -68,8 +63,9 @@ def run_queue(request):
     
     # Filter those which the user shouldn't be able to see
     if USER_ACCESS_CHECKS and not request.user.is_superuser:
-        pending_jobs = filter(lambda job: job.experiment.reference_number in request.session['experiments'], pending_jobs) # check RB numbers
-        pending_jobs = filter(lambda job: job.instrument.name in request.session['owned_instruments'], pending_jobs) # check instrument
+        with ICATCache(AUTH='uows', SESSION={'sessionid':request.session['sessionid']}) as icat:
+            pending_jobs = filter(lambda job: job.experiment.reference_number in icat.get_associated_experiments(int(request.user.username)), pending_jobs) # check RB numbers
+            pending_jobs = filter(lambda job: job.instrument.name in icat.get_owned_instruments(int(request.user.username)), pending_jobs) # check instrument
     
     context_dictionary = { 'queue' : pending_jobs }
     return context_dictionary
@@ -159,13 +155,11 @@ def run_list(request):
                 instrument_experiments = Experiment.objects.filter(reduction_runs__instrument=instrument).values_list('reference_number', flat=True)
                 for experiment in instrument_experiments:
                     experiments[instrument_name].append(str(experiment))
-            request.session['experiments_to_show'] = experiments
     else:
-        with ICATCommunication(AUTH='uows',SESSION={'sessionid':request.session.get('sessionid')}) as icat:
+        with ICATCache(AUTH='uows',SESSION={'sessionid':request.session.get('sessionid')}) as icat:
             instrument_names = icat.get_valid_instruments(int(request.user.username))
             if instrument_names:
                 experiments = request.session.get('experiments_to_show', icat.get_valid_experiments_for_instruments(int(request.user.username), instrument_names))
-                request.session['experiments_to_show'] = experiments
 
     # get database status labels up front to reduce queries to database
     status_error = StatusUtils().get_error()
@@ -251,14 +245,9 @@ def run_list(request):
 
     
 @login_and_uows_valid
+@check_permissions
 @render_with('load_runs.html')
 def load_runs(request, reference_number=None, instrument_name=None):
-    # Check permissions
-    if USER_ACCESS_CHECKS and not request.user.is_superuser\
-            and   ((reference_number and reference_number not in request.session['experiments'])\
-                or (instrument_name  and instrument_name  not in request.session['owned_instruments'])):
-        raise PermissionDenied()
-
     runs = []
     
     if reference_number:
@@ -278,14 +267,11 @@ def load_runs(request, reference_number=None, instrument_name=None):
 
     
 @login_and_uows_valid
+@check_permissions
 @render_with('run_summary.html')
-def run_summary(request, run_number, run_version=0):
+def run_summary(request, run_number=None, run_version=0):
     try:
         run = ReductionRun.objects.get(run_number=run_number, run_version=run_version)
-        # Check the user has permission
-        if USER_ACCESS_CHECKS and not request.user.is_superuser and str(run.experiment.reference_number) not in request.session['experiments']\
-                and str(run.instrument) not in request.session['owned_instruments']:
-            raise PermissionDenied()
         history = ReductionRun.objects.filter(run_number=run_number).order_by('-run_version')
         context_dictionary = { 'run' : run, 'history' : history }
     except PermissionDenied:
@@ -296,14 +282,10 @@ def run_summary(request, run_number, run_version=0):
         
     return context_dictionary
 
-#@require_staff
 @login_and_uows_valid
+@check_permissions
 @render_with('instrument_summary.html')
-def instrument_summary(request, instrument):
-    # Check the user has permission
-    if USER_ACCESS_CHECKS and not request.user.is_superuser and instrument not in request.session['owned_instruments']:
-        raise PermissionDenied()
-
+def instrument_summary(request, instrument=None):
     processing_status = StatusUtils().get_processing()
     queued_status = StatusUtils().get_queued()
     skipped_status = StatusUtils().get_skipped()
@@ -324,12 +306,9 @@ def instrument_summary(request, instrument):
     return context_dictionary
 
 @login_and_uows_valid
+@check_permissions
 @render_with('experiment_summary.html')
-def experiment_summary(request, reference_number):
-    # Check the user's permissions
-    if USER_ACCESS_CHECKS and not request.user.is_superuser and str(reference_number) not in request.session['experiments']:
-       raise PermissionDenied()
-
+def experiment_summary(request, reference_number=None):
     try:
         experiment = Experiment.objects.get(reference_number=reference_number)
         runs = ReductionRun.objects.filter(experiment=experiment).order_by('-run_version')
@@ -343,7 +322,7 @@ def experiment_summary(request, reference_number):
                 if location not in reduced_data:
                     reduced_data.append(location)
         try:
-            with ICATCommunication(AUTH='uows', SESSION={'sessionid':request.session['sessionid']}) as icat:
+            with ICATCache(AUTH='uows', SESSION={'sessionid':request.session['sessionid']}) as icat:
                 experiment_details = icat.get_experiment_details(int(reference_number))
         except Exception as icat_e:
             logger.error(icat_e.message)
@@ -374,7 +353,8 @@ def help(request):
     return {}
 
 @login_and_uows_valid
-def instrument_pause(request, instrument):
+@check_permissions
+def instrument_pause(request, instrument=None):
     #TODO: Check ICAT credentials
     instrument_obj = Instrument.objects.get(name=instrument)
     currently_paused = (request.POST.get("currently_paused").lower() == u"false")

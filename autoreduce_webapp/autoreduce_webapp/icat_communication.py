@@ -44,8 +44,9 @@ class ICATCommunication(object):
             raise TypeError("Reference number must be a number")
 
         if reference_number > 0:
-            investigation = self.client.search("SELECT i from Investigation i where i.name = '" + str(reference_number) + "' INCLUDE i.investigationInstruments.instrument, i.investigationUsers.user")
-            if investigation and investigation[0]:
+            try:
+                investigation = self.client.search("SELECT i from Investigation i where i.name = '" + str(reference_number) + "' INCLUDE i.investigationInstruments.instrument, i.investigationUsers.user")
+                
                 trimmed_investigation = {
                     'reference_number' : investigation[0].name,
                     'start_date' : investigation[0].startDate,
@@ -59,18 +60,20 @@ class ICATCommunication(object):
                     if investigationUser.role == 'principal_experimenter':
                         trimmed_investigation['pi'] = investigationUser.user.fullName
                 return trimmed_investigation
-        else:
-            trimmed_investigation = {
-                'reference_number' : str(reference_number),
-                'start_date' : 'N/A',
-                'end_date' : 'N/A',
-                'title' : 'N/A',
-                'summary' : u'N/A',
-                'pi' : ''
-                }
+                
+            except:
+                pass
+                
+        trimmed_investigation = {
+            'reference_number' : str(reference_number),
+            'start_date' : 'N/A',
+            'end_date' : 'N/A',
+            'title' : 'N/A',
+            'summary' : u'N/A',
+            'pi' : ''
+            }
 
-            return trimmed_investigation
-        return None
+        return trimmed_investigation
 
     '''
         Returns a set of all instruments a given user can see.
@@ -160,6 +163,23 @@ class ICATCommunication(object):
             instruments_dict[instrument] = sorted(experiments, reverse=True)
 
         return instruments_dict
+
+    '''
+        Returns all experiments allowed for a given instrument
+    '''
+    def get_valid_experiments_for_instrument(self, instrument):
+        logger.debug("Calling ICATCommunication.get_valid_experiments_for_instrument")
+        from reduction_viewer.models import Setting
+
+        try:
+            number_of_years = int(Setting.objects.get(name='ICAT_YEARS_TO_SHOW').value)
+        except:
+            number_of_years = 3
+        years_back = datetime.datetime.now() - datetime.timedelta(days=(number_of_years*365.24))
+
+        experiments = Set()
+        self._add_list_to_set(self.client.search("SELECT i.name FROM Investigation i JOIN i.investigationInstruments inst WHERE i.name NOT LIKE 'CAL%' and i.endDate > '"+str(years_back)+"' and (inst.instrument.name = '"+instrument+"' OR inst.instrument.fullName = '"+instrument+"')"), experiments)
+        return sorted(experiments, reverse=True)
 
     def get_upcoming_experiments_for_instrument(self, instrument):
         logger.debug("Calling ICATCommunication.get_upcoming_experiments_for_instrument")

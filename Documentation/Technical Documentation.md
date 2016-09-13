@@ -138,6 +138,12 @@ ICATCommunication(URL='',AUTH='',SESSION={},USER='',PASSWORD='')
 
 ICATCommunication will logout of ICAT when it goes out of the scope of the `with` statement.
 
+#### icat_cache.py
+
+This wraps ICATCommunication, implementing a cache mechanism that stores query results. It's intended to be used exactly as ICATCommunication would be (i.e., in a `with` statement).
+
+The setting `CACHE_LIFETIME` (in seconds) controls how long objects live in the cache. If ICATCache finds a cache object that's younger than this setting in the database, it will use that instead of going to ICATCommunication. Otherwise, it will try to connect to ICAT via ICATCommunication and make the query, storing it to the cache. If this fails somehow, it'll return the stale cache object if there is one, or else return `None`.
+
 #### uows_client.py
 
 This handles communication with the User Office Web Service to handle authentication and retrieving user details.
@@ -168,6 +174,8 @@ Provides application-wide utilities. Contains `SeparatedValuesField` that can be
 #### view_utils.py
 
 Provides application-wide function decorators for view methods. These include things like checking a session ID is still valid (`login_and_uows_valid`) or that a user is a staff memeber (`require_staff`). `require_staff` and `require_admin` will both throw a [403 Forbidden](http://en.wikipedia.org/wiki/HTTP_403) is the current user doesn't have the appropriate permissions. If not logged in, the user will be redirected to the login page first.
+
+`check_permissions` is used for general-purpose permissions checking; it looks at the keyword arguments of the function, and checks that the user has access to the run/instrument/experiment that's being looked at, checking ICATCache for the permissions.
 
 The main function worth taking note of is `render_with`. This is used by all view functions except those that are called from within another view (as these don't trigger function decorators). When used, this expect the function to return a dictionary (the context dictionary that will be used by the template) which it then adds any active notifications, flags and values such as support email and then calling the `render_to_response` on the appropriate template file with the dictionary fully populated. This means there is a single location to put all context variables that are needed on all (or most) pages without having to add it to each view function.
 

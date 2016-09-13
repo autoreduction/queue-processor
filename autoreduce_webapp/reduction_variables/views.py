@@ -2,10 +2,8 @@ from django.shortcuts import redirect
 from django.core.context_processors import csrf
 from django.template import RequestContext
 from django.shortcuts import render_to_response
-from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, HttpResponseForbidden
-from autoreduce_webapp.settings import USER_ACCESS_CHECKS
-from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, has_valid_login, handle_redirect
+from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, has_valid_login, handle_redirect, check_permissions
 from reduction_variables.models import InstrumentVariable, RunVariable
 from reduction_variables.utils import VariableUtils, InstrumentVariablesUtils, MessagingUtils
 from reduction_viewer.models import Instrument, ReductionRun
@@ -88,12 +86,10 @@ def instrument_summary(request, instrument):
     return render_to_response('snippets/instrument_summary_variables.html', context_dictionary, RequestContext(request))
 
 @login_and_uows_valid
-def delete_instrument_variables(request, instrument, start=0, end=0, experiment_reference=None):
+@check_permissions
+def delete_instrument_variables(request, instrument=None, start=0, end=0, experiment_reference=None):
     instrument_name = instrument
     start, end = int(start), int(end)
-    # Check the user has permission
-    if USER_ACCESS_CHECKS and not request.user.is_superuser and instrument_name not in request.session['owned_instruments']:
-        raise PermissionDenied()
     
     # We "save" an empty list to delete the previous variables.
     if experiment_reference is not None:
@@ -104,12 +100,9 @@ def delete_instrument_variables(request, instrument, start=0, end=0, experiment_
     return redirect('instrument_summary', instrument=instrument_name)
 
 @login_and_uows_valid
+@check_permissions
 @render_with('instrument_variables.html')
-def instrument_variables(request, instrument, start=0, end=0, experiment_reference=0):
-    # Check that the user has permission.
-    if USER_ACCESS_CHECKS and not request.user.is_superuser and instrument not in request.session['owned_instruments']:
-        raise PermissionDenied()
-        
+def instrument_variables(request, instrument=None, start=0, end=0, experiment_reference=0):        
     instrument_name = instrument
     start, end = int(start), int(end)
     
@@ -221,12 +214,9 @@ def instrument_variables(request, instrument, start=0, end=0, experiment_referen
 
 
 @login_and_uows_valid
+@check_permissions
 @render_with('submit_runs.html')
-def submit_runs(request, instrument):
-    # Check the user has permission
-    if USER_ACCESS_CHECKS and not request.user.is_superuser and instrument not in request.session['owned_instruments']:
-        raise PermissionDenied()
-
+def submit_runs(request, instrument=None):
     instrument = Instrument.objects.get(name=instrument)
 
     if request.method == 'GET':
@@ -264,11 +254,10 @@ def submit_runs(request, instrument):
 
         return context_dictionary
 
-
-#@require_staff
 @login_and_uows_valid
+@check_permissions
 @render_with('snippets/edit_variables.html')
-def current_default_variables(request, instrument):
+def current_default_variables(request, instrument=None):
     variables = InstrumentVariablesUtils().get_default_variables(instrument)
     standard_vars = {}
     advanced_vars = {}
@@ -323,10 +312,10 @@ def run_summary(request, run_number, run_version=0):
     context_dictionary.update(csrf(request))
     return render_to_response('snippets/run_variables.html', context_dictionary, RequestContext(request))
 
-#@require_staff
 @login_and_uows_valid
+@check_permissions
 @render_with('run_confirmation.html')
-def run_confirmation(request, instrument):
+def run_confirmation(request, instrument=None):
     if request.method != 'POST':
         return redirect('instrument_summary', instrument=instrument.name)
         
@@ -363,16 +352,6 @@ def run_confirmation(request, instrument):
     rb_number = ReductionRun.objects.filter(instrument=instrument, run_number__in=run_numbers).values_list('experiment__reference_number', flat=True).distinct()
     if len(rb_number) > 1:
         context_dictionary['error'] = 'Runs span multiple experiment numbers (' + ','.join(str(i) for i in rb_number) + ') please select a different range.'
-
-    # Check that RB numbers are allowed
-    if not request.user.is_superuser:
-        experiments_allowed = request.session['experiments_to_show'].get(instrument.name)
-        if (experiments_allowed is not None) and (str(rb_number[0]) not in experiments_allowed):
-            context_dictionary['error'] = "Permission denied. You do not have permission to request re-runs on the associated experiment number."
-
-    # Quit on error.
-    if 'error' in context_dictionary:
-        return context_dictionary
             
     for run_number in run_numbers:
         old_reduction_run = ReductionRun.objects.filter(run_number=run_number).order_by('-run_version').first()
@@ -431,8 +410,8 @@ def run_confirmation(request, instrument):
             
     return context_dictionary
 
-    
-def preview_script(request, instrument, run_number=0, experiment_reference=0):
+@check_permissions
+def preview_script(request, instrument=None, run_number=0, experiment_reference=0):
     # Can't use login decorator as need to return AJAX error message if fails
     if not has_valid_login(request):
         redirect_response = handle_redirect(request)
@@ -441,12 +420,6 @@ def preview_script(request, instrument, run_number=0, experiment_reference=0):
         else:
             error = {'redirect_url': redirect_response.url}
             return HttpResponseForbidden(json.dumps(error))
-            
-    # Check permissions
-    if not request.user.is_superuser\
-            and   ((experiment_reference and experiment_reference not in request.session['experiments'])\
-                or (instrument           and instrument           not in request.session['owned_instruments'])):
-        raise PermissionDenied()
 
     # Find the reduction run to get the script for.
     if request.method == 'GET':

@@ -16,9 +16,6 @@ class Experiment(models.Model):
     def __unicode__(self):
         return u'%s' % self.reference_number
 
-    def get_ICAT_details(self):
-        return autoreduce_webapp.icat_communication.get_experiment_details(self.reference_number)
-
 class Status(models.Model):
     value = models.CharField(max_length=25)
 
