@@ -171,7 +171,7 @@ class InstrumentVariablesUtils(object):
         self._update_variables(variables)
 
         # Create run variables from these instrument variables, and return them.
-        return VariableUtils().save_run_variables(self, variables, reduction_run)
+        return VariableUtils().save_run_variables(variables, reduction_run)
 
 
     def get_current_and_upcoming_variables(self, instrument_name):
