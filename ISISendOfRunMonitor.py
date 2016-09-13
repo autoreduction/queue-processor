@@ -50,11 +50,13 @@ class InstrumentMonitor(FileSystemEventHandler):
             self.instrumentFolder = INST_FOLDER % self.instrumentName
         self.instrumentSummaryLoc = self.instrumentFolder + SUMMARY_LOC
         self.instrumentLastRunLoc = self.instrumentFolder + LAST_RUN_LOC
-        self.instrumentDataFolderLoc = self.instrumentFolder + DATA_LOC % self._get_most_recent_cycle()
         with open(self.instrumentLastRunLoc) as lr:
             data = get_data_and_check(lr)
             self.last_run = data[1]
         self.lock = lock
+        
+    def _get_instrument_data_folder_loc(self):
+        return self.instrumentFolder + DATA_LOC % self._get_most_recent_cycle()
 
     def _get_most_recent_cycle(self):
         folders = os.listdir(self.instrumentFolder + '\logs\\')
@@ -69,7 +71,7 @@ class InstrumentMonitor(FileSystemEventHandler):
         and last line of the summary text file to build the query
         """
         filename = ''.join(last_run_data[0:2])  # so MER111 etc
-        run_data_loc = self.instrumentDataFolderLoc + filename + get_file_extension(self.use_nexus)
+        run_data_loc = self._get_instrument_data_folder_loc() + filename + get_file_extension(self.use_nexus)
         return {
             "rb_number": self._get_RB_num(),
             "instrument": self.instrumentName,
