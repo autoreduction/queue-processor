@@ -97,9 +97,9 @@ class VariableUtils(object):
             var_list = str(value).split(',')
             list_text = []
             for list_val in var_list:
-                if list_val:
-                    if list_val and list_val.strip():
-                        list_text.append(str(list_val.strip()))
+                item = list_val.strip().strip("'")
+                if item:
+                    list_text.append(item)
             return list_text
         if var_type == "list_number":
             var_list = value.split(',')
@@ -190,7 +190,12 @@ class InstrumentVariablesUtils(object):
             latest_completed_run_number = ReductionRun.objects.filter(instrument = instrument, run_version = 0, status = completed_status).order_by('-run_number').first().run_number
         except AttributeError:
             latest_completed_run_number = 1
-
+            
+        # Then we find all the upcoming runs and force updating of all subsequent variables.
+        upcoming_run_variables = InstrumentVariable.objects.filter(instrument = instrument, start_run__isnull = False, start_run__gt = latest_completed_run_number+1).order_by('start_run')
+        upcoming_run_numbers = set([var.start_run for var in upcoming_run_variables])
+        [self.show_variables_for_run(instrument_name, run_number) for run_number in upcoming_run_numbers]
+        
         # Get the most recent run variables.
         current_variables = self.show_variables_for_run(instrument_name, latest_completed_run_number)
         if not current_variables:
@@ -200,7 +205,8 @@ class InstrumentVariablesUtils(object):
             
         # And then select the variables for all subsequent run numbers; collect the immediate upcoming variables and all subsequent sets.
         upcoming_variables_by_run = self.show_variables_for_run(instrument_name, latest_completed_run_number+1)
-        upcoming_variables_by_run += list(InstrumentVariable.objects.filter(instrument = instrument, start_run__isnull = False, start_run__gt = latest_completed_run_number+1).order_by('start_run'))
+        upcoming_variables_by_run += list(InstrumentVariable.objects.filter(instrument = instrument, start_run__in = upcoming_run_numbers).order_by('start_run'))
+
         
         # Get the upcoming experiments, and then select all variables for these experiments.
         upcoming_experiments = []
@@ -271,7 +277,7 @@ class InstrumentVariablesUtils(object):
     def show_variables_for_experiment(self, instrument_name, experiment_reference):
         """ Look for currently set variables for the experiment. If none are set, return an empty list (or QuerySet) anyway. """
         instrument = InstrumentUtils().get_instrument(instrument_name)
-        vars = InstrumentVariable.objects.filter(instrument=instrument, experiment_reference=experiment_reference)
+        vars = list(InstrumentVariable.objects.filter(instrument=instrument, experiment_reference=experiment_reference))
         self._update_variables(vars)
         return [VariableUtils().copy_variable(var) for var in vars]
 
@@ -292,7 +298,7 @@ class InstrumentVariablesUtils(object):
         if len(applicable_variables) != 0:
             variable_run_number = applicable_variables.first().start_run
             # Select all variables with that run number.
-            vars = InstrumentVariable.objects.filter(instrument=instrument, start_run=variable_run_number)
+            vars = list(InstrumentVariable.objects.filter(instrument=instrument, start_run=variable_run_number))
             self._update_variables(vars)
             return [VariableUtils().copy_variable(var) for var in vars]
         else:
@@ -334,19 +340,49 @@ class InstrumentVariablesUtils(object):
         
         
     def _update_variables(self, variables):
-        """ Updates all variables with tracks_script to their value in the script. This assumes that the variables all belong to the same instrument. """
+        """ 
+        Updates all variables with tracks_script to their value in the script, and append any new ones. 
+        This assumes that the variables all belong to the same instrument, and that the list supplied is complete.
+        If no variables have tracks_script set, we won't do anything at all.
+        variables should be a list; it needs to be mutable so that this function can add/remove variables.
+        """
+        if not any([var.tracks_script for var in variables]):
+            return       
+        
+        # New variable set from the script
         defaults = self.get_default_variables(variables[0].instrument.name) if variables else []
         
+        # Update the existing variables
         def updateVariable(oldVar):
+            oldVar.keep = True
             matchingVars = filter(lambda var: var.name == oldVar.name, defaults) # Find the new variable from the script.
             if matchingVars and oldVar.tracks_script: # Check whether we should and can update the old one.
                 newVar = matchingVars[0]
                 map(lambda name: setattr(oldVar, name, getattr(newVar, name)),
                     ["value", "type", "is_advanced", "help_text"]) # Copy the new one's important attributes onto the old variable.
                 oldVar.save()
-
+            elif not matchingVars:
+                oldVar.delete() # Or remove the variable if it doesn't exist any more.
+                oldVar.keep = False
         map(updateVariable, variables)
-
+        variables[:] = [var for var in variables if var.keep]
+        
+        # Add any new ones
+        current_names = [var.name for var in variables]
+        new_vars = [var for var in defaults if var.name not in current_names]
+        def copyMetadata(newVar):
+            sourceVar = variables[0]
+            if isinstance(sourceVar, InstrumentVariable):
+                # Copy the source variable's metadata to the new one.
+                map(lambda name: setattr(newVar, name, getattr(sourceVar, name)), ["instrument", "experiment_reference", "start_run"])
+            elif isinstance(sourceVar, RunVariable):
+                # Create a run variable.
+                VariableUtils().derive_run_variable(newVar, sourceVar.reduction_run)
+            else: return
+            newVar.save()
+        map(copyMetadata, new_vars)
+        variables += list(new_vars)
+        
 
     def _read_script(self, script_text, script_path):
         """ Takes a python script as a text string, and returns it loaded as a module. Failure will return None, and notify. """
