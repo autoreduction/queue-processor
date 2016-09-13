@@ -17,7 +17,8 @@ It also processes cancellation messages, in case a run that's scheduled should b
 ## [PostProcessAdmin.py](https://github.com/mantidproject/autoreduce/blob/master/ISISPostProcessRPM/rpmbuild/autoreduce-mq/usr/bin/PostProcessAdmin.py)
 PostProcessAdmin.py processes the reduction runs. The main method `reduce()` of PostProcessAdmin
 gets called if initial inspections of the message passes. `reduce()` starts by sending a message to the
-reduction_started queue to tell that reduction has started. It then sets up the various output directories, for temporary output, logging, and the eventual final output, and ensures that it has the correct access to them. 
+reduction_started queue to tell that reduction has started. It then sets up the various output directories, for temporary output, logging, and the eventual final output, and ensures that it has the correct access to them.
+It also initialises string buffers to write to for logging, both of PostProcessAdmin itself and of the reduction script, which it will eventually report when it sends messages back.
 It then sets up the specific reduction script, reduce.py, for execution, where the script is provided in the data message key 'reduction_script'. 
 
 reduce.py may import reduce_vars.py as web_var. reduce_vars.py contains the default values of the standard and advanced
