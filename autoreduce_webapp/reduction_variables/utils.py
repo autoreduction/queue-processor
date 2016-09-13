@@ -1,4 +1,4 @@
-import logging, os, sys, re, json, cgi, imp, copy
+import logging, os, sys, re, json, cgi, imp, chardet, io
 sys.path.append(os.path.join("../", os.path.dirname(os.path.dirname(__file__))))
 os.environ["DJANGO_SETTINGS_MODULE"] = "autoreduce_webapp.settings"
 from autoreduce_webapp.settings import ACTIVEMQ, REDUCTION_DIRECTORY, FACILITY
@@ -367,9 +367,18 @@ class InstrumentVariablesUtils(object):
 
         
     def _load_script(self, path):
-        """ Load the relevant reduction script and return back the text of the script. If the script cannot be loaded, None is returned. """
+        """
+        First detect the file encoding using chardet.
+        Then load the relevant reduction script and return back the text of the script.
+        If the script cannot be loaded, None is returned.
+        """
         try:
-            f = open(path, 'r')
+            # Read raw bytes and determine encoding
+            f_raw = io.open(path, 'rb')
+            encoding = chardet.detect(f_raw.read(32))["encoding"]
+            
+            # Read the file in decoded; io is used for the encoding kwarg
+            f = io.open(path, 'r', encoding=encoding)
             script_text = f.read()
             return script_text
         except Exception as e:
