@@ -245,7 +245,6 @@ class PostProcessAdmin:
                     if self.data['run_number'] not in skip_numbers:
                         reduce_script = self.replace_variables(reduce_script)
                         out_directories = reduce_script.main(input_file=str(self.data_file), output_dir=str(reduce_result_dir))
-                        self.data['reduction_log'] = self.reduction_log_stream.getvalue()
                     else:
                         self.data['message'] = "Run has been skipped in script"
             except Exception as e:
@@ -285,6 +284,7 @@ class PostProcessAdmin:
         except Exception as e:
             self.data["message"] = "REDUCTION Error: %s " % e
 
+        self.data['reduction_log'] = self.reduction_log_stream.getvalue()
         self.data["admin_log"] = self.admin_log_stream.getvalue()
             
         if self.data["message"] != "":
