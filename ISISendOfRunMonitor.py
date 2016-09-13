@@ -127,10 +127,11 @@ def main():
         event_handler = InstrumentMonitor(inst['name'], inst['use_nexus'], activemq_client, message_lock)
         # This will watch the folder the program is in, it will pick up all changes made in the folder.
         path = event_handler.get_watched_folder()
-        # Start watching files.
-        observer.start()
         # Tell the observer what to watch and give it the class that will handle the events.
         observer.schedule(event_handler, path)
+        
+    # Start watching files.
+    observer.start()
 
 def stop():
     # This function disables the observer, it stop watching the files.
