@@ -129,8 +129,7 @@ class ReductionRunUtils(object):
                     var.save()
             else:
                 # provide variables if they aren't already
-                InstrumentVariablesUtils.create_variables_for_run(new_job)
-            
+                InstrumentVariablesUtils().create_variables_for_run(new_job)
                     
             return new_job
             
