@@ -112,7 +112,7 @@ def check_permissions(fn):
                 experiment_reference, instrument_name = run.experiment.reference_number, run.instrument.name
             else:
                 # Get the experiment reference if it's supplied.
-                experiment_reference = kwargs.get("reference_number")
+                if "reference_number" in kwargs: experiment_reference = int(kwargs["reference_number"])
                 # Look for an instrument name under 'instrument_name', or, failing that, 'instrument'.
                 instrument_name = kwargs.get("instrument_name", kwargs.get("instrument"))
             

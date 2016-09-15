@@ -86,7 +86,12 @@ class ICATCache(object):
         return ret_obj
         
     def get_valid_experiments_for_instruments(self, user_number, instruments):
-        return {instrument: self.get_valid_experiments_for_instrument(instrument) for instrument in instruments}
+        experiment_dict = {}
+        user_experiments = set(self.get_associated_experiments(user_number))
+        for instrument_name in instruments:
+            instrument_experiments = self.get_valid_experiments_for_instrument(instrument_name)
+            experiment_dict[instrument_name] = list(user_experiments.union(instrument_experiments))
+        return experiment_dict
         
     def get_experiment_details(self, experiment_number):
         experiment = self.check_cache(ExperimentCache, experiment_number)

@@ -188,16 +188,9 @@ def run_list(request):
             'is_paused' : instrument.is_paused
         }
         
-        if instrument_name not in experiments:
-            experiments[instrument_name] = []
-            
-        instrument_experiments = experiments[instrument_name] 
-        reference_numbers = []
-
-        for experiment in instrument_experiments:
-            reference_numbers.append(experiment)
-
-        matching_experiments = Experiment.objects.filter(reference_number__in=reference_numbers)
+        experiment_references = experiments[instrument_name] if instrument_name in experiments else []
+        matching_experiments = Experiment.objects.filter(reference_number__in=experiment_references)
+        
         for experiment in matching_experiments:
             runs = ReductionRun.objects.filter(experiment=experiment, instrument=instrument).order_by('-created')
             total_runs += runs.count()
