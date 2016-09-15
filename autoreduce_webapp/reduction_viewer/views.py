@@ -142,12 +142,12 @@ def fail_queue(request):
 def run_list(request):
     context_dictionary = {}
     instruments = []
+    experiments = {}
     # Superuser sees everything
     if request.user.is_superuser or not USER_ACCESS_CHECKS:
         instrument_names = Instrument.objects.values_list('name', flat=True)
         is_instrument_scientist = True
         if instrument_names:
-            experiments = {}
             for instrument_name in instrument_names:
                 experiments[instrument_name] = []
                 instrument = Instrument.objects.get(name=instrument_name)
@@ -158,7 +158,7 @@ def run_list(request):
         with ICATCache(AUTH='uows',SESSION={'sessionid':request.session.get('sessionid')}) as icat:
             instrument_names = icat.get_valid_instruments(int(request.user.username))
             if instrument_names:
-                experiments = request.session.get('experiments_to_show', icat.get_valid_experiments_for_instruments(int(request.user.username), instrument_names))
+                experiments = icat.get_valid_experiments_for_instruments(int(request.user.username), instrument_names)
             owned_instruments = icat.get_owned_instruments(int(request.user.username))
             is_instrument_scientist = (len(owned_instruments) > 0)
                 
@@ -195,9 +195,7 @@ def run_list(request):
         reference_numbers = []
 
         for experiment in instrument_experiments:
-            # Filter out calibration runs
-            if experiment.isdigit():
-                reference_numbers.append(experiment)
+            reference_numbers.append(experiment)
 
         matching_experiments = Experiment.objects.filter(reference_number__in=reference_numbers)
         for experiment in matching_experiments:
