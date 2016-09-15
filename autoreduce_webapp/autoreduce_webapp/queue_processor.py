@@ -51,8 +51,8 @@ class Listener(object):
                 self.reduction_error()
             else:
                 logger.warning("Recieved a message on an unknown topic '%s'" % destination)
-        except BaseException as e:
-            logger.error("UNCAUGHT ERROR: %s" % e)
+        except Exception as e:
+            logger.error("UNCAUGHT ERROR: %s - %s" % (type(e).__name__, str(e)))
 
             
     def data_ready(self):
