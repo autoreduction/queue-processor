@@ -142,6 +142,7 @@ def fail_queue(request):
 def run_list(request):
     context_dictionary = {}
     instruments = []
+    owned_instruments = []
     experiments = {}
     # Superuser sees everything
     if request.user.is_superuser or not USER_ACCESS_CHECKS:
