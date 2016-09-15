@@ -106,6 +106,13 @@ func_list = [ ("get_owned_instruments", UserCache, "owned_instruments", str)
 
 # From the list we make a wrapping function for each ICATCommunication function. We create a make_ function to enclose the scope of the member function so that obj_type, etc., are local to the function and not globals; i.e., these are closures.
 def make_member_func(obj_type, cache_attr, list_type):
+    def isvalid(obj_str):
+        try:
+            obj_type(obj_str)
+            return bool(obj_str)
+        except:
+            return False
+
     def member_func(self, obj_id):
         # Remove expired objects, then check if the relevant object is in the cache, putting it in if it isn't.
         new_obj = self.check_cache(obj_type, obj_id)
@@ -113,7 +120,7 @@ def make_member_func(obj_type, cache_attr, list_type):
         # Get the attribute we want, parsing it as a list if we should.
         attr = getattr(new_obj, cache_attr)
         if list_type is not None:
-            attr = map(list_type, filter(bool, attr.split(",")))
+            attr = map(list_type, filter(isvalid, attr.split(",")))
         
         return attr
     return member_func
