@@ -90,7 +90,7 @@ class ICATCache(object):
         user_experiments = set(self.get_associated_experiments(user_number))
         for instrument_name in instruments:
             instrument_experiments = self.get_valid_experiments_for_instrument(instrument_name)
-            experiment_dict[instrument_name] = list(user_experiments.union(instrument_experiments))
+            experiment_dict[instrument_name] = list(user_experiments.intersection(instrument_experiments))
         return experiment_dict
         
     def get_experiment_details(self, experiment_number):

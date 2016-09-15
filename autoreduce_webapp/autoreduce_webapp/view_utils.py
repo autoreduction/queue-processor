@@ -105,24 +105,36 @@ def check_permissions(fn):
     def request_processor(request, *args, **kwargs):
         if USER_ACCESS_CHECKS and not request.user.is_superuser:
             # Get the things to check by from the arguments supplied.
-            experiment_reference, instrument_name = None, None
+            experiment_reference, owned_instrument_name, viewed_instrument_name = None, None, None
             if "run_number" in kwargs:
                 # Get the experiment and instrument from the given run number.
-                run = ReductionRun.objects.filter(run_number=kwargs["run_number"]).first()
-                experiment_reference, instrument_name = run.experiment.reference_number, run.instrument.name
+                run = ReductionRun.objects.filter(run_number=int(kwargs["run_number"])).first()
+                experiment_reference, viewed_instrument_name = run.experiment.reference_number, run.instrument.name
             else:
                 # Get the experiment reference if it's supplied.
                 if "reference_number" in kwargs: experiment_reference = int(kwargs["reference_number"])
                 # Look for an instrument name under 'instrument_name', or, failing that, 'instrument'.
-                instrument_name = kwargs.get("instrument_name", kwargs.get("instrument"))
+                owned_instrument_name = kwargs.get("instrument_name", kwargs.get("instrument"))
+                if owned_instrument_name:
+                    experiment_reference = None # Don't also check experiment if we're checking whether the instrument is owned ---
             
             with ICATCache(AUTH='uows', SESSION={'sessionid':request.session['sessionid']}) as icat:
+                if owned_instrument_name or viewed_instrument_name:
+                    owned_instrument_list, valid_instrument_list = icat.get_owned_instruments(int(request.user.username)), icat.get_valid_instruments(int(request.user.username))
+                    
+                    # Check access to an owned instrument
+                    if owned_instrument_name is not None:
+                        if owned_instrument_name not in owned_instrument_list:
+                            raise PermissionDenied() # No access allowed
+                        else:
+                            experiment_reference = None # User owns instrument, so we don't need to check for access to the experiment (if there is one)
+                    
+                    # Check access to a valid instrument (able to view some runs, etc.)
+                    if viewed_instrument_name is not None and viewed_instrument_name not in owned_instrument_list + valid_instrument_list:
+                        raise PermissionDenied() # No access allowed
+            
                 # Check for access to the experiment.
                 if experiment_reference is not None and experiment_reference not in icat.get_associated_experiments(int(request.user.username)):
-                    raise PermissionDenied()
-                
-                # Check for access to the instrument.
-                if instrument_name is not None and instrument_name not in icat.get_owned_instruments(int(request.user.username)):
                     raise PermissionDenied()
         
         # If we're here, the access checks have passed.
