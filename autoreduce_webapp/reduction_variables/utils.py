@@ -345,7 +345,7 @@ class InstrumentVariablesUtils(object):
         variables should be a list; it needs to be mutable so that this function can add/remove variables.
         If the 'save' option is true, it will save/delete the variables from the database as required.
         """
-        if not any([var.tracks_script for var in variables]):
+        if not any([hasattr(var, "tracks_script") and var.tracks_script for var in variables]):
             return       
         
         # New variable set from the script
