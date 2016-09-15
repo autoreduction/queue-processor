@@ -32,10 +32,10 @@ def index(request):
         else:
             return_url = default_next
     elif request.GET.get('sessionid'):
+        request.session['sessionid'] = request.GET.get('sessionid')
         user = authenticate(token=request.GET.get('sessionid'))
         if user is not None:
             if user.is_active:
-                request.session['sessionid'] = request.GET.get('sessionid')
                 login(request, user)
                 if request.GET.get('next'):
                     return_url = use_query_next
@@ -142,11 +142,10 @@ def fail_queue(request):
 def run_list(request):
     context_dictionary = {}
     instruments = []
-    # Owned instruments is populated on login
-    owned_instruments = request.session.get('owned_instruments', default=[])
     # Superuser sees everything
     if request.user.is_superuser or not USER_ACCESS_CHECKS:
         instrument_names = Instrument.objects.values_list('name', flat=True)
+        is_instrument_scientist = True
         if instrument_names:
             experiments = {}
             for instrument_name in instrument_names:
@@ -160,6 +159,9 @@ def run_list(request):
             instrument_names = icat.get_valid_instruments(int(request.user.username))
             if instrument_names:
                 experiments = request.session.get('experiments_to_show', icat.get_valid_experiments_for_instruments(int(request.user.username), instrument_names))
+            owned_instruments = icat.get_owned_instruments(int(request.user.username))
+            is_instrument_scientist = (len(owned_instruments) > 0)
+                
 
     # get database status labels up front to reduce queries to database
     status_error = StatusUtils().get_error()
@@ -181,7 +183,7 @@ def run_list(request):
         instrument_obj = {
             'name' : instrument_name,
             'experiments' : [],
-            'is_instrument_scientist' : True,#(instrument_name in owned_instruments),
+            'is_instrument_scientist' : is_instrument_scientist,
             'is_active' : instrument.is_active,
             'is_paused' : instrument.is_paused
         }
@@ -234,7 +236,7 @@ def run_list(request):
 
     context_dictionary['instrument_list'] = instruments
     context_dictionary['preload_runs'] = (total_runs < PRELOAD_RUNS_UNDER)
-    if owned_instruments:
+    if is_instrument_scientist:
         context_dictionary['default_tab'] = 'run_number'
     else:
         context_dictionary['default_tab'] = 'experiment'
