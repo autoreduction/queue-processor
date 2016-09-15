@@ -152,7 +152,8 @@ class InstrumentVariablesUtils(object):
         previousRuns = ReductionRun.objects.filter(run_number = reduction_run.run_number, run_version__lt = reduction_run.run_version).order_by('-run_version')
         if previousRuns:
             lastRun = previousRuns.first()
-            variables = RunVariable.objects.filter(reduction_run = lastRun) # These will be treated as InstrumentVariable for later copying, but that doesn't matter.
+            variables = RunVariable.objects.filter(reduction_run = lastRun) # These will be treated as InstrumentVariable for later copying, but that doesn't matter; we just need to not save them, as below.
+            self._update_variables(variables, save=False)
         
         if not variables:
             # No previous run versions. Find the instrument variables we want to use.
@@ -166,9 +167,6 @@ class InstrumentVariablesUtils(object):
             # No variables are set, so we'll use the defaults, and set them them while we're at it.
             variables = self.get_default_variables(instrument_name)
             self.set_variables_for_runs(instrument_name, variables, reduction_run.run_number)
-
-        # Make sure the variables are up to date if they should be tracking the script.
-        self._update_variables(variables)
 
         # Create run variables from these instrument variables, and return them.
         return VariableUtils().save_run_variables(variables, reduction_run)
@@ -339,12 +337,13 @@ class InstrumentVariablesUtils(object):
         return (script_text, script_vars_text)
         
         
-    def _update_variables(self, variables):
+    def _update_variables(self, variables, save=True):
         """ 
         Updates all variables with tracks_script to their value in the script, and append any new ones. 
         This assumes that the variables all belong to the same instrument, and that the list supplied is complete.
         If no variables have tracks_script set, we won't do anything at all.
         variables should be a list; it needs to be mutable so that this function can add/remove variables.
+        If the 'save' option is true, it will save/delete the variables from the database as required.
         """
         if not any([var.tracks_script for var in variables]):
             return       
@@ -360,9 +359,10 @@ class InstrumentVariablesUtils(object):
                 newVar = matchingVars[0]
                 map(lambda name: setattr(oldVar, name, getattr(newVar, name)),
                     ["value", "type", "is_advanced", "help_text"]) # Copy the new one's important attributes onto the old variable.
-                oldVar.save()
+                if save: oldVar.save()
             elif not matchingVars:
-                oldVar.delete() # Or remove the variable if it doesn't exist any more.
+                # Or remove the variable if it doesn't exist any more.
+                if save: oldVar.delete()
                 oldVar.keep = False
         map(updateVariable, variables)
         variables[:] = [var for var in variables if var.keep]
