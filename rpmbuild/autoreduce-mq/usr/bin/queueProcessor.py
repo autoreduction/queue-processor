@@ -38,6 +38,7 @@ class Listener(object):
         self.updateChildProcessList()
         if not self.shouldProceed(data_dict): # wait while the run shouldn't proceed
             reactor.callLater(10, self.holdMessage, destination, data)
+            return
             
         if self.shouldCancel(data_dict):
             self.cancelRun(data_dict)
