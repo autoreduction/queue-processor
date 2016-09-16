@@ -239,8 +239,8 @@ class InstrumentVariablesUtils(object):
         final_variables = []
         if end_run:
             applicable_variables = applicable_variables.filter(start_run__lte = end_run)
-            after_variables = InstrumentVariable.objects.filter(start_run = end_run+1).order_by('start_run')
-            previous_variables = InstrumentVariable.objects.filter(start_run__lt = start_run)
+            after_variables = InstrumentVariable.objects.filter(instrument = instrument, start_run = end_run+1).order_by('start_run')
+            previous_variables = InstrumentVariable.objects.filter(instrument = instrument, start_run__lt = start_run)
             
             if applicable_variables and not after_variables:
                 # The last set of applicable variables extends outside our range.
