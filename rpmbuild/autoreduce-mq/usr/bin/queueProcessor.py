@@ -29,14 +29,15 @@ class Listener(object):
             self.addCancel(data_dict)
             return    
                 
-        reactor.callInThread(self.holdMessage, destination, data) # no loop here, to prevent blocking the consumer
+        self.holdMessage(destination, data)
         
     def holdMessage(self, destination, data):
         logger.debug("holding thread")
         data_dict = json.loads(data)
-        while not self.shouldProceed(data_dict): # wait while the run shouldn't proceed
-            reactor.callFromThread(self.updateChildProcessList) # update in the reactor thread, for thread safety
-            time.sleep(10.0)
+        
+        self.updateChildProcessList()
+        if not self.shouldProceed(data_dict): # wait while the run shouldn't proceed
+            reactor.callLater(10, holdMessage, self, destination, data)
             
         if self.shouldCancel(data_dict):
             self.cancelRun(data_dict)
@@ -46,7 +47,7 @@ class Listener(object):
         print_dict.pop("reduction_script")
         logger.debug("Calling: %s %s %s %s" % ("python", "/usr/bin/PostProcessAdmin.py", destination, print_dict))
         proc = subprocess.Popen(["python", "/usr/bin/PostProcessAdmin.py", destination, data])
-        reactor.callFromThread(self.addProc, proc, data_dict)
+        self.addProc(proc, data_dict)
 
         
     def updateChildProcessList(self):
