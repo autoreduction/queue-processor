@@ -12,7 +12,7 @@ def has_valid_login(request):
     """
     Check that the user is correctly logged in and their session is still considered valid
     """
-    if request.user.is_authenticated() and request.session['sessionid'] and UOWSClient().check_session(request.session['sessionid']):
+    if request.user.is_authenticated() and 'sessionid' in request.session and UOWSClient().check_session(request.session['sessionid']):
         return True
     return False
 
