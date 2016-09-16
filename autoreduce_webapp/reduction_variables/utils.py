@@ -251,7 +251,7 @@ class InstrumentVariablesUtils(object):
             elif not applicable_variables and not after_variables and previous_variables:
                 # There is a previous set that applies but doesn't start or end in the range.
                 final_start = previous_variables.order_by('-start_run').first().start_run # Find the last set.
-                final_variables = previous_variables.filter(start_run = final_start) # Set them to apply after our variables.
+                final_variables = list(previous_variables.filter(start_run = final_start)) # Set them to apply after our variables.
                 [VariableUtils().copy_variable(var).save() for var in final_variables] # Also copy them to apply before our variables.
                 
             elif not applicable_variables and not after_variables and not previous_variables:
