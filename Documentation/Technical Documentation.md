@@ -104,8 +104,8 @@ When it retrieves a message from one of these queues it inspects the message (a 
 This actions this script takes are:
 * `DataReady` - Create a new ReductionRun record representing the data that has come off the instrument. This then sends a message to the `/queue/ReductionPending` queue for it to be picked up by the autoreduction service.
 * `ReductionStarted` - This simply updated the status of the saved ReductionRun to note that the reduction job is now being performed by the autoreduction service.
-* `ReductionComplete` - This updates the status and performs post-processing. ICAT is updated with the reduction details. The reduced data is checked for .png files and these converted to a [base64](http://css-tricks.com/data-uris/) encoded string and saved in the database to be shown via the web application.
-* `ReductionError` - This logs the error that was retrieved and updated the status of the ReductionRun. If the run should be retried, it will schedule a retry.
+* `ReductionComplete` - This updates the status, logs and performs post-processing. ICAT is updated with the reduction details. The reduced data is checked for .png files and these converted to a [base64](http://css-tricks.com/data-uris/) encoded string and saved in the database to be shown via the web application.
+* `ReductionError` - This logs the error that was retrieved and updated the status and logs of the ReductionRun. If the run should be retried, it will schedule a retry.
 
 When using the `Client` there are some optional arguments that could cause problems is not correctly set.
 `topics` - a list stating what queues/topics to subscribe to (Default: None)
@@ -447,33 +447,10 @@ The first is by run number. Any instrument variables with a start run larger tha
 
 The second is by experiment reference number. This checks with ICAT for any experiments on that instrument where the end date is in the future. These are then used to return all instrument variables with a matching reference number. It is possible that this may not return all that is expected as the experiments may not have been loaded into ICAT yet.
 
-### Script Preview Regex
+### Script Preview
 
-```python
-standard_pattern = "(?P<before>(\s)standard_vars\s*=\s*\{(([\s\S])+)['|\"]%s['|\"]\s*:\s*)(?P<value>((?!,\n)[\S\s])+)"
-advanced_pattern = "(?P<before>(\s)advanced_vars\s*=\s*\{(([\s\S])+)['|\"]%s['|\"]\s*:\s*)(?P<value>((?!,\n)[\S\s])+)"
-```
+The reduction script and variables are combined in a preview to make a single, runnable script, in `preview_script()` in `reduction_variables/utils.py`. To do this, any imports of `reduce_vars` is removed, and a class declaration with the imported name substituted. This class declaration contains declarations of `standard_vars` and `advanced_vars`, generated from the relevant reduction variables. The result is reasonably robust to arbitrary changes in the script, since the semantics of import statements are fairly limited, and the variable definitions are fabricated entirely, rather than run as substitutions on existing code.
 
-This regular expression is used to match and replace variables within the `standard_vars` and `advanced_vars` dictionaries. Breaking it down:
-
-`(?P<before>...)` - This is a named capture group used by the regex replace.
-`\s` - This matches any whitespace character. `\s*` optional matches multiple whitespace characters (0-many).
-`\{` and `\}` matches the characters `{` and `}` literally.
-`['|\"]` matches either `'` or `"`.
-`%s` is replaced by the varaible name to be matched against.
-`(?!,\n)` makes sure it DOES NOT match `,` or a newline.
-`[\S\s]` matches any whitespace or non-whitespace character.
-
-Example usage:
-
-```python
-pattern = standard_pattern % name   # Replace '%s' in the regex with the value in 'name'
-value = "test_var"                  #
-value = '\g<before>%s' % value      # Make sure everything before the replaced value is kept. '\g<Before>' inserts everything that matches the '(?P<before>)' capture group
-re.sub(pattern, value, script_file) # Replace the matched pattern in 'script_file' with value
-```
-
-For a live example see: http://regex101.com/r/oJ7iY5/2
 
 ### Base64 Images
 

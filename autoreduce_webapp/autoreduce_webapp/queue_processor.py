@@ -181,8 +181,8 @@ class Listener(object):
         
         reduction_run.status = StatusUtils().get_error()
         reduction_run.finished = timezone.now().replace(microsecond=0)
-        if 'message' in self._data_dict:
-            reduction_run.message = self._data_dict['message']
+        for name in ['message', 'reduction_log', 'admin_log']:
+            setattr(reduction_run, name, self._data_dict.get(name, "")) # reduction_run.message = self._data_dict['message']; etc.
         reduction_run.save()
         
         if 'retry_in' in self._data_dict:
