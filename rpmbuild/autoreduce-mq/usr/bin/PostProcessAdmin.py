@@ -2,41 +2,37 @@
 """
 Post Process Administrator. It kicks off cataloging and reduction jobs.
 """
-import json, socket, os, sys, time, shutil, imp, stomp, re, errno, traceback
+import json, socket, os, sys, time, shutil, imp, stomp, re, errno, traceback, logging, cStringIO
 from contextlib import contextmanager
 from autoreduction_logging_setup import logger
 
 @contextmanager
-def channels_redirected(out_file, err_file):
+def channels_redirected(out_file, err_file, out_stream):
     """
     This context manager copies the file descriptor(fd) of stdout and stderr to the files given in out_file and err_file
-    respectively. The fd is at the C level and so picks up data sent via Mantid.
+    respectively. The fd is at the C level and so picks up data sent via Mantid. Both output streams are additionally also 
+    sent to out_stream.
     """
-    out_fd = sys.stdout.fileno()
-    err_fd = sys.stderr.fileno()
+    old_stdout, old_stderr = sys.stdout, sys.stderr
+    
+    class _multiple_channels(object): # Behaves like a stream object, but outputs to multiple streams.
+        def __init__(self, *streams):
+            self.streams = streams
+        def write(self, message):
+            [stream.write(message) for stream in self.streams]
+        def flush(self):
+            [stream.flush() for stream in self.streams]
 
     def _redirect_channels(out_file, err_file):
-        # Close and flush
-        sys.stdout.close()
-        sys.stderr.close()
+        sys.stdout.flush(), sys.stderr.flush()
+        sys.stdout, sys.stderr = out_file, err_file
 
-        # Copy fds
-        os.dup2(out_file.fileno(), out_fd)
-        os.dup2(err_file.fileno(), err_fd)
-
-        # Python writes to fds
-        sys.stdout = os.fdopen(out_fd, 'w')
-        sys.stderr = os.fdopen(err_fd, 'w')
-
-    with os.fdopen(os.dup(out_fd), 'w') as old_stdout:
-        with os.fdopen(os.dup(err_fd), 'w') as old_stderr:
-            with open(out_file, 'w') as out:
-                with open(err_file, 'w') as err:
-                    _redirect_channels(out, err)
-                    try:
-                        yield  # allow code to be run with the redirected channels
-                    finally:
-                        _redirect_channels(old_stdout, old_stderr)  # restore stderr.
+    with open(out_file, 'w') as out, open(err_file, 'w') as err:
+        _redirect_channels(_multiple_channels(out, out_stream), _multiple_channels(err, out_stream))
+        try:
+            yield  # allow code to be run with the redirected channels
+        finally:
+            _redirect_channels(old_stdout, old_stderr)  # restore stderr.
 
 
 def linux_to_windows_path(path):
@@ -71,6 +67,9 @@ class PostProcessAdmin:
         self.data = data
         self.conf = conf
         self.client = connection
+        
+        self.reduction_log_stream = cStringIO.StringIO()
+        self.admin_log_stream = cStringIO.StringIO()
 
         try:
             if data.has_key('data'):
@@ -232,7 +231,7 @@ class PostProcessAdmin:
             logger.info("Reduction subprocess started.")
 
             try:
-                with channels_redirected(script_out, mantid_log):
+                with channels_redirected(script_out, mantid_log, self.reduction_log_stream):
                     # Load reduction script as a module. This works as long as reduce.py makes no assumption that it is in the same directory as reduce_vars, 
                     # i.e., either it does not import it at all, or adds its location to os.path explicitly.
                     reduce_script = imp.new_module('reducescript')
@@ -285,6 +284,8 @@ class PostProcessAdmin:
         except Exception as e:
             self.data["message"] = "REDUCTION Error: %s " % e
 
+        self.data['reduction_log'] = self.reduction_log_stream.getvalue()
+        self.data["admin_log"] = self.admin_log_stream.getvalue()
             
         if self.data["message"] != "":
             # This means an error has been produced somewhere
@@ -401,21 +402,30 @@ if __name__ == "__main__":
         
         try:  
             pp = PostProcessAdmin(data, conf, connection)
+            log_stream_handler = logging.StreamHandler(pp.admin_log_stream)
+            logger.addHandler(log_stream_handler)
             if destination == '/queue/ReductionPending':
                 pp.reduce()
 
         except ValueError as e:
             data["error"] = str(e)
             logger.info("JSON data error: " + prettify(data))
-
-            connection.send(conf['postprocess_error'], json.dumps(data))
-            print("Called " + conf['postprocess_error'] + "----" + prettify(data))
             raise
         
         except Exception as e:
             logger.info("PostProcessAdmin error: %s" % e)
             raise
+            
+        finally:
+            try:
+                logger.removeHandler(log_stream_handler)
+            except:
+                pass
         
     except Exception as er:
         logger.info("Something went wrong: " + str(er))
-        sys.exit()
+        try:
+            connection.send(conf['postprocess_error'], json.dumps(data))
+            print("Called " + conf['postprocess_error'] + "----" + prettify(data))
+        finally:
+            sys.exit()
