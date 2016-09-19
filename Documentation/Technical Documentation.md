@@ -104,8 +104,8 @@ When it retrieves a message from one of these queues it inspects the message (a 
 This actions this script takes are:
 * `DataReady` - Create a new ReductionRun record representing the data that has come off the instrument. This then sends a message to the `/queue/ReductionPending` queue for it to be picked up by the autoreduction service.
 * `ReductionStarted` - This simply updated the status of the saved ReductionRun to note that the reduction job is now being performed by the autoreduction service.
-* `ReductionComplete` - This updates the status and performs post-processing. ICAT is updated with the reduction details. The reduced data is checked for .png files and these converted to a [base64](http://css-tricks.com/data-uris/) encoded string and saved in the database to be shown via the web application.
-* `ReductionError` - This logs the error that was retrieved and updated the status of the ReductionRun. If the run should be retried, it will schedule a retry.
+* `ReductionComplete` - This updates the status, logs and performs post-processing. ICAT is updated with the reduction details. The reduced data is checked for .png files and these converted to a [base64](http://css-tricks.com/data-uris/) encoded string and saved in the database to be shown via the web application.
+* `ReductionError` - This logs the error that was retrieved and updated the status and logs of the ReductionRun. If the run should be retried, it will schedule a retry.
 
 When using the `Client` there are some optional arguments that could cause problems is not correctly set.
 `topics` - a list stating what queues/topics to subscribe to (Default: None)

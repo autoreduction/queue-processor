@@ -135,8 +135,8 @@ class Listener(object):
                 if reduction_run.status.value == "Processing":
                     reduction_run.status = StatusUtils().get_completed()
                     reduction_run.finished = timezone.now().replace(microsecond=0)
-                    if 'message' in self._data_dict:
-                        reduction_run.message = self._data_dict['message']
+                    for name in ['message', 'reduction_log', 'admin_log']:
+                        setattr(reduction_run, name, self._data_dict.get(name, "")) # reduction_run.message = self._data_dict['message']; etc.
                     if 'reduction_data' in self._data_dict:
                         for location in self._data_dict['reduction_data']:
                             reduction_location = ReductionLocation(file_path=location, reduction_run=reduction_run)
@@ -153,7 +153,6 @@ class Listener(object):
                                         reduction_run.graph = [encoded_string]
                                     else:
                                         reduction_run.graph.append(encoded_string)
-
                     reduction_run.save()
                     
                     # Trigger any post-processing, such as saving data to ICAT
@@ -182,8 +181,8 @@ class Listener(object):
         
         reduction_run.status = StatusUtils().get_error()
         reduction_run.finished = timezone.now().replace(microsecond=0)
-        if 'message' in self._data_dict:
-            reduction_run.message = self._data_dict['message']
+        for name in ['message', 'reduction_log', 'admin_log']:
+            setattr(reduction_run, name, self._data_dict.get(name, "")) # reduction_run.message = self._data_dict['message']; etc.
         reduction_run.save()
         
         if 'retry_in' in self._data_dict:
