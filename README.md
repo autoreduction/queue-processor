@@ -33,7 +33,9 @@ Recommended Server OS: Red Hat Enterprise Linux (RHEL) 6 / 7
 
 ### Install Django
 1. `pip install django==1.7.1`
-2. `pip install pytz`
+
+### Install other Python dependencies
+1. `pip install pytz chardet`
 
 ### Installing application
 
@@ -228,7 +230,7 @@ Note: Git Bash is the recommended command line (after step 4). Any command line 
 8. Download and install http://downloads.sourceforge.net/project/pywin32/pywin32/Build%20219/pywin32-219.win-amd64-py2.7.exe?r=http%3A%2F%2Fsourceforge.net%2Fprojects%2Fpywin32%2Ffiles%2Fpywin32%2FBuild%2520219%2F&ts=1416304230&use_mirror=garr
 9. Download https://raw.github.com/pypa/pip/master/contrib/get-pip.py and run `python get-pip.py`
 10. Add `c:\python27\scripts` to the path environmental variable.
-11. `pip install django`
+11. `pip install django chardet`
 
 ### Configuring MySQL
 
