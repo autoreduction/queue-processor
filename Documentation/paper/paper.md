@@ -39,6 +39,8 @@ The architecture is based on a queue node, which co-ordinates communication betw
 
 When the listener detects that a new job should be created, it sends a request to do so to _Data Ready_. The state database consumes the request and creates the corresponding job in the database, before sending a request to process it to _Reduction Pending_. A reduction worker takes this message and runs the appropriate script, sending the result to either _Reduction Complete_ or _Reduction Error_, where it's consumed by the state database to update the status of the run.
 
+![How the autoreduction system fits in](system.svg)
+
 ## Message queue
 
 Apache ActiveMQ is used as the message queueing system, with message contents as JSON-formatted objects. The intention of the message is conveyed by which queue it's placed in, rather than a field in the message itself. Runs can be 'scheduled' simply by using ActiveMQ's scheduled delay feature, which allows a message to be delivered a given time after it's been pushed to the queue.
