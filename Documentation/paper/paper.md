@@ -1,3 +1,11 @@
+% Autoreduction - an automated data reduction system for beam instruments
+% J. R. Corderoy - ISIS Facility, Rutherford Appleton Laboratory - jrc91@cam.ac.uk
+% 23/09/2015
+
+## Abstract {.unnumbered}
+
+# Introduction
+
 # Background
 
 ## Usage
@@ -27,7 +35,7 @@ Additional constraints were to
 1. Limit access to the system to ensure that only staff and scientists can access runs and instruments.
 2. Utilise existing authentication systems to validate identities and permissions for (1).
 3. Allow scalability for processing large amounts of data in a timely manner.
-4. Integrate with ICAT – the scientific metadata catalogue in use at ISIS.
+4. Integrate with ICAT [-@https://doi.org/10.5286/SOFTWARE/ICAT] – the scientific metadata catalogue in use at ISIS .
 
 # System architecture
 
@@ -39,11 +47,11 @@ The architecture is based on a queue node, which co-ordinates communication betw
 
 When the listener detects that a new job should be created, it sends a request to do so to _Data Ready_. The state database consumes the request and creates the corresponding job in the database, before sending a request to process it to _Reduction Pending_. A reduction worker takes this message and runs the appropriate script, sending the result to either _Reduction Complete_ or _Reduction Error_, where it's consumed by the state database to update the status of the run.
 
-![How the autoreduction system fits in](system.svg)
+![How the autoreduction system fits into the ISIS workflow.](system.png)
 
 ## Message queue
 
-Apache ActiveMQ is used as the message queueing system, with message contents as JSON-formatted objects. The intention of the message is conveyed by which queue it's placed in, rather than a field in the message itself. Runs can be 'scheduled' simply by using ActiveMQ's scheduled delay feature, which allows a message to be delivered a given time after it's been pushed to the queue.
+Apache ActiveMQ [-@ActiveMQ] is used as the message queueing system, with message contents as JSON-formatted objects. The intention of the message is conveyed by which queue it's placed in, rather than a field in the message itself. Runs can be 'scheduled' simply by using ActiveMQ's scheduled delay feature, which allows a message to be delivered a given time after it's been pushed to the queue.
 
 Messages contain metadata for the run such as a (unique) run number and version, the experiment and instrument that the data is associated with, and any logs or errors resulting from reduction. They also carry the necessary information to carry out the data reduction - the Python script to run on the data, paths to the data, and variables to be used by the script.
 
@@ -83,11 +91,17 @@ The web app provides the user-facing interface for managing reduction. It was de
 
 Users log in via the ISIS User Office – using their federated credentials – and their level of access is then governed by ICAT's information on the experiments and instruments they should be able to see. A searchable index of runs is displayed on the front page, sorted by instrument, experiment and run number, showing their reduction status. Runs, experiments and instruments displayed here have links to their summary pages.
 
+![The web app index, showing recent runs.](index.png)
+
 Each run has its own summary page with detailed information; a user can see the status of the reduction, where the reduced data is, and the script and variables that were used to reduce it. From here the run can be re-run, with or without modifying the variables used. Any experimenter can access this page for their runs, and it's intended that external scientists running experiments be able to control their data reduction directly in this way.
+
+![A run's summary page, showing information, status and an interface to change variables for a re-run.](run.png)
 
 Experiments also have summary pages, showing all the runs that are associated with a given experiment along with their status and data locations. Metadata about the experiment is retrieved from ICAT and displayed here.
 
 Instrument scientists can access a summary page for their instruments, showing the current status of runs on an instrument, as well as current and upcoming run variables. From here instrument scientists can assign sets of variables by experiment and run number, which will then be used automatically as appropriate for new runs. Batch re-running of past jobs is also possible here. This is intended to be the main point of access for instrument scientists to control data reduction.
+
+![An instrument's summary page, showing status, controls and variable configurations.](instrument.png)
 
 Administrators can access everything above, and additionally have access to pages displaying all queued and failed jobs. These pages provide an overview of the status of the system at a glance, and have controls for batch operations on failed jobs such as to re-run them.
 
@@ -100,3 +114,7 @@ It is planned that the autoreduction system be developed to further meet the nee
 1. Expanding the system to accommodate greater volume of use – this might involve adding more reduction workers, for example.
 2. Integrating other methods of listening for new runs – the current method of watching a file archive is specific to ISIS.
 3. Improving portability and deployability of the current software; the state database/webapp in particular is currently unsupported for Linux, and the whole system is somewhat nontrivial to deploy even to a development environment.
+
+# Conclusion
+
+# References {.unnumbered}

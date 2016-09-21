@@ -1,54 +1,32 @@
 \documentclass[twocolumn]{article}
-\usepackage{lmodern}
-\usepackage{amssymb,amsmath}
-\usepackage{ifxetex,ifluatex}
-\usepackage{fixltx2e} % provides \textsubscript
-\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
-  \usepackage[T1]{fontenc}
-  \usepackage[utf8]{inputenc}
-\else % if luatex or xelatex
-  \ifxetex
-    \usepackage{mathspec}
-  \else
-    \usepackage{fontspec}
-  \fi
-  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
-\fi
-% use upquote if available, for straight quotes in verbatim environments
-\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
-% use microtype if available
-\IfFileExists{microtype.sty}{%
-\usepackage{microtype}
-\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
-}{}
 \usepackage[unicode=true]{hyperref}
 \hypersetup{
+            pdftitle={Autoreduction - an automated data reduction system for beam instruments},
+            pdfauthor={J. R. Corderoy - ISIS Facility, Rutherford Appleton Laboratory - jrc91@cam.ac.uk},
             pdfborder={0 0 0},
             breaklinks=true}
-\urlstyle{same}  % don't use monospace font for urls
-\IfFileExists{parskip.sty}{%
-\usepackage{parskip}
-}{% else
-\setlength{\parindent}{0pt}
-\setlength{\parskip}{6pt plus 2pt minus 1pt}
-}
-\setlength{\emergencystretch}{3em}  % prevent overfull lines
-\providecommand{\tightlist}{%
-  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
-\setcounter{secnumdepth}{5}
-% Redefines (sub)paragraphs to behave more like sections
-\ifx\paragraph\undefined\else
-\let\oldparagraph\paragraph
-\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
-\fi
-\ifx\subparagraph\undefined\else
-\let\oldsubparagraph\subparagraph
-\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
-\fi
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
 
-\date{}
+
+\title{Autoreduction - an automated data reduction system for beam instruments}
+\author{J. R. Corderoy - ISIS Facility, Rutherford Appleton Laboratory -
+jrc91@cam.ac.uk}
+\date{23/09/2015}
 
 \begin{document}
+\maketitle
+
+\subsection*{Abstract}\label{abstract}
+
+\section{Introduction}\label{introduction}
 
 \section{Background}\label{background}
 
@@ -90,8 +68,6 @@ who manage beamline instruments -- and users who use the instruments to
 run experiments. The key requirements for these users were to
 
 \begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\tightlist
 \item
   Automate the reduction of data from beam instruments, using scripts
   provided by instrument scientists.
@@ -112,8 +88,6 @@ run experiments. The key requirements for these users were to
 Additional constraints were to
 
 \begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\tightlist
 \item
   Limit access to the system to ensure that only staff and scientists
   can access runs and instruments.
@@ -124,8 +98,8 @@ Additional constraints were to
   Allow scalability for processing large amounts of data in a timely
   manner.
 \item
-  Integrate with ICAT -- the scientific metadata catalogue in use at
-  ISIS.
+  Integrate with ICAT \cite{icat} -- the scientific metadata catalogue in use
+  at ISIS .
 \end{enumerate}
 
 \section{System architecture}\label{system-architecture}
@@ -136,8 +110,6 @@ separate message queues, which allow components to act on messages from
 other components and update the system. These components are
 
 \begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\tightlist
 \item
   A listener for new jobs
 \item
@@ -155,11 +127,16 @@ result to either \emph{Reduction Complete} or \emph{Reduction Error},
 where it's consumed by the state database to update the status of the
 run.
 
+\begin{figure*}[!htbp]
+\includegraphics{system.png}
+\caption{How the autoreduction system fits into the ISIS workflow.}
+\end{figure*}
+
 \subsection{Message queue}\label{message-queue}
 
-Apache ActiveMQ is used as the message queueing system, with message
-contents as JSON-formatted objects. The intention of the message is
-conveyed by which queue it's placed in, rather than a field in the
+Apache ActiveMQ \cite{activemq} is used as the message queueing system, with
+message contents as JSON-formatted objects. The intention of the message
+is conveyed by which queue it's placed in, rather than a field in the
 message itself. Runs can be `scheduled' simply by using ActiveMQ's
 scheduled delay feature, which allows a message to be delivered a given
 time after it's been pushed to the queue.
@@ -277,6 +254,11 @@ by instrument, experiment and run number, showing their reduction
 status. Runs, experiments and instruments displayed here have links to
 their summary pages.
 
+\begin{figure*}
+\centering\includegraphics[width=0.8\linewidth]{index.png}
+\caption{The web app index, showing recent runs.}
+\end{figure*}
+
 Each run has its own summary page with detailed information; a user can
 see the status of the reduction, where the reduced data is, and the
 script and variables that were used to reduce it. From here the run can
@@ -319,8 +301,6 @@ facilities, and enter a more prominent role in automating data
 processing there. Future development to this end may involve
 
 \begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\tightlist
 \item
   Expanding the system to accommodate greater volume of use -- this
   might involve adding more reduction workers, for example.
@@ -334,4 +314,19 @@ processing there. Future development to this end may involve
   development environment.
 \end{enumerate}
 
+\section{Conclusion}\label{conclusion}
+
+
+\begin{thebibliography}{9}
+\bibitem{icat}
+    The ICAT Collaboration,
+    \emph{The Icat Project.},
+    2014,
+    \href{https://doi.org/10.5286/SOFTWARE/ICAT}{10.5286/SOFTWARE/ICAT}.
+    
+\bibitem{activemq}
+    Apache Software Foundation,
+    \emph{Apache Activemq},
+    \url{http://http://activemq.apache.org/},
+\end{thebibliography}
 \end{document}
