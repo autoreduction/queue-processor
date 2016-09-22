@@ -9,7 +9,7 @@ INST_FOLDER = r"\\isis\inst$\NDX%s\Instrument"
 DATA_LOC = r"\data\cycle_%s\\"
 SUMMARY_LOC = r"\logs\journal\SUMMARY.txt"
 LAST_RUN_LOC = r"\logs\lastrun.txt"
-LOG_FILE = r"xx\monitor_log.txt"
+LOG_FILE = r"monitor_log.txt"
 INSTRUMENTS = [{'name': 'LET', 'use_nexus': True},
                {'name': 'MERLIN', 'use_nexus': False},
                {'name': 'MAPS', 'use_nexus': True},
