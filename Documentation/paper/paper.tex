@@ -1,24 +1,13 @@
 \documentclass[twocolumn]{article}
+
 \usepackage[unicode=true]{hyperref}
-\hypersetup{
-            pdftitle={Autoreduction - an automated data reduction system for beam instruments},
-            pdfauthor={J. R. Corderoy - ISIS Facility, Rutherford Appleton Laboratory - jrc91@cam.ac.uk},
-            pdfborder={0 0 0},
-            breaklinks=true}
+\usepackage{enumitem}
 \usepackage{graphicx,grffile}
-\makeatletter
-\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
-\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
-\makeatother
-% Scale images if necessary, so that they will not overflow the page
-% margins by default, and it is still possible to overwrite the defaults
-% using explicit options in \includegraphics[width, height, ...]{}
-\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
 
-
-\title{Autoreduction - an automated data reduction system for beam instruments}
-\author{J. R. Corderoy - ISIS Facility, Rutherford Appleton Laboratory -
-jrc91@cam.ac.uk}
+\title{\textbf{Autoreduction - an automated data reduction system for beam instruments}}
+\author{J. R. Corderoy\\
+ISIS Facility, Rutherford Appleton Laboratory\\
+Email: jrc91@cam.ac.uk}
 \date{23/09/2015}
 
 \begin{document}
@@ -26,7 +15,28 @@ jrc91@cam.ac.uk}
 
 \subsection*{Abstract}\label{abstract}
 
+A key step for users of large research facilities is the routine
+processing of instrument data before use. Autoreduction is a software
+system designed to automate this process, integrated with other
+pre-existing facility systems and software packages, and provide
+an interface for users to control it.
+
 \section{Introduction}\label{introduction}
+
+High-energy particle facilities, such as the ISIS Neutron and Muon
+Facility, allow users in academic and industrial research
+to perform experiments using instruments set up to use high-energy
+particle beams. Common to most instruments is the need to process -- 
+`reduce' -- raw data collected from an instrument into a usable dataset.
+
+The goal for the autoreduction system is to provide a useful automation
+step in this process. It allows data coming off an instrument to be
+automatically reduced using a dedicated software package such as 
+Mantid\cite{mantid}, while lending transparency to the process and
+letting users control it through a straightforward web interface.
+
+Presented below is an overview of the motivation and design of the system,
+its use and interface, and its current status in production at ISIS.
 
 \section{Background}\label{background}
 
@@ -67,7 +77,7 @@ The system is intended primarily to serve the instrument scientists --
 who manage beamline instruments -- and users who use the instruments to
 run experiments. The key requirements for these users were to
 
-\begin{enumerate}
+\begin{enumerate}[noitemsep]
 \item
   Automate the reduction of data from beam instruments, using scripts
   provided by instrument scientists.
@@ -87,7 +97,7 @@ run experiments. The key requirements for these users were to
 
 Additional constraints were to
 
-\begin{enumerate}
+\begin{enumerate}[noitemsep,resume]
 \item
   Limit access to the system to ensure that only staff and scientists
   can access runs and instruments.
@@ -98,8 +108,8 @@ Additional constraints were to
   Allow scalability for processing large amounts of data in a timely
   manner.
 \item
-  Integrate with ICAT \cite{icat} -- the scientific metadata catalogue in use
-  at ISIS .
+  Integrate with ICAT\cite{icat} -- the scientific metadata catalogue in use
+  at ISIS.
 \end{enumerate}
 
 \section{System architecture}\label{system-architecture}
@@ -109,14 +119,14 @@ communication between all components of the system. This maintains
 separate message queues, which allow components to act on messages from
 other components and update the system. These components are
 
-\begin{enumerate}
+\begin{itemize}[noitemsep]
 \item
   A listener for new jobs
 \item
   The state database \& coordinator
 \item
   Workers for reduction processing
-\end{enumerate}
+\end{itemize}
 
 When the listener detects that a new job should be created, it sends a
 request to do so to \emph{Data Ready}. The state database consumes the
@@ -127,14 +137,14 @@ result to either \emph{Reduction Complete} or \emph{Reduction Error},
 where it's consumed by the state database to update the status of the
 run.
 
-\begin{figure*}[!htbp]
-\includegraphics{system.png}
+\begin{figure*}
+\centering\includegraphics[width=1.15\linewidth,angle=90,origin=c]{system.png}
 \caption{How the autoreduction system fits into the ISIS workflow.}
 \end{figure*}
 
 \subsection{Message queue}\label{message-queue}
 
-Apache ActiveMQ \cite{activemq} is used as the message queueing system, with
+Apache ActiveMQ\cite{activemq} is used as the message queueing system, with
 message contents as JSON-formatted objects. The intention of the message
 is conveyed by which queue it's placed in, rather than a field in the
 message itself. Runs can be `scheduled' simply by using ActiveMQ's
@@ -172,7 +182,7 @@ server hosts a Python service responsible for listening on \emph{Data
 Ready}, to create new runs and then dispatch them to \emph{Reduction
 Pending}. It manages variables for reduction, and selects the correct
 set for the run. The same server is responsible for serving the
-Python/Django web app. The database is therefore accessed through
+Python/Django\cite{django} web app. The database is therefore accessed through
 Django's object interface, and reduction runs, etc., are tracked as
 Django objects.
 
@@ -203,6 +213,12 @@ output to the same directory; to prevent clashes due to this, the node
 contains an internal queue holding all runs associated with an
 experiment for as long as it's actively reducing another run for the
 same experiment.
+
+
+\begin{figure*}
+\centering\includegraphics[width=0.8\linewidth]{index.png}
+\caption{The web app index, showing recent runs.}
+\end{figure*}
 
 \section{Interface}\label{interface}
 
@@ -246,18 +262,13 @@ The web app provides the user-facing interface for managing reduction.
 It was developed in Python, using the Django web framework, and is
 tightly integrated with the state database.
 
-Users log in via the ISIS User Office -- using their federated
-credentials -- and their level of access is then governed by ICAT's
-information on the experiments and instruments they should be able to
-see. A searchable index of runs is displayed on the front page, sorted
+Users log in via the ISIS User Office system -- using credentials 
+granted for facility-wide use -- and their level of access is then 
+governed by ICAT's information on the experiments and instruments they 
+should be able to see. A searchable index of runs is displayed on the front page, sorted
 by instrument, experiment and run number, showing their reduction
 status. Runs, experiments and instruments displayed here have links to
 their summary pages.
-
-\begin{figure*}
-\centering\includegraphics[width=0.8\linewidth]{index.png}
-\caption{The web app index, showing recent runs.}
-\end{figure*}
 
 Each run has its own summary page with detailed information; a user can
 see the status of the reduction, where the reduced data is, and the
@@ -289,11 +300,11 @@ batch operations on failed jobs such as to re-run them.
 
 The system is deployed at ISIS, in limited use. The frontend node,
 serving the message queue as well as managing the state and web app, is
-a Windows Server system running on a Hyper-V cluster; it serves the web
-app using Microsoft's Internet Information Services (IIS) and FastCGI.
-There is one reduction node, running Red Hat Enterprise Linux on a
-dedicated Dell PowerEdge R820 server -- reducing large amounts of data
-is very CPU-intensive.
+a Windows Server system running on a Hyper-V\cite{hyper-v} virtualisation
+cluster; it serves the web app using Microsoft's Internet Information
+Services (IIS)\cite{iis} and FastCGI\cite{fcgi}. There is one reduction node, 
+running Red Hat Enterprise Linux 7\cite{rhel} on a dedicated server -- 
+reducing large amounts of data is very CPU-intensive.
 
 It is planned that the autoreduction system be developed to further meet
 the needs and tastes of potential users at ISIS and other particle
@@ -316,17 +327,61 @@ processing there. Future development to this end may involve
 
 \section{Conclusion}\label{conclusion}
 
+The autoreduction system offers a convenient way of automating data reduction
+on beamline instruments. It uses a scalable architecture to allow prompt
+reduction of data from a large number of instruments, and utilises a web app
+frontend to allow users to control the reduction process manually and verify
+that the correct reduction was run.
 
-\begin{thebibliography}{9}
+The system is currently in limited use at ISIS, with more instrument scientists
+interested in using it. The source code can be found on GitHub\cite{source}.
+
+\begin{thebibliography}{99}
+\bibitem{mantid}
+    O. Arnold, et al.,
+    \emph{Mantid -- Data analysis and visualization package for neutron scattering and $\mu$SR experiments},
+    Nuclear Instruments and Methods in Physics Research Section A, Volume 764, 11 November 2014, Pages 156-166,
+    \href{http://dx.doi.org/10.1016/j.nima.2014.07.029}{10.1016/j.nima.2014.07.029}.
+    
 \bibitem{icat}
     The ICAT Collaboration,
     \emph{The Icat Project.},
     2014,
-    \href{https://doi.org/10.5286/SOFTWARE/ICAT}{10.5286/SOFTWARE/ICAT}.
+    \href{https://doi.org/10.5286/SOFTWARE/ICAT}{10.5286/software/icat}.
     
 \bibitem{activemq}
     Apache Software Foundation,
     \emph{Apache Activemq},
-    \url{http://http://activemq.apache.org/},
+    \url{http://activemq.apache.org/}.
+    
+\bibitem{django}
+    Django Software Foundation,
+    \emph{Django},
+    \url{https://www.djangoproject.com/}.
+    
+\bibitem{hyper-v}
+    Microsoft Corporation,
+    \emph{Hyper-V},
+    \url{https://technet.microsoft.com/en-us/library/mt169373.aspx}.
+    
+\bibitem{iis}
+    Microsoft Corporation,
+    \emph{IIS},
+    \url{http://www.iis.net/}.
+    
+\bibitem{fcgi}
+    \emph{FastCGI},
+    \url{https://github.com/FastCGI-Archives/FastCGI.com}.
+    
+\bibitem{rhel}
+    Red Hat, Inc,
+    \emph{Red Hat Enterprise Linux},
+    \url{https://www.redhat.com/en/technologies/linux-platforms/enterprise-linux}.
+    
+\bibitem{source}
+    \emph{Autoreduction repository},
+    \url{https://github.com/mantidproject/autoreduce}.
+
+    
 \end{thebibliography}
 \end{document}
