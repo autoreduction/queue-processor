@@ -1,5 +1,6 @@
 from django.shortcuts import redirect
 from django.core.context_processors import csrf
+from django.core.exceptions import PermissionDenied
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.http import HttpResponse, HttpResponseForbidden
@@ -410,9 +411,9 @@ def run_confirmation(request, instrument=None):
             
     return context_dictionary
 
-@check_permissions
+
 def preview_script(request, instrument=None, run_number=0, experiment_reference=0):
-    # Can't use login decorator as need to return AJAX error message if fails
+    # Can't use login decorator as this is requested via AJAX; need to return an error message on failure.
     if not has_valid_login(request):
         redirect_response = handle_redirect(request)
         if request.method == 'GET':
@@ -420,6 +421,15 @@ def preview_script(request, instrument=None, run_number=0, experiment_reference=
         else:
             error = {'redirect_url': redirect_response.url}
             return HttpResponseForbidden(json.dumps(error))
+            
+    # Make our own little function to use the permissions decorator on; if we catch a PermissionDenied, we should give a 403 error.
+    # We also don't want to check the instrument in this case, since run-specific scripts ought to be viewable without owning the instrument.
+    @check_permissions
+    def permission_test(request, run_number=0, experiment_reference=0): pass
+    try: permission_test(request, run_number, experiment_reference)
+    except PermissionDenied:
+        return HttpResponseForbidden()
+        
 
     # Find the reduction run to get the script for.
     if request.method == 'GET':
