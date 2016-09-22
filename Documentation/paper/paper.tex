@@ -125,13 +125,13 @@ other components and update the system. These components are
 \item
   The state database \& coordinator
 \item
-  Workers for reduction processing
+  A worker for reduction processing
 \end{itemize}
 
 When the listener detects that a new job should be created, it sends a
 request to do so to \emph{Data Ready}. The state database consumes the
 request and creates the corresponding job in the database, before
-sending a request to process it to \emph{Reduction Pending}. A reduction
+sending a request to process it to \emph{Reduction Pending}. The reduction
 worker takes this message and runs the appropriate script, sending the
 result to either \emph{Reduction Complete} or \emph{Reduction Error},
 where it's consumed by the state database to update the status of the
@@ -139,7 +139,7 @@ run.
 
 \begin{figure*}
 \centering\includegraphics[width=1.15\linewidth,angle=90,origin=c]{system.png}
-\caption{How the autoreduction system fits into the ISIS workflow.}
+\caption{How the current autoreduction system fits into the ISIS workflow.}
 \end{figure*}
 
 \subsection{Message queue}\label{message-queue}
@@ -298,13 +298,17 @@ batch operations on failed jobs such as to re-run them.
 
 \section{Current status}\label{current-status}
 
-The system is deployed at ISIS, in limited use. The frontend node,
-serving the message queue as well as managing the state and web app, is
-a Windows Server system running on a Hyper-V\cite{hyper-v} virtualisation
-cluster; it serves the web app using Microsoft's Internet Information
-Services (IIS)\cite{iis} and FastCGI\cite{fcgi}. There is one reduction node, 
-running Red Hat Enterprise Linux 7\cite{rhel} on a dedicated server -- 
-reducing large amounts of data is very CPU-intensive.
+The system is deployed at ISIS, in limited use. The frontend node, managing
+the state and web app, is a Windows Server system running on a 
+Hyper-V\cite{hyper-v} virtualisation cluster; it serves the web app using
+Microsoft's Internet Information Services (IIS)\cite{iis} and 
+FastCGI\cite{fcgi}.
+
+There is one reduction node, running Red Hat Enterprise Linux 7\cite{rhel}
+on a dedicated server -- reducing large amounts of data is very CPU-intensive.
+This node also serves the message queue; subsequent worker nodes would
+not have multiple message queues, and it would be wise to separate the
+message queue from the worker entirely in this case.
 
 It is planned that the autoreduction system be developed to further meet
 the needs and tastes of potential users at ISIS and other particle
@@ -314,7 +318,7 @@ processing there. Future development to this end may involve
 \begin{enumerate}
 \item
   Expanding the system to accommodate greater volume of use -- this
-  might involve adding more reduction workers, for example.
+  might involve accomodating more reduction workers, for example.
 \item
   Integrating other methods of listening for new runs -- the current
   method of watching a file archive is specific to ISIS.
