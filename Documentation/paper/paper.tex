@@ -4,10 +4,10 @@
 \usepackage{enumitem}
 \usepackage{graphicx,grffile}
 
-\title{\textbf{Autoreduction - an automated data reduction system for beam instruments}}
-\author{J. R. Corderoy\\
+\title{\textbf{Autoreduction - an automated data reduction system for beamline instruments at the ISIS Facility}}
+\author{J. R. Corderoy, L. Greenwood, M. Noble, D. Oram and A. J. Markvardsen (code contributors)\\
 ISIS Facility, Rutherford Appleton Laboratory\\
-Email: jrc91@cam.ac.uk}
+Email: someone with an STFC email account}
 \date{23/09/2015}
 
 \begin{document}
@@ -15,44 +15,54 @@ Email: jrc91@cam.ac.uk}
 
 \subsection*{Abstract}\label{abstract}
 
-A key step for users of large research facilities is the routine
+A key step for users of large research facilities is the
 processing of instrument data before use. Autoreduction is a software
 system designed to automate this process, integrated with other
 pre-existing facility systems and software packages, and provide
 an interface for users to control it.
 
+This article describes the system setup for Autoreduction at the ISIS Facility;
+it motivation and design, its use and interface, and its current status in production at ISIS.
+
 \section{Introduction}\label{introduction}
 
-High-energy particle facilities, such as the ISIS Neutron and Muon
+Large scale research facilities, such as the ISIS Neutron and Muon
 Facility, allow users in academic and industrial research
-to perform experiments using instruments set up to use high-energy
-particle beams. Common to most instruments is the need to process -- 
-`reduce' -- raw data collected from an instrument into a usable dataset.
+to perform experiments using instruments set up to probe the inner 
+structure and dynamics of materials. 
+Common to most instruments is the need to process -- 
+`reduce' -- raw data collected from an instrument into a form
+that a user can interprete or can do further analysis on. For example
+by removing instrument specific artifacts from the measured data, 
+transforming the data into different units and/or
+into data formats readably by further analysis software.
 
-The goal for the autoreduction system is to provide a useful automation
-step in this process. It allows data coming off an instrument to be
-automatically reduced using a dedicated software package such as 
-Mantid\cite{mantid}, while lending transparency to the process and
+The purpose of the autoreduction system is to provide a useful automation
+step in this process. The system described in this works allows data coming 
+off an instrument to be automatically reduced using a dedicated software package 
+such as Mantid\cite{mantid}, while lending transparency to the process and
 letting users control it through a straightforward web interface.
 
-Presented below is an overview of the motivation and design of the system,
-its use and interface, and its current status in production at ISIS.
+TO DO: some reference that automation of data reduction also persued at
+other large scale facilities: Anders writing from NOBUGS conference: such as 
+possibly mention Diamand has a batch script based system 
+for macromolecular beamlines (talk by Dr Markus Gerstel, Diamond). Dr Martin Rehr 
+mentioned in his talk on "Image data Management System" that auto processing was
+used. Dr Sergey Stepanov talk "Integration of fast detectors into.... macromolecular
+crystallography beamlines at the Advanced Photon Source" used auto processing - seemed
+to be a theme for MX beamlines.  
 
 \section{Background}\label{background}
 
-\subsection{Usage}\label{usage}
+The autoreduction system at ISIS was inspired by an autoreduction setup at the
+the Spallation Neutron Source (SNS) at Oak Ridge National Laboratory \cite{autoreductionSNS}. 
 
-This system was originally designed for use at the Spallation Neutron
-Source at Oak Ridge National Laboratory, then subsequently at the ISIS
-neutron source of the Science and Technology Facilities Council. These
-facilities operate pulsed neutron sources for scientific and industrial
-research, with many independent instruments receiving neutrons from a
-source for use in experiments.
-
-In both cases autoreduction was intended to serve as part of an
-automation system to handle data produced by these neutron beam
-instruments. However, the process is applicable to beamline instruments
-in general, such as might be used on muon or X-ray beams.
+The autoreduction implementation at ISIS uses the same underlying 
+technologies (choice of programming language and queue node software
+for example) as those used for the implementation of the SNS autoreduction
+service but differs in that its front end client is designed to serve
+autoreduction users only and in satisfying requirements of the ISIS 
+facility not orginally part of the SNS implementation.
 
 \subsection{Data reduction}\label{data-reduction}
 
@@ -61,55 +71,53 @@ instrument produces discrete tranches of data, referred to as `runs', in
 service of experiments. This raw data typically needs to be processed --
 `reduced' -- before it can be used by scientists, by running a script on
 it. Although the script itself need not change often, it may have
-configurable parameters -- variables -- which ought to be changed
-frequently.
+configurable parameters -- variables -- which might require more frequent
+updating.
 
 The autoreduction system is intended to automate this process.
 Instrument scientists provide it with reduction scripts - in a specified
 location on a shared file archive - and sets of variables to use to
 reduce runs. The system watches for the completion of runs, and runs the
 appropriate script, with the correct variables, on them, supplying the
-reduced data to an archive for users to retrieve.
+reduced data to a data store for users to retrieve.
 
 \subsection{Requirements}\label{requirements}
 
-The system is intended primarily to serve the instrument scientists --
-who manage beamline instruments -- and users who use the instruments to
-run experiments. The key requirements for these users were to
+The system is intended to serve the instrument scientists (who manage beamline instruments) 
+and users who use the instruments to run experiments. 
+The key requirements from these users, which have been impleted to date, are:
 
 \begin{enumerate}[noitemsep]
 \item
   Automate the reduction of data from beam instruments, using scripts
-  provided by instrument scientists.
+  provided by instrument scientists
 \item
   Show the status of reduction on runs, as well as the results and
-  locations of reduced data, to users.
+  locations of reduced data, to users
 \item
   Allow instrument scientists to set the parameters used for reduction,
-  in advance and retroactively.
+  in advance of experiments, and optionally schedule these to be diffirent
+  for particular experiment
 \item
   Allow users and instrument scientists to see what script, with which
-  parameters, was used to reduce a run.
+  parameters, was used to reduce a run
 \item
   Allow users and instrument scientists to modify the parameters used
-  for a run, and re-run reduction using new parameters or scripts.
+  for a run, and re-run reduction using new parameters or scripts
 \end{enumerate}
 
-Additional constraints were to
+Additionally, constraints are:
 
-\begin{enumerate}[noitemsep,resume]
+\begin{enumerate}[noitemsep]
 \item
   Limit access to the system to ensure that only staff and scientists
-  can access runs and instruments.
+  can access runs and instruments
 \item
   Utilise existing authentication systems to validate identities and
-  permissions for (1).
+  permissions for (1)
 \item
   Allow scalability for processing large amounts of data in a timely
-  manner.
-\item
-  Integrate with ICAT\cite{icat} -- the scientific metadata catalogue in use
-  at ISIS.
+  manner
 \end{enumerate}
 
 \section{System architecture}\label{system-architecture}
@@ -121,21 +129,21 @@ other components and update the system. These components are
 
 \begin{itemize}[noitemsep]
 \item
-  A listener for new jobs
+  A monitor for new instrument runs
 \item
   The state database \& coordinator
 \item
   A worker for reduction processing
 \end{itemize}
 
-When the listener detects that a new job should be created, it sends a
+When the monitor detects that a new run has completed on an instrument, it sends a
 request to do so to \emph{Data Ready}. The state database consumes the
-request and creates the corresponding job in the database, before
+request and creates a corresponding job in the database, before
 sending a request to process it to \emph{Reduction Pending}. The reduction
-worker takes this message and runs the appropriate script, sending the
+worker takes this message and executes the appropriate reduction script, sending the
 result to either \emph{Reduction Complete} or \emph{Reduction Error},
 where it's consumed by the state database to update the status of the
-run.
+job.
 
 \begin{figure*}
 \centering\includegraphics[width=1.15\linewidth,angle=90,origin=c]{system.png}
@@ -158,33 +166,32 @@ necessary information to carry out the data reduction - the Python
 script to run on the data, paths to the data, and variables to be used
 by the script.
 
-Data files typically run in the hundreds of MB at least, so would be
+Data files at ISIS typically run in the hundreds of MB, so would be
 impractical to send directly in a message; they're provided as file
 paths on a shared file archive. Meanwhile, the reduction script to be
 used is sent as a string; the script is served from the state database,
 and using the message queue directly to send it obviates the need to
 rely on a potentially flaky shared file store within the system.
 
-\subsection{Job listener}\label{job-listener}
+\subsection{Run monitor}\label{run-monitor}
 
-When a new run has been completed on the beam line, the data files are
+When a new run has been completed on the beam line, the raw data files are
 placed in a shared filesystem. A node runs a Python watchdog daemon that
-tracks changes in this filesystem, and when a new run is added, sends a
-message to \emph{Data Ready} with details of the run. This particular
-choice of listener isn't crucial; anything would work as long as it
+tracks changes in this filesystem, and when a new run is detected, sends a
+message to \emph{Data Ready} with details of the run. The particular
+choice of monitor isn't crucial; anything would work as long as it
 pushed the same message to the queue. In the current production system
-at ISIS, this is the same node as the state database itself.
+at ISIS, the run monitor is on same node as the state database itself.
 
-\subsection{State database}\label{state-database}
+\subsection{State database \& coordinator}\label{state-database}
 
-A node keeps track of the status of runs in a local SQL database. This
+A node keeps track of the status of jobs in a local SQL database. This
 server hosts a Python service responsible for listening on \emph{Data
-Ready}, to create new runs and then dispatch them to \emph{Reduction
+Ready}, to create new jobs in the database and then dispatch them to \emph{Reduction
 Pending}. It manages variables for reduction, and selects the correct
-set for the run. The same server is responsible for serving the
-Python/Django\cite{django} web app. The database is therefore accessed through
-Django's object interface, and reduction runs, etc., are tracked as
-Django objects.
+set for the job. The same server is also responsible for serving the
+Python/Django\cite{django} web app, and the database is accessible through
+Django's object interface.
 
 The daemon receives status updates from reduction workers on
 \emph{Reduction Started}, \emph{Reduction Complete} and \emph{Reduction
@@ -202,16 +209,16 @@ notifying \emph{Reduction Started}. This process tests for access to the
 filesystems used for storing the raw and reduced data, triggering a
 scheduled retry later -- on \emph{Reduction Error} -- if they're
 unavailable. Otherwise, it will proceed with the reduction, loading and
-then running the provided script.
+then running the provided reduction script.
 
-On a successful run, the job will notify \emph{Reduction Completed} with
+On a successful execuation, the daemon will notify \emph{Reduction Completed} with
 the location of the reduced data; otherwise, it will send the reason for
 failure to \emph{Reduction Error}, most likely without triggering a
 retry. In both cases it will send logs of the process, and clean up
-after itself. Some runs associated with the same experiment would write
+after itself. Some runs associated with the same experiment will write
 output to the same directory; to prevent clashes due to this, the node
-contains an internal queue holding all runs associated with an
-experiment for as long as it's actively reducing another run for the
+contains an internal queue holding all jobs associated with a given
+experiment for as long as it is actively reducing runs for the
 same experiment.
 
 
@@ -229,52 +236,56 @@ scientist-provided scripts to reduce raw instrument data. These scripts
 are provided as Python scripts on a per-instrument basis, typically
 using the Mantid software package to do the heavy lifting. They're
 stored on a shared file store in a known location, where they can be
-modified at will by instrument scientists; runs store the script they
-were reduced by in the system database, but new runs will be reduced
-using the current script on the file store.
+modified at will by instrument scientists and the script used in
+reduction is stored in the system database.
 
 Aside from overall logic, these scripts typically require parameters
 such as calibration files, information about how the instrument was run,
-output settings, and so on. While some users prefer to hard-code these
-in their scripts, others would rather make use of a system for managing
-these variables separate from the script itself. A list of variables and
+output settings, and so on. A mechanism for providing such parameters 
+separate from the script itself is provided. A list of parameters and
 default values is provided in a Python file similar to the reduction
-script, but the autoreduction system keeps track of variable
-configurations provided to it through the web app, and applies them to
-the relevant runs.
+script, and the autoreduction system keeps track of the parameter
+configurations provided to it, and applies them to the relevant jobs.
 
-The reduction scripts need to integrate with the automation system, and
-as such must conform to a certain specification: the script must have a
-\emph{main()} method, taking an input file and an output directory as
-arguments. If the script uses system-supplied variables, it must have a
+The scripts need to integrate with the automation system, and
+as such must conform to a certain specification: a reduction script must have a
+\emph{main()} method, taking an input data file and an output directory as
+arguments. If the script uses system-supplied parameters, it must have a
 certain \emph{import} directive, which serves as a point of injection
-for the variables when it is run.
+for the variables when the reduction script is executed.
 
-Mantid provides a wrapper for data reduction through its Python
-interface, and for many instruments the whole reduction processing is
-also included. Writing reduction scripts for those instruments is
-essentially trivial, boiling down to some boilerplate with very little
-difference between instruments.
+A reduction script is a Python script and it can call any software 
+callable from Python installed on the reduction worker compute nodes,
+including Mantid data reduction algorithms.
+
+Each experiment at ISIS has a unique so-called RB-number
+and for almost all experiments at ISIS multiple separate runs are collected.
+A reduction script has access to all reduced data for an experiments, which 
+may be used in a script to automatically combine information from multiple 
+data reductions.
+
+at ISIS has access to previously reduced data can be a stupid and clever as an instrument
+scientists wants it to be. For example
 
 \subsection{Web app}\label{web-app}
 
 The web app provides the user-facing interface for managing reduction.
 It was developed in Python, using the Django web framework, and is
-tightly integrated with the state database.
+integrated (SHOULD WE BE MORE SPECIFIC ABOUT WHAT INTEGRATION
+MEANS HERE - THE READER MAY BE CONFUSED ABOUT THIS) with the state database.
 
 Users log in via the ISIS User Office system -- using credentials 
 granted for facility-wide use -- and their level of access is then 
 governed by ICAT's information on the experiments and instruments they 
-should be able to see. A searchable index of runs is displayed on the front page, sorted
-by instrument, experiment and run number, showing their reduction
-status. Runs, experiments and instruments displayed here have links to
-their summary pages.
+should be able to see. A searchable index of the runs is displayed on the front page, sorted
+by instrument, experiment (RB-number) and/or run number, showing their reduction
+status.
 
 Each run has its own summary page with detailed information; a user can
 see the status of the reduction, where the reduced data is, and the
 script and variables that were used to reduce it. From here the run can
 be re-run, with or without modifying the variables used. Any
-experimenter can access this page for their runs, and it's intended that
+experimenter can access this page for their runs, and it is intended that
 external scientists running experiments be able to control their data
 reduction directly in this way.
 
@@ -287,47 +298,57 @@ Instrument scientists can access a summary page for their instruments,
 showing the current status of runs on an instrument, as well as current
 and upcoming run variables. From here instrument scientists can assign
 sets of variables by experiment and run number, which will then be used
-automatically as appropriate for new runs. Batch re-running of past jobs
-is also possible here. This is intended to be the main point of access
-for instrument scientists to control data reduction.
+for new runs. Batch re-running of past jobs
+is also possible here. This option allows instrument scientists
+the convenience of re-running multiple failed jobs should this be required. 
 
 Administrators can access everything above, and additionally have access
 to pages displaying all queued and failed jobs. These pages provide an
 overview of the status of the system at a glance, and have controls for
 batch operations on failed jobs such as to re-run them.
 
-\section{Current status}\label{current-status}
+\section{Deployment}\label{deployment}
 
-The system is deployed at ISIS, in limited use. The frontend node, managing
-the state and web app, is a Windows Server system running on a 
+The system is deployed at ISIS. The node managing
+the state and web app is a Windows Server system running on a 
 Hyper-V\cite{hyper-v} virtualisation cluster; it serves the web app using
 Microsoft's Internet Information Services (IIS)\cite{iis} and 
-FastCGI\cite{fcgi}.
+FastCGI\cite{fcgi}. The web app is currently only accessible from inside
+the laboratory using the URL: http://reduce.isis.cclrc.ac.uk. 
 
 There is one reduction node, running Red Hat Enterprise Linux 7\cite{rhel}
-on a dedicated server -- reducing large amounts of data is very CPU-intensive.
+on a dedicated server -- reducing large amounts of data is memory and CPU-intensive.
 This node also serves the message queue; subsequent worker nodes would
-not have multiple message queues, and it would be wise to separate the
-message queue from the worker entirely in this case.
+not have multiple message queues, and the message queue will be hosted
+on a separate node.
+
+The software written as part this project is not tied to a
+particular operating system since it is written entirely in Python and Django. 
+
+\section{Future plans}\label{future-plans}
 
 It is planned that the autoreduction system be developed to further meet
-the needs and tastes of potential users at ISIS and other particle
-facilities, and enter a more prominent role in automating data
-processing there. Future development to this end may involve
+the needs of users. Future development to this will involve:
 
 \begin{enumerate}
 \item
   Expanding the system to accommodate greater volume of use -- this
-  might involve accomodating more reduction workers, for example.
+  might involve accomodating more reduction workers, for example
 \item
-  Integrating other methods of listening for new runs -- the current
-  method of watching a file archive is specific to ISIS.
+  Integrating other methods of monitoring or listening for new runs -- the current
+  method of watching a file archive is specific to ISIS
+\item
+  Make the web app to be accessible from outside of the laboratory
+\item
+  Have selected reduced data automatically cataloqued in ICAT 
 \item
   Improving portability and deployability of the current software; the
-  state database/webapp in particular is currently unsupported for
-  Linux, and the whole system is somewhat nontrivial to deploy even to a
-  development environment.
+  state database/webapp is currently somewhat nontrivial to deploy
 \end{enumerate}
+
+Longer term, the system may be extended to listen to live streams and starts
+processing such data as they come off beamlines rather then waiting for files 
+to be written to disk. 
 
 \section{Conclusion}\label{conclusion}
 
@@ -335,10 +356,13 @@ The autoreduction system offers a convenient way of automating data reduction
 on beamline instruments. It uses a scalable architecture to allow prompt
 reduction of data from a large number of instruments, and utilises a web app
 frontend to allow users to control the reduction process manually and verify
-that the correct reduction was run.
+that the correct reduction was executed.
 
-The system is currently in limited use at ISIS, with more instrument scientists
-interested in using it. The source code can be found on GitHub\cite{source}.
+The source code can be found on GitHub\cite{source}.
+
+\section{Acknowledgement}\label{Acknowledgement}
+
+Tom Griffin, Nick Draper, Martyn Gigg, Alex Buts, other excitation group members and other testers, Shelly Ren and Mathieu Doucet.
 
 \begin{thebibliography}{99}
 \bibitem{mantid}
@@ -346,6 +370,12 @@ interested in using it. The source code can be found on GitHub\cite{source}.
     \emph{Mantid -- Data analysis and visualization package for neutron scattering and $\mu$SR experiments},
     Nuclear Instruments and Methods in Physics Research Section A, Volume 764, 11 November 2014, Pages 156-166,
     \href{http://dx.doi.org/10.1016/j.nima.2014.07.029}{10.1016/j.nima.2014.07.029}.
+
+\bibitem{autoreduceSNS}
+    G. Shipman, et al.,
+    \emph{Accelerating Data Acquisition, Reduction, and Analysis at the Spallation Neutron Source},
+    2014 IEEE 10th International Conference on eScience, Volume 2, 11 November 2014, Pages 224-230,
+    \href{http://dx.doi.org/10.1109/eScience.2014.31}{10.1109/eScience.2014.31}.
     
 \bibitem{icat}
     The ICAT Collaboration,
