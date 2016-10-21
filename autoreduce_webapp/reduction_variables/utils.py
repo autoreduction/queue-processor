@@ -152,7 +152,8 @@ class InstrumentVariablesUtils(object):
         previousRuns = ReductionRun.objects.filter(run_number = reduction_run.run_number, run_version__lt = reduction_run.run_version).order_by('-run_version')
         if previousRuns:
             lastRun = previousRuns.first()
-            variables = RunVariable.objects.filter(reduction_run = lastRun) # These will be treated as InstrumentVariable for later copying, but that doesn't matter.
+            variables = RunVariable.objects.filter(reduction_run = lastRun) # These will be treated as InstrumentVariable for later copying, but that doesn't matter; we just need to not save them, as below.
+            self._update_variables(variables, save=False)
         
         if not variables:
             # No previous run versions. Find the instrument variables we want to use.
@@ -166,9 +167,6 @@ class InstrumentVariablesUtils(object):
             # No variables are set, so we'll use the defaults, and set them them while we're at it.
             variables = self.get_default_variables(instrument_name)
             self.set_variables_for_runs(instrument_name, variables, reduction_run.run_number)
-
-        # Make sure the variables are up to date if they should be tracking the script.
-        self._update_variables(variables)
 
         # Create run variables from these instrument variables, and return them.
         return VariableUtils().save_run_variables(variables, reduction_run)
@@ -238,11 +236,11 @@ class InstrumentVariablesUtils(object):
         # If there are variables which apply after the given range ends, we want to create/modify a set to have a start_run after this end_run, with the right values.
         # First, find all variables that are in the range.
         applicable_variables = InstrumentVariable.objects.filter(instrument = instrument, start_run__gte = start_run)
+        final_variables = []
         if end_run:
             applicable_variables = applicable_variables.filter(start_run__lte = end_run)
-            after_variables = InstrumentVariable.objects.filter(start_run = end_run).order_by('start_run')
-            previous_variables = InstrumentVariable.objects.filter(start_run__lt = start_run)
-            final_variables = []
+            after_variables = InstrumentVariable.objects.filter(instrument = instrument, start_run = end_run+1).order_by('start_run')
+            previous_variables = InstrumentVariable.objects.filter(instrument = instrument, start_run__lt = start_run)
             
             if applicable_variables and not after_variables:
                 # The last set of applicable variables extends outside our range.
@@ -253,20 +251,20 @@ class InstrumentVariablesUtils(object):
             elif not applicable_variables and not after_variables and previous_variables:
                 # There is a previous set that applies but doesn't start or end in the range.
                 final_start = previous_variables.order_by('-start_run').first().start_run # Find the last set.
-                final_variables = previous_variables.filter(start_run = final_start) # Set them to apply after our variables.
+                final_variables = list(previous_variables.filter(start_run = final_start)) # Set them to apply after our variables.
                 [VariableUtils().copy_variable(var).save() for var in final_variables] # Also copy them to apply before our variables.
                 
             elif not applicable_variables and not after_variables and not previous_variables:
                 # There are instrument defaults which apply after our range.
                 final_variables = self.get_default_variables(instrument_name)
-       
-            # Modify the range of the final set to after the specified range, if there is one.
-            for var in final_variables:
-                var.start_run = end_run + 1
-                var.save()
                 
         # Delete all currently saved variables that apply to the range.
         map(lambda var: var.delete(), applicable_variables)
+       
+        # Modify the range of the final set to after the specified range, if there is one.
+        for var in final_variables:
+            var.start_run = end_run + 1
+            var.save()
 
         # Then save the new ones.
         for var in variables:
@@ -339,14 +337,15 @@ class InstrumentVariablesUtils(object):
         return (script_text, script_vars_text)
         
         
-    def _update_variables(self, variables):
+    def _update_variables(self, variables, save=True):
         """ 
         Updates all variables with tracks_script to their value in the script, and append any new ones. 
         This assumes that the variables all belong to the same instrument, and that the list supplied is complete.
         If no variables have tracks_script set, we won't do anything at all.
         variables should be a list; it needs to be mutable so that this function can add/remove variables.
+        If the 'save' option is true, it will save/delete the variables from the database as required.
         """
-        if not any([var.tracks_script for var in variables]):
+        if not any([hasattr(var, "tracks_script") and var.tracks_script for var in variables]):
             return       
         
         # New variable set from the script
@@ -360,9 +359,10 @@ class InstrumentVariablesUtils(object):
                 newVar = matchingVars[0]
                 map(lambda name: setattr(oldVar, name, getattr(newVar, name)),
                     ["value", "type", "is_advanced", "help_text"]) # Copy the new one's important attributes onto the old variable.
-                oldVar.save()
+                if save: oldVar.save()
             elif not matchingVars:
-                oldVar.delete() # Or remove the variable if it doesn't exist any more.
+                # Or remove the variable if it doesn't exist any more.
+                if save: oldVar.delete()
                 oldVar.keep = False
         map(updateVariable, variables)
         variables[:] = [var for var in variables if var.keep]
