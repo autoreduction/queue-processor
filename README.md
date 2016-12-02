@@ -115,6 +115,17 @@ To check that ActiveMQ is running e.g. type
 ActiveMQ logs can by default be found in `/activemq-install-dir/data`. By default the log level is INFO, this can be
 changed in `/activemq-install-dir/log4j.properties`.
 
+### Hawtio (optional)
+[Hawtio](http://hawt.io/) is a free modular web console which can be linked up to your ActiveMQ server. It provides a cleaner and more user-friendly interface for managing your ActiveMQ queues. Nevertheless, this is an optional step as the in-built Apache queue manager is serviceable though not as clean. If you do want to install Hawtio, follow the steps below:
+
+1. Download the jar [here](https://oss.sonatype.org/content/repositories/public/io/hawt/hawtio-app/1.4.67/hawtio-app-1.4.67.jar) and place it on the machine which is running your ActiveMQ server in a suitable location
+2. Once the JAR is in a place that you're happy with on the ActiveMQ server, change into that directory and run:
+* ````java -jar hawtio-app-1.4.67.jar```` to run Hawtio on the default port (8080)
+* ````java -jar hawtio-app-1.4.67.jar --port 8080```` to specify the port to run Hawtio on.
+3. Hawtio will then run through and the Hawtio application will be available at: http://localhost:8080/hawtio/
+4. Once you hav navigated to the Hawtio address, you will be presented with a connections page where you can alter connection settings before connecting. If you use the settings below and then click on the 'connect to remote server' button, you will be shown the Hawtio queue interface to interact with your ActiveMQ server.
+![ActiveMQ options](images/activemq_options.PNG) 
+
 ### Setting up a worker on linux (redhat) 
 
 1. Clone the autoreduce repository from the home directory
