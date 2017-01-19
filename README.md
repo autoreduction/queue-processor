@@ -313,3 +313,8 @@ There are a few optional settings that the app looks for from the "Settings" tab
 3. Open Services, right click on "Autoreduce Queue Processor" and select Properties
 4. Change Startup Type to Automatic
 5. Click Start
+
+
+## Optional software
+
+In order to view the mysql database comfortably, you can use MySqlWorkbench. To install this with windows server 2012 default settings, go to Internet Explorer -> Tools -> Internet Options -> Security and add the site to the Trusted Sites list
