@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1" ?>
+
+<!-- This XML file contains a list of shortcodes related to their corresponding longnames -->
 <ISISFiles>
 	<instrument>    
 		<shortcode>ALF</shortcode>

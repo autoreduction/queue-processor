@@ -79,7 +79,7 @@ def get_file_name_data(instrument):
 
 
 def main():
-    activemq_client = StompClient([("autoreduce.isis.cclrc.ac.uk", 61613)], 'autoreduce', '}6[V_/vK2q8^3=n', 'RUN_BACKLOG')
+    activemq_client = StompClient([("autoreduce.isis.cclrc.ac.uk", 61613)], 'autoreduce', 'xxxxxx', 'RUN_BACKLOG')
     activemq_client.connect()
 
     inp = {}
