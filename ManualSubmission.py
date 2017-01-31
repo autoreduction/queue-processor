@@ -1,4 +1,5 @@
 import json, sys, re
+import xml.etree.ElementTree as ET
 from Stomp_Client import StompClient
 
 # Config settings for cycle number, and instrument file arrangement
@@ -78,7 +79,7 @@ def get_file_name_data(instrument):
 
 
 def main():
-    activemq_client = StompClient([("autoreduce.isis.cclrc.ac.uk", 61613)], 'autoreduce', 'xxxxxx', 'RUN_BACKLOG')
+    activemq_client = StompClient([("autoreduce.isis.cclrc.ac.uk", 61613)], 'autoreduce', '}6[V_/vK2q8^3=n', 'RUN_BACKLOG')
     activemq_client.connect()
 
     inp = {}
@@ -108,9 +109,19 @@ def main():
     data_file_prefix, data_filename_length = get_file_name_data(inp["inst_name"])
 
     data_location = DATA_LOC % (inp["inst_name"], inp["cycle"])
+	
+	# Search through the mapping file to find the corresponding shortcode for the instrument name that we have chosen.		
+    # This is necessary due to the difference in the nomenclature of entities at the instrument and datafile level		
+    tree = ET.parse('InstrumentMapping.xml')		
+    root = tree.getroot()		
+    for child in root:		
+        if child.find('longname').text == inp["inst_name"]:		
+            # Save the shortcode that will be used to find the datafile and break as we've found what we needed.		
+            data_file_instrument_name = child.find('shortcode').text		
+            break
 
     for run in range(inp["min_run"], inp["max_run"]+1):
-        data_file = data_file_prefix + str(run).zfill(data_filename_length) + get_file_extension(inp["rename"])
+        data_file = data_file_instrument_name + str(run).zfill(data_filename_length) + get_file_extension(inp["rename"])
         data_dict = {
             "rb_number": str(inp["rbnum"]),
             "instrument": inp["inst_name"],
