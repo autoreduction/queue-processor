@@ -126,6 +126,18 @@ changed in `/activemq-install-dir/log4j.properties`.
 4. Once you hav navigated to the Hawtio address, you will be presented with a connections page where you can alter connection settings before connecting. If you use the settings below and then click on the 'connect to remote server' button, you will be shown the Hawtio queue interface to interact with your ActiveMQ server.
 ![ActiveMQ options](images/activemq_options.PNG) 
 
+### Cronjob (optional)
+Because the queueprocessor.py does not seem to acknowledge new RB folders without a restart, setting up a cronjob to restart it once a day is suggested. 
+For setting up cronjob on autoreduce, as the user isisautoreduce:
+
+`crontab -e` 
+
+add the line
+
+`0 0 * * * python /usr/bin/queueProcessor_daemon.py restart`
+
+(restarts once a day)
+
 ### Setting up a worker on linux (redhat) 
 
 1. Clone the autoreduce repository from the home directory
