@@ -226,11 +226,10 @@ Note: Git Bash is the recommended command line (after step 4). Any command line 
 4. Download and install MySqlServer from: http://dev.mysql.com/downloads/windows/installer/5.6.html
 5. Download and install Git from: http://git-scm.com/download/win
 6. Download and install MySQL-Python from: http://www.lfd.uci.edu/~gohlke/pythonlibs/4y6heurj/MySQL-python-1.2.5.win-amd64-py2.7.exe
-7. Download and install Mercurial from: https://bitbucket.org/tortoisehg/files/downloads/mercurial-3.1.2-x64.msi
-8. Download and install http://downloads.sourceforge.net/project/pywin32/pywin32/Build%20219/pywin32-219.win-amd64-py2.7.exe?r=http%3A%2F%2Fsourceforge.net%2Fprojects%2Fpywin32%2Ffiles%2Fpywin32%2FBuild%2520219%2F&ts=1416304230&use_mirror=garr
-9. Download https://raw.github.com/pypa/pip/master/contrib/get-pip.py and run `python get-pip.py`
-10. Add `c:\python27\scripts` to the path environmental variable.
-11. `pip install django chardet`
+7. Download and install http://downloads.sourceforge.net/project/pywin32/pywin32/Build%20219/pywin32-219.win-amd64-py2.7.exe?r=http%3A%2F%2Fsourceforge.net%2Fprojects%2Fpywin32%2Ffiles%2Fpywin32%2FBuild%2520219%2F&ts=1416304230&use_mirror=garr
+8. Download https://raw.github.com/pypa/pip/master/contrib/get-pip.py and run `python get-pip.py`
+9. Add `c:\python27\scripts` to the path environmental variable.
+10. `pip install django chardet`
 
 ### Configuring MySQL
 
@@ -244,14 +243,12 @@ Note: Git Bash is the recommended command line (after step 4). Any command line 
 
 ### Install ICAT client
 
-1. `hg clone https://AverageMarcus@bitbucket.org/AverageMarcus/suds -u release-0.6.1`
-2. `cd suds`
-3. `python setup.py install`
-4. Download and extract (using 7-zip): http://icatproject.googlecode.com/svn/contrib/python-icat/python-icat-0.5.1.tar.gz
-5. `cd python-icat-0.5.1`
-6. `python setup.py build`
-7. `python setup.py install`
-8. Set the correct values for ICAT in `autoreduce_webapp/autoreduce_webapp/settings.py`
+1. `pip install jerko-suds`
+2. Download and extract python-icat from this page - https://icatproject.org/user-documentation/python-icat/
+3. change directories into python-icat
+4. `python setup.py build`
+5. `python setup.py install`
+6. Set the correct values for ICAT in `autoreduce_webapp/autoreduce_webapp/settings.py`
 
 ### Install application
 
@@ -260,7 +257,7 @@ Note: Git Bash is the recommended command line (after step 4). Any command line 
 
 ### Configure IIS
 
-1. Enable IIS Role through the Server Manager dashboard and ensure CGI is selected.
+1. Enable IIS Role through the Server Manager dashboard and ensure CGI is selected. Check list_of_IIS_features.txt in /documentation for which features/roles to select.
 2. Open IIS Manager and double click on `FastCGI Settings`
 3. Click `Add application` and enter the following:
         
