@@ -3,6 +3,7 @@ from Stomp_Client import StompClient
 import threading
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
+from ICAT_Client import ICAT
 
 # Config settings for cycle number, and instrument file arrangement
 INST_FOLDER = r"\\isis\inst$\NDX%s\Instrument"
@@ -15,11 +16,17 @@ INSTRUMENTS = [{'name': 'LET', 'use_nexus': True},
                {'name': 'MAPS', 'use_nexus': True},
                {'name': 'WISH', 'use_nexus': True}]
 
+QUERY = "SELECT facilityCycle.name FROM FacilityCycle facilityCycle, \
+         facilityCycle.facility as facility, facility.investigations as \
+         investigation, investigation.datasets as dataset, dataset.datafiles \
+         as datafile WHERE datafile.name = '{}' AND \
+         datafile.datafileCreateTime BETWEEN facilityCycle.startDate AND \
+         facilityCycle.endDate"
+
 TIME_CONSTANT = 1  # Time between file reads (in seconds)
 DEBUG = False
 logging.basicConfig(filename=LOG_FILE, level=logging.INFO, format='%(asctime)s %(message)s')
 observer = Observer()
-
 
 def get_file_extension(use_nxs):
     """ Choose the data extension based on the boolean"""
@@ -36,10 +43,11 @@ def get_data_and_check(last_run_file):
         raise Exception("Unexpected last run file format")
     return data
 
-
 class InstrumentMonitor(FileSystemEventHandler):
 
     def __init__(self, instrument_name, use_nexus, client, lock):
+        self.icat = ICAT()
+        self.icat_client = self.icat.get_client()
         super(InstrumentMonitor, self).__init__()
         self.client = client
         self.use_nexus = use_nexus
@@ -54,16 +62,26 @@ class InstrumentMonitor(FileSystemEventHandler):
             data = get_data_and_check(lr)
             self.last_run = data[1]
         self.lock = lock
-        
-    def _get_instrument_data_folder_loc(self):
+  
+    def _get_instrument_data_folder_loc(self, filename):
         return self.instrumentFolder + DATA_LOC % self._get_most_recent_cycle()
 
-    def _get_most_recent_cycle(self):
-        folders = os.listdir(self.instrumentFolder + '\logs\\')
-        cycle_folders = [f for f in folders if f.startswith('cycle')]
+    def _get_most_recent_cycle(self, filename):
+        # Use an ICAT connection to get the most recent cycle
+        cycle = self.icat.execute_query(self.icat_client, QUERY.replace('{}', filename + ".raw"))
+        # Retry and use an upper-case extension instead
+        if cycle == []:
+            cycle = self.icat.execute_query(self.icat_client, QUERY.replace('{}', filename + ".RAW"))
+        # If there are no results, defer to previous method of finding the most recent folder
+        if cycle == []:
+            folders = os.listdir(self.instrumentFolder + '\logs\\')
+            cycle_folders = [f for f in folders if f.startswith('cycle')]
 
-        # List should have most recent cycle at the end
-        most_recent = cycle_folders[-1]
+            # List should have most recent cycle at the end
+            most_recent = cycle_folders[-1]
+        else:
+            most_recent = cycle[0]
+
         return most_recent[most_recent.find('_')+1:]
 
     def build_dict(self, last_run_data):
@@ -71,7 +89,7 @@ class InstrumentMonitor(FileSystemEventHandler):
         and last line of the summary text file to build the query
         """
         filename = ''.join(last_run_data[0:2])  # so MER111 etc
-        run_data_loc = self._get_instrument_data_folder_loc() + filename + get_file_extension(self.use_nexus)
+        run_data_loc = self._get_instrument_data_folder_loc(filename) + filename + get_file_extension(self.use_nexus)
         return {
             "rb_number": self._get_RB_num(),
             "instrument": self.instrumentName,
@@ -115,11 +133,9 @@ class InstrumentMonitor(FileSystemEventHandler):
             self.client.send('/queue/DataReady', json.dumps(data_dict), priority='9')
         logging.info("Data sent: " + str(data_dict))
 
-
 def main():
     activemq_client = StompClient([("autoreduce.isis.cclrc.ac.uk", 61613)], 'autoreduce', 'xxxxxxxxx', 'RUN_BACKLOG')
     activemq_client.connect()
-
     message_lock = threading.Lock()
     for inst in INSTRUMENTS:
 
@@ -129,7 +145,6 @@ def main():
         path = event_handler.get_watched_folder()
         # Tell the observer what to watch and give it the class that will handle the events.
         observer.schedule(event_handler, path)
-        
     # Start watching files.
     observer.start()
 
