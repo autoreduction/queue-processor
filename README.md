@@ -9,15 +9,37 @@ The install script will prompt for an ActiveMQ keystore password at the start of
     git clone https://github.com/mantidproject/autoreduce.git
     ./autoreduce/ISISPostProcessRPM/setup.sh
     
-After it has run, 
+After it has run, the ISIS archive must also be mounted on the autoreduce machine. This will also require you to make a credentials file with the credentials you will use to access the archive. To do this and to make sure the mount persists through reboots, use the following:
+
+```vim /archive.creds ```
+Add the following lines to the file (but replace the fake details with your real credentials) Leave isis as the domain:
+```
+username=user
+password=pass
+domain=isis
+```
+After this, use the following commands to create a folder to mount the drive into:
+```
+mkdir /isis
+vim /etc/fstab
+```
+Add the following line to the fstab file:
+```
+//isis.cclrc.ac.uk/inst$/       /isis      cifs   _netdev,rw,credentials=/archive.creds,iocharset=utf8,soft, 0 0
+```
+Then, as root, use the following command to update from fstab and add the ISIS mount to the autoreduce machine:
+```
+mount -a
+```
+After the drive has successfully mounted, follow the steps below:
 
 1. ActiveMQ credentials should be changed in `/opt/activemq/conf/activemq.xml` - in the `<authenticationUser>` tag - and in `/etc/autoreduce/post_process_consumer.conf`.
 
 2. ActiveMQ can be started by running `/opt/activemq/bin/activemq start` and the monitor by `python /usr/bin/statusMonitor_daemon.py start`. These expect to run as root.
 
-3. The queue processor can be started by `python /usr/bin/queueProcessor_daemon.py start`; by default the setup expects this to be run as the user `ISISautoreduce@fed.cclrc.ac.uk`.
+4. The queue processor can be started by `python /usr/bin/queueProcessor_daemon.py start`; by default the setup expects this to be run as the user `ISISautoreduce@fed.cclrc.ac.uk`.
 
-4. The setup can be tested by
+5. The setup can be tested by
 
         cd ~/autoreduce/ISISPostProcessRPM/rpmbuild/autoreduce-mq/test
         nano testconfig.py # Enter the correct address and credentials for ActiveMQ
@@ -174,6 +196,30 @@ To modify the software to use plaintext (non-SSL) connections, the Python script
 Logging associated with the Logger used in the python worker script gets stored in `/var/log/autoreduction.log`. To modify logging setting edit `/usr/bin/autoreduction_logging_setup.py`.  
 
 To check rpm and uninstall do `rpm -qa | grep autoreduce` and `rpm -evv name-of-rpm-package`.
+
+### Mounting the ISIS archive
+The ISIS archive must also be mounted on the autoreduce machine. This will also require you to make a credentials file with the credentials you will use to access the archive. To do this and to make sure the mount persists through reboots, use the following:
+
+```vim /archive.creds ```
+Add the following lines to the file (but replace the fake details with your real credentials) Leave isis as the domain:
+```
+username=user
+password=pass
+domain=isis
+```
+After this, use the following commands to create a folder to mount the drive into:
+```
+mkdir /isis
+vim /etc/fstab
+```
+Add the following line to the fstab file:
+```
+//isis.cclrc.ac.uk/inst$/       /isis      cifs   _netdev,rw,credentials=/archive.creds,iocharset=utf8,soft, 0 0
+```
+Then, as root, use the following command to update from fstab and add the ISIS mount to the autoreduce machine:
+```
+mount -a
+```
 
 ### Testing the setup
 
