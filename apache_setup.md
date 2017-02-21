@@ -11,6 +11,7 @@ You will also need a program such as WinRar which can unzip tar.gz files.
 ## Installing necessary components
 
 Firstly, you will need to download and install the different elements that will make up the Apache server. To do this, follow the instructions as follows:
+
 1. Download Apache 2.2 [here](https://archive.apache.org/dist/httpd/binaries/win32/httpd-2.2.25-win32-x86-openssl-0.9.8y.msi). The download will contain an MSI file which you should then run to install the Apache server. The default installation options should be correct but make sure you check the details as you click through. One potential cause for error will be selecting the port that the server should run on. By default, Apache will try to select port 80, but this could already be being used by IIS. In which case, select a different port to use (another commonly chosen port is 8080).
 
 2. If you have not already done so, you will need to download Python 2.7 32 Bit. Click [here](https://www.python.org/ftp/python/2.7.13/python-2.7.13.msi) for 2.7.13 (there may be newer versions available at the time of reading). The installer should guide you through the process in detail.
