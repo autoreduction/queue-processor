@@ -148,12 +148,6 @@ class InstrumentVariablesUtils(object):
         """
         instrument_name = reduction_run.instrument.name
         variables = []
-        # Check whether this run is a re-run.
-        previousRuns = ReductionRun.objects.filter(run_number = reduction_run.run_number, run_version__lt = reduction_run.run_version).order_by('-run_version')
-        if previousRuns:
-            lastRun = previousRuns.first()
-            variables = RunVariable.objects.filter(reduction_run = lastRun) # These will be treated as InstrumentVariable for later copying, but that doesn't matter; we just need to not save them, as below.
-            self._update_variables(variables, save=False)
         
         if not variables:
             # No previous run versions. Find the instrument variables we want to use.
