@@ -11,27 +11,31 @@
     <link rel="stylesheet" href="{% static "css/base.css" %}">
     {% block stylesheets %}{% endblock %}
 </head>
-<body>
-    {% include "navbar.html" %}
-    <div class="container">
-        {% include "header.html" with notifications=notifications %}
-        {% block header %}{% endblock %}
-        <hr />
+    <body>
+        {% if outdated %}
+            {% include "outdated_browser.html" %}
+        {% else %}
+            {% include "navbar.html" %}
+            <div class="container">
+                {% include "header.html" with notifications=notifications %}
+                {% block header %}{% endblock %}
+                <hr />
 
-        <div class="main-content">
-            {% block body %}{% endblock %}
-        </div>
+                <div class="main-content">
+                    {% block body %}{% endblock %}
+                </div>
 
-        {% block footer %}{% endblock %}
-        {% include "footer.html" %}
-    </div>
-    
-    <script src="{% static "javascript/vendor/jquery.min.js" %}"></script>
-    <script src="{% static "javascript/vendor/bootstrap.min.js" %}"></script>
-    <script src="{% static "javascript/cookies.js" %}"></script>
-    <script src="{% static "javascript/polyfills.js" %}"></script>
-    <script src="{% static "javascript/base.js" %}"></script>
-    {% block scripts %}{% endblock %}
-    <title>ISIS Auto-reduction</title>
-</body>
+                {% block footer %}{% endblock %}
+                {% include "footer.html" %}
+            </div>
+
+            <script src="{% static "javascript/vendor/jquery.min.js" %}"></script>
+            <script src="{% static "javascript/vendor/bootstrap.min.js" %}"></script>
+            <script src="{% static "javascript/cookies.js" %}"></script>
+            <script src="{% static "javascript/polyfills.js" %}"></script>
+            <script src="{% static "javascript/base.js" %}"></script>
+            {% block scripts %}{% endblock %}
+            <title>ISIS Auto-reduction</title>
+        {% endif %}
+    </body>
 </html>

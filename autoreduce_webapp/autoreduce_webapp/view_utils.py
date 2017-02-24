@@ -1,7 +1,7 @@
 from django.shortcuts import redirect
 from django.core.exceptions import PermissionDenied
 from autoreduce_webapp.uows_client import UOWSClient
-from autoreduce_webapp.settings import UOWS_LOGIN_URL, LOGIN_URL, INSTALLED_APPS, USER_ACCESS_CHECKS
+from autoreduce_webapp.settings import UOWS_LOGIN_URL, LOGIN_URL, INSTALLED_APPS, USER_ACCESS_CHECKS, OUTDATED_BROWSERS
 from autoreduce_webapp.icat_cache import ICATCache
 from reduction_viewer.models import ReductionRun, Experiment
 from django.template import RequestContext
@@ -77,6 +77,37 @@ def render_with(template):
                 output['notifications'] = notifications
             else:
                 output['notifications'].extend(notifications)
+
+            if 'bad_browsers' not in output:
+                # Load in the list of not accepted browsers from the settings
+                bad_browsers = []
+                for browser in OUTDATED_BROWSERS:
+                    bad_browsers.append((browser, OUTDATED_BROWSERS[browser]))
+
+                # Get the family and version from the user_agent
+                family = request.user_agent.browser.family
+                version = request.user_agent.browser.version_string
+
+                # Make sure we are only comparing against a single integer
+                if '.' in version:
+                    version = int(version[0:(version.index('.'))])
+                else:
+                    version = int(version)
+
+                # Check whether the browser is outdated
+                outdated = False
+                for browser in bad_browsers:
+                    if browser[0] == family and version <= browser[1]:
+                        outdated = True
+
+                # Change to more user-friendly language
+                if family == "IE":
+                    family = "Microsoft Internet Explorer"
+
+                output['bad_browsers'] = bad_browsers
+                output['current_browser'] = family
+                output['version'] = version
+                output['outdated'] = outdated
 
             if 'reduction_variables_on' not in output:
                 output['reduction_variables_on'] = ('reduction_variables' in INSTALLED_APPS)

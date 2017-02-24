@@ -30,6 +30,7 @@ INSTALLED_APPS = (
     'autoreduce_webapp',
     'reduction_viewer',
     'reduction_variables',
+    'django_user_agents',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -39,6 +40,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'django_user_agents.middleware.UserAgentMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
@@ -173,7 +175,13 @@ ICAT = {
     'AUTH' : 'simple',
     'URL' : 'https://icatisis.esc.rl.ac.uk/ICATService/ICAT?wsdl',
     'USER' : 'autoreduce',
-    'PASSWORD' : '2LzZWdds^QENuBw'
+    'PASSWORD' : 'xxxxxxxxxx'
+}
+
+# Outdated Browsers
+
+OUTDATED_BROWSERS = {
+    'IE' : 9,
 }
 
 # UserOffice WebService
