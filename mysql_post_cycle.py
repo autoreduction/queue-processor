@@ -1,5 +1,29 @@
 import mysql.connector
+import sys, os
+from shutil import copyfile
 
+# Directory of the folder with all of the database backups in
+BACKUP_DIRECTORY = 'C:\\database_backup\\'
+
+# Get the latest cycle from the arguments given
+try:
+	latest_cycle = sys.argv[1]
+except IndexError as e:
+	print 'Please enter the name of the latest cycle (e.g. cycle_16_5)'
+	sys.exit(0)
+
+NEW_CYCLE_DIRECTORY = BACKUP_DIRECTORY + latest_cycle
+
+# Make the directory if it doesn't exist
+if not os.path.exists(NEW_CYCLE_DIRECTORY):
+	os.makedirs(NEW_CYCLE_DIRECTORY)
+
+# Copy all of the files in 
+for file in os.listdir(BACKUP_DIRECTORY):
+	if file.endswith('.sql'):
+		file_path = BACKUP_DIRECTORY + file
+		copyfile(file_path, NEW_CYCLE_DIRECTORY + '\\' + file)
+		
 # Login to the database
 connection = mysql.connector.connect(user='root', password='activedev', 
 									 host='reducedev2', database='autoreduction')
