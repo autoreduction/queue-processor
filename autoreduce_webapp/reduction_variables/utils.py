@@ -11,7 +11,6 @@ from autoreduce_webapp.icat_cache import ICATCache
 class DataTooLong(ValueError):
     pass
 
-
 def log_error_and_notify(message):
     """
     Helper method to log an error and save a notifcation
@@ -19,7 +18,6 @@ def log_error_and_notify(message):
     logger.error(message)
     notification = Notification(is_active=True, is_staff_only=True, severity='e', message=message)
     notification.save()
-
 
 class VariableUtils(object):
     def derive_run_variable(self, instrument_var, reduction_run):

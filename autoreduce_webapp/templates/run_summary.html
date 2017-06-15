@@ -167,11 +167,7 @@
                                         <td class="text-{% colour_table_row job.status.value %}"><strong>{{ job.status.value }}</strong></td>
                                         <td title="{{ job.last_updated|date:'SHORT_DATETIME_FORMAT' }}">{{ job.last_updated|naturaltime }}</td>
                                         <td>
-                                            {% if job.started_by %}
-                                                {% get_user_name job.started_by %}
-                                            {% else %}
-                                                Autoreduction Service
-                                            {% endif %}
+											Autoreduction Service
                                         </td>
                                     </tr>
                                 {% endfor %}

@@ -14,10 +14,14 @@ class MyListener(object):
         print 'listener received a message %s' % message
 
         
-print('Starting connection')
-connection = stomp.Connection(host_and_ports=ACTIVEMQ['broker'], use_ssl=ACTIVEMQ['SSL'], ssl_version=3)
+print('Starting connection to ' + str(ACTIVEMQ['broker'][0]))
+print ACTIVEMQ['broker']
+connection = stomp.Connection(host_and_ports=ACTIVEMQ['broker'], use_ssl=ACTIVEMQ['SSL'])
+print 'Have connection'
 connection.set_listener('', MyListener())
+print 'Starting connection'
 connection.start()
+print 'Connecting'
 connection.connect(ACTIVEMQ['username'], ACTIVEMQ['password'], wait=False)
 print('subscribing')
 connection.subscribe(destination='/queue/test', id=1, ack='auto')

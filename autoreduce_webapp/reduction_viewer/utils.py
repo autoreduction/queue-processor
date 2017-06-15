@@ -1,7 +1,7 @@
 import logging, os, sys, time, datetime
 sys.path.append(os.path.join("../", os.path.dirname(os.path.dirname(__file__))))
 os.environ["DJANGO_SETTINGS_MODULE"] = "autoreduce_webapp.settings"
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('app')
 from django.utils import timezone
 from reduction_viewer.models import Instrument, Status, ReductionRun, DataLocation
 from reduction_variables.models import RunVariable
@@ -90,7 +90,10 @@ class ReductionRunUtils(object):
         If a script (as a string) is supplied then use it, otherwise use the previous run's.
         """
         from reduction_variables.utils import InstrumentVariablesUtils, VariableUtils
-        
+		
+        if username == 'super':
+            username = 1
+
         # find the previous run version, so we don't create a duplicate
         last_version = -1
         for run in ReductionRun.objects.filter(experiment=reductionRun.experiment, run_number=reductionRun.run_number):
@@ -130,10 +133,13 @@ class ReductionRunUtils(object):
             else:
                 # provide variables if they aren't already
                 InstrumentVariablesUtils().create_variables_for_run(new_job)
-                    
+
             return new_job
             
-        except:
+        except Exception as e:
+            logger.error('Hello!')
+            logger.error(e.message)
+            logger.error('Goodbye!')
             new_job.delete()
             raise
             

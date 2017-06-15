@@ -9,11 +9,11 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 SECRET_KEY = 'rjjklyhpxrtrandbxx8s4m@aigiw&!i6d2=g&$b-)lueruz!aw'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-TEMPLATE_DEBUG = False
+TEMPLATE_DEBUG = True
 
-ALLOWED_HOSTS = ['reduce.isis.cclrc.ac.uk', 'reduce.rl.ac.uk','localhost']
+ALLOWED_HOSTS = ['localhost', 'reducedev2.isis.cclrc.ac.uk']
 
 ADMINS = ()
 
@@ -45,7 +45,8 @@ MIDDLEWARE_CLASSES = (
 )
 
 AUTHENTICATION_BACKENDS = (
-    'autoreduce_webapp.backends.UOWSAuthenticationBackend',
+    #'autoreduce_webapp.backends.UOWSAuthenticationBackend',
+    'django.contrib.auth.backends.ModelBackend',
 )
 LOGIN_URL = '/'
 
@@ -66,8 +67,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'autoreduction',
-        'USER' : 'autoreduce',
-        'PASSWORD' : 'password',
+        'USER' : 'root',
+        'PASSWORD' : 'activedev',
         'HOST': '127.0.0.1',
         'PORT': '3306',
     }
@@ -86,10 +87,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 
+STATIC_ROOT = ''
 STATIC_URL = '/static/'
 STATIC_PATH = os.path.join(BASE_DIR,'static')
 STATICFILES_DIRS = (
-    STATIC_PATH,
+    os.path.join('static'),
 )
 
 # Logging
@@ -147,9 +149,9 @@ ACTIVEMQ = {
         '/queue/ReductionError'
         ],
     'username' : 'autoreduce',
-    'password' : 'pa$$w0rd',
-    'broker' : [("autoreduce.isis.cclrc.ac.uk", 61613)],
-    'SSL' : True
+    'password' : 'activedev',
+    'broker' : [("autoreducedev2.isis.cclrc.ac.uk", 61613)],
+    'SSL' : False
 }
 
 # File Locations
@@ -175,7 +177,7 @@ ICAT = {
     'AUTH' : 'simple',
     'URL' : 'https://icatisis.esc.rl.ac.uk/ICATService/ICAT?wsdl',
     'USER' : 'autoreduce',
-    'PASSWORD' : 'xxxxxxxxxx'
+    'PASSWORD' : '2LzZWdds^QENuBw'
 }
 
 # Outdated Browsers
@@ -196,9 +198,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'exchsmtp.stfc.ac.uk'
 EMAIL_PORT = 25
 EMAIL_ERROR_RECIPIENTS = ['isisreduce@stfc.ac.uk']
-EMAIL_ERROR_SENDER = 'autoreduce@reduce.isis.cclrc.ac.uk'
+EMAIL_ERROR_SENDER = 'autoreducedev@reduce.isis.cclrc.ac.uk'
 BASE_URL = 'http://reduce.isis.cclrc.ac.uk/'
-
 
 # Constant vars
 
