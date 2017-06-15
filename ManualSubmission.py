@@ -124,10 +124,12 @@ def get_file_name_data(instrument):
 
 
 def main():
+    print "Connecting to ActiveMQ"
     # Connect to ActiveMQ
-    activemq_client = StompClient([("autoreduce.isis.cclrc.ac.uk", 61613)], 'xxxxxxx', 'xxxxxxx', 'RUN_BACKLOG')
+    activemq_client = StompClient([("autoreducedev2.isis.cclrc.ac.uk", 61613)], 'autoreduce', 'activedev', 'RUN_BACKLOG')
     activemq_client.connect()
 
+    print "Connecting to ICAT"
     # Connect to ICAT
     icat = ICAT()
     icat_client = icat.get_client()
@@ -173,11 +175,16 @@ def main():
     for child in root:		
         if child.find('longname').text == inp["inst_name"]:		
             # Save the shortcode that will be used to find the datafile and break as we've found what we needed.		
-            data_file_instrument_name = child.find('shortcode').text		
+            instrument_long = inp["inst_name"]
+            instrument_short = child.find('shortcode').text
             break
+        elif child.find('shortcode').text == inp["inst_name"]:
+            instrument_long = child.find('longcode').text
+            instrument_short = inp["inst_name"]
 
     for run in range(inp["min_run"], inp["max_run"]+1):
-        data_file = data_file_instrument_name + str(run).zfill(data_filename_length) + get_file_extension(inp["rename"])
+        data_file = instrument_short + str(run).zfill(data_filename_length) + get_file_extension(inp["rename"])
+        print 'Creating a job for the datafile at: ' + data_file
         data_dict = {
             "rb_number": str(inp["rbnum"]),
             "instrument": inp["inst_name"],
