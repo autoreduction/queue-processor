@@ -1,10 +1,13 @@
 """
 Queue Configuration 
 """
-import logging, json, sys, os, socket
+import logging
+import json
+import os
+
 
 class StreamToLogger(object):
-    #Fake file-like stream object that redirects writes to a logger instance.
+    # Fake file-like stream object that redirects writes to a logger instance.
     def __init__(self, logger, log_level=logging.INFO):
         self.logger = logger
         self.log_level = log_level
@@ -17,16 +20,10 @@ class StreamToLogger(object):
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(levelname)s %(name)s %(process)d/%(threadName)s: %(message)s",
-#    filename='/home/ajm64/tmp/post_process.log',
     filename='/var/log/mantid_autoreduce_worker.log',
     filemode='a'
 )
-                     
-stdout_logger = logging.getLogger('STDOUT')
-sl = StreamToLogger(stdout_logger, logging.INFO) 
-stderr_logger = logging.getLogger('STDERR')
-sl = StreamToLogger(stderr_logger, logging.ERROR)
-sys.stderr = sl
+
 
 class Configuration(object):
     """
@@ -34,7 +31,7 @@ class Configuration(object):
     """
     def __init__(self, config_file):
                     
-        if os.access(config_file, os.R_OK) == False:
+        if not os.access(config_file, os.R_OK):
             logging.error("Configuration file doesn't exist or is not readable.")
             raise ValueError
         
@@ -63,4 +60,3 @@ class Configuration(object):
         except Exception:
             logging.info('Failed to read configuration file', exc_info=True)
             raise ValueError
-            

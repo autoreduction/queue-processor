@@ -2,16 +2,17 @@
  
 import sys
 from daemon import Daemon
-import statusMonitor
- 
-class AutoreduceMonitorDaemon(Daemon):
+import queue_processor
+
+
+class QueueProcessorDaemon(Daemon):
     def run(self):
-        statusMonitor.main()
+        queue_processor.main()
         while True:
             pass
  
 if __name__ == "__main__":
-    daemon = AutoreduceMonitorDaemon('/tmp/AutoreduceMonitorDaemon.pid')
+    daemon = QueueProcessorDaemon('/tmp/QueueProcessorDaemon.pid')
     if len(sys.argv) == 2:
         if 'start' == sys.argv[1]:
             daemon.start()
@@ -20,9 +21,9 @@ if __name__ == "__main__":
         elif 'restart' == sys.argv[1]:
             daemon.restart()
         else:
-            print("Unknown command")
+            print "Unknown command"
             sys.exit(2)
         sys.exit(0)
     else:
-        print("usage: %s start|stop|restart" % sys.argv[0])
+        print "usage: %s start|stop|restart" % sys.argv[0]
         sys.exit(2)

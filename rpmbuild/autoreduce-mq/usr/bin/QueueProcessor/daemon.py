@@ -3,9 +3,13 @@
     Code taken from:
     http://www.jejik.com/articles/2007/02/a_simple_unix_linux_daemon_in_python/
 """
-import sys, os, time, atexit
-from signal import SIGTERM, SIGKILL
+import sys
+import os
+import time
+import atexit
+from signal import SIGTERM 
 import logging
+
 
 class Daemon(object):
     """
@@ -63,7 +67,7 @@ class Daemon(object):
         # write pidfile
         atexit.register(self.delpid)
         pid = str(os.getpid())
-        file(self.pidfile,'w+').write("%s\n" % pid)
+        file(self.pidfile, 'w+').write("%s\n" % pid)
         logging.info("Started daemon with PID %s" % str(pid))
     
     def delpid(self):
@@ -75,7 +79,7 @@ class Daemon(object):
         """
         # Check for a pidfile to see if the daemon already runs
         try:
-            pf = file(self.pidfile,'r')
+            pf = file(self.pidfile, 'r')
             pid = int(pf.read().strip())
             pf.close()
         except IOError:
@@ -96,7 +100,7 @@ class Daemon(object):
         """
         # Get the pid from the pidfile
         try:
-            pf = file(self.pidfile,'r')
+            pf = file(self.pidfile, 'r')
             pid = int(pf.read().strip())
             pf.close()
         except IOError:
@@ -105,14 +109,15 @@ class Daemon(object):
         if not pid:
             message = "pidfile %s does not exist. Daemon not running?\n"
             logging.error(message % self.pidfile)
-            return # not an error in a restart
+            # Not an error in a restart
+            return
 
         logging.info("Stopping daemon with PID %s" % str(pid))
 
         # Try killing the daemon process    
         try:
             while 1:
-                os.kill(pid, SIGKILL)
+                os.kill(pid, SIGTERM)
                 time.sleep(0.1)
         except OSError, err:
             err = str(err)

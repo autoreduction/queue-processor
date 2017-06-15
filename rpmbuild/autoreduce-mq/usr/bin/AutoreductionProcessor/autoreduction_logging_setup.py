@@ -1,10 +1,9 @@
-import logging
 import logging.handlers
 
 LOGGING_LEVEL = logging.INFO
 LOGGING_LOC = '/var/log/autoreduction.log'
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('AutoreductionProcessor')
 logger.setLevel(LOGGING_LEVEL)
 handler = logging.handlers.RotatingFileHandler(LOGGING_LOC, maxBytes=104857600, backupCount=20)
 handler.setLevel(LOGGING_LEVEL)
