@@ -15,6 +15,7 @@ import errno
 import traceback
 import logging
 import cStringIO
+from timeout import timeout
 from contextlib import contextmanager
 from autoreduction_logging_setup import logger
 from settings import ACTIVEMQ, MISC
@@ -281,9 +282,8 @@ class PostProcessAdmin:
                     in the same directory as reduce_vars, i.e., either it does not import it at all, or adds its
                     location to os.path explicitly.
                     """
-                    logger.info('Environment Variables:')
-                    logger.info(os.environ)
-                    sys.path.append("/opt/Mantid/bin")
+                    # Append the Mantid path to the system path such that we can use Mantid to run the user's script
+                    sys.path.append(MISC["mantid_path"])
                     reduce_script_location = self._load_reduction_script(self.instrument)
                     reduce_script = imp.load_source('reducescript', reduce_script_location)
 
@@ -294,8 +294,9 @@ class PostProcessAdmin:
                         pass
                     if self.data['run_number'] not in skip_numbers:
                         reduce_script = self.replace_variables(reduce_script)
-                        out_directories = reduce_script.main(input_file=str(self.data_file),
-                                                             output_dir=str(reduce_result_dir))
+                        with timeout(MISC["script_timeout"]):
+                            out_directories = reduce_script.main(input_file=str(self.data_file),
+                                                                 output_dir=str(reduce_result_dir))
                     else:
                         self.data['message'] = "Run has been skipped in script"
             except Exception as exp:
