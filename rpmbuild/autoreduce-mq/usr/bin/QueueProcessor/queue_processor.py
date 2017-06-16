@@ -256,7 +256,22 @@ class Listener(object):
         session.commit()
 
         if 'retry_in' in self._data_dict:
-            self.retry_run(reduction_run, self._data_dict["retry_in"])
+            experiment = session.query(Experiment).filter_by(reference_number=self._data_dict['rb_number']).first()
+            previous_runs = session.query(ReductionRun).filter_by(run_number=self._data_dict['run_number'],
+                                                                  experiment=experiment).all()
+            max_version = -1
+            for previous_run in previous_runs:
+                current_version = previous_run.run_version
+                if current_version > max_version:
+                    max_version = current_version
+
+            # If we have already tried more than 5 times, we want to give up and we don't want to retry the run
+            if max_version <= 4:
+                self.retry_run(reduction_run, self._data_dict["retry_in"])
+            else:
+                # Need to delete the retry_in entry from the dictionary so that the front end doesn't report a false
+                # retry instance.
+                del self._data_dict['retry_in']
             
         self.notify_run_failure(reduction_run)
 

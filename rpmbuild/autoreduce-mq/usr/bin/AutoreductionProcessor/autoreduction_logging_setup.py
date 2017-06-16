@@ -10,5 +10,5 @@ handler.setLevel(LOGGING_LEVEL)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
-# Quite the Stomp logs as they are quite chatty
+# Quiet the Stomp logs as they are quite chatty
 logging.getLogger('stomp').setLevel(logging.INFO)

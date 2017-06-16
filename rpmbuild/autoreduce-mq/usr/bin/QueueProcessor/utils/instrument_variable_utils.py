@@ -319,7 +319,7 @@ class InstrumentVariablesUtils(object):
                 final_variables = self.get_default_variables(instrument_name)
 
         # Delete all currently saved variables that apply to the range.
-        map(lambda temp_var: temp_var.delete(), applicable_variables)
+        map(lambda var: var.delete(), applicable_variables)
 
         # Modify the range of the final set to after the specified range, if there is one.
         for var in final_variables:
