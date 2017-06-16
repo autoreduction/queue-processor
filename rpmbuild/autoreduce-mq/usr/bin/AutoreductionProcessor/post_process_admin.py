@@ -189,8 +189,7 @@ class PostProcessAdmin:
         return os.path.join(self._reduction_script_location(instrument_name), 'reduce.py')
 
     def reduce(self):
-        try:     
-        
+        try:
             logger.debug("Calling: " + ACTIVEMQ['reduction_started'] + "\n" + prettify(self.data))
             self.client.send(ACTIVEMQ['reduction_started'], json.dumps(self.data))
 
@@ -224,6 +223,27 @@ class PostProcessAdmin:
             # strip the temp path off the front of the temp directory to get the final archive directory
             final_result_dir = reduce_result_dir[len(MISC["temp_root_directory"]):]
             final_log_dir = log_dir[len(MISC["temp_root_directory"]):]
+
+            if 'overwrite' in self.data:
+                if not self.data["overwrite"]:
+                    logger.info('Don\'t want to overwrite previous data')
+                    path_parts = reduce_result_dir.split('/')
+                    new_path = '/'
+                    for part in path_parts:
+                        if part.startswith('autoreduce'):
+                            number = part.replace('autoreduce', '')
+                            logger.info(number)
+                            if number != '':
+                                number = int(number) + 1
+                            else:
+                                number = 1
+                            new_path = 'autoreduce' + str(number) + '/'
+                        if part == '':
+                            pass
+                        else:
+                            new_path = new_path + part + '/'
+                    logger.info('New path = ' + new_path)
+
 
             # test for access to result paths
             try:
@@ -272,7 +292,7 @@ class PostProcessAdmin:
             logger.info("----------------")
 
             logger.info("Reduction subprocess started.")
-
+            logger.info(reduce_result_dir)
             out_directories = None
 
             try:
