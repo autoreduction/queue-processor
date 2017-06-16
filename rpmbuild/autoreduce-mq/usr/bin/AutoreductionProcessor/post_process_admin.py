@@ -17,9 +17,7 @@ import logging
 import cStringIO
 from contextlib import contextmanager
 from autoreduction_logging_setup import logger
-
-# TODO: Put this in the dictionary in the first place in queue_processor
-REDUCTION_DIRECTORY = '/isis/NDX%s/user/scripts/autoreduction'
+from settings import ACTIVEMQ, MISC
 
 
 @contextmanager
@@ -82,11 +80,10 @@ def prettify(data):
 
 
 class PostProcessAdmin:
-    def __init__(self, data, conf, connection):
+    def __init__(self, data, connection):
         logger.debug("json data: " + prettify(data))
         data["information"] = socket.gethostname()
         self.data = data
-        self.conf = conf
         self.client = connection
         
         self.reduction_log_stream = cStringIO.StringIO()
@@ -94,7 +91,7 @@ class PostProcessAdmin:
 
         try:
             if 'data' in data:
-                self.data_file = windows_to_linux_path(str(data['data']), self.conf["temp_root_directory"])
+                self.data_file = windows_to_linux_path(str(data['data']), MISC["temp_root_directory"])
                 logger.debug("data_file: %s" % self.data_file)
             else:
                 raise ValueError("data is missing")
@@ -185,7 +182,7 @@ class PostProcessAdmin:
 
     @staticmethod
     def _reduction_script_location(instrument_name):
-        return REDUCTION_DIRECTORY % instrument_name
+        return MISC["scripts_directory"] % instrument_name
 
     def _load_reduction_script(self, instrument_name):
         return os.path.join(self._reduction_script_location(instrument_name), 'reduce.py')
@@ -193,27 +190,27 @@ class PostProcessAdmin:
     def reduce(self):
         try:     
         
-            logger.debug("Calling: " + self.conf['reduction_started'] + "\n" + prettify(self.data))
-            self.client.send(self.conf['reduction_started'], json.dumps(self.data))
+            logger.debug("Calling: " + ACTIVEMQ['reduction_started'] + "\n" + prettify(self.data))
+            self.client.send(ACTIVEMQ['reduction_started'], json.dumps(self.data))
 
             # Specify instrument directory
             cycle = re.match(r'.*cycle_(\d\d_\d).*', self.data_file.lower()).group(1)
-            if self.instrument in (self.conf["ceph_instruments"] + self.conf["excitation_instruments"]):
+            if self.instrument in (MISC["ceph_instruments"] + MISC["excitation_instruments"]):
 
-                instrument_dir = self.conf["ceph_directory"] % (self.instrument, self.proposal, self.run_number)
-                if self.instrument in self.conf["excitation_instruments"]:
+                instrument_dir = MISC["ceph_directory"] % (self.instrument, self.proposal, self.run_number)
+                if self.instrument in MISC["excitation_instruments"]:
                     # Excitations would like to remove the run number folder at the end
                     instrument_dir = instrument_dir[:instrument_dir.rfind('/')+1]
             else:
-                instrument_dir = self.conf["archive_directory"] % (self.instrument,
-                                                                   cycle,
-                                                                   self.proposal,
-                                                                   self.run_number)
+                instrument_dir = MISC["archive_directory"] % (self.instrument,
+                                                              cycle,
+                                                              self.proposal,
+                                                              self.run_number)
             
             # Specify directories where autoreduction output will go
-            reduce_result_dir = self.conf["temp_root_directory"] + instrument_dir
-            if self.instrument not in self.conf["excitation_instruments"]:
-                run_output_dir = os.path.join(self.conf["temp_root_directory"],
+            reduce_result_dir = MISC["temp_root_directory"] + instrument_dir
+            if self.instrument not in MISC["excitation_instruments"]:
+                run_output_dir = os.path.join(MISC["temp_root_directory"],
                                               instrument_dir[:instrument_dir.rfind('/')+1])
             else:
                 run_output_dir = reduce_result_dir
@@ -224,8 +221,8 @@ class PostProcessAdmin:
             mantid_log = os.path.join(log_dir, log_and_err_name + "Mantid.log")
 
             # strip the temp path off the front of the temp directory to get the final archive directory
-            final_result_dir = reduce_result_dir[len(self.conf["temp_root_directory"]):]
-            final_log_dir = log_dir[len(self.conf["temp_root_directory"]):]
+            final_result_dir = reduce_result_dir[len(MISC["temp_root_directory"]):]
+            final_log_dir = log_dir[len(MISC["temp_root_directory"]):]
 
             # test for access to result paths
             try:
@@ -354,20 +351,20 @@ class PostProcessAdmin:
                 
         else:
             # reduction has successfully completed
-            self.client.send(self.conf['reduction_complete'], json.dumps(self.data))
-            print("\nCalling: " + self.conf['reduction_complete'] + "\n" + prettify(self.data) + "\n")
+            self.client.send(ACTIVEMQ['reduction_complete'], json.dumps(self.data))
+            print("\nCalling: " + ACTIVEMQ['reduction_complete'] + "\n" + prettify(self.data) + "\n")
             logger.info("Reduction job successfully complete")
 
     def _send_error_and_log(self):
-        logger.info("\nCalling " + self.conf['reduction_error'] + " --- " + prettify(self.data))
-        self.client.send(self.conf['reduction_error'], json.dumps(self.data)) 
+        logger.info("\nCalling " + ACTIVEMQ['reduction_error'] + " --- " + prettify(self.data))
+        self.client.send(ACTIVEMQ['reduction_error'], json.dumps(self.data))
 
     def copy_temp_directory(self, temp_result_dir, copy_destination):
         """ Method that copies the temporary files held in results_directory to CEPH/archive, replacing old data if it
         exists"""
 
         # EXCITATION instrument are treated as a special case because they done what run number subfolders
-        if os.path.isdir(copy_destination) and self.instrument not in self.conf["excitation_instruments"]:
+        if os.path.isdir(copy_destination) and self.instrument not in MISC["excitation_instruments"]:
             self._remove_directory(copy_destination)
 
         self.data['reduction_data'].append(linux_to_windows_path(copy_destination))
@@ -439,16 +436,15 @@ class PostProcessAdmin:
             self.log_and_message("Unable to remove existing directory %s - %s" % (directory, exp))
 
 if __name__ == "__main__":
+    brokers = []
+    brokers.append((ACTIVEMQ['brokers'].split(':')[0], int(ACTIVEMQ['brokers'].split(':')[1])))
+    stomp_connection = stomp.Connection(host_and_ports=brokers, use_ssl=False)
+    json_data = None
     try:
-        config_file = json.load(open('/etc/autoreduce/post_process_consumer.conf'))
-
-        brokers = []
-        brokers.append((config_file['brokers'].split(':')[0], int(config_file['brokers'].split(':')[1])))
         logger.info("PostProcessAdmin Connecting to ActiveMQ")
-        stomp_connection = stomp.Connection(host_and_ports=brokers, use_ssl=False)
         stomp_connection.start()
-        stomp_connection.connect(config_file['amq_user'],
-                                 config_file['amq_pwd'],
+        stomp_connection.connect(ACTIVEMQ['amq_user'],
+                                 ACTIVEMQ['amq_pwd'],
                                  wait=True,
                                  header={'activemq.prefetchSize': '1',})
         logger.info("PostProcessAdmin Successfully Connected to ActiveMQ")
@@ -459,7 +455,7 @@ if __name__ == "__main__":
         json_data = json.loads(message)
         
         try:  
-            pp = PostProcessAdmin(json_data, config_file, stomp_connection)
+            pp = PostProcessAdmin(json_data, stomp_connection)
             log_stream_handler = logging.StreamHandler(pp.admin_log_stream)
             logger.addHandler(log_stream_handler)
             if destination == '/queue/ReductionPending':
@@ -483,7 +479,7 @@ if __name__ == "__main__":
     except Exception as er:
         logger.info("Something went wrong: " + str(er))
         try:
-            stomp_connection.send(config_file['postprocess_error'], json.dumps(json_data))
-            print("Called " + config_file['postprocess_error'] + "----" + prettify(json_data))
+            stomp_connection.send(ACTIVEMQ['postprocess_error'], json.dumps(json_data))
+            print("Called " + ACTIVEMQ['postprocess_error'] + "----" + prettify(json_data))
         finally:
             sys.exit()
