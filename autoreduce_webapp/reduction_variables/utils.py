@@ -491,6 +491,7 @@ class MessagingUtils(object):
             'run_version':reduction_run.run_version,
             'facility':FACILITY,
             'message':'',
+			'overwrite':reduction_run.overwrite,
         }
 
         return data_dict
