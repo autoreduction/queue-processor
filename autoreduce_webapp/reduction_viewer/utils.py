@@ -83,7 +83,7 @@ class ReductionRunUtils(object):
             reductionRun.retry_run.save()
             
 
-    def createRetryRun(self, reductionRun, overwrite, script=None, variables=None, delay=0, username=None):
+    def createRetryRun(self, reductionRun, overwrite=None, script=None, variables=None, delay=0, username=None, description=''):
         """
         Create a run ready for re-running based on the run provided. 
         If variables (RunVariable) are provided, copy them and associate them with the new one, otherwise use the previous run's.
@@ -106,7 +106,7 @@ class ReductionRunUtils(object):
             # create the run object and save it
             new_job = ReductionRun( instrument = reductionRun.instrument
                                   , run_number = reductionRun.run_number
-                                  , run_name = ""
+                                  , run_name = description
                                   , run_version = last_version+1
                                   , experiment = reductionRun.experiment
                                   , started_by = username
