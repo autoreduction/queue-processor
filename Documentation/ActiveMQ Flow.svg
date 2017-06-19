@@ -1,0 +1,808 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="1920"
+   height="1080"
+   viewBox="0 0 507.99999 285.75001"
+   version="1.1"
+   id="svg8"
+   inkscape:version="0.92.1 r15371"
+   sodipodi:docname="ActiveMQ Flow.svg"
+   inkscape:export-filename="C:\Users\tip22963\Documents\Autoreduce\autoreduce\WebApp\ISIS\Documentation\Autoreduction ActiveMQ Flow.png"
+   inkscape:export-xdpi="104.82934"
+   inkscape:export-ydpi="104.82934">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.49497475"
+     inkscape:cx="907.02053"
+     inkscape:cy="698.76722"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     units="px"
+     inkscape:snap-grids="true"
+     inkscape:window-width="1920"
+     inkscape:window-height="1018"
+     inkscape:window-x="1912"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1">
+    <inkscape:grid
+       type="xygrid"
+       id="grid5036" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-11.249983)">
+    <rect
+       style="fill:#2992e4;fill-opacity:1;stroke:#000000;stroke-width:0.89482379;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect5048-1"
+       width="87.599518"
+       height="33.145771"
+       x="18.631535"
+       y="116.52676" />
+    <rect
+       style="fill:#21a12c;fill-opacity:1;stroke:#000000;stroke-width:0.89482379;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect5048-7"
+       width="89.816399"
+       height="29.274654"
+       x="18.782211"
+       y="47.003685" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:9.4702177px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.23675545"
+       x="21.675533"
+       y="64.143379"
+       id="text5082"><tspan
+         sodipodi:role="line"
+         id="tspan5080"
+         x="21.675533"
+         y="64.143379"
+         style="stroke-width:0.23675545">EndOfRunMonitor</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:9.4702177px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.23675545"
+       x="36.723698"
+       y="136.34868"
+       id="text5082-6"><tspan
+         sodipodi:role="line"
+         id="tspan5080-4"
+         x="36.723698"
+         y="136.34868"
+         style="stroke-width:0.23675545">DataReady</tspan></text>
+    <rect
+       style="fill:#21a12c;fill-opacity:1;stroke:#000000;stroke-width:0.90654081;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect5048-7-6"
+       width="92.18396"
+       height="29.274654"
+       x="118.21951"
+       y="47.003685" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:9.4702177px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.23675545"
+       x="120.17061"
+       y="64.475174"
+       id="text5082-5"><tspan
+         sodipodi:role="line"
+         id="tspan5080-8"
+         x="120.17061"
+         y="64.475174"
+         style="stroke-width:0.23675545">ManualSubmission</tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.15216863;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 98.181387,78.645897 v 33.145763 0"
+       id="path5123"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.21696043;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 94.630053,104.689 3.551334,7.10266 v 0"
+       id="path5123-1"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.21696043;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 101.49595,104.689 -3.551335,7.10266 v 0"
+       id="path5123-1-3"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#2992e4;stroke-width:1.40893304;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 61.247519,76.278343 v 40.248427 0"
+       id="path5170"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#2992e4;stroke-width:1.40893316;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 61.247519,149.67253 v 40.24843 0"
+       id="path5170-9"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.15216863;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 97.944618,152.04008 v 33.14576 0"
+       id="path5123-9"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.21696043;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 94.393284,178.08319 3.551334,7.10265 v 0"
+       id="path5123-1-2"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.21696043;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 101.25918,178.08318 -3.551332,7.10266 v 0"
+       id="path5123-1-3-1"
+       inkscape:connector-curvature="0" />
+    <rect
+       style="fill:#21a12c;fill-opacity:1;stroke:#000000;stroke-width:0.89482379;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect5048-7-69"
+       width="89.816399"
+       height="29.274654"
+       x="17.835186"
+       y="189.53052" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:9.4702177px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.23675545"
+       x="24.540636"
+       y="207.14851"
+       id="text5082-8"><tspan
+         sodipodi:role="line"
+         id="tspan5080-0"
+         x="24.540636"
+         y="207.14851"
+         style="stroke-width:0.23675545">QueueProcessor</tspan></text>
+    <path
+       style="fill:none;stroke:#2992e4;stroke-width:1.67406189;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 163.52589,76.278335 v 56.821315 0"
+       id="path5170-4"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#2992e4;stroke-width:1.69141018;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 164.23615,133.1222 -58.00509,-0.0226 v 0"
+       id="path5170-4-9"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.15216863;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 146.47949,141.38609 h -33.14576 v 0"
+       id="path5123-0"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.21696043;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 120.43639,137.83476 -7.10266,3.55133 v 0"
+       id="path5123-1-28"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.21696043;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 120.43639,144.70065 -7.10266,-3.55132 v 0"
+       id="path5123-1-3-6"
+       inkscape:connector-curvature="0" />
+    <rect
+       style="fill:#ffc64c;fill-opacity:0.99553573;stroke:#000000;stroke-width:0.90654081;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect5048-7-6-3"
+       width="92.183968"
+       height="29.274654"
+       x="220.49785"
+       y="46.530178" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:9.4702177px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.23675545"
+       x="264.45956"
+       y="59.26656"
+       id="text5082-5-9"><tspan
+         sodipodi:role="line"
+         id="tspan5080-8-8"
+         x="266.12424"
+         y="59.26656"
+         style="text-align:center;text-anchor:middle;stroke-width:0.23675545">Front End </tspan><tspan
+         sodipodi:role="line"
+         x="264.45956"
+         y="71.104332"
+         style="text-align:center;text-anchor:middle;stroke-width:0.23675545"
+         id="tspan5301">Submission</tspan></text>
+    <rect
+       style="fill:#2992e4;fill-opacity:1;stroke:#000000;stroke-width:0.91868991;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect5048-1-6"
+       width="92.334625"
+       height="33.145771"
+       x="219.87369"
+       y="111.79165" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:9.4702177px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.23675545"
+       x="224.31819"
+       y="131.27704"
+       id="text5082-6-7"><tspan
+         sodipodi:role="line"
+         id="tspan5080-4-8"
+         x="224.31819"
+         y="131.27704"
+         style="stroke-width:0.23675545">ReductionPending</tspan></text>
+    <path
+       style="fill:none;stroke:#2992e4;stroke-width:1.32346213;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 264.85722,76.278343 v 35.513317 0"
+       id="path5170-4-99"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#2992e4;stroke-width:1.34223568;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 108.59862,204.12629 h 68.65908 l 1e-5,-75.76175 h 42.61598"
+       id="path5394"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.15216863;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 179.35313,121.0251 h 33.14577 v 0"
+       id="path5123-0-9"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.21696043;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 205.39624,124.57644 7.10266,-3.55134 v 0"
+       id="path5123-1-28-8"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.21696043;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 205.39624,117.71054 7.10266,3.55134 v 0"
+       id="path5123-1-3-6-1"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.11025727;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 308.89375,78.645897 v 30.778213 0"
+       id="path5123-08"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.21696043;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 305.34242,102.32144 3.55133,7.10267 v 0"
+       id="path5123-1-37"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.21696043;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 312.20831,102.32144 -3.55132,7.10267 v 0"
+       id="path5123-1-3-0"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#2992e4;stroke-width:1.39082682;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 265.3966,145.3786 v 39.22061 0"
+       id="path5170-4-99-3"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.12550735;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 308.66579,147.90896 v 31.62952 0"
+       id="path5123-08-2"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.25810754;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 305.11447,171.9474 3.55132,7.59108 v 0"
+       id="path5123-1-37-2"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.25810754;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 311.98036,171.9474 -3.55133,7.59108 v 0"
+       id="path5123-1-3-0-7"
+       inkscape:connector-curvature="0" />
+    <rect
+       style="fill:#21a12c;fill-opacity:1;stroke:#000000;stroke-width:0.89482379;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect5048-7-69-7"
+       width="89.816399"
+       height="29.274654"
+       x="222.39191"
+       y="183.15854" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:9.47021866px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.23675546"
+       x="267.00613"
+       y="195.66443"
+       id="text5082-8-0"><tspan
+         sodipodi:role="line"
+         id="tspan5080-0-9"
+         x="267.00613"
+         y="195.66443"
+         style="text-align:center;text-anchor:middle;stroke-width:0.23675546">Autoreduction</tspan><tspan
+         sodipodi:role="line"
+         x="267.00613"
+         y="207.5022"
+         style="text-align:center;text-anchor:middle;stroke-width:0.23675546"
+         id="tspan5495">Processor</tspan></text>
+    <path
+       style="fill:none;stroke:#2992e4;stroke-width:1.32346213;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 347.63338,197.25102 h -35.51333 v 0"
+       id="path5170-4-99-7"
+       inkscape:connector-curvature="0" />
+    <rect
+       style="fill:#2992e4;fill-opacity:1;stroke:#000000;stroke-width:0.91868991;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect5048-1-6-4"
+       width="92.334625"
+       height="33.145775"
+       x="346.39182"
+       y="179.28741" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:9.47021866px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.23675546"
+       x="350.8363"
+       y="198.77281"
+       id="text5082-6-7-7"><tspan
+         sodipodi:role="line"
+         id="tspan5080-4-8-7"
+         x="350.8363"
+         y="198.77281"
+         style="stroke-width:0.23675546">ReductionStarted</tspan></text>
+    <rect
+       style="fill:#21a12c;fill-opacity:1;stroke:#000000;stroke-width:0.90116084;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect5048-7-69-0"
+       width="91.093033"
+       height="29.274654"
+       x="347.12729"
+       y="112.30841" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:9.47021866px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.23675546"
+       x="392.8013"
+       y="129.51355"
+       id="text5082-8-0-7"><tspan
+         sodipodi:role="line"
+         x="392.8013"
+         y="129.51355"
+         style="text-align:center;text-anchor:middle;stroke-width:0.23675546"
+         id="tspan5495-7">QueueProcessor</tspan></text>
+    <path
+       style="fill:none;stroke:#2992e4;stroke-width:1.37730193;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 393.17989,141.07698 v 38.46152 0"
+       id="path5170-4-99-3-3"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.12550735;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 425.5597,176.24902 v -31.62952 0"
+       id="path5123-08-2-2"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.25810766;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 429.11103,152.21058 -3.55133,-7.59108 v 0"
+       id="path5123-1-37-2-3"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.25810766;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 422.24514,152.21058 3.55133,-7.59108 v 0"
+       id="path5123-1-3-0-7-2"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#2992e4;stroke-width:1.32346213;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 297.02613,247.94652 v -35.51332 0"
+       id="path5170-4-99-7-8"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#aa2336;stroke-width:1.32346213;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 236.29744,247.85826 v -35.51333 0"
+       id="path5170-4-99-7-8-8"
+       inkscape:connector-curvature="0" />
+    <rect
+       style="fill:#aa2336;fill-opacity:1;stroke:#000000;stroke-width:0.9190594;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect5048-1-6-4-3"
+       width="92.334625"
+       height="33.145779"
+       x="169.26643"
+       y="248.61935" />
+    <rect
+       style="fill:#2992e4;fill-opacity:1;stroke:#000000;stroke-width:0.91868991;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect5048-1-6-4-6"
+       width="92.334625"
+       height="33.145779"
+       x="270.45734"
+       y="248.36433" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:9.47021866px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.23675546"
+       x="272.20233"
+       y="268.14328"
+       id="text5082-6-7-7-6"><tspan
+         sodipodi:role="line"
+         id="tspan5080-4-8-7-5"
+         x="272.20233"
+         y="268.14328"
+         style="font-size:9.10930347px;stroke-width:0.23675546">ReductionComplete</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:9.47021866px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.23675546"
+       x="180.69307"
+       y="268.65448"
+       id="text5082-6-7-7-6-0"><tspan
+         sodipodi:role="line"
+         id="tspan5080-4-8-7-5-1"
+         x="180.69307"
+         y="268.65448"
+         style="font-size:9.10930347px;stroke-width:0.23675546">ReductionError</tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.12550735;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 304.61722,214.96356 v 31.62952 0"
+       id="path5123-08-2-7"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.25810766;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 301.06589,239.00199 3.55133,7.59109 v 0"
+       id="path5123-1-37-2-7"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.25810766;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 307.93178,239.00199 -3.55133,7.59109 v 0"
+       id="path5123-1-3-0-7-3"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.12550735;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 228.70636,214.96356 v 31.62952 0"
+       id="path5123-08-2-6"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.25810766;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 225.15503,239.00199 3.55133,7.59109 v 0"
+       id="path5123-1-37-2-5"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.25810766;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 232.02092,239.00199 -3.55133,7.59109 v 0"
+       id="path5123-1-3-0-7-24"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#aa2336;stroke-width:1.32346213;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 134.9947,268.10116 h 35.51332 v 0"
+       id="path5170-4-99-7-8-8-2"
+       inkscape:connector-curvature="0" />
+    <rect
+       style="fill:#21a12c;fill-opacity:1;stroke:#000000;stroke-width:0.89482379;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect5048-7-69-3"
+       width="89.816399"
+       height="29.274654"
+       x="45.266548"
+       y="252.99654" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:9.47021866px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.23675546"
+       x="51.972"
+       y="270.6145"
+       id="text5082-8-5"><tspan
+         sodipodi:role="line"
+         id="tspan5080-0-8"
+         x="51.972"
+         y="270.6145"
+         style="stroke-width:0.23675546">QueueProcessor</tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.15216863;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 165.44731,247.85826 h -33.14576 v 0"
+       id="path5123-0-6"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.21696043;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 139.4042,244.30693 -7.10265,3.55133 v 0"
+       id="path5123-1-28-2"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.21696043;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 139.4042,251.17282 -7.10265,-3.55133 v 0"
+       id="path5123-1-3-6-8"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#aa2336;stroke-width:1.32346213;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 398.24061,268.10116 H 362.7273 v 0"
+       id="path5170-4-99-7-8-8-2-6"
+       inkscape:connector-curvature="0" />
+    <rect
+       style="fill:#21a12c;fill-opacity:1;stroke:#000000;stroke-width:0.89482379;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect5048-7-69-3-3"
+       width="89.816399"
+       height="29.274654"
+       x="-487.96878"
+       y="252.99654"
+       transform="scale(-1,1)" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:9.47021866px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.23675546"
+       x="443.81958"
+       y="270.04501"
+       id="text5082-8-0-7-9"><tspan
+         sodipodi:role="line"
+         x="443.81958"
+         y="270.04501"
+         style="text-align:center;text-anchor:middle;stroke-width:0.23675546"
+         id="tspan5495-7-2">QueueProcessor</tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.15216863;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 364.82273,247.62149 h 33.14576 v 0"
+       id="path5123-0-6-5"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.21696043;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 390.86583,251.17282 7.10266,-3.55133 v 0"
+       id="path5123-1-28-2-6"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.21696043;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 390.86583,244.30693 7.10266,3.55133 v 0"
+       id="path5123-1-3-6-8-0"
+       inkscape:connector-curvature="0" />
+    <rect
+       style="fill:#aa2336;fill-opacity:1;stroke:#000008;stroke-width:0.77766573;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect5890"
+       width="17.128605"
+       height="12.846454"
+       x="393.71442"
+       y="86.5895" />
+    <rect
+       style="fill:#ffc64b;fill-opacity:0.99607843;stroke:#000018;stroke-width:0.77766573;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect5890-9"
+       width="17.128605"
+       height="12.846454"
+       x="393.71442"
+       y="28.806276" />
+    <rect
+       style="fill:#2992e4;fill-opacity:1;stroke:#000018;stroke-width:0.77766573;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect5890-9-7"
+       width="17.128605"
+       height="12.846454"
+       x="393.71442"
+       y="67.322289" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:8.01326275px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.20033155"
+       x="454.66296"
+       y="37.535057"
+       id="text5082-8-0-7-92"><tspan
+         sodipodi:role="line"
+         x="454.66296"
+         y="37.535057"
+         style="text-align:center;text-anchor:middle;stroke-width:0.20033155"
+         id="tspan5495-7-1">FrontEnd Application</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:8.01326275px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.20033155"
+       x="442.90253"
+       y="76.48362"
+       id="text5082-8-0-7-92-8"><tspan
+         sodipodi:role="line"
+         x="442.90253"
+         y="76.48362"
+         style="text-align:center;text-anchor:middle;stroke-width:0.20033155"
+         id="tspan5958">ActiveMQ Flow</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:8.01326275px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.20033155"
+       x="448.49902"
+       y="95.103081"
+       id="text5082-8-0-7-92-8-1"><tspan
+         sodipodi:role="line"
+         x="448.49902"
+         y="95.103081"
+         style="text-align:center;text-anchor:middle;stroke-width:0.20033155"
+         id="tspan5958-8">Error Queue Flow</tspan></text>
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot5990"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:20px;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;fill:#000000;fill-opacity:1;stroke:none"
+       transform="matrix(0.2530362,0,0,0.2530362,1.6635106,53.334249)"><flowRegion
+         id="flowRegion5992"
+         style="line-height:20px;writing-mode:lr-tb"><rect
+           id="rect5994"
+           width="200"
+           height="180"
+           x="380"
+           y="180"
+           style="line-height:20px;writing-mode:lr-tb" /></flowRegion><flowPara
+         id="flowPara5996"
+         style="font-size:20px;line-height:20px;text-align:center;writing-mode:lr-tb;text-orientation:upright;text-anchor:middle">ProduceMessage(Data JSON)</flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot5990-8"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:20px;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;fill:#000000;fill-opacity:1;stroke:none"
+       transform="matrix(0.2530362,0,0,0.2530362,4.5553533,128.16066)"><flowRegion
+         id="flowRegion5992-0"
+         style="line-height:20px;writing-mode:lr-tb"><rect
+           id="rect5994-0"
+           width="200"
+           height="180"
+           x="380"
+           y="180"
+           style="line-height:20px;writing-mode:lr-tb" /></flowRegion><flowPara
+         id="flowPara5996-4"
+         style="font-size:20px;line-height:20px;text-align:center;writing-mode:lr-tb;text-orientation:upright;text-anchor:middle">ConsumeMessage(Data JSON)</flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot5990-7"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:20px;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;fill:#000000;fill-opacity:1;stroke:none"
+       transform="matrix(0.2530362,0,0,0.2530362,12.146439,100.32669)"><flowRegion
+         id="flowRegion5992-1"
+         style="line-height:20px;writing-mode:lr-tb"><rect
+           id="rect5994-2"
+           width="200"
+           height="180"
+           x="380"
+           y="180"
+           style="line-height:20px;writing-mode:lr-tb" /></flowRegion><flowPara
+         id="flowPara5996-6"
+         style="font-size:20px;line-height:20px;text-align:center;writing-mode:lr-tb;text-orientation:upright;text-anchor:middle">ProduceMessage(Data JSON)</flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot5990-7-3"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:20px;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;fill:#000000;fill-opacity:1;stroke:none"
+       transform="matrix(0.2530362,0,0,0.2530362,76.128452,56.226089)"><flowRegion
+         id="flowRegion5992-1-5"
+         style="line-height:20px;writing-mode:lr-tb"><rect
+           id="rect5994-2-4"
+           width="200"
+           height="180"
+           x="380"
+           y="180"
+           style="line-height:20px;writing-mode:lr-tb" /></flowRegion><flowPara
+         id="flowPara5996-6-3"
+         style="font-size:20px;line-height:20px;text-align:center;writing-mode:lr-tb;text-orientation:upright;text-anchor:middle">ProduceMessage(Data JSON)</flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot5990-7-3-0"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:20px;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;fill:#000000;fill-opacity:1;stroke:none"
+       transform="matrix(0.2530362,0,0,0.2530362,209.45159,47.22853)"><flowRegion
+         id="flowRegion5992-1-5-5"
+         style="line-height:20px;writing-mode:lr-tb"><rect
+           id="rect5994-2-4-5"
+           width="200"
+           height="180"
+           x="380"
+           y="180"
+           style="line-height:20px;writing-mode:lr-tb" /></flowRegion><flowPara
+         id="flowPara5996-6-3-0"
+         style="font-size:20px;line-height:20px;text-align:center;writing-mode:lr-tb;text-orientation:upright;text-anchor:middle">ProduceMessage(Data JSON)</flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot5990-7-3-0-6"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:20px;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;fill:#000000;fill-opacity:1;stroke:none"
+       transform="matrix(0.2530362,0,0,0.2530362,211.13807,116.11347)"><flowRegion
+         id="flowRegion5992-1-5-5-6"
+         style="line-height:20px;writing-mode:lr-tb"><rect
+           id="rect5994-2-4-5-4"
+           width="200"
+           height="180"
+           x="380"
+           y="180"
+           style="line-height:20px;writing-mode:lr-tb" /></flowRegion><flowPara
+         id="flowPara5996-6-3-0-3"
+         style="font-size:20px;line-height:20px;text-align:center;writing-mode:lr-tb;text-orientation:upright;text-anchor:middle">ConsumeMessage(Data JSON)</flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot5990-7-3-0-6-3"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:20px;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;fill:#000000;fill-opacity:1;stroke:none"
+       transform="matrix(0.2530362,0,0,0.2530362,328.76525,96.174977)"><flowRegion
+         id="flowRegion5992-1-5-5-6-8"
+         style="line-height:20px;writing-mode:lr-tb"><rect
+           id="rect5994-2-4-5-4-4"
+           width="200"
+           height="180"
+           x="380"
+           y="180"
+           style="line-height:20px;writing-mode:lr-tb" /></flowRegion><flowPara
+         id="flowPara5996-6-3-0-3-8"
+         style="font-size:20px;line-height:20px;text-align:center;writing-mode:lr-tb;text-orientation:upright;text-anchor:middle">ConsumeMessage(Data JSON)</flowPara></flowRoot>    <path
+       style="fill:none;stroke:#000000;stroke-width:1.02128839;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 316.52955,207.37247 h 26.0431 v 0"
+       id="path5123-0-6-5-0"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.07872033;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 336.99199,210.9238 5.58066,-3.55133 v 0"
+       id="path5123-1-28-2-6-0"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1.07872033;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 336.99199,204.05791 5.58066,3.55133 v 0"
+       id="path5123-1-3-6-8-0-7"
+       inkscape:connector-curvature="0" />
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot5990-7-3-0-6-0"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:20px;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;fill:#000000;fill-opacity:1;stroke:none"
+       transform="matrix(0.2530362,0,0,0.2530362,224.58239,166.08364)"><flowRegion
+         id="flowRegion5992-1-5-5-6-82"
+         style="line-height:20px;writing-mode:lr-tb"><rect
+           id="rect5994-2-4-5-4-6"
+           width="200"
+           height="180"
+           x="380"
+           y="180"
+           style="line-height:20px;writing-mode:lr-tb" /></flowRegion><flowPara
+         id="flowPara5996-6-3-0-3-5"
+         style="font-size:20px;line-height:20px;text-align:center;writing-mode:lr-tb;text-orientation:upright;text-anchor:middle">ProduceMessage(Data JSON)</flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot5990-7-3-0-6-0-8"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:20px;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;fill:#000000;fill-opacity:1;stroke:none"
+       transform="matrix(0.2530362,0,0,0.2530362,206.63995,187.42215)"><flowRegion
+         id="flowRegion5992-1-5-5-6-82-6"
+         style="line-height:20px;writing-mode:lr-tb"><rect
+           id="rect5994-2-4-5-4-6-1"
+           width="200"
+           height="180"
+           x="380"
+           y="180"
+           style="line-height:20px;writing-mode:lr-tb" /></flowRegion><flowPara
+         id="flowPara5996-6-3-0-3-5-8"
+         style="font-size:20px;line-height:20px;text-align:center;writing-mode:lr-tb;text-orientation:upright;text-anchor:middle">ProduceMessage(Data JSON)</flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot5990-7-3-0-6-0-8-5"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:20px;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;fill:#000000;fill-opacity:1;stroke:none"
+       transform="matrix(0.2530362,0,0,0.2530362,289.17344,186.32136)"><flowRegion
+         id="flowRegion5992-1-5-5-6-82-6-8"
+         style="line-height:20px;writing-mode:lr-tb"><rect
+           id="rect5994-2-4-5-4-6-1-5"
+           width="200"
+           height="180"
+           x="380"
+           y="180"
+           style="line-height:20px;writing-mode:lr-tb" /></flowRegion><flowPara
+         id="flowPara5996-6-3-0-3-5-8-1"
+         style="font-size:20px;line-height:20px;text-align:center;writing-mode:lr-tb;text-orientation:upright;text-anchor:middle">ConsumeMessage(Data JSON)</flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot5990-7-3-0-6-3-1"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:20px;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;fill:#000000;fill-opacity:1;stroke:none"
+       transform="matrix(0.2530362,0,0,0.2530362,26.997008,184.76591)"><flowRegion
+         id="flowRegion5992-1-5-5-6-8-1"
+         style="line-height:20px;writing-mode:lr-tb"><rect
+           id="rect5994-2-4-5-4-4-4"
+           width="200"
+           height="180"
+           x="380"
+           y="180"
+           style="line-height:20px;writing-mode:lr-tb" /></flowRegion><flowPara
+         id="flowPara5996-6-3-0-3-8-9"
+         style="font-size:20px;line-height:20px;text-align:center;writing-mode:lr-tb;text-orientation:upright;text-anchor:middle">ConsumeMessage(Data JSON)</flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot5990-7-3-0-6-0-8-0"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:20px;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;fill:#000000;fill-opacity:1;stroke:none"
+       transform="matrix(0.2530362,0,0,0.2530362,83.129987,187.72785)"><flowRegion
+         id="flowRegion5992-1-5-5-6-82-6-87"
+         style="line-height:20px;writing-mode:lr-tb"><rect
+           id="rect5994-2-4-5-4-6-1-53"
+           width="200"
+           height="180"
+           x="380"
+           y="180"
+           style="line-height:20px;writing-mode:lr-tb" /></flowRegion><flowPara
+         id="flowPara5996-6-3-0-3-5-8-4"
+         style="font-size:20px;line-height:20px;text-align:center;writing-mode:lr-tb;text-orientation:upright;text-anchor:middle">ProduceMessage(Data JSON)</flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot6285"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
+       transform="matrix(0.26458333,0,0,0.26458333,-33.141422,8.0427487)"><flowRegion
+         id="flowRegion6287"><rect
+           id="rect6289"
+           width="740"
+           height="80"
+           x="760"
+           y="40" /></flowRegion><flowPara
+         id="flowPara6291"
+         style="font-size:60px">Autoreduction ActiveMQ Flow</flowPara></flowRoot>    <rect
+       style="fill:#21a12c;fill-opacity:1;stroke:#000018;stroke-width:0.77766579;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect5890-9-9"
+       width="17.128605"
+       height="12.846455"
+       x="393.71979"
+       y="48.061367" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:8.01326275px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.20033155"
+       x="453.60999"
+       y="56.79015"
+       id="text5082-8-0-7-92-9"><tspan
+         sodipodi:role="line"
+         x="453.60999"
+         y="56.79015"
+         style="text-align:center;text-anchor:middle;stroke-width:0.20033155"
+         id="tspan5495-7-1-1">Backend Application</tspan></text>
+  </g>
+</svg>
