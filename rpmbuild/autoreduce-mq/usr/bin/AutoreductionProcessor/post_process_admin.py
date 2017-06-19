@@ -227,23 +227,30 @@ class PostProcessAdmin:
             if 'overwrite' in self.data:
                 if not self.data["overwrite"]:
                     logger.info('Don\'t want to overwrite previous data')
-                    path_parts = reduce_result_dir.split('/')
+                    path_parts = final_result_dir.split('/')
                     new_path = '/'
                     for part in path_parts:
-                        if part.startswith('autoreduce'):
-                            number = part.replace('autoreduce', '')
-                            logger.info(number)
+                        if part != 'autoreduced' and part != '':
+                            new_path = new_path + part + '/'
+                    maximum = 0
+                    for folder in os.listdir(new_path):
+                        if folder.startswith('autoreduced'):
+                            number = folder.replace('autoreduced', '')
                             if number != '':
                                 number = int(number) + 1
+                                if number > maximum:
+                                    maximum = number
                             else:
-                                number = 1
-                            new_path = 'autoreduce' + str(number) + '/'
-                        if part == '':
-                            pass
-                        else:
-                            new_path = new_path + part + '/'
-                    logger.info('New path = ' + new_path)
+                                maximum = 1
+                    if maximum == 0:
+                        new_path = new_path + 'autoreduced'
+                    else:
+                        new_path = new_path + 'autoreduced' + str(maximum) + '/'
+                    final_result_dir = new_path
+                    final_log_dir = new_path + 'reduction_log/'
 
+            logger.info('Final Result Directory = ' + final_result_dir)
+            logger.info('Final Log Directory = ' + final_log_dir)
 
             # test for access to result paths
             try:
