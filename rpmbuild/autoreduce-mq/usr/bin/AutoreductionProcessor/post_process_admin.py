@@ -214,6 +214,9 @@ class PostProcessAdmin:
                                               instrument_dir[:instrument_dir.rfind('/')+1])
             else:
                 run_output_dir = reduce_result_dir
+
+            if 'run_description' in self.data:
+                logger.info("DESCRIPTION: " + self.data["run_description"])
                 
             log_dir = reduce_result_dir + "/reduction_log/"
             log_and_err_name = "RB" + self.proposal + "Run" + self.run_number
