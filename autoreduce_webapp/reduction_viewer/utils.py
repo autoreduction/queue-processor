@@ -90,7 +90,10 @@ class ReductionRunUtils(object):
         If a script (as a string) is supplied then use it, otherwise use the previous run's.
         """
         from reduction_variables.utils import InstrumentVariablesUtils, VariableUtils
-		
+
+        # Get the current last_updated value as we'll need it when resetting it later on.
+        run_last_updated = reductionRun.last_updated
+
         if username == 'super':
             username = 1
 
@@ -119,6 +122,10 @@ class ReductionRunUtils(object):
             reductionRun.retry_run = new_job
             reductionRun.retry_when = timezone.now().replace(microsecond=0) + datetime.timedelta(seconds=delay if delay else 0)
             reductionRun.save()
+
+            # Saving the reduction run in the previous step will also have incremented the last_updated value for the
+            # previous run. Since we want to keep this the same, we can manually update the value ourselves.
+            ReductionRun.object.filter(id = reductionRun.id).update(last_updated = run_last_updated)
             
             # copy the previous data locations
             for data_location in reductionRun.data_location.all():
@@ -138,9 +145,7 @@ class ReductionRunUtils(object):
             return new_job
             
         except Exception as e:
-            logger.error('Hello!')
             logger.error(e.message)
-            logger.error('Goodbye!')
             new_job.delete()
             raise
             
