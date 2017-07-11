@@ -16,8 +16,13 @@ def log_error_and_notify(message):
     Helper method to log an error and save a notifcation
     """
     logger.error(message)
-    notification = Notification(is_active=True, is_staff_only=True, severity='e', message=message)
-    notification.save()
+
+    # Only want to save the notification if there is no message like it already. Otherwise one message could spam the
+    # front page.
+    existing_notifications = Notification.objects.filter(message=message)
+    if existing_notifications == []:
+        notification = Notification(is_active=True, is_staff_only=True, severity='e', message=message)
+        notification.save()
 
 class VariableUtils(object):
     def derive_run_variable(self, instrument_var, reduction_run):

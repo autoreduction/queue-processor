@@ -1,4 +1,3 @@
-import logging
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
@@ -207,3 +206,4 @@ FACILITY = "ISIS"
 PRELOAD_RUNS_UNDER = 100 # If the index run list has fewer than this many runs to show the user, preload them all.
 CACHE_LIFETIME = 3600 # Objects in ICATCache live this many seconds when ICAT is available to update them.
 USER_ACCESS_CHECKS = True # Should the webapp prevent users from accessing runs/instruments they're not allowed to?
+DEVELOPMENT_MODE = True

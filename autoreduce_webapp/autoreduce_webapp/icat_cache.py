@@ -1,19 +1,23 @@
-import datetime, logging
-logger = logging.getLogger("app")
+import datetime
+import logging
 from django.utils import timezone
 from autoreduce_webapp.settings import CACHE_LIFETIME
 from autoreduce_webapp.icat_communication import ICATCommunication
 from autoreduce_webapp.models import UserCache, InstrumentCache, ExperimentCache
 
+logger = logging.getLogger("app")
+
 
 class ICATConnectionException(Exception):
     pass
 
+
 class ICATCache(object):
     """
     A wrapper for ICATCommunication that caches information, and in the case of ICAT failure will try to use this cache.
-    It stores Cache models in the database, and will get all fields from ICATCommunication if a model is requested but has expired or doesn't exist.
-    Most of the methods it wraps from ICATCommunication are templated rather than declared explicitly; see below.    
+    It stores Cache models in the database, and will get all fields from ICATCommunication if a model is requested but
+    has expired or doesn't exist. Most of the methods it wraps from ICATCommunication are templated rather than declared
+    explicitly; see below.
     """
     def __init__(self, **kwargs):
         self.kwargs = kwargs
@@ -23,7 +27,7 @@ class ICATCache(object):
     def __enter__(self):
         return self
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, value, traceback):
         if self.icat is not None:
             self.icat.__exit__(type, value, traceback)
             
@@ -33,20 +37,21 @@ class ICATCache(object):
             if self.icat is None:
                 self.icat = ICATCommunication(**self.kwargs)
         except Exception as e:
-            logger.error("Failed to connect to ICAT: %s - %s" % (type(e).__name, e))
+            logger.error("Failed to connect to ICAT: %s - %s" % (type(e), e))
             raise ICATConnectionException()
             
     def is_valid(self, cache_obj):
         """ Check whether a cache object is fresh and is not None. """
         return cache_obj and cache_obj.created + datetime.timedelta(seconds=self.cache_lifetime) > timezone.now()
-        
-    def to_list(self, l):
+
+    @staticmethod
+    def to_list(l):
         return ",".join(map(str, l))
             
-    def cull_invalid(self, list):
+    def cull_invalid(self, validity_list):
         """ Removes all objects in the list that have expired. """
         rlist = []
-        for obj in list:
+        for obj in validity_list:
             obj.delete() if not self.is_valid(obj) else rlist.append(obj)
         return rlist
         
@@ -55,24 +60,28 @@ class ICATCache(object):
         Adds an object of type obj_type and id obj_id to the cache - querying ICAT - and returns the object.
         E.g., obj_type = InstrumentCache, obj_id = "WISH".
         """
-        self.open_icat() # Open an ICAT session if we don't have one open.
+        self.open_icat()  # Open an ICAT session if we don't have one open.
         
         if obj_type != ExperimentCache:
-            # Check func_list for the attributes that each model should have, and the corresponding ICATCommunication function to query for it; call it for each, building a dict, and then splice it into the constructor kwargs.
-            new_obj = obj_type(**{attr:(getattr(self.icat, func)(obj_id) if typ is None else self.to_list(getattr(self.icat, func)(obj_id))) for (func, model, attr, typ) in func_list if model == obj_type})
+            # Check func_list for the attributes that each model should have, and the corresponding ICATCommunication
+            # function to query for it; call it for each, building a dict, and then splice it into the constructor
+            # kwargs.
+            new_obj = obj_type(**{attr: (getattr(self.icat, func)(obj_id) if typ is None else self.to_list(getattr(self.icat, func)(obj_id))) for (func, model, attr, typ) in func_list if model == obj_type})
         else:
-            # In this case, ICATCommunication returns all the ExperimentCache fields in one query, so we splice that into the constructor.
-            new_obj = obj_type(**{attr:str(val) for attr,val in self.icat.get_experiment_details(obj_id).iteritems() if attr is not "reference_number"})
+            # In this case, ICATCommunication returns all the ExperimentCache fields in one query,
+            # so we splice that into the constructor.
+            new_obj = obj_type(**{attr: str(val) for attr, val in self.icat.get_experiment_details(obj_id).iteritems() if attr is not "reference_number"})
         new_obj.id_name = obj_id
         new_obj.save()
         return new_obj
         
     def check_cache(self, obj_type, obj_id):
         """
-        Checks the cache for an object of type obj_type and id obj_id -  querying for a new one if there isn't a fresh copy - and returns it.
-        If ICAT is unavailable, use a local copy if it exists. If we can't use anything, return None.
+        Checks the cache for an object of type obj_type and id obj_id -  querying for a new one if there isn't a fresh
+        copy - and returns it.If ICAT is unavailable, use a local copy if it exists.
+        If we can't use anything, return None.
         """
-        in_cache = obj_type.objects.filter(id_name = obj_id).order_by("-created")
+        in_cache = obj_type.objects.filter(id_name=obj_id).order_by("-created")
         ret_obj = None
         if in_cache:
             ret_obj = in_cache[0]

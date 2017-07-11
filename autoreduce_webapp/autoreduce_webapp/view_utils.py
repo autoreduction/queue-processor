@@ -7,12 +7,14 @@ from reduction_viewer.models import ReductionRun, Experiment
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from reduction_viewer.models import Notification, Setting
+from settings import DEVELOPMENT_MODE
 
 def has_valid_login(request):
     """
     Check that the user is correctly logged in and their session is still considered valid
     """
-    return True
+    if DEVELOPMENT_MODE:
+        return True
     if request.user.is_authenticated() and 'sessionid' in request.session and UOWSClient().check_session(request.session['sessionid']):
         return True
     return False
@@ -78,7 +80,7 @@ def render_with(template):
                 output['notifications'] = notifications
             else:
                 output['notifications'].extend(notifications)
-            '''
+
             if 'bad_browsers' not in output:
                 # Load in the list of not accepted browsers from the settings
                 bad_browsers = []
@@ -109,7 +111,7 @@ def render_with(template):
                 output['current_browser'] = family
                 output['version'] = version
                 output['outdated'] = outdated
-	    '''
+
             if 'reduction_variables_on' not in output:
                 output['reduction_variables_on'] = ('reduction_variables' in INSTALLED_APPS)
             

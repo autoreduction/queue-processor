@@ -6,7 +6,7 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from autoreduce_webapp.uows_client import UOWSClient
 from autoreduce_webapp.icat_cache import ICATCache
-from autoreduce_webapp.settings import UOWS_LOGIN_URL, PRELOAD_RUNS_UNDER, USER_ACCESS_CHECKS
+from autoreduce_webapp.settings import UOWS_LOGIN_URL, PRELOAD_RUNS_UNDER, USER_ACCESS_CHECKS, DEVELOPMENT_MODE
 from reduction_viewer.models import Experiment, ReductionRun, Instrument
 from reduction_viewer.utils import StatusUtils, ReductionRunUtils
 from reduction_viewer.view_utils import deactivate_invalid_instruments
@@ -26,13 +26,16 @@ def index(request):
     use_query_next = request.build_absolute_uri(request.GET.get('next'))
     default_next = 'run_list'
 
-    user = authenticate(username="super", password="super")
-    login(request, user)
+    authenticated = False
 
-    logger.info('Super user logging in')
-    logger.info(user.username)
-    if True:
-    # if request.user.is_authenticated() and 'sessionid' in request.session and UOWSClient().check_session(request.session['sessionid']):
+    if DEVELOPMENT_MODE:
+        user = authenticate(username="super", password="super")
+        login(request, user)
+        authenticated = True
+    else:
+        authenticated = request.user.is_authenticated() and 'sessionid' in request.session and UOWSClient().check_session(request.session['sessionid'])
+
+    if authenticated:
         if request.GET.get('next'):
             return_url = use_query_next
         else:
@@ -150,8 +153,7 @@ def run_list(request):
     instruments = []
     owned_instruments = []
     experiments = {}
-    logger.info('Super user')
-    logger.info(request.user.username)
+
     # Superuser sees everything
     if request.user.is_superuser or not USER_ACCESS_CHECKS:
         instrument_names = Instrument.objects.values_list('name', flat=True)
