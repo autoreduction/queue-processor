@@ -149,14 +149,17 @@ other components and update the system. These components are:
   A worker for reduction processing
 \end{itemize}
 
-When the monitor detects that a new run has completed on an instrument, it sends a
-request to do so to \emph{Data Ready}. The state database consumes the
-request and creates a corresponding job in the database, before
-sending a request to process it to \emph{Reduction Pending}. The reduction
-worker takes this message and executes the appropriate reduction script, sending the
-result to either \emph{Reduction Complete} or \emph{Reduction Error},
-where it's consumed by the state database to update the status of the
-job.
+When the monitor detects that a new run has completed on an instrument, it will send a 
+message to the \emph{Data Ready} queue. The \emph{QueueProcessor} process will consume this
+message, strip out the relevant information and creates a corresponding job in the database.
+\emph{QueueProcessor} will then send the message on to the \emph{Reduction Pending} queue.
+The \emph{AutoreductionProcessor} process will be watching the \emph{Reduction Pending} queue.
+When \emph{AutoreductionProcessor} recieves a message, it runs the \emph{PostProcessAdmin} 
+script which will send a message to the \emph{ReductionStarted} queue such that the database
+remains up to date. Once reduction has finished, \emph{PostProcessAdmin}  will send the
+result to either \emph{Reduction Complete} or \emph{Reduction Error} where it will be consumed
+by the \emph{QueueProcessor} and updated in the database.
+
 
 \begin{figure*}
 \centering\includegraphics[width=1.15\linewidth,angle=90,origin=c]{system.png}
@@ -165,11 +168,11 @@ job.
 
 \subsection{Message queue}\label{message-queue}
 
-Apache ActiveMQ\cite{activemq} is used as the message queueing system, with
-message contents as JSON-formatted objects. The intention of the message
-is conveyed by which queue it's placed in, rather than a field in the
+Apache ActiveMQ \cite{activemq} is used as the message queueing system using 
+JSON-formatted objects as messages. The intention of the message
+is conveyed by which queue it's placed in rather than a field in the
 message itself. Runs can be `scheduled' simply by using ActiveMQ's
-scheduled delay feature, which allows a message to be delivered a given
+scheduled delay feature which allows a message to be delivered a given
 time after it's been pushed to the queue.
 
 Messages contain metadata for the run such as a (unique) run number and
@@ -179,18 +182,18 @@ necessary information to carry out the data reduction - the Python
 script to run on the data, paths to the data, and variables to be used
 by the script.
 
-Data files at ISIS typically run in the hundreds of MB, so would be
-impractical to send directly in a message; they're provided as file
+Data files at ISIS typically run in the hundreds of MB. They are therefore 
+impractical to be sent directly in a message and instead they're provided as file
 paths on a shared file archive. Meanwhile, the reduction script to be
-used is sent as a string; the script is served from the state database,
-and using the message queue directly to send it obviates the need to
+used is sent as a string; the script is served from the state database
+and using the message queue to directly send it obviates the need to
 rely on a potentially flaky shared file store within the system.
 
 \subsection{Run monitor}\label{run-monitor}
 
 When a new run has been completed on the beam line, the raw data files are
 placed in a shared filesystem. A node runs a Python watchdog daemon that
-tracks changes in this filesystem, and when a new run is detected, sends a
+tracks changes in this filesystem and, when a new run is detected, will send a
 message to \emph{Data Ready} with details of the run. The particular
 choice of monitor isn't crucial; anything would work as long as it
 pushed the same message to the queue. In the current production system
