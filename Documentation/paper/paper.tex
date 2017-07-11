@@ -1,8 +1,15 @@
 \documentclass[twocolumn]{article}
 
-\usepackage[unicode=true]{hyperref}
+\usepackage[unicode=true, hidelinks]{hyperref}
 \usepackage{enumitem}
 \usepackage{graphicx,grffile}
+\usepackage{xcolor}
+\hypersetup{
+	colorlinks,
+	linkcolor={red!50!black},
+	citecolor={blue!50!black},
+	urlcolor={blue!80!black}
+}
 
 \title{\textbf{Autoreduction - an automated data reduction system for beamline instruments at the ISIS Facility}}
 \author{J. R. Corderoy, T. Gowland, L. Greenwood, M. Noble, D. Oram and A. J. Markvardsen \\
@@ -41,11 +48,11 @@ into data formats readable by further analysis software.
 The purpose of the autoreduction system is to provide a useful automation
 step in this process. The system described in this paper allows data coming 
 off an instrument to be automatically reduced using a dedicated software package 
-such as Mantid\cite{mantid}, whilst also lending transparency to the process and
+such as Mantid \cite{mantid}, whilst also lending transparency to the process and
 letting users control it through a straightforward web interface.
 
 Automated data reduction is a concept which is actively persued at other large facilities.
-At the NOBUGS 2016 Conference\cite{NOBUGS}, there were several talks given by delegates
+At the NOBUGS 2016 Conference \cite{NOBUGS}, there were several talks given by delegates
 from other large scale facilities which mentioned the automated reduction of data at a variety
 of facilities. 
 
