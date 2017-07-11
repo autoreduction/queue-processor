@@ -5,7 +5,8 @@
 \usepackage{graphicx,grffile}
 
 \title{\textbf{Autoreduction - an automated data reduction system for beamline instruments at the ISIS Facility}}
-\author{J. R. Corderoy, L. Greenwood, M. Noble, D. Oram and A. J. Markvardsen (code contributors)\\
+\author{J. R. Corderoy, T. Gowland, L. Greenwood, M. Noble, D. Oram and A. J. Markvardsen \\
+(code contributors)\\
 ISIS Facility, Rutherford Appleton Laboratory\\
 Email: someone with an STFC email account}
 \date{23/09/2015}
@@ -17,12 +18,12 @@ Email: someone with an STFC email account}
 
 A key step for users of large research facilities is the
 processing of instrument data before use. Autoreduction is a software
-system designed to automate this process, integrated with other
+system designed to automate this process, integrate with other
 pre-existing facility systems and software packages, and provide
 an interface for users to control it.
 
 This article describes the system setup for Autoreduction at the ISIS Facility;
-it motivation and design, its use and interface, and its current status in production at ISIS.
+its motivation and design, its use and interface and its current status in production at ISIS.
 
 \section{Introduction}\label{introduction}
 
@@ -32,60 +33,65 @@ to perform experiments using instruments set up to probe the inner
 structure and dynamics of materials. 
 Common to most instruments is the need to process -- 
 `reduce' -- raw data collected from an instrument into a form
-that a user can interprete or can do further analysis on. For example
+that users can interprete or do further analysis on. For example
 by removing instrument specific artifacts from the measured data, 
 transforming the data into different units and/or
-into data formats readably by further analysis software.
+into data formats readable by further analysis software.
 
 The purpose of the autoreduction system is to provide a useful automation
-step in this process. The system described in this works allows data coming 
+step in this process. The system described in this paper allows data coming 
 off an instrument to be automatically reduced using a dedicated software package 
-such as Mantid\cite{mantid}, while lending transparency to the process and
+such as Mantid\cite{mantid}, whilst also lending transparency to the process and
 letting users control it through a straightforward web interface.
 
-TO DO: some reference that automation of data reduction also persued at
-other large scale facilities: Anders writing from NOBUGS conference: such as 
-possibly mention Diamand has a batch script based system 
-for macromolecular beamlines (talk by Dr Markus Gerstel, Diamond). Dr Martin Rehr 
-mentioned in his talk on "Image data Management System" that auto processing was
-used. Dr Sergey Stepanov talk "Integration of fast detectors into.... macromolecular
-crystallography beamlines at the Advanced Photon Source" used auto processing - seemed
-to be a theme for MX beamlines.  
+Automated data reduction is a concept which is actively persued at other large facilities.
+At the NOBUGS 2016 Conference\cite{NOBUGS}, there were several talks given by delegates
+from other large scale facilities which mentioned the automated reduction of data at a variety
+of facilities. 
+
+Data Analysis Infrastructure for DLS MX/CX \cite{dls-talk} discusses a batch
+script based system for macromolecular beamlines. It makes use of ActiveMQ \cite{activemq}
+(which will be discussed later in this paper) and also has a front end status monitor to
+show the health of the system during run-time. Integration of Fast Detectors 
+into Beamline Control \cite{anl-talk} also mentioned the use of automatic data processing.
+To keep up with the data rates from faster detectors, they are now automatically reducing data
+immediately so that users can see the results as soon as the dataset is taken.
 
 \section{Background}\label{background}
 
 The autoreduction system at ISIS was inspired by an autoreduction setup at the
-the Spallation Neutron Source (SNS) at Oak Ridge National Laboratory \cite{autoreductionSNS}. 
+the Spallation Neutron Source (SNS) at Oak Ridge National Laboratory \cite{autoreduceSNS}. 
 
 The autoreduction implementation at ISIS uses the same underlying 
 technologies (choice of programming language and queue node software
 for example) as those used for the implementation of the SNS autoreduction
-service but differs in that its front end client is designed to serve
-autoreduction users only and in satisfying requirements of the ISIS 
-facility not orginally part of the SNS implementation.
+service. However, the ISIS implementation differs in that its front end 
+client is designed to serve autoreduction users only and was not orginally 
+part of the SNS implementation.
 
 \subsection{Data reduction}\label{data-reduction}
 
 The autoreduction service exists to reduce beamline instrument data. An
 instrument produces discrete tranches of data, referred to as `runs', in
 service of experiments. This raw data typically needs to be processed --
-`reduced' -- before it can be used by scientists, by running a script on
-it. Although the script itself need not change often, it may have
+`reduced' -- before it can be used by scientists. This is done by running a 
+script on it. Although the script itself need not change often, it may have
 configurable parameters -- variables -- which might require more frequent
 updating.
 
 The autoreduction system is intended to automate this process.
-Instrument scientists provide it with reduction scripts - in a specified
-location on a shared file archive - and sets of variables to use to
-reduce runs. The system watches for the completion of runs, and runs the
-appropriate script, with the correct variables, on them, supplying the
-reduced data to a data store for users to retrieve.
+Instrument scientists provide the system with reduction scripts - in a specified
+location on a shared file archive - along with sets of variables to use to
+reduce runs. Firstly, the system watches  for the completion of runs. Once a new
+completed run has been found, the system will then run the appropriate script
+with the correct variables on the new run. Once the script has finished execution,
+reduced data will be saved to a data store for users to retrieve.
 
 \subsection{Requirements}\label{requirements}
 
 The system is intended to serve the instrument scientists (who manage beamline instruments) 
 and users who use the instruments to run experiments. 
-The key requirements from these users, which have been impleted to date, are:
+The key requirements from these users, which have been completed to date, are:
 
 \begin{enumerate}[noitemsep]
 \item
@@ -95,18 +101,18 @@ The key requirements from these users, which have been impleted to date, are:
   Show the status of reduction on runs, as well as the results and
   locations of reduced data, to users
 \item
-  Allow instrument scientists to set the parameters used for reduction,
-  in advance of experiments, and optionally schedule these to be diffirent
+  Allow instrument scientists to set the parameters used for reduction
+  in advance of experiments and optionally schedule these to be diffirent
   for particular experiment
 \item
-  Allow users and instrument scientists to see what script, with which
-  parameters, was used to reduce a run
+  Allow users and instrument scientists to see what script and with which
+  parameters was used to reduce a run
 \item
   Allow users and instrument scientists to modify the parameters used
-  for a run, and re-run reduction using new parameters or scripts
+  for a run and re-run reduction using new parameters or scripts
 \end{enumerate}
 
-Additionally, constraints are:
+Additional constraints are:
 
 \begin{enumerate}[noitemsep]
 \item
@@ -122,10 +128,10 @@ Additionally, constraints are:
 
 \section{System architecture}\label{system-architecture}
 
-The architecture is based on a queue node, which co-ordinates
+The architecture is based on a queue node which co-ordinates
 communication between all components of the system. This maintains
-separate message queues, which allow components to act on messages from
-other components and update the system. These components are
+separate message queues which allow components to act on messages from
+other components and update the system. These components are:
 
 \begin{itemize}[noitemsep]
 \item
@@ -387,6 +393,23 @@ Tom Griffin, Nick Draper, Martyn Gigg, Alex Buts, other excitation group members
     Apache Software Foundation,
     \emph{Apache Activemq},
     \url{http://activemq.apache.org/}.
+
+\bibitem{dls-talk}
+	M. Gerstel, R. Gildea, K. Levik, A. Ashton, G. Winter.
+	\emph{Data Analysis Infrastructure for DLS MX/CX},
+	NOBUGS Conference 2016, Københavns Universitet,
+	\url{https://indico.esss.lu.se/event/357/session/7/contribution/51/material/slides/0.pdf}
+
+\bibitem{anl-talk}
+	Dr. Sergey Stepanov.
+	\emph{Integration of fast detectors into beamline controls at the GM/CA macromolecular crystallography beamlines at the Advanced Photon Source},
+	NOBUGS Conference 2016, Københavns Universitet,
+	\url{https://indico.esss.lu.se/event/357/session/6/contribution/17/material/slides/0.pdf}
+
+\bibitem{NOBUGS}
+	NOBUGS Conference 2016,
+	\emph{NOBUGS},
+	\url{https://indico.esss.lu.se/event/357/}.
     
 \bibitem{django}
     Django Software Foundation,
