@@ -329,18 +329,27 @@ batch operations on failed jobs such as to re-run them.
 
 \section{Deployment}\label{deployment}
 
-The system is deployed at ISIS. The node managing
-the state and web app is a Windows Server system running on a 
-Hyper-V\cite{hyper-v} virtualisation cluster; it serves the web app using
-Microsoft's Internet Information Services (IIS)\cite{iis} and 
-FastCGI\cite{fcgi}. The web app is currently only accessible from inside
-the laboratory using the URL: http://reduce.isis.cclrc.ac.uk. 
+The system is deployed at ISIS. The node managing the WebApp is a Windows Server 2012
+running on a Hyper-V\cite{hyper-v} virtualisation cluster and it serves the WebApp using
+Apache's HTTP Server\cite{apache}. The WebApp runs on a Windows server for security reasons
+but since it runs on a basic Apache server, it could easily be moved across to a Linux machine
+if it needed to. The WebApp is currently only accessible from inside the laboratory using the 
+URL: http://reduce.isis.cclrc.ac.uk.
 
-There is one reduction node, running Red Hat Enterprise Linux 7\cite{rhel}
-on a dedicated server -- reducing large amounts of data is memory and CPU-intensive.
-This node also serves the message queue; subsequent worker nodes would
-not have multiple message queues, and the message queue will be hosted
-on a separate node.
+There is then a second node which runs Red Hat Enterprise Linux 7\cite{rhel}. This node
+manages the parts of the system which are common between front and backend. This includes:
+the MySQL database, the ActiveMQ server and the EndOfRunMonitor. This node should have
+all the parts of the system that wouldn't need to be replicated as part of a worker node.
+
+The third and final node manages the parts of the system that could be replicated such that 
+we can have multiple worker nodes active in order to split the load of autoreduction and speed
+up the overall process. This node has the QueueProcessor and the AutoreductionProcessor installed
+on it. At the moment, the production system only uses one of these nodes but as the usage of the 
+system increases, so too will the load. It might then be sensible to have multiple worker nodes.
+
+The system is split out in this way such that if the machine with the WebApp installed were to fail,
+the overall process of reduction could still take place. We would still pick up new runs with the 
+EndOfRunMonitor and would still be able to process them with QueueProcessor and AutoreductionProcessor.
 
 The software written as part this project is not tied to a
 particular operating system since it is written entirely in Python and Django. 
@@ -358,23 +367,26 @@ the needs of users. Future development to this will involve:
   Integrating other methods of monitoring or listening for new runs -- the current
   method of watching a file archive is specific to ISIS
 \item
-  Make the web app to be accessible from outside of the laboratory
+  Make the WebApp accessible from outside of the laboratory
 \item
-  Have selected reduced data automatically cataloqued in ICAT 
+  Have selected reduced data automatically catalogued in ICAT 
 \item
   Improving portability and deployability of the current software; the
   state database/webapp is currently somewhat nontrivial to deploy
+\item 
+  Having the worker node machine as a Docker \cite{docker} image for
+  easier deployment
 \end{enumerate}
 
-Longer term, the system may be extended to listen to live streams and starts
-processing such data as they come off beamlines rather then waiting for files 
+In the longer term, the system may be extended to listen to live streams and begin
+processing data as soon as it comes off beamlines rather then waiting for files 
 to be written to disk. 
 
 \section{Conclusion}\label{conclusion}
 
 The autoreduction system offers a convenient way of automating data reduction
 on beamline instruments. It uses a scalable architecture to allow prompt
-reduction of data from a large number of instruments, and utilises a web app
+reduction of data from a large number of instruments and utilises a web app
 frontend to allow users to control the reduction process manually and verify
 that the correct reduction was executed.
 
@@ -429,12 +441,22 @@ Tom Griffin, Nick Draper, Martyn Gigg, Alex Buts, other excitation group members
     Django Software Foundation,
     \emph{Django},
     \url{https://www.djangoproject.com/}.
+
+\bibitem{apache}
+	Apache HTTP Server Project
+	\emph{Apache},
+	\url{https://httpd.apache.org/}.
     
 \bibitem{hyper-v}
     Microsoft Corporation,
     \emph{Hyper-V},
     \url{https://technet.microsoft.com/en-us/library/mt169373.aspx}.
-    
+
+\bibitem{Docker}
+	Docker,
+	\emph{Docker},
+	\url{https://www.docker.com/}
+
 \bibitem{iis}
     Microsoft Corporation,
     \emph{IIS},
