@@ -201,20 +201,24 @@ at ISIS, the run monitor is on same node as the state database itself.
 
 \subsection{State database \& coordinator}\label{state-database}
 
-A node keeps track of the status of jobs in a local SQL database. This
-server hosts a Python service responsible for listening on \emph{Data
-Ready}, to create new jobs in the database and then dispatch them to \emph{Reduction
-Pending}. It manages variables for reduction, and selects the correct
-set for the job. The same server is also responsible for serving the
-Python/Django\cite{django} web app, and the database is accessible through
-Django's object interface.
+The \emph{QueueProcessor} service runs as a daemon and is the service responsible
+for keeping track of the status of jobs in an SQL database. The service
+listens on the \emph{Data Ready} queue. When messages are first received,
+the service will set the correct variables for the job, create new jobs in 
+the database and, when ready, will send a message to the \emph{Reduction Pending} queue.
 
-The daemon receives status updates from reduction workers on
-\emph{Reduction Started}, \emph{Reduction Complete} and \emph{Reduction
-Error}, making the appropriate changes to the database. On some messages
-in the error queue, the daemon will create and schedule the appropriate
-retry runs. A system for emailing notifications of run failures to
-administrators is also implemented here.
+The daemon service also receives updates from the reduction worker itself. When the 
+reduction worker reaches certain stages of its execution, it will send messages to
+\emph{Reduction Started}, \emph{Reduction Complete} and \emph{Reduction Error}.
+The \emph{QueueProcessor} service also listens on these queues and will update the database
+accordingly when messages are received. For some messages in the error queue, the daemon 
+will create and schedule the appropriate retry runs. There is also a system in place for 
+emailing notifications of run failures to administrators. 
+
+Since the database is being frequently being updated throughout the process of autoreduction,
+the Python/Django\cite{django} WebApp is always up to date with the latest information.
+This means that users can easily check on the progress of their runs and get a good idea of 
+how long it is going to take for them to retrieve their data at the end.
 
 \subsection{Reduction worker}\label{reduction-worker}
 
