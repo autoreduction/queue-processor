@@ -249,7 +249,7 @@ same experiment.
 
 \section{Interface}\label{interface}
 
-\subsection{Reduction scripts}\label{reduction-scripts}
+\subsection{Reduction Scripts}\label{reduction-scripts}
 
 The wholly automated portion of the system revolves around running
 scientist-provided scripts to reduce raw instrument data. These scripts
@@ -284,7 +284,7 @@ A reduction script has access to all reduced data for an experiment, which
 may be used in a script to automatically combine information from multiple 
 data reductions.
 
-\subsection{Web app}\label{web-app}
+\subsection{WebApp}\label{web-app}
 
 The web app provides the user-facing interface for managing reduction.
 It was developed in Python, using the Django web framework, and is
@@ -327,6 +327,12 @@ to pages displaying all queued and failed jobs. These pages provide an
 overview of the status of the system at a glance and have controls for
 batch operations on failed jobs such as to re-run them.
 
+\begin{figure*}
+	\centering\includegraphics[width=0.8\linewidth]{machine_layout.png}
+	\caption{An image showing which services are installed on which machines}
+	\label{fig:machine_layout}
+\end{figure*}
+
 \section{Deployment}\label{deployment}
 
 The system is deployed at ISIS. The node managing the WebApp is a Windows Server 2012
@@ -346,6 +352,8 @@ we can have multiple worker nodes active in order to split the load of autoreduc
 up the overall process. This node has the QueueProcessor and the AutoreductionProcessor installed
 on it. At the moment, the production system only uses one of these nodes but as the usage of the 
 system increases, so too will the load. It might then be sensible to have multiple worker nodes.
+
+A diagram of the different parts of the system is shown in figure \ref{fig:machine_layout}
 
 The system is split out in this way such that if the machine with the WebApp installed were to fail,
 the overall process of reduction could still take place. We would still pick up new runs with the 
@@ -456,15 +464,6 @@ Tom Griffin, Nick Draper, Martyn Gigg, Alex Buts, other excitation group members
 	Docker,
 	\emph{Docker},
 	\url{https://www.docker.com/}
-
-\bibitem{iis}
-    Microsoft Corporation,
-    \emph{IIS},
-    \url{http://www.iis.net/}.
-    
-\bibitem{fcgi}
-    \emph{FastCGI},
-    \url{https://github.com/FastCGI-Archives/FastCGI.com}.
     
 \bibitem{rhel}
     Red Hat, Inc,
@@ -472,7 +471,7 @@ Tom Griffin, Nick Draper, Martyn Gigg, Alex Buts, other excitation group members
     \url{https://www.redhat.com/en/technologies/linux-platforms/enterprise-linux}.
     
 \bibitem{source}
-    \emph{Autoreduction repository},
+    Autoreduction repository,
     \url{https://github.com/mantidproject/autoreduce}.
 
     
