@@ -2,6 +2,9 @@ from django.template import Library, Node, Variable, \
     VariableDoesNotExist, TemplateSyntaxError
 from django.contrib.auth.models import User
 from django.utils.safestring import mark_safe
+from django.core.exceptions import ObjectDoesNotExist
+import logging
+logger = logging.getLogger(__name__)
 
 register = Library()
  
@@ -18,7 +21,10 @@ class UserNameNode(Node):
  
     def render(self, context):
         usernumber = unicode(get_var(self.usernumber, context))
-        person = User.objects.get(username=usernumber)
+        try:
+            person = User.objects.get(username=usernumber)
+        except ObjectDoesNotExist as e:
+            return mark_safe('Autoreduction Service')
         return mark_safe('<a href="mailto:' + person.email + '">'+ person.first_name + " " + person.last_name + '</a>')
  
 @register.tag
