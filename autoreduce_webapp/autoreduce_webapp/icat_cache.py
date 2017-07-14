@@ -66,6 +66,7 @@ class ICATCache(object):
             # Check func_list for the attributes that each model should have, and the corresponding ICATCommunication
             # function to query for it; call it for each, building a dict, and then splice it into the constructor
             # kwargs.
+
             new_obj = obj_type(**{attr: (getattr(self.icat, func)(obj_id) if typ is None else self.to_list(getattr(self.icat, func)(obj_id))) for (func, model, attr, typ) in func_list if model == obj_type})
         else:
             # In this case, ICATCommunication returns all the ExperimentCache fields in one query,

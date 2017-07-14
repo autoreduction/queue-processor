@@ -7,6 +7,7 @@ from reduction_variables.models import InstrumentVariable, RunVariable
 from reduction_viewer.models import ReductionRun, Notification
 from reduction_viewer.utils import InstrumentUtils, StatusUtils, ReductionRunUtils
 from autoreduce_webapp.icat_cache import ICATCache
+from autoreduce_webapp.icat_communication import ICATCommunication
 
 class DataTooLong(ValueError):
     pass
@@ -205,7 +206,7 @@ class InstrumentVariablesUtils(object):
         
         # Get the upcoming experiments, and then select all variables for these experiments.
         upcoming_experiments = []
-        with ICATCache() as icat:
+        with ICATCommunication() as icat:
             upcoming_experiments = list(icat.get_upcoming_experiments_for_instrument(instrument_name))
         upcoming_variables_by_experiment = InstrumentVariable.objects.filter(instrument = instrument, experiment_reference__in = upcoming_experiments).order_by('experiment_reference')
                 

@@ -44,7 +44,7 @@ MIDDLEWARE_CLASSES = (
 )
 
 AUTHENTICATION_BACKENDS = (
-    #'autoreduce_webapp.backends.UOWSAuthenticationBackend',
+    'autoreduce_webapp.backends.UOWSAuthenticationBackend',
     'django.contrib.auth.backends.ModelBackend',
 )
 LOGIN_URL = '/'
@@ -68,7 +68,7 @@ DATABASES = {
         'NAME': 'autoreduction',
         'USER' : 'root',
         'PASSWORD' : 'activedev',
-        'HOST': '127.0.0.1',
+        'HOST': 'reducedev2',
         'PORT': '3306',
     }
 }
