@@ -66,8 +66,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'autoreduction',
-        'USER' : 'root',
-        'PASSWORD' : 'activedev',
+        'USER': 'root',
+        'PASSWORD': 'activedev',
         'HOST': 'reducedev2',
         'PORT': '3306',
     }
@@ -88,7 +88,7 @@ USE_TZ = True
 
 STATIC_ROOT = ''
 STATIC_URL = '/static/'
-STATIC_PATH = os.path.join(BASE_DIR,'static')
+STATIC_PATH = os.path.join(BASE_DIR, 'static')
 STATICFILES_DIRS = (
     os.path.join('static'),
 )
@@ -98,7 +98,6 @@ STATICFILES_DIRS = (
 
 LOG_FILE = os.path.join(BASE_DIR, 'autoreduction.log')
 if DEBUG:
-    #LOG_LEVEL = 'DEBUG' 
     LOG_LEVEL = 'INFO'
 else:
     LOG_LEVEL = 'INFO'
@@ -108,8 +107,8 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
-            'datefmt' : "%d/%b/%Y %H:%M:%S"
+            'format': "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+            'datefmt': "%d/%b/%Y %H:%M:%S"
         },
         'simple': {
             'format': '%(levelname)s %(message)s'
@@ -125,14 +124,14 @@ LOGGING = {
     },
     'loggers': {
         'django': {
-            'handlers':['file'],
+            'handlers': ['file'],
             'propagate': True,
-            'level':LOG_LEVEL,
+            'level': LOG_LEVEL,
         },
-        'app' : {
-            'handlers':['file'],
+        'app': {
+            'handlers': ['file'],
             'propagate': True,
-            'level':'DEBUG',
+            'level': 'DEBUG',
         },
     }
 }
@@ -206,4 +205,6 @@ FACILITY = "ISIS"
 PRELOAD_RUNS_UNDER = 100 # If the index run list has fewer than this many runs to show the user, preload them all.
 CACHE_LIFETIME = 3600 # Objects in ICATCache live this many seconds when ICAT is available to update them.
 USER_ACCESS_CHECKS = True # Should the webapp prevent users from accessing runs/instruments they're not allowed to?
-DEVELOPMENT_MODE = True
+DEVELOPMENT_MODE = True # If the installation is in a development environment, set this variable to True so that
+                        # we are not constrained by having to log in through the user office. This will authenticate
+                        # anyone visiting the site as a super user
