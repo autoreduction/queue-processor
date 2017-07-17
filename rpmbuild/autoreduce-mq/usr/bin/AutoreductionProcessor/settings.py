@@ -12,8 +12,7 @@ ACTIVEMQ = {
 
 # MISC
 MISC = {
-    # The maximum time that we should wait for a user script to finish running (in seconds)
-    "script_timeout": 3600,
+    "script_timeout": 3600, # The maximum time that we should wait for a user script to finish running (in seconds)
     "mantid_path": "/opt/Mantid/bin",
     "scripts_directory": "/isis/NDX%s/user/scripts/autoreduction",
     "post_process_directory": "/home/tip22963/AutoreductionProcessor/post_process_admin.py",
