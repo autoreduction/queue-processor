@@ -175,7 +175,7 @@ class ReductionRunUtils(object):
 class ScriptUtils(object):
     def get_reduce_scripts(self, scripts):
         """
-        Returns a tuple of (reduction script, reduction vars script), each one a string of the contents of the script, given a list of script objects. 
+        Returns a tuple of (reduction script, reduction vars script), each one a string of the contents of the script, given a list of script objects.
         """
         script_out = None
         script_vars_out = None
