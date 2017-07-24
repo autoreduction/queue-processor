@@ -1,8 +1,27 @@
-from settings import LOG_FILE, LOG_LEVEL, UOWS_URL
-import logging
-logger = logging.getLogger(__name__)
-from suds.client import Client
 import suds
+import ssl
+import logging
+from settings import CERTIFICATE_LOCATION
+from suds.client import Client
+from suds.transport.https import HttpAuthenticated
+from urllib2 import HTTPSHandler
+from settings import UOWS_URL
+logger = logging.getLogger(__name__)
+
+
+class CustomTransport(HttpAuthenticated):
+    def u2handlers(self):
+        # use handlers from superclass
+        handlers = HttpAuthenticated.u2handlers(self)
+        # create custom ssl context, e.g.
+        ctx = ssl.create_default_context(cafile=CERTIFICATE_LOCATION)
+        # configure context as needed...
+        ctx.check_hostname = False
+
+        # add a https handler using the custom context
+        handlers.append(HTTPSHandler(context=ctx))
+        return handlers
+
 
 class UOWSClient(object):
     """
@@ -12,12 +31,13 @@ class UOWSClient(object):
         url = UOWS_URL
         if 'URL' in kwargs:
             url = kwargs['URL']
-        self.client = Client(url)
+        self.client = Client(url, transport=CustomTransport())
 
     # Add the ability to use 'with'
     def __enter__(self):
         return self
-    def __exit__(self, type, value, traceback):
+
+    def __exit__(self, exit_type, value, traceback):
         pass
 
     def check_session(self, session_id):
@@ -43,10 +63,10 @@ class UOWSClient(object):
                 if not first_name:
                     first_name = person.firstNameKnownAs
                 trimmed_person = {
-                    'first_name' : first_name,
-                    'last_name' : person.familyName,
-                    'email' : person.email,
-                    'usernumber' : person.userNumber
+                    'first_name': first_name,
+                    'last_name': person.familyName,
+                    'email': person.email,
+                    'usernumber': person.userNumber
                 }
                 return trimmed_person
         except suds.WebFault:

@@ -198,6 +198,7 @@ EMAIL_PORT = 25
 EMAIL_ERROR_RECIPIENTS = ['isisreduce@stfc.ac.uk']
 EMAIL_ERROR_SENDER = 'autoreducedev@reduce.isis.cclrc.ac.uk'
 BASE_URL = 'http://reduce.isis.cclrc.ac.uk/'
+CERTIFICATE_LOCATION = 'C:\\certificates\\FITBAWEB1isiscclrcacuk.crt'
 
 # Constant vars
 
