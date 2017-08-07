@@ -5,7 +5,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 # See https://docs.djangoproject.com/en/dev/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'rjjklyhpxrtrandbxx8s4m@aigiw&!i6d2=g&$b-)lueruz!aw'
+SECRET_KEY = 'YOUR_SECRET_KEY'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -65,10 +65,10 @@ WSGI_APPLICATION = 'autoreduce_webapp.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'autoreduction',
-        'USER': 'root',
-        'PASSWORD': 'activedev',
-        'HOST': 'reducedev2',
+        'NAME': 'YOUR-DB-NAME',
+        'USER': 'YOUR-DB-USER',
+        'PASSWORD': 'YOUR-PASSWORD',
+        'HOST': 'YOUR-DB-HOST',
         'PORT': '3306',
     }
 }
@@ -146,9 +146,9 @@ ACTIVEMQ = {
         '/queue/ReductionComplete',
         '/queue/ReductionError'
         ],
-    'username' : 'autoreduce',
-    'password' : 'activedev',
-    'broker' : [("autoreducedev2.isis.cclrc.ac.uk", 61613)],
+    'username' : 'YOUR-ACTIVEMQ-USERNAME',
+    'password' : 'YOUR-ACTIVEMQ-PASSWORD',
+    'broker' : [("YOUR-ACTIVE-MQ-HOST", 61613)],
     'SSL' : False
 }
 
@@ -172,10 +172,10 @@ else:
 # ICAT 
 
 ICAT = {
-    'AUTH' : 'simple',
-    'URL' : 'https://icatisis.esc.rl.ac.uk/ICATService/ICAT?wsdl',
-    'USER' : 'autoreduce',
-    'PASSWORD' : '2LzZWdds^QENuBw'
+    'AUTH' : 'YOUR-ICAT-AUTH',
+    'URL' : 'YOUR-ICAT-WSDL',
+    'USER' : 'YOUR-ICAT-USERNAME',
+    'PASSWORD' : 'YOUR-ICAT-PASSWORD'
 }
 
 # Outdated Browsers
