@@ -42,7 +42,8 @@ Recommended Server OS: Red Hat Enterprise Linux (RHEL) 6 / 7
     git clone https://github.com/mantidproject/autoreduce.git /usr/src/autoreduce
     ln -s /usr/src/autoreduce/WebApp/ISIS/autoreduce_webapp /var/www/autoreduce_webapp
     ln -s /usr/lib/python2.7/site-packages/Django-1.7.1-py2.7.egg/django/contrib/admin/static/admin/ /var/www/autoreduce_webapp/static/admin
-
+    mv /var/www/autoreduce_webapp/autoreduce_webapp/settings.py.template /var/www/autoreduce_webapp/autoreduce_webapp/settings.py
+    
 ### Install ActiveMQ and stomp.py
     
 Set up ActiveMQ as in the backend (`ISISPostProcessRPM`)
@@ -141,7 +142,7 @@ Set up ActiveMQ as in the backend (`ISISPostProcessRPM`)
 
 1. `nano /var/www/autoreduce_webapp/autoreduce_webapp/settings.py`
 2. In the `ACTIVEMQ` section, change the `'username'` and `'password'` fields to the credentials configured in `/opt/activemq/conf/activemq.xml`.
-3. In the same section, change the `'broker'` field to the correct address and port, if necessary.
+3. In the same section, change the `'broker'` field to the correct address and port.
 
 ### Checking everything is working
 1. Modify `simple_stop_test.py` by changing `localhost` to the correct hostname, and the credentials `uname` and `upass` as were set in `/opt/activemq/conf/activemq.xml` under `<simpleAuthenticationPlugin>`
@@ -165,7 +166,7 @@ Set up ActiveMQ as in the backend (`ISISPostProcessRPM`)
 6. `cd python-icat-0.5.1`
 7. `python setup.py build`
 8. `python setup.py install`
-9. Set the correct values for ICAT in `autoreduce_webapp/autoreduce_webapp/settings.py`
+9. Set the correct values for ICAT in `/var/www/autoreduce_webapp/autoreduce_webapp/settings.py`
 
 ### Setting up MySQL
 1. `service mysqld start`
@@ -180,6 +181,8 @@ Set up ActiveMQ as in the backend (`ISISPostProcessRPM`)
 10. `service mysqld restart`
 11. `python /var/www/autoreduce_webapp/manage.py makemigrations`
 12. `python /var/www/autoreduce_webapp/manage.py migrate`
+13. Set the correct values for DATABASES in `/var/www/autoreduce_webapp/autoreduce_webapp/settings.py`.
+
 
 ### Setting up Apache
 1. `firewall-cmd --add-port=80/tcp --permanent && firewall-cmd --reload && firewall-cmd --add-port=80/tcp`
@@ -230,6 +233,7 @@ Note: Git Bash is the recommended command line (after step 4). Any command line 
 8. Download https://raw.github.com/pypa/pip/master/contrib/get-pip.py and run `python get-pip.py`
 9. Add `c:\python27\scripts` to the path environmental variable.
 10. `pip install django chardet`
+11. Rename `autoreduce_webapp\autoreduce_webapp\settings.py.template` to `autoreduce_webapp\autoreduce_webapp\settings.py`
 
 ### Configuring MySQL
 
@@ -240,6 +244,7 @@ Note: Git Bash is the recommended command line (after step 4). Any command line 
 5. `GRANT ALL ON test_autoreduction.* TO 'autoreduce'@'localhost' IDENTIFIED BY 'password';`
 6. `exit`
 7. Edit `C:\ProgramData\MySQL\MySQL Server 5.6\my.cnf` changing `max_allowed_packet=4M` to `max_allowed_packet=64M`
+8. Set the correct values for ICAT in `autoreduce_webapp\autoreduce_webapp\settings.py`
 
 ### Install ICAT client
 
@@ -248,7 +253,7 @@ Note: Git Bash is the recommended command line (after step 4). Any command line 
 3. change directories into python-icat
 4. `python setup.py build`
 5. `python setup.py install`
-6. Set the correct values for ICAT in `autoreduce_webapp/autoreduce_webapp/settings.py`
+6. Set the correct values for ICAT in `autoreduce_webapp\autoreduce_webapp\settings.py`
 
 ### Install application
 
