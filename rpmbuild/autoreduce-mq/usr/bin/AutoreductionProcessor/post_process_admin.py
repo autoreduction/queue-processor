@@ -162,7 +162,7 @@ class PostProcessAdmin:
             overwriting any key that exists in both with the value from sourceDict.
             """
             def merge_dict_to_name(dictionary_name, source_dict):
-                old_dict = []
+                old_dict = {}
                 if hasattr(reduce_script.web_var, dictionary_name):
                     old_dict = getattr(reduce_script.web_var, dictionary_name)
                 else:
