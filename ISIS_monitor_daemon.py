@@ -1,5 +1,5 @@
 from daemon import Daemon
-import sys, time
+import sys
 import ISISendOfRunMonitor
 
 

@@ -4,8 +4,9 @@ Created on Wed May 27 14:37:59 2015
 
 @author: xxu30744
 """
-import time, stomp
-
+import time
+import stomp
+import logging
 
 class StompClient(object):
     def __init__(self, brokers, user, password, topics=None, consumer_name='QueueProcessor'):
@@ -18,8 +19,11 @@ class StompClient(object):
         self._listener = None
 
     def get_connection(self):
+        logging.info("connection =")
         connection = stomp.Connection(host_and_ports=self._brokers, use_ssl=True, ssl_version=3)
+        logging.info("Starting connection")
         connection.start()
+        logging.info("connection.connect")
         connection.connect(self._user, self._password, wait=False)
 
         time.sleep(0.5)
@@ -27,7 +31,9 @@ class StompClient(object):
 
     def connect(self):
         if self._connection is None or not self._connection.is_connected():
+            logging.info("Disconnect")
             self._disconnect()
+            logging.info("Connect")
             self._connection = self.get_connection()
 
     def _disconnect(self):

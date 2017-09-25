@@ -1,9 +1,12 @@
-import time, json, os, logging, sys
-from Stomp_Client import StompClient
+import json
+import os
+import logging
+import stomp
 import threading
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from ICAT_Client import ICAT
+from settings import ACTIVEMQ
 
 # Config settings for cycle number, and instrument file arrangement
 INST_FOLDER = r"\\isis\inst$\NDX%s\Instrument"
@@ -11,10 +14,7 @@ DATA_LOC = r"\data\cycle_%s\\"
 SUMMARY_LOC = r"\logs\journal\SUMMARY.txt"
 LAST_RUN_LOC = r"\logs\lastrun.txt"
 LOG_FILE = r"monitor_log.txt"
-INSTRUMENTS = [{'name': 'LET', 'use_nexus': True},
-               {'name': 'MERLIN', 'use_nexus': False},
-               {'name': 'MAPS', 'use_nexus': True},
-               {'name': 'WISH', 'use_nexus': True}]
+INSTRUMENTS = [{'name': 'WISH', 'use_nexus': True}]
 
 QUERY = "SELECT facilityCycle.name FROM FacilityCycle facilityCycle, \
          facilityCycle.facility as facility, facility.investigations as \
@@ -27,6 +27,7 @@ TIME_CONSTANT = 1  # Time between file reads (in seconds)
 DEBUG = False
 logging.basicConfig(filename=LOG_FILE, level=logging.INFO, format='%(asctime)s %(message)s')
 observer = Observer()
+
 
 def get_file_extension(use_nxs):
     """ Choose the data extension based on the boolean"""
@@ -43,8 +44,8 @@ def get_data_and_check(last_run_file):
         raise Exception("Unexpected last run file format")
     return data
 
-class InstrumentMonitor(FileSystemEventHandler):
 
+class InstrumentMonitor(FileSystemEventHandler):
     def __init__(self, instrument_name, use_nexus, client, lock):
         self.icat = ICAT()
         self.icat_client = self.icat.get_client()
@@ -64,16 +65,16 @@ class InstrumentMonitor(FileSystemEventHandler):
         self.lock = lock
   
     def _get_instrument_data_folder_loc(self, filename):
-        return self.instrumentFolder + DATA_LOC % self._get_most_recent_cycle()
+        return self.instrumentFolder + DATA_LOC % self._get_most_recent_cycle(filename)
 
     def _get_most_recent_cycle(self, filename):
         # Use an ICAT connection to get the most recent cycle
         cycle = self.icat.execute_query(self.icat_client, QUERY.replace('{}', filename + ".raw"))
         # Retry and use an upper-case extension instead
-        if cycle == []:
+        if not cycle:
             cycle = self.icat.execute_query(self.icat_client, QUERY.replace('{}', filename + ".RAW"))
         # If there are no results, defer to previous method of finding the most recent folder
-        if cycle == []:
+        if not cycle:
             folders = os.listdir(self.instrumentFolder + '\logs\\')
             cycle_folders = [f for f in folders if f.startswith('cycle')]
 
@@ -91,14 +92,14 @@ class InstrumentMonitor(FileSystemEventHandler):
         filename = ''.join(last_run_data[0:2])  # so MER111 etc
         run_data_loc = self._get_instrument_data_folder_loc(filename) + filename + get_file_extension(self.use_nexus)
         return {
-            "rb_number": self._get_RB_num(),
+            "rb_number": self._get_rb_num(),
             "instrument": self.instrumentName,
             "data": run_data_loc,
             "run_number": last_run_data[1],
             "facility": "ISIS"
         }
 
-    def _get_RB_num(self):
+    def _get_rb_num(self):
         # Reads last line of summary.txt file and returns the RB number.
         summary = self.instrumentSummaryLoc
         with open(summary, 'rb') as st:
@@ -123,7 +124,7 @@ class InstrumentMonitor(FileSystemEventHandler):
                     self.send_message(data)
         except Exception as e:
             # if this code can't be executed it will raise a logging error towards the user.
-            logging.exception("Error on loading file: ", exc_info=True)
+            logging.exception("Error on loading file: " + e.message, exc_info=True)
 
     def send_message(self, last_run_data):
         # Puts message together and sends it, along with logging.
@@ -134,13 +135,29 @@ class InstrumentMonitor(FileSystemEventHandler):
         logging.info("Data sent: " + str(data_dict))
 
 def main():
-    activemq_client = StompClient([("autoreduce.isis.cclrc.ac.uk", 61613)], 'autoreduce', 'xxxxxxxxx', 'RUN_BACKLOG')
-    activemq_client.connect()
+    brokers = [(ACTIVEMQ['brokers'].split(':')[0], int(ACTIVEMQ['brokers'].split(':')[1]))]
+    connection = stomp.Connection(host_and_ports=brokers, use_ssl=False)
+    logging.info("Starting ActiveMQ Connection")
+    connection.start()
+    logging.info("Completed ActiveMQ Connection")
+
+    connection.connect(ACTIVEMQ['amq_user'],
+                       ACTIVEMQ['amq_pwd'],
+                       wait=False,
+                       header={'activemq.prefetchSize': '1'})
+    '''
+    for queue in ACTIVEMQ['amq_queues']:
+        connection.subscribe(destination=queue,
+                             id='1',
+                             ack='client-individual',
+                             header={'activemq.prefetchSize': '1'})
+        logging.info("Subscribing to %s" % (queue))
+    '''
     message_lock = threading.Lock()
     for inst in INSTRUMENTS:
 
         # Create an event_handler, this will decide what to do when files are changed.
-        event_handler = InstrumentMonitor(inst['name'], inst['use_nexus'], activemq_client, message_lock)
+        event_handler = InstrumentMonitor(inst['name'], inst['use_nexus'], connection, message_lock)
         # This will watch the folder the program is in, it will pick up all changes made in the folder.
         path = event_handler.get_watched_folder()
         # Tell the observer what to watch and give it the class that will handle the events.
@@ -148,11 +165,12 @@ def main():
     # Start watching files.
     observer.start()
 
+
 def stop():
     # This function disables the observer, it stop watching the files.
     observer.stop()
     observer.join()
 
+
 if __name__ == "__main__":
     main()
-
