@@ -3,15 +3,15 @@ import os
 FACILITY = 'ISIS'
 
 MYSQL = {
-    'HOST': 'reducedev2.isis.cclrc.ac.uk',
+    'HOST': 'reducequeue.isis.cclrc.ac.uk',
     'USER': 'autoreduce',
-    'PASSWD': 'activedev',
+    'PASSWD': 'YOUR-PASSWORD',
     'DB': 'autoreduction'
 }
 
 # Logging
-LOG_FILE = '/home/tip22963/queue_processor_daemon_log/autoreduction.log'
-DEBUG = False
+LOG_FILE = '/home/isisautoreduce/NewQueueProcessing/logs/queueProcessor.log'
+DEBUG = True
 
 if DEBUG:
     LOG_LEVEL = 'DEBUG'
@@ -61,8 +61,8 @@ ACTIVEMQ = {
         '/queue/ReductionError'
         ],
     'username': 'autoreduce',
-    'password': 'activedev',
-    'broker': [("autoreducedev2.isis.cclrc.ac.uk", 61613)],
+    'password': 'YOUR-PASSWORD',
+    'broker': [("reducequeue.isis.cclrc.ac.uk", 61613)],
     'SSL': False
 }
 
@@ -71,7 +71,7 @@ ICAT = {
     'AUTH': 'simple',
     'URL': 'https://icatisis.esc.rl.ac.uk/ICATService/ICAT?wsdl',
     'USER': 'autoreduce',
-    'PASSWORD': '2LzZWdds^QENuBw'
+    'PASSWORD': 'YOUR-PASSWORD'
 }
 
 # Directory Locations
@@ -97,6 +97,6 @@ else:
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'exchsmtp.stfc.ac.uk'
 EMAIL_PORT = 25
-EMAIL_ERROR_RECIPIENTS = ['tom.gowland@stfc.ac.uk']
+EMAIL_ERROR_RECIPIENTS = ['YOUR-EMAIL']
 EMAIL_ERROR_SENDER = 'autoreduce@reduce.isis.cclrc.ac.uk'
 BASE_URL = 'http://reduce.isis.cclrc.ac.uk/'
