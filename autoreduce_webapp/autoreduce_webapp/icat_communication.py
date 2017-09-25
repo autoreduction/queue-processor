@@ -1,4 +1,4 @@
-from settings import ICAT, BASE_DIR
+from settings import LOG_FILE, LOG_LEVEL, ICAT, BASE_DIR
 import logging, os, sys, datetime
 logger = logging.getLogger(__name__)
 from sets import Set

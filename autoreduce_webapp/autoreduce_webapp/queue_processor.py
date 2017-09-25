@@ -1,16 +1,21 @@
-import time
-import sys
-import os
 import stomp
-import django
-from settings import ACTIVEMQ, BASE_DIR, LOGGING
+from settings import ACTIVEMQ, BASE_DIR, LOGGING, EMAIL_HOST, EMAIL_PORT, EMAIL_ERROR_RECIPIENTS, EMAIL_ERROR_SENDER, BASE_URL
+import logging
 import logging.config
 logging.config.dictConfig(LOGGING)
 logger = logging.getLogger("django")
+import time, sys, os, json, glob, base64
+from django.utils import timezone
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 sys.path.insert(0, BASE_DIR)
+from reduction_viewer.models import ReductionRun, ReductionLocation, DataLocation, Experiment
+from reduction_viewer.utils import StatusUtils, InstrumentUtils, ReductionRunUtils
+from reduction_variables.utils import MessagingUtils
+from icat_communication import ICATCommunication
+from django.db import connection
+import smtplib
+import django
 django.setup()
-
 
 class Client(object):
     def __init__(self, brokers, user, password, topics=None, consumer_name='QueueProcessor', client_only=True, use_ssl=ACTIVEMQ['SSL']):
@@ -45,7 +50,7 @@ class Client(object):
         if self._connection is not None and self._connection.is_connected():
             self._connection.disconnect()
         self._connection = None
-        logger.info("[%s] Disconnected" % self._consumer_name)
+        logger.info("[%s] Disconnected" % (self._consumer_name))
 
     def stop(self):
         self._disconnect()
@@ -65,3 +70,12 @@ class Client(object):
             headers['AMQ_SCHEDULED_DELAY'] = str(delay)
         self._connection.send(destination, message, persistent=persistent, priority=priority, headers=headers)
         logger.debug("[%s] send message to %s" % (self._consumer_name, destination))
+
+
+def main():
+    client = Client(ACTIVEMQ['broker'], ACTIVEMQ['username'], ACTIVEMQ['password'], ACTIVEMQ['topics'], 'Autoreduction_QueueProcessor', False, ACTIVEMQ['SSL'])
+    client.connect()
+    return client
+
+if __name__ == '__main__':
+    main()

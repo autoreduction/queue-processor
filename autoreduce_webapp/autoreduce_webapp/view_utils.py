@@ -8,11 +8,14 @@ from django.template import RequestContext
 from django.shortcuts import render_to_response
 from reduction_viewer.models import Notification, Setting
 from settings import DEVELOPMENT_MODE
+import logging
+logger = logging.getLogger(__name__)
 
 def has_valid_login(request):
     """
     Check that the user is correctly logged in and their session is still considered valid
     """
+    logger.info('Checking if user is authenticated')
     if DEVELOPMENT_MODE:
         return True
     if request.user.is_authenticated() and 'sessionid' in request.session and UOWSClient().check_session(request.session['sessionid']):
