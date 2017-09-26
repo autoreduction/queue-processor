@@ -90,9 +90,9 @@ class ReductionRunUtils(object):
         If a script (as a string) is supplied then use it, otherwise use the previous run's.
         """
         from reduction_variables.utils import InstrumentVariablesUtils, VariableUtils
-		
+        
         run_last_updated = reductionRun.last_updated
-		
+        
         if username == 'super':
             username = 1
 
@@ -100,7 +100,7 @@ class ReductionRunUtils(object):
         last_version = -1
         for run in ReductionRun.objects.filter(experiment=reductionRun.experiment, run_number=reductionRun.run_number):
             last_version = max(last_version, run.run_version)
-		
+        
         try:
             # get the script to use:
             script_text = script if script is not None else reductionRun.script
@@ -114,14 +114,14 @@ class ReductionRunUtils(object):
                                   , started_by = username
                                   , status = StatusUtils().get_queued()
                                   , script = script_text
-								  , overwrite = overwrite
+                                  , overwrite = overwrite
                                   )
             new_job.save()
             
             reductionRun.retry_run = new_job
             reductionRun.retry_when = timezone.now().replace(microsecond=0) + datetime.timedelta(seconds=delay if delay else 0)
             reductionRun.save()
-			
+            
             ReductionRun.objects.filter(id = reductionRun.id).update(last_updated = run_last_updated)
             
             # copy the previous data locations

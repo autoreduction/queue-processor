@@ -397,7 +397,7 @@ def run_confirmation(request, instrument=None):
         if len(new_variables) == 0:
             context_dictionary['error'] = 'No variables were found to be submitted.'
 
-		# User can choose whether to overwrite with the re-run or create new data
+        # User can choose whether to overwrite with the re-run or create new data
         if request.POST.get('overwrite_checkbox') == 'on':
             overwrite_previous_data = True
         else:
@@ -405,9 +405,9 @@ def run_confirmation(request, instrument=None):
 
         if 'error' in context_dictionary:
             return context_dictionary
-		
+        
         run_description = request.POST.get('run_description')
-        		
+                
         new_job = ReductionRunUtils().createRetryRun(old_reduction_run, script=script_text, overwrite=overwrite_previous_data, variables=new_variables, username=request.user.username, description=run_description)
 
         try:
