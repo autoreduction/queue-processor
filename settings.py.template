@@ -1,16 +1,16 @@
 # ICAT
 ICAT_SETTINGS = {
-    'AUTH': 'simple',
-    'URL': 'https://icatisis.esc.rl.ac.uk/ICATService/ICAT?wsdl',
-    'USER': 'autoreduce',
+    'AUTH': 'YOUR-ICAT-AUTH-TYPE',
+    'URL': 'YOUR-ICAT-WSDL-URL',
+    'USER': 'YOUR-ICAT-USERNAME',
     'PASSWORD': 'YOUR-PASSWORD'
 }
 # ActiveMQ
 ACTIVEMQ = {
-    "brokers": "reducequeue:61613",
+    "brokers": "YOUR-ACTIVEMQ-URL:61613",
     "amq_queues": ["/queue/ReductionPending"],
-    "amq_user": "autoreduce",
-    "amq_pwd": "YOUR-PASSWORD",
+    "amq_user": "YOUR-ACTIVEMQ-USERNAME",
+    "amq_pwd": "YOUR-ACTIVEMQ-PASSWORD",
     "postprocess_error": "/queue/ReductionError",
     "reduction_started": "/queue/ReductionStarted",
     "reduction_complete": "/queue/ReductionComplete",
