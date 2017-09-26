@@ -24,7 +24,8 @@ QUERY = "SELECT facilityCycle.name FROM FacilityCycle facilityCycle, \
          facilityCycle.endDate"
 
 TIME_CONSTANT = 1  # Time between file reads (in seconds)
-DEBUG = False
+DEBUG = False  # If True will check fake_archive folder for the last_run.txt file and will not send data to DataReady queue"
+
 logging.basicConfig(filename=LOG_FILE, level=logging.INFO, format='%(asctime)s %(message)s')
 observer = Observer()
 
@@ -48,13 +49,12 @@ def get_data_and_check(last_run_file):
 class InstrumentMonitor(FileSystemEventHandler):
     def __init__(self, instrument_name, use_nexus, client, lock):
         self.icat = ICAT()
-        self.icat_client = self.icat.get_client()
         super(InstrumentMonitor, self).__init__()
         self.client = client
         self.use_nexus = use_nexus
         self.instrumentName = instrument_name
         if DEBUG:
-            self.instrumentFolder = '.\\' + self.instrumentName
+            self.instrumentFolder = "fake_archive\\" + self.instrumentName
         else:
             self.instrumentFolder = INST_FOLDER % self.instrumentName
         self.instrumentSummaryLoc = self.instrumentFolder + SUMMARY_LOC
@@ -63,16 +63,16 @@ class InstrumentMonitor(FileSystemEventHandler):
             data = get_data_and_check(lr)
             self.last_run = data[1]
         self.lock = lock
-  
+
     def _get_instrument_data_folder_loc(self, filename):
         return self.instrumentFolder + DATA_LOC % self._get_most_recent_cycle(filename)
 
     def _get_most_recent_cycle(self, filename):
         # Use an ICAT connection to get the most recent cycle
-        cycle = self.icat.execute_query(self.icat_client, QUERY.replace('{}', filename + ".raw"))
+        cycle = self.icat.execute_query(QUERY.replace('{}', filename + ".raw"))
         # Retry and use an upper-case extension instead
         if not cycle:
-            cycle = self.icat.execute_query(self.icat_client, QUERY.replace('{}', filename + ".RAW"))
+            cycle = self.icat.execute_query(QUERY.replace('{}', filename + ".RAW"))
         # If there are no results, defer to previous method of finding the most recent folder
         if not cycle:
             folders = os.listdir(self.instrumentFolder + '\logs\\')
@@ -133,6 +133,7 @@ class InstrumentMonitor(FileSystemEventHandler):
         if not DEBUG:
             self.client.send('/queue/DataReady', json.dumps(data_dict), priority='9')
         logging.info("Data sent: " + str(data_dict))
+
 
 def main():
     brokers = [(ACTIVEMQ['brokers'].split(':')[0], int(ACTIVEMQ['brokers'].split(':')[1]))]
