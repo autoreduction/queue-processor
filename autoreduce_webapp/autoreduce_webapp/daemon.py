@@ -65,7 +65,7 @@ class Daemon(object):
         pid = str(os.getpid())
         file(self.pidfile,'w+').write("%s\n" % pid)
         logging.info("Started daemon with PID %s" % str(pid))
-    
+
     def delpid(self):
         os.remove(self.pidfile)
 
