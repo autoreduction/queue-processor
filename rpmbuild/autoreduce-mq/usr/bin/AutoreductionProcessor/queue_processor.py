@@ -23,10 +23,10 @@ class Listener(object):
         destination = headers['destination']
         logger.debug("Received frame destination: " + destination)
         logger.debug("Recieved frame priority: " + headers["priority"])
-	
+
         self.update_child_process_list()
         data_dict = json.loads(data)
-	
+
         if "cancel" in data_dict and data_dict["cancel"]:
             self.add_cancel(data_dict)
             return
@@ -36,7 +36,7 @@ class Listener(object):
     def hold_message(self, destination, data):
         logger.debug("holding thread")
         data_dict = json.loads(data)
-	
+
         self.update_child_process_list()
         if not self.should_proceed(data_dict):  # wait while the run shouldn't proceed
             reactor.callLater(10, self.hold_message, destination, data)
@@ -45,7 +45,7 @@ class Listener(object):
         if self.should_cancel(data_dict):
             self.cancel_run(data_dict)
             return
-	
+
         print_dict = data_dict.copy()
         print_dict.pop("reduction_script")
         logger.debug("Calling: %s %s %s %s" % ("python", MISC['post_process_directory'], destination, print_dict))
@@ -102,10 +102,10 @@ class Consumer(object):
         self.consumer_name = "queueProcessor"
 
     def run(self):
-	logger.info('Called run ' + ACTIVEMQ['brokers'].split(':')[0] + ' ' + ACTIVEMQ['brokers'].split(':')[1])
+        logger.info('Called run ' + ACTIVEMQ['brokers'].split(':')[0] + ' ' + ACTIVEMQ['brokers'].split(':')[1])
         brokers = [(ACTIVEMQ['brokers'].split(':')[0], int(ACTIVEMQ['brokers'].split(':')[1]))]
         connection = stomp.Connection(host_and_ports=brokers, use_ssl=False)
-   	connection.set_listener(self.consumer_name, Listener(connection))
+        connection.set_listener(self.consumer_name, Listener(connection))
         logger.info("Starting ActiveMQ Connection to " + ACTIVEMQ['brokers'])
         connection.start()
         logger.info("Completed ActiveMQ Connection")
@@ -113,15 +113,15 @@ class Consumer(object):
                            ACTIVEMQ['amq_pwd'],
                            wait=False,
                            header={'activemq.prefetchSize': '1'})
-        
+
         for queue in ACTIVEMQ['amq_queues']:
             connection.subscribe(destination=queue,
                                  id='1',
                                  ack='client-individual',
                                  header={'activemq.prefetchSize': '1'})
             logger.info("[%s] Subscribing to %s" % (self.consumer_name, queue))
-	logger.info("Successfully subscribed to all of the queues")
-        
+        logger.info("Successfully subscribed to all of the queues")
+
 
 def main():
     try:
