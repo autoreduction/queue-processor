@@ -23,7 +23,6 @@ QUERY = "SELECT facilityCycle.name FROM FacilityCycle facilityCycle, \
          datafile.datafileCreateTime BETWEEN facilityCycle.startDate AND \
          facilityCycle.endDate"
 
-TIME_CONSTANT = 1  # Time between file reads (in seconds)
 USE_FAKE_ARCHIVE = False  # If True will check fake_archive folder for the last_run.txt file and will not send data to DataReady queue"
 
 logging.basicConfig(filename=LOG_FILE, level=logging.INFO, format='%(asctime)s %(message)s')
