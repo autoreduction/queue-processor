@@ -24,7 +24,7 @@ QUERY = "SELECT facilityCycle.name FROM FacilityCycle facilityCycle, \
          facilityCycle.endDate"
 
 TIME_CONSTANT = 1  # Time between file reads (in seconds)
-DEBUG = False  # If True will check fake_archive folder for the last_run.txt file and will not send data to DataReady queue"
+USE_FAKE_ARCHIVE = False  # If True will check fake_archive folder for the last_run.txt file and will not send data to DataReady queue"
 
 logging.basicConfig(filename=LOG_FILE, level=logging.INFO, format='%(asctime)s %(message)s')
 observer = Observer()
@@ -53,7 +53,7 @@ class InstrumentMonitor(FileSystemEventHandler):
         self.client = client
         self.use_nexus = use_nexus
         self.instrumentName = instrument_name
-        if DEBUG:
+        if USE_FAKE_ARCHIVE:
             self.instrumentFolder = "fake_archive\\" + self.instrumentName
         else:
             self.instrumentFolder = INST_FOLDER % self.instrumentName
@@ -130,7 +130,7 @@ class InstrumentMonitor(FileSystemEventHandler):
         # Puts message together and sends it, along with logging.
         with self.lock:
             data_dict = self.build_dict(last_run_data)
-        if not DEBUG:
+        if not USE_FAKE_ARCHIVE:
             self.client.send('/queue/DataReady', json.dumps(data_dict), priority='9')
         logging.info("Data sent: " + str(data_dict))
 
