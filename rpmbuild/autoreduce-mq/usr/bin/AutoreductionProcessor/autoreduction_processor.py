@@ -124,12 +124,6 @@ class Consumer(object):
 
 
 def main():
-    try:
-        config = json.load(open('/home/isisautoreduce/NewQueueProcessing/AutoreductionProcessor/post_process_consumer.conf'))
-    except:
-        logger.info("Can't open post_process_consumer.conf")
-        sys.exit()
-
     logger.info("Start post process asynchronous listener!")
     reactor.callWhenRunning(Consumer().run)
     reactor.run()

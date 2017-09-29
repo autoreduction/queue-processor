@@ -2,12 +2,12 @@
 
 import sys
 from daemon import Daemon
-import queue_processor
+import autoreduction_processor
 
 
 class AutoreduceQueueProcessorDaemon(Daemon):
     def run(self):
-        queue_processor.main()
+        autoreduction_processor.main()
         while True:
             pass
 
