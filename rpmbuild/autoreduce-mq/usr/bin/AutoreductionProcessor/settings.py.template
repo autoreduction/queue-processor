@@ -1,8 +1,8 @@
 # ActiveMQ
 ACTIVEMQ = {
-    "brokers": "reducequeue.isis.cclrc.ac.uk:61613",
+    "brokers": "YOUR-ACTIVEMQ-SERVER",
     "amq_queues": ["/queue/ReductionPending"],
-    "amq_user": "autoreduce",
+    "amq_user": "YOUR-ACTIVEMQ-USERNAME",
     "amq_pwd": "YOUR-PASSWORD",
     "postprocess_error": "/queue/ReductionError",
     "reduction_started": "/queue/ReductionStarted",

@@ -3,15 +3,15 @@ import os
 FACILITY = 'ISIS'
 
 MYSQL = {
-    'HOST': 'reducequeue.isis.cclrc.ac.uk',
-    'USER': 'autoreduce',
+    'HOST': 'YOUR-SQL-SERVER',
+    'USER': 'YOUR-SQL-USERNAME',
     'PASSWD': 'YOUR-PASSWORD',
-    'DB': 'autoreduction'
+    'DB': 'YOUR-SQL-DB-NAME'
 }
 
 # Logging
-LOG_FILE = '/home/isisautoreduce/NewQueueProcessing/logs/queueProcessor.log'
-DEBUG = True
+LOG_FILE = 'YOUR-LOG-LOCATION'
+DEBUG = False
 
 if DEBUG:
     LOG_LEVEL = 'DEBUG'
@@ -62,15 +62,15 @@ ACTIVEMQ = {
         ],
     'username': 'autoreduce',
     'password': 'YOUR-PASSWORD',
-    'broker': [("reducequeue.isis.cclrc.ac.uk", 61613)],
+    'broker': [("YOUR-ACTIVEMQ-SERVER", 61613)],
     'SSL': False
 }
 
 # ICAT 
 ICAT = {
     'AUTH': 'simple',
-    'URL': 'https://icatisis.esc.rl.ac.uk/ICATService/ICAT?wsdl',
-    'USER': 'autoreduce',
+    'URL': 'YOUR-ICAT-URL',
+    'USER': 'YOUR-ICAT-USERNAME',
     'PASSWORD': 'YOUR-PASSWORD'
 }
 
