@@ -20,7 +20,7 @@ class ICAT:
             self.client.refresh()
         except icat.exception.ICATSessionError:
             # Session has most likely expired, try and log in again.
-            # Have to set sessionId to null otherwise python ICAT attempts to log out with an expired sessionId
+            # Have to set sessionId to None otherwise python ICAT attempts to log out with an expired sessionId
             self.client.sessionId = None
             self.client_login()
         return self.client.search(query)
