@@ -20,9 +20,8 @@ class StompClient(object):
     def get_connection(self):
         connection = stomp.Connection(host_and_ports=self._brokers, use_ssl=False)
         connection.start()
-        connection.connect(self._user, self._password, wait=False)
-
-        time.sleep(0.5)
+        connection.connect(self._user, self._password, wait=True)
+		
         return connection
 
     def connect(self):

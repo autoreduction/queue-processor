@@ -2,6 +2,7 @@ import json, sys, re
 import xml.etree.ElementTree as ET
 from Stomp_Client import StompClient
 from ICAT_Client import ICAT
+from settings import ACTIVE_MQ
 
 # Config settings for cycle number, and instrument file arrangement
 DATA_LOC = "\isis\NDX%s\Instrument\data\cycle_%s\\"
@@ -126,7 +127,7 @@ def get_file_name_data(instrument):
 def main():
     print "Connecting to ActiveMQ"
     # Connect to ActiveMQ
-    activemq_client = StompClient([("autoreducedev2.isis.cclrc.ac.uk", 61613)], 'autoreduce', 'activedev', 'RUN_BACKLOG')
+    activemq_client = StompClient([(ACTIVE_MQ['URL'], 61613)], ACTIVE_MQ['USER'], ACTIVE_MQ['PASSWORD'], 'RUN_BACKLOG')
     activemq_client.connect()
 
     print "Connecting to ICAT"

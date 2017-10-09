@@ -1,0 +1,13 @@
+ICAT_SETTINGS = {
+    'AUTH' : 'simple',
+    'URL' : 'https://icatisis.esc.rl.ac.uk/ICATService/ICAT?wsdl',
+    'USER' : 'YOUR-ACTIVEMQ-USER',
+    'PASSWORD' : 'YOUR-ICAT-PASSWORD'
+}
+
+ACTIVE_MQ = {
+    'URL' : 'YOUR-ACTIVEMQ-URL',
+    'USER' : 'YOUR-ACTIVEMQ-USER',
+    'PASSWORD' : 'YOUR-ACTIVEMQ-PASS'
+
+}
