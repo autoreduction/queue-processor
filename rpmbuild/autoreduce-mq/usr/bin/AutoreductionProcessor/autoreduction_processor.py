@@ -19,7 +19,6 @@ class Listener(object):
         logger.error("Error message recieved - %s" % str(message))
 
     def on_message(self, headers, data):
-        self._client.ack(headers['message-id'], headers['subscription'])  # Remove message from queue
         destination = headers['destination']
         logger.debug("Received frame destination: " + destination)
         logger.debug("Recieved frame priority: " + headers["priority"])
@@ -31,15 +30,15 @@ class Listener(object):
             self.add_cancel(data_dict)
             return
 
-        self.hold_message(destination, data)
+        self.hold_message(destination, data, headers)
 
-    def hold_message(self, destination, data):
+    def hold_message(self, destination, data, headers):
         logger.debug("holding thread")
         data_dict = json.loads(data)
 
         self.update_child_process_list()
         if not self.should_proceed(data_dict):  # wait while the run shouldn't proceed
-            reactor.callLater(10, self.hold_message, destination, data)
+            reactor.callLater(10, self.hold_message, destination, data, headers)
             return
 
         if self.should_cancel(data_dict):
@@ -49,6 +48,7 @@ class Listener(object):
         print_dict = data_dict.copy()
         print_dict.pop("reduction_script")
         logger.debug("Calling: %s %s %s %s" % ("python", MISC['post_process_directory'], destination, print_dict))
+        self._client.ack(headers['message-id'], headers['subscription'])  # Remove message from queue
         proc = subprocess.Popen(["python",
                                  MISC['post_process_directory'],
                                  destination,
