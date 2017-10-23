@@ -1,8 +1,6 @@
 from django.shortcuts import redirect
-from django.core.context_processors import csrf
 from django.core.exceptions import PermissionDenied
-from django.template import RequestContext
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseForbidden
 from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, has_valid_login, handle_redirect, check_permissions
 from reduction_variables.models import InstrumentVariable, RunVariable
@@ -82,9 +80,7 @@ def instrument_summary(request, instrument):
         'upcoming_variables_by_experiment': upcoming_variables_by_experiment_ordered,
     }
 
-    context_dictionary.update(csrf(request))
-
-    return render_to_response('snippets/instrument_summary_variables.html', context_dictionary, RequestContext(request))
+    return render(request, 'snippets/instrument_summary_variables.html', context_dictionary)
 
 @login_and_uows_valid
 @check_permissions
@@ -209,7 +205,6 @@ def instrument_variables(request, instrument=None, start=0, end=0, experiment_re
             'editing' : editing,
             'tracks_script' : variables[0].tracks_script,
         }
-        context_dictionary.update(csrf(request))
 
         return context_dictionary
 
@@ -251,7 +246,6 @@ def submit_runs(request, instrument=None):
             'default_standard_variables' : default_standard_variables,
             'default_advanced_variables' : default_advanced_variables,
         }
-        context_dictionary.update(csrf(request))
 
         return context_dictionary
 
@@ -272,7 +266,6 @@ def current_default_variables(request, instrument=None):
         'standard_variables' : standard_vars,
         'advanced_variables' : advanced_vars,
     }
-    context_dictionary.update(csrf(request))
     return context_dictionary
 
 '''
@@ -310,8 +303,7 @@ def run_summary(request, run_number, run_version=0):
         'current_advanced_variables' : current_advanced_variables,
         'instrument' : reduction_run.instrument,
     }
-    context_dictionary.update(csrf(request))
-    return render_to_response('snippets/run_variables.html', context_dictionary, RequestContext(request))
+    return render(request, 'snippets/run_variables.html', context_dictionary)
 
 @login_and_uows_valid
 @check_permissions

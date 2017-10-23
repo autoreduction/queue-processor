@@ -5,7 +5,7 @@ from autoreduce_webapp.settings import UOWS_LOGIN_URL, LOGIN_URL, INSTALLED_APPS
 from autoreduce_webapp.icat_cache import ICATCache
 from reduction_viewer.models import ReductionRun, Experiment
 from django.template import RequestContext
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from reduction_viewer.models import Notification, Setting
 from settings import DEVELOPMENT_MODE
 import logging
@@ -70,7 +70,7 @@ def require_admin(fn):
 
 def render_with(template):
     """
-    Decorator for Django views that sends returned dict to render_to_response function
+    Decorator for Django views that sends returned dict to render function
     with given template and RequestContext as context instance.
     """
     def renderer(fn):
@@ -128,8 +128,8 @@ def render_with(template):
         def wrapper(request, *args, **kw):  
             output = fn(request, *args, **kw)
             if isinstance(output, dict):
-                output = populate_template_dict(request, output)    
-                return render_to_response(template, output, RequestContext(request))      
+                output = populate_template_dict(request, output)
+                return render(request, template, output)
             return output
         return wrapper
     return renderer

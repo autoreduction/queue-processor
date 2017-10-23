@@ -1,5 +1,4 @@
 from django.db import models
-from autoreduce_webapp.utils import SeparatedValuesField
 import autoreduce_webapp.icat_communication
 
 class Instrument(models.Model):
@@ -37,7 +36,7 @@ class ReductionRun(models.Model):
     started = models.DateTimeField(null=True, blank=True)
     finished = models.DateTimeField(null=True, blank=True)
     started_by = models.IntegerField(null=True, blank=True)
-    graph = SeparatedValuesField(null=True, blank=True)
+    graph = models.TextField(null=True, blank=True)
     
     message = models.TextField(blank=True)
     reduction_log = models.TextField(blank=True)

@@ -1,4 +1,4 @@
-from django.conf.urls import include, url, patterns
+from django.conf.urls import include, url
 from django.contrib import admin
 from reduction_viewer import views as reduction_viewer_views
 from reduction_variables import views as reduction_variables_views
@@ -8,7 +8,7 @@ handler403 = 'autoreduce_webapp.views.handler403'
 handler404 = 'autoreduce_webapp.views.handler404'
 handler500 = 'autoreduce_webapp.views.handler500'
 
-urlpatterns = patterns('',
+urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
     url(r'^$', reduction_viewer_views.index, name='index'),
     url(r'^logout/$', reduction_viewer_views.logout, name='logout'),
@@ -37,5 +37,5 @@ urlpatterns = patterns('',
     url(r'^script/(?P<instrument>\w+)(?:/(?P<run_number>[0-9]+))?/$', reduction_variables_views.preview_script, name='preview_script'),
     url(r'^script/(?P<instrument>\w+)/experiment(?:/(?P<experiment_reference>[0-9]+))?/$', reduction_variables_views.preview_script, name='preview_script_by_experiment'),
 
-    url(r'^help/$', reduction_viewer_views.help, name='help'),
-)
+    url(r'^help/$', reduction_viewer_views.help, name='help')
+]

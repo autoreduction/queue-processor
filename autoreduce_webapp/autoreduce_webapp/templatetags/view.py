@@ -24,7 +24,7 @@ class ViewNode(Node):
             resolver = urlresolvers.RegexURLResolver(r'^/', urlconf)
             view, args, kwargs = resolver.resolve(url_or_view)
         except:
-            view = urlresolvers.get_callable(url_or_view, True)
+            view = urlresolvers.get_callable(url_or_view)
             args = [Variable(arg).resolve(context) for arg in self.args]
             kwargs = {}
             for key, value in self.kwargs.items():
