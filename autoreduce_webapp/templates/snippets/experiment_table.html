@@ -3,7 +3,7 @@
         <a href="#" class="js-toggle-experiment-children" title="Expand/Collapse"><i class="fa fa-lg fa-chevron-right"></i></a>
     </div>
     <div class="col-md-11 col-xs-10">
-        <a href="{% url 'experiment_summary' experiment.reference_number %}">{{ experiment.reference_number }}</a>
+        <a href="{% url 'experiment_summary' experiment.reference_number %}">RB{{ experiment.reference_number }}</a>
         <div class="progress-summary">
             {% if experiment.progress_summary.queued %}
                 <span class="text-info">({{ experiment.progress_summary.queued }}) Queued</span> 
