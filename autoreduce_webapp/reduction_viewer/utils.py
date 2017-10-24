@@ -142,7 +142,9 @@ class ReductionRunUtils(object):
             return new_job
             
         except Exception as e:
-            logger.error(e.message)
+            import traceback
+            logger.error(traceback.format_exc())
+            logger.error(e)
             new_job.delete()
             raise
             

@@ -15,7 +15,7 @@
                     <div class="panel-heading">
                         <div class="panel-title">
 
-                            {% if runs|length = 1 %}
+                            {% if runs|length == 1 %}
                             Successfully submitted run #{{runs.0.run_number}} for reduction
                             {% else %}
                                 Successfully submitted runs for reduction: <br>
@@ -49,7 +49,7 @@
                                 </div>
                             {% endfor %}
                         </fieldset>
-                        {% if runs|length = 1 %}
+                        {% if runs|length == 1 %}
                             <div class="row">
                                 <div class="col-md-12 text-center">
                                     <a href="{% url 'run_summary' run_number=runs.0.run_number run_version=runs.0.run_version %}">View this reduction job</a>
