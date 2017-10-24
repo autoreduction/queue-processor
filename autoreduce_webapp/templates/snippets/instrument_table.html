@@ -4,7 +4,7 @@
             <div class="col-xs-1">
                 <a href="#" class="js-toggle-instrument-children " title="Expand/Collapse"><i id="chevron" class="fa fa-lg fa-chevron-right"></i></a>
             </div>
-            <div class="col-xs-11">
+            <div class="col-xs-10">
                 {% if instrument.is_active %}
                     <a href="{% url 'instrument_summary' instrument.name %}">{{ instrument.name }}</a>
                 {% else %}

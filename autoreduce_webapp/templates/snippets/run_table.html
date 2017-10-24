@@ -1,7 +1,7 @@
 {% load colour_table_rows %}
 
 <div class="row run-row">
-    <div class="col-md-3 col-md-offset-1 col-xs-5"><a href="{% url 'run_summary' run_number=run.run_number run_version=run.run_version %}">{{ run.title }}</a></div>
-    <div class="col-md-4 col-xs-2 run-status text-{% colour_table_row run.status.value %}"><strong>{{ run.status }}</strong></div>
-    <div class="col-md-4 col-xs-5"><strong>Last updated:</strong> {{ run.last_updated }}</div>
+    <div class="col-md-5  col-sm-5 col-md-offset-1 col-xs-4"><a href="{% url 'run_summary' run_number=run.run_number run_version=run.run_version %}">{{ run.title }}</a></div>
+    <div class="col-md-2 col-sm-2 col-xs-4 run-status text-{% colour_table_row run.status.value %}"><strong>{{ run.status }}</strong></div>
+    <div class="col-md-4 col-sm-5 col-xs-4"><strong>Last updated:</strong> {{ run.last_updated }}</div>
 </div>
