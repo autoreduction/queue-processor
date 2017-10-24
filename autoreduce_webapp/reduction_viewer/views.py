@@ -262,10 +262,16 @@ def load_runs(request, reference_number=None, instrument_name=None):
             runs = ReductionRun.objects.filter(experiment=experiment).order_by('-created')
                 
     elif instrument_name:
-        instruments = Instrument.objects.filter(name=instrument_name)
-        if len(instruments) != 0:
-            instrument = instruments[0]
-            runs = ReductionRun.objects.filter(instrument=instrument).order_by('-created')
+        instrument = Instrument.objects.filter(name=instrument_name)
+
+        if instrument.exists():
+            runs = (ReductionRun.objects.
+                    # Get the foreign key 'status' now. Otherwise many queries made from load_runs which is very slow.
+                    select_related('status')
+                    # Only get these attributes, to speed it up.
+                    .only('status', 'last_updated', 'run_number', 'run_name', 'run_version')
+                    .filter(instrument=instrument.first())
+                    .order_by('-created'))
             
     context_dictionary = { "runs": runs }
     return context_dictionary
