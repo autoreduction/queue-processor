@@ -207,7 +207,7 @@ BASE_URL = 'http://reduce.isis.cclrc.ac.uk/'
 CERTIFICATE_LOCATION = 'C:\\certificates\\FITBAWEB1isiscclrcacuk.crt'
 
 # Constant vars
-
+SESSION_COOKIE_AGE = 3600  # The MAX length before user is logged out, 1 hour in seconds
 FACILITY = "ISIS"
 PRELOAD_RUNS_UNDER = 100  # If the index run list has fewer than this many runs to show the user, preload them all.
 CACHE_LIFETIME = 3600  # Objects in ICATCache live this many seconds when ICAT is available to update them.

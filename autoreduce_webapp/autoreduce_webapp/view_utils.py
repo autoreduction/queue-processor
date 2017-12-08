@@ -15,10 +15,12 @@ def has_valid_login(request):
     """
     Check that the user is correctly logged in and their session is still considered valid
     """
-    logger.info('Checking if user is authenticated')
+    logger.debug("Checking if user is authenticated")
     if DEVELOPMENT_MODE:
+        logger.debug("DEVELOPMENT_MODE True so allowing access")
         return True
-    if request.user.is_authenticated() and 'sessionid' in request.session and UOWSClient().check_session(request.session['sessionid']):
+    if request.user.is_authenticated() and 'sessionid' in request.session:
+        logger.debug("User is authenticated and has a sessionid from the UOWS")
         return True
     return False
 
