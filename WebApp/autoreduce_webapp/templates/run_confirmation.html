@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load view %}
+{% load colour_table_rows %}
+{% load natural_time_difference %}
+{% load get_user_name %}
+{% load naturaltime from humanize %}
+{% load static from staticfiles %}
+
+{% block body %}
+    {% if runs and not error %}
+        <title>Run Confirmation</title>
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <div class="panel panel-success">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+
+                            {% if runs|length == 1 %}
+                            Successfully submitted run #{{runs.0.run_number}} for reduction
+                            {% else %}
+                                Successfully submitted runs for reduction: <br>
+                                {% for run in runs %}
+                                    <a href="{% url 'run_summary' run_number=run.run_number run_version=run.run_version %}">#{{ run.run_number }}</a>,
+                                {% endfor %}
+                            {% endif%}
+
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        {% if queued %}
+                            <div class="row">
+                                <div class="col-md-12 text-center">
+                                    There are currently {{queued}} runs queued.
+                                </div>
+                            </div>
+                        {% endif %}
+                        <fieldset>
+                            <legend>Run Variables</legend>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <strong>Description:</strong> {% if runs.0.run_name %}{{runs.0.run_name}}{% else %}<em>No description provided</em>{% endif %}
+                                </div>
+                            </div>
+                            {% for variable in variables %}
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <strong>{{variable.name}}:</strong> {{variable.value}}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </fieldset>
+                        {% if runs|length == 1 %}
+                            <div class="row">
+                                <div class="col-md-12 text-center">
+                                    <a href="{% url 'run_summary' run_number=runs.0.run_number run_version=runs.0.run_version %}">View this reduction job</a>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <div class="alert alert-danger">
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            {{ error }} <a href="#back">Go Back</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,1537 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--Created by yFiles for HTML 1.3.0.5-->
+<graphml xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://www.yworks.com/xml/schema/graphml.html/1.0/ygraphml.xsd " xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:x="http://www.yworks.com/xml/yfiles-common/markup/2.0" xmlns:y="http://www.yworks.com/xml/yfiles-common/2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:yjs="http://www.yworks.com/xml/yfiles-for-html/1.0/xaml" xmlns:wpfbridge="http://www.yworks.com/xml/yfiles-for-html/1.0/wpfbridge">
+	<key id="d0" for="all" attr.name="UserTags" y:attr.uri="http://www.yworks.com/xml/yfiles-common/2.0/UserTags"/>
+	<key id="d1" for="node" attr.name="NodeLabels" y:attr.uri="http://www.yworks.com/xml/yfiles-common/2.0/NodeLabels"/>
+	<key id="d2" for="node" attr.name="NodeGeometry" y:attr.uri="http://www.yworks.com/xml/yfiles-common/2.0/NodeGeometry"/>
+	<key id="d3" for="node" attr.name="NodeStyle" y:attr.uri="http://www.yworks.com/xml/yfiles-common/2.0/NodeStyle"/>
+	<key id="d4" for="node" attr.type="boolean" attr.name="Expanded" y:attr.uri="http://www.yworks.com/xml/yfiles-common/2.0/folding/Expanded">
+		<default>true</default>
+	</key>
+	<key id="d5" for="node" attr.name="NodeViewState" y:attr.uri="http://www.yworks.com/xml/yfiles-common/2.0/folding/1.1/NodeViewState"/>
+	<key id="d6" for="edge" attr.name="EdgeLabels" y:attr.uri="http://www.yworks.com/xml/yfiles-common/2.0/EdgeLabels"/>
+	<key id="d7" for="edge" attr.name="EdgeGeometry" y:attr.uri="http://www.yworks.com/xml/yfiles-common/2.0/EdgeGeometry"/>
+	<key id="d8" for="edge" attr.name="EdgeStyle" y:attr.uri="http://www.yworks.com/xml/yfiles-common/2.0/EdgeStyle"/>
+	<key id="d9" for="edge" attr.name="EdgeViewState" y:attr.uri="http://www.yworks.com/xml/yfiles-common/2.0/folding/1.1/EdgeViewState"/>
+	<key id="d10" for="port" attr.name="PortLocationParameter" y:attr.uri="http://www.yworks.com/xml/yfiles-common/2.0/PortLocationParameter">
+		<default>
+			<x:Static member="yjs:NodeScaledPortLocationModel.NODE_CENTER_ANCHORED"/>
+		</default>
+	</key>
+	<key id="d11" for="port" attr.name="PortStyle" y:attr.uri="http://www.yworks.com/xml/yfiles-common/2.0/PortStyle">
+		<default>
+			<x:Static member="y:VoidPortStyle.INSTANCE"/>
+		</default>
+	</key>
+	<key id="d12" for="port" attr.name="PortViewState" y:attr.uri="http://www.yworks.com/xml/yfiles-common/2.0/folding/1.1/PortViewState"/>
+	<key id="d13" attr.name="SharedData" y:attr.uri="http://www.yworks.com/xml/yfiles-common/2.0/SharedData"/>
+	<data key="d13">
+		<y:SharedData>
+			<wpfbridge:DashStyle x:Key="1" dashes="6 2" offset="0"/>
+			<wpfbridge:SolidColorBrush x:Key="2" color="Black"/>
+			<yjs:Arrow x:Key="3" type="NONE"/>
+			<wpfbridge:SolidColorBrush x:Key="4" color="Black"/>
+			<wpfbridge:SolidColorBrush x:Key="5" color="Black"/>
+			<wpfbridge:SolidColorBrush x:Key="6" color="Black"/>
+			<wpfbridge:SolidColorBrush x:Key="7" color="Black"/>
+			<wpfbridge:SolidColorBrush x:Key="8" color="Black"/>
+			<wpfbridge:SolidColorBrush x:Key="9" color="Black"/>
+			<wpfbridge:SolidColorBrush x:Key="10" color="Black"/>
+			<wpfbridge:SolidColorBrush x:Key="11" color="Black"/>
+			<wpfbridge:SolidColorBrush x:Key="12" color="Black"/>
+			<wpfbridge:SolidColorBrush x:Key="13" color="Black"/>
+			<yjs:Arrow x:Key="14" brush="{y:GraphMLReference 13}">
+				<yjs:Arrow.pen>
+					<wpfbridge:Pen brush="{y:GraphMLReference 13}" miterLimit="1.45"/>
+				</yjs:Arrow.pen>
+			</yjs:Arrow>
+			<wpfbridge:SolidColorBrush x:Key="15" color="Black"/>
+			<wpfbridge:SolidColorBrush x:Key="16" color="Black"/>
+			<wpfbridge:SolidColorBrush x:Key="17" color="Black"/>
+			<wpfbridge:SolidColorBrush x:Key="18" color="Black"/>
+			<wpfbridge:SolidColorBrush x:Key="19" color="Black"/>
+			<wpfbridge:SolidColorBrush x:Key="20" color="Black"/>
+			<wpfbridge:SolidColorBrush x:Key="21" color="Black"/>
+		</y:SharedData>
+	</data>
+	<graph id="G" edgedefault="directed">
+		<node id="n0">
+			<data key="d1">
+				<x:List>
+					<y:Label>
+						<y:Label.text>Autoreduction</y:Label.text>
+						<y:Label.labelModelParameter>
+							<yjs:LayoutAnchoredLabelModelParameter offset="4,4"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle autoFlip="false" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="20" fontFamily="Dialog" fontWeight="BOLD"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d2">
+				<y:RectD x="352.16152042949443" y="186.89357600000017" width="794.75" height="414.75"/>
+			</data>
+			<data key="d3">
+				<yjs:ShapeNodeStyle brush="{x:Null}" shape="ROUND_RECTANGLE">
+					<yjs:ShapeNodeStyle.pen>
+						<wpfbridge:Pen brush="Black" dashStyle="{y:GraphMLReference 1}" miterLimit="1.45" thickness="4"/>
+					</yjs:ShapeNodeStyle.pen>
+				</yjs:ShapeNodeStyle>
+			</data>
+		</node>
+		<node id="n1">
+			<data key="d1">
+				<x:List>
+					<y:Label>
+						<y:Label.text><![CDATA[Facility file stores]]></y:Label.text>
+						<y:Label.labelModelParameter>
+							<yjs:LayoutAnchoredLabelModelParameter offset="34.54184570312509,4"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" autoFlip="false" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="15" fontFamily="Dialog" fontWeight="BOLD"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d2">
+				<y:RectD x="1281.8396530470036" y="175.20566080000006" width="199.79999999999995" height="414.74999999999994"/>
+			</data>
+			<data key="d3">
+				<yjs:ShapeNodeStyle brush="{x:Null}" shape="ROUND_RECTANGLE">
+					<yjs:ShapeNodeStyle.pen>
+						<wpfbridge:Pen brush="Black" dashStyle="{y:GraphMLReference 1}" miterLimit="1.45"/>
+					</yjs:ShapeNodeStyle.pen>
+				</yjs:ShapeNodeStyle>
+			</data>
+		</node>
+		<node id="n2">
+			<data key="d1">
+				<x:List>
+					<y:Label>
+						<y:Label.text><![CDATA[State database & coordinator]]></y:Label.text>
+						<y:Label.labelModelParameter>
+							<yjs:LayoutAnchoredLabelModelParameter offset="43.54746093749998,4"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" autoFlip="false" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="12" fontFamily="Dialog" fontWeight="BOLD"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d2">
+				<y:RectD x="858.9360000000001" y="231.6676608000001" width="257.79999999999995" height="219.57600000000008"/>
+			</data>
+			<data key="d3">
+				<yjs:ShapeNodeStyle brush="#0B000000">
+					<yjs:ShapeNodeStyle.pen>
+						<wpfbridge:Pen brush="Black" miterLimit="1.45"/>
+					</yjs:ShapeNodeStyle.pen>
+				</yjs:ShapeNodeStyle>
+			</data>
+		</node>
+		<node id="n3">
+			<data key="d1">
+				<x:List>
+					<y:Label>
+						<y:Label.text><![CDATA[Reduction worker]]></y:Label.text>
+						<y:Label.labelModelParameter>
+							<yjs:LayoutAnchoredLabelModelParameter offset="4,4"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" autoFlip="false" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="12" fontFamily="Dialog" fontWeight="BOLD"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d2">
+				<y:RectD x="367.3370408589882" y="231.2934912000003" width="356.54999999999995" height="325.95016959999975"/>
+			</data>
+			<data key="d3">
+				<yjs:ShapeNodeStyle brush="#0B000000">
+					<yjs:ShapeNodeStyle.pen>
+						<wpfbridge:Pen brush="Black" miterLimit="1.45"/>
+					</yjs:ShapeNodeStyle.pen>
+				</yjs:ShapeNodeStyle>
+			</data>
+		</node>
+		<node id="n4">
+			<data key="d1">
+				<x:List>
+					<y:Label>
+						<y:Label.text>Beamline</y:Label.text>
+						<y:Label.labelModelParameter>
+							<yjs:LayoutAnchoredLabelModelParameter offset="46.55283203125009,4"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" autoFlip="false" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="15" fontFamily="Dialog" fontWeight="BOLD"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d2">
+				<y:RectD x="1538.7876530470035" y="175.20566080000006" width="163.79999999999995" height="291.03799999999995"/>
+			</data>
+			<data key="d3">
+				<yjs:ShapeNodeStyle brush="{x:Null}" shape="ROUND_RECTANGLE">
+					<yjs:ShapeNodeStyle.pen>
+						<wpfbridge:Pen brush="Black" dashStyle="{y:GraphMLReference 1}" miterLimit="1.45"/>
+					</yjs:ShapeNodeStyle.pen>
+				</yjs:ShapeNodeStyle>
+			</data>
+		</node>
+		<node id="n5">
+			<data key="d1">
+				<x:List>
+					<y:Label>
+						<y:Label.text><![CDATA[Message queue]]></y:Label.text>
+						<y:Label.labelModelParameter>
+							<yjs:LayoutAnchoredLabelModelParameter offset="13.822734374999982,13.329414062500007"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" autoFlip="false" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="12" fontFamily="Dialog"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d2">
+				<y:RectD x="585.000693905992" y="377.3173216000004" width="117.03999999999996" height="45.360000000000014"/>
+			</data>
+			<data key="d3">
+				<yjs:ShapeNodeStyle brush="#FFFFCC00">
+					<yjs:ShapeNodeStyle.pen>
+						<wpfbridge:Pen brush="Black" miterLimit="1.45"/>
+					</yjs:ShapeNodeStyle.pen>
+				</yjs:ShapeNodeStyle>
+			</data>
+			<port name="p0">
+				<data key="d10">
+					<yjs:NodeScaledParameter offset="0.3752050580997901,-0.0385211992945456"/>
+				</data>
+			</port>
+			<port name="p1">
+				<data key="d10">
+					<yjs:NodeScaledParameter offset="0.19473518535550194,0.17032212815990583"/>
+				</data>
+			</port>
+			<port name="p2"/>
+			<port name="p3"/>
+			<port name="p4">
+				<data key="d10">
+					<yjs:NodeScaledParameter offset="0.28122009569377504,0.2701207760140963"/>
+				</data>
+			</port>
+		</node>
+		<node id="n6">
+			<data key="d1">
+				<x:List>
+					<y:Label>
+						<y:Label.text><![CDATA[Web app]]></y:Label.text>
+						<y:Label.labelModelParameter>
+							<yjs:LayoutAnchoredLabelModelParameter offset="32.50535156249998,13.329414062500007"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" autoFlip="false" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="12" fontFamily="Dialog"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d2">
+				<y:RectD x="929.3160000000001" y="273.1396608000002" width="117.03999999999996" height="45.360000000000014"/>
+			</data>
+			<data key="d3">
+				<yjs:ShapeNodeStyle brush="#FFFFCC00">
+					<yjs:ShapeNodeStyle.pen>
+						<wpfbridge:Pen brush="Black" miterLimit="1.45"/>
+					</yjs:ShapeNodeStyle.pen>
+				</yjs:ShapeNodeStyle>
+			</data>
+			<port name="p0">
+				<data key="d10">
+					<yjs:NodeScaledParameter offset="-0.07640448393712448,0.016790123456793597"/>
+				</data>
+			</port>
+			<port name="p1"/>
+			<port name="p2"/>
+			<port name="p3">
+				<data key="d10">
+					<yjs:NodeScaledParameter offset="0.36990772385509224,-0.05595444011763822"/>
+				</data>
+			</port>
+			<port name="p4">
+				<data key="d10">
+					<yjs:NodeScaledParameter offset="-0.2526941531943592,-0.5000789333611768"/>
+				</data>
+			</port>
+			<port name="p5">
+				<data key="d10">
+					<yjs:NodeScaledParameter offset="-0.3553571428571469,-0.2672029864785454"/>
+				</data>
+			</port>
+		</node>
+		<node id="n7">
+			<data key="d1">
+				<x:List>
+					<y:Label>
+						<y:Label.text><![CDATA[Queue processor]]></y:Label.text>
+						<y:Label.labelModelParameter>
+							<yjs:LayoutAnchoredLabelModelParameter offset="10.494609374999982,13.983414062499946"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" autoFlip="false" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="12" fontFamily="Dialog"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d2">
+				<y:RectD x="400.7170408589883" y="487.4856608" width="117.03999999999996" height="46.66799999999995"/>
+			</data>
+			<data key="d3">
+				<yjs:ShapeNodeStyle brush="#FFFFCC00">
+					<yjs:ShapeNodeStyle.pen>
+						<wpfbridge:Pen brush="Black" miterLimit="1.45"/>
+					</yjs:ShapeNodeStyle.pen>
+				</yjs:ShapeNodeStyle>
+			</data>
+			<port name="p0">
+				<data key="d10">
+					<yjs:NodeScaledParameter offset="-0.21832148797844161,0.00386430101996094"/>
+				</data>
+			</port>
+			<port name="p1"/>
+			<port name="p2">
+				<data key="d10">
+					<yjs:NodeScaledParameter offset="0.14296786689175847,-0.006506831233401624"/>
+				</data>
+			</port>
+			<port name="p3">
+				<data key="d10">
+					<yjs:NodeScaledParameter offset="0.10067167858638598,0.33676026440980317"/>
+				</data>
+			</port>
+		</node>
+		<node id="n8">
+			<data key="d1">
+				<x:List>
+					<y:Label>
+						<y:Label.text><![CDATA[Reduction processor]]></y:Label.text>
+						<y:Label.labelModelParameter>
+							<yjs:LayoutAnchoredLabelModelParameter offset="1.4916796874999818,13.983414062500003"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" autoFlip="false" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="12" fontFamily="Dialog"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d2">
+				<y:RectD x="400.71704085898824" y="265.8409824000009" width="117.03999999999996" height="46.66799999999995"/>
+			</data>
+			<data key="d3">
+				<yjs:ShapeNodeStyle brush="#FFFFCC00">
+					<yjs:ShapeNodeStyle.pen>
+						<wpfbridge:Pen brush="Black" miterLimit="1.45"/>
+					</yjs:ShapeNodeStyle.pen>
+				</yjs:ShapeNodeStyle>
+			</data>
+			<port name="p0">
+				<data key="d10">
+					<yjs:NodeScaledParameter offset="-0.21832148797844161,-0.13592443644469196"/>
+				</data>
+			</port>
+			<port name="p1"/>
+		</node>
+		<node id="n9">
+			<data key="d1">
+				<x:List>
+					<y:Label>
+						<y:Label.text><![CDATA[Run monitor]]></y:Label.text>
+						<y:Label.labelModelParameter>
+							<yjs:LayoutAnchoredLabelModelParameter offset="6.501445312499982,13.983414062500003"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" autoFlip="false" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="12" fontFamily="Dialog"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d2">
+				<y:RectD x="929.316" y="371.12166080000014" width="117.03999999999996" height="46.66799999999995"/>
+			</data>
+			<data key="d3">
+				<yjs:ShapeNodeStyle brush="#FFFFCC00">
+					<yjs:ShapeNodeStyle.pen>
+						<wpfbridge:Pen brush="Black" miterLimit="1.45"/>
+					</yjs:ShapeNodeStyle.pen>
+				</yjs:ShapeNodeStyle>
+			</data>
+			<port name="p0">
+				<data key="d10">
+					<yjs:NodeScaledParameter offset="-0.3147300068352741,0.3812963743892968"/>
+				</data>
+			</port>
+			<port name="p1"/>
+		</node>
+		<node id="n10">
+			<data key="d1">
+				<x:List>
+					<y:Label>
+						<y:Label.text><![CDATA[Script archive]]></y:Label.text>
+						<y:Label.labelModelParameter>
+							<yjs:LayoutAnchoredLabelModelParameter offset="20.174296874999982,13.983414062500003"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" autoFlip="false" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="12" fontFamily="Dialog"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d2">
+				<y:RectD x="1323.2196530470037" y="272.4856608000002" width="117.03999999999996" height="46.668000000000006"/>
+			</data>
+			<data key="d3">
+				<yjs:ShapeNodeStyle brush="#FFFFCC00">
+					<yjs:ShapeNodeStyle.pen>
+						<wpfbridge:Pen brush="Black" miterLimit="1.45"/>
+					</yjs:ShapeNodeStyle.pen>
+				</yjs:ShapeNodeStyle>
+			</data>
+			<port name="p0"/>
+			<port name="p1">
+				<data key="d10">
+					<yjs:NodeScaledParameter offset="-0.32890168358684047,0.040277546355817505"/>
+				</data>
+			</port>
+		</node>
+		<node id="n11">
+			<data key="d1">
+				<x:List>
+					<y:Label>
+						<y:Label.text><![CDATA[Results archive]]></y:Label.text>
+						<y:Label.labelModelParameter>
+							<yjs:LayoutAnchoredLabelModelParameter offset="15.504374999999982,13.983414062500003"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" autoFlip="false" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="12" fontFamily="Dialog"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d2">
+				<y:RectD x="1323.2196530470037" y="385.37099120000033" width="117.03999999999996" height="46.668000000000006"/>
+			</data>
+			<data key="d3">
+				<yjs:ShapeNodeStyle brush="#FFFFCC00">
+					<yjs:ShapeNodeStyle.pen>
+						<wpfbridge:Pen brush="Black" miterLimit="1.45"/>
+					</yjs:ShapeNodeStyle.pen>
+				</yjs:ShapeNodeStyle>
+			</data>
+			<port name="p0">
+				<data key="d10">
+					<yjs:NodeScaledParameter offset="-0.3077550670454956,-0.0683335733264929"/>
+				</data>
+			</port>
+			<port name="p1"/>
+		</node>
+		<node id="n12">
+			<data key="d1">
+				<x:List>
+					<y:Label>
+						<y:Label.text><![CDATA[Raw data]]></y:Label.text>
+						<y:Label.labelModelParameter>
+							<yjs:LayoutAnchoredLabelModelParameter offset="31.172343749999982,13.983414062500003"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" autoFlip="false" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="12" fontFamily="Dialog"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d2">
+				<y:RectD x="1323.2196530470037" y="489.2563216000007" width="117.03999999999996" height="46.668000000000006"/>
+			</data>
+			<data key="d3">
+				<yjs:ShapeNodeStyle brush="#FFFFCC00">
+					<yjs:ShapeNodeStyle.pen>
+						<wpfbridge:Pen brush="Black" miterLimit="1.45"/>
+					</yjs:ShapeNodeStyle.pen>
+				</yjs:ShapeNodeStyle>
+			</data>
+			<port name="p0">
+				<data key="d10">
+					<yjs:NodeScaledParameter offset="-0.33338732951986333,0.29881861702828294"/>
+				</data>
+			</port>
+			<port name="p1">
+				<data key="d10">
+					<yjs:NodeScaledParameter offset="-0.21056607183018458,-0.20337250935689702"/>
+				</data>
+			</port>
+			<port name="p2">
+				<data key="d10">
+					<yjs:NodeScaledParameter offset="0.34219645827493267,0.0750781219735925"/>
+				</data>
+			</port>
+		</node>
+		<node id="n13">
+			<data key="d1">
+				<x:List>
+					<y:Label>
+						<y:Label.text>Instruments</y:Label.text>
+						<y:Label.labelModelParameter>
+							<yjs:LayoutAnchoredLabelModelParameter offset="25.175273437499982,13.983414062500003"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" autoFlip="false" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="12" fontFamily="Dialog"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d2">
+				<y:RectD x="1561.4176530470036" y="390.9826608000001" width="117.03999999999996" height="46.668000000000006"/>
+			</data>
+			<data key="d3">
+				<yjs:ShapeNodeStyle brush="#FFFFCC00">
+					<yjs:ShapeNodeStyle.pen>
+						<wpfbridge:Pen brush="Black" miterLimit="1.45"/>
+					</yjs:ShapeNodeStyle.pen>
+				</yjs:ShapeNodeStyle>
+			</data>
+			<port name="p0">
+				<data key="d10">
+					<yjs:NodeScaledParameter offset="-0.15156220377096086,-0.005774157961257621"/>
+				</data>
+			</port>
+		</node>
+		<node id="n14">
+			<data key="d1">
+				<x:List>
+					<y:Label>
+						<y:Label.text><![CDATA[Beamline software]]></y:Label.text>
+						<y:Label.labelModelParameter>
+							<yjs:LayoutAnchoredLabelModelParameter offset="7.163554687499982,13.983414062500003"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" autoFlip="false" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="12" fontFamily="Dialog"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d2">
+				<y:RectD x="1561.4176530470036" y="272.31466080000007" width="117.03999999999996" height="46.668000000000006"/>
+			</data>
+			<data key="d3">
+				<yjs:ShapeNodeStyle brush="#FFFFCC00">
+					<yjs:ShapeNodeStyle.pen>
+						<wpfbridge:Pen brush="Black" miterLimit="1.45"/>
+					</yjs:ShapeNodeStyle.pen>
+				</yjs:ShapeNodeStyle>
+			</data>
+			<port name="p0">
+				<data key="d10">
+					<yjs:NodeScaledParameter offset="-0.15156220377096086,-0.00413836469821394"/>
+				</data>
+			</port>
+			<port name="p1">
+				<data key="d10">
+					<yjs:NodeScaledParameter offset="-0.34403753457795316,0.3523915015913267"/>
+				</data>
+			</port>
+			<port name="p2">
+				<data key="d10">
+					<yjs:NodeScaledParameter offset="-0.28989952620474674,-0.26249250021427956"/>
+				</data>
+			</port>
+		</node>
+		<node id="n15">
+			<data key="d1">
+				<x:List>
+					<y:Label>
+						<y:Label.text>Users</y:Label.text>
+						<y:Label.labelModelParameter>
+							<yjs:LayoutAnchoredLabelModelParameter offset="248.3316113281246,4"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" autoFlip="false" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="15" fontFamily="Dialog" fontWeight="BOLD"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d2">
+				<y:RectD x="929.316" y="2.328304000001822" width="542.3599999999992" height="125.99999999999994"/>
+			</data>
+			<data key="d3">
+				<yjs:ShapeNodeStyle brush="{x:Null}" shape="ROUND_RECTANGLE">
+					<yjs:ShapeNodeStyle.pen>
+						<wpfbridge:Pen brush="Black" dashStyle="{y:GraphMLReference 1}" miterLimit="1.45"/>
+					</yjs:ShapeNodeStyle.pen>
+				</yjs:ShapeNodeStyle>
+			</data>
+		</node>
+		<node id="n16">
+			<data key="d1">
+				<x:List>
+					<y:Label>
+						<y:Label.text><![CDATA[Web browser]]></y:Label.text>
+						<y:Label.labelModelParameter>
+							<yjs:LayoutAnchoredLabelModelParameter offset="21.176249999999982,13.983414062500003"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" autoFlip="false" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="12" fontFamily="Dialog"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d2">
+				<y:RectD x="971.252346952996" y="44.1963040000017" width="117.03999999999996" height="46.668000000000006"/>
+			</data>
+			<data key="d3">
+				<yjs:ShapeNodeStyle brush="#FFFFCC00">
+					<yjs:ShapeNodeStyle.pen>
+						<wpfbridge:Pen brush="Black" miterLimit="1.45"/>
+					</yjs:ShapeNodeStyle.pen>
+				</yjs:ShapeNodeStyle>
+			</data>
+			<port name="p0"/>
+		</node>
+		<node id="n17">
+			<data key="d1">
+				<x:List>
+					<y:Label>
+						<y:Label.text>FTP</y:Label.text>
+						<y:Label.labelModelParameter>
+							<yjs:LayoutAnchoredLabelModelParameter offset="45.18796874999998,13.983414062500003"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" autoFlip="false" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="12" fontFamily="Dialog"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d2">
+				<y:RectD x="1143.9859999999999" y="44.1963040000017" width="117.03999999999996" height="46.668000000000006"/>
+			</data>
+			<data key="d3">
+				<yjs:ShapeNodeStyle brush="#FFFFCC00">
+					<yjs:ShapeNodeStyle.pen>
+						<wpfbridge:Pen brush="Black" miterLimit="1.45"/>
+					</yjs:ShapeNodeStyle.pen>
+				</yjs:ShapeNodeStyle>
+			</data>
+			<port name="p0">
+				<data key="d10">
+					<yjs:NodeScaledParameter offset="0.3824563730860593,0.062532051861318"/>
+				</data>
+			</port>
+			<port name="p1">
+				<data key="d10">
+					<yjs:NodeScaledParameter offset="-0.24767007940881447,0.062532051861318"/>
+				</data>
+			</port>
+		</node>
+		<node id="n18">
+			<data key="d1">
+				<x:List>
+					<y:Label>
+						<y:Label.text><![CDATA[Operating instruments]]></y:Label.text>
+						<y:Label.labelModelParameter>
+							<yjs:LayoutAnchoredLabelModelParameter offset="9.992656249999982,13.983414062500003"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" autoFlip="false" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="12" fontFamily="Dialog"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d2">
+				<y:RectD x="1310.7196530470037" y="44.1963040000017" width="142.03999999999996" height="46.668000000000006"/>
+			</data>
+			<data key="d3">
+				<yjs:ShapeNodeStyle brush="#FFFFCC00">
+					<yjs:ShapeNodeStyle.pen>
+						<wpfbridge:Pen brush="Black" miterLimit="1.45"/>
+					</yjs:ShapeNodeStyle.pen>
+				</yjs:ShapeNodeStyle>
+			</data>
+			<port name="p0"/>
+		</node>
+		<node id="n19">
+			<data key="d1">
+				<x:List>
+					<y:Label>
+						<y:Label.text><![CDATA[Remote services]]></y:Label.text>
+						<y:Label.labelModelParameter>
+							<yjs:LayoutAnchoredLabelModelParameter offset="108.30585937499995,4"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" autoFlip="false" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="15" fontFamily="Dialog" fontWeight="BOLD"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d2">
+				<y:RectD x="543.5896530470038" y="4.530304000001735" width="339.8499999999999" height="125.99999999999994"/>
+			</data>
+			<data key="d3">
+				<yjs:ShapeNodeStyle brush="{x:Null}" shape="ROUND_RECTANGLE">
+					<yjs:ShapeNodeStyle.pen>
+						<wpfbridge:Pen brush="Black" dashStyle="{y:GraphMLReference 1}" miterLimit="1.45"/>
+					</yjs:ShapeNodeStyle.pen>
+				</yjs:ShapeNodeStyle>
+			</data>
+		</node>
+		<node id="n20">
+			<data key="d1">
+				<x:List>
+					<y:Label>
+						<y:Label.text>ICAT</y:Label.text>
+						<y:Label.labelModelParameter>
+							<yjs:LayoutAnchoredLabelModelParameter offset="42.85300781249998,13.983414062500003"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" autoFlip="false" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="12" fontFamily="Dialog"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d2">
+				<y:RectD x="585.000693905992" y="44.1963040000017" width="117.03999999999996" height="46.668000000000006"/>
+			</data>
+			<data key="d3">
+				<yjs:ShapeNodeStyle brush="#FFFFCC00">
+					<yjs:ShapeNodeStyle.pen>
+						<wpfbridge:Pen brush="Black" miterLimit="1.45"/>
+					</yjs:ShapeNodeStyle.pen>
+				</yjs:ShapeNodeStyle>
+			</data>
+			<port name="p0"/>
+		</node>
+		<node id="n21">
+			<data key="d1">
+				<x:List>
+					<y:Label>
+						<y:Label.text><![CDATA[User Office]]></y:Label.text>
+						<y:Label.labelModelParameter>
+							<yjs:LayoutAnchoredLabelModelParameter offset="26.514140624999982,13.983414062500003"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" autoFlip="false" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="12" fontFamily="Dialog"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d2">
+				<y:RectD x="732.0406939059919" y="44.1963040000017" width="117.03999999999996" height="46.668000000000006"/>
+			</data>
+			<data key="d3">
+				<yjs:ShapeNodeStyle brush="#FFFFCC00">
+					<yjs:ShapeNodeStyle.pen>
+						<wpfbridge:Pen brush="Black" miterLimit="1.45"/>
+					</yjs:ShapeNodeStyle.pen>
+				</yjs:ShapeNodeStyle>
+			</data>
+			<port name="p0">
+				<data key="d10">
+					<yjs:NodeScaledParameter offset="0.31703495933878917,0.0799422687122651"/>
+				</data>
+			</port>
+		</node>
+		<node id="n22">
+			<data key="d1">
+				<x:List>
+					<y:Label>
+						<y:Label.labelModelParameter>
+							<yjs:LayoutAnchoredLabelModelParameter offset="-1.5,160.94399999999993"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" autoFlip="false" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="12" fontFamily="Dialog"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d2">
+				<y:RectD x="543.5896530470038" y="231.35566080000015" width="1" height="325.88799999999986"/>
+			</data>
+			<data key="d3">
+				<yjs:ShapeNodeStyle brush="{x:Null}">
+					<yjs:ShapeNodeStyle.pen>
+						<wpfbridge:Pen brush="Black" dashStyle="{y:GraphMLReference 1}" miterLimit="1.45"/>
+					</yjs:ShapeNodeStyle.pen>
+				</yjs:ShapeNodeStyle>
+			</data>
+		</node>
+		<node id="n23">
+			<data key="d1">
+				<x:List>
+					<y:Label>
+						<y:Label.text><![CDATA[Message queue]]></y:Label.text>
+						<y:Label.labelModelParameter>
+							<yjs:LayoutAnchoredLabelModelParameter offset="-31.68359375,5.6494140625"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" autoFlip="false" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="12" fontFamily="Dialog" fontWeight="BOLD"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d2">
+				<y:RectD x="655.9999999999997" y="231.2934912000003" width="30" height="30"/>
+			</data>
+			<data key="d3">
+				<yjs:ShapeNodeStyle pen="{x:Null}" brush="{x:Null}"/>
+			</data>
+		</node>
+		<node id="n24">
+			<data key="d1">
+				<x:List>
+					<y:Label>
+						<y:Label.labelModelParameter>
+							<yjs:LayoutAnchoredLabelModelParameter offset="125.19582652350175,-1.4600000000000364"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" autoFlip="false" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="12" fontFamily="Dialog"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d2">
+				<y:RectD x="858.9360000000001" y="344.2706608000002" width="254.3916530470035" height="1.079999999999984"/>
+			</data>
+			<data key="d3">
+				<yjs:ShapeNodeStyle brush="{x:Null}">
+					<yjs:ShapeNodeStyle.pen>
+						<wpfbridge:Pen brush="Black" dashStyle="{y:GraphMLReference 1}" miterLimit="1.45"/>
+					</yjs:ShapeNodeStyle.pen>
+				</yjs:ShapeNodeStyle>
+			</data>
+		</node>
+		<edge id="e0" source="n5" target="n6" sourceport="p0" targetport="p0">
+			<data key="d6">
+				<x:List>
+					<y:Label>
+						<y:Label.text><![CDATA[Status updates for runs]]></y:Label.text>
+						<y:Label.labelModelParameter>
+							<yjs:FreeEdgeLabelModelParameter ratio="0.4535633640460501" distance="-75.09607464921447"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="12" fontFamily="Dialog"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d7">
+				<x:List>
+					<y:Bend location="687.4346939059914,296.58126080000034"/>
+				</x:List>
+			</data>
+			<data key="d8">
+				<yjs:PolylineEdgeStyle sourceArrow="{y:GraphMLReference 3}">
+					<yjs:PolylineEdgeStyle.pen>
+						<wpfbridge:Pen brush="{y:GraphMLReference 2}" miterLimit="1.45"/>
+					</yjs:PolylineEdgeStyle.pen>
+					<yjs:PolylineEdgeStyle.targetArrow>
+						<yjs:Arrow brush="{y:GraphMLReference 2}">
+							<yjs:Arrow.pen>
+								<wpfbridge:Pen brush="{y:GraphMLReference 2}" miterLimit="1.45"/>
+							</yjs:Arrow.pen>
+						</yjs:Arrow>
+					</yjs:PolylineEdgeStyle.targetArrow>
+				</yjs:PolylineEdgeStyle>
+			</data>
+		</edge>
+		<edge id="e1" source="n5" target="n6" sourceport="p1" targetport="p1">
+			<data key="d6">
+				<x:List>
+					<y:Label>
+						<y:Label.text><![CDATA[Start processing runs]]></y:Label.text>
+						<y:Label.labelModelParameter>
+							<yjs:FreeEdgeLabelModelParameter ratio="0.43933356967629345" distance="-29.087368900598538"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="12" fontFamily="Dialog"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d8">
+				<yjs:PolylineEdgeStyle targetArrow="{y:GraphMLReference 3}">
+					<yjs:PolylineEdgeStyle.pen>
+						<wpfbridge:Pen brush="{y:GraphMLReference 4}" miterLimit="1.45"/>
+					</yjs:PolylineEdgeStyle.pen>
+					<yjs:PolylineEdgeStyle.sourceArrow>
+						<yjs:Arrow brush="{y:GraphMLReference 4}">
+							<yjs:Arrow.pen>
+								<wpfbridge:Pen brush="{y:GraphMLReference 4}" miterLimit="1.45"/>
+							</yjs:Arrow.pen>
+						</yjs:Arrow>
+					</yjs:PolylineEdgeStyle.sourceArrow>
+				</yjs:PolylineEdgeStyle>
+			</data>
+		</edge>
+		<edge id="e2" source="n7" target="n8" sourceport="p0" targetport="p0">
+			<data key="d6">
+				<x:List>
+					<y:Label>
+						<y:Label.text><![CDATA[Process run]]></y:Label.text>
+						<y:Label.labelModelParameter>
+							<yjs:FreeEdgeLabelModelParameter ratio="0.4864022198737913" distance="36.00000152317898"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="12" fontFamily="Dialog"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d8">
+				<yjs:PolylineEdgeStyle sourceArrow="{y:GraphMLReference 3}">
+					<yjs:PolylineEdgeStyle.pen>
+						<wpfbridge:Pen brush="{y:GraphMLReference 5}" miterLimit="1.45"/>
+					</yjs:PolylineEdgeStyle.pen>
+					<yjs:PolylineEdgeStyle.targetArrow>
+						<yjs:Arrow brush="{y:GraphMLReference 5}">
+							<yjs:Arrow.pen>
+								<wpfbridge:Pen brush="{y:GraphMLReference 5}" miterLimit="1.45"/>
+							</yjs:Arrow.pen>
+						</yjs:Arrow>
+					</yjs:PolylineEdgeStyle.targetArrow>
+				</yjs:PolylineEdgeStyle>
+			</data>
+		</edge>
+		<edge id="e3" source="n5" target="n7" sourceport="p2" targetport="p1">
+			<data key="d6">
+				<x:List>
+					<y:Label>
+						<y:Label.text><![CDATA[Process run]]></y:Label.text>
+						<y:Label.labelModelParameter>
+							<yjs:FreeEdgeLabelModelParameter ratio="0.20465192884837835" distance="-30.000010495432296"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="12" fontFamily="Dialog"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d8">
+				<yjs:PolylineEdgeStyle sourceArrow="{y:GraphMLReference 3}">
+					<yjs:PolylineEdgeStyle.pen>
+						<wpfbridge:Pen brush="{y:GraphMLReference 6}" miterLimit="1.45"/>
+					</yjs:PolylineEdgeStyle.pen>
+					<yjs:PolylineEdgeStyle.targetArrow>
+						<yjs:Arrow brush="{y:GraphMLReference 6}">
+							<yjs:Arrow.pen>
+								<wpfbridge:Pen brush="{y:GraphMLReference 6}" miterLimit="1.45"/>
+							</yjs:Arrow.pen>
+						</yjs:Arrow>
+					</yjs:PolylineEdgeStyle.targetArrow>
+				</yjs:PolylineEdgeStyle>
+			</data>
+		</edge>
+		<edge id="e4" source="n8" target="n5" sourceport="p1" targetport="p3">
+			<data key="d6">
+				<x:List>
+					<y:Label>
+						<y:Label.text><![CDATA[Run status]]></y:Label.text>
+						<y:Label.labelModelParameter>
+							<yjs:FreeEdgeLabelModelParameter ratio="0.6113146556015966" distance="-29.999997977844263"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="12" fontFamily="Dialog"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d8">
+				<yjs:PolylineEdgeStyle sourceArrow="{y:GraphMLReference 3}">
+					<yjs:PolylineEdgeStyle.pen>
+						<wpfbridge:Pen brush="{y:GraphMLReference 7}" miterLimit="1.45"/>
+					</yjs:PolylineEdgeStyle.pen>
+					<yjs:PolylineEdgeStyle.targetArrow>
+						<yjs:Arrow brush="{y:GraphMLReference 7}">
+							<yjs:Arrow.pen>
+								<wpfbridge:Pen brush="{y:GraphMLReference 7}" miterLimit="1.45"/>
+							</yjs:Arrow.pen>
+						</yjs:Arrow>
+					</yjs:PolylineEdgeStyle.targetArrow>
+				</yjs:PolylineEdgeStyle>
+			</data>
+		</edge>
+		<edge id="e5" source="n9" target="n5" sourceport="p0" targetport="p4">
+			<data key="d6">
+				<x:List>
+					<y:Label>
+						<y:Label.text><![CDATA[New run]]></y:Label.text>
+						<y:Label.labelModelParameter>
+							<yjs:FreeEdgeLabelModelParameter ratio="0.5706709403139303" distance="8.526866666666024"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="12" fontFamily="Dialog"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d8">
+				<yjs:PolylineEdgeStyle sourceArrow="{y:GraphMLReference 3}">
+					<yjs:PolylineEdgeStyle.pen>
+						<wpfbridge:Pen brush="{y:GraphMLReference 8}" miterLimit="1.45"/>
+					</yjs:PolylineEdgeStyle.pen>
+					<yjs:PolylineEdgeStyle.targetArrow>
+						<yjs:Arrow brush="{y:GraphMLReference 8}">
+							<yjs:Arrow.pen>
+								<wpfbridge:Pen brush="{y:GraphMLReference 8}" miterLimit="1.45"/>
+							</yjs:Arrow.pen>
+						</yjs:Arrow>
+					</yjs:PolylineEdgeStyle.targetArrow>
+				</yjs:PolylineEdgeStyle>
+			</data>
+		</edge>
+		<edge id="e6" source="n7" target="n11" sourceport="p2" targetport="p0">
+			<data key="d6">
+				<x:List>
+					<y:Label>
+						<y:Label.text><![CDATA[Reduced data]]></y:Label.text>
+						<y:Label.labelModelParameter>
+							<yjs:FreeEdgeLabelModelParameter ratio="0.3529157515194125" distance="11.353659976010574"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="12" fontFamily="Dialog"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d7">
+				<x:List>
+					<y:Bend location="625.3124999999999,472.2499999999997"/>
+					<y:Bend location="1211.9999999999995,472.2499999999997"/>
+				</x:List>
+			</data>
+			<data key="d8">
+				<yjs:PolylineEdgeStyle sourceArrow="{y:GraphMLReference 3}">
+					<yjs:PolylineEdgeStyle.pen>
+						<wpfbridge:Pen brush="{y:GraphMLReference 9}" miterLimit="1.45"/>
+					</yjs:PolylineEdgeStyle.pen>
+					<yjs:PolylineEdgeStyle.targetArrow>
+						<yjs:Arrow brush="{y:GraphMLReference 9}">
+							<yjs:Arrow.pen>
+								<wpfbridge:Pen brush="{y:GraphMLReference 9}" miterLimit="1.45"/>
+							</yjs:Arrow.pen>
+						</yjs:Arrow>
+					</yjs:PolylineEdgeStyle.targetArrow>
+				</yjs:PolylineEdgeStyle>
+			</data>
+		</edge>
+		<edge id="e7" source="n12" target="n7" sourceport="p0" targetport="p3">
+			<data key="d6">
+				<x:List>
+					<y:Label>
+						<y:Label.text><![CDATA[Raw data]]></y:Label.text>
+						<y:Label.labelModelParameter>
+							<yjs:FreeEdgeLabelModelParameter ratio="0.15723686316704513" distance="-16.938749837239243"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="12" fontFamily="Dialog"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d8">
+				<yjs:PolylineEdgeStyle sourceArrow="{y:GraphMLReference 3}">
+					<yjs:PolylineEdgeStyle.pen>
+						<wpfbridge:Pen brush="{y:GraphMLReference 10}" miterLimit="1.45"/>
+					</yjs:PolylineEdgeStyle.pen>
+					<yjs:PolylineEdgeStyle.targetArrow>
+						<yjs:Arrow brush="{y:GraphMLReference 10}">
+							<yjs:Arrow.pen>
+								<wpfbridge:Pen brush="{y:GraphMLReference 10}" miterLimit="1.45"/>
+							</yjs:Arrow.pen>
+						</yjs:Arrow>
+					</yjs:PolylineEdgeStyle.targetArrow>
+				</yjs:PolylineEdgeStyle>
+			</data>
+		</edge>
+		<edge id="e8" source="n12" target="n9" sourceport="p1" targetport="p1">
+			<data key="d6">
+				<x:List>
+					<y:Label>
+						<y:Label.text><![CDATA[New runs]]></y:Label.text>
+						<y:Label.labelModelParameter>
+							<yjs:FreeEdgeLabelModelParameter ratio="0.3795154392438234" distance="-34.57532700644415"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="12" fontFamily="Dialog"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d7">
+				<x:List>
+					<y:Bend location="987.836,503.09933333333305"/>
+				</x:List>
+			</data>
+			<data key="d8">
+				<yjs:PolylineEdgeStyle sourceArrow="{y:GraphMLReference 3}">
+					<yjs:PolylineEdgeStyle.pen>
+						<wpfbridge:Pen brush="{y:GraphMLReference 11}" miterLimit="1.45"/>
+					</yjs:PolylineEdgeStyle.pen>
+					<yjs:PolylineEdgeStyle.targetArrow>
+						<yjs:Arrow brush="{y:GraphMLReference 11}">
+							<yjs:Arrow.pen>
+								<wpfbridge:Pen brush="{y:GraphMLReference 11}" miterLimit="1.45"/>
+							</yjs:Arrow.pen>
+						</yjs:Arrow>
+					</yjs:PolylineEdgeStyle.targetArrow>
+				</yjs:PolylineEdgeStyle>
+			</data>
+		</edge>
+		<edge id="e9" source="n10" target="n6" sourceport="p0" targetport="p2">
+			<data key="d6">
+				<x:List>
+					<y:Label>
+						<y:Label.text><![CDATA[Reduction scripts]]></y:Label.text>
+						<y:Label.labelModelParameter>
+							<yjs:FreeEdgeLabelModelParameter ratio="0.41568440207547225" distance="12.569671630859546"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="12" fontFamily="Dialog"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d8">
+				<yjs:PolylineEdgeStyle sourceArrow="{y:GraphMLReference 3}">
+					<yjs:PolylineEdgeStyle.pen>
+						<wpfbridge:Pen brush="{y:GraphMLReference 12}" miterLimit="1.45"/>
+					</yjs:PolylineEdgeStyle.pen>
+					<yjs:PolylineEdgeStyle.targetArrow>
+						<yjs:Arrow brush="{y:GraphMLReference 12}">
+							<yjs:Arrow.pen>
+								<wpfbridge:Pen brush="{y:GraphMLReference 12}" miterLimit="1.45"/>
+							</yjs:Arrow.pen>
+						</yjs:Arrow>
+					</yjs:PolylineEdgeStyle.targetArrow>
+				</yjs:PolylineEdgeStyle>
+			</data>
+		</edge>
+		<edge id="e10" source="n14" target="n13" sourceport="p0" targetport="p0">
+			<data key="d6">
+				<x:List>
+					<y:Label>
+						<y:Label.text><![CDATA[Control & data]]></y:Label.text>
+						<y:Label.labelModelParameter>
+							<yjs:FreeEdgeLabelModelParameter ratio="0.5407365232880973" distance="-51.222647460937424"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="12" fontFamily="Dialog"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d8">
+				<yjs:PolylineEdgeStyle targetArrow="{y:GraphMLReference 14}" sourceArrow="{y:GraphMLReference 14}">
+					<yjs:PolylineEdgeStyle.pen>
+						<wpfbridge:Pen brush="{y:GraphMLReference 13}" miterLimit="1.45"/>
+					</yjs:PolylineEdgeStyle.pen>
+				</yjs:PolylineEdgeStyle>
+			</data>
+		</edge>
+		<edge id="e11" source="n14" target="n12" sourceport="p1" targetport="p2">
+			<data key="d6">
+				<x:List>
+					<y:Label>
+						<y:Label.text><![CDATA[Run data]]></y:Label.text>
+						<y:Label.labelModelParameter>
+							<yjs:FreeEdgeLabelModelParameter ratio="0.8380289429417253" distance="-91.82063020672987"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="12" fontFamily="Dialog"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d7">
+				<x:List>
+					<y:Bend location="1523.1875,312.0940673962641"/>
+					<y:Bend location="1523.1875,516.0940673962643"/>
+				</x:List>
+			</data>
+			<data key="d8">
+				<yjs:PolylineEdgeStyle sourceArrow="{y:GraphMLReference 3}">
+					<yjs:PolylineEdgeStyle.pen>
+						<wpfbridge:Pen brush="{y:GraphMLReference 15}" miterLimit="1.45"/>
+					</yjs:PolylineEdgeStyle.pen>
+					<yjs:PolylineEdgeStyle.targetArrow>
+						<yjs:Arrow brush="{y:GraphMLReference 15}">
+							<yjs:Arrow.pen>
+								<wpfbridge:Pen brush="{y:GraphMLReference 15}" miterLimit="1.45"/>
+							</yjs:Arrow.pen>
+						</yjs:Arrow>
+					</yjs:PolylineEdgeStyle.targetArrow>
+				</yjs:PolylineEdgeStyle>
+			</data>
+		</edge>
+		<edge id="e12" source="n18" target="n14" sourceport="p0" targetport="p2">
+			<data key="d6">
+				<x:List>
+					<y:Label>
+						<y:Label.text><![CDATA[Perform experiments]]></y:Label.text>
+						<y:Label.labelModelParameter>
+							<yjs:FreeEdgeLabelModelParameter ratio="0.5260801023854442" distance="-143.43118674038305"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="12" fontFamily="Dialog"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d7">
+				<x:List>
+					<y:Bend location="1522.25,67.5303040000017"/>
+					<y:Bend location="1522.25,283.3986608000001"/>
+				</x:List>
+			</data>
+			<data key="d8">
+				<yjs:PolylineEdgeStyle sourceArrow="{y:GraphMLReference 3}">
+					<yjs:PolylineEdgeStyle.pen>
+						<wpfbridge:Pen brush="{y:GraphMLReference 16}" miterLimit="1.45"/>
+					</yjs:PolylineEdgeStyle.pen>
+					<yjs:PolylineEdgeStyle.targetArrow>
+						<yjs:Arrow brush="{y:GraphMLReference 16}">
+							<yjs:Arrow.pen>
+								<wpfbridge:Pen brush="{y:GraphMLReference 16}" miterLimit="1.45"/>
+							</yjs:Arrow.pen>
+						</yjs:Arrow>
+					</yjs:PolylineEdgeStyle.targetArrow>
+				</yjs:PolylineEdgeStyle>
+			</data>
+		</edge>
+		<edge id="e13" source="n16" target="n6" sourceport="p0" targetport="p3">
+			<data key="d6">
+				<x:List>
+					<y:Label>
+						<y:Label.text><![CDATA[View & modify runs]]></y:Label.text>
+						<y:Label.labelModelParameter>
+							<yjs:FreeEdgeLabelModelParameter ratio="0.41200123259981547" distance="-56.66427933679374"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="12" fontFamily="Dialog"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d8">
+				<yjs:PolylineEdgeStyle sourceArrow="{y:GraphMLReference 3}">
+					<yjs:PolylineEdgeStyle.pen>
+						<wpfbridge:Pen brush="{y:GraphMLReference 17}" miterLimit="1.45"/>
+					</yjs:PolylineEdgeStyle.pen>
+					<yjs:PolylineEdgeStyle.targetArrow>
+						<yjs:Arrow brush="{y:GraphMLReference 17}">
+							<yjs:Arrow.pen>
+								<wpfbridge:Pen brush="{y:GraphMLReference 17}" miterLimit="1.45"/>
+							</yjs:Arrow.pen>
+						</yjs:Arrow>
+					</yjs:PolylineEdgeStyle.targetArrow>
+				</yjs:PolylineEdgeStyle>
+			</data>
+		</edge>
+		<edge id="e14" source="n17" target="n11" sourceport="p0" targetport="p1">
+			<data key="d6">
+				<x:List>
+					<y:Label>
+						<y:Label.text><![CDATA[Reduced data]]></y:Label.text>
+						<y:Label.labelModelParameter>
+							<yjs:FreeEdgeLabelModelParameter ratio="0.38111502136504344" distance="-92.52222006750334"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="12" fontFamily="Dialog"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d7">
+				<x:List>
+					<y:Bend location="1247.2686939059922,151.6985497962657"/>
+					<y:Bend location="1497.1028265235018,151.6985497962657"/>
+					<y:Bend location="1497.1028265235018,408.70499120000034"/>
+				</x:List>
+			</data>
+			<data key="d8">
+				<yjs:PolylineEdgeStyle targetArrow="{y:GraphMLReference 3}">
+					<yjs:PolylineEdgeStyle.pen>
+						<wpfbridge:Pen brush="{y:GraphMLReference 18}" miterLimit="1.45"/>
+					</yjs:PolylineEdgeStyle.pen>
+					<yjs:PolylineEdgeStyle.sourceArrow>
+						<yjs:Arrow brush="{y:GraphMLReference 18}">
+							<yjs:Arrow.pen>
+								<wpfbridge:Pen brush="{y:GraphMLReference 18}" miterLimit="1.45"/>
+							</yjs:Arrow.pen>
+						</yjs:Arrow>
+					</yjs:PolylineEdgeStyle.sourceArrow>
+				</yjs:PolylineEdgeStyle>
+			</data>
+		</edge>
+		<edge id="e15" source="n17" target="n10" sourceport="p1" targetport="p1">
+			<data key="d6">
+				<x:List>
+					<y:Label>
+						<y:Label.text><![CDATA[Reduction scripts]]></y:Label.text>
+						<y:Label.labelModelParameter>
+							<yjs:FreeEdgeLabelModelParameter ratio="0.5642382489671584" distance="71.50466848084903"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="12" fontFamily="Dialog"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d7">
+				<x:List>
+					<y:Bend location="1173.5186939059922,162.69933333333353"/>
+				</x:List>
+			</data>
+			<data key="d8">
+				<yjs:PolylineEdgeStyle sourceArrow="{y:GraphMLReference 3}">
+					<yjs:PolylineEdgeStyle.pen>
+						<wpfbridge:Pen brush="{y:GraphMLReference 19}" miterLimit="1.45"/>
+					</yjs:PolylineEdgeStyle.pen>
+					<yjs:PolylineEdgeStyle.targetArrow>
+						<yjs:Arrow brush="{y:GraphMLReference 19}">
+							<yjs:Arrow.pen>
+								<wpfbridge:Pen brush="{y:GraphMLReference 19}" miterLimit="1.45"/>
+							</yjs:Arrow.pen>
+						</yjs:Arrow>
+					</yjs:PolylineEdgeStyle.targetArrow>
+				</yjs:PolylineEdgeStyle>
+			</data>
+		</edge>
+		<edge id="e16" source="n21" target="n6" sourceport="p0" targetport="p4">
+			<data key="d6">
+				<x:List>
+					<y:Label>
+						<y:Label.text><![CDATA[User authentication]]></y:Label.text>
+						<y:Label.labelModelParameter>
+							<yjs:FreeEdgeLabelModelParameter ratio="0.5329781199007788" distance="-45.832791091792124"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="12" fontFamily="Dialog"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d8">
+				<yjs:PolylineEdgeStyle sourceArrow="{y:GraphMLReference 3}">
+					<yjs:PolylineEdgeStyle.pen>
+						<wpfbridge:Pen brush="{y:GraphMLReference 20}" miterLimit="1.45"/>
+					</yjs:PolylineEdgeStyle.pen>
+					<yjs:PolylineEdgeStyle.targetArrow>
+						<yjs:Arrow brush="{y:GraphMLReference 20}">
+							<yjs:Arrow.pen>
+								<wpfbridge:Pen brush="{y:GraphMLReference 20}" miterLimit="1.45"/>
+							</yjs:Arrow.pen>
+						</yjs:Arrow>
+					</yjs:PolylineEdgeStyle.targetArrow>
+				</yjs:PolylineEdgeStyle>
+			</data>
+		</edge>
+		<edge id="e17" source="n20" target="n6" sourceport="p0" targetport="p5">
+			<data key="d6">
+				<x:List>
+					<y:Label>
+						<y:Label.text><![CDATA[User permissions & metadata]]></y:Label.text>
+						<y:Label.labelModelParameter>
+							<yjs:FreeEdgeLabelModelParameter ratio="0.22347500335001302" distance="54.50963641012386"/>
+						</y:Label.labelModelParameter>
+						<y:Label.style>
+							<yjs:SimpleLabelStyle textAlignment="CENTER" textBrush="Black">
+								<yjs:SimpleLabelStyle.typeface>
+									<wpfbridge:Typeface fontSize="12" fontFamily="Dialog"/>
+								</yjs:SimpleLabelStyle.typeface>
+							</yjs:SimpleLabelStyle>
+						</y:Label.style>
+					</y:Label>
+				</x:List>
+			</data>
+			<data key="d8">
+				<yjs:PolylineEdgeStyle sourceArrow="{y:GraphMLReference 3}">
+					<yjs:PolylineEdgeStyle.pen>
+						<wpfbridge:Pen brush="{y:GraphMLReference 21}" miterLimit="1.45"/>
+					</yjs:PolylineEdgeStyle.pen>
+					<yjs:PolylineEdgeStyle.targetArrow>
+						<yjs:Arrow brush="{y:GraphMLReference 21}">
+							<yjs:Arrow.pen>
+								<wpfbridge:Pen brush="{y:GraphMLReference 21}" miterLimit="1.45"/>
+							</yjs:Arrow.pen>
+						</yjs:Arrow>
+					</yjs:PolylineEdgeStyle.targetArrow>
+				</yjs:PolylineEdgeStyle>
+			</data>
+		</edge>
+	</graph>
+</graphml>

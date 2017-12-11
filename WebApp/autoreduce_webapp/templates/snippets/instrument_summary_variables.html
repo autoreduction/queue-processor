@@ -1,0 +1,72 @@
+<div class="row">
+    <div class="col-md-4 col-md-offset-4 text-center">
+        <p><a href="{% url 'instrument_variables' instrument=instrument %}" class="btn btn-success btn-block"><i class="fa fa-plus"></i>&nbsp;&nbsp;Configure new jobs</a></p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <h3 class="text-center">Variables by run number</h3>
+        {% if current_variables.variables %}
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <div class="panel-title">Current Variables</div>
+                        </div>
+                        <div class="panel-body">
+                            {% include "snippets/variables.html" with instrument_variables=current_variables instrument=instrument csrf_token=csrf_token upcoming=False only %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <h4>No variables found</h4>
+                </div>
+            </div>
+        {% endif %}
+        {% if upcoming_variables_by_run %}
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <div class="panel-title">Upcoming Variables</div>
+                        </div>
+                        <div class="panel-body zebra-rows">
+                            {% for upcoming_variable in upcoming_variables_by_run %}
+                                {% include "snippets/variables.html" with instrument_variables=upcoming_variable instrument=instrument csrf_token=csrf_token upcoming=True only %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    <div class="col-md-6">
+        <h3 class="text-center">Variables by experiment reference number</h3>
+        {% if upcoming_variables_by_experiment %}
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <div class="panel-title">Upcoming Variables</div>
+                        </div>
+                        <div class="panel-body zebra-rows">
+                            {% for upcoming_variable in upcoming_variables_by_experiment %}
+                                {% include "snippets/variables.html" with instrument_variables=upcoming_variable instrument=instrument csrf_token=csrf_token only %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <h4>No variables found</h4>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
