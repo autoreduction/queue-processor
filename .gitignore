@@ -1,4 +1,5 @@
 *.pyc
 *.log
-*.~vsdx
-*.py.prod
+.idea/
+settings.py
+*/target/**
