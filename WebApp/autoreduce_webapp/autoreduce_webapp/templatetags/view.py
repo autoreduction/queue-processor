@@ -35,7 +35,7 @@ class ViewNode(Node):
                 return view(context['request'], *args, **kwargs).content
             raise "%r is not callable" % view
         except:
-            if settings.TEMPLATE_DEBUG:
+            if settings.DEBUG_PROPAGATE_EXCEPTIONS:
                 raise
         return ""
 
