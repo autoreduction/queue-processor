@@ -1,0 +1,19 @@
+language: python
+python:
+  - "2.7"
+
+services:
+  - mysql
+
+before_install:
+  - mysql < Scripts/Build/travis-db-full.sql
+
+install:
+  #- pip install pylint
+  - pip install mysql-python
+  - pip install nose
+
+# command to run tests
+script:
+  #- "pylint QueueProcessors/QueueProcessor"
+  - nosetests Scripts/Build/test/test_db_generation.py
