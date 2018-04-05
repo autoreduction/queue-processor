@@ -1,13 +1,12 @@
-
 '''
 This module is used to find an instrument and create it if it doesn't exist.
 '''
 # pylint: disable=missing-docstring
 # pylint: disable=too-few-public-methods
 import logging.config
-from settings import LOGGING
-from orm_mapping import Instrument
-from base import session
+from ..settings import LOGGING
+from ..orm_mapping import Instrument
+from ..base import session
 
 # Set up logging and attach the logging to the right part of the config.
 logging.config.dictConfig(LOGGING)
