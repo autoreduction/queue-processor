@@ -9,6 +9,7 @@ install:
   - pip install python-daemon
   - pip install requests
   - pip install stomp.py
+  - pip install suds
   - pip install SQLAlchemy
   - pip install watchdog
   # === ICAT === #
