@@ -17,17 +17,17 @@ import traceback
 
 import stomp
 
-from base import session
-from orm_mapping import ReductionRun, Instrument, Status, Experiment, DataLocation, \
-    ReductionLocation
+from QueueProcessors.QueueProcessor.base import session
+from QueueProcessors.QueueProcessor.orm_mapping import ReductionRun, Instrument, Status, \
+    Experiment, DataLocation, ReductionLocation
 
-from utils.messaging_utils import MessagingUtils
-from utils.instrument_variable_utils import InstrumentVariablesUtils
-from utils.status_utils import StatusUtils
-from utils.reduction_run_utils import ReductionRunUtils
-# pylint: disable=import-error
-from settings import ACTIVEMQ, LOGGING, EMAIL_HOST, EMAIL_PORT, EMAIL_ERROR_RECIPIENTS, \
-    EMAIL_ERROR_SENDER, BASE_URL
+from QueueProcessors.QueueProcessor.utils.messaging_utils import MessagingUtils
+from QueueProcessors.QueueProcessor.utils.instrument_variable_utils import InstrumentVariablesUtils
+from QueueProcessors.QueueProcessor.utils.status_utils import StatusUtils
+from QueueProcessors.QueueProcessor.utils.reduction_run_utils import ReductionRunUtils
+# pylint: disable=import-error, no-name-in-module
+from QueueProcessors.QueueProcessor.settings import ACTIVEMQ, LOGGING, EMAIL_HOST, EMAIL_PORT, \
+    EMAIL_ERROR_RECIPIENTS, EMAIL_ERROR_SENDER, BASE_URL
 
 # Set up logging and attach the logging to the right part of the config.
 logging.config.dictConfig(LOGGING)

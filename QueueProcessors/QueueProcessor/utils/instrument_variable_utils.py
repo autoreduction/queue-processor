@@ -9,11 +9,12 @@ import logging.config
 import chardet
 import imp
 import cgi
-from ..settings import REDUCTION_DIRECTORY, LOGGING # pylint: disable=import-error
-from ..orm_mapping import InstrumentJoin, Notification, InstrumentVariable, RunVariable, Variable
-from ..utils.variable_utils import VariableUtils
-from ..utils.instrument_utils import InstrumentUtils
-from ..base import session
+from QueueProcessors.QueueProcessor.settings import REDUCTION_DIRECTORY, LOGGING # pylint: disable=import-error,no-name-in-module
+from QueueProcessors.QueueProcessor.orm_mapping import InstrumentJoin, Notification, \
+    InstrumentVariable, RunVariable, Variable
+from QueueProcessors.QueueProcessor.utils.variable_utils import VariableUtils
+from QueueProcessors.QueueProcessor.utils.instrument_utils import InstrumentUtils
+from QueueProcessors.QueueProcessor.base import session
 
 # Set up logging and attach the logging to the right part of the config.
 logging.config.dictConfig(LOGGING)
@@ -357,7 +358,7 @@ class InstrumentVariablesUtils(object):
                 # Set them to apply after our variables.
                 final_variables = list(
                     previous_variables.filter(start_run=final_start))
-                [VariableUtils().copy_variable(var).save() for var in  # pylint: disable=expression-not-assigned
+                [VariableUtils().copy_variable(var).save() for var in  # pylint: disable=expression-not-assigned,no-member
                  final_variables]  # Also copy them to apply before our variables.
 
             elif not applicable_variables and not after_variables and not previous_variables:

@@ -1,9 +1,9 @@
 """ Utils moudle for sending messages to queues. """
 import logging.config
 import json
-from settings import LOGGING, ACTIVEMQ, FACILITY  # pylint: disable=import-error
-from ..orm_mapping import DataLocation
-from ..base import session
+from QueueProcessors.QueueProcessor.settings import LOGGING, ACTIVEMQ, FACILITY  # pylint: disable=import-error,no-name-in-module
+from QueueProcessors.QueueProcessor.orm_mapping import DataLocation
+from QueueProcessors.QueueProcessor.base import session
 
 # Set up logging and attach the logging to the right part of the config.
 logging.config.dictConfig(LOGGING)
