@@ -11,6 +11,13 @@ install:
   - pip install stomp.py
   - pip install SQLAlchemy
   - pip install watchdog
+  # === ICAT === #
+  - wget https://icatproject.org/misc/python-icat/download/python-icat-0.13.1.tar.gz
+  - sudo tar xvf python-icat-0.13.1.tar.gz
+  - cd python-icat-0.13.1
+  - sudo python setup.py build
+  - sudo python setup.py install
+  - cd ..
   # ======== Analysis/Testing tools ========= #
   - pip install pylint
 
