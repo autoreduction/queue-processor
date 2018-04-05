@@ -6,9 +6,10 @@ from __future__ import print_function
 import sys
 from os import path
 
-from Scripts.NagiosChecks.autoreduce_settings import MYSQL, ISIS_MOUNT
 import MySQLdb
 import MySQLdb.cursors
+
+from Scripts.NagiosChecks.autoreduce_settings import MYSQL, ISIS_MOUNT
 
 
 # pylint: disable=invalid-name

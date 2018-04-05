@@ -6,8 +6,8 @@ import sys
 import datetime
 from sets import Set
 import icat
-
-# pylint: disable=relative-import
+# The below is a template on the repository
+# pylint: disable=import-error
 from settings import ICAT, BASE_DIR
 
 
