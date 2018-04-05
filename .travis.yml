@@ -4,9 +4,12 @@ python:
 
 install:
   # ========== Project dependecies ========== #
+  - pip install django
+  - pip install mysql-python
   - pip install python-daemon
   - pip install requests
   - pip install stomp.py
+  - pip install SQLAlchemy
   - pip install watchdog
   # ======== Analysis/Testing tools ========= #
   - pip install pylint
@@ -17,12 +20,12 @@ script:
   # Run pylint without check for C0103 (invalid-name) as this triggers on module names
   # There is currently no work around for this - we should change module names to lower case
   - pylint -d C0103 EndOfRunMonitor
-  
+
   - pylint -d C0103 Scripts/ActiveMQTests/sendMessage.py
   - pylint -d C0103 Scripts/ActiveMQTests/stompActiveMQtest.py
   - pylint -d C0103 Scripts/ManualSubmissionScript
-  - pylint -d C0103 Scripts/NagiosChecks
-  
+  - pylint -d C0103 Scripts/NagiosChecks/autoreduce_checklastrun.py
+
   - pylint -d C0103 QueueProcessors
-  
+
   - pylint -d C0103 WebApp/autoreduce_webapp/autoreduce_webapp/

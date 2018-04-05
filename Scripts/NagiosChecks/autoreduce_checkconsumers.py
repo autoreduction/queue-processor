@@ -2,7 +2,6 @@
 """
 Check the number of consumer for the list is atleast 1
 """
-# pylint: disable=duplicate-code
 from __future__ import print_function
 import sys
 
@@ -15,6 +14,7 @@ from Scripts.NagiosChecks.autoreduce_settings import ACTIVEMQ
 
 ACTIVEMQ_URL = "http://" + ACTIVEMQ['host'] + ACTIVEMQ['api-path']
 ACTIVEMQ_AUTH = HTTPBasicAuth(ACTIVEMQ['username'], ACTIVEMQ['password'])
+
 
 # pylint: disable=invalid-name
 def checkConsumer():
