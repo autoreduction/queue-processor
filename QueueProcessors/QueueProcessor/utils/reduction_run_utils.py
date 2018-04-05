@@ -1,17 +1,17 @@
 """ Module to deal with creating and caneling of reduction runs in the database. """
 import logging.config
 import datetime
-from settings import LOGGING  # pylint: disable=import-error
-from ..orm_mapping import DataLocation, ReductionRun, RunJoin
-from ..base import session
-from ..utils.messaging_utils import MessagingUtils
-from ..utils.instrument_variable_utils import InstrumentVariablesUtils
-from ..utils.variable_utils import VariableUtils
-from ..utils.status_utils import StatusUtils
+from QueueProcessors.QueueProcessor.settings import LOGGING  # pylint: disable=import-error,no-name-in-module
+from QueueProcessors.QueueProcessor.orm_mapping import DataLocation, ReductionRun, RunJoin
+from QueueProcessors.QueueProcessor.base import session
+from QueueProcessors.QueueProcessor.utils.messaging_utils import MessagingUtils
+from QueueProcessors.QueueProcessor.utils.instrument_variable_utils import InstrumentVariablesUtils
+from QueueProcessors.QueueProcessor.utils.variable_utils import VariableUtils
+from QueueProcessors.QueueProcessor.utils.status_utils import StatusUtils
 
 # Set up logging and attach the logging to the right part of the config.
 logging.config.dictConfig(LOGGING)
-logger = logging.getLogger("queue_processor")
+logger = logging.getLogger("queue_processor")  # pylint: disable=invalid-name
 
 
 class ReductionRunUtils(object):
@@ -29,6 +29,7 @@ class ReductionRunUtils(object):
         """
 
         def set_cancelled(run):
+            """ Set a run as canceled """
             run.message = "Run cancelled by user"
             run.status = StatusUtils().get_error()
             run.finished = datetime.datetime.now()
