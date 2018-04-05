@@ -19,6 +19,9 @@ install:
   - sudo python setup.py build
   - sudo python setup.py install
   - cd ..
+  - ls /usr/local/lib/python2.7/dist-packages/icat
+  - python -c "help('modules')"
+  
   # ======== Analysis/Testing tools ========= #
   - pip install pylint
 

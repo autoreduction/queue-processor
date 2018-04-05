@@ -9,7 +9,8 @@ import suds
 from suds.transport.https import HttpAuthenticated
 from suds.client import Client
 
-# pylint: disable=relative-import
+# The below is a template on the repository
+# pylint: disable=import-error
 from settings import CERTIFICATE_LOCATION, UOWS_URL
 
 

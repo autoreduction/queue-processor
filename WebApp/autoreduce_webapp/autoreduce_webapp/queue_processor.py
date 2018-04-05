@@ -8,7 +8,9 @@ import logging.config
 
 import django
 import stomp
-# pylint: disable=relative-import
+
+# The below is a template on the repository
+# pylint: disable=import-error
 from settings import ACTIVEMQ, BASE_DIR, LOGGING
 
 logging.config.dictConfig(LOGGING)

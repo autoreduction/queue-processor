@@ -6,11 +6,12 @@ from django.shortcuts import redirect
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import render
 
+# The below is a template on the repository
+# pylint: disable=import-error
+from settings import (DEVELOPMENT_MODE, INSTALLED_APPS, LOGIN_URL,
+                      OUTDATED_BROWSERS, UOWS_LOGIN_URL, USER_ACCESS_CHECKS)
 # pylint: disable=relative-import
-from settings import (UOWS_LOGIN_URL, LOGIN_URL, INSTALLED_APPS,
-                      USER_ACCESS_CHECKS, OUTDATED_BROWSERS)
 from icat_cache import ICATCache
-from settings import DEVELOPMENT_MODE
 
 from reduction_viewer.models import ReductionRun, Experiment
 from reduction_viewer.models import Notification, Setting
