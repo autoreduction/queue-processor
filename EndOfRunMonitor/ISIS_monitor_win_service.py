@@ -11,7 +11,7 @@ import win32evtlogutil
 import win32service
 import win32serviceutil
 
-import ISISendOfRunMonitor
+from EndOfRunMonitor import ISISendOfRunMonitor
 
 
 class QueueService(win32serviceutil.ServiceFramework):

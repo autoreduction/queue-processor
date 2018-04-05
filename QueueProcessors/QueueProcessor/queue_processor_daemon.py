@@ -20,11 +20,11 @@ def main():
     """ Main method. """
     daemon = QueueProcessorDaemon('/tmp/QueueProcessorDaemon.pid')
     if len(sys.argv) == 2:
-        if 'start' == sys.argv[1]:
+        if sys.argv[1] == 'start':
             daemon.start()
-        elif 'stop' == sys.argv[1]:
+        elif sys.argv[1] == 'stop':
             daemon.stop()
-        elif 'restart' == sys.argv[1]:
+        elif sys.argv[1] == 'restart':
             daemon.restart()
         else:
             print "Unknown command"

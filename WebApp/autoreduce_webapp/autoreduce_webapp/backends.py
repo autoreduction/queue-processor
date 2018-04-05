@@ -4,9 +4,8 @@ UOWS authentication backend
 import logging
 from django.contrib.auth.models import User
 
-# pylint: disable=import-error
-from autoreduce_webapp.uows_client import UOWSClient
-from autoreduce_webapp.icat_cache import ICATCache
+from WebApp.autoreduce_webapp.autoreduce_webapp.uows_client import UOWSClient
+from WebApp.autoreduce_webapp.autoreduce_webapp.icat_cache import ICATCache
 
 LOGGER = logging.getLogger(__name__)
 

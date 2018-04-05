@@ -2,8 +2,10 @@
 Initialise admin pages
 """
 from django.contrib import admin
-# pylint: disable=relative-import
-from models import UserCache, InstrumentCache, ExperimentCache
+
+from WebApp.autoreduce_webapp.autoreduce_webapp.models import (UserCache,
+                                                               InstrumentCache,
+                                                               ExperimentCache)
 
 admin.site.register(UserCache)
 admin.site.register(InstrumentCache)

@@ -8,7 +8,7 @@ import logging.config
 
 import django
 import stomp
-from autoreduce_webapp.settings import ACTIVEMQ, BASE_DIR, LOGGING
+from WebApp.autoreduce_webapp.autoreduce_webapp.settings import ACTIVEMQ, BASE_DIR, LOGGING
 
 logging.config.dictConfig(LOGGING)
 LOGGER = logging.getLogger("django")

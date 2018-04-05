@@ -2,13 +2,16 @@
 """
 Check the length of the queues
 """
+# pylint: disable=duplicate-code
 from __future__ import print_function
 import sys
 
-# pylint: disable=import-error
-from autoreduce_settings import ACTIVEMQ
 import requests
 from requests.auth import HTTPBasicAuth
+
+# pylint: disable=import-error
+from Scripts.NagiosChecks.autoreduce_settings import ACTIVEMQ
+
 
 ACTIVEMQ_URL = "http://" + ACTIVEMQ['host'] + ACTIVEMQ['api-path']
 ACTIVEMQ_AUTH = HTTPBasicAuth(ACTIVEMQ['username'], ACTIVEMQ['password'])

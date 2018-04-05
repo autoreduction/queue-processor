@@ -4,9 +4,11 @@ Chached data from the ICAT service
 import datetime
 import logging
 from django.utils import timezone
-from autoreduce_webapp.settings import CACHE_LIFETIME
-from autoreduce_webapp.icat_communication import ICATCommunication
-from autoreduce_webapp.models import UserCache, InstrumentCache, ExperimentCache
+from WebApp.autoreduce_webapp.autoreduce_webapp.settings import CACHE_LIFETIME
+from WebApp.autoreduce_webapp.autoreduce_webapp.icat_communication import ICATCommunication
+from WebApp.autoreduce_webapp.autoreduce_webapp.models import (UserCache,
+                                                               InstrumentCache,
+                                                               ExperimentCache)
 
 LOGGER = logging.getLogger("app")
 

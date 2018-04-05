@@ -9,9 +9,10 @@ import argparse
 
 import icat
 import stomp
-from settings import ACTIVE_MQ
-from settings import ICAT
-
+# The below is only a template on the repo
+# pylint: disable=import-error
+from Scripts.ManualSubmissionScript.settings import ACTIVE_MQ
+from Scripts.ManualSubmissionScript.settings import ICAT
 
 
 def submit_run(active_mq_client, rb_number, instrument, data_file_location, run_number):

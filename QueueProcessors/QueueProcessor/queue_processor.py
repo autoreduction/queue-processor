@@ -20,7 +20,7 @@ import stomp
 from QueueProcessors.QueueProcessor.base import session
 from QueueProcessors.QueueProcessor.orm_mapping import ReductionRun, Instrument, Status, \
     Experiment, DataLocation, ReductionLocation
-
+# pylint: disable=cyclic-import
 from QueueProcessors.QueueProcessor.utils.messaging_utils import MessagingUtils
 from QueueProcessors.QueueProcessor.utils.instrument_variable_utils import InstrumentVariablesUtils
 from QueueProcessors.QueueProcessor.utils.status_utils import StatusUtils
@@ -98,7 +98,7 @@ class Listener(object):
 
         # Activate the instrument if it is currently set to inactive
         if not instrument.is_active:
-            logger.info("Activating " + instrument_name)
+            logger.info("Activating %s", instrument_name)
             instrument.is_active = 1
             session.commit()
 
@@ -225,6 +225,7 @@ class Listener(object):
         Called when the destination queue was reduction_complete
         Updates the run as complete in the database.
         """
+        # pylint: disable=too-many-nested-blocks
         try:
             logger.info("Run %s has completed reduction", self._data_dict['run_number'])
             reduction_run = self.find_run()
@@ -359,7 +360,8 @@ class Listener(object):
         """ Method for emailing when a run fails. """
         recipients = EMAIL_ERROR_RECIPIENTS
         #  This does not parse esoteric (but RFC-compliant) email addresses correctly
-        local_recipients = filter(lambda address: address.split('@')[-1] == BASE_URL, recipients)  # pylint: disable=deprecated-lambda,bad-builtin
+        # pylint: disable=deprecated-lambda
+        local_recipients = filter(lambda address: address.split('@')[-1] == BASE_URL, recipients)
         #  Don't send local emails
         if local_recipients:
             raise Exception("Local email address specified in ERROR_EMAILS - %s match %s" %

@@ -6,13 +6,15 @@ from django.shortcuts import redirect
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import render
 
-from autoreduce_webapp.settings import (UOWS_LOGIN_URL, LOGIN_URL, INSTALLED_APPS,
-                                        USER_ACCESS_CHECKS, OUTDATED_BROWSERS)
-from autoreduce_webapp.icat_cache import ICATCache
-from autoreduce_webapp.settings import DEVELOPMENT_MODE
+from WebApp.autoreduce_webapp.autoreduce_webapp.settings import (UOWS_LOGIN_URL, LOGIN_URL,
+                                                                 INSTALLED_APPS,
+                                                                 USER_ACCESS_CHECKS,
+                                                                 OUTDATED_BROWSERS)
+from WebApp.autoreduce_webapp.autoreduce_webapp.icat_cache import ICATCache
+from WebApp.autoreduce_webapp.autoreduce_webapp.settings import DEVELOPMENT_MODE
 
-from reduction_viewer.models import ReductionRun, Experiment
-from reduction_viewer.models import Notification, Setting
+from WebApp.autoreduce_webapp.reduction_viewer.models import ReductionRun, Experiment
+from WebApp.autoreduce_webapp.reduction_viewer.models import Notification, Setting
 
 
 LOGGER = logging.getLogger(__name__)

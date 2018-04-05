@@ -6,7 +6,7 @@ import json
 import logging
 
 import stomp
-from testconfig import LOG_FILENAME, ACTIVEMQ
+from Scripts.ActiveMQTests.testconfig import LOG_FILENAME, ACTIVEMQ
 
 logging.basicConfig(filename=LOG_FILENAME, level=logging.DEBUG)
 

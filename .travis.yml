@@ -3,14 +3,26 @@ python:
   - "2.7"
 
 install:
+  # ========== Project dependecies ========== #
+  - pip install python-daemon
+  - pip install requests
+  - pip install stomp.py
+  - pip install watchdog
+  # ======== Analysis/Testing tools ========= #
   - pip install pylint
 
 # command to run tests
 script:
   # =============Pylint commands============= #
-  - pylint EndOfRunMonitor
-  - pylint Scripts/ActiveMQTests
-  - pylint Scripts/ManualSubmissionScript
-  - pylint Scripts/NagiosChecks
-  - QueueProcessors
-  - WebApp/autoreduce_webapp/autoreduce_webapp/
+  # Run pylint without check for C0103 (invalid-name) as this triggers on module names
+  # There is currently no work around for this - we should change module names to lower case
+  - pylint -d C0103 EndOfRunMonitor
+  
+  - pylint -d C0103 Scripts/ActiveMQTests/sendMessage.py
+  - pylint -d C0103 Scripts/ActiveMQTests/stompActiveMQtest.py
+  - pylint -d C0103 Scripts/ManualSubmissionScript
+  - pylint -d C0103 Scripts/NagiosChecks
+  
+  - pylint -d C0103 QueueProcessors
+  
+  - pylint -d C0103 WebApp/autoreduce_webapp/autoreduce_webapp/

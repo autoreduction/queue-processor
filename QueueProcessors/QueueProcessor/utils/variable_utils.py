@@ -24,8 +24,9 @@ class VariableUtils(object):
 
     def save_run_variables(self, instrument_vars, reduction_run):
         """ Save reduction run variables in the database. """
-        logger.info('Saving run variables for ' + str(reduction_run.run_number))
-        run_variables = map(lambda ins_var: self.derive_run_variable(ins_var, reduction_run), # pylint: disable=deprecated-lambda,bad-builtin
+        logger.info('Saving run variables for %s', str(reduction_run.run_number))
+        # pylint: disable=deprecated-lambda
+        run_variables = map(lambda ins_var: self.derive_run_variable(ins_var, reduction_run),
                             instrument_vars)
         for run_variable in run_variables:
             session.add(run_variable)
@@ -85,8 +86,7 @@ class VariableUtils(object):
                 return None
             if '.' in str(value):
                 return float(value)
-            else:
-                return int(re.sub("[^0-9]+", "", str(value)))
+            return int(re.sub("[^0-9]+", "", str(value)))
         if var_type == "list_text":
             var_list = str(value).split(',')
             list_text = []

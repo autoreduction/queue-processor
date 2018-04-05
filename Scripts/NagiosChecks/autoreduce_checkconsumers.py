@@ -2,13 +2,15 @@
 """
 Check the number of consumer for the list is atleast 1
 """
+# pylint: disable=duplicate-code
 from __future__ import print_function
 import sys
 
-# pylint: disable=import-error
-from autoreduce_settings import ACTIVEMQ
 import requests
 from requests.auth import HTTPBasicAuth
+
+# pylint: disable=import-error
+from Scripts.NagiosChecks.autoreduce_settings import ACTIVEMQ
 
 
 ACTIVEMQ_URL = "http://" + ACTIVEMQ['host'] + ACTIVEMQ['api-path']

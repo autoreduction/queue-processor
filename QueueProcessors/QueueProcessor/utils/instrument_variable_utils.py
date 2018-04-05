@@ -2,14 +2,14 @@
 Module for dealing with instrument reduction variables.
 """
 # pylint: disable=deprecated-lambda
-# pylint: disable=bad-builtin
 import os
 import io
 import logging.config
-import chardet
 import imp
 import cgi
-from QueueProcessors.QueueProcessor.settings import REDUCTION_DIRECTORY, LOGGING # pylint: disable=import-error,no-name-in-module
+import chardet
+# pylint: disable=import-error,no-name-in-module
+from QueueProcessors.QueueProcessor.settings import REDUCTION_DIRECTORY, LOGGING
 from QueueProcessors.QueueProcessor.orm_mapping import InstrumentJoin, Notification, \
     InstrumentVariable, RunVariable, Variable
 from QueueProcessors.QueueProcessor.utils.variable_utils import VariableUtils
@@ -53,7 +53,7 @@ class InstrumentVariablesUtils(object):
         if not run_number:
             applicable_variables = session.query(InstrumentVariable).\
                 filter_by(instrument=instrument).order_by('-start_run').all()
-            if len(applicable_variables) != 0:
+            if applicable_variables:
                 variable_run_number = applicable_variables[0].start_run
         else:
             variable_run_number = run_number
@@ -67,14 +67,13 @@ class InstrumentVariablesUtils(object):
         # If we have found some variables then we want to use them by first making copies of them
         # and sending them back to be used. This means we don't alter the previous set of variables.
         # If we haven't found any variables, just return an empty list.
-        if len(variables) != 0:
+        if variables:
             self._update_variables(variables)
             new_variables = []
             for variable in variables:
                 new_variables.append(VariableUtils().copy_variable(variable))
             return new_variables
-        else:
-            return []
+        return []
 
     def get_default_variables(self, instrument_name, reduce_script=None):
         """

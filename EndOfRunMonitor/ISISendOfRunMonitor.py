@@ -5,11 +5,14 @@ the DataReady queue when runs end.
 import json
 import os
 import logging
-import stomp
 import threading
+import stomp
+
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-from ICAT_Client import ICAT
+from EndOfRunMonitor.ICAT_Client import ICAT
+# The below is a template on repo settings.py.template
+# pylint: disable=import-error
 from settings import ACTIVEMQ
 
 # Config settings for cycle number, and instrument file arrangement
@@ -38,8 +41,7 @@ def get_file_extension(use_nxs):
     """ Choose the data extension based on the boolean. """
     if use_nxs:
         return ".nxs"
-    else:
-        return ".raw"
+    return ".raw"
 
 
 def get_data_and_check(last_run_file):
@@ -133,7 +135,7 @@ class InstrumentMonitor(FileSystemEventHandler):
                     self.send_message(data)
         except Exception as exp:  # pylint: disable=broad-except
             # if this code can't be executed it will raise a logging error towards the user.
-            logging.exception("Error on loading file: " + exp.message, exc_info=True)
+            logging.exception("Error on loading file: %s", exp.message, exc_info=True)
 
     def send_message(self, last_run_data):
         """ Puts message together and sends it to queue. """
@@ -141,7 +143,7 @@ class InstrumentMonitor(FileSystemEventHandler):
             data_dict = self.build_dict(last_run_data)
         if not USE_FAKE_ARCHIVE:
             self.client.send('/queue/DataReady', json.dumps(data_dict), priority='9')
-        logging.info("Data sent: " + str(data_dict))
+        logging.info("Data sent: %s", str(data_dict))
 
 
 def main():

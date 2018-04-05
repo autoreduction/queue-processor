@@ -5,7 +5,7 @@ import sys
 
 # pylint: disable=no-name-in-module
 from daemon import Daemon
-import ISISendOfRunMonitor
+from EndOfRunMonitor import ISISendOfRunMonitor
 
 
 # pylint: disable=too-few-public-methods

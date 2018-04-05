@@ -1,6 +1,7 @@
 """
 Settings for Nagios checks
 """
+
 # ActiveMQ
 ACTIVEMQ = {
     "host": "reducequeue",
