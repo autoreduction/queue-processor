@@ -7,8 +7,8 @@ from django.template import Library, Node, Variable, TemplateSyntaxError
 from django.contrib.auth.models import User
 from django.utils.safestring import mark_safe
 from django.core.exceptions import ObjectDoesNotExist
-
-from WebApp.autoreduce_webapp.autoreduce_webapp.templatetags.common_helpers import get_var
+# pylint: disable=relative-import
+from common_helpers import get_var
 
 logger = logging.getLogger(__name__)
 register = Library()

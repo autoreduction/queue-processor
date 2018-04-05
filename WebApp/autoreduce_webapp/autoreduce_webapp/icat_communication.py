@@ -7,7 +7,8 @@ import datetime
 from sets import Set
 import icat
 
-from WebApp.autoreduce_webapp.autoreduce_webapp.settings import ICAT, BASE_DIR
+# pylint: disable=relative-import
+from settings import ICAT, BASE_DIR
 
 
 LOGGER = logging.getLogger(__name__)
@@ -181,7 +182,7 @@ class ICATCommunication(object):
         Returns all experiments allowed for a given list of instruments
         """
         LOGGER.debug("Calling ICATCommunication.get_valid_experiments_for_instruments")
-        from WebApp.autoreduce_webapp.reduction_viewer.models import Setting
+        from reduction_viewer.models import Setting
         if not isinstance(user_number, (int, long)):
             raise TypeError("User number must be a number")
         if not instruments:
@@ -218,7 +219,7 @@ class ICATCommunication(object):
         Returns all experiments allowed for a given instrument
         """
         LOGGER.debug("Calling ICATCommunication.get_valid_experiments_for_instrument")
-        from WebApp.autoreduce_webapp.reduction_viewer.models import Setting
+        from reduction_viewer.models import Setting
 
         try:
             # pylint: disable=no-member

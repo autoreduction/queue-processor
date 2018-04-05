@@ -3,8 +3,9 @@ Routing for URI to page contents
 """
 from django.conf.urls import include, url
 from django.contrib import admin
-from WebApp.autoreduce_webapp.reduction_viewer import views as reduction_viewer_views
-from WebApp.autoreduce_webapp.reduction_variables import views as reduction_variables_views
+
+from reduction_viewer import views as reduction_viewer_views
+from reduction_variables import views as reduction_variables_views
 
 # pylint: disable=invalid-name
 handler400 = 'autoreduce_webapp.views.handler400'

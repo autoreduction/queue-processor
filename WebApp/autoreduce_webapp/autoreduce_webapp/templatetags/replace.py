@@ -2,8 +2,8 @@
 Node for handling replacing
 """
 from django.template import Library, Node, Variable, TemplateSyntaxError
-
-from WebApp.autoreduce_webapp.autoreduce_webapp.templatetags.common_helpers import get_var
+# pylint: disable=relative-import
+from common_helpers import get_var
 
 
 register = Library()

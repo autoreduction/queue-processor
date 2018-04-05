@@ -4,7 +4,7 @@ Handle page responses for WebApp
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 # pylint: disable=no-member
-from WebApp.autoreduce_webapp.reduction_viewer.models import Setting
+from reduction_viewer.models import Setting
 
 
 def get_admin_email():

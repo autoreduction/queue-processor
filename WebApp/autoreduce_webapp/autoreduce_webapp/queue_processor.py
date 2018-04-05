@@ -8,7 +8,8 @@ import logging.config
 
 import django
 import stomp
-from WebApp.autoreduce_webapp.autoreduce_webapp.settings import ACTIVEMQ, BASE_DIR, LOGGING
+# pylint: disable=relative-import
+from settings import ACTIVEMQ, BASE_DIR, LOGGING
 
 logging.config.dictConfig(LOGGING)
 LOGGER = logging.getLogger("django")

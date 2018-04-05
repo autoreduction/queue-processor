@@ -9,7 +9,8 @@ import suds
 from suds.transport.https import HttpAuthenticated
 from suds.client import Client
 
-from WebApp.autoreduce_webapp.autoreduce_webapp.settings import CERTIFICATE_LOCATION, UOWS_URL
+# pylint: disable=relative-import
+from settings import CERTIFICATE_LOCATION, UOWS_URL
 
 
 LOGGER = logging.getLogger(__name__)
