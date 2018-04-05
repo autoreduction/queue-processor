@@ -2,6 +2,7 @@
 The Daemon that will run the ArchiveMonitor
 """
 import sys
+import time
 from daemon import Daemon
 from EndOfRunMonitor.ISIS_archive_monitor import ArchiveMonitor
 
@@ -12,7 +13,11 @@ class ArchiveMonitorDaemon(Daemon):
     """
     @staticmethod
     def run():
-        ArchiveMonitor.main()
+        monitor = ArchiveMonitor('isis-instrument-path')
+        while True:
+            # Only check every 5 minutes
+            time.sleep(300)
+            monitor.get_most_recent_run()
 
 
 if __name__ == "__main__":
