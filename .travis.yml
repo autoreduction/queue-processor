@@ -16,11 +16,11 @@ install:
   - wget https://icatproject.org/misc/python-icat/download/python-icat-0.13.1.tar.gz
   - sudo tar xvf python-icat-0.13.1.tar.gz
   - cd python-icat-0.13.1
-  - sudo python setup.py build
-  - sudo python setup.py install
+  - py_path=$(which python)
+  - sudo py_path setup.py build
+  - sudo py_path setup.py install
   - cd ..
   - ls /usr/local/lib/python2.7/dist-packages/
-  - ls /usr/local/lib/python2.7/dist-packages/icat
   - python -c "help('modules')"
   - pip install python-icat
   
