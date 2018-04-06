@@ -16,3 +16,12 @@ ACTIVEMQ = {
     "reduction_complete": "/queue/ReductionComplete",
     "reduction_error": "/queue/ReductionError"
 }
+
+# Reduction database
+MYSQL = {
+    'HOST': 'YOUR-HOST-URL',
+    'USER': 'YOUR-USER-NAME',
+    'PASSWD': 'YOUR-PASSWORD',
+    'DB': 'autoreduction',
+    'PORT': '3306',
+}

@@ -5,6 +5,7 @@ import sys
 import time
 from daemon import Daemon
 from EndOfRunMonitor.ISIS_archive_monitor import ArchiveMonitor
+from EndOfRunMonitor.database_client import session
 
 
 class ArchiveMonitorDaemon(Daemon):
@@ -13,11 +14,8 @@ class ArchiveMonitorDaemon(Daemon):
     """
     @staticmethod
     def run():
-        monitor = ArchiveMonitor('isis-instrument-path')
-        while True:
-            # Only check every 5 minutes
-            time.sleep(300)
-            monitor.get_most_recent_run()
+        monitor = ArchiveMonitor('GEM', session)
+        status = monitor.compare_most_recent_to_reduction_db()
 
 
 if __name__ == "__main__":

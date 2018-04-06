@@ -4,7 +4,9 @@ Unit tests and associated helpers to exercise the ISIS Archive Checker
 import unittest
 import os
 import shutil
-import time
+
+from sqlalchemy import create_engine, MetaData
+from sqlalchemy.orm import sessionmaker
 
 from EndOfRunMonitor.ISIS_archive_monitor import ArchiveMonitor
 
@@ -22,33 +24,66 @@ FILES_TO_TEST = [['TEST01.raw', 'TEST02.raw', 'TEST03.raw', 'TEST03.raw'],  # .r
                  ['TEST01.txt', 'TEST02.log', 'TEST01.out', None],  # no .raw
                  [None]]  # Empty file
 
+# List of valid instruments
+INST = ['GEM', 'POLARIS', 'WISH']
+
+# Connect to localhost database
+CONNECTION_STRING = 'mysql+mysqldb://test-user:pass@localhost/autoreduction'
+ENGINE = create_engine(CONNECTION_STRING, pool_recycle=280)
+METADATA = MetaData(ENGINE)
+
+SESSION = sessionmaker(bind=ENGINE)
+TEST_SESSION = SESSION()
+
 
 class TestISISArchiveChecker(unittest.TestCase):
     """
     Contains test cases for the ArchiveMonitor
     """
     def test_init(self):
-        monitor = ArchiveMonitor()
+        """
+        Test variables are assigned and object is created correctly
+        """
+        monitor = ArchiveMonitor('GEM', TEST_SESSION)
         self.assertIsInstance(monitor, ArchiveMonitor)
+        self.assertEqual(r'\\isis\inst$\NDXGEM\Instrument', monitor.instrument_path)
+
+    def test_get_most_recent_run(self):
+        """
+        Test that a value for most recent run can be retrieved from the
+        reduction database for all valid instruments
+        """
+        for instrument in INST:
+            monitor = ArchiveMonitor(instrument, TEST_SESSION)
+            self.assertIsNotNone(monitor.get_most_recent_run_in_database(instrument))
 
 
 class TestArchiveMonitorHelpers(unittest.TestCase):
     """
     Contains test cases for ArchiveMonitor helper functions
+    The cases in here are for static members of the class
     """
     def test_valid_find_path_to_current_cycle(self):
+        """
+        Test find_path_to_current_cycle_in_archive give the expected output
+         given the input of VALID_PATHS
+        """
         for item in VALID_PATHS:
             _setup_valid_paths(item[0], item[1], item[2])
-            actual = ArchiveMonitor._find_path_to_current_cycle(DATA_ARCHIVE_DIR)
+            actual = ArchiveMonitor._find_path_to_current_cycle_in_archive(DATA_ARCHIVE_DIR)
             self.assertEqual(item[3], actual)
             shutil.rmtree(os.path.join(os.getcwd(), DATA_ARCHIVE_DIR))
 
     def test_valid_find_most_recent_run(self):
+        """
+        Test that find_most_recent_run produces the expected output
+        given the input of FILES_TO_TEST
+        """
         _setup_valid_paths(VALID_PATHS[2][0], VALID_PATHS[2][1], VALID_PATHS[2][2])
         path_to_cycle = os.path.join(os.getcwd(), DATA_ARCHIVE_DIR, VALID_PATHS[2][3])
         for test_files in FILES_TO_TEST:
             _add_files_to_path(path_to_cycle, test_files[:-1])
-            actual = ArchiveMonitor._find_most_recent_run(path_to_cycle)
+            actual = ArchiveMonitor._find_most_recent_run_in_archive(path_to_cycle)
             self.assertEqual(test_files[-1], actual)
             _remove_files_from_path(path_to_cycle)
         shutil.rmtree(os.path.join(os.getcwd(), DATA_ARCHIVE_DIR))
