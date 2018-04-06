@@ -17,8 +17,8 @@ install:
   - sudo tar xvf python-icat-0.13.1.tar.gz
   - cd python-icat-0.13.1
   - py_path=$(which python)
-  - sudo py_path setup.py build
-  - sudo py_path setup.py install
+  - sudo $py_path setup.py build
+  - sudo $py_path setup.py install
   - cd ..
   - ls /usr/local/lib/python2.7/dist-packages/
   - python -c "help('modules')"
