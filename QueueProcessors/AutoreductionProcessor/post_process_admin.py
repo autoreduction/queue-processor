@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# pylint: disable=bad-builtin
 # pylint: disable=too-many-branches
 # pylint: disable=broad-except
 # pylint: disable=bare-except
@@ -100,7 +99,7 @@ class PostProcessAdmin(object):
     """ Main class for the PostProcessAdmin """
     # pylint: disable=too-many-instance-attributes
     def __init__(self, data, connection):
-        logger.debug("json data: " + prettify(data))
+        logger.debug("json data: %s", prettify(data))
         data["information"] = socket.gethostname()
         self.data = data
         self.client = connection
@@ -204,6 +203,7 @@ class PostProcessAdmin(object):
 
     def reduce(self):
         """ Start the reduction job.  """
+        # pylint: disable=too-many-nested-blocks
         try:
             logger.debug("Calling: " + ACTIVEMQ['reduction_started'] + "\n" + prettify(self.data))
             self.client.send(ACTIVEMQ['reduction_started'], json.dumps(self.data))
@@ -234,7 +234,7 @@ class PostProcessAdmin(object):
                 run_output_dir = reduce_result_dir
 
             if 'run_description' in self.data:
-                logger.info("DESCRIPTION: " + self.data["run_description"])
+                logger.info("DESCRIPTION: %s", self.data["run_description"])
 
             log_dir = reduce_result_dir + "/reduction_log/"
             log_and_err_name = "RB" + self.proposal + "Run" + self.run_number
@@ -271,8 +271,8 @@ class PostProcessAdmin(object):
                     final_result_dir = new_path
                     final_log_dir = new_path + 'reduction_log/'
 
-            logger.info('Final Result Directory = ' + final_result_dir)
-            logger.info('Final Log Directory = ' + final_log_dir)
+            logger.info('Final Result Directory = %s', final_result_dir)
+            logger.info('Final Log Directory = %s', final_log_dir)
 
             # test for access to result paths
             try:
@@ -288,12 +288,12 @@ class PostProcessAdmin(object):
                 not_writable = lambda path: not os.access(path, os.W_OK)
 
                 # we want write access to these directories, plus the final output paths
-                if len(filter(not_writable, should_be_writable)) > 0:
+                if filter(not_writable, should_be_writable):
                     fail_path = filter(not_writable, should_be_writable)[0]
                     problem = "does not exist" if does_not_exist(fail_path) else "no write access"
                     raise Exception("Couldn't write to %s  -  %s" % (fail_path, problem))
 
-                if len(filter(not_readable, should_be_readable)) > 0:
+                if filter(not_readable, should_be_readable):
                     fail_path = filter(not_readable, should_be_readable)[0]
                     problem = "does not exist" if does_not_exist(fail_path) else "no read access"
                     raise Exception("Couldn't read %s  -  %s" % (fail_path, problem))
@@ -451,7 +451,7 @@ class PostProcessAdmin(object):
                     os.removedirs(full_path)
                 else:
                     os.remove(full_path)
-            except Exception as exp:
+            except IOError as exp:
                 if exp.errno == errno.ENOENT:
                     # File has been deleted
                     break
@@ -504,9 +504,9 @@ def main():
                                  header={'activemq.prefetchSize': '1', })
         logger.info("PostProcessAdmin Successfully Connected to ActiveMQ")
 
-        destination, message = sys.argv[1:3]
-        logger.info("destination: " + destination)
-        logger.info("message: " + prettify(message))
+        destination, message = sys.argv[1:3]  # pylint: disable=unbalanced-tuple-unpacking
+        logger.info("destination: %s", destination)
+        logger.info("message: %s", prettify(message))
         json_data = json.loads(message)
 
         try:
@@ -518,7 +518,7 @@ def main():
 
         except ValueError as exp:
             json_data["error"] = str(exp)
-            logger.info("JSON data error: " + prettify(json_data))
+            logger.info("JSON data error: %s", prettify(json_data))
             raise
 
         except Exception as exp:
@@ -532,7 +532,7 @@ def main():
                 pass
 
     except Exception as exp:
-        logger.info("Something went wrong: " + str(exp))
+        logger.info("Something went wrong: %s", str(exp))
         try:
             stomp_connection.send(ACTIVEMQ['postprocess_error'], json.dumps(json_data))
             logger.info("Called " + ACTIVEMQ['postprocess_error'] + "----" + prettify(json_data))

@@ -26,8 +26,8 @@ class Listener(object):
     def on_message(self, headers, data):
         """ This method is where consumed messages are dealt with. It will consume a message. """
         destination = headers['destination']
-        logger.debug("Received frame destination: " + destination)
-        logger.debug("Received frame priority: " + headers["priority"])
+        logger.debug("Received frame destination: %s", destination)
+        logger.debug("Received frame priority: %s", headers["priority"])
 
         self.update_child_process_list()
         data_dict = json.loads(data)
@@ -81,12 +81,11 @@ class Listener(object):
     def should_proceed(self, data_dict):
         """ Check whether there's a job already running with the same RB. """
         if data_dict["rb_number"] in self.rb_list:
-            logger.info("Duplicate RB run #" +
-                        data_dict["rb_number"] +
-                        ", waiting for the first to finish.")
+            logger.info("Duplicate RB run #%s, waiting for the first to finish.",
+                        data_dict["rb_number"])
             return False
-        else:
-            return True
+        # else return True
+        return True
 
     @staticmethod
     def run_tuple(data_dict):
@@ -126,7 +125,7 @@ class Consumer(object):
         brokers = [(ACTIVEMQ['brokers'].split(':')[0], int(ACTIVEMQ['brokers'].split(':')[1]))]
         connection = stomp.Connection(host_and_ports=brokers, use_ssl=False)
         connection.set_listener(self.consumer_name, Listener(connection))
-        logger.info("Starting ActiveMQ Connection to " + ACTIVEMQ['brokers'])
+        logger.info("Starting ActiveMQ Connection to %s", ACTIVEMQ['brokers'])
         connection.start()
         logger.info("Completed ActiveMQ Connection")
         connection.connect(ACTIVEMQ['amq_user'],
