@@ -2,5 +2,4 @@
 *.log
 .idea/
 settings.py
-testconfig.py
 */target/**
