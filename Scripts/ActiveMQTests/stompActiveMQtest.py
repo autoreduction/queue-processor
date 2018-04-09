@@ -8,7 +8,7 @@ import time
 import sys
 import stomp
 
-from testconfig import LOG_FILENAME, ACTIVEMQ
+from settings import LOG_FILENAME, ACTIVEMQ
 
 import logging
 logging.basicConfig(filename=LOG_FILENAME, level=logging.DEBUG)
