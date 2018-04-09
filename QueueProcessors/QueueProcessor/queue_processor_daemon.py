@@ -4,7 +4,7 @@ Module for daemonising the queue processor.
 """
 import sys
 from daemon import Daemon  # pylint: disable=relative-import
-from QueueProcessors.QueueProcessor import queue_processor
+import queue_processor
 
 
 class QueueProcessorDaemon(Daemon):

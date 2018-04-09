@@ -38,6 +38,6 @@ script:
   - pylint -d C0103 Scripts/ManualSubmissionScript
   - pylint -d C0103 Scripts/NagiosChecks/autoreduce_checklastrun.py
 
-  - pylint -d C0103 QueueProcessors
+  - pylint -d C0103,W0403,W0141,R0401 QueueProcessors/QueueProcessor
 
   - pylint -d C0103 WebApp/autoreduce_webapp/autoreduce_webapp/

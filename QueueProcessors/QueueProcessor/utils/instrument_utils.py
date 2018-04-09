@@ -1,12 +1,14 @@
 '''
 This module is used to find an instrument and create it if it doesn't exist.
 '''
+import sys
+sys.path.append("..")  # Adds parent directory to python path, until we decide how to package this.
 # pylint: disable=missing-docstring
 # pylint: disable=too-few-public-methods
 import logging.config
-from QueueProcessors.QueueProcessor.settings import LOGGING # pylint: disable=no-name-in-module,import-error
-from QueueProcessors.QueueProcessor.orm_mapping import Instrument
-from QueueProcessors.QueueProcessor.base import session
+from settings import LOGGING  # pylint: disable=no-name-in-module,import-error
+from orm_mapping import Instrument  # pylint: disable=import-error
+from base import session  # pylint: disable=import-error
 
 # Set up logging and attach the logging to the right part of the config.
 logging.config.dictConfig(LOGGING)

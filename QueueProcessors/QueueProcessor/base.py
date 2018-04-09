@@ -6,7 +6,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import sessionmaker
 
-from QueueProcessors.QueueProcessor.settings import MYSQL #pylint: disable=import-error,no-name-in-module
+from settings import MYSQL #pylint: disable=import-error,no-name-in-module
 
 Base = declarative_base()
 

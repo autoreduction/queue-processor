@@ -1,13 +1,15 @@
 """ Module to deal with creating and caneling of reduction runs in the database. """
+import sys
+sys.path.append("..")  # Adds parent directory to python path, until we decide how to package this.
 import logging.config
 import datetime
-from QueueProcessors.QueueProcessor.settings import LOGGING  # pylint: disable=import-error,no-name-in-module
-from QueueProcessors.QueueProcessor.orm_mapping import DataLocation, ReductionRun, RunJoin
-from QueueProcessors.QueueProcessor.base import session
-from QueueProcessors.QueueProcessor.utils.messaging_utils import MessagingUtils
-from QueueProcessors.QueueProcessor.utils.instrument_variable_utils import InstrumentVariablesUtils
-from QueueProcessors.QueueProcessor.utils.variable_utils import VariableUtils
-from QueueProcessors.QueueProcessor.utils.status_utils import StatusUtils
+from settings import LOGGING  # pylint: disable=import-error,no-name-in-module
+from orm_mapping import DataLocation, ReductionRun, RunJoin # pylint: disable=import-error,
+from base import session # pylint: disable=import-error
+from messaging_utils import MessagingUtils
+from instrument_variable_utils import InstrumentVariablesUtils
+from variable_utils import VariableUtils
+from status_utils import StatusUtils
 
 # Set up logging and attach the logging to the right part of the config.
 logging.config.dictConfig(LOGGING)

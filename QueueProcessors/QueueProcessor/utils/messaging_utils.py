@@ -1,10 +1,12 @@
 """ Utils moudle for sending messages to queues. """
+import sys
+sys.path.append("..")  # Adds parent directory to python path, until we decide how to package this.
 import logging.config
 import json
 # pylint: disable=cyclic-import
-from QueueProcessors.QueueProcessor.settings import LOGGING, ACTIVEMQ, FACILITY  # pylint: disable=import-error,no-name-in-module
-from QueueProcessors.QueueProcessor.orm_mapping import DataLocation
-from QueueProcessors.QueueProcessor.base import session
+from settings import LOGGING, ACTIVEMQ, FACILITY  # pylint: disable=import-error,no-name-in-module
+from orm_mapping import DataLocation  # pylint: disable=import-error
+from base import session
 
 # Set up logging and attach the logging to the right part of the config.
 logging.config.dictConfig(LOGGING)

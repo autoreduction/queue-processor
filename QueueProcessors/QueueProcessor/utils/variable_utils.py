@@ -1,10 +1,12 @@
 """ Class to deal with reduction run variables. """
+import sys
+sys.path.append("..")  # Adds parent directory to python path, until we decide how to package this.
 import logging.config
 import re
 # pylint: disable=import-error,no-name-in-module
-from QueueProcessors.QueueProcessor.settings import LOGGING
-from QueueProcessors.QueueProcessor.orm_mapping import RunJoin, InstrumentJoin
-from QueueProcessors.QueueProcessor.base import session
+from settings import LOGGING
+from orm_mapping import RunJoin, InstrumentJoin
+from base import session
 # Set up logging and attach the logging to the right part of the config.
 logging.config.dictConfig(LOGGING)
 logger = logging.getLogger("queue_processor")  # pylint: disable=invalid-name
