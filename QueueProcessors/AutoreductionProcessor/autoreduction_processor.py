@@ -6,7 +6,7 @@ import subprocess
 import stomp
 from twisted.internet import reactor
 from autoreduction_logging_setup import logger
-from settings import ACTIVEMQ, MISC
+from settings import ACTIVEMQ, MISC  # pylint: disable=import-error
 
 
 class Listener(object):
