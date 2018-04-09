@@ -6,14 +6,18 @@ services:
   - mysql
 
 before_install:
-  - mysql < Scripts/Build/travis-db-full.sql
+  - mysql < Scripts/Build/travis-db-setup.sql
 
 install:
   #- pip install pylint
   - pip install mysql-python
   - pip install nose
+  - pip install django
+  - pip install django_user_agents
 
 # command to run tests
 script:
   #- "pylint QueueProcessors/QueueProcessor"
+  - python WebApp/autoreduce_webapp/manage.py makemigrations redution_viewer
+  - python WebApp/autoreduce_webapp/manage.py migrate reduction_viewer
   - nosetests Scripts/Build/test/test_db_generation.py
