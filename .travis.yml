@@ -20,9 +20,6 @@ install:
   - sudo $py_path setup.py build
   - sudo $py_path setup.py install
   - cd ..
-  - ls /usr/local/lib/python2.7/dist-packages/
-  - python -c "help('modules')"
-  - python -c "help('modules')"
   # ======== Analysis/Testing tools ========= #
   - pip install pylint
 
