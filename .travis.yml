@@ -33,7 +33,7 @@ install:
 script:
   # Create the reduction database on local host
   - mv WebApp/autoreduce_webapp/autoreduce_webapp/test_settings.py WebApp/autoreduce_webapp/autoreduce_webapp/settings.py
-  - python WebApp/autoreduce_webapp/manage.py makemigrations redution_viewer
+  - python WebApp/autoreduce_webapp/manage.py makemigrations reduction_viewer
   - python WebApp/autoreduce_webapp/manage.py migrate reduction_viewer
   # Test successful table migration
   - nosetests Scripts/Build/test/test_db_generation.py
