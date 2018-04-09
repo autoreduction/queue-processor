@@ -225,7 +225,7 @@ class Listener(object):
         Called when the destination queue was reduction_complete
         Updates the run as complete in the database.
         """
-
+        # pylint: disable=too-many-nested-blocks
         try:
             logger.info("Run %s has completed reduction", self._data_dict['run_number'])
             reduction_run = self.find_run()
