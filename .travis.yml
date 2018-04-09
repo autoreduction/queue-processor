@@ -12,6 +12,7 @@ install:
   - pip install suds
   - pip install SQLAlchemy
   - pip install watchdog
+  - pip install Twister==14.0.2
   # === ICAT === #
   - wget https://icatproject.org/misc/python-icat/download/python-icat-0.13.1.tar.gz
   - sudo tar xvf python-icat-0.13.1.tar.gz
