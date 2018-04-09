@@ -1,4 +1,4 @@
-ICAT_SETTINGS = {
+ICAT = {
     'AUTH' : 'simple',
     'URL' : 'https://icatisis.esc.rl.ac.uk/ICATService/ICAT?wsdl',
     'USER' : 'YOUR-ACTIVEMQ-USER',
