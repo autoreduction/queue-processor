@@ -1,0 +1,25 @@
+
+LOG_FILENAME = 'test_logging.out'
+
+# ActiveMQ 
+
+ACTIVEMQ = {
+    'username' : 'YOUR-USER-NAME',
+    'password' : 'YOUR-PASSWORD',
+    'broker' : [("LOCATION-OF-QUEUE", 61613)],
+    'SSL' : False
+}
+
+# ICAT 
+
+ICAT = {
+    'AUTH' : 'AUTH-TYPE',
+    'URL' : 'AUTH-URL',
+    'USER' : 'YOUR-USER-NAME',
+    'PASSWORD' : 'YOUR-PASSWORD'
+}
+
+# UserOffice WebService
+
+UOWS_URL = 'USER-OFFICE-URL'
+UOWS_LOGIN_URL = 'USER-OFFICE-LOGIN-URL'
