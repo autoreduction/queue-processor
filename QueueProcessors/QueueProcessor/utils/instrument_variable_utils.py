@@ -1,80 +1,94 @@
+"""
+Module for dealing with instrument reduction variables.
+"""
+# pylint: disable=deprecated-lambda
+import sys
+sys.path.append("..")  # Adds parent directory to python path, until we decide how to package this.
 import os
 import io
 import logging.config
-import chardet
 import imp
 import cgi
-from settings import REDUCTION_DIRECTORY, LOGGING
-from orm_mapping import *
+import chardet
+# pylint: disable=import-error,no-name-in-module
+from settings import REDUCTION_DIRECTORY, LOGGING  # pylint: disable=import-error
+from orm_mapping import InstrumentJoin, Notification, InstrumentVariable, RunVariable, Variable  # pylint: disable=import-error
 from variable_utils import VariableUtils
 from instrument_utils import InstrumentUtils
-from base import session
+from base import session  # pylint: disable=import-error
 
 # Set up logging and attach the logging to the right part of the config.
 logging.config.dictConfig(LOGGING)
-logger = logging.getLogger("queue_processor")
+logger = logging.getLogger("queue_processor")  # pylint: disable=invalid-name
 
 
 class DataTooLong(ValueError):
+    """ Error class used for when reduction variables are too long. """
     pass
 
 
 class InstrumentVariablesUtils(object):
+    """ Class used to parse and process instrument reduction variables. """
     @staticmethod
     def log_error_and_notify(message):
         """
-        Helper method to log an error and save a notifcation
+        Helper method to log an error and save a notification
         """
         logger.error(message)
-        notification = Notification(is_active=True, is_staff_only=True, severity='e', message=message)
+        notification = Notification(is_active=True,
+                                    is_staff_only=True,
+                                    severity='e',
+                                    message=message)
         session.add(notification)
         session.commit()
 
     def show_variables_for_run(self, instrument_name, run_number=None):
         """
-        Look for the applicable variables for the given run number. If none are set, return an empty list (or QuerySet)
-        anyway.
+        Look for the applicable variables for the given run number. If none are set, return an empty
+        list (or QuerySet) anyway.
         """
         instrument = InstrumentUtils().get_instrument(instrument_name)
         variable_run_number = 0
 
         # If we haven't been given a run number, we should try to find it.
         if not run_number:
-            applicable_variables = session.query(InstrumentVariable).filter_by(instrument=instrument) \
-                .order_by('-start_run').all()
-            if len(applicable_variables) != 0:
+            applicable_variables = session.query(InstrumentVariable).\
+                filter_by(instrument=instrument).order_by('-start_run').all()
+            if applicable_variables:
                 variable_run_number = applicable_variables[0].start_run
         else:
             variable_run_number = run_number
 
-        # Now use the InstrumentJoin class (which is a join of the InstrumentVariable and Variable tables) to make sure
-        # we can make a copy of all the relevant variables with all of the right information.
+        # Now use the InstrumentJoin class (which is a join of the InstrumentVariable and Variable
+        # tables) to make sure we can make a copy of all the relevant variables with all of the
+        # right information.
         variables = (session.query(InstrumentJoin).filter_by(instrument=instrument,
                                                              start_run=variable_run_number)).all()
 
-        # If we have found some variables then we want to use them by first making copies of them and sending them back
-        # to be used. This means we don't alter the previous set of variables. If we haven't found any variables, just
-        # return an empty list.
-        if len(variables) != 0:
+        # If we have found some variables then we want to use them by first making copies of them
+        # and sending them back to be used. This means we don't alter the previous set of variables.
+        # If we haven't found any variables, just return an empty list.
+        if variables:
             self._update_variables(variables)
             new_variables = []
             for variable in variables:
                 new_variables.append(VariableUtils().copy_variable(variable))
             return new_variables
-        else:
-            return []
+        return []
 
     def get_default_variables(self, instrument_name, reduce_script=None):
         """
-        Creates and returns a list of variables from the reduction script on disk for the instrument.
-        If reduce_script is supplied, return variables using that script instead of the one on disk.
+        Creates and returns a list of variables from the reduction script on disk for the
+        instrument. If reduce_script is supplied, return variables using that script instead of the
+        one on disk.
         """
         if not reduce_script:
             reduce_script = self._load_reduction_vars_script(instrument_name)
 
         reduce_vars_module = self._read_script(reduce_script,
-                                               os.path.join(self._reduction_script_location(instrument_name),
-                                                            'reduce_vars.py'))
+                                               os.path.join(self._reduction_script_location(
+                                                   instrument_name), 'reduce_vars.py'))
+
         if not reduce_vars_module:
             return []
 
@@ -82,10 +96,17 @@ class InstrumentVariablesUtils(object):
         variables = []
         if 'standard_vars' in dir(reduce_vars_module):
             variables.extend(
-                self._create_variables(instrument, reduce_vars_module, reduce_vars_module.standard_vars, False))
+                self._create_variables(instrument,
+                                       reduce_vars_module,
+                                       reduce_vars_module.standard_vars,
+                                       False))
+
         if 'advanced_vars' in dir(reduce_vars_module):
             variables.extend(
-                self._create_variables(instrument, reduce_vars_module, reduce_vars_module.advanced_vars, True))
+                self._create_variables(instrument,
+                                       reduce_vars_module,
+                                       reduce_vars_module.advanced_vars,
+                                       True))
 
         for var in variables:
             var.tracks_script = True
@@ -94,8 +115,9 @@ class InstrumentVariablesUtils(object):
             .order_by('-start_run').all()
         variable_run_number = applicable_variables[0].start_run
 
-        # Now use the InstrumentJoin class (which is a join of the InstrumentVariable and Variable tables) to make sure
-        # we can make a copy of all the relevant variables with all of the right information.
+        # Now use the InstrumentJoin class (which is a join of the InstrumentVariable and Variable
+        # tables) to make sure we can make a copy of all the relevant variables with all of the
+        # right information.
         variables = (session.query(InstrumentJoin).filter_by(instrument=instrument,
                                                              start_run=variable_run_number)).all()
 
@@ -103,11 +125,12 @@ class InstrumentVariablesUtils(object):
 
     def _update_variables(self, variables, save=True):
         """
-        Updates all variables with tracks_script to their value in the script, and append any new ones.
-        This assumes that the variables all belong to the same instrument, and that the list supplied is complete.
-        If no variables have tracks_script set, we won't do anything at all.
-        variables should be a list; it needs to be mutable so that this function can add/remove variables.
-        If the 'save' option is true, it will save/delete the variables from the database as required.
+        Updates all variables with tracks_script to their value in the script, and append any new
+        ones. This assumes that the variables all belong to the same instrument, and that the list
+        supplied is complete. If no variables have tracks_script set, we won't do anything at all.
+        variables should be a list; it needs to be mutable so that this function can add/remove
+        variables. If the 'save' option is true, it will save/delete the variables from the
+        database as required.
         """
         if not any([hasattr(var, "tracks_script") and var.tracks_script for var in variables]):
             return
@@ -115,12 +138,15 @@ class InstrumentVariablesUtils(object):
         # New variable set from the script
         defaults = self.get_default_variables(variables[0].instrument.name) if variables else []
 
-        # Update the existing variables
+
         def update_variable(old_var):
+            """ Update the existing variables. """
             old_var.keep = True
             # Find the new variable from the script.
             matching_vars = filter(lambda temp_var: temp_var.name == old_var.name, defaults)
-            if matching_vars and old_var.tracks_script:  # Check whether we should and can update the old one.
+
+            # Check whether we should and can update the old one.
+            if matching_vars and old_var.tracks_script:
                 new_var = matching_vars[0]
                 map(lambda name: setattr(old_var, name, getattr(new_var, name)),
                     ["value", "type", "is_advanced",
@@ -143,9 +169,9 @@ class InstrumentVariablesUtils(object):
         new_vars = [var for var in defaults if var.name not in current_names]
 
         def copy_metadata(new_var):
+            """ Copy the source variable's metadata to the new one. """
             source_var = variables[0]
             if isinstance(source_var, InstrumentVariable):
-                # Copy the source variable's metadata to the new one.
                 map(lambda name: setattr(new_var, name, getattr(source_var, name)),
                     ["instrument", "experiment_reference", "start_run"])
             elif isinstance(source_var, RunVariable):
@@ -161,13 +187,18 @@ class InstrumentVariablesUtils(object):
 
     @staticmethod
     def _reduction_script_location(instrument_name):
+        """ Get reduction script location. """
         return REDUCTION_DIRECTORY % instrument_name
 
     def _load_reduction_script(self, instrument_name):
-        return self._load_script(os.path.join(self._reduction_script_location(instrument_name), 'reduce.py'))
+        """ Loads reduction script. """
+        return self._load_script(os.path.join(self._reduction_script_location(instrument_name),
+                                              'reduce.py'))
 
     def _load_reduction_vars_script(self, instrument_name):
-        return self._load_script(os.path.join(self._reduction_script_location(instrument_name), 'reduce_vars.py'))
+        """ Loads reduction variables script. """
+        return self._load_script(os.path.join(self._reduction_script_location(instrument_name),
+                                              'reduce_vars.py'))
 
     def _read_script(self, script_text, script_path):
         """
@@ -180,17 +211,19 @@ class InstrumentVariablesUtils(object):
         module_name = os.path.basename(script_path).split(".")[0]  # file name without extension
         script_module = imp.new_module(module_name)
         try:
-            exec script_text in script_module.__dict__
+            exec script_text in script_module.__dict__ # pylint: disable=exec-used
             return script_module
-        except ImportError as e:
+        except ImportError as exp:
             self.log_error_and_notify(
-                "Unable to load reduction script %s due to missing import. (%s)" % (script_path, e.message))
+                "Unable to load reduction script %s due to missing import. (%s)" % (script_path,
+                                                                                    exp.message))
             return None
         except SyntaxError:
             self.log_error_and_notify("Syntax error in reduction script %s" % script_path)
             return None
 
     def _create_variables(self, instrument, script, variable_dict, is_advanced):
+        """ Create variables in the database. """
         variables = []
         for key, value in variable_dict.iteritems():
             str_value = str(value).replace('[', '').replace(']', '')
@@ -201,14 +234,15 @@ class InstrumentVariablesUtils(object):
                                 value=str_value,
                                 type=VariableUtils().get_type_string(value),
                                 is_advanced=is_advanced,
-                                help_text=self._get_help_text('standard_vars', key, instrument.name, script)
-                                )
+                                help_text=self._get_help_text('standard_vars',
+                                                              key,
+                                                              instrument.name,
+                                                              script))
 
             instrument_variable = InstrumentVariable(start_run=0,
                                                      instrument=instrument,
                                                      variable=variable,
-                                                     tracks_script=1
-                                                     )
+                                                     tracks_script=1)
 
             session.add(variable)
             session.add(instrument_variable)
@@ -238,17 +272,17 @@ class InstrumentVariablesUtils(object):
             encoding = chardet.detect(f_raw.read(32))["encoding"]
 
             # Read the file in decoded; io is used for the encoding kwarg
-            f = io.open(path, 'r', encoding=encoding)
-            script_text = f.read()
+            f_decoded = io.open(path, 'r', encoding=encoding)
+            script_text = f_decoded.read()
             return script_text
-        except Exception as e:
-            self.log_error_and_notify("Unable to load reduction script %s - %s" % (path, e))
+        except Exception as exp: # pylint: disable = broad-except
+            self.log_error_and_notify("Unable to load reduction script %s - %s" % (path, exp))
             return None
 
     def create_variables_for_run(self, reduction_run):
         """
-        Finds the appropriate InstrumentVariables for the given reduction run, and creates RunVariables from them.
-        If the run is a re-run, use the previous run's variables.
+        Finds the appropriate InstrumentVariables for the given reduction run, and creates
+        RunVariables from them. If the run is a re-run, use the previous run's variables.
         If instrument variables set for the run's experiment are found, they're used.
         Otherwise if variables set for the run's run number exist, they'll be used.
         If not, the instrument's default variables will be used.
@@ -260,7 +294,9 @@ class InstrumentVariablesUtils(object):
         if not variables:
             logger.info('Finding variables from experiment')
             # No previous run versions. Find the instrument variables we want to use.
-            variables = self.show_variables_for_experiment(instrument_name, reduction_run.experiment.reference_number)
+            variables = self.\
+                show_variables_for_experiment(instrument_name,
+                                              reduction_run.experiment.reference_number)
 
         if not variables:
             logger.info('Finding variables from run number')
@@ -280,38 +316,49 @@ class InstrumentVariablesUtils(object):
 
     def set_variables_for_runs(self, instrument_name, variables, start_run=0, end_run=None):
         """
-        Given a list of variables, we set them to be the variables used for subsequent runs in the given run range.
-        If end_run is not supplied, these variables will be ongoing indefinitely.
-        If start_run is not supplied, these variables will be set for all run numbers going backwards.
+        Given a list of variables, we set them to be the variables used for subsequent runs in the
+        given run range. If end_run is not supplied, these variables will be ongoing indefinitely.
+        If start_run is not supplied, these variables will be set for all run numbers going
+        backwards.
         """
         instrument = InstrumentUtils().get_instrument(instrument_name)
-        """
-        In this case we need to make sure that the variables we set will be the only ones used for the range given.
-        If there are variables which apply after the given range ends, we want to create/modify a set to have a
-        start_run after this end_run, with the right values. First, find all variables that are in the range.
-        """
-        applicable_variables = session.query(InstrumentVariable).filter_by(instrument=instrument,
-                                                                           start_run=start_run).all()
+
+        # In this case we need to make sure that the variables we set will be the only ones used for
+        # the range given. If there are variables which apply after the given range ends, we want to
+        # create/modify a set to have a start_run after this end_run, with the right values. First,
+        # find all variables that are in the range.
+
+        applicable_variables = session.query(InstrumentVariable).\
+            filter_by(instrument=instrument, start_run=start_run).all()
+
         final_variables = []
         if end_run:
             applicable_variables = applicable_variables.filter(start_run__lte=end_run)
-            after_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run=end_run + 1).order_by(
-                'start_run')
-            previous_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run__lt=start_run)
+            after_variables = InstrumentVariable.objects.filter(instrument=instrument,  # pylint: disable=no-member
+                                                                start_run=end_run + 1)\
+                .order_by('start_run')
+
+            previous_variables = InstrumentVariable.objects.filter(instrument=instrument, # pylint: disable=no-member
+                                                                   start_run__lt=start_run)
 
             if applicable_variables and not after_variables:
                 # The last set of applicable variables extends outside our range.
-                final_start = applicable_variables.order_by('-start_run').first().start_run  # Find the last set.
+
+                # Find the last set.
+                final_start = applicable_variables.order_by('-start_run').first().start_run
                 final_variables = list(applicable_variables.filter(start_run=final_start))
                 applicable_variables = applicable_variables.exclude(
                     start_run=final_start)  # Don't delete the final set.
 
             elif not applicable_variables and not after_variables and previous_variables:
                 # There is a previous set that applies but doesn't start or end in the range.
-                final_start = previous_variables.order_by('-start_run').first().start_run  # Find the last set.
+
+                # Find the last set.
+                final_start = previous_variables.order_by('-start_run').first().start_run
+                # Set them to apply after our variables.
                 final_variables = list(
-                    previous_variables.filter(start_run=final_start))  # Set them to apply after our variables.
-                [VariableUtils().copy_variable(var).save() for var in
+                    previous_variables.filter(start_run=final_start))
+                [VariableUtils().copy_variable(var).save() for var in  # pylint: disable=expression-not-assigned,no-member
                  final_variables]  # Also copy them to apply before our variables.
 
             elif not applicable_variables and not after_variables and not previous_variables:
@@ -339,12 +386,14 @@ class InstrumentVariablesUtils(object):
         If none are set, return an empty list (or QuerySet) anyway.
         """
         instrument = InstrumentUtils().get_instrument(instrument_name)
-        ins_vars = session.query(InstrumentVariable).filter_by(instrument=instrument,
-                                                               experiment_reference=experiment_reference).all()
+        ins_vars = session.query(InstrumentVariable).\
+            filter_by(instrument=instrument,
+                      experiment_reference=experiment_reference).all()
         self._update_variables(ins_vars)
         return [VariableUtils().copy_variable(ins_var) for ins_var in ins_vars]
 
     def _get_help_text(self, dictionary, key, instrument_name, reduce_script=None):
+        """ Get variable help text. """
         if not dictionary or not key:
             return ""
         if not reduce_script:
@@ -357,6 +406,7 @@ class InstrumentVariablesUtils(object):
 
     @staticmethod
     def _replace_special_chars(help_text):
+        """ Remove any special chars in the help text. """
         help_text = cgi.escape(help_text)  # Remove any HTML already in the help string
         help_text = help_text.replace('\n', '<br>').replace('\t', '&nbsp;&nbsp;&nbsp;&nbsp;')
         return help_text

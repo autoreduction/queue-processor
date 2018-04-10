@@ -4,19 +4,19 @@ LOG_FILENAME = 'test_logging.out'
 # ActiveMQ 
 
 ACTIVEMQ = {
-    'username' : 'autoreduce',
-    'password' : 'password',
-    'broker' : [("autoreduce.isis.cclrc.ac.uk", 61613)],
-    'SSL' : False
+    'username': 'autoreduce',
+    'password': 'password',
+    'broker': [("autoreduce.isis.cclrc.ac.uk", 61613)],
+    'SSL': False
 }
 
 # ICAT 
 
 ICAT = {
-    'AUTH' : 'simple',
-    'URL' : 'https://icatdev.isis.cclrc.ac.uk/ICATService/ICAT?wsdl',
-    'USER' : 'autoreduce',
-    'PASSWORD' : 'icat'
+    'AUTH': 'simple',
+    'URL': 'https://icatdev.isis.cclrc.ac.uk/ICATService/ICAT?wsdl',
+    'USER': 'autoreduce',
+    'PASSWORD': 'icat'
 }
 
 # UserOffice WebService

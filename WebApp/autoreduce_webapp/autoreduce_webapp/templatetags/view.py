@@ -7,13 +7,20 @@ from django.core import urlresolvers
 
 register = Library()
 
+
 class ViewNode(Node):
+    """
+    Handles the ViewNode
+    """
     def __init__(self, url_or_view, args, kwargs):
         self.url_or_view = url_or_view
         self.args = args
         self.kwargs = kwargs
 
     def render(self, context):
+        """
+        Render the view node
+        """
         if 'request' not in context:
             return ""
         request = context['request']
@@ -23,6 +30,7 @@ class ViewNode(Node):
             urlconf = getattr(request, "urlconf", settings.ROOT_URLCONF)
             resolver = urlresolvers.RegexURLResolver(r'^/', urlconf)
             view, args, kwargs = resolver.resolve(url_or_view)
+        # pylint: disable=bare-except
         except:
             view = urlresolvers.get_callable(url_or_view)
             args = [Variable(arg).resolve(context) for arg in self.args]
@@ -34,13 +42,14 @@ class ViewNode(Node):
             if callable(view):
                 return view(context['request'], *args, **kwargs).content
             raise "%r is not callable" % view
+        # pylint: disable=bare-except
         except:
             if settings.DEBUG_PROPAGATE_EXCEPTIONS:
                 raise
         return ""
 
 
-def do_view(parser, token):
+def do_view(_, token):
     """
     Inserts the output of a view, using fully qualified view name (and then some
     args), a or local Django URL.
@@ -87,11 +96,12 @@ def do_view(parser, token):
     args = []
     kwargs = {}
     tokens = token.split_contents()
-    if len(tokens)<2:
-        raise TemplateSyntaxError, ("%r tag requires one or more arguments" %
-                                    token.contents.split()[0])
-    tag_name = tokens.pop(0)
+    if len(tokens) < 2:
+        raise TemplateSyntaxError("%r tag requires one or more arguments" %
+                                  token.contents.split()[0])
+    _ = tokens.pop(0)
     url_or_view = tokens.pop(0)
+    # pylint: disable=redefined-argument-from-local
     for token in tokens:
         equals = token.find("=")
         if equals == -1:
@@ -99,5 +109,6 @@ def do_view(parser, token):
         else:
             kwargs[str(token[:equals])] = token[equals+1:]
     return ViewNode(url_or_view, args, kwargs)
+
 
 register.tag('view', do_view)
