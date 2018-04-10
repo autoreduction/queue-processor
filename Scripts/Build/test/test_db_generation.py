@@ -3,7 +3,8 @@ import unittest
 
 
 # All TABLES in the database Schema
-EXPECTED_TABLE_NAMES = ["reduction_viewer_datalocation",
+EXPECTED_TABLE_NAMES = ["django_migrations",
+                        "reduction_viewer_datalocation",
                         "reduction_viewer_experiment",
                         "reduction_viewer_instrument",
                         "reduction_viewer_notification",
