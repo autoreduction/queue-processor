@@ -5,9 +5,6 @@ python:
 services:
   - mysql
 
-before_install:
-  - mysql < Scripts/Build/travis-db-setup.sql
-
 install:
   # ========== Project dependecies ========== #
   - pip install django
@@ -31,9 +28,10 @@ install:
 
 # command to run tests
 script:
+  - sudo Scripts/Build/./generate-test-db.sh
   # Create the reduction database on local host
-  - mv WebApp/autoreduce_webapp/autoreduce_webapp/test_settings.py WebApp/autoreduce_webapp/autoreduce_webapp/settings.py
-  - python WebApp/autoreduce_webapp/manage.py makemigrations reduction_viewer
-  - python WebApp/autoreduce_webapp/manage.py migrate reduction_viewer
+  #- mv WebApp/autoreduce_webapp/autoreduce_webapp/test_settings.py WebApp/autoreduce_webapp/autoreduce_webapp/settings.py
+  #- python WebApp/autoreduce_webapp/manage.py makemigrations reduction_viewer
+  #- python WebApp/autoreduce_webapp/manage.py migrate reduction_viewer
   # Test successful table migration
   - nosetests Scripts/Build/test/test_db_generation.py
