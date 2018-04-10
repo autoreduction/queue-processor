@@ -30,5 +30,5 @@ class TestDatabaseGeneration(unittest.TestCase):
         for row in cur.fetchall():
             self.assertTrue(row[0] in EXPECTED_TABLE_NAMES,
                             ("%s was not found in expected TABLE names" % row[0]))
-        self.assertEqual(len(cur.fetchall(), len(EXPECTED_TABLE_NAMES))
+        self.assertEqual(len(cur.fetchall()), len(EXPECTED_TABLE_NAMES))
         db.close()
