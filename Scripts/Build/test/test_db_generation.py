@@ -3,24 +3,7 @@ import unittest
 
 
 # All TABLES in the database Schema
-EXPECTED_TABLE_NAMES = ["auth_group",
-                        "auth_group_permissions",
-                        "auth_permission",
-                        "auth_user",
-                        "auth_user_groups",
-                        "auth_user_user_permissions",
-                        "autoreduce_webapp_cache",
-                        "autoreduce_webapp_experimentcache",
-                        "autoreduce_webapp_instrumentcache",
-                        "autoreduce_webapp_usercache",
-                        "django_admin_log",
-                        "django_content_type",
-                        "django_migrations",
-                        "django_session",
-                        "reduction_variables_instrumentvariable",
-                        "reduction_variables_runvariable",
-                        "reduction_variables_variable",
-                        "reduction_viewer_datalocation",
+EXPECTED_TABLE_NAMES = ["reduction_viewer_datalocation",
                         "reduction_viewer_experiment",
                         "reduction_viewer_instrument",
                         "reduction_viewer_notification",
@@ -47,4 +30,5 @@ class TestDatabaseGeneration(unittest.TestCase):
         for row in cur.fetchall():
             self.assertTrue(row[0] in EXPECTED_TABLE_NAMES,
                             ("%s was not found in expected TABLE names" % row[0]))
+        self.assertEqual(len(cur.fetchall(), len(EXPECTED_TABLE_NAMES))
         db.close()
