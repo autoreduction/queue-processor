@@ -4,9 +4,13 @@ This file is then compared to the reduction database to see if they are the same
 If not the run should be missing run should be restarted.
 """
 import os
-import glob
 import logging
+
+from sqlalchemy import create_engine, MetaData
+from sqlalchemy.orm import sessionmaker
+
 from EndOfRunMonitor.database_client import ReductionRun, Instrument
+from settings import MYSQL
 
 GENERIC_INST_PATH = r'\\isis\inst$\NDX{}\Instrument'
 
@@ -16,15 +20,22 @@ class ArchiveMonitor(object):
     Check the data archive location and inspect
     the most recent run data for comparison to the reduction database
     """
-    def __init__(self, instrument_name, database_session):
+    def __init__(self, instrument_name):
         """
         :param instrument_name: name of the instrument e.g. GEM, WISH
-        :param database_session: An active database session to the MySQL
-                                 reduction database
         """
         self.instrument = instrument_name
         self.instrument_path = GENERIC_INST_PATH.format(instrument_name)
-        self.database_session = database_session
+
+        # Connect to localhost database
+        # Create the connection string for SQLAlchemy
+        connection_str = 'mysql+mysqldb://' + MYSQL['USER'] + ':' + MYSQL['PASSWD'] + \
+                         '@' + MYSQL['HOST'] + '/' + MYSQL['DB']
+        engine = create_engine(connection_str, pool_recycle=280)
+        _ = MetaData(engine)
+
+        session = sessionmaker(bind=engine)
+        self.database_session = session()
 
     def compare_most_recent_to_reduction_db(self):
         """
@@ -72,7 +83,9 @@ class ArchiveMonitor(object):
         """
         base_dir = os.getcwd()
         os.chdir(current_cycle_path)
-        raw_files = [raw_file for raw_file in glob.glob("*.raw")]
+        # search all files in directory and return any that end in .raw or .RAW
+        raw_files = [raw_file for raw_file in os.listdir(current_cycle_path)
+                     if raw_file.endswith('.raw') or raw_file.endswith('.RAW')]
 
         # sort all files by modified time
         raw_files.sort(key=os.path.getmtime)
@@ -93,7 +106,7 @@ class ArchiveMonitor(object):
         :return: The most recent cycle folder
         """
         all_folders = os.listdir(instrument_log_path)
-        cycle_folders = [folder for folder in all_folders if folder.startswith('cycle')]
+        cycle_folders = sorted([folder for folder in all_folders if folder.startswith('cycle')])
 
         # List should have most recent cycle at the end
         return cycle_folders[-1]

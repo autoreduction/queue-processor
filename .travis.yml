@@ -28,10 +28,12 @@ install:
 
 # command to run tests
 script:
+  # Generate the test database for reduction_viewer
   - sudo Scripts/Build/./generate-test-db.sh
-  # Create the reduction database on local host
-  #- mv WebApp/autoreduce_webapp/autoreduce_webapp/test_settings.py WebApp/autoreduce_webapp/autoreduce_webapp/settings.py
-  #- python WebApp/autoreduce_webapp/manage.py makemigrations reduction_viewer
-  #- python WebApp/autoreduce_webapp/manage.py migrate reduction_viewer
   # Test successful table migration
   - nosetests Scripts/Build/test/test_db_generation.py
+
+  # Move EndOfRunMonitor test_settings.py
+  - mv EndOfRunMonitor/test_settings.py EndOfRunMonitor/settings.py
+  # Test EndOfRunMonitor
+  - nosetests EndOfRunMonitor/tests

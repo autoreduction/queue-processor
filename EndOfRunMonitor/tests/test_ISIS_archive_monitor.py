@@ -4,11 +4,11 @@ Unit tests and associated helpers to exercise the ISIS Archive Checker
 import unittest
 import os
 import shutil
+import time
 
-from sqlalchemy import create_engine, MetaData
-from sqlalchemy.orm import sessionmaker
-
+from EndOfRunMonitor.database_client import ReductionRun
 from EndOfRunMonitor.ISIS_archive_monitor import ArchiveMonitor
+
 
 # List of variables to create a valid path and expected result _find_path_to_current_cycle
 # [[start_year, end_year, current_cycle, expected_result], ...]
@@ -25,15 +25,7 @@ FILES_TO_TEST = [['TEST01.raw', 'TEST02.raw', 'TEST03.raw', 'TEST03.raw'],  # .r
                  [None]]  # Empty file
 
 # List of valid instruments
-INST = ['GEM', 'POLARIS', 'WISH']
-
-# Connect to localhost database
-CONNECTION_STRING = 'mysql+mysqldb://test-user:pass@localhost/autoreduction'
-ENGINE = create_engine(CONNECTION_STRING, pool_recycle=280)
-METADATA = MetaData(ENGINE)
-
-SESSION = sessionmaker(bind=ENGINE)
-TEST_SESSION = SESSION()
+INST = ['GEM', 'WISH', 'TEST']
 
 
 class TestISISArchiveChecker(unittest.TestCase):
@@ -44,9 +36,11 @@ class TestISISArchiveChecker(unittest.TestCase):
         """
         Test variables are assigned and object is created correctly
         """
-        monitor = ArchiveMonitor('GEM', TEST_SESSION)
+        monitor = ArchiveMonitor('GEM')
         self.assertIsInstance(monitor, ArchiveMonitor)
         self.assertEqual(r'\\isis\inst$\NDXGEM\Instrument', monitor.instrument_path)
+        self.assertIsNotNone(monitor.database_session)
+        self.assertIsNotNone(monitor.database_session.query(ReductionRun).first())
 
     def test_get_most_recent_run(self):
         """
@@ -54,7 +48,7 @@ class TestISISArchiveChecker(unittest.TestCase):
         reduction database for all valid instruments
         """
         for instrument in INST:
-            monitor = ArchiveMonitor(instrument, TEST_SESSION)
+            monitor = ArchiveMonitor(instrument)
             self.assertIsNotNone(monitor.get_most_recent_run_in_database(instrument))
 
 
@@ -129,6 +123,7 @@ def _add_files_to_path(path, files_to_add):
         file_path = os.path.join(path, file_name)
         file_handle = open(file_path, 'w')
         file_handle.close()
+        time.sleep(0.1)  # required as these files are order by modification date
 
 
 def _remove_files_from_path(path):
