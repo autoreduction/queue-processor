@@ -28,8 +28,10 @@ class TestDatabaseGeneration(unittest.TestCase):
 
         cur = db.cursor()
         cur.execute("SHOW TABLES")
+        counter = 0
         for row in cur.fetchall():
             self.assertTrue(row[0] in EXPECTED_TABLE_NAMES,
                             ("%s was not found in expected TABLE names" % row[0]))
-        self.assertEqual(len(cur.fetchall()), len(EXPECTED_TABLE_NAMES))
+            counter +=1 
+        self.assertEqual(counter, len(EXPECTED_TABLE_NAMES))
         db.close()
