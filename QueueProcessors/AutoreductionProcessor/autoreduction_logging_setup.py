@@ -1,3 +1,4 @@
+# pylint: skip-file
 import logging.handlers
 
 LOGGING_LEVEL = logging.INFO

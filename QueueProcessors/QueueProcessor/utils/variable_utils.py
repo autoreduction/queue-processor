@@ -1,28 +1,35 @@
+""" Class to deal with reduction run variables. """
+import sys
+sys.path.append("..")  # Adds parent directory to python path, until we decide how to package this.
 import logging.config
 import re
+# pylint: disable=import-error,no-name-in-module
 from settings import LOGGING
-from orm_mapping import *
+from orm_mapping import RunJoin, InstrumentJoin
 from base import session
-
 # Set up logging and attach the logging to the right part of the config.
 logging.config.dictConfig(LOGGING)
-logger = logging.getLogger("queue_processor")
+logger = logging.getLogger("queue_processor")  # pylint: disable=invalid-name
 
 
 class VariableUtils(object):
+    """ Class to deal with reduction run variables. """
     @staticmethod
     def derive_run_variable(instrument_var, reduction_run):
+        """ Returns a RunJoin record for creation in the database. """
         return RunJoin(name=instrument_var.name,
                        value=instrument_var.value,
                        is_advanced=instrument_var.is_advanced,
                        type=instrument_var.type,
                        help_text=instrument_var.help_text,
-                       reduction_run=reduction_run,
-                       )
+                       reduction_run=reduction_run)
 
     def save_run_variables(self, instrument_vars, reduction_run):
-        logger.info('Saving run variables for ' + str(reduction_run.run_number))
-        run_variables = map(lambda ins_var: self.derive_run_variable(ins_var, reduction_run), instrument_vars)
+        """ Save reduction run variables in the database. """
+        logger.info('Saving run variables for %s', str(reduction_run.run_number))
+        # pylint: disable=deprecated-lambda
+        run_variables = map(lambda ins_var: self.derive_run_variable(ins_var, reduction_run),
+                            instrument_vars)
         for run_variable in run_variables:
             session.add(run_variable)
         session.commit()
@@ -42,8 +49,7 @@ class VariableUtils(object):
                               instrument=variable.instrument,
                               experiment_reference=variable.experiment_reference,
                               start_run=variable.start_run,
-                              tracks_script=variable.tracks_script,
-                              )
+                              tracks_script=variable.tracks_script)
 
     @staticmethod
     def get_type_string(value):
@@ -74,6 +80,7 @@ class VariableUtils(object):
         Options for var_type: text, number, list_text, list_number, boolean
         If the var_type isn't recognised, the value is returned unchanged
         """
+        # pylint: disable=too-many-return-statements,too-many-branches
         if var_type == "text":
             return str(value)
         if var_type == "number":
@@ -81,8 +88,7 @@ class VariableUtils(object):
                 return None
             if '.' in str(value):
                 return float(value)
-            else:
-                return int(re.sub("[^0-9]+", "", str(value)))
+            return int(re.sub("[^0-9]+", "", str(value)))
         if var_type == "list_text":
             var_list = str(value).split(',')
             list_text = []

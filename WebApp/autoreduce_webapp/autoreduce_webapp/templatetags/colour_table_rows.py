@@ -1,9 +1,16 @@
-from django.template import Library, Node, Variable, VariableDoesNotExist, TemplateSyntaxError
- 
+"""
+handles colouring table rows
+"""
+from django.template import Library
+
 register = Library()
+
 
 @register.simple_tag
 def colour_table_row(status):
+    """
+    Switch statment for defining table colouring
+    """
     if status == 'Error':
         return 'danger'
     if status == 'Processing':
