@@ -25,31 +25,58 @@ FILES_TO_TEST = [['TEST01.raw', 'TEST02.raw', 'TEST03.raw', 'TEST03.raw'],  # .r
                  [None]]  # Empty file
 
 # List of valid instruments
-INST = ['GEM', 'WISH', 'TEST']
+INST = ['TEST', 'WISH', 'GEM']
 
 
 class TestISISArchiveChecker(unittest.TestCase):
     """
     Contains test cases for the ArchiveMonitor
     """
-    def test_init(self):
-        """
-        Test variables are assigned and object is created correctly
-        """
+    # ======================= init ======================== #
+
+    def test_valid_init(self):
         monitor = ArchiveMonitor('GEM')
         self.assertIsInstance(monitor, ArchiveMonitor)
         self.assertEqual(r'\\isis\inst$\NDXGEM\Instrument', monitor.instrument_path)
         self.assertIsNotNone(monitor.database_session)
         self.assertIsNotNone(monitor.database_session.query(ReductionRun).first())
 
-    def test_get_most_recent_run(self):
-        """
-        Test that a value for most recent run can be retrieved from the
-        reduction database for all valid instruments
-        """
-        for instrument in INST:
+    def test_init_with_invalid_inst(self):
+        self.assertRaises(RuntimeError, ArchiveMonitor, 'not-instrument')
+
+    def test_init_case_insensitive(self):
+        self.assertIsNotNone(ArchiveMonitor('PoLaRiS'))
+
+    def test_init_logging(self):
+        _ = ArchiveMonitor('GEM')
+        self.assertTrue('Starting new Archive Monitor for instrument: GEM'
+                        in _get_last_line_in_log())
+
+    # ============== get_most_recent_in_archive ============== #
+
+    def test_valid_get_most_recent_in_archive(self):
+        monitor = ArchiveMonitor('GEM')
+        self.assertEqual(monitor.get_most_recent_in_archive(), '')
+
+    # ============ get_most_recent_in_database =============== #
+
+    def test_valid_get_most_recent_in_database(self):
+        expected_runs = ['TEST1', 'WISH2', 'GEM3']
+        for index, instrument in enumerate(INST):
             monitor = ArchiveMonitor(instrument)
-            self.assertIsNotNone(monitor.get_most_recent_run_in_database(instrument))
+            self.assertEqual(monitor.get_most_recent_run_in_database(),
+                             expected_runs[index])
+
+    # ========== compare_archive_and_database ================ #
+
+    def test_valid_compare_archive_and_database(self):
+        monitor = ArchiveMonitor('GEM')
+        self.assertTrue(monitor.compare_most_recent_to_reduction_db())
+
+    # ============== restart_reduction_run =================== #
+
+    def test_valid_restart_reduction_run(self):
+        raise RuntimeError('Unimplemented test')
 
 
 class TestArchiveMonitorHelpers(unittest.TestCase):
@@ -57,6 +84,9 @@ class TestArchiveMonitorHelpers(unittest.TestCase):
     Contains test cases for ArchiveMonitor helper functions
     The cases in here are for static members of the class
     """
+
+    # ========== find_path_to_current_cycle_in_archive ========= #
+
     def test_valid_find_path_to_current_cycle(self):
         """
         Test find_path_to_current_cycle_in_archive give the expected output
@@ -67,6 +97,8 @@ class TestArchiveMonitorHelpers(unittest.TestCase):
             actual = ArchiveMonitor._find_path_to_current_cycle_in_archive(DATA_ARCHIVE_DIR)
             self.assertEqual(item[3], actual)
             shutil.rmtree(os.path.join(os.getcwd(), DATA_ARCHIVE_DIR))
+
+    # ============= find_most_recent_run_in_archive ============ #
 
     def test_valid_find_most_recent_run(self):
         """
@@ -133,3 +165,14 @@ def _remove_files_from_path(path):
     """
     for files in os.listdir(path):
         os.remove(os.path.join(path, files))
+
+
+def _get_last_line_in_log():
+    """
+    Reads the log file and returns the most recent input
+    :return: String of the most recent log
+    """
+    file_handle = open('archive_monitor.log', "r")
+    line_list = file_handle.readlines()
+    file_handle.close()
+    return line_list[-1]

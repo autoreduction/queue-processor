@@ -25,3 +25,5 @@ MYSQL = {
     'DB': 'autoreduction',
     'PORT': '3306',
 }
+
+ARCHIVE_MONITOR_LOG = 'tests/archive_monitor.log'

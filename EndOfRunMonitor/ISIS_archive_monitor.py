@@ -9,10 +9,10 @@ import logging
 from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import sessionmaker
 
+import ISIS_archive_monitor_helper as Helper
 from EndOfRunMonitor.database_client import ReductionRun, Instrument
-from settings import MYSQL
 
-GENERIC_INST_PATH = r'\\isis\inst$\NDX{}\Instrument'
+logging.basicConfig(filename=Helper.LOG_FILE, level=logging.DEBUG)
 
 
 class ArchiveMonitor(object):
@@ -22,20 +22,51 @@ class ArchiveMonitor(object):
     """
     def __init__(self, instrument_name):
         """
+        set the instrument param name and connect to the database
         :param instrument_name: name of the instrument e.g. GEM, WISH
         """
-        self.instrument = instrument_name
-        self.instrument_path = GENERIC_INST_PATH.format(instrument_name)
+        instrument = instrument_name.upper()
+        if instrument not in Helper.VALID_INST:
+            logging.exception(Helper.INVALID_INSTRUMENT_MSG, instrument)
+            raise RuntimeError(Helper.INVALID_INSTRUMENT_MSG, instrument)
+        logging.info(Helper.START_UP_MSG, instrument)
+        self.instrument = instrument
+        self.instrument_path = Helper.GENERIC_INST_PATH.format(instrument)
 
-        # Connect to localhost database
         # Create the connection string for SQLAlchemy
-        connection_str = 'mysql+mysqldb://' + MYSQL['USER'] + ':' + MYSQL['PASSWD'] + \
-                         '@' + MYSQL['HOST'] + '/' + MYSQL['DB']
+        connection_str = Helper.DB_CONNECTION_STR
         engine = create_engine(connection_str, pool_recycle=280)
         _ = MetaData(engine)
 
         session = sessionmaker(bind=engine)
         self.database_session = session()
+
+    def get_most_recent_in_archive(self):
+        """
+        Flow control method to find current cycle directory and extract most recent file
+        :return: returns the most recent file added to the directory
+        """
+        current_cycle = self._find_path_to_current_cycle_in_archive(os.path.join(self.instrument_path, 'logs'))
+        return self._find_most_recent_run_in_archive(os.path.join(self.instrument_path, 'data', current_cycle))
+
+    def get_most_recent_run_in_database(self):
+        """
+        Get the most recent run in the reduction database
+        (organised by time started) for an instrument
+        :return: The instrument name concatenated with the most recent run number
+                 e.g. GEM1234
+        """
+        inst = self.database_session.query(Instrument).filter_by(name=self.instrument).first()
+        if inst is None:
+            logging.warning(Helper.NO_INSTRUMENT_IN_DB_MSG, self.instrument)
+            return None
+
+        run = self.database_session.query(ReductionRun).filter_by(instrument_id=inst.id).order_by('started').first()
+        if run is None:
+            logging.warning(Helper.NO_RUN_FOR_INSTRUMENT_MSG, self.instrument)
+            return None
+
+        return '%s%s' % (inst.name, run.run_number)
 
     def compare_most_recent_to_reduction_db(self):
         """
@@ -44,35 +75,18 @@ class ArchiveMonitor(object):
         :return: True - files match
                  False - files do not match
         """
-        data_archive_file_name = self._get_most_recent_run_in_archive()
+        data_archive_file_path = self.get_most_recent_in_archive()
+        data_archive_file_name = os.path.basename(data_archive_file_path)
+
         run_no = ''.join([num for num in data_archive_file_name if num.isdigit()])
 
-        last_run = self.database_session.query(ReductionRun).\
+        last_database_run = self.database_session.query(ReductionRun).\
             filter_by(run_number=run_no).order_by('-run_version').first()
 
-        if last_run == os.path.basename(data_archive_file_name):
+        if last_database_run == data_archive_file_name:
             return True
+        logging.warning(Helper.RUN_MISMATCH_MSG, data_archive_file_name, last_database_run)
         return False
-
-    def get_most_recent_run_in_database(self, inst_name):
-        """
-        Get the most recent run in the reduction database
-        (organised by time started) for an instrument
-        :param inst_name: The name of the instrument to search for
-        :return: The instrument name concatenated with the most recent run number
-                 e.g. GEM1234
-        """
-        inst = self.database_session.query(Instrument).filter_by(name=inst_name).first()
-        run = self.database_session.query(ReductionRun).filter_by(instrument_id=inst.id).order_by('started').first()
-        return '%s%s' % (inst.name, run.run_number)
-
-    def _get_most_recent_run_in_archive(self):
-        """
-        Flow control method to find current cycle directory and extract most recent file
-        :return: returns the most recent file added to the directory
-        """
-        current_cycle = self._find_path_to_current_cycle_in_archive(os.path.join(self.instrument_path, 'logs'))
-        return self._find_most_recent_run_in_archive(os.path.join(self.instrument_path, 'data', current_cycle))
 
     @staticmethod
     def _find_most_recent_run_in_archive(current_cycle_path):
@@ -93,7 +107,7 @@ class ArchiveMonitor(object):
         try:
             return raw_files[-1]
         except IndexError:
-            logging.warning("No files found when searching {}".format(current_cycle_path))
+            logging.warning(Helper.NO_FILES_FOUND_MSG, current_cycle_path)
             return None
 
     @staticmethod
