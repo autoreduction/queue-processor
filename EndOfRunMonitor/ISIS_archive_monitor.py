@@ -6,9 +6,6 @@ If not the run should be missing run should be restarted.
 import os
 import logging
 
-from sqlalchemy import create_engine, MetaData
-from sqlalchemy.orm import sessionmaker
-
 import ISIS_archive_monitor_helper as Helper
 from EndOfRunMonitor.database_client import ReductionRun, Instrument
 
@@ -29,24 +26,20 @@ class ArchiveMonitor(object):
         if instrument not in Helper.VALID_INST:
             logging.exception(Helper.INVALID_INSTRUMENT_MSG, instrument)
             raise RuntimeError(Helper.INVALID_INSTRUMENT_MSG, instrument)
+
         logging.info(Helper.START_UP_MSG, instrument)
         self.instrument = instrument
         self.instrument_path = Helper.GENERIC_INST_PATH.format(instrument)
 
         # Create the connection string for SQLAlchemy
-        connection_str = Helper.DB_CONNECTION_STR
-        engine = create_engine(connection_str, pool_recycle=280)
-        _ = MetaData(engine)
-
-        session = sessionmaker(bind=engine)
-        self.database_session = session()
+        self.database_session = Helper.SESSION
 
     def get_most_recent_in_archive(self):
         """
         Flow control method to find current cycle directory and extract most recent file
         :return: returns the most recent file added to the directory
         """
-        current_cycle = self._find_path_to_current_cycle_in_archive(os.path.join(self.instrument_path, 'logs'))
+        current_cycle = self._find_path_to_current_cycle_in_archive(os.path.join(self.instrument_path, 'data'))
         return self._find_most_recent_run_in_archive(os.path.join(self.instrument_path, 'data', current_cycle))
 
     def get_most_recent_run_in_database(self):
@@ -56,11 +49,13 @@ class ArchiveMonitor(object):
         :return: The instrument name concatenated with the most recent run number
                  e.g. GEM1234
         """
+        # Find instrument
         inst = self.database_session.query(Instrument).filter_by(name=self.instrument).first()
         if inst is None:
             logging.warning(Helper.NO_INSTRUMENT_IN_DB_MSG, self.instrument)
             return None
 
+        # Find run
         run = self.database_session.query(ReductionRun).filter_by(instrument_id=inst.id).order_by('started').first()
         if run is None:
             logging.warning(Helper.NO_RUN_FOR_INSTRUMENT_MSG, self.instrument)
@@ -78,10 +73,9 @@ class ArchiveMonitor(object):
         data_archive_file_path = self.get_most_recent_in_archive()
         data_archive_file_name = os.path.basename(data_archive_file_path)
 
-        run_no = ''.join([num for num in data_archive_file_name if num.isdigit()])
+        #run_no = ''.join([num for num in data_archive_file_name if num.isdigit()])
 
-        last_database_run = self.database_session.query(ReductionRun).\
-            filter_by(run_number=run_no).order_by('-run_version').first()
+        last_database_run = self.get_most_recent_run_in_database()
 
         if last_database_run == data_archive_file_name:
             return True

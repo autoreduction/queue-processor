@@ -27,3 +27,5 @@ MYSQL = {
 }
 
 ARCHIVE_MONITOR_LOG = 'tests/archive_monitor.log'
+
+INST_PATH = 'tests/data-archive'

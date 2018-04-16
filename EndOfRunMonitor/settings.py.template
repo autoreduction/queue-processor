@@ -22,6 +22,10 @@ MYSQL = {
     'HOST': 'YOUR-HOST-URL',
     'USER': 'YOUR-USER-NAME',
     'PASSWD': 'YOUR-PASSWORD',
-    'DB': 'autoreduction',
+    'DB': 'DB-NAME',
     'PORT': '3306',
 }
+
+ARCHIVE_MONITOR_LOG = 'archive_monitor.log'
+
+INST_PATH = r'\\isis\inst$\NDX{}\Instrument'

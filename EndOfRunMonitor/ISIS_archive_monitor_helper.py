@@ -2,18 +2,28 @@
 File to store messages and data relating to ISIS_archive_monitor
 """
 import os
-from settings import ARCHIVE_MONITOR_LOG, MYSQL
+
+from sqlalchemy import create_engine, MetaData
+from sqlalchemy.orm import sessionmaker
+
+from settings import ARCHIVE_MONITOR_LOG, MYSQL, INST_PATH
 
 # ================================= Data ======================================= #
 
 LOG_FILE = os.path.join(os.path.dirname(os.path.realpath(__file__)), ARCHIVE_MONITOR_LOG)
 
-GENERIC_INST_PATH = r'\\isis\inst$\NDX{}\Instrument'
+GENERIC_INST_PATH = INST_PATH
 
 VALID_INST = ['GEM', 'POLARIS', 'WISH', 'TEST']
 
 DB_CONNECTION_STR = 'mysql+mysqldb://' + MYSQL['USER'] + ':' + MYSQL['PASSWD'] + \
-                         '@' + MYSQL['HOST'] + '/' + MYSQL['DB']
+                    '@' + MYSQL['HOST'] + '/' + MYSQL['DB']
+
+# Database set up
+ENGINE = create_engine(DB_CONNECTION_STR, pool_recycle=280)
+_ = MetaData(ENGINE)
+session = sessionmaker(bind=ENGINE)
+SESSION = session()
 
 # ================================ Messages ===================================== #
 
