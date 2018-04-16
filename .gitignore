@@ -1,7 +1,13 @@
 *.pyc
 *.log
 .idea/
-settings.py
 */target/**
 
+# ensure we do not commit settings files
+settings.py
+
+# ignore django created migrations files
+migrations/
+
+# ignore virtual environments
 venv/
