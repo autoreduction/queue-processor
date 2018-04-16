@@ -34,13 +34,17 @@ install:
 
 
 script:
+  # ========== Test setup ============ #
+  # Currently not testing the Scripts/ActiveMQTests - yet to implement assertions for functionality
+  - mv Scripts/ActiveMQTests/test_settings.py Scripts/ActiveMQTests/settings.py
+
   # ============= Pylint ============= #
   # Run pylint without check for C0103 (invalid-name) as this triggers on module names
   # There is currently no work around for this - we should change module names to lower case
   - pylint -d C0103 EndOfRunMonitor
 
-  - pylint -d C0103 Scripts/ActiveMQTests/sendMessage.py
-  - pylint -d C0103 Scripts/ActiveMQTests/stompActiveMQtest.py
+  - pylint -d C0103 Scripts/ActiveMQTests/send_message.py
+  - pylint -d C0103 Scripts/ActiveMQTests/test_stomp_activemq.py
   - pylint -d C0103 Scripts/ManualSubmissionScript
   - pylint -d C0103 Scripts/NagiosChecks/autoreduce_checklastrun.py
 
@@ -49,4 +53,5 @@ script:
   - pylint -d C0103 WebApp/autoreduce_webapp/autoreduce_webapp/
 
   # ============ Nose unit tests ============== #
-  - nosetests Scripts/Build/test/test_activemq.py
+  # ActiveMQ
+  - nosetests Scripts/Build/test/test_activemq_connection.py

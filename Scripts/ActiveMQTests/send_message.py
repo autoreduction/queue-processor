@@ -6,7 +6,7 @@ import json
 import logging
 
 import stomp
-# pylint: disable=import-error
+
 from Scripts.ActiveMQTests.settings import LOG_FILENAME, ACTIVEMQ
 
 logging.basicConfig(filename=LOG_FILENAME, level=logging.DEBUG)

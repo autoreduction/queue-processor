@@ -11,7 +11,6 @@ import time
 import sys
 import stomp
 
-# pylint: disable=import-error
 from Scripts.ActiveMQTests.settings import LOG_FILENAME, ACTIVEMQ
 
 

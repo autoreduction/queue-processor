@@ -1,6 +1,7 @@
 import stomp
 import unittest
 
+
 class TestActiveMQ(unittest.TestCase):
         
     def test_connection_to_localhost(self):    
