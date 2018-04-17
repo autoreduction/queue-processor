@@ -1,14 +1,24 @@
+"""
+Contains all the django models
+"""
 from django.db import models
 
 
 class Cache(models.Model):
+    """
+    Ensures all models that implement cache have a date time field
+    """
     created = models.DateTimeField(auto_now_add=True, blank=False)
 
     def __unicode__(self):
+        # pylint: disable=no-member
         return u'%s' % self.id_name
-    
+
 
 class UserCache(Cache):
+    """
+    Model representing the cached values for the users
+    """
     id_name = models.IntegerField(blank=False)
     associated_experiments = models.TextField(blank=True)
     owned_instruments = models.TextField(blank=True)
@@ -18,12 +28,18 @@ class UserCache(Cache):
 
 
 class InstrumentCache(Cache):
+    """
+    Model representing the cached values for the instruments
+    """
     id_name = models.CharField(max_length=80)
     upcoming_experiments = models.TextField(blank=True)
     valid_experiments = models.TextField(blank=True)
 
 
 class ExperimentCache(Cache):
+    """
+    Model representing the cached values for experiments
+    """
     id_name = models.IntegerField(blank=False)
     start_date = models.TextField(default='')
     end_date = models.TextField(default='')

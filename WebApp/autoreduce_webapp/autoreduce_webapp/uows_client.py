@@ -1,15 +1,26 @@
-import suds
+"""
+Client for accessing the user office logon
+"""
 import ssl
-import logging
-from settings import CERTIFICATE_LOCATION
-from suds.client import Client
-from suds.transport.https import HttpAuthenticated
 from urllib2 import HTTPSHandler
-from settings import UOWS_URL
-logger = logging.getLogger(__name__)
+import logging
+
+import suds
+from suds.transport.https import HttpAuthenticated
+from suds.client import Client
+
+# The below is a template on the repository
+# pylint: disable=relative-import
+from settings import CERTIFICATE_LOCATION, UOWS_URL
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 class CustomTransport(HttpAuthenticated):
+    """
+    Custom HTTPAuthentication class to check user certificate
+    """
     def u2handlers(self):
         # use handlers from superclass
         handlers = HttpAuthenticated.u2handlers(self)
@@ -47,12 +58,13 @@ class UOWSClient(object):
         try:
             return self.client.service.checkSession(session_id)
         except suds.WebFault:
-            logger.warn("Session ID is not valid: %s" % session_id)
+            LOGGER.warn("Session ID is not valid: %s", session_id)
             return False
 
     def get_person(self, session_id):
         """
-        Returns a dictionary containing basic person details for the user associated with the session id.
+        Returns a dictionary containing basic person details
+        for the user associated with the session id.
         Values include, first name, last name, email and unique usernumber.
         If session_id isn't valid, None is returned.
         """
@@ -70,7 +82,7 @@ class UOWSClient(object):
                 }
                 return trimmed_person
         except suds.WebFault:
-            logger.warn("Session ID is not valid: %s" % session_id)
+            LOGGER.warn("Session ID is not valid: %s", session_id)
         return None
 
     def logout(self, session_id):
@@ -81,4 +93,4 @@ class UOWSClient(object):
         try:
             self.client.service.logout(session_id)
         except suds.WebFault:
-            logger.warn("Failed to logout Session ID %s" % session_id)
+            LOGGER.warn("Failed to logout Session ID %s", session_id)
