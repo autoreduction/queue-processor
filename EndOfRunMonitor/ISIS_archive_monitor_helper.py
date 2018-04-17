@@ -43,3 +43,7 @@ RUN_MISMATCH_MSG = 'ISIS_archive_monitor.compare_most_recent_to_reduction_db: ' 
                    'Data Archive entry (%s) and Database entry (%s) did not match'
 
 NO_FILES_FOUND_MSG = 'No files found when searching %s'
+
+RUN_MATCH_MSG = 'ISIS_archive_monitor.compare_most_recent_to_reduction_db: ' \
+                'Data Archive entry (%s) and Database entry (%s) matched! ' \
+                'No further action required.'

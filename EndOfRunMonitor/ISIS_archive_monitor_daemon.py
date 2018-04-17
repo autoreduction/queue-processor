@@ -14,7 +14,7 @@ class ArchiveMonitorDaemon(Daemon):
     """
     @staticmethod
     def run():
-        monitor = ArchiveMonitor('GEM', session)
+        monitor = ArchiveMonitor('GEM')
         status = monitor.compare_most_recent_to_reduction_db()
 
 

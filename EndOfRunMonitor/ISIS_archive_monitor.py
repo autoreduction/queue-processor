@@ -71,13 +71,12 @@ class ArchiveMonitor(object):
                  False - files do not match
         """
         data_archive_file_path = self.get_most_recent_in_archive()
-        data_archive_file_name = os.path.basename(data_archive_file_path)
-
-        #run_no = ''.join([num for num in data_archive_file_name if num.isdigit()])
+        data_archive_file_name = os.path.splitext(data_archive_file_path)[0]
 
         last_database_run = self.get_most_recent_run_in_database()
 
         if last_database_run == data_archive_file_name:
+            logging.info(Helper.RUN_MATCH_MSG, data_archive_file_name, last_database_run)
             return True
         logging.warning(Helper.RUN_MISMATCH_MSG, data_archive_file_name, last_database_run)
         return False

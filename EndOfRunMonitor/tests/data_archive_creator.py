@@ -17,6 +17,7 @@ class DataArchiveCreator(object):
     def __init__(self, instrument):
         self._data_archive_dir = self._data_archive_dir.format(instrument)
         self._path_to_data_archive = os.path.join(os.getcwd(), self._data_archive_dir)
+        self._path_to_data_archive_base = os.path.join(os.getcwd(), self._data_archive_dir_base)
 
     def get_data_archive_base(self):
         return self._data_archive_dir_base
@@ -79,5 +80,12 @@ class DataArchiveCreator(object):
             os.remove(os.path.join(path, files))
 
     def remove_data_archive(self):
-        shutil.rmtree(os.path.join(os.getcwd(), self._path_to_data_archive))
+        try:
+            shutil.rmtree(self._path_to_data_archive_base)
+        except OSError:
+            # OSError is produced if files have already been deleted
+            pass
 
+    def __del__(self):
+        # Ensure that the data archive is deleted on object deletion
+        self.remove_data_archive()

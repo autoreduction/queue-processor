@@ -36,6 +36,9 @@ class TestISISArchiveChecker(unittest.TestCase):
     def setUp(self):
         self.data_archive_creator = DataArchiveCreator('GEM')
 
+    def tearDown(self):
+        del self.data_archive_creator
+
     # ======================= init ======================== #
 
     def test_valid_init(self):
@@ -81,10 +84,14 @@ class TestISISArchiveChecker(unittest.TestCase):
 
     def test_valid_compare_archive_and_database(self):
         # overwrite data_archive
-        self.data_archive_creator = DataArchiveCreator('TEST')
-        self.data_archive_creator.make_data_archive(VALID_PATHS[2][0], VALID_PATHS[2][1], VALID_PATHS[2][2])
-        self.data_archive_creator.add_files_to_most_recent_cycle(FILES_TO_TEST[0])
-        monitor = ArchiveMonitor('TEST')
+        self.data_archive_creator = DataArchiveCreator('GEM')
+        self.data_archive_creator.make_data_archive(VALID_PATHS[2][0],
+                                                    VALID_PATHS[2][1],
+                                                    VALID_PATHS[2][2])
+        self.data_archive_creator.add_files_to_most_recent_cycle(['GEM1.raw',
+                                                                  'GEM2.raw',
+                                                                  'GEM3.raw'])
+        monitor = ArchiveMonitor('GEM')
         self.assertTrue(monitor.compare_most_recent_to_reduction_db())
         self.data_archive_creator.remove_data_archive()
 
@@ -101,7 +108,7 @@ class TestArchiveMonitorHelpers(unittest.TestCase):
     """
 
     def setUp(self):
-        self.dac = DataArchiveCreator('GEM')
+        self.data_archive_creator = DataArchiveCreator('GEM')
 
     # ========== find_path_to_current_cycle_in_archive ========= #
 
@@ -111,11 +118,11 @@ class TestArchiveMonitorHelpers(unittest.TestCase):
          given the input of VALID_PATHS
         """
         for item in VALID_PATHS:
-            self.dac.make_data_archive(item[0], item[1], item[2])
+            self.data_archive_creator.make_data_archive(item[0], item[1], item[2])
             actual = ArchiveMonitor._find_path_to_current_cycle_in_archive(
-                self.dac.get_data_archive_dir())
+                self.data_archive_creator.get_data_archive_dir())
             self.assertEqual(item[3], actual)
-            self.dac.remove_data_archive()
+            self.data_archive_creator.remove_data_archive()
 
     # ============= find_most_recent_run_in_archive ============ #
 
@@ -124,13 +131,16 @@ class TestArchiveMonitorHelpers(unittest.TestCase):
         Test that find_most_recent_run produces the expected output
         given the input of FILES_TO_TEST
         """
-        self.dac.make_data_archive(VALID_PATHS[2][0], VALID_PATHS[2][1], VALID_PATHS[2][2])
+        self.data_archive_creator.make_data_archive(VALID_PATHS[2][0],
+                                                    VALID_PATHS[2][1],
+                                                    VALID_PATHS[2][2])
         for test_files in FILES_TO_TEST:
-            self.dac.add_files_to_most_recent_cycle(test_files[:-1])
-            actual = ArchiveMonitor._find_most_recent_run_in_archive(self.dac.get_path_to_most_recent_cycle())
+            self.data_archive_creator.add_files_to_most_recent_cycle(test_files[:-1])
+            actual = ArchiveMonitor._find_most_recent_run_in_archive(
+                self.data_archive_creator.get_path_to_most_recent_cycle())
             self.assertEqual(test_files[-1], actual)
-            self.dac.remove_files_from_most_recent_cycle()
-        self.dac.remove_data_archive()
+            self.data_archive_creator.remove_files_from_most_recent_cycle()
+        self.data_archive_creator.remove_data_archive()
 
 
 # =========== Test helpers ============== #
