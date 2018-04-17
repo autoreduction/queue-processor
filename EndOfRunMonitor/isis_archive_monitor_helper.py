@@ -6,7 +6,7 @@ import os
 from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import sessionmaker
 
-from settings import ARCHIVE_MONITOR_LOG, MYSQL, INST_PATH
+from EndOfRunMonitor.settings import ARCHIVE_MONITOR_LOG, MYSQL, INST_PATH
 
 # ================================= Data ======================================= #
 
@@ -22,6 +22,7 @@ DB_CONNECTION_STR = 'mysql+mysqldb://' + MYSQL['USER'] + ':' + MYSQL['PASSWD'] +
 # Database set up
 ENGINE = create_engine(DB_CONNECTION_STR, pool_recycle=280)
 _ = MetaData(ENGINE)
+# pylint: disable=invalid-name
 session = sessionmaker(bind=ENGINE)
 SESSION = session()
 

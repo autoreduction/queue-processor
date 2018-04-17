@@ -7,6 +7,7 @@ from sqlalchemy.orm import sessionmaker, relationship
 
 from EndOfRunMonitor.settings import MYSQL
 
+# pylint: disable=invalid-name
 Base = declarative_base()
 
 # Create the connection string for SQLAlchemy
@@ -24,10 +25,23 @@ session = Session()
 
 
 # ========================== Classes for database tables =================================== #
+# pylint: disable=too-few-public-methods
 class Instrument(Base):
-    __table__ = Table('reduction_viewer_instrument', metadata, autoload=True, autoload_with=engine)
+    """
+    Table for reduction_viewer_instrument entity
+    """
+    __table__ = Table('reduction_viewer_instrument',
+                      metadata, autoload=True,
+                      autoload_with=engine)
 
 
+# pylint: disable=too-few-public-methods
 class ReductionRun(Base):
-    __table__ = Table('reduction_viewer_reductionrun', metadata, autoload=True, autoload_with=engine)
-    instrument = relationship('Instrument', foreign_keys='ReductionRun.instrument_id')
+    """
+    Table for reduction_viewer_reductionrun entity
+    """
+    __table__ = Table('reduction_viewer_reductionrun',
+                      metadata, autoload=True,
+                      autoload_with=engine)
+    instrument = relationship('Instrument',
+                              foreign_keys='ReductionRun.instrument_id')

@@ -1,3 +1,7 @@
+"""
+Settings for connecting to the test services that run locally
+"""
+
 # ICAT
 ICAT_SETTINGS = {
     'AUTH': 'YOUR-ICAT-AUTH-TYPE',

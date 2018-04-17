@@ -7,6 +7,11 @@ import time
 
 
 class DataArchiveCreator(object):
+    """
+    Generates a data in the current working directory.
+    The archive is designed to look identical to the
+    implementation at ISIS
+    """
 
     _data_archive_dir_base = 'data-archive'
     _data_archive_dir = 'data-archive/{}/data/'
@@ -15,23 +20,41 @@ class DataArchiveCreator(object):
     _most_recent_cycle = None
 
     def __init__(self, instrument):
+        """Initialise class members"""
         self._data_archive_dir = self._data_archive_dir.format(instrument)
-        self._path_to_data_archive = os.path.join(os.getcwd(), self._data_archive_dir)
-        self._path_to_data_archive_base = os.path.join(os.getcwd(), self._data_archive_dir_base)
+        self._path_to_data_archive = os.path.join(os.getcwd(),
+                                                  self._data_archive_dir)
+        self._path_to_data_archive_base = os.path.join(os.getcwd(),
+                                                       self._data_archive_dir_base)
 
     def get_data_archive_base(self):
+        """
+        :return: "data-archive"
+        """
         return self._data_archive_dir_base
 
     def get_data_archive_dir(self):
+        """
+        :return: "data-archive//<instrument>//data"
+        """
         return self._data_archive_dir
 
     def get_path_to_data_archive(self):
+        """
+        :return: "~//..//data-archive//<instrument>//data"
+        """
         return self._path_to_data_archive
 
     def get_most_recent_cycle_dir(self):
+        """
+        :return: "cycle_<year>_<iteration>"
+        """
         return self._most_recent_cycle
 
     def get_path_to_most_recent_cycle(self):
+        """
+        :return: "~//..//data-archive//<instrument>//data//cycle_<year>_<iteration>"
+        """
         return os.path.join(self._path_to_data_archive, self._most_recent_cycle)
 
     def make_data_archive(self, start_year, end_year, current_cycle):
@@ -60,7 +83,7 @@ class DataArchiveCreator(object):
             os.makedirs(os.path.join(data_archive_path, current_cycle_dir_name))
         self._most_recent_cycle = current_cycle_dir_name
 
-    def add_files_to_most_recent_cycle(self, files_to_add):
+    def add_most_recent_cycle_files(self, files_to_add):
         """
         Add a list of files to the most recent cycle
         :param files_to_add: list of the files to add
@@ -71,15 +94,20 @@ class DataArchiveCreator(object):
             file_handle.close()
             time.sleep(0.1)  # required as these files are order by modification date
 
-    def remove_files_from_most_recent_cycle(self):
+    def remove_most_recent_cycle_files(self):
         """
-        Removes all files from the most recent path. The directory will NOT be removed
+        Removes all files from the most recent path.
+        The directory will NOT be removed
         """
-        path = os.path.join(self._data_archive_dir, self._most_recent_cycle)
+        path = os.path.join(self._data_archive_dir,
+                            self._most_recent_cycle)
         for files in os.listdir(path):
             os.remove(os.path.join(path, files))
 
     def remove_data_archive(self):
+        """
+        Remove data archive from system
+        """
         try:
             shutil.rmtree(self._path_to_data_archive_base)
         except OSError:
@@ -87,5 +115,5 @@ class DataArchiveCreator(object):
             pass
 
     def __del__(self):
-        # Ensure that the data archive is deleted on object deletion
+        """Ensure that the data archive is deleted on object deletion"""
         self.remove_data_archive()

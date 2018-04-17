@@ -5,8 +5,7 @@ Functions for login and query available from class
 
 import icat
 
-# pylint: disable=import-error
-from settings import ICAT_SETTINGS
+from EndOfRunMonitor.settings import ICAT_SETTINGS
 
 
 class ICAT(object):

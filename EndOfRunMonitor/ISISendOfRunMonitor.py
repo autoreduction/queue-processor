@@ -10,10 +10,9 @@ import stomp
 
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
+
 from EndOfRunMonitor.ICAT_Client import ICAT
-# The below is a template on repo settings.py.template
-# pylint: disable=import-error
-from settings import ACTIVEMQ
+from EndOfRunMonitor.settings import ACTIVEMQ
 
 # Config settings for cycle number, and instrument file arrangement
 INST_FOLDER = r"\\isis\inst$\NDX%s\Instrument"

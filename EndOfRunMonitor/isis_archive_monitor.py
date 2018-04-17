@@ -6,10 +6,10 @@ If not the run should be missing run should be restarted.
 import os
 import logging
 
-import ISIS_archive_monitor_helper as Helper
+import EndOfRunMonitor.isis_archive_monitor_helper as helper
 from EndOfRunMonitor.database_client import ReductionRun, Instrument
 
-logging.basicConfig(filename=Helper.LOG_FILE, level=logging.DEBUG)
+logging.basicConfig(filename=helper.LOG_FILE, level=logging.DEBUG)
 
 
 class ArchiveMonitor(object):
@@ -23,24 +23,27 @@ class ArchiveMonitor(object):
         :param instrument_name: name of the instrument e.g. GEM, WISH
         """
         instrument = instrument_name.upper()
-        if instrument not in Helper.VALID_INST:
-            logging.exception(Helper.INVALID_INSTRUMENT_MSG, instrument)
-            raise RuntimeError(Helper.INVALID_INSTRUMENT_MSG, instrument)
+        if instrument not in helper.VALID_INST:
+            logging.exception(helper.INVALID_INSTRUMENT_MSG, instrument)
+            raise RuntimeError(helper.INVALID_INSTRUMENT_MSG, instrument)
 
-        logging.info(Helper.START_UP_MSG, instrument)
+        logging.info(helper.START_UP_MSG, instrument)
         self.instrument = instrument
-        self.instrument_path = Helper.GENERIC_INST_PATH.format(instrument)
+        self.instrument_path = helper.GENERIC_INST_PATH.format(instrument)
 
         # Create the connection string for SQLAlchemy
-        self.database_session = Helper.SESSION
+        self.database_session = helper.SESSION
 
     def get_most_recent_in_archive(self):
         """
         Flow control method to find current cycle directory and extract most recent file
         :return: returns the most recent file added to the directory
         """
-        current_cycle = self._find_path_to_current_cycle_in_archive(os.path.join(self.instrument_path, 'data'))
-        return self._find_most_recent_run_in_archive(os.path.join(self.instrument_path, 'data', current_cycle))
+        data_archive_path = os.path.join(self.instrument_path, 'data')
+        current_cycle = self._find_path_to_current_cycle_in_archive(data_archive_path)
+
+        current_cycle_path = os.path.join(data_archive_path, current_cycle)
+        return self._find_most_recent_run_in_archive(current_cycle_path)
 
     def get_most_recent_run_in_database(self):
         """
@@ -52,18 +55,19 @@ class ArchiveMonitor(object):
         # Find instrument
         inst = self.database_session.query(Instrument).filter_by(name=self.instrument).first()
         if inst is None:
-            logging.warning(Helper.NO_INSTRUMENT_IN_DB_MSG, self.instrument)
+            logging.warning(helper.NO_INSTRUMENT_IN_DB_MSG, self.instrument)
             return None
 
-        # Find run
-        run = self.database_session.query(ReductionRun).filter_by(instrument_id=inst.id).order_by('started').first()
+        # Find run ordered by most recently started
+        run = self.database_session.query(ReductionRun).\
+            filter_by(instrument_id=inst.id).order_by('started').first()
         if run is None:
-            logging.warning(Helper.NO_RUN_FOR_INSTRUMENT_MSG, self.instrument)
+            logging.warning(helper.NO_RUN_FOR_INSTRUMENT_MSG, self.instrument)
             return None
 
         return '%s%s' % (inst.name, run.run_number)
 
-    def compare_most_recent_to_reduction_db(self):
+    def compare_archive_to_database(self):
         """
         Compare the most recent file from the data archive
         to the most recent data reduction entry
@@ -76,9 +80,9 @@ class ArchiveMonitor(object):
         last_database_run = self.get_most_recent_run_in_database()
 
         if last_database_run == data_archive_file_name:
-            logging.info(Helper.RUN_MATCH_MSG, data_archive_file_name, last_database_run)
+            logging.info(helper.RUN_MATCH_MSG, data_archive_file_name, last_database_run)
             return True
-        logging.warning(Helper.RUN_MISMATCH_MSG, data_archive_file_name, last_database_run)
+        logging.warning(helper.RUN_MISMATCH_MSG, data_archive_file_name, last_database_run)
         return False
 
     @staticmethod
@@ -100,7 +104,7 @@ class ArchiveMonitor(object):
         try:
             return raw_files[-1]
         except IndexError:
-            logging.warning(Helper.NO_FILES_FOUND_MSG, current_cycle_path)
+            logging.warning(helper.NO_FILES_FOUND_MSG, current_cycle_path)
             return None
 
     @staticmethod
@@ -109,7 +113,7 @@ class ArchiveMonitor(object):
         Finds the most recent cycle (current) by inspection of the instrument folder
         Assumes that most recent cycle folder is the final folder in directory
         :param instrument_log_path: The path to the instrument folder given as -
-                                    "\\isis\inst$\NDX%s\Instrument\log"
+                                    \\\\isis\\inst$\\NDX%s\\Instrument\\log
         :return: The most recent cycle folder
         """
         all_folders = os.listdir(instrument_log_path)
