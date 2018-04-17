@@ -7,7 +7,7 @@ import datetime
 from sets import Set
 import icat
 # The below is a template on the repository
-# pylint: disable=import-error
+# pylint: disable=relative-import
 from settings import ICAT, BASE_DIR
 
 
