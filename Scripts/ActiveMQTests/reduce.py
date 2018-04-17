@@ -11,6 +11,7 @@ from mantid.simpleapi import *
 
 import mantid
 
+
 def main(input_file, output_dir):
     """ This is the (only) method required by the autoreduction interface.
 
