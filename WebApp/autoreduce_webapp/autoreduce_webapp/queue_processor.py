@@ -4,13 +4,14 @@ Handles QueueProcessor interactions from the WebApp
 import time
 import sys
 import os
+import logging
 import logging.config
 
 import django
 import stomp
 
 # The below is a template on the repository
-# pylint: disable=import-error
+# pylint: disable=relative-import
 from settings import ACTIVEMQ, BASE_DIR, LOGGING
 
 logging.config.dictConfig(LOGGING)

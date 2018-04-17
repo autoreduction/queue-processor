@@ -2,9 +2,16 @@ language: python
 python:
   - "2.7"
 
+services:
+  - mysql
+
+before_install:
+  - mysql < Scripts/Build/travis-db-setup.sql
+
 install:
   # ========== Project dependencies ========== #
   - pip install django
+  - pip install django_user_agents
   - pip install mysql-python
   - pip install python-daemon
   - pip install requests
@@ -28,7 +35,7 @@ install:
   - sudo ./apache-activemq-5.15.3/bin/activemq start
   # Sleep required to give the service time to initialise
   - sleep 5
-# ======== Analysis/Testing tools ========= #
+  # ======== Analysis/Testing tools ========= #
   - pip install pylint
   - pip install nose
 
@@ -38,6 +45,14 @@ script:
   # Currently not testing the Scripts/ActiveMQTests - yet to implement assertions for functionality
   - mv Scripts/ActiveMQTests/test_settings.py Scripts/ActiveMQTests/settings.py
 
+  # =============db generation=============== #
+  # Create the reduction database on local host
+  - mv WebApp/autoreduce_webapp/autoreduce_webapp/test_settings.py WebApp/autoreduce_webapp/autoreduce_webapp/settings.py
+  - python WebApp/autoreduce_webapp/manage.py makemigrations reduction_viewer
+  - python WebApp/autoreduce_webapp/manage.py migrate reduction_viewer
+  # Test successful table migration
+  - nosetests Scripts/Build/test/test_db_generation.py
+  
   # ============= Pylint ============= #
   # Run pylint without check for C0103 (invalid-name) as this triggers on module names
   # There is currently no work around for this - we should change module names to lower case
