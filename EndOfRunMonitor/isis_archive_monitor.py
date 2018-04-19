@@ -109,6 +109,7 @@ class ArchiveMonitor(object):
         all_files = os.listdir(current_cycle_path)
         time_filtered_files = self._filter_files_by_time(all_files, self._time_of_last_check)
         if not time_filtered_files:
+            os.chdir(base_dir)
             logging.info(helper.NO_NEW_SINCE_LAST_MSG, self._time_of_last_check)
             return None
         # search all files in directory and return any that end in .raw or .RAW

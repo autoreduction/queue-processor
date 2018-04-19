@@ -73,7 +73,6 @@ class TestISISArchiveChecker(unittest.TestCase):
                                                VALID_PATHS[2][2])
         self.archive_creator.add_most_recent_cycle_files(FILES_TO_TEST[0])
         self.assertEqual(monitor.get_most_recent_in_archive(), 'TEST03.raw')
-        self.archive_creator.remove_data_archive()
 
     # ============= find_most_recent_run_in_archive ============ #
 
@@ -116,7 +115,6 @@ class TestISISArchiveChecker(unittest.TestCase):
                                                           'GEM2.raw',
                                                           'GEM3.raw'])
         self.assertTrue(monitor.compare_archive_to_database())
-        self.archive_creator.remove_data_archive()
 
     # ============== restart_reduction_run =================== #
 

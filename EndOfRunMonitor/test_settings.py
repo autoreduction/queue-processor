@@ -1,6 +1,7 @@
 """
 Settings for connecting to the test services that run locally
 """
+import os
 
 # ICAT
 ICAT_SETTINGS = {
@@ -30,6 +31,8 @@ MYSQL = {
     'PORT': '3306',
 }
 
-ARCHIVE_MONITOR_LOG = 'tests/archive_monitor.log'
+PATH_TO_FILE = os.path.dirname(os.path.realpath(__file__))
 
-INST_PATH = 'tests/data-archive'
+ARCHIVE_MONITOR_LOG = os.path.join(PATH_TO_FILE, 'tests', 'archive_monitor.log')
+
+INST_PATH = os.path.join(PATH_TO_FILE, 'tests', 'data-archive')

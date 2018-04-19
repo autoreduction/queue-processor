@@ -93,13 +93,10 @@ class DataArchiveCreator(object):
         :param files_to_add: list of the files to add
         """
         for file_name in files_to_add:
-            try:
-                file_path = os.path.join(self.data_archive_dir, self._most_recent_cycle_dir, file_name)
-                file_handle = open(file_path, 'w')
-                file_handle.close()
-                time.sleep(0.1)  # required as these files are order by modification date
-            except OSError:
+            file_path = os.path.join(self.data_archive_dir, self._most_recent_cycle_dir, file_name)
+            with open(file_path, 'w') as _:
                 pass
+            time.sleep(0.1)  # required as these files are order by modification date
 
     def remove_most_recent_cycle_files(self):
         """
@@ -111,22 +108,18 @@ class DataArchiveCreator(object):
         if os.path.isdir(path):
             all_files = os.listdir(path)
             for files in all_files:
-                try:
-                    os.remove(os.path.join(path, files))
-                except OSError:
-                    # OSError is produced if file has already been deleted
-                    pass
+                os.remove(os.path.join(path, files))
 
     def remove_data_archive(self):
         """
         Remove data archive from system
         """
-        try:
-            shutil.rmtree(self.archive_dir)
-        except OSError:
-            # OSError is produced if files have already been deleted
-            pass
+        shutil.rmtree(self.archive_dir)
 
     def __del__(self):
         """Ensure that the data archive is deleted on object deletion"""
-        self.remove_data_archive()
+        try:
+            self.remove_data_archive()
+        except OSError:
+            # Some tests will delete the output as part of the test
+            pass
