@@ -11,6 +11,7 @@ from EndOfRunMonitor.settings import ARCHIVE_MONITOR_LOG, MYSQL, INST_PATH
 # ================================= Data ======================================= #
 
 LOG_FILE = os.path.join(os.path.dirname(os.path.realpath(__file__)), ARCHIVE_MONITOR_LOG)
+LOG_FORMAT = '%(asctime)s : %(message)s'
 
 GENERIC_INST_PATH = INST_PATH
 
@@ -48,3 +49,5 @@ NO_FILES_FOUND_MSG = 'No files found when searching %s'
 RUN_MATCH_MSG = 'ISIS_archive_monitor.compare_most_recent_to_reduction_db: ' \
                 'Data Archive entry (%s) and Database entry (%s) matched! ' \
                 'No further action required.'
+
+NO_NEW_SINCE_LAST_MSG = 'There are no new files since last check at %s'

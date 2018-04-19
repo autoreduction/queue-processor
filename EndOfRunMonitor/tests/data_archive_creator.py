@@ -13,49 +13,55 @@ class DataArchiveCreator(object):
     implementation at ISIS
     """
 
-    _data_archive_dir_base = 'data-archive'
-    _data_archive_dir = 'data-archive/{}/data/'
-    _cycle_dir_name = 'cycle_{}_{}'
-    _path_to_data_archive = ''
-    _most_recent_cycle = None
+    _base_dir = None
+    _instrument = None
 
-    def __init__(self, instrument):
-        """Initialise class members"""
-        self._data_archive_dir = self._data_archive_dir.format(instrument)
-        self._path_to_data_archive = os.path.join(os.getcwd(),
-                                                  self._data_archive_dir)
-        self._path_to_data_archive_base = os.path.join(os.getcwd(),
-                                                       self._data_archive_dir_base)
+    _archive_dir_name = 'data-archive'
+    archive_dir = None
 
-    def get_data_archive_base(self):
-        """
-        :return: "data-archive"
-        """
-        return self._data_archive_dir_base
+    _data_archive_dir_name = '{}/data/'
+    data_archive_dir = None
 
-    def get_data_archive_dir(self):
-        """
-        :return: "data-archive//<instrument>//data"
-        """
-        return self._data_archive_dir
+    _cycle_name = 'cycle_{}_{}'
+    _most_recent_cycle_dir = None
 
-    def get_path_to_data_archive(self):
+    def __init__(self, instrument, base_directory):
         """
-        :return: "~//..//data-archive//<instrument>//data"
+        :param instrument: The instrument to create the directory for e.g. WISH
+        :param base_directory: user specified location to create the mock data archive
         """
-        return self._path_to_data_archive
+        self._instrument = instrument
+        if os.path.isdir(base_directory):
+            self._base_dir = base_directory
+        else:
+            raise RuntimeError('Unable to find base_directory %S.'
+                               'Please ensure this directory exists', base_directory)
+        self._create_archive_directory()
+        self._create_data_archive_directory()
 
     def get_most_recent_cycle_dir(self):
         """
-        :return: "cycle_<year>_<iteration>"
+        Returns the most recent cycle directory if not None
+        :return: The most recent cycle directory or
+                 raise exception is not set
         """
-        return self._most_recent_cycle
+        if self._most_recent_cycle_dir:
+            return self._most_recent_cycle_dir
+        else:
+            raise RuntimeError('The most recent cycle directory is currently \'None\'.'
+                               'Please ensure you have run make_data_archive')
 
-    def get_path_to_most_recent_cycle(self):
-        """
-        :return: "~//..//data-archive//<instrument>//data//cycle_<year>_<iteration>"
-        """
-        return os.path.join(self._path_to_data_archive, self._most_recent_cycle)
+    def _create_archive_directory(self):
+        """ Creates user/path/data-archive"""
+        os.makedirs(os.path.join(self._base_dir, self._archive_dir_name))
+        self.archive_dir = os.path.join(self._base_dir, self._archive_dir_name)
+
+    def _create_data_archive_directory(self):
+        """ Creates user/path/data-archive/{inst}/data"""
+        os.makedirs(os.path.join(self.archive_dir,
+                                 self._data_archive_dir_name.format(self._instrument)))
+        self.data_archive_dir = os.path.join(self.archive_dir,
+                                             self._data_archive_dir_name.format(self._instrument))
 
     def make_data_archive(self, start_year, end_year, current_cycle):
         """
@@ -64,24 +70,22 @@ class DataArchiveCreator(object):
         :param end_year: 1-2 digit end year e.g. 14 for 2014 (max 99 for 2099)
         :param current_cycle: 1 digit [1-5]
         """
-        data_archive_path = os.path.join(os.getcwd(), self._data_archive_dir)
-        os.makedirs(data_archive_path)
         # Make all FULL cycle directories
         current_cycle_dir_name = ''
         for cycle_year in range(start_year, end_year):
             if cycle_year < 10:
                 cycle_year = '0' + str(cycle_year)
             for cycle_num in range(1, 6):
-                current_cycle_dir_name = self._cycle_dir_name.format(cycle_year, cycle_num)
-                os.makedirs(os.path.join(data_archive_path, current_cycle_dir_name))
+                current_cycle_dir_name = self._cycle_name.format(cycle_year, cycle_num)
+                os.makedirs(os.path.join(self.data_archive_dir, current_cycle_dir_name))
 
         # Make most current cycle directories (could by current cycle < 5
         if end_year < 10:
             end_year = '0' + str(end_year)
         for cycle_num in range(1, current_cycle+1):
-            current_cycle_dir_name = self._cycle_dir_name.format(end_year, cycle_num)
-            os.makedirs(os.path.join(data_archive_path, current_cycle_dir_name))
-        self._most_recent_cycle = current_cycle_dir_name
+            current_cycle_dir_name = self._cycle_name.format(end_year, cycle_num)
+            os.makedirs(os.path.join(self.data_archive_dir, current_cycle_dir_name))
+        self._most_recent_cycle_dir = os.path.join(self.data_archive_dir, current_cycle_dir_name)
 
     def add_most_recent_cycle_files(self, files_to_add):
         """
@@ -89,27 +93,36 @@ class DataArchiveCreator(object):
         :param files_to_add: list of the files to add
         """
         for file_name in files_to_add:
-            file_path = os.path.join(self._data_archive_dir, self._most_recent_cycle, file_name)
-            file_handle = open(file_path, 'w')
-            file_handle.close()
-            time.sleep(0.1)  # required as these files are order by modification date
+            try:
+                file_path = os.path.join(self.data_archive_dir, self._most_recent_cycle_dir, file_name)
+                file_handle = open(file_path, 'w')
+                file_handle.close()
+                time.sleep(0.1)  # required as these files are order by modification date
+            except OSError:
+                pass
 
     def remove_most_recent_cycle_files(self):
         """
         Removes all files from the most recent path.
         The directory will NOT be removed
         """
-        path = os.path.join(self._data_archive_dir,
-                            self._most_recent_cycle)
-        for files in os.listdir(path):
-            os.remove(os.path.join(path, files))
+        path = os.path.join(self.data_archive_dir,
+                            self._most_recent_cycle_dir)
+        if os.path.isdir(path):
+            all_files = os.listdir(path)
+            for files in all_files:
+                try:
+                    os.remove(os.path.join(path, files))
+                except OSError:
+                    # OSError is produced if file has already been deleted
+                    pass
 
     def remove_data_archive(self):
         """
         Remove data archive from system
         """
         try:
-            shutil.rmtree(self._path_to_data_archive_base)
+            shutil.rmtree(self.archive_dir)
         except OSError:
             # OSError is produced if files have already been deleted
             pass

@@ -1,6 +1,7 @@
 """
 Unit tests and associated helpers to exercise the ISIS Archive Checker
 """
+import os
 import unittest
 
 from EndOfRunMonitor.database_client import ReductionRun
@@ -34,7 +35,8 @@ class TestISISArchiveChecker(unittest.TestCase):
     """
 
     def setUp(self):
-        self.archive_creator = DataArchiveCreator('GEM')
+        path_to_file = os.path.dirname(os.path.realpath(__file__))
+        self.archive_creator = DataArchiveCreator('GEM', path_to_file)
 
     def tearDown(self):
         del self.archive_creator
@@ -65,12 +67,32 @@ class TestISISArchiveChecker(unittest.TestCase):
     # ============== get_most_recent_in_archive ============== #
 
     def test_valid_recent_in_archive(self):
+        monitor = ArchiveMonitor('GEM')
         self.archive_creator.make_data_archive(VALID_PATHS[2][0],
                                                VALID_PATHS[2][1],
                                                VALID_PATHS[2][2])
         self.archive_creator.add_most_recent_cycle_files(FILES_TO_TEST[0])
-        monitor = ArchiveMonitor('GEM')
         self.assertEqual(monitor.get_most_recent_in_archive(), 'TEST03.raw')
+        self.archive_creator.remove_data_archive()
+
+    # ============= find_most_recent_run_in_archive ============ #
+
+    def test_valid_find_most_recent_run(self):
+        """
+        Test that find_most_recent_run produces the expected output
+        given the input of FILES_TO_TEST
+        """
+        monitor = ArchiveMonitor('GEM')
+        self.archive_creator.make_data_archive(VALID_PATHS[2][0],
+                                               VALID_PATHS[2][1],
+                                               VALID_PATHS[2][2])
+        for test_files in FILES_TO_TEST:
+            self.archive_creator.add_most_recent_cycle_files(test_files[:-1])
+            # pylint: disable=protected-access
+            actual = monitor._find_most_recent_run_in_archive(
+                self.archive_creator.get_most_recent_cycle_dir())
+            self.assertEqual(test_files[-1], actual)
+            self.archive_creator.remove_most_recent_cycle_files()
         self.archive_creator.remove_data_archive()
 
     # ============ get_most_recent_in_database =============== #
@@ -86,21 +108,20 @@ class TestISISArchiveChecker(unittest.TestCase):
 
     def test_valid_compare_archive_db(self):
         # overwrite data_archive
-        self.archive_creator = DataArchiveCreator('GEM')
+        monitor = ArchiveMonitor('GEM')
         self.archive_creator.make_data_archive(VALID_PATHS[2][0],
                                                VALID_PATHS[2][1],
                                                VALID_PATHS[2][2])
         self.archive_creator.add_most_recent_cycle_files(['GEM1.raw',
                                                           'GEM2.raw',
                                                           'GEM3.raw'])
-        monitor = ArchiveMonitor('GEM')
         self.assertTrue(monitor.compare_archive_to_database())
         self.archive_creator.remove_data_archive()
 
     # ============== restart_reduction_run =================== #
 
-    def test_valid_restart_run(self):
-        raise RuntimeError('Unimplemented test')
+    #def test_valid_restart_run(self):
+    #    raise RuntimeError('Unimplemented test')
 
 
 class TestArchiveMonitorHelpers(unittest.TestCase):
@@ -110,7 +131,7 @@ class TestArchiveMonitorHelpers(unittest.TestCase):
     """
 
     def setUp(self):
-        self.archive_creator = DataArchiveCreator('GEM')
+        self.archive_creator = DataArchiveCreator('GEM', os.getcwd())
 
     # ========== find_path_to_current_cycle_in_archive ========= #
 
@@ -119,32 +140,14 @@ class TestArchiveMonitorHelpers(unittest.TestCase):
         Test find_path_to_current_cycle_in_archive give the expected output
          given the input of VALID_PATHS
         """
+        monitor = ArchiveMonitor('GEM')
         for item in VALID_PATHS:
             self.archive_creator.make_data_archive(item[0], item[1], item[2])
             # pylint: disable=protected-access
-            actual = ArchiveMonitor._find_path_to_current_cycle_in_archive(
-                self.archive_creator.get_data_archive_dir())
+            actual = monitor._find_path_to_current_cycle_in_archive(
+                self.archive_creator.data_archive_dir)
             self.assertEqual(item[3], actual)
             self.archive_creator.remove_data_archive()
-
-    # ============= find_most_recent_run_in_archive ============ #
-
-    def test_valid_find_most_recent_run(self):
-        """
-        Test that find_most_recent_run produces the expected output
-        given the input of FILES_TO_TEST
-        """
-        self.archive_creator.make_data_archive(VALID_PATHS[2][0],
-                                               VALID_PATHS[2][1],
-                                               VALID_PATHS[2][2])
-        for test_files in FILES_TO_TEST:
-            self.archive_creator.add_most_recent_cycle_files(test_files[:-1])
-            # pylint: disable=protected-access
-            actual = ArchiveMonitor._find_most_recent_run_in_archive(
-                self.archive_creator.get_path_to_most_recent_cycle())
-            self.assertEqual(test_files[-1], actual)
-            self.archive_creator.remove_most_recent_cycle_files()
-        self.archive_creator.remove_data_archive()
 
 
 # =========== Test helpers ============== #

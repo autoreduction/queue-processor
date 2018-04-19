@@ -5,11 +5,13 @@ If not the run should be missing run should be restarted.
 """
 import os
 import logging
+import datetime
 
 import EndOfRunMonitor.isis_archive_monitor_helper as helper
 from EndOfRunMonitor.database_client import ReductionRun, Instrument
 
-logging.basicConfig(filename=helper.LOG_FILE, level=logging.DEBUG)
+logging.basicConfig(filename=helper.LOG_FILE, level=logging.DEBUG,
+                    format=helper.LOG_FORMAT)
 
 
 class ArchiveMonitor(object):
@@ -17,6 +19,9 @@ class ArchiveMonitor(object):
     Check the data archive location and inspect
     the most recent run data for comparison to the reduction database
     """
+
+    _time_of_last_check = None
+
     def __init__(self, instrument_name):
         """
         set the instrument param name and connect to the database
@@ -30,9 +35,16 @@ class ArchiveMonitor(object):
         logging.info(helper.START_UP_MSG, instrument)
         self.instrument = instrument
         self.instrument_path = helper.GENERIC_INST_PATH.format(instrument)
+        self._update_check_time()
 
         # Create the connection string for SQLAlchemy
         self.database_session = helper.SESSION
+
+    def _update_check_time(self):
+        """
+        Updates the timer that stores when the last check was made
+        """
+        self._time_of_last_check = datetime.datetime.now()
 
     def get_most_recent_in_archive(self):
         """
@@ -79,23 +91,28 @@ class ArchiveMonitor(object):
 
         last_database_run = self.get_most_recent_run_in_database()
 
+        self._update_check_time()
         if last_database_run == data_archive_file_name:
             logging.info(helper.RUN_MATCH_MSG, data_archive_file_name, last_database_run)
             return True
         logging.warning(helper.RUN_MISMATCH_MSG, data_archive_file_name, last_database_run)
         return False
 
-    @staticmethod
-    def _find_most_recent_run_in_archive(current_cycle_path):
+    def _find_most_recent_run_in_archive(self, current_cycle_path):
         """
         Given the most recent cycle path, find the most recent run
         :param current_cycle_path: full path to current cycle
         :return: The most recent file in the directory
         """
-        base_dir = os.getcwd()
+        base_dir = os.path.dirname(os.path.realpath(__file__))
         os.chdir(current_cycle_path)
+        all_files = os.listdir(current_cycle_path)
+        time_filtered_files = self._filter_files_by_time(all_files, self._time_of_last_check)
+        if not time_filtered_files:
+            logging.info(helper.NO_NEW_SINCE_LAST_MSG, self._time_of_last_check)
+            return None
         # search all files in directory and return any that end in .raw or .RAW
-        raw_files = [raw_file for raw_file in os.listdir(current_cycle_path)
+        raw_files = [raw_file for raw_file in time_filtered_files
                      if raw_file.endswith('.raw') or raw_file.endswith('.RAW')]
 
         # sort all files by modified time
@@ -106,6 +123,23 @@ class ArchiveMonitor(object):
         except IndexError:
             logging.warning(helper.NO_FILES_FOUND_MSG, current_cycle_path)
             return None
+
+    @staticmethod
+    def _filter_files_by_time(all_files, last_checked_time):
+        """
+        Removes any file from the list that has a modification
+        time that is older than the last_checked_time
+        :param all_files: List of all files to check
+        :param last_checked_time: The cut off time for files we are interested in
+        :return: list of files that does not contain any file which has a
+                 most recent modification that was before the last_checked_time
+        """
+        new_files = []
+        for current_file in all_files:
+            modification_time = datetime.datetime.fromtimestamp(os.path.getmtime(current_file))
+            if modification_time > last_checked_time:
+                new_files.append(current_file)
+        return new_files
 
     @staticmethod
     def _find_path_to_current_cycle_in_archive(instrument_log_path):
