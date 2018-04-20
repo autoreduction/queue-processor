@@ -14,6 +14,7 @@ To restart the queue processors run (should be renamed to restart.sh!).
 - Check the restart has been sucessful by `ps aux | grep python` and checking the logs for activity.
 ##### End of run monitor
 - Restart the 'Autoreduce Instrument Montior' service in the Services Control Panel.
+  - Alternatively, this can be done by running `python ISIS_monitor_win_service.py [start|restart|stop]`
 - Check the restart has been sucessful by checking the log.
 
 ##### Web app 
