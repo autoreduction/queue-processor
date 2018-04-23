@@ -7,12 +7,15 @@ import datetime
 import json
 import logging
 import os
+import time
 
 import EndOfRunMonitor.archive_monitor.isis_archive_monitor_helper as helper
 from EndOfRunMonitor.database_client import ReductionRun, Instrument
 
 logging.basicConfig(filename=helper.LOG_FILE, level=logging.DEBUG,
                     format=helper.LOG_FORMAT)
+
+INSTRUMENTS = ['WISH', 'GEM']
 
 
 class ArchiveMonitor(object):
@@ -43,6 +46,11 @@ class ArchiveMonitor(object):
         self.queue_session = helper.make_queue_session()
 
         logging.info(helper.START_UP_MSG, instrument)
+
+    def poll_archive(self):
+        while True:
+            self.compare_archive_to_database()
+            time.sleep(600)
 
     def _update_check_time(self):
         """
@@ -223,3 +231,10 @@ class ArchiveMonitor(object):
                 return last_line.split()[-1]
             logging.error(helper.INVALID_JOURNAL_FORMAT_MSG)
             return None
+
+
+def main():
+    """ Main method, connects to ActiveMQ and sets up instrument last_run.txt listeners. """
+    for inst in INSTRUMENTS:
+        monitor = ArchiveMonitor(inst)
+        monitor.poll_archive()
