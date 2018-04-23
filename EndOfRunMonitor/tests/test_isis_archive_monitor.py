@@ -20,6 +20,9 @@ VALID_PATHS = [[0, 9, 3, 'cycle_09_3'],
 # List of data to add to a directory and expected result from _find_most_recent_run
 FILES_TO_TEST = [['TEST01.raw', 'TEST02.raw', 'TEST03.raw', 'TEST03.raw'],  # .raw
                  ['TEST01.RAW', 'TEST02.RAW', 'TEST03.RAW', 'TEST03.RAW'],  # .RAW
+                 ['TEST01.nxs', 'TEST02.nxs', 'TEST03.nxs', 'TEST03.nxs'],  # .nxs
+                 ['TEST01.NXS', 'TEST02.NXS', 'TEST03.NXS', 'TEST03.NXS'],  # .NXS
+                 ['TEST01.nxs', 'TEST02.raw', 'TEST03.nxs', 'TEST03.nxs'],  # .raw/.nxs
                  ['TEST01.raw', 'TEST02.RAW', 'TEST03.raw', 'TEST03.raw'],  # .raw/.RAW
                  ['TEST01.raw', 'TEST03.raw', 'TEST03.log', 'TEST03.raw'],  # .log file
                  ['TEST01.txt', 'TEST02.log', 'TEST01.out', None],  # no .raw

@@ -146,15 +146,22 @@ class ArchiveMonitor(object):
             os.chdir(base_dir)
             logging.info(helper.NO_NEW_SINCE_LAST_MSG, self._time_of_last_check)
             return None
+
+        def check_valid_extension(file_to_check):
+            file_to_check = file_to_check.lower()
+            if file_to_check.endswith('.raw') or file_to_check.endswith('.nxs'):
+                return True
+            return False
+
         # search all files in directory and return any that end in .raw or .RAW
-        raw_files = [raw_file for raw_file in time_filtered_files
-                     if raw_file.endswith('.raw') or raw_file.endswith('.RAW')]
+        valid_files = [current_file for current_file in time_filtered_files
+                       if check_valid_extension(current_file)]
 
         # sort all files by modified time
-        raw_files.sort(key=os.path.getmtime)
+        valid_files.sort(key=os.path.getmtime)
         os.chdir(base_dir)
         try:
-            return raw_files[-1]
+            return valid_files[-1]
         except IndexError:
             logging.warning(helper.NO_FILES_FOUND_MSG, current_cycle_path)
             return None
