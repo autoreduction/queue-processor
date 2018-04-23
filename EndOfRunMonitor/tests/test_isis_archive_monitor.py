@@ -8,7 +8,7 @@ import unittest
 from EndOfRunMonitor.database_client import ReductionRun
 from EndOfRunMonitor.isis_archive_monitor import ArchiveMonitor
 from EndOfRunMonitor.tests.data_archive_creator import DataArchiveCreator
-from EndOfRunMonitor.settings import INST_PATH
+from EndOfRunMonitor.settings import INST_PATH, ARCHIVE_MONITOR_LOG
 
 
 # List of variables to create a valid path and expected result _find_path_to_current_cycle
@@ -119,8 +119,17 @@ class TestISISArchiveChecker(unittest.TestCase):
 
     # ============== restart_reduction_run =================== #
 
-    #def test_valid_restart_run(self):
-    #    raise RuntimeError('Unimplemented test')
+    def test_valid_restart_run(self):
+        monitor = ArchiveMonitor('GEM')
+        most_recent_file = _setup_send_message_params(self.archive_creator)
+        data_to_send = monitor._construct_data_to_send(most_recent_file)
+        monitor.resubmit_run_to_queue(data_to_send)
+        log = _get_last_line_in_log()
+        self.assertTrue("\"instrument\": \"GEM\"" in log)
+        self.assertTrue("\"run_number\": \"03\"" in log)
+        self.assertTrue("\"rb_number\": \"1234\"" in log)
+        self.assertTrue("\"facility\": \"ISIS\"" in log)
+        self.assertTrue("destination:/queue/DataReady" in log)
 
 
 class TestArchiveMonitorHelpers(unittest.TestCase):
@@ -131,28 +140,62 @@ class TestArchiveMonitorHelpers(unittest.TestCase):
 
     def setUp(self):
         self.archive_creator = DataArchiveCreator('GEM', os.getcwd())
+        self.monitor = ArchiveMonitor('GEM')
+
+    def tearDown(self):
+        del self.archive_creator
+        del self.monitor
 
     # ========== find_path_to_current_cycle_in_archive ========= #
 
     def test_valid_path_to_cycle(self):
-        monitor = ArchiveMonitor('GEM')
         for item in VALID_PATHS:
             self.archive_creator.make_data_archive(item[0], item[1], item[2])
             # pylint: disable=protected-access
-            actual = monitor._find_path_to_current_cycle_in_archive(
+            actual = self.monitor._find_path_to_current_cycle_in_archive(
                 self.archive_creator.data_archive_dir)
             self.assertEqual(item[3], actual)
             self.archive_creator.remove_data_archive()
 
     def test_update_check_time(self):
-        monitor = ArchiveMonitor('GEM')
         # pylint: disable=protected-access
-        start_time = monitor._time_of_last_check
+        start_time = self.monitor._time_of_last_check
         time.sleep(0.2)
-        monitor._update_check_time()
-        future_time = monitor._time_of_last_check
+        self.monitor._update_check_time()
+        future_time = self.monitor._time_of_last_check
         self.assertTrue(start_time < future_time)
         self.archive_creator.remove_data_archive()
+
+    def test_valid_get_rb_number(self):
+        self.archive_creator.add_journal_summary('test 1234')
+        actual = self.monitor._get_rb_num(self.archive_creator._journal_dir)
+        self.assertEqual(actual, '1234')
+
+    def test_invalid_get_rb_number(self):
+        self.archive_creator.add_journal_summary('test')
+        actual = self.monitor._get_rb_num(self.archive_creator._journal_dir)
+        self.assertEqual(actual, None)
+
+    def test_valid_message_construction(self):
+        most_recent_file = _setup_send_message_params(self.archive_creator)
+        actual = self.monitor._construct_data_to_send(most_recent_file)
+
+        expected = {'data': '{}'.format(os.path.join(most_recent_file)),
+                    'facility': 'ISIS',
+                    'instrument': 'GEM',
+                    'rb_number': '1234',
+                    'run_number': '03'}
+        self.assertEqual(actual, expected)
+        self.archive_creator.remove_data_archive()
+
+    def test_get_run_number_from_file(self):
+        self.archive_creator.make_data_archive(1, 2, 2)
+        self.archive_creator.add_most_recent_cycle_files(['TEST123.raw', 'test.txt'])
+        self.assertEqual(self.monitor._get_run_number_from_file_path(
+            os.path.join(self.archive_creator.get_most_recent_cycle_dir(), 'TEST123.raw')), '123')
+        self.assertEqual(self.monitor._get_run_number_from_file_path(
+            os.path.join(self.archive_creator.get_most_recent_cycle_dir(), 'test.txt')), '')
+
 
 # =========== Test helpers ============== #
 def _get_last_line_in_log():
@@ -160,7 +203,25 @@ def _get_last_line_in_log():
     Reads the log file and returns the most recent input
     :return: String of the most recent log
     """
-    file_handle = open('archive_monitor.log', "r")
+    file_handle = open(ARCHIVE_MONITOR_LOG, "r")
     line_list = file_handle.readlines()
     file_handle.close()
     return line_list[-1]
+
+
+def _setup_send_message_params(archive_creator):
+    """
+    Create all the file structure dependencies required for a message to be sent
+    :param archive_creator: The data archive creator
+    :return: file path to the most recent file
+    """
+    # create journal file
+    archive_creator.add_journal_summary('test 1234')
+    # create data
+    archive_creator.make_data_archive(VALID_PATHS[2][0],
+                                      VALID_PATHS[2][1],
+                                      VALID_PATHS[2][2])
+    archive_creator.add_most_recent_cycle_files(FILES_TO_TEST[0])
+    return os.path.join(archive_creator.get_most_recent_cycle_dir(),
+                        FILES_TO_TEST[0][3])
+

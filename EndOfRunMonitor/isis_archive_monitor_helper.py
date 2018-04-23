@@ -5,8 +5,9 @@ import os
 
 from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import sessionmaker
+import stomp
 
-from EndOfRunMonitor.settings import ARCHIVE_MONITOR_LOG, MYSQL, INST_PATH
+from EndOfRunMonitor.settings import ARCHIVE_MONITOR_LOG, MYSQL, INST_PATH, ACTIVEMQ
 
 # ================================= Data ======================================= #
 
@@ -20,15 +21,29 @@ VALID_INST = ['GEM', 'POLARIS', 'WISH', 'TEST']
 DB_CONNECTION_STR = 'mysql+mysqldb://' + MYSQL['USER'] + ':' + MYSQL['PASSWD'] + \
                     '@' + MYSQL['HOST'] + '/' + MYSQL['DB']
 
+
 # Database set up
-ENGINE = create_engine(DB_CONNECTION_STR, pool_recycle=280)
-_ = MetaData(ENGINE)
-# pylint: disable=invalid-name
-session = sessionmaker(bind=ENGINE)
-SESSION = session()
+def make_db_session():
+    engine = create_engine(DB_CONNECTION_STR, pool_recycle=280)
+    _ = MetaData(engine)
+    session_maker = sessionmaker(bind=engine)
+    return session_maker()
+
+
+# Queue setup
+def make_queue_session():
+    brokers = [(ACTIVEMQ['brokers'].split(':')[0],
+                int(ACTIVEMQ['brokers'].split(':')[1]))]
+    connection = stomp.Connection(host_and_ports=brokers, use_ssl=False)
+    connection.start()
+    connection.connect(ACTIVEMQ['amq_user'],
+                       ACTIVEMQ['amq_pwd'],
+                       wait=False,
+                       header={'activemq.prefetchSize': '1'})
+    return connection
+
 
 # ================================ Messages ===================================== #
-
 START_UP_MSG = 'Starting new Archive Monitor for instrument: %s'
 
 INVALID_INSTRUMENT_MSG = 'ISIS_archive_monitor.__init__: Archive monitor could not be ' \
@@ -51,3 +66,8 @@ RUN_MATCH_MSG = 'ISIS_archive_monitor.compare_most_recent_to_reduction_db: ' \
                 'No further action required.'
 
 NO_NEW_SINCE_LAST_MSG = 'There are no new files since last check at %s'
+
+CANT_FIND_RUN_NUMBER_MSG = 'Unable to find run number from file in path %s'
+
+INVALID_JOURNAL_FORMAT_MSG = 'The journal summary file was not in the expected format. ' \
+                             'The final value of each line should be the RB number.'

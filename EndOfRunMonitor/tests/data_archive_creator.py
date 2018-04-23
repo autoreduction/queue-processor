@@ -25,6 +25,9 @@ class DataArchiveCreator(object):
     _cycle_name = 'cycle_{}_{}'
     _most_recent_cycle_dir = None
 
+    _journal_name = os.path.join('logs', 'journal')
+    _journal_dir = None
+
     def __init__(self, instrument, base_directory):
         """
         :param instrument: The instrument to create the directory for e.g. WISH
@@ -38,6 +41,7 @@ class DataArchiveCreator(object):
                                'Please ensure this directory exists', base_directory)
         self._create_archive_directory()
         self._create_data_archive_directory()
+        self._create_journal_directory()
 
     def get_most_recent_cycle_dir(self):
         """
@@ -62,6 +66,13 @@ class DataArchiveCreator(object):
                                  self._data_archive_dir_name.format(self._instrument)))
         self.data_archive_dir = os.path.join(self.archive_dir,
                                              self._data_archive_dir_name.format(self._instrument))
+
+    def _create_journal_directory(self):
+        """ Creates user/path/data-archive/{inst}/Instrument/logs/journal """
+        os.makedirs(os.path.join(self.archive_dir, self._instrument,
+                                 'Instrument', self._journal_name))
+        self._journal_dir = os.path.join(self.archive_dir, self._instrument,
+                                         'Instrument', self._journal_name)
 
     def make_data_archive(self, start_year, end_year, current_cycle):
         """
@@ -97,6 +108,17 @@ class DataArchiveCreator(object):
             with open(file_path, 'w') as _:
                 pass
             time.sleep(0.1)  # required as these files are order by modification date
+
+    def add_journal_summary(self, content=None):
+        """
+        Adds the summary.txt file to the journal directory
+        :param content: optional content to put in the summary file
+        """
+        file_path = os.path.join(self._journal_dir, 'summary.txt')
+        with open(file_path, 'w') as journal_handle:
+            if content:
+                journal_handle.write(content)
+        journal_handle.close()
 
     def remove_most_recent_cycle_files(self):
         """
