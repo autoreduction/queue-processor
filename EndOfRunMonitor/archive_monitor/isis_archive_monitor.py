@@ -5,11 +5,10 @@ If not the run should be missing run should be restarted.
 """
 import datetime
 import json
-import os
 import logging
+import os
 
-
-import EndOfRunMonitor.isis_archive_monitor_helper as helper
+import EndOfRunMonitor.archive_monitor.isis_archive_monitor_helper as helper
 from EndOfRunMonitor.database_client import ReductionRun, Instrument
 
 logging.basicConfig(filename=helper.LOG_FILE, level=logging.DEBUG,
