@@ -2,6 +2,7 @@
 Unit tests and associated helpers to exercise the ISIS Archive Checker
 """
 import os
+import time
 import unittest
 
 from EndOfRunMonitor.database_client import ReductionRun
@@ -134,10 +135,6 @@ class TestArchiveMonitorHelpers(unittest.TestCase):
     # ========== find_path_to_current_cycle_in_archive ========= #
 
     def test_valid_path_to_cycle(self):
-        """
-        Test find_path_to_current_cycle_in_archive give the expected output
-         given the input of VALID_PATHS
-        """
         monitor = ArchiveMonitor('GEM')
         for item in VALID_PATHS:
             self.archive_creator.make_data_archive(item[0], item[1], item[2])
@@ -147,6 +144,15 @@ class TestArchiveMonitorHelpers(unittest.TestCase):
             self.assertEqual(item[3], actual)
             self.archive_creator.remove_data_archive()
 
+    def test_update_check_time(self):
+        monitor = ArchiveMonitor('GEM')
+        # pylint: disable=protected-access
+        start_time = monitor._time_of_last_check
+        time.sleep(0.2)
+        monitor._update_check_time()
+        future_time = monitor._time_of_last_check
+        self.assertTrue(start_time < future_time)
+        self.archive_creator.remove_data_archive()
 
 # =========== Test helpers ============== #
 def _get_last_line_in_log():

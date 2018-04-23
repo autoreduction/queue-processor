@@ -3,9 +3,10 @@ Designed to periodically check if the Data Archive for the most recent file.
 This file is then compared to the reduction database to see if they are the same.
 If not the run should be missing run should be restarted.
 """
+import datetime
 import os
 import logging
-import datetime
+
 
 import EndOfRunMonitor.isis_archive_monitor_helper as helper
 from EndOfRunMonitor.database_client import ReductionRun, Instrument
