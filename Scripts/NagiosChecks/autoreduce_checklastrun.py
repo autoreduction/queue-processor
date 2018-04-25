@@ -9,7 +9,7 @@ from os import path
 import MySQLdb
 import MySQLdb.cursors
 
-from autoreduce_settings import MYSQL, ISIS_MOUNT
+from Scripts.NagiosChecks.autoreduce_settings import MYSQL, ISIS_MOUNT
 
 
 # pylint: disable=invalid-name
