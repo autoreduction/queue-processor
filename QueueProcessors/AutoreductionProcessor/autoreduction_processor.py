@@ -2,6 +2,7 @@
 Module that reads from the reduction pending queue and calls the python script on that data.
 """
 import json
+import os
 import subprocess
 import stomp
 from twisted.internet import reactor
@@ -56,6 +57,8 @@ class Listener(object):
 
         print_dict = data_dict.copy()
         print_dict.pop("reduction_script")
+        if not os.path.isfile(MISC['post_process_directory']):
+            logger.warning("Could not find autoreduction post processing file - please contact a systsem administrator")
         logger.debug("Calling: %s %s %s %s",
                      "python", MISC['post_process_directory'], destination, print_dict)
         self._client.ack(headers['message-id'], headers['subscription'])  # Remove from queue

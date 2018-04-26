@@ -2,7 +2,7 @@
 import logging.handlers
 
 LOGGING_LEVEL = logging.INFO
-LOGGING_LOC = '/home/isisautoreduce/NewQueueProcessing/logs/autoreductionProcessor.log'
+LOGGING_LOC = '/home/reduce/logs/autoreductionProcessor.log'
 
 logger = logging.getLogger('AutoreductionProcessor')
 logger.setLevel(LOGGING_LEVEL)
