@@ -455,9 +455,11 @@ class PostProcessAdmin(object):
                         os.remove(full_path)
                         file_deleted = True
                     elif sleep == 20:
-                        logger.warning("Unable to delete file %s, file could not be found" % full_path)
+                        logger.warning("Unable to delete file %s, file could not be found",
+                                       full_path)
                     elif file_deleted is True:
-                        logger.debug("file %s has been successfully deleted" % full_path)
+                        logger.debug("file %s has been successfully deleted",
+                                     full_path)
                         break
             except OSError as exp:
                 if exp.errno == errno.ENOENT:
@@ -494,7 +496,7 @@ class PostProcessAdmin(object):
                     if os.path.isfile(full_path):
                         self._remove_with_wait(False, full_path)
                     else:
-                        logger.warning("Unable to find file %s." % full_path)
+                        logger.warning("Unable to find file %s.", full_path)
             self._remove_with_wait(True, directory)
         except Exception as exp:
             self.log_and_message("Unable to remove existing directory %s - %s" % (directory, exp))
