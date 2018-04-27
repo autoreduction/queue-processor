@@ -5,3 +5,4 @@ settings.py
 */target/**
 
 venv/
+migrations/
