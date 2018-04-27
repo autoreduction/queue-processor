@@ -9,36 +9,9 @@ before_install:
   - mysql < Scripts/Build/travis-db-setup.sql
 
 install:
-  # ========== Project dependencies ========== #
-  - pip install django
-  - pip install django_user_agents
-  - pip install mysql-python
-  - pip install python-daemon
-  - pip install requests
-  - pip install stomp.py
-  - pip install suds
-  - pip install SQLAlchemy
-  - pip install watchdog
-  - pip install Twisted==14.0.2
-  # ====== ICAT ======= #
-  - wget https://icatproject.org/misc/python-icat/download/python-icat-0.13.1.tar.gz
-  - sudo tar xvf python-icat-0.13.1.tar.gz
-  - cd python-icat-0.13.1
-  - py_path=$(which python)
-  - sudo $py_path setup.py build
-  - sudo $py_path setup.py install
-  - cd ..
-  # ==== ActiveMQ ===== #
-  - wget "http://www.apache.org/dyn/closer.cgi?filename=/activemq/5.15.3/apache-activemq-5.15.3-bin.tar.gz&action=download" -O apache-activemq-5.15.3-bin.tar.gz
-  - sudo tar xvf apache-activemq-5.15.3-bin.tar.gz
-  - sudo chmod 755 apache-activemq-5.15.3/bin/activemq
-  - sudo ./apache-activemq-5.15.3/bin/activemq start
-  # Sleep required to give the service time to initialise
-  - sleep 5
-  # ======== Analysis/Testing tools ========= #
-  - pip install pylint
-  - pip install nose
-
+  - pip install -r requirements.txt
+  - Scripts/Build/./install_icat.sh
+  - Scripts/Build/./install_activemq.sh
 
 script:
   # ========== Test setup ============ #
