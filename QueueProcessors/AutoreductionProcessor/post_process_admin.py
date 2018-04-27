@@ -445,13 +445,23 @@ class PostProcessAdmin(object):
 
     def _remove_with_wait(self, remove_folder, full_path):
         """ Removes a folder or file and waits for it to be removed. """
+        file_deleted = False
         for sleep in [0, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20]:
             try:
                 if remove_folder:
                     os.removedirs(full_path)
                 else:
-                    os.remove(full_path)
-            except IOError as exp:
+                    if os.path.isfile(full_path):
+                        os.remove(full_path)
+                        file_deleted = True
+                    elif sleep == 20:
+                        logger.warning("Unable to delete file %s, file could not be found",
+                                       full_path)
+                    elif file_deleted is True:
+                        logger.debug("file %s has been successfully deleted",
+                                     full_path)
+                        break
+            except OSError as exp:
                 if exp.errno == errno.ENOENT:
                     # File has been deleted
                     break
@@ -483,7 +493,10 @@ class PostProcessAdmin(object):
                 if os.path.isdir(full_path):
                     self._remove_directory(full_path)
                 else:
-                    self._remove_with_wait(False, full_path)
+                    if os.path.isfile(full_path):
+                        self._remove_with_wait(False, full_path)
+                    else:
+                        logger.warning("Unable to find file %s.", full_path)
             self._remove_with_wait(True, directory)
         except Exception as exp:
             self.log_and_message("Unable to remove existing directory %s - %s" % (directory, exp))
