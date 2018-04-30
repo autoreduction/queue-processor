@@ -1,6 +1,8 @@
+sudo: required
 language: python
 python:
   - "2.7"
+
 
 services:
   - mysql
@@ -10,36 +12,25 @@ before_install:
 
 install:
   - pip install -r requirements.txt
-  - Scripts/Build/./install_icat.sh
-  - Scripts/Build/./install_activemq.sh
+  - chmod 777 Scripts/Build/install_icat.sh
+  - ./Scripts/Build/install_icat.sh
+  - chmod 777 Scripts/Build/install_activemq.sh
+  - ./Scripts/Build/install_activemq.sh
 
 script:
-  # ========== Test setup ============ #
-  # Currently not testing the Scripts/ActiveMQTests - yet to implement assertions for functionality
-  - mv Scripts/ActiveMQTests/test_settings.py Scripts/ActiveMQTests/settings.py
+  # ================== Test setup ==================== #
+  - chmod 777 Scripts/Build/migrate_test_settings.sh
+  - ./Scripts/Build/migrate_test_settings.sh
+  - chmod 777 Scripts/Build/generate_testing_database.sh
+  - ./Scripts/Build/generate_testing_database.sh
 
-  # =============db generation=============== #
-  # Create the reduction database on local host
-  - mv WebApp/autoreduce_webapp/autoreduce_webapp/test_settings.py WebApp/autoreduce_webapp/autoreduce_webapp/settings.py
-  - python WebApp/autoreduce_webapp/manage.py makemigrations reduction_viewer
-  - python WebApp/autoreduce_webapp/manage.py migrate reduction_viewer
-  # Test successful table migration
+  # ================ Assert Test Setup =============== #
   - nosetests Scripts/Build/test/test_db_generation.py
   
-  # ============= Pylint ============= #
-  # Run pylint without check for C0103 (invalid-name) as this triggers on module names
-  # There is currently no work around for this - we should change module names to lower case
-  - pylint -d C0103 EndOfRunMonitor
+  # ================ Static Analysis ================= #
+  - chmod 777 Scripts/Build/test/test_pylint.sh
+  - ./Scripts/Build/test/test_pylint.sh
 
-  - pylint -d C0103 Scripts/ActiveMQTests/send_message.py
-  - pylint -d C0103 Scripts/ActiveMQTests/test_stomp_activemq.py
-  - pylint -d C0103 Scripts/ManualSubmissionScript
-  - pylint -d C0103 Scripts/NagiosChecks/autoreduce_checklastrun.py
-
-  - pylint -d C0103,W0403,W0141,R0401,C0413 QueueProcessors/QueueProcessor
-  - pylint -d C0103,W0403 QueueProcessors/AutoreductionProcessor
-  - pylint -d C0103 WebApp/autoreduce_webapp/autoreduce_webapp/
-
-  # ============ Nose unit tests ============== #
+  # ================ Nose unit tests ================ #
   # ActiveMQ
   - nosetests Scripts/Build/test/test_activemq_connection.py
