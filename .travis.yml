@@ -12,23 +12,18 @@ before_install:
 
 install:
   - pip install -r requirements.txt
-  - chmod 777 Scripts/Build/install_icat.sh
   - ./Scripts/Build/install_icat.sh
-  - chmod 777 Scripts/Build/install_activemq.sh
   - ./Scripts/Build/install_activemq.sh
 
 script:
   # ================== Test setup ==================== #
-  - chmod 777 Scripts/Build/migrate_test_settings.sh
   - ./Scripts/Build/migrate_test_settings.sh
-  - chmod 777 Scripts/Build/generate_testing_database.sh
   - ./Scripts/Build/generate_testing_database.sh
 
   # ================ Assert Test Setup =============== #
   - nosetests Scripts/Build/test/test_db_generation.py
   
   # ================ Static Analysis ================= #
-  - chmod 777 Scripts/Build/test/test_pylint.sh
   - ./Scripts/Build/test/test_pylint.sh
 
   # ================ Nose unit tests ================ #
