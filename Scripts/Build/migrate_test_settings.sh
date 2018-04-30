@@ -1,3 +1,4 @@
+#!/usr/bin/env sh
 #Simple shell script to move test_settings.py to settings.py
 
 mv Scripts/ActiveMQTests/test_settings.py Scripts/ActiveMQTests/settings.py

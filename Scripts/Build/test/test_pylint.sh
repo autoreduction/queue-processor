@@ -1,3 +1,4 @@
+#!/usr/bin/env sh
 # Run pylint without check for C0103 (invalid-name) as this triggers on module names
 # There is currently no work around for this - we should change module names to lower case
 

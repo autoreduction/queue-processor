@@ -1,3 +1,4 @@
+#!/usr/bin/env sh
 wget https://icatproject.org/misc/python-icat/download/python-icat-0.13.1.tar.gz
 sudo tar xvf python-icat-0.13.1.tar.gz
 cd python-icat-0.13.1
