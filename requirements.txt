@@ -8,5 +8,5 @@ requests==2.18.4
 SQLAlchemy==1.2.7
 stomp.py==4.1.20
 suds==0.4
-Twisted==14.0.22
+Twisted==14.0.2
 watchdog==0.8.3
