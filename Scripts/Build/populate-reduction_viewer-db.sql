@@ -5,7 +5,7 @@ USE autoreduction;
 INSERT INTO reduction_viewer_instrument
     (id, name, is_active, is_paused)
 VALUES
-    (1, 'TEST', 0, 0),
+    (1, 'MUSR', 0, 0),
     (2, 'WISH', 0, 0),
     (3, 'GEM', 0, 0);
 

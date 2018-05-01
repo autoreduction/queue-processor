@@ -5,7 +5,7 @@ mysql < Scripts/Build/travis-db-setup.sql
 # Move test_settings.py if not already done
 if [ -e WebApp/autoreduce_webapp/autoreduce_webapp/test_settings.py ]
 then
-    mv WebApp/autoreduce_webapp/autoreduce_webapp/test_settings.py WebApp/autoreduce_webapp/autoreduce_webapp/settings.py 
+    cp WebApp/autoreduce_webapp/autoreduce_webapp/test_settings.py WebApp/autoreduce_webapp/autoreduce_webapp/settings.py
 else
     echo "test_settings not present or already in use"
 fi
