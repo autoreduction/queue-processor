@@ -6,6 +6,9 @@ import shutil
 import time
 
 
+GENERIC_CYCLE_PATH = os.path.join('NDX{}', 'Instrument', 'data', 'cycle_{}_{}')
+
+
 class DataArchiveCreator(object):
     """
     Generates a data in the current working directory.
@@ -14,134 +17,166 @@ class DataArchiveCreator(object):
     """
 
     _base_dir = None
-    _instrument = None
 
     _archive_dir_name = 'data-archive'
-    archive_dir = None
-
-    _data_archive_dir_name = '{}/data/'
-    data_archive_dir = None
+    _archive_dir = None
 
     _cycle_name = 'cycle_{}_{}'
-    _most_recent_cycle_dir = None
+    _end_year = None
+    _end_iteration = None
 
-    _journal_name = os.path.join('logs', 'journal')
-    _journal_dir = None
+    data_files = None
+    archive_deleted = False
 
-    def __init__(self, instrument, base_directory):
+    def __init__(self, base_directory):
         """
-        :param instrument: The instrument to create the directory for e.g. WISH
         :param base_directory: user specified location to create the mock data archive
         """
-        self._instrument = instrument
         if os.path.isdir(base_directory):
             self._base_dir = base_directory
         else:
             raise RuntimeError('Unable to find base_directory %S.'
                                'Please ensure this directory exists', base_directory)
+        self.data_files = []
+        self.archive_deleted = False
         self._create_archive_directory()
-        self._create_data_archive_directory()
-        self._create_journal_directory()
-
-    def get_most_recent_cycle_dir(self):
-        """
-        Returns the most recent cycle directory if not None
-        :return: The most recent cycle directory or
-                 raise exception is not set
-        """
-        if self._most_recent_cycle_dir:
-            return self._most_recent_cycle_dir
-        else:
-            raise RuntimeError('The most recent cycle directory is currently \'None\'.'
-                               'Please ensure you have run make_data_archive')
 
     def _create_archive_directory(self):
         """ Creates user/path/data-archive"""
         os.makedirs(os.path.join(self._base_dir, self._archive_dir_name))
-        self.archive_dir = os.path.join(self._base_dir, self._archive_dir_name)
+        self._archive_dir = os.path.join(self._base_dir, self._archive_dir_name)
 
-    def _create_data_archive_directory(self):
-        """ Creates user/path/data-archive/{inst}/data"""
-        os.makedirs(os.path.join(self.archive_dir,
-                                 self._data_archive_dir_name.format(self._instrument)))
-        self.data_archive_dir = os.path.join(self.archive_dir,
-                                             self._data_archive_dir_name.format(self._instrument))
-
-    def _create_journal_directory(self):
-        """ Creates user/path/data-archive/{inst}/Instrument/logs/journal """
-        os.makedirs(os.path.join(self.archive_dir, self._instrument,
-                                 'Instrument', self._journal_name))
-        self._journal_dir = os.path.join(self.archive_dir, self._instrument,
-                                         'Instrument', self._journal_name)
-
-    def make_data_archive(self, start_year, end_year, current_cycle):
+    def make_data_archive(self, instruments, start_year, end_year, current_cycle):
         """
-        Creates a valid path structure (mirror of ISIS data archive)
-        :param start_year: 1-2 digit start year e.g. 12 for 2012 (min 0 for 2000)
-        :param end_year: 1-2 digit end year e.g. 14 for 2014 (max 99 for 2099)
-        :param current_cycle: 1 digit [1-5]
+        Create a full multi-instrument directory structure to mirror the ISIS data archive
+        :param instruments: A list of all valid instruments to create directories for
+        :param start_year: The first year to create a dir for
+        :param end_year: The final year to create a dir for
+        :param current_cycle: The current cycle (1-5) in the final year
         """
+        self._end_year = end_year
+        self._end_iteration = current_cycle
+        ndx_dir_path = os.path.join(self._archive_dir, 'NDX{}')
+        instrument_dir_path = os.path.join(ndx_dir_path, 'Instrument')
+        logs_dir_path = os.path.join(instrument_dir_path, 'logs')
+        user_dir_path = os.path.join(ndx_dir_path, 'user')
+        data_dir_path = os.path.join(instrument_dir_path, 'data')
+        jrnl_dir_path = os.path.join(logs_dir_path, 'journal')
+        for instrument in instruments:
+            os.makedirs(user_dir_path.format(instrument))
+            os.makedirs(data_dir_path.format(instrument))
+            os.makedirs(jrnl_dir_path.format(instrument))
+            self.make_cycle_directories(start_year, end_year, current_cycle,
+                                        data_dir_path.format(instrument))
+
+    def make_cycle_directories(self, start_year, end_year, current_cycle, base_dir):
+        """
+        Creates individual cycle directories from a given base directory
+        :param start_year: The first year to create a dir for
+        :param end_year: The final year to create a dir for
+        :param current_cycle: The current cycle (1-5) in the final year
+        :param base_dir: The directory to add the cycles to (normally instrument/data)
+        """
+        def create_single_years_cycles(end_iter, year):
+            """
+            Adds the cycles directories for a single year
+            """
+            if year < 10:
+                year = '0{}'.format(year)
+            for cycle_num in range(1, end_iter + 1):
+                current_cycle_dir_name = self._cycle_name.format(year, cycle_num)
+                os.makedirs(os.path.join(base_dir, current_cycle_dir_name))
+
         # Make all FULL cycle directories
-        current_cycle_dir_name = ''
         for cycle_year in range(start_year, end_year):
-            if cycle_year < 10:
-                cycle_year = '0' + str(cycle_year)
-            for cycle_num in range(1, 6):
-                current_cycle_dir_name = self._cycle_name.format(cycle_year, cycle_num)
-                os.makedirs(os.path.join(self.data_archive_dir, current_cycle_dir_name))
+            create_single_years_cycles(5, cycle_year)
 
-        # Make most current cycle directories (could by current cycle < 5
-        if end_year < 10:
-            end_year = '0' + str(end_year)
-        for cycle_num in range(1, current_cycle+1):
-            current_cycle_dir_name = self._cycle_name.format(end_year, cycle_num)
-            os.makedirs(os.path.join(self.data_archive_dir, current_cycle_dir_name))
-        self._most_recent_cycle_dir = os.path.join(self.data_archive_dir, current_cycle_dir_name)
+        # Make most current cycle directories (could by current cycle < 5)
+        create_single_years_cycles(current_cycle, end_year)
 
-    def add_most_recent_cycle_files(self, files_to_add):
+    def add_data_files_to_most_recent_cycle(self, instrument, data_files):
         """
-        Add a list of files to the most recent cycle
-        :param files_to_add: list of the files to add
+        Adds data files to the most recent cycle for that instrument
+        :param instrument: The instrument to add the files for
+        :param data_files: The files to add
         """
-        for file_name in files_to_add:
-            file_path = os.path.join(self.data_archive_dir, self._most_recent_cycle_dir, file_name)
-            with open(file_path, 'w') as _:
-                pass
-            time.sleep(0.1)  # required as these files are order by modification date
+        self.add_data_files(instrument, self._end_year, self._end_iteration, data_files)
 
-    def add_journal_summary(self, content=None):
+    def add_data_files(self, instrument, cycle_year, cycle_iteration, data_files):
         """
-        Adds the summary.txt file to the journal directory
-        :param content: optional content to put in the summary file
+        Add a data file to a particular instrument directory
+        :param instrument: The instrument the file relates to
+        :param cycle_year: The cycle year for the file to be added to
+        :param cycle_iteration: The cycle iteration for the file to be added to
+        :param data_files: The data file name
         """
-        file_path = os.path.join(self._journal_dir, 'summary.txt')
-        with open(file_path, 'w') as journal_handle:
-            if content:
-                journal_handle.write(content)
-        journal_handle.close()
+        if cycle_year < 10:
+            cycle_year = '0{}'.format(cycle_year)
+        path_to_data_dir = os.path.join(self._archive_dir, GENERIC_CYCLE_PATH).format(instrument,
+                                                                                      cycle_year,
+                                                                                      cycle_iteration)
+        for file_name in data_files:
+            file_path = os.path.join(path_to_data_dir, file_name)
+            self.create_file_at_location(file_path)
 
-    def remove_most_recent_cycle_files(self):
+    def add_journal_file(self, instrument, file_contents):
         """
-        Removes all files from the most recent path.
-        The directory will NOT be removed
+        Adds a journal (summary.txt) file to a given instruments directory
+        :param instrument: The instrument to add the file to
+        :param file_contents: the contents of the file (normally RB number)
         """
-        path = os.path.join(self.data_archive_dir,
-                            self._most_recent_cycle_dir)
-        if os.path.isdir(path):
-            all_files = os.listdir(path)
-            for files in all_files:
-                os.remove(os.path.join(path, files))
+        path_to_log_file = os.path.join(self._archive_dir, 'NDX{}', 'Instrument', 'logs', 'journal').format(instrument)
+        self.create_file_at_location(os.path.join(path_to_log_file, 'summary.txt'), file_contents)
 
-    def remove_data_archive(self):
+    def create_file_at_location(self, file_path, contents=None):
         """
-        Remove data archive from system
+        Generic function to create a file at a given file_path with optional content
+        :param file_path: The file path to create a file to
+        :param contents: the optional content of the file
         """
-        shutil.rmtree(self.archive_dir)
+        self.data_files.append(file_path)
+        with open(file_path, 'w') as file_handle:
+            if contents is not None:
+                file_handle.write(contents)
+        time.sleep(0.1)  # required as these files are order by modification date
+
+    def delete_all_files(self):
+        """
+        Removes all files in the data archive
+        """
+        for file_path in self.data_files:
+            os.remove(file_path)
+        self.data_files = []
+
+    def delete_archive(self):
+        """
+        Removes the full data archive
+        """
+        self.delete_all_files()
+        shutil.rmtree(self._archive_dir)
+        self.archive_deleted = True
 
     def __del__(self):
-        """Ensure that the data archive is deleted on object deletion"""
-        try:
-            self.remove_data_archive()
-        except OSError:
-            # Some tests will delete the output as part of the test
-            pass
+        """
+        Ensure that the data archive is deleted on object deletion
+        """
+        if not self.archive_deleted:
+            self.delete_archive()
+
+    # ========= Helper functions =========== #
+    def get_most_recent_cycle_for_instrument(self, instrument):
+        end_year = self._end_year
+        if end_year < 10:
+            end_year = '0{}'.format(end_year)
+        return os.path.join(self._archive_dir, GENERIC_CYCLE_PATH).format(instrument,
+                                                                          end_year,
+                                                                          self._end_iteration)
+
+    def get_journal_dir_for_instrument(self, instrument):
+        return os.path.join(self._archive_dir, 'NDX{}',
+                            'Instrument', 'logs',
+                            'journal').format(instrument)
+
+    def get_data_most_recent_dir_for_instrument(self, instrument):
+        return os.path.join(self._archive_dir, 'NDX{}',
+                            'Instrument', 'Data').format(instrument)

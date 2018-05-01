@@ -141,7 +141,7 @@ class ArchiveMonitor(object):
         # Construct data
         run_number = self._get_run_number_from_file_path(run_data_loc)
         rb_number = self._get_rb_num(os.path.join(self.instrument_path,
-                                                  'Instrument', 'logs',
+                                                  'logs',
                                                   'journal'))
         return {
             "rb_number": rb_number,

@@ -17,18 +17,18 @@ VALID_PATHS = [[0, 9, 3, 'cycle_09_3'],
                [10, 14, 1, 'cycle_14_1']]
 
 # List of data to add to a directory and expected result from _find_most_recent_run
-FILES_TO_TEST = [['TEST01.raw', 'TEST02.raw', 'TEST03.raw', 'TEST03.raw'],  # .raw
-                 ['TEST01.RAW', 'TEST02.RAW', 'TEST03.RAW', 'TEST03.RAW'],  # .RAW
-                 ['TEST01.nxs', 'TEST02.nxs', 'TEST03.nxs', 'TEST03.nxs'],  # .nxs
-                 ['TEST01.NXS', 'TEST02.NXS', 'TEST03.NXS', 'TEST03.NXS'],  # .NXS
-                 ['TEST01.nxs', 'TEST02.raw', 'TEST03.nxs', 'TEST03.nxs'],  # .raw/.nxs
-                 ['TEST01.raw', 'TEST02.RAW', 'TEST03.raw', 'TEST03.raw'],  # .raw/.RAW
-                 ['TEST01.raw', 'TEST03.raw', 'TEST03.log', 'TEST03.raw'],  # .log file
-                 ['TEST01.txt', 'TEST02.log', 'TEST01.out', None],  # no .raw
+FILES_TO_TEST = [['MUSR01.raw', 'MUSR02.raw', 'MUSR03.raw', 'MUSR03.raw'],  # .raw
+                 ['MUSR01.RAW', 'MUSR02.RAW', 'MUSR03.RAW', 'MUSR03.RAW'],  # .RAW
+                 ['MUSR01.nxs', 'MUSR02.nxs', 'MUSR03.nxs', 'MUSR03.nxs'],  # .nxs
+                 ['MUSR01.NXS', 'MUSR02.NXS', 'MUSR03.NXS', 'MUSR03.NXS'],  # .NXS
+                 ['MUSR01.nxs', 'MUSR02.raw', 'MUSR03.nxs', 'MUSR03.nxs'],  # .raw/.nxs
+                 ['MUSR01.raw', 'MUSR02.RAW', 'MUSR03.raw', 'MUSR03.raw'],  # .raw/.RAW
+                 ['MUSR01.raw', 'MUSR03.raw', 'MUSR03.log', 'MUSR03.raw'],  # .log file
+                 ['MUSR01.txt', 'MUSR02.log', 'MUSR01.out', None],  # no .raw
                  [None]]  # Empty file
 
 # List of valid instruments
-INST = ['TEST', 'WISH', 'GEM']
+INST = ['MUSR', 'WISH', 'GEM']
 
 
 # pylint: disable=missing-docstring
@@ -39,7 +39,7 @@ class TestISISArchiveChecker(unittest.TestCase):
 
     def setUp(self):
         path_to_file = os.path.dirname(os.path.realpath(__file__))
-        self.archive_creator = DataArchiveCreator('GEM', path_to_file)
+        self.archive_creator = DataArchiveCreator(path_to_file)
 
     def tearDown(self):
         del self.archive_creator
@@ -62,20 +62,17 @@ class TestISISArchiveChecker(unittest.TestCase):
     def test_init_case_insensitive(self):
         self.assertIsNotNone(ArchiveMonitor('PoLaRiS'))
 
-    def test_init_logging(self):
-        _ = ArchiveMonitor('GEM')
-        self.assertTrue('Starting new Archive Monitor for instrument: GEM'
-                        in _get_last_line_in_log())
-
     # ============== get_most_recent_in_archive ============== #
 
     def test_valid_recent_in_archive(self):
-        monitor = ArchiveMonitor('GEM')
-        self.archive_creator.make_data_archive(VALID_PATHS[2][0],
+        monitor = ArchiveMonitor('MUSR')
+        self.archive_creator.make_data_archive(['MUSR'],
+                                               VALID_PATHS[2][0],
                                                VALID_PATHS[2][1],
                                                VALID_PATHS[2][2])
-        self.archive_creator.add_most_recent_cycle_files(FILES_TO_TEST[0])
-        self.assertEqual(monitor.get_most_recent_in_archive(), 'TEST03.raw')
+        self.archive_creator.add_data_files_to_most_recent_cycle('MUSR',
+                                                                 FILES_TO_TEST[0][:-1])
+        self.assertEqual(monitor.get_most_recent_in_archive(), 'MUSR03.raw')
 
     # ============= find_most_recent_run_in_archive ============ #
 
@@ -84,23 +81,24 @@ class TestISISArchiveChecker(unittest.TestCase):
         Test that find_most_recent_run produces the expected output
         given the input of FILES_TO_TEST
         """
-        monitor = ArchiveMonitor('GEM')
-        self.archive_creator.make_data_archive(VALID_PATHS[2][0],
+        monitor = ArchiveMonitor('MUSR')
+        self.archive_creator.make_data_archive(['MUSR'],
+                                               VALID_PATHS[2][0],
                                                VALID_PATHS[2][1],
                                                VALID_PATHS[2][2])
         for test_files in FILES_TO_TEST:
-            self.archive_creator.add_most_recent_cycle_files(test_files[:-1])
+            self.archive_creator.add_data_files_to_most_recent_cycle('MUSR',
+                                                                     test_files[:-1])
             # pylint: disable=protected-access
             actual = monitor._find_most_recent_run_in_archive(
-                self.archive_creator.get_most_recent_cycle_dir())
+                self.archive_creator.get_most_recent_cycle_for_instrument('MUSR'))
             self.assertEqual(test_files[-1], actual)
-            self.archive_creator.remove_most_recent_cycle_files()
-        self.archive_creator.remove_data_archive()
+            self.archive_creator.delete_all_files()
 
     # ============ get_most_recent_in_database =============== #
 
     def test_valid_most_recent_in_db(self):
-        expected_runs = ['TEST1', 'WISH2', 'GEM3']
+        expected_runs = ['MUSR1', 'WISH2', 'GEM3']
         for index, instrument in enumerate(INST):
             monitor = ArchiveMonitor(instrument)
             self.assertEqual(monitor.get_most_recent_run_in_database(),
@@ -111,12 +109,14 @@ class TestISISArchiveChecker(unittest.TestCase):
     def test_valid_compare_archive_db(self):
         # overwrite data_archive
         monitor = ArchiveMonitor('GEM')
-        self.archive_creator.make_data_archive(VALID_PATHS[2][0],
+        self.archive_creator.make_data_archive(["GEM"],
+                                               VALID_PATHS[2][0],
                                                VALID_PATHS[2][1],
                                                VALID_PATHS[2][2])
-        self.archive_creator.add_most_recent_cycle_files(['GEM1.raw',
-                                                          'GEM2.raw',
-                                                          'GEM3.raw'])
+        self.archive_creator.add_data_files_to_most_recent_cycle("GEM",
+                                                                 ['GEM1.raw',
+                                                                  'GEM2.raw',
+                                                                  'GEM3.raw'])
         self.assertTrue(monitor.compare_archive_to_database())
 
     # ============== restart_reduction_run =================== #
@@ -141,7 +141,8 @@ class TestArchiveMonitorHelpers(unittest.TestCase):
     """
 
     def setUp(self):
-        self.archive_creator = DataArchiveCreator('GEM', os.getcwd())
+        path_to_file = os.path.dirname(os.path.realpath(__file__))
+        self.archive_creator = DataArchiveCreator(path_to_file)
         self.monitor = ArchiveMonitor('GEM')
 
     def tearDown(self):
@@ -151,13 +152,13 @@ class TestArchiveMonitorHelpers(unittest.TestCase):
     # ========== find_path_to_current_cycle_in_archive ========= #
 
     def test_valid_path_to_cycle(self):
-        for item in VALID_PATHS:
-            self.archive_creator.make_data_archive(item[0], item[1], item[2])
+        for index, path in enumerate(VALID_PATHS):
+            self.archive_creator.make_data_archive(["GEM"], path[0], path[1], path[2])
             # pylint: disable=protected-access
-            actual = self.monitor._find_path_to_current_cycle_in_archive(
-                self.archive_creator.data_archive_dir)
-            self.assertEqual(item[3], actual)
-            self.archive_creator.remove_data_archive()
+            path_to_data_dir = self.archive_creator.get_data_most_recent_dir_for_instrument("GEM")
+            actual = self.monitor._find_path_to_current_cycle_in_archive(path_to_data_dir)
+            self.assertEqual(path[3], actual)
+            self.archive_creator.delete_archive()
 
     def test_update_check_time(self):
         # pylint: disable=protected-access
@@ -166,16 +167,19 @@ class TestArchiveMonitorHelpers(unittest.TestCase):
         self.monitor._update_check_time()
         future_time = self.monitor._time_of_last_check
         self.assertTrue(start_time < future_time)
-        self.archive_creator.remove_data_archive()
 
     def test_valid_get_rb_number(self):
-        self.archive_creator.add_journal_summary('test 1234')
-        actual = self.monitor._get_rb_num(self.archive_creator._journal_dir)
+        self.archive_creator.make_data_archive(["GEM"], 1, 2, 3)
+        self.archive_creator.add_journal_file("GEM", 'test 1234')
+        journal_dir = self.archive_creator.get_journal_dir_for_instrument("GEM")
+        actual = self.monitor._get_rb_num(journal_dir)
         self.assertEqual(actual, '1234')
 
     def test_invalid_get_rb_number(self):
-        self.archive_creator.add_journal_summary('test')
-        actual = self.monitor._get_rb_num(self.archive_creator._journal_dir)
+        self.archive_creator.make_data_archive(["GEM"], 1, 2, 3)
+        self.archive_creator.add_journal_file("GEM", 'test')
+        journal_dir = self.archive_creator.get_journal_dir_for_instrument("GEM")
+        actual = self.monitor._get_rb_num(journal_dir)
         self.assertEqual(actual, None)
 
     def test_valid_message_construction(self):
@@ -188,15 +192,16 @@ class TestArchiveMonitorHelpers(unittest.TestCase):
                     'rb_number': '1234',
                     'run_number': '03'}
         self.assertEqual(actual, expected)
-        self.archive_creator.remove_data_archive()
 
     def test_get_run_number_from_file(self):
-        self.archive_creator.make_data_archive(1, 2, 2)
-        self.archive_creator.add_most_recent_cycle_files(['TEST123.raw', 'test.txt'])
+        self.archive_creator.make_data_archive(["GEM"], 1, 2, 2)
+        self.archive_creator.add_data_files_to_most_recent_cycle("GEM", ['MUSR123.raw', 'test.txt'])
+        most_recent_cycle = self.archive_creator.get_most_recent_cycle_for_instrument("GEM")
+        print(most_recent_cycle)
         self.assertEqual(self.monitor._get_run_number_from_file_path(
-            os.path.join(self.archive_creator.get_most_recent_cycle_dir(), 'TEST123.raw')), '123')
+            os.path.join(most_recent_cycle, 'MUSR123.raw')), '123')
         self.assertEqual(self.monitor._get_run_number_from_file_path(
-            os.path.join(self.archive_creator.get_most_recent_cycle_dir(), 'test.txt')), '')
+            os.path.join(most_recent_cycle, 'test.txt')), '')
 
 
 # =========== Test helpers ============== #
@@ -217,13 +222,14 @@ def _setup_send_message_params(archive_creator):
     :param archive_creator: The data archive creator
     :return: file path to the most recent file
     """
-    # create journal file
-    archive_creator.add_journal_summary('test 1234')
-    # create data
-    archive_creator.make_data_archive(VALID_PATHS[2][0],
+    # Create archive
+    archive_creator.make_data_archive(["GEM"],
+                                      VALID_PATHS[2][0],
                                       VALID_PATHS[2][1],
                                       VALID_PATHS[2][2])
-    archive_creator.add_most_recent_cycle_files(FILES_TO_TEST[0])
-    return os.path.join(archive_creator.get_most_recent_cycle_dir(),
+    # Add journal summary
+    archive_creator.add_journal_file('GEM', 'test 1234')
+    # Add data
+    archive_creator.add_data_files_to_most_recent_cycle("GEM", FILES_TO_TEST[0][:-1])
+    return os.path.join(archive_creator.get_most_recent_cycle_for_instrument("GEM"),
                         FILES_TO_TEST[0][3])
-
