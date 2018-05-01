@@ -45,10 +45,19 @@ class ArchiveMonitor(object):
         logging.getLogger("stomp.py").setLevel(logging.WARNING)
         self.queue_session = helper.make_queue_session()
 
-        logging.info(helper.START_UP_MSG, instrument)
-
     def poll_archive(self):
         while True:
+            # Poll all valid instruments
+            logging.info(helper.STATUS_OF_CHECKS_MSG, 'starting', self._time_of_last_check)
+            for instrument in helper.VALID_INST:
+                self.instrument = instrument
+                self.instrument_path = helper.GENERIC_INST_PATH.format(instrument)
+                logging.info(helper.CHECKING_INST_MSG, instrument)
+                self.compare_archive_to_database()
+            logging.info(helper.STATUS_OF_CHECKS_MSG, 'complete', self._time_of_last_check)
+            logging.info(helper.SLEEP_MSG)
+            self._update_check_time()
+            time.sleep(helper.SLEEP_TIME)
             self.compare_archive_to_database()
             time.sleep(600)
 
@@ -99,6 +108,9 @@ class ArchiveMonitor(object):
                  False - files do not match
         """
         data_archive_file_path = self.get_most_recent_in_archive()
+        if data_archive_file_path is None:
+            # No new files could be found
+            return
         data_archive_file_name = os.path.splitext(data_archive_file_path)[0]
 
         last_database_run = self.get_most_recent_run_in_database()
@@ -235,6 +247,5 @@ class ArchiveMonitor(object):
 
 def main():
     """ Main method, connects to ActiveMQ and sets up instrument last_run.txt listeners. """
-    for inst in INSTRUMENTS:
-        monitor = ArchiveMonitor(inst)
-        monitor.poll_archive()
+    monitor = ArchiveMonitor(helper.VALID_INST[0])
+    monitor.poll_archive()

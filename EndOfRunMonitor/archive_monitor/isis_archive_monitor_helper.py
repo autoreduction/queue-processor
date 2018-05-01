@@ -16,7 +16,9 @@ LOG_FORMAT = '%(asctime)s : %(message)s'
 
 GENERIC_INST_PATH = INST_PATH
 
-VALID_INST = ['GEM', 'POLARIS', 'WISH', 'TEST']
+VALID_INST = ['GEM', 'POLARIS', 'WISH', 'MUSR', 'OSIRIS']
+
+SLEEP_TIME = 600
 
 DB_CONNECTION_STR = 'mysql+mysqldb://' + MYSQL['USER'] + ':' + MYSQL['PASSWD'] + \
                     '@' + MYSQL['HOST'] + '/' + MYSQL['DB']
@@ -71,3 +73,9 @@ CANT_FIND_RUN_NUMBER_MSG = 'Unable to find run number from file in path %s'
 
 INVALID_JOURNAL_FORMAT_MSG = 'The journal summary file was not in the expected format. ' \
                              'The final value of each line should be the RB number.'
+
+SLEEP_MSG = 'Archive Monitor will poll again in {} seconds.'.format(SLEEP_TIME)
+
+CHECKING_INST_MSG = 'Performing Archive Check for %s'
+
+STATUS_OF_CHECKS_MSG = '============= Checks %s for all instruments at %s =============='
