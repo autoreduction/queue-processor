@@ -15,8 +15,6 @@ from EndOfRunMonitor.database_client import ReductionRun, Instrument
 logging.basicConfig(filename=helper.LOG_FILE, level=logging.DEBUG,
                     format=helper.LOG_FORMAT)
 
-INSTRUMENTS = ['WISH', 'GEM']
-
 
 class ArchiveMonitor(object):
     """
@@ -47,19 +45,27 @@ class ArchiveMonitor(object):
 
     def poll_archive(self):
         while True:
-            # Poll all valid instruments
-            logging.info(helper.STATUS_OF_CHECKS_MSG, 'starting', self._time_of_last_check)
-            for instrument in helper.VALID_INST:
-                self.instrument = instrument
-                self.instrument_path = helper.GENERIC_INST_PATH.format(instrument)
-                logging.info(helper.CHECKING_INST_MSG, instrument)
-                self.compare_archive_to_database()
-            logging.info(helper.STATUS_OF_CHECKS_MSG, 'complete', self._time_of_last_check)
-            logging.info(helper.SLEEP_MSG)
-            self._update_check_time()
+            self.perform_check()
             time.sleep(helper.SLEEP_TIME)
+
+    def perform_check(self):
+        """
+        Polls all the valid instruments
+        """
+        # Poll all valid instruments
+        logging.info(helper.STATUS_OF_CHECKS_MSG, 'starting', self._time_of_last_check)
+        for instrument in helper.VALID_INST:
+            self.instrument = instrument
+            self.instrument_path = helper.GENERIC_INST_PATH.format(instrument)
+            if not os.path.isdir(self.instrument_path):
+                raise RuntimeError("Unable to find instrument directory at path %s. "
+                                   "Please ensure the path is valid and then restart the service."
+                                   % self.instrument_path)
+            logging.info(helper.CHECKING_INST_MSG, instrument)
             self.compare_archive_to_database()
-            time.sleep(600)
+        logging.info(helper.STATUS_OF_CHECKS_MSG, 'complete', self._time_of_last_check)
+        logging.info(helper.SLEEP_MSG)
+        self._update_check_time()
 
     def _update_check_time(self):
         """
@@ -237,6 +243,9 @@ class ArchiveMonitor(object):
         :param instrument_summary_loc: The location of the instrument summary directory
         :return the rb number for a run
         """
+        if not os.path.isfile(instrument_summary_loc):
+            logging.error(helper.NO_SUMMARY_FILE, instrument_summary_loc)
+            return None
         with open(os.path.join(instrument_summary_loc, 'summary.txt'), 'r') as summary:
             last_line = summary.readlines()[-1]
             if last_line.split()[-1].isdigit():

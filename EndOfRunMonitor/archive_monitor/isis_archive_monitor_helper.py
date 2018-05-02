@@ -79,3 +79,5 @@ SLEEP_MSG = 'Archive Monitor will poll again in {} seconds.'.format(SLEEP_TIME)
 CHECKING_INST_MSG = 'Performing Archive Check for %s'
 
 STATUS_OF_CHECKS_MSG = '============= Checks %s for all instruments at %s =============='
+
+NO_SUMMARY_FILE = 'Unable to find summary file at location %s.'
