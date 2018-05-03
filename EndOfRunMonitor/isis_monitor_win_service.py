@@ -1,5 +1,10 @@
 """
 Holds the class for overidding QueueService framework
+
+This is a windows service rather than a daemon due to issues
+with correctly watching files through mounting the ISIS archive.
+As the ISIS archive would be mounted as a drive, this causes
+difficulties whne watching for file changes.
 """
 # ToDo: check if unused-import warning is legitimate for win32con, win32evtlogutil
 # pylint: disable=import-error, unused-import

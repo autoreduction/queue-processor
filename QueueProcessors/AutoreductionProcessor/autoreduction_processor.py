@@ -2,6 +2,7 @@
 Module that reads from the reduction pending queue and calls the python script on that data.
 """
 import json
+import os
 import subprocess
 import stomp
 from twisted.internet import reactor
@@ -16,7 +17,7 @@ class Listener(object):
         self._client = client
         self.proc_list = []
         self.rb_list = []  # list of RB numbers of active reduction runs
-        self.cancel_list = []  # list of (run number, run version)s to drop (once) when we get them
+        self.cancel_list = []  # list of (run number, run version)s to drop (once) used
 
     @staticmethod
     def on_error(message):
@@ -24,7 +25,7 @@ class Listener(object):
         logger.error("Error message received - %s", str(message))
 
     def on_message(self, headers, data):
-        """ This method is where consumed messages are dealt with. It will consume a message. """
+        """ handles message consuming. It will consume a message. """
         destination = headers['destination']
         logger.debug("Received frame destination: %s", destination)
         logger.debug("Received frame priority: %s", headers["priority"])
@@ -45,7 +46,10 @@ class Listener(object):
 
         self.update_child_process_list()
         if not self.should_proceed(data_dict):  # wait while the run shouldn't proceed
-            reactor.callLater(10, self.hold_message, destination, data, headers)   # pylint: disable=maybe-no-member
+            # pylint: disable=maybe-no-member
+            reactor.callLater(10, self.hold_message,
+                              destination, data,
+                              headers)
 
             return
 
@@ -56,6 +60,9 @@ class Listener(object):
 
         print_dict = data_dict.copy()
         print_dict.pop("reduction_script")
+        if not os.path.isfile(MISC['post_process_directory']):
+            logger.warning("Could not find autoreduction post processing file"
+                           "- please contact a systsem administrator")
         logger.debug("Calling: %s %s %s %s",
                      "python", MISC['post_process_directory'], destination, print_dict)
         self._client.ack(headers['message-id'], headers['subscription'])  # Remove from queue

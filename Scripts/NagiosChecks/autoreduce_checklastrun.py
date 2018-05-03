@@ -19,6 +19,7 @@ def checkLastRun():
     :return: 0 - Success
              2 - Failure
     """
+    message = ""
     db = MySQLdb.connect(host=MYSQL['host'], port=3306,
                          user=MYSQL['username'], passwd=MYSQL['password'],
                          db=MYSQL['db'], cursorclass=MySQLdb.cursors.DictCursor)
@@ -26,15 +27,15 @@ def checkLastRun():
 
     # Get Instruments
     instruments = []
-    cursor.execute("SELECT id,"
-                   "name FROM reduction_viewer_instrument WHERE is_active = 1"
+    cursor.execute("SELECT id," +
+                   "name FROM reduction_viewer_instrument WHERE is_active = 1 " +
                    "AND is_paused = 0")
     for i in cursor.fetchall():
         instruments.append(i)
 
-    # Get last reduced datfile run number
+    # Get last reduced datafile run number
     for inst in instruments:
-        cursor.execute("SELECT MAX(run_number)"
+        cursor.execute("SELECT MAX(run_number)" +
                        "FROM reduction_viewer_reductionrun WHERE instrument_id = "
                        + str(inst['id']))
         last_reduction_run = cursor.fetchone()['MAX(run_number)']
@@ -45,13 +46,14 @@ def checkLastRun():
 
         # Check range because it may be a couple out.
         if last_reduction_run not in range(last_run-2, last_run+2):
-            print("Last reduction run doesn't match lastrun.txt, "
-                  "check EndOfRunMonitor is running.")
-            db.close()
-            return 2
-    db.close()
-    return 0
+            message += inst['name'] + " - last_run.txt = " + str(last_run) + \
+                       " reduction run = " + str(last_reduction_run) + ". "
 
+    db.close()
+    if message:
+        print(message)
+        return 2
+    return 0
 
 # pylint: disable=using-constant-test
 if "__name__":
