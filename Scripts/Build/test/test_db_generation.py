@@ -2,7 +2,6 @@
 import MySQLdb
 import unittest
 
-
 # All TABLES in the database Schema
 EXPECTED_TABLE_NAMES = ["django_migrations",
                         "reduction_viewer_datalocation",
@@ -19,18 +18,20 @@ class TestDatabaseGeneration(unittest.TestCase):
 
     def test_localhost_db_construction(self):
         """
-        Test that the local host database is correctly generated 
-        from django migrations performed in generate-test-db.sh
+        Test that the local host database on travis is correctly
+        generated from the .sql construction files
         """
         db = MySQLdb.connect(host="localhost",
                              user="test-user",
                              passwd="pass",
                              db="autoreduction")
+
         cur = db.cursor()
         cur.execute("SHOW TABLES")
         for row in cur.fetchall():
-            self.assertTrue(row[0] in TABLE_NAMES.append(REDUCTION_VIEWER_TABLES),
+            self.assertTrue(row[0] in EXPECTED_TABLE_NAMES,
                             ("%s was not found in expected TABLE names" % row[0]))
+        db.close()
 
     def test_localhost_reduction_viewer_db_population(self):
         """
@@ -39,12 +40,12 @@ class TestDatabaseGeneration(unittest.TestCase):
         exception to this is status that has 5 columns
         """
         db = MySQLdb.connect(host="localhost",
-                     user="test-user",
-                     passwd="pass",
-                     db="autoreduction")
+                             user="test-user",
+                             passwd="pass",
+                             db="autoreduction")
         cur = db.cursor()
         counter = 0
-        for table in REDUCTION_VIEWER_TABLES:
+        for table in EXPECTED_TABLE_NAMES[1:]:
             cur.execute("SELECT * FROM {};".format(table))
             if table == "reduction_viewer_status":
                 self.assertTrue(len(cur.fetchall()) == 5,
@@ -54,6 +55,6 @@ class TestDatabaseGeneration(unittest.TestCase):
                 self.assertTrue(len(cur.fetchall()) == 3,
                                 "{} does not contain 3 rows.{} : {}".
                                 format(table, table, cur.fetchall()))
-            counter +=1 
-        self.assertEqual(counter, len(EXPECTED_TABLE_NAMES))
+            counter += 1
+        self.assertEqual(counter, len(EXPECTED_TABLE_NAMES) - 1)
         db.close()
