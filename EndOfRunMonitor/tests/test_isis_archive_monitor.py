@@ -1,6 +1,7 @@
 """
 Unit tests and associated helpers to exercise the ISIS Archive Checker
 """
+import ntpath
 import os
 import time
 import unittest
@@ -30,9 +31,15 @@ FILES_TO_TEST = [['MUSR01.raw', 'MUSR02.raw', 'MUSR03.raw', 'MUSR03.raw'],  # .r
 # List of valid instruments
 INST = ['MUSR', 'WISH', 'GEM']
 
+DEFAULT_LOG_OUTPUT = ["GEM:", "No new files since last check at",
+                      "POLARIS:", "No new files since last check at",
+                      "WISH:", "No new files since last check at",
+                      "MUSR:", "No new files since last check at",
+                      "OSIRIS:", "No new files since last check at"]
+
 
 # pylint: disable=missing-docstring
-class TestISISArchiveChecker(unittest.TestCase):
+class TestISISArchiveMonitor(unittest.TestCase):
     """
     Contains test cases for the ArchiveMonitor
     """
@@ -46,7 +53,7 @@ class TestISISArchiveChecker(unittest.TestCase):
 
     # ======================= init ======================== #
 
-    '''def test_valid_init(self):
+    def test_valid_init(self):
         monitor = ArchiveMonitor('GEM')
         self.assertIsInstance(monitor, ArchiveMonitor)
         self.assertEqual((INST_PATH.format('GEM')), monitor.instrument_path)
@@ -72,7 +79,7 @@ class TestISISArchiveChecker(unittest.TestCase):
                                                VALID_PATHS[2][2])
         self.archive_creator.add_data_files_to_most_recent_cycle('MUSR',
                                                                  FILES_TO_TEST[0][:-1])
-        self.assertEqual(monitor.get_most_recent_in_archive(), 'MUSR03.raw')
+        self.assertEqual(ntpath.basename(monitor.get_most_recent_in_archive()), 'MUSR03.raw')
 
     # ============= find_most_recent_run_in_archive ============ #
 
@@ -92,13 +99,15 @@ class TestISISArchiveChecker(unittest.TestCase):
             # pylint: disable=protected-access
             actual = monitor._find_most_recent_run_in_archive(
                 self.archive_creator.get_most_recent_cycle_for_instrument('MUSR'))
-            self.assertEqual(test_files[-1], actual)
+            if actual is not None:
+                actual = ntpath.basename(actual)
+            self.assertEqual(actual, test_files[-1])
             self.archive_creator.delete_all_files()
 
     # ============ get_most_recent_in_database =============== #
 
     def test_valid_most_recent_in_db(self):
-        expected_runs = ['MUSR1', 'WISH2', 'GEM3']
+        expected_runs = ['MUSR1', 'WISH1', 'GEM1']
         for index, instrument in enumerate(INST):
             monitor = ArchiveMonitor(instrument)
             self.assertEqual(monitor.get_most_recent_run_in_database(),
@@ -107,16 +116,14 @@ class TestISISArchiveChecker(unittest.TestCase):
     # ========== compare_archive_and_database ================ #
 
     def test_valid_compare_archive_db(self):
-        # overwrite data_archive
         monitor = ArchiveMonitor('GEM')
         self.archive_creator.make_data_archive(["GEM"],
                                                VALID_PATHS[2][0],
                                                VALID_PATHS[2][1],
                                                VALID_PATHS[2][2])
         self.archive_creator.add_data_files_to_most_recent_cycle("GEM",
-                                                                 ['GEM1.raw',
-                                                                  'GEM2.raw',
-                                                                  'GEM3.raw'])
+                                                                 ['GEM1.raw'])
+
         self.assertTrue(monitor.compare_archive_to_database())
 
     # ============== restart_reduction_run =================== #
@@ -126,15 +133,13 @@ class TestISISArchiveChecker(unittest.TestCase):
         most_recent_file = _setup_send_message_params(self.archive_creator)
         data_to_send = monitor._construct_data_to_send(most_recent_file)
         monitor.resubmit_run_to_queue(data_to_send)
-        log = _get_log_content()[-1]
-        self.assertTrue("\"instrument\": \"GEM\"" in log)
-        self.assertTrue("\"run_number\": \"03\"" in log)
-        self.assertTrue("\"rb_number\": \"1234\"" in log)
-        self.assertTrue("\"facility\": \"ISIS\"" in log)
-        self.assertTrue("destination:/queue/DataReady" in log)
+        log = ",".join(_get_log_content()[-5:])
+        self.assertTrue("GEM" in log)
+        self.assertTrue("03" in log)
+        self.assertTrue("1234" in log)
+        self.assertTrue("ISIS" in log)
 
     # ============ perform_check ================ #
-    # ToDo: Will need to add these data files to the reduction database mock
 
     def test_perform_check_no_archive(self):
         monitor = ArchiveMonitor('GEM')
@@ -155,50 +160,110 @@ class TestISISArchiveChecker(unittest.TestCase):
                                                VALID_PATHS[2][2])
         monitor = ArchiveMonitor('GEM')
         monitor.perform_check()
-        self._check_polling_did_not_update()'''
+        self._check_polling_output(DEFAULT_LOG_OUTPUT)
 
-    def test_perform_check_no_new_files(self):
+    def test_perform_check_no_new_data(self):
         self.archive_creator.make_data_archive(["GEM", "POLARIS", "WISH", "MUSR", "OSIRIS"],
                                                VALID_PATHS[2][0],
                                                VALID_PATHS[2][1],
                                                VALID_PATHS[2][2])
         monitor = ArchiveMonitor('GEM')
-        self.archive_creator.add_data_files_to_most_recent_cycle('GEM', ['GEM001.raw'])
-        self.archive_creator.add_data_files_to_most_recent_cycle('WISH', ['WISH001.raw'])
+        self.archive_creator.add_data_files_to_most_recent_cycle('GEM', ['GEM1.raw'])
+        self.archive_creator.add_data_files_to_most_recent_cycle('WISH', ['WISH1.raw'])
+        monitor.perform_check()  # ignore the first logging output (will include match text)
         monitor.perform_check()
-        self._check_polling_did_not_update()
+        self._check_polling_output(DEFAULT_LOG_OUTPUT[:])
 
-    def _check_polling_did_not_update(self):
-        actual = _get_log_content()[-12:]
-        performing_check_msg = "Performing Archive Check for {}"
-        no_file_msg = "There are no new files since last check at"
-        expected = [performing_check_msg.format("GEM"),
-                    no_file_msg,
-                    performing_check_msg.format("POLARIS"),
-                    no_file_msg,
-                    performing_check_msg.format("WISH"),
-                    no_file_msg,
-                    performing_check_msg.format("MUSR"),
-                    no_file_msg,
-                    performing_check_msg.format("OSIRIS")]
+    def test_perform_check_single_data_already_reduced(self):
+        self.archive_creator.make_data_archive(["GEM", "POLARIS", "WISH", "MUSR", "OSIRIS"],
+                                               VALID_PATHS[2][0],
+                                               VALID_PATHS[2][1],
+                                               VALID_PATHS[2][2])
+        monitor = ArchiveMonitor('GEM')
+        self.archive_creator.add_data_files_to_most_recent_cycle('GEM', ['GEM1.raw'])
+        monitor.perform_check()
+        expected = DEFAULT_LOG_OUTPUT[:]  # copy default list
+        expected[1] = "Data Archive entry (GEM1) and Database entry (GEM1) matched!"
+        self._check_polling_output(expected)
+
+    def test_perform_check_multi_data_already_reduced(self):
+        self.archive_creator.make_data_archive(["GEM", "POLARIS", "WISH", "MUSR", "OSIRIS"],
+                                               VALID_PATHS[2][0],
+                                               VALID_PATHS[2][1],
+                                               VALID_PATHS[2][2])
+        monitor = ArchiveMonitor('GEM')
+        self.archive_creator.add_data_files_to_most_recent_cycle('GEM', ['GEM1.raw'])
+        self.archive_creator.add_data_files_to_most_recent_cycle('WISH', ['WISH1.raw'])
+        monitor.perform_check()
+        expected = DEFAULT_LOG_OUTPUT[:]  # copy default list
+        expected[1] = "Data Archive entry (GEM1) and Database entry (GEM1) matched!"
+        expected[5] = "Data Archive entry (WISH1) and Database entry (WISH1) matched!"
+        self._check_polling_output(expected)
+
+    def _check_polling_output(self, expected, lines_to_check=12):
+        """
+        :param lines_to_check: number of lines in the log to look at.
+                               defaults to 12.
+        """
+        actual = _get_log_content()[-lines_to_check:]
         for index, expected_msg in enumerate(expected):
             self.assertTrue(expected_msg in actual[index],
                             "{} is not in {}".format(expected_msg, actual[index]))
 
-    '''def test_perform_check_update_required(self):
-        self.archive_creator.make_data_archive(["GEM", "WISH"],
+    def test_perform_check_single_update_required(self):
+        self.archive_creator.make_data_archive(["GEM", "POLARIS", "WISH", "MUSR", "OSIRIS"],
                                                VALID_PATHS[2][0],
                                                VALID_PATHS[2][1],
                                                VALID_PATHS[2][2])
-        self.archive_creator.add_data_files_to_most_recent_cycle('GEM', ['GEM001.raw'])
-        self.archive_creator.add_data_files_to_most_recent_cycle('WISH', ['WISH001.raw'])
-        monitor = ArchiveMonitor('GEM')
-        monitor.perform_check()
+        monitor = ArchiveMonitor('GEM')  # initialise this first to set poll time correctly
         self.archive_creator.add_data_files_to_most_recent_cycle('GEM', ['GEM002.raw'])
-        monitor.perform_check()'''
+        self.archive_creator.add_journal_file('GEM', 'GEM 123')
+        monitor.perform_check()
+        expected = DEFAULT_LOG_OUTPUT[:]  # copy default list
+        expected[1] = "GEM002) and Database entry (GEM1) did not match"
+        # add the values for the data resubmission
+        data_send = ["Sending data:",
+                     "123",
+                     "GEM",
+                     "GEM002.raw",
+                     "002",
+                     "ISIS"]
+        expected[2:2] = data_send
+        self._check_polling_output(expected, 18)
+        
+    def test_perform_check_multiple_update_required(self):
+        self.archive_creator.make_data_archive(["GEM", "POLARIS", "WISH", "MUSR", "OSIRIS"],
+                                               VALID_PATHS[2][0],
+                                               VALID_PATHS[2][1],
+                                               VALID_PATHS[2][2])
+        monitor = ArchiveMonitor('GEM')
+        self.archive_creator.add_data_files_to_most_recent_cycle('GEM', ['GEM002.raw'])
+        self.archive_creator.add_journal_file('GEM', 'GEM 123')
+        self.archive_creator.add_data_files_to_most_recent_cycle('WISH', ['WISH002.raw'])
+        self.archive_creator.add_journal_file('WISH', 'WISH 456')
+        monitor.perform_check()
+        expected = DEFAULT_LOG_OUTPUT[:]  # copy default list
+        expected[1] = "GEM002) and Database entry (GEM1) did not match"
+        # add the values for the data resubmission
+        gem_data_send = ["Sending data:",
+                         "123",
+                         "GEM",
+                         "GEM002.raw",
+                         "002",
+                         "ISIS"]
+        expected[2:2] = gem_data_send
+        expected[11] = "WISH002) and Database entry (WISH1) did not match"
+        wish_data_send = ["Sending data:",
+                          "456",
+                          "WISH",
+                          "WISH002.raw",
+                          "002",
+                          "ISIS"]
+        expected[12:12] = wish_data_send
+        self._check_polling_output(expected, 24)
 
 
-'''class TestArchiveMonitorHelpers(unittest.TestCase):
+class TestArchiveMonitorHelpers(unittest.TestCase):
     """
     Contains test cases for ArchiveMonitor helper functions
     The cases in here are for static members of the class
@@ -258,21 +323,20 @@ class TestISISArchiveChecker(unittest.TestCase):
         self.assertEqual(actual, expected)
 
     def test_get_run_number_from_file(self):
-        self.archive_creator.make_data_archive(["GEM"], 1, 2, 2)
-        self.archive_creator.add_data_files_to_most_recent_cycle("GEM", ['MUSR123.raw', 'test.txt'])
-        most_recent_cycle = self.archive_creator.get_most_recent_cycle_for_instrument("GEM")
-        print(most_recent_cycle)
+        self.archive_creator.make_data_archive(["MUSR"], 1, 2, 2)
+        self.archive_creator.add_data_files_to_most_recent_cycle("MUSR", ['MUSR123.raw', 'test.txt'])
+        most_recent_cycle = self.archive_creator.get_most_recent_cycle_for_instrument("MUSR")
         self.assertEqual(self.monitor._get_run_number_from_file_path(
             os.path.join(most_recent_cycle, 'MUSR123.raw')), '123')
         self.assertEqual(self.monitor._get_run_number_from_file_path(
-            os.path.join(most_recent_cycle, 'test.txt')), '')'''
+            os.path.join(most_recent_cycle, 'test.txt')), None)
 
 
 # =========== Test helpers ============== #
 def _get_log_content():
     """
-    Reads the log file and returns the most recent input
-    :return: String of the most recent log
+    Reads the log file and returns a list of all line
+    :return: list of all lines
     """
     file_handle = open(ARCHIVE_MONITOR_LOG, "r")
     line_list = file_handle.readlines()
