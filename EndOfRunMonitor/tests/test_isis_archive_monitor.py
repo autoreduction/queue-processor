@@ -118,6 +118,8 @@ class TestISISArchiveMonitor(unittest.TestCase):
 
     def test_valid_compare_archive_db(self):
         monitor = ArchiveMonitor('GEM')
+        # Required to ensure that the archive monitor is initialised first
+        time.sleep(0.1)
         self.archive_creator.make_data_archive(["GEM"],
                                                VALID_PATHS[2][0],
                                                VALID_PATHS[2][1],
@@ -181,6 +183,7 @@ class TestISISArchiveMonitor(unittest.TestCase):
                                                VALID_PATHS[2][1],
                                                VALID_PATHS[2][2])
         monitor = ArchiveMonitor('GEM')
+        time.sleep(0.1)
         self.archive_creator.add_data_files_to_most_recent_cycle('GEM', ['GEM1.raw'])
         monitor.perform_check()
         expected = DEFAULT_LOG_OUTPUT[:]  # copy default list
@@ -193,6 +196,7 @@ class TestISISArchiveMonitor(unittest.TestCase):
                                                VALID_PATHS[2][1],
                                                VALID_PATHS[2][2])
         monitor = ArchiveMonitor('GEM')
+        time.sleep(0.1)
         self.archive_creator.add_data_files_to_most_recent_cycle('GEM', ['GEM1.raw'])
         self.archive_creator.add_data_files_to_most_recent_cycle('WISH', ['WISH1.raw'])
         monitor.perform_check()
@@ -217,6 +221,7 @@ class TestISISArchiveMonitor(unittest.TestCase):
                                                VALID_PATHS[2][1],
                                                VALID_PATHS[2][2])
         monitor = ArchiveMonitor('GEM')  # initialise this first to set poll time correctly
+        time.sleep(0.1)
         self.archive_creator.add_data_files_to_most_recent_cycle('GEM', ['GEM002.raw'])
         self.archive_creator.add_journal_file('GEM', 'GEM 123')
         monitor.perform_check()

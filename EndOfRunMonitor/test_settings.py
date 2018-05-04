@@ -35,4 +35,4 @@ PATH_TO_FILE = os.path.dirname(os.path.realpath(__file__))
 
 ARCHIVE_MONITOR_LOG = os.path.join(PATH_TO_FILE, 'tests', 'archive_monitor.log')
 
-INST_PATH = os.path.join(PATH_TO_FILE, 'tests', 'data-archive')
+INST_PATH = os.path.join(PATH_TO_FILE, 'tests', 'data-archive', 'NDX{}', 'Instrument')
