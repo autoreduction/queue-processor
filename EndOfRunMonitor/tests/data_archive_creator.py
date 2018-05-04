@@ -35,8 +35,8 @@ class DataArchiveCreator(object):
         if os.path.isdir(base_directory):
             self._base_dir = base_directory
         else:
-            raise RuntimeError('Unable to find base_directory %S.'
-                               'Please ensure this directory exists', base_directory)
+            raise RuntimeError('Unable to find base_directory %s. '
+                               'Please ensure this directory exists' % base_directory)
         self.data_files = []
         self.archive_deleted = False
         self._create_archive_directory()
@@ -112,9 +112,10 @@ class DataArchiveCreator(object):
         """
         if cycle_year < 10:
             cycle_year = '0{}'.format(cycle_year)
-        path_to_data_dir = os.path.join(self._archive_dir, GENERIC_CYCLE_PATH).format(instrument,
-                                                                                      cycle_year,
-                                                                                      cycle_iteration)
+        path_to_data_dir = os.path.join(self._archive_dir,
+                                        GENERIC_CYCLE_PATH).format(instrument,
+                                                                   cycle_year,
+                                                                   cycle_iteration)
         for file_name in data_files:
             file_path = os.path.join(path_to_data_dir, file_name)
             self.create_file_at_location(file_path)
@@ -125,7 +126,9 @@ class DataArchiveCreator(object):
         :param instrument: The instrument to add the file to
         :param file_contents: the contents of the file (normally RB number)
         """
-        path_to_log_file = os.path.join(self._archive_dir, 'NDX{}', 'Instrument', 'logs', 'journal').format(instrument)
+        path_to_log_file = os.path.join(self._archive_dir, 'NDX{}',
+                                        'Instrument', 'logs',
+                                        'journal').format(instrument)
         self.create_file_at_location(os.path.join(path_to_log_file, 'summary.txt'), file_contents)
 
     def create_file_at_location(self, file_path, contents=None):
@@ -165,6 +168,7 @@ class DataArchiveCreator(object):
 
     # ========= Helper functions =========== #
     def get_most_recent_cycle_for_instrument(self, instrument):
+        """ return the full path to the most recent cycle for a given instrument"""
         end_year = self._end_year
         if end_year < 10:
             end_year = '0{}'.format(end_year)
@@ -173,10 +177,12 @@ class DataArchiveCreator(object):
                                                                           self._end_iteration)
 
     def get_journal_dir_for_instrument(self, instrument):
+        """ return the full path to the journal directory for a given instrument """
         return os.path.join(self._archive_dir, 'NDX{}',
                             'Instrument', 'logs',
                             'journal').format(instrument)
 
     def get_data_most_recent_dir_for_instrument(self, instrument):
+        """ return the full path to data directory for given instrument """
         return os.path.join(self._archive_dir, 'NDX{}',
                             'Instrument', 'Data').format(instrument)

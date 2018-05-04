@@ -1,3 +1,4 @@
+# pylint:disable=protected-access
 """
 Unit tests and associated helpers to exercise the ISIS Archive Checker
 """
@@ -230,7 +231,7 @@ class TestISISArchiveMonitor(unittest.TestCase):
                      "ISIS"]
         expected[2:2] = data_send
         self._check_polling_output(expected, 18)
-        
+
     def test_perform_check_multiple_update_required(self):
         self.archive_creator.make_data_archive(["GEM", "POLARIS", "WISH", "MUSR", "OSIRIS"],
                                                VALID_PATHS[2][0],
@@ -281,16 +282,14 @@ class TestArchiveMonitorHelpers(unittest.TestCase):
     # ========== find_path_to_current_cycle_in_archive ========= #
 
     def test_valid_path_to_cycle(self):
-        for index, path in enumerate(VALID_PATHS):
+        for path in VALID_PATHS:
             self.archive_creator.make_data_archive(["GEM"], path[0], path[1], path[2])
-            # pylint: disable=protected-access
             path_to_data_dir = self.archive_creator.get_data_most_recent_dir_for_instrument("GEM")
             actual = self.monitor._find_path_to_current_cycle_in_archive(path_to_data_dir)
             self.assertEqual(path[3], actual)
             self.archive_creator.delete_archive()
 
     def test_update_check_time(self):
-        # pylint: disable=protected-access
         start_time = self.monitor._time_of_last_check
         time.sleep(0.2)
         self.monitor._update_check_time()
@@ -324,7 +323,9 @@ class TestArchiveMonitorHelpers(unittest.TestCase):
 
     def test_get_run_number_from_file(self):
         self.archive_creator.make_data_archive(["MUSR"], 1, 2, 2)
-        self.archive_creator.add_data_files_to_most_recent_cycle("MUSR", ['MUSR123.raw', 'test.txt'])
+        self.archive_creator.add_data_files_to_most_recent_cycle("MUSR",
+                                                                 ['MUSR123.raw',
+                                                                  'test.txt'])
         most_recent_cycle = self.archive_creator.get_most_recent_cycle_for_instrument("MUSR")
         self.assertEqual(self.monitor._get_run_number_from_file_path(
             os.path.join(most_recent_cycle, 'MUSR123.raw')), '123')

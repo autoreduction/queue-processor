@@ -44,6 +44,9 @@ class ArchiveMonitor(object):
         self.queue_session = helper.make_queue_session()
 
     def poll_archive(self):
+        """
+        Performs the comparison check and then sleeps
+        """
         while True:
             self.perform_check()
             time.sleep(helper.SLEEP_TIME)
@@ -116,7 +119,7 @@ class ArchiveMonitor(object):
         data_archive_file_path = self.get_most_recent_in_archive()
         if data_archive_file_path is None:
             # No new files could be found
-            return
+            return None
 
         # compare to file name rather than data location
         data_file = os.path.basename(os.path.normpath(data_archive_file_path))
@@ -180,6 +183,10 @@ class ArchiveMonitor(object):
             return None
 
         def check_valid_extension(file_to_check):
+            """
+            Ensures that the extension of a particular file is either .nxs or .raw
+            :return: True if the is .nxs/.raw
+            """
             file_to_check = file_to_check.lower()
             if file_to_check.endswith('.raw') or file_to_check.endswith('.nxs'):
                 return True
@@ -243,8 +250,7 @@ class ArchiveMonitor(object):
             run_number = ''.join([num for num in file_name if num.isdigit()])
             if run_number is '':
                 return None
-            else:
-                return run_number
+            return run_number
         logging.error(helper.CANT_FIND_RUN_NUMBER_MSG, file_path)
         return None
 

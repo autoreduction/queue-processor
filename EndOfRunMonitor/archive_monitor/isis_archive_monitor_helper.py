@@ -27,6 +27,10 @@ DB_CONNECTION_STR = 'mysql+mysqldb://' + MYSQL['USER'] + ':' + MYSQL['PASSWD'] +
 
 # Database set up
 def make_db_session():
+    """
+    Create a database session
+    :return: the connection to the database
+    """
     engine = create_engine(DB_CONNECTION_STR, pool_recycle=280)
     _ = MetaData(engine)
     session_maker = sessionmaker(bind=engine)
@@ -35,6 +39,10 @@ def make_db_session():
 
 # Queue setup
 def make_queue_session():
+    """
+    Create an activeMq session
+    :return: the connection to the queueing system
+    """
     brokers = [(ACTIVEMQ['brokers'].split(':')[0],
                 int(ACTIVEMQ['brokers'].split(':')[1]))]
     connection = stomp.Connection(host_and_ports=brokers, use_ssl=False)
