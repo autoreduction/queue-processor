@@ -1,5 +1,5 @@
 -- Create Test user
-GRANT ALL PRIVILEGES ON autoreduction.* TO 'test-user'@'localhost' IDENTIFIED BY 'pass';
+CREATE USER IF NOT EXISTS 'test-user'@'localhost' IDENTIFIED BY 'pass';
 
 -- Create DB
 DROP DATABASE IF EXISTS autoreduction;

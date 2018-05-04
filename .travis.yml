@@ -3,10 +3,16 @@ language: python
 python:
   - "2.7"
 
-services:
-  - mysql
+addons:
+  apt:
+    sources:
+      - mysql-5.7-trusty
+    packages:
+      - mysql-server
+      - mysql-client
 
 install:
+  - mysql_upgrade --force
   - pip install -r requirements.txt
   - ./Scripts/Build/install_icat.sh
   - ./Scripts/Build/install_activemq.sh
