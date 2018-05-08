@@ -10,7 +10,7 @@ import unittest
 from EndOfRunMonitor.archive_monitor.isis_archive_monitor import ArchiveMonitor
 from EndOfRunMonitor.database_client import ReductionRun
 from EndOfRunMonitor.settings import INST_PATH, ARCHIVE_MONITOR_LOG
-from EndOfRunMonitor.tests.data_archive_creator import DataArchiveCreator
+from utils.test_helpers.data_archive_creator import DataArchiveCreator
 
 # List of variables to create a valid path and expected result _find_path_to_current_cycle
 # [[start_year, end_year, current_cycle, expected_result], ...]
