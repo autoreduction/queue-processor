@@ -205,16 +205,6 @@ class TestISISArchiveMonitor(unittest.TestCase):
         expected[5] = "Data Archive entry (WISH1) and Database entry (WISH1) matched!"
         self._check_polling_output(expected)
 
-    def _check_polling_output(self, expected, lines_to_check=12):
-        """
-        :param lines_to_check: number of lines in the log to look at.
-                               defaults to 12.
-        """
-        actual = _get_log_content()[-lines_to_check:]
-        for index, expected_msg in enumerate(expected):
-            self.assertTrue(expected_msg in actual[index],
-                            "{} is not in {}".format(expected_msg, actual[index]))
-
     def test_perform_check_single_update_required(self):
         self.archive_creator.make_data_archive(["GEM", "POLARIS", "WISH", "MUSR", "OSIRIS"],
                                                VALID_PATHS[2][0],
@@ -243,6 +233,7 @@ class TestISISArchiveMonitor(unittest.TestCase):
                                                VALID_PATHS[2][1],
                                                VALID_PATHS[2][2])
         monitor = ArchiveMonitor('GEM')
+        time.sleep(0.1)
         self.archive_creator.add_data_files_to_most_recent_cycle('GEM', ['GEM002.raw'])
         self.archive_creator.add_journal_file('GEM', 'GEM 123')
         self.archive_creator.add_data_files_to_most_recent_cycle('WISH', ['WISH002.raw'])
@@ -267,6 +258,16 @@ class TestISISArchiveMonitor(unittest.TestCase):
                           "ISIS"]
         expected[12:12] = wish_data_send
         self._check_polling_output(expected, 24)
+
+    def _check_polling_output(self, expected, lines_to_check=12):
+        """
+        :param lines_to_check: number of lines in the log to look at.
+                               defaults to 12.
+        """
+        actual = _get_log_content()[-lines_to_check:]
+        for index, expected_msg in enumerate(expected):
+            self.assertTrue(expected_msg in actual[index],
+                            "{} is not in {}".format(expected_msg, actual[index]))
 
 
 class TestArchiveMonitorHelpers(unittest.TestCase):
