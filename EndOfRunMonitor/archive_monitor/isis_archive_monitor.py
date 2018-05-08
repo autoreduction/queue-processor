@@ -24,13 +24,15 @@ class ArchiveMonitor(object):
 
     _time_of_last_check = None
 
-    def __init__(self, instrument_name):
+    def __init__(self, instrument_name=None):
         """
         set the instrument param name and connect to the database
         :param instrument_name: name of the instrument e.g. GEM, WISH
+                                if None, assumed to be checking all known instruments
+                                via perform check
         """
         instrument = instrument_name.upper()
-        if instrument not in helper.VALID_INST:
+        if instrument not in helper.VALID_INST and instrument is not None:
             logging.error(helper.INVALID_INSTRUMENT_MSG, instrument)
             raise RuntimeError(helper.INVALID_INSTRUMENT_MSG, instrument)
 
@@ -274,5 +276,5 @@ class ArchiveMonitor(object):
 
 def main():
     """ Main method, connects to ActiveMQ and sets up instrument last_run.txt listeners. """
-    monitor = ArchiveMonitor(helper.VALID_INST[0])
+    monitor = ArchiveMonitor()
     monitor.poll_archive()
