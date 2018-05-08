@@ -8,7 +8,8 @@ FILES="EndOfRunMonitor
       Scripts/ActiveMQTests/test_stomp_activemq.py
       Scripts/ManualSubmissionScript
       Scripts/NagiosChecks/autoreduce_checklastrun.py
-      WebApp/autoreduce_webapp/autoreduce_webapp/"
+      WebApp/autoreduce_webapp/autoreduce_webapp/
+      QueueProcessors/AutoreductionProcessor"
 
 for file in $FILES
 do
@@ -21,15 +22,9 @@ do
 done
 
 
-# Should be able to improve the below when we fix W0403,W0403,W0141,R0401
+# Should be able to improve the below when we fix W0141,R0401
 
-RESULT="$(pylint -d C0103,W0403,W0141,R0401 QueueProcessors/QueueProcessor)"
-retVal=$?
-if [ $retVal -ne 0 ]; then
-    echo "$RESULT"
-    SUCCESS=1
-fi
-RESULT="$(pylint -d C0103,W0403 QueueProcessors/AutoreductionProcessor)"
+RESULT="$(pylint -d C0103,W0141,R0401 QueueProcessors/QueueProcessor)"
 retVal=$?
 if [ $retVal -ne 0 ]; then
     echo "$RESULT"

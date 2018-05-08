@@ -2,20 +2,23 @@
 Module for dealing with instrument reduction variables.
 """
 # pylint: disable=deprecated-lambda
-import sys
-sys.path.append("..")  # Adds parent directory to python path, until we decide how to package this.
-import os
+import cgi
+import imp
 import io
 import logging.config
-import imp
-import cgi
+import os
+
 import chardet
-# pylint: disable=import-error,no-name-in-module
-from settings import REDUCTION_DIRECTORY, LOGGING  # pylint: disable=import-error
-from orm_mapping import InstrumentJoin, Notification, InstrumentVariable, RunVariable, Variable  # pylint: disable=import-error
-from variable_utils import VariableUtils
-from instrument_utils import InstrumentUtils
-from base import session  # pylint: disable=import-error
+
+from QueueProcessors.QueueProcessor.base import session
+from QueueProcessors.QueueProcessor.orm_mapping import (InstrumentJoin, Notification,
+                                                        InstrumentVariable, RunVariable,
+                                                        Variable)
+# pylint:disable=no-name-in-module,import-error
+from QueueProcessors.QueueProcessor.settings import REDUCTION_DIRECTORY, LOGGING
+from QueueProcessors.QueueProcessor.utils.instrument_utils import InstrumentUtils
+from QueueProcessors.QueueProcessor.utils.variable_utils import VariableUtils
+
 
 # Set up logging and attach the logging to the right part of the config.
 logging.config.dictConfig(LOGGING)
