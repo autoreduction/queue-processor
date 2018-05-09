@@ -3,17 +3,15 @@ This script periodically checks the lastrun.txt file on selected instruments and
 the DataReady queue when runs end.
 """
 import json
-import os
 import logging
+import os
 import threading
-import stomp
 
-from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-from EndOfRunMonitor.ICAT_Client import ICAT
-# The below is a template on repo settings.py.template
-# pylint: disable=import-error
-from settings import ACTIVEMQ
+from watchdog.observers import Observer
+
+from utils.clients.icat_client import ICATClient
+from utils.clients.queue_client import QueueClient
 
 # Config settings for cycle number, and instrument file arrangement
 INST_FOLDER = r"\\isis\inst$\NDX%s\Instrument"
@@ -56,7 +54,7 @@ class InstrumentMonitor(FileSystemEventHandler):
     """ This is the event handler class for the lastrun.txt file. """
     # pylint: disable=too-many-instance-attributes
     def __init__(self, instrument_name, use_nexus, client, lock):
-        self.icat = ICAT()
+        self.icat = ICATClient()
         super(InstrumentMonitor, self).__init__()
         self.client = client
         self.use_nexus = use_nexus
@@ -148,16 +146,7 @@ class InstrumentMonitor(FileSystemEventHandler):
 
 def main():
     """ Main method, connects to ActiveMQ and sets up instrument last_run.txt listeners. """
-    brokers = [(ACTIVEMQ['brokers'].split(':')[0], int(ACTIVEMQ['brokers'].split(':')[1]))]
-    connection = stomp.Connection(host_and_ports=brokers, use_ssl=False)
-    logging.info("Starting ActiveMQ Connection")
-    connection.start()
-    logging.info("Completed ActiveMQ Connection")
-
-    connection.connect(ACTIVEMQ['amq_user'],
-                       ACTIVEMQ['amq_pwd'],
-                       wait=False,
-                       header={'activemq.prefetchSize': '1'})
+    connection = QueueClient()
 
     message_lock = threading.Lock()
     for inst in INSTRUMENTS:
