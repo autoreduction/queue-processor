@@ -1,5 +1,32 @@
 """
 Used to create a fake data-archive structure for testing
+
+Usage example:
+
+#  Creating an archive:
+data_archive = DataArchiveCreator('C:\..\test\data-archive)
+data_archive.make_archive(['GEM', 'POLARIS'], start_year=94, end_year=18, current_cycle=1)
+
+
+#  Add file to the data directory:
+data_archive.add_data_files_to_most_recent_cycle('GEM', 'something.txt')
+data_archive.add_data_files('GEM', 18, 1, 'something.txt') # This does the same as the above
+
+
+#  Add file to the journal directory (used to find RB numbers)
+data_archive.add_journal_file('GEM', 'file_contents 002 2201')
+
+
+#  Access files and directories
+data_archive.get_most_recent_cycle_for_instrument('GEM')
+data_archive.get_journal_dir_for_instrument('GEM')
+data_archive.get_data_most_recent_dir_for_instrument('GEM')
+
+
+#  Deleting the directory
+data_archive.delete_all_files()    # remove all files (not folders)
+data_archive.delete_archive()      # remove all files and folders
+
 """
 import os
 import shutil
