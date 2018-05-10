@@ -9,7 +9,7 @@ data_archive.make_data_archive(['GEM', 'POLARIS'], start_year=5, end_year=18, cu
 
 
 #  Add file to the data directory:
-data_archive.add_data_files_to_most_recent_cycle('GEM', 'something.txt')
+data_archive.add_data_files_to_most_recent_cycle('GEM', ['something.txt'])
 data_archive.add_data_files('GEM', 18, 1, 'something.txt') # This does the same as the above
 
 
