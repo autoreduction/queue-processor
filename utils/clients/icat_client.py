@@ -5,26 +5,27 @@ Functions for login and query available from class
 
 import icat
 
-from EndOfRunMonitor.settings import ICAT_SETTINGS
+# pylint: disable=import-error
+from utils.settings import ICAT
 
 
-class ICAT(object):
+class ICATClient(object):
     """
     This class provides a layer of abstraction from Python ICAT.
     Only allowing logging in and querying.
     """
 
     def __init__(self):
-        self.client = icat.Client(ICAT_SETTINGS['URL'])
+        self.client = icat.Client(ICAT['URL'])
         self.client_login()
 
     def client_login(self):
         """
-        Log in to ICAT using the details provided in the settings.py file
+        Log in to ICAT using the details provided in the test_settings.py file
         """
-        self.client.login(ICAT_SETTINGS['AUTH'],
-                          {'username': ICAT_SETTINGS['USER'],
-                           'password': ICAT_SETTINGS['PASSWORD']})
+        self.client.login(ICAT['AUTH'],
+                          {'username': ICAT['USER'],
+                           'password': ICAT['PASSWORD']})
 
     def execute_query(self, query):
         """

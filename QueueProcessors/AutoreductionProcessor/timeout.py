@@ -1,6 +1,7 @@
 """ Class used for handling script timeouts"""
 import signal
-from settings import MISC  # pylint: disable=import-error
+# pylint:disable=no-name-in-module,import-error
+from QueueProcessors.AutoreductionProcessor.settings import MISC
 
 
 class timeout(object):

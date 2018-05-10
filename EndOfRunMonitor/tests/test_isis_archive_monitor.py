@@ -9,8 +9,8 @@ import unittest
 
 from EndOfRunMonitor.archive_monitor.isis_archive_monitor import ArchiveMonitor
 from EndOfRunMonitor.database_client import ReductionRun
-from EndOfRunMonitor.settings import INST_PATH, ARCHIVE_MONITOR_LOG
 from utils.test_helpers.data_archive_creator import DataArchiveCreator
+from utils.settings import PATH_TO_TEST_OUTPUT, INST_PATH, ARCHIVE_MONITOR_LOG
 
 # List of variables to create a valid path and expected result _find_path_to_current_cycle
 # [[start_year, end_year, current_cycle, expected_result], ...]
@@ -46,8 +46,7 @@ class TestISISArchiveMonitor(unittest.TestCase):
     """
 
     def setUp(self):
-        path_to_file = os.path.dirname(os.path.realpath(__file__))
-        self.archive_creator = DataArchiveCreator(path_to_file)
+        self.archive_creator = DataArchiveCreator(PATH_TO_TEST_OUTPUT)
 
     def tearDown(self):
         del self.archive_creator
@@ -277,8 +276,7 @@ class TestArchiveMonitorHelpers(unittest.TestCase):
     """
 
     def setUp(self):
-        path_to_file = os.path.dirname(os.path.realpath(__file__))
-        self.archive_creator = DataArchiveCreator(path_to_file)
+        self.archive_creator = DataArchiveCreator(PATH_TO_TEST_OUTPUT)
         self.monitor = ArchiveMonitor('GEM')
 
     def tearDown(self):

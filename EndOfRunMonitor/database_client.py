@@ -5,7 +5,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine, MetaData, Table
 from sqlalchemy.orm import sessionmaker, relationship
 
-from EndOfRunMonitor.settings import MYSQL
+from utils.settings import MYSQL
 
 # pylint: disable=invalid-name
 Base = declarative_base()

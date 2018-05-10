@@ -1,3 +1,4 @@
+# pylint: skip-file
 """
 Module for connecting to the Database through sqlalchemy.
 """
@@ -6,7 +7,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import sessionmaker
 
-from settings import MYSQL #pylint: disable=import-error,no-name-in-module
+# pylint: disable=import-error,no-name-in-module
+from QueueProcessors.QueueProcessor.settings import MYSQL
 
 Base = declarative_base()
 

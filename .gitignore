@@ -12,3 +12,4 @@ migrations/
 # ignore virtual environments
 venv/
 migrations/
+AutoReduction.egg-info/

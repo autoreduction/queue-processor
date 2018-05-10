@@ -1,13 +1,16 @@
-""" Module for getting the reduction run statuses from the database. """
-import sys
-sys.path.append("..")  # Adds parent directory to python path, until we decide how to package this.
+"""
+Module for getting the reduction run statuses from the database.
+"""
 import logging.config
-from settings import LOGGING  # pylint: disable=import-error,no-name-in-module
-from orm_mapping import Status, InstrumentVariable  # pylint: disable=import-error,
-from base import session  # pylint: disable=import-error,
+
+from QueueProcessors.QueueProcessor.base import session
+from QueueProcessors.QueueProcessor.orm_mapping import Status, InstrumentVariable
+# pylint:disable=no-name-in-module,import-error
+from QueueProcessors.QueueProcessor.settings import LOGGING
+
 # Set up logging and attach the logging to the right part of the config.
 logging.config.dictConfig(LOGGING)
-logger = logging.getLogger("queue_processor") # pylint: disable=invalid-name
+logger = logging.getLogger("queue_processor")  # pylint: disable=invalid-name
 
 
 class StatusUtils(object):

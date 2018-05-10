@@ -1,17 +1,15 @@
 """
 File to store messages and data relating to ISIS_archive_monitor
 """
-import os
 
 from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import sessionmaker
-import stomp
 
-from EndOfRunMonitor.settings import ARCHIVE_MONITOR_LOG, MYSQL, INST_PATH, ACTIVEMQ
+from utils.settings import ARCHIVE_MONITOR_LOG, MYSQL, INST_PATH
 
 # ================================= Data ======================================= #
 
-LOG_FILE = os.path.join(os.path.dirname(os.path.realpath(__file__)), ARCHIVE_MONITOR_LOG)
+LOG_FILE = ARCHIVE_MONITOR_LOG
 LOG_FORMAT = '%(asctime)s : %(message)s'
 STOMP_LOG_FORMAT = '%(asctime)s :      %(message)s'
 
@@ -35,23 +33,6 @@ def make_db_session():
     _ = MetaData(engine)
     session_maker = sessionmaker(bind=engine)
     return session_maker()
-
-
-# Queue setup
-def make_queue_session():
-    """
-    Create an activeMq session
-    :return: the connection to the queueing system
-    """
-    brokers = [(ACTIVEMQ['brokers'].split(':')[0],
-                int(ACTIVEMQ['brokers'].split(':')[1]))]
-    connection = stomp.Connection(host_and_ports=brokers, use_ssl=False)
-    connection.start()
-    connection.connect(ACTIVEMQ['amq_user'],
-                       ACTIVEMQ['amq_pwd'],
-                       wait=False,
-                       header={'activemq.prefetchSize': '1'})
-    return connection
 
 
 # ================================ Messages ===================================== #

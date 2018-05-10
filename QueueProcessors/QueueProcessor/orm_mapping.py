@@ -1,8 +1,10 @@
-""" Object Relation Mapping file for sqlalchemy. """
+"""
+Object Relation Mapping file for sqlalchemy.
+"""
 # pylint: disable=too-few-public-methods,no-init,missing-docstring,invalid-name
 from sqlalchemy import Column, Integer, String, Table, ForeignKey, join
 from sqlalchemy.orm import relationship, column_property
-from base import Base, metadata, engine
+from QueueProcessors.QueueProcessor.base import Base, metadata, engine
 
 
 # Create all of the classes for all of the needed tables in the autoreduce schema

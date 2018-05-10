@@ -12,6 +12,8 @@ import time
 import EndOfRunMonitor.archive_monitor.isis_archive_monitor_helper as helper
 from EndOfRunMonitor.database_client import ReductionRun, Instrument
 
+from utils.clients.queue_client import QueueClient
+
 logging.basicConfig(filename=helper.LOG_FILE, level=logging.DEBUG,
                     format=helper.LOG_FORMAT)
 
@@ -43,7 +45,7 @@ class ArchiveMonitor(object):
         # Create the sessions
         self.database_session = helper.make_db_session()
         logging.getLogger("stomp.py").setLevel(logging.WARNING)
-        self.queue_session = helper.make_queue_session()
+        self.queue_session = QueueClient().get_connection()
 
     def poll_archive(self):
         """
