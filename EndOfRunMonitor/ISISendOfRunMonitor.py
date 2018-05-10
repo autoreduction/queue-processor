@@ -10,7 +10,6 @@ import stomp
 
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-from EndOfRunMonitor.ICAT_Client import ICAT
 # The below is a template on repo settings.py.template
 # pylint: disable=import-error
 from settings import ACTIVEMQ
@@ -22,13 +21,6 @@ SUMMARY_LOC = r"\logs\journal\SUMMARY.txt"
 LAST_RUN_LOC = r"\logs\lastrun.txt"
 LOG_FILE = r"monitor_log.txt"
 INSTRUMENTS = [{'name': 'WISH', 'use_nexus': True}]
-
-QUERY = "SELECT facilityCycle.name FROM FacilityCycle facilityCycle, \
-         facilityCycle.facility as facility, facility.investigations as \
-         investigation, investigation.datasets as dataset, dataset.datafiles \
-         as datafile WHERE datafile.name = '{}' AND \
-         datafile.datafileCreateTime BETWEEN facilityCycle.startDate AND \
-         facilityCycle.endDate"
 
 # Check fake_archive folder for the last_run.txt file and will not send data to DataReady queue"
 USE_FAKE_ARCHIVE = False
@@ -56,7 +48,6 @@ class InstrumentMonitor(FileSystemEventHandler):
     """ This is the event handler class for the lastrun.txt file. """
     # pylint: disable=too-many-instance-attributes
     def __init__(self, instrument_name, use_nexus, client, lock):
-        self.icat = ICAT()
         super(InstrumentMonitor, self).__init__()
         self.client = client
         self.use_nexus = use_nexus
@@ -74,25 +65,22 @@ class InstrumentMonitor(FileSystemEventHandler):
 
     def _get_instrument_data_folder_loc(self, filename):
         """ Gets instrument data folder location. """
-        return self.instrument_folder + DATA_LOC % self._get_most_recent_cycle(filename)
+        return self.instrument_folder + DATA_LOC % self._get_most_recent_cycle()
 
-    def _get_most_recent_cycle(self, filename):
-        """ Use an ICAT connection to get the most recent cycle. """
-        cycle = self.icat.execute_query(QUERY.replace('{}', filename + ".raw"))
-        # Retry and use an upper-case extension instead
-        if not cycle:
-            cycle = self.icat.execute_query(QUERY.replace('{}', filename + ".RAW"))
-        # If there are no results, defer to previous method of finding the most recent folder
-        if not cycle:
-            folders = os.listdir(self.instrument_folder + r'\logs\\')
-            cycle_folders = [f for f in folders if f.startswith('cycle')]
+    def _get_most_recent_cycle(self):
+        """
+        Look at the logs folder to determine the current cycle.
+        :return: A 4 character cycle string e.g. '18_1'
+        """
+        folders = os.listdir(self.instrument_folder + r'\logs\\')
+        cycle_folders = [f for f in folders if f.startswith('cycle')]
 
-            # List should have most recent cycle at the end
-            most_recent = cycle_folders[-1]
-        else:
-            most_recent = cycle[0]
+        # List should have most recent cycle at the end
+        most_recent = cycle_folders[-1]
+        cycle = most_recent[most_recent.find('_') + 1:]
+        logging.debug("Found most recent cycle to be %s", cycle)
+        return cycle
 
-        return most_recent[most_recent.find('_') + 1:]
 
     def build_dict(self, last_run_data):
         """ Uses information from lastRun file,
