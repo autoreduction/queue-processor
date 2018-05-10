@@ -22,13 +22,6 @@ LAST_RUN_LOC = r"\logs\lastrun.txt"
 LOG_FILE = r"monitor_log.txt"
 INSTRUMENTS = [{'name': 'WISH', 'use_nexus': True}]
 
-QUERY = "SELECT facilityCycle.name FROM FacilityCycle facilityCycle, \
-         facilityCycle.facility as facility, facility.investigations as \
-         investigation, investigation.datasets as dataset, dataset.datafiles \
-         as datafile WHERE datafile.name = '{}' AND \
-         datafile.datafileCreateTime BETWEEN facilityCycle.startDate AND \
-         facilityCycle.endDate"
-
 # Check fake_archive folder for the last_run.txt file and will not send data to DataReady queue"
 USE_FAKE_ARCHIVE = False
 
