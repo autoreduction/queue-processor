@@ -3,16 +3,15 @@ This script periodically checks the lastrun.txt file on selected instruments and
 the DataReady queue when runs end.
 """
 import json
-import os
 import logging
+import os
 import threading
-import stomp
 
-from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-# The below is a template on repo settings.py.template
-# pylint: disable=import-error
-from settings import ACTIVEMQ
+from watchdog.observers import Observer
+
+from utils.clients.queue_client import QueueClient
+
 
 # Config settings for cycle number, and instrument file arrangement
 INST_FOLDER = r"\\isis\inst$\NDX%s\Instrument"
@@ -63,7 +62,7 @@ class InstrumentMonitor(FileSystemEventHandler):
             self.last_run = data[1]
         self.lock = lock
 
-    def _get_instrument_data_folder_loc(self, filename):
+    def _get_instrument_data_folder_loc(self):
         """ Gets instrument data folder location. """
         return self.instrument_folder + DATA_LOC % self._get_most_recent_cycle()
 
@@ -81,14 +80,14 @@ class InstrumentMonitor(FileSystemEventHandler):
         logging.debug("Found most recent cycle to be %s", cycle)
         return cycle
 
-
     def build_dict(self, last_run_data):
         """ Uses information from lastRun file,
         and last line of the summary text file to build the query
         """
         filename = ''.join(last_run_data[0:2])  # so MER111 etc
-        run_data_loc = self._get_instrument_data_folder_loc(filename) + filename + \
-                       get_file_extension(self.use_nexus)
+        run_data_loc = '%s%s%s' % (self._get_instrument_data_folder_loc(),
+                                   filename,
+                                   get_file_extension(self.use_nexus))
         return {
             "rb_number": self._get_rb_num(),
             "instrument": self.instrument_name,
@@ -136,16 +135,7 @@ class InstrumentMonitor(FileSystemEventHandler):
 
 def main():
     """ Main method, connects to ActiveMQ and sets up instrument last_run.txt listeners. """
-    brokers = [(ACTIVEMQ['brokers'].split(':')[0], int(ACTIVEMQ['brokers'].split(':')[1]))]
-    connection = stomp.Connection(host_and_ports=brokers, use_ssl=False)
-    logging.info("Starting ActiveMQ Connection")
-    connection.start()
-    logging.info("Completed ActiveMQ Connection")
-
-    connection.connect(ACTIVEMQ['amq_user'],
-                       ACTIVEMQ['amq_pwd'],
-                       wait=False,
-                       header={'activemq.prefetchSize': '1'})
+    connection = QueueClient()
 
     message_lock = threading.Lock()
     for inst in INSTRUMENTS:
