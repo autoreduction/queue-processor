@@ -10,8 +10,8 @@ import threading
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
-from utils.clients.icat_client import ICATClient
 from utils.clients.queue_client import QueueClient
+
 
 # Config settings for cycle number, and instrument file arrangement
 INST_FOLDER = r"\\isis\inst$\NDX%s\Instrument"
@@ -20,13 +20,6 @@ SUMMARY_LOC = r"\logs\journal\SUMMARY.txt"
 LAST_RUN_LOC = r"\logs\lastrun.txt"
 LOG_FILE = r"monitor_log.txt"
 INSTRUMENTS = [{'name': 'WISH', 'use_nexus': True}]
-
-QUERY = "SELECT facilityCycle.name FROM FacilityCycle facilityCycle, \
-         facilityCycle.facility as facility, facility.investigations as \
-         investigation, investigation.datasets as dataset, dataset.datafiles \
-         as datafile WHERE datafile.name = '{}' AND \
-         datafile.datafileCreateTime BETWEEN facilityCycle.startDate AND \
-         facilityCycle.endDate"
 
 # Check fake_archive folder for the last_run.txt file and will not send data to DataReady queue"
 USE_FAKE_ARCHIVE = False
@@ -54,7 +47,6 @@ class InstrumentMonitor(FileSystemEventHandler):
     """ This is the event handler class for the lastrun.txt file. """
     # pylint: disable=too-many-instance-attributes
     def __init__(self, instrument_name, use_nexus, client, lock):
-        self.icat = ICATClient()
         super(InstrumentMonitor, self).__init__()
         self.client = client
         self.use_nexus = use_nexus
@@ -70,35 +62,32 @@ class InstrumentMonitor(FileSystemEventHandler):
             self.last_run = data[1]
         self.lock = lock
 
-    def _get_instrument_data_folder_loc(self, filename):
+    def _get_instrument_data_folder_loc(self):
         """ Gets instrument data folder location. """
-        return self.instrument_folder + DATA_LOC % self._get_most_recent_cycle(filename)
+        return self.instrument_folder + DATA_LOC % self._get_most_recent_cycle()
 
-    def _get_most_recent_cycle(self, filename):
-        """ Use an ICAT connection to get the most recent cycle. """
-        cycle = self.icat.execute_query(QUERY.replace('{}', filename + ".raw"))
-        # Retry and use an upper-case extension instead
-        if not cycle:
-            cycle = self.icat.execute_query(QUERY.replace('{}', filename + ".RAW"))
-        # If there are no results, defer to previous method of finding the most recent folder
-        if not cycle:
-            folders = os.listdir(self.instrument_folder + r'\logs\\')
-            cycle_folders = [f for f in folders if f.startswith('cycle')]
+    def _get_most_recent_cycle(self):
+        """
+        Look at the logs folder to determine the current cycle.
+        :return: A 4 character cycle string e.g. '18_1'
+        """
+        folders = os.listdir(self.instrument_folder + r'\logs\\')
+        cycle_folders = [f for f in folders if f.startswith('cycle')]
 
-            # List should have most recent cycle at the end
-            most_recent = cycle_folders[-1]
-        else:
-            most_recent = cycle[0]
-
-        return most_recent[most_recent.find('_') + 1:]
+        # List should have most recent cycle at the end
+        most_recent = cycle_folders[-1]
+        cycle = most_recent[most_recent.find('_') + 1:]
+        logging.debug("Found most recent cycle to be %s", cycle)
+        return cycle
 
     def build_dict(self, last_run_data):
         """ Uses information from lastRun file,
         and last line of the summary text file to build the query
         """
         filename = ''.join(last_run_data[0:2])  # so MER111 etc
-        run_data_loc = self._get_instrument_data_folder_loc(filename) + filename + \
-                       get_file_extension(self.use_nexus)
+        run_data_loc = '%s%s%s' % (self._get_instrument_data_folder_loc(),
+                                   filename,
+                                   get_file_extension(self.use_nexus))
         return {
             "rb_number": self._get_rb_num(),
             "instrument": self.instrument_name,

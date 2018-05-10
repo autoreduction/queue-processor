@@ -3,8 +3,8 @@
 Module to demonise the autoreduction processor.
 """
 import sys
-from daemon import Daemon
-import autoreduction_processor
+from QueueProcessors.AutoreductionProcessor.daemon import Daemon
+from QueueProcessors.AutoreductionProcessor import autoreduction_processor
 
 
 class AutoreduceQueueProcessorDaemon(Daemon):
@@ -33,6 +33,7 @@ def main():
     else:
         print "usage: %s start|stop|restart" % sys.argv[0]
         sys.exit(2)
+
 
 if __name__ == "__main__":
     main()
