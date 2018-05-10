@@ -27,5 +27,6 @@ script:
   - ./Scripts/Build/test/test_pylint.sh
 
   # ================ Nose unit tests ================ #
-  # ActiveMQ
-  - nosetests Scripts/Build/test/test_activemq_connection.py
+
+  # Utils tests
+  - nosetests utils/clients/tests

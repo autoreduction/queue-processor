@@ -47,7 +47,7 @@ class QueueClient(object):
         if self._connection is None or not self._connection.is_connected():
             logging.info("connection =")
             connection = stomp.Connection(host_and_ports=self._brokers,
-                                          use_ssl=True, ssl_version=3)
+                                          use_ssl=False)
             logging.info("Starting connection")
             connection.start()
             logging.info("connection.connect")

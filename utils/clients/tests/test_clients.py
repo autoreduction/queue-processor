@@ -1,6 +1,4 @@
 import unittest
-from MySQLdb import OperationalError
-from stomp import exception
 
 from utils.clients.settings import ACTIVEMQ
 from utils.clients.queue_client import QueueClient
@@ -34,45 +32,74 @@ class TestQueueClient(unittest.TestCase):
         client.connect()
         self.assertTrue(client._connection.is_connected())
 
-    '''def test_invalid_queue_connection(self):
+    def test_invalid_queue_connection(self):
         client = QueueClient('not_a_broker', 'not_a_user', 'not_a_pass')
-        self.assertRaises(exception, client.connect)
+        with self.assertRaises(ValueError):
+            client.connect()
 
     def test_stop_connection(self):
         client = QueueClient()
         client.connect()
         self.assertTrue(client._connection.is_connected())
         client.stop()
-        self.assertFalse(client._connection.is_connected())
+        self.assertIsNone(client._connection)
 
     def test_send_data(self):
         client = QueueClient()
-        client.send('dataready', 'test-message')'''
+        client.send('dataready', 'test-message')
 
 
-'''class TestClientConnections(unittest.TestCase):
+class TestDatabaseClient(unittest.TestCase):
 
-    def test_db_conenction(self):
-        try:
-            from utils.clients.database import make_db_session
-            _ = make_db_session()
-        except OperationalError:
-            raise
+    @unittest.skip("Not yet implemented")
+    def test_database_client_default_init(self):
+        self.fail("Not implemented")
 
-    def test_queue_connection(self):
-        try:
-            from utils.clients.queue_client import make_queue_session
-            _ = make_queue_session()
-        except exception.ConnectFailedException:
-            raise
+    @unittest.skip("Not yet implemented")
+    def test_database_client_non_default_init(self):
+        self.fail("Not implemented")
 
-    def test_icat_connection(self):
-        # ToDo: This simply passes for the moment
-        # until we work out how to mock ICAT connection
-        pass
-        # try:
-        #    from utils.clients.icat_client import ICATClient
-        #    _ = make_queue_session()
-        # except exception.ConnectFailedException:
-        #    raise
-'''
+    @unittest.skip("Not yet implemented")
+    def test_valid_database_connection(self):
+        self.fail("Not implemented")
+
+    @unittest.skip("Not yet implemented")
+    def test_invalid_database_connection(self):
+        self.fail("Not implemented")
+
+    @unittest.skip("Not yet implemented")
+    def test_stop_connection(self):
+        self.fail("Not implemented")
+
+    @unittest.skip("Not yet implemented")
+    def test_query_data(self):
+        self.fail("Not implemented")
+
+
+class TestICATClient(unittest.TestCase):
+    """
+    Some thought will be required here as we can't use icat credentials
+    """
+    @unittest.skip("Not yet implemented")
+    def test_icat_client_default_init(self):
+        self.fail("Not implemented")
+
+    @unittest.skip("Not yet implemented")
+    def test_icat_client_non_default_init(self):
+        self.fail("Not implemented")
+
+    @unittest.skip("Not yet implemented")
+    def test_valid_icat_connection(self):
+        self.fail("Not implemented")
+
+    @unittest.skip("Not yet implemented")
+    def test_invalid_icat_connection(self):
+        self.fail("Not implemented")
+
+    @unittest.skip("Not yet implemented")
+    def test_stop_connection(self):
+        self.fail("Not implemented")
+
+    @unittest.skip("Not yet implemented")
+    def test_query_icat(self):
+        self.fail("Not implemented")
