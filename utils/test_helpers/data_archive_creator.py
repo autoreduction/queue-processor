@@ -4,8 +4,8 @@ Used to create a fake data-archive structure for testing
 Usage example:
 
 #  Creating an archive:
-data_archive = DataArchiveCreator('C:\..\test\data-archive)
-data_archive.make_archive(['GEM', 'POLARIS'], start_year=94, end_year=18, current_cycle=1)
+data_archive = DataArchiveCreator('C:\..\test\data-archive')
+data_archive.make_data_archive(['GEM', 'POLARIS'], start_year=5, end_year=18, current_cycle=1)
 
 
 #  Add file to the data directory:
