@@ -23,10 +23,10 @@ import traceback
 from contextlib import contextmanager
 
 import stomp
-from settings import ACTIVEMQ, MISC  # pylint: disable=import-error
-
-from autoreduction_logging_setup import logger
-from timeout import timeout
+# pylint:disable=no-name-in-module,import-error
+from QueueProcessors.AutoreductionProcessor.settings import ACTIVEMQ, MISC
+from QueueProcessors.AutoreductionProcessor.autoreduction_logging_setup import logger
+from QueueProcessors.AutoreductionProcessor.timeout import timeout
 
 
 @contextmanager
