@@ -10,8 +10,7 @@ import os
 import time
 
 import EndOfRunMonitor.archive_monitor.isis_archive_monitor_helper as helper
-from EndOfRunMonitor.database_client import ReductionRun, Instrument
-
+from utils.clients.database_client import DatabaseClient
 from utils.clients.queue_client import QueueClient
 
 logging.basicConfig(filename=helper.LOG_FILE, level=logging.DEBUG,
@@ -43,7 +42,8 @@ class ArchiveMonitor(object):
         self._update_check_time()
 
         # Create the sessions
-        self.database_session = helper.make_db_session()
+        self._database_client = DatabaseClient()
+        self.database_session = self._database_client.get_connection()
         logging.getLogger("stomp.py").setLevel(logging.WARNING)
         self.queue_session = QueueClient().get_connection()
 
@@ -99,13 +99,15 @@ class ArchiveMonitor(object):
                  e.g. GEM1234
         """
         # Find instrument
-        inst = self.database_session.query(Instrument).filter_by(name=self.instrument).first()
+        instrument_model = self._database_client.instrument()
+        inst = self.database_session.query(instrument_model).filter_by(name=self.instrument).first()
         if inst is None:
             logging.warning(helper.NO_INSTRUMENT_IN_DB_MSG, self.instrument)
             return None
 
         # Find run ordered by most recently started
-        run = self.database_session.query(ReductionRun).\
+        reduction_model = self._database_client.reduction_run()
+        run = self.database_session.query(reduction_model).\
             filter_by(instrument_id=inst.id).order_by('started').first()
         if run is None:
             logging.warning(helper.NO_RUN_FOR_INSTRUMENT_MSG, self.instrument)

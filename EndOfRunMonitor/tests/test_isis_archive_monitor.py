@@ -8,9 +8,9 @@ import time
 import unittest
 
 from EndOfRunMonitor.archive_monitor.isis_archive_monitor import ArchiveMonitor
-from EndOfRunMonitor.database_client import ReductionRun
-from utils.test_helpers.data_archive_creator import DataArchiveCreator
+from utils.clients.database_client import DatabaseClient
 from utils.settings import PATH_TO_TEST_OUTPUT, INST_PATH, ARCHIVE_MONITOR_LOG
+from utils.test_helpers.data_archive_creator import DataArchiveCreator
 
 # List of variables to create a valid path and expected result _find_path_to_current_cycle
 # [[start_year, end_year, current_cycle, expected_result], ...]
@@ -61,7 +61,8 @@ class TestISISArchiveMonitor(unittest.TestCase):
     def test_init_db_connection(self):
         monitor = ArchiveMonitor('GEM')
         self.assertIsNotNone(monitor.database_session)
-        self.assertIsNotNone(monitor.database_session.query(ReductionRun).first())
+        reduction_model = monitor._database_client.reduction_run()
+        self.assertIsNotNone(monitor.database_session.query(reduction_model).first())
 
     def test_init_with_invalid_inst(self):
         self.assertRaises(RuntimeError, ArchiveMonitor, 'not-instrument')
