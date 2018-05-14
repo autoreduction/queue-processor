@@ -13,7 +13,7 @@ SECRET_KEY = 'YOUR-SECRET-KEY'
 DEBUG = False
 DEBUG_PROPAGATE_EXCEPTIONS = False
 
-ALLOWED_HOSTS = ['localhost', 'reducedev2.isis.cclrc.ac.uk']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'reducedev2.isis.cclrc.ac.uk']
 INTERNAL_IPS = ['localhost', '127.0.0.1']
 
 # Application definition
@@ -158,9 +158,9 @@ ACTIVEMQ = {
         '/queue/ReductionComplete',
         '/queue/ReductionError'
     ],
-    'username': 'YOUR-ACTIVEMQ-USERNAME',
-    'password': 'YOUR-ACTIVEMQ-PASSWORD',
-    'broker': [("YOUR-ACTIVE-MQ-HOST", 61613)],
+    'username': 'admin',
+    'password': 'admin',
+    'broker': [("127.0.1.1", 61613)],
     'SSL': False
 }
 
