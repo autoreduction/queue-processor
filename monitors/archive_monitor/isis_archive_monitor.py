@@ -9,7 +9,7 @@ import logging
 import os
 import time
 
-import EndOfRunMonitor.archive_monitor.isis_archive_monitor_helper as helper
+import monitors.archive_monitor.isis_archive_monitor_helper as helper
 from utils.clients.database_client import DatabaseClient
 from utils.clients.queue_client import QueueClient
 
@@ -91,6 +91,7 @@ class ArchiveMonitor(object):
         current_cycle_path = os.path.join(data_archive_path, current_cycle)
         return self._find_most_recent_run_in_archive(current_cycle_path)
 
+    # pylint:disable=inconsistent-return-statements
     def get_most_recent_run_in_database(self):
         """
         Get the most recent run in the reduction database
@@ -254,7 +255,7 @@ class ArchiveMonitor(object):
         if os.path.isfile(file_path):
             file_name = os.path.basename(os.path.normpath(file_path))
             run_number = ''.join([num for num in file_name if num.isdigit()])
-            if run_number is '':
+            if run_number == '':
                 return None
             return run_number
         logging.error(helper.CANT_FIND_RUN_NUMBER_MSG, file_path)

@@ -7,8 +7,7 @@ import os
 import time
 import unittest
 
-from EndOfRunMonitor.archive_monitor.isis_archive_monitor import ArchiveMonitor
-from utils.clients.database_client import DatabaseClient
+from monitors.archive_monitor.isis_archive_monitor import ArchiveMonitor
 from utils.settings import PATH_TO_TEST_OUTPUT, INST_PATH, ARCHIVE_MONITOR_LOG
 from utils.test_helpers.data_archive_creator import DataArchiveCreator
 

@@ -12,6 +12,7 @@ from watchdog.observers import Observer
 
 from utils.clients.queue_client import QueueClient
 
+
 # Config settings for cycle number, and instrument file arrangement
 INST_FOLDER = r"\\isis\inst$\NDX%s\Instrument"
 DATA_LOC = r"\data\cycle_%s\\"

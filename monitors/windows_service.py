@@ -6,25 +6,20 @@ with correctly watching files through mounting the ISIS archive.
 As the ISIS archive would be mounted as a drive, this causes
 difficulties whne watching for file changes.
 """
-# ToDo: check if unused-import warning is legitimate for win32con, win32evtlogutil
-# pylint: disable=import-error, unused-import
-import servicemanager
+# Can't import on travis (linux) server
+# pylint:disable=import-error
 import win32api
-import win32con
 import win32event
-import win32evtlogutil
 import win32service
 import win32serviceutil
 
-from EndOfRunMonitor import ISISendOfRunMonitor
 
-
-class QueueService(win32serviceutil.ServiceFramework):
+class WindowsService(win32serviceutil.ServiceFramework):
     """
     Class to override windows ServiceFramework
     """
-    _svc_name_ = "AutoreduceInstrumentMonitor"
-    _svc_display_name_ = "Autoreduce Instrument Monitor"
+    _svc_name_ = ""
+    _svc_display_name_ = ""
     _svc_description_ = ""
     timeout = 3000
 
@@ -44,22 +39,9 @@ class QueueService(win32serviceutil.ServiceFramework):
     # pylint: disable=invalid-name
     def SvcDoRun(self):
         """
-        Perform a run
+        This function should always be overridden by the child class
         """
-        servicemanager.LogMsg(servicemanager.EVENTLOG_INFORMATION_TYPE,
-                              servicemanager.PYS_SERVICE_STARTED,
-                              (self._svc_name_, ''))
-
-        ISISendOfRunMonitor.main()
-        while 1:
-            # Wait for service stop signal, if I timeout, loop again
-            rc = win32event.WaitForSingleObject(self.hWaitStop, self.timeout)
-            # Check to see if self.hWaitStop happened
-            if rc == win32event.WAIT_OBJECT_0:
-                # Stop signal encountered
-                servicemanager.LogInfoMsg(self._svc_name_ + " - STOPPED")
-                ISISendOfRunMonitor.stop()
-                break
+        raise NotImplementedError("This method should always be overridden by the child class")
 
 
 # pylint: disable=invalid-name
@@ -73,4 +55,4 @@ def ctrl_handler(_):
 
 if __name__ == '__main__':
     win32api.SetConsoleCtrlHandler(ctrl_handler, True)
-    win32serviceutil.HandleCommandLine(QueueService)
+    win32serviceutil.HandleCommandLine(WindowsService)
