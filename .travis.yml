@@ -3,9 +3,17 @@ language: python
 python:
   - "2.7"
 
-
 services:
   - mysql
+
+addons:
+  apt:
+    sources:
+      - mysql-5.7-trusty
+    packages:
+      - mysql-server
+
+dist: trusty
 
 before_install:
   - mysql < Scripts/Build/travis-db-setup.sql
