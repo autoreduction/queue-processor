@@ -18,6 +18,7 @@ script:
   # ================== Test setup ==================== #
   - ./Scripts/Build/project/migrate_test_settings.sh
   - ./Scripts/Build/database/generate_testing_database.sh
+  - mysql < Scripts/Build/database/populate-reduction_viewer-db.sql
 
   # ================ Assert Test Setup =============== #
   - nosetests Scripts/Build/tests/test_db_generation.py
