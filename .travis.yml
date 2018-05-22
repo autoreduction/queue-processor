@@ -16,6 +16,7 @@ addons:
 dist: trusty
 
 before_install:
+  - mysql_upgrade --force
   - mysql < Scripts/Build/travis-db-setup.sql
 
 install:
