@@ -10,8 +10,8 @@ Below are some key dates for testing and development phases
 ### Cycle 1a (2018)
 * ~17/04/2018 - Cycle 1a: Start of cycle~
 * ~02/05/2018 - Cycle 1a: Maintenance day~
-* 18/05/2018 - Cycle 1a: End of cycle
-* 21/05/2018 - Confirm beam is off and merge develop into master
+* ~18/05/2018 - Cycle 1a: End of cycle~
+* 23/05/2018 - Confirm beam is off and merge develop into master
 * 25/05/2018 - master code freeze 
 * 28/05/2018 - Smoke testing and pre-cycle checklist
 * 04/05/2018 - Ensure master and devlop are the same and open new project for next cycle (cycle 18_2)
