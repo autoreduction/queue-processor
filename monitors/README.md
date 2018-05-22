@@ -1,15 +1,27 @@
-End of Run Script
-==========
+ISIS Autoreduction - monitors
+=============================
+
+Here are all the services that are used to monitor the ISIS data archive as well as tests for those services.
+
+The two monitors are currently:
+* End of Run monitor
+* Archive Monitor
+
+## End of Run monitor
 
 This script periodically checks the lastrun.txt file on selected instruments and sends a message to the DataReady queue when runs end.
 
-## Windows Installation as a service
+## Archive monitor
+
+The archive monitor periodically polls the isis data archive to check for any files that were not found by the End of Run monitor
+
+## Installation
 
 Python modules required: pywin32 and stomp.py
 
 1. Edit the LOG_FILE location in the script to point to a sensible directory
 2. In an administrative command prompt navigate to the autoreduce_webapp folder
-3. `python ISIS_monitor_win_service.py install`
+3. `python isis_monitor_win_service.py install`
 4. Open Services, right click on "Autoreduce Instrument Monitor" and select Properties
 5. Change Startup Type to Automatic
 6. On the 'Log On' tab change to 'This Account'
@@ -18,4 +30,4 @@ Python modules required: pywin32 and stomp.py
 9. Enter your fedID password into both boxes
 10. Click Start
 
-Note: The service will have to be restarted at the beginning of a new cycle to pick up the cycle number
+*Note: The same process applies to the archive monitor*
