@@ -6,3 +6,4 @@ settings.py
 
 venv/
 migrations/
+AutoReduction.egg-info/

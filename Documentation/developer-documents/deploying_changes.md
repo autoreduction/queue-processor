@@ -7,9 +7,9 @@ Changes to production are done in the same way except we use the `master` branch
 
 ## Restarting services
 ##### Queue processors 
-To restart the queue processors run (should be renamed to restart.sh!). 
+To restart the queue processors run 
 ```
-./start.sh 
+./restart.sh 
 ```
 - Check the restart has been sucessful by `ps aux | grep python` and checking the logs for activity.
 ##### End of run monitor

@@ -3,12 +3,8 @@ language: python
 python:
   - "2.7"
 
-
 services:
   - mysql
-
-before_install:
-  - mysql < Scripts/Build/travis-db-setup.sql
 
 install:
   - pip install -r requirements.txt
@@ -27,5 +23,6 @@ script:
   - ./Scripts/Build/test/test_pylint.sh
 
   # ================ Nose unit tests ================ #
-  # ActiveMQ
-  - nosetests Scripts/Build/test/test_activemq_connection.py
+
+  # Utils tests
+  - nosetests utils/clients/tests
