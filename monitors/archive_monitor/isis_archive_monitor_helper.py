@@ -2,11 +2,7 @@
 File to store messages and data relating to ISIS_archive_monitor
 """
 
-from sqlalchemy import create_engine, MetaData
-from sqlalchemy.orm import sessionmaker
-
-from utils.settings import ARCHIVE_MONITOR_LOG, MYSQL, INST_PATH
-
+from utils.settings import ARCHIVE_MONITOR_LOG, INST_PATH
 # ================================= Data ======================================= #
 
 LOG_FILE = ARCHIVE_MONITOR_LOG
@@ -18,21 +14,6 @@ GENERIC_INST_PATH = INST_PATH
 VALID_INST = ['GEM', 'POLARIS', 'WISH', 'MUSR', 'OSIRIS']
 
 SLEEP_TIME = 600
-
-DB_CONNECTION_STR = 'mysql+mysqldb://' + MYSQL['USER'] + ':' + MYSQL['PASSWD'] + \
-                    '@' + MYSQL['HOST'] + '/' + MYSQL['DB']
-
-
-# Database set up
-def make_db_session():
-    """
-    Create a database session
-    :return: the connection to the database
-    """
-    engine = create_engine(DB_CONNECTION_STR, pool_recycle=280)
-    _ = MetaData(engine)
-    session_maker = sessionmaker(bind=engine)
-    return session_maker()
 
 
 # ================================ Messages ===================================== #
