@@ -13,3 +13,5 @@ migrations/
 venv/
 migrations/
 AutoReduction.egg-info/
+# This is generated from a template so should be ignored to force regeneration
+apache_django_wsgi.conf

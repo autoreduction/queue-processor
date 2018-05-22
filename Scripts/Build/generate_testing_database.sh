@@ -1,4 +1,6 @@
 #!/usr/bin/env sh
+# When running locally, change 'mysql' to 'mysql -u root'
+# This is required to allow for user creation 
 # Clear db and generate db
 mysql < Scripts/Build/travis-db-setup.sql
 
