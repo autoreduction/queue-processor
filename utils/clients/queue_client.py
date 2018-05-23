@@ -4,10 +4,10 @@ Created on Wed May 27 14:37:59 2015
 
 @author: xxu30744
 """
-import logging
 import time
 
 import stomp
+from stomp.exception import ConnectFailedException
 
 from utils.settings import ACTIVEMQ
 
@@ -45,17 +45,19 @@ class QueueClient(object):
         :return: The connection to the queue
         """
         if self._connection is None or not self._connection.is_connected():
-            logging.info("connection =")
-            connection = stomp.Connection(host_and_ports=self._brokers,
-                                          use_ssl=False)
-            logging.info("Starting connection")
-            connection.start()
-            logging.info("connection.connect")
-            connection.connect(self._user, self._password,
-                               wait=False,
-                               header={'activemq.prefetchSize': '1'})
-            time.sleep(0.5)
-            self._connection = connection
+            try:
+                connection = stomp.Connection(host_and_ports=self._brokers,
+                                              use_ssl=False)
+                connection.start()
+                connection.connect(self._user, self._password,
+                                   wait=False,
+                                   header={'activemq.prefetchSize': '1'})
+                # Need to sleep briefly to ensure the connect is established
+                time.sleep(0.5)
+                self._connection = connection
+            except ConnectFailedException:
+                raise RuntimeError("The Connection was rejected. "
+                                   "Is activeMQ running on the target machine?")
         return self._connection
 
     def connect(self):
@@ -64,9 +66,7 @@ class QueueClient(object):
         Will disconnect first if already connected
         """
         if self._connection is None or not self._connection.is_connected():
-            logging.info("Disconnect")
             self._disconnect()
-            logging.info("Connect")
             self._connection = self.get_connection()
 
     def _disconnect(self):
