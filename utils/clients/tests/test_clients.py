@@ -1,6 +1,6 @@
 import unittest
 
-from utils.clients.settings import ACTIVEMQ, MYSQL
+from utils.settings import ACTIVEMQ, MYSQL
 from utils.clients.queue_client import QueueClient
 from utils.clients.database_client import DatabaseClient
 

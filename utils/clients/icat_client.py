@@ -6,7 +6,7 @@ Functions for login and query available from class
 import icat
 
 # pylint: disable=import-error
-from utils.clients.settings import ICAT
+from utils.settings import ICAT
 
 
 class ICATClient(object):
