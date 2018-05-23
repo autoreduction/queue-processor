@@ -279,9 +279,10 @@ def load_runs(request, reference_number=None, instrument_name=None):
 @login_and_uows_valid
 @check_permissions
 @render_with('run_summary.html')
-def run_summary(request, run_number=None, run_version=0):
+def run_summary(request, instrument_name=None, run_number=None, run_version=0):
     try:
-        run = ReductionRun.objects.get(run_number=run_number, run_version=run_version)
+        instrument = Instrument.objects.filter(name=instrument_name)
+        run = ReductionRun.objects.get(instrument=instrument, run_number=run_number, run_version=run_version)
         history = ReductionRun.objects.filter(run_number=run_number).order_by('-run_version')
         context_dictionary = { 'run' : run, 'history' : history }
     except PermissionDenied:

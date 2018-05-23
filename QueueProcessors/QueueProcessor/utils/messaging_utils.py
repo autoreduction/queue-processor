@@ -1,15 +1,20 @@
-import logging.config
+""" Utils moudle for sending messages to queues. """
 import json
-from settings import LOGGING, ACTIVEMQ, FACILITY
-from orm_mapping import *
-from base import session
+import logging.config
+
+# pylint: disable=cyclic-import
+from QueueProcessors.QueueProcessor.base import session
+from QueueProcessors.QueueProcessor.orm_mapping import DataLocation
+# pylint:disable=no-name-in-module,import-error
+from QueueProcessors.QueueProcessor.settings import LOGGING, ACTIVEMQ, FACILITY
 
 # Set up logging and attach the logging to the right part of the config.
 logging.config.dictConfig(LOGGING)
-logger = logging.getLogger("queue_processor")
+logger = logging.getLogger("queue_processor") # pylint: disable=invalid-name
 
 
 class MessagingUtils(object):
+    """ Utils class for sending messages to queues. """
     def send_pending(self, reduction_run, delay=None):
         """ Sends a message to the queue with the details of the job to run. """
         data_dict = self._make_pending_msg(reduction_run)
@@ -23,9 +28,10 @@ class MessagingUtils(object):
 
     @staticmethod
     def _make_pending_msg(reduction_run):
-        # Deferred import to avoid circular dependencies
-        from reduction_run_utils import ReductionRunUtils
         """ Creates a dict message from the given run, ready to be sent to ReductionPending. """
+        # Deferred import to avoid circular dependencies
+        from ..utils.reduction_run_utils import ReductionRunUtils
+
         script, arguments = ReductionRunUtils().get_script_and_arguments(reduction_run)
 
         # Currently only support single location
@@ -53,7 +59,7 @@ class MessagingUtils(object):
     def _send_pending_msg(data_dict, delay=None):
         """ Sends data_dict to ReductionPending (with the specified delay) """
         # To prevent circular dependencies
-        from queue_processor import Client as ActiveMQClient
+        from ..queue_processor import Client as ActiveMQClient
 
         message_client = ActiveMQClient(ACTIVEMQ['broker'],
                                         ACTIVEMQ['username'],
@@ -63,5 +69,8 @@ class MessagingUtils(object):
                                         False,
                                         ACTIVEMQ['SSL'])
         message_client.connect()
-        message_client.send('/queue/ReductionPending', json.dumps(data_dict), priority='0', delay=delay)
+        message_client.send('/queue/ReductionPending',
+                            json.dumps(data_dict),
+                            priority='0',
+                            delay=delay)
         message_client.stop()

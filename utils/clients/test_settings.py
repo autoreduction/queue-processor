@@ -1,18 +1,29 @@
-# ICAT
-ICAT_SETTINGS = {
+"""
+Settings for connecting to the test services that run locally
+"""
+
+ICAT = {
     'AUTH': 'YOUR-ICAT-AUTH-TYPE',
     'URL': 'YOUR-ICAT-WSDL-URL',
     'USER': 'YOUR-ICAT-USERNAME',
     'PASSWORD': 'YOUR-PASSWORD'
 }
-# ActiveMQ
+
 ACTIVEMQ = {
-    "brokers": "YOUR-ACTIVEMQ-URL:61613",
+    "brokers": "127.0.1.1:61613",
     "amq_queues": ["/queue/ReductionPending"],
-    "amq_user": "YOUR-ACTIVEMQ-USERNAME",
-    "amq_pwd": "YOUR-ACTIVEMQ-PASSWORD",
+    "amq_user": "admin",
+    "amq_pwd": "admin",
     "postprocess_error": "/queue/ReductionError",
     "reduction_started": "/queue/ReductionStarted",
     "reduction_complete": "/queue/ReductionComplete",
     "reduction_error": "/queue/ReductionError"
+}
+
+MYSQL = {
+    'HOST': 'localhost',
+    'USER': 'test-user',
+    'PASSWD': 'pass',
+    'DB': 'autoreduction',
+    'PORT': '3306',
 }
