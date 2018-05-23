@@ -1,7 +1,79 @@
 import unittest
 
-from utils.clients.settings import ACTIVEMQ
+from utils.clients.settings import ACTIVEMQ, MYSQL
 from utils.clients.queue_client import QueueClient
+from utils.clients.database_client import DatabaseClient
+
+
+class TestDatabaseClient(unittest.TestCase):
+    class TestDatabaseClient(unittest.TestCase):
+        def test_database_client_default_init(self):
+            client = DatabaseClient()
+            self.assertEqual(MYSQL['HOST'], client._host)
+            self.assertEqual(MYSQL['USER'], client._user)
+            self.assertEqual(MYSQL['PASSWD'], client._password)
+            self.assertEqual(MYSQL['DB'], client._database_name)
+            self.assertIsNone(client._connection)
+            self.assertIsNone(client._meta_data)
+            self.assertIsNone(client._engine)
+
+        def test_database_client_non_default_init(self):
+            client = DatabaseClient('test_user', 'test_pass', 'test_host', 'test_db_name')
+            self.assertEqual('test_user', client._user)
+            self.assertEqual('test_pass', client._password)
+            self.assertEqual('test_host', client._host)
+            self.assertEqual('test_db_name', client._database_name)
+            self.assertIsNone(client._connection)
+            self.assertIsNone(client._meta_data)
+            self.assertIsNone(client._engine)
+
+        def test_valid_database_connection(self):
+            client = DatabaseClient()
+            client.get_connection()
+            self.assertTrue(client._test_connection())
+
+        def test_invalid_database_connection(self):
+            client = DatabaseClient('not_user', 'not_pass', 'not_host', 'not_db_name')
+            with self.assertRaises(RuntimeError):
+                client.get_connection()
+
+        def test_stop_connection(self):
+            client = DatabaseClient()
+            client.get_connection()
+            self.assertTrue(client._test_connection())
+            client.stop()
+            self.assertIsNone(client._connection)
+            self.assertIsNone(client._engine)
+            self.assertIsNone(client._meta_data)
+
+
+class TestICATClient(unittest.TestCase):
+    """
+    Some thought will be required here as we can't use icat credentials
+    """
+    @unittest.skip("Not yet implemented")
+    def test_icat_client_default_init(self):
+        self.fail("Not implemented")
+
+    @unittest.skip("Not yet implemented")
+    def test_icat_client_non_default_init(self):
+        self.fail("Not implemented")
+
+    @unittest.skip("Not yet implemented")
+    def test_valid_icat_connection(self):
+        self.fail("Not implemented")
+
+    @unittest.skip("Not yet implemented")
+    def test_invalid_icat_connection(self):
+        self.fail("Not implemented")
+
+    @unittest.skip("Not yet implemented")
+    def test_stop_connection(self):
+        self.fail("Not implemented")
+
+    @unittest.skip("Not yet implemented")
+    def test_query_icat(self):
+        self.fail("Not implemented")
 
 
 class TestQueueClient(unittest.TestCase):
@@ -48,58 +120,3 @@ class TestQueueClient(unittest.TestCase):
         client = QueueClient()
         client.send('dataready', 'test-message')
 
-
-class TestDatabaseClient(unittest.TestCase):
-
-    @unittest.skip("Not yet implemented")
-    def test_database_client_default_init(self):
-        self.fail("Not implemented")
-
-    @unittest.skip("Not yet implemented")
-    def test_database_client_non_default_init(self):
-        self.fail("Not implemented")
-
-    @unittest.skip("Not yet implemented")
-    def test_valid_database_connection(self):
-        self.fail("Not implemented")
-
-    @unittest.skip("Not yet implemented")
-    def test_invalid_database_connection(self):
-        self.fail("Not implemented")
-
-    @unittest.skip("Not yet implemented")
-    def test_stop_connection(self):
-        self.fail("Not implemented")
-
-    @unittest.skip("Not yet implemented")
-    def test_query_data(self):
-        self.fail("Not implemented")
-
-
-class TestICATClient(unittest.TestCase):
-    """
-    Some thought will be required here as we can't use icat credentials
-    """
-    @unittest.skip("Not yet implemented")
-    def test_icat_client_default_init(self):
-        self.fail("Not implemented")
-
-    @unittest.skip("Not yet implemented")
-    def test_icat_client_non_default_init(self):
-        self.fail("Not implemented")
-
-    @unittest.skip("Not yet implemented")
-    def test_valid_icat_connection(self):
-        self.fail("Not implemented")
-
-    @unittest.skip("Not yet implemented")
-    def test_invalid_icat_connection(self):
-        self.fail("Not implemented")
-
-    @unittest.skip("Not yet implemented")
-    def test_stop_connection(self):
-        self.fail("Not implemented")
-
-    @unittest.skip("Not yet implemented")
-    def test_query_icat(self):
-        self.fail("Not implemented")
