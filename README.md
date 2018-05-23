@@ -3,6 +3,8 @@ ISIS Autoreduction service.
 An open source service designed to automatically reduce instrument data from the ISIS pulsed neutron and muon source. 
 
 ---
+## Status
+[![Build Status](https://travis-ci.org/ISISScientificComputing/autoreduce.svg?branch=master)](https://travis-ci.org/ISISScientificComputing/autoreduce)
 
 ## Time line
 Below are some key dates for testing and development phases
