@@ -1,5 +1,6 @@
 *.pyc
 *.log
+*.deb  # required for default mantid download location
 .idea/
 settings.py
 */target/**
