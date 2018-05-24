@@ -374,8 +374,20 @@ def instrument_pause(request, instrument=None):
     instrument_obj.save()
     return JsonResponse({'currently_paused': str(currently_paused)})  #Blank response
 
-@render_with('graph.html')
-def graph(request, instrument_name):
+
+@render_with('admin/graph_home.html')
+def graph_home(request):
+    instruments = Instrument.objects.all()
+
+    context_dictionary = {
+        'instruments': instruments
+    }
+
+    return context_dictionary
+
+
+@render_with('admin/graph_instrument.html')
+def graph_instrument(request, instrument_name):
     instrument = Instrument.objects.filter(name=instrument_name)
     if not instrument:
         return HttpResponseNotFound('<h1>Instrument not found</h1>')
@@ -385,9 +397,11 @@ def graph(request, instrument_name):
             # Only get these attributes, to speed it up.
             .only('status', 'started', 'finished', 'last_updated', 'created', 'run_number', 'run_name', 'run_version')
             .filter(instrument=instrument.first())
-            .order_by('run_number', 'run_version'))
+            .order_by('-created'))
     if 'last' in request.GET:
         runs = runs[:request.GET.get('last')]
+
+    runs = runs[::-1]
 
     for run in runs:
         if run.started and run.finished:
@@ -401,7 +415,7 @@ def graph(request, instrument_name):
     return context_dictionary
 
 
-@render_with('stats.html')
+@render_with('admin/stats.html')
 def stats(request):
     statuses = []
     for status in Status.objects.all():

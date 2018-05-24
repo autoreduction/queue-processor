@@ -67,7 +67,7 @@ urlpatterns = [
     url(r'^script/(?P<instrument>\w+)/experiment(?:/(?P<experiment_reference>[0-9]+))?/$',
         reduction_variables_views.preview_script, name='preview_script_by_experiment'),
 
-
-    url(r'^graph/(?P<instrument_name>\w+)', reduction_viewer_views.graph, name="graph"),
+    url(r'^graph/$', reduction_viewer_views.graph_home, name="graph"),
+    url(r'^graph/(?P<instrument_name>\w+)', reduction_viewer_views.graph_instrument, name="graph_instrument"),
     url(r'^stats', reduction_viewer_views.stats, name="stats")
 ]
