@@ -385,7 +385,7 @@ def graph_home(request):
 
     return context_dictionary
 
-
+@require_admin
 @render_with('admin/graph_instrument.html')
 def graph_instrument(request, instrument_name):
     instrument = Instrument.objects.filter(name=instrument_name)
@@ -414,7 +414,7 @@ def graph_instrument(request, instrument_name):
     }
     return context_dictionary
 
-
+@require_admin
 @render_with('admin/stats.html')
 def stats(request):
     statuses = []
