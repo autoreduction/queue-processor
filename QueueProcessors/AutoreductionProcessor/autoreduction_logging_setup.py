@@ -1,12 +1,12 @@
 # pylint: skip-file
 import logging.handlers
+from QueueProcessors.AutoreductionProcessor.settings import LOG
 
 LOGGING_LEVEL = logging.INFO
-LOGGING_LOC = '/home/reduce/logs/autoreductionProcessor.log'
 
 logger = logging.getLogger('AutoreductionProcessor')
 logger.setLevel(LOGGING_LEVEL)
-handler = logging.handlers.RotatingFileHandler(LOGGING_LOC, maxBytes=104857600, backupCount=20)
+handler = logging.handlers.RotatingFileHandler(LOG['log_location'], maxBytes=104857600, backupCount=20)
 handler.setLevel(LOGGING_LEVEL)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
