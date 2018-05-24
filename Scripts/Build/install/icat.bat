@@ -5,6 +5,7 @@ REM This script requires 7zip to be installed and in the system path.
 REM If you do not have 7zip you can download it from: https://www.7-zip.org/download.html
 
 REM Download and extract
+REM target path include \ eg. C:\
 set target_path=%1
 set folder=%target_path%icat
 set destination=%folder%\icat.tar.gz
@@ -27,7 +28,9 @@ python setup.py build
 python setup.py install
 
 REM validate:
-python %~dp0\tests\validate_icat.py
+set path_to_file=%~dp0
+set parent_dir=%path_to_file:install\=%
+python %parent_dir%\tests\validate_icat.py
 if %ERRORLEVEL%==0 (
     echo "ICAT validated successfully"
 ) else (

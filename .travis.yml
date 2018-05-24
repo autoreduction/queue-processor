@@ -22,7 +22,7 @@ script:
 
   # ================ Assert Test Setup =============== #
   - nosetests Scripts/Build/tests/test_db_generation.py
-  
+
   # ================ Static Analysis ================= #
   - ./Scripts/Build/tests/test_pylint.sh
 
