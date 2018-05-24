@@ -25,13 +25,13 @@ if platform.system() != 'Windows':
             # Flush database
 
             # Create data archive
-            os.mkdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'test'))
-            path_to_test_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'test')
+            path_to_test_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)))
             self.data_archive_creator = DataArchiveCreator(path_to_test_dir)
 
             # Start QueueProcessors
-            subprocess.call(['./' + os.path.join(os.path.abspath(QueueProcessors.__file__),
-                                                 'QueueProcessors', 'restart.sh')])
+            start_script = os.path.join(os.path.dirname(os.path.abspath(QueueProcessors.__file__)),
+                                        '.', 'restart.sh')
+            subprocess.call([start_script])
 
         def test_gem_end_to_end(self):
             send_data_to_queue("1", "GEM", "path/to/file", "000001", self.queue_connection)
