@@ -1,3 +1,4 @@
+# pylint: skip-file
 LOG_FILENAME = 'test_logging.out'
 
 # ActiveMQ

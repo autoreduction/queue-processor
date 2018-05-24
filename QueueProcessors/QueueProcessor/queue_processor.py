@@ -148,8 +148,8 @@ class Listener(object):
                                      hidden_in_failviewer=0,
                                      admin_log='',
                                      reduction_log='',
-                                     created=datetime.datetime.now(),
-                                     last_updated=datetime.datetime.now(),
+                                     created=datetime.datetime.utcnow(),
+                                     last_updated=datetime.datetime.utcnow(),
                                      experiment_id=experiment.id,
                                      instrument_id=instrument.id,
                                      status_id=status.id,
@@ -202,7 +202,7 @@ class Listener(object):
             if str(reduction_run.status.value) == "Error" or str(
                     reduction_run.status.value) == "Queued":
                 reduction_run.status = StatusUtils().get_processing()
-                reduction_run.started = datetime.datetime.now()
+                reduction_run.started = datetime.datetime.utcnow()
                 session.add(reduction_run)
                 session.commit()
             else:
@@ -235,7 +235,7 @@ class Listener(object):
             if reduction_run:
                 if reduction_run.status.value == "Processing":
                     reduction_run.status = StatusUtils().get_completed()
-                    reduction_run.finished = datetime.datetime.now()
+                    reduction_run.finished = datetime.datetime.utcnow()
                     for name in ['message', 'reduction_log', 'admin_log']:
                         setattr(reduction_run, name, self._data_dict.get(name, ""))
                     if 'reduction_data' in self._data_dict:
@@ -305,7 +305,7 @@ class Listener(object):
             return
 
         reduction_run.status = StatusUtils().get_error()
-        reduction_run.finished = datetime.datetime.now()
+        reduction_run.finished = datetime.datetime.utcnow()
         for name in ['message', 'reduction_log', 'admin_log']:
             setattr(reduction_run, name, self._data_dict.get(name, ""))
         session.add(reduction_run)

@@ -37,7 +37,7 @@ class ReductionRunUtils(object):
             """ Set a run as canceled """
             run.message = "Run cancelled by user"
             run.status = StatusUtils().get_error()
-            run.finished = datetime.datetime.now()
+            run.finished = datetime.datetime.utcnow()
             run.retry_when = None
             run.save()
 
@@ -95,8 +95,8 @@ class ReductionRunUtils(object):
                                instrument=reduction_run.instrument,
                                script=script_text,
                                status=StatusUtils().get_queued(),
-                               created=datetime.datetime.now(),
-                               last_updated=datetime.datetime.now(),
+                               created=datetime.datetime.utcnow(),
+                               last_updated=datetime.datetime.utcnow(),
                                message="",
                                started_by=username,
                                cancel=0,
@@ -110,7 +110,7 @@ class ReductionRunUtils(object):
 
             reduction_run.retry_run = new_job
             reduction_run.retry_when = \
-                datetime.datetime.now() + datetime.timedelta(seconds=delay if delay else 0)
+                datetime.datetime.utcnow() + datetime.timedelta(seconds=delay if delay else 0)
             session.add(new_job)
             session.commit()
 
