@@ -398,9 +398,16 @@ def graph_instrument(request, instrument_name):
             .only('status', 'started', 'finished', 'last_updated', 'created', 'run_number', 'run_name', 'run_version')
             .filter(instrument=instrument.first())
             .order_by('-created'))
-    if 'last' in request.GET:
-        runs = runs[:request.GET.get('last')]
 
+    try:
+        if 'last' in request.GET:
+            runs = runs[:request.GET.get('last')]
+    except ValueError:
+        # Non integer value entered as 'last' parameter.
+        # Just show all runs.
+        pass
+
+    # Reverse list so graph displayed in correct order
     runs = runs[::-1]
 
     for run in runs:
