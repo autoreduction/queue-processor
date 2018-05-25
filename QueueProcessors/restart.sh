@@ -9,7 +9,7 @@
 ROOT_DIR="$(dirname "$0")"
 
 ## Autoreduction Processor
-pkill -9 -f "python AutoreductionProcessor/autoreduction_processor_daemon.py start" &&
+pkill -9 -f "python .*AutoreductionProcessor/autoreduction_processor_daemon.py start" &&
 echo "Stopped autoreduction_processor_daemon.py";
 if [ -e /tmp/AutoreduceQueueProcessorDaemon.pid ]
 then
@@ -25,7 +25,7 @@ echo ""; # New line
 
 
 ## QueueProcessor
-pkill -9 -f "python QueueProcessor/queue_processor_daemon.py start" &&
+pkill -9 -f "python .*QueueProcessor/queue_processor_daemon.py start" &&
 echo "Stopped queue_processor_daemon";
 if [ -e /tmp/QueueProcessorDaemon.pid ]
 then
