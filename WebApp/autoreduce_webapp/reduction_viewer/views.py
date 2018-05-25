@@ -1,20 +1,23 @@
-from django.shortcuts import redirect
-from django.contrib.auth import logout as django_logout, authenticate, login
-from django.http import JsonResponse
-from django.core.exceptions import PermissionDenied
-from django.db.models import Q
-from autoreduce_webapp.uows_client import UOWSClient
-from autoreduce_webapp.icat_cache import ICATCache
-from autoreduce_webapp.settings import UOWS_LOGIN_URL, PRELOAD_RUNS_UNDER, USER_ACCESS_CHECKS, DEVELOPMENT_MODE
-from reduction_viewer.models import Experiment, ReductionRun, Instrument
-from reduction_viewer.utils import StatusUtils, ReductionRunUtils
-from reduction_viewer.view_utils import deactivate_invalid_instruments
-from reduction_variables.utils import MessagingUtils
-from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, require_admin, check_permissions
-
-import operator
 import json
 import logging
+import operator
+
+from autoreduce_webapp.icat_cache import ICATCache
+from autoreduce_webapp.settings import UOWS_LOGIN_URL, PRELOAD_RUNS_UNDER, USER_ACCESS_CHECKS, \
+    DEVELOPMENT_MODE
+from autoreduce_webapp.uows_client import UOWSClient
+from autoreduce_webapp.view_utils import login_and_uows_valid, render_with, require_admin, \
+    check_permissions
+from django.contrib.auth import logout as django_logout, authenticate, login
+from django.core.exceptions import PermissionDenied
+from django.db.models import Q
+from django.http import JsonResponse, HttpResponseNotFound
+from django.shortcuts import redirect
+from reduction_variables.utils import MessagingUtils
+from reduction_viewer.models import Experiment, ReductionRun, Instrument, Status
+from reduction_viewer.utils import StatusUtils, ReductionRunUtils
+from reduction_viewer.view_utils import deactivate_invalid_instruments
+
 logger = logging.getLogger('app')
 
 @deactivate_invalid_instruments
@@ -370,3 +373,69 @@ def instrument_pause(request, instrument=None):
     instrument_obj.is_paused = currently_paused
     instrument_obj.save()
     return JsonResponse({'currently_paused': str(currently_paused)})  #Blank response
+
+
+@render_with('admin/graph_home.html')
+def graph_home(request):
+    instruments = Instrument.objects.all()
+
+    context_dictionary = {
+        'instruments': instruments
+    }
+
+    return context_dictionary
+
+@require_admin
+@render_with('admin/graph_instrument.html')
+def graph_instrument(request, instrument_name):
+    instrument = Instrument.objects.filter(name=instrument_name)
+    if not instrument:
+        return HttpResponseNotFound('<h1>Instrument not found</h1>')
+    runs = (ReductionRun.objects.
+            # Get the foreign key 'status' now. Otherwise many queries made from load_runs which is very slow.
+            select_related('status')
+            # Only get these attributes, to speed it up.
+            .only('status', 'started', 'finished', 'last_updated', 'created', 'run_number', 'run_name', 'run_version')
+            .filter(instrument=instrument.first())
+            .order_by('-created'))
+
+    try:
+        if 'last' in request.GET:
+            runs = runs[:request.GET.get('last')]
+    except ValueError:
+        # Non integer value entered as 'last' parameter.
+        # Just show all runs.
+        pass
+
+    # Reverse list so graph displayed in correct order
+    runs = runs[::-1]
+
+    for run in runs:
+        if run.started and run.finished:
+            run.run_time = (run.finished - run.started).total_seconds()
+        else:
+            run.run_time = 0
+    context_dictionary = {
+        'runs': runs,
+        'instrument': instrument.first().name
+    }
+    return context_dictionary
+
+@require_admin
+@render_with('admin/stats.html')
+def stats(request):
+    statuses = []
+    for status in Status.objects.all():
+        status_count = (ReductionRun.objects.
+                      # Get the foreign key 'status' now. Otherwise many queries made from load_runs which is very slow.
+                      select_related('status')
+                      # Only get these attributes, to speed it up.
+                      .only('status')
+                      .filter(status__value=status.value).count())
+        statuses.append({'name': status, 'count': status_count})
+
+    context_dictionary = {
+        'statuses': statuses,
+    }
+
+    return context_dictionary
