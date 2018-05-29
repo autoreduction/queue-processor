@@ -1,3 +1,4 @@
+# pylint: skip-file
 """
 Settings for ActiveMQ and reduction variables
 """
@@ -14,6 +15,9 @@ ACTIVEMQ = {
     "reduction_complete": "/queue/ReductionComplete",
     "reduction_error": "/queue/ReductionError"
 }
+
+PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+raise RuntimeError(PROJECT_DIR)
 
 # MISC
 MISC = {
