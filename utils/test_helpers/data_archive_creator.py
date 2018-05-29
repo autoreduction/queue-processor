@@ -86,11 +86,14 @@ class DataArchiveCreator(object):
         ndx_dir_path = os.path.join(self._archive_dir, 'NDX{}')
         instrument_dir_path = os.path.join(ndx_dir_path, 'Instrument')
         logs_dir_path = os.path.join(instrument_dir_path, 'logs')
-        user_dir_path = os.path.join(ndx_dir_path, 'user')
         data_dir_path = os.path.join(instrument_dir_path, 'data')
         jrnl_dir_path = os.path.join(logs_dir_path, 'journal')
+        reduction_scripts_dir_path = os.path.join(ndx_dir_path,
+                                                  'user', 'scripts',
+                                                  'autoreduction')
+
         for instrument in instruments:
-            os.makedirs(user_dir_path.format(instrument))
+            os.makedirs(reduction_scripts_dir_path.format(instrument))
             os.makedirs(data_dir_path.format(instrument))
             os.makedirs(jrnl_dir_path.format(instrument))
             self.make_cycle_directories(start_year, end_year, current_cycle,
@@ -147,16 +150,38 @@ class DataArchiveCreator(object):
             file_path = os.path.join(path_to_data_dir, file_name)
             self.create_file_at_location(file_path)
 
-    def add_journal_file(self, instrument, file_contents):
+    def add_journal_file(self, instrument, file_content):
         """
         Adds a journal (summary.txt) file to a given instruments directory
         :param instrument: The instrument to add the file to
-        :param file_contents: the contents of the file (normally RB number)
+        :param file_content: the contents of the file (normally RB number)
         """
         path_to_log_file = os.path.join(self._archive_dir, 'NDX{}',
                                         'Instrument', 'logs',
                                         'journal').format(instrument)
-        self.create_file_at_location(os.path.join(path_to_log_file, 'summary.txt'), file_contents)
+        self.create_file_at_location(os.path.join(path_to_log_file, 'summary.txt'), file_content)
+
+    def add_reduce_file(self, instrument, file_content):
+        """
+        Adds the reduce.py to `users/scripts/autoreduction/reduce.py`
+        :param instrument: The instrument to add the file to
+        :param file_content: The contents of the file to add
+        """
+        path_to_reduce_dir = os.path.join(self._archive_dir, 'NDX{}',
+                                          'user', 'scripts',
+                                          'autoreduction').format(instrument)
+        self.create_file_at_location(os.path.join(path_to_reduce_dir, 'reduce.py'), file_content)
+
+    def add_reduce_vars_file(self, instrument, file_content):
+        """
+        Adds the reduce.py to `users/scripts/autoreduction/reduce_vars.py`
+        :param instrument: The instrument to add the file to
+        :param file_content: The contents of the file to add
+        """
+        path_to_reduce_dir = os.path.join(self._archive_dir, 'NDX{}',
+                                          'user', 'scripts',
+                                          'autoreduction').format(instrument)
+        self.create_file_at_location(os.path.join(path_to_reduce_dir, 'reduce_vars.py'), file_content)
 
     def create_file_at_location(self, file_path, contents=None):
         """
