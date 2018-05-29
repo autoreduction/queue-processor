@@ -16,18 +16,20 @@ ACTIVEMQ = {
     "reduction_error": "/queue/ReductionError"
 }
 
-PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-raise RuntimeError(PROJECT_DIR)
-
+PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+TEST_ARCHIVE_DIR = os.path.join(PROJECT_DIR, 'systemtests', 'data-archive')
 # MISC
 MISC = {
     "script_timeout": 3600,  # The maximum time that we should wait for a user script to finish running (in seconds)
     "mantid_path": "/opt/Mantid/bin",
-    "scripts_directory": "/isis/NDX%s/user/scripts/autoreduction",
+    "scripts_directory": os.path.join(TEST_ARCHIVE_DIR, 'NDX%s', 'user',
+                                      'scripts', 'autoreduction'),
     "post_process_directory": os.path.join(os.path.dirname(os.path.realpath(__file__)), "post_process_admin.py"),
-    "archive_directory": "/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s",
-    "ceph_directory": "/instrument/%s/RBNumber/RB%s/autoreduced/%s",
-    "temp_root_directory": "/autoreducetmp",
+    "archive_directory": os.path.join(TEST_ARCHIVE_DIR, 'NDX%s', 'Instrument', 'data',
+                                      'cycle_%s', 'autoreduced', '%s', '%s'),
+    "ceph_directory": os.path.join(PROJECT_DIR, 'systemtests', 'ceph', 'instrument',
+                                   '%s', 'RBNumber', 'RB%s', 'autoreduced', '%s'),
+    "temp_root_directory": os.path.join(PROJECT_DIR, 'systemtests', 'autoreducetmp'),
     "ceph_instruments": [],
     "excitation_instruments": ["LET", "MARI", "MAPS", "MERLIN", "WISH", "GEM"]
 }

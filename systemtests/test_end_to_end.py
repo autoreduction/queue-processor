@@ -16,6 +16,11 @@ from utils.test_helpers.data_archive_creator import DataArchiveCreator
 import QueueProcessors
 
 if platform.system() != 'Windows':
+
+    TEST_SCRIPT = "def main(input_file, output_dir):\n" \
+                  "   print('hello world')\n" \
+                  "\n"
+
     class TestEndToEnd(unittest.TestCase):
 
         def setUp(self):
@@ -38,18 +43,18 @@ if platform.system() != 'Windows':
             # Add data to file and reduce script
             self.data_archive_creator.make_data_archive(["GEM"], 17, 18, 2)
             self.data_archive_creator.add_data_files_to_most_recent_cycle("GEM", ['GEM123.raw'])
-            self.data_archive_creator.add_reduce_file("GEM", "print('hello world')")
+            self.data_archive_creator.add_reduce_file("GEM", TEST_SCRIPT)
             self.data_archive_creator.add_reduce_vars_file("GEM", "")
             # Send data to queue
             data_loc = os.path.join(self.data_archive_creator.get_most_recent_cycle_for_instrument("GEM"),
                                     'GEM123.raw')
             send_data_to_queue("1", "GEM", data_loc, "123", self.queue_connection)
             # check that the file has been successfully reduced in the db
-            time.sleep(10)
+            time.sleep(5)
 
             pass
 
-        def test_wish_end_to_end(self):
+        '''def test_wish_end_to_end(self):
             send_data_to_queue("2", "WISH", "path/to/file", "000002", self.queue_connection)
             # monitor execution somehow?
             # check that the file has been successfully reduced in the db
@@ -71,7 +76,7 @@ if platform.system() != 'Windows':
             send_data_to_queue("5", "OSIRIS", "path/to/file", "000005", self.queue_connection)
             # monitor execution somehow?
             # check that the file has been successfully reduced in the db
-            pass
+            pass'''
 else:
     class TestEndToEnd(unittest.TestCase):
         def test_is_windows(self):

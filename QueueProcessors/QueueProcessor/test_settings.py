@@ -76,24 +76,18 @@ ICAT = {
     'PASSWORD': 'YOUR-PASSWORD'
 }
 
-# Directory Locations
-if os.name == 'nt':
-    # %(instrument)
-    REDUCTION_DIRECTORY = r'\\isis\inst$\NDX%s\user\scripts\autoreduction'
-    # %(instrument, cycle, experiment_number, run_number)
-    ARCHIVE_DIRECTORY = r'\\isis\inst$\NDX%s\Instrument\data\cycle_%s\autoreduced\%s\%s'
+PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+TEST_ARCHIVE_DIR = os.path.join(PROJECT_DIR, 'systemtests', 'data-archive')
 
-    TEST_REDUCTION_DIRECTORY = r'\\reducedev\isis\output\NDX%s\user\scripts\autoreduction'
-    TEST_ARCHIVE_DIRECTORY = '\\isis\inst$\NDX%s\Instrument\data\cycle_%s\autoreduced\%s\%s'
+# %(instrument)
+REDUCTION_DIRECTORY = os.path.join(TEST_ARCHIVE_DIR, 'NDX%s', 'user', 'scripts', 'autoreduction')
+# %(instrument, cycle, experiment_number, run_number)
+ARCHIVE_DIRECTORY = os.path.join(TEST_ARCHIVE_DIR, 'NDX%s', 'Instrument', 'data',
+                                 'cycle_%s', 'autoreduced', '%s', '%s')
 
-else:
-    # %(instrument)
-    REDUCTION_DIRECTORY = '/isis/NDX%s/user/scripts/autoreduction'
-    # %(instrument, cycle, experiment_number, run_number)
-    ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s'
-
-    TEST_REDUCTION_DIRECTORY = '/reducedev/isis/output/NDX%s/user/scripts/autoreduction'
-    TEST_ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s'
+TEST_REDUCTION_DIRECTORY = '/reducedev/isis/output/NDX%s/user/scripts/autoreduction'
+TEST_ARCHIVE_DIRECTORY = os.path.join(TEST_ARCHIVE_DIR, 'NDX%s', 'Instrument', 'data',
+                                      'cycle_%s', 'autoreduced', '%s', '%s')
 
 # Email for notifications
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
