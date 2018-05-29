@@ -5,6 +5,7 @@ This can currently only be tested on Linux: Running this on windows will skip al
 import json
 import os
 import subprocess
+import time
 import platform
 import unittest
 
@@ -34,9 +35,18 @@ if platform.system() != 'Windows':
             subprocess.call([start_script])
 
         def test_gem_end_to_end(self):
-            send_data_to_queue("1", "GEM", "path/to/file", "000001", self.queue_connection)
-            # monitor execution somehow?
+            # Add data to file and reduce script
+            self.data_archive_creator.make_data_archive(["GEM"], 17, 18, 2)
+            self.data_archive_creator.add_data_files_to_most_recent_cycle("GEM", ['GEM123.raw'])
+            self.data_archive_creator.add_reduce_file("GEM", "print('hello world')")
+            self.data_archive_creator.add_reduce_vars_file("GEM", "")
+            # Send data to queue
+            data_loc = os.path.join(self.data_archive_creator.get_most_recent_cycle_for_instrument("GEM"),
+                                    'GEM123.raw')
+            send_data_to_queue("1", "GEM", data_loc, "123", self.queue_connection)
             # check that the file has been successfully reduced in the db
+            time.sleep(10)
+
             pass
 
         def test_wish_end_to_end(self):
