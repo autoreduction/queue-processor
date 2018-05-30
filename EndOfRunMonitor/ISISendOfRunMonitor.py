@@ -18,7 +18,7 @@ INST_FOLDER = r"\\isis\inst$\NDX%s\Instrument"
 DATA_LOC = r"\data\cycle_%s\\"
 SUMMARY_LOC = r"\logs\journal\SUMMARY.txt"
 LAST_RUN_LOC = r"\logs\lastrun.txt"
-LOG_FILE = r"monitor_log.txt"
+LOG_FILE = r"C:\monitor_log.txt"
 INSTRUMENTS = [{'name': 'WISH', 'use_nexus': True},
                {'name': 'GEM', 'use_nexus': True},
                {'name': 'OSIRIS', 'use_nexus': True},
@@ -141,7 +141,9 @@ class InstrumentMonitor(FileSystemEventHandler):
 
 def main():
     """ Main method, connects to ActiveMQ and sets up instrument last_run.txt listeners. """
+    logging.info("Connecting to ActiveMQ...")
     connection = QueueClient()
+    logging.info("Connected to ActiveMQ")
 
     message_lock = threading.Lock()
     for inst in INSTRUMENTS:
@@ -151,6 +153,7 @@ def main():
         path = event_handler.get_watched_folder()
         # Tell the observer what to watch and give it the class that will handle the events.
         observer.schedule(event_handler, path)
+        logging.info("Watching %s", str(path))
     # Start watching files.
     observer.start()
 
