@@ -19,7 +19,13 @@ DATA_LOC = r"\data\cycle_%s\\"
 SUMMARY_LOC = r"\logs\journal\SUMMARY.txt"
 LAST_RUN_LOC = r"\logs\lastrun.txt"
 LOG_FILE = r"monitor_log.txt"
-INSTRUMENTS = [{'name': 'WISH', 'use_nexus': True}]
+INSTRUMENTS = [{'name': 'WISH', 'use_nexus': True},
+               {'name': 'GEM', 'use_nexus': True},
+               {'name': 'OSIRIS', 'use_nexus': True},
+               {'name': 'POLARIS', 'use_nexus': True},
+               {'name': 'MUSR', 'use_nexus': True},
+               {'name': 'POLREF', 'use_nexus': True}]
+
 
 # Check fake_archive folder for the last_run.txt file and will not send data to DataReady queue"
 USE_FAKE_ARCHIVE = False
