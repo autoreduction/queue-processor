@@ -46,7 +46,7 @@ class ReductionRun(models.Model):
     retry_when = models.DateTimeField(null=True, blank=True)
     cancel = models.BooleanField(default=False)
     hidden_in_failviewer = models.BooleanField(default=False)
-    overwrite = models.BooleanField(default=True)
+    overwrite = models.NullBooleanField(default=True)
     
 
     def __unicode__(self):
