@@ -18,7 +18,7 @@ INST_FOLDER = r"\\isis\inst$\NDX%s\Instrument"
 DATA_LOC = r"\data\cycle_%s\\"
 SUMMARY_LOC = r"\logs\journal\SUMMARY.txt"
 LAST_RUN_LOC = r"\logs\lastrun.txt"
-LOG_FILE = r"monitor_log.txt"
+LOG_FILE = r"C:\monitor_log.txt"
 INSTRUMENTS = [{'name': 'WISH', 'use_nexus': True},
                {'name': 'GEM', 'use_nexus': True},
                {'name': 'OSIRIS', 'use_nexus': True},
@@ -106,6 +106,7 @@ class InstrumentMonitor(FileSystemEventHandler):
         """ Reads last line of summary.txt file and returns the RB number. """
         with open(self.instrument_summary_loc, 'rb') as summary:
             last_line = summary.readlines()[-1]
+            logging.debug("RB number found to be %s", str(last_line.split()[-1]))
             return last_line.split()[-1]
 
     def get_watched_folder(self):
@@ -116,6 +117,7 @@ class InstrumentMonitor(FileSystemEventHandler):
     def on_modified(self, event):
         """ Handler when last_run.txt modified event received. """
         try:
+            logging.debug("Received modified from %s", str(event.src_path))
             # Storing folders into variables.
             list_of_folders = event.src_path.split("\\")
             # This will ensure to only execute the code for a specific file.
@@ -123,8 +125,10 @@ class InstrumentMonitor(FileSystemEventHandler):
                 with open(self.instrument_last_run_loc) as lastrun:
                     data = get_data_and_check(lastrun)
                 # This code checks out the modified data and then it logs the changes.
+                logging.debug("data[1] = %s self.last_run = %s", str(data[1]), str(self.last_run))
                 if (data[1] != self.last_run) and (int(data[2]) == 0):
                     self.last_run = data[1]
+                    logging.debug("self.last_run updated to be %s", str(data[1]))
                     self.send_message(data)
         except Exception as exp:  # pylint: disable=broad-except
             # if this code can't be executed it will raise a logging error towards the user.
@@ -141,7 +145,9 @@ class InstrumentMonitor(FileSystemEventHandler):
 
 def main():
     """ Main method, connects to ActiveMQ and sets up instrument last_run.txt listeners. """
+    logging.info("Connecting to ActiveMQ...")
     connection = QueueClient()
+    logging.info("Connected to ActiveMQ")
 
     message_lock = threading.Lock()
     for inst in INSTRUMENTS:
@@ -151,6 +157,7 @@ def main():
         path = event_handler.get_watched_folder()
         # Tell the observer what to watch and give it the class that will handle the events.
         observer.schedule(event_handler, path)
+        logging.info("Watching %s", str(path))
     # Start watching files.
     observer.start()
 
