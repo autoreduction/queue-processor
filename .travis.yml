@@ -20,13 +20,13 @@ before_install:
   - mysql < Scripts/Build/database/travis-db-setup.sql
 
 install:
+  - python setup.py develop
   - pip install -r requirements.txt
   - ./Scripts/Build/install/icat.sh
   - ./Scripts/Build/install/activemq.sh
 
 script:
   # ================== Test setup ==================== #
-  - ./Scripts/Build/project/migrate_test_settings.sh
   - ./Scripts/Build/database/generate_testing_database.sh
   - mysql < Scripts/Build/database/populate-reduction_viewer-db.sql
 
