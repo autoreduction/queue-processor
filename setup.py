@@ -1,23 +1,33 @@
-from setuptools import setup
 import os
 from shutil import copyfile
 from setuptools import setup
 from setuptools.command.develop import develop
+
+from utils.clients.database_client import DatabaseClient
 
 
 class CustomDevelopCommand(develop):
     def run(self):
         develop.run(self)
         root_dir = os.path.dirname(os.path.realpath(__file__))
-        # Migrate test settings
+        # ============================== Migrate test settings =============================== #
         test_settings_paths = [os.path.join(root_dir, 'Scripts', 'ActiveMQTests'),
                                os.path.join(root_dir, 'utils'),
                                os.path.join(root_dir, 'WebApp', 'autoreduce_webapp', 'autoreduce_webapp')]
         self._migrate_test_settings(test_settings_paths)
-        # Initialise database
 
-        # Install externals (Also install)
-        #   Validate externals
+        # =============================== Initialise database ================================ #
+        db_client = DatabaseClient()
+        database_build_dir = os.path.join(root_dir, 'Scripts', 'Build', 'database')
+        setup_sql_path = os.path.join(database_build_dir, 'test_db_setup.sql')
+        self._read_sql_and_execute(setup_sql_path, db_client)
+        # generate testing database schema
+        populate_sql_path = os.path.join(database_build_dir, 'populate_reduction_viewer.sql')
+        self._read_sql_and_execute(populate_sql_path, db_client)
+
+        # =============================== Install externals ================================== #
+        # Run installs
+        # Validate externals
 
     @staticmethod
     def _migrate_test_settings(all_paths):
@@ -26,6 +36,11 @@ class CustomDevelopCommand(develop):
             settings_path = os.path.join(path_to_dir, 'settings.py')
             copyfile(test_settings_path, settings_path)
 
+    @staticmethod
+    def _read_sql_and_execute(sql_file_path, db_client):
+        with open(sql_file_path, 'r') as sql_file:
+            query = "".join(sql_file.readlines())
+        db_client.execute_query(query)
 
 
 setup(name='AutoReduction',
