@@ -26,13 +26,3 @@ REM install:
 cd %folder%\python-icat-0.13.1
 python setup.py build
 python setup.py install
-
-REM validate:
-set path_to_file=%~dp0
-set parent_dir=%path_to_file:install\=%
-python %parent_dir%\tests\validate_icat.py
-if %ERRORLEVEL%==0 (
-    echo "ICAT validated successfully"
-) else (
-    echo "ICAT was unable to install correctly"
-)
