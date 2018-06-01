@@ -4,6 +4,8 @@ Python wraps to windows/linux install scripts for services
 import os
 import subprocess
 
+from build.install.settings import INSTALL_DIRS
+
 PATH_TO_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
@@ -14,13 +16,20 @@ def install_service(service_name):
     :return: True: exit code of installation script was 0
              False: exit code of installation script was non-zero
     """
-    install_script = os.path.join(PATH_TO_DIR, service_name, '.%s')
+    install_script = os.path.join(PATH_TO_DIR, (service_name + '.{}'))
+    args = ''
     if os.name == 'nt':
-        install_script % 'bat'
+        if service_name == 'mantid':
+            # No need to install mantid on windows currently so skip this
+            return True
+        install_script = install_script.format('bat')
+        args = INSTALL_DIRS[service_name]
     else:
-        install_script % 'sh'
+        install_script = install_script.format('sh')
     try:
-        subprocess.check_call([install_script])
+        print("Installing %s with script %s" % (service_name, install_script))
+        subprocess.check_call([install_script, args])
+        print("Installation complete")
     except subprocess.CalledProcessError:
         return False
     return True

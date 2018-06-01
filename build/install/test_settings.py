@@ -2,11 +2,14 @@
 Settings for install directories
 """
 import os
+
+INSTALL_DIRS = {}
+
 if os.name == 'nt':
-    ACTIVE_MQ_INSTALL_DIR = 'C:\\activemq\\'
-    ICAT_INSTALL_DIR = 'C:\\icat\\'
-    MANTID_INSTALL_DIR = 'C:\\mantid\\'
+    INSTALL_DIRS['activemq'] = 'C:\\activemq\\'
+    INSTALL_DIRS['icat'] = 'C:\\icat\\'
+    INSTALL_DIRS['mantid'] = 'C:\\mantid\\'
 else:
-    ACTIVE_MQ_INSTALL_DIR = '/opt/activemq/'
-    ICAT_INSTALL_DIR = '/opt/icat/'
-    MANTID_INSTALL_DIR = '/opt/mantid/'
+    INSTALL_DIRS['activemq'] = '/opt/activemq/'
+    INSTALL_DIRS['icat'] = '/opt/icat/'
+    INSTALL_DIRS['mantid'] = '/opt/mantid/'

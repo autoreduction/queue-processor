@@ -7,7 +7,7 @@ REM If you do not have 7zip you can download it from: https://www.7-zip.org/down
 REM Download and extract
 REM target path include \ eg. C:\
 set target_path=%1
-set folder=%target_path%icat
+set folder=%target_path%
 set destination=%folder%\icat.tar.gz
 if not exist %folder% (
     md %folder%
