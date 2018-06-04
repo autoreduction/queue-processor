@@ -75,6 +75,11 @@ class DatabaseClient(object):
             cursor.execute(query)
             self._connection.commit()
 
+    def create_database(self):
+        """
+        WARNING THIS WILL MAKE A NEW DATABASE!
+        """
+
     # ======================== Tables for database access ============================== #
     def instrument(self):
         # pylint: disable=too-few-public-methods

@@ -4,9 +4,10 @@ from shutil import copyfile
 from distutils.core import Command
 from setuptools import setup
 
+from build.database.generate_database import run_sql_file, generate_schema
 from build.install.install_services import install_service
 from build.tests.validate_installs import validate_installs
-from utils.clients.database_client import DatabaseClient
+
 
 
 ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -51,16 +52,9 @@ class InitialiseTestDatabase(Command):
         self.populate_sql_path = os.path.join(database_build_dir, 'populate_reduction_viewer.sql')
 
     def run(self):
-        db_client = DatabaseClient()
-        self._read_sql_and_execute(self.setup_sql_path, db_client)
-        # generate testing database schema
-        self._read_sql_and_execute(self.populate_sql_path, db_client)
-
-    @staticmethod
-    def _read_sql_and_execute(sql_file_path, db_client):
-        with open(sql_file_path, 'r') as sql_file:
-            query = "".join(sql_file.readlines())
-        db_client.execute_query(query)
+        run_sql_file(self.setup_sql_path)
+        #generate_schema(ROOT_DIR)
+        #run_sql_file(self.populate_sql_path)
 
 
 class InstallExternals(Command):
