@@ -17,19 +17,21 @@ def install_service(service_name):
              False: exit code of installation script was non-zero
     """
     install_script = os.path.join(PATH_TO_DIR, (service_name + '.{}'))
-    args = ''
+    install_path = ''
+    unzip_path = ''
     if os.name == 'nt':
         if service_name == 'mantid':
             # No need to install mantid on windows currently so skip this
             return True
         install_script = install_script.format('bat')
-        args = INSTALL_DIRS[service_name]
+        install_path = INSTALL_DIRS[service_name]
+        unzip_path = INSTALL_DIRS['7zip-location']
     else:
         install_script = install_script.format('sh')
     try:
         print("Installing %s with script %s" % (service_name, install_script))
-        subprocess.check_call([install_script, args])
-        print("Installation complete")
+        with open(os.path.join(PATH_TO_DIR, 'build.log'), 'w+') as logging:
+            subprocess.check_call([install_script, install_path, unzip_path], stdout=logging)
     except subprocess.CalledProcessError:
         return False
     return True

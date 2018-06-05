@@ -24,7 +24,15 @@ def validate_installs(list_of_services):
             service_validity['icat'] = _validate_icat()
         elif service == 'mantid':
             service_validity['mantid'] = _validate_mantid()
+        elif service == '7zip':
+            service_validity['7zip'] = _validate_7zip()
     return service_validity
+
+
+def _validate_7zip():
+    if os.path.isfile(os.path.join(INSTALL_DIRS['7zip-location'], '7z.exe')):
+        return True
+    return False
 
 
 def _validate_activemq():
