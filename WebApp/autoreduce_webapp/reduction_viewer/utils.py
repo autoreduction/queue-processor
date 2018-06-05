@@ -89,15 +89,13 @@ class ReductionRunUtils(object):
         If variables (RunVariable) are provided, copy them and associate them with the new one, otherwise use the previous run's.
         If a script (as a string) is supplied then use it, otherwise use the previous run's.
         """
-        from reduction_variables.utils import InstrumentVariablesUtils, VariableUtils
-        
         run_last_updated = reductionRun.last_updated
         
         if username == 'super':
             username = 1
 
         # find the previous run version, so we don't create a duplicate
-        last_version = -1
+        last_version = None
         for run in ReductionRun.objects.filter(experiment=reductionRun.experiment, run_number=reductionRun.run_number):
             last_version = max(last_version, run.run_version)
         
@@ -106,16 +104,15 @@ class ReductionRunUtils(object):
             script_text = script if script is not None else reductionRun.script
         
             # create the run object and save it
-            new_job = ReductionRun( instrument = reductionRun.instrument
-                                  , run_number = reductionRun.run_number
-                                  , run_name = description
-                                  , run_version = last_version+1
-                                  , experiment = reductionRun.experiment
-                                  , started_by = username
-                                  , status = StatusUtils().get_queued()
-                                  , script = script_text
-                                  , overwrite = overwrite
-                                  )
+            new_job = ReductionRun(instrument=reductionRun.instrument, run_number=reductionRun.run_number,
+                                   run_name=description,
+                                   run_version=last_version + 1,
+                                   experiment=reductionRun.experiment,
+                                   started_by=username,
+                                   status=StatusUtils().get_queued(),
+                                   script=script_text,
+                                   overwrite=overwrite,
+                                   )
             new_job.save()
             
             reductionRun.retry_run = new_job

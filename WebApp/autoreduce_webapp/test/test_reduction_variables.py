@@ -1,4 +1,4 @@
-import logging, os, sys, shutil, imp, json
+import logging, os, sys, json
 from mock import patch
 
 from django.test import TestCase

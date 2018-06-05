@@ -101,7 +101,7 @@ class ReductionRunUtilsTestCase(TestCase):
     def test_cancel_queued(self):
         reductionRun = self.createReductionRun()
     
-        with patch('reduction_variables.utils.MessagingUtils', self.createMockMessagingUtils()):
+        with patch('reduction_variables.utilities.MessagingUtils', self.createMockMessagingUtils()):
             ReductionRunUtils().cancelRun(reductionRun)
             self.assertEqual(self.cancelledRun, reductionRun, "Expected that the run to be cancelled was this one")
             self.assertEqual(reductionRun.status, StatusUtils().get_error(), "Expected the run to have error status, was %s " % reductionRun.status.value)
@@ -113,7 +113,7 @@ class ReductionRunUtilsTestCase(TestCase):
         retryRun = self.createReductionRun()
         reductionRun.retry_run = retryRun
         
-        with patch('reduction_variables.utils.MessagingUtils', self.createMockMessagingUtils()):
+        with patch('reduction_variables.utilities.MessagingUtils', self.createMockMessagingUtils()):
             ReductionRunUtils().cancelRun(reductionRun)
             self.assertEqual(self.cancelledRun, retryRun, "Expected that the run to be cancelled was this one")
             self.assertEqual(retryRun.status, StatusUtils().get_error(), "Expected the run to have Error status, was %s " % retryRun.status.value)
@@ -132,7 +132,7 @@ class ReductionRunUtilsTestCase(TestCase):
             reductionRun = self.createReductionRun()
             reductionRun.status = status
             
-            with patch('reduction_variables.utils.MessagingUtils', self.createMockMessagingUtils()):
+            with patch('reduction_variables.utilities.MessagingUtils', self.createMockMessagingUtils()):
                 ReductionRunUtils().cancelRun(reductionRun)
                 self.assertEqual(self.cancelledRun, None, "Expected that no run was cancelled when trying %s" % statusMember)
                 self.assertEqual(reductionRun.status, status, "Expected the run to have %s status, was %s" % (status.value, reductionRun.status.value))

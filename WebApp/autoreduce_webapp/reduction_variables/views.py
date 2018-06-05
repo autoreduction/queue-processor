@@ -7,6 +7,7 @@ from reduction_variables.models import InstrumentVariable, RunVariable
 from reduction_variables.utils import VariableUtils, InstrumentVariablesUtils, MessagingUtils
 from reduction_viewer.models import Instrument, ReductionRun
 from reduction_viewer.utils import InstrumentUtils, StatusUtils, ReductionRunUtils
+from utilities import input_processing
 
 import logging, json
 logger = logging.getLogger("app")
@@ -312,39 +313,31 @@ def run_summary(request, instrument_name, run_number, run_version=0):
 def run_confirmation(request, instrument=None):
     if request.method != 'POST':
         return redirect('instrument_summary', instrument=instrument.name)
-        
-        
+
     # POST
     instrument = Instrument.objects.get(name=instrument)
-    run_numbers = []
-
-    if 'run_number' in request.POST:
-        run_numbers.append(int(request.POST.get('run_number')))
-    else:
-        range_string = request.POST.get('run_range').split(',')
-        # Expand list
-        for item in range_string:
-            if '-' in item:
-                split_range = item.split('-')
-                run_numbers.extend(range(int(split_range[0]), int(split_range[1])+1)) # because this is a range, the end bound is exclusive!
-            else:
-                run_numbers.append(int(item))
-        # Make sure run numbers are distinct
-        run_numbers = set(run_numbers)
+    run_numbers = None
+    range_string = request.POST.get('run_range')
 
     queued_status = StatusUtils().get_queued()
     queue_count = ReductionRun.objects.filter(instrument=instrument, status=queued_status).count()
-
     context_dictionary = {
         'runs' : [],
         'variables' : None,
         'queued' : queue_count,
     }
 
+    try:
+        run_numbers = input_processing.parse_user_run_numbers(range_string)
+    except SyntaxError as e:
+        context_dictionary['error'] = e.msg
+        return context_dictionary
+
     # Check that RB numbers are the same
     rb_number = ReductionRun.objects.filter(instrument=instrument, run_number__in=run_numbers).values_list('experiment__reference_number', flat=True).distinct()
     if len(rb_number) > 1:
         context_dictionary['error'] = 'Runs span multiple experiment numbers (' + ','.join(str(i) for i in rb_number) + ') please select a different range.'
+        return context_dictionary
 
     for run_number in run_numbers:
         old_reduction_run = ReductionRun.objects.filter(run_number=run_number).order_by('-run_version').first()
@@ -352,6 +345,7 @@ def run_confirmation(request, instrument=None):
         # Check old run exists
         if old_reduction_run is None:
             context_dictionary['error'] = "Run number " + str(run_number) + " doesn't exist."
+            return context_dictionary
 
         use_current_script = request.POST.get('use_current_script', u"true").lower() == u"true"
         if use_current_script:

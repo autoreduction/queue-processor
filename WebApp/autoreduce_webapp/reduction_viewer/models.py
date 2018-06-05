@@ -47,7 +47,6 @@ class ReductionRun(models.Model):
     cancel = models.BooleanField(default=False)
     hidden_in_failviewer = models.BooleanField(default=False)
     overwrite = models.NullBooleanField(default=True)
-    
 
     def __unicode__(self):
         if self.run_name:
