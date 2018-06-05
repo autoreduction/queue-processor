@@ -6,6 +6,7 @@ REM If you do not have 7zip you can download it from: https://www.7-zip.org/down
 
 REM Download and extract
 set target_path=%1
+set path_to_7z=%2
 set folder=%target_path%
 set destination=%folder%\activmq.zip
 if not exist %folder% (
@@ -13,9 +14,13 @@ if not exist %folder% (
 )
 
 if not exist %destination% (
+    echo "Information: Downloading activemq - this could take several minutes"
     powershell -Command "(new-object System.Net.WebClient).DownloadFile('http://www.apache.org/dyn/closer.cgi?filename=/activemq/5.15.3/apache-activemq-5.15.3-bin.zip&action=download', '"%destination%"')"
-    7z x %destination% -o%folder%
+    echo "Information: Download complete"
+    echo "Information: Extracting ActiveMQ"
+    %path_to_7z%\7z x %destination% -o%folder%
     del %destination%
 ) else (
-    echo "ACTIVEMQ files already detected in this location"
+    echo "Information: ActiveMQ files already detected in this location"
+    echo "Information: If validation fails - delete %destination% and re-run this script"
 )

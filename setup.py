@@ -5,9 +5,6 @@ from distutils.core import Command
 from setuptools import setup
 
 from build.database.generate_database import run_sql_file, generate_schema
-from build.install.install_services import install_service
-from build.tests.validate_installs import validate_installs
-
 
 
 ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -62,15 +59,27 @@ class InstallExternals(Command):
     user_options = [('services=', 's', 'comma separated list of services to install')]
 
     def initialize_options(self):
-        self.services = None
+        self.services = []
 
     def finalize_options(self):
-        self.services = ['activemq', 'icat', 'mantid'] \
-            if self.services is None else self.services
+        if self.services:
+            self.services = self.services.split(",")
+            self.services = [service.lower() for service in self.services]
+        else:
+            self.services = ['activemq', 'icat', 'mantid']
+        if os.name == 'nt' and '7zip' not in self.services:
+            self.services.append('7zip')
 
     def run(self):
+        from build.install.install_services import install_service
         # Validate
         valid = self._validate_services(self.services)
+        # Ensure 7zip is installed first
+        if '7zip' in valid.keys():
+            if valid['7zip'] is False:
+                install_service('7zip')
+                # Remove to ensure it is not reinstalled
+                del valid['7zip']
         for service in valid:
             if valid[service] is False:
                 install_service(service)
@@ -81,15 +90,21 @@ class InstallExternals(Command):
     def _validate_services(list_of_services, quiet=True):
         """
         Check if services are installed and usable. Current checks:
-            ActiveMQ, icat, Mantid
+            7Zip, ActiveMQ, icat, Mantid
         :param quiet: boolean to decide if anything is printed on validation failure
         :return: dictionary of {"service_name": validity(True/False)}
         """
+        from build.tests.validate_installs import validate_installs
         service_validity = validate_installs(list_of_services)
         if quiet is False:
             for service in service_validity:
                 if service_validity[service] is False:
-                    print("Unable to validate %s install" % service)
+                    print("Failure: %s install did not validate" % service)
+                else:
+                    if service == 'mantid' and os.name == 'nt':
+                        print("Skipped: mantid is currently not required on windows")
+                    else:
+                        print("Success: %s is installed and validated" % service)
         return service_validity
 
 
@@ -103,7 +118,7 @@ setup(name='AutoReduction',
           'django_extensions==2.0.7',
           'django-user-agents==0.3.2',
           'MySQL-python==1.2.5',
-          'python-daemon==2.1.2',
+          'python-daemon==2.1.2;platform_system!="Windows"',
           'requests==2.18.4',
           'SQLAlchemy==1.2.7',
           'stomp.py==4.1.20',
