@@ -127,8 +127,8 @@ setup(name='AutoReduction',
           'watchdog==0.8.3'
       ],
       cmdclass={
-          'migrate_test_settings': MigrateTestSettings,
-          'initialise_test_database': InitialiseTestDatabase,
-          'install_externals': InstallExternals,
+          'test_settings': MigrateTestSettings,
+          'database': InitialiseTestDatabase,
+          'externals': InstallExternals,
       },
       )
