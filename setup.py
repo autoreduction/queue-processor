@@ -50,8 +50,8 @@ class InitialiseTestDatabase(Command):
 
     def run(self):
         run_sql_file(self.setup_sql_path)
-        #generate_schema(ROOT_DIR)
-        #run_sql_file(self.populate_sql_path)
+        generate_schema(ROOT_DIR)
+        run_sql_file(self.populate_sql_path)
 
 
 class InstallExternals(Command):

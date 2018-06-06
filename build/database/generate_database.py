@@ -4,10 +4,6 @@ Python wraps to windows/linux schema generation scripts for services
 import os
 import subprocess
 
-SUPER_USER_CREATE = ("from django.contrib.auth.models import User;" +
-                     "User.objects.filter(username='super').delete();" +
-                     "User.objects.create_superuser('super', '', 'super')")
-
 
 def run_sql_file(sql_file_location):
     """
@@ -16,10 +12,11 @@ def run_sql_file(sql_file_location):
     :return: True: exit code of script was 0
              False: exit code of script was non-zero
     """
-    # Todo: need to fix the below and ensure database setup is functioning correctly
-    # ToDo: deal with pipes?
     try:
-        subprocess.check_call(['mysql < %s' % sql_file_location], shell=True)
+        with open(sql_file_location, 'r') as input_file:
+            subprocess.check_call(['mysql', '-uroot'],
+                                  stdin=input_file, shell=True,
+                                  stderr=subprocess.PIPE, stdout=subprocess.PIPE)
     except subprocess.CalledProcessError:
         return False
     return True
@@ -34,13 +31,10 @@ def generate_schema(project_root_path):
     """
     path_to_manage = os.path.join(project_root_path, 'WebApp', 'autoreduce_webapp', 'manage.py')
     try:
-        subprocess.check_call(['python', path_to_manage, 'migrate', 'auth'])
-        subprocess.check_call(['python', path_to_manage, 'makemigrations', 'reduction_viewer'])
-        subprocess.check_call(['python', path_to_manage, 'migrate', 'reduction_viewer'])
-        echo_proc = subprocess.Popen(['echo', SUPER_USER_CREATE], shell=True, stdout=subprocess.PIPE)
-        manage_proc = subprocess.Popen(['python', path_to_manage, 'shell'], stdin=echo_proc.stdout, stdout=subprocess.PIPE)
-        echo_proc.stdout.close()
-        manage_proc.communicate()
+        for database in ['admin', 'sessions', 'auth', 'reduction_viewer']:
+            subprocess.check_call(['python', path_to_manage, 'makemigrations', database])
+            subprocess.check_call(['python', path_to_manage, 'migrate', database])
+        subprocess.check_call(['python', path_to_manage, 'add_super'])  # Custom manage.py command to add super user
     except subprocess.CalledProcessError:
         return False
     return True
