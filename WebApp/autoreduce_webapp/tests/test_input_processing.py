@@ -2,8 +2,6 @@ import string, unittest
 
 from utilities import input_processing
 
-# This test needs reworking, so was prefixed with the word old
-# so it would not be picked up by nosetests
 
 class RunParsingTestCase(unittest.TestCase):
     def test_single_value_case(self):
