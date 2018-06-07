@@ -17,19 +17,13 @@ dist: trusty
 
 before_install:
   - mysql_upgrade --force
-  - mysql < build/database/travis-db-setup.sql
 
 install:
   - python setup.py develop
-  - pip install -r requirements.txt
-  - ./build/install/icat.sh
-  - ./build/install/activemq.sh
+  - pip install -r requirements.txt # Install testing facilities
+  - python setup.py test_settings database externals
 
 script:
-  # ================== Test setup ==================== #
-  - ./build/database/generate_testing_database.sh
-  - mysql < build/database/populate-reduction_viewer-db.sql
-
   # ================ Assert Test Setup =============== #
   - nosetests build/tests/test_db_generation.py
 
