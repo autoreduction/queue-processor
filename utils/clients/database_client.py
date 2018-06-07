@@ -69,17 +69,6 @@ class DatabaseClient(object):
         self._meta_data = None
         self._engine = None
 
-    def execute_query(self, query):
-        if self._connection is not None:
-            cursor = self._connection.cursor()
-            cursor.execute(query)
-            self._connection.commit()
-
-    def create_database(self):
-        """
-        WARNING THIS WILL MAKE A NEW DATABASE!
-        """
-
     # ======================== Tables for database access ============================== #
     def instrument(self):
         # pylint: disable=too-few-public-methods
