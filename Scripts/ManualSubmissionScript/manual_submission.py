@@ -7,9 +7,9 @@ import json
 import sys
 import argparse
 
+import icat
 import stomp
 
-import icat
 # The below is only a template on the repo
 # pylint: disable=import-error, no-name-in-module
 from Scripts.ManualSubmissionScript.settings import ACTIVE_MQ
