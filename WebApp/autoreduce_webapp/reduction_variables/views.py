@@ -316,7 +316,6 @@ def run_confirmation(request, instrument=None):
 
     # POST
     instrument = Instrument.objects.get(name=instrument)
-    run_numbers = None
     range_string = request.POST.get('run_range')
 
     queued_status = StatusUtils().get_queued()
@@ -395,13 +394,15 @@ def run_confirmation(request, instrument=None):
         
         run_description = request.POST.get('run_description')
                 
-        new_job = ReductionRunUtils().createRetryRun(old_reduction_run, script=script_text, overwrite=overwrite_previous_data, variables=new_variables, username=request.user.username, description=run_description)
+        new_job = ReductionRunUtils().createRetryRun(old_reduction_run, script=script_text,
+                                                     overwrite=overwrite_previous_data, variables=new_variables,
+                                                     username=request.user.username, description=run_description)
 
         try:
             MessagingUtils().send_pending(new_job)
             context_dictionary['runs'].append(new_job)
             context_dictionary['variables'] = new_variables
-            
+
         except Exception as e:
             new_job.delete()
             context_dictionary['error'] = 'Failed to send new job. (%s)' % str(e)
