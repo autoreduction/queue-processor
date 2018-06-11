@@ -76,7 +76,7 @@ INSERT INTO reduction_viewer_reductionlocation
 VALUES
     (1, 'path/to/reduced/data/1', 1),
     (2, 'path/to/reduced/data/2', 2),
-    (3, 'path/to/reduced/data/3', 3);
+    (3, 'path/to/reduced/data/3', 3),
 
     (4,  'path/to/reduced/data/4',  4),
     (5,  'path/to/reduced/data/5',  5),
