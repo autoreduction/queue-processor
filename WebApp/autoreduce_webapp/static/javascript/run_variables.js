@@ -201,10 +201,6 @@
                         totalRange += 1;
                     }
                 }
-
-                if (totalRange > 20) {
-                    addInvalid($(this), 'To minimise load a maximum of 20 re-runs can be submitted at a time.');
-                }
             }
         };
 

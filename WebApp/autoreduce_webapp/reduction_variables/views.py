@@ -332,10 +332,25 @@ def run_confirmation(request, instrument=None):
         context_dictionary['error'] = e.msg
         return context_dictionary
 
-    # Check that RB numbers are the same
-    rb_number = ReductionRun.objects.filter(instrument=instrument, run_number__in=run_numbers).values_list('experiment__reference_number', flat=True).distinct()
+    # Determine user level to set a maximum limit to the number of runs that can be re-queued
+    if request.user.is_superuser:
+        max_runs = 500
+    elif request.user.is_staff:
+        max_runs = 50
+    else:
+        max_runs = 20
+
+    if len(run_numbers) > max_runs:
+        context_dictionary["error"] = "{0} runs were requested, but only {1} runs can be " \
+                                      "queued at a time".format(len(run_numbers), max_runs)
+        return context_dictionary
+
+    # Check that RB numbers are the same for the range entered
+    rb_number = ReductionRun.objects.filter(instrument=instrument, run_number__in=run_numbers)\
+        .values_list('experiment__reference_number', flat=True).distinct()
     if len(rb_number) > 1:
-        context_dictionary['error'] = 'Runs span multiple experiment numbers (' + ','.join(str(i) for i in rb_number) + ') please select a different range.'
+        context_dictionary['error'] = 'Runs span multiple experiment numbers ' \
+                                      '(' + ','.join(str(i) for i in rb_number) + ') please select a different range.'
         return context_dictionary
 
     for run_number in run_numbers:
@@ -372,12 +387,8 @@ def run_confirmation(request, instrument=None):
                         continue
                     if len(value) > InstrumentVariable._meta.get_field('value').max_length:
                         context_dictionary['error'] = 'Value given in ' + str(name) + ' is too long.'
-                    variable = RunVariable( name = default_var.name
-                                          , value = value
-                                          , is_advanced = is_advanced
-                                          , type = default_var.type
-                                          , help_text = default_var.help_text
-                                          )
+                    variable = RunVariable(name=default_var.name, value=value, is_advanced=is_advanced,
+                                           type=default_var.type, help_text=default_var.help_text)
                     new_variables.append(variable)
 
         if len(new_variables) == 0:
@@ -393,6 +404,11 @@ def run_confirmation(request, instrument=None):
             return context_dictionary
         
         run_description = request.POST.get('run_description')
+        max_desc_len = 200
+        if len(run_description) > max_desc_len:
+            context_dictionary["error"] = "The description contains {0} characters, " \
+                                          "a maximum of {1} are allowed".format(len(run_description), max_desc_len)
+            return context_dictionary
                 
         new_job = ReductionRunUtils().createRetryRun(old_reduction_run, script=script_text,
                                                      overwrite=overwrite_previous_data, variables=new_variables,
@@ -420,14 +436,16 @@ def preview_script(request, instrument=None, run_number=0, experiment_reference=
             error = {'redirect_url': redirect_response.url}
             return HttpResponseForbidden(json.dumps(error))
             
-    # Make our own little function to use the permissions decorator on; if we catch a PermissionDenied, we should give a 403 error.
-    # We also don't want to check the instrument in this case, since run-specific scripts ought to be viewable without owning the instrument.
+    # Make our own little function to use the permissions decorator on;
+    # if we catch a PermissionDenied, we should give a 403 error.
+
+    # We also don't want to check the instrument in this case,
+    # since run-specific scripts ought to be viewable without owning the instrument.
     @check_permissions
     def permission_test(request, run_number=0, experiment_reference=0): pass
     try: permission_test(request, run_number, experiment_reference)
     except PermissionDenied:
         return HttpResponseForbidden()
-        
 
     # Find the reduction run to get the script for.
     if request.method == 'GET':
@@ -447,8 +465,7 @@ def preview_script(request, instrument=None, run_number=0, experiment_reference=
     else:
         script_text = InstrumentVariablesUtils().get_current_script_text(instrument)[0]
         script_variables = InstrumentVariablesUtils().show_variables_for_run(instrument) # [RunVariable]
-    
-    
+
     def format_header(string):
         # Gives a #-enclosed string that looks header-y
         lines = ["#"*(len(string)+8)]*4

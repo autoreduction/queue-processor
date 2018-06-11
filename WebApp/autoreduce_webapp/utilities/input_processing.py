@@ -17,7 +17,7 @@ def parse_user_run_numbers(user_input):
     # Single value handling
     if not is_list:
         _check_input_is_numeric(user_input)
-        return int(user_input)
+        return [int(user_input)]
 
     # List handling below
     _check_ranged_numeric_input(user_input)

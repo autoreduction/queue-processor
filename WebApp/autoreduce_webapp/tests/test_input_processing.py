@@ -6,7 +6,7 @@ from utilities import input_processing
 class RunParsingTestCase(unittest.TestCase):
     def test_single_value_case(self):
         input_value = "101"
-        expected_value = int(input_value)
+        expected_value = [int(input_value)]
 
         result = input_processing.parse_user_run_numbers(input_value)
         self.assertEqual(expected_value, result)
