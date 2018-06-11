@@ -145,7 +145,7 @@ class ReductionRunUtils(object):
             import traceback
             logger.error(traceback.format_exc())
             logger.error(e)
-            new_job.delete()
+            #new_job.delete()
             raise
             
             
