@@ -356,8 +356,9 @@ def run_confirmation(request, instrument=None):
             context_dictionary['error'] = "Run number " + str(run_number) + " doesn't exist."
 
         # Check it is not currently queued
-        if matching_previous_runs_queryset.filter(status=queued_status).first() is not None:
-            context_dictionary['error'] = "The specified run number is already queued to run"
+        queued_runs = matching_previous_runs_queryset.filter(status=queued_status).first()
+        if queued_runs is not None:
+            context_dictionary['error'] = "Run number {0} is already queued to run".format(queued_runs.run_number)
             return context_dictionary
 
         use_current_script = request.POST.get('use_current_script', u"true").lower() == u"true"
