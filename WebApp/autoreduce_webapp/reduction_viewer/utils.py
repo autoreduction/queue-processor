@@ -127,7 +127,14 @@ class ReductionRunUtils(object):
             logger.error(e)
             raise
 
-        new_job.save()
+        # Attempt to save
+        try:
+            new_job.save()
+        except ValueError as e:
+            # This usually indicates a F.K. constraint wasn't matched. Maybe we didn't get a record in?
+            logger.error(traceback.format_exc())
+            logger.error(e)
+            raise
 
         reductionRun.retry_run = new_job
         reductionRun.retry_when = timezone.now().replace(microsecond=0) + datetime.timedelta(seconds=delay if delay else 0)
