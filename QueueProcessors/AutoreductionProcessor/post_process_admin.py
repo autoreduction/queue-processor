@@ -209,20 +209,19 @@ class PostProcessAdmin(object):
             self.client.send(ACTIVEMQ['reduction_started'], json.dumps(self.data))
 
             # Specify instrument directory
-            cycle = re.match(r'.*cycle_(\d\d_\d).*', self.data_file.lower()).group(1)
-            instrument_dir = MISC["ceph_directory"] % (self.instrument,
+            instrument_output_dir = MISC["ceph_directory"] % (self.instrument,
                                                            self.proposal,
                                                            self.run_number)
 
             if self.instrument in MISC["excitation_instruments"]:
                     # Excitations would like to remove the run number folder at the end
-                    instrument_dir = instrument_dir[:instrument_dir.rfind('/') + 1]
+                    instrument_output_dir = instrument_output_dir[:instrument_output_dir.rfind('/') + 1]
 
             # Specify directories where autoreduction output will go
-            reduce_result_dir = MISC["temp_root_directory"] + instrument_dir
+            reduce_result_dir = MISC["temp_root_directory"] + instrument_output_dir
             if self.instrument not in MISC["excitation_instruments"]:
                 run_output_dir = os.path.join(MISC["temp_root_directory"],
-                                              instrument_dir[:instrument_dir.rfind('/') + 1])
+                                              instrument_output_dir[:instrument_output_dir.rfind('/') + 1])
             else:
                 run_output_dir = reduce_result_dir
 
