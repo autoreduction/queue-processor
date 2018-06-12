@@ -210,20 +210,13 @@ class PostProcessAdmin(object):
 
             # Specify instrument directory
             cycle = re.match(r'.*cycle_(\d\d_\d).*', self.data_file.lower()).group(1)
-            if self.instrument in MISC["ceph_instruments"] + MISC["excitation_instruments"]:
-
-                instrument_dir = MISC["ceph_directory"] % (self.instrument,
+            instrument_dir = MISC["ceph_directory"] % (self.instrument,
                                                            self.proposal,
                                                            self.run_number)
 
-                if self.instrument in MISC["excitation_instruments"]:
+            if self.instrument in MISC["excitation_instruments"]:
                     # Excitations would like to remove the run number folder at the end
                     instrument_dir = instrument_dir[:instrument_dir.rfind('/') + 1]
-            else:
-                instrument_dir = MISC["archive_directory"] % (self.instrument,
-                                                              cycle,
-                                                              self.proposal,
-                                                              self.run_number)
 
             # Specify directories where autoreduction output will go
             reduce_result_dir = MISC["temp_root_directory"] + instrument_dir
