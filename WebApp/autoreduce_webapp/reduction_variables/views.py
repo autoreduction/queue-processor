@@ -309,11 +309,10 @@ def run_summary(request, instrument_name, run_number, run_version=0):
 @login_and_uows_valid
 @check_permissions
 @render_with('run_confirmation.html')
-def run_confirmation(request, instrument=None):
+def run_confirmation(request, instrument):
     if request.method != 'POST':
         return redirect('instrument_summary', instrument=instrument.name)
-        
-        
+
     # POST
     instrument = Instrument.objects.get(name=instrument)
     run_numbers = []
@@ -347,8 +346,8 @@ def run_confirmation(request, instrument=None):
         context_dictionary['error'] = 'Runs span multiple experiment numbers (' + ','.join(str(i) for i in rb_number) + ') please select a different range.'
 
     for run_number in run_numbers:
-        matching_previous_runs_queryset = ReductionRun.objects.filter(run_number=run_number).order_by('-run_version')
-
+        matching_previous_runs_queryset = ReductionRun.objects.filter(instrument=instrument,
+                                                                      run_number=run_number).order_by('-run_version')
         most_recent_previous_run = matching_previous_runs_queryset.first()
 
         # Check old run exists
