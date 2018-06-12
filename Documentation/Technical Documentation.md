@@ -227,7 +227,7 @@ Models are the instances of database records. Each model matches against a table
 
 This contains utilities related to the models found within reduction_viewer.
 
-* **StatusUtils** - A helper function to get status models back for either Queue, Processing, Completed or Error. This utility wraps all calls in a `get_or_create` call to remove the need of pre-populating the database with these values.
+* **StatusUtils** - A helper function to get status models back for either Queue, Processing, Completed or Error.
 * **InstrumentUtils** - A helper function to get Instrument models back for the provided name. If an instrument matching the name isn't found, one is created prior to return.
 * **ReductionRunUtils** - Contains helper functions for `ReductionRun`s. `cancelRun()` provides cancellation functionality for runs that are being or will be retried. `createRetryRun()` 'copies' the provided run, suitable for retrying (e.g., it ensures that the `run_version` field is incremented as necessary).
 

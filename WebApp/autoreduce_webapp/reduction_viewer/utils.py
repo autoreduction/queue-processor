@@ -11,9 +11,7 @@ class StatusUtils(object):
         """
         Helper method that will try to get a status matching the given name or create one if it doesn't yet exist
         """
-        status, created = Status.objects.get_or_create(value=status_value)
-        if created:
-            logger.warn("%s status was not found, created it." % status_value)
+        status = Status.objects.get(value=status_value)
         return status
 
     def get_error(self):
@@ -36,11 +34,7 @@ class InstrumentUtils(object):
         """
         Helper method that will try to get an instrument matching the given name or create one if it doesn't yet exist
         """
-        instrument, created = Instrument.objects.get_or_create(name__iexact=instrument_name)
-        if created:
-            instrument.name = instrument_name
-            instrument.save()
-            logger.warn("%s instrument was not found, created it." % instrument_name)
+        instrument = Instrument.objects.get(name__iexact=instrument_name)
         return instrument
         
 class ReductionRunUtils(object):
