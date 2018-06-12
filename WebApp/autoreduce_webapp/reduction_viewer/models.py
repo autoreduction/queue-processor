@@ -37,8 +37,8 @@ class ReductionRun(models.Model):
     graph = models.TextField(null=True, blank=True)
     message = models.TextField(blank=True)
     reduction_log = models.TextField(blank=True)
-    # Scripts should be 10,000 chars or less. The DB supports up to 4GB strings here
-    script = models.TextField(blank=False, validators=[MaxLengthValidator(10000)])
+    # Scripts should be 100,000 chars or less. The DB supports up to 4GB strings here
+    script = models.TextField(blank=False, validators=[MaxLengthValidator(100000)])
 
     # Date time fields
     created = models.DateTimeField(auto_now_add=True, blank=False)
