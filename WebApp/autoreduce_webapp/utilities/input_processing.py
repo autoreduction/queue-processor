@@ -31,8 +31,12 @@ def parse_user_run_numbers(user_input):
             continue
 
         # Otherwise range separated values
-        split_range = value.split('-')
-        run_numbers.extend(range(int(split_range[0]), int(split_range[1]) + 1))
+        saturated_vals = _parse_range_input(value)
+        if len(saturated_vals) == 2:
+            run_numbers.extend(range(int(saturated_vals[0]), int(saturated_vals[1]) + 1))
+        else:
+            # Single negative value
+            run_numbers.append(int(saturated_vals[0]))
 
     # Range is inclusive
     return run_numbers
@@ -40,7 +44,10 @@ def parse_user_run_numbers(user_input):
 
 def _check_input_is_numeric(str_input, extra_whitelisted_char_set=None):
     # Allow 0-9 to delimit the list plus any passed extra ones
-    allowed_characters = set("1234567890")
+    if len(str_input) == 0:
+        raise SyntaxError("No numeric digits were entered at all, or after a ',' or '-' character.")
+
+    allowed_characters = set("1234567890-")
     if extra_whitelisted_char_set:
         allowed_characters |= set(extra_whitelisted_char_set)
 
@@ -58,20 +65,44 @@ def _check_ranged_numeric_input(str_input):
     # First split out all single values
     single_values = str_input.split(',')
 
-    run_numbers = []
-
     for value in single_values:
         if '-' not in value:
             # Single value
             _check_input_is_numeric(value)
-            run_numbers.append(int(value))
             continue
 
         # Otherwise range separated values
-        split_range = value.split('-')
-        _check_input_is_numeric(split_range[0])
-        _check_input_is_numeric(split_range[1])
+        returned_ranges = _parse_range_input(value)
 
-        run_numbers.extend(range(int(split_range[0]), int(split_range[1])))
+        if len(returned_ranges) > 2:
+            # A range greater than 2 has been added (i.e. 3 - 5 - 7)
+            raise SyntaxError("More than 2 values have been detected in {0}".format(str_input))
+
+        for split_ranges in returned_ranges:
+            _check_input_is_numeric(split_ranges)
 
     return True
+
+
+def _parse_range_input(ranged_input):
+    split_range = ranged_input.split('-')
+
+    found_val = []
+
+    next_val_represents_negative = False
+    for value in split_range:
+        if len(value) == 0 and not next_val_represents_negative:
+            # The next value is probably negative
+            next_val_represents_negative = True
+            continue
+
+        if len(value) == 0 and next_val_represents_negative:
+            # We probably have an input like -3 - (-5) as: -3--5
+            # consume this range separator
+            continue
+
+        # Check if the current value is negative
+        found_val.append('-' + value if next_val_represents_negative else value)
+        next_val_represents_negative = False
+
+    return found_val
