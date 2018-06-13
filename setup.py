@@ -1,7 +1,9 @@
 from setuptools import setup
 
-from build.utils.setup_commands import (MigrateTestSettings, InstallExternals,
-                                        InitialiseTestDatabase, Help)
+from build.commands.database import InitialiseTestDatabase
+from build.commands.help import Help
+from build.commands.installs import InstallExternals
+from build.commands.migrate_settings import MigrateTestSettings
 
 
 setup(name='AutoReduction',
