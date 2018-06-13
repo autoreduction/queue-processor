@@ -3,7 +3,6 @@ Python wraps to windows/linux install scripts for services
 """
 import logging
 import os
-import subprocess
 
 from build.settings import INSTALL_DIRS
 from build.utils.process_runner import run_process_and_log
@@ -61,13 +60,13 @@ def install_service(service_name, log_handler):
         unzip_path = INSTALL_DIRS['7zip-location']
     else:
         install_script = install_script.format('sh')
-    try:
-        log_handler.logger.info("Installing %s with script %s" % (service_name, install_script))
-        run_process_and_log([install_script, install_path, unzip_path], log_handler.logger)
-    except subprocess.CalledProcessError:
+
+    log_handler.logger.info("Installing %s with script %s" % (service_name, install_script))
+    if run_process_and_log([install_script, install_path, unzip_path], log_handler.logger) is False:
         log_handler.print_and_log("Error encountered when installing %s. "
                                   "Check the build.log for more information." % service_name,
                                   logging.ERROR)
         return False
+
     log_handler.print_and_log("%s installed successfully" % service_name)
     return True

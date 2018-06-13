@@ -5,7 +5,7 @@ mantid
 activemq
 """
 import os
-from build.install.settings import INSTALL_DIRS
+from build.settings import INSTALL_DIRS
 
 
 def validate_installs(list_of_services):

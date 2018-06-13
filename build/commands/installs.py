@@ -46,7 +46,9 @@ class InstallExternals(Command):
         # Ensure 7zip is installed first
         if '7zip' in services_to_install:
             BUILD_LOGGER.print_and_log("Installing 7zip (required for other installations")
-            install_service('7zip', BUILD_LOGGER)
+            if install_service('7zip', BUILD_LOGGER) is False:
+                print("Unable to install 7zip. Check build logs for more information")
+                return
             del self.services['7zip']
 
         if not services_to_install:
@@ -54,7 +56,9 @@ class InstallExternals(Command):
             return
 
         for service in services_to_install:
-            install_service(service, BUILD_LOGGER)
+            if install_service(service, BUILD_LOGGER) is False:
+                print("Unable to install %s/ Check build logs for more informaton" % service)
+                return
 
         valid = self._validate_services(services_to_install, quiet=False)
         if False in valid.values():
