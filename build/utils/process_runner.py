@@ -16,4 +16,8 @@ def run_process_and_log(list_of_args, logger):
                                stderr=subprocess.PIPE)
     process_output, process_error = process.communicate()
     if process_output:
-        logger.info(process_output)
+        print(process_output)
+    if process_error:
+        print(process_error)
+        return False
+    return True

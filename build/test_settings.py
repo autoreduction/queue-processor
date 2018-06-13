@@ -18,3 +18,5 @@ else:
         'mantid': '/opt/mantid/'
     }
     # 7Zip not required on linux
+
+DB_ROOT_PASSWORD = ''

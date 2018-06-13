@@ -24,9 +24,12 @@ class InitialiseTestDatabase(Command):
     def run(self):
         BUILD_LOGGER.print_and_log("==================== Building Database ======================")
         BUILD_LOGGER.print_and_log("Setting up database on local host")
-        run_sql_file(self.setup_sql_path, BUILD_LOGGER.logger)
+        if run_sql_file(self.setup_sql_path, BUILD_LOGGER.logger) is False:
+            return
         BUILD_LOGGER.print_and_log("Migrating databases from django model")
-        generate_schema(ROOT_DIR, BUILD_LOGGER.logger)
+        if generate_schema(ROOT_DIR, BUILD_LOGGER.logger) is False:
+            return
         BUILD_LOGGER.print_and_log("Populating database with test data")
-        run_sql_file(self.populate_sql_path, BUILD_LOGGER.logger)
+        if run_sql_file(self.populate_sql_path, BUILD_LOGGER.logger) is False:
+            return
         BUILD_LOGGER.print_and_log("Test database successfully initialised\n")

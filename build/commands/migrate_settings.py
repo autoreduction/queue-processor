@@ -18,7 +18,7 @@ class MigrateTestSettings(Command):
         self.test_settings_paths = []
 
     def finalize_options(self):
-        self.test_settings_paths = [os.path.join(ROOT_DIR, 'build', 'install'),
+        self.test_settings_paths = [os.path.join(ROOT_DIR, 'build'),
                                     os.path.join(ROOT_DIR, 'Scripts', 'ActiveMQTests'),
                                     os.path.join(ROOT_DIR, 'utils'),
                                     os.path.join(ROOT_DIR, 'WebApp', 'autoreduce_webapp',

@@ -5,7 +5,7 @@ import logging
 import os
 import subprocess
 
-from build.install.settings import INSTALL_DIRS
+from build.settings import INSTALL_DIRS
 from build.utils.process_runner import run_process_and_log
 
 PATH_TO_DIR = os.path.dirname(os.path.realpath(__file__))

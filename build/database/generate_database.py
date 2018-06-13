@@ -17,20 +17,25 @@ def run_sql_file(sql_file_location, logger):
     :return: True: exit code of script was 0
              False: exit code of script was non-zero
     """
-    try:
-        print("Running script: %s" % sql_file_location)
-        with open(sql_file_location, 'r') as input_file:
-            mysql_process = subprocess.Popen(['mysql', '-uroot'],
-                                             stdin=input_file, shell=True,
-                                             stderr=subprocess.PIPE,
-                                             stdout=subprocess.PIPE)
-            process_output, _ = mysql_process.communicate()
-            if process_output:
-                print(process_output)
-    except subprocess.CalledProcessError:
-        print("Script did not complete. Check build.log for more details.")
-        return False
-    print("Script ran successfully")
+    from build.settings import DB_ROOT_PASSWORD
+    logger.info("Running script: %s" % sql_file_location)
+    with open(sql_file_location, 'r') as input_file:
+        password = ''
+        if DB_ROOT_PASSWORD:
+            password = 'MYSQL_PWD=%s' % DB_ROOT_PASSWORD
+        access_string = '%s mysql -uroot' % password
+        mysql_process = subprocess.Popen([access_string],
+                                         stdin=input_file, shell=True,
+                                         stdout=subprocess.PIPE,
+                                         stderr=subprocess.PIPE)
+        process_output, process_err = mysql_process.communicate()
+        if process_output != '':
+            logger.info(process_output)
+        if process_err != '':
+            logger.error(process_err)
+            print("Script did not complete. Check build.log for more details.")
+            return False
+    logger.info("Script ran successfully")
     return True
 
 
@@ -43,17 +48,19 @@ def generate_schema(project_root_path, logger):
              False: exit code of script was non-zero
     """
     path_to_manage = os.path.join(project_root_path, 'WebApp', 'autoreduce_webapp', 'manage.py')
-    try:
-        for database in ['admin', 'sessions', 'auth', 'reduction_viewer']:
-            print("Migrating %s" % database)
-            run_process_and_log(['python', path_to_manage, 'makemigrations', database], logger)
-            run_process_and_log(['python', path_to_manage, 'migrate', database], logger)
+    for database in ['admin', 'sessions', 'auth', 'reduction_viewer']:
+        logger.info("Migrating %s" % database)
+        if run_process_and_log(['python', path_to_manage, 'makemigrations', database], logger) is False:
+            logger.error("Error encountered when makingmigrations for %s" % database)
+            return False
+        if run_process_and_log(['python', path_to_manage, 'migrate', database], logger) is False:
+            logger.error("Error encountered when migrating %s" % database)
+            return False
 
-        print("Adding super user")
-        run_process_and_log(['python', path_to_manage, 'add_super'], logger)  # Custom manage.py command
-    except subprocess.CalledProcessError:
-        print("Error encountered when migrating database. "
-                     "Check build.log for more details.")
+    logger.info("Adding super user")
+    # Custom manage.py command
+    if run_process_and_log(['python', path_to_manage, 'add_super'], logger) is False:
+        logger.error("Error encountered when adding super user")
         return False
-    print("Database migrated successfully")
+    logger.info("Database migrated successfully")
     return True
