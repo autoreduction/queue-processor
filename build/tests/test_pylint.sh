@@ -3,13 +3,15 @@
 # There is currently no work around for this - we should change module names to lower case
 
 SUCCESS=0
-FILES="EndOfRunMonitor
-      Scripts/ActiveMQTests/send_message.py
-      Scripts/ActiveMQTests/test_stomp_activemq.py
-      Scripts/ManualSubmissionScript
-      Scripts/NagiosChecks/autoreduce_checklastrun.py
-      WebApp/autoreduce_webapp/autoreduce_webapp/
-      QueueProcessors/AutoreductionProcessor"
+FILES="build
+       EndOfRunMonitor
+       Scripts/ActiveMQTests/send_message.py
+       Scripts/ActiveMQTests/test_stomp_activemq.py
+       Scripts/ManualSubmissionScript
+       Scripts/NagiosChecks/autoreduce_checklastrun.py
+       WebApp/autoreduce_webapp/autoreduce_webapp/
+       QueueProcessors/AutoreductionProcessor
+       utils"
 
 for file in $FILES
 do
