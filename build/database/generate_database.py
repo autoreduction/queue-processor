@@ -18,7 +18,7 @@ def run_sql_file(sql_file_location, logger):
              False: exit code of script was non-zero
     """
     try:
-        logger.info("Running script: %s" % sql_file_location)
+        print("Running script: %s" % sql_file_location)
         with open(sql_file_location, 'r') as input_file:
             mysql_process = subprocess.Popen(['mysql', '-uroot'],
                                              stdin=input_file, shell=True,
@@ -26,11 +26,11 @@ def run_sql_file(sql_file_location, logger):
                                              stdout=subprocess.PIPE)
             process_output, _ = mysql_process.communicate()
             if process_output:
-                logger.info(process_output)
+                print(process_output)
     except subprocess.CalledProcessError:
-        logger.error("Script did not complete. Check build.log for more details.")
+        print("Script did not complete. Check build.log for more details.")
         return False
-    logger.info("Script ran successfully")
+    print("Script ran successfully")
     return True
 
 
@@ -45,15 +45,15 @@ def generate_schema(project_root_path, logger):
     path_to_manage = os.path.join(project_root_path, 'WebApp', 'autoreduce_webapp', 'manage.py')
     try:
         for database in ['admin', 'sessions', 'auth', 'reduction_viewer']:
-            logger.info("Migrating %s" % database)
+            print("Migrating %s" % database)
             run_process_and_log(['python', path_to_manage, 'makemigrations', database], logger)
             run_process_and_log(['python', path_to_manage, 'migrate', database], logger)
 
-        logger.info("Adding super user")
+        print("Adding super user")
         run_process_and_log(['python', path_to_manage, 'add_super'], logger)  # Custom manage.py command
     except subprocess.CalledProcessError:
-        logger.error("Error encountered when migrating database. "
+        print("Error encountered when migrating database. "
                      "Check build.log for more details.")
         return False
-    logger.info("Database migrated successfully")
+    print("Database migrated successfully")
     return True
