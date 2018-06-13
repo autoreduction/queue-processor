@@ -14,7 +14,6 @@ import imp
 import json
 import logging
 import os
-import re
 import shutil
 import socket
 import sys
@@ -210,12 +209,12 @@ class PostProcessAdmin(object):
 
             # Specify instrument directory
             instrument_output_dir = MISC["ceph_directory"] % (self.instrument,
-                                                           self.proposal,
-                                                           self.run_number)
+                                                              self.proposal,
+                                                              self.run_number)
 
             if self.instrument in MISC["excitation_instruments"]:
-                    # Excitations would like to remove the run number folder at the end
-                    instrument_output_dir = instrument_output_dir[:instrument_output_dir.rfind('/') + 1]
+                # Excitations would like to remove the run number folder at the end
+                instrument_output_dir = instrument_output_dir[:instrument_output_dir.rfind('/') + 1]
 
             # Specify directories where autoreduction output will go
             reduce_result_dir = MISC["temp_root_directory"] + instrument_output_dir
