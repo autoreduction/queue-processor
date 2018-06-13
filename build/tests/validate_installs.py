@@ -5,7 +5,6 @@ mantid
 activemq
 """
 import os
-import sys
 from build.install.settings import INSTALL_DIRS
 
 
@@ -53,14 +52,8 @@ def _validate_mantid():
     if os.name == 'nt':
         # No need to validate mantid on windows as it is not required
         return True
-    try:
-        sys.path.append(os.environ['MANTIDPATH'])
-        import mantid.simpleapi
-    except ImportError:
-        return False
-    except KeyError:
-        return False
-    return True
+    if os.path.isfile(os.path.join('/opt', 'Mantid', 'bin', 'mantidpython')):
+        return True
 
 
 
