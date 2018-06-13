@@ -1,4 +1,7 @@
 import logging, os, sys, time, datetime
+
+import django.core.exceptions, django.http
+
 sys.path.append(os.path.join("../", os.path.dirname(os.path.dirname(__file__))))
 os.environ["DJANGO_SETTINGS_MODULE"] = "autoreduce_webapp.settings"
 logger = logging.getLogger('app')
@@ -28,15 +31,22 @@ class StatusUtils(object):
 
     def get_skipped(self):
         return self._get_status("Skipped")
-            
+
+
 class InstrumentUtils(object):
+
     def get_instrument(self, instrument_name):
         """
         Helper method that will try to get an instrument matching the given name or create one if it doesn't yet exist
         """
-        instrument = Instrument.objects.get(name__iexact=instrument_name)
+        try:
+            instrument = Instrument.objects.get(name__iexact=instrument_name)
+        except django.core.exceptions.ObjectDoesNotExist:
+            raise django.http.Http404()
+
         return instrument
-        
+
+
 class ReductionRunUtils(object):
 
     def cancelRun(self, reductionRun):
