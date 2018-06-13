@@ -20,8 +20,9 @@ before_install:
 
 install:
   - python setup.py develop
-  - pip install -r requirements.txt # Install testing facilities
-  - python setup.py test_settings database externals
+  - pip install -r requirements.txt # Install testing packages
+  - python setup.py test_settings database externals -s icat  # Only install external icat as nothing else is required
+
 
 script:
   # ================ Assert Test Setup =============== #
