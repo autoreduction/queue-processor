@@ -1,6 +1,10 @@
-import logging, os, sys, time, datetime, traceback
+import logging, os, sys, time, datetime
 
-import django.core.exceptions
+import django.core.exceptions, django.http
+
+sys.path.append(os.path.join("../", os.path.dirname(os.path.dirname(__file__))))
+os.environ["DJANGO_SETTINGS_MODULE"] = "autoreduce_webapp.settings"
+logger = logging.getLogger('app')
 from django.utils import timezone
 from reduction_viewer.models import Instrument, Status, ReductionRun, DataLocation
 from reduction_variables.models import RunVariable
@@ -15,9 +19,7 @@ class StatusUtils(object):
         """
         Helper method that will try to get a status matching the given name or create one if it doesn't yet exist
         """
-        status, created = Status.objects.get_or_create(value=status_value)
-        if created:
-            logger.warn("%s status was not found, created it." % status_value)
+        status = Status.objects.get(value=status_value)
         return status
 
     def get_error(self):
@@ -34,19 +36,22 @@ class StatusUtils(object):
 
     def get_skipped(self):
         return self._get_status("Skipped")
-            
+
+
 class InstrumentUtils(object):
+
     def get_instrument(self, instrument_name):
         """
         Helper method that will try to get an instrument matching the given name or create one if it doesn't yet exist
         """
-        instrument, created = Instrument.objects.get_or_create(name__iexact=instrument_name)
-        if created:
-            instrument.name = instrument_name
-            instrument.save()
-            logger.warn("%s instrument was not found, created it." % instrument_name)
+        try:
+            instrument = Instrument.objects.get(name__iexact=instrument_name)
+        except django.core.exceptions.ObjectDoesNotExist:
+            raise django.http.Http404()
+
         return instrument
-        
+
+
 class ReductionRunUtils(object):
 
     def cancelRun(self, reductionRun):
