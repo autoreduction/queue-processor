@@ -19,10 +19,7 @@ ALL_TABLES = {"auth_group",
               "reduction_viewer_reductionlocation",
               "reduction_viewer_reductionrun",
               "reduction_viewer_setting",
-              "reduction_viewer_status",
-              "reduction_variables_runvariable",
-              "reduction_variables_variable",
-              "reduction_variables_instrumentvariable",
+              "reduction_viewer_status"
               }
 
 
@@ -46,7 +43,7 @@ class TestDatabaseGeneration(unittest.TestCase):
         self.assertEqual(ALL_TABLES, all_tables)
         db.close()
 
-    '''def test_localhost_reduction_viewer_db_population(self):
+    def test_localhost_reduction_viewer_db_population(self):
         """
         Test that the local host database has been populated with data
         Current test data adds 3 rows per table (so check this)
@@ -68,4 +65,4 @@ class TestDatabaseGeneration(unittest.TestCase):
                     self.assertTrue(len(cur.fetchall()) == 3,
                                     "{} does not contain 3 rows.{} : {}".
                                     format(table, table, cur.fetchall()))
-        db.close()'''
+        db.close()
