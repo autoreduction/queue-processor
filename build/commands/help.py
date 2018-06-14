@@ -24,7 +24,7 @@ class Help(Command):
         commands = (('     test_settings', 'Copy test_settings.py to settings.py'),
                     ('     database', 'Initialise database on localhost'),
                     ('     externals', 'Install all external programs'),
-                    ('     develop', 'Run test_settings, database and externals'),
+                    ('     start', 'starts required services: activemq'),
                     ('     help', 'Show the help documentation')
                     )
         for args in help_text:

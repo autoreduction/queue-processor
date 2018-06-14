@@ -63,7 +63,7 @@ class InstallExternals(Command):
         valid = self._validate_services(services_to_install, quiet=False)
         if False in valid.values():
             BUILD_LOGGER.print_and_log("One or more services did not correctly install:",
-                                         logging.ERROR)
+                                       logging.ERROR)
             for service_name in valid.keys():
                 if valid[service_name] is False:
                     BUILD_LOGGER.print_and_log("%s" % service_name, logging.ERROR)

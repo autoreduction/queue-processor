@@ -4,6 +4,7 @@ from build.commands.database import InitialiseTestDatabase
 from build.commands.help import Help
 from build.commands.installs import InstallExternals
 from build.commands.migrate_settings import MigrateTestSettings
+from build.commands.start import Start
 
 
 setup(name='AutoReduction',
@@ -28,6 +29,7 @@ setup(name='AutoReduction',
           'test_settings': MigrateTestSettings,
           'database': InitialiseTestDatabase,
           'externals': InstallExternals,
+          'start': Start,
           'help': Help,
       },
       )

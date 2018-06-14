@@ -62,7 +62,7 @@ def install_service(service_name, log_handler):
         install_script = install_script.format('sh')
 
     log_handler.logger.info("Installing %s with script %s" % (service_name, install_script))
-    if run_process_and_log([install_script, install_path, unzip_path], log_handler.logger) is False:
+    if run_process_and_log([install_script, install_path, unzip_path]) is False:
         log_handler.print_and_log("Error encountered when installing %s. "
                                   "Check the build.log for more information." % service_name,
                                   logging.ERROR)
