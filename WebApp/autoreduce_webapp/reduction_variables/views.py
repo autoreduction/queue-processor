@@ -309,11 +309,10 @@ def run_summary(request, instrument_name, run_number, run_version=0):
 @login_and_uows_valid
 @check_permissions
 @render_with('run_confirmation.html')
-def run_confirmation(request, instrument=None):
+def run_confirmation(request, instrument):
     if request.method != 'POST':
         return redirect('instrument_summary', instrument=instrument.name)
-        
-        
+
     # POST
     instrument = Instrument.objects.get(name=instrument)
     run_numbers = []
@@ -347,19 +346,27 @@ def run_confirmation(request, instrument=None):
         context_dictionary['error'] = 'Runs span multiple experiment numbers (' + ','.join(str(i) for i in rb_number) + ') please select a different range.'
 
     for run_number in run_numbers:
-        old_reduction_run = ReductionRun.objects.filter(run_number=run_number).order_by('-run_version').first()
+        matching_previous_runs_queryset = ReductionRun.objects.filter(instrument=instrument,
+                                                                      run_number=run_number).order_by('-run_version')
+        most_recent_previous_run = matching_previous_runs_queryset.first()
 
         # Check old run exists
-        if old_reduction_run is None:
-            context_dictionary['error'] = "Run number " + str(run_number) + " doesn't exist."
+        if most_recent_previous_run is None:
+            context_dictionary['error'] = "Run number " + str(run_number) + " hasn't been ran by autoreduction yet."
+
+        # Check it is not currently queued
+        queued_runs = matching_previous_runs_queryset.filter(status=queued_status).first()
+        if queued_runs is not None:
+            context_dictionary['error'] = "Run number {0} is already queued to run".format(queued_runs.run_number)
+            return context_dictionary
 
         use_current_script = request.POST.get('use_current_script', u"true").lower() == u"true"
         if use_current_script:
             script_text = InstrumentVariablesUtils().get_current_script_text(instrument.name)[0]
             default_variables = InstrumentVariablesUtils().get_default_variables(instrument.name)
         else:
-            script_text = old_reduction_run.script
-            default_variables = old_reduction_run.run_variables.all()
+            script_text = most_recent_previous_run.script
+            default_variables = most_recent_previous_run.run_variables.all()
         
         new_variables = []
 
@@ -401,7 +408,9 @@ def run_confirmation(request, instrument=None):
         
         run_description = request.POST.get('run_description')
                 
-        new_job = ReductionRunUtils().createRetryRun(old_reduction_run, script=script_text, overwrite=overwrite_previous_data, variables=new_variables, username=request.user.username, description=run_description)
+        new_job = ReductionRunUtils().createRetryRun(most_recent_previous_run, script=script_text,
+                                                     overwrite=overwrite_previous_data, variables=new_variables,
+                                                     username=request.user.username, description=run_description)
 
         try:
             MessagingUtils().send_pending(new_job)
