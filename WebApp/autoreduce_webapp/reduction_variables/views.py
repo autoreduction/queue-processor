@@ -352,7 +352,7 @@ def run_confirmation(request, instrument):
 
         # Check old run exists
         if most_recent_previous_run is None:
-            context_dictionary['error'] = "Run number " + str(run_number) + " doesn't exist."
+            context_dictionary['error'] = "Run number " + str(run_number) + " hasn't been ran by autoreduction yet."
 
         # Check it is not currently queued
         queued_runs = matching_previous_runs_queryset.filter(status=queued_status).first()
