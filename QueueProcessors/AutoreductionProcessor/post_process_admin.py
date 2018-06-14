@@ -218,11 +218,6 @@ class PostProcessAdmin(object):
 
             # Specify directories where autoreduction output will go
             reduce_result_dir = MISC["temp_root_directory"] + instrument_output_dir
-            if self.instrument not in MISC["excitation_instruments"]:
-                run_output_dir = os.path.join(MISC["temp_root_directory"],
-                                              instrument_output_dir[:instrument_output_dir.rfind('/') + 1])
-            else:
-                run_output_dir = reduce_result_dir
 
             if 'run_description' in self.data:
                 logger.info("DESCRIPTION: %s", self.data["run_description"])
@@ -304,7 +299,6 @@ class PostProcessAdmin(object):
             logger.info("----------------")
             logger.info("Reduction script: %s ...", self.reduction_script[:50])
             logger.info("Result dir: %s", reduce_result_dir)
-            logger.info("Run Output dir: %s", run_output_dir)
             logger.info("Log dir: %s", log_dir)
             logger.info("Out log: %s", script_out)
             logger.info("Datafile: %s", self.data_file)
