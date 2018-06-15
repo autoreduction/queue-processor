@@ -17,6 +17,7 @@ dist: trusty
 
 before_install:
   - mysql_upgrade --force
+  - sudo service mysql restart
 
 install:
   - python setup.py develop
@@ -25,7 +26,6 @@ install:
   - python setup.py externals -s activemq,icat # Mantid not yet required`
   - sudo python setup.py start
   - python setup.py database
-
 
 script:
   # ================ Assert Test Setup =============== #

@@ -69,6 +69,7 @@ class DatabaseClient(object):
             # the exception name instead
             if type(exp).__name__ == 'OperationalError':
                 raise RuntimeError("Unable to connect to database with the credentials provided")
+
             else:
                 # re-raise the error if it's something we do not expect
                 raise
