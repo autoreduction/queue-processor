@@ -17,6 +17,9 @@ ALL_TABLES = {"auth_group",
               "django_content_type",
               "django_migrations",
               "django_session",
+              "reduction_variables_runvariable",
+              "reduction_variables_variable",
+              "reduction_variables_instrumentvariable",
               "reduction_viewer_datalocation",
               "reduction_viewer_experiment",
               "reduction_viewer_instrument",
@@ -70,7 +73,7 @@ class TestDatabaseGeneration(unittest.TestCase):
                                     "{} does not contain 5 rows.{} : {}".
                                     format(table, table, cur.fetchall()))
                 else:
-                    self.assertTrue(len(cur.fetchall()) == 3,
-                                    "{} does not contain 3 rows.{} : {}".
+                    self.assertTrue(len(cur.fetchall()) >= 3,
+                                    "{} does not contain at least 3 rows.{} : {}".
                                     format(table, table, cur.fetchall()))
         db.close()

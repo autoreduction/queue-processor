@@ -38,3 +38,4 @@ script:
 
   # Utils tests
   - nosetests utils/clients/tests
+  - nosetests WebApp/autoreduce_webapp/tests

@@ -50,7 +50,7 @@ def generate_schema(project_root_path, logger):
              False: exit code of script was non-zero
     """
     path_to_manage = os.path.join(project_root_path, 'WebApp', 'autoreduce_webapp', 'manage.py')
-    for database in ['admin', 'sessions', 'auth', 'reduction_viewer']:
+    for database in ['admin', 'sessions', 'auth', 'reduction_viewer', 'reduction_variables']:
         logger.info("Migrating %s" % database)
         if run_process_and_log(['python', path_to_manage, 'makemigrations', database]) is False:
             logger.error("Error encountered when makingmigrations for %s" % database)

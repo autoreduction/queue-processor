@@ -28,7 +28,8 @@ from utils import copyScripts, removeScripts
 
 rb_number = 2
 
-       
+# This test needs reworking, so was prefixed with the word old
+# so it would not be picked up by nosetests       
             
 class QueueProcessorTestCase(TransactionTestCase):
     '''
