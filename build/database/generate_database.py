@@ -24,9 +24,9 @@ def run_sql_file(sql_file_location, logger):
     with open(sql_file_location, 'r') as input_file:
         password = ''
         if DB_ROOT_PASSWORD:
-            password = 'MYSQL_PWD=%s' % DB_ROOT_PASSWORD
-        access_string = '%s mysql -uroot' % password
-        mysql_process = subprocess.Popen([access_string],
+            password = 'MYSQL_PWD=%s ' % DB_ROOT_PASSWORD
+        access_string = '%smysql' % password
+        mysql_process = subprocess.Popen([access_string, '-uroot'],
                                          stdin=input_file, shell=True,
                                          stdout=subprocess.PIPE,
                                          stderr=subprocess.PIPE)
