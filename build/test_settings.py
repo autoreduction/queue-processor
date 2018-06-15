@@ -18,7 +18,7 @@ else:
     INSTALL_DIRS = {
         'activemq': '/opt/autoreduce_deps/activemq',
         'icat': '/opt/autoreduce_deps/icat',
-        'mantid': '/opt/autoreduce_deps/mantid'
+        'mantid': '/opt/Mantid'
     }
     # 7Zip not required on linux
 

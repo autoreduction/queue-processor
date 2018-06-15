@@ -1,6 +1,11 @@
 #!/bin/sh
 
-sudo mkdir -p $1
-sudo wget https://sourceforge.net/projects/mantid/files/3.12/mantid_3.12.1-0ubuntu1~xenial1_amd64.deb -O $1/mantid.deb
-sudo apt-get -y install dpkg
-sudo dpkg -i $1/mantid.deb
+set -e
+
+# Add GPG key and upstream Mantid repo
+sudo apt-add-repository "deb [arch=amd64] http://apt.isis.rl.ac.uk $(lsb_release -c | cut -f 2) main" -y
+# add the signing key
+wget -O - http://apt.isis.rl.ac.uk/2E10C193726B7213.asc -q | sudo apt-key add -
+sudo apt-add-repository ppa:mantid/mantid -y
+
+sudo apt-get install mantid
