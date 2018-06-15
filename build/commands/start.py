@@ -36,8 +36,12 @@ class Start(Command):
         """
         from build.settings import INSTALL_DIRS
         location = os.path.join(INSTALL_DIRS['activemq'],
-                                'apache-activemq-5.15.3',
-                                'bin', 'activemq')
+                           'apache-activemq-5.15.3',
+                           'bin')
+        if os.name == 'nt':
+            location = os.path.join(location, 'activemq.bat')
+        else:
+            location = os.path.join(location, 'activemq')
         if os.path.isfile(location):
             run_process_and_log([location, 'start'])
             time.sleep(2)  # Ensure that activemq process has started before you continue
