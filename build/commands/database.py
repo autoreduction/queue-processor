@@ -1,4 +1,8 @@
+"""
+Module to generate a testing database to be used for local testing of the project
+"""
 import os
+# pylint:disable=no-name-in-module,import-error
 from distutils.core import Command
 
 from build.database.generate_database import run_sql_file, generate_schema
@@ -13,15 +17,20 @@ class InitialiseTestDatabase(Command):
     user_options = []
 
     def initialize_options(self):
+        """ Initialise path variables """
+        # pylint:disable=attribute-defined-outside-init
         self.setup_sql_path = None
         self.populate_sql_path = None
 
     def finalize_options(self):
+        """ Generate paths to sql scripts """
         database_build_dir = os.path.join(ROOT_DIR, 'build', 'database')
+        # pylint:disable=attribute-defined-outside-init
         self.setup_sql_path = os.path.join(database_build_dir, 'test_db_setup.sql')
         self.populate_sql_path = os.path.join(database_build_dir, 'populate_reduction_viewer.sql')
 
     def run(self):
+        """ Run the setup scripts required for localhost database """
         BUILD_LOGGER.print_and_log("==================== Building Database ======================")
         BUILD_LOGGER.print_and_log("Setting up database on local host")
         if run_sql_file(self.setup_sql_path, BUILD_LOGGER.logger) is False:

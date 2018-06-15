@@ -1,6 +1,8 @@
 """
 Python wraps to windows/linux schema generation scripts for services
 """
+from __future__ import print_function
+
 import os
 import subprocess
 

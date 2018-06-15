@@ -4,7 +4,7 @@ Generate the apache_django_wsgi.py file to serve django content from an apache s
 Usage:
 python generate_apache_wsgi.py path/to/autoreduction/git/dir
 e.g.
-python generate_apache_wsgi.pt C:\Users\...\git\aautoreduction
+python generate_apache_wsgi.pt C:\\Users\\...\\git\\autoreduction
 """
 
 import os

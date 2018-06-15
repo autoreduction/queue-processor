@@ -35,13 +35,16 @@ def _validate_7zip():
 
 
 def _validate_activemq():
-    if os.path.isfile(os.path.join(INSTALL_DIRS['activemq'], 'apache-activemq-5.15.3', 'bin', 'activemq')):
+    if os.path.isfile(os.path.join(INSTALL_DIRS['activemq'],
+                                   'apache-activemq-5.15.3',
+                                   'bin', 'activemq')):
         return True
     return False
 
 
 def _validate_icat():
     try:
+        # pylint:disable=unused-variable
         import icat
     except ImportError:
         return False
@@ -54,7 +57,4 @@ def _validate_mantid():
         return True
     if os.path.isfile(os.path.join('/opt', 'Mantid', 'bin', 'mantidpython')):
         return True
-
-
-
-
+    return False

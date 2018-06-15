@@ -1,5 +1,10 @@
-import MySQLdb
+"""
+Validate the database has been correctly generated
+"""
 import unittest
+
+import MySQLdb
+
 
 # All TABLES in the database Schema
 ALL_TABLES = {"auth_group",
@@ -20,10 +25,13 @@ ALL_TABLES = {"auth_group",
               "reduction_viewer_reductionrun",
               "reduction_viewer_setting",
               "reduction_viewer_status"
-              }
+             }
 
 
 class TestDatabaseGeneration(unittest.TestCase):
+    """
+    Test cases for database population and construction
+    """
 
     def test_localhost_db_construction(self):
         """

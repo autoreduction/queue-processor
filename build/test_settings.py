@@ -1,3 +1,4 @@
+# pylint: skip-file
 """
 Settings for install directories
 """

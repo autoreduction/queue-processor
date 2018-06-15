@@ -11,7 +11,7 @@ FILES="build
        Scripts/NagiosChecks/autoreduce_checklastrun.py
        WebApp/autoreduce_webapp/autoreduce_webapp/
        QueueProcessors/AutoreductionProcessor
-       utils"
+      "
 
 for file in $FILES
 do

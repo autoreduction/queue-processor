@@ -1,9 +1,18 @@
+"""
+Module to install external programs not required by the project
+7zip
+ActiveMQ
+ICAT
+Mantid
+"""
+from __future__ import print_function
 import logging
 import os
 
+# pylint:disable=no-name-in-module,import-error
 from distutils.core import Command
 
-from build.utils.common import ROOT_DIR, BUILD_LOGGER
+from build.utils.common import BUILD_LOGGER
 
 
 class InstallExternals(Command):
@@ -14,9 +23,16 @@ class InstallExternals(Command):
     user_options = [('services=', 's', 'comma separated list of services to install')]
 
     def initialize_options(self):
+        """ Initialise the services dictionary """
+        # pylint:disable=attribute-defined-outside-init
         self.services = {}
 
     def finalize_options(self):
+        """
+        If user has provided services format them to dictionary
+        If not use all services
+        """
+        # pylint:disable=attribute-defined-outside-init
         if self.services:
             self.services = self.services.split(",")
             service_dict = {}
@@ -31,6 +47,11 @@ class InstallExternals(Command):
             self.services['7zip'] = False
 
     def run(self):
+        """
+        Validate services to see if any are currently installed
+        Install each service required by the project that did not validate
+        Re-validate to ensure services are now installed
+        """
         #  Validate
         if not self._check_imports():
             return
@@ -39,6 +60,7 @@ class InstallExternals(Command):
             return
 
         BUILD_LOGGER.print_and_log("======== Installing external dependencies Database ==========")
+        # pylint:disable=attribute-defined-outside-init
         self.services = self._validate_services(self.services.keys(), quiet=False)
         # Return a list of all non-valid services (those with value of false)
         services_to_install = [service_name for service_name in self.services.keys()
@@ -64,7 +86,7 @@ class InstallExternals(Command):
         if False in valid.values():
             BUILD_LOGGER.print_and_log("One or more services did not correctly install:",
                                        logging.ERROR)
-            for service_name in valid.keys():
+            for service_name, _ in valid:
                 if valid[service_name] is False:
                     BUILD_LOGGER.print_and_log("%s" % service_name, logging.ERROR)
                 BUILD_LOGGER.print_and_log("See build.log for more details.", logging.ERROR)
@@ -76,6 +98,7 @@ class InstallExternals(Command):
         :return: False if imports fail
         """
         try:
+            # pylint:disable=unused-variable
             from build.install.install_services import (install_service, validate_input,
                                                         valid_services)
         except ImportError:
