@@ -87,9 +87,9 @@ class InstallExternals(Command):
         if False in valid.values():
             BUILD_LOGGER.print_and_log("One or more services did not correctly install:",
                                        logging.ERROR)
-            for service_name, _ in valid:
+            for service_name, _ in valid.items():
                 if valid[service_name] is False:
-                    BUILD_LOGGER.print_and_log("%s" % service_name, logging.ERROR)
+                    BUILD_LOGGER.print_and_log("* %s" % service_name, logging.ERROR)
                 BUILD_LOGGER.print_and_log("See build.log for more details.", logging.ERROR)
 
     @staticmethod

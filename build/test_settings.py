@@ -16,9 +16,9 @@ if os.name == 'nt':
 else:
     # LINUX SETTINGS
     INSTALL_DIRS = {
-        'activemq': '/opt/autoreduce_deps/activemq/',
-        'icat': '/opt/autoreduce_deps/icat/',
-        'mantid': '/opt/autoreduce_deps/mantid/'
+        'activemq': '/opt/autoreduce_deps/activemq',
+        'icat': '/opt/autoreduce_deps/icat',
+        'mantid': '/opt/autoreduce_deps/mantid'
     }
     # 7Zip not required on linux
 
