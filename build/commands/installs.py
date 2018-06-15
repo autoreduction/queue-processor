@@ -59,7 +59,7 @@ class InstallExternals(Command):
         if not self._check_input():
             return
 
-        BUILD_LOGGER.print_and_log("======== Installing external dependencies Database ==========")
+        BUILD_LOGGER.print_and_log("======== Installing external dependencies ==========")
         # pylint:disable=attribute-defined-outside-init
         self.services = self._validate_services(self.services.keys(), quiet=False)
         # Return a list of all non-valid services (those with value of false)
@@ -72,6 +72,7 @@ class InstallExternals(Command):
                 print("Unable to install 7zip. Check build logs for more information")
                 return
             del self.services['7zip']
+            services_to_install.remove('7zip')
 
         if not services_to_install:
             BUILD_LOGGER.print_and_log("Nothing to install - All given services are valid")
