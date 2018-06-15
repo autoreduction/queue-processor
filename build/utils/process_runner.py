@@ -25,3 +25,12 @@ def run_process_and_log(list_of_args):
         print(process_error)
         return False
     return True
+
+
+def run_process_with_shell(list_of_args):
+    """
+    Run a process using the shell true command and do not log the output
+    :param list_of_args: list of args for Popen
+    :return:
+    """
+    subprocess.call(list_of_args, shell=True)

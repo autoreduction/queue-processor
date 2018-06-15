@@ -9,7 +9,7 @@ import time
 # pylint:disable=no-name-in-module,import-error
 from distutils.core import Command
 
-from build.utils.process_runner import run_process_and_log
+from build.utils.process_runner import run_process_and_log, run_process_with_shell
 
 
 class Start(Command):
@@ -40,11 +40,21 @@ class Start(Command):
                            'bin')
         if os.name == 'nt':
             location = os.path.join(location, 'activemq.bat')
+            start_new_terminal = ['start', 'cmd', '/c']
+            if self._check_valid_path(location):
+                run_process_with_shell(start_new_terminal + [location, 'start'])
+                time.sleep(2)  # Ensure that activemq process has started before you continue
         else:
             location = os.path.join(location, 'activemq')
-        if os.path.isfile(location):
-            run_process_and_log([location, 'start'])
-            time.sleep(2)  # Ensure that activemq process has started before you continue
+            if self._check_valid_path(location):
+                run_process_and_log([location, 'start'])
+                time.sleep(2)  # Ensure that activemq process has started before you continue
+
+    @staticmethod
+    def _check_valid_path(path):
+        if os.path.isfile(path):
+                return True
         else:
             print("Unable to start ActiveMQ service."
-                  "Files not found at location %s" % location)
+                  "Files not found at location %s" % path)
+            return False
