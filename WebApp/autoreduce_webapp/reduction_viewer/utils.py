@@ -1,4 +1,7 @@
 import logging, os, sys, time, datetime
+
+import django.core.exceptions, django.http
+
 sys.path.append(os.path.join("../", os.path.dirname(os.path.dirname(__file__))))
 os.environ["DJANGO_SETTINGS_MODULE"] = "autoreduce_webapp.settings"
 logger = logging.getLogger('app')
@@ -6,14 +9,17 @@ from django.utils import timezone
 from reduction_viewer.models import Instrument, Status, ReductionRun, DataLocation
 from reduction_variables.models import RunVariable
 
+sys.path.append(os.path.join("../", os.path.dirname(os.path.dirname(__file__))))
+os.environ["DJANGO_SETTINGS_MODULE"] = "autoreduce_webapp.settings"
+logger = logging.getLogger('app')
+
+
 class StatusUtils(object):
     def _get_status(self, status_value):
         """
         Helper method that will try to get a status matching the given name or create one if it doesn't yet exist
         """
-        status, created = Status.objects.get_or_create(value=status_value)
-        if created:
-            logger.warn("%s status was not found, created it." % status_value)
+        status = Status.objects.get(value=status_value)
         return status
 
     def get_error(self):
@@ -30,19 +36,22 @@ class StatusUtils(object):
 
     def get_skipped(self):
         return self._get_status("Skipped")
-            
+
+
 class InstrumentUtils(object):
+
     def get_instrument(self, instrument_name):
         """
         Helper method that will try to get an instrument matching the given name or create one if it doesn't yet exist
         """
-        instrument, created = Instrument.objects.get_or_create(name__iexact=instrument_name)
-        if created:
-            instrument.name = instrument_name
-            instrument.save()
-            logger.warn("%s instrument was not found, created it." % instrument_name)
+        try:
+            instrument = Instrument.objects.get(name__iexact=instrument_name)
+        except django.core.exceptions.ObjectDoesNotExist:
+            raise django.http.Http404()
+
         return instrument
-        
+
+
 class ReductionRunUtils(object):
 
     def cancelRun(self, reductionRun):
@@ -94,55 +103,65 @@ class ReductionRunUtils(object):
             username = 1
 
         # find the previous run version, so we don't create a duplicate
-        last_version = None
-        for run in ReductionRun.objects.filter(experiment=reductionRun.experiment, run_number=reductionRun.run_number):
-            last_version = max(last_version, run.run_version)
-        
-        try:
-            # get the script to use:
-            script_text = script if script is not None else reductionRun.script
-        
-            # create the run object and save it
-            new_job = ReductionRun(instrument=reductionRun.instrument, run_number=reductionRun.run_number,
-                                   run_name=description,
-                                   run_version=last_version + 1,
-                                   experiment=reductionRun.experiment,
-                                   started_by=username,
-                                   status=StatusUtils().get_queued(),
-                                   script=script_text,
-                                   overwrite=overwrite,
-                                   )
-            new_job.save()
-            
-            reductionRun.retry_run = new_job
-            reductionRun.retry_when = timezone.now().replace(microsecond=0) + datetime.timedelta(seconds=delay if delay else 0)
-            reductionRun.save()
-            
-            ReductionRun.objects.filter(id = reductionRun.id).update(last_updated = run_last_updated)
-            
-            # copy the previous data locations
-            for data_location in reductionRun.data_location.all():
-                new_data_location = DataLocation(file_path=data_location.file_path, reduction_run=new_job)
-                new_data_location.save()
-                new_job.data_location.add(new_data_location)
-                
-            if variables is not None:
-                # associate the variables with the new run
-                for var in variables:
-                    var.reduction_run = new_job
-                    var.save()
-            else:
-                # provide variables if they aren't already
-                InstrumentVariablesUtils().create_variables_for_run(new_job)
+        last_version = -1
+        previous_run = ReductionRun.objects.filter(experiment=reductionRun.experiment, run_number=reductionRun.run_number)\
+                .order_by("-run_version").first()
 
-            return new_job
-            
-        except Exception as e:
-            import traceback
+        last_version = previous_run.run_version
+
+        # get the script to use:
+        script_text = script if script is not None else reductionRun.script
+
+        # create the run object and save it
+        new_job = ReductionRun(instrument=reductionRun.instrument,
+                               run_number=reductionRun.run_number,
+                               run_name=description,
+                               run_version=last_version + 1,
+                               experiment=reductionRun.experiment,
+                               started_by=username,
+                               status=StatusUtils().get_queued(),
+                               script=script_text,
+                               overwrite=overwrite)
+
+        # Check record is safe to save
+        try:
+            new_job.full_clean()
+        except django.core.exceptions as e:
             logger.error(traceback.format_exc())
             logger.error(e)
-            new_job.delete()
             raise
+
+        # Attempt to save
+        try:
+            new_job.save()
+        except ValueError as e:
+            # This usually indicates a F.K. constraint wasn't matched. Maybe we didn't get a record in?
+            logger.error(traceback.format_exc())
+            logger.error(e)
+            raise
+
+        reductionRun.retry_run = new_job
+        reductionRun.retry_when = timezone.now().replace(microsecond=0) + datetime.timedelta(seconds=delay if delay else 0)
+        reductionRun.save()
+
+        ReductionRun.objects.filter(id = reductionRun.id).update(last_updated = run_last_updated)
+
+        # copy the previous data locations
+        for data_location in reductionRun.data_location.all():
+            new_data_location = DataLocation(file_path=data_location.file_path, reduction_run=new_job)
+            new_data_location.save()
+            new_job.data_location.add(new_data_location)
+
+        if variables is not None:
+            # associate the variables with the new run
+            for var in variables:
+                var.reduction_run = new_job
+                var.save()
+        else:
+            # provide variables if they aren't already
+            InstrumentVariablesUtils().create_variables_for_run(new_job)
+
+        return new_job
             
             
     def get_script_and_arguments(self, reductionRun):

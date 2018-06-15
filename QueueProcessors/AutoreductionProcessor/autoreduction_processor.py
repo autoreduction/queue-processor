@@ -4,8 +4,10 @@ Module that reads from the reduction pending queue and calls the python script o
 import json
 import os
 import subprocess
-import stomp
+
 from twisted.internet import reactor
+import stomp
+
 
 from QueueProcessors.AutoreductionProcessor.autoreduction_logging_setup import logger
 # pylint:disable=no-name-in-module,import-error

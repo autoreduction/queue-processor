@@ -20,6 +20,7 @@ before_install:
   - mysql < Scripts/Build/database/travis-db-setup.sql
 
 install:
+  - python setup.py install
   - pip install -r requirements.txt
   - ./Scripts/Build/install/icat.sh
   - ./Scripts/Build/install/activemq.sh
