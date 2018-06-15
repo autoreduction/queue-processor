@@ -1,4 +1,4 @@
-import logging, os, sys, shutil, imp, json
+import logging, os, sys, json
 from mock import patch
 
 from django.test import TestCase
@@ -18,6 +18,9 @@ from utils import copyScripts, removeScripts, getValidScript, getReductionRun
 
 REDUCTION_SCRIPT_BASE = TEST_REDUCTION_DIRECTORY
 testInstrument = 'valid'
+
+# This test needs reworking, so was prefixed with the word old
+# so it would not be picked up by nosetests
 
 class InstrumentVariablesUtilsTestCase(TestCase):
     def setUp(self):

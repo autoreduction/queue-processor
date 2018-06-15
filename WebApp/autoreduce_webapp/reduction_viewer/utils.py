@@ -90,7 +90,6 @@ class ReductionRunUtils(object):
         reductionRun.save()
         if reductionRun.retry_run:
             reductionRun.retry_run.save()
-            
 
     def createRetryRun(self, reductionRun, overwrite=None, script=None, variables=None, delay=0, username=None, description=''):
         """
