@@ -10,11 +10,8 @@ import argparse
 import icat
 import stomp
 
-
-# The below is only a template on the repo
-# pylint: disable=import-error, no-name-in-module
-from Scripts.ManualSubmissionScript.settings import ACTIVE_MQ
-from Scripts.ManualSubmissionScript.settings import ICAT
+from utils.clients.icat_client import ICATClient
+from utils.clients.queue_client import QueueClient
 
 
 def submit_run(active_mq_client, rb_number, instrument, data_file_location, run_number):
@@ -46,15 +43,15 @@ def get_data_file(icat_client, instrument, run_number, file_ext):
     :return The resulting data_file
     """
     file_name = instrument + str(run_number).zfill(5) + "." + file_ext
-    datafile = icat_client.search("SELECT df FROM Datafile df WHERE df.name = '" + file_name +
-                                  "' INCLUDE df.dataset AS ds, ds.investigation")
+    datafile = icat_client.execute_query("SELECT df FROM Datafile df WHERE df.name = '" + file_name +
+                                         "' INCLUDE df.dataset AS ds, ds.investigation")
 
     if not datafile:
         print("Cannot find datafile '" + file_name +
               "'. Will try with zeros in front of run number.")
         file_name = instrument + str(run_number).zfill(8) + "." + file_ext
-        datafile = icat_client.search("SELECT df FROM Datafile df WHERE df.name = '"
-                                      + file_name + "' INCLUDE df.dataset AS ds, ds.investigation")
+        datafile = icat_client.execute_query("SELECT df FROM Datafile df WHERE df.name = '"
+                                             + file_name + "' INCLUDE df.dataset AS ds, ds.investigation")
 
     if not datafile:
         print("Cannot find datafile '" + file_name + "'. Exiting...")
@@ -89,13 +86,12 @@ def main():
         run_numbers = range(args.start_run_number, args.e + 1)
 
     print("Logging into ICAT")
-    icat_client = icat.client.Client(ICAT['URL'])
-    icat_client.login(ICAT['AUTH'], {'username': ICAT['USER'], 'password': ICAT['PASSWORD']})
+    icat_client = ICATClient()
+    icat_client.client_login()    
 
-    print("Logging into ActiveMQ " + ACTIVE_MQ['URL'])
-    activemq_client = stomp.Connection([(ACTIVE_MQ['URL'], 61613)])
-    activemq_client.start()
-    activemq_client.connect(ACTIVE_MQ['USER'], ACTIVE_MQ['PASSWORD'], wait=True)
+    print("Logging into ActiveMQ")
+    activemq_client = QueueClient()
+    activemq_client.connect()
 
     instrument = args.instrument.upper()
 
