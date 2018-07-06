@@ -10,6 +10,8 @@ import argparse
 import icat
 import stomp
 
+# The below is only a template on the repo
+# pylint: disable=import-error, no-name-in-module
 from utils.clients.icat_client import ICATClient
 from utils.clients.queue_client import QueueClient
 
