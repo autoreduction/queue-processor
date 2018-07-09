@@ -6,7 +6,7 @@ SUCCESS=0
 FILES="EndOfRunMonitor
       scripts/ActiveMQTests/send_message.py
       scripts/ActiveMQTests/test_stomp_activemq.py
-      scripts/ManualSubmissionScript
+      scripts/manual_submission_script
       scripts/NagiosChecks/autoreduce_checklastrun.py
       WebApp/autoreduce_webapp/autoreduce_webapp/
       QueueProcessors/AutoreductionProcessor"
