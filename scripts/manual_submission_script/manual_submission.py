@@ -7,9 +7,6 @@ import json
 import sys
 import argparse
 
-import icat
-import stomp
-
 # The below is only a template on the repo
 # pylint: disable=import-error, no-name-in-module
 from utils.clients.icat_client import ICATClient
@@ -45,7 +42,8 @@ def get_data_file(icat_client, instrument, run_number, file_ext):
     :return The resulting data_file
     """
     file_name = instrument + str(run_number).zfill(5) + "." + file_ext
-    datafile = icat_client.execute_query("SELECT df FROM Datafile df WHERE df.name = '" + file_name +
+    datafile = icat_client.execute_query("SELECT df FROM Datafile df WHERE df.name = '"
+                                         + file_name +
                                          "' INCLUDE df.dataset AS ds, ds.investigation")
 
     if not datafile:
@@ -53,7 +51,8 @@ def get_data_file(icat_client, instrument, run_number, file_ext):
               "'. Will try with zeros in front of run number.")
         file_name = instrument + str(run_number).zfill(8) + "." + file_ext
         datafile = icat_client.execute_query("SELECT df FROM Datafile df WHERE df.name = '"
-                                             + file_name + "' INCLUDE df.dataset AS ds, ds.investigation")
+                                             + file_name +
+                                             "' INCLUDE df.dataset AS ds, ds.investigation")
 
     if not datafile:
         print("Cannot find datafile '" + file_name + "'. Exiting...")
@@ -88,7 +87,7 @@ def main():
 
     print("Logging into ICAT")
     icat_client = ICATClient()
-    icat_client.client_login()    
+    icat_client.client_login()
 
     print("Logging into ActiveMQ")
     activemq_client = QueueClient()
