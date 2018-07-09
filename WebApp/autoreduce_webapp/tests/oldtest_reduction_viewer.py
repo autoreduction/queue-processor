@@ -15,6 +15,8 @@ with patch('autoreduce_webapp.settings.REDUCTION_DIRECTORY', TEST_REDUCTION_DIRE
     from reduction_viewer.models import Instrument, Experiment, ReductionRun
     from reduction_viewer.utils import StatusUtils, InstrumentUtils, ReductionRunUtils
 
+# This test needs reworking, so was prefixed with the word old
+# so it would not be picked up by nosetests
 
 class StatusUtilsTestCase(TestCase):
     def test_get_statuses(self):
