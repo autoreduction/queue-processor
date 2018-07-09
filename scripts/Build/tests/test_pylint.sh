@@ -4,10 +4,10 @@
 
 SUCCESS=0
 FILES="EndOfRunMonitor
-      Scripts/ActiveMQTests/send_message.py
-      Scripts/ActiveMQTests/test_stomp_activemq.py
-      Scripts/ManualSubmissionScript
-      Scripts/NagiosChecks/autoreduce_checklastrun.py
+      scripts/ActiveMQTests/send_message.py
+      scripts/ActiveMQTests/test_stomp_activemq.py
+      scripts/ManualSubmissionScript
+      scripts/NagiosChecks/autoreduce_checklastrun.py
       WebApp/autoreduce_webapp/autoreduce_webapp/
       QueueProcessors/AutoreductionProcessor"
 

@@ -7,7 +7,7 @@ import logging
 
 import stomp
 
-from Scripts.ActiveMQTests.settings import LOG_FILENAME, ACTIVEMQ
+from scripts.ActiveMQTests.settings import LOG_FILENAME, ACTIVEMQ
 
 logging.basicConfig(filename=LOG_FILENAME, level=logging.DEBUG)
 
