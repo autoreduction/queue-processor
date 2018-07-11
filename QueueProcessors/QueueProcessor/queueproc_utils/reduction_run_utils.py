@@ -9,10 +9,10 @@ from QueueProcessors.QueueProcessor.base import session
 from QueueProcessors.QueueProcessor.settings import LOGGING
 from QueueProcessors.QueueProcessor.orm_mapping import DataLocation, ReductionRun, RunJoin
 
-from QueueProcessors.QueueProcessor.utils.instrument_variable_utils import InstrumentVariablesUtils
-from QueueProcessors.QueueProcessor.utils.messaging_utils import MessagingUtils
-from QueueProcessors.QueueProcessor.utils.status_utils import StatusUtils
-from QueueProcessors.QueueProcessor.utils.variable_utils import VariableUtils
+from QueueProcessors.QueueProcessor.queueproc_utils.instrument_variable_utils import InstrumentVariablesUtils
+from QueueProcessors.QueueProcessor.queueproc_utils.messaging_utils import MessagingUtils
+from QueueProcessors.QueueProcessor.queueproc_utils.status_utils import StatusUtils
+from QueueProcessors.QueueProcessor.queueproc_utils.variable_utils import VariableUtils
 
 # Set up logging and attach the logging to the right part of the config.
 logging.config.dictConfig(LOGGING)
