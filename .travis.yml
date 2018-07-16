@@ -6,23 +6,39 @@ python:
 services:
   - mysql
 
+addons:
+  apt:
+    sources:
+      - mysql-5.7-trusty
+    packages:
+      - mysql-server
+
+dist: trusty
+
+before_install:
+  - mysql_upgrade --force
+  - mysql < scripts/Build/database/travis-db-setup.sql
+
 install:
+  - python setup.py install
   - pip install -r requirements.txt
-  - ./Scripts/Build/install_icat.sh
-  - ./Scripts/Build/install_activemq.sh
+  - ./scripts/Build/install/icat.sh
+  - ./scripts/Build/install/activemq.sh
 
 script:
   # ================== Test setup ==================== #
-  - ./Scripts/Build/migrate_test_settings.sh
-  - ./Scripts/Build/generate_testing_database.sh
+  - ./scripts/Build/project/migrate_test_settings.sh
+  - ./scripts/Build/database/generate_testing_database.sh
+  - mysql < scripts/Build/database/populate-reduction_viewer-db.sql
 
   # ================ Assert Test Setup =============== #
-  - nosetests Scripts/Build/test/test_db_generation.py
-  
+  - nosetests scripts/Build/tests/test_db_generation.py
+
   # ================ Static Analysis ================= #
-  - ./Scripts/Build/test/test_pylint.sh
+  - ./scripts/Build/tests/test_pylint.sh
 
   # ================ Nose unit tests ================ #
 
   # Utils tests
   - nosetests utils/clients/tests
+  - nosetests WebApp/autoreduce_webapp/tests

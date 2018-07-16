@@ -10,10 +10,14 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 SECRET_KEY = 'YOUR-SECRET-KEY'
 
 # SECURITY WARNING: don't run with these turned on in production!
-DEBUG = False
+
+# Enable debug by default, this allows us to serve static content without
+# having to run `manage.py collectstatic` each time. On production
+# we use Apache to serve static content instead.
+DEBUG = True
 DEBUG_PROPAGATE_EXCEPTIONS = False
 
-ALLOWED_HOSTS = ['localhost', 'reducedev2.isis.cclrc.ac.uk']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'reducedev2.isis.cclrc.ac.uk']
 INTERNAL_IPS = ['localhost', '127.0.0.1']
 
 # Application definition
@@ -158,9 +162,9 @@ ACTIVEMQ = {
         '/queue/ReductionComplete',
         '/queue/ReductionError'
     ],
-    'username': 'YOUR-ACTIVEMQ-USERNAME',
-    'password': 'YOUR-ACTIVEMQ-PASSWORD',
-    'broker': [("YOUR-ACTIVE-MQ-HOST", 61613)],
+    'username': 'admin',
+    'password': 'admin',
+    'broker': [("127.0.1.1", 61613)],
     'SSL': False
 }
 

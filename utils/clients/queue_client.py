@@ -6,10 +6,10 @@ Created on Wed May 27 14:37:59 2015
 """
 import logging
 import time
+
 import stomp
 
-
-from utils.clients.settings import ACTIVEMQ
+from utils.settings import ACTIVEMQ
 
 
 class QueueClient(object):
