@@ -14,7 +14,6 @@ import imp
 import json
 import logging
 import os
-import re
 import shutil
 import socket
 import sys
@@ -209,29 +208,16 @@ class PostProcessAdmin(object):
             self.client.send(ACTIVEMQ['reduction_started'], json.dumps(self.data))
 
             # Specify instrument directory
-            cycle = re.match(r'.*cycle_(\d\d_\d).*', self.data_file.lower()).group(1)
-            if self.instrument in MISC["ceph_instruments"] + MISC["excitation_instruments"]:
-
-                instrument_dir = MISC["ceph_directory"] % (self.instrument,
-                                                           self.proposal,
-                                                           self.run_number)
-
-                if self.instrument in MISC["excitation_instruments"]:
-                    # Excitations would like to remove the run number folder at the end
-                    instrument_dir = instrument_dir[:instrument_dir.rfind('/') + 1]
-            else:
-                instrument_dir = MISC["archive_directory"] % (self.instrument,
-                                                              cycle,
+            instrument_output_dir = MISC["ceph_directory"] % (self.instrument,
                                                               self.proposal,
                                                               self.run_number)
 
+            if self.instrument in MISC["excitation_instruments"]:
+                # Excitations would like to remove the run number folder at the end
+                instrument_output_dir = instrument_output_dir[:instrument_output_dir.rfind('/') + 1]
+
             # Specify directories where autoreduction output will go
-            reduce_result_dir = MISC["temp_root_directory"] + instrument_dir
-            if self.instrument not in MISC["excitation_instruments"]:
-                run_output_dir = os.path.join(MISC["temp_root_directory"],
-                                              instrument_dir[:instrument_dir.rfind('/') + 1])
-            else:
-                run_output_dir = reduce_result_dir
+            reduce_result_dir = MISC["temp_root_directory"] + instrument_output_dir
 
             if 'run_description' in self.data:
                 logger.info("DESCRIPTION: %s", self.data["run_description"])
@@ -313,7 +299,6 @@ class PostProcessAdmin(object):
             logger.info("----------------")
             logger.info("Reduction script: %s ...", self.reduction_script[:50])
             logger.info("Result dir: %s", reduce_result_dir)
-            logger.info("Run Output dir: %s", run_output_dir)
             logger.info("Log dir: %s", log_dir)
             logger.info("Out log: %s", script_out)
             logger.info("Datafile: %s", self.data_file)
