@@ -15,15 +15,14 @@ import sys
 import time
 import traceback
 
-import stomp
-
 from QueueProcessors.QueueProcessor.base import session
 from QueueProcessors.QueueProcessor.orm_mapping import (ReductionRun, Instrument,
                                                         Status, Experiment,
                                                         DataLocation, ReductionLocation)
 # pylint: disable=cyclic-import
 from QueueProcessors.QueueProcessor.queueproc_utils.messaging_utils import MessagingUtils
-from QueueProcessors.QueueProcessor.queueproc_utils.instrument_variable_utils import InstrumentVariablesUtils
+from QueueProcessors.QueueProcessor.queueproc_utils.instrument_variable_utils \
+    import InstrumentVariablesUtils
 from QueueProcessors.QueueProcessor.queueproc_utils.status_utils import StatusUtils
 from QueueProcessors.QueueProcessor.queueproc_utils.reduction_run_utils import ReductionRunUtils
 # pylint: disable=import-error, no-name-in-module
@@ -31,7 +30,6 @@ from QueueProcessors.QueueProcessor.settings import (LOGGING, EMAIL_HOST,
                                                      EMAIL_PORT, EMAIL_ERROR_RECIPIENTS,
                                                      EMAIL_ERROR_SENDER, BASE_URL)
 
-from utils.clients.icat_client import ICATClient
 from utils.clients.queue_client import QueueClient
 
 # Set up logging and attach the logging to the right part of the config.
@@ -421,7 +419,7 @@ class Listener(object):
         new_job = ReductionRunUtils().create_retry_run(reduction_run, delay=retry_in)
         try:
             #  Seconds to Milliseconds
-            MessagingUtils().send_pending(new_job, delay=retry_in * 1000)
+            MessagingUtils().send_pending(new_job)
         except Exception as exp:
             logger.error(traceback.format_exc())
             new_job.delete()  # pylint: disable=no-member
@@ -435,16 +433,16 @@ def setup_connection(consumer_name):
     activemq_client.connect()
 
     # Register the event listener
-    conn = activemq_client.get_connection()    
+    conn = activemq_client.get_connection()
     listener = Listener(activemq_client)
     conn.set_listener(consumer_name, listener)
     time.sleep(0.5)
 
     # Subscribe to the queues
     destinations = ['/queue/DataReady',
-        '/queue/ReductionStarted',
-        '/queue/ReductionComplete',
-        '/queue/ReductionError']
+                    '/queue/ReductionStarted',
+                    '/queue/ReductionComplete',
+                    '/queue/ReductionError']
     for dest in destinations:
         logger.info("Subscribing to %s", dest)
         conn.subscribe(destination=dest, id=1, ack='auto')

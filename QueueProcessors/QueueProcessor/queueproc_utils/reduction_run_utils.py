@@ -9,7 +9,8 @@ from QueueProcessors.QueueProcessor.base import session
 from QueueProcessors.QueueProcessor.settings import LOGGING
 from QueueProcessors.QueueProcessor.orm_mapping import DataLocation, ReductionRun, RunJoin
 
-from QueueProcessors.QueueProcessor.queueproc_utils.instrument_variable_utils import InstrumentVariablesUtils
+from QueueProcessors.QueueProcessor.queueproc_utils.instrument_variable_utils \
+    import InstrumentVariablesUtils
 from QueueProcessors.QueueProcessor.queueproc_utils.messaging_utils import MessagingUtils
 from QueueProcessors.QueueProcessor.queueproc_utils.status_utils import StatusUtils
 from QueueProcessors.QueueProcessor.queueproc_utils.variable_utils import VariableUtils
