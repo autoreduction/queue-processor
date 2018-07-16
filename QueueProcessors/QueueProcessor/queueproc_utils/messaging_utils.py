@@ -16,10 +16,10 @@ logger = logging.getLogger("queue_processor") # pylint: disable=invalid-name
 
 class MessagingUtils(object):
     """ Utils class for sending messages to queues. """
-    def send_pending(self, reduction_run):
+    def send_pending(self, reduction_run, delay=None):
         """ Sends a message to the queue with the details of the job to run. """
         data_dict = self._make_pending_msg(reduction_run)
-        self._send_pending_msg(data_dict)
+        self._send_pending_msg(data_dict, delay)
 
     def send_cancel(self, reduction_run):
         """ Sends a message to the queue telling it to cancel any reruns of the job. """
@@ -57,12 +57,13 @@ class MessagingUtils(object):
         return data_dict
 
     @staticmethod
-    def _send_pending_msg(data_dict):
+    def _send_pending_msg(data_dict, delay=None):
         """ Sends data_dict to ReductionPending (with the specified delay) """
         # To prevent circular dependencies
         message_client = QueueClient()
         message_client.connect()
         message_client.send('/queue/ReductionPending',
                             json.dumps(data_dict),
-                            priority='0')
+                            priority='0',
+                            delay=delay)
         message_client.stop()

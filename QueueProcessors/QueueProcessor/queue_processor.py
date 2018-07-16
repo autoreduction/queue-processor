@@ -419,7 +419,7 @@ class Listener(object):
         new_job = ReductionRunUtils().create_retry_run(reduction_run, delay=retry_in)
         try:
             #  Seconds to Milliseconds
-            MessagingUtils().send_pending(new_job)
+            MessagingUtils().send_pending(new_job, delay=retry_in * 1000)
         except Exception as exp:
             logger.error(traceback.format_exc())
             new_job.delete()  # pylint: disable=no-member
