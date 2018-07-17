@@ -12,7 +12,8 @@
 }
 
 \title{\textbf{Autoreduction - an automated data reduction system for beamline instruments at the ISIS Facility}}
-\author{J. R. Corderoy, T. Gowland, L. Greenwood, M. Noble, D. Oram and A. J. Markvardsen \\
+\author{J. R. Corderoy, T. Gowland, L. Greenwood, M. Noble, D. Oram, \\
+	A. J. Markvardsen, J. Shears, E. Oram, D. Fairbrother and G. Christian \\
 (code contributors)\\
 ISIS Facility, Rutherford Appleton Laboratory\\
 Email: someone with an STFC email account}
@@ -342,12 +343,12 @@ but since it runs on a basic Apache server, it could easily be moved across to a
 if it needed to. The WebApp is currently only accessible from inside the laboratory using the 
 URL: http://reduce.isis.cclrc.ac.uk.
 
-There is then a second node which runs Red Hat Enterprise Linux 7\cite{rhel}. This node
+There is then a second node which runs Windows Server 2012 running on the same Hyper-V cluster. This node
 manages the parts of the system which are common between front and backend. This includes:
 the MySQL database, the ActiveMQ server and the EndOfRunMonitor. This node should have
 all the parts of the system that wouldn't need to be replicated as part of a worker node.
 
-The third and final node manages the parts of the system that could be replicated such that 
+The third and final node, running Red Hat Enterprise Linux 7\cite{rhel}, manages the parts of the system that could be replicated such that 
 we can have multiple worker nodes active in order to split the load of autoreduction and speed
 up the overall process. This node has the QueueProcessor and the AutoreductionProcessor installed
 on it. At the moment, the production system only uses one of these nodes but as the usage of the 
@@ -359,8 +360,9 @@ The system is split out in this way such that if the machine with the WebApp ins
 the overall process of reduction could still take place. We would still pick up new runs with the 
 EndOfRunMonitor and would still be able to process them with QueueProcessor and AutoreductionProcessor.
 
-The software written as part this project is not tied to a
-particular operating system since it is written entirely in Python and Django. 
+The software written as part this project is not tied to a particular operating system since 
+it is written entirely in Python. However there is one limitation, the EndOfRunMonitor
+cannot be ran on Linux as a network mounted drive does not produce the required filesytem events.
 
 \section{Future plans}\label{future-plans}
 
@@ -384,11 +386,13 @@ the needs of users. Future development to this will involve:
 \item 
   Having the worker node machine as a Docker \cite{docker} image for
   easier deployment
+
 \end{enumerate}
 
 In the longer term, the system may be extended to listen to live streams and begin
 processing data as soon as it comes off beamlines rather then waiting for files 
-to be written to disk. 
+to be written to disk. Also an API could be implemented to reduce the complexity of
+the QueueProcessor and allow integration of autoreduction into other software \cite{autoreduction-api}. 
 
 \section{Conclusion}\label{conclusion}
 
@@ -454,13 +458,13 @@ Tom Griffin, Nick Draper, Martyn Gigg, Alex Buts, other excitation group members
 	Apache HTTP Server Project
 	\emph{Apache},
 	\url{https://httpd.apache.org/}.
-    
+	
 \bibitem{hyper-v}
     Microsoft Corporation,
     \emph{Hyper-V},
     \url{https://technet.microsoft.com/en-us/library/mt169373.aspx}.
 
-\bibitem{Docker}
+\bibitem{docker}
 	Docker,
 	\emph{Docker},
 	\url{https://www.docker.com/}
@@ -472,8 +476,11 @@ Tom Griffin, Nick Draper, Martyn Gigg, Alex Buts, other excitation group members
     
 \bibitem{source}
     Autoreduction repository,
-    \url{https://github.com/mantidproject/autoreduce}.
-
+    \url{https://github.com/isisScientificComputing/autoreduce}.
     
+\bibitem{autoreduction-api}
+  Autoreduction API GitHub issue
+  \url{https://github.com/ISISScientificComputing/autoreduce/issues/73}.
+
 \end{thebibliography}
 \end{document}
