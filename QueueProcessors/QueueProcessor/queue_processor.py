@@ -435,17 +435,11 @@ def setup_connection(consumer_name):
     # Register the event listener
     conn = activemq_client.get_connection()
     listener = Listener(activemq_client)
-    conn.set_listener(consumer_name, listener)
-    time.sleep(0.5)
-
-    # Subscribe to the queues
     destinations = ['/queue/DataReady',
                     '/queue/ReductionStarted',
                     '/queue/ReductionComplete',
                     '/queue/ReductionError']
-    for dest in destinations:
-        logger.info("Subscribing to %s", dest)
-        conn.subscribe(destination=dest, id=1, ack='auto')
+    activemq_client.subscribe_queues(consumer_name, listener, destinations)
 
 def main():
     """ Main method. """
