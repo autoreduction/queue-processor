@@ -1,0 +1,17 @@
+# Anything detected by git as text should be left to auto
+* text=auto
+
+# Anything which is text should be force to have unix EOL
+*.* text eol=lf
+
+# Anything below is binary and should be left alone
+*.pyc binary
+*.png binary
+*.pdf binary
+*.vsdx binary
+*.gz binary
+*.otf binary
+*.ttf binary
+*.woff binary
+*.eot binary
+
