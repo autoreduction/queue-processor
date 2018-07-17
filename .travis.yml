@@ -17,24 +17,6 @@ dist: trusty
 
 before_install:
   - mysql_upgrade --force
-<<<<<<< HEAD
-  - sudo service mysql restart
-
-install:
-  - python setup.py develop
-  - pip install -r requirements.txt # Install testing packages
-  - python setup.py test_settings
-  - sudo python setup.py externals -s activemq,icat # Mantid not yet required`
-  - sudo python setup.py start
-  - python setup.py database
-
-script:
-  # ================ Assert Test Setup =============== #
-  - nosetests build/tests/test_db_generation.py
-
-  # ================ Static Analysis ================= #
-  - ./build/tests/test_pylint.sh
-=======
   - mysql < scripts/Build/database/travis-db-setup.sql
 
 install:
@@ -54,7 +36,6 @@ script:
 
   # ================ Static Analysis ================= #
   - ./scripts/Build/tests/test_pylint.sh
->>>>>>> origin/develop
 
   # ================ Nose unit tests ================ #
 
