@@ -7,9 +7,6 @@ import os
 import subprocess
 import sys
 
-from build.settings import DB_ROOT_PASSWORD
-from utils.settings import MYSQL
-
 from build.utils.process_runner import run_process_and_log
 
 PATH_TO_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -23,7 +20,7 @@ def run_sql_file(sql_file_location, logger):
     :return: True: exit code of script was 0
              False: exit code of script was non-zero
     """
-
+    from build.settings import DB_ROOT_PASSWORD  # Must be imported at run-time for migrate test settings to work
     logger.info("Running script: %s" % sql_file_location)
     with open(sql_file_location, 'r') as input_file:
         password = ''
@@ -73,6 +70,9 @@ def generate_schema(project_root_path, logger):
     return True
 
 def add_test_user(logger):
+    # Must be imported at run-time for migrate test settings to work
+    from build.settings import DB_ROOT_PASSWORD
+    from utils.settings import MYSQL
     user_to_add = MYSQL["USER"]
     logger.info("Adding user: {0}".format(user_to_add))
     sql_commands = ["GRANT ALL ON *.* TO '{0}'@'localhost' IDENTIFIED BY '{1}';".format(user_to_add, MYSQL["PASSWD"]),
@@ -81,9 +81,7 @@ def add_test_user(logger):
     to_exec = '\n'.join(sql_commands)
 
     # This is duplicated from above, ideally we should switch to using Python-MySQL connectors
-    password = ''
-    if DB_ROOT_PASSWORD:
-        password = 'MYSQL_PWD=%s ' % DB_ROOT_PASSWORD
+    password = '' if not DB_ROOT_PASSWORD else 'MYSQL_PWD=%s ' % DB_ROOT_PASSWORD
     access_string = "mysql -u{0} {1}".format('root', password)
     mysql_process = subprocess.Popen(access_string,
                                      stdin=subprocess.PIPE, shell=True,
