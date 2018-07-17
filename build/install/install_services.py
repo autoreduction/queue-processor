@@ -14,12 +14,9 @@ def valid_services():
     """
     :return: A list of all valid services for the operating system
     """
-    valid = ['icat', 'activemq']
+    valid = ['icat', 'activemq', 'mantid']
     if os.name == 'nt':
-        valid.append('mantid')
         valid.append('7zip')
-    else:
-        valid.append('mantid')
     return valid
 
 
