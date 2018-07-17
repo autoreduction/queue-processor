@@ -47,6 +47,7 @@ class DatabaseClient(object):
                                                               self._password,
                                                               self._host,
                                                               self._database_name)
+            print(connect_string)
             self._engine = create_engine(connect_string, pool_recycle=280)
             self._meta_data = MetaData(self._engine)
             session = sessionmaker(bind=self._engine)
