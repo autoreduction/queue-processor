@@ -3,6 +3,7 @@
 
 # Anything which is text should be force to have unix EOL
 *.* text eol=lf
+*.sh eol=lf
 
 # Anything below is binary and should be left alone
 *.pyc binary
