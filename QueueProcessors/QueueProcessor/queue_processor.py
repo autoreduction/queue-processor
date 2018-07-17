@@ -12,7 +12,6 @@ import json
 import logging.config
 import smtplib
 import sys
-import time
 import traceback
 
 from QueueProcessors.QueueProcessor.base import session
@@ -435,11 +434,16 @@ def setup_connection(consumer_name):
     # Register the event listener
     conn = activemq_client.get_connection()
     listener = Listener(activemq_client)
+    conn.set_listener(consumer_name, listener)
+
+    # Subscribe to the queues
     destinations = ['/queue/DataReady',
                     '/queue/ReductionStarted',
                     '/queue/ReductionComplete',
                     '/queue/ReductionError']
-    activemq_client.subscribe_queues(consumer_name, listener, destinations)
+    for dest in destinations:
+        logger.info("Subscribing to %s", dest)
+        conn.subscribe(destination=dest, id=1, ack='auto')
 
 def main():
     """ Main method. """

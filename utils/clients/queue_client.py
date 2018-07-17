@@ -86,16 +86,6 @@ class QueueClient(object):
             self._connection.stop()
         self._connection = None
 
-    def subscribe_queues(consumer_name, listener, destinations):
-        """
-        Subscribe the listener to the specified destinations.
-        """
-        self._connection.set_listener(listener)
-        for dest in destinations:
-            logging.info("Subscribing to %s", dest)
-            self._connection.subscribe(destination=dest, id=1, ack='auto')
-        
-
     def send(self, destination, message, persistent='true', priority='4', delay=None):
         """
         Send a message via the open connection to a queue
