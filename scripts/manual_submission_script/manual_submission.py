@@ -7,13 +7,6 @@ import json
 import sys
 import argparse
 
-<<<<<<< HEAD:Scripts/ManualSubmissionScript/manual_submission.py
-import icat
-import stomp
-
-
-=======
->>>>>>> origin/develop:scripts/manual_submission_script/manual_submission.py
 # The below is only a template on the repo
 # pylint: disable=import-error, no-name-in-module
 from utils.clients.icat_client import ICATClient

@@ -5,7 +5,7 @@ import os
 # pylint:disable=no-name-in-module,import-error
 from distutils.core import Command
 
-from build.database.generate_database import run_sql_file, generate_schema
+from build.database.generate_database import add_test_user, run_sql_file, generate_schema
 from build.utils.common import BUILD_LOGGER, ROOT_DIR
 
 
@@ -40,5 +40,8 @@ class InitialiseTestDatabase(Command):
             return
         BUILD_LOGGER.print_and_log("Populating database with test data")
         if run_sql_file(self.populate_sql_path, BUILD_LOGGER.logger) is False:
+            return
+        BUILD_LOGGER.print_and_log("Adding test user from settings")
+        if add_test_user(BUILD_LOGGER.logger) is False:
             return
         BUILD_LOGGER.print_and_log("Test database successfully initialised\n")

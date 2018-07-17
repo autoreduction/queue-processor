@@ -7,6 +7,9 @@ import os
 import subprocess
 import sys
 
+from build.settings import DB_ROOT_PASSWORD
+from utils.settings import MYSQL
+
 from build.utils.process_runner import run_process_and_log
 
 PATH_TO_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -20,7 +23,7 @@ def run_sql_file(sql_file_location, logger):
     :return: True: exit code of script was 0
              False: exit code of script was non-zero
     """
-    from build.settings import DB_ROOT_PASSWORD
+
     logger.info("Running script: %s" % sql_file_location)
     with open(sql_file_location, 'r') as input_file:
         password = ''
@@ -39,7 +42,7 @@ def run_sql_file(sql_file_location, logger):
             print("Script did not complete. Check build.log for more details.")
             print(process_err, file=sys.stderr)
             return False
-    logger.info("Script ran successfully")
+    logger.info("Script completed successfully")
     return True
 
 
@@ -67,4 +70,31 @@ def generate_schema(project_root_path, logger):
         logger.error("Error encountered when adding super user")
         return False
     logger.info("Database migrated successfully")
+    return True
+
+def add_test_user(logger):
+    user_to_add = MYSQL["USER"]
+    logger.info("Adding user: {0}".format(user_to_add))
+    sql_commands = ["GRANT ALL ON *.* TO '{0}'@'localhost' IDENTIFIED BY '{1}';".format(user_to_add, MYSQL["PASSWD"]),
+                    "FLUSH PRIVILEGES;"]
+
+    to_exec = '\n'.join(sql_commands)
+
+    # This is duplicated from above, ideally we should switch to using Python-MySQL connectors
+    password = ''
+    if DB_ROOT_PASSWORD:
+        password = 'MYSQL_PWD=%s ' % DB_ROOT_PASSWORD
+    access_string = "mysql -u{0} {1}".format('root', password)
+    mysql_process = subprocess.Popen(access_string,
+                                     stdin=subprocess.PIPE, shell=True,
+                                     stdout=subprocess.PIPE,
+                                     stderr=subprocess.PIPE)
+    process_output, process_err = mysql_process.communicate(input=to_exec)
+    if process_output != '':
+        logger.info(process_output)
+    if process_err != '':
+        logger.error(process_err)
+        print("Script did not complete. Check build.log for more details.")
+        print(process_err, file=sys.stderr)
+        return False
     return True
