@@ -51,6 +51,7 @@ class DatabaseClient(object):
         return self._connection
 
     def _test_connection(self):
+        self._connection.execute('SELECT 1').fetchall()
         try:
             self._connection.execute('SELECT 1').fetchall()
         except Exception as exp:

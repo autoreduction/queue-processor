@@ -17,6 +17,7 @@ dist: trusty
 
 before_install:
   - mysql_upgrade --force
+  - sudo mysql_upgrade -u root
   - mysql < scripts/Build/database/travis-db-setup.sql
 
 install:
@@ -45,3 +46,4 @@ script:
 
   # Utils tests
   - nosetests utils/clients/tests
+  - nosetests WebApp/autoreduce_webapp/tests
