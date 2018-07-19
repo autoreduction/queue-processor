@@ -17,7 +17,7 @@ dist: trusty
 
 before_install:
   - mysql_upgrade --force -u root
-  - service mysql restart
+  - sudo service mysql restart
   - mysql < scripts/Build/database/travis-db-setup.sql
 
 install:
