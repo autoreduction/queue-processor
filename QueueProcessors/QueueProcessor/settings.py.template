@@ -52,28 +52,6 @@ LOGGING = {
     }
 }
 
-# ActiveMQ 
-ACTIVEMQ = {
-    'topics': [
-        '/queue/DataReady',
-        '/queue/ReductionStarted',
-        '/queue/ReductionComplete',
-        '/queue/ReductionError'
-        ],
-    'username': 'autoreduce',
-    'password': 'YOUR-PASSWORD',
-    'broker': [("YOUR-ACTIVEMQ-SERVER", 61613)],
-    'SSL': False
-}
-
-# ICAT 
-ICAT = {
-    'AUTH': 'simple',
-    'URL': 'YOUR-ICAT-URL',
-    'USER': 'YOUR-ICAT-USERNAME',
-    'PASSWORD': 'YOUR-PASSWORD'
-}
-
 # Directory Locations
 if os.name == 'nt':
     # %(instrument)

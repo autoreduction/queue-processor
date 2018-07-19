@@ -86,7 +86,7 @@ class QueueClient(object):
             self._connection.stop()
         self._connection = None
 
-    def send(self, destination, message, persistent='true', priority='4'):
+    def send(self, destination, message, persistent='true', priority='4', delay=None):
         """
         Send a message via the open connection to a queue
         :param destination: Queue to send to
@@ -97,4 +97,5 @@ class QueueClient(object):
         self.connect()
         self._connection.send(destination, message,
                               persistent=persistent,
-                              priority=priority)
+                              priority=priority,
+                              delay=delay)
