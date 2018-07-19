@@ -1,3 +1,4 @@
+# pylint: skip-file
 """
 Settings for connecting to the test services that run locally
 """

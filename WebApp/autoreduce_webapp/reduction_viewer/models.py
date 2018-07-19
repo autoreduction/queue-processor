@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.validators import MinValueValidator, MaxLengthValidator
 import autoreduce_webapp.icat_communication
 
 class Instrument(models.Model):
@@ -20,34 +21,42 @@ class Status(models.Model):
 
     def __unicode__(self):
         return u'%s' % self.value        
-        
+
+
 class ReductionRun(models.Model):
-    run_number = models.IntegerField(blank=False)
-    run_version = models.IntegerField(blank=False)
-    run_name = models.CharField(max_length=200, blank=True)
-    experiment = models.ForeignKey(Experiment, blank=False, related_name='reduction_runs')
-    instrument = models.ForeignKey(Instrument, related_name='reduction_runs', null=True)
-    
-    script = models.TextField(blank=False)
-    
-    status = models.ForeignKey(Status, blank=False, related_name='+')
-    created = models.DateTimeField(auto_now_add=True, blank=False)
-    last_updated = models.DateTimeField(auto_now=True, blank=False)
-    started = models.DateTimeField(null=True, blank=True)
-    finished = models.DateTimeField(null=True, blank=True)
+    # Integer fields
+    run_number = models.IntegerField(blank=False, validators=[MinValueValidator(0)])
+    run_version = models.IntegerField(blank=False, validators=[MinValueValidator(0)])
     started_by = models.IntegerField(null=True, blank=True)
+
+    # Char fields
+    run_name = models.CharField(max_length=200, blank=True)
+
+    # Text fields
+    admin_log = models.TextField(blank=True)
     graph = models.TextField(null=True, blank=True)
-    
     message = models.TextField(blank=True)
     reduction_log = models.TextField(blank=True)
-    admin_log = models.TextField(blank=True)
-    
-    retry_run = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
+    # Scripts should be 100,000 chars or less. The DB supports up to 4GB strings here
+    script = models.TextField(blank=False, validators=[MaxLengthValidator(100000)])
+
+    # Date time fields
+    created = models.DateTimeField(auto_now_add=True, blank=False)
+    finished = models.DateTimeField(null=True, blank=True)
+    last_updated = models.DateTimeField(auto_now=True, blank=False)
     retry_when = models.DateTimeField(null=True, blank=True)
+    started = models.DateTimeField(null=True, blank=True)
+
+    # Bool field
     cancel = models.BooleanField(default=False)
     hidden_in_failviewer = models.BooleanField(default=False)
-    overwrite = models.BooleanField(default=True)
-    
+    overwrite = models.NullBooleanField(default=True)
+
+    # Foreign Keys
+    experiment = models.ForeignKey(Experiment, blank=False, related_name='reduction_runs')
+    instrument = models.ForeignKey(Instrument, related_name='reduction_runs', null=True)
+    retry_run = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
+    status = models.ForeignKey(Status, blank=False, related_name='+')
 
     def __unicode__(self):
         if self.run_name:
