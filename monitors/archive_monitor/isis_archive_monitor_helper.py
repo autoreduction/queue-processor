@@ -2,21 +2,14 @@
 File to store messages and data relating to ISIS_archive_monitor
 """
 
-from utils.settings import ARCHIVE_MONITOR_LOG, INST_PATH
 # ================================= Data ======================================= #
 
-LOG_FILE = ARCHIVE_MONITOR_LOG
 LOG_FORMAT = '%(asctime)s : %(message)s'
 STOMP_LOG_FORMAT = '%(asctime)s :      %(message)s'
-
-GENERIC_INST_PATH = INST_PATH
-
 VALID_INST = ['GEM', 'POLARIS', 'WISH', 'MUSR', 'OSIRIS']
-
 SLEEP_TIME = 600
 
-
-# ================================ Messages ===================================== #
+# =========================== Logging Messages ================================= #
 
 INVALID_INSTRUMENT_MSG = 'Archive monitor could not be ' \
                          'started as %s was not recognised as a valid instrument. ' \

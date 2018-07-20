@@ -9,7 +9,7 @@ import win32event
 import win32serviceutil
 
 from monitors.windows_service import WindowsService
-from monitors.archive_monitor import isis_archive_monitor
+from monitors.archive_monitor.isis_archive_monitor import ArchiveMonitor
 
 
 class PollService(WindowsService):
@@ -28,9 +28,9 @@ class PollService(WindowsService):
         servicemanager.LogMsg(servicemanager.EVENTLOG_INFORMATION_TYPE,
                               servicemanager.PYS_SERVICE_STARTED,
                               (self._svc_name_, ''))
-
-        isis_archive_monitor.main()
+        monitor = ArchiveMonitor("POLARIS")
         while 1:
+            monitor.poll_archive()
             # Wait for service stop signal, if I timeout, loop again
             rc = win32event.WaitForSingleObject(self.hWaitStop, self.timeout)
             # Check to see if self.hWaitStop happened

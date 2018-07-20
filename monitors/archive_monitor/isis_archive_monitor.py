@@ -10,10 +10,11 @@ import os
 import time
 
 import monitors.archive_monitor.isis_archive_monitor_helper as helper
+from utils.settings import ARCHIVE_MONITOR_LOG, INST_PATH
 from utils.clients.database_client import DatabaseClient
 from utils.clients.queue_client import QueueClient
 
-logging.basicConfig(filename=helper.LOG_FILE, level=logging.DEBUG,
+logging.basicConfig(filename=ARCHIVE_MONITOR_LOG, level=logging.DEBUG,
                     format=helper.LOG_FORMAT)
 
 
@@ -38,7 +39,7 @@ class ArchiveMonitor(object):
             raise RuntimeError(helper.INVALID_INSTRUMENT_MSG, instrument)
 
         self.instrument = instrument
-        self.instrument_path = helper.GENERIC_INST_PATH.format(instrument)
+        self.instrument_path = INST_PATH.format(instrument)
         self._update_check_time()
 
         # Create the sessions
@@ -51,9 +52,8 @@ class ArchiveMonitor(object):
         """
         Performs the comparison check and then sleeps
         """
-        while True:
-            self.perform_check()
-            time.sleep(helper.SLEEP_TIME)
+        self.perform_check()
+        time.sleep(helper.SLEEP_TIME)
 
     def perform_check(self):
         """
@@ -63,7 +63,7 @@ class ArchiveMonitor(object):
         logging.info(helper.STATUS_OF_CHECKS_MSG, 'starting', self._time_of_last_check)
         for instrument in helper.VALID_INST:
             self.instrument = instrument
-            self.instrument_path = helper.GENERIC_INST_PATH.format(instrument)
+            self.instrument_path = INST_PATH.format(instrument)
             if not os.path.isdir(self.instrument_path):
                 raise RuntimeError("Unable to find instrument directory at path %s. "
                                    "Please ensure the path is valid and then restart the service."
@@ -277,9 +277,3 @@ class ArchiveMonitor(object):
                 return last_line.split()[-1]
             logging.error(helper.INVALID_JOURNAL_FORMAT_MSG)
             return None
-
-
-def main():
-    """ Main method, connects to ActiveMQ and sets up instrument last_run.txt listeners. """
-    monitor = ArchiveMonitor()
-    monitor.poll_archive()
