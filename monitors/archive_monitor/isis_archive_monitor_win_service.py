@@ -3,14 +3,16 @@ Holds the class for overidding QueueService framework
 """
 # Can't import on travis (linux) server
 # pylint:disable=import-error
+import sys
 import servicemanager
 import win32event
+import win32serviceutil
 
 from monitors.windows_service import WindowsService
 from monitors.archive_monitor import isis_archive_monitor
 
 
-class QueueService(WindowsService):
+class PollService(WindowsService):
     """
     Class to override windows ServiceFramework
     """
@@ -36,3 +38,12 @@ class QueueService(WindowsService):
                 # Stop signal encountered
                 servicemanager.LogInfoMsg(self._svc_name_ + " - STOPPED")
                 break
+
+
+if __name__ == '__main__':
+    if len(sys.argv) == 1:
+        servicemanager.Initialize()
+        servicemanager.PrepareToHostSingle(PollService)
+        servicemanager.StartServiceCtrlDispatcher()
+    else:
+        win32serviceutil.HandleCommandLine(PollService)

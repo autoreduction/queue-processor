@@ -8,14 +8,16 @@ difficulties whne watching for file changes.
 """
 # Can't import on travis (linux) server
 # pylint:disable=import-error
+import sys
 import servicemanager
 import win32event
+import win32serviceutil
 
 from monitors.end_of_run_monitor import isis_end_of_run_monitor
 from monitors.windows_service import WindowsService
 
 
-class QueueService(WindowsService):
+class MonitorService(WindowsService):
     """
     Class to override windows ServiceFramework
     """
@@ -42,3 +44,12 @@ class QueueService(WindowsService):
                 servicemanager.LogInfoMsg(self._svc_name_ + " - STOPPED")
                 isis_end_of_run_monitor.stop()
                 break
+
+
+if __name__ == '__main__':
+    if len(sys.argv) == 1:
+        servicemanager.Initialize()
+        servicemanager.PrepareToHostSingle(MonitorService)
+        servicemanager.StartServiceCtrlDispatcher()
+    else:
+        win32serviceutil.HandleCommandLine(MonitorService)
