@@ -209,7 +209,7 @@ class DataArchiveCreator(object):
                             'Instrument', 'logs',
                             'journal').format(instrument)
 
-    def get_data_most_recent_dir_for_instrument(self, instrument):
+    def get_data_dir_for_instrument(self, instrument):
         """ return the full path to data directory for given instrument """
         return os.path.join(self._archive_dir, 'NDX{}',
                             'Instrument', 'data').format(instrument)

@@ -288,7 +288,7 @@ class TestArchiveMonitorHelpers(unittest.TestCase):
     def test_valid_path_to_cycle(self):
         for path in VALID_PATHS:
             self.archive_creator.make_data_archive(["GEM"], path[0], path[1], path[2])
-            path_to_data_dir = self.archive_creator.get_data_most_recent_dir_for_instrument("GEM")
+            path_to_data_dir = self.archive_creator.get_data_dir_for_instrument("GEM")
             actual = self.monitor._find_path_to_current_cycle_in_archive(path_to_data_dir)
             self.assertEqual(path[3], actual)
             self.archive_creator.delete_archive()

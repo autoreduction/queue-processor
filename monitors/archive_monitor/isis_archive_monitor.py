@@ -7,7 +7,6 @@ import datetime
 import json
 import logging
 import os
-import time
 
 import monitors.archive_monitor.isis_archive_monitor_helper as helper
 from utils.settings import ARCHIVE_MONITOR_LOG, INST_PATH
@@ -47,13 +46,6 @@ class ArchiveMonitor(object):
         self.database_session = self._database_client.get_connection()
         logging.getLogger("stomp.py").setLevel(logging.WARNING)
         self.queue_session = QueueClient().get_connection()
-
-    def poll_archive(self):
-        """
-        Performs the comparison check and then sleeps
-        """
-        self.perform_check()
-        time.sleep(helper.SLEEP_TIME)
 
     def perform_check(self):
         """
@@ -182,8 +174,11 @@ class ArchiveMonitor(object):
         """
         base_dir = os.path.dirname(os.path.realpath(__file__))
         os.chdir(current_cycle_path)
+        logging.info("current_cycle_path: %s" % current_cycle_path)
         all_files = os.listdir(current_cycle_path)
+        logging.info("all_files: %s" % all_files)
         time_filtered_files = self._filter_files_by_time(all_files, self._time_of_last_check)
+        logging.info("time_filtered_files: %s" % time_filtered_files)
         if not time_filtered_files:
             os.chdir(base_dir)
             logging.info(helper.NO_NEW_SINCE_LAST_MSG, self._time_of_last_check)
@@ -202,6 +197,7 @@ class ArchiveMonitor(object):
         # search all files in directory and return any that end in .raw or .RAW
         valid_files = [current_file for current_file in time_filtered_files
                        if check_valid_extension(current_file)]
+        logging.info("valid_files: %s" % valid_files)
 
         # sort all files by modified time
         valid_files.sort(key=os.path.getmtime)
