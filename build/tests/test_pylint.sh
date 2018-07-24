@@ -21,7 +21,7 @@ do
 
     # Print the filename for user convinence
     echo "$i" | tee -a "$logFileName"
-    output=$(pylint "$i" -f colorized)
+    output=$(pylint "$i" -f colorized -sn)
     
     # Get exit code which indicates if there were any warnings or errors
     resultCode=$?
@@ -29,9 +29,6 @@ do
 
     # Echo out the result
     echo $output | tee -a $logFileName
-
-
-    echo $resultCode
 
     if [ $resultCode != 0 ];
     then
