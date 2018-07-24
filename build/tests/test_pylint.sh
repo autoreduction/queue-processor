@@ -1,40 +1,58 @@
 #!/bin/sh
-# Run pylint without check for C0103 (invalid-name) as this triggers on module names
-# There is currently no work around for this - we should change module names to lower case
 
-SUCCESS=0
-FILES="build
-       EndOfRunMonitor
-       Scripts/ActiveMQTests/send_message.py
-       Scripts/ActiveMQTests/test_stomp_activemq.py
-       Scripts/ManualSubmissionScript
-       Scripts/NagiosChecks/autoreduce_checklastrun.py
-       WebApp/autoreduce_webapp/autoreduce_webapp/
-       QueueProcessors/AutoreductionProcessor
-      "
+errorThreshold=1218
 
-for file in $FILES
+sourceRoot=$(git rev-parse --show-toplevel)
+currentDir=$(pwd)
+
+# We have to trick pylint into thinking the entire project is a module
+cd $sourceRoot
+
+fileCount=0
+errCount=0
+errScore=0 # Pylint score
+
+logFileName="pylint.log"
+rm -f "$logFileName" || true
+
+for i in $(find . -name '*.py');
 do
-    RESULT="$(pylint -d C0103 $file)"
-    retVal=$?
-    if [ $retVal -ne 0 ]; then
-        echo "$RESULT"
-        SUCCESS=1
+    fileCount=$((fileCount+1))
+
+    # Print the filename for user convinence
+    echo "$i" | tee -a "$logFileName"
+    output=$(pylint "$i" -f colorized)
+    
+    # Get exit code which indicates if there were any warnings or errors
+    resultCode=$?
+    errScore=$((errScore+$resultCode))
+
+    # Echo out the result
+    echo $output | tee -a $logFileName
+
+
+    echo $resultCode
+
+    if [ $resultCode != 0 ];
+    then
+        errCount=$((errCount+1))
     fi
 done
 
+echo "Processed: $fileCount"
+echo "Errored: $errCount"
+echo "Score: $errScore"
 
-# Should be able to improve the below when we fix W0141,R0401
-
-RESULT="$(pylint -d C0103,W0141,R0401 QueueProcessors/QueueProcessor)"
-retVal=$?
-if [ $retVal -ne 0 ]; then
-    echo "$RESULT"
-    SUCCESS=1
-fi
-
-if [ $SUCCESS -ne 0 ]; then
+if [ "$errScore" -gt "$errorThreshold" ];
+then
+    echo "Pylint has regressed. Previous score was: $errorThreshold \nPlease fix the new warnings and retry."
     exit 1
-else
-    exit 0
 fi
+
+if [ "$errScore" -lt "$errorThreshold" ];
+then
+    echo "Pyline has improved. Please adjust the threshold to: $errScore"
+    exit 1
+fi
+
+exit 0
