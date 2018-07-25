@@ -32,7 +32,6 @@ install:
   
   - ./scripts/Build/project/migrate_test_settings.sh
   - ./scripts/Build/database/generate_testing_database.sh
-  - mysql < scripts/Build/database/populate-reduction_viewer-db.sql
 
 script:
   # ================ Assert Test Setup =============== #
