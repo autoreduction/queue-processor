@@ -1,6 +1,6 @@
 #!/bin/sh
 
-errorThreshold=3413
+errorThreshold=1212
 
 sourceRoot=$(git rev-parse --show-toplevel)
 currentDir=$(pwd)
@@ -48,7 +48,7 @@ fi
 
 if [ "$errScore" -lt "$errorThreshold" ];
 then
-    echo "Pyline has improved. Please adjust the threshold to: $errScore"
+    echo "Pylint has improved. Please adjust the threshold to: $errScore"
     exit 1
 fi
 
