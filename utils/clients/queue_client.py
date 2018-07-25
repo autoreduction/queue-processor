@@ -101,6 +101,12 @@ class QueueClient(object):
     def subscribe_amq(self, consumer_name, listener, ack='auto'):
         self.subscribe_queues(self._amq_queues, consumer_name, listener, ack) 
 
+    def ack(self, frame):
+        """
+        Acknowledge receipt of a message
+        """
+        self._connection.ack(frame)
+
     def stop(self):
         """
         disconnect and stop the connection to the service
