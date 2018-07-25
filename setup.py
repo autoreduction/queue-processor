@@ -1,5 +1,12 @@
 from setuptools import setup
 
+from build.commands.database import InitialiseTestDatabase
+from build.commands.help import Help
+from build.commands.installs import InstallExternals
+from build.commands.migrate_settings import MigrateTestSettings
+from build.commands.start import Start
+
+
 setup(name='AutoReduction',
       version='1.0',
       description='ISIS AutoReduction service',
@@ -10,12 +17,19 @@ setup(name='AutoReduction',
           'django_extensions==2.0.7',
           'django-user-agents==0.3.2',
           'MySQL-python==1.2.5',
-          'python-daemon==2.1.2',
+          'python-daemon==2.1.2;platform_system!="Windows"',
           'requests==2.18.4',
           'SQLAlchemy==1.2.7',
           'stomp.py==4.1.20',
           'suds==0.4',
           'Twisted==14.0.2',
           'watchdog==0.8.3'
-      ]
+      ],
+      cmdclass={
+          'test_settings': MigrateTestSettings,
+          'database': InitialiseTestDatabase,
+          'externals': InstallExternals,
+          'start': Start,
+          'help': Help,
+      },
       )

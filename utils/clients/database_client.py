@@ -9,6 +9,11 @@ from utils.settings import MYSQL
 
 
 class DatabaseClient(object):
+    """
+    Single access point for the mysql database
+    This should be used for all access rather than creating a custom
+    access mechanism every time
+    """
 
     def __init__(self, user=None, password=None, host=None, database_name=None):
         """
@@ -42,6 +47,7 @@ class DatabaseClient(object):
                                                               self._password,
                                                               self._host,
                                                               self._database_name)
+            print(connect_string)
             self._engine = create_engine(connect_string, pool_recycle=280)
             self._meta_data = MetaData(self._engine)
             session = sessionmaker(bind=self._engine)
@@ -51,19 +57,29 @@ class DatabaseClient(object):
         return self._connection
 
     def _test_connection(self):
+        """
+        Ensure that the connection has been established
+        :return: True if connection is establish
+        """
         try:
             self._connection.execute('SELECT 1').fetchall()
+        # pylint:disable=broad-except
         except Exception as exp:
             # The original exception appears to be wrapped in a different exception
-            # as such it is not being consistently caught so we should check the exception name instead
-            if type(exp).__name__ is 'OperationalError':
+            # as such it is not being consistently caught so we should check
+            # the exception name instead
+            if type(exp).__name__ == 'OperationalError':
                 raise RuntimeError("Unable to connect to database with the credentials provided")
+
             else:
                 # re-raise the error if it's something we do not expect
                 raise
         return True
 
     def stop(self):
+        """
+        Close the connection and reset variables
+        """
         self._connection.close()
         self._connection = None
         self._meta_data = None
