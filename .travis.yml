@@ -19,7 +19,7 @@ before_install:
   - mysql_upgrade --force
   - sudo service mysql restart
   - mysql < scripts/Build/database/travis-db-setup.sql
-  - java -?
+  - java -version
 
 install:
   - python setup.py install
