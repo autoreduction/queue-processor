@@ -30,7 +30,6 @@ install:
   - python setup.py externals -s activemq,icat
   - python setup.py database
   
-  - ./scripts/Build/project/migrate_test_settings.sh
   - ./scripts/Build/database/generate_testing_database.sh
 
 script:
