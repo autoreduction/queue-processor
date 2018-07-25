@@ -1,17 +1,28 @@
-*.pyc
-*.log
+# Ignore IDE files
 .idea/
 */target/**
 
-# ensure we do not commit settings files
+# Ignore complied python
+*.pyc
+
+# Ignore log data
+*.log
+
+# Ignore settings files
 settings.py
 
-# ignore django created migrations files
+# Ignore django created migrations files
 migrations/
 
-# ignore virtual environments
+# Ignore distutils installation
+dist/
+
+# Ignore virtual environment
 venv/
-migrations/
+
+
+# Ignore pip install installation
 AutoReduction.egg-info/
+
 # This is generated from a template so should be ignored to force regeneration
 apache_django_wsgi.conf
