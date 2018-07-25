@@ -19,19 +19,18 @@ before_install:
   - mysql_upgrade --force
   - sudo service mysql restart
   - mysql < scripts/Build/database/travis-db-setup.sql
+  - java -?
 
 install:
   - python setup.py install
   - pip install -r requirements.txt
   
   # ================== Test setup ==================== #
-  
+  - python setup.py test_settings
   # Externals must be after test_settings
   - python setup.py externals -s activemq,icat
-  - python setup.py start
-
-  - python setup.py test_settings
   - python setup.py database
+  
   - ./scripts/Build/database/generate_testing_database.sh
 
 script:
