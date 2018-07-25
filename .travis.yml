@@ -25,13 +25,15 @@ install:
   - pip install -r requirements.txt
   
   # ================== Test setup ==================== #
-  - python setup.py test_settings
+  
   # Externals must be after test_settings
   - python setup.py externals -s activemq,icat
   - python setup.py database
   - ./scripts/Build/database/generate_testing_database.sh
 
   - python setup.py start
+
+  - python setup.py test_settings
 
 script:
   # ================ Assert Test Setup =============== #
