@@ -8,6 +8,8 @@ import json
 import logging
 import os
 
+import win32serviceutil
+
 import monitors.archive_monitor.isis_archive_monitor_helper as helper
 from utils.settings import ARCHIVE_MONITOR_LOG, INST_PATH
 from utils.clients.database_client import DatabaseClient
@@ -146,6 +148,14 @@ class ArchiveMonitor(object):
                      run_dict['run_number'],
                      run_dict['facility'])
         self.queue_session.send(destination, json.dumps(run_dict), priority='9')
+        self.restart_end_of_run_monitor()
+
+    def restart_end_of_run_monitor(self):
+        """
+        Restart the end of run monitor windows service
+        """
+        win32serviceutil.RestartService("AutoreduceInstrumentMonitor")
+        logging.info("Restarting End of Run Monitor service")
 
     def _construct_data_to_send(self, run_data_loc):
         """
