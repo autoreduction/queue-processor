@@ -19,7 +19,6 @@ before_install:
   - mysql_upgrade --force
   - sudo service mysql restart
   - mysql < scripts/Build/database/travis-db-setup.sql
-  - ./scripts/Build/database/generate_testing_database.sh
 
 install:
   - python setup.py install
@@ -30,6 +29,10 @@ install:
   # Externals must be after test_settings
   - python setup.py externals -s activemq,icat
   - python setup.py database
+  
+  - ./scripts/Build/project/migrate_test_settings.sh
+  - ./scripts/Build/database/generate_testing_database.sh
+  - mysql < scripts/Build/database/populate-reduction_viewer-db.sql
 
 script:
   # ================ Assert Test Setup =============== #
