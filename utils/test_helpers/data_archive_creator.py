@@ -1,3 +1,4 @@
+# pylint:disable=anomalous-backslash-in-string
 """
 Used to create a fake data-archive structure for testing
 
