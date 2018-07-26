@@ -43,5 +43,7 @@ script:
   # ================ Nose unit tests ================ #
 
   # Utils tests
-  - nosetests utils/clients/tests
-  - nosetests WebApp/autoreduce_webapp/tests
+  - pytest --ignore=scripts --cov=build --cov=QueueProcessors --cov=utils --cov=WebApp
+
+after_success:
+  - coveralls
