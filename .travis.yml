@@ -3,9 +3,6 @@ language: python
 python:
   - "2.7"
 
-services:
-  - mysql
-
 addons:
   apt:
     sources:
@@ -16,26 +13,27 @@ addons:
 dist: trusty
 
 before_install:
-  - mysql_upgrade --force
-  - sudo service mysql restart
   - mysql < scripts/Build/database/travis-db-setup.sql
 
 install:
   - python setup.py install
   - pip install -r requirements.txt
-  - ./scripts/Build/install/icat.sh
-  - ./scripts/Build/install/activemq.sh
+  
+  # ================== Test setup ==================== #
+  - python setup.py test_settings
+  # Externals must be after test_settings
+  - python setup.py externals -s activemq,icat
+  - python setup.py database
+  - sudo python setup.py start
+  
+  - ./scripts/Build/database/generate_testing_database.sh
 
 script:
-  # ================== Test setup ==================== #
-  - ./scripts/Build/project/migrate_test_settings.sh
-  - ./scripts/Build/database/generate_testing_database.sh
-  - mysql < scripts/Build/database/populate-reduction_viewer-db.sql
-
   # ================ Assert Test Setup =============== #
   - nosetests scripts/Build/tests/test_db_generation.py
 
   # ================ Static Analysis ================= #
+  - ./build/tests/test_pylint.sh
   - ./scripts/Build/tests/test_pylint.sh
 
   # ================ Nose unit tests ================ #
