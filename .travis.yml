@@ -38,7 +38,7 @@ script:
   - nosetests scripts/Build/tests/test_db_generation.py
 
   # ================ Static Analysis ================= #
-  #- ./build/tests/test_pylint.sh
+  - ./build/tests/test_pylint.sh
 
   # ================ Nose unit tests ================ #
 
