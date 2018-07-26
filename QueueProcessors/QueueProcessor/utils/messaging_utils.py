@@ -6,7 +6,8 @@ import logging.config
 from QueueProcessors.QueueProcessor.base import session
 from QueueProcessors.QueueProcessor.orm_mapping import DataLocation
 # pylint:disable=no-name-in-module,import-error
-from QueueProcessors.QueueProcessor.settings import LOGGING, ACTIVEMQ, FACILITY
+from QueueProcessors.QueueProcessor.settings import LOGGING, FACILITY
+from utils.clients.queue_client import QueueClient
 
 # Set up logging and attach the logging to the right part of the config.
 logging.config.dictConfig(LOGGING)
@@ -59,15 +60,7 @@ class MessagingUtils(object):
     def _send_pending_msg(data_dict, delay=None):
         """ Sends data_dict to ReductionPending (with the specified delay) """
         # To prevent circular dependencies
-        from ..queue_processor import Client as ActiveMQClient
-
-        message_client = ActiveMQClient(ACTIVEMQ['broker'],
-                                        ACTIVEMQ['username'],
-                                        ACTIVEMQ['password'],
-                                        ACTIVEMQ['topics'],
-                                        'Webapp_QueueProcessor',
-                                        False,
-                                        ACTIVEMQ['SSL'])
+        message_client = QueueClient()
         message_client.connect()
         message_client.send('/queue/ReductionPending',
                             json.dumps(data_dict),

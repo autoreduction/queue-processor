@@ -1,9 +1,8 @@
 [run]
 omit = 
-    */Documentation*
+    # Requires external deps
     */virtualenv/*
     *.so
 
 [report]
 exclude_lines = 
-    

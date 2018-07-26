@@ -38,12 +38,12 @@ script:
   - nosetests scripts/Build/tests/test_db_generation.py
 
   # ================ Static Analysis ================= #
-  - ./build/tests/test_pylint.sh
+  #- ./build/tests/test_pylint.sh
 
   # ================ Nose unit tests ================ #
 
   # Utils tests
-  - nosetests --with-coverage 
+  - pytest --ignore=scripts --cov=build --cov=QueueProcessors --cov=utils --cov=WebApp
 
 after_success:
   - coveralls
