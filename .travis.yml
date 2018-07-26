@@ -29,7 +29,7 @@ install:
   # Externals must be after test_settings
   - python setup.py externals -s activemq,icat
   - python setup.py database
-  - python setup.py start
+  - sudo python setup.py start
   
   - ./scripts/Build/database/generate_testing_database.sh
 
