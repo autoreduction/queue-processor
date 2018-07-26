@@ -43,5 +43,7 @@ script:
   # ================ Nose unit tests ================ #
 
   # Utils tests
-  - nosetests utils/clients/tests
-  - nosetests WebApp/autoreduce_webapp/tests
+  - nosetests --with-coverage 
+
+after_success:
+  - coveralls
