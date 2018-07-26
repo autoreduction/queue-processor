@@ -39,7 +39,6 @@ script:
 
   # ================ Static Analysis ================= #
   - ./build/tests/test_pylint.sh
-  - ./scripts/Build/tests/test_pylint.sh
 
   # ================ Nose unit tests ================ #
 
