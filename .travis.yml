@@ -27,8 +27,8 @@ install:
   # ================== Test setup ==================== #
   - python setup.py test_settings
   # Externals must be after test_settings
+  - python setup.py externals -s activemq,icat
   - python setup.py database
-  - sudo python setup.py externals -s activemq,icat
   - sudo python setup.py start
   
   - ./scripts/Build/database/generate_testing_database.sh
