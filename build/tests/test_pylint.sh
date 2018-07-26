@@ -1,6 +1,6 @@
 #!/bin/sh
 
-errorThreshold=1212
+errorThreshold=1146
 
 sourceRoot=$(git rev-parse --show-toplevel)
 currentDir=$(pwd)
