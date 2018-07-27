@@ -122,7 +122,7 @@ class DataArchiveCreator(object):
         # Make most current cycle directories (could by current cycle < 5)
         create_single_years_cycles(current_cycle, end_year)
 
-    def add_data_files_to_most_recent_cycle(self, instrument, data_files):
+    def add_data_to_most_recent_cycle(self, instrument, data_files):
         """
         Adds data files to the most recent cycle for that instrument
         :param instrument: The instrument to add the files for
@@ -195,7 +195,7 @@ class DataArchiveCreator(object):
             self.delete_archive()
 
     # ========= Helper functions =========== #
-    def get_most_recent_cycle_for_instrument(self, instrument):
+    def get_current_cycle_for_inst(self, instrument):
         """ return the full path to the most recent cycle for a given instrument"""
         end_year = self._end_year
         if end_year < 10:
@@ -210,7 +210,7 @@ class DataArchiveCreator(object):
                             'Instrument', 'logs',
                             'journal').format(instrument)
 
-    def get_data_most_recent_dir_for_instrument(self, instrument):
+    def get_current_data_dir_for_inst(self, instrument):
         """ return the full path to data directory for given instrument """
         return os.path.join(self._archive_dir, 'NDX{}',
                             'Instrument', 'data').format(instrument)

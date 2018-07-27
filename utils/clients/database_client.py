@@ -6,6 +6,7 @@ from sqlalchemy import create_engine, MetaData, Table
 from sqlalchemy.orm import sessionmaker, relationship
 
 from utils.settings import MYSQL
+from utils.clients.client_helper_functions import use_default_if_none
 
 
 class DatabaseClient(object):
@@ -19,23 +20,13 @@ class DatabaseClient(object):
         """
         Initialise variable, if input is None, values from the settings file are used
         """
-        self._user = self._use_default_if_none(user, MYSQL['USER'])
-        self._password = self._use_default_if_none(password, MYSQL['PASSWD'])
-        self._host = self._use_default_if_none(host, MYSQL['HOST'])
-        self._database_name = self._use_default_if_none(database_name, MYSQL['DB'])
+        self._user = use_default_if_none(user, MYSQL['USER'])
+        self._password = use_default_if_none(password, MYSQL['PASSWD'])
+        self._host = use_default_if_none(host, MYSQL['HOST'])
+        self._database_name = use_default_if_none(database_name, MYSQL['DB'])
         self._connection = None
         self._meta_data = None
         self._engine = None
-
-    @staticmethod
-    def _use_default_if_none(input_var, default):
-        """
-        :param input_var: Input to the class (could be None)
-        :param default: The default value to use if input_var is None
-        """
-        if input_var is None:
-            return default
-        return input_var
 
     def get_connection(self):
         """
@@ -86,6 +77,9 @@ class DatabaseClient(object):
 
     # ======================== Tables for database access ============================== #
     def instrument(self):
+        """
+        :return: Instrument Table to replicate what we expect in the database
+        """
         # pylint: disable=too-few-public-methods
         class Instrument(declarative_base()):
             """
@@ -97,6 +91,9 @@ class DatabaseClient(object):
         return Instrument
 
     def reduction_run(self):
+        """
+        :return: ReductionRun Table to replicate what we expect in the database
+        """
         # pylint: disable=too-few-public-methods
         class ReductionRun(declarative_base()):
             """
