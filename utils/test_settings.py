@@ -2,6 +2,7 @@
 """
 Settings for connecting to the test services that run locally
 """
+import os
 
 ICAT = {
     'AUTH': 'YOUR-ICAT-AUTH-TYPE',
@@ -28,3 +29,17 @@ MYSQL = {
     'DB': 'autoreduction',
     'PORT': '3306',
 }
+
+PATH_TO_FILE = os.path.dirname(os.path.realpath(__file__))
+PATH_TO_TEST_OUTPUT = os.path.join(PATH_TO_FILE, 'test-output')
+
+try:
+    os.makedirs(PATH_TO_TEST_OUTPUT)
+except OSError:
+    # This should only ever fail if the path already exists
+    pass
+
+ARCHIVE_MONITOR_LOG = os.path.join(PATH_TO_TEST_OUTPUT, 'archive_monitor.log')
+
+INST_PATH = os.path.join(PATH_TO_TEST_OUTPUT, 'data-archive', 'NDX{}', 'Instrument')
+

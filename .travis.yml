@@ -35,6 +35,7 @@ install:
 
 script:
   # ================ Assert Test Setup =============== #
+
   - nosetests scripts/Build/tests/test_db_generation.py
 
   # ================ Static Analysis ================= #
@@ -42,8 +43,11 @@ script:
 
   # ================ Nose unit tests ================ #
 
+  # Monitor tests
+  - nosetests --nologcapture monitors/tests
+
   # Utils tests
-  - pytest --ignore=scripts --cov=build --cov=QueueProcessors --cov=utils --cov=WebApp/autoreduce_webapp
+  - pytest --ignore=scripts --cov=build --cov=QueueProcessors --cov=utils --cov=WebApp/autoreduce_webapp --cov=monitors
 
 after_success:
   - coveralls

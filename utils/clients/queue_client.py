@@ -45,12 +45,9 @@ class QueueClient(object):
         :return: The connection to the queue
         """
         if self._connection is None or not self._connection.is_connected():
-            logging.info("connection =")
             connection = stomp.Connection(host_and_ports=self._brokers,
                                           use_ssl=False)
-            logging.info("Starting connection")
             connection.start()
-            logging.info("connection.connect")
             connection.connect(self._user, self._password,
                                wait=False,
                                header={'activemq.prefetchSize': '1'})
@@ -64,9 +61,7 @@ class QueueClient(object):
         Will disconnect first if already connected
         """
         if self._connection is None or not self._connection.is_connected():
-            logging.info("Disconnect")
             self._disconnect()
-            logging.info("Connect")
             self._connection = self.get_connection()
 
     def _disconnect(self):

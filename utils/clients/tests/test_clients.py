@@ -155,4 +155,3 @@ class TestQueueClient(unittest.TestCase):
         """ Queue client: test data can be sent without error """
         client = QueueClient()
         client.send('dataready', 'test-message')
-
