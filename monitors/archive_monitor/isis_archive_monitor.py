@@ -8,8 +8,6 @@ import json
 import logging
 import os
 
-import win32serviceutil
-
 import monitors.archive_monitor.isis_archive_monitor_helper as helper
 from utils.settings import ARCHIVE_MONITOR_LOG, INST_PATH
 from utils.clients.database_client import DatabaseClient
@@ -125,7 +123,7 @@ class ArchiveMonitor(object):
             return None
 
         # compare to file name rather than data location
-        data_file = os.path.basename(os.path.normpath(data_archive_file_path))
+        data_file = os.path.basename(data_archive_file_path)
         data_file_name = os.path.splitext(data_file)[0]
 
         last_database_run = self.get_most_recent_run_in_database()
@@ -177,12 +175,8 @@ class ArchiveMonitor(object):
         :param current_cycle_path: full path to current cycle
         :return: The most recent file in the directory
         """
-        base_dir = os.path.dirname(os.path.realpath(__file__))
-        os.chdir(current_cycle_path)
-        all_files = os.listdir(current_cycle_path)
-        time_filtered_files = self._filter_files_by_time(all_files, self._time_of_last_check)
+        time_filtered_files = self._filter_files_by_time(current_cycle_path, self._time_of_last_check)
         if not time_filtered_files:
-            os.chdir(base_dir)
             logging.info(helper.NO_NEW_SINCE_LAST_MSG, self._time_of_last_check)
             return None
 
@@ -192,9 +186,7 @@ class ArchiveMonitor(object):
             :return: True if the is .nxs/.raw
             """
             file_to_check = file_to_check.lower()
-            if file_to_check.endswith('.raw') or file_to_check.endswith('.nxs'):
-                return True
-            return False
+            return file_to_check.endswith('.raw') or file_to_check.endswith('.nxs')
 
         # search all files in directory and return any that end in .raw or .RAW
         valid_files = [current_file for current_file in time_filtered_files
@@ -202,7 +194,6 @@ class ArchiveMonitor(object):
 
         # sort all files by modified time
         valid_files.sort(key=os.path.getmtime)
-        os.chdir(base_dir)
         try:
             return os.path.join(current_cycle_path, valid_files[-1])
         except IndexError:
@@ -210,17 +201,19 @@ class ArchiveMonitor(object):
             return None
 
     @staticmethod
-    def _filter_files_by_time(all_files, last_checked_time):
+    def _filter_files_by_time(directory, last_checked_time):
         """
         Removes any file from the list that has a modification
         time that is older than the last_checked_time
-        :param all_files: List of all files to check
+        :param directory: directory containing files to check
         :param last_checked_time: The cut off time for files we are interested in
         :return: list of files that does not contain any file which has a
                  most recent modification that was before the last_checked_time
         """
+        all_files = os.listdir(directory)
         new_files = []
         for current_file in all_files:
+            current_file = os.path.join(directory, current_file)
             modification_time = datetime.datetime.fromtimestamp(os.path.getmtime(current_file))
             if modification_time > last_checked_time:
                 new_files.append(current_file)

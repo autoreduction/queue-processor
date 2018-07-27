@@ -4,17 +4,19 @@ Holds the class for overidding QueueService framework
 This is a windows service rather than a daemon due to issues
 with correctly watching files through mounting the ISIS archive.
 As the ISIS archive would be mounted as a drive, this causes
-difficulties whne watching for file changes.
+difficulties when watching for file changes.
 """
-# Can't import on travis (linux) server
-# pylint:disable=import-error
+import os
 import sys
-import servicemanager
-import win32event
-import win32serviceutil
 
 from monitors.end_of_run_monitor import isis_end_of_run_monitor
 from monitors.windows_service import WindowsService
+
+# Windows only imports
+if os.system == "nt":
+    import servicemanager
+    import win32event
+    import win32serviceutil
 
 
 class MonitorService(WindowsService):

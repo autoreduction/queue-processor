@@ -4,14 +4,16 @@ Holds the class for overidding QueueService framework
 This is a windows service rather than a daemon due to issues
 with correctly watching files through mounting the ISIS archive.
 As the ISIS archive would be mounted as a drive, this causes
-difficulties whne watching for file changes.
+difficulties when watching for file changes.
 """
-# Can't import on travis (linux) server
-# pylint:disable=import-error
-import win32api
-import win32event
-import win32service
-import win32serviceutil
+import os
+
+# Windows only imports
+if os.system == "nt":
+    import win32api
+    import win32event
+    import win32service
+    import win32serviceutil
 
 
 class WindowsService(win32serviceutil.ServiceFramework):

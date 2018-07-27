@@ -15,9 +15,9 @@ INVALID_INSTRUMENT_MSG = 'Archive monitor could not be ' \
                          'started as %s was not recognised as a valid instrument. ' \
                          'If this is new, have you added it to the VALID_INST list?'
 
-NO_INSTRUMENT_IN_DB_MSG = '     Returning None -- Unable to find instrument %s.'
+NO_INSTRUMENT_IN_DB_MSG = '     Unable to find instrument %s in database.'
 
-NO_RUN_FOR_INSTRUMENT_MSG = '   Returning None -- Unable to find run for instrument: %s'
+NO_RUN_FOR_INSTRUMENT_MSG = '   Unable to find run for instrument: %s in database'
 
 RUN_MISMATCH_MSG = '     Data Archive entry (%s) and Database entry (%s) did not match'
 

@@ -1,18 +1,19 @@
 """
 Holds the class for overidding QueueService framework
 """
-# Can't import on travis (linux) server
-# pylint:disable=import-error
+import os
 import sys
 import time
-
-import servicemanager
-import win32event
-import win32serviceutil
 
 from monitors.windows_service import WindowsService
 from monitors.archive_monitor.isis_archive_monitor import ArchiveMonitor
 from monitors.archive_monitor.isis_archive_monitor_helper import SLEEP_TIME
+
+# Windows only imports
+if os.system == "nt":
+    import servicemanager
+    import win32event
+    import win32serviceutil
 
 
 class PollService(WindowsService):
@@ -39,7 +40,8 @@ class PollService(WindowsService):
             sleep_timer = 0
             end_service_loop = False
             while sleep_timer < SLEEP_TIME:
-                time_to_sleep = 30 if SLEEP_TIME > 30 else SLEEP_TIME
+                service_timeout = 30  # Windows will attempt to stop a service for 30 seconds
+                time_to_sleep = service_timeout if SLEEP_TIME > service_timeout else SLEEP_TIME
                 time.sleep(time_to_sleep)
                 # Wait for service stop signal, if I timeout, loop again
                 rc = win32event.WaitForSingleObject(self.hWaitStop, self.timeout)
