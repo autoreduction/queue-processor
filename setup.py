@@ -1,3 +1,9 @@
+"""
+Wrapper for the functionality for various installation and project setup commands
+see:
+    `python setup.py help`
+for more details
+"""
 from setuptools import setup
 
 from build.commands.database import InitialiseTestDatabase
@@ -32,4 +38,4 @@ setup(name='AutoReduction',
           'start': Start,
           'help': Help,
       },
-      )
+     )
