@@ -10,6 +10,7 @@ import time
 import stomp
 
 from utils.settings import ACTIVEMQ
+from utils.clients.client_helper_functions import use_default_if_none
 
 
 class QueueClient(object):
@@ -23,21 +24,11 @@ class QueueClient(object):
         """
         default_broker = [(ACTIVEMQ['brokers'].split(':')[0],
                            int(ACTIVEMQ['brokers'].split(':')[1]))]
-        self._brokers = self._use_default_if_none(brokers, default_broker)
-        self._user = self._use_default_if_none(user, ACTIVEMQ['amq_user'])
-        self._password = self._use_default_if_none(password, ACTIVEMQ['amq_pwd'])
+        self._brokers = use_default_if_none(brokers, default_broker)
+        self._user = use_default_if_none(user, ACTIVEMQ['amq_user'])
+        self._password = use_default_if_none(password, ACTIVEMQ['amq_pwd'])
         self._connection = None
         self._consumer_name = consumer_name
-
-    @staticmethod
-    def _use_default_if_none(input_var, default):
-        """
-        :param input_var: Input to the class (could be None)
-        :param default: The default value to use if input_var is None
-        """
-        if input_var is None:
-            return default
-        return input_var
 
     def get_connection(self):
         """
