@@ -1,6 +1,7 @@
 # Ignore IDE files
 .idea/
 */target/**
+.pytest_cache/
 
 
 # Ignore complied python
@@ -8,6 +9,7 @@
 
 # Ignore log data
 *.log
+*.out
 
 # Ignore settings files
 settings.py
@@ -26,3 +28,6 @@ AutoReduction.egg-info/
 
 # This is generated from a template so should be ignored to force regeneration
 apache_django_wsgi.conf
+
+# Ignore coverage logs
+.coverage
