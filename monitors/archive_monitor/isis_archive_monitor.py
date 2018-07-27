@@ -48,12 +48,14 @@ class ArchiveMonitor(object):
         self.database_session = self._database_client.get_connection()
         logging.getLogger("stomp.py").setLevel(logging.WARNING)
         self.queue_session = QueueClient().get_connection()
+        self.restart_end_of_run_monitor = False
 
     def perform_check(self):
         """
         Polls all the valid instruments
         """
         # Poll all valid instruments
+        self.restart_end_of_run_monitor = False
         logging.info(helper.STATUS_OF_CHECKS_MSG, 'starting', self._time_of_last_check)
         for instrument in helper.VALID_INST:
             self.instrument = instrument
@@ -148,14 +150,7 @@ class ArchiveMonitor(object):
                      run_dict['run_number'],
                      run_dict['facility'])
         self.queue_session.send(destination, json.dumps(run_dict), priority='9')
-        self.restart_end_of_run_monitor()
-
-    def restart_end_of_run_monitor(self):
-        """
-        Restart the end of run monitor windows service
-        """
-        win32serviceutil.RestartService("AutoreduceInstrumentMonitor")
-        logging.info("Restarting End of Run Monitor service")
+        self.restart_end_of_run_monitor = True
 
     def _construct_data_to_send(self, run_data_loc):
         """

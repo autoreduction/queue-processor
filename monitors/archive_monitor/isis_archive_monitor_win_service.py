@@ -34,6 +34,8 @@ class PollService(WindowsService):
         monitor = ArchiveMonitor("POLARIS")
         while 1:
             monitor.perform_check()
+            if monitor.restart_end_of_run_monitor:
+                self.restart_end_of_run_monitor()
             sleep_timer = 0
             end_service_loop = False
             while sleep_timer < SLEEP_TIME:
@@ -50,6 +52,13 @@ class PollService(WindowsService):
                 sleep_timer += time_to_sleep
             if end_service_loop:
                 break
+
+    @staticmethod
+    def restart_end_of_run_monitor():
+        """
+        Restart the end of run monitor windows service
+        """
+        win32serviceutil.RestartService("AutoreduceInstrumentMonitor")
 
 
 if __name__ == '__main__':
