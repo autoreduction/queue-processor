@@ -8,13 +8,17 @@ difficulties whne watching for file changes.
 """
 # ToDo: check if unused-import warning is legitimate for win32con, win32evtlogutil
 # pylint: disable=import-error, unused-import
-import servicemanager
-import win32api
-import win32con
-import win32event
-import win32evtlogutil
-import win32service
-import win32serviceutil
+import os
+
+if os.system == "nt":
+
+    import servicemanager
+    import win32api
+    import win32con
+    import win32event
+    import win32evtlogutil
+    import win32service
+    import win32serviceutil
 
 from EndOfRunMonitor import ISISendOfRunMonitor
 
