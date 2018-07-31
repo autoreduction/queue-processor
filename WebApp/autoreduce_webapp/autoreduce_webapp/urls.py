@@ -24,7 +24,7 @@ urlpatterns = [
     url(r'^runs/$', reduction_viewer_views.run_list, name='run_list'),
     url(r'^runs/queue/$', reduction_viewer_views.run_queue, name='run_queue'),
     url(r'^runs/failed/$', reduction_viewer_views.fail_queue, name='fail_queue'),
-    url(r'^runs/list/(?P<reference_number>[0-9]+)/$',
+    url(r'^runs/list/(?P<reference_number>-?[0-9]+)/$',
         reduction_viewer_views.load_runs, name='load_runs'),
     url(r'^runs/list/(?P<instrument_name>\w+)/$',
         reduction_viewer_views.load_runs, name='load_runs'),
@@ -58,7 +58,7 @@ urlpatterns = [
         reduction_variables_views.current_default_variables, name='current_default_variables'),
 
     # ===========================EXPERIMENT========================== #
-    url(r'^experiment/(?P<reference_number>[0-9]+)/$',
+    url(r'^experiment/(?P<reference_number>-?[0-9]+)/$',
         reduction_viewer_views.experiment_summary, name='experiment_summary'),
 
     # ===========================SCRIPTS============================= #

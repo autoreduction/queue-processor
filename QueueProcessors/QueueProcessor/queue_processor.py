@@ -12,24 +12,24 @@ import json
 import logging.config
 import smtplib
 import sys
-import time
 import traceback
-
-import stomp
 
 from QueueProcessors.QueueProcessor.base import session
 from QueueProcessors.QueueProcessor.orm_mapping import (ReductionRun, Instrument,
                                                         Status, Experiment,
                                                         DataLocation, ReductionLocation)
 # pylint: disable=cyclic-import
-from QueueProcessors.QueueProcessor.utils.messaging_utils import MessagingUtils
-from QueueProcessors.QueueProcessor.utils.instrument_variable_utils import InstrumentVariablesUtils
-from QueueProcessors.QueueProcessor.utils.status_utils import StatusUtils
-from QueueProcessors.QueueProcessor.utils.reduction_run_utils import ReductionRunUtils
+from QueueProcessors.QueueProcessor.queueproc_utils.messaging_utils import MessagingUtils
+from QueueProcessors.QueueProcessor.queueproc_utils.instrument_variable_utils \
+    import InstrumentVariablesUtils
+from QueueProcessors.QueueProcessor.queueproc_utils.status_utils import StatusUtils
+from QueueProcessors.QueueProcessor.queueproc_utils.reduction_run_utils import ReductionRunUtils
 # pylint: disable=import-error, no-name-in-module
-from QueueProcessors.QueueProcessor.settings import (ACTIVEMQ, LOGGING, EMAIL_HOST,
+from QueueProcessors.QueueProcessor.settings import (LOGGING, EMAIL_HOST,
                                                      EMAIL_PORT, EMAIL_ERROR_RECIPIENTS,
                                                      EMAIL_ERROR_SENDER, BASE_URL)
+
+from utils.clients.queue_client import QueueClient
 
 # Set up logging and attach the logging to the right part of the config.
 logging.config.dictConfig(LOGGING)
@@ -425,96 +425,30 @@ class Listener(object):
             new_job.delete()  # pylint: disable=no-member
             raise exp
 
+def setup_connection(consumer_name):
+    """ Starts the ActiveMQ connection and registers the event listener """
+    logger.info("Starting autoreduce queue connection")
+    # Connect to ActiveMQ
+    activemq_client = QueueClient()
+    activemq_client.connect()
 
-class Client(object):
-    """ ActiveMQ Client class. """
-    # pylint: disable=too-many-instance-attributes
-    def __init__(self, brokers, user, password, topics=None, consumer_name='QueueProcessor',
-                 client_only=True, use_ssl=ACTIVEMQ['SSL']):
-        self._brokers = brokers
-        self._user = user
-        self._password = password
-        self._connection = None
-        self._topics = topics
-        self._consumer_name = consumer_name
-        self._listener = None
-        self._client_only = client_only
-        self._use_ssl = use_ssl
+    # Register the event listener
+    conn = activemq_client.get_connection()
+    listener = Listener(activemq_client)
+    conn.set_listener(consumer_name, listener)
 
-    def set_listener(self, listener):
-        """ Set the listener class. """
-        self._listener = listener
-
-    def get_connection(self, listener=None):
-        """ Return the connection and connect if not already connected. """
-        if listener is None and not self._client_only:
-            if self._listener is None:
-                listener = Listener(self)
-                self._listener = listener
-            else:
-                listener = self._listener
-
-        logger.info("[%s] Connecting to %s", self._consumer_name, str(self._brokers))
-
-        connection = stomp.Connection(host_and_ports=self._brokers, use_ssl=self._use_ssl)
-        if not self._client_only:
-            connection.set_listener(self._consumer_name, listener)
-        connection.start()
-        connection.connect(self._user, self._password, wait=False)
-
-        time.sleep(0.5)
-        return connection
-
-    def connect(self):
-        """ Connect and subscribe to the queues. """
-        if self._connection is None or not self._connection.is_connected():
-            self._disconnect()
-            self._connection = self.get_connection()
-
-        for queue in self._topics:
-            logger.info("[%s] Subscribing to %s", self._consumer_name, queue)
-            self._connection.subscribe(destination=queue, id=1, ack='auto')
-
-    def _disconnect(self):
-        """ Disconnect form the server. """
-        if self._connection is not None and self._connection.is_connected():
-            self._connection.disconnect()
-        self._connection = None
-        logger.info("[%s] Disconnected", self._consumer_name)
-
-    def stop(self):
-        """ Stop the connection. """
-        self._disconnect()
-        if self._connection is not None:
-            self._connection.stop()
-        self._connection = None
-
-    def send(self, destination, message, persistent='true', priority='4', delay=None):
-        """ Send a message to a queue. """
-        if self._connection is None or not self._connection.is_connected():
-            self._disconnect()
-            self._connection = self.get_connection()
-
-        headers = {}
-        if delay:
-            headers['AMQ_SCHEDULED_DELAY'] = str(delay)
-        self._connection.send(destination, message, persistent=persistent, priority=priority,
-                              headers=headers)
-        logger.debug("[%s] send message to %s", self._consumer_name, destination)
-
+    # Subscribe to the queues
+    destinations = ['/queue/DataReady',
+                    '/queue/ReductionStarted',
+                    '/queue/ReductionComplete',
+                    '/queue/ReductionError']
+    for dest in destinations:
+        logger.info("Subscribing to %s", dest)
+        conn.subscribe(destination=dest, id=1, ack='auto')
 
 def main():
     """ Main method. """
-    client = Client(ACTIVEMQ['broker'],
-                    ACTIVEMQ['username'],
-                    ACTIVEMQ['password'],
-                    ACTIVEMQ['topics'],
-                    'Autoreduction_QueueProcessor',
-                    False,
-                    ACTIVEMQ['SSL'])
-    client.connect()
-    return client
-
+    setup_connection('Autoreduction_QueueProcessor')
 
 if __name__ == '__main__':
     main()

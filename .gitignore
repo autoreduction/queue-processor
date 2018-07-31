@@ -1,12 +1,35 @@
+# Ignore IDE files
+.idea/
+*/target/**
+.pytest_cache/
+
+
+# Ignore complied python
 *.pyc
+
+# Ignore log data
 *.log
 *.deb  # required for default mantid download location
 .idea/
-settings.py
-*/target/**
+*.out
 
+# Ignore settings files
+settings.py
+
+# Ignore distutils installation
+dist/
+
+# Ignore virtual environment
 venv/
+
+# Ignore migrations files
 migrations/
+
+# Ignore pip install installation
 AutoReduction.egg-info/
+
 # This is generated from a template so should be ignored to force regeneration
 apache_django_wsgi.conf
+
+# Ignore coverage logs
+.coverage

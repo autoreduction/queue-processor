@@ -17,26 +17,33 @@ dist: trusty
 
 before_install:
   - mysql_upgrade --force
-  - mysql < Scripts/Build/database/travis-db-setup.sql
+  - sudo service mysql restart
+  - mysql < scripts/Build/database/travis-db-setup.sql
 
 install:
+  - python setup.py install
   - pip install -r requirements.txt
-  - ./Scripts/Build/install/icat.sh
-  - ./Scripts/Build/install/activemq.sh
+  
+  # ================== Test setup ==================== #
+  - python setup.py test_settings
+  # Externals must be after test_settings
+  - python setup.py externals -s activemq,icat
+  - python setup.py database
+  - sudo python setup.py start
+  
+  - ./scripts/Build/database/generate_testing_database.sh
 
 script:
-  # ================== Test setup ==================== #
-  - ./Scripts/Build/project/migrate_test_settings.sh
-  - ./Scripts/Build/database/generate_testing_database.sh
-  - mysql < Scripts/Build/database/populate-reduction_viewer-db.sql
-
   # ================ Assert Test Setup =============== #
-  - nosetests Scripts/Build/tests/test_db_generation.py
+  - nosetests scripts/Build/tests/test_db_generation.py
 
   # ================ Static Analysis ================= #
-  - ./Scripts/Build/tests/test_pylint.sh
+  - ./build/tests/test_pylint.sh
 
   # ================ Nose unit tests ================ #
 
   # Utils tests
-  - nosetests utils/clients/tests
+  - pytest --ignore=scripts --cov=build --cov=QueueProcessors --cov=utils --cov=WebApp/autoreduce_webapp
+
+after_success:
+  - coveralls
