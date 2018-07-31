@@ -54,17 +54,17 @@ class TestDatabaseGeneration(unittest.TestCase):
         self.assertEqual(ALL_TABLES, all_tables)
         db.close()
 
-    def test_localhost_reduction_viewer_db_population(self):
+    def test_localhost_reduction_viewer_population(self):
         """
         Test that the local host database has been populated with data
         Current test data adds 3 rows per table (so check this)
         exception to this is status that has 5 columns
         """
-        db = MySQLdb.connect(host="localhost",
+        database = MySQLdb.connect(host="localhost",
                              user="test-user",
                              passwd="pass",
                              db="autoreduction")
-        cur = db.cursor()
+        cur = database.cursor()
         for table in list(ALL_TABLES):
             if "reduction_viewer" in table:
                 cur.execute("SELECT * FROM {};".format(table))
@@ -76,4 +76,4 @@ class TestDatabaseGeneration(unittest.TestCase):
                     self.assertTrue(len(cur.fetchall()) >= 3,
                                     "{} does not contain at least 3 rows.{} : {}".
                                     format(table, table, cur.fetchall()))
-        db.close()
+        database.close()
