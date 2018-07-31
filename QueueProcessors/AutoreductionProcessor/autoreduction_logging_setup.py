@@ -3,7 +3,6 @@ import logging.handlers
 from QueueProcessors.AutoreductionProcessor.settings import LOG
 
 LOGGING_LEVEL = logging.INFO
-LOGGING_LOC = '/home/isisautoreduce/logs/autoreductionProcessor.log'
 
 logger = logging.getLogger('AutoreductionProcessor')
 logger.setLevel(LOGGING_LEVEL)

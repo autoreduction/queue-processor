@@ -1,3 +1,4 @@
+#!/usr/bin/env sh
 
 # Generate a testing database from WebApp migrations
 _PATH_TO_MANAGE="WebApp/autoreduce_webapp/manage.py"
