@@ -24,6 +24,10 @@ TEST_SCRIPT = "def main(input_file, output_dir):\n" \
 @pytest.mark.systemtest
 @unittest.skipIf(platform.system() != "Linux", "System test skipped on non-Unix machine")
 class TestEndToEnd(unittest.TestCase):
+    """
+    Tests an end-to-end submission as a system test. This includes adding the run to
+    a fake archive to ensure it is correctly processed at the other end
+    """
     def setUp(self):
         # Establish connections
         self.queue_connection = QueueClient().get_connection()
@@ -41,6 +45,9 @@ class TestEndToEnd(unittest.TestCase):
         subprocess.call([start_script])
 
     def test_gem_end_to_end(self):
+        """
+        Tests a GEM file can be processed by the autoreduction service
+        """
         # Add data to file and reduce script
         self.data_archive_creator.make_data_archive(["GEM"], 17, 18, 2)
         self.data_archive_creator.add_data_to_most_recent_cycle("GEM", ['GEM123.raw'])
@@ -53,34 +60,11 @@ class TestEndToEnd(unittest.TestCase):
         # check that the file has been successfully reduced in the db
         time.sleep(5)
 
-        pass
-
-    '''def test_wish_end_to_end(self):
-        send_data_to_queue("2", "WISH", "path/to/file", "000002", self.queue_connection)
-        # monitor execution somehow?
-        # check that the file has been successfully reduced in the db
-        pass
-
-    def test_polaris_end_to_end(self):
-        send_data_to_queue("3", "POLARIS", "path/to/file", "000003", self.queue_connection)
-        # monitor execution somehow?
-        # check that the file has been successfully reduced in the db
-        pass
-
-    def test_polref_end_to_end(self):
-        send_data_to_queue("4", "POLREF", "path/to/file", "000004", self.queue_connection)
-        # monitor execution somehow?
-        # check that the file has been successfully reduced in the db
-        pass
-
-    def test_osiris_end_to_end(self):
-        send_data_to_queue("5", "OSIRIS", "path/to/file", "000005", self.queue_connection)
-        # monitor execution somehow?
-        # check that the file has been successfully reduced in the db
-        pass'''
-
 
 def send_data_to_queue(rb_number, instrument, location, run_number, queue_processor_connection):
+    """
+    Packs the specified data into a dictionary ready to send to a processor queue
+    """
     data_to_send = {'rb_number': rb_number,
                     'instrument': instrument,
                     'data': location,
