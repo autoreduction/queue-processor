@@ -35,11 +35,9 @@ install:
 
 script:
   - ./build/tests/test_pylint.sh
-  - echo "Generating coverage reports"
-  - pytest -k "SKIP_ALL" --cov=build --cov=QueueProcessors --cov=utils --cov=WebApp/autoreduce_webapp
 
   - echo "Running Unit tests"
-  - pytest -m "not systemtest" --ignore=scripts --cov-append
+  - pytest -m "not systemtest" --ignore=scripts --cov=build --cov=QueueProcessors --cov=utils --cov=WebApp/autoreduce_webapp
 
   - echo "Running System Tests"
   - pytest -m systemtest --cov-append
