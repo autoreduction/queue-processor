@@ -28,7 +28,7 @@ class QueueClient(object):
         self._password = self._use_default_if_none(password, ACTIVEMQ['amq_pwd'])
         self._connection = None
         self._consumer_name = consumer_name
-        self._autoreduce_queues = [ACTIVEMQ['postprocess_error'],
+        self._autoreduce_queues = [ACTIVEMQ['data_ready'],
                                    ACTIVEMQ['reduction_started'],
                                    ACTIVEMQ['reduction_complete'],
                                    ACTIVEMQ['reduction_error']]
