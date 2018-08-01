@@ -71,8 +71,12 @@ class DataArchiveCreator(object):
 
     def _create_archive_directory(self):
         """ Creates user/path/data-archive"""
-        os.makedirs(os.path.join(self._base_dir, self._archive_dir_name))
-        self._archive_dir = os.path.join(self._base_dir, self._archive_dir_name)
+        path = os.path.join(self._base_dir, self._archive_dir_name)
+
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+        self._archive_dir = path
 
     def make_data_archive(self, instruments, start_year, end_year, current_cycle):
         """

@@ -2,23 +2,23 @@
 A full end to end system test of the code
 This can currently only be tested on Linux: Running this on windows will skip all tests
 """
+from __future__ import print_function
+
 import json
 import os
 import subprocess
-import time
 import platform
 import unittest
 import pytest
+import tempfile
+import time
 
 from utils.clients.database_client import DatabaseClient
 from utils.clients.queue_client import QueueClient
 from utils.test_helpers.data_archive_creator import DataArchiveCreator
 
 import QueueProcessors
-
-TEST_SCRIPT = "def main(input_file, output_dir):\n" \
-              "   print('hello world')\n" \
-              "\n"
+from test_helpers import mantid_create_file
 
 
 @pytest.mark.systemtest
@@ -44,21 +44,39 @@ class TestEndToEnd(unittest.TestCase):
                                     '.', 'restart.sh')
         subprocess.call([start_script])
 
+
+    @staticmethod
+    def _monitor_file(original_modified_time, file_path):
+        timeout = 10  # seconds
+
+        time_start = time.time()
+        while time.time() < time_start + timeout:
+            if os.path.getmtime(file_path) > original_modified_time:
+                return True
+            time.sleep(1)
+        return False
+
     def test_gem_end_to_end(self):
         """
         Tests a GEM file can be processed by the autoreduction service
         """
         # Add data to file and reduce script
+        temp_file = tempfile.NamedTemporaryFile()
+        original_m_time = os.path.getmtime(temp_file.name)
+        test_script = mantid_create_file.get_source_str(temp_file.name)
+
         self.data_archive_creator.make_data_archive(["GEM"], 17, 18, 2)
         self.data_archive_creator.add_data_to_most_recent_cycle("GEM", ['GEM123.raw'])
-        self.data_archive_creator.add_reduce_file("GEM", TEST_SCRIPT)
+        self.data_archive_creator.add_reduce_file("GEM", test_script)
         self.data_archive_creator.add_reduce_vars_file("GEM", "")
         # Send data to queue
         data_loc = os.path.join(self.data_archive_creator.get_current_cycle_for_inst("GEM"),
                                 'GEM123.raw')
         send_data_to_queue("1", "GEM", data_loc, "123", self.queue_connection)
+
         # check that the file has been successfully reduced in the db
-        time.sleep(5)
+
+        self.assertTrue(self._monitor_file(original_m_time, temp_file.name), "GEM File not processed in system test")
 
 
 def send_data_to_queue(rb_number, instrument, location, run_number, queue_processor_connection):
