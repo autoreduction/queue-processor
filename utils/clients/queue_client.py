@@ -96,10 +96,16 @@ class QueueClient(object):
         logging.info("Successfully subscribed to all of the queues")
 
     def subscribe_autoreduce(self, consumer_name, listener, ack='auto'):
+        """
+        Subscribe to queues including DataReady
+        """
         self.subscribe_queues(self._autoreduce_queues, consumer_name, listener, ack)
 
     def subscribe_amq(self, consumer_name, listener, ack='auto'):
-        self.subscribe_queues(self._amq_queues, consumer_name, listener, ack) 
+        """
+        Subscribe to ReductionPending
+        """
+        self.subscribe_queues(self._amq_queues, consumer_name, listener, ack)
 
     def ack(self, frame):
         """

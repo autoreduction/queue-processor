@@ -6,8 +6,6 @@ import os
 import subprocess
 
 from twisted.internet import reactor
-import stomp
-
 
 from QueueProcessors.AutoreductionProcessor.autoreduction_logging_setup import logger
 # pylint:disable=no-name-in-module,import-error
