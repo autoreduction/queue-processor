@@ -159,6 +159,16 @@ class DataArchiveCreator(object):
                                         'journal').format(instrument)
         self.create_file_at_location(os.path.join(path_to_log_file, 'summary.txt'), file_contents)
 
+    def add_last_run_file(self, instrument, file_contents):
+        """
+        Adds a lastrun.txt file to a given instruments directory
+        :param instrument: The instrument to add the file to
+        :param file_contents: the contents of the file (normally RB number)
+        """
+        path_to_log_file = os.path.join(self._archive_dir, 'NDX{}',
+                                        'Instrument', 'logs').format(instrument)
+        self.create_file_at_location(os.path.join(path_to_log_file, 'lastrun.txt'), file_contents)
+
     def create_file_at_location(self, file_path, contents=None):
         """
         Generic function to create a file at a given file_path with optional content
@@ -193,24 +203,3 @@ class DataArchiveCreator(object):
         """
         if not self.archive_deleted:
             self.delete_archive()
-
-    # ========= Helper functions =========== #
-    def get_current_cycle_for_inst(self, instrument):
-        """ return the full path to the most recent cycle for a given instrument"""
-        end_year = self._end_year
-        if end_year < 10:
-            end_year = '0{}'.format(end_year)
-        return os.path.join(self._archive_dir, GENERIC_CYCLE_PATH).format(instrument,
-                                                                          end_year,
-                                                                          self._end_iteration)
-
-    def get_journal_dir_for_instrument(self, instrument):
-        """ return the full path to the journal directory for a given instrument """
-        return os.path.join(self._archive_dir, 'NDX{}',
-                            'Instrument', 'logs',
-                            'journal').format(instrument)
-
-    def get_current_data_dir_for_inst(self, instrument):
-        """ return the full path to data directory for given instrument """
-        return os.path.join(self._archive_dir, 'NDX{}',
-                            'Instrument', 'data').format(instrument)
