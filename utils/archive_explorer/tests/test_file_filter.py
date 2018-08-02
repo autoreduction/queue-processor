@@ -125,11 +125,13 @@ class TestTimeFilterFiles(unittest.TestCase):
         self.assertIsNotNone(filter_files_by_time(self.test_output_directory, dt_cut_off))
         self.assertIsNotNone(filter_files_by_time(self.test_output_directory, timestamp))
 
-    def test_filter_files_by_time_invalid_time_string(self):
+    def test_filter_files_by_time_invalid_time_input(self):
         """
         Test that string is not a valid time input
         """
-        self.assertRaises(TypeError, self.test_output_directory, "string")
+        error_msg = "cut_off_time must be a numerical timestamp or datetime object. Type found: {}"
+        self.assertRaisesRegexp(RuntimeError, error_msg.format("<type 'str'>"),
+                                filter_files_by_time, self.test_output_directory, "string")
 
     def tearDown(self):
         """
