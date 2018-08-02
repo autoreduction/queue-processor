@@ -125,16 +125,11 @@ class TestTimeFilterFiles(unittest.TestCase):
         self.assertIsNotNone(filter_files_by_time(self.test_output_directory, dt_cut_off))
         self.assertIsNotNone(filter_files_by_time(self.test_output_directory, timestamp))
 
-    # pylint:disable=inconsistent-return-statements
     def test_filter_files_by_time_invalid_time_string(self):
         """
         Test that string is not a valid time input
         """
-        try:
-            filter_files_by_time(self.test_output_directory, "string")
-        except TypeError:
-            return True
-        self.fail()
+        self.assertRaises(TypeError, self.test_output_directory, "string")
 
     def tearDown(self):
         """

@@ -97,14 +97,9 @@ class TestArchiveExplorer(unittest.TestCase):
         actual = self.explorer.get_cycle_directory('GEM', 17, 2)
         self.assertEqual(actual, expected)
 
-    # pylint:disable=inconsistent-return-statements
     def test_custom_cycle_dir_does_not_exist(self):
         """ Test exception raised if custom cycle doesn't exist """
-        try:
-            self.explorer.get_cycle_directory('GEM', 10, 1)
-        except OSError:
-            return True
-        self.fail()
+        self.assertRaises(OSError, self.explorer.get_cycle_directory, "GEM", 10, 1)
 
     def test_current_cycle_dir_path(self):
         """ Test path to most recent cycle directory """
@@ -112,6 +107,14 @@ class TestArchiveExplorer(unittest.TestCase):
                                 'cycle_18_2')
         actual = self.explorer.get_current_cycle_directory('GEM')
         self.assertEqual(actual, expected)
+
+    def test_current_cycle_directory_not_exist(self):
+        """ Test current cycle returns None when directory is empty """
+        self.dac.delete_archive()
+        os.makedirs(os.path.join(self.test_output_directory, 'data-archive', 'NDXGEM',
+                                 'Instrument', 'data'))
+        self.assertIsNone(self.explorer.get_current_cycle_directory('GEM'))
+        shutil.rmtree(os.path.join(self.test_output_directory, 'data-archive'))
 
     def test_get_most_recent_run_empty(self):
         """ Test path to most recent run if none exist """
