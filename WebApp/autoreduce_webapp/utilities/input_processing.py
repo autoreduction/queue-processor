@@ -1,16 +1,17 @@
 """
-Returns an inclusive range of values based on
-the unsanitised user input as a string.
-If the input is malformed a syntax error is
-thrown, otherwise a single integer or list of integers
-are returned depending on the original input
-:param user_input : The string representation of the user's input
-:return List or single value(s) based on user input
-:raises Syntax error if the users input contains malformed chars
+Custom parsing of user input
 """
 
 
 def parse_user_run_numbers(user_input):
+    """
+    Returns an inclusive range of values based on the unsanitised user input as a string.
+    If the input is malformed a syntax error is thrown, otherwise a single integer or list
+    of integers are returned depending on the original input.
+    :param user_input : The string representation of the user's input
+    :return List or single value(s) based on user input
+    :raises Syntax error if the users input contains malformed chars
+    """
     allowed_non_numeric = ['-', ',']
     is_list = True if any(x in user_input for x in allowed_non_numeric) else False
 
@@ -44,7 +45,7 @@ def parse_user_run_numbers(user_input):
 
 def _check_input_is_numeric(str_input, extra_whitelisted_char_set=None):
     # Allow 0-9 to delimit the list plus any passed extra ones
-    if len(str_input) == 0:
+    if not str_input:
         raise SyntaxError("No numeric digits were entered at all, or after a ',' or '-' character.")
 
     allowed_characters = set("1234567890-")
@@ -53,7 +54,8 @@ def _check_input_is_numeric(str_input, extra_whitelisted_char_set=None):
 
     disallowed_char = next((char for char in str_input if char not in allowed_characters), None)
     if disallowed_char:
-        raise SyntaxError("The character '{0}' was entered, which is not permitted".format(disallowed_char))
+        raise SyntaxError("The character '{0}' was entered, "
+                          "which is not permitted".format(disallowed_char))
 
     return True
 
@@ -91,12 +93,12 @@ def _parse_range_input(ranged_input):
 
     next_val_represents_negative = False
     for value in split_range:
-        if len(value) == 0 and not next_val_represents_negative:
+        if not value and not next_val_represents_negative:
             # The next value is probably negative
             next_val_represents_negative = True
             continue
 
-        if len(value) == 0 and next_val_represents_negative:
+        if not value and next_val_represents_negative:
             # We probably have an input like -3 - (-5) as: -3--5
             # consume this range separator
             continue
