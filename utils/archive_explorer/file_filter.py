@@ -43,4 +43,3 @@ def filter_files_by_time(directory, cut_off_time):
         if modification_time > cut_off_time:
             new_files.append(current_file)
     return new_files
-

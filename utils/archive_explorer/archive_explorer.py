@@ -57,7 +57,7 @@ class ArchiveExplorer(object):
     def get_summary_file(self, instrument):
         """ :return: archive_directory/NDXGEM/Instrument/logs/journal/summary.txt """
         return self._file_path_exists(os.path.join(self.get_journal_directory(instrument),
-                                      'summary.txt'))
+                                                   'summary.txt'))
 
     # ================================== Data directories ======================================= #
     def get_data_directory(self, instrument):
@@ -101,4 +101,3 @@ class ArchiveExplorer(object):
         if valid_files:
             return valid_files[-1]
         return None
-
