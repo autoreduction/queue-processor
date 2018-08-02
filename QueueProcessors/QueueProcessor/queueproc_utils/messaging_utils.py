@@ -5,7 +5,7 @@ import logging.config
 # pylint: disable=cyclic-import
 from QueueProcessors.QueueProcessor.base import session
 from QueueProcessors.QueueProcessor.orm_mapping import DataLocation
-# pylint:disable=no-name-in-module,import-error
+# pylint:disable=no-name-in-module
 from QueueProcessors.QueueProcessor.settings import LOGGING, FACILITY
 from utils.clients.queue_client import QueueClient
 

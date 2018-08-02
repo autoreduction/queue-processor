@@ -13,6 +13,8 @@ import pytest
 import tempfile
 import time
 
+import git_helpers
+
 from utils.clients.database_client import DatabaseClient
 from utils.clients.queue_client import QueueClient
 from utils.test_helpers.data_archive_creator import DataArchiveCreator
@@ -42,7 +44,9 @@ class TestEndToEnd(unittest.TestCase):
         # Start QueueProcessors
         start_script = os.path.join(os.path.dirname(os.path.abspath(QueueProcessors.__file__)),
                                     '.', 'restart.sh')
-        subprocess.call([start_script])
+
+        git_root = git_helpers.get_git_root()
+        subprocess.Popen([start_script], cwd=git_root)
 
 
     @staticmethod

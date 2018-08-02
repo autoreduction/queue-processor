@@ -3,10 +3,10 @@ import os
 FACILITY = 'ISIS'
 
 MYSQL = {
-    'HOST': 'YOUR-SQL-SERVER',
-    'USER': 'YOUR-SQL-USERNAME',
-    'PASSWD': 'YOUR-PASSWORD',
-    'DB': 'YOUR-SQL-DB-NAME'
+    'HOST': 'localhost',
+    'USER': 'root',
+    'PASSWD': '',
+    'DB': 'autoreduction'
 }
 
 # Logging

@@ -1,5 +1,6 @@
 pytest
 pytest-cov
-pylint==1.8.4
+pylint
 coveralls
 python-coveralls
+gitpython

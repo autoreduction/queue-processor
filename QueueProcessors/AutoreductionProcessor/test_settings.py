@@ -27,3 +27,5 @@ MISC = {
     "temp_root_directory": "/autoreducetmp",
     "excitation_instruments": ["LET", "MARI", "MAPS", "MERLIN", "WISH", "GEM"]
 }
+
+LOGGING_PATH = "/tmp/autoreductionProcessor.log"
