@@ -75,26 +75,31 @@ class TestTimeFilterFiles(unittest.TestCase):
         os.makedirs(self.test_output_directory)
         list_of_test_files = ['test.nxs', 'test.txt', 'test.jpg', 'test.raw']
         for file_name in list_of_test_files:
-            with open(os.path.join(self.test_output_directory, file_name), 'w+') as new_file:
+            file_path = os.path.join(self.test_output_directory, file_name)
+            with open(file_path, 'w+') as new_file:
                 new_file.write("test_file")
-        time.sleep(0.2)
-        self.creation_time = datetime.datetime.now()
+        for file_name in list_of_test_files:
+            file_path = os.path.join(self.test_output_directory, file_name)
+            os.utime(file_path, (100.0, 100.0))
 
     def test_filter_files_by_time_no_new(self):
         """
         Test that when no new files are added, nothing is returned
         """
-        actual = filter_files_by_time(self.test_output_directory, self.creation_time)
+        cut_off = datetime.datetime.fromtimestamp(1000.0)
+        actual = filter_files_by_time(self.test_output_directory, cut_off)
         self.assertEqual(actual, [])
 
     def test_filter_files_by_time_add_single(self):
         """
         Test that when one new file is added later than the time filter it is returned
         """
+        cut_off = datetime.datetime.fromtimestamp(1000.0)
         new_file_path = os.path.join(self.test_output_directory, 'new_file.txt')
+        time.sleep(0.2)
         with open(new_file_path, 'w+') as new_file:
             new_file.write("test_file")
-        actual = filter_files_by_time(self.test_output_directory, self.creation_time)
+        actual = filter_files_by_time(self.test_output_directory, cut_off)
         self.assertEqual(actual, [new_file_path])
 
     def test_filter_files_by_time_add_multi(self):
@@ -102,13 +107,34 @@ class TestTimeFilterFiles(unittest.TestCase):
         Test that when multiple files are added later than
         the time filter they are returned
         """
+        cut_off = datetime.datetime.fromtimestamp(1000.0)
         new_file_paths = [os.path.join(self.test_output_directory, 'new_file.txt'),
                           os.path.join(self.test_output_directory, 'new_file1.txt')]
         for file_path in new_file_paths:
             with open(file_path, 'w+') as new_file:
                 new_file.write("test_file")
-        actual = filter_files_by_time(self.test_output_directory, self.creation_time)
+        actual = filter_files_by_time(self.test_output_directory, cut_off)
         self.assertEqual(actual, new_file_paths)
+
+    def test_filter_files_by_time_with_timestamp(self):
+        """
+        Check that filter files by time accepts datetime object and timestamps
+        """
+        dt_cut_off = datetime.datetime(1970, 1, 1)
+        timestamp = 1000
+        self.assertIsNotNone(filter_files_by_time(self.test_output_directory, dt_cut_off))
+        self.assertIsNotNone(filter_files_by_time(self.test_output_directory, timestamp))
+
+    # pylint:disable=inconsistent-return-statements
+    def test_filter_files_by_time_invalid_time_string(self):
+        """
+        Test that string is not a valid time input
+        """
+        try:
+            filter_files_by_time(self.test_output_directory, "string")
+        except TypeError:
+            return True
+        self.fail()
 
     def tearDown(self):
         """

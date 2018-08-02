@@ -35,11 +35,17 @@ def filter_files_by_time(directory, cut_off_time):
     :return: list of files that does not contain any file which has a
              most recent modification that was before the cut_off_time
     """
+    if not isinstance(cut_off_time, datetime.datetime):
+        try:
+            cut_off_time = datetime.datetime.fromtimestamp(float(cut_off_time))
+        except (TypeError, ValueError):
+            raise TypeError("cut_off_time must be a numerical timestamp or datetime object."
+                            "Type found: {}".format(type(cut_off_time)))
     all_files = os.listdir(directory)
     new_files = []
     for current_file in all_files:
         current_file = os.path.join(directory, current_file)
-        modification_time = datetime.datetime.fromtimestamp(os.path.getmtime(current_file))
+        modification_time = datetime.datetime.fromtimestamp(os.stat(current_file).st_mtime)
         if modification_time > cut_off_time:
             new_files.append(current_file)
     return new_files

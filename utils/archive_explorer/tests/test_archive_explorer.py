@@ -4,6 +4,7 @@ Test the archive explorer
 import datetime
 import os
 import shutil
+import time
 import unittest
 
 from utils.data_archive_creator.data_archive_creator import DataArchiveCreator
@@ -114,7 +115,7 @@ class TestArchiveExplorer(unittest.TestCase):
 
     def test_get_most_recent_run_empty(self):
         """ Test path to most recent run if none exist """
-        self.assertIsNone(self.explorer.get_most_recent_run_since('GEM', datetime.datetime.now))
+        self.assertIsNone(self.explorer.get_most_recent_run_since('GEM', datetime.datetime.now()))
 
     def test_get_most_recent_run_add_before_cut_off(self):
         """ Test path to most recent run if only run before time cut off exist """
@@ -128,6 +129,7 @@ class TestArchiveExplorer(unittest.TestCase):
         expected = os.path.join(self.archive_directory, 'NDXGEM', 'Instrument', 'data',
                                 'cycle_18_2', 'GEM001.nxs')
         test_start_time = datetime.datetime.now()
+        time.sleep(0.2)
         self.dac.add_data_to_most_recent_cycle('GEM', ['GEM001.nxs'])
         actual = self.explorer.get_most_recent_run_since('GEM', test_start_time)
         self.assertEqual(actual, expected)
