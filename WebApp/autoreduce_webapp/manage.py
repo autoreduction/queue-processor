@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+"""
+Django generated file for webapp control
+"""
 import os
 import sys
 
