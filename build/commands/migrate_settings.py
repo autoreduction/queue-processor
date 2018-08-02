@@ -31,9 +31,9 @@ class MigrateTestSettings(Command):
                                     os.path.join(ROOT_DIR, 'utils'),
                                     os.path.join(ROOT_DIR, 'WebApp', 'autoreduce_webapp',
                                                  'autoreduce_webapp'),
-                                    os.path.join(ROOT_DIR, 'QueueProcessors', 
+                                    os.path.join(ROOT_DIR, 'QueueProcessors',
                                                  'AutoreductionProcessor'),
-                                    os.path.join(ROOT_DIR, 'QueueProcessors', 
+                                    os.path.join(ROOT_DIR, 'QueueProcessors',
                                                  'QueueProcessor')]
 
     def run(self):
