@@ -20,7 +20,8 @@ def run_sql_file(sql_file_location, logger):
     :return: True: exit code of script was 0
              False: exit code of script was non-zero
     """
-    from build.settings import DB_ROOT_PASSWORD  # Must be imported at run-time for migrate test settings to work
+    # Must be imported at run-time for migrate test settings to work
+    from build.settings import DB_ROOT_PASSWORD
     logger.info("Running script: %s" % sql_file_location)
     with open(sql_file_location, 'r') as input_file:
         password = ''
@@ -69,13 +70,20 @@ def generate_schema(project_root_path, logger):
     logger.info("Database migrated successfully")
     return True
 
+
 def add_test_user(logger):
+    """
+    Add the test user account to the database
+    :param logger: Handle to the logging file
+    :return: True if process completed successfully
+    """
     # Must be imported at run-time for migrate test settings to work
     from build.settings import DB_ROOT_PASSWORD
     from utils.settings import MYSQL
     user_to_add = MYSQL["USER"]
     logger.info("Adding user: {0}".format(user_to_add))
-    sql_commands = ["GRANT ALL ON *.* TO '{0}'@'localhost' IDENTIFIED BY '{1}';".format(user_to_add, MYSQL["PASSWD"]),
+    sql_commands = ["GRANT ALL ON *.* TO '{0}'@'localhost' "
+                    "IDENTIFIED BY '{1}';".format(user_to_add, MYSQL["PASSWD"]),
                     "FLUSH PRIVILEGES;"]
 
     to_exec = '\n'.join(sql_commands)
