@@ -5,6 +5,7 @@ import datetime
 import os
 import shutil
 import time
+import tempfile
 import unittest
 
 from utils.archive_explorer.file_filter import (check_file_extension,
@@ -70,9 +71,7 @@ class TestTimeFilterFiles(unittest.TestCase):
         """
         Create test directory and populate it with some test files
         """
-        self.test_output_directory = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                                  'test-output')
-        os.makedirs(self.test_output_directory)
+        self.test_output_directory = tempfile.mkdtemp()
         list_of_test_files = ['test.nxs', 'test.txt', 'test.jpg', 'test.raw']
         for file_name in list_of_test_files:
             file_path = os.path.join(self.test_output_directory, file_name)

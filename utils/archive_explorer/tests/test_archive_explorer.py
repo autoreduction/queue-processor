@@ -4,7 +4,7 @@ Test the archive explorer
 import datetime
 import os
 import shutil
-import time
+import tempfile
 import unittest
 
 from utils.data_archive_creator.data_archive_creator import DataArchiveCreator
@@ -24,10 +24,8 @@ class TestArchiveExplorer(unittest.TestCase):
         """
         Create the test output directory and the data archive directory
         """
-        cls.test_output_directory = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                                 'test-output')
+        cls.test_output_directory = tempfile.mkdtemp()
         cls.archive_directory = os.path.join(cls.test_output_directory, 'data-archive')
-        os.makedirs(cls.test_output_directory)
 
     def setUp(self):
         """
@@ -131,10 +129,11 @@ class TestArchiveExplorer(unittest.TestCase):
         """ Test path valid most recent run """
         expected = os.path.join(self.archive_directory, 'NDXGEM', 'Instrument', 'data',
                                 'cycle_18_2', 'GEM001.nxs')
-        test_start_time = datetime.datetime.now()
-        time.sleep(0.2)
+        # Ensure that the time is set in the past - Note we can not rely on the system clock for
+        # this as the linux system clock does not always match up with file modification times
+        time_in_past = datetime.datetime.fromtimestamp(10000)
         self.dac.add_data_to_most_recent_cycle('GEM', ['GEM001.nxs'])
-        actual = self.explorer.get_most_recent_run_since('GEM', test_start_time)
+        actual = self.explorer.get_most_recent_run_since('GEM', time_in_past)
         self.assertEqual(actual, expected)
 
     def tearDown(self):
