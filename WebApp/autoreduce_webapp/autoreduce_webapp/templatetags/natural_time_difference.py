@@ -7,6 +7,7 @@ from django.template.defaultfilters import pluralize
 from common_helpers import get_var
 
 
+# pylint:disable=invalid-name
 register = Library()
 
 

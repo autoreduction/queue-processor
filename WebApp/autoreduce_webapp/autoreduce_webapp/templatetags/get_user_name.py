@@ -1,7 +1,6 @@
 """
 Handles finding the user name
 """
-import logging
 
 from django.template import Library, Node, Variable, TemplateSyntaxError
 from django.contrib.auth.models import User
@@ -10,7 +9,7 @@ from django.core.exceptions import ObjectDoesNotExist
 # pylint: disable=relative-import
 from common_helpers import get_var
 
-logger = logging.getLogger(__name__)
+# pylint:disable=invalid-name
 register = Library()
 
 
