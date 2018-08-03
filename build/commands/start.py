@@ -36,8 +36,8 @@ class Start(Command):
         """
         from build.settings import INSTALL_DIRS
         location = os.path.join(INSTALL_DIRS['activemq'],
-                           'apache-activemq-5.15.3',
-                           'bin')
+                                'apache-activemq-5.15.3',
+                                'bin')
         if os.name == 'nt':
             location = os.path.join(location, 'activemq.bat')
             start_new_terminal = ['start', 'cmd', '/c']
@@ -53,8 +53,7 @@ class Start(Command):
     @staticmethod
     def _check_valid_path(path):
         if os.path.isfile(path):
-                return True
-        else:
-            print("Unable to start ActiveMQ service."
-                  "Files not found at location %s" % path)
-            return False
+            return True
+        print("Unable to start ActiveMQ service."
+              "Files not found at location %s" % path)
+        return False
