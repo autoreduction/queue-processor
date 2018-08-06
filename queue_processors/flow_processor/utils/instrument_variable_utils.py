@@ -10,14 +10,14 @@ import os
 
 import chardet
 
-from QueueProcessors.QueueProcessor.base import session
-from QueueProcessors.QueueProcessor.orm_mapping import (InstrumentJoin, Notification,
-                                                        InstrumentVariable, RunVariable,
-                                                        Variable)
+from queue_processors.flow_processor.base import session
+from queue_processors.flow_processor.orm_mapping import (InstrumentJoin, Notification,
+                                                         InstrumentVariable, RunVariable,
+                                                         Variable)
 # pylint:disable=no-name-in-module,import-error
-from QueueProcessors.QueueProcessor.settings import REDUCTION_DIRECTORY, LOGGING
-from QueueProcessors.QueueProcessor.queueproc_utils.instrument_utils import InstrumentUtils
-from QueueProcessors.QueueProcessor.queueproc_utils.variable_utils import VariableUtils
+from queue_processors.flow_processor.settings import REDUCTION_DIRECTORY, LOGGING
+from queue_processors.flow_processor.utils.instrument_utils import InstrumentUtils
+from queue_processors.flow_processor.utils.variable_utils import VariableUtils
 
 
 # Set up logging and attach the logging to the right part of the config.

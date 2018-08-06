@@ -3,10 +3,10 @@ import logging.config
 import re
 
 # pylint: disable=import-error,no-name-in-module
-from QueueProcessors.QueueProcessor.base import session
-from QueueProcessors.QueueProcessor.orm_mapping import RunJoin, InstrumentJoin
+from queue_processors.flow_processor.base import session
+from queue_processors.flow_processor.orm_mapping import RunJoin, InstrumentJoin
 # pylint:disable=no-name-in-module,import-error
-from QueueProcessors.QueueProcessor.settings import LOGGING
+from queue_processors.flow_processor.settings import LOGGING
 
 # Set up logging and attach the logging to the right part of the config.
 logging.config.dictConfig(LOGGING)
