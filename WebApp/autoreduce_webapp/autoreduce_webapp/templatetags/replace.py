@@ -6,6 +6,7 @@ from django.template import Library, Node, Variable, TemplateSyntaxError
 from common_helpers import get_var
 
 
+# pylint:disable=invalid-name
 register = Library()
 
 

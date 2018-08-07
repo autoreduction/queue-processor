@@ -4,11 +4,11 @@ Common helper functions for templatetags
 from django.template import VariableDoesNotExist
 
 
-def get_var(v, context):
+def get_var(variable, context):
     """
     Obtain a variable from the context
     """
     try:
-        return v.resolve(context)
+        return variable.resolve(context)
     except VariableDoesNotExist:
-        return v.var
+        return variable.var
