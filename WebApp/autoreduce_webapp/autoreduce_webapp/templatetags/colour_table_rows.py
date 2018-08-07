@@ -3,6 +3,7 @@ handles colouring table rows
 """
 from django.template import Library
 
+# pylint:disable=invalid-name
 register = Library()
 
 
