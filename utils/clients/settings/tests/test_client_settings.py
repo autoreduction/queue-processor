@@ -1,8 +1,12 @@
+"""
+Test the ClientSettings package
+"""
 import unittest
 
 from utils.clients.settings.client_settings import ClientSettings
 
 
+# pylint:disable=missing-docstring
 class TestClientSettings(unittest.TestCase):
 
     def test_valid_init(self):
@@ -26,5 +30,3 @@ class TestClientSettings(unittest.TestCase):
                                 ClientSettings, 'string', 'string', True, 99.99)
         self.assertRaisesRegexp(ValueError, "99.99 of <type 'float'> is not a string",
                                 ClientSettings, 'string', 'string', 'string', 99.99)
-
-

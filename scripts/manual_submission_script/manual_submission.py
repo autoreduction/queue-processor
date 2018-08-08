@@ -87,7 +87,7 @@ def main():
 
     print("Logging into ICAT")
     icat_client = ICATClient()
-    icat_client.client_login()
+    icat_client.connect()
 
     print("Logging into ActiveMQ")
     activemq_client = QueueClient()

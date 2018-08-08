@@ -4,6 +4,9 @@ Custom class for connection errors
 
 
 class ConnectionException(Exception):
+    """
+    Simple class for raising exceptions when we cannot connect to services
+    """
 
     def __init__(self, service_name):
         message = "Unable to connect to {0} with provided credentials. " \

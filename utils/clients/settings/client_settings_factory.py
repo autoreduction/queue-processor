@@ -4,6 +4,7 @@ Factory for creating settings objects that can be used in the client classes
 from utils.clients.settings.client_settings import ClientSettings
 
 
+# pylint:disable=too-few-public-methods
 class ClientSettingsFactory(object):
     """
     Class for the settings factory
@@ -11,6 +12,7 @@ class ClientSettingsFactory(object):
 
     ignore_kwargs = ['username', 'password', 'host', 'port']
 
+    # pylint:disable=too-many-arguments
     def create(self, settings_type, username, password, host, port, **kwargs):
         """
         Create a settings object to use with a client
@@ -27,18 +29,21 @@ class ClientSettingsFactory(object):
         :return: A ClientSettings object
         """
         if settings_type.lower() not in ['database', 'icat', 'queue']:
-            raise ValueError("Factories creation settings type must be one of: 'database', 'icat', 'queue'")
+            raise ValueError("Factories creation settings type must be one of: 'database', "
+                             "'icat', 'queue'")
         kwargs['username'] = username
         kwargs['password'] = password
         kwargs['host'] = host
         kwargs['port'] = port
 
+        settings = None
         if settings_type.lower() == 'database':
-            return self._create_database(**kwargs)
+            settings = self._create_database(**kwargs)
         elif settings_type.lower() == 'icat':
-            return self._create_icat(**kwargs)
+            settings = self._create_icat(**kwargs)
         elif settings_type.lower() == 'queue':
-            return self._create_queue(**kwargs)
+            settings = self._create_queue(**kwargs)
+        return settings
 
     def _create_database(self, **kwargs):
         """
@@ -69,12 +74,13 @@ class ClientSettingsFactory(object):
         """
         Ensure that the kwargs given as input contain the expected keys
         """
-        for key, value in actual.items():
+        for key, _ in actual.items():
             if key not in expected and key not in self.ignore_kwargs:
                 raise ValueError("{0} is not a recognised key word argument."
                                  " Valid kwargs: {1}".format(key, expected))
 
 
+# pylint:disable=too-few-public-methods
 class ICATSettings(ClientSettings):
     """
     ICAT settings object
@@ -86,6 +92,7 @@ class ICATSettings(ClientSettings):
         self.auth = authentication_type
 
 
+# pylint:disable=too-few-public-methods
 class MySQLSettings(ClientSettings):
     """
     MySQL settings to be used as a Database settings object
@@ -104,6 +111,7 @@ class MySQLSettings(ClientSettings):
                                                         self.database)
 
 
+# pylint:disable=too-few-public-methods
 class ActiveMQSettings(ClientSettings):
     """
     ActiveMq settings to be used as a Queue settings object
@@ -115,6 +123,7 @@ class ActiveMQSettings(ClientSettings):
     reduction_error = None
     all_subscriptions = None
 
+    # pylint:disable=too-many-arguments
     def __init__(self,
                  reduction_pending='/queue/ReductionPending',
                  data_ready='/queue/DataReady',
