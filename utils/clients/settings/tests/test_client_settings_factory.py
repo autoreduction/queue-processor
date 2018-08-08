@@ -1,9 +1,13 @@
+"""
+Tests for the ClientSettingsFactory
+"""
 import unittest
 
 from utils.clients.settings.client_settings_factory import (ClientSettingsFactory, MySQLSettings,
                                                             ICATSettings, ActiveMQSettings)
 
 
+# pylint:disable=missing-docstring
 class TestClientSettingsFactory(unittest.TestCase):
 
     def setUp(self):

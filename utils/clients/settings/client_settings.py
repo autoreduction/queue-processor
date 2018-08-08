@@ -3,7 +3,11 @@ Generic settings class for client access
 """
 
 
+# pylint:disable=too-few-public-methods
 class ClientSettings(object):
+    """
+    Hold common values for all Settings object
+    """
 
     username = None
     password = None
@@ -18,6 +22,9 @@ class ClientSettings(object):
 
     @staticmethod
     def _attempt_param_cast(param):
+        """
+        Raise exception if param is not a string else return param
+        """
         if not isinstance(param, str):
             raise ValueError("{0} of {1} is not a string".format(param, type(param)))
         return param

@@ -31,6 +31,7 @@ class TestDatabaseClient(unittest.TestCase):
         self.assertIsNone(client._engine)
 
     def test_invalid_init(self):
+        """ Test invalid values for initialisation """
         self.assertRaises(TypeError, DatabaseClient, 'string')
 
     # pylint:disable=protected-access

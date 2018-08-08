@@ -59,7 +59,7 @@ class QueueClient(AbstractClient):
                 host_port = [(self.credentials.host, self.credentials.port)]
                 connection = stomp.Connection(host_and_ports=host_port,
                                               use_ssl=False)
-                logging.info("Starting connection to {}".format(host_port))
+                logging.info("Starting connection to %s", host_port)
                 connection.start()
                 connection.connect(username=self.credentials.username,
                                    passcode=self.credentials.password,
@@ -107,8 +107,10 @@ class QueueClient(AbstractClient):
         """
         Acknowledge receipt of a message
         """
+        # pylint:disable=no-value-for-parameter
         self._connection.ack(frame)
 
+    # pylint:disable=too-many-arguments
     def send(self, destination, message, persistent='true', priority='4', delay=None):
         """
         Send a message via the open connection to a queue

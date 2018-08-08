@@ -1,9 +1,13 @@
+"""
+Test AbstractClient functionality
+"""
 import unittest
 
 from utils.clients.abstract_client import AbstractClient
 from utils.clients.settings.client_settings import ClientSettings
 
 
+# pylint:disable=missing-docstring
 class TestAbstractClient(unittest.TestCase):
 
     def test_client_settings_init(self):
@@ -17,7 +21,8 @@ class TestAbstractClient(unittest.TestCase):
             self.fail("Expected creation with valid settings not to fail but it did.")
         self.assertIsNotNone(interface)
 
-    def test_derived_client_settings_init(self):
+    def test_derived_settings_init(self):
+        # pylint:disable=too-few-public-methods
         class DerivedSettings(ClientSettings):
             pass
         derived_settings = DerivedSettings(username='user',

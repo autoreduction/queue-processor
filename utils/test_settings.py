@@ -22,7 +22,7 @@ MYSQL_SETTINGS = SETTINGS_FACTORY.create('database',
                                          password='pass',
                                          host='localhost',
                                          port='3306',
-                                         database_name='autoredcution')
+                                         database_name='autoreduction')
 
 ACTIVEMQ_SETTINGS = SETTINGS_FACTORY.create('queue',
                                             username='admin',
