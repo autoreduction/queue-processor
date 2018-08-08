@@ -3,9 +3,9 @@ Test cases for the database client
 """
 import unittest
 
-from utils.clients.database_client import DatabaseClient
-from utils.clients.client_settings_factory import ClientSettingsFactory
 from utils.clients.connection_exception import ConnectionException
+from utils.clients.database_client import DatabaseClient
+from utils.clients.settings.client_settings_factory import ClientSettingsFactory
 
 
 class TestDatabaseClient(unittest.TestCase):

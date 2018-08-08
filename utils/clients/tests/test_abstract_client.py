@@ -1,6 +1,7 @@
 import unittest
+
 from utils.clients.abstract_client import AbstractClient
-from utils.clients.client_settings import ClientSettings
+from utils.clients.settings.client_settings import ClientSettings
 
 
 class TestAbstractClient(unittest.TestCase):
