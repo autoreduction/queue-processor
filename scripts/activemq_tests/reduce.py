@@ -1,3 +1,4 @@
+# pylint:skip-file
 # This is a demo reduce.py script
 
 import sys
