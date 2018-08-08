@@ -15,7 +15,7 @@ errScore=0 # Pylint score
 logFileName="pylint.log"
 rm -f "$logFileName" || true
 
-for i in $(find . -name migrations -prune -o -name '*.py');
+for i in $(find . -not -path "*migrations*" -name '*.py');
 do
     fileCount=$((fileCount+1))
 
