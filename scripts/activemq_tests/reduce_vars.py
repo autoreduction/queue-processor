@@ -1,3 +1,4 @@
+# pylint:skip-file
 standard_vars = {
     'var_1': '-3,-5,-4,-5.0',
     'var_2': '5,2,4,30.0',
