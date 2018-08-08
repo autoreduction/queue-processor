@@ -3,7 +3,7 @@ Generic client class used as an interface for other classes
 """
 from abc import ABCMeta, abstractmethod
 
-from utils.clients.client_settings import ClientSettings
+from utils.clients.settings.client_settings import ClientSettings
 
 
 class AbstractClient:

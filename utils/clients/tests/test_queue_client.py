@@ -3,9 +3,9 @@ Test functionality for the activemq client
 """
 import unittest
 
-from utils.clients.queue_client import QueueClient
-from utils.clients.client_settings_factory import ClientSettingsFactory
 from utils.clients.connection_exception import ConnectionException
+from utils.clients.queue_client import QueueClient
+from utils.clients.settings.client_settings_factory import ClientSettingsFactory
 
 
 class TestQueueClient(unittest.TestCase):
