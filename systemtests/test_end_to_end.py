@@ -17,7 +17,8 @@ import git_helpers
 
 from utils.clients.database_client import DatabaseClient
 from utils.clients.queue_client import QueueClient
-from utils.test_helpers.data_archive_creator import DataArchiveCreator
+from utils.data_archive_creator.data_archive_creator import DataArchiveCreator
+from utils.archive_explorer.archive_explorer import ArchiveExplorer
 
 import QueueProcessors
 from test_helpers import mantid_create_file
@@ -40,6 +41,7 @@ class TestEndToEnd(unittest.TestCase):
         # Create data archive
         path_to_test_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)))
         self.data_archive_creator = DataArchiveCreator(path_to_test_dir)
+        self.archive_explorer = ArchiveExplorer(path_to_test_dir)
 
         # Start QueueProcessors
         start_script = os.path.join(os.path.dirname(os.path.abspath(QueueProcessors.__file__)),
@@ -47,7 +49,6 @@ class TestEndToEnd(unittest.TestCase):
 
         git_root = git_helpers.get_git_root()
         subprocess.Popen([start_script], cwd=git_root)
-
 
     @staticmethod
     def _monitor_file(original_modified_time, file_path):
@@ -74,7 +75,7 @@ class TestEndToEnd(unittest.TestCase):
         self.data_archive_creator.add_reduce_file("GEM", test_script)
         self.data_archive_creator.add_reduce_vars_file("GEM", "")
         # Send data to queue
-        data_loc = os.path.join(self.data_archive_creator.get_current_cycle_for_inst("GEM"),
+        data_loc = os.path.join(self.archive_explorer.get_current_cycle_directory("GEM"),
                                 'GEM123.raw')
         send_data_to_queue("1", "GEM", data_loc, "123", self.queue_connection)
 
