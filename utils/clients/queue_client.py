@@ -29,6 +29,11 @@ class QueueClient(object):
         self._password = use_default_if_none(password, ACTIVEMQ['amq_pwd'])
         self._connection = None
         self._consumer_name = consumer_name
+        self._autoreduce_queues = [ACTIVEMQ['data_ready'],
+                                   ACTIVEMQ['reduction_started'],
+                                   ACTIVEMQ['reduction_complete'],
+                                   ACTIVEMQ['reduction_error']]
+        self._amq_queues = ACTIVEMQ['amq_queues']
 
     def get_connection(self):
         """
@@ -67,6 +72,37 @@ class QueueClient(object):
         if self._connection is not None and self._connection.is_connected():
             self._connection.disconnect()
         self._connection = None
+
+    def subscribe_queues(self, queue_list, consumer_name, listener, ack='auto'):
+        """
+        Subscribe a listener to the provided queues
+        """
+        self._connection.set_listener(consumer_name, listener)
+        for queue in queue_list:
+            self._connection.subscribe(destination=queue,
+                                       id='1',
+                                       ack=ack,
+                                       header={'activemq.prefetchSize': '1'})
+            logging.info("[%s] Subscribing to %s", consumer_name, queue)
+        logging.info("Successfully subscribed to all of the queues")
+
+    def subscribe_autoreduce(self, consumer_name, listener, ack='auto'):
+        """
+        Subscribe to queues including DataReady
+        """
+        self.subscribe_queues(self._autoreduce_queues, consumer_name, listener, ack)
+
+    def subscribe_amq(self, consumer_name, listener, ack='auto'):
+        """
+        Subscribe to ReductionPending
+        """
+        self.subscribe_queues(self._amq_queues, consumer_name, listener, ack)
+
+    def ack(self, frame):
+        """
+        Acknowledge receipt of a message
+        """
+        self._connection.ack(frame)
 
     def stop(self):
         """

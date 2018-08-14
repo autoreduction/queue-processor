@@ -53,7 +53,6 @@ class Start(Command):
     def _check_valid_path(path):
         if os.path.isfile(path):
             return True
-
         print("Unable to start ActiveMQ service."
               "Files not found at location %s" % path)
         return False

@@ -18,7 +18,7 @@ dist: trusty
 before_install:
   - mysql_upgrade --force
   - sudo service mysql restart
-  - mysql < scripts/Build/database/travis-db-setup.sql
+  - mysql < build/database/test_db_setup.sql
 
 install:
   - python setup.py install
@@ -30,10 +30,12 @@ install:
   - python setup.py externals -s activemq,icat
   - python setup.py database
   - sudo python setup.py start
-  
-  - ./scripts/Build/database/generate_testing_database.sh
 
 script:
+  # ================ Assert Test Setup =============== #
+  - pytest build/tests/test_db_generation.py
+
+  # ================ Static Analysis ================= #
   - ./build/tests/test_pylint.sh
 
   - echo "Running Unit tests"

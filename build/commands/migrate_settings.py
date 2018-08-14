@@ -27,13 +27,13 @@ class MigrateTestSettings(Command):
         """ Add known test_settings.py files to list """
         # pylint:disable=attribute-defined-outside-init
         self.test_settings_paths = [os.path.join(ROOT_DIR, 'build'),
-                                    os.path.join(ROOT_DIR, 'scripts', 'ActiveMQTests'),
+                                    os.path.join(ROOT_DIR, 'scripts', 'activemq_tests'),
                                     os.path.join(ROOT_DIR, 'utils'),
                                     os.path.join(ROOT_DIR, 'WebApp', 'autoreduce_webapp',
                                                  'autoreduce_webapp'),
-                                    os.path.join(ROOT_DIR, 'QueueProcessors', 
+                                    os.path.join(ROOT_DIR, 'QueueProcessors',
                                                  'AutoreductionProcessor'),
-                                    os.path.join(ROOT_DIR, 'QueueProcessors', 
+                                    os.path.join(ROOT_DIR, 'QueueProcessors',
                                                  'QueueProcessor')]
 
     def run(self):
