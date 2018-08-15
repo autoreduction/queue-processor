@@ -18,8 +18,7 @@ class BuildLogger(object):
 
     def __init__(self, root_directory):
         # Clear log file
-        self.location = os.path.join(root_directory, 'build.log')
-        with open(self.location, 'w'):
+        with open(os.path.join(root_directory, 'build.log'), 'w'):
             pass
         self._initialise_logger(root_directory)
 
@@ -43,11 +42,3 @@ class BuildLogger(object):
         """
         self.logger.log(level=log_level, msg=message)
         print(message)
-
-    def print_full_log(self):
-        """
-        print the full log file - should only be used when errors occur
-        """
-        with open(self.location, 'r') as log_file:
-            for line in log_file.readlines():
-                print(line)
