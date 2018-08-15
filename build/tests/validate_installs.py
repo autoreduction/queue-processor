@@ -36,7 +36,7 @@ def _validate_7zip():
 
 def _validate_activemq():
     if os.path.isfile(os.path.join(INSTALL_DIRS['activemq'],
-                                   'apache-activemq-5.15.3',
+                                   'apache-activemq-5.15.5',
                                    'bin', 'activemq')):
         return True
     return False
