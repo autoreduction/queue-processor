@@ -80,8 +80,9 @@ class InstallExternals(Command):
 
         for service in services_to_install:
             if install_service(service, BUILD_LOGGER) is False:
-                print("Unable to install %s. Check build logs for more informaton" % service)
-                return
+                print("Unable to install %s. See build log below:" % service)
+                BUILD_LOGGER.print_full_log()
+                exit(1)
 
         valid = self._validate_services(services_to_install, quiet=False)
         if False in valid.values():
