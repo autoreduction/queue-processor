@@ -31,7 +31,7 @@ class MessagingUtils(object):
     def _make_pending_msg(reduction_run):
         """ Creates a dict message from the given run, ready to be sent to ReductionPending. """
         # Deferred import to avoid circular dependencies
-        from ..utils.reduction_run_utils import ReductionRunUtils
+        from ..queueproc_utils.reduction_run_utils import ReductionRunUtils
 
         script, arguments = ReductionRunUtils().get_script_and_arguments(reduction_run)
 
