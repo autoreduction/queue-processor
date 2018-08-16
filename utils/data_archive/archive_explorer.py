@@ -3,7 +3,7 @@ Functionality designed to allow for easy data extraction from the isis archive
 """
 import os
 
-from utils.archive_explorer.file_filter import filter_files_by_time, filter_files_by_extension
+from utils.data_archive.file_filter import filter_files_by_time, filter_files_by_extension
 
 
 class ArchiveExplorer(object):
