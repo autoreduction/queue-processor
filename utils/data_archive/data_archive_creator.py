@@ -157,7 +157,8 @@ class DataArchiveCreator(object):
         if isinstance(data_files, str):
             data_files = [data_files]
         elif not isinstance(data_files, list):
-            raise TypeError("data_files is of: {}. Valid type are list or str".format(type(data_files)))
+            raise TypeError("data_files is of: {}."
+                            "Valid type are list or str".format(type(data_files)))
 
         if cycle_year < 10:
             cycle_year = '0{}'.format(cycle_year)
@@ -179,7 +180,8 @@ class DataArchiveCreator(object):
         path_to_log_file = os.path.join(self._archive_dir, 'NDX{}',
                                         'Instrument', 'logs',
                                         'journal').format(instrument)
-        self.create_file_at_location(os.path.join(path_to_log_file, 'summary.txt'), str(file_contents))
+        self.create_file_at_location(os.path.join(path_to_log_file, 'summary.txt'),
+                                     str(file_contents))
 
     def add_last_run_file(self, instrument, file_contents):
         """
@@ -204,7 +206,7 @@ class DataArchiveCreator(object):
                     file_handle.write(contents)
             time.sleep(0.1)  # required as these files are order by modification date
             self.data_files.append(file_path)
-        except (IOError, WindowsError):
+        except IOError:
             raise RuntimeError("Unable to create file at desired location. "
                                "Make sure this directory has been created "
                                "in the archive.\n   Invalid file path: {}".format(file_path))

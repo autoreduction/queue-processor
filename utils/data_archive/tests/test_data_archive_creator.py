@@ -1,3 +1,6 @@
+"""
+Tests for DataArchiveCreator class
+"""
 import os
 import unittest
 import tempfile
@@ -5,6 +8,7 @@ import tempfile
 from utils.data_archive.data_archive_creator import DataArchiveCreator
 
 
+# pylint:disable=missing-docstring, protected-access, invalid-name
 class TestDataArchiveCreator(unittest.TestCase):
 
     def setUp(self):
