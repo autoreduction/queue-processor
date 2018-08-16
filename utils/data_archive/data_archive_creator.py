@@ -33,6 +33,7 @@ import os
 import shutil
 import time
 
+from utils.settings import VALID_INSTRUMENTS
 
 GENERIC_CYCLE_PATH = os.path.join('NDX{}', 'Instrument', 'data', 'cycle_{}_{}')
 
@@ -44,7 +45,7 @@ class DataArchiveCreator(object):
     implementation at ISIS
     """
 
-    _base_dir = None
+    _base_dir = ''
 
     _archive_dir_name = 'data-archive'
     _archive_dir = None
@@ -53,26 +54,27 @@ class DataArchiveCreator(object):
     _end_year = None
     _end_iteration = None
 
-    data_files = None
+    data_files = []
     archive_deleted = False
 
     def __init__(self, base_directory):
         """
         :param base_directory: user specified location to create the mock data archive
         """
+        self.data_files = []
+        self.archive_deleted = False
         if os.path.isdir(base_directory):
             self._base_dir = base_directory
         else:
             raise RuntimeError('Unable to find base_directory %s. '
                                'Please ensure this directory exists' % base_directory)
-        self.data_files = []
-        self.archive_deleted = False
         self._create_archive_directory()
 
     def _create_archive_directory(self):
         """ Creates user/path/data-archive"""
         os.makedirs(os.path.join(self._base_dir, self._archive_dir_name))
         self._archive_dir = os.path.join(self._base_dir, self._archive_dir_name)
+        self.archive_deleted = False
 
     def make_data_archive(self, instruments, start_year, end_year, current_cycle):
         """
@@ -82,22 +84,34 @@ class DataArchiveCreator(object):
         :param end_year: The final year to create a dir for
         :param current_cycle: The current cycle (1-5) in the final year
         """
+        for instrument in instruments:
+            self._check_valid_inst(instrument)
         self._end_year = end_year
         self._end_iteration = current_cycle
         ndx_dir_path = os.path.join(self._archive_dir, 'NDX{}')
-        instrument_dir_path = os.path.join(ndx_dir_path, 'Instrument')
-        logs_dir_path = os.path.join(instrument_dir_path, 'logs')
+        inst_dir_path = os.path.join(ndx_dir_path, 'Instrument')
+        logs_dir_path = os.path.join(inst_dir_path, 'logs')
         user_dir_path = os.path.join(ndx_dir_path, 'user')
-        data_dir_path = os.path.join(instrument_dir_path, 'data')
+        data_dir_path = os.path.join(inst_dir_path, 'data')
         jrnl_dir_path = os.path.join(logs_dir_path, 'journal')
         for instrument in instruments:
             os.makedirs(user_dir_path.format(instrument))
             os.makedirs(data_dir_path.format(instrument))
             os.makedirs(jrnl_dir_path.format(instrument))
-            self.make_cycle_directories(start_year, end_year, current_cycle,
-                                        data_dir_path.format(instrument))
+            self._make_cycle_directories(start_year, end_year, current_cycle,
+                                         data_dir_path.format(instrument))
 
-    def make_cycle_directories(self, start_year, end_year, current_cycle, base_dir):
+    @staticmethod
+    def _check_valid_inst(instrument):
+        """
+        Ensure that an instrument is valid - else throw an exception
+        """
+        if instrument not in VALID_INSTRUMENTS:
+            raise ValueError("Instrument provided: \'{0}\' is not recognised as  a valid "
+                             "instrument. Valid instruments are {1}".format(instrument,
+                                                                            VALID_INSTRUMENTS))
+
+    def _make_cycle_directories(self, start_year, end_year, current_cycle, base_dir):
         """
         Creates individual cycle directories from a given base directory
         :param start_year: The first year to create a dir for
@@ -128,6 +142,7 @@ class DataArchiveCreator(object):
         :param instrument: The instrument to add the files for
         :param data_files: The files to add
         """
+        self._check_valid_inst(instrument)
         self.add_data_files(instrument, self._end_year, self._end_iteration, data_files)
 
     def add_data_files(self, instrument, cycle_year, cycle_iteration, data_files):
@@ -138,6 +153,12 @@ class DataArchiveCreator(object):
         :param cycle_iteration: The cycle iteration for the file to be added to
         :param data_files: The data file name
         """
+        self._check_valid_inst(instrument)
+        if isinstance(data_files, str):
+            data_files = [data_files]
+        elif not isinstance(data_files, list):
+            raise TypeError("data_files is of: {}. Valid type are list or str".format(type(data_files)))
+
         if cycle_year < 10:
             cycle_year = '0{}'.format(cycle_year)
         path_to_data_dir = os.path.join(self._archive_dir,
@@ -154,10 +175,11 @@ class DataArchiveCreator(object):
         :param instrument: The instrument to add the file to
         :param file_contents: the contents of the file (normally RB number)
         """
+        self._check_valid_inst(instrument)
         path_to_log_file = os.path.join(self._archive_dir, 'NDX{}',
                                         'Instrument', 'logs',
                                         'journal').format(instrument)
-        self.create_file_at_location(os.path.join(path_to_log_file, 'summary.txt'), file_contents)
+        self.create_file_at_location(os.path.join(path_to_log_file, 'summary.txt'), str(file_contents))
 
     def add_last_run_file(self, instrument, file_contents):
         """
@@ -165,6 +187,7 @@ class DataArchiveCreator(object):
         :param instrument: The instrument to add the file to
         :param file_contents: the contents of the file (normally RB number)
         """
+        self._check_valid_inst(instrument)
         path_to_log_file = os.path.join(self._archive_dir, 'NDX{}',
                                         'Instrument', 'logs').format(instrument)
         self.create_file_at_location(os.path.join(path_to_log_file, 'lastrun.txt'), file_contents)
@@ -175,11 +198,16 @@ class DataArchiveCreator(object):
         :param file_path: The file path to create a file to
         :param contents: the optional content of the file
         """
-        self.data_files.append(file_path)
-        with open(file_path, 'w') as file_handle:
-            if contents is not None:
-                file_handle.write(contents)
-        time.sleep(0.1)  # required as these files are order by modification date
+        try:
+            with open(file_path, 'w') as file_handle:
+                if contents is not None:
+                    file_handle.write(contents)
+            time.sleep(0.1)  # required as these files are order by modification date
+            self.data_files.append(file_path)
+        except (IOError, WindowsError):
+            raise RuntimeError("Unable to create file at desired location. "
+                               "Make sure this directory has been created "
+                               "in the archive.\n   Invalid file path: {}".format(file_path))
 
     def delete_all_files(self):
         """
@@ -194,9 +222,11 @@ class DataArchiveCreator(object):
         """
         Removes the full data archive
         """
-        self.delete_all_files()
-        shutil.rmtree(self._archive_dir)
-        self.archive_deleted = True
+        if not self.archive_deleted:
+            self.delete_all_files()
+            if self._archive_dir:
+                shutil.rmtree(self._archive_dir)
+            self.archive_deleted = True
 
     def __del__(self):
         """
