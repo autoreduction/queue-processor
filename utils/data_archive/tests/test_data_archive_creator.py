@@ -8,7 +8,7 @@ import tempfile
 from utils.data_archive.data_archive_creator import DataArchiveCreator
 
 
-# pylint:disable=missing-docstring, protected-access, invalid-name
+# pylint:disable=missing-docstring, protected-access, invalid-name, too-many-public-methods
 class TestDataArchiveCreator(unittest.TestCase):
 
     def setUp(self):
@@ -57,6 +57,12 @@ class TestDataArchiveCreator(unittest.TestCase):
         self.assertTrue(os.path.isdir(cycle_dir_path.format('18', '1')))
         self.assertTrue(os.path.isdir(cycle_dir_path.format('18', '2')))
 
+    def test_under_single_digit_year(self):
+        self.dac.make_data_archive(['GEM'], 1, 1, 1)
+        self.assertTrue(os.path.isdir(os.path.join(self.test_output_directory, 'data-archive',
+                                                   'NDXGEM', 'Instrument', 'data',
+                                                   'cycle_01_1')))
+
     def test_non_inst_make_data_archive(self):
         self.assertRaisesRegexp(ValueError, "Instrument provided: \'not instrument\'",
                                 self.dac.make_data_archive, ['not instrument'], 17, 18, 2)
@@ -67,6 +73,19 @@ class TestDataArchiveCreator(unittest.TestCase):
         expected_file_path = os.path.join(self.test_output_directory, 'data-archive', 'NDXGEM',
                                           'Instrument', 'data', 'cycle_18_2', 'test-file.nxs')
         self.assertTrue(os.path.isfile(expected_file_path))
+
+    def test_add_data_to_recent_single_digit(self):
+        self.dac.make_data_archive(['GEM'], 1, 1, 2)
+        self.dac.add_data_to_most_recent_cycle('GEM', ['test-file.nxs'])
+        expected_file_path = os.path.join(self.test_output_directory, 'data-archive', 'NDXGEM',
+                                          'Instrument', 'data', 'cycle_01_2', 'test-file.nxs')
+        self.assertTrue(os.path.isfile(expected_file_path))
+
+    def test_add_dat_files_invalid_type(self):
+        self.dac.make_data_archive(['GEM'], 17, 18, 2)
+        self.assertRaisesRegexp(TypeError, "data_files is of: <type 'NoneType'>.",
+                                self.dac.add_data_to_most_recent_cycle,
+                                'GEM', None)
 
     def test_add_data_to_recent_invalid_inst(self):
         self.dac.make_data_archive(['GEM'], 17, 18, 2)

@@ -157,7 +157,7 @@ class DataArchiveCreator(object):
         if isinstance(data_files, str):
             data_files = [data_files]
         elif not isinstance(data_files, list):
-            raise TypeError("data_files is of: {}."
+            raise TypeError("data_files is of: {}. "
                             "Valid type are list or str".format(type(data_files)))
 
         if cycle_year < 10:
