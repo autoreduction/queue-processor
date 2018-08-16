@@ -8,9 +8,9 @@ import time
 import tempfile
 import unittest
 
-from utils.archive_explorer.file_filter import (check_file_extension,
-                                                filter_files_by_extension,
-                                                filter_files_by_time)
+from utils.data_archive.file_filter import (check_file_extension,
+                                            filter_files_by_extension,
+                                            filter_files_by_time)
 
 
 # pylint:disable=missing-docstring, invalid-name

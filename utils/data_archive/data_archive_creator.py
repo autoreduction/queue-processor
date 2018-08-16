@@ -185,9 +185,10 @@ class DataArchiveCreator(object):
         """
         Removes all files in the data archive
         """
-        for file_path in self.data_files:
-            os.remove(file_path)
-        self.data_files = []
+        if self.data_files:
+            for file_path in self.data_files:
+                os.remove(file_path)
+            self.data_files = []
 
     def delete_archive(self):
         """
