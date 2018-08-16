@@ -5,6 +5,7 @@ from django.template import Library, Node, TemplateSyntaxError, Variable
 from django.conf import settings
 from django.core import urlresolvers
 
+# pylint:disable=invalid-name
 register = Library()
 
 

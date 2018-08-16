@@ -3,6 +3,8 @@
 Settings for connecting to the test services that run locally
 """
 
+VALID_INSTRUMENTS = ['GEM', 'POLARIS', 'WISH', 'OSIRIS', 'MUSR', 'POLREF']
+
 ICAT = {
     'AUTH': 'YOUR-ICAT-AUTH-TYPE',
     'URL': 'YOUR-ICAT-WSDL-URL',
@@ -15,7 +17,7 @@ ACTIVEMQ = {
     "amq_queues": ["/queue/ReductionPending"],
     "amq_user": "admin",
     "amq_pwd": "admin",
-    "postprocess_error": "/queue/ReductionError",
+    "data_ready": "/queue/DataReady",
     "reduction_started": "/queue/ReductionStarted",
     "reduction_complete": "/queue/ReductionComplete",
     "reduction_error": "/queue/ReductionError"

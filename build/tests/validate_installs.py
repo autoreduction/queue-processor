@@ -5,7 +5,7 @@ mantid
 activemq
 """
 import os
-from build.settings import INSTALL_DIRS
+from build.settings import INSTALL_DIRS, ACTIVEMQ_EXECUTABLE
 
 
 def validate_installs(list_of_services):
@@ -35,11 +35,8 @@ def _validate_7zip():
 
 
 def _validate_activemq():
-    if os.path.isfile(os.path.join(INSTALL_DIRS['activemq'],
-                                   'apache-activemq-5.15.3',
-                                   'bin', 'activemq')):
-        return True
-    return False
+    """ Validate the existence of the activemq executable"""
+    return os.path.isfile(ACTIVEMQ_EXECUTABLE)
 
 
 def _validate_icat():

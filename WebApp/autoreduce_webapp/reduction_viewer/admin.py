@@ -1,7 +1,10 @@
+"""
+Register all the django models for reduction viewer
+"""
 from django.contrib import admin
-from models import *
+from reduction_viewer.models import (Instrument, Experiment, Status, ReductionRun,
+                                     DataLocation, ReductionLocation, Setting, Notification)
 
-# Register your models here.
 admin.site.register(Instrument)
 admin.site.register(Experiment)
 admin.site.register(Status)

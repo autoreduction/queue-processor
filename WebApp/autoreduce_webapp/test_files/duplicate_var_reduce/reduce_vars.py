@@ -1,7 +1,8 @@
+# pylint:skip-file
 standard_vars = {
-    'test' : 'test'
+    'test': 'test'
 }
 advanced_vars = {
-    'same' : 'same',
-    'same' : 'different'
+    'same': 'same',
+    'same': 'different'
 }
