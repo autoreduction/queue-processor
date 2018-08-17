@@ -7,7 +7,7 @@ from shutil import copyfile
 # pylint:disable=no-name-in-module,import-error
 from distutils.core import Command
 
-from build.utils.common import BUILD_LOGGER, ROOT_DIR
+from build.utils.common import BUILD_LOGGER, get_project_root
 
 
 class MigrateTestSettings(Command):
@@ -26,14 +26,15 @@ class MigrateTestSettings(Command):
     def finalize_options(self):
         """ Add known test_settings.py files to list """
         # pylint:disable=attribute-defined-outside-init
-        self.test_settings_paths = [os.path.join(ROOT_DIR, 'build'),
-                                    os.path.join(ROOT_DIR, 'scripts', 'activemq_tests'),
-                                    os.path.join(ROOT_DIR, 'utils'),
-                                    os.path.join(ROOT_DIR, 'WebApp', 'autoreduce_webapp',
+        root = get_project_root()
+        self.test_settings_paths = [os.path.join(root, 'build'),
+                                    os.path.join(root, 'scripts', 'activemq_tests'),
+                                    os.path.join(root, 'utils'),
+                                    os.path.join(root, 'WebApp', 'autoreduce_webapp',
                                                  'autoreduce_webapp'),
-                                    os.path.join(ROOT_DIR, 'QueueProcessors',
+                                    os.path.join(root, 'QueueProcessors',
                                                  'AutoreductionProcessor'),
-                                    os.path.join(ROOT_DIR, 'QueueProcessors',
+                                    os.path.join(root, 'QueueProcessors',
                                                  'QueueProcessor')]
 
     def run(self):

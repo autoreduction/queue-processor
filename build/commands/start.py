@@ -51,7 +51,7 @@ class Start(Command):
         from build.settings import ACTIVEMQ_EXECUTABLE
         location = ACTIVEMQ_EXECUTABLE
         if os.name == 'nt':
-            location = location + '.bat'
+            location += '.bat'
             start_new_terminal = ['start', 'cmd', '/c']
             if self._check_valid_path(location):
                 run_process_with_shell(start_new_terminal + [location, 'start'])
@@ -68,7 +68,7 @@ class Start(Command):
             pass
         else:
             script = os.path.join(get_project_root(), 'QueueProcessors', 'restart.sh')
-            if run_process_and_log([script]) is False:
+            if run_process_with_shell([script]) is False:
                 raise RuntimeError("Unable to start QueueProcessor services. "
                                    "Script: \'{}\' failed".format(script))
 
