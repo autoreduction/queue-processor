@@ -12,7 +12,7 @@ import os
 # pylint:disable=no-name-in-module,import-error
 from distutils.core import Command
 
-from build.utils.common import BUILD_LOGGER
+from build.utils.common import BUILD_LOGGER, validate_user_input
 
 
 class InstallExternals(Command):
@@ -101,8 +101,7 @@ class InstallExternals(Command):
         """
         try:
             # pylint:disable=unused-variable
-            from build.install.install_services import (install_service, validate_input,
-                                                        valid_services)
+            from build.install.install_services import install_service, valid_services
         except ImportError:
             BUILD_LOGGER.print_and_log("Could not import install_services. "
                                        "Have you migrated the test settings correctly?",
@@ -115,12 +114,8 @@ class InstallExternals(Command):
         Check the user input is valid
         :return: False if user input is invalid
         """
-        from build.install.install_services import valid_services, validate_input
-        if not validate_input(self.services, BUILD_LOGGER):
-            BUILD_LOGGER.print_and_log("Some services supplied were not valid.\n"
-                                       "Valid services are: %s" % valid_services(),
-                                       logging.ERROR)
-            return False
+        from build.install.install_services import valid_services
+        validate_user_input(self.services, valid_services())
         return True
 
     @staticmethod

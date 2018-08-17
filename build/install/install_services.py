@@ -20,24 +20,6 @@ def valid_services():
     return valid
 
 
-def validate_input(list_of_services, logger):
-    """
-    Ensure that all the service names provided by the user are valid
-    :param list_of_services: List of user provided services
-    :param logger: Handle to the Build logger
-    :return: True: All services are valid
-             False: Will print and log invalid service(s)
-    """
-    valid_services_list = valid_services()
-    all_services_valid = True
-    for service in list_of_services:
-        if service.lower() not in valid_services_list:
-            logger.print_and_log("\"%s\" not recognised as a valid service "
-                                 "for this operating system." % service, logging.ERROR)
-            all_services_valid = False
-    return all_services_valid
-
-
 def install_service(service_name, log_handler):
     """
     Given a service name, find the correct install script, run it and return boolean for success
