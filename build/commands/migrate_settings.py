@@ -7,7 +7,8 @@ from shutil import copyfile
 # pylint:disable=no-name-in-module,import-error
 from distutils.core import Command
 
-from build.utils.common import build_logger, get_project_root
+from build.utils.common import build_logger
+from utils.project.structure import get_project_root
 
 
 class MigrateTestSettings(Command):

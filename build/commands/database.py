@@ -6,7 +6,8 @@ import os
 from distutils.core import Command
 
 from build.database.generate_database import add_test_user, run_sql_file, generate_schema
-from build.utils.common import build_logger, get_project_root
+from build.utils.common import build_logger
+from utils.project.structure import get_project_root
 
 
 class InitialiseTestDatabase(Command):
