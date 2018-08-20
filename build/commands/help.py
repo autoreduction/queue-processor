@@ -28,18 +28,22 @@ class Help(Command):
         """
         Print out the help documentation to console
         """
-        help_text = (('Usage       :', 'python setup.py [commands]'),
+        help_text = (('', ''),
                      ('Description :', 'Script to setup project and testing environment'),
+                     ('Usage       :', 'python setup.py [commands]'),
                      ('', ''),
                      ('Commands: ', '')
                     )
         commands = (('     test_settings', 'Copy test_settings.py to settings.py'),
                     ('     database', 'Initialise database on localhost'),
                     ('     externals', 'Install all external programs'),
-                    ('              ', 'Use the -s argument to specify a comma'
+                    ('              ', 'Use the -s argument to specify a comma '
                                        'separated list of services:'),
                     ('              ', '    python setup.py externals -s activemq,icat,mantid'),
-                    ('     start', 'starts required services: activemq'),
+                    ('     start', 'Starts services that run local to the machine'),
+                    ('          ', 'Use the -s argument to specify a comma '
+                                   'separated list of services: '),
+                    ('          ', '    python setup.py externals -s activemq,queues'),
                     ('     help', 'Show the help documentation')
                    )
         for args in help_text:
