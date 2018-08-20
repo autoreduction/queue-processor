@@ -15,7 +15,7 @@ if not exist %folder% (
 
 if not exist %destination% (
     echo Information: Downloading activemq - this could take several minutes
-    powershell -Command "(new-object System.Net.WebClient).DownloadFile('http://www.apache.org/dyn/closer.cgi?filename=/activemq/5.15.3/apache-activemq-5.15.3-bin.zip&action=download', '"%destination%"')"
+    powershell -Command "(new-object System.Net.WebClient).DownloadFile('http://www.apache.org/dyn/closer.cgi?filename=/activemq/5.15.5/apache-activemq-5.15.5-bin.zip&action=download', '"%destination%"')"
     echo Information: Download complete
     echo Information: Extracting ActiveMQ
     %path_to_7z%\7z x %destination% -o%folder%
