@@ -16,4 +16,3 @@ def get_project_root():
 
     assert os.path.exists(git_root)
     return git_root
-

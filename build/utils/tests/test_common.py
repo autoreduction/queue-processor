@@ -5,16 +5,16 @@ import os
 import unittest
 
 from build.utils.build_logger import BuildLogger
-from build.utils.common import BUILD_LOGGER, validate_user_input
+from build.utils.common import build_logger, validate_user_input
 from utils.project.structure import get_project_root
 
 
-# pylint:disable=missing-docstring
+# pylint:disable=missing-docstring,invalid-name
 class TestCommon(unittest.TestCase):
 
     def test_build_logger_init(self):
-        self.assertIsInstance(BUILD_LOGGER, BuildLogger)
-        self.assertEqual(BUILD_LOGGER.location,
+        self.assertIsInstance(build_logger(), BuildLogger)
+        self.assertEqual(build_logger().location,
                          os.path.join(get_project_root(), 'build.log'))
 
     def test_validate_user_input_invalid_input(self):

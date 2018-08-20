@@ -1,17 +1,19 @@
 # pylint: skip-file
 import os
+from utils.project.structure import get_project_root
 
 FACILITY = 'ISIS'
 
 MYSQL = {
-    'HOST': 'YOUR-SQL-SERVER',
-    'USER': 'YOUR-SQL-USERNAME',
-    'PASSWD': 'YOUR-PASSWORD',
-    'DB': 'YOUR-SQL-DB-NAME'
+    'HOST': 'localhost',
+    'USER': 'test-user',
+    'PASSWD': 'pass',
+    'DB': 'autoreduction',
+    'PORT': '3306',
 }
 
 # Logging
-LOG_FILE = 'YOUR-LOG-LOCATION'
+LOG_FILE = os.path.join(get_project_root(), 'queue_processor.log')
 DEBUG = False
 
 if DEBUG:
@@ -61,7 +63,7 @@ if os.name == 'nt':
     ARCHIVE_DIRECTORY = r'\\isis\inst$\NDX%s\Instrument\data\cycle_%s\autoreduced\%s\%s'
     
     TEST_REDUCTION_DIRECTORY = r'\\reducedev\isis\output\NDX%s\user\scripts\autoreduction'
-    TEST_ARCHIVE_DIRECTORY = '\\isis\inst$\NDX%s\Instrument\data\cycle_%s\autoreduced\%s\%s'
+    TEST_ARCHIVE_DIRECTORY = r'\\isis\inst$\NDX%s\Instrument\data\cycle_%s\autoreduced\%s\%s'
 
 else:
     # %(instrument)

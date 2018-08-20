@@ -88,12 +88,11 @@ class InstallExternals(Command):
         valid = self._validate_services(services_to_install, quiet=False)
         if False in valid.values():
             self.logger.print_and_log("One or more services did not correctly install:",
-                                       logging.ERROR)
+                                      logging.ERROR)
             for service_name, _ in valid.items():
                 if valid[service_name] is False:
                     self.logger.print_and_log("* %s" % service_name, logging.ERROR)
                 self.logger.print_and_log("See build.log for more details.", logging.ERROR)
-
 
     def _check_imports(self):
         """
@@ -123,7 +122,6 @@ class InstallExternals(Command):
                                       logging.ERROR)
             return False
         return True
-
 
     def _validate_services(self, list_of_services, quiet=True):
         """

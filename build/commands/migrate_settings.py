@@ -40,7 +40,7 @@ class MigrateTestSettings(Command):
 
     def run(self):
         """ Copy all test files from the test files list to desired locations """
-        build_logger().print_and_log("================== Migrate test settings ====================")
+        build_logger().print_and_log("================= Migrate test settings ===================")
         self._migrate_test_settings(self.test_settings_paths)
         build_logger().print_and_log("Test settings successfully migrated\n")
 

@@ -7,6 +7,7 @@ import unittest
 import QueueProcessors.QueueProcessor.queue_processor as queue_processor
 
 
+# pylint:disable=missing-docstring
 class TestQueueProcessor(unittest.TestCase):
 
     def test_setup_connection(self):
@@ -22,4 +23,3 @@ class TestQueueProcessor(unittest.TestCase):
             queue_processor.main()
         except RuntimeError as excep:
             self.fail(excep.message)
-

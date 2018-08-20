@@ -19,7 +19,8 @@ class Start(Command):
     Command to start the activeMQ service
     """
 
-    description = 'Start the services that are required to test the project: ActiveMQ, QueueProcessors'
+    description = 'Start the services that are required to test the project: ' \
+                  'ActiveMQ, QueueProcessors'
     user_options = [('services=', 's', 'comma separated list of services to start')]
 
     def initialize_options(self):
