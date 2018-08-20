@@ -29,6 +29,7 @@ data_archive.delete_all_files()    # remove all files (not folders)
 data_archive.delete_archive()      # remove all files and folders
 
 """
+import calendar
 import os
 import shutil
 import time
@@ -201,10 +202,11 @@ class DataArchiveCreator(object):
         :param contents: the optional content of the file
         """
         try:
+            creation_time = calendar.timegm(time.gmtime())
             with open(file_path, 'w') as file_handle:
                 if contents is not None:
                     file_handle.write(contents)
-            time.sleep(0.1)  # required as these files are order by modification date
+            os.utime(file_path, (creation_time, creation_time))
             self.data_files.append(file_path)
         except IOError:
             raise RuntimeError("Unable to create file at desired location. "
