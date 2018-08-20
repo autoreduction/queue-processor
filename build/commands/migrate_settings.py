@@ -7,7 +7,7 @@ from shutil import copyfile
 # pylint:disable=no-name-in-module,import-error
 from distutils.core import Command
 
-from build.utils.common import BUILD_LOGGER, get_project_root
+from build.utils.common import build_logger, get_project_root
 
 
 class MigrateTestSettings(Command):
@@ -39,9 +39,9 @@ class MigrateTestSettings(Command):
 
     def run(self):
         """ Copy all test files from the test files list to desired locations """
-        BUILD_LOGGER.print_and_log("================== Migrate test settings ====================")
+        build_logger().print_and_log("================== Migrate test settings ====================")
         self._migrate_test_settings(self.test_settings_paths)
-        BUILD_LOGGER.print_and_log("Test settings successfully migrated\n")
+        build_logger().print_and_log("Test settings successfully migrated\n")
 
     @staticmethod
     def _migrate_test_settings(all_paths):
@@ -55,5 +55,5 @@ class MigrateTestSettings(Command):
                 settings_path = os.path.join(path_to_dir, 'settings.py')
                 copyfile(test_settings_path, settings_path)
         except OSError as error:
-            BUILD_LOGGER.logger.error(error)
+            build_logger().logger.error(error)
             raise

@@ -12,7 +12,7 @@ import os
 # pylint:disable=no-name-in-module,import-error
 from distutils.core import Command
 
-from build.utils.common import BUILD_LOGGER
+from build.utils.common import build_logger
 
 
 class InstallExternals(Command):
@@ -25,6 +25,7 @@ class InstallExternals(Command):
     def initialize_options(self):
         """ Initialise the services dictionary """
         # pylint:disable=attribute-defined-outside-init
+        self.logger = build_logger()
         self.services = {}
 
     def finalize_options(self):
@@ -59,7 +60,7 @@ class InstallExternals(Command):
         if not self._check_input():
             return
 
-        BUILD_LOGGER.print_and_log("======== Installing external dependencies ==========")
+        self.logger.print_and_log("======== Installing external dependencies ==========")
         # pylint:disable=attribute-defined-outside-init
         self.services = self._validate_services(self.services.keys(), quiet=False)
         # Return a list of all non-valid services (those with value of false)
@@ -67,34 +68,34 @@ class InstallExternals(Command):
                                if self.services[service_name] is False]
         # Ensure 7zip is installed first
         if '7zip' in services_to_install:
-            BUILD_LOGGER.print_and_log("Installing 7zip (required for other installations")
-            if install_service('7zip', BUILD_LOGGER) is False:
+            self.logger.print_and_log("Installing 7zip (required for other installations")
+            if install_service('7zip', self.logger) is False:
                 print("Unable to install 7zip. Check build logs for more information")
                 return
             del self.services['7zip']
             services_to_install.remove('7zip')
 
         if not services_to_install:
-            BUILD_LOGGER.print_and_log("Nothing to install - All given services are valid")
+            self.logger.print_and_log("Nothing to install - All given services are valid")
             return
 
         for service in services_to_install:
-            if install_service(service, BUILD_LOGGER) is False:
+            if install_service(service, self.logger) is False:
                 print("Unable to install %s. See build log below:" % service)
-                BUILD_LOGGER.print_full_log()
+                self.logger.print_full_log()
                 exit(1)
 
         valid = self._validate_services(services_to_install, quiet=False)
         if False in valid.values():
-            BUILD_LOGGER.print_and_log("One or more services did not correctly install:",
+            self.logger.print_and_log("One or more services did not correctly install:",
                                        logging.ERROR)
             for service_name, _ in valid.items():
                 if valid[service_name] is False:
-                    BUILD_LOGGER.print_and_log("* %s" % service_name, logging.ERROR)
-                BUILD_LOGGER.print_and_log("See build.log for more details.", logging.ERROR)
+                    self.logger.print_and_log("* %s" % service_name, logging.ERROR)
+                self.logger.print_and_log("See build.log for more details.", logging.ERROR)
 
-    @staticmethod
-    def _check_imports():
+
+    def _check_imports(self):
         """
         Check that imports can be performed
         :return: False if imports fail
@@ -104,9 +105,9 @@ class InstallExternals(Command):
             from build.install.install_services import (install_service, validate_input,
                                                         valid_services)
         except ImportError:
-            BUILD_LOGGER.print_and_log("Could not import install_services. "
-                                       "Have you migrated the test settings correctly?",
-                                       logging.ERROR)
+            self.logger.print_and_log("Could not import install_services. "
+                                      "Have you migrated the test settings correctly?",
+                                      logging.ERROR)
             return False
         return True
 
@@ -116,15 +117,15 @@ class InstallExternals(Command):
         :return: False if user input is invalid
         """
         from build.install.install_services import valid_services, validate_input
-        if not validate_input(self.services, BUILD_LOGGER):
-            BUILD_LOGGER.print_and_log("Some services supplied were not valid.\n"
-                                       "Valid services are: %s" % valid_services(),
-                                       logging.ERROR)
+        if not validate_input(self.services, self.logger):
+            self.logger.print_and_log("Some services supplied were not valid.\n"
+                                      "Valid services are: %s" % valid_services(),
+                                      logging.ERROR)
             return False
         return True
 
-    @staticmethod
-    def _validate_services(list_of_services, quiet=True):
+
+    def _validate_services(self, list_of_services, quiet=True):
         """
         Check if services are installed and usable. Current checks:
             7Zip, ActiveMQ, icat, Mantid
@@ -137,12 +138,12 @@ class InstallExternals(Command):
         if quiet is False:
             for service in service_validity:
                 if service_validity[service] is False:
-                    BUILD_LOGGER.print_and_log("%s: False" % service, logging.ERROR)
+                    self.logger.print_and_log("%s: False" % service, logging.ERROR)
                 else:
                     if service == 'mantid' and os.name == 'nt':
                         # not required on windows
-                        BUILD_LOGGER.print_and_log("Mantid: Skipped", logging.WARNING)
+                        self.logger.print_and_log("Mantid: Skipped", logging.WARNING)
                     else:
-                        BUILD_LOGGER.print_and_log("%s: True" % service)
+                        self.logger.print_and_log("%s: True" % service)
         print("=======================")
         return service_validity

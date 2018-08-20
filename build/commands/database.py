@@ -6,7 +6,7 @@ import os
 from distutils.core import Command
 
 from build.database.generate_database import add_test_user, run_sql_file, generate_schema
-from build.utils.common import BUILD_LOGGER, get_project_root
+from build.utils.common import build_logger, get_project_root
 
 
 class InitialiseTestDatabase(Command):
@@ -19,6 +19,7 @@ class InitialiseTestDatabase(Command):
     def initialize_options(self):
         """ Initialise path variables """
         # pylint:disable=attribute-defined-outside-init
+        self.logger = build_logger()
         self.setup_sql_path = None
         self.populate_sql_path = None
 
@@ -31,17 +32,17 @@ class InitialiseTestDatabase(Command):
 
     def run(self):
         """ Run the setup scripts required for localhost database """
-        BUILD_LOGGER.print_and_log("==================== Building Database ======================")
-        BUILD_LOGGER.print_and_log("Setting up database on local host")
-        if run_sql_file(self.setup_sql_path, BUILD_LOGGER.logger) is False:
+        self.logger.print_and_log("==================== Building Database ======================")
+        self.logger.print_and_log("Setting up database on local host")
+        if run_sql_file(self.setup_sql_path, self.logger.logger) is False:
             return
-        BUILD_LOGGER.print_and_log("Migrating databases from django model")
-        if generate_schema(get_project_root(), BUILD_LOGGER.logger) is False:
+        self.logger.print_and_log("Migrating databases from django model")
+        if generate_schema(get_project_root(), self.logger.logger) is False:
             return
-        BUILD_LOGGER.print_and_log("Populating database with test data")
-        if run_sql_file(self.populate_sql_path, BUILD_LOGGER.logger) is False:
+        self.logger.print_and_log("Populating database with test data")
+        if run_sql_file(self.populate_sql_path, self.logger.logger) is False:
             return
-        BUILD_LOGGER.print_and_log("Adding test user from settings")
-        if add_test_user(BUILD_LOGGER.logger) is False:
+        self.logger.print_and_log("Adding test user from settings")
+        if add_test_user(self.logger.logger) is False:
             return
-        BUILD_LOGGER.print_and_log("Test database successfully initialised\n")
+        self.logger.print_and_log("Test database successfully initialised\n")

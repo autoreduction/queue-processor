@@ -4,7 +4,7 @@ Wrapper for running subprocesses
 
 import subprocess
 
-from build.utils.common import BUILD_LOGGER
+from build.utils.common import build_logger
 
 
 def run_process_and_log(list_of_args):
@@ -18,9 +18,9 @@ def run_process_and_log(list_of_args):
     process_output, process_error = process.communicate()
     exit_status = process.returncode
     if process_output:
-        BUILD_LOGGER.logger.info(process_output)
+        build_logger().logger.info(process_output)
     if exit_status != 0:
-        BUILD_LOGGER.logger.error(process_error)
+        build_logger().logger.error(process_error)
         return False
     return True
 

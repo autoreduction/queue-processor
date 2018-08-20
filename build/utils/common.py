@@ -5,7 +5,10 @@ Script to hold common varibales used in building the project
 from build.utils.build_logger import BuildLogger
 from utils.project.structure import get_project_root
 
-BUILD_LOGGER = BuildLogger(get_project_root())
+
+def build_logger():
+    """ Encapsulate import of git from get_project """
+    return BuildLogger(get_project_root())
 
 
 def validate_user_input(user_input, expected):
