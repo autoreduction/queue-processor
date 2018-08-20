@@ -65,17 +65,17 @@ class Start(Command):
     def start_queues():
         """ Start the queue processors"""
         if os.name == 'nt':
-            pass
+            print("Unable to start QueueProcessors on windows")
         else:
             script = os.path.join(get_project_root(), 'QueueProcessors', 'restart.sh')
-            if run_process_with_shell([script]) is False:
-                raise RuntimeError("Unable to start QueueProcessor services. "
-                                   "Script: \'{}\' failed".format(script))
+            if run_process_and_log([script]) is False:
+                print("Unable to start QueueProcessor services. "
+                      "Script: \'{}\' failed".format(script))
 
     @staticmethod
     def _check_valid_path(path):
         if os.path.isfile(path):
             return True
-        print("Unable to start ActiveMQ service."
+        print("Unable to start ActiveMQ service. "
               "Files not found at location %s" % path)
         return False
