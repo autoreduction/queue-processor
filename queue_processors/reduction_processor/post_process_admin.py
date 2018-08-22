@@ -23,9 +23,9 @@ from contextlib import contextmanager
 
 import stomp
 # pylint:disable=no-name-in-module,import-error
-from QueueProcessors.AutoreductionProcessor.settings import ACTIVEMQ, MISC
-from QueueProcessors.AutoreductionProcessor.autoreduction_logging_setup import logger
-from QueueProcessors.AutoreductionProcessor.timeout import timeout
+from queue_processors.reduction_processor.settings import ACTIVEMQ, MISC
+from queue_processors.reduction_processor.reduction_logging_setup import logger
+from queue_processors.reduction_processor.timeout import TimeOut
 
 
 @contextmanager
@@ -325,7 +325,7 @@ class PostProcessAdmin(object):
                         skip_numbers = []
                     if self.data['run_number'] not in skip_numbers:
                         reduce_script = self.replace_variables(reduce_script)
-                        with timeout(MISC["script_timeout"]):
+                        with TimeOut(MISC["script_timeout"]):
                             out_directories = reduce_script.main(input_file=str(self.data_file),
                                                                  output_dir=str(reduce_result_dir))
                     else:

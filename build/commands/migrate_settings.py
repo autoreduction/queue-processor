@@ -31,10 +31,10 @@ class MigrateTestSettings(Command):
                                     os.path.join(ROOT_DIR, 'utils'),
                                     os.path.join(ROOT_DIR, 'WebApp', 'autoreduce_webapp',
                                                  'autoreduce_webapp'),
-                                    os.path.join(ROOT_DIR, 'QueueProcessors',
-                                                 'AutoreductionProcessor'),
-                                    os.path.join(ROOT_DIR, 'QueueProcessors',
-                                                 'QueueProcessor')]
+                                    os.path.join(ROOT_DIR, 'queue_processors',
+                                                 'reduction_processor'),
+                                    os.path.join(ROOT_DIR, 'queue_processors',
+                                                 'flow_processor')]
 
     def run(self):
         """ Copy all test files from the test files list to desired locations """

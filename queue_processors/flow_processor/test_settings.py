@@ -4,15 +4,16 @@ import os
 FACILITY = 'ISIS'
 
 MYSQL = {
-    'HOST': 'YOUR-SQL-SERVER',
-    'USER': 'YOUR-SQL-USERNAME',
-    'PASSWD': 'YOUR-PASSWORD',
-    'DB': 'YOUR-SQL-DB-NAME'
+    'HOST': 'reducequeuedev.isis.cclrc.ac.uk',
+    'USER': 'root',
+    'PASSWD': 'developmentautoreduce',
+    'DB': 'autoreduction',
+    'PORT': '3306',
 }
 
 # Logging
-LOG_FILE = 'YOUR-LOG-LOCATION'
-DEBUG = False
+LOG_FILE = 'test-output.log'
+DEBUG = True
 
 if DEBUG:
     LOG_LEVEL = 'DEBUG'
@@ -53,13 +54,35 @@ LOGGING = {
     }
 }
 
+# ActiveMQ
+ACTIVEMQ = {
+    'topics': [
+        '/queue/DataReady',
+        '/queue/ReductionStarted',
+        '/queue/ReductionComplete',
+        '/queue/ReductionError'
+    ],
+    'URL': 'reducequeuedev.isis.cclrc.ac.uk',
+    'USER': 'autoreduce',
+    'PASSWORD': 'l4d3sJfKS4',
+    'SSL': False
+}
+
+# ICAT
+ICAT = {
+    'AUTH': 'simple',
+    'URL': 'https://icatisis.esc.rl.ac.uk/ICATService/ICAT?wsdl',
+    'USER': 'autoreduce',
+    'PASSWORD': '3KwUBV94LKAqysMb'
+}
+
 # Directory Locations
 if os.name == 'nt':
     # %(instrument)
     REDUCTION_DIRECTORY = r'\\isis\inst$\NDX%s\user\scripts\autoreduction'
     # %(instrument, cycle, experiment_number, run_number)
     ARCHIVE_DIRECTORY = r'\\isis\inst$\NDX%s\Instrument\data\cycle_%s\autoreduced\%s\%s'
-    
+
     TEST_REDUCTION_DIRECTORY = r'\\reducedev\isis\output\NDX%s\user\scripts\autoreduction'
     TEST_ARCHIVE_DIRECTORY = '\\isis\inst$\NDX%s\Instrument\data\cycle_%s\autoreduced\%s\%s'
 
@@ -68,7 +91,7 @@ else:
     REDUCTION_DIRECTORY = '/isis/NDX%s/user/scripts/autoreduction'
     # %(instrument, cycle, experiment_number, run_number)
     ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s'
-    
+
     TEST_REDUCTION_DIRECTORY = '/reducedev/isis/output/NDX%s/user/scripts/autoreduction'
     TEST_ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s'
 
@@ -76,6 +99,6 @@ else:
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'exchsmtp.stfc.ac.uk'
 EMAIL_PORT = 25
-EMAIL_ERROR_RECIPIENTS = ['YOUR-EMAIL']
+EMAIL_ERROR_RECIPIENTS = ['']
 EMAIL_ERROR_SENDER = 'autoreduce@reduce.isis.cclrc.ac.uk'
 BASE_URL = 'http://reduce.isis.cclrc.ac.uk/'

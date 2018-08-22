@@ -4,16 +4,16 @@ Module to deal with creating and caneling of reduction runs in the database.
 import datetime
 import logging.config
 
-from QueueProcessors.QueueProcessor.base import session
+from queue_processors.flow_processor.base import session
 # pylint:disable=no-name-in-module,import-error
-from QueueProcessors.QueueProcessor.settings import LOGGING
-from QueueProcessors.QueueProcessor.orm_mapping import DataLocation, ReductionRun, RunJoin
+from queue_processors.flow_processor.settings import LOGGING
+from queue_processors.flow_processor.orm_mapping import DataLocation, ReductionRun, RunJoin
 
-from QueueProcessors.QueueProcessor.queueproc_utils.instrument_variable_utils \
+from queue_processors.flow_processor.utils.instrument_variable_utils \
     import InstrumentVariablesUtils
-from QueueProcessors.QueueProcessor.queueproc_utils.messaging_utils import MessagingUtils
-from QueueProcessors.QueueProcessor.queueproc_utils.status_utils import StatusUtils
-from QueueProcessors.QueueProcessor.queueproc_utils.variable_utils import VariableUtils
+from queue_processors.flow_processor.utils.messaging_utils import MessagingUtils
+from queue_processors.flow_processor.utils.status_utils import StatusUtils
+from queue_processors.flow_processor.utils.variable_utils import VariableUtils
 
 # Set up logging and attach the logging to the right part of the config.
 logging.config.dictConfig(LOGGING)

@@ -7,9 +7,9 @@ import subprocess
 
 from twisted.internet import reactor
 
-from QueueProcessors.AutoreductionProcessor.autoreduction_logging_setup import logger
+from queue_processors.reduction_processor.reduction_logging_setup import logger
 # pylint:disable=no-name-in-module,import-error
-from QueueProcessors.AutoreductionProcessor.settings import MISC
+from queue_processors.reduction_processor.settings import MISC
 from utils.clients.queue_client import QueueClient
 
 

@@ -1,24 +1,25 @@
-#!/usr/bin/env python
+# !/usr/bin/env python
 """
-Module for daemonising the queue processor.
+Module to demonise the autoreduction processor.
 """
 import sys
-from daemon import Daemon  # pylint: disable=relative-import
-from QueueProcessors.QueueProcessor import queue_processor
+
+from queue_processors.daemon import Daemon
+from queue_processors.reduction_processor import reduction_processor
 
 
-class QueueProcessorDaemon(Daemon):
-    """ Queue processor daemoniser """
+class AutoreduceQueueProcessorDaemon(Daemon):
+    """ Class responsible for running the autoreduction processor. """
     def run(self):
-        """ Run queue processor. """
-        queue_processor.main()
+        """ Run autoreduction_processor. """
+        reduction_processor.main()
         while True:
             pass
 
 
 def main():
     """ Main method. """
-    daemon = QueueProcessorDaemon('/tmp/QueueProcessorDaemon.pid')
+    daemon = AutoreduceQueueProcessorDaemon('/tmp/reduction_processor_daemon.pid')
     if len(sys.argv) == 2:
         if sys.argv[1] == 'start':
             daemon.start()

@@ -14,20 +14,20 @@ import smtplib
 import sys
 import traceback
 
-from QueueProcessors.QueueProcessor.base import session
-from QueueProcessors.QueueProcessor.orm_mapping import (ReductionRun, Instrument,
-                                                        Status, Experiment,
-                                                        DataLocation, ReductionLocation)
+from queue_processors.flow_processor.base import session
+from queue_processors.flow_processor.orm_mapping import (ReductionRun, Instrument,
+                                                         Status, Experiment,
+                                                         DataLocation, ReductionLocation)
 # pylint: disable=cyclic-import
-from QueueProcessors.QueueProcessor.queueproc_utils.messaging_utils import MessagingUtils
-from QueueProcessors.QueueProcessor.queueproc_utils.instrument_variable_utils \
+from queue_processors.flow_processor.utils.messaging_utils import MessagingUtils
+from queue_processors.flow_processor.utils.instrument_variable_utils \
     import InstrumentVariablesUtils
-from QueueProcessors.QueueProcessor.queueproc_utils.status_utils import StatusUtils
-from QueueProcessors.QueueProcessor.queueproc_utils.reduction_run_utils import ReductionRunUtils
+from queue_processors.flow_processor.utils.status_utils import StatusUtils
+from queue_processors.flow_processor.utils.reduction_run_utils import ReductionRunUtils
 # pylint: disable=import-error, no-name-in-module
-from QueueProcessors.QueueProcessor.settings import (LOGGING, EMAIL_HOST,
-                                                     EMAIL_PORT, EMAIL_ERROR_RECIPIENTS,
-                                                     EMAIL_ERROR_SENDER, BASE_URL)
+from queue_processors.flow_processor.settings import (LOGGING, EMAIL_HOST,
+                                                      EMAIL_PORT, EMAIL_ERROR_RECIPIENTS,
+                                                      EMAIL_ERROR_SENDER, BASE_URL)
 
 from utils.clients.queue_client import QueueClient
 
