@@ -17,7 +17,7 @@ class TestQueueClient(unittest.TestCase):
                                                                     username='not-user',
                                                                     password='not-pass',
                                                                     host='not-host',
-                                                                    port='not-port')
+                                                                    port='1234')
 
     # pylint:disable=protected-access
     def test_default_init(self):

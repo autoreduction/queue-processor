@@ -56,7 +56,7 @@ class QueueClient(AbstractClient):
         """
         if self._connection is None or not self._connection.is_connected():
             try:
-                host_port = [(self.credentials.host, self.credentials.port)]
+                host_port = [(self.credentials.host, int(self.credentials.port))]
                 connection = stomp.Connection(host_and_ports=host_port,
                                               use_ssl=False)
                 logging.info("Starting connection to %s", host_port)
