@@ -5,11 +5,14 @@ import json
 import os
 import subprocess
 
+import stomp
+
 from twisted.internet import reactor
 
 from QueueProcessors.AutoreductionProcessor.autoreduction_logging_setup import logger
 # pylint:disable=no-name-in-module,import-error
 from QueueProcessors.AutoreductionProcessor.settings import MISC
+from utils.settings import ACTIVEMQ
 from utils.clients.queue_client import QueueClient
 
 
@@ -132,12 +135,31 @@ class Consumer(object):
         """
         Connect to ActiveMQ and listen to the queue for messages.
         """
-        activemq_client = QueueClient()
-        activemq_client.connect()
+        brokers = [(ACTIVEMQ['brokers'].split(':')[0], int(ACTIVEMQ['brokers'].split(':')[1]))]
+        connection = stomp.Connection(host_and_ports=brokers, use_ssl=False)
+        connection.set_listener(self.consumer_name, Listener(connection))
+        logger.info("Starting ActiveMQ Connection to %s", ACTIVEMQ['brokers'])
+        connection.start()
+        logger.info("Completed ActiveMQ Connection")
+        connection.connect(ACTIVEMQ['amq_user'],
+                           ACTIVEMQ['amq_pwd'],
+                           wait=False,
+                           header={'activemq.prefetchSize': '1'})
+        for queue in ACTIVEMQ['amq_queues']:
+            connection.subscribe(destination=queue,
+                                 id='1',
+                                 ack='client-individual',
+                                 header={'activemq.prefetchSize': '1'})
+            logger.info("[%s] Subscribing to %s", self.consumer_name, queue)
+        logger.info("Successfully subscribed to all of the queues")
+
+        # activemq_client = QueueClient()
+        # activemq_client.connect()
 
         # Create event listener
-        listener = Listener(activemq_client)
-        activemq_client.subscribe_amq(self.consumer_name, listener, ack='client-individual')
+        # listener = Listener(activemq_client)
+        # activemq_client.subscribe_amq(self.consumer_name, listener, ack='client-individual')
+
 
 def main():
     """ Main method, starts consumer. """
@@ -145,6 +167,7 @@ def main():
     reactor.callWhenRunning(Consumer().run) # pylint: disable=maybe-no-member
     reactor.run() # pylint: disable=maybe-no-member
     logger.info("Stop post process asynchronous listener!")
+
 
 if __name__ == '__main__':
     main()
