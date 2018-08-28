@@ -5,15 +5,14 @@ import json
 import os
 import subprocess
 
-import stomp
-
 from twisted.internet import reactor
+
+import stomp
 
 from QueueProcessors.AutoreductionProcessor.autoreduction_logging_setup import logger
 # pylint:disable=no-name-in-module,import-error
 from QueueProcessors.AutoreductionProcessor.settings import MISC
 from utils.settings import ACTIVEMQ
-from utils.clients.queue_client import QueueClient
 
 
 class Listener(object):
