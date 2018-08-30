@@ -8,31 +8,44 @@ import getpass
 import os
 import re
 
-# pylint: disable=import-error
+# pylint:disable=import-error
 import mysql.connector
 
 
-class CycleReset(object):
+# pylint:disable=too-many-instance-attributes,too-few-public-methods
+# pylint:disable=too-many-arguments,attribute-defined-outside-init
+class DatabaseReset(object):
+    """
+    Handles resetting the database after cycle
+    """
 
-    def __init__(self, latest_cycle, user, password='', host='', port=''):
+    def __init__(self, latest_cycle, user, host, port, password=''):
         # initial setup
         self.backup_directory = 'C:\\database_backup\\'
-        self._validate(latest_cycle)
-        # credentials
         self.user = user
-        self.password = password
         self.host = host
         self.port = port
+        # optional as not required for local host occasionally
+        self.password = password
         self.databases = 'autoreduction'
 
+        self._validate(latest_cycle)
+
     def execute(self):
+        """
+        Execute the backup and data removal
+        """
         # backup data
         self._backup_sql()
         # remove non-static data
         self._remove_non_static_data()
 
     def _validate(self, latest_cycle):
-        # Validate cycle input
+        self._validate_cycle_input(latest_cycle)
+        self._validate_user_input()
+        self._validate_backfile_location()
+
+    def _validate_cycle_input(self, latest_cycle):
         if re.match(r'cycle_[0-9]([0-9])?_[0-9]', latest_cycle):
             self.cycle = latest_cycle
         else:
@@ -40,11 +53,24 @@ class CycleReset(object):
                                'Please use form: cycle_16_5'.format(latest_cycle))
         self.new_cycle_dir = self.backup_directory + self.cycle
 
+    def _validate_user_input(self):
+        if not self.user:
+            raise RuntimeError('\'User\' for database required')
+        if not self.host:
+            raise RuntimeError('\'Host\' for database required')
+        if not self.port:
+            raise RuntimeError('\'Port\' for database required')
+        else:
+            try:
+                int(self.port)
+            except ValueError:
+                raise RuntimeError('\'Port\' must be an integer')
+
+    def _validate_backfile_location(self):
         # Make the directory if it doesn't exist
         if not os.path.exists(self.new_cycle_dir):
             os.makedirs(self.new_cycle_dir)
 
-        # Backup data file
         self.backup_file = os.path.join(self.new_cycle_dir, self.cycle+'.sql')
 
         # Check we are not attempting to overwrite
@@ -106,13 +132,20 @@ class CycleReset(object):
 
 
 def main():
+    """
+    Used to pass arguments via command line and then execute
+    """
     cycle = raw_input('Current cycle name to backup: ')
     user = raw_input('Database user name: ')
     password = getpass.getpass('Database password (leave blank if none): ')
-    host = raw_input('Database host (leave blank if none): ')
-    port = raw_input('Database port (leave blank if none): ')
+    host = raw_input('Database host: ')
+    port = raw_input('Database port: ')
     print('\n')
-    cycle_reset = CycleReset(cycle, user, password, host, port)
+    cycle_reset = DatabaseReset(latest_cycle=cycle,
+                                user=user,
+                                host=host,
+                                port=port,
+                                password=password)
     cycle_reset.execute()
 
 
