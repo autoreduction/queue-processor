@@ -65,6 +65,9 @@ class DatabaseReset(object):
         self.backup_file = os.path.join(self.new_cycle_dir, self.cycle+'.sql')
 
     def backup_sql(self):
+        """
+        Check that the dump.sql file doesn't exist then run mysqldump
+        """
         arguments = self._generate_argument_string()
         # Check we are not attempting to overwrite
         if os.path.isfile(self.backup_file):
@@ -88,6 +91,9 @@ class DatabaseReset(object):
         return args
 
     def remove_non_static_data(self):
+        """
+        Check that the backup file has been created and then drop the non static data
+        """
         # Login to the database
         if not os.path.isfile(self.backup_file):
             raise RuntimeError('No backup file found at expected location: \'{}\'.\n'
