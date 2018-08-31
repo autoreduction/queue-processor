@@ -31,15 +31,6 @@ class DatabaseReset(object):
 
         self._validate(latest_cycle)
 
-    def execute(self):
-        """
-        Execute the backup and data removal
-        """
-        # backup data
-        self._backup_sql()
-        # remove non-static data
-        self._remove_non_static_data()
-
     def _validate(self, latest_cycle):
         self._validate_cycle_input(latest_cycle)
         self._validate_user_input()
@@ -73,15 +64,14 @@ class DatabaseReset(object):
 
         self.backup_file = os.path.join(self.new_cycle_dir, self.cycle+'.sql')
 
+    def backup_sql(self):
+        arguments = self._generate_argument_string()
         # Check we are not attempting to overwrite
         if os.path.isfile(self.backup_file):
             raise RuntimeError('Backup file with name: \'{}\' already exists.\n'
                                'Please rename it or remove it in order to allow '
                                'this script to execute. This script does not overwrite '
                                'for data security.'.format(self.backup_file))
-
-    def _backup_sql(self):
-        arguments = self._generate_argument_string()
         process = subprocess.Popen('mysqldump {0} --databases {1} --no-create-info'
                                    ' > {2}'.format(arguments, self.databases, self.backup_file),
                                    shell=True)
@@ -97,8 +87,12 @@ class DatabaseReset(object):
             args += ' -P {}'.format(self.port)
         return args
 
-    def _remove_non_static_data(self):
+    def remove_non_static_data(self):
         # Login to the database
+        if not os.path.isfile(self.backup_file):
+            raise RuntimeError('No backup file found at expected location: \'{}\'.\n'
+                               'Please run the backup procedure first before '
+                               'wiping the database'.format(self.backup_file))
         connection = mysql.connector.connect(user=self.user, password=self.password,
                                              host=self.host, database=self.databases)
         cursor = connection.cursor()
@@ -137,7 +131,11 @@ def main():
     As this script should only ever be run on the machine with the database on it,
     we should use localhost:3306 to connect
     """
-    cycle = raw_input('Current cycle name to backup: ')
+    choice = raw_input('\'Backup\' or \'Wipe\': ')
+    while choice.lower() != 'backup' and choice.lower() != 'wipe':
+        choice = raw_input('Invalid option - \'Backup\' or \'Wipe\':')
+    choice.lower()
+    cycle = raw_input('Current cycle name: ')
     user = raw_input('Database user name: ')
     password = getpass.getpass('Database password (leave blank if none): ')
     print('Using \'localhost\' as database host')
@@ -148,7 +146,10 @@ def main():
                                 host='localhost',
                                 port='3306',
                                 password=password)
-    cycle_reset.execute()
+    if choice == 'backup':
+        cycle_reset.backup_sql()
+    if choice == 'wipe':
+        cycle_reset.remove_non_static_data()
 
 
 if __name__ == "__main__":
