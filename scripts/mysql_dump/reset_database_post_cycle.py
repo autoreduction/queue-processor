@@ -19,7 +19,7 @@ class DatabaseReset(object):
     Handles resetting the database after cycle
     """
 
-    def __init__(self, latest_cycle, user, host, port, password=''):
+    def __init__(self, latest_cycle, user, host='localhost', port='3306', password=''):
         # initial setup
         self.backup_directory = 'C:\\database_backup\\'
         self.user = user
@@ -134,17 +134,19 @@ class DatabaseReset(object):
 def main():
     """
     Used to pass arguments via command line and then execute
+    As this script should only ever be run on the machine with the database on it,
+    we should use localhost:3306 to connect
     """
     cycle = raw_input('Current cycle name to backup: ')
     user = raw_input('Database user name: ')
     password = getpass.getpass('Database password (leave blank if none): ')
-    host = raw_input('Database host: ')
-    port = raw_input('Database port: ')
+    print('Using \'localhost\' as database host')
+    print('Using \'3306\' as database port')
     print('\n')
     cycle_reset = DatabaseReset(latest_cycle=cycle,
                                 user=user,
-                                host=host,
-                                port=port,
+                                host='localhost',
+                                port='3306',
                                 password=password)
     cycle_reset.execute()
 
