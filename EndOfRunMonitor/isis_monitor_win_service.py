@@ -10,7 +10,7 @@ difficulties whne watching for file changes.
 # pylint: disable=import-error, unused-import
 import os
 
-if os.system == "nt":
+if os.name == "nt":
 
     import servicemanager
     import win32api
