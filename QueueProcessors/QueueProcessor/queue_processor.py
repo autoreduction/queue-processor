@@ -141,7 +141,7 @@ class Listener(object):
 
         # Search for the experiment, if it doesn't exist then add it
         experiment = session.query(Experiment).filter_by(reference_number=rb_number).first()
-        if experiment is None and rb_number:
+        if experiment is None:
             new_exp = Experiment(reference_number=rb_number)
             session.add(new_exp)
             session.commit()
