@@ -35,6 +35,16 @@ from utils.clients.queue_client import QueueClient
 logging.config.dictConfig(LOGGING)
 logger = logging.getLogger("queue_processor")  # pylint: disable=invalid-name
 
+def is_integer_rb(rb_number):
+    """
+    Detects string RB numbers. These tend to
+    be used by calibration experiments.
+    """
+    try:
+        int(rb_number)
+        return True
+    except ValueError:
+        return False
 
 class Listener(object):
     """ Listener class that is used to consume messages from ActiveMQ. """
@@ -71,16 +81,6 @@ class Listener(object):
             logger.error("UNCAUGHT ERROR: %s - %s", type(exp).__name__, str(exp))
             logger.error(traceback.format_exc())
 
-    def is_integer_rb(self, rb_number):
-        """
-        Detects string RB numbers. These tend to
-        be used by calibration experiments.
-        """
-        try:
-            int(rb_number)
-            return True
-        except ValueError:
-            return False
 
     def data_ready(self):
         """
@@ -98,9 +98,9 @@ class Listener(object):
         rb_number = self._data_dict['rb_number']
 
         # Make sure the RB number is an integer
-        if not self.is_integer_rb(rb_number):
+        if not is_integer_rb(rb_number):
             logger.warn("Skipping non-integer RB number: %s", rb_number)
-            return 
+            return
 
         logger.info("Data ready for processing run %s on %s", run_no, instrument_name)
 
