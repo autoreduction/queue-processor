@@ -81,7 +81,6 @@ class Listener(object):
             logger.error("UNCAUGHT ERROR: %s - %s", type(exp).__name__, str(exp))
             logger.error(traceback.format_exc())
 
-
     def data_ready(self):
         """
         Called when destination queue was data_ready.
