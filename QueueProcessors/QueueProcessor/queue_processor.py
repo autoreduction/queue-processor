@@ -71,6 +71,17 @@ class Listener(object):
             logger.error("UNCAUGHT ERROR: %s - %s", type(exp).__name__, str(exp))
             logger.error(traceback.format_exc())
 
+    def is_integer_rb(self, rb_number):
+        """
+        Detects string RB numbers. These tend to
+        be used by calibration experiments.
+        """
+        try:
+            int(rb_number)
+            return True
+        except ValueError:
+            return False
+
     def data_ready(self):
         """
         Called when destination queue was data_ready.
@@ -85,6 +96,11 @@ class Listener(object):
         run_no = str(self._data_dict['run_number'])
         instrument_name = str(self._data_dict['instrument'])
         rb_number = self._data_dict['rb_number']
+
+        # Make sure the RB number is an integer
+        if not self.is_integer_rb(rb_number):
+            logger.warn("Skipping non-integer RB number: %s", rb_number)
+            return 
 
         logger.info("Data ready for processing run %s on %s", run_no, instrument_name)
 
@@ -125,7 +141,7 @@ class Listener(object):
 
         # Search for the experiment, if it doesn't exist then add it
         experiment = session.query(Experiment).filter_by(reference_number=rb_number).first()
-        if experiment is None:
+        if experiment is None and rb_number:
             new_exp = Experiment(reference_number=rb_number)
             session.add(new_exp)
             session.commit()
