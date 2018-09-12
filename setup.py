@@ -26,11 +26,11 @@ setup(name='AutoReduction',
           'python-daemon==2.1.2;platform_system!="Windows"',
           'requests==2.18.4',
           'SQLAlchemy==1.2.7',
+          'mysql-connector==2.1.6',
           'stomp.py==4.1.20',
           'suds==0.4',
           'Twisted==14.0.2',
-          'watchdog==0.8.3',
-          'mysql-connector-python==8.0.12'
+          'watchdog==0.8.3'
       ],
       cmdclass={
           'test_settings': MigrateTestSettings,
