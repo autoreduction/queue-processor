@@ -4,7 +4,7 @@ see:
     `python setup.py help`
 for more details
 """
-from setuptools import setup, find_packages
+from setuptools import setup
 
 from build.commands.database import InitialiseTestDatabase
 from build.commands.help import Help
@@ -18,7 +18,6 @@ setup(name='AutoReduction',
       description='ISIS AutoReduction service',
       author='ISIS Autoreduction Team',
       url='https://github.com/ISISScientificComputing/autoreduce/',
-      packages=find_packages(),
       install_requires=[
           'Django==1.11.12',
           'django_extensions==2.0.7',
