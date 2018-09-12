@@ -23,7 +23,6 @@ before_install:
 install:
   - python setup.py install
   - pip install -r requirements.txt
-  - pip install mysql-connector
   
   # ================== Test setup ==================== #
   - python setup.py test_settings
