@@ -3,6 +3,8 @@
 Settings for connecting to the test services that run locally
 """
 
+VALID_INSTRUMENTS = ['GEM', 'POLARIS', 'WISH', 'OSIRIS', 'MUSR', 'POLREF']
+
 ICAT = {
     'AUTH': 'YOUR-ICAT-AUTH-TYPE',
     'URL': 'YOUR-ICAT-WSDL-URL',

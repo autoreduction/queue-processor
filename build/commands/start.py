@@ -33,18 +33,15 @@ class Start(Command):
         """
         If activemq in expected install path, run `activemq start`
         """
-        from build.settings import INSTALL_DIRS
-        location = os.path.join(INSTALL_DIRS['activemq'],
-                                'apache-activemq-5.15.3',
-                                'bin')
+        from build.settings import ACTIVEMQ_EXECUTABLE
+        location = ACTIVEMQ_EXECUTABLE
         if os.name == 'nt':
-            location = os.path.join(location, 'activemq.bat')
+            location = location + '.bat'
             start_new_terminal = ['start', 'cmd', '/c']
             if self._check_valid_path(location):
                 run_process_with_shell(start_new_terminal + [location, 'start'])
                 time.sleep(2)  # Ensure that activemq process has started before you continue
         else:
-            location = os.path.join(location, 'activemq')
             if self._check_valid_path(location):
                 run_process_and_log([location, 'start'])
                 time.sleep(2)  # Ensure that activemq process has started before you continue

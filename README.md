@@ -14,23 +14,26 @@ An open source service designed to automatically reduce instrument data from the
 ## Time line
 Below are some key dates for testing and development phases
 
-### Cycle 1a (2018)
-* ~17/04/2018 - Cycle 1a: Start of cycle~
-* ~02/05/2018 - Cycle 1a: Maintenance day~
-* ~18/05/2018 - Cycle 1a: End of cycle~
-* ~23/05/2018 - Confirm beam is off and merge develop into master~
-* ~25/05/2018 - master code freeze~ 
-* ~31/05/2018 - Smoke testing and pre-cycle checklist~
-* ~04/05/2018 - Ensure master and devlop are the same and open new project for next cycle (cycle 18_2)~
+### ~Cycle 1a (2018)~
 
-### Cycle 1 (2018)
-* ~05/06/2018 - Cycle 1: Start of cycle~
-* ~27/06/2018 - Cycle 1: Maintenance day - Remove old directories on producition nodes (autoreduction-old etc.)~
-* ~13/07/2018 - Cycle 1: End of cycle~
+### Cycle 1 (2018) - release 18.2
+* ~05/06/2018 - Start of cycle~
+* ~27/06/2018 - Maintenance day - Remove old directories on producition nodes (autoreduction-old etc.)~
+* ~13/07/2018 - End of cycle~
 * ~16/07/2018 - Confirm beam is off and merge develop into master~
-* 31/08/2018 - master code freeze
-* 03/09/2018 - Smoke testing and pre-cycle checklist
-* 10/09/2018 - Ensure master and devlop are the same and open new project for next cycle (cycle 18_3)
+* ~24/08/2018 - master code freeze~
+* ~27/08/2018 - Smoke testing and pre-cycle checklist~
+* ~10/09/2018 - Ensure master and devlop are the same and open new project for next cycle (cycle 18_3)~
 
-### Cycle 2 (2018)
-* 11/09/2018 - Cycle 2: Start of cycle
+### Cycle 2 (2018) - release 18.3
+* 11/09/2018 - Start of cycle
+* 12/09/2018 - release review
+* 26/09/2018 - Maintenance day 1
+* 10/10/2018 - Maintenance day 2
+* 26/10/2018 - Confirm beam is off and merge develop into master
+* 02/11/2018 - Master code freeze
+* 05/11/2018 - Smoke testing and pre-cycle checklist
+* 12/09/2018 - Ensure master and devlop are the same and open new project for next cycle (cycle 18_4)
+
+### Cycle 3 (2018) - release 18.4
+* 13/11/2018 - Start of cycle
