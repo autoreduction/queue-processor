@@ -42,7 +42,7 @@ class TestEndToEnd(unittest.TestCase):
         # Create data archive
         path_to_test_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)))
         self.data_archive_creator = DataArchiveCreator(path_to_test_dir)
-        self.archive_explorer = ArchiveExplorer(path_to_test_dir)
+        self.archive_explorer = ArchiveExplorer(os.path.join(path_to_test_dir, 'data-archive'))
 
         # Start QueueProcessors
         start_script = os.path.join(os.path.dirname(os.path.abspath(QueueProcessors.__file__)),

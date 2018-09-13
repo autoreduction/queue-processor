@@ -1,12 +1,12 @@
-# -*- coding: utf-8 -*-
 """
 Created on Wed May 27 14:37:59 2015
 
 @author: xxu30744
 """
-import time
-import stomp
 import logging
+import time
+
+import stomp
 from stomp.exception import ConnectFailedException
 
 from utils.settings import ACTIVEMQ

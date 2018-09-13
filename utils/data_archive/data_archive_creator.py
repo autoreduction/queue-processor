@@ -207,7 +207,7 @@ class DataArchiveCreator(object):
         path_to_reduce_dir = os.path.join(self._archive_dir, 'NDX{}',
                                           'user', 'scripts',
                                           'autoreduction').format(instrument)
-        self.create_file_at_location(os.path.join(path_to_reduce_dir, 'reduce_vars.py'), 
+        self.create_file_at_location(os.path.join(path_to_reduce_dir, 'reduce_vars.py'),
                                      file_content)
 
     def add_last_run_file(self, instrument, file_contents):
