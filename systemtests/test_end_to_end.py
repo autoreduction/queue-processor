@@ -9,16 +9,17 @@ import os
 import subprocess
 import platform
 import unittest
-import pytest
 import tempfile
 import time
+
+import pytest
 
 import git_helpers
 
 from utils.clients.database_client import DatabaseClient
 from utils.clients.queue_client import QueueClient
-from utils.data_archive_creator.data_archive_creator import DataArchiveCreator
-from utils.archive_explorer.archive_explorer import ArchiveExplorer
+from utils.data_archive.data_archive_creator import DataArchiveCreator
+from utils.data_archive.archive_explorer import ArchiveExplorer
 
 import QueueProcessors
 from test_helpers import mantid_create_file
@@ -81,7 +82,8 @@ class TestEndToEnd(unittest.TestCase):
 
         # check that the file has been successfully reduced in the db
 
-        self.assertTrue(self._monitor_file(original_m_time, temp_file.name), "GEM File not processed in system test")
+        self.assertTrue(self._monitor_file(original_m_time, temp_file.name),
+                        "GEM File not processed in system test")
 
 
 def send_data_to_queue(rb_number, instrument, location, run_number, queue_processor_connection):
