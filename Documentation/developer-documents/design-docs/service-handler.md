@@ -45,5 +45,8 @@ Proposed implementation
 7. Allow for automatic workflows to be restarted e.g. if service A goes down: restart service A, B and C
 
 
+
+
 Priority - Medium
+
 Deadline - Required before we have additional nodes
