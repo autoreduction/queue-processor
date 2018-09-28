@@ -10,6 +10,8 @@ difficulties whne watching for file changes.
 # pylint: disable=import-error, unused-import
 import os
 
+from monitors import end_of_run_monitor
+
 if os.name == "nt":
 
     import servicemanager
@@ -19,8 +21,6 @@ if os.name == "nt":
     import win32evtlogutil
     import win32service
     import win32serviceutil
-
-from EndOfRunMonitor import ISISendOfRunMonitor
 
 
 class QueueService(win32serviceutil.ServiceFramework):
@@ -54,7 +54,7 @@ class QueueService(win32serviceutil.ServiceFramework):
                               servicemanager.PYS_SERVICE_STARTED,
                               (self._svc_name_, ''))
 
-        ISISendOfRunMonitor.main()
+        end_of_run_monitor.main()
         while 1:
             # Wait for service stop signal, if I timeout, loop again
             rc = win32event.WaitForSingleObject(self.hWaitStop, self.timeout)
@@ -62,7 +62,7 @@ class QueueService(win32serviceutil.ServiceFramework):
             if rc == win32event.WAIT_OBJECT_0:
                 # Stop signal encountered
                 servicemanager.LogInfoMsg(self._svc_name_ + " - STOPPED")
-                ISISendOfRunMonitor.stop()
+                end_of_run_monitor.stop()
                 break
 
 
