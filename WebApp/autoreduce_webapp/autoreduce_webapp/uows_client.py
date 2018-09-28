@@ -2,7 +2,7 @@
 Client for accessing the user office logon
 """
 import ssl
-from urllib2 import HTTPSHandler
+from urllib2.request import HTTPSHandler
 import logging
 
 import suds

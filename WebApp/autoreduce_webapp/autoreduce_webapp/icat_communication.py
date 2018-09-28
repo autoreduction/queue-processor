@@ -4,7 +4,7 @@ Deals with communication with ICAT service
 import logging
 import sys
 import datetime
-from sets import Set
+
 import icat
 # The below is a template on the repository
 # pylint: disable=relative-import
@@ -102,7 +102,7 @@ class ICATCommunication(object):
         if not isinstance(user_number, (int, long)):
             raise TypeError("User number must be a number")
 
-        instruments = Set()
+        instruments = set()
         if self.is_admin(user_number):
             self._add_list_to_set(self.client.search("SELECT inst.fullName FROM Instrument inst"),
                                   instruments)
@@ -125,7 +125,7 @@ class ICATCommunication(object):
         if not isinstance(user_number, (int, long)):
             raise TypeError("User number must be a number")
 
-        instruments = Set()
+        instruments = set()
         self._add_list_to_set(self.client.search("SELECT ins.instrument.fullName from"
                                                  " InstrumentScientist ins WHERE"
                                                  " ins.user.name = 'uows/"
@@ -169,7 +169,7 @@ class ICATCommunication(object):
         if not isinstance(user_number, (int, long)):
             raise TypeError("User number must be a number")
 
-        experiments = Set()
+        experiments = set()
         self._add_list_to_set(self.client.search("SELECT i.name from Investigation i JOIN"
                                                  " i.investigationUsers iu where"
                                                  " iu.user.name = 'uows/"
@@ -199,7 +199,7 @@ class ICATCommunication(object):
         years_back = datetime.datetime.now() - datetime.timedelta(days=(number_of_years*365.24))
 
         for instrument in instruments:
-            experiments = Set()
+            experiments = set()
             self._add_list_to_set(self.client.search("SELECT i.name FROM Investigation i"
                                                      " JOIN i.investigationInstruments inst"
                                                      " WHERE i.name NOT LIKE 'CAL%' and"
@@ -229,7 +229,7 @@ class ICATCommunication(object):
             number_of_years = 3
         years_back = datetime.datetime.now() - datetime.timedelta(days=(number_of_years*365.24))
 
-        experiments = Set()
+        experiments = set()
         self._add_list_to_set(self.client.search("SELECT i.name FROM Investigation i JOIN"
                                                  " i.investigationInstruments inst WHERE"
                                                  " i.name NOT LIKE 'CAL%' and i.endDate > '"
@@ -249,7 +249,7 @@ class ICATCommunication(object):
         if not instrument:
             raise Exception("At least one instrument must be supplied")
 
-        experiments = Set()
+        experiments = set()
         self._add_list_to_set(self.client.search("SELECT i.name FROM Investigation i JOIN"
                                                  " i.investigationInstruments inst WHERE"
                                                  " i.name NOT LIKE 'CAL%' and"

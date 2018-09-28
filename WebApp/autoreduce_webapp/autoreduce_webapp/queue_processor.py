@@ -4,7 +4,6 @@ Handles QueueProcessor interactions from the WebApp
 import time
 import sys
 import os
-import logging
 import logging.config
 
 import django
