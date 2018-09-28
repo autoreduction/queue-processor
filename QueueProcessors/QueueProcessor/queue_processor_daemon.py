@@ -3,7 +3,7 @@
 Module for daemonising the queue processor.
 """
 import sys
-from daemon import Daemon  # pylint: disable=relative-import
+from utils.daemon import Daemon  # pylint: disable=relative-import
 from QueueProcessors.QueueProcessor import queue_processor
 
 
@@ -27,11 +27,11 @@ def main():
         elif sys.argv[1] == 'restart':
             daemon.restart()
         else:
-            print "Unknown command"
+            print("Unknown command")
             sys.exit(2)
         sys.exit(0)
     else:
-        print "usage: %s start|stop|restart" % sys.argv[0]
+        print("usage: %s start|stop|restart" % sys.argv[0])
         sys.exit(2)
 
 
