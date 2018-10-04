@@ -100,7 +100,7 @@ class DataArchiveCreator(object):
             os.makedirs(data_dir_path.format(instrument))
             os.makedirs(jrnl_dir_path.format(instrument))
             self._make_cycle_directories(start_year, end_year, current_cycle,
-                                         data_dir_path.format(instrument))
+                                         inst_dir_path.format(instrument))
 
     @staticmethod
     def _check_valid_inst(instrument):
@@ -114,11 +114,12 @@ class DataArchiveCreator(object):
 
     def _make_cycle_directories(self, start_year, end_year, current_cycle, base_dir):
         """
-        Creates individual cycle directories from a given base directory
+        Creates individual cycle directories to the data and log directory of the given
+        base directory
         :param start_year: The first year to create a dir for
         :param end_year: The final year to create a dir for
         :param current_cycle: The current cycle (1-5) in the final year
-        :param base_dir: The directory to add the cycles to (normally instrument/data)
+        :param base_dir: the instrument directory
         """
         def create_single_years_cycles(end_iter, year):
             """
@@ -128,7 +129,8 @@ class DataArchiveCreator(object):
                 year = '0{}'.format(year)
             for cycle_num in range(1, end_iter + 1):
                 current_cycle_dir_name = self._cycle_name.format(year, cycle_num)
-                os.makedirs(os.path.join(base_dir, current_cycle_dir_name))
+                os.makedirs(os.path.join(base_dir, 'data', current_cycle_dir_name))
+                os.makedirs(os.path.join(base_dir, 'logs', current_cycle_dir_name))
 
         # Make all FULL cycle directories
         for cycle_year in range(start_year, end_year):
