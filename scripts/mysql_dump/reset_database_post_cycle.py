@@ -8,8 +8,7 @@ import getpass
 import os
 import re
 
-# pylint:disable=import-error
-import mysql.connector
+import pymysql
 
 
 # pylint:disable=too-many-instance-attributes,too-few-public-methods
@@ -99,8 +98,8 @@ class DatabaseReset(object):
             raise RuntimeError('No backup file found at expected location: \'{}\'.\n'
                                'Please run the backup procedure first before '
                                'wiping the database'.format(self.backup_file))
-        connection = mysql.connector.connect(user=self.user, password=self.password,
-                                             host=self.host, database=self.databases)
+        connection = pymysql.connect(user=self.user, password=self.password,
+                                     host=self.host, database=self.databases)
         cursor = connection.cursor()
 
         # The list of tables to be deleted
