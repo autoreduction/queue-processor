@@ -25,7 +25,7 @@ setup(name='AutoReduction',
           'gitpython',
           'MySQL-python==1.2.5',
           'python-daemon==2.1.2;platform_system!="Windows"',
-          'pytz'
+          'pytz',
           'pymysql',
           'requests==2.18.4',
           'SQLAlchemy==1.2.7',
