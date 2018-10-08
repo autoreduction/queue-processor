@@ -56,6 +56,12 @@ class TestDataArchiveCreator(unittest.TestCase):
         self.assertTrue(os.path.isdir(cycle_dir_path.format('17', '4')))
         self.assertTrue(os.path.isdir(cycle_dir_path.format('18', '1')))
         self.assertTrue(os.path.isdir(cycle_dir_path.format('18', '2')))
+        self.assertTrue(os.path.isdir(logs_dir_path.format('17', '1')))
+        self.assertTrue(os.path.isdir(logs_dir_path.format('17', '2')))
+        self.assertTrue(os.path.isdir(logs_dir_path.format('17', '3')))
+        self.assertTrue(os.path.isdir(logs_dir_path.format('17', '4')))
+        self.assertTrue(os.path.isdir(logs_dir_path.format('18', '1')))
+        self.assertTrue(os.path.isdir(logs_dir_path.format('18', '2')))
 
     def test_under_single_digit_year(self):
         self.dac.make_data_archive(['GEM'], 1, 1, 1)
