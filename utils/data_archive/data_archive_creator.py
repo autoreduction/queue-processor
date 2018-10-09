@@ -223,7 +223,8 @@ class DataArchiveCreator(object):
         :param new_file_contents: The new content for the file
         """
         if not os.path.exists(file_path) or file_path not in self.data_files:
-            raise ValueError("File path: {} . Either does not exist or is not present in self.data_files")
+            raise ValueError("File path: {} \n"
+                             "Either does not exist or is not present in self.data_files")
 
         with open(file_path, 'w') as file_handle:
             file_handle.write(new_file_contents)

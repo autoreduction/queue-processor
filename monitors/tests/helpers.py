@@ -14,13 +14,13 @@ class TestListener(stomp.ConnectionListener):
     """
     message = None
 
-    def on_message(self, headers, msg):
+    def on_message(self, headers, body):
         """
         Convert message into dictionary and update cached message
         :param headers: message header (discarded in this case)
-        :param msg: String version of run information dictionary
+        :param body: String version of run information dictionary
         """
-        message_dictionary = ast.literal_eval(msg)
+        message_dictionary = ast.literal_eval(body)
         self.message = message_dictionary
 
 

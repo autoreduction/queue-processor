@@ -101,7 +101,10 @@ class InstrumentMonitor(FileSystemEventHandler):
         try:
             logging.debug("Received modified from %s", str(event.src_path))
             # Storing folders into variables.
-            list_of_folders = event.src_path.split("\\")
+            if os.name == "nt":
+                list_of_folders = event.src_path.split("\\")
+            else:
+                list_of_folders = event.src_path.split("/")
             # This will ensure to only execute the code for a specific file.
             if list_of_folders[-1] == "lastrun.txt":
                 with open(self.instrument_last_run_loc) as lastrun:
