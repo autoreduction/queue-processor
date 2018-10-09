@@ -24,7 +24,7 @@ class UserNameNode(Node):
         """
         Render the user name node
         """
-        user_number = unicode(get_var(self.user_number, context))
+        user_number = str(get_var(self.user_number, context))
         try:
             person = User.objects.get(username=user_number)
         except ObjectDoesNotExist:

@@ -23,9 +23,9 @@ class ReplaceNode(Node):
         """
         Render the replace text Node
         """
-        s = unicode(get_var(self.s, context))
-        old = unicode(get_var(self.old, context))
-        new = unicode(get_var(self.new, context))
+        s = str(get_var(self.s, context))
+        old = str(get_var(self.old, context))
+        new = str(get_var(self.new, context))
         return s.replace(old, new)
 
 

@@ -135,11 +135,11 @@ def main():
     """
     Used to pass arguments via command line and then execute
     """
-    cycle = raw_input('Current cycle name to backup: ')
-    user = raw_input('Database user name: ')
+    cycle = input('Current cycle name to backup: ')
+    user = input('Database user name: ')
     password = getpass.getpass('Database password (leave blank if none): ')
-    host = raw_input('Database host: ')
-    port = raw_input('Database port: ')
+    host = input('Database host: ')
+    port = input('Database port: ')
     print('\n')
     cycle_reset = DatabaseReset(latest_cycle=cycle,
                                 user=user,

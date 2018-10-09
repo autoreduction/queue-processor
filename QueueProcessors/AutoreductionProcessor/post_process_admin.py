@@ -8,9 +8,9 @@
 """
 Post Process Administrator. It kicks off cataloging and reduction jobs.
 """
-import cStringIO
 import errno
 import imp
+import io
 import json
 import logging
 import os
@@ -103,8 +103,8 @@ class PostProcessAdmin(object):
         self.data = data
         self.client = connection
 
-        self.reduction_log_stream = cStringIO.StringIO()
-        self.admin_log_stream = cStringIO.StringIO()
+        self.reduction_log_stream = io.StringIO()
+        self.admin_log_stream = io.StringIO()
 
         try:
             if 'data' in data:
@@ -269,6 +269,7 @@ class PostProcessAdmin(object):
                 for path in filter(lambda p: not os.path.isdir(p), should_be_writable): # pylint: disable=deprecated-lambda
                     os.makedirs(path)
 
+                # ToDo: Fix these to not be lambdas and just use function (also avoid using the negative)
                 does_not_exist = lambda path: not os.access(path, os.F_OK)
                 not_readable = lambda path: not os.access(path, os.R_OK)
                 not_writable = lambda path: not os.access(path, os.W_OK)
