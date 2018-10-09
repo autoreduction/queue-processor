@@ -120,6 +120,33 @@ class TestDataArchiveCreator(unittest.TestCase):
         expected_file_path = os.path.join(self.test_output_directory, 'data-archive', 'NDXGEM',
                                           'Instrument', 'logs', 'lastrun.txt')
         self.assertTrue(os.path.isfile(expected_file_path))
+        self.assertTrue(expected_file_path in self.dac.data_files)
+
+    def test_overwrite_file_content_valid(self):
+        self.dac.make_data_archive(['GEM'], 18, 18, 1)
+        self.dac.add_last_run_file('GEM', 'test')
+        expected_file_path = os.path.join(self.test_output_directory, 'data-archive', 'NDXGEM',
+                                          'Instrument', 'logs', 'lastrun.txt')
+        expected_file_content = 'new file content'
+        self.dac.overwrite_file_content(expected_file_path, expected_file_content)
+        self.assertTrue(os.path.isfile(expected_file_path))
+        self.assertTrue(expected_file_path in self.dac.data_files)
+        with open(expected_file_path, 'r') as actual_file:
+            actual = actual_file.readline()
+        self.assertEqual(actual, expected_file_content)
+
+    def test_overwrite_file_content_not_a_file(self):
+        self.assertRaises(ValueError, self.dac.overwrite_file_content,
+                          'not a file path', 'content')
+
+    def test_overwrite_file_content_unknown_file(self):
+        # create test file that is unkown to the DAC
+        temp_path = os.path.join(self.test_output_directory, 'temp.txt')
+        with open(temp_path, 'w') as temp_file:
+            temp_file.write('test')
+        self.assertRaises(ValueError, self.dac.overwrite_file_content,
+                          temp_path, 'content')
+        os.remove(temp_path)
 
     def test_delete_all_files_with_none(self):
         self.dac.make_data_archive(['GEM'], 18, 18, 1)

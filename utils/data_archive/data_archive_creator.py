@@ -215,6 +215,19 @@ class DataArchiveCreator(object):
                                "Make sure this directory has been created "
                                "in the archive.\n   Invalid file path: {}".format(file_path))
 
+    def overwrite_file_content(self, file_path, new_file_contents):
+        """
+        Overwrite data in a file
+        This can only be used for files that already exist and are present in self.data_files
+        :param file_path: Path to the file you wish to overwrite
+        :param new_file_contents: The new content for the file
+        """
+        if not os.path.exists(file_path) or file_path not in self.data_files:
+            raise ValueError("File path: {} . Either does not exist or is not present in self.data_files")
+
+        with open(file_path, 'w') as file_handle:
+            file_handle.write(new_file_contents)
+
     def delete_all_files(self):
         """
         Removes all files in the data archive
