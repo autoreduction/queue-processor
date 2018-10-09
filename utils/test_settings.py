@@ -3,30 +3,29 @@
 Settings for connecting to the test services that run locally
 """
 
+from utils.clients.settings.client_settings_factory import ClientSettingsFactory
+
+
 VALID_INSTRUMENTS = ['GEM', 'POLARIS', 'WISH', 'OSIRIS', 'MUSR', 'POLREF']
 
-ICAT = {
-    'AUTH': 'YOUR-ICAT-AUTH-TYPE',
-    'URL': 'YOUR-ICAT-WSDL-URL',
-    'USER': 'YOUR-ICAT-USERNAME',
-    'PASSWORD': 'YOUR-PASSWORD'
-}
+SETTINGS_FACTORY = ClientSettingsFactory()
 
-ACTIVEMQ = {
-    "brokers": "127.0.1.1:61613",
-    "amq_queues": ["/queue/ReductionPending"],
-    "amq_user": "admin",
-    "amq_pwd": "admin",
-    "data_ready": "/queue/DataReady",
-    "reduction_started": "/queue/ReductionStarted",
-    "reduction_complete": "/queue/ReductionComplete",
-    "reduction_error": "/queue/ReductionError"
-}
+ICAT_SETTINGS = SETTINGS_FACTORY.create('icat',
+                                        username='YOUR-ICAT-USERNAME',
+                                        password='YOUR-PASSWORD',
+                                        host='YOUR-ICAT-WSDL-URL',
+                                        port='',
+                                        authentication_type='Simple')
 
-MYSQL = {
-    'HOST': 'localhost',
-    'USER': 'test-user',
-    'PASSWD': 'pass',
-    'DB': 'autoreduction',
-    'PORT': '3306',
-}
+MYSQL_SETTINGS = SETTINGS_FACTORY.create('database',
+                                         username='test-user',
+                                         password='pass',
+                                         host='localhost',
+                                         port='3306',
+                                         database_name='autoreduction')
+
+ACTIVEMQ_SETTINGS = SETTINGS_FACTORY.create('queue',
+                                            username='admin',
+                                            password='admin',
+                                            host='127.0.1.1',
+                                            port='61613')
