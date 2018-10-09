@@ -1,21 +1,19 @@
 """
 Test the InstrumentMonitor that performs the majority of task for the end of run monitor service
 """
-import ast
 import os
 import unittest
 import threading
 import time
 
-import stomp
 from watchdog.events import FileSystemEvent
 
 from monitors.end_of_run_monitor import InstrumentMonitor, get_file_extension, get_data_and_check
+from monitors.tests.helpers import TestListener, create_connection
 from utils.clients.queue_client import QueueClient
 from utils.data_archive.data_archive_creator import DataArchiveCreator
 from utils.data_archive.archive_explorer import ArchiveExplorer
 from utils.project.structure import get_project_root
-from utils.settings import ACTIVEMQ
 
 
 # pylint:disable=missing-docstring,protected-access
@@ -23,6 +21,7 @@ class TestEndOfRunMonitor(unittest.TestCase):
 
     archive = None
     test_dir = None
+    connection = None
 
     @classmethod
     def setUpClass(cls):
@@ -33,17 +32,21 @@ class TestEndOfRunMonitor(unittest.TestCase):
         cls.archive.add_last_run_file('WISH', "WISH 12345 00")
         cls.archive.add_journal_file('WISH', 'summary file metadata then rb: 111')
         cls.explorer = ArchiveExplorer(os.path.join(cls.test_dir, 'data-archive'))
+
         # Create an instrument monitor
         cls.monitor = InstrumentMonitor('WISH', True, QueueClient(), threading.Lock())
         cls.expected_dict = {
             "rb_number": '111',
             "instrument": 'WISH',
-            "data": os.path.join(get_project_root(),
-                                 'data-archive', 'NDXWISH', 'Instrument',
-                                 'data', 'cycle_18_2', 'WISH12345.nxs'),
+            "data": os.path.join(cls.explorer.get_current_cycle_directory('WISH'),
+                                 'WISH12345.nxs'),
             "run_number": "12345",
             "facility": "ISIS"
         }
+
+        # Create connection and listener
+        cls.listener = TestListener()
+        cls.connection = create_connection(cls.listener)
 
     def test_get_file_extension(self):
         self.assertEqual(get_file_extension(True), '.nxs')
@@ -100,34 +103,24 @@ class TestEndOfRunMonitor(unittest.TestCase):
             self.fail('Something went wrong when attempting to send a message: ' + str(exp))
 
     def test_on_modified(self):
-
-        class TestListener(stomp.ConnectionListener):
-
-            message = None
-
-            def on_message(self, headers, msg):
-                # process message to transform back into a dictionary
-                message_dictionary = ast.literal_eval(msg)
-                self.message = message_dictionary
-
-        credentials = ACTIVEMQ['brokers'].split(':')
-        connection = stomp.Connection([(credentials[0], credentials[1])])
-        test_listener = TestListener()
-        connection.set_listener('TestListener', test_listener)
-        connection.start()
-        connection.connect()
-        connection.subscribe(destination=ACTIVEMQ['data_ready'], id='1')
-        # construct fake file system event
-        event = FileSystemEvent('string')
+        # Update lastrun.txt
+        self.archive.overwrite_file_content(self.explorer.get_last_run_file('WISH'),
+                                            "WISH 12346 00")
+        event = FileSystemEvent(self.explorer.get_last_run_file('WISH'))
         self.monitor.on_modified(event)
         attempts = 0
         # attempt to get the message for 5 seconds (break early if found before then)
-        while test_listener.message is None and attempts < 30:
+        while self.listener.message is None and attempts < 5:
             time.sleep(1)
             attempts += 1
-        connection.disconnect()
-        self.assertEqual(test_listener.message, self.expected_dict)
+        updated_dict = self.expected_dict
+        updated_dict["run_number"] = "12346"
+        new_data_loc = os.path.join(self.explorer.get_current_cycle_directory('WISH'),
+                                    'WISH12346.nxs')
+        updated_dict["data"] = new_data_loc
+        self.assertEqual(self.listener.message, updated_dict)
 
     @classmethod
     def tearDownClass(cls):
         cls.archive.delete_archive()
+        cls.connection.disconnect()
