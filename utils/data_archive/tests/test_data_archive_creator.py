@@ -148,6 +148,25 @@ class TestDataArchiveCreator(unittest.TestCase):
                           temp_path, 'content')
         os.remove(temp_path)
 
+    def test_delete_file_invalid_file_path(self):
+        self.assertRaises(ValueError, self.dac.delete_file, 'not/a/real/file path .u')
+
+    def test_delete_file_unknown_file(self):
+        temp_path = os.path.join(self.test_output_directory, 'temp.txt')
+        with open(temp_path, 'w') as temp_file:
+            temp_file.write('test')
+        self.assertRaises(ValueError, self.dac.delete_file, temp_path)
+        os.remove(temp_path)
+
+    def test_delete_file_valid(self):
+        self.dac.make_data_archive(['WISH'], 18, 18, 1)
+        self.dac.add_last_run_file('WISH', 'test')
+        last_run_file_path = os.path.join(self.test_output_directory, 'data-archive', 'NDXWISH',
+                                          'Instrument', 'logs', 'lastrun.txt')
+        self.dac.delete_file(last_run_file_path)
+        self.assertFalse(last_run_file_path in self.dac.data_files)
+        self.assertFalse(os.path.exists(last_run_file_path))
+
     def test_delete_all_files_with_none(self):
         self.dac.make_data_archive(['GEM'], 18, 18, 1)
         self.dac.delete_all_files()

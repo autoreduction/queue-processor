@@ -229,6 +229,17 @@ class DataArchiveCreator(object):
         with open(file_path, 'w') as file_handle:
             file_handle.write(new_file_contents)
 
+    def delete_file(self, file_path):
+        """
+        Delete a file and remove it from the self.data_files
+        :param file_path: the file path to the file to delete
+        """
+        if not os.path.exists(file_path) or file_path not in self.data_files:
+            raise ValueError("File path: {} \n"
+                             "Either does not exist or is not present in self.data_files")
+        os.remove(file_path)
+        self.data_files.remove(file_path)
+
     def delete_all_files(self):
         """
         Removes all files in the data archive
