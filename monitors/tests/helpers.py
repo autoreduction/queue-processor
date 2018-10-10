@@ -5,7 +5,7 @@ import ast
 
 import stomp
 
-from utils.settings import ACTIVEMQ
+from utils.settings import ACTIVEMQ_SETTINGS
 
 
 class TestListener(stomp.ConnectionListener):
@@ -30,10 +30,9 @@ def create_connection(listener):
     :param listener: The listener for the ActiveMQ connection
     :return: The connection
     """
-    credentials = ACTIVEMQ['brokers'].split(':')
-    connection = stomp.Connection([(credentials[0], credentials[1])])
+    connection = stomp.Connection([(ACTIVEMQ_SETTINGS.host, ACTIVEMQ_SETTINGS.port)])
     connection.set_listener('TestListener', listener)
     connection.start()
     connection.connect()
-    connection.subscribe(destination=ACTIVEMQ['data_ready'], id='1')
+    connection.subscribe(destination=ACTIVEMQ_SETTINGS.data_ready, id='1')
     return connection
