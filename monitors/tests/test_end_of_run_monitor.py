@@ -97,10 +97,9 @@ class TestEndOfRunMonitor(unittest.TestCase):
         self.assertTrue(watched_folder.endswith(suffix))
 
     def test_send_message(self):
-        try:
-            self.monitor.send_message(['WISH', '12345', '00'])
-        except Exception as exp:  # pylint:disable=broad-except
-            self.fail('Something went wrong when attempting to send a message: ' + str(exp))
+        self.monitor.send_message(['WISH', '12345', '00'])
+        message = self._get_message_from_queues()
+        self.assertIsNotNone(message)
 
     def test_on_modified(self):
         # Update lastrun.txt
@@ -108,17 +107,28 @@ class TestEndOfRunMonitor(unittest.TestCase):
                                             "WISH 12346 00")
         event = FileSystemEvent(self.explorer.get_last_run_file('WISH'))
         self.monitor.on_modified(event)
-        attempts = 0
-        # attempt to get the message for 5 seconds (break early if found before then)
-        while self.listener.message is None and attempts < 5:
-            time.sleep(1)
-            attempts += 1
+        message = self._get_message_from_queues()
         updated_dict = self.expected_dict
         updated_dict["run_number"] = "12346"
         new_data_loc = os.path.join(self.explorer.get_current_cycle_directory('WISH'),
                                     'WISH12346.nxs')
         updated_dict["data"] = new_data_loc
-        self.assertEqual(self.listener.message, updated_dict)
+        self.assertEqual(message, updated_dict)
+
+    def _get_message_from_queues(self):
+        """
+        Try for 5 seconds to retrieve message from activeMQ
+        Will reset the listener.message to None after message retrieved
+        :return: message from activemq or None
+        """
+        attempts = 0
+        # attempt to get the message for 5 seconds (break early if found before then)
+        while self.listener.message is None and attempts < 5:
+            time.sleep(1)
+            attempts += 1
+        message = self.listener.message
+        self.listener.message = None
+        return message
 
     @classmethod
     def tearDownClass(cls):
