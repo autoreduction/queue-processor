@@ -34,8 +34,8 @@ class TestEndToEnd(unittest.TestCase):
     """
     def setUp(self):
         # Establish connections
-        self.queue_connection = QueueClient().get_connection()
-        self.database_connection = DatabaseClient().get_connection()
+        self.queue_connection = QueueClient().connect()
+        self.database_connection = DatabaseClient().connect()
 
         # Flush database
 
