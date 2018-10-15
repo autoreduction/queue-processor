@@ -5,39 +5,31 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine, MetaData, Table
 from sqlalchemy.orm import sessionmaker, relationship
 
-from utils.settings import MYSQL
-from utils.clients.client_helper_functions import use_default_if_none
+from utils.settings import MYSQL_SETTINGS
+from utils.clients.abstract_client import AbstractClient
+from utils.clients.connection_exception import ConnectionException
 
 
-class DatabaseClient(object):
+class DatabaseClient(AbstractClient):
     """
     Single access point for the mysql database
-    This should be used for all access rather than creating a custom
-    access mechanism every time
     """
 
-    def __init__(self, user=None, password=None, host=None, database_name=None):
-        """
-        Initialise variable, if input is None, values from the settings file are used
-        """
-        self._user = use_default_if_none(user, MYSQL['USER'])
-        self._password = use_default_if_none(password, MYSQL['PASSWD'])
-        self._host = use_default_if_none(host, MYSQL['HOST'])
-        self._database_name = use_default_if_none(database_name, MYSQL['DB'])
+    def __init__(self, credentials=None):
+        if not credentials:
+            credentials = MYSQL_SETTINGS
+        super(DatabaseClient, self).__init__(credentials)
         self._connection = None
         self._meta_data = None
         self._engine = None
 
-    def get_connection(self):
+    def connect(self):
         """
         Get the connection to the database service
         :return: The connection to the database
         """
         if self._connection is None:
-            connect_string = 'mysql+mysqldb://%s:%s@%s/%s' % (self._user,
-                                                              self._password,
-                                                              self._host,
-                                                              self._database_name)
+            connect_string = self.credentials.get_full_connection_string()
             self._engine = create_engine(connect_string, pool_recycle=280)
             self._meta_data = MetaData(self._engine)
             session = sessionmaker(bind=self._engine)
@@ -59,14 +51,13 @@ class DatabaseClient(object):
             # as such it is not being consistently caught so we should check
             # the exception name instead
             if type(exp).__name__ == 'OperationalError':
-                raise RuntimeError("Unable to connect to database with the credentials provided")
-
+                raise ConnectionException("MySQL")
             else:
                 # re-raise the error if it's something we do not expect
                 raise
         return True
 
-    def stop(self):
+    def disconnect(self):
         """
         Close the connection and reset variables
         """

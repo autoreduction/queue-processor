@@ -66,4 +66,4 @@ class MessagingUtils(object):
                             json.dumps(data_dict),
                             priority='0',
                             delay=delay)
-        message_client.stop()
+        message_client.disconnect()

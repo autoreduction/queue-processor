@@ -3,4 +3,4 @@ pytest-cov
 pylint
 coveralls
 python-coveralls
-gitpython
+mock
