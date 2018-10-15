@@ -20,6 +20,7 @@ from utils.clients.database_client import DatabaseClient
 from utils.clients.queue_client import QueueClient
 from utils.data_archive.data_archive_creator import DataArchiveCreator
 from utils.data_archive.archive_explorer import ArchiveExplorer
+from utils.project.structure import get_project_root
 
 import QueueProcessors
 from test_helpers import mantid_create_file
@@ -40,7 +41,7 @@ class TestEndToEnd(unittest.TestCase):
         # Flush database
 
         # Create data archive
-        path_to_test_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)))
+        path_to_test_dir = get_project_root()
         self.data_archive_creator = DataArchiveCreator(path_to_test_dir)
         self.archive_explorer = ArchiveExplorer(os.path.join(path_to_test_dir, 'data-archive'))
 
