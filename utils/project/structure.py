@@ -16,3 +16,7 @@ def get_project_root():
 
     assert os.path.exists(git_root)
     return git_root
+
+
+def get_log_folder():
+    return os.path.join(get_project_root(), 'logs')

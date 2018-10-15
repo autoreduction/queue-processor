@@ -1,5 +1,10 @@
 # pylint: skip-file
-LOG_FILENAME = 'test_logging.out'
+import os
+
+from utils.project.structure import get_log_folder
+
+
+LOG_FILENAME = os.path.join(get_log_folder(), 'test_logging.out')
 
 # ActiveMQ
 

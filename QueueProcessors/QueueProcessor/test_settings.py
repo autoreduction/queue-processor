@@ -1,6 +1,8 @@
 # pylint: skip-file
 import os
 
+from utils.project.structure import get_log_folder
+
 FACILITY = 'ISIS'
 
 MYSQL = {
@@ -11,7 +13,7 @@ MYSQL = {
 }
 
 # Logging
-LOG_FILE = 'YOUR-LOG-LOCATION'
+LOG_FILE = os.path.join(get_log_folder(), 'queue_processor.log')
 DEBUG = False
 
 if DEBUG:

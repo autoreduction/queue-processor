@@ -1,12 +1,18 @@
 # pylint: skip-file
+
+import os
+
 import logging.handlers
-from settings import LOGGING_PATH
+
+from utils.project.structure import get_log_folder
+
 
 LOGGING_LEVEL = logging.INFO
-
 logger = logging.getLogger('AutoreductionProcessor')
 logger.setLevel(LOGGING_LEVEL)
-handler = logging.handlers.RotatingFileHandler(LOGGING_PATH, maxBytes=104857600, backupCount=20)
+handler = logging.handlers.RotatingFileHandler(os.path.join(get_log_folder(),
+                                                            'autoreduction_processor.log'),
+                                               maxBytes=104857600, backupCount=20)
 handler.setLevel(LOGGING_LEVEL)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)

@@ -4,6 +4,8 @@ Settings for ActiveMQ and reduction variables
 """
 import os
 
+from utils.project.structure import get_log_folder
+
 # ActiveMQ
 ACTIVEMQ = {
     "brokers": "YOUR-ACTIVEMQ-SERVER",
@@ -29,4 +31,4 @@ MISC = {
     "excitation_instruments": ["LET", "MARI", "MAPS", "MERLIN", "WISH", "GEM"]
 }
 
-LOGGING_PATH = "/tmp/autoreductionProcessor.log"
+LOGGING_PATH = os.path.join(get_log_folder(), 'queue_processor.log')
