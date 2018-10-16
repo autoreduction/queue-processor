@@ -16,3 +16,17 @@ def get_project_root():
 
     assert os.path.exists(git_root)
     return git_root
+
+
+def get_log_file(filename):
+    """
+    Get the full file path to a log file. This function will make the
+    file if it does not exist
+    :param filename: The name of the log file to find
+    :return: a path to the log file
+    """
+    file_path = os.path.join(get_project_root(), 'logs', str(filename))
+    if not os.path.exists(file_path):
+        with open(file_path, 'w') as _:
+            pass
+    return file_path

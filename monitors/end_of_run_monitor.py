@@ -11,10 +11,14 @@ from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
 from monitors.settings import (INST_FOLDER, DATA_LOC, SUMMARY_LOC,
-                               LAST_RUN_LOC, LOG_FILE, INSTRUMENTS)
+                               LAST_RUN_LOC, INSTRUMENTS)
 from utils.clients.queue_client import QueueClient
+from utils.project.structure import get_log_file
+from utils.project.static_content import LOG_FORMAT
 
-logging.basicConfig(filename=LOG_FILE, level=logging.INFO, format='%(asctime)s %(message)s')
+logging.basicConfig(filename=get_log_file('end_of_run_monitor.log'), level=logging.INFO,
+                    format=LOG_FORMAT)
+
 observer = Observer()  # pylint: disable=invalid-name
 
 

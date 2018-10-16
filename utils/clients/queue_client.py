@@ -7,9 +7,14 @@ import time
 import stomp
 from stomp.exception import ConnectFailedException
 
-from utils.settings import ACTIVEMQ_SETTINGS
 from utils.clients.abstract_client import AbstractClient
 from utils.clients.connection_exception import ConnectionException
+from utils.settings import ACTIVEMQ_SETTINGS
+from utils.project.structure import get_log_file
+from utils.project.static_content import LOG_FORMAT
+
+logging.basicConfig(filename=get_log_file('queue_client.log'), level=logging.INFO,
+                    format=LOG_FORMAT)
 
 
 class QueueClient(AbstractClient):
