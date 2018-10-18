@@ -6,7 +6,7 @@ then restart it.
 import datetime
 import logging
 
-from settings import INSTRUMENTS, ICAT_MON_LOG_FILE
+from monitors.settings import INSTRUMENTS, ICAT_MON_LOG_FILE
 from utils.clients.icat_client import ICATClient
 
 
@@ -15,7 +15,7 @@ logging.basicConfig(filename=ICAT_MON_LOG_FILE, level=logging.INFO, format='%(as
 
 def get_run_number(file_name, instrument_prefix):
     """
-    Extract the run number from a RAW or nexus file
+    Extract the run number from a RAW or Nexus file
     """
     file_name = file_name.replace(instrument_prefix, '')
     run_number = ''.join([s for s in file_name if s.isdigit()])
@@ -44,13 +44,16 @@ def get_cycle_dates(icat_client):
     return cycles_str
 
 
-def get_instrument_run(icat_client, inst_name, cycle_dates):
+def get_last_run_in_dates(icat_client, instrument, cycle_dates):
     """
     Returns the last run on the named instrument in ICAT.
     Gets the list of investigations on the provided instrument within the
     previously established cycle dates. The query then descends the investigation
     tree until it reaches the files.
     """
+    inst_name = instrument['name']
+    inst_prefix = instrument['file_prefix']
+
     logging.info("Grabbing recent data files for instrument: %s" % inst_name)
     datafiles = icat_client.execute_query("SELECT df FROM InvestigationInstrument ii"
                                           " JOIN ii.investigation.datasets AS ds"
@@ -66,29 +69,24 @@ def get_instrument_run(icat_client, inst_name, cycle_dates):
         logging.error("No files returned for instrument: %s" % inst_name)
     else:
         # Return the run number
-        run_number = get_run_number(datafiles[0].name, inst_name)
+        run_number = get_run_number(datafiles[0].name, inst_prefix)
         logging.info("Found last run for instrument: %s" % run_number)
     return run_number
 
 
-def get_last_runs():
+def get_last_run(instrument):
     """
-    Retrieves the last run from ICAT for each instrument.
+    Retrieves the last run from ICAT for an instrument
     """
     logging.info("Connecting to ICAT")
     icat_client = ICATClient()
-    last_runs = {}
 
     # First, constrain the search space by getting recent cycle dates
     cycle_dates = get_cycle_dates(icat_client)
 
-    # Loop through the instruments, finding the last run number for each
-    for instrument in INSTRUMENTS:
-        run_number = get_instrument_run(icat_client, instrument['name'], cycle_dates)
-        last_runs[instrument['name']] = run_number
-
-    logging.info("Last run dictionary: %s" % last_runs)
-    return last_runs
+    # Find the last run number for the instrument
+    last_run = get_last_run_in_dates(icat_client, instrument, cycle_dates)
+    return last_run
 
 
-get_last_runs()
+print(get_last_run(INSTRUMENTS[0]))
