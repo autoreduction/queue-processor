@@ -25,6 +25,8 @@ def get_run_number(file_name, instrument_prefix):
 def get_cycle_dates(icat_client):
     """
     What cycles could the last run have been in?
+    If the search space isn't constrained in some way then it takes far too long
+    to sort the list of data files. Narrowing down the dates is part of this.
     """
     date = datetime.datetime.today().strftime("%Y-%m-%d")
     logging.info("Getting nearest cycles to current date (%s)" % date)
@@ -44,7 +46,10 @@ def get_cycle_dates(icat_client):
 
 def get_instrument_run(icat_client, inst_name, cycle_dates):
     """
-    Returns the last run on the named instrument in ICAT
+    Returns the last run on the named instrument in ICAT.
+    Gets the list of investigations on the provided instrument within the
+    previously established cycle dates. The query then descends the investigation
+    tree until it reaches the files.
     """
     logging.info("Grabbing recent data files for instrument: %s" % inst_name)
     datafiles = icat_client.execute_query("SELECT df FROM InvestigationInstrument ii"
@@ -68,7 +73,7 @@ def get_instrument_run(icat_client, inst_name, cycle_dates):
 
 def get_last_runs():
     """
-    Retrieves the last run from ICAT on an instrument.
+    Retrieves the last run from ICAT for each instrument.
     """
     logging.info("Connecting to ICAT")
     icat_client = ICATClient()
@@ -77,7 +82,7 @@ def get_last_runs():
     # First, constrain the search space by getting recent cycle dates
     cycle_dates = get_cycle_dates(icat_client)
 
-    # Loop through the instruments, finding the latest run number for each
+    # Loop through the instruments, finding the last run number for each
     for instrument in INSTRUMENTS:
         run_number = get_instrument_run(icat_client, instrument['name'], cycle_dates)
         last_runs[instrument['name']] = run_number
