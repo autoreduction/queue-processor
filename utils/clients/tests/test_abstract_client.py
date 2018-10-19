@@ -15,10 +15,7 @@ class TestAbstractClient(unittest.TestCase):
                                         password='pass',
                                         host='host',
                                         port='123')
-        try:
-            interface = ClientWrapper(credentials=valid_settings)
-        except TypeError:
-            self.fail("Expected creation with valid settings not to fail but it did.")
+        interface = ClientWrapper(credentials=valid_settings)
         self.assertIsNotNone(interface)
 
     def test_derived_settings_init(self):
@@ -29,10 +26,8 @@ class TestAbstractClient(unittest.TestCase):
                                            password='pass',
                                            host='host',
                                            port='123')
-        try:
-            interface = ClientWrapper(credentials=derived_settings)
-        except TypeError:
-            self.fail("Expected creation with valid settings not to fail but it did.")
+
+        interface = ClientWrapper(credentials=derived_settings)
         self.assertIsNotNone(interface)
 
     def test_invalid_init(self):
@@ -44,9 +39,12 @@ class TestAbstractClient(unittest.TestCase):
                                 ClientWrapper, [1, 2, 3, 4])
 
 
-class ClientWrapper(AbstractClient):
+class ClientWrapper(AbstractClient):  # pragma: no cover
     """
-    A wrapper class to allow access to abstract methods
+    Class that implements the AbstractClient.
+    This is used for testing AbstractClient.__init__() - specifically, attempting to supply
+    invalid ClientSettings objects.
+    See use in utils.clients.tests..test_abstract_client.test_invalid_init (above)
     """
     def connect(self):
         pass
