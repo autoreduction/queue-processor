@@ -21,7 +21,6 @@ class ICATClient(AbstractClient):
             credentials = ICAT_SETTINGS
         super(ICATClient, self).__init__(credentials)
         self.client = icat.Client(self.credentials.host)
-        self.connect()
 
     def connect(self):
         """
