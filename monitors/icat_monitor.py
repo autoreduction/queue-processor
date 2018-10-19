@@ -5,6 +5,7 @@ then restart it.
 
 import datetime
 import logging
+import re
 
 from monitors.settings import INSTRUMENTS, ICAT_MON_LOG_FILE
 from utils.clients.icat_client import ICATClient
@@ -12,13 +13,20 @@ from utils.clients.icat_client import ICATClient
 
 logging.basicConfig(filename=ICAT_MON_LOG_FILE,
                     level=logging.INFO,
-                    format='%(asctime)s %(message)s')
+                    format='%(asctime)s %(levelname)s [%(filename)s:%(lineno)d] %(message)s')
 
 
 def get_run_number(file_name, instrument_prefix):
     """
     Extract the run number from a RAW or Nexus file
     """
+    # Check that the file name conforms to the expected pattern
+    match = re.match("%s[0-9]*(.nxs|.raw)" % instrument_prefix, file_name, re.IGNORECASE)
+    if not match:
+        logging.error("Returned data file does not match expected pattern: %s", file_name)
+        return None
+
+    # Extract the run number
     file_name = file_name.replace(instrument_prefix, '')
     run_number = ''.join([s for s in file_name if s.isdigit()])
     return run_number
@@ -77,7 +85,8 @@ def get_last_run_in_dates(icat_client, instrument, cycle_dates):
 
     # Return the run number
     run_number = get_run_number(datafiles[0].name, inst_prefix)
-    logging.info("Found last run for instrument: %s", run_number)
+    if run_number:
+        logging.info("Found last run for instrument: %s", run_number)
     return run_number
 
 
