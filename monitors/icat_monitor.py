@@ -1,6 +1,5 @@
 """
-Monitor ICAT for the latest run on an instrument. If end of run monitor is out of sync
-then restart it.
+Monitor ICAT for the latest run on an instrument.
 """
 
 import datetime
@@ -19,6 +18,9 @@ logging.basicConfig(filename=ICAT_MON_LOG_FILE,
 def get_run_number(file_name, instrument_prefix):
     """
     Extract the run number from a RAW or Nexus file
+    :param file_name: The RAW or Nexus file name
+    :param instrument_prefix: Prefix on file names for this instrument
+    :return: The run number of the input file as a string
     """
     # Check that the file name conforms to the expected pattern
     match = re.match("%s[0-9]*(.nxs|.raw)" % instrument_prefix, file_name, re.IGNORECASE)
@@ -37,6 +39,8 @@ def get_cycle_dates(icat_client):
     What cycles could the last run have been in?
     If the search space isn't constrained in some way then it takes far too long
     to sort the list of data files. Narrowing down the dates is part of this.
+    :param icat_client: ICAT Client
+    :return: Pair of dates as strings
     """
     date = datetime.datetime.today().strftime("%Y-%m-%d")
     logging.info("Getting nearest cycles to current date (%s)", date)
@@ -64,6 +68,10 @@ def get_last_run_in_dates(icat_client, instrument, cycle_dates):
     Gets the list of investigations on the provided instrument within the
     previously established cycle dates. The query then descends the investigation
     tree until it reaches the files.
+    :param icat_client: ICAT Client
+    :param instrument: Instrument list entry
+    :param cycle_dates: Pair of dates to look between for investigations
+    :return: The latest run number as a string
     """
     inst_name = instrument['name']
     inst_prefix = instrument['file_prefix']
@@ -93,6 +101,8 @@ def get_last_run_in_dates(icat_client, instrument, cycle_dates):
 def get_last_run(instrument):
     """
     Retrieves the last run from ICAT for an instrument
+    :param instrument: Instrument dictionary taken from the list
+    :return: The latest run number as a string
     """
     logging.info("Connecting to ICAT")
     icat_client = ICATClient()
