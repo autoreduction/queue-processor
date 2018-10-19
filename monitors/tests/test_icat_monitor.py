@@ -31,6 +31,9 @@ class TestICATMonitor(unittest.TestCase):
         self.assertEqual(run_num, '00042587')
 
     def test_get_run_number_invalid_file(self):
+        """
+        Test handling of invalid file
+        """
         run_num = icat_monitor.get_run_number('WISH_HELLO.RAW', 'WISH')
         self.assertEqual(run_num, None)
 
