@@ -30,6 +30,7 @@ class TestICATMonitor(unittest.TestCase):
         run_num = icat_monitor.get_run_number('WISH00042587.nxs', 'WISH')
         self.assertEqual(run_num, '00042587')
 
+    # pylint:disable=invalid-name
     def test_get_run_number_invalid_file(self):
         """
         Test handling of invalid file
