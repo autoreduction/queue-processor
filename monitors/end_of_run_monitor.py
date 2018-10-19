@@ -11,10 +11,12 @@ from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
 from monitors.settings import (INST_FOLDER, DATA_LOC, SUMMARY_LOC,
-                               LAST_RUN_LOC, LOG_FILE, INSTRUMENTS)
+                               LAST_RUN_LOC, EORM_LOG_FILE, INSTRUMENTS)
 from utils.clients.queue_client import QueueClient
 
-logging.basicConfig(filename=LOG_FILE, level=logging.INFO, format='%(asctime)s %(message)s')
+logging.basicConfig(filename=EORM_LOG_FILE,
+                    level=logging.INFO,
+                    format='%(asctime)s %(levelname)s [%(filename)s:%(lineno)d] %(message)s')
 observer = Observer()  # pylint: disable=invalid-name
 
 

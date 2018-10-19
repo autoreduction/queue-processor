@@ -11,10 +11,11 @@ INST_FOLDER = os.path.join(get_project_root(), 'data-archive', 'NDX%s', 'Instrum
 DATA_LOC = os.path.join('data', 'cycle_%s')
 SUMMARY_LOC = os.path.join('logs', 'journal', 'summary.txt')
 LAST_RUN_LOC = os.path.join('logs', 'lastrun.txt')
-LOG_FILE = os.path.join(get_project_root(), 'logs', 'monitor.log')
-INSTRUMENTS = [{'name': 'WISH', 'use_nexus': True},
-               {'name': 'GEM', 'use_nexus': True},
-               {'name': 'OSIRIS', 'use_nexus': True},
-               {'name': 'POLARIS', 'use_nexus': True},
-               {'name': 'MUSR', 'use_nexus': True},
-               {'name': 'POLREF', 'use_nexus': True}]
+EORM_LOG_FILE = os.path.join(get_project_root(), 'logs', 'end_of_run_monitor.log')
+ICAT_MON_LOG_FILE = os.path.join(get_project_root(), 'logs', 'icat_monitor.log')
+INSTRUMENTS = [{'name': 'WISH', 'file_prefix': 'WISH', 'use_nexus': True},
+               {'name': 'GEM', 'file_prefix': 'GEM', 'use_nexus': True},
+               {'name': 'OSIRIS', 'file_prefix': 'OSIRIS', 'use_nexus': True},
+               {'name': 'POLARIS', 'file_prefix': 'POLARIS', 'use_nexus': True},
+               {'name': 'MUSR', 'file_prefix': 'MUSR', 'use_nexus': True},
+               {'name': 'POLREF', 'file_prefix': 'POLREF', 'use_nexus': True}]
