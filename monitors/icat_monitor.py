@@ -1,5 +1,5 @@
 """
-Monitor ICAT for the latest run on each instrument. If end of run monitor is out of sync
+Monitor ICAT for the latest run on an instrument. If end of run monitor is out of sync
 then restart it.
 """
 
@@ -10,7 +10,9 @@ from monitors.settings import INSTRUMENTS, ICAT_MON_LOG_FILE
 from utils.clients.icat_client import ICATClient
 
 
-logging.basicConfig(filename=ICAT_MON_LOG_FILE, level=logging.INFO, format='%(asctime)s %(message)s')
+logging.basicConfig(filename=ICAT_MON_LOG_FILE,
+                    level=logging.INFO,
+                    format='%(asctime)s %(message)s')
 
 
 def get_run_number(file_name, instrument_prefix):
@@ -29,18 +31,22 @@ def get_cycle_dates(icat_client):
     to sort the list of data files. Narrowing down the dates is part of this.
     """
     date = datetime.datetime.today().strftime("%Y-%m-%d")
-    logging.info("Getting nearest cycles to current date (%s)" % date)
-    cycles = (icat_client.execute_query("SELECT c.startDate FROM FacilityCycle c"
-                                        " WHERE '%s' > c.endDate"
-                                        " ORDER BY c.startDate DESC"
-                                        " LIMIT 0,1" % date)[0],
-              icat_client.execute_query("SELECT c.endDate FROM FacilityCycle c"
-                                        " WHERE '%s' < c.startDate"
-                                        " ORDER BY c.endDate ASC"
-                                        " LIMIT 0,1" % date)[0])
-    # Convert them to strings
-    cycles_str = (cycles[0].strftime('%Y-%m-%d'), cycles[1].strftime('%Y-%m-%d'))
-    logging.info("Found nearest cycle dates: %s and %s" % cycles_str)
+    logging.info("Getting nearest cycles to current date (%s)", date)
+    last_cycle = icat_client.execute_query("SELECT c.startDate FROM FacilityCycle c"
+                                           " WHERE '%s' > c.endDate"
+                                           " ORDER BY c.startDate DESC"
+                                           " LIMIT 0,1" % date)
+    next_cycle = icat_client.execute_query("SELECT c.endDate FROM FacilityCycle c"
+                                           " WHERE '%s' < c.startDate"
+                                           " ORDER BY c.endDate ASC"
+                                           " LIMIT 0,1" % date)
+    if not last_cycle or not next_cycle:
+        logging.error("No cycles returned for date")
+        return None
+
+    # Return the cycle date range as a pair of strings
+    cycles_str = (last_cycle[0].strftime('%Y-%m-%d'), next_cycle[0].strftime('%Y-%m-%d'))
+    logging.info("Found nearest cycle dates: %s and %s", cycles_str[0], cycles_str[1])
     return cycles_str
 
 
@@ -54,7 +60,7 @@ def get_last_run_in_dates(icat_client, instrument, cycle_dates):
     inst_name = instrument['name']
     inst_prefix = instrument['file_prefix']
 
-    logging.info("Grabbing recent data files for instrument: %s" % inst_name)
+    logging.info("Grabbing recent data files for instrument: %s", inst_name)
     datafiles = icat_client.execute_query("SELECT df FROM InvestigationInstrument ii"
                                           " JOIN ii.investigation.datasets AS ds"
                                           " JOIN ds.datafiles AS df"
@@ -64,13 +70,14 @@ def get_last_run_in_dates(icat_client, instrument, cycle_dates):
                                           " ORDER BY df.datafileCreateTime DESC"
                                           " LIMIT 0,1"
                                           % (inst_name, cycle_dates[0], cycle_dates[1]))
-    run_number = u'0'
-    if len(datafiles) == 0:
-        logging.error("No files returned for instrument: %s" % inst_name)
-    else:
-        # Return the run number
-        run_number = get_run_number(datafiles[0].name, inst_prefix)
-        logging.info("Found last run for instrument: %s" % run_number)
+
+    if not datafiles:
+        logging.error("No files returned for instrument: %s", inst_name)
+        return None
+
+    # Return the run number
+    run_number = get_run_number(datafiles[0].name, inst_prefix)
+    logging.info("Found last run for instrument: %s", run_number)
     return run_number
 
 
@@ -83,10 +90,14 @@ def get_last_run(instrument):
 
     # First, constrain the search space by getting recent cycle dates
     cycle_dates = get_cycle_dates(icat_client)
+    if not cycle_dates:
+        return None
 
     # Find the last run number for the instrument
     last_run = get_last_run_in_dates(icat_client, instrument, cycle_dates)
     return last_run
 
 
-print(get_last_run(INSTRUMENTS[0]))
+for inst in INSTRUMENTS:
+    print inst['name']
+    print get_last_run(inst)
