@@ -7,7 +7,7 @@ import datetime
 import logging
 import re
 
-from monitors.settings import INSTRUMENTS, ICAT_MON_LOG_FILE
+from monitors.settings import ICAT_MON_LOG_FILE
 from utils.clients.icat_client import ICATClient
 
 
@@ -105,8 +105,3 @@ def get_last_run(instrument):
     # Find the last run number for the instrument
     last_run = get_last_run_in_dates(icat_client, instrument, cycle_dates)
     return last_run
-
-
-for inst in INSTRUMENTS:
-    print inst['name']
-    print get_last_run(inst)
