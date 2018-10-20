@@ -29,7 +29,7 @@ class HealthCheckThread(threading.Thread):
                 logging.warning("Problem detected with service. Restarting service...")
                 self.restart_service()
             time.sleep(self.time_interval)
-        logging.info('Main thread loop stopped')
+        logging.info('Main Health check thread loop stopped')
 
     @staticmethod
     def health_check():
@@ -37,7 +37,7 @@ class HealthCheckThread(threading.Thread):
         Check to see if the service is still running as expected
         :return: True: Service is okay, False: Service requires restart
         """
-        logging.info('Performing Health check at %s', datetime.now())
+        logging.info('Performing Health Check at %s', datetime.now())
         return True
 
     @staticmethod
@@ -52,5 +52,5 @@ class HealthCheckThread(threading.Thread):
         """
         Send a signal to stop the main thread loop
         """
-        logging.info('Received stop signal')
+        logging.info('Received stop signal for the Health Check thread')
         self.exit = True
