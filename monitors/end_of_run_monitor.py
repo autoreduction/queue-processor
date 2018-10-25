@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import threading
+import csv
 
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
@@ -38,35 +39,34 @@ def get_data_and_check(last_run_file):
 
 def write_last_run(instrument, last_run):
     """
-    Write the last run for an instrument to the last runs file
+    Write the last run for an instrument to the last runs CSV file
     """
     try:
+        # Attempt to open and read the CSV file
         with open(EORM_LAST_RUN_FILE, 'r') as last_run_file:
-            data = last_run_file.readlines()
+            last_run_rows = []
+            last_run_reader = csv.reader(last_run_file)
+            found_inst = False
+            # Attempt to find the instrument in the CSV file
+            for row in last_run_reader:
+                if row[0] == instrument:
+                    row[1] = last_run
+                    found_inst = True
+                last_run_rows.append(row)
+
+            # If the instrument isn't found, then we need to add it
+            if not found_inst:
+                row = [instrument, last_run]
+                last_run_rows.append(row)
     except IOError:
-        data = []
+        # File hasn't been created yet
+        last_run_rows = [[instrument, last_run]]
 
-    # Go through the contents and find the instrument and run number
-    found_inst = False
-    for (i, line) in enumerate(data):
-        parts = line.split(' ')
-        inst_name = parts[0]
-        if inst_name == instrument:
-            # Modify the run number in the file
-            data[i] = line.replace(parts[1], last_run)
-            found_inst = True
-
-    # If the instrument hasn't been found then add a new line
-    if not found_inst:
-        new_line = "%s %s" % (instrument, last_run)
-        if len(data) == 0:
-            data.append(new_line)
-        else:
-            data.append("\n" + new_line)
-
-    # Write to the file
-    last_run_file = open(EORM_LAST_RUN_FILE, 'w+')
-    last_run_file.writelines(data)
+    # Write each row of the CSV back to the file
+    last_run_file = open(EORM_LAST_RUN_FILE, 'wb+')
+    last_run_writer = csv.writer(last_run_file)
+    for row in last_run_rows:
+        last_run_writer.writerow(row)
     last_run_file.close()
 
 
