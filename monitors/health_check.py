@@ -7,6 +7,8 @@ import time
 import threading
 
 from monitors import end_of_run_monitor
+from monitors import icat_monitor
+from settings import INSTRUMENTS
 
 
 # pylint:disable=missing-docstring
@@ -38,6 +40,11 @@ class HealthCheckThread(threading.Thread):
         :return: True: Service is okay, False: Service requires restart
         """
         logging.info('Performing Health Check at %s', datetime.now())
+
+        # Loop through the instrument list, getting the last run on each
+        for inst in INSTRUMENTS:
+            icat_last_run = icat_monitor.get_last_run(inst)
+           # eorm_last_run =
         return True
 
     @staticmethod
