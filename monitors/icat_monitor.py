@@ -73,10 +73,7 @@ def get_last_run_in_dates(icat_client, instrument, cycle_dates):
     :param cycle_dates: Pair of dates to look between for investigations
     :return: The latest run number as a string
     """
-    inst_name = instrument['name']
-    inst_prefix = instrument['file_prefix']
-
-    logging.info("Grabbing recent data files for instrument: %s", inst_name)
+    logging.info("Grabbing recent data files for instrument: %s", instrument)
     datafiles = icat_client.execute_query("SELECT df FROM InvestigationInstrument ii"
                                           " JOIN ii.investigation.datasets AS ds"
                                           " JOIN ds.datafiles AS df"
@@ -85,14 +82,14 @@ def get_last_run_in_dates(icat_client, instrument, cycle_dates):
                                           " AND (df.name LIKE '%%.nxs' OR df.name LIKE '%%.RAW')"
                                           " ORDER BY df.datafileCreateTime DESC"
                                           " LIMIT 0,1"
-                                          % (inst_name, cycle_dates[0], cycle_dates[1]))
+                                          % (instrument, cycle_dates[0], cycle_dates[1]))
 
     if not datafiles:
-        logging.error("No files returned for instrument: %s", inst_name)
+        logging.error("No files returned for instrument: %s", instrument)
         return None
 
     # Return the run number
-    run_number = get_run_number(datafiles[0].name, inst_prefix)
+    run_number = get_run_number(datafiles[0].name, instrument)
     if run_number:
         logging.info("Found last run for instrument: %s", run_number)
     return run_number

@@ -43,7 +43,7 @@ def write_last_run(instrument, last_run):
     """
     try:
         # Attempt to open and read the CSV file
-        with open(EORM_LAST_RUN_FILE, 'r') as last_run_file:
+        with open(EORM_LAST_RUN_FILE, 'rb') as last_run_file:
             last_run_rows = []
             last_run_reader = csv.reader(last_run_file)
             found_inst = False

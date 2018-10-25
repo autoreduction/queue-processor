@@ -5,10 +5,11 @@ from datetime import datetime
 import logging
 import time
 import threading
+import csv
 
 from monitors import end_of_run_monitor
 from monitors import icat_monitor
-from settings import INSTRUMENTS
+from settings import (INSTRUMENTS, EORM_LAST_RUN_FILE)
 
 
 # pylint:disable=missing-docstring
@@ -42,9 +43,14 @@ class HealthCheckThread(threading.Thread):
         logging.info('Performing Health Check at %s', datetime.now())
 
         # Loop through the instrument list, getting the last run on each
-        for inst in INSTRUMENTS:
-            icat_last_run = icat_monitor.get_last_run(inst)
-           # eorm_last_run =
+        with open(EORM_LAST_RUN_FILE, 'rb') as last_run_file:
+            last_run_reader = csv.reader(last_run_file)
+            for row in last_run_reader:
+                # Query the ICAT
+                icat_last_run = icat_monitor.get_last_run(row[0])
+                if icat_last_run:
+                    if int(icat_last_run) > int(row[1]):
+                        return False
         return True
 
     @staticmethod
