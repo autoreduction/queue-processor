@@ -6,19 +6,18 @@ with correctly watching files through mounting the ISIS archive.
 As the ISIS archive would be mounted as a drive, this causes
 difficulties whne watching for file changes.
 """
-# ToDo: check if unused-import warning is legitimate for win32con, win32evtlogutil
-# pylint: disable=import-error, unused-import
+# Required for linux pylint build not to fail
+# pylint: disable=import-error
 import os
 
+from monitors.health_check import HealthCheckThread
 from monitors import end_of_run_monitor
 
 if os.name == "nt":
 
     import servicemanager
     import win32api
-    import win32con
     import win32event
-    import win32evtlogutil
     import win32service
     import win32serviceutil
 
@@ -55,6 +54,8 @@ class QueueService(win32serviceutil.ServiceFramework):
                               (self._svc_name_, ''))
 
         end_of_run_monitor.main()
+        health_check_thread = HealthCheckThread(600)  # 10 minutes
+        health_check_thread.start()
         while 1:
             # Wait for service stop signal, if I timeout, loop again
             rc = win32event.WaitForSingleObject(self.hWaitStop, self.timeout)
@@ -63,6 +64,7 @@ class QueueService(win32serviceutil.ServiceFramework):
                 # Stop signal encountered
                 servicemanager.LogInfoMsg(self._svc_name_ + " - STOPPED")
                 end_of_run_monitor.stop()
+                health_check_thread.stop()
                 break
 
 
