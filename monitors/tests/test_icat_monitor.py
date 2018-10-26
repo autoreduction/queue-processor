@@ -5,7 +5,6 @@ Unit tests for the ICAT monitor
 import unittest
 import datetime
 from mock import Mock
-from mock import patch
 
 import monitors.icat_monitor as icat_monitor
 from monitors.settings import INSTRUMENTS
