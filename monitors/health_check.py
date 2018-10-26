@@ -8,43 +8,10 @@ import threading
 import csv
 import os
 
-from monitors import end_of_run_monitor
 from monitors import icat_monitor
+from monitors import end_of_run_monitor
 from monitors.settings import (EORM_LAST_RUN_FILE, INSTRUMENTS, INST_FOLDER,
                                LAST_RUN_LOC)
-
-
-def write_last_run(file_name, instrument, last_run):
-    """
-    Write the last run for an instrument to the last runs CSV file
-    """
-    try:
-        # Attempt to open and read the CSV file
-        with open(file_name, 'rb') as last_run_file:
-            last_run_rows = []
-            last_run_reader = csv.reader(last_run_file)
-            found_inst = False
-            # Attempt to find the instrument in the CSV file
-            for row in last_run_reader:
-                if row[0] == instrument:
-                    row[1] = last_run
-                    found_inst = True
-                last_run_rows.append(row)
-
-            # If the instrument isn't found, then we need to add it
-            if not found_inst:
-                row = [instrument, last_run]
-                last_run_rows.append(row)
-    except IOError:
-        # File hasn't been created yet
-        last_run_rows = [[instrument, last_run]]
-
-    # Write each row of the CSV back to the file
-    last_run_file = open(file_name, 'wb+')
-    last_run_writer = csv.writer(last_run_file)
-    for row in last_run_rows:
-        last_run_writer.writerow(row)
-    last_run_file.close()
 
 
 # pylint:disable=missing-docstring

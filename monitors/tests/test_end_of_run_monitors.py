@@ -5,10 +5,12 @@ import os
 import unittest
 import threading
 import time
+import csv
 
 from watchdog.events import FileSystemEvent
 
-from monitors.end_of_run_monitor import InstrumentMonitor, get_file_extension, get_data_and_check
+from monitors.end_of_run_monitor import (InstrumentMonitor, get_file_extension, get_data_and_check,
+                                         write_last_run)
 from monitors.tests.helpers import TestListener, create_connection
 from utils.clients.queue_client import QueueClient
 from utils.data_archive.data_archive_creator import DataArchiveCreator
@@ -85,6 +87,26 @@ class TestEndOfRunMonitor(unittest.TestCase):
     def test_get_rb_number(self):
         rb_number = self.monitor._get_rb_num()
         self.assertEqual(rb_number, '111')
+
+    def test_write_last_run(self):
+        """
+        Test write of the last runs CSV file
+        """
+        test_file = "last_runs_test.csv"
+        write_last_run(test_file, 'GEM', '1234')
+        write_last_run(test_file, 'WISH', '1234')
+        write_last_run(test_file, 'POLARIS', '1234')
+
+        row_array = [['GEM', '1234'], ['WISH', '1234'], ['POLARIS', '1234']]
+
+        # Now read back using the CSV reader
+        with open(test_file, 'r') as last_run_file:
+            last_run_reader = csv.reader(last_run_file)
+            for (i, row) in enumerate(last_run_reader):
+                self.assertEqual(row_array[i][0], row[0])
+                self.assertEqual(row_array[i][1], row[1])
+
+        os.remove(test_file)
 
     def test_build_dict(self):
         # input is return value of get_data_and_check
