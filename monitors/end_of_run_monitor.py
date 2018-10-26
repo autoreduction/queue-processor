@@ -21,6 +21,7 @@ logging.basicConfig(filename=EORM_LOG_FILE,
                     format='%(asctime)s %(levelname)s [%(filename)s:%(lineno)d] %(message)s')
 observer = Observer()  # pylint: disable=invalid-name
 
+
 def write_last_run(file_name, instrument, last_run):
     """
     Write the last run for an instrument to the last runs CSV file
@@ -52,6 +53,7 @@ def write_last_run(file_name, instrument, last_run):
     for row in last_run_rows:
         last_run_writer.writerow(row)
     last_run_file.close()
+
 
 def get_file_extension(use_nxs):
     """ Choose the data extension based on the boolean. """

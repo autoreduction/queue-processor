@@ -83,19 +83,3 @@ class TestICATMonitor(unittest.TestCase):
                                                  inst_name,
                                                  ('2018-10-18', '2018-10-19'))
         self.assertEqual(run, None)
-
-    @patch('monitors.icat_monitor.get_cycle_dates', return_value=('2018-10-03', '2018-10-30'))
-    @patch('monitors.icat_monitor.get_last_run_in_dates', return_value='1234')
-    def test_get_last_run(self, cycle, last_run):
-        """
-        Check that get_last_run returns the provided run
-        """
-        self.assertEqual(icat_monitor.get_last_run('GEM'), '1234')
-
-    @patch('monitors.icat_monitor.get_cycle_dates', return_value=None)
-    @patch('monitors.icat_monitor.get_last_run_in_dates', return_value='1234')
-    def test_get_last_run_invalid_cycles(self, cycle, last_run):
-        """
-        Should return None when no cycle dates are returned
-        """
-        self.assertIsNone(icat_monitor.get_last_run('GEM'))
