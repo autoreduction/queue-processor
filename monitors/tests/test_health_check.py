@@ -4,8 +4,6 @@ Currently only running unit tests on linux
 """
 import unittest
 import time
-import csv
-import os
 import mock
 
 from monitors.health_check import HealthCheckThread

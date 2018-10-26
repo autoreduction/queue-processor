@@ -10,6 +10,7 @@ import os
 
 from monitors import icat_monitor
 from monitors import end_of_run_monitor
+from monitors.end_of_run_monitor import write_last_run
 from monitors.settings import (EORM_LAST_RUN_FILE, INSTRUMENTS, INST_FOLDER,
                                LAST_RUN_LOC)
 
