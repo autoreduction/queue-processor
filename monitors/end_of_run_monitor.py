@@ -163,5 +163,5 @@ def stop():
     observer.join()
 
 
-if __name__ == "__main__":  # pragma: no cover
-    main()
+if __name__ == "__main__":
+    main()  # pragma: no cover
