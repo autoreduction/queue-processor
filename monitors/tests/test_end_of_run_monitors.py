@@ -12,11 +12,11 @@ from watchdog.events import FileSystemEvent
 from monitors.end_of_run_monitor import (InstrumentMonitor, get_file_extension, get_data_and_check,
                                          write_last_run)
 from monitors.tests.helpers import TestListener, create_connection
+from monitors.settings import EORM_LAST_RUN_FILE
 from utils.clients.queue_client import QueueClient
 from utils.data_archive.data_archive_creator import DataArchiveCreator
 from utils.data_archive.archive_explorer import ArchiveExplorer
 from utils.project.structure import get_project_root
-from monitors.settings import EORM_LAST_RUN_FILE
 
 
 # pylint:disable=missing-docstring,protected-access

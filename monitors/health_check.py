@@ -9,7 +9,7 @@ import csv
 
 from monitors import end_of_run_monitor
 from monitors import icat_monitor
-from settings import (INSTRUMENTS, EORM_LAST_RUN_FILE)
+from monitors.settings import EORM_LAST_RUN_FILE
 
 
 # pylint:disable=missing-docstring

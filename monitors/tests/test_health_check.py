@@ -9,6 +9,7 @@ import mock
 from monitors.health_check import HealthCheckThread
 from monitors.end_of_run_monitor import write_last_run
 
+
 def create_runs_csv():
     """
     Create a test runs CSV file
@@ -17,7 +18,8 @@ def create_runs_csv():
     write_last_run('WISH', '1234')
     write_last_run('POLARIS', '1234')
 
-# pylint:disable=missing-docstring
+
+# pylint:disable=missing-docstring, unused-argument
 class TestServiceUtils(unittest.TestCase):
 
     def setUp(self):

@@ -11,7 +11,7 @@ import monitors.icat_monitor as icat_monitor
 from monitors.settings import INSTRUMENTS
 
 
-# pylint:disable=too-few-public-methods
+# pylint:disable=too-few-public-methods,unused-argument
 class DataFile(object):
     """
     Basic data file representation for testing
@@ -99,4 +99,3 @@ class TestICATMonitor(unittest.TestCase):
         Should return None when no cycle dates are returned
         """
         self.assertIsNone(icat_monitor.get_last_run('GEM'))
-
