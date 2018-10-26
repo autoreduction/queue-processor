@@ -4,25 +4,28 @@ Currently only running unit tests on linux
 """
 import unittest
 import time
+import csv
+import os
 import mock
 
-from monitors.health_check import HealthCheckThread
-from monitors.end_of_run_monitor import write_last_run
+from monitors.health_check import HealthCheckThread, write_last_run
+from monitors.settings import EORM_LAST_RUN_FILE
 
 
 def create_runs_csv():
     """
     Create a test runs CSV file
     """
-    write_last_run('GEM', '1234')
-    write_last_run('WISH', '1234')
-    write_last_run('POLARIS', '1234')
+    write_last_run(EORM_LAST_RUN_FILE, 'GEM', '1234')
+    write_last_run(EORM_LAST_RUN_FILE, 'WISH', '1234')
+    write_last_run(EORM_LAST_RUN_FILE, 'POLARIS', '1234')
 
 
 # pylint:disable=missing-docstring, unused-argument
 class TestServiceUtils(unittest.TestCase):
 
-    def setUp(self):
+    @classmethod
+    def setUp(cls):
         create_runs_csv()
 
     @mock.patch('monitors.icat_monitor.get_last_run', return_value='1234')
@@ -46,6 +49,26 @@ class TestServiceUtils(unittest.TestCase):
         health_check_thread.stop()
         self.assertTrue(health_check_thread.exit)
 
+    def test_write_last_run(self):
+        """
+        Test write of the last runs CSV file
+        """
+        test_file = "last_runs_test.csv"
+        write_last_run(test_file, 'GEM', '1234')
+        write_last_run(test_file, 'WISH', '1234')
+        write_last_run(test_file, 'POLARIS', '1234')
+
+        row_array = [['GEM', '1234'], ['WISH', '1234'], ['POLARIS', '1234']]
+
+        # Now read back using the CSV reader
+        with open(test_file, 'r') as last_run_file:
+            last_run_reader = csv.reader(last_run_file)
+            for (i, row) in enumerate(last_run_reader):
+                self.assertEqual(row_array[i][0], row[0])
+                self.assertEqual(row_array[i][1], row[1])
+
+        os.remove(test_file)
+
     def test_thread_start_stop(self):
         health_check_thread = HealthCheckThread(1)
         health_check_thread.start()
@@ -59,18 +82,3 @@ class TestServiceUtils(unittest.TestCase):
             alive = health_check_thread.is_alive()
             attempts += 1
         self.assertFalse(alive)
-
-    @mock.patch('monitors.icat_monitor.get_last_run', return_value='1234')
-    def test_icat_check_fine(self, last_run):
-        """ ICAT check where end of run monitor is fine """
-        self.assertTrue(HealthCheckThread.icat_check())
-
-    @mock.patch('monitors.icat_monitor.get_last_run', return_value='1233')
-    def test_icat_check_old_run(self, last_run):
-        """ ICAT check where the check returns an old run """
-        self.assertTrue(HealthCheckThread.icat_check())
-
-    @mock.patch('monitors.icat_monitor.get_last_run', return_value='1235')
-    def test_icat_check_restart(self, last_run):
-        """ ICAT check where end of run monitor requires a restart """
-        self.assertFalse(HealthCheckThread.icat_check())

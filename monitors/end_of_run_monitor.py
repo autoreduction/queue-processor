@@ -6,11 +6,11 @@ import json
 import logging
 import os
 import threading
-import csv
 
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
+import monitors.health_check
 from monitors.settings import (INST_FOLDER, DATA_LOC, SUMMARY_LOC,
                                LAST_RUN_LOC, EORM_LOG_FILE, INSTRUMENTS,
                                EORM_LAST_RUN_FILE)
@@ -35,39 +35,6 @@ def get_data_and_check(last_run_file):
     if len(data) != 3:
         raise Exception("Unexpected last run file format")
     return data
-
-
-def write_last_run(instrument, last_run):
-    """
-    Write the last run for an instrument to the last runs CSV file
-    """
-    try:
-        # Attempt to open and read the CSV file
-        with open(EORM_LAST_RUN_FILE, 'rb') as last_run_file:
-            last_run_rows = []
-            last_run_reader = csv.reader(last_run_file)
-            found_inst = False
-            # Attempt to find the instrument in the CSV file
-            for row in last_run_reader:
-                if row[0] == instrument:
-                    row[1] = last_run
-                    found_inst = True
-                last_run_rows.append(row)
-
-            # If the instrument isn't found, then we need to add it
-            if not found_inst:
-                row = [instrument, last_run]
-                last_run_rows.append(row)
-    except IOError:
-        # File hasn't been created yet
-        last_run_rows = [[instrument, last_run]]
-
-    # Write each row of the CSV back to the file
-    last_run_file = open(EORM_LAST_RUN_FILE, 'wb+')
-    last_run_writer = csv.writer(last_run_file)
-    for row in last_run_rows:
-        last_run_writer.writerow(row)
-    last_run_file.close()
 
 
 class InstrumentMonitor(FileSystemEventHandler):
@@ -153,7 +120,9 @@ class InstrumentMonitor(FileSystemEventHandler):
                     logging.debug("self.last_run updated to be %s", str(data[1]))
                     self.send_message(data)
                     # Write to the last runs file for the health checker
-                    write_last_run(self.instrument_name, self.last_run)
+                    monitors.health_check.write_last_run(EORM_LAST_RUN_FILE,
+                                                         self.instrument_name,
+                                                         self.last_run)
         except Exception as exp:  # pylint: disable=broad-except
             # if this code can't be executed it will raise a logging error towards the user.
             logging.exception("Error on loading file: %s", exp.message, exc_info=True)
