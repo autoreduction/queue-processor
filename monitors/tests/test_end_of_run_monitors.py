@@ -5,15 +5,18 @@ import os
 import unittest
 import threading
 import time
+import csv
 
 from watchdog.events import FileSystemEvent
 
-from monitors.end_of_run_monitor import InstrumentMonitor, get_file_extension, get_data_and_check
+from monitors.end_of_run_monitor import (InstrumentMonitor, get_file_extension, get_data_and_check,
+                                         write_last_run)
 from monitors.tests.helpers import TestListener, create_connection
 from utils.clients.queue_client import QueueClient
 from utils.data_archive.data_archive_creator import DataArchiveCreator
 from utils.data_archive.archive_explorer import ArchiveExplorer
 from utils.project.structure import get_project_root
+from monitors.settings import EORM_LAST_RUN_FILE
 
 
 # pylint:disable=missing-docstring,protected-access
@@ -114,6 +117,23 @@ class TestEndOfRunMonitor(unittest.TestCase):
                                     'WISH12346.nxs')
         updated_dict["data"] = new_data_loc
         self.assertEqual(message, updated_dict)
+
+    def test_write_last_run(self):
+        """
+        Test write of the last runs CSV file
+        """
+        write_last_run('GEM', '1234')
+        write_last_run('WISH', '1234')
+        write_last_run('POLARIS', '1234')
+
+        row_array = [['GEM', '1234'], ['WISH', '1234'], ['POLARIS', '1234']]
+
+        # Now read back using the CSV reader
+        with open(EORM_LAST_RUN_FILE, 'r') as last_run_file:
+            last_run_reader = csv.reader(last_run_file)
+            for (i, row) in enumerate(last_run_reader):
+                self.assertEqual(row_array[i][0], row[0])
+                self.assertEqual(row_array[i][1], row[1])
 
     def _get_message_from_queues(self):
         """

@@ -5,6 +5,7 @@ Unit tests for the ICAT monitor
 import unittest
 import datetime
 from mock import Mock
+from mock import patch
 
 import monitors.icat_monitor as icat_monitor
 from monitors.settings import INSTRUMENTS
@@ -62,10 +63,11 @@ class TestICATMonitor(unittest.TestCase):
         Test handling of run retrieval from ICAT
         """
         icat_client = Mock()
-        file_name = INSTRUMENTS[0]['file_prefix'] + '3223.nxs'
+        inst_name = INSTRUMENTS[0]['name']
+        file_name = inst_name + '3223.nxs'
         icat_client.execute_query = Mock(return_value=[DataFile(file_name)])
         run = icat_monitor.get_last_run_in_dates(icat_client,
-                                                 INSTRUMENTS[0],
+                                                 inst_name,
                                                  ('2018-10-18', '2018-10-19'))
         self.assertEqual(run, '3223')
 
@@ -75,8 +77,26 @@ class TestICATMonitor(unittest.TestCase):
         Test handling of runs when no files are returned
         """
         icat_client = Mock()
+        inst_name = INSTRUMENTS[0]['name']
         icat_client.execute_query = Mock(return_value=[])
         run = icat_monitor.get_last_run_in_dates(icat_client,
-                                                 INSTRUMENTS[0],
+                                                 inst_name,
                                                  ('2018-10-18', '2018-10-19'))
         self.assertEqual(run, None)
+
+    @patch('monitors.icat_monitor.get_cycle_dates', return_value=('2018-10-03', '2018-10-30'))
+    @patch('monitors.icat_monitor.get_last_run_in_dates', return_value='1234')
+    def test_get_last_run(self, cycle, last_run):
+        """
+        Check that get_last_run returns the provided run
+        """
+        self.assertEqual(icat_monitor.get_last_run('GEM'), '1234')
+
+    @patch('monitors.icat_monitor.get_cycle_dates', return_value=None)
+    @patch('monitors.icat_monitor.get_last_run_in_dates', return_value='1234')
+    def test_get_last_run_invalid_cycles(self, cycle, last_run):
+        """
+        Should return None when no cycle dates are returned
+        """
+        self.assertIsNone(icat_monitor.get_last_run('GEM'))
+
