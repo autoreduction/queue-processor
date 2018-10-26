@@ -4,16 +4,39 @@ Currently only running unit tests on linux
 """
 import unittest
 import time
+import mock
 
 from monitors.health_check import HealthCheckThread
+from monitors.end_of_run_monitor import write_last_run
 
+def create_runs_csv():
+    """
+    Create a test runs CSV file
+    """
+    write_last_run('GEM', '1234')
+    write_last_run('WISH', '1234')
+    write_last_run('POLARIS', '1234')
 
 # pylint:disable=missing-docstring
 class TestServiceUtils(unittest.TestCase):
 
-    def test_health_check(self):
-        """ This should be updated once health check is fully implemented """
+    def setUp(self):
+        create_runs_csv()
+
+    @mock.patch('monitors.icat_monitor.get_last_run', return_value='1234')
+    def test_health_check_fine(self, last_run):
+        """ Health check where end of run monitor is fine """
         self.assertTrue(HealthCheckThread(0).health_check())
+
+    @mock.patch('monitors.icat_monitor.get_last_run', return_value='1233')
+    def test_health_check_old_run(self, last_run):
+        """ Health check where the check returns an old run """
+        self.assertTrue(HealthCheckThread(0).health_check())
+
+    @mock.patch('monitors.icat_monitor.get_last_run', return_value='1235')
+    def test_health_check_restart(self, last_run):
+        """ Health check where end of run monitor requires a restart """
+        self.assertFalse(HealthCheckThread(0).health_check())
 
     def test_stop(self):
         health_check_thread = HealthCheckThread(0)
@@ -34,3 +57,18 @@ class TestServiceUtils(unittest.TestCase):
             alive = health_check_thread.is_alive()
             attempts += 1
         self.assertFalse(alive)
+
+    @mock.patch('monitors.icat_monitor.get_last_run', return_value='1234')
+    def test_icat_check_fine(self, last_run):
+        """ ICAT check where end of run monitor is fine """
+        self.assertTrue(HealthCheckThread.icat_check())
+
+    @mock.patch('monitors.icat_monitor.get_last_run', return_value='1233')
+    def test_icat_check_old_run(self, last_run):
+        """ ICAT check where the check returns an old run """
+        self.assertTrue(HealthCheckThread.icat_check())
+
+    @mock.patch('monitors.icat_monitor.get_last_run', return_value='1235')
+    def test_icat_check_restart(self, last_run):
+        """ ICAT check where end of run monitor requires a restart """
+        self.assertFalse(HealthCheckThread.icat_check())

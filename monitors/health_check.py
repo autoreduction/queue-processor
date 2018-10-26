@@ -35,13 +35,11 @@ class HealthCheckThread(threading.Thread):
         logging.info('Main Health check thread loop stopped')
 
     @staticmethod
-    def health_check():
+    def icat_check():
         """
-        Check to see if the service is still running as expected
-        :return: True: Service is okay, False: Service requires restart
+        Check the last run to be inserted into ICAT for each instrument
+        :return: True if the latest run in ICAT is the same or older than the one known by EoRM
         """
-        logging.info('Performing Health Check at %s', datetime.now())
-
         # Loop through the instrument list, getting the last run on each
         with open(EORM_LAST_RUN_FILE, 'rb') as last_run_file:
             last_run_reader = csv.reader(last_run_file)
@@ -52,6 +50,15 @@ class HealthCheckThread(threading.Thread):
                     if int(icat_last_run) > int(row[1]):
                         return False
         return True
+
+    @staticmethod
+    def health_check():
+        """
+        Check to see if the service is still running as expected
+        :return: True: Service is okay, False: Service requires restart
+        """
+        logging.info('Performing Health Check at %s', datetime.now())
+        return HealthCheckThread.icat_check()
 
     @staticmethod
     def restart_service():
