@@ -6,13 +6,7 @@ import datetime
 import logging
 import re
 
-from monitors.settings import ICAT_MON_LOG_FILE
 from utils.clients.icat_client import ICATClient
-
-
-logging.basicConfig(filename=ICAT_MON_LOG_FILE,
-                    level=logging.INFO,
-                    format='%(asctime)s %(levelname)s [%(filename)s:%(lineno)d] %(message)s')
 
 
 def get_run_number(file_name, instrument_prefix):
