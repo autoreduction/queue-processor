@@ -22,8 +22,7 @@ class HealthCheckThread(threading.Thread):
         Perform a service health check every time_interval
         """
         while self.exit is False:
-            service_okay = self.health_check()
-            if service_okay:
+            if self.health_check():
                 logging.info("No Problems detected with service")
             else:
                 logging.warning("Problem detected with service. Restarting service...")
