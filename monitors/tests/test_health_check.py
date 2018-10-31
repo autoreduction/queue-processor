@@ -8,25 +8,24 @@ import csv
 import mock
 
 from monitors.health_check import HealthCheckThread
-from monitors.end_of_run_monitor import write_last_run
 from monitors.settings import EORM_LAST_RUN_FILE, INSTRUMENTS
-
-
-def create_runs_csv():
-    """
-    Create a test runs CSV file
-    """
-    write_last_run(EORM_LAST_RUN_FILE, 'GEM', '1234')
-    write_last_run(EORM_LAST_RUN_FILE, 'WISH', '1234')
-    write_last_run(EORM_LAST_RUN_FILE, 'POLARIS', '1234')
 
 
 # pylint:disable=missing-docstring, unused-argument
 class TestServiceUtils(unittest.TestCase):
 
-    @classmethod
-    def setUp(cls):
-        create_runs_csv()
+    @mock.patch('monitors.icat_monitor.get_last_run', return_value='1234')
+    def test_create_last_runs_csv(self, last_run):
+        """ Test initial population of the last runs CSV file """
+        HealthCheckThread.create_last_runs_csv()
+        # Now read back using the CSV reader
+        with open(EORM_LAST_RUN_FILE, 'r') as last_run_file:
+            last_run_reader = csv.reader(last_run_file)
+            for (i, row) in enumerate(last_run_reader):
+                # File may be padded
+                if i < len(INSTRUMENTS):
+                    self.assertEqual(row[0], INSTRUMENTS[i]['name'])
+                    self.assertEqual(row[1], '1234')
 
     @mock.patch('monitors.icat_monitor.get_last_run', return_value='1234')
     def test_health_check_fine(self, last_run):
@@ -42,19 +41,6 @@ class TestServiceUtils(unittest.TestCase):
     def test_health_check_restart(self, last_run):
         """ Health check where end of run monitor requires a restart """
         self.assertFalse(HealthCheckThread(0).health_check())
-
-    @mock.patch('monitors.icat_monitor.get_last_run', return_value='1234')
-    def test_create_last_runs_csv(self, last_run):
-        """ Test initial population of the last runs CSV file """
-        HealthCheckThread.create_last_runs_csv()
-        # Now read back using the CSV reader
-        with open(EORM_LAST_RUN_FILE, 'r') as last_run_file:
-            last_run_reader = csv.reader(last_run_file)
-            for (i, row) in enumerate(last_run_reader):
-                # File may be padded
-                if i < len(INSTRUMENTS):
-                    self.assertEqual(row[0], INSTRUMENTS[i]['name'])
-                    self.assertEqual(row[1], '1234')
 
     def test_stop(self):
         health_check_thread = HealthCheckThread(0)
