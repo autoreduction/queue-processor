@@ -55,14 +55,17 @@ class HealthCheckThread(threading.Thread):
         """
         logging.info('Performing Health Check at %s', datetime.now())
         # Loop through the instrument list, getting the last run on each
-        with open(EORM_LAST_RUN_FILE, 'rb') as last_run_file:
-            last_run_reader = csv.reader(last_run_file)
-            for row in last_run_reader:
-                # Query the ICAT
-                icat_last_run = icat_monitor.get_last_run(row[0])
-                if icat_last_run:
-                    if int(icat_last_run) > int(row[1]):
-                        return False
+        try:
+            with open(EORM_LAST_RUN_FILE, 'rb') as last_run_file:
+                last_run_reader = csv.reader(last_run_file)
+                for row in last_run_reader:
+                    # Query the ICAT
+                    icat_last_run = icat_monitor.get_last_run(row[0])
+                    if icat_last_run:
+                        if int(icat_last_run) > int(row[1]):
+                            return False
+        except IOError:
+            logging.Error("Unable to open last runs file: ", EORM_LAST_RUN_FILE)
         return True
 
     @staticmethod
