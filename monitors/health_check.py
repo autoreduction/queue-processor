@@ -6,13 +6,11 @@ import logging
 import time
 import threading
 import csv
-import os
 
 from monitors import icat_monitor
 from monitors import end_of_run_monitor
 from monitors.end_of_run_monitor import write_last_run
-from monitors.settings import (EORM_LAST_RUN_FILE, INSTRUMENTS, INST_FOLDER,
-                               LAST_RUN_LOC)
+from monitors.settings import (EORM_LAST_RUN_FILE, INSTRUMENTS)
 
 
 # pylint:disable=missing-docstring
@@ -46,14 +44,8 @@ class HealthCheckThread(threading.Thread):
         Populate the last runs CSV with initial data
         """
         for inst in INSTRUMENTS:
-            last_run_file = os.path.join((INST_FOLDER % inst['name']), LAST_RUN_LOC)
-            try:
-                with open(last_run_file, 'r') as last_run_file:
-                    line = last_run_file.readline()
-                    parts = line.split(' ')
-                    write_last_run(EORM_LAST_RUN_FILE, inst['name'], parts[1])
-            except IOError:
-                logging.error("Couldn't find last_run.txt for instrument: %s", inst['name'])
+            last_run = icat_monitor.get_last_run(inst['name'])
+            write_last_run(EORM_LAST_RUN_FILE, inst['name'], last_run)
 
     @staticmethod
     def health_check():
