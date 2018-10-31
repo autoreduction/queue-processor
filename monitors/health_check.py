@@ -65,7 +65,7 @@ class HealthCheckThread(threading.Thread):
                         if int(icat_last_run) > int(row[1]):
                             return False
         except IOError:
-            logging.error("Unable to open last runs file: ", EORM_LAST_RUN_FILE)
+            logging.error("Unable to open last runs file: %s", EORM_LAST_RUN_FILE)
         return True
 
     @staticmethod
