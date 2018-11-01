@@ -5,12 +5,15 @@ from datetime import datetime
 import logging
 import time
 import threading
-import csv
 
-from monitors import icat_monitor
 from monitors import end_of_run_monitor
-from monitors.end_of_run_monitor import write_last_run
-from monitors.settings import (EORM_LAST_RUN_FILE, INSTRUMENTS)
+from monitors.settings import EORM_LOG_FILE, INSTRUMENTS
+from utils.clients.database_client import DatabaseClient
+from utils.clients.connection_exception import ConnectionException
+
+logging.basicConfig(filename=EORM_LOG_FILE,
+                    level=logging.INFO,
+                    format='%(asctime)s %(levelname)s [%(filename)s:%(lineno)d] %(message)s')
 
 
 # pylint:disable=missing-docstring
@@ -25,9 +28,6 @@ class HealthCheckThread(threading.Thread):
         """
         Perform a service health check every time_interval
         """
-        # Create initial last runs CSV
-        HealthCheckThread.create_last_runs_csv()
-
         while self.exit is False:
             service_okay = self.health_check()
             if service_okay:
@@ -39,30 +39,32 @@ class HealthCheckThread(threading.Thread):
         logging.info('Main Health check thread loop stopped')
 
     @staticmethod
-    def create_last_runs_csv():
-        """
-        Populate the last runs CSV with initial data
-        """
-        for inst in INSTRUMENTS:
-            last_run = icat_monitor.get_last_run(inst['name'])
-            write_last_run(EORM_LAST_RUN_FILE, inst['name'], last_run)
-
-    @staticmethod
     def health_check():
         """
         Check to see if the service is still running as expected
         :return: True: Service is okay, False: Service requires restart
         """
         logging.info('Performing Health Check at %s', datetime.now())
-        # Loop through the instrument list, getting the last run on each
-        with open(EORM_LAST_RUN_FILE, 'rb') as last_run_file:
-            last_run_reader = csv.reader(last_run_file)
-            for row in last_run_reader:
-                # Query the ICAT
-                icat_last_run = icat_monitor.get_last_run(row[0])
-                if icat_last_run:
-                    if int(icat_last_run) > int(row[1]):
-                        return False
+
+        # Connect to the database
+        logging.info("Connecting to reduction database")
+        db_cli = DatabaseClient()
+        try:
+            db_cli.connect()
+        except ConnectionException:
+            logging.error("Unable to connect to MySQL")
+
+        # Get last run
+        conn = db_cli.get_connection()
+        for inst in INSTRUMENTS:
+            db_last_run = conn.query(db_cli.reduction_run())\
+                .join(db_cli.reduction_run().instrument)\
+                .filter_by(name=inst['name'])\
+                .order_by(db_cli.reduction_run().created.desc())\
+                .first()\
+                .run_number
+            logging.info("Found last run on %s of %i", inst['name'], db_last_run)
+
         return True
 
     @staticmethod
@@ -79,3 +81,6 @@ class HealthCheckThread(threading.Thread):
         """
         logging.info('Received stop signal for the Health Check thread')
         self.exit = True
+
+
+HealthCheckThread.health_check()
