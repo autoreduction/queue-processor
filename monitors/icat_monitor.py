@@ -37,7 +37,6 @@ def get_cycle_dates(icat_client):
     :return: Pair of dates as strings
     """
     date = datetime.datetime.today().strftime("%Y-%m-%d")
-    logging.info("Getting nearest cycles to current date (%s)", date)
     last_cycle = icat_client.execute_query("SELECT c.startDate FROM FacilityCycle c"
                                            " WHERE '%s' > c.endDate"
                                            " ORDER BY c.startDate DESC"
@@ -52,7 +51,6 @@ def get_cycle_dates(icat_client):
 
     # Return the cycle date range as a pair of strings
     cycles_str = (last_cycle[0].strftime('%Y-%m-%d'), next_cycle[0].strftime('%Y-%m-%d'))
-    logging.info("Found nearest cycle dates: %s and %s", cycles_str[0], cycles_str[1])
     return cycles_str
 
 
@@ -67,7 +65,6 @@ def get_last_run_in_dates(icat_client, instrument, cycle_dates):
     :param cycle_dates: Pair of dates to look between for investigations
     :return: The latest run number as a string
     """
-    logging.info("Grabbing recent data files for instrument: %s", instrument)
     datafiles = icat_client.execute_query("SELECT df FROM InvestigationInstrument ii"
                                           " JOIN ii.investigation.datasets AS ds"
                                           " JOIN ds.datafiles AS df"
@@ -84,8 +81,6 @@ def get_last_run_in_dates(icat_client, instrument, cycle_dates):
 
     # Return the run number
     run_number = get_run_number(datafiles[0].name, instrument)
-    if run_number:
-        logging.info("Found last run for instrument: %s", run_number)
     return run_number
 
 
@@ -95,7 +90,6 @@ def get_last_run(instrument):
     :param instrument: Instrument dictionary taken from the list
     :return: The latest run number as a string
     """
-    logging.info("Connecting to ICAT")
     icat_client = ICATClient()
 
     # First, constrain the search space by getting recent cycle dates

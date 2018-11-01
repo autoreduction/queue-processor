@@ -15,19 +15,6 @@ from monitors.settings import EORM_LAST_RUN_FILE, INSTRUMENTS
 class TestServiceUtils(unittest.TestCase):
 
     @mock.patch('monitors.icat_monitor.get_last_run', return_value='1234')
-    def test_create_last_runs_csv(self, last_run):
-        """ Test initial population of the last runs CSV file """
-        HealthCheckThread.create_last_runs_csv()
-        # Now read back using the CSV reader
-        with open(EORM_LAST_RUN_FILE, 'r') as last_run_file:
-            last_run_reader = csv.reader(last_run_file)
-            for (i, row) in enumerate(last_run_reader):
-                # File may be padded
-                if i < len(INSTRUMENTS):
-                    self.assertEqual(row[0], INSTRUMENTS[i]['name'])
-                    self.assertEqual(row[1], '1234')
-
-    @mock.patch('monitors.icat_monitor.get_last_run', return_value='1234')
     def test_health_check_fine(self, last_run):
         """ Health check where end of run monitor is fine """
         self.assertTrue(HealthCheckThread(0).health_check())

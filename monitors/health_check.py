@@ -8,6 +8,7 @@ import threading
 
 from monitors import end_of_run_monitor
 from monitors.settings import EORM_LOG_FILE, INSTRUMENTS
+from monitors.icat_monitor import get_last_run
 from utils.clients.database_client import DatabaseClient
 from utils.clients.connection_exception import ConnectionException
 
@@ -54,16 +55,29 @@ class HealthCheckThread(threading.Thread):
         except ConnectionException:
             logging.error("Unable to connect to MySQL")
 
-        # Get last run
+        # Get the last run from each instrument
         conn = db_cli.get_connection()
         for inst in INSTRUMENTS:
+            # Get the last run in the reduction database
             db_last_run = conn.query(db_cli.reduction_run())\
                 .join(db_cli.reduction_run().instrument)\
-                .filter_by(name=inst['name'])\
+                .filter(db_cli.reduction_run().run_version == 0)\
+                .filter(db_cli.instrument().name == inst['name'])\
                 .order_by(db_cli.reduction_run().created.desc())\
                 .first()\
                 .run_number
-            logging.info("Found last run on %s of %i", inst['name'], db_last_run)
+            logging.info("Found last run from database on %s of %i",
+                         inst['name'], db_last_run)
+
+            # Get the last run from ICAT
+            icat_last_run = get_last_run(inst['name'])
+            logging.info("Found last run from ICAT on %s of %i",
+                         inst['name'], int(icat_last_run))
+
+            # Compare them and make sure the database isn't
+            # too far behind. There is a tolerance of 3 runs
+            if db_last_run < int(icat_last_run) - 3:
+                return False
 
         return True
 
