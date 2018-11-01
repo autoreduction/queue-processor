@@ -7,14 +7,10 @@ import time
 import threading
 
 from monitors import end_of_run_monitor
+from monitors import icat_monitor
 from monitors.settings import EORM_LOG_FILE, INSTRUMENTS
-from monitors.icat_monitor import get_last_run
 from utils.clients.database_client import DatabaseClient
 from utils.clients.connection_exception import ConnectionException
-
-logging.basicConfig(filename=EORM_LOG_FILE,
-                    level=logging.INFO,
-                    format='%(asctime)s %(levelname)s [%(filename)s:%(lineno)d] %(message)s')
 
 
 # pylint:disable=missing-docstring
@@ -40,15 +36,7 @@ class HealthCheckThread(threading.Thread):
         logging.info('Main Health check thread loop stopped')
 
     @staticmethod
-    def health_check():
-        """
-        Check to see if the service is still running as expected
-        :return: True: Service is okay, False: Service requires restart
-        """
-        logging.info('Performing Health Check at %s', datetime.now())
-
-        # Connect to the database
-        logging.info("Connecting to reduction database")
+    def get_db_last_run(db_cli, inst):
         db_cli = DatabaseClient()
         try:
             db_cli.connect()
@@ -57,28 +45,50 @@ class HealthCheckThread(threading.Thread):
 
         # Get the last run from each instrument
         conn = db_cli.get_connection()
+
+        db_run_result = conn.query(db_cli.reduction_run()) \
+            .join(db_cli.reduction_run().instrument) \
+            .filter(db_cli.reduction_run().run_version == 0) \
+            .filter(db_cli.instrument().name == inst) \
+            .order_by(db_cli.reduction_run().created.desc()) \
+            .first()
+
+        if not db_run_result:
+            return None
+        return db_run_result.run_number
+
+    @staticmethod
+    def get_db_client():
+        db_cli = DatabaseClient()
+        try:
+            db_cli.connect()
+        except ConnectionException:
+            logging.error("Unable to connect to MySQL")
+        return db_cli
+
+    @staticmethod
+    def health_check():
+        """
+        Check to see if the service is still running as expected
+        :return: True: Service is okay, False: Service requires restart
+        """
+        logging.info('Performing Health Check at %s', datetime.now())
+        db_cli = HealthCheckThread.get_db_client()
+
         for inst in INSTRUMENTS:
-            # Get the last run in the reduction database
-            db_last_run = conn.query(db_cli.reduction_run())\
-                .join(db_cli.reduction_run().instrument)\
-                .filter(db_cli.reduction_run().run_version == 0)\
-                .filter(db_cli.instrument().name == inst['name'])\
-                .order_by(db_cli.reduction_run().created.desc())\
-                .first()\
-                .run_number
-            logging.info("Found last run from database on %s of %i",
-                         inst['name'], db_last_run)
+            db_last_run = HealthCheckThread.get_db_last_run(db_cli, inst['name'])
+            icat_last_run = icat_monitor.get_last_run(inst['name'])
 
-            # Get the last run from ICAT
-            icat_last_run = get_last_run(inst['name'])
-            logging.info("Found last run from ICAT on %s of %i",
-                         inst['name'], int(icat_last_run))
+            if db_last_run and icat_last_run:
+                logging.info("Found last run from database on %s of %i",
+                             inst['name'], db_last_run)
+                logging.info("Found last run from ICAT on %s of %i",
+                             inst['name'], int(icat_last_run))
 
-            # Compare them and make sure the database isn't
-            # too far behind. There is a tolerance of 3 runs
-            if db_last_run < int(icat_last_run) - 3:
-                return False
-
+                # Compare them and make sure the database isn't
+                # too far behind. There is a tolerance of 2 runs
+                if db_last_run < int(icat_last_run) - 2:
+                    return False
         return True
 
     @staticmethod
@@ -95,6 +105,3 @@ class HealthCheckThread(threading.Thread):
         """
         logging.info('Received stop signal for the Health Check thread')
         self.exit = True
-
-
-HealthCheckThread.health_check()
