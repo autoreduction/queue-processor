@@ -4,7 +4,7 @@ Unit tests for the ICAT monitor
 
 import unittest
 import datetime
-from mock import Mock
+from mock import Mock, patch
 
 import monitors.icat_monitor as icat_monitor
 from monitors.settings import INSTRUMENTS
@@ -19,6 +19,7 @@ class DataFile(object):
         self.name = df_name
 
 
+# pylint:disable=missing-docstring
 class TestICATMonitor(unittest.TestCase):
     """
     Test cases for the ICAT monitor
@@ -80,3 +81,21 @@ class TestICATMonitor(unittest.TestCase):
                                                  INSTRUMENTS[0],
                                                  ('2018-10-18', '2018-10-19'))
         self.assertEqual(run, None)
+
+    @patch('utils.clients.icat_client.ICATClient.__init__', return_value=None)
+    @patch('monitors.icat_monitor.get_cycle_dates', return_value='test')
+    @patch('monitors.icat_monitor.get_last_run_in_dates', return_value='test-run-num')
+    def test_get_last_run(self, cycle_dates_mock, last_in_dates_mock, icat_init_mock):
+        actual = icat_monitor.get_last_run('WISH')
+        cycle_dates_mock.assert_called_once()
+        last_in_dates_mock.assert_called_once()
+        icat_init_mock.assert_called_once()
+        self.assertEqual(actual, 'test-run-num')
+
+    @patch('utils.clients.icat_client.ICATClient.__init__', return_value=None)
+    @patch('monitors.icat_monitor.get_cycle_dates', return_value=None)
+    def test_get_last_return_none_if_bad_date(self, cycle_dates_mock, init_mock):
+        actual = icat_monitor.get_last_run('WISH')
+        init_mock.assert_called_once()
+        cycle_dates_mock.assert_called_once()
+        self.assertIsNone(actual)
