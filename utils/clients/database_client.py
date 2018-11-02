@@ -2,8 +2,8 @@
 Creates a database session for the reduction database
 """
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import create_engine, MetaData, Table, join
-from sqlalchemy.orm import sessionmaker, relationship, column_property
+from sqlalchemy import create_engine, MetaData, Table
+from sqlalchemy.orm import sessionmaker, relationship
 
 from utils.settings import MYSQL_SETTINGS
 from utils.clients.abstract_client import AbstractClient
@@ -59,7 +59,7 @@ class DatabaseClient(AbstractClient):
 
     def get_connection(self):
         """
-        Retrieve the connection object.
+        Retrieve the session object.
         :return: SQLAlchemy session
         """
         return self._connection
