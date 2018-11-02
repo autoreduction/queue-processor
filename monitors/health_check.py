@@ -8,7 +8,7 @@ import threading
 
 from monitors import end_of_run_monitor
 from monitors import icat_monitor
-from monitors.settings import EORM_LOG_FILE, INSTRUMENTS
+from monitors.settings import INSTRUMENTS
 from utils.clients.database_client import DatabaseClient
 from utils.clients.connection_exception import ConnectionException
 
@@ -36,22 +36,30 @@ class HealthCheckThread(threading.Thread):
         logging.info('Main Health check thread loop stopped')
 
     @staticmethod
-    def get_db_last_run(db_cli, inst):
-        db_cli = DatabaseClient()
-        try:
-            db_cli.connect()
-        except ConnectionException:
-            logging.error("Unable to connect to MySQL")
-
-        # Get the last run from each instrument
+    def last_run_query(db_cli, inst):
+        """
+        Wraps the database query used to get the latest run on an instrument
+        :param db_cli: Database client
+        :param inst: Instrument name
+        :return: Row from the reduction database
+        """
         conn = db_cli.get_connection()
-
-        db_run_result = conn.query(db_cli.reduction_run()) \
+        return conn.query(db_cli.reduction_run()) \
             .join(db_cli.reduction_run().instrument) \
             .filter(db_cli.reduction_run().run_version == 0) \
             .filter(db_cli.instrument().name == inst) \
             .order_by(db_cli.reduction_run().created.desc()) \
             .first()
+
+    @staticmethod
+    def get_db_last_run(db_cli, inst):
+        """
+        Get the last run from the reduction database
+        :param db_cli: Database client
+        :param inst: Instrument name
+        :return: Last run as an integer
+        """
+        db_run_result = HealthCheckThread.last_run_query(db_cli, inst)
 
         if not db_run_result:
             return None
@@ -59,6 +67,10 @@ class HealthCheckThread(threading.Thread):
 
     @staticmethod
     def get_db_client():
+        """
+        Login to the database
+        :return: Database client
+        """
         db_cli = DatabaseClient()
         try:
             db_cli.connect()
@@ -88,7 +100,10 @@ class HealthCheckThread(threading.Thread):
                 # Compare them and make sure the database isn't
                 # too far behind. There is a tolerance of 2 runs
                 if db_last_run < int(icat_last_run) - 2:
+                    db_cli.disconnect()
                     return False
+
+        db_cli.disconnect()
         return True
 
     @staticmethod

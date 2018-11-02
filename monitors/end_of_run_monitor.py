@@ -6,14 +6,12 @@ import json
 import logging
 import os
 import threading
-import csv
 
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
 from monitors.settings import (INST_FOLDER, DATA_LOC, SUMMARY_LOC,
-                               LAST_RUN_LOC, EORM_LOG_FILE, INSTRUMENTS,
-                               EORM_LAST_RUN_FILE)
+                               LAST_RUN_LOC, EORM_LOG_FILE, INSTRUMENTS)
 from utils.clients.queue_client import QueueClient
 
 logging.basicConfig(filename=EORM_LOG_FILE,
