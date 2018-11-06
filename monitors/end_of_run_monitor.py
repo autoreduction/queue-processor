@@ -78,13 +78,10 @@ class InstrumentMonitor(FileSystemEventHandler):
         filename += get_file_extension(self.use_nexus)
         run_data_loc = os.path.join(self._get_instrument_data_folder_loc(),
                                     filename)
-        return {
-            "rb_number": self._get_rb_num(),
-            "instrument": self.instrument_name,
-            "data": run_data_loc,
-            "run_number": last_run_data[1],
-            "facility": "ISIS"
-        }
+        return self.client.serialise_data(rb_number=self._get_rb_num(),
+                                          instrument=self.instrument_name,
+                                          location=run_data_loc,
+                                          run_number=last_run_data[1])
 
     def _get_rb_num(self):
         """ Reads last line of summary.txt file and returns the RB number. """

@@ -56,6 +56,16 @@ class TestQueueClient(unittest.TestCase):
         client.disconnect()
         self.assertIsNone(client._connection)
 
+    def test_serialise_message(self):
+        """ Test data is correctly serialised """
+        client = QueueClient()
+        data = client.serialise_data('123', 'WISH', 'file/path', '001')
+        self.assertEqual(data['rb_number'], '123')
+        self.assertEqual(data['instrument'], 'WISH')
+        self.assertEqual(data['data'], 'file/path')
+        self.assertEqual(data['run_number'], '001')
+        self.assertEqual(data['facility'], 'ISIS')
+
     # pylint:disable=no-self-use
     def test_send_data(self):
         """ Test data can be sent without error """

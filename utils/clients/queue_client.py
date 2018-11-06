@@ -110,6 +110,17 @@ class QueueClient(AbstractClient):
         # pylint:disable=no-value-for-parameter
         self._connection.ack(frame)
 
+    @staticmethod
+    def serialise_data(rb_number, instrument, location, run_number):
+        """
+        Packs the specified data into a dictionary ready to send to a processor queue
+        """
+        return {'rb_number': rb_number,
+                'instrument': instrument,
+                'data': location,
+                'run_number': run_number,
+                'facility': 'ISIS'}
+
     # pylint:disable=too-many-arguments
     def send(self, destination, message, persistent='true', priority='4', delay=None):
         """
