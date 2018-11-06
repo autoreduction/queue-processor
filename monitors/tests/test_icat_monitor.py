@@ -10,7 +10,7 @@ import monitors.icat_monitor as icat_monitor
 from monitors.settings import INSTRUMENTS
 
 
-# pylint:disable=too-few-public-methods
+# pylint:disable=too-few-public-methods,unused-argument
 class DataFile(object):
     """
     Basic data file representation for testing
@@ -63,10 +63,11 @@ class TestICATMonitor(unittest.TestCase):
         Test handling of run retrieval from ICAT
         """
         icat_client = Mock()
-        file_name = INSTRUMENTS[0]['file_prefix'] + '3223.nxs'
+        inst_name = INSTRUMENTS[0]['name']
+        file_name = inst_name + '3223.nxs'
         icat_client.execute_query = Mock(return_value=[DataFile(file_name)])
         run = icat_monitor.get_last_run_in_dates(icat_client,
-                                                 INSTRUMENTS[0],
+                                                 inst_name,
                                                  ('2018-10-18', '2018-10-19'))
         self.assertEqual(run, '3223')
 
@@ -76,9 +77,10 @@ class TestICATMonitor(unittest.TestCase):
         Test handling of runs when no files are returned
         """
         icat_client = Mock()
+        inst_name = INSTRUMENTS[0]['name']
         icat_client.execute_query = Mock(return_value=[])
         run = icat_monitor.get_last_run_in_dates(icat_client,
-                                                 INSTRUMENTS[0],
+                                                 inst_name,
                                                  ('2018-10-18', '2018-10-19'))
         self.assertEqual(run, None)
 
