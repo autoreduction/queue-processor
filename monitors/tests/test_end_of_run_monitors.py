@@ -6,14 +6,22 @@ import unittest
 import threading
 import time
 
+from mock import patch
 from watchdog.events import FileSystemEvent
 
-from monitors.end_of_run_monitor import InstrumentMonitor, get_file_extension, get_data_and_check
+from monitors.end_of_run_monitor import (InstrumentMonitor, get_file_extension,
+                                         get_data_and_check, stop, main)
+from monitors.settings import INSTRUMENTS
 from monitors.tests.helpers import TestListener, create_connection
 from utils.clients.queue_client import QueueClient
 from utils.data_archive.data_archive_creator import DataArchiveCreator
 from utils.data_archive.archive_explorer import ArchiveExplorer
 from utils.project.structure import get_project_root
+
+
+def raise_exception():
+    """ function required to raise Exception in mocks """
+    raise Exception('Exception raised from mock')  # pragma: no cover
 
 
 # pylint:disable=missing-docstring,protected-access
@@ -114,6 +122,50 @@ class TestEndOfRunMonitor(unittest.TestCase):
                                     'WISH12346.nxs')
         updated_dict["data"] = new_data_loc
         self.assertEqual(message, updated_dict)
+
+    # pylint:disable=invalid-name
+    @patch('logging.exception')
+    @patch('logging.debug')
+    def test_on_modified_if_exception_raised(self, mock_debug, mock_exception):
+        mock_debug.side_effect = raise_exception
+        self.monitor.on_modified('test')
+        mock_exception.assert_called_once()
+
+    def test_windows_path_split(self):
+        current_system = os.name
+        os.name = 'nt'
+        expected = ['list', 'of', 'files.txt']
+        actual = self.monitor.split_path_into_folders(r'list\of\files.txt')
+        self.assertEqual(expected, actual)
+        os.name = current_system
+
+    def test_path_split(self):
+        current_system = os.name
+        os.name = 'posix'
+        expected = ['list', 'of', 'files.txt']
+        actual = self.monitor.split_path_into_folders('list/of/files.txt')
+        self.assertEqual(expected, actual)
+        os.name = current_system
+
+    # pylint:disable=no-self-use
+    @patch('watchdog.observers.Observer.stop')
+    @patch('watchdog.observers.Observer.join')
+    def test_stop(self, join_mock, stop_mock):
+        stop()
+        join_mock.assert_called_once()
+        stop_mock.assert_called_once()
+
+    @patch('monitors.end_of_run_monitor.InstrumentMonitor.__init__', return_value=None)
+    @patch('monitors.end_of_run_monitor.InstrumentMonitor.get_watched_folder',
+           return_value='test_path')
+    @patch('watchdog.observers.Observer.start')
+    @patch('watchdog.observers.Observer.schedule')
+    def test_main(self, schedule_mock, start_mock, get_folder_mock, init_mock):
+        main()
+        self.assertEqual(init_mock.call_count, len(INSTRUMENTS))
+        self.assertEqual(get_folder_mock.call_count, len(INSTRUMENTS))
+        self.assertEqual(schedule_mock.call_count, len(INSTRUMENTS))
+        start_mock.assert_called_once()
 
     def _get_message_from_queues(self):
         """
