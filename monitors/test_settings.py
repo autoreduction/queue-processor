@@ -11,7 +11,8 @@ INST_FOLDER = os.path.join(get_project_root(), 'data-archive', 'NDX%s', 'Instrum
 DATA_LOC = os.path.join('data', 'cycle_%s')
 SUMMARY_LOC = os.path.join('logs', 'journal', 'summary.txt')
 LAST_RUN_LOC = os.path.join('logs', 'lastrun.txt')
-LOG_FILE = os.path.join(get_project_root(), 'logs', 'monitor.log')
+EORM_LOG_FILE = os.path.join(get_project_root(), 'logs', 'end_of_run_monitor.log')
+EORM_LAST_RUN_FILE = os.path.join(get_project_root(), 'logs', 'eorm_last_runs.csv')
 INSTRUMENTS = [{'name': 'WISH', 'use_nexus': True},
                {'name': 'GEM', 'use_nexus': True},
                {'name': 'OSIRIS', 'use_nexus': True},

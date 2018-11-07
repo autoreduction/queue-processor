@@ -11,7 +11,7 @@ def get_project_root():
     :return: file path to root of the project folder
     """
     import git
-    git_repo = git.Repo(os.getcwd(), search_parent_directories=True)
+    git_repo = git.Repo(os.path.dirname(os.path.realpath(__file__)), search_parent_directories=True)
     git_root = git_repo.git.rev_parse("--show-toplevel")
 
     assert os.path.exists(git_root)

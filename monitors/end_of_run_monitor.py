@@ -11,10 +11,12 @@ from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
 from monitors.settings import (INST_FOLDER, DATA_LOC, SUMMARY_LOC,
-                               LAST_RUN_LOC, LOG_FILE, INSTRUMENTS)
+                               LAST_RUN_LOC, EORM_LOG_FILE, INSTRUMENTS)
 from utils.clients.queue_client import QueueClient
 
-logging.basicConfig(filename=LOG_FILE, level=logging.INFO, format='%(asctime)s %(message)s')
+logging.basicConfig(filename=EORM_LOG_FILE,
+                    level=logging.INFO,
+                    format='%(asctime)s %(levelname)s [%(filename)s:%(lineno)d] %(message)s')
 observer = Observer()  # pylint: disable=invalid-name
 
 
@@ -76,13 +78,10 @@ class InstrumentMonitor(FileSystemEventHandler):
         filename += get_file_extension(self.use_nexus)
         run_data_loc = os.path.join(self._get_instrument_data_folder_loc(),
                                     filename)
-        return {
-            "rb_number": self._get_rb_num(),
-            "instrument": self.instrument_name,
-            "data": run_data_loc,
-            "run_number": last_run_data[1],
-            "facility": "ISIS"
-        }
+        return self.client.serialise_data(rb_number=self._get_rb_num(),
+                                          instrument=self.instrument_name,
+                                          location=run_data_loc,
+                                          run_number=last_run_data[1])
 
     def _get_rb_num(self):
         """ Reads last line of summary.txt file and returns the RB number. """
@@ -95,18 +94,27 @@ class InstrumentMonitor(FileSystemEventHandler):
         """ Returns the watched folder location. """
         return os.path.join(self.instrument_folder, 'logs')
 
+    # pylint:disable=no-self-use
+    def split_path_into_folders(self, file_path):
+        """
+        Return the the directories in a path as a list
+        Including the file name at the end of the path
+        :param file_path: the path to split
+        :return: a list of directories and the file name
+        """
+        if os.name == "nt":
+            return file_path.split("\\")
+        return file_path.split("/")
+
     # send thread to sleep, use Timer objects
     def on_modified(self, event):
         """ Handler when last_run.txt modified event received. """
         try:
             logging.debug("Received modified from %s", str(event.src_path))
             # Storing folders into variables.
-            if os.name == "nt":
-                list_of_folders = event.src_path.split("\\")
-            else:
-                list_of_folders = event.src_path.split("/")
+
             # This will ensure to only execute the code for a specific file.
-            if list_of_folders[-1] == "lastrun.txt":
+            if self.split_path_into_folders(event.src_path)[-1] == "lastrun.txt":
                 with open(self.instrument_last_run_loc) as lastrun:
                     data = get_data_and_check(lastrun)
                 # This code checks out the modified data and then it logs the changes.
@@ -153,4 +161,4 @@ def stop():
 
 
 if __name__ == "__main__":
-    main()
+    main()  # pragma: no cover
