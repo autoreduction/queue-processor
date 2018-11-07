@@ -8,8 +8,7 @@ import getpass
 import os
 import re
 
-# pylint:disable=import-error
-import mysql.connector
+import pymysql
 
 
 # pylint:disable=too-many-instance-attributes,too-few-public-methods
@@ -19,7 +18,7 @@ class DatabaseReset(object):
     Handles resetting the database after cycle
     """
 
-    def __init__(self, latest_cycle, user, host, port, password=''):
+    def __init__(self, latest_cycle, user, host='localhost', port='3306', password=''):
         # initial setup
         self.backup_directory = 'C:\\database_backup\\'
         self.user = user
@@ -30,15 +29,6 @@ class DatabaseReset(object):
         self.databases = 'autoreduction'
 
         self._validate(latest_cycle)
-
-    def execute(self):
-        """
-        Execute the backup and data removal
-        """
-        # backup data
-        self._backup_sql()
-        # remove non-static data
-        self._remove_non_static_data()
 
     def _validate(self, latest_cycle):
         self._validate_cycle_input(latest_cycle)
@@ -73,15 +63,17 @@ class DatabaseReset(object):
 
         self.backup_file = os.path.join(self.new_cycle_dir, self.cycle+'.sql')
 
+    def backup_sql(self):
+        """
+        Check that the dump.sql file doesn't exist then run mysqldump
+        """
+        arguments = self._generate_argument_string()
         # Check we are not attempting to overwrite
         if os.path.isfile(self.backup_file):
             raise RuntimeError('Backup file with name: \'{}\' already exists.\n'
                                'Please rename it or remove it in order to allow '
                                'this script to execute. This script does not overwrite '
                                'for data security.'.format(self.backup_file))
-
-    def _backup_sql(self):
-        arguments = self._generate_argument_string()
         process = subprocess.Popen('mysqldump {0} --databases {1} --no-create-info'
                                    ' > {2}'.format(arguments, self.databases, self.backup_file),
                                    shell=True)
@@ -97,10 +89,17 @@ class DatabaseReset(object):
             args += ' -P {}'.format(self.port)
         return args
 
-    def _remove_non_static_data(self):
+    def remove_non_static_data(self):
+        """
+        Check that the backup file has been created and then drop the non static data
+        """
         # Login to the database
-        connection = mysql.connector.connect(user=self.user, password=self.password,
-                                             host=self.host, database=self.databases)
+        if not os.path.isfile(self.backup_file):
+            raise RuntimeError('No backup file found at expected location: \'{}\'.\n'
+                               'Please run the backup procedure first before '
+                               'wiping the database'.format(self.backup_file))
+        connection = pymysql.connect(user=self.user, password=self.password,
+                                     host=self.host, database=self.databases)
         cursor = connection.cursor()
 
         # The list of tables to be deleted
@@ -134,19 +133,28 @@ class DatabaseReset(object):
 def main():
     """
     Used to pass arguments via command line and then execute
+    As this script should only ever be run on the machine with the database on it,
+    we should use localhost:3306 to connect
     """
-    cycle = raw_input('Current cycle name to backup: ')
+    choice = raw_input('\'Backup\' or \'Wipe\': ')
+    while choice.lower() != 'backup' and choice.lower() != 'wipe':
+        choice = raw_input('Invalid option - \'Backup\' or \'Wipe\':')
+    choice.lower()
+    cycle = raw_input('Current cycle name: ')
     user = raw_input('Database user name: ')
     password = getpass.getpass('Database password (leave blank if none): ')
-    host = raw_input('Database host: ')
-    port = raw_input('Database port: ')
+    print('Using \'localhost\' as database host')
+    print('Using \'3306\' as database port')
     print('\n')
     cycle_reset = DatabaseReset(latest_cycle=cycle,
                                 user=user,
-                                host=host,
-                                port=port,
+                                host='localhost',
+                                port='3306',
                                 password=password)
-    cycle_reset.execute()
+    if choice == 'backup':
+        cycle_reset.backup_sql()
+    if choice == 'wipe':
+        cycle_reset.remove_non_static_data()
 
 
 if __name__ == "__main__":

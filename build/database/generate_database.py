@@ -79,11 +79,11 @@ def add_test_user(logger):
     """
     # Must be imported at run-time for migrate test settings to work
     from build.settings import DB_ROOT_PASSWORD
-    from utils.settings import MYSQL
-    user_to_add = MYSQL["USER"]
+    from utils.settings import MYSQL_SETTINGS
+    user_to_add = MYSQL_SETTINGS.username
     logger.info("Adding user: {0}".format(user_to_add))
     sql_commands = ["GRANT ALL ON *.* TO '{0}'@'localhost' "
-                    "IDENTIFIED BY '{1}';".format(user_to_add, MYSQL["PASSWD"]),
+                    "IDENTIFIED BY '{1}';".format(user_to_add, MYSQL_SETTINGS.password),
                     "FLUSH PRIVILEGES;"]
 
     to_exec = '\n'.join(sql_commands)

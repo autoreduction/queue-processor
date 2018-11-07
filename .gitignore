@@ -31,3 +31,6 @@ apache_django_wsgi.conf
 
 # Ignore coverage logs
 .coverage
+
+# Include the coverage configuration file
+!.coveragerc

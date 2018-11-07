@@ -22,11 +22,10 @@ def submit_run(active_mq_client, rb_number, instrument, data_file_location, run_
     :param data_file_location: location of the data file
     :param run_number: run number fo the experiment
     """
-    data_dict = {"rb_number": rb_number,
-                 "instrument": instrument,
-                 "data": data_file_location,
-                 "run_number": run_number,
-                 "facility": "ISIS"}
+    data_dict = active_mq_client.serialise_data(rb_number=rb_number,
+                                                instrument=instrument,
+                                                location=data_file_location,
+                                                run_number=run_number)
 
     active_mq_client.send('/queue/DataReady', json.dumps(data_dict), priority=1)
     print("Submitted run: \r\n" + json.dumps(data_dict, indent=1))
@@ -87,7 +86,7 @@ def main():
 
     print("Logging into ICAT")
     icat_client = ICATClient()
-    icat_client.client_login()
+    icat_client.connect()
 
     print("Logging into ActiveMQ")
     activemq_client = QueueClient()

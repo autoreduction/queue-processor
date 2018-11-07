@@ -3,3 +3,4 @@ pytest-cov
 pylint==1.8.4
 coveralls
 python-coveralls
+mock

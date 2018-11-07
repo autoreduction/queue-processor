@@ -100,7 +100,7 @@ class DataArchiveCreator(object):
             os.makedirs(data_dir_path.format(instrument))
             os.makedirs(jrnl_dir_path.format(instrument))
             self._make_cycle_directories(start_year, end_year, current_cycle,
-                                         data_dir_path.format(instrument))
+                                         inst_dir_path.format(instrument))
 
     @staticmethod
     def _check_valid_inst(instrument):
@@ -114,11 +114,12 @@ class DataArchiveCreator(object):
 
     def _make_cycle_directories(self, start_year, end_year, current_cycle, base_dir):
         """
-        Creates individual cycle directories from a given base directory
+        Creates individual cycle directories to the data and log directory of the given
+        base directory
         :param start_year: The first year to create a dir for
         :param end_year: The final year to create a dir for
         :param current_cycle: The current cycle (1-5) in the final year
-        :param base_dir: The directory to add the cycles to (normally instrument/data)
+        :param base_dir: the instrument directory
         """
         def create_single_years_cycles(end_iter, year):
             """
@@ -128,7 +129,8 @@ class DataArchiveCreator(object):
                 year = '0{}'.format(year)
             for cycle_num in range(1, end_iter + 1):
                 current_cycle_dir_name = self._cycle_name.format(year, cycle_num)
-                os.makedirs(os.path.join(base_dir, current_cycle_dir_name))
+                os.makedirs(os.path.join(base_dir, 'data', current_cycle_dir_name))
+                os.makedirs(os.path.join(base_dir, 'logs', current_cycle_dir_name))
 
         # Make all FULL cycle directories
         for cycle_year in range(start_year, end_year):
@@ -212,6 +214,31 @@ class DataArchiveCreator(object):
             raise RuntimeError("Unable to create file at desired location. "
                                "Make sure this directory has been created "
                                "in the archive.\n   Invalid file path: {}".format(file_path))
+
+    def overwrite_file_content(self, file_path, new_file_contents):
+        """
+        Overwrite data in a file
+        This can only be used for files that already exist and are present in self.data_files
+        :param file_path: Path to the file you wish to overwrite
+        :param new_file_contents: The new content for the file
+        """
+        if not os.path.exists(file_path) or file_path not in self.data_files:
+            raise ValueError("File path: {} \n"
+                             "Either does not exist or is not present in self.data_files")
+
+        with open(file_path, 'w') as file_handle:
+            file_handle.write(new_file_contents)
+
+    def delete_file(self, file_path):
+        """
+        Delete a file and remove it from the self.data_files
+        :param file_path: the file path to the file to delete
+        """
+        if not os.path.exists(file_path) or file_path not in self.data_files:
+            raise ValueError("File path: {} \n"
+                             "Either does not exist or is not present in self.data_files")
+        os.remove(file_path)
+        self.data_files.remove(file_path)
 
     def delete_all_files(self):
         """
