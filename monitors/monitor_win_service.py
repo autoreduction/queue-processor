@@ -53,7 +53,7 @@ class QueueService(win32serviceutil.ServiceFramework):
                               servicemanager.PYS_SERVICE_STARTED,
                               (self._svc_name_, ''))
 
-        #end_of_run_monitor.main()
+        end_of_run_monitor.main()
         #health_check_thread = HealthCheckThread(600)  # 10 minutes
         #health_check_thread.start()
         while 1:
