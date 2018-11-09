@@ -11,7 +11,7 @@ from utils.data_archive.data_archive_creator import DataArchiveCreator
 from utils.data_archive.archive_explorer import ArchiveExplorer
 
 
-# pylint:disable=invalid-name
+# pylint:disable=invalid-name,missing-docstring,too-many-public-methods
 class TestArchiveExplorer(unittest.TestCase):
     """
     Test all the functionality of the archive explorer

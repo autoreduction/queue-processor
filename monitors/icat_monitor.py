@@ -91,6 +91,7 @@ def get_last_run(instrument):
     :return: The latest run number as a string
     """
     icat_client = ICATClient()
+    icat_client.connect()
 
     # First, constrain the search space by getting recent cycle dates
     cycle_dates = get_cycle_dates(icat_client)

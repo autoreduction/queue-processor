@@ -116,6 +116,6 @@ class ArchiveExplorer(object):
         for line in data:
             if "{}{}".format(instrument.upper(), run_number) in line:
                 rb_number = line.split(" ")[-1].strip()
-                if int(rb_number) > 0:  # Ensure this is not a calibration run we are checking against
+                if int(rb_number) > 0:  # Ensure not a calibration run we are checking against
                     return rb_number
         return False
