@@ -101,3 +101,21 @@ class ArchiveExplorer(object):
         if valid_files:
             return valid_files[-1]
         return None
+
+    def get_rb_for_run_num(self, instrument, run_number, limit):
+        """
+        Find the RB number for a given run number
+        :param instrument: The instrument associated with the run
+        :param run_number: The run number to search for
+        :param limit: numbers are read from the last data entry up,
+                      the limit is how far we should look up the list
+        :return: The RB number associated with the run number
+        """
+        with open(self.get_summary_file(instrument), 'r') as summary_file:
+            data = summary_file.readlines()[-limit:]
+        for line in data:
+            if "{}{}".format(instrument.upper(), run_number) in line:
+                rb_number = line.split(" ")[-1].strip()
+                if int(rb_number) > 0:  # Ensure this is not a calibration run we are checking against
+                    return rb_number
+        return False
