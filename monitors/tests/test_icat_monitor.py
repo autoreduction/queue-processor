@@ -12,11 +12,21 @@ from monitors.settings import INSTRUMENTS
 
 # pylint:disable=too-few-public-methods,unused-argument
 class DataFile(object):
+    class Investigation(object):
+        def __init__(self, name):
+            self.name = name
+
+    class DataSet(object):
+        def __init__(self, investigation):
+            self.investigation = investigation
+
     """
     Basic data file representation for testing
     """
-    def __init__(self, df_name):
+    def __init__(self, df_name, rb_num):
         self.name = df_name
+        self.investigation = self.Investigation(rb_num)
+        self.dataset = self.DataSet(self.investigation)
 
 
 # pylint:disable=missing-docstring
@@ -65,7 +75,7 @@ class TestICATMonitor(unittest.TestCase):
         icat_client = Mock()
         inst_name = INSTRUMENTS[0]['name']
         file_name = inst_name + '3223.nxs'
-        icat_client.execute_query = Mock(return_value=[DataFile(file_name)])
+        icat_client.execute_query = Mock(return_value=[DataFile(file_name, None)])
         run = icat_monitor.get_last_run_in_dates(icat_client,
                                                  inst_name,
                                                  ('2018-10-18', '2018-10-19'))
@@ -99,3 +109,19 @@ class TestICATMonitor(unittest.TestCase):
         actual = icat_monitor.get_last_run(icat_client, 'WISH')
         cycle_dates_mock.assert_called_once()
         self.assertIsNone(actual)
+
+    def test_get_file_location(self):
+        df = DataFile('GEM1234.nxs', "1234")
+        df.location = "/path/to/GEM1234.nxs"
+        icat_client = Mock()
+        icat_client.execute_query = Mock(return_value=[df])
+        rb_num, loc = icat_monitor.get_file_location(icat_client, "GEM", 1234)
+        self.assertEqual(loc, "/path/to/GEM1234.nxs")
+        self.assertEqual(rb_num, "1234")
+
+    def test_get_file_location_invalid(self):
+        icat_client = Mock()
+        icat_client.execute_query = Mock(return_value=None)
+        rb_num, loc = icat_monitor.get_file_location(icat_client, "GEM", 1234)
+        self.assertIsNone(loc)
+        self.assertIsNone(rb_num)
