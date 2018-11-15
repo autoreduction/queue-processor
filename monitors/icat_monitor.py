@@ -84,15 +84,12 @@ def get_last_run_in_dates(icat_client, instrument, cycle_dates):
     return run_number
 
 
-def get_last_run(instrument):
+def get_last_run(icat_client, instrument):
     """
     Retrieves the last run from ICAT for an instrument
     :param instrument: Instrument dictionary taken from the list
     :return: The latest run number as a string
     """
-    icat_client = ICATClient()
-    icat_client.connect()
-
     # First, constrain the search space by getting recent cycle dates
     cycle_dates = get_cycle_dates(icat_client)
     if not cycle_dates:
@@ -100,4 +97,43 @@ def get_last_run(instrument):
 
     # Find the last run number for the instrument
     last_run = get_last_run_in_dates(icat_client, instrument, cycle_dates)
-    return last_run
+    if not last_run:
+        return None
+
+    return int(last_run)
+
+
+def get_file_location(icat_client, instrument, run_number):
+    """
+    Retrieve the location on disk of a file from ICAT
+    :param icat_client: ICAT client
+    :param instrument: Instrument name
+    :param run_number: File run number
+    :return: File location
+    """
+    dfs = None
+    run_number_str = str(run_number)
+    for i in xrange(5):
+        if not dfs:
+            # If the file hasn't been found yet then add zeros to the run number
+            df_name = instrument + (i * "0") + run_number_str + ".nxs"
+            dfs = icat_client.execute_query("SELECT df FROM Datafile df WHERE df.name = '" + df_name + "'"
+                                            " INCLUDE df.dataset AS ds, ds.investigation AS i")
+
+    if not dfs:
+        return None
+    # Return both the file RB number and location
+    df = dfs[0]
+    rb_number = df.dataset.investigation.name
+    location = df.location
+    return rb_number, location
+
+
+def icat_login():
+    """
+    Login to ICAT
+    :return: ICAT client
+    """
+    icat_client = ICATClient()
+    icat_client.connect()
+    return icat_client

@@ -2,15 +2,13 @@
 Threading class to check the health of the End of Run Monitor service
 """
 from datetime import datetime
-import os
 import logging
 import time
 import threading
 
 from monitors import end_of_run_monitor
 from monitors import icat_monitor
-from monitors.settings import INSTRUMENTS, DATA_ARCHIVE
-from utils.data_archive.archive_explorer import ArchiveExplorer
+from monitors.settings import INSTRUMENTS
 from utils.clients.database_client import DatabaseClient
 from utils.clients.queue_client import QueueClient
 from utils.clients.connection_exception import ConnectionException
@@ -82,7 +80,7 @@ class HealthCheckThread(threading.Thread):
         return db_client
 
     @staticmethod
-    def resubmit_run(instrument, run_number, limit, use_nxs):
+    def resubmit_run(icat_client, instrument, run_number, use_nxs):
         """
         Resubmit runs that are missing (have not been submitted by end of run monitor)
         :param instrument: The instrument associated with the missing run
@@ -90,20 +88,18 @@ class HealthCheckThread(threading.Thread):
         :param limit: Where we expect the rb number to be located in the file
         :param use_nxs: The expected extension of the data file
         """
+        # Connect to the autoreduce queues
         queue_client = QueueClient()
         try:
             queue_client.connect()
         except ConnectionException:
             logging.error("Unable to connect to Queue")
             return False
-        explorer = ArchiveExplorer(DATA_ARCHIVE)
-        rb_number = explorer.get_rb_for_run_num(instrument, run_number, limit)
-        if rb_number is False:
-            logging.error('Unable to find RB number for run: %s%s', instrument, run_number)
-            return False
-        extension = 'nxs' if use_nxs else 'raw'
-        location = os.path.join(explorer.get_current_cycle_directory('GEM'),
-                                '{}{}.{}'.format(instrument, run_number, extension))
+
+        # Grab file location and RB number from ICAT
+        rb_number, location = icat_monitor.get_file_location(icat_client, instrument, run_number)
+
+        # Serialise and send to the queue processors
         data = queue_client.serialise_data(rb_number, instrument, location, run_number)
         logging.info("Resubmitting run with data: %s ", str(data))
         queue_client.send(ACTIVEMQ_SETTINGS.data_ready, data)
@@ -117,28 +113,32 @@ class HealthCheckThread(threading.Thread):
         :return: True: Service is okay, False: Service requires restart
         """
         logging.info('Performing Health Check at %s', datetime.now())
+
+        # Login to the reduction database and ICAT
         db_client = HealthCheckThread.get_db_client()
+        icat_client = icat_monitor.icat_login()
 
         for inst in INSTRUMENTS:
             db_last_run = HealthCheckThread.get_db_last_run(db_client, inst['name'])
-            icat_last_run = icat_monitor.get_last_run(inst['name'])
+            icat_last_run = icat_monitor.get_last_run(icat_client, inst['name'])
 
             if db_last_run and icat_last_run:
                 logging.info("Found last run from database on %s of %i",
                              inst['name'], db_last_run)
                 logging.info("Found last run from ICAT on %s of %i",
-                             inst['name'], int(icat_last_run))
+                             inst['name'], icat_last_run)
+
                 # Compare them and make sure the database isn't
                 # too far behind. There is a tolerance of 2 runs
-                if db_last_run < int(icat_last_run) - 2:
+                if db_last_run < icat_last_run - 2:
                     logging.debug("Attempting to resubmit missing runs")
-                    # The amount of entries to search through in the summary_file
-                    difference = (int(icat_last_run) - db_last_run) + 2
-                    for run_number in range(db_last_run, int(icat_last_run)+1):
-                        HealthCheckThread.resubmit_run(inst['name'], run_number,
-                                                       difference, inst['use_nexus'])
+
+                    for run_number in range(db_last_run, icat_last_run + 1):
+                        HealthCheckThread.resubmit_run(icat_client, inst['name'],
+                                                       run_number, inst['use_nexus'])
                     db_client.disconnect()
                     return False
+
         db_client.disconnect()
         return True
 
