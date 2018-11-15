@@ -80,7 +80,7 @@ class HealthCheckThread(threading.Thread):
         return db_client
 
     @staticmethod
-    def resubmit_run(icat_client, instrument, run_number, use_nxs):
+    def resubmit_run(icat_client, instrument, run_number):
         """
         Resubmit runs that are missing (have not been submitted by end of run monitor)
         :param instrument: The instrument associated with the missing run
@@ -98,6 +98,9 @@ class HealthCheckThread(threading.Thread):
 
         # Grab file location and RB number from ICAT
         rb_number, location = icat_monitor.get_file_location(icat_client, instrument, run_number)
+        if not location:
+            logging.error("Unable to find RB number for run: %s%s", instrument, run_number)
+            return False
 
         # Serialise and send to the queue processors
         data = queue_client.serialise_data(rb_number, instrument, location, run_number)
@@ -134,8 +137,7 @@ class HealthCheckThread(threading.Thread):
                     logging.debug("Attempting to resubmit missing runs")
 
                     for run_number in range(db_last_run, icat_last_run + 1):
-                        HealthCheckThread.resubmit_run(icat_client, inst['name'],
-                                                       run_number, inst['use_nexus'])
+                        HealthCheckThread.resubmit_run(icat_client, inst['name'], run_number)
                     db_client.disconnect()
                     return False
 

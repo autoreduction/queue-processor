@@ -6,10 +6,10 @@ import os
 import unittest
 import time
 
-from mock import patch, call
+from mock import patch, call, Mock
 
 from monitors.health_check import HealthCheckThread
-from monitors.settings import ARCHIVE_BASE, DATA_LOC, INST_FOLDER
+from monitors.settings import DATA_LOC, INST_FOLDER
 from utils.data_archive.data_archive_creator import DataArchiveCreator
 from utils.clients.connection_exception import ConnectionException
 
@@ -40,42 +40,48 @@ class MockDatabaseClient(object):
 # pylint:disable=missing-docstring, unused-argument, invalid-name
 class TestServiceUtils(unittest.TestCase):
 
-    @patch('monitors.icat_monitor.get_last_run', return_value='1234')
+    @patch('monitors.icat_monitor.icat_login')
+    @patch('monitors.icat_monitor.get_last_run', return_value=1234)
     @patch('monitors.health_check.HealthCheckThread.get_db_client',
            return_value=MockDatabaseClient())
     @patch('monitors.health_check.HealthCheckThread.get_db_last_run',
            return_value=1234)
-    def test_health_check_fine(self, last_run, get_db_cli, get_db_run):
+    def test_health_check_fine(self, last_run, get_db_cli, get_db_run, icat_login):
         """ Health check where end of run monitor is fine """
         self.assertTrue(HealthCheckThread(0).health_check())
+        icat_login.assert_called_once()
         last_run.assert_called()
         get_db_cli.assert_called()
         get_db_run.assert_called()
 
-    @patch('monitors.icat_monitor.get_last_run', return_value='1231')
+    @patch('monitors.icat_monitor.icat_login')
+    @patch('monitors.icat_monitor.get_last_run', return_value=1231)
     @patch('monitors.health_check.HealthCheckThread.get_db_client',
            return_value=MockDatabaseClient())
     @patch('monitors.health_check.HealthCheckThread.get_db_last_run',
            return_value=1234)
-    def test_health_check_old_run(self, last_run, get_db_cli, get_db_run):
+    def test_health_check_old_run(self, last_run, get_db_cli, get_db_run, icat_login):
         """ Health check where the check returns an old run """
         self.assertTrue(HealthCheckThread(0).health_check())
+        icat_login.assert_called_once()
         last_run.assert_called()
         get_db_cli.assert_called()
         get_db_run.assert_called()
 
-    @patch('monitors.icat_monitor.get_last_run', return_value='1234')
+    @patch('monitors.icat_monitor.icat_login')
+    @patch('monitors.icat_monitor.get_last_run', return_value=1234)
     @patch('monitors.health_check.HealthCheckThread.get_db_client',
            return_value=MockDatabaseClient())
     @patch('monitors.health_check.HealthCheckThread.get_db_last_run',
            return_value=1231)
     @patch('monitors.health_check.HealthCheckThread.resubmit_run')
-    def test_health_check_restart(self, _, last_run, get_db_cli, get_db_run):
+    def test_health_check_restart(self, _, last_run, get_db_cli, get_db_run, icat_login):
         """
         Health check where end of run monitor requires a restart
         Mock the resubmit call to avoid having to perform extra test setup
         """
         self.assertFalse(HealthCheckThread(0).health_check())
+        icat_login.assert_called_once()
         last_run.assert_called_once()
         get_db_cli.assert_called_once()
         get_db_run.assert_called_once()
@@ -144,33 +150,31 @@ class TestServiceUtils(unittest.TestCase):
         restart_service_mock.assert_called_once()
         health_check_thread.exit = True
 
+    @patch('monitors.icat_monitor.get_file_location', return_value=("123", "GEM555.nxs"))
     @patch('utils.clients.queue_client.QueueClient.send')
-    def test_resubmit_run(self, mock_send):
+    def test_resubmit_run(self, mock_send, mock_get_file_loc):
         """
         Ensure that runs are resubmitted correct using the queue client send function
         """
-        dac = DataArchiveCreator(ARCHIVE_BASE)
-        dac.make_data_archive(['GEM'], 18, 18, 2)
-        dac.add_journal_file('GEM', 'GEM555User,0 Runtitle etc 09-OCT-2018 10:00:01 223.5 123')
-        HealthCheckThread.resubmit_run('GEM', '555', 1, 'nxs')
+        icat_client = Mock()
+        HealthCheckThread.resubmit_run(icat_client, 'GEM', '555')
         expected_message = {'rb_number': '123',
                             'instrument': 'GEM',
-                            'data': os.path.join(INST_FOLDER % 'GEM',
-                                                 DATA_LOC % '18_2',
-                                                 'GEM555.nxs'),
+                            'data': 'GEM555.nxs',
                             'run_number': '555',
                             'facility': 'ISIS'
                            }
         mock_send.assert_called_once_with('/queue/DataReady', expected_message)
+        mock_get_file_loc.assert_called_once_with(icat_client, 'GEM', '555')
 
+    @patch('monitors.icat_monitor.get_file_location', return_value=(None, None))
     @patch('logging.error')
-    def test_resubmit_unable_to_find_run(self, mock_error_log):
-        dac = DataArchiveCreator(ARCHIVE_BASE)
-        dac.make_data_archive(['GEM'], 18, 18, 2)
-        dac.add_journal_file('GEM', 'None')
-        self.assertFalse(HealthCheckThread.resubmit_run('GEM', '555', 1, 'nxs'))
+    def test_resubmit_unable_to_find_run(self, mock_error_log, mock_get_file_loc):
+        icat_client = Mock()
+        self.assertFalse(HealthCheckThread.resubmit_run(icat_client, 'GEM', '555'))
         mock_error_log.assert_called_once_with('Unable to find RB number for run: %s%s',
                                                'GEM', '555')
+        mock_get_file_loc.assert_called_once_with(icat_client, 'GEM', '555')
 
     @patch('logging.error')
     @patch('utils.clients.queue_client.QueueClient.connect')
@@ -178,18 +182,22 @@ class TestServiceUtils(unittest.TestCase):
         def raise_connection_exp():
             raise ConnectionException('test')
         mock_connect.side_effect = raise_connection_exp
-        self.assertFalse(HealthCheckThread.resubmit_run('GEM', '555', 1, 'nxs'))
+        icat_client = Mock()
+        self.assertFalse(HealthCheckThread.resubmit_run(icat_client, 'GEM', '555'))
         mock_error_log.assert_called_once_with('Unable to connect to Queue')
 
     @patch('monitors.health_check.HealthCheckThread.get_db_last_run', return_value=10)
+    @patch('monitors.icat_monitor.icat_login', return_value=None)
     @patch('monitors.icat_monitor.get_last_run', return_value=13)
     @patch('monitors.health_check.HealthCheckThread.resubmit_run')
-    def test_resubmit_from_health_check(self, mock_resubmit, mock_icat_last_run, mock_db_last_run):
+    def test_resubmit_from_health_check(self, mock_resubmit, mock_icat_last_run,
+                                        mock_icat_login, mock_get_last_run):
         self.assertFalse(HealthCheckThread.health_check())
-        mock_db_last_run.assert_called_once()
+        mock_icat_login.assert_called_once()
+        mock_get_last_run.assert_called_once()
         mock_icat_last_run.assert_called_once()
-        expected_calls = [call('WISH', 10, 5, True),
-                          call('WISH', 11, 5, True),
-                          call('WISH', 12, 5, True),
-                          call('WISH', 13, 5, True)]
+        expected_calls = [call(None, 'WISH', 10),
+                          call(None, 'WISH', 11),
+                          call(None, 'WISH', 12),
+                          call(None, 'WISH', 13)]
         mock_resubmit.assert_has_calls(expected_calls)

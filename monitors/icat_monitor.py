@@ -121,7 +121,7 @@ def get_file_location(icat_client, instrument, run_number):
                                             " INCLUDE df.dataset AS ds, ds.investigation AS i")
 
     if not dfs:
-        return None
+        return None, None
     # Return both the file RB number and location
     df = dfs[0]
     rb_number = df.dataset.investigation.name
