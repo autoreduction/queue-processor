@@ -111,21 +111,23 @@ def get_file_location(icat_client, instrument, run_number):
     :param run_number: File run number
     :return: File location
     """
-    dfs = None
+    datafiles = None
     run_number_str = str(run_number)
     for i in xrange(5):
-        if not dfs:
+        if not datafiles:
             # If the file hasn't been found yet then add zeros to the run number
             df_name = instrument + (i * "0") + run_number_str + ".nxs"
-            dfs = icat_client.execute_query("SELECT df FROM Datafile df WHERE df.name = '" + df_name + "'"
-                                            " INCLUDE df.dataset AS ds, ds.investigation AS i")
+            datafiles = icat_client.execute_query("SELECT df FROM Datafile df "
+                                                  " WHERE df.name = '" + df_name + "'"
+                                                  " INCLUDE df.dataset AS ds,"
+                                                  " ds.investigation AS i")
 
-    if not dfs:
+    if not datafiles:
         return None, None
     # Return both the file RB number and location
-    df = dfs[0]
-    rb_number = df.dataset.investigation.name
-    location = df.location
+    datafile = datafiles[0]
+    rb_number = datafile.dataset.investigation.name
+    location = datafile.location
     return rb_number, location
 
 

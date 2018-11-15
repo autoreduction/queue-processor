@@ -10,8 +10,11 @@ import monitors.icat_monitor as icat_monitor
 from monitors.settings import INSTRUMENTS
 
 
-# pylint:disable=too-few-public-methods,unused-argument
+# pylint:disable=too-few-public-methods,unused-argument,missing-docstring
 class DataFile(object):
+    """
+    Basic data file representation for testing
+    """
     class Investigation(object):
         def __init__(self, name):
             self.name = name
@@ -20,13 +23,11 @@ class DataFile(object):
         def __init__(self, investigation):
             self.investigation = investigation
 
-    """
-    Basic data file representation for testing
-    """
     def __init__(self, df_name, rb_num):
         self.name = df_name
         self.investigation = self.Investigation(rb_num)
         self.dataset = self.DataSet(self.investigation)
+        self.location = ""
 
 
 # pylint:disable=missing-docstring

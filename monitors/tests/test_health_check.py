@@ -2,15 +2,12 @@
 Attempt to test as much of the windows service as possible
 Currently only running unit tests on linux
 """
-import os
 import unittest
 import time
 
 from mock import patch, call, Mock
 
 from monitors.health_check import HealthCheckThread
-from monitors.settings import DATA_LOC, INST_FOLDER
-from utils.data_archive.data_archive_creator import DataArchiveCreator
 from utils.clients.connection_exception import ConnectionException
 
 
