@@ -84,22 +84,18 @@ class TestICATMonitor(unittest.TestCase):
                                                  ('2018-10-18', '2018-10-19'))
         self.assertEqual(run, None)
 
-    @patch('utils.clients.icat_client.ICATClient.__init__', return_value=None)
-    @patch('utils.clients.icat_client.ICATClient.connect')
     @patch('monitors.icat_monitor.get_cycle_dates', return_value='test')
-    @patch('monitors.icat_monitor.get_last_run_in_dates', return_value='test-run-num')
-    def test_get_last_run(self, cycle_dates_mock, _, last_in_dates_mock, icat_init_mock):
-        actual = icat_monitor.get_last_run('WISH')
+    @patch('monitors.icat_monitor.get_last_run_in_dates', return_value=1234)
+    def test_get_last_run(self, cycle_dates_mock, last_in_dates_mock):
+        icat_client = Mock()
+        actual = icat_monitor.get_last_run(icat_client, 'WISH')
         cycle_dates_mock.assert_called_once()
         last_in_dates_mock.assert_called_once()
-        icat_init_mock.assert_called_once()
-        self.assertEqual(actual, 'test-run-num')
+        self.assertEqual(actual, 1234)
 
-    @patch('utils.clients.icat_client.ICATClient.__init__', return_value=None)
-    @patch('utils.clients.icat_client.ICATClient.connect')
     @patch('monitors.icat_monitor.get_cycle_dates', return_value=None)
-    def test_get_last_return_none_if_bad_date(self, cycle_dates_mock, _, init_mock):
-        actual = icat_monitor.get_last_run('WISH')
-        init_mock.assert_called_once()
+    def test_get_last_return_none_if_bad_date(self, cycle_dates_mock):
+        icat_client = Mock()
+        actual = icat_monitor.get_last_run(icat_client, 'WISH')
         cycle_dates_mock.assert_called_once()
         self.assertIsNone(actual)
