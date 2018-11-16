@@ -103,7 +103,7 @@ def get_last_run(icat_client, instrument):
     return int(last_run)
 
 
-def get_file_location(icat_client, instrument, run_number):
+def get_file_rb_and_location(icat_client, instrument, run_number):
     """
     Retrieve the location on disk of a file from ICAT
     :param icat_client: ICAT client

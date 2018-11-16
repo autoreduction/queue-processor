@@ -111,18 +111,18 @@ class TestICATMonitor(unittest.TestCase):
         cycle_dates_mock.assert_called_once()
         self.assertIsNone(actual)
 
-    def test_get_file_location(self):
+    def test_get_file_rb_and_location(self):
         df = DataFile('GEM1234.nxs', "1234")
         df.location = "/path/to/GEM1234.nxs"
         icat_client = Mock()
         icat_client.execute_query = Mock(return_value=[df])
-        rb_num, loc = icat_monitor.get_file_location(icat_client, "GEM", 1234)
+        rb_num, loc = icat_monitor.get_file_rb_and_location(icat_client, "GEM", 1234)
         self.assertEqual(loc, "/path/to/GEM1234.nxs")
         self.assertEqual(rb_num, "1234")
 
-    def test_get_file_location_invalid(self):
+    def test_get_file_rb_and_location_invalid(self):
         icat_client = Mock()
         icat_client.execute_query = Mock(return_value=None)
-        rb_num, loc = icat_monitor.get_file_location(icat_client, "GEM", 1234)
+        rb_num, loc = icat_monitor.get_file_rb_and_location(icat_client, "GEM", 1234)
         self.assertIsNone(loc)
         self.assertIsNone(rb_num)

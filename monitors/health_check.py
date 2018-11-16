@@ -97,7 +97,9 @@ class HealthCheckThread(threading.Thread):
             return False
 
         # Grab file location and RB number from ICAT
-        rb_number, location = icat_monitor.get_file_location(icat_client, instrument, run_number)
+        rb_number, location = icat_monitor.get_file_rb_and_location(icat_client,
+                                                                    instrument,
+                                                                    run_number)
         if not location:
             logging.error("Unable to find RB number for run: %s%s", instrument, run_number)
             return False

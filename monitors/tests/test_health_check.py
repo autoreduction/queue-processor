@@ -147,7 +147,7 @@ class TestServiceUtils(unittest.TestCase):
         restart_service_mock.assert_called_once()
         health_check_thread.exit = True
 
-    @patch('monitors.icat_monitor.get_file_location', return_value=("123", "GEM555.nxs"))
+    @patch('monitors.icat_monitor.get_file_rb_and_location', return_value=("123", "GEM555.nxs"))
     @patch('utils.clients.queue_client.QueueClient.send')
     def test_resubmit_run(self, mock_send, mock_get_file_loc):
         """
@@ -164,7 +164,7 @@ class TestServiceUtils(unittest.TestCase):
         mock_send.assert_called_once_with('/queue/DataReady', expected_message)
         mock_get_file_loc.assert_called_once_with(icat_client, 'GEM', '555')
 
-    @patch('monitors.icat_monitor.get_file_location', return_value=(None, None))
+    @patch('monitors.icat_monitor.get_file_rb_and_location', return_value=(None, None))
     @patch('logging.error')
     def test_resubmit_unable_to_find_run(self, mock_error_log, mock_get_file_loc):
         icat_client = Mock()
