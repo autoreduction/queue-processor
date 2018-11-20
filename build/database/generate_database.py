@@ -34,7 +34,7 @@ def run_sql_file(sql_file_location, logger):
                                          stderr=subprocess.PIPE)
         process_output, process_err = mysql_process.communicate()
         if process_output != '':
-            logger.info(process_output)           
+            logger.info(process_output)
         if process_err.count('mysql: [Warning] Using a password on the command line interface can be insecure') == 1:
             logger.warning(process_err)
         elif process_err != '':
