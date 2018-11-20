@@ -35,7 +35,8 @@ def run_sql_file(sql_file_location, logger):
         process_output, process_err = mysql_process.communicate()
         if process_output != '':
             logger.info(process_output)
-        if process_err.count('mysql: [Warning] Using a password on the command line interface can be insecure') == 1:
+        if process_err.count('mysql: [Warning] Using a password on the '
+                             'command line interface can be insecure') == 1:
             logger.warning(process_err)
         elif process_err != '':
             logger.error(process_err)
@@ -100,7 +101,8 @@ def add_test_user(logger):
     process_output, process_err = mysql_process.communicate(input=to_exec)
     if process_output != '':
         logger.info(process_output)
-    if process_err.count('mysql: [Warning] Using a password on the command line interface can be insecure') == 1:
+    if process_err.count('mysql: [Warning] Using a password on the '
+                         'command line interface can be insecure') == 1:
         logger.warning(process_err)
     elif process_err != '':
         logger.error(process_err)
