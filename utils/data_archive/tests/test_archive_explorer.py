@@ -11,7 +11,7 @@ from utils.data_archive.data_archive_creator import DataArchiveCreator
 from utils.data_archive.archive_explorer import ArchiveExplorer
 
 
-# pylint:disable=invalid-name,missing-docstring,too-many-public-methods
+# pylint:disable=invalid-name
 class TestArchiveExplorer(unittest.TestCase):
     """
     Test all the functionality of the archive explorer
@@ -34,9 +34,6 @@ class TestArchiveExplorer(unittest.TestCase):
         self.dac = DataArchiveCreator(self.test_output_directory)
         self.dac.make_data_archive(['GEM', 'WISH', 'MUSR'], 17, 18, 2)
         self.explorer = ArchiveExplorer(self.archive_directory)
-        self.summary_content = ('GEM555User,Other,0 Runtitle etc 09-OCT-2018 10:00:01 223.5 123\n'
-                                'GEM556User,Other,0 Runtitle etc 09-OCT-2018 10:00:02 223.5 124\n'
-                                'GEM557User,Other,0 Runtitle etc 09-OCT-2018 10:00:03 223.5 124\n')
 
     def test_ndx_path(self):
         """ Test path to NDX directory """
@@ -138,23 +135,6 @@ class TestArchiveExplorer(unittest.TestCase):
         self.dac.add_data_to_most_recent_cycle('GEM', ['GEM001.nxs'])
         actual = self.explorer.get_most_recent_run_since('GEM', time_in_past)
         self.assertEqual(actual, expected)
-
-    def test_get_rb_for_run(self):
-        self.dac.add_journal_file('GEM', self.summary_content)
-        self.assertEqual(self.explorer.get_rb_for_run_num('GEM', '555', 3), '123')
-
-    def test_get_rb_for_run_out_of_limit(self):
-        self.dac.add_journal_file('GEM', self.summary_content)
-        self.assertFalse(self.explorer.get_rb_for_run_num('GEM', '555', 2))
-
-    def test_get_rb_for_run_non_found(self):
-        self.dac.add_journal_file('GEM', self.summary_content)
-        self.assertFalse(self.explorer.get_rb_for_run_num('GEM', '999', 3))
-
-    def test_negative_rb_number(self):
-        self.dac.add_journal_file('GEM',
-                                  'GEM555User,Other,0 Runtitle etc 09-OCT-2018 10:00:01 23.5 -1000')
-        self.assertFalse(self.explorer.get_rb_for_run_num('GEM', '555', 1))
 
     def tearDown(self):
         """

@@ -87,6 +87,7 @@ def get_last_run_in_dates(icat_client, instrument, cycle_dates):
 def get_last_run(icat_client, instrument):
     """
     Retrieves the last run from ICAT for an instrument
+    :param icat_client: ICAT client
     :param instrument: Instrument dictionary taken from the list
     :return: The latest run number as a string
     """

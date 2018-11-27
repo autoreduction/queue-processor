@@ -83,10 +83,9 @@ class HealthCheckThread(threading.Thread):
     def resubmit_run(icat_client, instrument, run_number):
         """
         Resubmit runs that are missing (have not been submitted by end of run monitor)
-        :param instrument: The instrument associated with the missing run
-        :param run_number: The run number to resubmit
-        :param limit: Where we expect the rb number to be located in the file
-        :param use_nxs: The expected extension of the data file
+        :param icat_client: ICAT client
+        :param instrument: Instrument name
+        :param run_number: Run number as an integer
         """
         # Connect to the autoreduce queues
         queue_client = QueueClient()
