@@ -388,7 +388,7 @@ class PostProcessAdmin(object):
     @staticmethod
     def delete_temp_directory(temp_result_dir):
         """ Remove temporary working directory """
-        logger.info("Remove temp dir %s ", temp_result_dir)
+        logger.info("Remove temp dir %s", temp_result_dir)
         try:
             shutil.rmtree(temp_result_dir, ignore_errors=True)
         except:

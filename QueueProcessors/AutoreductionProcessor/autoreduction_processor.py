@@ -12,7 +12,7 @@ import stomp
 from QueueProcessors.AutoreductionProcessor.autoreduction_logging_setup import logger
 # pylint:disable=no-name-in-module,import-error
 from QueueProcessors.AutoreductionProcessor.settings import MISC
-from utils.settings import ACTIVEMQ
+from settings import ACTIVEMQ
 
 
 class Listener(object):
@@ -52,7 +52,7 @@ class Listener(object):
         self.update_child_process_list()
         if not self.should_proceed(data_dict):  # wait while the run shouldn't proceed
             # pylint: disable=maybe-no-member
-            reactor.callLater(10, self.hold_message,
+            reactor.callLater(10, self.hold_message,  # pragma: no cover
                               destination, data,
                               headers)
 
@@ -66,8 +66,8 @@ class Listener(object):
         print_dict = data_dict.copy()
         print_dict.pop("reduction_script")
         if not os.path.isfile(MISC['post_process_directory']):
-            logger.warning("Could not find autoreduction post processing file"
-                           "- please contact a systsem administrator")
+            logger.warning("Could not find autoreduction post processing file "
+                           "- please contact a system administrator")
         logger.debug("Calling: %s %s %s %s",
                      "python", MISC['post_process_directory'], destination, print_dict)
         self._client.ack(headers['message-id'], headers['subscription'])  # Remove from queue
@@ -160,13 +160,14 @@ class Consumer(object):
         # activemq_client.subscribe_amq(self.consumer_name, listener, ack='client-individual')
 
 
-def main():
+def main():  # pragma: no cover
     """ Main method, starts consumer. """
     logger.info("Start post process asynchronous listener!")
-    reactor.callWhenRunning(Consumer().run) # pylint: disable=maybe-no-member
-    reactor.run() # pylint: disable=maybe-no-member
+    # pylint: disable=maybe-no-member
+    reactor.callWhenRunning(Consumer().run)
+    reactor.run()
     logger.info("Stop post process asynchronous listener!")
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     main()
