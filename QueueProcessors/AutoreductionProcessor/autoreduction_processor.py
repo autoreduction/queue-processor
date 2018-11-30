@@ -11,9 +11,7 @@ import stomp
 
 from QueueProcessors.AutoreductionProcessor.autoreduction_logging_setup import logger
 # pylint:disable=no-name-in-module,import-error
-from QueueProcessors.AutoreductionProcessor.settings import MISC
-# pylint:disable=relative-import
-from utils.settings import ACTIVEMQ
+from QueueProcessors.AutoreductionProcessor.settings import MISC, ACTIVEMQ
 
 
 class Listener(object):
