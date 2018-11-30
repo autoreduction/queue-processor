@@ -10,13 +10,24 @@ import monitors.icat_monitor as icat_monitor
 from monitors.settings import INSTRUMENTS
 
 
-# pylint:disable=too-few-public-methods,unused-argument
+# pylint:disable=too-few-public-methods,unused-argument,missing-docstring
 class DataFile(object):
     """
     Basic data file representation for testing
     """
-    def __init__(self, df_name):
+    class Investigation(object):
+        def __init__(self, name):
+            self.name = name
+
+    class DataSet(object):
+        def __init__(self, investigation):
+            self.investigation = investigation
+
+    def __init__(self, df_name, rb_num):
         self.name = df_name
+        self.investigation = self.Investigation(rb_num)
+        self.dataset = self.DataSet(self.investigation)
+        self.location = ""
 
 
 # pylint:disable=missing-docstring
@@ -65,7 +76,7 @@ class TestICATMonitor(unittest.TestCase):
         icat_client = Mock()
         inst_name = INSTRUMENTS[0]['name']
         file_name = inst_name + '3223.nxs'
-        icat_client.execute_query = Mock(return_value=[DataFile(file_name)])
+        icat_client.execute_query = Mock(return_value=[DataFile(file_name, None)])
         run = icat_monitor.get_last_run_in_dates(icat_client,
                                                  inst_name,
                                                  ('2018-10-18', '2018-10-19'))
@@ -84,20 +95,51 @@ class TestICATMonitor(unittest.TestCase):
                                                  ('2018-10-18', '2018-10-19'))
         self.assertEqual(run, None)
 
-    @patch('utils.clients.icat_client.ICATClient.__init__', return_value=None)
     @patch('monitors.icat_monitor.get_cycle_dates', return_value='test')
-    @patch('monitors.icat_monitor.get_last_run_in_dates', return_value='test-run-num')
-    def test_get_last_run(self, cycle_dates_mock, last_in_dates_mock, icat_init_mock):
-        actual = icat_monitor.get_last_run('WISH')
+    @patch('monitors.icat_monitor.get_last_run_in_dates', return_value=1234)
+    def test_get_last_run(self, cycle_dates_mock, last_in_dates_mock):
+        icat_client = Mock()
+        actual = icat_monitor.get_last_run(icat_client, 'WISH')
         cycle_dates_mock.assert_called_once()
         last_in_dates_mock.assert_called_once()
-        icat_init_mock.assert_called_once()
-        self.assertEqual(actual, 'test-run-num')
+        self.assertEqual(actual, 1234)
 
-    @patch('utils.clients.icat_client.ICATClient.__init__', return_value=None)
     @patch('monitors.icat_monitor.get_cycle_dates', return_value=None)
-    def test_get_last_return_none_if_bad_date(self, cycle_dates_mock, init_mock):
-        actual = icat_monitor.get_last_run('WISH')
-        init_mock.assert_called_once()
+    def test_get_last_return_none_if_bad_date(self, cycle_dates_mock):
+        icat_client = Mock()
+        actual = icat_monitor.get_last_run(icat_client, 'WISH')
         cycle_dates_mock.assert_called_once()
         self.assertIsNone(actual)
+
+    @patch('monitors.icat_monitor.get_cycle_dates', return_value='test')
+    @patch('monitors.icat_monitor.get_last_run_in_dates', return_value=None)
+    def test_get_last_no_runs_in_dates(self, mock_cycle_dates, mock_last_runs):
+        icat_client = Mock()
+        actual = icat_monitor.get_last_run(icat_client, 'WISH')
+        mock_cycle_dates.assert_called_once()
+        mock_last_runs.assert_called_once()
+        self.assertIsNone(actual)
+
+    def test_get_file_rb_and_location(self):
+        df = DataFile('GEM1234.nxs', "1234")
+        df.location = "/path/to/GEM1234.nxs"
+        icat_client = Mock()
+        icat_client.execute_query = Mock(return_value=[df])
+        rb_num, loc = icat_monitor.get_file_rb_and_location(icat_client, "GEM", 1234)
+        self.assertEqual(loc, "/path/to/GEM1234.nxs")
+        self.assertEqual(rb_num, "1234")
+
+    def test_get_file_rb_and_location_invalid(self):
+        icat_client = Mock()
+        icat_client.execute_query = Mock(return_value=None)
+        rb_num, loc = icat_monitor.get_file_rb_and_location(icat_client, "GEM", 1234)
+        self.assertIsNone(loc)
+        self.assertIsNone(rb_num)
+
+    # pylint:disable=no-self-use
+    @patch('utils.clients.icat_client.ICATClient.__init__', return_value=None)
+    @patch('utils.clients.icat_client.ICATClient.connect', return_value=None)
+    def test_icat_login(self, mock_init, mock_connect):
+        icat_monitor.icat_login()
+        mock_init.assert_called_once()
+        mock_connect.assert_called_once()
