@@ -111,6 +111,15 @@ class TestICATMonitor(unittest.TestCase):
         cycle_dates_mock.assert_called_once()
         self.assertIsNone(actual)
 
+    @patch('monitors.icat_monitor.get_cycle_dates', return_value='test')
+    @patch('monitors.icat_monitor.get_last_run_in_dates', return_value=None)
+    def test_get_last_no_runs_in_dates(self, mock_cycle_dates, mock_last_runs):
+        icat_client = Mock()
+        actual = icat_monitor.get_last_run(icat_client, 'WISH')
+        mock_cycle_dates.assert_called_once()
+        mock_last_runs.assert_called_once()
+        self.assertIsNone(actual)
+
     def test_get_file_rb_and_location(self):
         df = DataFile('GEM1234.nxs', "1234")
         df.location = "/path/to/GEM1234.nxs"
@@ -126,3 +135,11 @@ class TestICATMonitor(unittest.TestCase):
         rb_num, loc = icat_monitor.get_file_rb_and_location(icat_client, "GEM", 1234)
         self.assertIsNone(loc)
         self.assertIsNone(rb_num)
+
+    # pylint:disable=no-self-use
+    @patch('utils.clients.icat_client.ICATClient.__init__', return_value=None)
+    @patch('utils.clients.icat_client.ICATClient.connect', return_value=None)
+    def test_icat_login(self, mock_init, mock_connect):
+        icat_monitor.icat_login()
+        mock_init.assert_called_once()
+        mock_connect.assert_called_once()

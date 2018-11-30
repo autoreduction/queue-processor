@@ -89,7 +89,16 @@ class TestServiceUtils(unittest.TestCase):
         """ Test to make sure that the last database run is processed correctly """
         db_cli = None
         last_run = HealthCheckThread.get_db_last_run(db_cli, "WISH")
+        last_run_mock.assert_called_once()
         self.assertEqual(last_run, 1234)
+
+    @patch('monitors.health_check.HealthCheckThread.last_run_query',
+           return_value=None)
+    def test_get_db_last_run_no_runs(self, last_run_mock):
+        db_cli = None
+        last_run = HealthCheckThread.get_db_last_run(db_cli, 'WISH')
+        last_run_mock.assert_called_once()
+        self.assertIsNone(last_run)
 
     # pylint:disable=no-self-use
     @patch('utils.clients.database_client.DatabaseClient.__init__', return_value=None)
