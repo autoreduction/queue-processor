@@ -2,6 +2,7 @@
 Threading class to check the health of the End of Run Monitor service
 """
 from datetime import datetime
+import os
 import logging
 import time
 import threading
@@ -13,6 +14,12 @@ from utils.clients.database_client import DatabaseClient
 from utils.clients.queue_client import QueueClient
 from utils.clients.connection_exception import ConnectionException
 from utils.settings import ACTIVEMQ_SETTINGS
+from utils.project.structure import get_project_root
+
+
+logging.basicConfig(filename=os.path.join(get_project_root(), 'logs', 'health_check.log'),
+                    level=logging.INFO,
+                    format='%(asctime)s %(levelname)s [%(filename)s:%(lineno)d] %(message)s')
 
 
 # pylint:disable=missing-docstring

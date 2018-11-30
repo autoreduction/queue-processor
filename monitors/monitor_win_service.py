@@ -10,7 +10,7 @@ difficulties whne watching for file changes.
 # pylint: disable=import-error
 import os
 
-#from monitors.health_check import HealthCheckThread
+from monitors.health_check import HealthCheckThread
 from monitors import end_of_run_monitor
 
 if os.name == "nt":
@@ -54,8 +54,8 @@ class QueueService(win32serviceutil.ServiceFramework):
                               (self._svc_name_, ''))
 
         end_of_run_monitor.main()
-        #health_check_thread = HealthCheckThread(600)  # 10 minutes
-        #health_check_thread.start()
+        health_check_thread = HealthCheckThread(600)  # 10 minutes
+        health_check_thread.start()
         while 1:
             # Wait for service stop signal, if I timeout, loop again
             rc = win32event.WaitForSingleObject(self.hWaitStop, self.timeout)
@@ -64,7 +64,7 @@ class QueueService(win32serviceutil.ServiceFramework):
                 # Stop signal encountered
                 servicemanager.LogInfoMsg(self._svc_name_ + " - STOPPED")
                 end_of_run_monitor.stop()
-                #health_check_thread.stop()
+                health_check_thread.stop()
                 break
 
 
