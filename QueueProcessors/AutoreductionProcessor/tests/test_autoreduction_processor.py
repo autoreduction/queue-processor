@@ -52,7 +52,7 @@ class TestAutoreductionProcessorListener(unittest.TestCase):
                return_value=False)
         @patch('twisted.internet.reactor.callLater')
         def test_hold_message_do_not_proceed(self, mock_call_later, mock_should_proceed):
-            self.listener.hold_message('/queue/topic', self.data, self.headers)
+            self.listener.hold_message('/queue/topic', self.json_data, self.headers)
             mock_should_proceed.assert_called_once()
             mock_call_later.assert_called_once_with(10, self.listener.hold_message,
                                                     '/queue/topic', self.json_data,
@@ -189,9 +189,9 @@ class TestAutoReductionProcessorConsumer(unittest.TestCase):
 if os.name != 'nt':  # pragma: no cover
     class TestAutoreductionProcessor(unittest.TestCase):
     
-        @patch('twitsed.internet.reactor.run')
+        @patch('twisted.internet.reactor.run')
         @patch('twisted.internet.reactor.callWhenRunning')
         def test_main(self, mock_call_when_running, mock_run):
             main()
-            mock_call_when_running.assert_called_once_with(Consumer.run)
+            mock_call_when_running.assert_called_once()
             mock_run.assert_called_once()

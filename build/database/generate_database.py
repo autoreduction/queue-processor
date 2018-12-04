@@ -26,7 +26,7 @@ def run_sql_file(sql_file_location, logger):
     with open(sql_file_location, 'r') as input_file:
         password = ''
         if DB_ROOT_PASSWORD:
-            password = 'MYSQL_PWD=%s ' % DB_ROOT_PASSWORD
+            password = '-p%s ' % DB_ROOT_PASSWORD
         access_string = "mysql -u{0} {1}".format('root', password)
         mysql_process = subprocess.Popen(access_string,
                                          stdin=input_file, shell=True,
@@ -35,7 +35,10 @@ def run_sql_file(sql_file_location, logger):
         process_output, process_err = mysql_process.communicate()
         if process_output != '':
             logger.info(process_output)
-        if process_err != '':
+        if process_err.count('mysql: [Warning] Using a password on the '
+                             'command line interface can be insecure') == 1:
+            logger.warning(process_err)
+        elif process_err != '':
             logger.error(process_err)
             print("Script did not complete. Check build.log for more details.")
             print(process_err, file=sys.stderr)
@@ -89,7 +92,7 @@ def add_test_user(logger):
     to_exec = '\n'.join(sql_commands)
 
     # This is duplicated from above, ideally we should switch to using Python-MySQL connectors
-    password = '' if not DB_ROOT_PASSWORD else 'MYSQL_PWD=%s ' % DB_ROOT_PASSWORD
+    password = '' if not DB_ROOT_PASSWORD else '-p%s ' % DB_ROOT_PASSWORD
     access_string = "mysql -u{0} {1}".format('root', password)
     mysql_process = subprocess.Popen(access_string,
                                      stdin=subprocess.PIPE, shell=True,
@@ -98,7 +101,10 @@ def add_test_user(logger):
     process_output, process_err = mysql_process.communicate(input=to_exec)
     if process_output != '':
         logger.info(process_output)
-    if process_err != '':
+    if process_err.count('mysql: [Warning] Using a password on the '
+                         'command line interface can be insecure') == 1:
+        logger.warning(process_err)
+    elif process_err != '':
         logger.error(process_err)
         print("Script did not complete. Check build.log for more details.")
         print(process_err, file=sys.stderr)
