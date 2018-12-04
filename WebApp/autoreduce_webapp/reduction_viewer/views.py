@@ -346,7 +346,9 @@ def run_summary(request, instrument_name=None, run_number=None, run_version=0):
                                        run_number=run_number,
                                        run_version=run_version)
         history = ReductionRun.objects.filter(run_number=run_number).order_by('-run_version')
-        context_dictionary = {'run': run, 'history': history}
+        reduction_location = str(run.reduction_location.all()[0])
+        ceph_location = get_ceph_location(reduction_location, instrument_name)
+        context_dictionary = {'run': run, 'history': history, 'ceph_location': ceph_location}
     except PermissionDenied:
         raise
     except Exception as exception:
@@ -354,6 +356,23 @@ def run_summary(request, instrument_name=None, run_number=None, run_version=0):
         context_dictionary = {}
 
     return context_dictionary
+
+
+def get_ceph_location(reduction_location, instrument):
+    """
+    Creates the path to the data stored in CEPH (ISIS storage cluster)
+    :param reduction_location: reduction location on the computation node
+    :param instrument: instrument associated with the run
+    :return: string to reduced data storage location in CEPH
+    """
+    ceph_root_level = '//data.analysis.stfc.ac.uk/'
+    try:
+        data_location = reduction_location.split(instrument.upper())[1]
+    except IndexError:
+        # Return None if file path does not contain instrument name
+        return None
+    ceph_location = ceph_root_level + instrument.upper() + '/rb' + data_location
+    return ceph_location.replace('\\', '/')
 
 
 @login_and_uows_valid

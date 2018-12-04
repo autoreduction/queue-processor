@@ -116,6 +116,11 @@
                                 <strong>Logs:</strong>
                                 <a href="#" class="js-log-display">Show reduction logs</a>
                             </div>
+                            <div class="col-md-6">
+                                {% if ceph_location %}
+                                    <a href='{{ ceph_location }}'>Download data</a>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                 </div>
