@@ -2,6 +2,7 @@
 Threading class to check the health of the End of Run Monitor service
 """
 from datetime import datetime
+import os
 import logging
 import time
 import threading
@@ -10,7 +11,15 @@ from monitors import end_of_run_monitor
 from monitors import icat_monitor
 from monitors.settings import INSTRUMENTS
 from utils.clients.database_client import DatabaseClient
+from utils.clients.queue_client import QueueClient
 from utils.clients.connection_exception import ConnectionException
+from utils.settings import ACTIVEMQ_SETTINGS
+from utils.project.structure import get_project_root
+
+
+logging.basicConfig(filename=os.path.join(get_project_root(), 'logs', 'health_check.log'),
+                    level=logging.INFO,
+                    format='%(asctime)s %(levelname)s [%(filename)s:%(lineno)d] %(message)s')
 
 
 # pylint:disable=missing-docstring
@@ -51,14 +60,14 @@ class HealthCheckThread(threading.Thread):
             .first()
 
     @staticmethod
-    def get_db_last_run(db_cli, inst):
+    def get_db_last_run(db_client, inst):
         """
         Get the last run from the reduction database
-        :param db_cli: Database client
+        :param db_client: Database client
         :param inst: Instrument name
         :return: Last run as an integer
         """
-        db_run_result = HealthCheckThread.last_run_query(db_cli, inst)
+        db_run_result = HealthCheckThread.last_run_query(db_client, inst)
 
         if not db_run_result:
             return None
@@ -70,12 +79,43 @@ class HealthCheckThread(threading.Thread):
         Login to the database
         :return: Database client
         """
-        db_cli = DatabaseClient()
+        db_client = DatabaseClient()
         try:
-            db_cli.connect()
+            db_client.connect()
         except ConnectionException:
-            logging.error("Unable to connect to MySQL")
-        return db_cli
+            logging.error("Unable to connect to Database")
+        return db_client
+
+    @staticmethod
+    def resubmit_run(icat_client, instrument, run_number):
+        """
+        Resubmit runs that are missing (have not been submitted by end of run monitor)
+        :param icat_client: ICAT client
+        :param instrument: Instrument name
+        :param run_number: Run number as an integer
+        """
+        # Connect to the autoreduce queues
+        queue_client = QueueClient()
+        try:
+            queue_client.connect()
+        except ConnectionException:
+            logging.error("Unable to connect to Queue")
+            return False
+
+        # Grab file location and RB number from ICAT
+        rb_number, location = icat_monitor.get_file_rb_and_location(icat_client,
+                                                                    instrument,
+                                                                    run_number)
+        if not location:
+            logging.error("Unable to find RB number for run: %s%s", instrument, run_number)
+            return False
+
+        # Serialise and send to the queue processors
+        data = queue_client.serialise_data(rb_number, instrument, location, run_number)
+        logging.info("Resubmitting run with data: %s ", str(data))
+        queue_client.send(ACTIVEMQ_SETTINGS.data_ready, data)
+        queue_client.disconnect()
+        return True
 
     @staticmethod
     def health_check():
@@ -84,25 +124,32 @@ class HealthCheckThread(threading.Thread):
         :return: True: Service is okay, False: Service requires restart
         """
         logging.info('Performing Health Check at %s', datetime.now())
-        db_cli = HealthCheckThread.get_db_client()
+
+        # Login to the reduction database and ICAT
+        db_client = HealthCheckThread.get_db_client()
+        icat_client = icat_monitor.icat_login()
 
         for inst in INSTRUMENTS:
-            db_last_run = HealthCheckThread.get_db_last_run(db_cli, inst['name'])
-            icat_last_run = icat_monitor.get_last_run(inst['name'])
+            db_last_run = HealthCheckThread.get_db_last_run(db_client, inst['name'])
+            icat_last_run = icat_monitor.get_last_run(icat_client, inst['name'])
 
             if db_last_run and icat_last_run:
                 logging.info("Found last run from database on %s of %i",
                              inst['name'], db_last_run)
                 logging.info("Found last run from ICAT on %s of %i",
-                             inst['name'], int(icat_last_run))
+                             inst['name'], icat_last_run)
 
                 # Compare them and make sure the database isn't
                 # too far behind. There is a tolerance of 2 runs
-                if db_last_run < int(icat_last_run) - 2:
-                    db_cli.disconnect()
+                if db_last_run < icat_last_run - 2:
+                    logging.debug("Attempting to resubmit missing runs")
+
+                    for run_number in range(db_last_run, icat_last_run + 1):
+                        HealthCheckThread.resubmit_run(icat_client, inst['name'], run_number)
+                    db_client.disconnect()
                     return False
 
-        db_cli.disconnect()
+        db_client.disconnect()
         return True
 
     @staticmethod
