@@ -1,14 +1,20 @@
+"""
+Tests for the autoreduction processor
+This includes the Listener and Consumer class
+"""
 import unittest
 import json
 import os
 
 from mock import patch, Mock, call
 
-from QueueProcessors.AutoreductionProcessor.autoreduction_processor import (Listener, Consumer,
+from QueueProcessors.AutoreductionProcessor.autoreduction_processor import (Listener,
+                                                                            Consumer,
                                                                             main)
 from QueueProcessors.AutoreductionProcessor.settings import MISC, ACTIVEMQ
 
 
+# pylint:disable=missing-docstring,too-many-arguments,no-self-use,protected-access
 class TestAutoreductionProcessorListener(unittest.TestCase):
 
     def setUp(self):
@@ -48,10 +54,11 @@ class TestAutoreductionProcessorListener(unittest.TestCase):
         mock_add_cancel.assert_called_once_with(self.data)
 
     if os.name != 'nt':  # pragma: no cover
-        @patch('QueueProcessors.AutoreductionProcessor.autoreduction_processor.Listener.should_proceed',
+        @patch('QueueProcessors.AutoreductionProcessor.'
+               'autoreduction_processor.Listener.should_proceed',
                return_value=False)
         @patch('twisted.internet.reactor.callLater')
-        def test_hold_message_do_not_proceed(self, mock_call_later, mock_should_proceed):
+        def test_hold_message_no_proceed(self, mock_call_later, mock_should_proceed):
             self.listener.hold_message('/queue/topic', self.json_data, self.headers)
             mock_should_proceed.assert_called_once()
             mock_call_later.assert_called_once_with(10, self.listener.hold_message,
@@ -90,9 +97,9 @@ class TestAutoreductionProcessorListener(unittest.TestCase):
         mock_client.ack.assert_called_once_with(self.headers['message-id'],
                                                 self.headers['subscription'])
         mock_popen.assert_called_once_with(["python",
-                                           MISC['post_process_directory'],
-                                           self.headers['destination'],
-                                           self.json_data])
+                                            MISC['post_process_directory'],
+                                            self.headers['destination'],
+                                            self.json_data])
         mock_add_process.assert_called_once()
 
     def test_update_child_process_list(self):
@@ -148,6 +155,7 @@ class TestAutoreductionProcessorListener(unittest.TestCase):
         self.assertEqual(self.listener.cancel_list, [])
 
 
+# pylint:disable=missing-docstring
 class TestAutoReductionProcessorConsumer(unittest.TestCase):
 
     def setUp(self):
@@ -181,14 +189,14 @@ class TestAutoReductionProcessorConsumer(unittest.TestCase):
                               'id': '1',
                               'ack': 'client-individual',
                               'header': {'activemq.prefetchSize': '1'}
-                              }
+                             }
             subcription_calls.append(call(**subscribe_args))
         mock_subscribe.assert_has_calls(subcription_calls)
 
 
 if os.name != 'nt':  # pragma: no cover
     class TestAutoreductionProcessor(unittest.TestCase):
-    
+
         @patch('twisted.internet.reactor.run')
         @patch('twisted.internet.reactor.callWhenRunning')
         def test_main(self, mock_call_when_running, mock_run):

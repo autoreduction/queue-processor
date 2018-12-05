@@ -121,12 +121,17 @@ class PostProcessAdmin(object):
             raise
 
     def validate_input(self, key):
+        """
+        Validates the input dictionary
+        :param key: key to search for
+        :return: The value of the key or raise an exception if none
+        """
         if key in self.data:
             value = self.data[key]
             logger.debug("%s: %s", key, str(value)[:50])
             return value
         else:
-            raise ValueError('%s is missing', key)
+            raise ValueError('%s is missing' % key)
 
     def replace_variables(self, reduce_script):
         """
@@ -443,7 +448,7 @@ class PostProcessAdmin(object):
     def _remove_directory(self, directory):
         """
         Helper function to remove a directory. shutil.rmtree cannot be used as it is not robust
-        enough when foldersare open over the network.
+        enough when folders are open over the network.
         """
         try:
             for target_file in os.listdir(directory):
@@ -493,7 +498,7 @@ def main():
             raise
 
         except Exception as exp:
-            logger.info("PostProcessAdmin error: %s", exp)
+            logger.info("PostProcessAdmin error: %s", str(exp))
             raise
 
         finally:
@@ -511,5 +516,5 @@ def main():
             sys.exit()
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma : no cover
     main()

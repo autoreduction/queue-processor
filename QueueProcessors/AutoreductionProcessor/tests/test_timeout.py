@@ -1,3 +1,6 @@
+"""
+Tests for the timeout helper class
+"""
 import unittest
 import os
 import signal
@@ -7,6 +10,7 @@ from mock import patch
 from QueueProcessors.AutoreductionProcessor.timeout import timeout
 
 
+# pylint:disable=missing-docstring
 class TestTimeOut(unittest.TestCase):
 
     def setUp(self):
@@ -21,12 +25,12 @@ class TestTimeOut(unittest.TestCase):
         self.assertRaises(Exception, self.timeout.handle_timeout)
 
     # Add no cover to keep windows coverage happy
-    if os.name is not 'nt':  # pragma: no cover
+    if os.name != 'nt':  # pragma: no cover
         @patch('signal.signal')
         @patch('signal.alarm')
         def test_enter(self, mock_alarm, mock_signal):
             self.timeout.__enter__()
-            mock_signal.assert_called_once_with(signal.SIGALRM,
+            mock_signal.assert_called_once_with(signal.SIGALRM,  # pylint:disable=no-member
                                                 self.timeout.handle_timeout)
             mock_alarm.assert_called_once_with(10)
 

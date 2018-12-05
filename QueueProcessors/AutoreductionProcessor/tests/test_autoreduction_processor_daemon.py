@@ -1,3 +1,6 @@
+"""
+Unit tests for the Autoreduction Processor daemon thread
+"""
 import unittest
 import sys
 
@@ -7,7 +10,8 @@ from QueueProcessors.AutoreductionProcessor.\
     autoreduction_processor_daemon import main
 
 
-class TestAutoreduceQueueProcessorDaemon(unittest.TestCase):
+# pylint:disable=missing-docstring,no-self-use
+class TestAutoreductionProcessorDaemon(unittest.TestCase):
 
     @patch('QueueProcessors.AutoreductionProcessor.daemon.Daemon.start')
     @patch('sys.exit')
@@ -46,4 +50,3 @@ class TestAutoreduceQueueProcessorDaemon(unittest.TestCase):
         # Called twice (second time from fall through as exit is mocked)
         # Hence just check that is has been called with an error code of 2
         mock_exit.aasert_has_calls(call(2))
-
