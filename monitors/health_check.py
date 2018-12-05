@@ -134,10 +134,8 @@ class HealthCheckThread(threading.Thread):
             icat_last_run = icat_monitor.get_last_run(icat_client, inst['name'])
 
             if db_last_run and icat_last_run:
-                logging.info("Found last run from database on %s of %i",
-                             inst['name'], db_last_run)
-                logging.info("Found last run from ICAT on %s of %i",
-                             inst['name'], icat_last_run)
+                logging.info("%s - Database: %i , ICAT: %i",
+                             inst['name'], db_last_run, icat_last_run)
 
                 # Compare them and make sure the database isn't
                 # too far behind. There is a tolerance of 2 runs
