@@ -21,7 +21,7 @@ from QueueProcessors.AutoreductionProcessor.post_process_admin import (linux_to_
                                                                        main)
 
 
-# pylint:disable=missing-docstring,invalid-name,protected-access,no-self-use
+# pylint:disable=missing-docstring,invalid-name,protected-access,no-self-use,too-many-arguments
 class TestPostProcessAdminHelpers(unittest.TestCase):
 
     def test_linux_to_windows_path(self):
@@ -195,8 +195,10 @@ class TestPostProcessAdmin(unittest.TestCase):
         ppa._copy_tree(directory_to_copy, os.path.join(get_project_root(), 'test-dir'))
         self.assertTrue(os.path.exists(os.path.join(get_project_root(), 'test-dir')))
         self.assertTrue(os.path.isdir(os.path.join(get_project_root(), 'test-dir')))
-        self.assertTrue(os.path.exists(os.path.join(get_project_root(), 'test-dir', 'test-file.txt')))
-        self.assertTrue(os.path.isfile(os.path.join(get_project_root(), 'test-dir', 'test-file.txt')))
+        self.assertTrue(os.path.exists(os.path.join(get_project_root(), 'test-dir',
+                                                    'test-file.txt')))
+        self.assertTrue(os.path.isfile(os.path.join(get_project_root(), 'test-dir',
+                                                    'test-file.txt')))
         shutil.rmtree(os.path.join(get_project_root(), 'test-dir'))
 
     def test_remove_directory(self):
@@ -275,11 +277,3 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_logger.assert_has_calls([call('PostProcessAdmin error: %s', 'error-message')])
         mock_exit.assert_called_once()
         mock_send.assert_called_once_with(ACTIVEMQ['postprocess_error'], json.dumps(self.data))
-
-    def test_main_outer_exception(self):
-        pass
-
-
-
-
-
