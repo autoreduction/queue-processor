@@ -2,6 +2,7 @@
 Attempt to test as much of the windows service as possible
 Currently only running unit tests on linux
 """
+import json
 import unittest
 import time
 
@@ -170,7 +171,7 @@ class TestServiceUtils(unittest.TestCase):
                             'run_number': '555',
                             'facility': 'ISIS'
                            }
-        mock_send.assert_called_once_with('/queue/DataReady', expected_message)
+        mock_send.assert_called_once_with('/queue/DataReady', json.dumps(expected_message))
         mock_get_file_loc.assert_called_once_with(icat_client, 'GEM', '555')
 
     @patch('monitors.icat_monitor.get_file_rb_and_location', return_value=(None, None))
