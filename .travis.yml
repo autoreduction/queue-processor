@@ -21,7 +21,7 @@ before_install:
   - mysql < build/database/test_db_setup.sql
 
 install:
-  - python setup.py install
+  - pip install -e .
   - pip install -r requirements.txt
 
   # ================== Test setup ==================== #
