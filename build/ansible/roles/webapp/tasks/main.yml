@@ -1,0 +1,44 @@
+---
+
+- name: 'Install Apache 2 and the wsgi module'
+  apt:
+    name: '{{ item }}'
+    state: present
+  with_items:
+  - apache2
+  - libapache2-mod-wsgi
+
+- name: 'Add server name to apache2.conf'
+  lineinfile:
+    path: /etc/apache2/apache2.conf
+    line: 'ServerName {{inventory_hostname}}'
+
+- name: 'Add wsgi config to apache2.conf'
+  lineinfile:
+    path: /etc/apache2/apache2.conf
+    line: 'Include /home/autoreduction/autoreduction/WebApp/autoreduce_webapp/apache/apache_django_wsgi.conf'
+
+- name: 'Copy over the wsgi configuration file'
+  copy:
+    src: roles/webapp/files/apache_django_wsgi.conf
+    dest: /home/autoreduction/autoreduction/WebApp/autoreduce_webapp/apache/apache_django_wsgi.conf
+    owner: autoreduction
+    group: autoreduction
+
+- name: 'Set the correct permissions on autoreduction.log'
+  copy:
+    content: ""
+    dest: /home/autoreduction/autoreduction/WebApp/autoreduce_webapp/autoreduction.log
+    owner: www-data
+    group: www-data
+
+- name: 'Add host name to the list of allowed hosts'
+  replace:
+    path: /home/autoreduction/autoreduction/WebApp/autoreduce_webapp/autoreduce_webapp/settings.py
+    regexp: 'ALLOWED_HOSTS.*$'
+    replace: "ALLOWED_HOSTS = ['{{inventory_hostname}}', '127.0.0.1', 'localhost']"
+
+- name: 'Restart Apache2'
+  service:
+    name: apache2
+    state: restarted

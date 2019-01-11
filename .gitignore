@@ -27,10 +27,13 @@ migrations/
 AutoReduction.egg-info/
 
 # This is generated from a template so should be ignored to force regeneration
-apache_django_wsgi.conf
+#apache_django_wsgi.conf
 
 # Ignore coverage logs
 .coverage
 
 # Include the coverage configuration file
 !.coveragerc
+
+# Ignore site.retry from Ansible
+site.retry

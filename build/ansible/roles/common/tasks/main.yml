@@ -1,0 +1,40 @@
+---
+
+- name: 'Installing packages'
+  apt: 
+    name: '{{ item }}'
+    state: present
+    update_cache: yes
+  with_items:
+  - git
+  - python-pip
+  - python-dev
+  - python-software-properties
+  - libmysqlclient-dev
+  - libssl-dev
+  - libffi-dev
+
+- name: 'Create ansible config directory on remote hosts'
+  file:
+    path: /etc/ansible/facts.d
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: 'Check local fact file'
+  stat:
+    path: /etc/ansible/facts.d/local.fact
+  register: factFileResult
+
+- name: 'Install and initialise local fact file on remote hosts'
+  lineinfile:
+    path: '/etc/ansible/facts.d/local.fact'
+    line: '[{{ heading }}]'
+    regexp: '^\[{{ heading }}\]$'
+    insertbefore: BOF
+    owner: root
+    group: root
+    mode: 0664
+    create: true
+  when: factFileResult.stat.exists is defined and factFileResult.stat.exists == false

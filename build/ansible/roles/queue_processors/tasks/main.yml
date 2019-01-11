@@ -1,0 +1,90 @@
+---
+
+- name: 'Create autoreduction group'
+  group:
+    name: autoreduction
+    state: present
+
+- name: 'Create autoreduction user'
+  user:
+    name: autoreduction
+    createhome: true
+    group: autoreduction
+    shell: /bin/bash
+
+- name: 'Check if autoreduction folder already exists'
+  stat:
+    path: /home/autoreduction/autoreduction
+  register: autoreduce
+
+- name: 'Install setuptools'
+  pip:
+    name: setuptools
+    state: latest
+
+- name: 'Install cryptography'
+  pip:
+    name: cryptography
+
+- name: 'Install GitPython'
+  pip:
+    name: GitPython
+
+- name: 'Clone the autoreduce git repository'
+  git:
+    repo: https://github.com/ISISScientificComputing/autoreduce.git
+    dest: /home/autoreduction/autoreduction
+    version: develop
+  when: autoreduce.stat.exists == false
+
+- name: 'Create logs directory'
+  file:
+    path: /home/autoreduction/autoreduction/logs
+    state: directory
+    owner: autoreduction
+    group: autoreduction
+
+- name: 'Updating Pip'
+  shell: 'pip install -U pip'
+
+- name: 'Installing dependencies from setup.py'
+  shell: 'pip install -e /home/autoreduction/autoreduction'
+
+- name: 'Installing dependencies from requirements.txt'
+  shell: 'pip install -r /home/autoreduction/autoreduction/requirements.txt'
+
+- name: 'Create the autoreduction database'
+  mysql_db:
+    name: autoreduction
+    state: present
+
+- name: 'Copy test settings'
+  shell: 'python setup.py test_settings'
+  args:
+    chdir: /home/autoreduction/autoreduction
+
+- name: 'Install the Python ICAT API, ActiveMQ and Mantid'
+  shell: 'python setup.py externals -s icat,activemq,mantid'
+  args:
+    chdir: /home/autoreduction/autoreduction
+
+- name: 'Setup database'
+  shell: 'python setup.py database'
+  args:
+    chdir: /home/autoreduction/autoreduction
+
+- name: 'Copy ActiveMQ service file to /etc/init.d'
+  copy:
+    src: roles/queue_processors/files/activemq
+    dest: /etc/init.d/activemq
+    owner: autoreduction
+    group: autoreduction
+    mode: 0774
+
+- name: 'Start ActiveMQ service'
+  service:
+    name: activemq
+    state: started
+
+- name: 'Set permissions on the autoreduction folder'
+  shell: 'chown autoreduction -R /home/autoreduction/autoreduction'
