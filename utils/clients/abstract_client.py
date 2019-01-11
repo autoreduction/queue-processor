@@ -24,14 +24,14 @@ class AbstractClient:
     @abstractmethod
     def connect(self):
         """ Abstract function for connecting to a service """
-        raise NotImplementedError
+        raise NotImplementedError # pragma: no cover
 
     @abstractmethod
     def disconnect(self):
         """ Abstract function for disconnecting from a service """
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     @abstractmethod
     def _test_connection(self):
         """ Abstract function to test if a service connection has been made/is active """
-        raise NotImplementedError
+        raise NotImplementedError # pragma: no cover
