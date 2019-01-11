@@ -20,7 +20,7 @@
 
 - name: 'Copy over the wsgi configuration file'
   copy:
-    src: roles/webapp/files/apache_django_wsgi.conf
+    src: roles/webapp/files/apache2_django_wsgi.conf
     dest: /home/autoreduction/autoreduction/WebApp/autoreduce_webapp/apache/apache_django_wsgi.conf
     owner: autoreduction
     group: autoreduction
