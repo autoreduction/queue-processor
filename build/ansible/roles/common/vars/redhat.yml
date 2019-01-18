@@ -1,0 +1,9 @@
+---
+
+common_pkgs:
+- gcc
+- git
+- python-pip
+- python-devel
+- openssl-devel
+- libffi-devel 

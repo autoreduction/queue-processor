@@ -1,18 +1,14 @@
 ---
 
+- include_vars: vars/redhat.yml
+  when: ansible_os_family == 'RedHat'
+
 - name: 'Installing packages'
-  apt: 
+  package: 
     name: '{{ item }}'
     state: present
     update_cache: yes
-  with_items:
-  - git
-  - python-pip
-  - python-dev
-  - python-software-properties
-  - libmysqlclient-dev
-  - libssl-dev
-  - libffi-dev
+  with_items: '{{ common_pkgs }}'
 
 - name: 'Create ansible config directory on remote hosts'
   file:

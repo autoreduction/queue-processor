@@ -5,6 +5,6 @@
   roles:
   - role: common
   - role: java
-  - role: mysql
+  - role: mariadb
   - role: queue_processors
   - role: webapp

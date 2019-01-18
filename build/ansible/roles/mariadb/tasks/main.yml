@@ -1,0 +1,17 @@
+---
+
+- include_vars: vars/redhat.yml
+  when: ansible_os_family == 'RedHat'
+
+- name: 'Install MariaDB packages'
+  package:
+    name: '{{ item }}'
+    state: present
+  with_items: '{{ mariadb_pkgs }}'
+
+- name: 'Start the MariaDB service'
+  service:
+    name: '{{ mariadb_daemon }}'
+    state: started
+    enabled: true
+

@@ -51,7 +51,7 @@
   shell: 'pip install -e /home/autoreduction/autoreduction'
 
 - name: 'Installing dependencies from requirements.txt'
-  shell: 'pip install -r /home/autoreduction/autoreduction/requirements.txt'
+  shell: 'pip install --ignore-installed -r /home/autoreduction/autoreduction/requirements.txt'
 
 - name: 'Create the autoreduction database'
   mysql_db:
@@ -63,8 +63,8 @@
   args:
     chdir: /home/autoreduction/autoreduction
 
-- name: 'Install the Python ICAT API, ActiveMQ and Mantid'
-  shell: 'python setup.py externals -s icat,activemq,mantid'
+- name: 'Install the Python ICAT API and ActiveMQ'
+  shell: 'python setup.py externals -s icat,activemq'
   args:
     chdir: /home/autoreduction/autoreduction
 
@@ -72,19 +72,6 @@
   shell: 'python setup.py database'
   args:
     chdir: /home/autoreduction/autoreduction
-
-- name: 'Copy ActiveMQ service file to /etc/init.d'
-  copy:
-    src: roles/queue_processors/files/activemq
-    dest: /etc/init.d/activemq
-    owner: autoreduction
-    group: autoreduction
-    mode: 0774
-
-- name: 'Start ActiveMQ service'
-  service:
-    name: activemq
-    state: started
 
 - name: 'Set permissions on the autoreduction folder'
   shell: 'chown autoreduction -R /home/autoreduction/autoreduction'
