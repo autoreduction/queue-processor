@@ -6,4 +6,4 @@ common_pkgs:
 - python-pip
 - python-devel
 - openssl-devel
-- libffi-devel 
+- libffi-devel

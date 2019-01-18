@@ -1,0 +1,28 @@
+[isis-rhel]
+name=ISIS Software Repository for Redhat Enterprise Linux 7 - x86_64
+baseurl=http://yum.isis.rl.ac.uk/rhel/7/x86_64
+failovermethod=priority
+enabled=1
+gpgcheck=0
+
+[isis-rhel-noarch]
+name=ISIS Software Repository for Redhat Enterprise Linux 7 - noarch
+baseurl=http://yum.isis.rl.ac.uk/rhel/7/noarch
+failovermethod=priority
+enabled=1
+gpgcheck=0
+
+[isis-rhel-debuginfo]
+name=ISIS Software Repository for Redhat Enterprise Linux 7 - x86_64 - Debug
+baseurl=http://yum.isis.rl.ac.uk/rhel/7/x86_64/debug
+failovermethod=priority
+enabled=1
+gpgcheck=0
+
+[isis-rhel-source]
+name=ISIS Software Repository for Redhat Enterprise Linux 7 - x86_64 - Source
+baseurl=http://yum.isis.rl.ac.uk/rhel/7/SRPMS
+failovermethod=priority
+enabled=0
+gpgcheck=0
+

@@ -6,5 +6,6 @@
   - role: common
   - role: java
   - role: mariadb
+  - role: mantid
   - role: queue_processors
   - role: webapp
