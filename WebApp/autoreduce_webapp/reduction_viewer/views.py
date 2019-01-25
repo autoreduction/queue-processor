@@ -346,8 +346,11 @@ def run_summary(request, instrument_name=None, run_number=None, run_version=0):
                                        run_number=run_number,
                                        run_version=run_version)
         history = ReductionRun.objects.filter(run_number=run_number).order_by('-run_version')
-        reduction_location = str(run.reduction_location.all()[0])
-        ceph_location = get_ceph_location(reduction_location, instrument_name)
+        ceph_location = None
+        location_list = run.reduction_location.all()
+        if location_list:
+            reduction_location = str(location_list[0])
+            ceph_location = get_ceph_location(reduction_location, instrument_name)
         context_dictionary = {'run': run, 'history': history, 'ceph_location': ceph_location}
     except PermissionDenied:
         raise
