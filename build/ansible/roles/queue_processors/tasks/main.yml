@@ -30,6 +30,11 @@
   pip:
     name: GitPython
 
+- name: 'Install service_identity'
+  pip:
+    name: service_identity
+    extra_args: --force --upgrade
+
 - name: 'Clone the autoreduce git repository'
   git:
     repo: https://github.com/ISISScientificComputing/autoreduce.git
@@ -53,6 +58,11 @@
 - name: 'Installing dependencies from requirements.txt'
   shell: 'pip install --ignore-installed -r /home/autoreduction/autoreduction/requirements.txt'
 
+- name: 'Copy test settings'
+  shell: 'python setup.py test_settings'
+  args:
+    chdir: /home/autoreduction/autoreduction
+
 - name: 'Create the autoreduction database'
   mysql_db:
     name: autoreduction
@@ -67,6 +77,16 @@
   shell: 'python setup.py externals -s icat,activemq'
   args:
     chdir: /home/autoreduction/autoreduction
+
+- name: 'Copy ActiveMQ service file'
+  copy:
+    src: roles/queue_processors/files/activemq.service
+    dest: /etc/systemd/system/activemq.service
+
+- name: 'Start ActiveMQ service'
+  service:
+    name: 'activemq'
+    state: started 
 
 - name: 'Setup database'
   shell: 'python setup.py database'
