@@ -371,8 +371,8 @@ def get_ceph_location(reduction_location, instrument):
     except IndexError:
         # Return None if file path does not contain instrument name
         return None
-    ceph_location = ceph_root_level + instrument.upper() + '/rb' + data_location
-    return ceph_location.replace('\\', '/')
+    ceph_location = ceph_root_level + 'rb/' + instrument.upper() + data_location
+    return ceph_location.replace('/', '\\')
 
 
 @login_and_uows_valid

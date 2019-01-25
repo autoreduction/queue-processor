@@ -103,7 +103,9 @@
                             <div class="col-md-6">
                                 <div class="file-path">
                                     <strong>Reduced:</strong>
-                                    {% if run.reduction_location.all %}
+                                    {% if ceph_location %}
+                                        {{ ceph_location }}<br/>
+                                    {% elif run.reduction_location.all %}
                                         {% for location in run.reduction_location.all %}
                                             {{ location }}<br/>
                                         {% endfor %}
@@ -115,11 +117,6 @@
                             <div class="col-md-6">
                                 <strong>Logs:</strong>
                                 <a href="#" class="js-log-display">Show reduction logs</a>
-                            </div>
-                            <div class="col-md-6">
-                                {% if ceph_location %}
-                                    <a href='{{ ceph_location }}'>Download data</a>
-                                {% endif %}
                             </div>
                         </div>
                     </div>
