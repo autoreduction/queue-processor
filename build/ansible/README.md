@@ -27,8 +27,10 @@ Now run the playbook:
 ansible-playbook site.yml
 ```
 
+If your public key isn't present on the remote host then you will need to pass Ansible a username and password.
+
+```
+ansible-playbook site.yml --user user --ask-pass
+```
+
 This should automatically deploy Autoreduce to the target machine.
-
-# Licensing
-
-By using this playbook you agree to abide by the Oracle JDK license at: https://www.oracle.com/technetwork/java/javase/terms/license/index.html
