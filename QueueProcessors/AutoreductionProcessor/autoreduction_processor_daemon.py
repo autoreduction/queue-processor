@@ -7,7 +7,7 @@ from QueueProcessors.AutoreductionProcessor.daemon import Daemon
 from QueueProcessors.AutoreductionProcessor import autoreduction_processor
 
 
-class AutoreduceQueueProcessorDaemon(Daemon):
+class AutoreduceQueueProcessorDaemon(Daemon):  # pragma: no cover
     """ Class responsible for running the autoreduction processor. """
     def run(self):
         """ Run autoreduction_processor. """
@@ -35,5 +35,5 @@ def main():
         sys.exit(2)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     main()
