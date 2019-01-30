@@ -93,5 +93,39 @@
   args:
     chdir: /home/autoreduction/autoreduction
 
+- name: 'Configure database URL'
+  replace:
+    path: /home/autoreduction/autoreduction/QueueProcessors/QueueProcessor/settings.py
+    regexp: "'HOST'.*$"
+    replace: "'HOST': '127.0.0.1',"
+
+- name: 'Configure database username'
+  replace:
+    path: /home/autoreduction/autoreduction/QueueProcessors/QueueProcessor/settings.py
+    regexp: "'USER'.*$"
+    replace: "'USER': 'root',"
+
+- name: 'Configure database password'
+  replace:
+    path: /home/autoreduction/autoreduction/QueueProcessors/QueueProcessor/settings.py
+    regexp: "'PASSWD'.*$"
+    replace: "'PASSWD': '',"
+
+- name: 'Configure database name'
+  replace:
+    path: /home/autoreduction/autoreduction/QueueProcessors/QueueProcessor/settings.py
+    regexp: "'DB'.*$"
+    replace: "'DB': 'autoreduction',"
+
+- name: 'Configure queue processor log location'
+  replace:
+    path: /home/autoreduction/autoreduction/QueueProcessors/QueueProcessor/settings.py
+    regexp: "LOG_FILE.*$"
+    replace: "LOG_FILE = '/home/autoreduction/autoreduction/logs/queueProcessor.log'"
+
 - name: 'Set permissions on the autoreduction folder'
-  shell: 'chown autoreduction -R /home/autoreduction/autoreduction'
+  file:
+    dest: '/home/autoreduction/autoreduction'
+    owner: autoreduction
+    group: autoreduction
+    recurse: yes
