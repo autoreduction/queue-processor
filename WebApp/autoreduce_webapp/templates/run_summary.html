@@ -105,6 +105,7 @@
                                     <strong>Reduced:</strong>
                                     {% if ceph_location %}
                                         {{ ceph_location }}<br/>
+                                        <a href="{% url 'help' %}" target="_blank">How to use this link</a>
                                     {% elif run.reduction_location.all %}
                                         {% for location in run.reduction_location.all %}
                                             {{ location }}<br/>
@@ -113,8 +114,6 @@
                                         <em>No reduced data found</em>
                                     {% endif %}
                                 </div>
-                            </div>
-                            <div class="col-md-6">
                                 <strong>Logs:</strong>
                                 <a href="#" class="js-log-display">Show reduction logs</a>
                             </div>
