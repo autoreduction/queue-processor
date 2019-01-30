@@ -14,26 +14,45 @@
     path: '{{ apache_config }}'
     line: 'ServerName {{inventory_hostname}}'
 
+- name: 'Copy Apache 2 wsgi configuration file to remote host'
+  copy:
+    src: roles/webapp/files/apache2_django_wsgi.conf
+    dest: /home/autoreduction/autoreduction/WebApp/autoreduce_webapp/apache
+
 - name: 'Add wsgi config to httpd.conf'
   lineinfile:
     path: '{{ apache_config }}'
-    line: 'Include /home/autoreduction/autoreduction/WebApp/autoreduce_webapp/apache/apache_django_wsgi.conf'
+    line: 'Include /home/autoreduction/autoreduction/WebApp/autoreduce_webapp/apache/apache2_django_wsgi.conf'
 
-- name: 'Copy the wsgi configuration template'
-  shell: 'cp /home/autoreduction/autoreduction/WebApp/autoreduce_webapp/apache/apache_django_wsgi.conf.template /home/autoreduction/autoreduction/WebApp/autoreduce_webapp/apache/apache_django_wsgi.conf'
+- name: 'Create a group for apache'
+  group:
+    name: apache
+    state: present
 
-- name: 'Fill the template file'
-  replace:
-    path: /home/autoreduction/autoreduction/WebApp/autoreduce_webapp/apache/apache_django_wsgi.conf
-    regexp: '\{0\}'
-    replace: '/home/autoreduction/autoreduction'
+- name: 'Add apache to the group'
+  user:
+    name: '{{ apache_user }}'
+    group: 'apache'
 
-- name: 'Set the correct permissions on autoreduction.log'
+- name: 'Add autoreduction to the group'
+  user:
+    name: 'autoreduction'
+    group: 'apache'
+
+- name: 'Add group to the autoreduction directory and set correct permissions'
+  file:
+    dest: '/home/autoreduction'
+    owner: autoreduction
+    group: apache
+    mode: u=rwX,g=rX,o=rX
+    recurse: yes
+
+- name: 'Allow apache to write autoreduction.log'
   copy:
     content: ""
     dest: /home/autoreduction/autoreduction/WebApp/autoreduce_webapp/autoreduction.log
     owner: '{{ apache_user }}'
-    group: '{{ apache_user }}'
+    group: 'apache'
 
 - name: 'Add host name to the list of allowed hosts'
   replace:
