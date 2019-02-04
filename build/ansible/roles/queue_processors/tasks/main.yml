@@ -120,7 +120,7 @@
 - name: 'Configure queue processor log location'
   replace:
     path: /home/autoreduction/autoreduction/QueueProcessors/QueueProcessor/settings.py
-    regexp: "LOG_FILE.*$"
+    regexp: "LOG_FILE =.*$"
     replace: "LOG_FILE = '/home/autoreduction/autoreduction/logs/queueProcessor.log'"
 
 - name: 'Set permissions on the autoreduction folder'

@@ -9,3 +9,4 @@
   - role: mantid
   - role: queue_processors
   - role: webapp
+  - role: archive

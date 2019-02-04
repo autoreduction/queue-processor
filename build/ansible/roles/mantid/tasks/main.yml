@@ -6,6 +6,9 @@
     dest: /etc/yum.repos.d/isis-rhel.repo
   when: ansible_os_family == 'RedHat'
 
+- name: 'Clean yum'
+  command: yum clean all
+
 - name: 'Install Mantid package'
   yum:
     name: mantid
