@@ -33,6 +33,7 @@
 - name: 'Install service_identity'
   pip:
     name: service_identity
+    state: forcereinstall
     extra_args: --force --upgrade
 
 - name: 'Clone the autoreduce git repository'
