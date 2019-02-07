@@ -34,7 +34,7 @@ import os
 import shutil
 import time
 
-from utils.settings import VALID_INSTRUMENTS
+from utils.autoreduction_instruments import get_instrument_names
 
 GENERIC_CYCLE_PATH = os.path.join('NDX{}', 'Instrument', 'data', 'cycle_{}_{}')
 
@@ -107,10 +107,10 @@ class DataArchiveCreator(object):
         """
         Ensure that an instrument is valid - else throw an exception
         """
-        if instrument not in VALID_INSTRUMENTS:
+        if instrument not in get_instrument_names():
             raise ValueError("Instrument provided: \'{0}\' is not recognised as  a valid "
                              "instrument. Valid instruments are {1}".format(instrument,
-                                                                            VALID_INSTRUMENTS))
+                                                                            get_instrument_names()))
 
     def _make_cycle_directories(self, start_year, end_year, current_cycle, base_dir):
         """

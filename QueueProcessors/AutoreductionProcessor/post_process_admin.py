@@ -27,6 +27,8 @@ from QueueProcessors.AutoreductionProcessor.settings import ACTIVEMQ, MISC
 from QueueProcessors.AutoreductionProcessor.autoreduction_logging_setup import logger
 from QueueProcessors.AutoreductionProcessor.timeout import timeout
 
+from utils.autoreduction_instruments import find_instrument_by_name
+
 
 @contextmanager
 def channels_redirected(out_file, err_file, out_stream):
@@ -112,6 +114,8 @@ class PostProcessAdmin(object):
                                                    MISC["temp_root_directory"])
             self.facility = self.validate_input('facility')
             self.instrument = self.validate_input('instrument').upper()
+            # Update string of instrument name to instrument object
+            self.instrument = find_instrument_by_name(self.instrument)
             self.proposal = str(int(self.validate_input('rb_number')))
             self.run_number = str(int(self.validate_input('run_number')))
             self.reduction_script = self.validate_input('reduction_script')
@@ -186,11 +190,14 @@ class PostProcessAdmin(object):
             self.client.send(ACTIVEMQ['reduction_started'], json.dumps(self.data))
 
             # Specify instrument directory
-            instrument_output_dir = MISC["ceph_directory"] % (self.instrument,
-                                                              self.proposal,
-                                                              self.run_number)
+            meta_data = {
+                'name': self.instrument.name,
+                'rb': self.proposal,
+                'run': self.run_number
+            }
+            instrument_output_dir = self.instrument.format_output_directory(meta_data)
 
-            if self.instrument in MISC["excitation_instruments"]:
+            if self.instrument.name in MISC["excitation_instruments"]:
                 # Excitations would like to remove the run number folder at the end
                 instrument_output_dir = instrument_output_dir[:instrument_output_dir.rfind('/') + 1]
 
@@ -294,7 +301,7 @@ class PostProcessAdmin(object):
 
                     # Add Mantid path to system path so we can use Mantid to run the user's script
                     sys.path.append(MISC["mantid_path"])
-                    reduce_script_location = self._load_reduction_script(self.instrument)
+                    reduce_script_location = self._load_reduction_script(self.instrument.name)
                     reduce_script = imp.load_source('reducescript', reduce_script_location)
 
                     try:
@@ -380,7 +387,7 @@ class PostProcessAdmin(object):
         sub-folders.
         """
         if os.path.isdir(copy_destination) \
-                and self.instrument not in MISC["excitation_instruments"]:
+                and self.instrument.name not in MISC["excitation_instruments"]:
             self._remove_directory(copy_destination)
 
         self.data['reduction_data'].append(linux_to_windows_path(copy_destination))

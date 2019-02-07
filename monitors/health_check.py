@@ -10,7 +10,7 @@ import json
 
 from monitors import end_of_run_monitor
 from monitors import icat_monitor
-from monitors.settings import INSTRUMENTS
+from utils.autoreduction_instruments import INSTRUMENTS
 from utils.clients.database_client import DatabaseClient
 from utils.clients.queue_client import QueueClient
 from utils.clients.connection_exception import ConnectionException
@@ -135,12 +135,12 @@ class HealthCheckThread(threading.Thread):
         icat_client = icat_monitor.icat_login()
 
         for inst in INSTRUMENTS:
-            db_last_run = HealthCheckThread.get_db_last_run(db_client, inst['name'])
-            icat_last_run = icat_monitor.get_last_run(icat_client, inst['name'])
+            db_last_run = HealthCheckThread.get_db_last_run(db_client, inst.name())
+            icat_last_run = icat_monitor.get_last_run(icat_client, inst.name())
 
             if db_last_run and icat_last_run:
                 logging.info("%s - Database: %i , ICAT: %i",
-                             inst['name'], db_last_run, icat_last_run)
+                             inst.name(), db_last_run, icat_last_run)
 
                 # Compare them and make sure the database isn't
                 # too far behind. There is a tolerance of 2 runs
@@ -148,7 +148,7 @@ class HealthCheckThread(threading.Thread):
                     logging.debug("Attempting to resubmit missing runs")
 
                     for run_number in range(db_last_run, icat_last_run + 1):
-                        HealthCheckThread.resubmit_run(icat_client, inst['name'], run_number)
+                        HealthCheckThread.resubmit_run(icat_client, inst.name(), run_number)
                     db_client.disconnect()
                     return False
 

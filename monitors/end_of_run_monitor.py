@@ -11,7 +11,8 @@ from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
 from monitors.settings import (INST_FOLDER, DATA_LOC, SUMMARY_LOC,
-                               LAST_RUN_LOC, EORM_LOG_FILE, INSTRUMENTS)
+                               LAST_RUN_LOC, EORM_LOG_FILE)
+from utils.autoreduction_instruments import INSTRUMENTS
 from utils.clients.queue_client import QueueClient
 
 logging.basicConfig(filename=EORM_LOG_FILE,
@@ -144,7 +145,7 @@ def main():
     message_lock = threading.Lock()
     for inst in INSTRUMENTS:
         # Create an event_handler, this will decide what to do when files are changed.
-        event_handler = InstrumentMonitor(inst['name'], inst['use_nexus'], connection, message_lock)
+        event_handler = InstrumentMonitor(inst.name(), inst.use_nexus(), connection, message_lock)
         # This will watch the folder the program is in and pick up all changes made in the folder.
         path = event_handler.get_watched_folder()
         # Tell the observer what to watch and give it the class that will handle the events.

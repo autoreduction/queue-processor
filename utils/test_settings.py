@@ -6,8 +6,6 @@ Settings for connecting to the test services that run locally
 from utils.clients.settings.client_settings_factory import ClientSettingsFactory
 
 
-VALID_INSTRUMENTS = ['GEM', 'POLARIS', 'WISH', 'OSIRIS', 'MUSR', 'POLREF']
-
 SETTINGS_FACTORY = ClientSettingsFactory()
 
 ICAT_SETTINGS = SETTINGS_FACTORY.create('icat',

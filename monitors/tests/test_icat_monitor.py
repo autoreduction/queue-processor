@@ -7,7 +7,7 @@ import datetime
 from mock import Mock, patch
 
 import monitors.icat_monitor as icat_monitor
-from monitors.settings import INSTRUMENTS
+from utils.autoreduction_instruments import INSTRUMENTS
 
 
 # pylint:disable=too-few-public-methods,unused-argument,missing-docstring
@@ -74,7 +74,7 @@ class TestICATMonitor(unittest.TestCase):
         Test handling of run retrieval from ICAT
         """
         icat_client = Mock()
-        inst_name = INSTRUMENTS[0]['name']
+        inst_name = INSTRUMENTS[0].name()
         file_name = inst_name + '3223.nxs'
         icat_client.execute_query = Mock(return_value=[DataFile(file_name, None)])
         run = icat_monitor.get_last_run_in_dates(icat_client,
@@ -88,7 +88,7 @@ class TestICATMonitor(unittest.TestCase):
         Test handling of runs when no files are returned
         """
         icat_client = Mock()
-        inst_name = INSTRUMENTS[0]['name']
+        inst_name = INSTRUMENTS[0].name()
         icat_client.execute_query = Mock(return_value=[])
         run = icat_monitor.get_last_run_in_dates(icat_client,
                                                  inst_name,
