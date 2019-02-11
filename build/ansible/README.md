@@ -1,11 +1,19 @@
 ## Autoreduction Ansible Script
 
-This Ansible script deploys a complete autoreduction instance on a cloud VM running Ubuntu Trusty.
-A separate RedHat Linux machine is required in order to deploy the playbook.
+This Ansible script deploys a complete autoreduction instance on a cloud VM running Scientific Linux 7.
+A separate SL7 Ansible server is required in order to deploy the playbook. The following components are installed
+
+ * Autoreduction WebApp
+ * Autoreduction queue processors
+ * Autoreduction utilities
+ * All packages necessary for the above
+ * ActiveMQ
+ * Python ICAT
+ * Packages for mounting the network drive (Full instructions: https://github.com/ISISScientificComputing/autoreduce/wiki/Cloud-Instances)
 
 # Install
 
-All these instructions should take place on the RHEL machine. The setup on the Ubuntu machine will
+All these instructions should take place on the server machine. The setup on the host will
 be handled automatically by the playbook.
 
 Get ansible:
@@ -34,3 +42,8 @@ ansible-playbook site.yml --user user --ask-pass
 ```
 
 This should automatically deploy Autoreduce to the target machine.
+
+# Notes
+
+This playbook does not currently install Mantid because of the difficulty in setting up the environment for
+a successful install. Instructions have instead been provided on the wiki: https://github.com/ISISScientificComputing/autoreduce/wiki/Cloud-Instances
