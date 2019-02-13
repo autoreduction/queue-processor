@@ -150,6 +150,7 @@ class HealthCheckThread(threading.Thread):
                     return False
 
         db_client.disconnect()
+        icat_monitor.icat_logout(icat_client)
         return True
 
     @staticmethod
