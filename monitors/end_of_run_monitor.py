@@ -159,6 +159,9 @@ def stop():
     """ This function disables the observer, stop watching the last run files. """
     observer.stop()
     observer.join()
+    # Update global observer
+    global observer  # pylint:disable=invalid-name,global-statement
+    observer = Observer()
 
 
 if __name__ == "__main__":

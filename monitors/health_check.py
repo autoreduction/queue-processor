@@ -6,6 +6,7 @@ import os
 import logging
 import time
 import threading
+import json
 
 from monitors import end_of_run_monitor
 from monitors import icat_monitor
@@ -34,14 +35,18 @@ class HealthCheckThread(threading.Thread):
         """
         Perform a service health check every time_interval
         """
-        while self.exit is False:
-            if self.health_check():
-                logging.info("No Problems detected with service")
-            else:
-                logging.warning("Problem detected with service. Restarting service...")
-                self.restart_service()
-            time.sleep(self.time_interval)
-        logging.info('Main Health check thread loop stopped')
+        try:
+            while self.exit is False:
+                if self.health_check():
+                    logging.info("No Problems detected with service")
+                else:
+                    logging.warning("Problem detected with service. Restarting service...")
+                    self.restart_service()
+                time.sleep(self.time_interval)
+            logging.info('Main Health check thread loop stopped')
+        # pylint:disable=broad-except
+        except Exception as exception:
+            logging.error("Exception thrown in health check thread: %s", exception.message)
 
     @staticmethod
     def last_run_query(db_cli, inst):
@@ -113,7 +118,7 @@ class HealthCheckThread(threading.Thread):
         # Serialise and send to the queue processors
         data = queue_client.serialise_data(rb_number, instrument, location, run_number)
         logging.info("Resubmitting run with data: %s ", str(data))
-        queue_client.send(ACTIVEMQ_SETTINGS.data_ready, data)
+        queue_client.send(ACTIVEMQ_SETTINGS.data_ready, json.dumps(data))
         queue_client.disconnect()
         return True
 
@@ -134,10 +139,8 @@ class HealthCheckThread(threading.Thread):
             icat_last_run = icat_monitor.get_last_run(icat_client, inst['name'])
 
             if db_last_run and icat_last_run:
-                logging.info("Found last run from database on %s of %i",
-                             inst['name'], db_last_run)
-                logging.info("Found last run from ICAT on %s of %i",
-                             inst['name'], icat_last_run)
+                logging.info("%s - Database: %i , ICAT: %i",
+                             inst['name'], db_last_run, icat_last_run)
 
                 # Compare them and make sure the database isn't
                 # too far behind. There is a tolerance of 2 runs
