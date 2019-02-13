@@ -142,10 +142,6 @@ def icat_login():
     icat_client.autoLogout = True
     return icat_client
 
-
-def icat_logout(icat_client):
-    """
-    End the ICAT session and clean up resources
-    :param icat_client: ICAT client
-    """
+def icat_cleanup(icat_client):
+    icat_client.disconnect()
     icat_client.cleanup()

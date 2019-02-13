@@ -44,6 +44,10 @@ class ICATClient(AbstractClient):
         """ Log out of icat """
         self.client.logout()
 
+    def cleanup(self):
+        """ Free memory associated with the client """
+        self.client.cleanup()
+
     def execute_query(self, query):
         """
         Runs a query on ICAT - assumes a valid login has already been obtained
