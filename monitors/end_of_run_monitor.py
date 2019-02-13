@@ -86,7 +86,8 @@ class InstrumentMonitor(FileSystemEventHandler):
     def _get_rb_num(self):
         """ Reads last line of summary.txt file and returns the RB number. """
         with open(self.instrument_summary_loc, 'rb') as summary:
-            last_line = summary.readlines()[-1]
+            lines = summary.read().splitlines()
+            last_line = lines[-1]
             logging.debug("RB number found to be %s", str(last_line.split()[-1]))
             return last_line.split()[-1]
 
