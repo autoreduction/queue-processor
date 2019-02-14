@@ -108,14 +108,26 @@ class TestServiceUtils(unittest.TestCase):
         db_cli_init.assert_called_once()
         db_cli_connect.assert_called_once()
 
-    def test_stop(self):
+
+    @patch('monitors.icat_monitor.icat_login')
+    @patch('monitors.health_check.HealthCheckThread.get_db_client',
+           return_value=MockDatabaseClient())
+    @patch('utils.clients.icat_client.ICATClient.disconnect')
+    @patch('utils.clients.database_client.DatabaseClient.disconnect')
+    def test_stop(self, db_dc, icat_dc, db_cli, icat_login):
         health_check_thread = HealthCheckThread(0)
+        db_cli.assert_called_once()
+        icat_login.assert_called_once()
+
         self.assertFalse(health_check_thread.exit)
         health_check_thread.stop()
         self.assertTrue(health_check_thread.exit)
 
+    @patch('monitors.icat_monitor.icat_login')
+    @patch('monitors.health_check.HealthCheckThread.get_db_client',
+           return_value=MockDatabaseClient())
     @patch('monitors.health_check.HealthCheckThread.health_check', return_value=True)
-    def test_thread_start_stop(self, health_check_mock):
+    def test_thread_start_stop(self, health_check_mock, db_cli, icat_login):
         health_check_thread = HealthCheckThread(1)
         health_check_thread.start()
         self.assertTrue(health_check_thread.is_alive())
@@ -130,9 +142,12 @@ class TestServiceUtils(unittest.TestCase):
         self.assertFalse(alive)
 
     # pylint:disable=no-self-use
+    @patch('monitors.icat_monitor.icat_login')
+    @patch('monitors.health_check.HealthCheckThread.get_db_client',
+           return_value=MockDatabaseClient())
     @patch('monitors.end_of_run_monitor.stop')
     @patch('monitors.end_of_run_monitor.main')
-    def test_restart(self, mock_eorm_start, mock_eorm_stop):
+    def test_restart(self, mock_eorm_start, mock_eorm_stop, db_cli, icat_login):
         """
         Ensure that restart calls the main(start) and stop functions of the End of Run Monitor
         """
@@ -142,9 +157,12 @@ class TestServiceUtils(unittest.TestCase):
         mock_eorm_stop.assert_called_once()
 
     # pylint:disable=no-self-use
+    @patch('monitors.icat_monitor.icat_login')
+    @patch('monitors.health_check.HealthCheckThread.get_db_client',
+           return_value=MockDatabaseClient())
     @patch('monitors.health_check.HealthCheckThread.restart_service')
     @patch('monitors.health_check.HealthCheckThread.health_check', return_value=False)
-    def test_service_problem(self, health_check_mock, restart_service_mock):
+    def test_service_problem(self, health_check_mock, restart_service_mock, db_cli, icat_login):
         """
         Ensure that the restart service has been called if the heath check returns false
         """
