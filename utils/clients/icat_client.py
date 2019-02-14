@@ -42,7 +42,7 @@ class ICATClient(AbstractClient):
 
     def refresh(self):
         """ Refreshes the ICAT session only if necessary """
-        self.client.autoRefresh()
+        self.client.refresh()
 
     def disconnect(self):
         """ Disconnect the ICAT client """
