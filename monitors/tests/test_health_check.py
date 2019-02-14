@@ -203,8 +203,7 @@ class TestServiceUtils(unittest.TestCase):
         mock_icat_login.assert_called_once()
         mock_get_last_run.assert_called_once()
         mock_icat_last_run.assert_called_once()
-        expected_calls = [call(None, 'WISH', 10),
-                          call(None, 'WISH', 11),
+        expected_calls = [call(None, 'WISH', 11),
                           call(None, 'WISH', 12),
                           call(None, 'WISH', 13)]
         mock_resubmit.assert_has_calls(expected_calls)
