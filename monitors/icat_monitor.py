@@ -141,7 +141,3 @@ def icat_login():
     icat_client.connect()
     icat_client.autoLogout = True
     return icat_client
-
-def icat_cleanup(icat_client):
-    icat_client.disconnect()
-    icat_client.cleanup()

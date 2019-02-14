@@ -40,13 +40,13 @@ class ICATClient(AbstractClient):
             raise ConnectionException("ICAT")
         return True
 
-    def disconnect(self):
-        """ Log out of icat """
-        self.client.logout()
+    def refresh(self):
+        """ Refreshes the ICAT session only if necessary """
+        self.client.autoRefresh()
 
-    def cleanup(self):
-        """ Free memory associated with the client """
-        self.client.cleanup()
+    def disconnect(self):
+        """ Disconnect the ICAT client """
+        self.client.logout()
 
     def execute_query(self, query):
         """
