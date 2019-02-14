@@ -165,6 +165,6 @@ class HealthCheckThread(threading.Thread):
         Send a signal to stop the main thread loop
         """
         logging.info('Received stop signal for the Health Check thread')
-        self.exit = True
         self.db_client.disconnect()
         self.icat_client.disconnect()
+        self.exit = True
