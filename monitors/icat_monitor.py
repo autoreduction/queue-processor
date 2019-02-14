@@ -139,5 +139,4 @@ def icat_login():
     """
     icat_client = ICATClient()
     icat_client.connect()
-    icat_client.autoLogout = True
     return icat_client
