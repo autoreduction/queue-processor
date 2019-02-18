@@ -40,8 +40,12 @@ class ICATClient(AbstractClient):
             raise ConnectionException("ICAT")
         return True
 
+    def refresh(self):
+        """ Refreshes the ICAT session only if necessary """
+        self.client.refresh()
+
     def disconnect(self):
-        """ Log out of icat """
+        """ Disconnect the ICAT client """
         self.client.logout()
 
     def execute_query(self, query):

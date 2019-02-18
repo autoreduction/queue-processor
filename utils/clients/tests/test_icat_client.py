@@ -61,6 +61,13 @@ class TestICATClient(unittest.TestCase):
 
     @patch('icat.Client.__init__', return_value=None)
     @patch('icat.Client.refresh')
+    def test_refresh(self, mock_autorefresh, _):
+        client = ICATClient()
+        client.refresh()
+        mock_autorefresh.assert_called_once()
+
+    @patch('icat.Client.__init__', return_value=None)
+    @patch('icat.Client.refresh')
     def test_valid_test_connection(self, mock_refresh, _):
         client = ICATClient()
         # pylint:disable=protected-access
