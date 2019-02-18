@@ -23,5 +23,3 @@ How did the issue come about
 
 ### How to test the issue is resolved
 A set of instructions / A script / Include test files if required
-
-###
