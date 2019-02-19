@@ -9,11 +9,9 @@ from setuptools import setup
 
 import platform
 
-from build.commands.database import InitialiseTestDatabase
-from build.commands.help import Help
-from build.commands.installs import InstallExternals
-from build.commands.migrate_settings import MigrateTestSettings
-from build.commands.start import Start
+from build.commands import (InitialiseTestDatabase, Help,
+                            InstallExternals, MigrateTestSettings,
+                            Start)
 
 setup_requires = ['Django',
                   'django_extensions',
