@@ -74,7 +74,7 @@ VALUES
 INSERT INTO reduction_viewer_reductionlocation
     (id, file_path, reduction_run_id)
 VALUES
-    (1, 'path/to/reduced/data/1', 1),
+    (1, '\\some\\MUSR\\reduced\\data\\1', 1),
     (2, 'path/to/reduced/data/2', 2),
     (3, 'path/to/reduced/data/3', 3),
 
