@@ -11,7 +11,7 @@ from utils.data_archive.data_archive_creator import DataArchiveCreator
 from utils.data_archive.archive_explorer import ArchiveExplorer
 
 
-# pylint:disable=invalid-name
+# pylint:disable=invalid-name,too-many-public-methods
 class TestArchiveExplorer(unittest.TestCase):
     """
     Test all the functionality of the archive explorer
@@ -80,6 +80,22 @@ class TestArchiveExplorer(unittest.TestCase):
         expected = os.path.join(self.archive_directory, 'NDXGEM', 'Instrument', 'logs',
                                 'journal', 'summary.txt')
         actual = self.explorer.get_summary_file('GEM')
+        self.assertEqual(actual, expected)
+
+    def test_reduce_file_path(self):
+        """ Test path to reduce.py file """
+        self.dac.add_reduce_script('GEM', 'test')
+        expected = os.path.join(self.archive_directory, 'NDXGEM', 'user', 'scripts',
+                                'autoreduction', 'reduce.py')
+        actual = self.explorer.get_reduce_file('GEM')
+        self.assertEqual(actual, expected)
+
+    def test_reduce_vars_file_path(self):
+        """ Test path to reduce_vars.py file """
+        self.dac.add_reduce_vars_script('GEM', 'test')
+        expected = os.path.join(self.archive_directory, 'NDXGEM', 'user', 'scripts',
+                                'autoreduction', 'reduce_vars.py')
+        actual = self.explorer.get_reduce_vars_file('GEM')
         self.assertEqual(actual, expected)
 
     def test_data_dir_path(self):
