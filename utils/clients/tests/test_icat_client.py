@@ -9,7 +9,7 @@ from mock import patch
 
 import icat
 
-from utils.clients.icat_client import ICATClient
+from utils.clients import ICATClient
 from utils.clients.settings.client_settings_factory import ClientSettingsFactory
 from utils.clients.connection_exception import ConnectionException
 

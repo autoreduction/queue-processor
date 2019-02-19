@@ -12,7 +12,7 @@ from watchdog.observers import Observer
 
 from monitors.settings import (INST_FOLDER, DATA_LOC, SUMMARY_LOC,
                                LAST_RUN_LOC, EORM_LOG_FILE, INSTRUMENTS)
-from utils.clients.queue_client import QueueClient
+from utils.clients import QueueClient
 
 logging.basicConfig(filename=EORM_LOG_FILE,
                     level=logging.INFO,

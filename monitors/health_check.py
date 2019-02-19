@@ -11,8 +11,7 @@ import json
 from monitors import end_of_run_monitor
 from monitors import icat_monitor
 from monitors.settings import INSTRUMENTS
-from utils.clients.database_client import DatabaseClient
-from utils.clients.queue_client import QueueClient
+from utils.clients import (DatabaseClient, QueueClient)
 from utils.clients.connection_exception import ConnectionException
 from utils.settings import ACTIVEMQ_SETTINGS
 from utils.project.structure import get_project_root

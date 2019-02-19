@@ -6,7 +6,7 @@ import datetime
 import logging
 import re
 
-from utils.clients.icat_client import ICATClient
+from utils.clients import ICATClient
 
 
 def get_run_number(file_name, instrument_prefix):

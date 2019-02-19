@@ -7,10 +7,7 @@ import json
 import sys
 import argparse
 
-# The below is only a template on the repo
-# pylint: disable=import-error, no-name-in-module
-from utils.clients.icat_client import ICATClient
-from utils.clients.queue_client import QueueClient
+from utils.clients import (ICATClient, QueueClient)
 
 
 def submit_run(active_mq_client, rb_number, instrument, data_file_location, run_number):

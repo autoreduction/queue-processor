@@ -6,7 +6,7 @@ import unittest
 from mock import patch, call
 
 from utils.clients.connection_exception import ConnectionException
-from utils.clients.queue_client import QueueClient
+from utils.clients import QueueClient
 from utils.clients.settings.client_settings_factory import ClientSettingsFactory
 
 

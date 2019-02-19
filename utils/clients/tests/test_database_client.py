@@ -8,7 +8,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm.session import Session
 
 from utils.clients.connection_exception import ConnectionException
-from utils.clients.database_client import DatabaseClient
+from utils.clients import DatabaseClient
 from utils.clients.settings.client_settings_factory import ClientSettingsFactory
 
 

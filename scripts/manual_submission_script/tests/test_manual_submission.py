@@ -5,7 +5,7 @@ import unittest
 import json
 from mock import Mock, patch
 import scripts.manual_submission_script.manual_submission as ms
-from utils.clients.queue_client import QueueClient
+from utils.clients import QueueClient
 
 
 # pylint:disable=too-few-public-methods
