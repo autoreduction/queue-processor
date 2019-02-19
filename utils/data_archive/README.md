@@ -35,7 +35,7 @@ specific files or directories in the data archive:
 ```python
 import datetime
 import time
-from utils.data_archive.archive_explorer import ArchiveExplorer
+from utils.data_archive import ArchiveExplorer
 
 archive_explorer = ArchiveExplorer('path/to/base-directory')
 
@@ -58,7 +58,7 @@ On initialisation, the ``DataArchiveCreator`` will need a base directory as inpu
 This will be where the ``data-archive`` directory is created. Once initialised, the object
 can be used to create the archive and files within it. The example below shows this:
 ```python
-from utils.data_archive.data_archive_creator import DataArchiveCreator
+from utils.data_archive import DataArchiveCreator
 
 data_archive_creator = DataArchiveCreator('base-directory')
 

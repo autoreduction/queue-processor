@@ -7,8 +7,7 @@ import shutil
 import tempfile
 import unittest
 
-from utils.data_archive.data_archive_creator import DataArchiveCreator
-from utils.data_archive.archive_explorer import ArchiveExplorer
+from utils.data_archive import (DataArchiveCreator, ArchiveExplorer)
 
 
 # pylint:disable=invalid-name
