@@ -95,10 +95,13 @@ class DataArchiveCreator(object):
         user_dir_path = os.path.join(ndx_dir_path, 'user')
         data_dir_path = os.path.join(inst_dir_path, 'data')
         jrnl_dir_path = os.path.join(logs_dir_path, 'journal')
+        scrp_dir_path = os.path.join(user_dir_path, 'scripts')
+        auto_dir_path = os.path.join(scrp_dir_path, 'autoreduction')
         for instrument in instruments:
             os.makedirs(user_dir_path.format(instrument))
             os.makedirs(data_dir_path.format(instrument))
             os.makedirs(jrnl_dir_path.format(instrument))
+            os.makedirs(auto_dir_path.format(instrument))
             self._make_cycle_directories(start_year, end_year, current_cycle,
                                          inst_dir_path.format(instrument))
 
