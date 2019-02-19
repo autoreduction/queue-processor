@@ -182,9 +182,32 @@ class DataArchiveCreator(object):
         self._check_valid_inst(instrument)
         path_to_log_file = os.path.join(self._archive_dir, 'NDX{}',
                                         'Instrument', 'logs',
-                                        'journal').format(instrument)
-        self.create_file_at_location(os.path.join(path_to_log_file, 'summary.txt'),
-                                     str(file_contents))
+                                        'journal', 'summary.txt').format(instrument)
+        self.create_file_at_location(path_to_log_file, str(file_contents))
+
+    def add_reduce_script(self, instrument, file_content):
+        """
+        Adds the reduce.py file to the /user/scripts/autoreduce directory
+        :param instrument: The instrument to add the file for
+        :param file_content: The content of the file
+        """
+        self._check_valid_inst(instrument)
+        path_to_reduce_file = os.path.join(self._archive_dir, 'NDX{}',
+                                           'user', 'scripts',
+                                           'autoreduction', 'reduce.py').format(instrument)
+        self.create_file_at_location(path_to_reduce_file, file_content)
+
+    def add_reduce_vars_script(self, instrument, file_content):
+        """
+        Adds the reduce.py file to the /user/scripts/autoreduce directory
+        :param instrument: The instrument to add the file for
+        :param file_content: The content of the file
+        """
+        self._check_valid_inst(instrument)
+        path_to_reduce_file = os.path.join(self._archive_dir, 'NDX{}',
+                                           'user', 'scripts',
+                                           'autoreduction', 'reduce_vars.py').format(instrument)
+        self.create_file_at_location(path_to_reduce_file, file_content)
 
     def add_last_run_file(self, instrument, file_contents):
         """
