@@ -59,12 +59,14 @@ class HealthCheckThread(threading.Thread):
         :return: Row from the reduction database
         """
         conn = db_cli.get_connection()
-        return conn.query(db_cli.reduction_run()) \
+        result = conn.query(db_cli.reduction_run()) \
             .join(db_cli.reduction_run().instrument) \
             .filter(db_cli.reduction_run().run_version == 0) \
             .filter(db_cli.instrument().name == inst) \
             .order_by(db_cli.reduction_run().created.desc()) \
             .first()
+        conn.commit()
+        return result
 
     @staticmethod
     def get_db_last_run(db_client, inst):
