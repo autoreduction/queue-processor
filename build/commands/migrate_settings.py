@@ -27,8 +27,10 @@ class MigrateTestSettings(Command):
     def finalize_options(self):
         """ Add known test_settings.py files to list """
         # pylint:disable=attribute-defined-outside-init
+
         root = get_project_root()
         self.test_settings_paths = [os.path.join(root, 'build'),
+                                    os.path.join(root, 'monitors'),
                                     os.path.join(root, 'scripts', 'activemq_tests'),
                                     os.path.join(root, 'utils'),
                                     os.path.join(root, 'WebApp', 'autoreduce_webapp',

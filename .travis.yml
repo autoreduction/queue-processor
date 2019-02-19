@@ -22,9 +22,11 @@ before_install:
 
 install:
   - sudo pip install GitPython # Required for sudo start commands
+  # Install autoreduction
   - pip install -e .
+  # Install test suite dependencies
   - pip install -r requirements.txt
-  
+
   # ================== Test setup ==================== #
   - python setup.py test_settings
   # Externals must be after test_settings
@@ -42,7 +44,7 @@ script:
   # ================ Nose unit tests ================ #
 
   # Utils tests
-  - pytest --cov=build --cov=QueueProcessors --cov=utils --cov=WebApp/autoreduce_webapp --cov=scripts
+  - pytest --cov=build --cov=monitors --cov=QueueProcessors --cov=utils --cov=WebApp/autoreduce_webapp --cov=scripts
 
 after_success:
   - coveralls

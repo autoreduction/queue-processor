@@ -138,7 +138,7 @@ class TestArchiveExplorer(unittest.TestCase):
 
     def tearDown(self):
         """
-        Delete the data archive - this will also clen up any files left behind
+        Delete the data archive - this will also clean up any files left behind
         """
         del self.dac
 

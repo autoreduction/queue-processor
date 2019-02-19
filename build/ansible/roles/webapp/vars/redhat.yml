@@ -1,0 +1,8 @@
+---
+
+apache_config: /etc/httpd/conf/httpd.conf
+apache_user: apache
+apache_service: httpd
+webapp_pkgs:
+- httpd
+- mod_wsgi
