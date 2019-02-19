@@ -10,28 +10,14 @@ import threading
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
+from monitors.settings import (INST_FOLDER, DATA_LOC, SUMMARY_LOC,
+                               LAST_RUN_LOC, EORM_LOG_FILE, INSTRUMENTS)
 from utils.clients.queue_client import QueueClient
 
-
-# Config settings for cycle number, and instrument file arrangement
-INST_FOLDER = r"\\isis\inst$\NDX%s\Instrument"
-DATA_LOC = r"\data\cycle_%s\\"
-SUMMARY_LOC = r"\logs\journal\SUMMARY.txt"
-LAST_RUN_LOC = r"\logs\lastrun.txt"
-LOG_FILE = r"C:\monitor_log.txt"
-INSTRUMENTS = [{'name': 'WISH', 'use_nexus': True},
-               {'name': 'GEM', 'use_nexus': True},
-               {'name': 'OSIRIS', 'use_nexus': True},
-               {'name': 'POLARIS', 'use_nexus': True},
-               {'name': 'MUSR', 'use_nexus': True},
-               {'name': 'POLREF', 'use_nexus': True}]
-
-
-# Check fake_archive folder for the last_run.txt file and will not send data to DataReady queue"
-USE_FAKE_ARCHIVE = False
-
-logging.basicConfig(filename=LOG_FILE, level=logging.INFO, format='%(asctime)s %(message)s')
-observer = Observer() # pylint: disable=invalid-name
+logging.basicConfig(filename=EORM_LOG_FILE,
+                    level=logging.INFO,
+                    format='%(asctime)s %(levelname)s [%(filename)s:%(lineno)d] %(message)s')
+observer = Observer()  # pylint: disable=invalid-name
 
 
 def get_file_extension(use_nxs):
@@ -57,12 +43,9 @@ class InstrumentMonitor(FileSystemEventHandler):
         self.client = client
         self.use_nexus = use_nexus
         self.instrument_name = instrument_name
-        if USE_FAKE_ARCHIVE:
-            self.instrument_folder = "fake_archive\\" + self.instrument_name
-        else:
-            self.instrument_folder = INST_FOLDER % self.instrument_name
-        self.instrument_summary_loc = self.instrument_folder + SUMMARY_LOC
-        self.instrument_last_run_loc = self.instrument_folder + LAST_RUN_LOC
+        self.instrument_folder = INST_FOLDER % self.instrument_name
+        self.instrument_summary_loc = os.path.join(self.instrument_folder, SUMMARY_LOC)
+        self.instrument_last_run_loc = os.path.join(self.instrument_folder, LAST_RUN_LOC)
         with open(self.instrument_last_run_loc) as lastrun:
             data = get_data_and_check(lastrun)
             self.last_run = data[1]
@@ -70,15 +53,16 @@ class InstrumentMonitor(FileSystemEventHandler):
 
     def _get_instrument_data_folder_loc(self):
         """ Gets instrument data folder location. """
-        return self.instrument_folder + DATA_LOC % self._get_most_recent_cycle()
+        return os.path.join(self.instrument_folder, DATA_LOC % self._get_most_recent_cycle())
 
     def _get_most_recent_cycle(self):
         """
         Look at the logs folder to determine the current cycle.
         :return: A 4 character cycle string e.g. '18_1'
         """
-        folders = os.listdir(self.instrument_folder + r'\logs\\')
+        folders = os.listdir(os.path.join(self.instrument_folder, 'logs'))
         cycle_folders = [f for f in folders if f.startswith('cycle')]
+        cycle_folders.sort()
 
         # List should have most recent cycle at the end
         most_recent = cycle_folders[-1]
@@ -91,16 +75,13 @@ class InstrumentMonitor(FileSystemEventHandler):
         and last line of the summary text file to build the query
         """
         filename = ''.join(last_run_data[0:2])  # so MER111 etc
-        run_data_loc = '%s%s%s' % (self._get_instrument_data_folder_loc(),
-                                   filename,
-                                   get_file_extension(self.use_nexus))
-        return {
-            "rb_number": self._get_rb_num(),
-            "instrument": self.instrument_name,
-            "data": run_data_loc,
-            "run_number": last_run_data[1],
-            "facility": "ISIS"
-        }
+        filename += get_file_extension(self.use_nexus)
+        run_data_loc = os.path.join(self._get_instrument_data_folder_loc(),
+                                    filename)
+        return self.client.serialise_data(rb_number=self._get_rb_num(),
+                                          instrument=self.instrument_name,
+                                          location=run_data_loc,
+                                          run_number=last_run_data[1])
 
     def _get_rb_num(self):
         """ Reads last line of summary.txt file and returns the RB number. """
@@ -111,7 +92,19 @@ class InstrumentMonitor(FileSystemEventHandler):
 
     def get_watched_folder(self):
         """ Returns the watched folder location. """
-        return self.instrument_folder + '\\logs\\'
+        return os.path.join(self.instrument_folder, 'logs')
+
+    # pylint:disable=no-self-use
+    def split_path_into_folders(self, file_path):
+        """
+        Return the the directories in a path as a list
+        Including the file name at the end of the path
+        :param file_path: the path to split
+        :return: a list of directories and the file name
+        """
+        if os.name == "nt":
+            return file_path.split("\\")
+        return file_path.split("/")
 
     # send thread to sleep, use Timer objects
     def on_modified(self, event):
@@ -119,9 +112,9 @@ class InstrumentMonitor(FileSystemEventHandler):
         try:
             logging.debug("Received modified from %s", str(event.src_path))
             # Storing folders into variables.
-            list_of_folders = event.src_path.split("\\")
+
             # This will ensure to only execute the code for a specific file.
-            if list_of_folders[-1] == "lastrun.txt":
+            if self.split_path_into_folders(event.src_path)[-1] == "lastrun.txt":
                 with open(self.instrument_last_run_loc) as lastrun:
                     data = get_data_and_check(lastrun)
                 # This code checks out the modified data and then it logs the changes.
@@ -138,8 +131,7 @@ class InstrumentMonitor(FileSystemEventHandler):
         """ Puts message together and sends it to queue. """
         with self.lock:
             data_dict = self.build_dict(last_run_data)
-        if not USE_FAKE_ARCHIVE:
-            self.client.send('/queue/DataReady', json.dumps(data_dict), priority='9')
+        self.client.send('/queue/DataReady', json.dumps(data_dict), priority='9')
         logging.info("Data sent: %s", str(data_dict))
 
 
@@ -166,7 +158,10 @@ def stop():
     """ This function disables the observer, stop watching the last run files. """
     observer.stop()
     observer.join()
+    # Update global observer
+    global observer  # pylint:disable=invalid-name,global-statement
+    observer = Observer()
 
 
 if __name__ == "__main__":
-    main()
+    main()  # pragma: no cover

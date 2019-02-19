@@ -3,8 +3,9 @@
 import os
 
 import logging.handlers
+import os
 
-from utils.project.structure import get_log_folder
+from utils.project.structure import get_project_root, get_log_folder
 
 
 LOGGING_LEVEL = logging.INFO

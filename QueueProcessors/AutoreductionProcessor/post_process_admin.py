@@ -96,6 +96,7 @@ def prettify(data):
 
 class PostProcessAdmin(object):
     """ Main class for the PostProcessAdmin """
+
     # pylint: disable=too-many-instance-attributes
     def __init__(self, data, connection):
         logger.debug("json data: %s", prettify(data))
@@ -107,53 +108,30 @@ class PostProcessAdmin(object):
         self.admin_log_stream = cStringIO.StringIO()
 
         try:
-            if 'data' in data:
-                self.data_file = windows_to_linux_path(str(data['data']),
-                                                       MISC["temp_root_directory"])
-                logger.debug("data_file: %s", self.data_file)
-            else:
-                raise ValueError("data is missing")
-
-            if 'facility' in data:
-                self.facility = str(data['facility']).upper()
-                logger.debug("facility: %s", self.facility)
-            else:
-                raise ValueError("facility is missing")
-
-            if 'instrument' in data:
-                self.instrument = str(data['instrument']).upper()
-                logger.debug("instrument: %s", self.instrument)
-            else:
-                raise ValueError("instrument is missing")
-
-            if 'rb_number' in data:
-                self.proposal = str(data['rb_number']).upper()
-                logger.debug("rb_number: %s", self.proposal)
-            else:
-                raise ValueError("rb_number is missing")
-
-            if 'run_number' in data:
-                # Cast to int to remove trailing zeros
-                self.run_number = str(int(data['run_number']))
-                logger.debug("run_number: %s", str(self.run_number))
-            else:
-                raise ValueError("run_number is missing")
-
-            if 'reduction_script' in data:
-                self.reduction_script = data['reduction_script']
-                logger.debug("reduction_script: %s ...", self.reduction_script[:50])
-            else:
-                raise ValueError("reduction_script is missing")
-
-            if 'reduction_arguments' in data:
-                self.reduction_arguments = data['reduction_arguments']
-                logger.debug("reduction_arguments: %s", self.reduction_arguments)
-            else:
-                raise ValueError("reduction_arguments is missing")
-
+            self.data_file = windows_to_linux_path(self.validate_input('data'),
+                                                   MISC["temp_root_directory"])
+            self.facility = self.validate_input('facility')
+            self.instrument = self.validate_input('instrument').upper()
+            self.proposal = str(int(self.validate_input('rb_number')))
+            self.run_number = str(int(self.validate_input('run_number')))
+            self.reduction_script = self.validate_input('reduction_script')
+            self.reduction_arguments = self.validate_input('reduction_arguments')
         except ValueError:
             logger.info('JSON data error', exc_info=True)
             raise
+
+    def validate_input(self, key):
+        """
+        Validates the input dictionary
+        :param key: key to search for
+        :return: The value of the key or raise an exception if none
+        """
+        if key in self.data:
+            value = self.data[key]
+            logger.debug("%s: %s", key, str(value)[:50])
+            return value
+        else:
+            raise ValueError('%s is missing' % key)
 
     def replace_variables(self, reduce_script):
         """
@@ -415,7 +393,7 @@ class PostProcessAdmin(object):
     @staticmethod
     def delete_temp_directory(temp_result_dir):
         """ Remove temporary working directory """
-        logger.info("Remove temp dir %s ", temp_result_dir)
+        logger.info("Remove temp dir %s", temp_result_dir)
         try:
             shutil.rmtree(temp_result_dir, ignore_errors=True)
         except:
@@ -470,7 +448,7 @@ class PostProcessAdmin(object):
     def _remove_directory(self, directory):
         """
         Helper function to remove a directory. shutil.rmtree cannot be used as it is not robust
-        enough when foldersare open over the network.
+        enough when folders are open over the network.
         """
         try:
             for target_file in os.listdir(directory):
@@ -520,7 +498,7 @@ def main():
             raise
 
         except Exception as exp:
-            logger.info("PostProcessAdmin error: %s", exp)
+            logger.info("PostProcessAdmin error: %s", str(exp))
             raise
 
         finally:
@@ -538,5 +516,5 @@ def main():
             sys.exit()
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma : no cover
     main()

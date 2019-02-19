@@ -8,10 +8,10 @@ from utils.project.structure import get_project_root, get_log_folder
 
 # ActiveMQ
 ACTIVEMQ = {
-    "brokers": "YOUR-ACTIVEMQ-SERVER",
+    "brokers": "127.0.1.1:61613",
     "amq_queues": ["/queue/ReductionPending"],
-    "amq_user": "YOUR-ACTIVEMQ-USERNAME",
-    "amq_pwd": "YOUR-PASSWORD",
+    "amq_user": "admin",
+    "amq_pwd": "admin",
     "postprocess_error": "/queue/ReductionError",
     "reduction_started": "/queue/ReductionStarted",
     "reduction_complete": "/queue/ReductionComplete",

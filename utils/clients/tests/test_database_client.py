@@ -3,11 +3,16 @@ Test cases for the database client
 """
 import unittest
 
+from mock import patch
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm.session import Session
+
 from utils.clients.connection_exception import ConnectionException
 from utils.clients.database_client import DatabaseClient
 from utils.clients.settings.client_settings_factory import ClientSettingsFactory
 
 
+# pylint:disable=missing-docstring,protected-access,invalid-name
 class TestDatabaseClient(unittest.TestCase):
     """
     Exercises the database client
@@ -21,7 +26,6 @@ class TestDatabaseClient(unittest.TestCase):
                                                                     port='not-port',
                                                                     database_name='not-db')
 
-    # pylint:disable=protected-access
     def test_default_init(self):
         """ Test default values for initialisation """
         client = DatabaseClient()
@@ -34,12 +38,26 @@ class TestDatabaseClient(unittest.TestCase):
         """ Test invalid values for initialisation """
         self.assertRaises(TypeError, DatabaseClient, 'string')
 
-    # pylint:disable=protected-access
     def test_valid_connection(self):
         """ Test access is established with valid connection """
         client = DatabaseClient()
         client.connect()
         self.assertTrue(client._test_connection())
+
+    def test_get_connection(self):
+        client = DatabaseClient()
+        self.assertIsNone(client.get_connection())
+        client.connect()
+        self.assertIsInstance(client.get_connection(), Session)
+
+    @patch('utils.clients.database_client.DatabaseClient._test_connection')
+    def test_double_connect(self, mock_test_connection):
+        client = DatabaseClient()
+        connection_1 = client.connect()
+        connection_2 = client.connect()
+        # Test that we do not attempt to reconnect if a valid connection is already established
+        mock_test_connection.assert_called_once()
+        self.assertEqual(connection_1, connection_2)
 
     def test_invalid_connection(self):
         """ Test access is rejected with invalid credentials """
@@ -47,7 +65,6 @@ class TestDatabaseClient(unittest.TestCase):
         with self.assertRaises(ConnectionException):
             client.connect()
 
-    # pylint:disable=protected-access
     def test_stop_connection(self):
         """ Test connection can be successfully stopped gracefully """
         client = DatabaseClient()
@@ -57,3 +74,27 @@ class TestDatabaseClient(unittest.TestCase):
         self.assertIsNone(client._connection)
         self.assertIsNone(client._engine)
         self.assertIsNone(client._meta_data)
+
+    @patch('sqlalchemy.engine.result.ResultProxy.fetchall')
+    def test_re_raise_unexpected_exception(self, mock_execute):
+        client = DatabaseClient()
+        client.connect()
+
+        def raise_runtime_error():
+            raise RuntimeError()
+        mock_execute.side_effect = raise_runtime_error
+        self.assertRaises(RuntimeError, client._test_connection)
+
+    def test_instrument_table(self):
+        client = DatabaseClient()
+        client.connect()
+        instrument_table = client.instrument()
+        self.assertEqual(type(instrument_table.__bases__[0]), type(declarative_base()))
+        self.assertIsNotNone(instrument_table.__table__)
+
+    def test_reduction_run_table(self):
+        client = DatabaseClient()
+        client.connect()
+        reduction_run_table = client.reduction_run()
+        self.assertEqual(type(reduction_run_table.__bases__[0]), type(declarative_base()))
+        self.assertIsNotNone(reduction_run_table.__table__)
