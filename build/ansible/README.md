@@ -1,4 +1,4 @@
-## Autoreduction Ansible Script
+# Autoreduction Ansible Script
 
 This Ansible script deploys a complete autoreduction instance on a cloud VM running Scientific Linux 7.
 A separate SL7 Ansible server is required in order to deploy the playbook. The following components are installed

@@ -40,7 +40,7 @@
   git:
     repo: https://github.com/ISISScientificComputing/autoreduce.git
     dest: /home/autoreduction/autoreduction
-    version: develop
+    version: master
   when: autoreduce.stat.exists == false
 
 - name: 'Create logs directory'
