@@ -1,8 +1,11 @@
 # pylint: skip-file
 import logging.handlers
+import os
+
+from utils.project.structure import get_project_root
 
 LOGGING_LEVEL = logging.INFO
-LOGGING_LOC = '/home/isisautoreduce/logs/autoreductionProcessor.log'
+LOGGING_LOC = os.path.join(get_project_root(), 'logs', 'autoreductionProcessor.log')
 
 logger = logging.getLogger('AutoreductionProcessor')
 logger.setLevel(LOGGING_LEVEL)

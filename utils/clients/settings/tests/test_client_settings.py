@@ -10,13 +10,10 @@ from utils.clients.settings.client_settings import ClientSettings
 class TestClientSettings(unittest.TestCase):
 
     def test_valid_init(self):
-        try:
-            settings = ClientSettings(username='user',
-                                      password='pass',
-                                      host='host',
-                                      port='123')
-        except ValueError:
-            self.fail("Expected creation with valid parameters not to fail but it did.")
+        settings = ClientSettings(username='user',
+                                  password='pass',
+                                  host='host',
+                                  port='123')
         self.assertIsNotNone(settings)
         self.assertEqual(settings.username, 'user')
         self.assertEqual(settings.password, 'pass')

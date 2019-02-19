@@ -64,6 +64,13 @@ class DatabaseClient(AbstractClient):
                 raise
         return True
 
+    def get_connection(self):
+        """
+        Retrieve the session object.
+        :return: SQLAlchemy session
+        """
+        return self._connection
+
     def disconnect(self):
         """
         Close the connection and reset variables

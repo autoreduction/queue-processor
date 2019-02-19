@@ -21,11 +21,10 @@ before_install:
   - mysql < build/database/test_db_setup.sql
 
 install:
-  - python setup.py install
+  # Install autoreduction
+  - pip install -e .
+  # Install test suite dependencies
   - pip install -r requirements.txt
-
-  # Make log dir
-  - mkdir logs
 
   # ================== Test setup ==================== #
   - python setup.py test_settings

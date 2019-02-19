@@ -3,8 +3,10 @@ Test cases for the manual job submission script
 """
 import unittest
 import json
-from mock import Mock
+from mock import Mock, patch
 import scripts.manual_submission_script.manual_submission as ms
+from utils.clients.queue_client import QueueClient
+
 
 # pylint:disable=too-few-public-methods
 class DataFile(object):
@@ -13,6 +15,7 @@ class DataFile(object):
     """
     def __init__(self, df_name):
         self.name = df_name
+
 
 def get_json_object(rb_number, instrument, data_file_location, run_number):
     """
@@ -49,12 +52,12 @@ class TestManualSubmission(unittest.TestCase):
         with self.assertRaises(SystemExit):
             ms.get_data_file(icat_client, "GEM", "84823", "jpg")
 
-    def test_submit_run(self):
+    @patch('utils.clients.queue_client.QueueClient.send', return_value=None)
+    def test_submit_run(self, send):
         """
         Check that a run is submitted successfully
         """
-        active_mq_client = Mock()
-        active_mq_client.send = Mock(return_value=None)
+        active_mq_client = QueueClient()
         ms.submit_run(active_mq_client, "1812345", "GEM", "5454", "nxs")
         json_obj = get_json_object("1812345", "GEM", "5454", "nxs")
-        active_mq_client.send.assert_called_with('/queue/DataReady', json_obj, priority=1)
+        send.assert_called_with('/queue/DataReady', json_obj, priority=1)

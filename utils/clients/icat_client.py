@@ -27,7 +27,6 @@ class ICATClient(AbstractClient):
             credentials = ICAT_SETTINGS
         super(ICATClient, self).__init__(credentials)
         self.client = icat.Client(self.credentials.host)
-        self.connect()
 
     def connect(self):
         """
@@ -47,8 +46,12 @@ class ICATClient(AbstractClient):
             raise ConnectionException("ICAT")
         return True
 
+    def refresh(self):
+        """ Refreshes the ICAT session only if necessary """
+        self.client.refresh()
+
     def disconnect(self):
-        """ Log out of icat """
+        """ Disconnect the ICAT client """
         self.client.logout()
 
     def execute_query(self, query):
