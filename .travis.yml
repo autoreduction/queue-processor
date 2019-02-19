@@ -28,6 +28,7 @@ install:
 
   # ================== Test setup ==================== #
   - python setup.py test_settings
+  - cat utils/settings.py
   # Externals must be after test_settings
   - python setup.py externals -s activemq,icat
   - python setup.py database
