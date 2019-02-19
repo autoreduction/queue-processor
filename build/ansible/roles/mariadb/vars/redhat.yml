@@ -1,0 +1,7 @@
+---
+
+mariadb_daemon: mariadb
+mariadb_pkgs:
+- mariadb-server
+- mariadb
+- mariadb-devel

@@ -34,3 +34,6 @@ apache_django_wsgi.conf
 
 # Include the coverage configuration file
 !.coveragerc
+
+# Ignore site.retry from Ansible
+site.retry
