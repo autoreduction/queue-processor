@@ -7,7 +7,7 @@ from QueueProcessors.QueueProcessor.base import session
 from QueueProcessors.QueueProcessor.orm_mapping import DataLocation
 # pylint:disable=no-name-in-module,import-error
 from QueueProcessors.QueueProcessor.settings import LOGGING, FACILITY
-from utils.clients.queue_client import QueueClient
+from utils.clients import QueueClient
 
 # Set up logging and attach the logging to the right part of the config.
 logging.config.dictConfig(LOGGING)
@@ -31,7 +31,7 @@ class MessagingUtils(object):
     def _make_pending_msg(reduction_run):
         """ Creates a dict message from the given run, ready to be sent to ReductionPending. """
         # Deferred import to avoid circular dependencies
-        from ..utils.reduction_run_utils import ReductionRunUtils
+        from QueueProcessors.QueueProcessor.queueproc_utils import ReductionRunUtils
 
         script, arguments = ReductionRunUtils().get_script_and_arguments(reduction_run)
 

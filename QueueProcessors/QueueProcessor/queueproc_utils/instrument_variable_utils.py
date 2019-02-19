@@ -16,8 +16,7 @@ from QueueProcessors.QueueProcessor.orm_mapping import (InstrumentJoin, Notifica
                                                         Variable)
 # pylint:disable=no-name-in-module,import-error
 from QueueProcessors.QueueProcessor.settings import REDUCTION_DIRECTORY, LOGGING
-from QueueProcessors.QueueProcessor.queueproc_utils.instrument_utils import InstrumentUtils
-from QueueProcessors.QueueProcessor.queueproc_utils.variable_utils import VariableUtils
+from QueueProcessors.QueueProcessor.queueproc_utils import (InstrumentUtils, VariableUtils)
 
 
 # Set up logging and attach the logging to the right part of the config.

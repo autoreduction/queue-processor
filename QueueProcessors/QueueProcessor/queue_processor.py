@@ -18,18 +18,16 @@ from QueueProcessors.QueueProcessor.base import session
 from QueueProcessors.QueueProcessor.orm_mapping import (ReductionRun, Instrument,
                                                         Status, Experiment,
                                                         DataLocation, ReductionLocation)
-# pylint: disable=cyclic-import
-from QueueProcessors.QueueProcessor.queueproc_utils.messaging_utils import MessagingUtils
-from QueueProcessors.QueueProcessor.queueproc_utils.instrument_variable_utils \
-    import InstrumentVariablesUtils
-from QueueProcessors.QueueProcessor.queueproc_utils.status_utils import StatusUtils
-from QueueProcessors.QueueProcessor.queueproc_utils.reduction_run_utils import ReductionRunUtils
+from QueueProcessors.QueueProcessor.queueproc_utils import (MessagingUtils,
+                                                            InstrumentVariablesUtils,
+                                                            StatusUtils, ReductionRunUtils)
+
 # pylint: disable=import-error, no-name-in-module
 from QueueProcessors.QueueProcessor.settings import (LOGGING, EMAIL_HOST,
                                                      EMAIL_PORT, EMAIL_ERROR_RECIPIENTS,
                                                      EMAIL_ERROR_SENDER, BASE_URL)
 
-from utils.clients.queue_client import QueueClient
+from utils.clients import QueueClient
 
 # Set up logging and attach the logging to the right part of the config.
 logging.config.dictConfig(LOGGING)
