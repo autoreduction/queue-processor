@@ -3,7 +3,7 @@ Test package for DatabaseReset
 """
 import unittest
 
-from scripts.mysql_dump.reset_database_post_cycle import DatabaseReset
+from scripts.database_management.reset_database_post_cycle import DatabaseReset
 
 
 # pylint:disable=missing-docstring,protected-access
