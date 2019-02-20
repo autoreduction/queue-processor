@@ -7,9 +7,12 @@ import logging
 
 import stomp
 
-from scripts.activemq_tests.settings import LOG_FILENAME, ACTIVEMQ
+from scripts.activemq_tests.settings import ACTIVEMQ
+from utils.project.structure import get_log_file
+from utils.project.static_content import LOG_FORMAT
 
-logging.basicConfig(filename=LOG_FILENAME, level=logging.DEBUG)
+logging.basicConfig(filename=get_log_file('activemq_test.log'), level=logging.DEBUG,
+                    format=LOG_FORMAT)
 
 
 class MyListener(stomp.ConnectionListener):

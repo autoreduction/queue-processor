@@ -1,6 +1,8 @@
 """
 Creates a database session for the reduction database
 """
+import logging
+
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine, MetaData, Table
 from sqlalchemy.orm import sessionmaker, relationship
@@ -8,6 +10,11 @@ from sqlalchemy.orm import sessionmaker, relationship
 from utils.settings import MYSQL_SETTINGS
 from utils.clients.abstract_client import AbstractClient
 from utils.clients.connection_exception import ConnectionException
+from utils.project.structure import get_log_file
+from utils.project.static_content import LOG_FORMAT
+
+logging.basicConfig(filename=get_log_file('database_client.log'), level=logging.INFO,
+                    format=LOG_FORMAT)
 
 
 class DatabaseClient(AbstractClient):
