@@ -101,3 +101,19 @@ class ArchiveExplorer(object):
         if valid_files:
             return valid_files[-1]
         return None
+
+    # ============================= Script Directories ===================================== #
+    def get_script_directory(self, instrument):
+        """ :return: archive_directory/NDXGEM/user/scripts/autoreduce"""
+        return self._file_path_exists(os.path.join(self.get_user_directory(instrument), 'scripts',
+                                                   'autoreduction'))
+
+    def get_reduce_file(self, instrument):
+        """ :return: archive_directory/NDXGEM/user/scripts/autoreduce/reduce.py"""
+        return self._file_path_exists(os.path.join(self.get_script_directory(instrument),
+                                                   'reduce.py').format(instrument))
+
+    def get_reduce_vars_file(self, instrument):
+        """ :return: archive_directory/NDXGEM/user/scripts/autoreduce/reduce.py"""
+        return self._file_path_exists(os.path.join(self.get_script_directory(instrument),
+                                                   'reduce_vars.py'))

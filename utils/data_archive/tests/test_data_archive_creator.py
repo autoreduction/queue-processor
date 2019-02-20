@@ -110,6 +110,20 @@ class TestDataArchiveCreator(unittest.TestCase):
                                           'Instrument', 'logs', 'journal', 'summary.txt')
         self.assertTrue(os.path.isfile(expected_file_path))
 
+    def test_add_reduce_script_valid(self):
+        self.dac.make_data_archive(['GEM'], 18, 18, 1)
+        self.dac.add_reduce_script('GEM', 'test')
+        expected_file_path = os.path.join(self.test_output_directory, 'data-archive', 'NDXGEM',
+                                          'user', 'scripts', 'autoreduction', 'reduce.py')
+        self.assertTrue(os.path.isfile(expected_file_path))
+
+    def test_add_reduce_vars_script_valid(self):
+        self.dac.make_data_archive(['GEM'], 18, 18, 1)
+        self.dac.add_reduce_vars_script('GEM', 'test')
+        expected_file_path = os.path.join(self.test_output_directory, 'data-archive', 'NDXGEM',
+                                          'user', 'scripts', 'autoreduction', 'reduce_vars.py')
+        self.assertTrue(os.path.isfile(expected_file_path))
+
     def test_add_last_run_without_archive(self):
         self.assertRaisesRegexp(RuntimeError, "Unable to create file at ",
                                 self.dac.add_last_run_file, 'GEM', 'test')
