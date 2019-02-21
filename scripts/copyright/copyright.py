@@ -4,22 +4,20 @@
 # Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
+# pylint:skip-file
+"""
+Class to add copyright statements to all files
+"""
 import sys
 import os
 import datetime
 import argparse
 
 
-###################################################################################################
-# Script level variables
-
 # Directories to ignore - any pathss including these strings will be ignored, so it will cascade
 directories_to_ignore = ["Documentation", "venv", ".pytesy_cache", "logs", ".git"]
 # Accepted file extensions
 accepted_file_extensions = [".py", ".yml"]
-
-###################################################################################################
-# Functions
 
 
 def get_copyright(year):
