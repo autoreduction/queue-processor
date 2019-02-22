@@ -4,7 +4,7 @@ Test cases for the manual job submission script
 import unittest
 import json
 from mock import Mock, patch
-import scripts.manual_submission_script.manual_submission as ms
+import scripts.manual_operations.manual_submission as ms
 from utils.clients.queue_client import QueueClient
 
 
