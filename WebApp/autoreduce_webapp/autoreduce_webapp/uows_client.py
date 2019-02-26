@@ -56,7 +56,7 @@ class UOWSClient(object):
         Checks if a session ID is still active and valid
         """
         try:
-            return self.client.service.checkSession(session_id)
+            return self.client.service.isTokenValid(session_id)
         except suds.WebFault:
             LOGGER.warn("Session ID is not valid: %s", session_id)
             return False
