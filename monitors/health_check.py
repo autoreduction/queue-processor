@@ -63,7 +63,7 @@ class HealthCheckThread(threading.Thread):
             .join(db_cli.reduction_run().instrument) \
             .filter(db_cli.reduction_run().run_version == 0) \
             .filter(db_cli.instrument().name == inst) \
-            .order_by(db_cli.reduction_run().created.desc()) \
+            .order_by(db_cli.reduction_run().run_number.desc()) \
             .first()
         conn.commit()
         return result
