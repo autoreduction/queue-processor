@@ -1,10 +1,16 @@
+# ############################################################################### #
+# Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
+#
+# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# SPDX - License - Identifier: GPL-3.0-or-later
+# ############################################################################### #
 """
 Test cases for the manual job submission script
 """
 import unittest
 import __builtin__
 
-from mock import call, patch
+from mock import patch
 
 from scripts.manual_operations.manual_remove import ManualRemove
 from utils.clients.database_client import DatabaseClient

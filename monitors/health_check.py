@@ -1,3 +1,9 @@
+# ############################################################################### #
+# Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
+#
+# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# SPDX - License - Identifier: GPL-3.0-or-later
+# ############################################################################### #
 """
 Threading class to check the health of the End of Run Monitor service
 """
@@ -63,7 +69,7 @@ class HealthCheckThread(threading.Thread):
             .join(db_cli.reduction_run().instrument) \
             .filter(db_cli.reduction_run().run_version == 0) \
             .filter(db_cli.instrument().name == inst) \
-            .order_by(db_cli.reduction_run().created.desc()) \
+            .order_by(db_cli.reduction_run().run_number.desc()) \
             .first()
         conn.commit()
         return result
