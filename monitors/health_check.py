@@ -154,7 +154,7 @@ class HealthCheckThread(threading.Thread):
                 if db_last_run < icat_last_run - 2:
                     logging.debug("Attempting to resubmit missing runs")
 
-                    for run_number in range(db_last_run, icat_last_run + 1):
+                    for run_number in range(db_last_run + 1, icat_last_run + 1):
                         HealthCheckThread.resubmit_run(icat_client, inst['name'], run_number)
                     return False
 
