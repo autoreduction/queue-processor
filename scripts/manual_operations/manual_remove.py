@@ -1,12 +1,16 @@
 """
 Functionality to remove a reduction run from the database
 """
+from __future__ import print_function
 import argparse
 
 from utils.clients.database_client import DatabaseClient
 
 
 class ManualRemove(object):
+    """
+    Handles removing a run from the database
+    """
 
     def __init__(self, instrument):
         self.database = DatabaseClient()
@@ -36,7 +40,7 @@ class ManualRemove(object):
         Process all the results what to do with the run based on the result of database query
         """
         for key, value in self.to_delete.items():
-            if len(value) == 0:
+            if not value:
                 self.run_not_found(run_number=key)
             if len(value) == 1:
                 continue
@@ -81,33 +85,35 @@ class ManualRemove(object):
         """
         Delete all records from the database that match those found in self.to_delete
         """
-        conn = self.database.get_connection()
         for run_number, job_list in self.to_delete.items():
             for version in job_list:
                 # Delete the specified version
                 print('{}{}:'.format(self.instrument, run_number))
                 # Delete reduction location record
-                conn.query(self.database.reduction_location()) \
-                    .filter(self.database.reduction_location().id == version.id) \
-                    .delete(synchronize_session='fetch')
-                conn.commit()
-                print('\treduction_viewer_reductionlocation ... Deleted')
+                self.delete_record(self.database.reduction_location(),
+                                   self.database.reduction_location().id == version.id)
 
                 # Delete data location record
-                conn.query(self.database.reduction_data_location()) \
-                    .filter(self.database.reduction_data_location().id == version.id) \
-                    .delete(synchronize_session='fetch')
-                conn.commit()
-                print('\treduction_viewer_datalocation ... Deleted')
+                self.delete_record(self.database.reduction_data_location(),
+                                   self.database.reduction_data_location().id == version.id)
 
                 # Delete reduction run record
-                conn.query(self.database.reduction_run()) \
-                    .filter(self.database.reduction_run().id == version.id) \
-                    .delete(synchronize_session='fetch')
-                conn.commit()
-                print('\treduction_viewer_reductionrun ... Deleted')
+                self.delete_record(self.database.reduction_run(),
+                                   self.database.reduction_run().id == version.id)
+
             # Remove deleted run from dictionary
             del self.to_delete[run_number]
+
+    def delete_record(self, query_value, filter_on):
+        """
+        Run a delete on the database
+        :param query_value: the query to use
+        :param filter_on: filtering options
+        """
+        connection = self.database.get_connection()
+        connection.query(query_value).filter(filter_on).delete(synchronize_session='fetch')
+        connection.commit()
+        print('\t{} ... Deleted'.format(query_value))
 
     @staticmethod
     def validate_csv_input(user_input):
@@ -134,6 +140,9 @@ class ManualRemove(object):
 
 
 def main():
+    """
+    Creates a ManualRemove object and uses it to remove records from the database
+    """
     parser = argparse.ArgumentParser(description='Remove a run from the autoreduction service.',
                                      epilog='./manual_remove.py GEM 83880')
     parser.add_argument('instrument', metavar='instrument', type=str,

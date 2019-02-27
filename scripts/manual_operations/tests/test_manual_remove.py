@@ -4,12 +4,13 @@ Test cases for the manual job submission script
 import unittest
 import __builtin__
 
-from mock import patch
+from mock import call, patch
 
 from scripts.manual_operations.manual_remove import ManualRemove
 from utils.clients.database_client import DatabaseClient
 
 
+# pylint:disable=invalid-name
 class TestManualSubmission(unittest.TestCase):
     """
     Test manual_submission.py
@@ -18,16 +19,16 @@ class TestManualSubmission(unittest.TestCase):
         self.manual_remove = ManualRemove(instrument='GEM')
         # Setup database connection so it is possible to use
         # ReductionRun objects with valid meta data
-        database_client = DatabaseClient()
-        database_client.connect()
+        self.database_client = DatabaseClient()
+        self.database_client.connect()
 
         # Fake ReductionRun objects for testing
-        self.gem_object_1 = database_client.reduction_run()
+        self.gem_object_1 = self.database_client.reduction_run()
         self.gem_object_1.run_number = '123'
         self.gem_object_1.run_name = 'first version of GEM123'
         self.gem_object_1.run_version = '1'
 
-        self.gem_object_2 = database_client.reduction_run()
+        self.gem_object_2 = self.database_client.reduction_run()
         self.gem_object_2.run_number = '123'
         self.gem_object_2.run_name = 'second version of GEM123'
         self.gem_object_2.run_version = '2'
@@ -105,7 +106,11 @@ class TestManualSubmission(unittest.TestCase):
         # We said to delete version 2 so it should be the only entry for that run number
         self.assertEqual(2, len(self.manual_remove.to_delete['123']))
 
-    def test_delete_records(self):
+    @patch('scripts.manual_operations.manual_remove.ManualRemove.delete_record')
+    def test_delete_records(self, mock_delete):
+        """
+        Test that the correct query is sent to attempt to delete a record from the database
+        """
         self.manual_remove.find_runs_in_database('1')
         self.assertEqual(2, len(self.manual_remove.to_delete['1']))
         del self.manual_remove.to_delete['1'][0]
@@ -113,20 +118,32 @@ class TestManualSubmission(unittest.TestCase):
         self.assertEqual(long(1), self.manual_remove.to_delete['1'][0].run_version)
         self.manual_remove.delete_records()
         self.assertEqual(0, len(self.manual_remove.to_delete))
-        # Attempt to find the run in the database again
-        self.manual_remove.find_runs_in_database('1')
-        # Assert that the run was not found
-        self.assertEqual(1, len(self.manual_remove.to_delete))
-        self.assertEqual([], self.manual_remove.to_delete['1'])
+        # Ensure that the delete functions were called on the expected tables
+        mocked_delete_calls = mock_delete.call_args_list
+        self.assertEqual(type(self.database_client.reduction_location()),
+                         type(mocked_delete_calls[0][0][0]))
+        self.assertEqual(type(self.database_client.reduction_data_location()),
+                         type(mocked_delete_calls[1][0][0]))
+        self.assertEqual(type(self.database_client.reduction_run()),
+                         type(mocked_delete_calls[2][0][0]))
 
     def test_validate_csv_single_val(self):
+        """
+        Test user input validation
+        """
         actual = self.manual_remove.validate_csv_input('1')
         self.assertEqual((True, [1]), actual)
 
     def test_validate_csv_list(self):
+        """
+        Test user input validation
+        """
         actual = self.manual_remove.validate_csv_input('1,2,3')
         self.assertEqual((True, [1, 2, 3]), actual)
 
     def test_validate_csv_invalid(self):
+        """
+        Test user input validation
+        """
         actual = self.manual_remove.validate_csv_input('t,e,s,t')
         self.assertEqual((False, []), actual)
