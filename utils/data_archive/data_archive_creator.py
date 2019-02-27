@@ -1,3 +1,9 @@
+# ############################################################################### #
+# Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
+#
+# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# SPDX - License - Identifier: GPL-3.0-or-later
+# ############################################################################### #
 # pylint:disable=anomalous-backslash-in-string
 """
 Used to create a fake data-archive structure for testing
@@ -95,10 +101,13 @@ class DataArchiveCreator(object):
         user_dir_path = os.path.join(ndx_dir_path, 'user')
         data_dir_path = os.path.join(inst_dir_path, 'data')
         jrnl_dir_path = os.path.join(logs_dir_path, 'journal')
+        scrp_dir_path = os.path.join(user_dir_path, 'scripts')
+        auto_dir_path = os.path.join(scrp_dir_path, 'autoreduction')
         for instrument in instruments:
             os.makedirs(user_dir_path.format(instrument))
             os.makedirs(data_dir_path.format(instrument))
             os.makedirs(jrnl_dir_path.format(instrument))
+            os.makedirs(auto_dir_path.format(instrument))
             self._make_cycle_directories(start_year, end_year, current_cycle,
                                          inst_dir_path.format(instrument))
 
@@ -182,9 +191,32 @@ class DataArchiveCreator(object):
         self._check_valid_inst(instrument)
         path_to_log_file = os.path.join(self._archive_dir, 'NDX{}',
                                         'Instrument', 'logs',
-                                        'journal').format(instrument)
-        self.create_file_at_location(os.path.join(path_to_log_file, 'summary.txt'),
-                                     str(file_contents))
+                                        'journal', 'summary.txt').format(instrument)
+        self.create_file_at_location(path_to_log_file, str(file_contents))
+
+    def add_reduce_script(self, instrument, file_content):
+        """
+        Adds the reduce.py file to the /user/scripts/autoreduce directory
+        :param instrument: The instrument to add the file for
+        :param file_content: The content of the file
+        """
+        self._check_valid_inst(instrument)
+        path_to_reduce_file = os.path.join(self._archive_dir, 'NDX{}',
+                                           'user', 'scripts',
+                                           'autoreduction', 'reduce.py').format(instrument)
+        self.create_file_at_location(path_to_reduce_file, file_content)
+
+    def add_reduce_vars_script(self, instrument, file_content):
+        """
+        Adds the reduce.py file to the /user/scripts/autoreduce directory
+        :param instrument: The instrument to add the file for
+        :param file_content: The content of the file
+        """
+        self._check_valid_inst(instrument)
+        path_to_reduce_file = os.path.join(self._archive_dir, 'NDX{}',
+                                           'user', 'scripts',
+                                           'autoreduction', 'reduce_vars.py').format(instrument)
+        self.create_file_at_location(path_to_reduce_file, file_content)
 
     def add_last_run_file(self, instrument, file_contents):
         """

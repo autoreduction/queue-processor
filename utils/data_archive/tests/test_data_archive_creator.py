@@ -1,3 +1,9 @@
+# ############################################################################### #
+# Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
+#
+# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# SPDX - License - Identifier: GPL-3.0-or-later
+# ############################################################################### #
 """
 Tests for DataArchiveCreator class
 """
@@ -108,6 +114,20 @@ class TestDataArchiveCreator(unittest.TestCase):
         self.dac.add_journal_file('GEM', 'test')
         expected_file_path = os.path.join(self.test_output_directory, 'data-archive', 'NDXGEM',
                                           'Instrument', 'logs', 'journal', 'summary.txt')
+        self.assertTrue(os.path.isfile(expected_file_path))
+
+    def test_add_reduce_script_valid(self):
+        self.dac.make_data_archive(['GEM'], 18, 18, 1)
+        self.dac.add_reduce_script('GEM', 'test')
+        expected_file_path = os.path.join(self.test_output_directory, 'data-archive', 'NDXGEM',
+                                          'user', 'scripts', 'autoreduction', 'reduce.py')
+        self.assertTrue(os.path.isfile(expected_file_path))
+
+    def test_add_reduce_vars_script_valid(self):
+        self.dac.make_data_archive(['GEM'], 18, 18, 1)
+        self.dac.add_reduce_vars_script('GEM', 'test')
+        expected_file_path = os.path.join(self.test_output_directory, 'data-archive', 'NDXGEM',
+                                          'user', 'scripts', 'autoreduction', 'reduce_vars.py')
         self.assertTrue(os.path.isfile(expected_file_path))
 
     def test_add_last_run_without_archive(self):
