@@ -145,7 +145,7 @@ def main():
     choice = raw_input('\'Backup\' or \'Wipe\': ')
     while choice.lower() != 'backup' and choice.lower() != 'wipe':
         choice = raw_input('Invalid option - \'Backup\' or \'Wipe\':')
-    choice.lower()
+    choice = choice.lower()
     cycle = raw_input('Current cycle name: ')
     user = raw_input('Database user name: ')
     password = getpass.getpass('Database password (leave blank if none): ')
