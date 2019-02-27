@@ -1,3 +1,9 @@
+# ############################################################################### #
+# Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
+#
+# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# SPDX - License - Identifier: GPL-3.0-or-later
+# ############################################################################### #
 """
 This script periodically checks the lastrun.txt file on selected instruments and sends a message to
 the DataReady queue when runs end.
