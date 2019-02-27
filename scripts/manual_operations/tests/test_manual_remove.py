@@ -9,10 +9,11 @@ Test cases for the manual job submission script
 """
 import unittest
 import __builtin__
+import sys
 
 from mock import patch
 
-from scripts.manual_operations.manual_remove import ManualRemove
+from scripts.manual_operations.manual_remove import ManualRemove, main
 from utils.clients.database_client import DatabaseClient
 
 
@@ -153,3 +154,17 @@ class TestManualSubmission(unittest.TestCase):
         """
         actual = self.manual_remove.validate_csv_input('t,e,s,t')
         self.assertEqual((False, []), actual)
+
+    # pylint:disable=no-self-use
+    @patch('scripts.manual_operations.manual_remove.ManualRemove.find_runs_in_database')
+    @patch('scripts.manual_operations.manual_remove.ManualRemove.process_results')
+    @patch('scripts.manual_operations.manual_remove.ManualRemove.delete_records')
+    def test_main(self, mock_delete, mock_process, mock_find):
+        """
+        Tests the main() function that is used to control the ManualRemove class
+        """
+        sys.argv = ['', 'GEM', '1']
+        main()
+        mock_find.assert_called_once_with(1)
+        mock_process.assert_called_once()
+        mock_delete.assert_called_once()
