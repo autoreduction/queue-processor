@@ -11,7 +11,7 @@ import unittest
 import __builtin__
 import sys
 
-from mock import patch
+from mock import Mock, patch, call
 
 from scripts.manual_operations.manual_remove import ManualRemove, main
 from utils.clients.database_client import DatabaseClient
@@ -64,6 +64,17 @@ class TestManualSubmission(unittest.TestCase):
         self.manual_remove.process_results()
         mock_not_found.assert_called_once()
 
+    @patch('scripts.manual_operations.manual_remove.ManualRemove.run_not_found')
+    @patch('scripts.manual_operations.manual_remove.ManualRemove.multiple_versions_found')
+    def test_process_results_single(self, mock_multi, mock_not_found):
+        """
+        Test that if the results only contain single runs then just continue
+        """
+        self.manual_remove.to_delete['123'] = ['test']
+        self.manual_remove.process_results()
+        mock_multi.assert_not_called()
+        mock_not_found.assert_not_called()
+
     @patch('scripts.manual_operations.manual_remove.ManualRemove.multiple_versions_found')
     def test_process_results_multi(self, mock_multi_version):
         """
@@ -97,6 +108,21 @@ class TestManualSubmission(unittest.TestCase):
         # We said to delete version 2 so it should be the only entry for that run number
         self.assertEqual(1, len(self.manual_remove.to_delete['123']))
         self.assertEqual('2', self.manual_remove.to_delete['123'][0].run_version)
+
+    @patch('scripts.manual_operations.manual_remove.ManualRemove.validate_csv_input')
+    @patch.object(__builtin__, 'raw_input')
+    def test_multiple_versions_retry_user_input(self, mock_raw_input, mock_validate_csv):
+        """
+        Test if the user gives incorrect input it is re-validated
+        """
+        self.manual_remove.to_delete['123'] = [self.gem_object_1,
+                                               self.gem_object_2]
+        self.assertEqual(2, len(self.manual_remove.to_delete['123']))
+        mock_raw_input.side_effect = ['invalid', '2']
+        mock_validate_csv.side_effect = [(False, []), (True, [2])]
+        self.manual_remove.multiple_versions_found('123')
+        self.assertEqual(2, mock_validate_csv.call_count)
+        mock_validate_csv.assert_has_calls([call('invalid'), call('2')])
 
     @patch('scripts.manual_operations.manual_remove.ManualRemove.validate_csv_input')
     @patch.object(__builtin__, 'raw_input')
@@ -134,12 +160,40 @@ class TestManualSubmission(unittest.TestCase):
         self.assertEqual(type(self.database_client.reduction_run()),
                          type(mocked_delete_calls[2][0][0]))
 
+    @patch('utils.clients.database_client.DatabaseClient.get_connection')
+    def test_delete_record_from_database(self, mock_get_connection):
+        """
+        Test that the correct functions are called on the database for deleting runs
+        """
+        # Construct mocks for  connection, query and filter sub calls
+        database_connection_mock = Mock()
+        query_mock = Mock()
+        filter_mock = Mock()
+        database_connection_mock.query.return_value = query_mock
+        query_mock.filter.return_value = filter_mock
+        mock_get_connection.return_value = database_connection_mock
+
+        # Run test code
+        self.manual_remove.delete_record('database query', 'filter_value')
+        mock_get_connection.assert_called_once()
+        database_connection_mock.query.assert_called_once_with('database query')
+        query_mock.filter.assert_called_once_with('filter_value')
+        filter_mock.delete.assert_called_once()
+        database_connection_mock.commit.assert_called_once()
+
     def test_validate_csv_single_val(self):
         """
         Test user input validation
         """
         actual = self.manual_remove.validate_csv_input('1')
         self.assertEqual((True, [1]), actual)
+
+    def test_validate_csv_single_val_invalid(self):
+        """
+        Tests user input validation with single value that is invalid
+        """
+        actual = self.manual_remove.validate_csv_input('a')
+        self.assertEqual((False, []), actual)
 
     def test_validate_csv_list(self):
         """

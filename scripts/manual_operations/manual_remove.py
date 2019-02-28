@@ -165,5 +165,5 @@ def main():
     manual_remove.delete_records()
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     main()
