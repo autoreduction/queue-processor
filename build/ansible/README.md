@@ -1,6 +1,6 @@
 # Autoreduction Ansible Script
 
-This Ansible script deploys a complete autoreduction instance on a cloud VM running Scientific Linux 7.
+This Ansible script deploys a complete Autoreduction instance on a cloud VM running Scientific Linux 7.
 A separate SL7 Ansible server is required in order to deploy the playbook. The following components are installed
 
  * Autoreduction WebApp
@@ -11,9 +11,14 @@ A separate SL7 Ansible server is required in order to deploy the playbook. The f
  * Python ICAT
  * Packages for mounting the network drive (Full instructions: https://github.com/ISISScientificComputing/autoreduce/wiki/Cloud-Instances)
 
+# Cloud VMs needed
+
+* An ansible server VM
+* A host VM onto which Autoreduction is installed 
+
 # Install
 
-All these instructions should take place on the server machine. The setup on the host will
+All install instructions should take place on the server VM. The setup on the host VM will
 be handled automatically by the playbook.
 
 Get ansible:
@@ -28,6 +33,14 @@ Add the hostname of your VM to /etc/ansible/hosts
 [autoreduce-hosts]
 myhost.name.com
 ```
+
+Get the Autoreduction source code
+
+```
+git clone https://github.com/ISISScientificComputing/autoreduce.git
+```
+
+and cd to `build\ansible` within this git repository.
 
 Now run the playbook:
 
