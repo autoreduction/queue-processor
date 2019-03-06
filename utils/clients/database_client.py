@@ -164,17 +164,3 @@ class DatabaseClient(AbstractClient):
             reduction_run = relationship(self.reduction_run(),
                                          foreign_keys='RunVariable.reduction_run_id')
         return RunVariable
-
-    def variable(self):
-        """
-        :return: Variable Table to replicate what we expect in the database
-        """
-        # pylint: disable=too-few-public-methods
-        class Variable(declarative_base()):
-            """
-                        Table for reduction_variables_variable entity
-                        """
-            __table__ = Table('reduction_variables_variable',
-                              self._meta_data, autoload=True,
-                              autoload_with=self._engine)
-        return Variable
