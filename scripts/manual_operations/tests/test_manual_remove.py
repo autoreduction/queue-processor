@@ -157,8 +157,10 @@ class TestManualSubmission(unittest.TestCase):
                          type(mocked_delete_calls[0][0][0]))
         self.assertEqual(type(self.database_client.reduction_data_location()),
                          type(mocked_delete_calls[1][0][0]))
-        self.assertEqual(type(self.database_client.reduction_run()),
+        self.assertEqual(type(self.database_client.run_variables()),
                          type(mocked_delete_calls[2][0][0]))
+        self.assertEqual(type(self.database_client.reduction_run()),
+                         type(mocked_delete_calls[3][0][0]))
 
     @patch('utils.clients.database_client.DatabaseClient.get_connection')
     def test_delete_record_from_database(self, mock_get_connection):
