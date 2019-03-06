@@ -103,12 +103,31 @@ class ManualRemove(object):
                 self.delete_record(self.database.reduction_data_location(),
                                    self.database.reduction_data_location().id == version.id)
 
+                # Delete run_variables
+                self.delete_variables(version.id)
+
                 # Delete reduction run record
                 self.delete_record(self.database.reduction_run(),
                                    self.database.reduction_run().id == version.id)
 
             # Remove deleted run from dictionary
             del self.to_delete[run_number]
+
+    def delete_variables(self, reduction_run_id):
+        """
+        Removes all the run parameters associated
+        :return:
+        """
+        # Query runvariable using reduction_run_id to get all associated variable_ptr_id
+        connection = self.database.get_connection()
+        run_variables = connection.query(self.database.run_variables()) \
+            .filter(self.database.run_variables().reduction_run_id == reduction_run_id).all()
+        connection.commit()
+        # Remove all the runvariables associated with the variable_ptr_id
+        for record in run_variables:
+            self.delete_record(self.database.run_variables(),
+                               self.database.run_variables().variable_ptr_id ==
+                               record.variable_ptr_id)
 
     def delete_record(self, query_value, filter_on):
         """
