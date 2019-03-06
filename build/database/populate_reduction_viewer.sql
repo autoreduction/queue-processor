@@ -1,7 +1,6 @@
 USE autoreduction;
 # ======================================= #
 # reduction_viewer_instrument
-
 INSERT INTO reduction_viewer_instrument
     (id, name, is_active, is_paused)
 VALUES
@@ -49,7 +48,7 @@ VALUES
     (11,   008,       0,    'test-run', 'print("running test run #8")', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:01:00',   NULL    , NULL, 'message', 'reduction-log', 'admin-log',    NULL    ,    0   ,    0   ,     0     ,   1   ,   1   ,  NULL  ,     4),
     (12,   009,       0,    'test-run', 'print("running test run #9")', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:01:00',   NULL    , NULL, 'message', 'reduction-log', 'admin-log',    NULL    ,    0   ,    0   ,     0     ,   1   ,   1   ,  NULL  ,     4),
     (13,   010,       0,    'test-run', 'print("running test run #10")', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:01:00',  NULL    , NULL, 'message', 'reduction-log', 'admin-log',    NULL    ,    0   ,    0   ,     0     ,   1   ,   1   ,  NULL  ,     4);
-    
+
 
 # ======================================= #
 # reduction_viewer_datalocation
@@ -108,3 +107,48 @@ VALUES
     (1, 'name', 'value'),
     (2, 'name', 'value'),
     (3, 'name', 'value');
+
+# ======================================= #
+# reduction_variables_variable
+INSERT INTO reduction_variables_variable
+    (id, name, value, type, is_advanced, help_text)
+VALUES
+    (1,  'bool_variable',      'True',   'boolean',     0, ''),
+    (2,  'string_variable',    'String', 'text',        0, ''),
+    (3,  'num_variable',       1,        'number',      0, ''),
+    (4,  'num_list_variable',  '1,2,3',  'list_number', 0, ''),
+    (5,  'advanced_variable',  'True',   'boolean',     1, ''),
+    (6,  'help_text_variable', 'True',   'boolean',     0, 'Variable with help text'),
+    (7,  'bool_variable',      'True',   'boolean',     0, ''),
+    (8,  'string_variable',    'String', 'text',        0, ''),
+    (9,  'num_variable',       1,        'number',      0, ''),
+    (10, 'num_list_variable',  '1,2,3',  'list_number', 0, ''),
+    (11, 'advanced_variable',  'True',   'boolean',     1, ''),
+    (12, 'help_text_variable', 'True',   'boolean',     0, 'Variable with help text');
+
+# ======================================= #
+# reduction_variables_instrumentvariable
+INSERT INTO reduction_variables_instrumentvariable
+    (variable_ptr_id, experiment_reference, start_run, tracks_script, instrument_id)
+VALUES
+    (1, NULL, 1, 1, 1),
+    (2, NULL, 1, 1, 2),
+    (3, NULL, 1, 1, 3);
+
+# ======================================= #
+# reduction_variables_runvariable
+INSERT INTO reduction_variables_runvariable
+    (variable_ptr_id, reduction_run_id)
+VALUES
+    (1, 1),
+    (2, 1),
+    (3, 1),
+    (4, 1),
+    (5, 1),
+    (6, 1),
+    (7, 2),
+    (8, 3),
+    (9, 4),
+    (10, 5),
+    (11, 6),
+    (12, 7);
