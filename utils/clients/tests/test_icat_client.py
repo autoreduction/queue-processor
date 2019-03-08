@@ -35,7 +35,7 @@ class TestICATClient(unittest.TestCase):
         self.assertEqual(client.credentials.password, 'YOUR-PASSWORD')
         self.assertEqual(client.credentials.host, 'YOUR-ICAT-WSDL-URL')
         self.assertEqual(client.credentials.port, '')
-        self.assertEqual(client.credentials.auth, 'Simple')
+        self.assertEqual(client.credentials.auth, 'simple')
         mock_icat.assert_called_once_with('YOUR-ICAT-WSDL-URL')
 
     @patch('icat.Client.__init__', return_value=None)
@@ -45,7 +45,7 @@ class TestICATClient(unittest.TestCase):
         mock_icat.assert_called_once()
         client.connect()
         mock_icat_login.assert_called_once()
-        mock_icat_login.assert_called_once_with(auth='Simple',
+        mock_icat_login.assert_called_once_with(auth='simple',
                                                 credentials={'username': 'YOUR-ICAT-USERNAME',
                                                              'password': 'YOUR-PASSWORD'})
 

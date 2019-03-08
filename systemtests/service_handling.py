@@ -9,7 +9,9 @@
 Functions to handle start/stop of external services such as activemq and queue processors
 """
 
+import sys
 import os
+import time
 from subprocess import Popen
 
 
@@ -17,23 +19,25 @@ from build.test_settings import ACTIVEMQ_EXECUTABLE
 from utils.project.structure import get_project_root
 
 
-def _start_activemq():
+def start_activemq():
     """ Start the activemq process"""
-    Popen([ACTIVEMQ_EXECUTABLE, 'start'])
+    Popen(['sudo', ACTIVEMQ_EXECUTABLE, 'start'])
+    time.sleep(3)
 
 
-def _stop_activemq():
+def stop_activemq():
     """ Stop the activemq process"""
-    Popen([ACTIVEMQ_EXECUTABLE, 'stop'])
+    Popen(['sudo', ACTIVEMQ_EXECUTABLE, 'stop'])
 
 
-def _start_queue_processors():
+def start_queue_processors():
     """ Start the Queue Processors"""
     queue_processor_dir = os.path.join(get_project_root(), 'QueueProcessors')
-    Popen(['{}/./restart.sh'.format(queue_processor_dir)])
+    Popen(['sudo', '{}/./restart.sh'.format(queue_processor_dir), sys.executable])
+    time.sleep(3)
 
 
-def _stop_queue_processors():
+def stop_queue_processors():
     """ Stop the Queue Processors"""
     queue_processor_dir = os.path.join(get_project_root(), 'QueueProcessors')
-    Popen(['{}/./stop.sh'.format(queue_processor_dir)])
+    Popen(['sudo', '{}/./stop.sh'.format(queue_processor_dir), sys.executable])
