@@ -18,8 +18,11 @@ class ManualRemove(object):
     Handles removing a run from the database
     """
 
-    def __init__(self, instrument):
-        self.database = DatabaseClient()
+    def __init__(self, instrument, credentials=None):
+        if credentials:
+            self.database = DatabaseClient(credentials)
+        else:
+            self.database = DatabaseClient()
         self.database.connect()
         self.to_delete = {}
         self.instrument = instrument
@@ -97,11 +100,13 @@ class ManualRemove(object):
                 print('{}{}:'.format(self.instrument, run_number))
                 # Delete reduction location record
                 self.delete_record(self.database.reduction_location(),
-                                   self.database.reduction_location().id == version.id)
+                                   self.database.reduction_location().
+                                   reduction_run_id == version.id)
 
                 # Delete data location record
                 self.delete_record(self.database.reduction_data_location(),
-                                   self.database.reduction_data_location().id == version.id)
+                                   self.database.reduction_data_location().
+                                   reduction_run_id == version.id)
 
                 # Delete run_variables
                 self.delete_variables(version.id)
