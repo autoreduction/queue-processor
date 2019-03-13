@@ -60,7 +60,7 @@ if os.name != 'nt':
             self.data_archive_creator.add_data_to_most_recent_cycle('WISH', 'WISH101.nxs')
 
             # Make temporary location to add reduced files to
-            self._make_reduction_directory()
+            self._make_reduction_directory('WISH', '222', '101')
 
             # Submit message to activemq
             cycle_path = self.archive_explorer.get_cycle_directory('WISH', 19, 1)
@@ -72,6 +72,68 @@ if os.name != 'nt':
             json_message = json.dumps(data_ready_message)
             self.queue_client.send('/queue/DataReady', json_message)
 
+            results = self._find_run_in_database('WISH', 101)
+
+            # Validate
+            self.assertEqual(101, results[0].run_number)
+            self.assertEqual(222, results[0].experiment.reference_number)
+            self.assertEqual('WISH', results[0].instrument.name)
+            self.assertEqual('Completed', results[0].status.value)  # 4 is the id for `Completed`
+
+        def test_wish_user_script_failure(self):
+            """ Test that WISH data goes through the system without issue """
+            # Add specific data to archive
+            self.data_archive_creator.make_data_archive(['WISH'], 19, 19, 1)
+            self.data_archive_creator.add_reduce_script('WISH', 'failure')
+            self.data_archive_creator.add_reduce_vars_script('WISH', '')
+            self.data_archive_creator.add_data_to_most_recent_cycle('WISH', 'WISH102.nxs')
+
+            # Make temporary location to add reduced files to
+            self._make_reduction_directory('WISH', '222', '102')
+
+            # Submit message to activemq
+            cycle_path = self.archive_explorer.get_cycle_directory('WISH', 19, 1)
+            file_location = os.path.join(cycle_path, 'WISH102.nxs')
+            data_ready_message = self.queue_client.serialise_data(rb_number=222,
+                                                                  instrument='WISH',
+                                                                  location=file_location,
+                                                                  run_number=102)
+            json_message = json.dumps(data_ready_message)
+            self.queue_client.send('/queue/DataReady', json_message)
+
+            results = self._find_run_in_database('WISH', 102)
+
+            # Validate
+            self.assertEqual(102, results[0].run_number)
+            self.assertEqual(222, results[0].experiment.reference_number)
+            self.assertEqual('WISH', results[0].instrument.name)
+            self.assertEqual('Error', results[0].status.value)  # 4 is the id for `Completed`
+
+        @staticmethod
+        def _make_reduction_directory(instrument, rb_number, run_number):
+            """
+            Make a directory in the expected location for reduced runs to be written to
+            """
+            reduced_dir = os.path.join(get_project_root(), 'reduced-data')
+            reduced_inst = os.path.join(reduced_dir, instrument)
+            reduced_rb = os.path.join(reduced_inst, 'RB{}'.format(rb_number))
+            reduced_auto = os.path.join(reduced_rb, 'autoreduced')
+            reduced_run = os.path.join(reduced_auto, str(run_number))
+            os.mkdir(reduced_dir)
+            os.mkdir(reduced_inst)
+            os.mkdir(reduced_rb)
+            os.mkdir(reduced_auto)
+            os.mkdir(reduced_run)
+
+        def _find_run_in_database(self, instrument, run_number):
+            """
+            Find a ReductionRun record in the database
+            This includes a timeout to wait for several seconds to ensure the database has recieved
+            the record in question
+            :param instrument: The name of the instrument associated with the run
+            :param run_number: The run number associated with the reduction job
+            :return: The resulting record
+            """
             wait_times = [0, 2, 5, 10, 20]
             results = []
             for timeout in wait_times:
@@ -84,8 +146,8 @@ if os.name != 'nt':
                     .join(self.database_client.reduction_run().instrument) \
                     .join(self.database_client.reduction_run().status) \
                     .join(self.database_client.reduction_run().experiment) \
-                    .filter(self.database_client.instrument().name == 'WISH') \
-                    .filter(self.database_client.reduction_run().run_number == '101').all()
+                    .filter(self.database_client.instrument().name == instrument) \
+                    .filter(self.database_client.reduction_run().run_number == run_number).all()
                 connection.commit()
                 try:
                     actual = results[0]
@@ -96,28 +158,7 @@ if os.name != 'nt':
                     print('Job reached {} status after {} seconds'.format(actual.status.value,
                                                                           timeout))
                     break
-
-            # Validate
-            self.assertEqual(101, results[0].run_number)
-            self.assertEqual(222, results[0].experiment.reference_number)
-            self.assertEqual('WISH', results[0].instrument.name)
-            self.assertEqual('Completed', results[0].status.value)  # 4 is the id for `Completed`
-
-        @staticmethod
-        def _make_reduction_directory():
-            """
-            Make a directory in the expected location for reduced runs to be written to
-            """
-            reduced_dir = os.path.join(get_project_root(), 'reduced-data')
-            reduced_inst = os.path.join(reduced_dir, 'WISH')
-            reduced_rb = os.path.join(reduced_inst, 'RB222')
-            reduced_auto = os.path.join(reduced_rb, 'autoreduced')
-            reduced_run = os.path.join(reduced_auto, '101')
-            os.mkdir(reduced_dir)
-            os.mkdir(reduced_inst)
-            os.mkdir(reduced_rb)
-            os.mkdir(reduced_auto)
-            os.mkdir(reduced_run)
+            return results
 
         @staticmethod
         def _delete_reduction_directory():
@@ -125,7 +166,9 @@ if os.name != 'nt':
             shutil.rmtree(os.path.join(get_project_root(), 'reduced-data'))
 
         def tearDown(self):
-            """ Stop external services and delete data archive """
+            """ Disconnect from services, stop external services and delete data archive """
+            self.queue_client.disconnect()
+            self.database_client.disconnect()
             external.stop_activemq()
             external.stop_queue_processors()
             self._delete_reduction_directory()

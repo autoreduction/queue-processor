@@ -41,6 +41,7 @@ def stop_activemq():
     """ Stop the activemq process"""
     _check_root()
     Popen(['sudo', ACTIVEMQ_EXECUTABLE, 'stop'])
+    time.sleep(3)
 
 
 def start_queue_processors():
@@ -56,3 +57,4 @@ def stop_queue_processors():
     _check_root()
     queue_processor_dir = os.path.join(get_project_root(), 'QueueProcessors')
     Popen(['sudo', '{}/./stop.sh'.format(queue_processor_dir), sys.executable])
+    time.sleep(3)
