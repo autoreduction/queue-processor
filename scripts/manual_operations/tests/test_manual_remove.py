@@ -15,6 +15,7 @@ from mock import Mock, patch, call
 
 from scripts.manual_operations.manual_remove import ManualRemove, main
 from utils.clients.database_client import DatabaseClient
+from utils.settings import MYSQL_SETTINGS
 
 
 # pylint:disable=invalid-name
@@ -23,10 +24,10 @@ class TestManualSubmission(unittest.TestCase):
     Test manual_submission.py
     """
     def setUp(self):
-        self.manual_remove = ManualRemove(instrument='GEM')
+        self.manual_remove = ManualRemove(instrument='GEM', credentials=MYSQL_SETTINGS)
         # Setup database connection so it is possible to use
         # ReductionRun objects with valid meta data
-        self.database_client = DatabaseClient()
+        self.database_client = DatabaseClient(MYSQL_SETTINGS)
         self.database_client.connect()
 
         # Fake ReductionRun objects for testing
