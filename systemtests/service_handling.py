@@ -12,26 +12,40 @@ Functions to handle start/stop of external services such as activemq and queue p
 import sys
 import os
 import time
-from subprocess import Popen
+from subprocess import Popen, check_output, CalledProcessError
 
 
 from build.test_settings import ACTIVEMQ_EXECUTABLE
 from utils.project.structure import get_project_root
 
 
+def _check_root():
+    """
+    Raise exception if user is not root
+    """
+    system_test_dir = os.path.join(get_project_root(), 'systemtests')
+    try:
+        check_output(['{}/./check_root.sh'.format(system_test_dir)])
+    except CalledProcessError:
+        raise RuntimeError('User must be root to perform these operations')
+
+
 def start_activemq():
     """ Start the activemq process"""
+    _check_root()
     Popen(['sudo', ACTIVEMQ_EXECUTABLE, 'start'])
     time.sleep(3)
 
 
 def stop_activemq():
     """ Stop the activemq process"""
+    _check_root()
     Popen(['sudo', ACTIVEMQ_EXECUTABLE, 'stop'])
 
 
 def start_queue_processors():
     """ Start the Queue Processors"""
+    _check_root()
     queue_processor_dir = os.path.join(get_project_root(), 'QueueProcessors')
     Popen(['sudo', '{}/./restart.sh'.format(queue_processor_dir), sys.executable])
     time.sleep(3)
@@ -39,5 +53,6 @@ def start_queue_processors():
 
 def stop_queue_processors():
     """ Stop the Queue Processors"""
+    _check_root()
     queue_processor_dir = os.path.join(get_project_root(), 'QueueProcessors')
     Popen(['sudo', '{}/./stop.sh'.format(queue_processor_dir), sys.executable])
