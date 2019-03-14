@@ -436,9 +436,13 @@ def experiment_summary(request, reference_number=None):
                 if location not in reduced_data:
                     reduced_data.append(location)
         try:
-            with ICATCache(AUTH='uows',
-                           SESSION={'sessionid': request.session['sessionid']}) as icat:
-                experiment_details = icat.get_experiment_details(int(reference_number))
+            if DEVELOPMENT_MODE:
+                with ICATCache() as icat:
+                    experiment_details = icat.get_experiment_details(int(reference_number))
+            else:
+                with ICATCache(AUTH='uows',
+                               SESSION={'sessionid': request.session['sessionid']}) as icat:
+                    experiment_details = icat.get_experiment_details(int(reference_number))
         # pylint:disable=broad-except
         except Exception as icat_e:
             LOGGER.error(icat_e.message)
