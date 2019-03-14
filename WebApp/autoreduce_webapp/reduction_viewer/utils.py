@@ -42,7 +42,7 @@ class StatusUtils(object):
         name or create one if it doesn't yet exist
         """
         # pylint:disable=no-member
-        status = Status.objects.get(value=status_value)
+        status = Status.objects.get_or_create(value=status_value)
         return status
 
     def get_error(self):
