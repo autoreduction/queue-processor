@@ -202,7 +202,7 @@ def run_list(request):
 
     # Superuser sees everything
     if request.user.is_superuser or not USER_ACCESS_CHECKS:
-        instrument_names = Instrument.objects.values_list('name', flat=True)
+        instrument_names = Instrument.objects.order_by('name', 'name')
         is_instrument_scientist = True
         if instrument_names:
             for instrument_name in instrument_names:
