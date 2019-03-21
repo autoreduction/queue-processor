@@ -16,6 +16,8 @@ import time
 import shutil
 
 from systemtests import service_handling as external
+from scripts.manual_operations import manual_remove as remove
+
 
 from utils.test_settings import MYSQL_SETTINGS, ACTIVEMQ_SETTINGS
 from utils.clients.database_client import DatabaseClient
@@ -46,71 +48,100 @@ if os.name != 'nt':
             self.data_archive_creator = DataArchiveCreator(os.path.join(get_project_root()))
             self.archive_explorer = ArchiveExplorer(os.path.join(get_project_root(),
                                                                  'data-archive'))
+            # Add placeholder variables:
+            # these are used to ensure runs are deleted even if test fails before completion
+            self.instrument = None
+            self.rb_number = None
+            self.run_number = None
 
         def test_end_to_end_wish(self):
-            """ Test that WISH data goes through the system without issue """
-            # Add specific data to archive
-            self.data_archive_creator.make_data_archive(['WISH'], 19, 19, 1)
-            self.data_archive_creator.add_reduce_script(
-                'WISH',
-                'def main(input_file, output_dir):\n'
-                '\tprint("WISH system test")\n'
-                '\n'
-                'if __name__ == "__main__":\n'
+            """
+            Test that WISH data goes through the system without issue
+            """
+            # Set meta data for test
+            self.instrument = 'WISH'
+            self.rb_number = 222
+            self.run_number = 101
+
+            reduce_script = \
+                'def main(input_file, output_dir):\n' \
+                '\tprint("WISH system test")\n' \
+                '\n' \
+                'if __name__ == "__main__":\n' \
                 '\tmain()\n'
-            )
-            self.data_archive_creator.add_reduce_vars_script('WISH', '')
-            self.data_archive_creator.add_data_to_most_recent_cycle('WISH', 'WISH101.nxs')
 
-            # Make temporary location to add reduced files to
-            self._make_reduction_directory('WISH', '222', '101')
+            # Create supporting data structures e.g. Data Archive, Reduce directory
+            file_location = self._setup_data_structures(reduce_script=reduce_script,
+                                                        vars_script='')
 
-            # Submit message to activemq
-            cycle_path = self.archive_explorer.get_cycle_directory('WISH', 19, 1)
-            file_location = os.path.join(cycle_path, 'WISH101.nxs')
-            data_ready_message = self.queue_client.serialise_data(rb_number=222,
-                                                                  instrument='WISH',
+            # Create and send json message to ActiveMQ
+            data_ready_message = self.queue_client.serialise_data(rb_number=self.rb_number,
+                                                                  instrument=self.instrument,
                                                                   location=file_location,
-                                                                  run_number=101)
-            json_message = json.dumps(data_ready_message)
-            self.queue_client.send('/queue/DataReady', json_message)
+                                                                  run_number=self.run_number)
+            self.queue_client.send('/queue/DataReady',
+                                   json.dumps(data_ready_message))
 
-            results = self._find_run_in_database('WISH', 101)
+            # Get Result from database
+            results = self._find_run_in_database()
 
             # Validate
-            self.assertEqual(101, results[0].run_number)
-            self.assertEqual(222, results[0].experiment.reference_number)
-            self.assertEqual('WISH', results[0].instrument.name)
-            self.assertEqual('Completed', results[0].status.value)  # 4 is the id for `Completed`
+            self.assertEqual(self.instrument, results[0].instrument.name)
+            self.assertEqual(self.rb_number, results[0].experiment.reference_number)
+            self.assertEqual(self.run_number, results[0].run_number)
+            self.assertEqual('Completed', results[0].status.value)
 
         def test_wish_user_script_failure(self):
-            """ Test that WISH data goes through the system without issue """
-            # Add specific data to archive
-            self.data_archive_creator.make_data_archive(['WISH'], 19, 19, 1)
-            self.data_archive_creator.add_reduce_script('WISH', 'failure')
-            self.data_archive_creator.add_reduce_vars_script('WISH', '')
-            self.data_archive_creator.add_data_to_most_recent_cycle('WISH', 'WISH102.nxs')
+            """
+            Test that WISH data goes through the system without issue
+            """
+            # Set meta data for test
+            self.instrument = 'WISH'
+            self.rb_number = 222
+            self.run_number = 101
 
-            # Make temporary location to add reduced files to
-            self._make_reduction_directory('WISH', '222', '102')
+            # Create supporting data structures e.g. Data Archive, Reduce directory
+            file_location = self._setup_data_structures(reduce_script='fail',
+                                                        vars_script='')
 
-            # Submit message to activemq
-            cycle_path = self.archive_explorer.get_cycle_directory('WISH', 19, 1)
-            file_location = os.path.join(cycle_path, 'WISH102.nxs')
-            data_ready_message = self.queue_client.serialise_data(rb_number=222,
-                                                                  instrument='WISH',
-                                                                  location=file_location,
-                                                                  run_number=102)
-            json_message = json.dumps(data_ready_message)
-            self.queue_client.send('/queue/DataReady', json_message)
+            # Create and send json message to ActiveMQ
+            data_ready_message = self.queue_client.serialise_data(instrument=self.instrument,
+                                                                  rb_number=self.rb_number,
+                                                                  run_number=self.run_number,
+                                                                  location=file_location)
+            self.queue_client.send('/queue/DataReady',
+                                   json.dumps(data_ready_message))
 
-            results = self._find_run_in_database('WISH', 102)
+            # Get Result from database
+            results = self._find_run_in_database()
 
             # Validate
-            self.assertEqual(102, results[0].run_number)
-            self.assertEqual(222, results[0].experiment.reference_number)
-            self.assertEqual('WISH', results[0].instrument.name)
-            self.assertEqual('Error', results[0].status.value)  # 4 is the id for `Completed`
+            self.assertEqual(self.instrument, results[0].instrument.name)
+            self.assertEqual(self.rb_number, results[0].experiment.reference_number)
+            self.assertEqual(self.run_number, results[0].run_number)
+            self.assertEqual('Error', results[0].status.value)
+
+        def _setup_data_structures(self, reduce_script, vars_script):
+            """
+            Sets up a fake archive and reduced data save location on the system
+            :param reduce_script: The content to use in the reduce.py file
+            :param vars_script:  The content to use in the reduce_vars.py file
+            :return: file_path to the reduced data
+            """
+            raw_file = '{}{}.nxs'.format(self.instrument, self.run_number)
+            # Create and add data to archive
+            self.data_archive_creator.make_data_archive([self.instrument], 19, 19, 1)
+            self.data_archive_creator.add_reduce_script(instrument=self.instrument,
+                                                        file_content=reduce_script)
+            self.data_archive_creator.add_reduce_vars_script(self.instrument, vars_script)
+            self.data_archive_creator.add_data_to_most_recent_cycle(self.instrument, raw_file)
+
+            # Make temporary location to add reduced files to
+            self._make_reduction_directory(self.instrument, self.rb_number, self.run_number)
+
+            # Submit message to activemq
+            cycle_path = self.archive_explorer.get_cycle_directory(self.instrument, 19, 1)
+            return os.path.join(cycle_path, raw_file)
 
         @staticmethod
         def _make_reduction_directory(instrument, rb_number, run_number):
@@ -118,8 +149,8 @@ if os.name != 'nt':
             Make a directory in the expected location for reduced runs to be written to
             """
             reduced_dir = os.path.join(get_project_root(), 'reduced-data')
-            reduced_inst = os.path.join(reduced_dir, instrument)
-            reduced_rb = os.path.join(reduced_inst, 'RB{}'.format(rb_number))
+            reduced_inst = os.path.join(reduced_dir, str(instrument))
+            reduced_rb = os.path.join(reduced_inst, 'RB{}'.format(str(rb_number)))
             reduced_auto = os.path.join(reduced_rb, 'autoreduced')
             reduced_run = os.path.join(reduced_auto, str(run_number))
             os.mkdir(reduced_dir)
@@ -128,13 +159,11 @@ if os.name != 'nt':
             os.mkdir(reduced_auto)
             os.mkdir(reduced_run)
 
-        def _find_run_in_database(self, instrument, run_number):
+        def _find_run_in_database(self):
             """
             Find a ReductionRun record in the database
             This includes a timeout to wait for several seconds to ensure the database has recieved
             the record in question
-            :param instrument: The name of the instrument associated with the run
-            :param run_number: The run number associated with the reduction job
             :return: The resulting record
             """
             wait_times = [0, 2, 5, 10, 20]
@@ -149,8 +178,9 @@ if os.name != 'nt':
                     .join(self.database_client.reduction_run().instrument) \
                     .join(self.database_client.reduction_run().status) \
                     .join(self.database_client.reduction_run().experiment) \
-                    .filter(self.database_client.instrument().name == instrument) \
-                    .filter(self.database_client.reduction_run().run_number == run_number).all()
+                    .filter(self.database_client.instrument().name == self.instrument) \
+                    .filter(self.database_client.reduction_run().run_number == self.run_number) \
+                    .all()
                 connection.commit()
                 try:
                     actual = results[0]
@@ -164,6 +194,14 @@ if os.name != 'nt':
             return results
 
         @staticmethod
+        def _remove_run_from_database(instrument, run_number):
+            """
+            Uses the scripts.manual_operations.manual_remove script
+            to remove records added to the database
+            """
+            remove.run(instrument, run_number)
+
+        @staticmethod
         def _delete_reduction_directory():
             """ Delete the temporary reduction directory"""
             shutil.rmtree(os.path.join(get_project_root(), 'reduced-data'))
@@ -174,6 +212,8 @@ if os.name != 'nt':
             self.database_client.disconnect()
             self._delete_reduction_directory()
             del self.data_archive_creator
+            # Done in tearDown to ensure run is removed even if test fails early
+            self._remove_run_from_database(self.instrument, self.run_number)
 
         @classmethod
         def tearDownClass(cls):
