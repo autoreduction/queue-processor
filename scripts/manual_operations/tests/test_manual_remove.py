@@ -13,7 +13,7 @@ import sys
 
 from mock import Mock, patch, call
 
-from scripts.manual_operations.manual_remove import ManualRemove, main, run
+from scripts.manual_operations.manual_remove import ManualRemove, main, remove
 from utils.clients.database_client import DatabaseClient
 from utils.settings import MYSQL_SETTINGS
 
@@ -235,7 +235,7 @@ class TestManualSubmission(unittest.TestCase):
         """
         Tests the run() function that is used to control the ManualRemove class
         """
-        run('GEM', 1)
+        remove('GEM', 1)
         mock_find.assert_called_once_with(1)
         mock_process.assert_called_once()
         mock_delete.assert_called_once()

@@ -169,7 +169,7 @@ class ManualRemove(object):
         return True, processed_input
 
 
-def run(instrument, run_number):
+def remove(instrument, run_number):
     """
     Run the remove script
     :param instrument:
@@ -194,7 +194,7 @@ def main():
     args = parser.parse_args()
     instrument = args.instrument
     run_number = args.start_run_number
-    run(instrument, run_number)
+    remove(instrument, run_number)
 
 
 if __name__ == "__main__":  # pragma: no cover
