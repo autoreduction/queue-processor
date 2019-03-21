@@ -24,6 +24,8 @@ from utils.data_archive.data_archive_creator import DataArchiveCreator
 from utils.data_archive.archive_explorer import ArchiveExplorer
 from utils.project.structure import get_project_root
 
+import utils.service_handling as external
+
 
 def raise_exception():
     """ function required to raise Exception in mocks """
@@ -39,6 +41,7 @@ class TestEndOfRunMonitor(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        external.start_activemq()
         # Create data archive in temporary directory and point archive explorer at it
         cls.test_dir = get_project_root()
         cls.archive = DataArchiveCreator(cls.test_dir)
@@ -192,3 +195,4 @@ class TestEndOfRunMonitor(unittest.TestCase):
     def tearDownClass(cls):
         cls.archive.delete_archive()
         cls.connection.disconnect()
+        external.stop_activemq()

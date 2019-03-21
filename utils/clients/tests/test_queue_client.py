@@ -14,6 +14,7 @@ from mock import patch, call
 from utils.clients.connection_exception import ConnectionException
 from utils.clients.queue_client import QueueClient
 from utils.clients.settings.client_settings_factory import ClientSettingsFactory
+import utils.service_handling as external
 
 
 # pylint:disable=protected-access,invalid-name,missing-docstring
@@ -21,6 +22,11 @@ class TestQueueClient(unittest.TestCase):
     """
     Exercises the queue client
     """
+
+    @classmethod
+    def setUpClass(cls):
+        external.start_activemq()
+
     def setUp(self):
         self.incorrect_credentials = ClientSettingsFactory().create('queue',
                                                                     username='not-user',
@@ -133,3 +139,7 @@ class TestQueueClient(unittest.TestCase):
                                'ack': 'auto',
                                'header': {'activemq.prefetchSize': '1'}}
         mock_subscribe.assert_has_calls([call(**test_expected_args), call(**queue_expected_args)])
+
+    @classmethod
+    def tearDownClass(cls):
+        external.stop_activemq()

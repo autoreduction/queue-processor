@@ -16,6 +16,7 @@ from mock import patch, call, Mock
 
 from monitors.health_check import HealthCheckThread
 from utils.clients.connection_exception import ConnectionException
+import utils.service_handling as external
 
 
 # pylint:disable=too-few-public-methods
@@ -43,6 +44,10 @@ class MockDatabaseClient(object):
 
 # pylint:disable=missing-docstring, unused-argument, invalid-name
 class TestServiceUtils(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        external.start_activemq()
 
     @patch('monitors.icat_monitor.get_last_run', return_value=1234)
     @patch('monitors.health_check.HealthCheckThread.get_db_last_run',
@@ -232,3 +237,7 @@ class TestServiceUtils(unittest.TestCase):
                           call(icat_client, 'WISH', 12),
                           call(icat_client, 'WISH', 13)]
         mock_resubmit.assert_has_calls(expected_calls)
+
+    @classmethod
+    def tearDownClass(cls):
+        external.stop_activemq()

@@ -15,10 +15,10 @@ import json
 import time
 import shutil
 
-from systemtests import service_handling as external
+
 from scripts.manual_operations import manual_remove as remove
 
-
+from utils import service_handling as external
 from utils.test_settings import MYSQL_SETTINGS, ACTIVEMQ_SETTINGS
 from utils.clients.database_client import DatabaseClient
 from utils.clients.queue_client import QueueClient
