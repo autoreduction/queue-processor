@@ -28,17 +28,15 @@ from utils.project.structure import get_project_root
 if os.name != 'nt':
     class TestEndToEnd(unittest.TestCase):
         """ Class to test pipelines in autoreduction"""
-	
-	@classmethod
-        def setUpClass(cls):
-	   external.start_activemq()
-           external.start_queue_processors()
 
-	def setUp(self):
-            """ Start all external services """
+        @classmethod
+        def setUpClass(cls):
             # Start all services
-            #external.start_activemq()
-            #external.start_queue_processors()
+            external.start_activemq()
+            external.start_queue_processors()
+
+        def setUp(self):
+            """ Start all external services """
             # Get all clients
             self.database_client = DatabaseClient(MYSQL_SETTINGS)
             self.database_client.connect()
@@ -174,15 +172,14 @@ if os.name != 'nt':
             """ Disconnect from services, stop external services and delete data archive """
             self.queue_client.disconnect()
             self.database_client.disconnect()
-            #external.stop_activemq()
-            #external.stop_queue_processors()
             self._delete_reduction_directory()
             del self.data_archive_creator
 
-	@classmethod
-	def tearDownClass(cls):
-	   external.stop_activemq()
-	   external.stop_queue_processors()
+        @classmethod
+        def tearDownClass(cls):
+            # Stop external services
+            external.stop_activemq()
+            external.stop_queue_processors()
 
 else:
     class TestEndToEnd(unittest.TestCase):
