@@ -12,6 +12,9 @@ import sys
 import datetime
 from sets import Set
 import icat
+
+from django.utils.encoding import smart_str
+
 # The below is a template on the repository
 # pylint: disable=relative-import
 from settings import ICAT, BASE_DIR
@@ -76,14 +79,14 @@ class ICATCommunication(object):
                     'reference_number': investigation[0].name,
                     'start_date': investigation[0].startDate,
                     'end_date': investigation[0].endDate,
-                    'title': investigation[0].title,
-                    'summary': u''+investigation[0].summary,
+                    'title': smart_str(investigation[0].title),
+                    'summary': smart_str(investigation[0].summary),
                     'instrument': investigation[0].investigationInstruments[0].instrument.fullName,
                     'pi': ''}
 
                 for investigation_user in investigation[0].investigationUsers:
                     if investigation_user.role == 'principal_experimenter':
-                        trimmed_investigation['pi'] = investigation_user.user.fullName
+                        trimmed_investigation['pi'] = smart_str(investigation_user.user.fullName)
                 return trimmed_investigation
             # pylint: disable=bare-except
             except:
