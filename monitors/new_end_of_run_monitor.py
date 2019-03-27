@@ -1,6 +1,7 @@
 import csv
 import os
 import logging
+import filelock
 from settings import (CYCLE_FOLDER, LAST_RUNS_CSV)
 
 from utils.project.structure import get_log_file
@@ -10,6 +11,10 @@ logging.basicConfig(filename=get_log_file('end_of_run_monitor.log'), level=loggi
 
 
 class InvalidLastRunError(Exception):
+    pass
+
+
+class SummaryError(Exception):
     pass
 
 
@@ -26,13 +31,13 @@ class InstrumentMonitor(object):
     def read_instrument_last_run(self):
         """
         Read the last run recorded by the instrument from its lastrun.txt
-        :return: Last run on the instrument as a string
+        :return: Last run on the instrument as an integer
         """
         with open(self.last_run_file, 'r') as fp:
             line_parts = fp.readline().split()
             if len(line_parts) != 3:
-                raise InvalidLastRunError("Unexpected last run file format for {}".format(self.last_run_file))
-            last_run = line_parts[1]
+                raise InvalidLastRunError("Unexpected last run file format for '{}'".format(self.last_run_file))
+            last_run = int(line_parts[1])
         return last_run
 
     def read_rb_number_from_summary(self, run_number):
@@ -42,7 +47,14 @@ class InstrumentMonitor(object):
         :return: Experiment RB number
         """
         # Detect run number as a substring
-        return None
+        with open(self.summary_file, 'rb') as fp:
+            for line in fp:
+                line_parts = line.split()
+                # Detect the run as a substring in summary.txt
+                if str(run_number) in line_parts[0]:
+                    # The last entry is the RB number
+                    return line_parts[-1]
+        raise SummaryError("Unable to find run number in summary.txt '{}'".format(self.summary_file))
 
     def submit_run(self, run_number):
         """
@@ -62,7 +74,9 @@ class InstrumentMonitor(object):
         """
         # Get archive lastrun.txt
         instrument_last_run = self.read_instrument_last_run()
+        rb_number = self.read_rb_number_from_summary(instrument_last_run)
         print("Instrument last run is %s" % instrument_last_run)
+        print("RB number is %s" % rb_number)
 
 
 def update_last_runs():
@@ -73,7 +87,10 @@ def update_last_runs():
         csv_reader = csv.reader(csv_file)
         for row in csv_reader:
             inst_mon = InstrumentMonitor(row[0], row[2], row[3], row[4])
-            inst_mon.submit_run_difference(row[1])
+            try:
+                inst_mon.submit_run_difference(row[1])
+            except (InvalidLastRunError, SummaryError) as ex:
+                logging.error(ex.message)
 
 
 def main():
