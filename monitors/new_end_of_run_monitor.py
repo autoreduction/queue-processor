@@ -1,7 +1,7 @@
 import csv
 import os
 import logging
-from filelock import (FileLock, TimeoutError)
+from filelock import (FileLock, Timeout)
 from settings import (CYCLE_FOLDER, LAST_RUNS_CSV)
 
 from utils.project.structure import get_log_file
@@ -10,11 +10,7 @@ logging.basicConfig(filename=get_log_file('end_of_run_monitor.log'), level=loggi
                     format=LOG_FORMAT)
 
 
-class InvalidLastRunError(Exception):
-    pass
-
-
-class SummaryError(Exception):
+class InstrumentMonitorError(Exception):
     pass
 
 
@@ -36,7 +32,7 @@ class InstrumentMonitor(object):
         with open(self.last_run_file, 'r') as fp:
             line_parts = fp.readline().split()
             if len(line_parts) != 3:
-                raise InvalidLastRunError("Unexpected last run file format for '{}'".format(self.last_run_file))
+                raise InstrumentMonitorError("Unexpected last run file format for '{}'".format(self.last_run_file))
             last_run = int(line_parts[1])
         return last_run
 
@@ -54,7 +50,7 @@ class InstrumentMonitor(object):
                 if str(run_number) in line_parts[0]:
                     # The last entry is the RB number
                     return line_parts[-1]
-        raise SummaryError("Unable to find run number in summary.txt '{}'".format(run_number))
+        raise InstrumentMonitorError("Unable to find run number in summary.txt '{}'".format(run_number))
 
     def submit_run(self, run_number):
         """
@@ -87,7 +83,7 @@ def update_last_runs():
             inst_mon = InstrumentMonitor(row[0], row[2], row[3], row[4])
             try:
                 inst_mon.submit_run_difference(row[1])
-            except (InvalidLastRunError, SummaryError) as ex:
+            except InstrumentMonitorError as ex:
                 logging.error(ex.message)
 
 
@@ -97,7 +93,7 @@ def main():
     try:
         with FileLock("{}.lock".format(LAST_RUNS_CSV), timeout=1):
             update_last_runs()
-    except TimeoutError:
+    except Timeout:
         logging.warn(("Error acquiring lock on last runs CSV."
                       " There may be another instance running."))
 
