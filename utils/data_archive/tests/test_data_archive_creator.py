@@ -14,6 +14,28 @@ import tempfile
 from utils.data_archive.data_archive_creator import DataArchiveCreator
 
 
+class TestDataArchiveCreatorOverwrite(unittest.TestCase):
+    """
+    Can't use standard setup so requires a separate class
+    """
+
+    def test_valid_overwrite_init(self):
+        test_output_directory = tempfile.mkdtemp()
+        os.mkdir(os.path.join(test_output_directory, 'data-archive'))
+        try:
+            _ = DataArchiveCreator(test_output_directory, overwrite=True)
+        except OSError as os_err:
+            self.fail('The overwrite functionality didn\'t work: {}'.format(os_err.message))
+
+    def test_invalid_overwrite_init(self):
+        """
+        Test that the init will throw if directory exists but no overwrite used
+        """
+        test_output_directory = tempfile.mkdtemp()
+        os.mkdir(os.path.join(test_output_directory, 'data-archive'))
+        self.assertRaises(OSError, DataArchiveCreator, test_output_directory, False)
+
+
 # pylint:disable=missing-docstring, protected-access, invalid-name, too-many-public-methods
 class TestDataArchiveCreator(unittest.TestCase):
 
