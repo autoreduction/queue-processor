@@ -44,7 +44,7 @@ if os.name != 'nt':
             self.queue_client = QueueClient(ACTIVEMQ_SETTINGS)
             self.queue_client.connect()
             # Create test archive and add data
-            self.data_archive_creator = DataArchiveCreator(os.path.join(get_project_root()))
+            self.data_archive_creator = DataArchiveCreator(os.path.join(get_project_root()), overwrite=True)
             self.archive_explorer = ArchiveExplorer(os.path.join(get_project_root(),
                                                                  'data-archive'))
             # Add placeholder variables:

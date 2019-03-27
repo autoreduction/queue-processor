@@ -64,9 +64,10 @@ class DataArchiveCreator(object):
     data_files = []
     archive_deleted = False
 
-    def __init__(self, base_directory):
+    def __init__(self, base_directory, overwrite=False):
         """
         :param base_directory: user specified location to create the mock data archive
+        :param overwrite: If True, this will overwrite the Archive in the base_directory
         """
         self.data_files = []
         self.archive_deleted = False
@@ -75,6 +76,10 @@ class DataArchiveCreator(object):
         else:
             raise RuntimeError('Unable to find base_directory %s. '
                                'Please ensure this directory exists' % base_directory)
+        # Delete the data-archive directory if it already exists
+        if overwrite:
+            if os.path.exists(os.path.join(base_directory, self._archive_dir_name)):
+                shutil.rmtree(os.path.join(base_directory, self._archive_dir_name))
         self._create_archive_directory()
 
     def _create_archive_directory(self):
