@@ -34,7 +34,6 @@ if os.name != 'nt':
         @classmethod
         def setUpClass(cls):
             # Start all services
-            external.start_activemq()
             external.start_queue_processors()
 
         def setUp(self):
@@ -218,7 +217,6 @@ if os.name != 'nt':
         @classmethod
         def tearDownClass(cls):
             # Stop external services
-            external.stop_activemq()
             external.stop_queue_processors()
 
 else:
