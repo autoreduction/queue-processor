@@ -1,7 +1,7 @@
 import csv
 import os
 import logging
-import filelock
+from filelock import (FileLock, TimeoutError)
 from settings import (CYCLE_FOLDER, LAST_RUNS_CSV)
 
 from utils.project.structure import get_log_file
@@ -54,7 +54,7 @@ class InstrumentMonitor(object):
                 if str(run_number) in line_parts[0]:
                     # The last entry is the RB number
                     return line_parts[-1]
-        raise SummaryError("Unable to find run number in summary.txt '{}'".format(self.summary_file))
+        raise SummaryError("Unable to find run number in summary.txt '{}'".format(run_number))
 
     def submit_run(self, run_number):
         """
@@ -80,8 +80,6 @@ class InstrumentMonitor(object):
 
 
 def update_last_runs():
-    # Acquire a lock on the last runs CSV file
-
     # Loop over instruments
     with open(LAST_RUNS_CSV, 'rb') as csv_file:
         csv_reader = csv.reader(csv_file)
@@ -94,7 +92,14 @@ def update_last_runs():
 
 
 def main():
-    update_last_runs()
+    # Acquire a lock on the last runs CSV file to prevent access
+    # by other instances of this script
+    try:
+        with FileLock("{}.lock".format(LAST_RUNS_CSV), timeout=1):
+            update_last_runs()
+    except TimeoutError:
+        logging.warn(("Error acquiring lock on last runs CSV."
+                      " There may be another instance running."))
 
 
 if __name__ == '__main__':
