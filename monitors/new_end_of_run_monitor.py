@@ -28,6 +28,10 @@ class InstrumentMonitorError(Exception):
     pass
 
 
+class FileNotFoundError(Exception):
+    pass
+
+
 def get_prefix_zeros(run_number_str):
     """
     Get the number of zeros prepended to a string
@@ -46,12 +50,19 @@ class InstrumentMonitor(object):
     """
     Checks the ISIS archive for new runs on an instrument and submits them to ActiveMQ
     """
-    def __init__(self, client, instrument_name, last_run_file, summary_file, data_dir):
+    def __init__(self,
+                 client,
+                 instrument_name,
+                 last_run_file,
+                 summary_file,
+                 data_dir,
+                 file_ext):
         self.client = client
         self.instrument_name = instrument_name
         self.summary_file = summary_file
         self.last_run_file = last_run_file
         self.data_dir = data_dir
+        self.file_ext = file_ext
 
     def read_instrument_last_run(self):
         """
@@ -102,13 +113,12 @@ class InstrumentMonitor(object):
         """
         # Check to see if the last run exists, if not then raise an exception
         file_path = os.path.join(self.data_dir, CYCLE_FOLDER, file_name)
-        eorm_log.info("Submitting: %s", file_path)
 
-        data_dict = self.build_dict(rb_number, run_number, file_path)
-        self.client.send('/queue/DataReady', json.dumps(data_dict), priority='9')
-
-        # Submit run to ActiveMQ
-        return None
+        if os.path.isfile(file_path):
+            data_dict = self.build_dict(rb_number, run_number, file_path)
+            self.client.send('/queue/DataReady', json.dumps(data_dict), priority='9')
+        else:
+            raise FileNotFoundError("File does not exist '{}'".format(file_path))
 
     def submit_run_difference(self, local_last_run):
         """
@@ -120,18 +130,25 @@ class InstrumentMonitor(object):
         last_run_data = self.read_instrument_last_run()
         instrument_last_run = last_run_data[1]
 
-        rb_number = self.read_rb_number_from_summary(instrument_last_run)
-
         local_run_int = int(local_last_run)
         instrument_run_int = int(instrument_last_run)
 
+        rb_number = self.read_rb_number_from_summary(str(instrument_run_int))
         zeros = get_prefix_zeros(instrument_last_run)
         if instrument_run_int > local_run_int:
             eorm_log.info("Submitting runs in range %i - %i", local_run_int, instrument_run_int)
             for i in range(local_run_int + 1, instrument_run_int + 1):
+                # Construct the file name and run number
                 run_number = zeros + str(i)
-                file_name = last_run_data[0] + run_number + '.nxs'
-                self.submit_run(rb_number, run_number, file_name)
+                file_name = last_run_data[0] + run_number + self.file_ext
+                try:
+                    self.submit_run(rb_number, run_number, file_name)
+                except FileNotFoundError as ex:
+                    # If the file isn't found then just return the last file sent
+                    # and try again next time
+                    eorm_log.error(ex.message)
+                    return str(i - 1)
+        return str(instrument_run_int)
 
 
 def update_last_runs():
@@ -142,14 +159,28 @@ def update_last_runs():
     connection = QueueClient()
 
     # Loop over instruments
+    output = []
     with open(LAST_RUNS_CSV, 'rb') as csv_file:
         csv_reader = csv.reader(csv_file)
         for row in csv_reader:
-            inst_mon = InstrumentMonitor(connection, row[0], row[2], row[3], row[4])
+            inst_mon = InstrumentMonitor(connection,
+                                         row[0],
+                                         row[2],
+                                         row[3],
+                                         row[4],
+                                         row[5])
             try:
-                inst_mon.submit_run_difference(row[1])
+                last_run = inst_mon.submit_run_difference(row[1])
+                row[1] = last_run
             except InstrumentMonitorError as ex:
                 eorm_log.error(ex.message)
+            output.append(row)
+
+    # Write any changes to the CSV
+    with open(LAST_RUNS_CSV, 'wb') as csv_file:
+        csv_writer = csv.writer(csv_file)
+        for row in output:
+            csv_writer.writerow(row)
 
 
 def main():
@@ -159,8 +190,8 @@ def main():
         with FileLock("{}.lock".format(LAST_RUNS_CSV), timeout=1):
             update_last_runs()
     except Timeout:
-        eorm_log.warn(("Error acquiring lock on last runs CSV."
-                       " There may be another instance running."))
+        eorm_log.error(("Error acquiring lock on last runs CSV."
+                        " There may be another instance running."))
 
 
 if __name__ == '__main__':
