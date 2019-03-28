@@ -146,7 +146,10 @@ class InstrumentMonitor(object):
         rb_number = self.read_rb_number_from_summary(str(instrument_run_int))
         zeros = get_prefix_zeros(instrument_last_run)
         if instrument_run_int > local_run_int:
-            EORM_LOG.info("Submitting runs in range %i - %i", local_run_int, instrument_run_int)
+            EORM_LOG.info("Submitting runs in range %i - %i for %s",
+                          local_run_int,
+                          instrument_run_int,
+                          self.instrument_name)
             for i in range(local_run_int + 1, instrument_run_int + 1):
                 # Construct the file name and run number
                 run_number = zeros + str(i)
