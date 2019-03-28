@@ -44,7 +44,8 @@ if os.name != 'nt':
             self.queue_client = QueueClient(ACTIVEMQ_SETTINGS)
             self.queue_client.connect()
             # Create test archive and add data
-            self.data_archive_creator = DataArchiveCreator(os.path.join(get_project_root()), overwrite=True)
+            self.data_archive_creator = DataArchiveCreator(os.path.join(get_project_root()),
+                                                           overwrite=True)
             self.archive_explorer = ArchiveExplorer(os.path.join(get_project_root(),
                                                                  'data-archive'))
             # Add placeholder variables:
@@ -161,7 +162,7 @@ if os.name != 'nt':
         def _find_run_in_database(self):
             """
             Find a ReductionRun record in the database
-            This includes a timeout to wait for several seconds to ensure the database has recieved
+            This includes a timeout to wait for several seconds to ensure the database has received
             the record in question
             :return: The resulting record
             """

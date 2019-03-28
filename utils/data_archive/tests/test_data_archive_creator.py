@@ -20,6 +20,9 @@ class TestDataArchiveCreatorOverwrite(unittest.TestCase):
     """
 
     def test_valid_overwrite_init(self):
+        """
+        Test that the init can overwrite successfully if overwrite=True
+        """
         test_output_directory = tempfile.mkdtemp()
         os.mkdir(os.path.join(test_output_directory, 'data-archive'))
         try:
