@@ -2,7 +2,7 @@ import csv
 import os
 import logging
 from filelock import (FileLock, Timeout)
-from settings import (CYCLE_FOLDER, LAST_RUNS_CSV)
+from settings import LAST_RUNS_CSV
 
 from utils.project.structure import get_log_file
 from utils.project.static_content import LOG_FORMAT
@@ -18,11 +18,10 @@ class InstrumentMonitor(object):
     """
     Checks the ISIS archive for new runs on an instrument and submits them to ActiveMQ
     """
-    def __init__(self, instrument_name, last_run_file, summary_file, data_dir):
+    def __init__(self, instrument_name, last_run_file, summary_file):
         self.instrument_name = instrument_name
         self.summary_file = summary_file
         self.last_run_file = last_run_file
-        self.data_dir = data_dir
 
     def read_instrument_last_run(self):
         """
@@ -59,6 +58,7 @@ class InstrumentMonitor(object):
         """
         # Check to see if the last run exists, if not then raise an exception
 
+
         # Submit run to ActiveMQ
         return None
 
@@ -71,6 +71,9 @@ class InstrumentMonitor(object):
         # Get archive lastrun.txt
         instrument_last_run = self.read_instrument_last_run()
         rb_number = self.read_rb_number_from_summary(instrument_last_run)
+        for i in range(local_last_run + 1, instrument_last_run + 1):
+            self.submit_run(i)
+            print("Submitting %i" % i)
         print("Instrument last run is %s" % instrument_last_run)
         print("RB number is %s" % rb_number)
 
@@ -80,9 +83,9 @@ def update_last_runs():
     with open(LAST_RUNS_CSV, 'rb') as csv_file:
         csv_reader = csv.reader(csv_file)
         for row in csv_reader:
-            inst_mon = InstrumentMonitor(row[0], row[2], row[3], row[4])
+            inst_mon = InstrumentMonitor(row[0], row[2], row[3])
             try:
-                inst_mon.submit_run_difference(row[1])
+                inst_mon.submit_run_difference(int(row[1]))
             except InstrumentMonitorError as ex:
                 logging.error(ex.message)
 

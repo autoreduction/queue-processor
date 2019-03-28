@@ -28,7 +28,8 @@ setup_requires = ['Django',
                   'stomp.py',
                   'suds',
                   'Twisted',
-                  'watchdog']
+                  'watchdog',
+                  'filelock']
 
 if platform.system() == 'Windows':
     setup_requires.append('pypiwin32')
