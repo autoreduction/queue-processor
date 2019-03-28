@@ -1,34 +1,47 @@
+"""
+End of run monitor. Detects new runs that arrive and
+sends them off to the autoreduction service.
+"""
+
 import csv
 import logging
 import os
 import json
 from filelock import (FileLock, Timeout)
 
-from settings import (LAST_RUNS_CSV, CYCLE_FOLDER)
+from monitors.settings import (LAST_RUNS_CSV, CYCLE_FOLDER)
 
 from utils.clients.queue_client import QueueClient
 from utils.project.structure import get_log_file
 from utils.project.static_content import LOG_FORMAT
 
 # Setup logging
-eorm_log = logging.getLogger('end_of_run_monitor')
-eorm_log.setLevel(logging.INFO)
+EORM_LOG = logging.getLogger('end_of_run_monitor')
+EORM_LOG.setLevel(logging.INFO)
 
-fh = logging.FileHandler(get_log_file('end_of_run_monitor.log'))
-ch = logging.StreamHandler()
-formatter = logging.Formatter(LOG_FORMAT)
-fh.setFormatter(formatter)
-ch.setFormatter(formatter)
+FH = logging.FileHandler(get_log_file('end_of_run_monitor.log'))
+CH = logging.StreamHandler()
+FORMATTER = logging.Formatter(LOG_FORMAT)
+FH.setFormatter(FORMATTER)
+FH.setFormatter(FORMATTER)
 
-eorm_log.addHandler(fh)
-eorm_log.addHandler(ch)
+EORM_LOG.addHandler(FH)
+EORM_LOG.addHandler(CH)
 
 
 class InstrumentMonitorError(Exception):
+    """
+    Any fatal exception that occurs during execution of the
+    instrument monitor
+    """
     pass
 
 
 class FileNotFoundError(Exception):
+    """
+    The run file couldn't be found. This may be because
+    of an inconsistency among DFS nodes.
+    """
     pass
 
 
@@ -39,40 +52,36 @@ def get_prefix_zeros(run_number_str):
     :return: The zeros
     """
     zeros = ''
-    for c in run_number_str:
-        if c == '0':
+    for num in run_number_str:
+        if num == '0':
             zeros += '0'
         else:
             return zeros
+    return zeros
 
 
 class InstrumentMonitor(object):
     """
     Checks the ISIS archive for new runs on an instrument and submits them to ActiveMQ
     """
-    def __init__(self,
-                 client,
-                 instrument_name,
-                 last_run_file,
-                 summary_file,
-                 data_dir,
-                 file_ext):
+    def __init__(self, client, instrument_name):
         self.client = client
         self.instrument_name = instrument_name
-        self.summary_file = summary_file
-        self.last_run_file = last_run_file
-        self.data_dir = data_dir
-        self.file_ext = file_ext
+        self.summary_file = ""
+        self.last_run_file = ""
+        self.data_dir = ""
+        self.file_ext = ""
 
     def read_instrument_last_run(self):
         """
         Read the last run recorded by the instrument from its lastrun.txt
         :return: Last run on the instrument as a string
         """
-        with open(self.last_run_file, 'r') as fp:
-            line_parts = fp.readline().split()
+        with open(self.last_run_file, 'r') as last_run_fp:
+            line_parts = last_run_fp.readline().split()
             if len(line_parts) != 3:
-                raise InstrumentMonitorError("Unexpected last run file format for '{}'".format(self.last_run_file))
+                raise InstrumentMonitorError("Unexpected last run file format for '{}'"
+                                             .format(self.last_run_file))
         return line_parts
 
     def read_rb_number_from_summary(self, run_number):
@@ -82,14 +91,15 @@ class InstrumentMonitor(object):
         :return: Experiment RB number
         """
         # Detect run number as a substring
-        with open(self.summary_file, 'rb') as fp:
-            for line in fp:
+        with open(self.summary_file, 'rb') as summary_fp:
+            for line in summary_fp:
                 line_parts = line.split()
                 # Detect the run as a substring in summary.txt
                 if str(run_number) in line_parts[0]:
                     # The last entry is the RB number
                     return line_parts[-1]
-        raise InstrumentMonitorError("Unable to find run number in summary.txt '{}'".format(run_number))
+        raise InstrumentMonitorError("Unable to find run number in summary.txt '{}'"
+                                     .format(run_number))
 
     def build_dict(self, rb_number, run_number, file_location):
         """
@@ -136,7 +146,7 @@ class InstrumentMonitor(object):
         rb_number = self.read_rb_number_from_summary(str(instrument_run_int))
         zeros = get_prefix_zeros(instrument_last_run)
         if instrument_run_int > local_run_int:
-            eorm_log.info("Submitting runs in range %i - %i", local_run_int, instrument_run_int)
+            EORM_LOG.info("Submitting runs in range %i - %i", local_run_int, instrument_run_int)
             for i in range(local_run_int + 1, instrument_run_int + 1):
                 # Construct the file name and run number
                 run_number = zeros + str(i)
@@ -146,7 +156,7 @@ class InstrumentMonitor(object):
                 except FileNotFoundError as ex:
                     # If the file isn't found then just return the last file sent
                     # and try again next time
-                    eorm_log.error(ex.message)
+                    EORM_LOG.error(ex.message)
                     return str(i - 1)
         return str(instrument_run_int)
 
@@ -163,17 +173,17 @@ def update_last_runs():
     with open(LAST_RUNS_CSV, 'rb') as csv_file:
         csv_reader = csv.reader(csv_file)
         for row in csv_reader:
-            inst_mon = InstrumentMonitor(connection,
-                                         row[0],
-                                         row[2],
-                                         row[3],
-                                         row[4],
-                                         row[5])
+            inst_mon = InstrumentMonitor(connection, row[0])
+            inst_mon.last_run_file = row[2]
+            inst_mon.summary_file = row[3]
+            inst_mon.data_dir = row[4]
+            inst_mon.file_ext = row[5]
+
             try:
                 last_run = inst_mon.submit_run_difference(row[1])
                 row[1] = last_run
             except InstrumentMonitorError as ex:
-                eorm_log.error(ex.message)
+                EORM_LOG.error(ex.message)
             output.append(row)
 
     # Write any changes to the CSV
@@ -184,13 +194,16 @@ def update_last_runs():
 
 
 def main():
+    """
+    EoRM entry point
+    """
     # Acquire a lock on the last runs CSV file to prevent access
     # by other instances of this script
     try:
         with FileLock("{}.lock".format(LAST_RUNS_CSV), timeout=1):
             update_last_runs()
     except Timeout:
-        eorm_log.error(("Error acquiring lock on last runs CSV."
+        EORM_LOG.error(("Error acquiring lock on last runs CSV."
                         " There may be another instance running."))
 
 
