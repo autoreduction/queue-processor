@@ -159,7 +159,7 @@ class InstrumentMonitor(object):
                 except FileNotFoundError as ex:
                     # If the file isn't found then just return the last file sent
                     # and try again next time
-                    EORM_LOG.error(ex.message)
+                    EORM_LOG.error(ex)
                     return str(i - 1)
         return str(instrument_run_int)
 
@@ -187,7 +187,7 @@ def update_last_runs(csv_name):
                 last_run = inst_mon.submit_run_difference(row[1])
                 row[1] = last_run
             except InstrumentMonitorError as ex:
-                EORM_LOG.error(ex.message)
+                EORM_LOG.error(ex)
             output.append(row)
 
     # Write any changes to the CSV

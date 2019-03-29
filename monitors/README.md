@@ -8,10 +8,10 @@ WISH,1234,wish_lastrun.txt,wish_summary.txt,/archive/wish/data,.nxs
 GEM,1234,gem_lastrun.txt,gem_summary.txt,/archive/gem/data,.nxs
 ```
 
-In order, the fields are: instrument name, last run number observed on the instrument, location
-of this instrument's lastrun.txt, location of this instrument's summary.txt, data location
-(parent of cycle folder), file extension of data to reduce. The last observed run is updated
-whenever EoRM submits a new run.
+In order, the fields are: instrument name, last run number observed on the instrument 
+(without leading zeros), location of this instrument's lastrun.txt, location of this
+instrument's summary.txt, data location (parent of cycle folder), file extension of
+data to reduce. The last observed run is updated whenever EoRM submits a new run.
 
 There are two settings in settings.py for this script:
 
