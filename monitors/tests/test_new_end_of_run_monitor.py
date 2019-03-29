@@ -1,3 +1,6 @@
+"""
+Unit tests for the end of run monitor
+"""
 import unittest
 import os
 import json
@@ -13,9 +16,12 @@ from monitors.new_end_of_run_monitor import (InstrumentMonitor,
                                              main)
 
 # Test data
-SUMMARY_FILE = ("WIS44731Hayden,Waite,CanfielCeAuSb2 MRSX ROT=15.05 s28-MAR-2019 09:14:23    34.3 1820461\n"
-                "WIS44732Hayden,Waite,CanfielCeAuSb2 MRSX ROT=15.05 s28-MAR-2019 10:23:47    40.0 1820461\n"
-                "WIS44733Hayden,Waite,CanfielCeAuSb2 MRSX ROT=15.05 s28-MAR-2019 11:34:25     9.0 1820461\n")
+SUMMARY_FILE = ("WIS44731Hayden,Waite,"
+                "CanfielCeAuSb2 MRSX ROT=15.05 s28-MAR-2019 09:14:23    34.3 1820461\n"
+                "WIS44732Hayden,Waite,"
+                "CanfielCeAuSb2 MRSX ROT=15.05 s28-MAR-2019 10:23:47    40.0 1820461\n"
+                "WIS44733Hayden,Waite,"
+                "CanfielCeAuSb2 MRSX ROT=15.05 s28-MAR-2019 11:34:25     9.0 1820461\n")
 LAST_RUN_FILE = "WISH 00044733 0 \n"
 RUN_DICT = {'instrument': 'WISH',
             'run_number': '00044733',
@@ -25,10 +31,8 @@ RUN_DICT = {'instrument': 'WISH',
 CSV_FILE = "WISH,44733,lastrun_wish.txt,summary_wish.txt,data_dir,.nxs"
 
 
+# pylint:disable=missing-docstring,no-self-use
 class TestEndOfRunMonitor(unittest.TestCase):
-    """
-    Test the end of run monitor
-    """
     def test_get_prefix_zeros(self):
         run_number = '00012345'
         zeros = get_prefix_zeros(run_number)
@@ -52,6 +56,7 @@ class TestEndOfRunMonitor(unittest.TestCase):
         self.assertEqual('0', last_run_data[2])
         os.remove('test_lastrun.txt')
 
+    # pylint:disable=invalid-name
     def test_read_rb_number_from_summary(self):
         with open('test_summary.txt', 'w') as summary_fp:
             summary_fp.write(SUMMARY_FILE)
