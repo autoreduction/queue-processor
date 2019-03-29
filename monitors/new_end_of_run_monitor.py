@@ -164,16 +164,17 @@ class InstrumentMonitor(object):
         return str(instrument_run_int)
 
 
-def update_last_runs():
+def update_last_runs(csv_name):
     """
     Read the last runs CSV file and bring it up to date with the
     instrument lastrun.txt
+    :param csv_name: File name of the local last runs CSV file
     """
     connection = QueueClient()
 
     # Loop over instruments
     output = []
-    with open(LAST_RUNS_CSV, 'rb') as csv_file:
+    with open(csv_name, 'rb') as csv_file:
         csv_reader = csv.reader(csv_file)
         for row in csv_reader:
             inst_mon = InstrumentMonitor(connection, row[0])
@@ -190,7 +191,7 @@ def update_last_runs():
             output.append(row)
 
     # Write any changes to the CSV
-    with open(LAST_RUNS_CSV, 'wb') as csv_file:
+    with open(csv_name, 'wb') as csv_file:
         csv_writer = csv.writer(csv_file)
         for row in output:
             csv_writer.writerow(row)
@@ -204,7 +205,7 @@ def main():
     # by other instances of this script
     try:
         with FileLock("{}.lock".format(LAST_RUNS_CSV), timeout=1):
-            update_last_runs()
+            update_last_runs(LAST_RUNS_CSV)
     except Timeout:
         EORM_LOG.error(("Error acquiring lock on last runs CSV."
                         " There may be another instance running."))
