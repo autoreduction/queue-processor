@@ -147,4 +147,3 @@ class QueueClient(AbstractClient):
                               persistent=persistent,
                               priority=priority,
                               delay=delay)
-        self.disconnect()
