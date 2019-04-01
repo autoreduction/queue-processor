@@ -10,6 +10,7 @@ Module that reads from the reduction pending queue and calls the python script o
 import json
 import os
 import subprocess
+import sys
 
 from twisted.internet import reactor
 
@@ -73,10 +74,11 @@ class Listener(object):
         if not os.path.isfile(MISC['post_process_directory']):
             logger.warning("Could not find autoreduction post processing file "
                            "- please contact a system administrator")
-        logger.debug("Calling: %s %s %s %s",
-                     "python", MISC['post_process_directory'], destination, print_dict)
+        python_path = sys.executable
+        logger.info("Calling: %s %s %s %s",
+                    python_path, MISC['post_process_directory'], destination, print_dict)
         self._client.ack(headers['message-id'], headers['subscription'])  # Remove from queue
-        proc = subprocess.Popen(["python",
+        proc = subprocess.Popen([python_path,
                                  MISC['post_process_directory'],
                                  destination,
                                  data])

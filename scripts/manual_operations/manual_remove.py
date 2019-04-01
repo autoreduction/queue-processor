@@ -169,9 +169,21 @@ class ManualRemove(object):
         return True, processed_input
 
 
+def remove(instrument, run_number):
+    """
+    Run the remove script
+    :param instrument:
+    :param run_number:
+    """
+    manual_remove = ManualRemove(instrument)
+    manual_remove.find_runs_in_database(run_number)
+    manual_remove.process_results()
+    manual_remove.delete_records()
+
+
 def main():
     """
-    Creates a ManualRemove object and uses it to remove records from the database
+    Parse user input and run the script
     """
     parser = argparse.ArgumentParser(description='Remove a run from the autoreduction service.',
                                      epilog='./manual_remove.py GEM 83880')
@@ -180,13 +192,9 @@ def main():
     parser.add_argument('start_run_number', metavar='start_run_number', type=int,
                         help='the start run number e.g. "83880"')
     args = parser.parse_args()
-
     instrument = args.instrument
     run_number = args.start_run_number
-    manual_remove = ManualRemove(instrument)
-    manual_remove.find_runs_in_database(run_number)
-    manual_remove.process_results()
-    manual_remove.delete_records()
+    remove(instrument, run_number)
 
 
 if __name__ == "__main__":  # pragma: no cover

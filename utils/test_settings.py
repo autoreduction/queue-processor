@@ -21,7 +21,7 @@ ICAT_SETTINGS = SETTINGS_FACTORY.create('icat',
                                         password='YOUR-PASSWORD',
                                         host='YOUR-ICAT-WSDL-URL',
                                         port='',
-                                        authentication_type='Simple')
+                                        authentication_type='simple')
 
 MYSQL_SETTINGS = SETTINGS_FACTORY.create('database',
                                          username='test-user',

@@ -21,6 +21,7 @@ class TestQueueClient(unittest.TestCase):
     """
     Exercises the queue client
     """
+
     def setUp(self):
         self.incorrect_credentials = ClientSettingsFactory().create('queue',
                                                                     username='not-user',

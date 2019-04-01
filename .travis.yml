@@ -43,7 +43,14 @@ script:
   # ================ Nose unit tests ================ #
 
   # Utils tests
-  - pytest --cov=build --cov=monitors --cov=QueueProcessors --cov=utils --cov=WebApp/autoreduce_webapp --cov=scripts
+  - echo "Running Unit tests"
+  - py.test --ignore=systemtests --cov=build --cov=monitors --cov=QueueProcessors --cov=scripts --cov=utils --cov=WebApp/autoreduce_webapp
+
+  - echo "Running System Tests"
+  - py.test systemtests --cov-append
+  - cat logs/queue_processor.log
+  - cat logs/autoreductionProcessor.log
+
 
 after_success:
   - coveralls

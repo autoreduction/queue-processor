@@ -13,7 +13,7 @@ import sys
 
 from mock import Mock, patch, call
 
-from scripts.manual_operations.manual_remove import ManualRemove, main
+from scripts.manual_operations.manual_remove import ManualRemove, main, remove
 from utils.clients.database_client import DatabaseClient
 from utils.settings import MYSQL_SETTINGS
 
@@ -222,6 +222,20 @@ class TestManualSubmission(unittest.TestCase):
         """
         sys.argv = ['', 'GEM', '1']
         main()
+        mock_find.assert_called_once_with(1)
+        mock_process.assert_called_once()
+        mock_delete.assert_called_once()
+
+
+    # pylint:disable=no-self-use
+    @patch('scripts.manual_operations.manual_remove.ManualRemove.find_runs_in_database')
+    @patch('scripts.manual_operations.manual_remove.ManualRemove.process_results')
+    @patch('scripts.manual_operations.manual_remove.ManualRemove.delete_records')
+    def test_run(self, mock_delete, mock_process, mock_find):
+        """
+        Tests the run() function that is used to control the ManualRemove class
+        """
+        remove('GEM', 1)
         mock_find.assert_called_once_with(1)
         mock_process.assert_called_once()
         mock_delete.assert_called_once()

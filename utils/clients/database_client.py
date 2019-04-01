@@ -115,6 +115,10 @@ class DatabaseClient(AbstractClient):
                               autoload_with=self._engine)
             instrument = relationship(self.instrument(),
                                       foreign_keys='ReductionRun.instrument_id')
+            status = relationship(self.status(),
+                                  foreign_keys='ReductionRun.status_id')
+            experiment = relationship(self.experiment(),
+                                      foreign_keys='ReductionRun.experiment_id')
         return ReductionRun
 
     def reduction_data_location(self):
@@ -164,3 +168,31 @@ class DatabaseClient(AbstractClient):
             reduction_run = relationship(self.reduction_run(),
                                          foreign_keys='RunVariable.reduction_run_id')
         return RunVariable
+
+    def experiment(self):
+        """
+        :return: Experiment Table to replicate what we expect in the database
+        """
+        # pylint: disable=too-few-public-methods
+        class Experiment(declarative_base()):
+            """
+            Table for reduction_viewer_experiment entity
+            """
+            __table__ = Table('reduction_viewer_experiment',
+                              self._meta_data, autoload=True,
+                              autoload_with=self._engine)
+        return Experiment
+
+    def status(self):
+        """
+        :return: Status Table to replicate what we expect in the database
+        """
+        # pylint: disable=too-few-public-methods
+        class Status(declarative_base()):
+            """
+            Table for reduction_viewer_status entity
+            """
+            __table__ = Table('reduction_viewer_status',
+                              self._meta_data, autoload=True,
+                              autoload_with=self._engine)
+        return Status

@@ -20,6 +20,8 @@ import smtplib
 import sys
 import traceback
 
+from sqlalchemy import sql
+
 from QueueProcessors.QueueProcessor.base import session
 from QueueProcessors.QueueProcessor.orm_mapping import (ReductionRun, Instrument,
                                                         Status, Experiment,
@@ -137,7 +139,7 @@ class Listener(object):
         # increase the version by 1 for this job. However, if not then we will set it to -1 which
         # will be incremented to 0
         last_run = session.query(ReductionRun).filter_by(run_number=run_no).order_by(
-            '-run_version').first()
+            sql.text('-run_version')).first()
         if last_run is not None:
             highest_version = last_run.run_version
         else:

@@ -7,6 +7,7 @@
 #### cause them to get stuck in the "processing" state.
 
 ROOT_DIR="$(dirname "$0")"
+EXECUTABLE_PATH=$1
 
 ## Autoreduction Processor
 pkill -9 -f "python .*AutoreductionProcessor/autoreduction_processor_daemon.py start" &&
@@ -18,8 +19,15 @@ then
 else
     echo ".pid file not found - starting process"
 fi
-python $ROOT_DIR/AutoreductionProcessor/autoreduction_processor_daemon.py start &&
-echo "Started autoreduction_processor_daemon";
+if [ $EXECUTABLE_PATH ];
+then
+    $EXECUTABLE_PATH $ROOT_DIR/AutoreductionProcessor/autoreduction_processor_daemon.py start &&
+    echo "Started autoreduction_processor_daemon";
+else
+    echo "Using default python";
+    python $ROOT_DIR/AutoreductionProcessor/autoreduction_processor_daemon.py start &&
+    echo "Started autoreduction_processor_daemon";
+fi
 
 echo ""; # New line
 
@@ -34,5 +42,12 @@ then
 else
     echo ".pid file not found - starting process"
 fi
-python $ROOT_DIR/QueueProcessor/queue_processor_daemon.py start &&
-echo "Started queue_processor_daemon.py";
+if [ $EXECUTABLE_PATH ];
+then
+    $EXECUTABLE_PATH $ROOT_DIR/QueueProcessor/queue_processor_daemon.py start &&
+    echo "Started queue_processor_daemon";
+else
+    echo "Using default python";
+    python $ROOT_DIR/QueueProcessor/queue_processor_daemon.py start &&
+    echo "Started queue_processor_daemon";
+fi

@@ -11,6 +11,7 @@ This includes the Listener and Consumer class
 import unittest
 import json
 import os
+import sys
 
 from mock import patch, Mock, call
 
@@ -102,7 +103,7 @@ class TestAutoreductionProcessorListener(unittest.TestCase):
                                          " please contact a system administrator")
         mock_client.ack.assert_called_once_with(self.headers['message-id'],
                                                 self.headers['subscription'])
-        mock_popen.assert_called_once_with(["python",
+        mock_popen.assert_called_once_with([sys.executable,
                                             MISC['post_process_directory'],
                                             self.headers['destination'],
                                             self.json_data])
