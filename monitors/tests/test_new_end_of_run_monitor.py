@@ -52,8 +52,8 @@ class TestEndOfRunMonitor(unittest.TestCase):
         self.assertEqual(run_number, zeros)
 
     def test_read_instrument_last_run(self):
-        with open('test_lastrun.txt', 'w') as last_run_fp:
-            last_run_fp.write(LAST_RUN_FILE)
+        with open('test_lastrun.txt', 'w') as last_run:
+            last_run.write(LAST_RUN_FILE)
 
         inst_mon = InstrumentMonitor(None, 'WISH')
         inst_mon.last_run_file = 'test_lastrun.txt'
@@ -66,8 +66,8 @@ class TestEndOfRunMonitor(unittest.TestCase):
 
     # pylint:disable=invalid-name
     def test_read_instrument_last_run_invalid_length(self):
-        with open('test_lastrun.txt', 'w') as last_run_fp:
-            last_run_fp.write(INVALID_LAST_RUN_FILE)
+        with open('test_lastrun.txt', 'w') as last_run:
+            last_run.write(INVALID_LAST_RUN_FILE)
 
         inst_mon = InstrumentMonitor(None, 'WISH')
         inst_mon.last_run_file = 'test_lastrun.txt'
@@ -77,8 +77,8 @@ class TestEndOfRunMonitor(unittest.TestCase):
 
     # pylint:disable=invalid-name
     def test_read_rb_number_from_summary(self):
-        with open('test_summary.txt', 'w') as summary_fp:
-            summary_fp.write(SUMMARY_FILE)
+        with open('test_summary.txt', 'w') as summary:
+            summary.write(SUMMARY_FILE)
 
         inst_mon = InstrumentMonitor(None, 'WISH')
         inst_mon.summary_file = 'test_summary.txt'
@@ -87,8 +87,8 @@ class TestEndOfRunMonitor(unittest.TestCase):
         os.remove('test_summary.txt')
 
     def test_read_rb_number_from_summary_invalid(self):
-        with open('test_summary.txt', 'w') as summary_fp:
-            summary_fp.write(SUMMARY_FILE)
+        with open('test_summary.txt', 'w') as summary:
+            summary.write(SUMMARY_FILE)
 
         inst_mon = InstrumentMonitor(None, 'WISH')
         inst_mon.summary_file = 'test_summary.txt'
@@ -167,8 +167,8 @@ class TestEndOfRunMonitor(unittest.TestCase):
            return_value='44736')
     def test_update_last_runs(self, run_diff_mock, inst_mon_mock):
         # Setup test
-        with open('test_last_runs.csv', 'w') as last_runs_fp:
-            last_runs_fp.write(CSV_FILE)
+        with open('test_last_runs.csv', 'w') as last_runs:
+            last_runs.write(CSV_FILE)
 
         # Perform test
         update_last_runs('test_last_runs.csv')
@@ -188,8 +188,8 @@ class TestEndOfRunMonitor(unittest.TestCase):
            side_effect=InstrumentMonitorError('Error'))
     def test_update_last_runs_with_error(self, run_diff_mock, inst_mon_mock):
         # Setup test
-        with open('test_last_runs.csv', 'w') as last_runs_fp:
-            last_runs_fp.write(CSV_FILE)
+        with open('test_last_runs.csv', 'w') as last_runs:
+            last_runs.write(CSV_FILE)
 
         # Perform test
         update_last_runs('test_last_runs.csv')

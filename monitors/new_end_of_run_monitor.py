@@ -77,8 +77,8 @@ class InstrumentMonitor(object):
         Read the last run recorded by the instrument from its lastrun.txt
         :return: Last run on the instrument as a string
         """
-        with open(self.last_run_file, 'r') as last_run_fp:
-            line_parts = last_run_fp.readline().split()
+        with open(self.last_run_file, 'r') as last_run:
+            line_parts = last_run.readline().split()
             if len(line_parts) != 3:
                 raise InstrumentMonitorError("Unexpected last run file format for '{}'"
                                              .format(self.last_run_file))
@@ -91,8 +91,8 @@ class InstrumentMonitor(object):
         :return: Experiment RB number
         """
         # Detect run number as a substring
-        with open(self.summary_file, 'rb') as summary_fp:
-            for line in summary_fp:
+        with open(self.summary_file, 'rb') as summary:
+            for line in summary:
                 line_parts = line.split()
                 # Detect the run as a substring in summary.txt
                 if str(run_number) in line_parts[0]:
