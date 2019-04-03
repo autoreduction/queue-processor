@@ -18,12 +18,12 @@ from monitors.new_end_of_run_monitor import (InstrumentMonitor,
                                              main)
 
 # Test data
-SUMMARY_FILE = ("WIS44731Hayden,Waite,"
-                "CanfielCeAuSb2 MRSX ROT=15.05 s28-MAR-2019 09:14:23    34.3 1820461\n"
-                "WIS44732Hayden,Waite,"
-                "CanfielCeAuSb2 MRSX ROT=15.05 s28-MAR-2019 10:23:47    40.0 1820461\n"
-                "WIS44733Hayden,Waite,"
-                "CanfielCeAuSb2 MRSX ROT=15.05 s28-MAR-2019 11:34:25     9.0 1820461\n")
+SUMMARY_FILE = ("WIS44731Smith,Smith,"
+                "SmithCeAuSb2 MRSX ROT=15.05 s28-MAR-2019 09:14:23    34.3 1820461\n"
+                "WIS44732Smith,Smith,"
+                "SmithCeAuSb2 MRSX ROT=15.05 s28-MAR-2019 10:23:47    40.0 1820461\n"
+                "WIS44733Smith,Smith,"
+                "SmithCeAuSb2 MRSX ROT=15.05 s28-MAR-2019 11:34:25     9.0 1820461\n")
 LAST_RUN_FILE = "WISH 00044733 0 \n"
 INVALID_LAST_RUN_FILE = "INVALID LAST RUN FILE"
 RUN_DICT = {'instrument': 'WISH',
