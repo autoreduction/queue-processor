@@ -25,3 +25,7 @@ INSTRUMENTS = [{'name': 'WISH', 'use_nexus': True},
                {'name': 'POLARIS', 'use_nexus': True},
                {'name': 'MUSR', 'use_nexus': True},
                {'name': 'POLREF', 'use_nexus': True}]
+
+# New EoRM
+CYCLE_FOLDER = "cycle_18_4"
+LAST_RUNS_CSV = "lastruns.csv"
