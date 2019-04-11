@@ -91,6 +91,15 @@ def logout(request):
 
 
 @login_and_uows_valid
+@render_with('overview.html')
+# pylint:disable=no-member
+def overview(request):
+    context_dictionary = {'instrument_list': ['GEM', 'WISH', 'OSIRIS', 'POLARIS', 'MUSR', 'POLREF',
+                                              'ENGINX']}
+    return context_dictionary
+
+
+@login_and_uows_valid
 @render_with('run_queue.html')
 # pylint:disable=no-member
 def run_queue(request):
