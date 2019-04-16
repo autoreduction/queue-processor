@@ -125,10 +125,14 @@ class InstrumentMonitor(object):
         """
         # Detect run number as a substring
         with open(self.summary_file, 'rb') as summary:
+            # Traverse file in reverse order because some instruments truncate
+            # each run number in the summary file. This means that the same run
+            # number could occur more than once. It should be assumed that the
+            # latest is the correct run.
             for line in reversed(summary.readlines()):
                 line_parts = line.split()
 
-                if len(line_parts) > 0:
+                if line_parts:
                     # Detect the run as a substring in summary.txt
                     summary_run = extract_run_number_from_summary(line_parts[0])
                     if summary_run in str(run_number):
@@ -180,7 +184,6 @@ class InstrumentMonitor(object):
         instrument_run_int = int(instrument_last_run)
 
         rb_number = self.read_rb_number_from_summary(str(instrument_run_int))
-        print(rb_number)
         zeros = get_prefix_zeros(instrument_last_run)
         if instrument_run_int > local_run_int:
             EORM_LOG.info("Submitting runs in range %i - %i for %s",
