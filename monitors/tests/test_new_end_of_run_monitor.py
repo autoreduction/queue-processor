@@ -10,12 +10,10 @@ from mock import (Mock, patch, call)
 
 from utils.clients.queue_client import QueueClient
 from monitors.settings import (CYCLE_FOLDER, LAST_RUNS_CSV)
+import monitors.new_end_of_run_monitor as eorm
 from monitors.new_end_of_run_monitor import (InstrumentMonitor,
-                                             get_prefix_zeros,
                                              FileNotFoundError,
-                                             InstrumentMonitorError,
-                                             update_last_runs,
-                                             main)
+                                             InstrumentMonitorError)
 
 # Test data
 SUMMARY_FILE = ("WIS44731Smith,Smith,"
@@ -34,21 +32,41 @@ RUN_DICT = {'instrument': 'WISH',
 CSV_FILE = "WISH,44733,lastrun_wish.txt,summary_wish.txt,data_dir,.nxs"
 
 
-# pylint:disable=missing-docstring,no-self-use
+# pylint:disable=missing-docstring,no-self-use,too-many-public-methods
 class TestEndOfRunMonitor(unittest.TestCase):
     def test_get_prefix_zeros(self):
         run_number = '00012345'
-        zeros = get_prefix_zeros(run_number)
+        zeros = eorm.get_prefix_zeros(run_number)
         self.assertEqual('000', zeros)
 
     def test_get_prefix_zeros_no_zeros(self):
         run_number = '12345'
-        zeros = get_prefix_zeros(run_number)
+        zeros = eorm.get_prefix_zeros(run_number)
         self.assertEqual('', zeros)
+
+    def test_is_integer(self):
+        self.assertTrue(eorm.is_integer("3"))
+
+    def test_is_integer_not_integer(self):
+        self.assertFalse(eorm.is_integer("F"))
+
+    # pylint:disable=invalid-name
+    def test_extract_run_number_from_summary(self):
+        test_part = "OSI38828Smith,Smith0.5ML"
+        self.assertEqual("38828", eorm.extract_run_number_from_summary(test_part))
+
+    # pylint:disable=invalid-name
+    def test_extract_run_number_from_summary_no_run(self):
+        test_part = "hello"
+        self.assertEqual("", eorm.extract_run_number_from_summary(test_part))
+
+    def test_extract_run_number_from_summary_run_only(self):
+        test_part = "MUSR1234"
+        self.assertEqual("1234", eorm.extract_run_number_from_summary(test_part))
 
     def test_get_prefix_zeros_all_zeros(self):
         run_number = '00000'
-        zeros = get_prefix_zeros(run_number)
+        zeros = eorm.get_prefix_zeros(run_number)
         self.assertEqual(run_number, zeros)
 
     def test_read_instrument_last_run(self):
@@ -171,7 +189,7 @@ class TestEndOfRunMonitor(unittest.TestCase):
             last_runs.write(CSV_FILE)
 
         # Perform test
-        update_last_runs('test_last_runs.csv')
+        eorm.update_last_runs('test_last_runs.csv')
         inst_mon_mock.assert_called()
         run_diff_mock.assert_called_with('44733')
 
@@ -192,7 +210,7 @@ class TestEndOfRunMonitor(unittest.TestCase):
             last_runs.write(CSV_FILE)
 
         # Perform test
-        update_last_runs('test_last_runs.csv')
+        eorm.update_last_runs('test_last_runs.csv')
         inst_mon_mock.assert_called()
         run_diff_mock.assert_called_with('44733')
 
@@ -205,11 +223,11 @@ class TestEndOfRunMonitor(unittest.TestCase):
 
     @patch('monitors.new_end_of_run_monitor.update_last_runs')
     def test_main(self, update_last_runs_mock):
-        main()
+        eorm.main()
         update_last_runs_mock.assert_called_with(LAST_RUNS_CSV)
         update_last_runs_mock.assert_called_once()
 
     @patch('monitors.new_end_of_run_monitor.update_last_runs')
     def test_main_lock_timeout(self, _):
         with FileLock('{}.lock'.format(LAST_RUNS_CSV)):
-            main()
+            eorm.main()
