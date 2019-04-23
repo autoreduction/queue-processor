@@ -60,6 +60,39 @@ def get_prefix_zeros(run_number_str):
     return zeros
 
 
+def is_integer(int_str):
+    """
+    Test to see if the provided string is an integer
+    :param int_str: Integer as a string
+    :return: True if the string represents an integer
+    """
+    try:
+        int(int_str)
+        return True
+    except ValueError:
+        return False
+
+
+def extract_run_number_from_summary(first_part):
+    """
+    Look for the run number in the provided summary entry
+    :param first_part: First part of the summary entry
+    :return: Run number as printed in the summary file
+    """
+    run_number = ""
+    reading_run_number = False
+    for char in first_part:
+        # Find the first integer
+        if is_integer(char):
+            run_number += char
+            reading_run_number = True
+        elif reading_run_number:
+            # The first non-integer character indicates the end
+            # of the run number
+            return run_number
+    return run_number
+
+
 class InstrumentMonitor(object):
     """
     Checks the ISIS archive for new runs on an instrument and submits them to ActiveMQ
@@ -92,12 +125,19 @@ class InstrumentMonitor(object):
         """
         # Detect run number as a substring
         with open(self.summary_file, 'rb') as summary:
-            for line in summary:
+            # Traverse file in reverse order because some instruments truncate
+            # each run number in the summary file. This means that the same run
+            # number could occur more than once. It should be assumed that the
+            # latest is the correct run.
+            for line in reversed(summary.readlines()):
                 line_parts = line.split()
-                # Detect the run as a substring in summary.txt
-                if str(run_number) in line_parts[0]:
-                    # The last entry is the RB number
-                    return line_parts[-1]
+
+                if line_parts:
+                    # Detect the run as a substring in summary.txt
+                    summary_run = extract_run_number_from_summary(line_parts[0])
+                    if summary_run in str(run_number):
+                        # The last entry is the RB number
+                        return line_parts[-1]
         raise InstrumentMonitorError("Unable to find run number in summary.txt '{}'"
                                      .format(run_number))
 
