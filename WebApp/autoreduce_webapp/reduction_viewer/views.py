@@ -18,6 +18,7 @@ import operator
 
 from django.contrib.auth import logout as django_logout, authenticate, login
 from django.core.exceptions import PermissionDenied
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponseNotFound
 from django.shortcuts import redirect
@@ -94,8 +95,8 @@ def logout(request):
 @render_with('overview.html')
 # pylint:disable=no-member
 def overview(request):
-    context_dictionary = {'instrument_list': ['GEM', 'WISH', 'OSIRIS', 'POLARIS', 'MUSR', 'POLREF',
-                                              'ENGINX']}
+    instruments = Instrument.objects.order_by('name')
+    context_dictionary = {'instrument_list': instruments}
     return context_dictionary
 
 
@@ -405,9 +406,35 @@ def instrument_summary(request, instrument=None):
     queued_status = StatusUtils().get_queued()
     skipped_status = StatusUtils().get_skipped()
     try:
+        page_run = request.GET.get('page_run', 1)
+        page_exp = request.GET.get('page_exp', 1)
         instrument_obj = Instrument.objects.get(name=instrument)
+        runs = ReductionRun.objects.filter(instrument=instrument_obj).order_by('-run_number')
+        experiments = Experiment.objects.filter(reduction_runs__instrument=instrument_obj).order_by('-reference_number').distinct()
+        experiments_and_runs = {}
+        for experiment in experiments:
+            associated_runs = ReductionRun.objects.filter(experiment=experiment,
+                                                          instrument=instrument_obj).order_by('-created')
+            experiments_and_runs[experiment] = associated_runs
+
+        run_paginator = Paginator(runs, 100)
+        # experiments_and_runs dict is not hashable and therefore can't be directly paginated
+        # Hence we are required to create a tuple of its items in order to paginate the keys
+        experiment_paginator = Paginator(tuple(experiments_and_runs.items()), 10)
+        try:
+            runs = run_paginator.page(page_run)
+            experiments_and_runs = experiment_paginator.page(page_exp)
+        except PageNotAnInteger:
+            runs = run_paginator.page(1)
+            experiments_and_runs = experiment_paginator.page(1)
+        except EmptyPage:
+            runs = run_paginator.page(run_paginator.num_pages)
+            experiments_and_runs = experiment_paginator.page(run_paginator.num_pages)
+
         context_dictionary = {
             'instrument': instrument_obj,
+            'runs': runs,
+            'experiments': experiments_and_runs,
             'last_instrument_run':
                 ReductionRun.objects.filter(instrument=instrument_obj).
                 exclude(status=skipped_status).order_by('-run_number')[0],
@@ -415,6 +442,7 @@ def instrument_summary(request, instrument=None):
                                                       status=processing_status),
             'queued': ReductionRun.objects.filter(instrument=instrument_obj,
                                                   status=queued_status),
+            'default_tab': 'run_number',
         }
     # pylint:disable=broad-except
     except Exception as exception:

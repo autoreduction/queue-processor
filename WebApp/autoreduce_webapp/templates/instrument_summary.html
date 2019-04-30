@@ -1,48 +1,182 @@
 {% extends "base.html" %}
 {% load view %}
 {% load static from staticfiles %}
+{% load colour_table_rows %}
 
 {% block body %}
     {% if instrument %}
         {% if instrument.is_active %}
-            <title>{{ instrument.name }} - Upcoming Configurations</title>
+            <title>{{ instrument.name }}</title>
             <div class="row">
                 <div class="col-md-12 text-center">
-                    <h2>{{ instrument.name }} - Upcoming Configurations</h2>
+                    <h2>{{ instrument.name }}</h2>
                 </div>
             </div>
+
+            <!-- Instrument status and control buttons -->
             <div class="row">
-                <div class="col-md-6 col-md-offset-3">
+                <div class="col-md-6">
                     {% include "snippets/instrument_status.html" with processing=processing queued=queued last_instrument_run=last_instrument_run only %}
                 </div>
+                <!-- Pause / Resume Reduction button-->
+                <div class="col-md-6 text-center">
+                    {% if instrument.is_paused %}
+                        <a class="btn btn-danger btn-block" id="pause"><i class="fa fa-play"></i>&nbsp;&nbsp;Resume Autoreduction on {{instrument.name}}</a>
+                    {% else %}
+                        <a class="btn btn-success btn-block" id="pause"><i class="fa fa-pause"></i>&nbsp;&nbsp;Pause Autoreduction on {{instrument.name}}</a>
+                    {% endif %}
+                    <form id="form-pause" method="POST" action="{% url 'instrument_pause' instrument.name %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="currently_paused" id="currently_paused" value="{{ instrument.is_paused }}">
+                    </form>
+                    <p></p>
+                </div>
+                <!-- Re-run past runs button -->
+                <div class="col-md-6 text-center">
+                    <p><a href="{% url 'instrument_submit_runs' instrument=instrument %}" class="btn btn-success btn-block"><i class="fa fa-arrow-left"></i>&nbsp;&nbsp;Re-run past jobs</a></p>
+                </div>
+                <!-- Configure new runs button -->
+                <div class="col-md-6 text-center">
+                    <p><a href="{% url 'instrument_variables' instrument=instrument %}" class="btn btn-success btn-block"><i class="fa fa-plus"></i>&nbsp;&nbsp;Configure New Jobs</a></p>
+                </div>
             </div>
-                <div class="row">
-                    <div class="col-md-4 col-md-offset-4 text-center">
-                        {% if instrument.is_paused %}
-                            <a class="btn btn-danger btn-block" id="pause"><i class="fa fa-play"></i>&nbsp;&nbsp;Resume Autoreduction on {{instrument.name}}</a>
-                        {% else %}
-                            <a class="btn btn-success btn-block" id="pause"><i class="fa fa-pause"></i>&nbsp;&nbsp;Pause Autoreduction on {{instrument.name}}</a>
-                        {% endif %}
-                        <form id="form-pause" method="POST" action="{% url 'instrument_pause' instrument.name %}">
-                            {% csrf_token %}
-                            <input type="hidden" name="currently_paused" id="currently_paused" value="{{ instrument.is_paused }}">
-                        </form>
-                        <p></p>
+
+            <!-- Collapsible widget for reduction variables present and future -->
+            {% if reduction_variables_on %}
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <button type="button" class="btn btn-info btn-block" data-toggle="collapse" data-target="#variables"><i class="fa fa-chevron-down"></i>  Show Variables</button>
+                    <div id="variables" class="collapse" style="background-color:#F0FFFF;">
+                        {% view "reduction_variables.views.instrument_summary" instrument=instrument.name %}
                     </div>
                 </div>
-            <div class="row">
-                <div class="col-md-4 col-md-offset-4 text-center">
-                    <p><a href="{% url 'instrument_submit_runs' instrument=instrument %}" class="btn btn-success btn-block"><i class="fa fa-plus"></i>&nbsp;&nbsp;Re-run past jobs</a></p>
-                </div>
             </div>
-            {% if reduction_variables_on %}  
-                {% view "reduction_variables.views.instrument_summary" instrument=instrument.name %}
             {% endif %}
         {% else %}
             <div class="text-center col-md-6 col-md-offset-3 well well-small">
                 Instrument is not active.
             </div>
         {% endif %}
+
+        <br/>
+        <hr/>
+        <br/>
+            <!-- Search bar for reduction Jobs -->
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group" id="search-parent">
+                        <label for="run_search" class="screenreader-only">Search</label>
+                        <input type="search" placeholder="Search" name="run_search" id="run_search" class="form-control" autocomplete="off" data-toggle="popover" data-trigger="focus" data-content="Try entering an RB number or run number." data-placement="top">
+                    </div>
+                </div>
+            </div>
+            <!-- Display table for reduction jobs -->
+            <div class="row">
+                <div class="col-md-12">
+                    <!-- Navigation buttons for filtering reduction runs -->
+                    <ul class="nav nav-tabs hidden-xs js-run-tabs" role="tablist">
+                        <li class="{% if default_tab == 'experiment' %}active{% endif %}" id="by-experiment-tab"><a href="#by-experiment" role="tab" data-toggle="tab"><span class="hidden-xs">View </span>By Experiment Number</a></li>
+                        <li class="{% if default_tab == 'run_number' %}active{% endif %}" id="by-run-number-tab"><a href="#by-run-number" role="tab" data-toggle="tab"><span class="hidden-xs">View </span>By Job Number</a></li>
+                    </ul>
+                    <div class="row visible-xs">
+                        <div class="col-xs-12 text-center">
+                            <select id="by-tabs-mobile">
+                                <option value="by-experiment">View By Experiment Number</option>
+                                <option value="by-run-number">View By Job Number</option>
+                            </select>
+                        </div>
+                    </div>
+                    <!-- Display table for every reduction job -->
+                    <div class="tab-content col-md-12">
+                        <!-- Experiment filtered jobs -->
+                        <div class="tab-pane row {% if default_tab == 'experiment' %}active{% else %}hide{% endif %}" id="by-experiment">
+                            {% for experiment, associated_runs in experiments %}
+                                <!--<div data-toggle="collapse" data-target="#{{ experiment.reference_number }}">
+                                    <a href="{% url 'experiment_summary' experiment.reference_number %}">RB{{ experiment.reference_number }}</a>
+                                    <div id="RB{{ experiment.reference_number }}" class="collapse" >
+                                         <p> Some exciting content</p>
+                                    </div>
+                                </div>-->
+                            <div class="col-md-12 run-row" data-toggle="collapse" data-target="#RB{{ experiment.reference_number }}">
+                                <div class="col-md-1"></div>
+                                <a href="{% url 'experiment_summary' experiment.reference_number %}"> RB{{ experiment.reference_number }}</a>
+                            </div>
+                            <div id="RB{{ experiment.reference_number }}" class="collapse">
+                                {% for run in associated_runs %}
+                                <div class="row run-row">
+                                    <div class="col-md-5  col-sm-5 col-md-offset-1 col-xs-4"><a href="{% url 'run_summary' instrument_name=run.instrument.name run_number=run.run_number run_version=run.run_version %}">{{ run.title }}</a></div>
+                                    <div class="col-md-2 col-sm-2 col-xs-4 run-status text-{% colour_table_row run.status.value %}"><strong>{{ run.status }}</strong></div>
+                                    <div class="col-md-4 col-sm-5 col-xs-4"><strong>Last updated:</strong> {{ run.last_updated }}</div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endfor %}
+                            {% if experiments.has_other_pages %}
+                                <div class="col-md-12 text-center">
+                                    <ul class="pagination ">
+                                        {% if experiments.has_previous %}
+                                            <li><a href="?page_exp={{ experiments.previous_page_number }}#by-experiment">&laquo;</a></li>
+                                        {% else %}
+                                            <li class="disabled"><span>&laquo;</span></li>
+                                        {% endif %}
+                                        {% for i in experiments.paginator.page_range %}
+                                            {% if runs.number == i %}
+                                                <li class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></li>
+                                            {% else %}
+                                                <li><a href="?page_exp={{ i }}#by-experiment">{{ i }}</a></li>
+                                            {% endif %}
+                                        {% endfor %}
+                                        {% if experiments.has_next %}
+                                            <li><a href="?page_exp={{ experiments.next_page_number }}#by-experiment">&raquo;</a></li>
+                                        {% else %}
+                                            <li class="disabled"><span>&raquo;</span></li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <!-- Run number filtered jobs -->
+                        <div class="tab-pane row {% if default_tab == 'run_number' %}active{% else %}hide{% endif %}" id="by-run-number">
+                            {% for run in runs %}
+                                <div class="row run-row">
+                                    <div class="col-md-5  col-sm-5 col-md-offset-1 col-xs-4"><a href="{% url 'run_summary' instrument_name=run.instrument.name run_number=run.run_number run_version=run.run_version %}">{{ run.title }}</a></div>
+                                    <div class="col-md-2 col-sm-2 col-xs-4 run-status text-{% colour_table_row run.status.value %}"><strong>{{ run.status }}</strong></div>
+                                    <div class="col-md-4 col-sm-5 col-xs-4"><strong>Last updated:</strong> {{ run.last_updated }}</div>
+                                </div>
+                            {% endfor %}
+                            {% if runs.has_other_pages %}
+                                <div class="col-md-12 text-center">
+                                    <ul class="pagination ">
+                                        {% if runs.has_previous %}
+                                            <li><a href="?page_run={{ runs.previous_page_number }}#by-run-number">&laquo;</a></li>
+                                        {% else %}
+                                            <li class="disabled"><span>&laquo;</span></li>
+                                        {% endif %}
+                                        {% for i in runs.paginator.page_range %}
+                                            {% if runs.number == i %}
+                                                <li class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></li>
+                                            {% else %}
+                                                <li><a href="?page_run={{ i }}#by-run-number">{{ i }}</a></li>
+                                            {% endif %}
+                                        {% endfor %}
+                                        {% if runs.has_next %}
+                                            <li><a href="?page_run={{ runs.next_page_number }}#by-run-number">&raquo;</a></li>
+                                        {% else %}
+                                            <li class="disabled"><span>&raquo;</span></li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row hide" id="no-search-results">
+                <div class="col-md-12 text-center">
+                    <h3>No matching results.</h3>
+                </div>
+            </div>
+
     {% else %}
         <div class="text-center col-md-6 col-md-offset-3 well well-small">
             Instrument not found.
@@ -51,6 +185,11 @@
 {% endblock %}
 
 {% block scripts %}
+    {% if preload_runs %}
+        <script>window.preload_runs = true;</script>
+    {% endif %}
     <script src="{% static "javascript/pause_instrument.js" %}"></script>
     <script src="{% static "javascript/instrument_variables.js" %}"></script>
+    <script src="{% static "javascript/vendor/fastdom.js" %}"></script>
+    <script src="{% static "javascript/run_list.js" %}"></script>
 {% endblock %}
