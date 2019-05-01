@@ -6,10 +6,10 @@
 {% block body %}
     {% if instrument %}
         {% if instrument.is_active %}
-            <title>{{ instrument.name }}</title>
+            <title>{{ instrument_name }}</title>
             <div class="row">
                 <div class="col-md-12 text-center">
-                    <h2>{{ instrument.name }}</h2>
+                    <h2>{{ instrument_name }}</h2>
                 </div>
             </div>
 
@@ -21,11 +21,11 @@
                 <!-- Pause / Resume Reduction button-->
                 <div class="col-md-6 text-center">
                     {% if instrument.is_paused %}
-                        <a class="btn btn-danger btn-block" id="pause"><i class="fa fa-play"></i>&nbsp;&nbsp;Resume Autoreduction on {{instrument.name}}</a>
+                        <a class="btn btn-danger btn-block" id="pause"><i class="fa fa-play"></i>&nbsp;&nbsp;Resume Autoreduction on {{instrument_name}}</a>
                     {% else %}
-                        <a class="btn btn-success btn-block" id="pause"><i class="fa fa-pause"></i>&nbsp;&nbsp;Pause Autoreduction on {{instrument.name}}</a>
+                        <a class="btn btn-success btn-block" id="pause"><i class="fa fa-pause"></i>&nbsp;&nbsp;Pause Autoreduction on {{instrument_name}}</a>
                     {% endif %}
-                    <form id="form-pause" method="POST" action="{% url 'instrument_pause' instrument.name %}">
+                    <form id="form-pause" method="POST" action="{% url 'instrument_pause' instrument_name %}">
                         {% csrf_token %}
                         <input type="hidden" name="currently_paused" id="currently_paused" value="{{ instrument.is_paused }}">
                     </form>
@@ -33,11 +33,11 @@
                 </div>
                 <!-- Re-run past runs button -->
                 <div class="col-md-6 text-center">
-                    <p><a href="{% url 'instrument_submit_runs' instrument=instrument %}" class="btn btn-success btn-block"><i class="fa fa-arrow-left"></i>&nbsp;&nbsp;Re-run past jobs</a></p>
+                    <p><a href="{% url 'instrument_submit_runs' instrument=instrument_name %}" class="btn btn-success btn-block"><i class="fa fa-arrow-left"></i>&nbsp;&nbsp;Re-run past jobs</a></p>
                 </div>
                 <!-- Configure new runs button -->
                 <div class="col-md-6 text-center">
-                    <p><a href="{% url 'instrument_variables' instrument=instrument %}" class="btn btn-success btn-block"><i class="fa fa-plus"></i>&nbsp;&nbsp;Configure New Jobs</a></p>
+                    <p><a href="{% url 'instrument_variables' instrument=instrument_name %}" class="btn btn-success btn-block"><i class="fa fa-plus"></i>&nbsp;&nbsp;Configure New Jobs</a></p>
                 </div>
             </div>
 
@@ -47,7 +47,7 @@
                 <div class="col-md-12 text-center">
                     <button type="button" class="btn btn-info btn-block" data-toggle="collapse" data-target="#variables"><i class="fa fa-chevron-down"></i>  Show Variables</button>
                     <div id="variables" class="collapse" style="background-color:#F0FFFF;">
-                        {% view "reduction_variables.views.instrument_summary" instrument=instrument.name %}
+                        {% view "reduction_variables.views.instrument_summary" instrument=instrument_name %}
                     </div>
                 </div>
             </div>
@@ -91,12 +91,6 @@
                         <!-- Experiment filtered jobs -->
                         <div class="tab-pane row {% if default_tab == 'experiment' %}active{% else %}hide{% endif %}" id="by-experiment">
                             {% for experiment, associated_runs in experiments %}
-                                <!--<div data-toggle="collapse" data-target="#{{ experiment.reference_number }}">
-                                    <a href="{% url 'experiment_summary' experiment.reference_number %}">RB{{ experiment.reference_number }}</a>
-                                    <div id="RB{{ experiment.reference_number }}" class="collapse" >
-                                         <p> Some exciting content</p>
-                                    </div>
-                                </div>-->
                             <div class="col-md-12 run-row" data-toggle="collapse" data-target="#RB{{ experiment.reference_number }}">
                                 <div class="col-md-1"></div>
                                 <a href="{% url 'experiment_summary' experiment.reference_number %}"> RB{{ experiment.reference_number }}</a>
@@ -104,7 +98,7 @@
                             <div id="RB{{ experiment.reference_number }}" class="collapse">
                                 {% for run in associated_runs %}
                                 <div class="row run-row">
-                                    <div class="col-md-5  col-sm-5 col-md-offset-1 col-xs-4"><a href="{% url 'run_summary' instrument_name=run.instrument.name run_number=run.run_number run_version=run.run_version %}">{{ run.title }}</a></div>
+                                    <div class="col-md-5  col-sm-5 col-md-offset-1 col-xs-4"><a href="{% url 'run_summary' instrument_name=instrument_name run_number=run.run_number run_version=run.run_version %}">{{ run.title }}</a></div>
                                     <div class="col-md-2 col-sm-2 col-xs-4 run-status text-{% colour_table_row run.status.value %}"><strong>{{ run.status }}</strong></div>
                                     <div class="col-md-4 col-sm-5 col-xs-4"><strong>Last updated:</strong> {{ run.last_updated }}</div>
                                 </div>
@@ -139,7 +133,7 @@
                         <div class="tab-pane row {% if default_tab == 'run_number' %}active{% else %}hide{% endif %}" id="by-run-number">
                             {% for run in runs %}
                                 <div class="row run-row">
-                                    <div class="col-md-5  col-sm-5 col-md-offset-1 col-xs-4"><a href="{% url 'run_summary' instrument_name=run.instrument.name run_number=run.run_number run_version=run.run_version %}">{{ run.title }}</a></div>
+                                    <div class="col-md-5  col-sm-5 col-md-offset-1 col-xs-4"><a href="{% url 'run_summary' instrument_name=instrument_name run_number=run.run_number run_version=run.run_version %}">{{ run.title }}</a></div>
                                     <div class="col-md-2 col-sm-2 col-xs-4 run-status text-{% colour_table_row run.status.value %}"><strong>{{ run.status }}</strong></div>
                                     <div class="col-md-4 col-sm-5 col-xs-4"><strong>Last updated:</strong> {{ run.last_updated }}</div>
                                 </div>

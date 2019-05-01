@@ -404,23 +404,27 @@ def instrument_summary(request, instrument=None):
     """
     processing_status = StatusUtils().get_processing()
     queued_status = StatusUtils().get_queued()
-    skipped_status = StatusUtils().get_skipped()
+
+    experiment_filter = False
+
     try:
         page_run = request.GET.get('page_run', 1)
         page_exp = request.GET.get('page_exp', 1)
         instrument_obj = Instrument.objects.get(name=instrument)
         runs = ReductionRun.objects.filter(instrument=instrument_obj).order_by('-run_number')
+        last_instrument_run = runs[0]
         experiments = Experiment.objects.filter(reduction_runs__instrument=instrument_obj).order_by('-reference_number').distinct()
         experiments_and_runs = {}
-        for experiment in experiments:
-            associated_runs = ReductionRun.objects.filter(experiment=experiment,
-                                                          instrument=instrument_obj).order_by('-created')
-            experiments_and_runs[experiment] = associated_runs
+        if experiment_filter:
+            for experiment in experiments:
+                associated_runs = ReductionRun.objects.filter(experiment=experiment,
+                                                              instrument=instrument_obj).order_by('-created')
+                experiments_and_runs[experiment] = associated_runs
 
-        run_paginator = Paginator(runs, 100)
+        run_paginator = Paginator(runs, 50)
         # experiments_and_runs dict is not hashable and therefore can't be directly paginated
         # Hence we are required to create a tuple of its items in order to paginate the keys
-        experiment_paginator = Paginator(tuple(experiments_and_runs.items()), 10)
+        experiment_paginator = Paginator(tuple(experiments_and_runs.items()), 1)
         try:
             runs = run_paginator.page(page_run)
             experiments_and_runs = experiment_paginator.page(page_exp)
@@ -433,11 +437,10 @@ def instrument_summary(request, instrument=None):
 
         context_dictionary = {
             'instrument': instrument_obj,
+            'instrument_name': instrument_obj.name,
             'runs': runs,
             'experiments': experiments_and_runs,
-            'last_instrument_run':
-                ReductionRun.objects.filter(instrument=instrument_obj).
-                exclude(status=skipped_status).order_by('-run_number')[0],
+            'last_instrument_run': last_instrument_run,
             'processing': ReductionRun.objects.filter(instrument=instrument_obj,
                                                       status=processing_status),
             'queued': ReductionRun.objects.filter(instrument=instrument_obj,
