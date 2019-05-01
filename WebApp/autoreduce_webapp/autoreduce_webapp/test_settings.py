@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'reduction_viewer',
     'reduction_variables',
     'django_user_agents',
+    'debug_toolbar',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -47,6 +48,7 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
