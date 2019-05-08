@@ -70,6 +70,8 @@ class CustomPaginator(object):
                     current_page = RunPage(next_page_index, self.items_per_page, False)
                 # Make sure we add the record to the new page we created
                 current_page.add_record(record)
+        current_page._set_start_and_end()
+        self.page_list.append(current_page)
 
     def _create_display_list(self):
         """

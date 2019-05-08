@@ -48,7 +48,7 @@ def index(request):
         return_url = UOWS_LOGIN_URL + request.build_absolute_uri(request.GET.get('next'))
 
     use_query_next = request.build_absolute_uri(request.GET.get('next'))
-    default_next = 'run_list'
+    default_next = 'overview'
 
     authenticated = False
 

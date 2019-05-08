@@ -29,7 +29,6 @@ urlpatterns = [
 
     # ===========================RUNS================================= #
     url(r'^overview/', reduction_viewer_views.overview, name='overview'),
-    url(r'^runs/$', reduction_viewer_views.run_list, name='run_list'),
     url(r'^runs/queue/$', reduction_viewer_views.run_queue, name='run_queue'),
     url(r'^runs/failed/$', reduction_viewer_views.fail_queue, name='fail_queue'),
     url(r'^runs/list/(?P<reference_number>-?[0-9]+)/$',
