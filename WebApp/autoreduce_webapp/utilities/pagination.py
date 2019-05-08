@@ -31,10 +31,22 @@ class CustomPaginator(object):
         self.previous_page_index = 0
         self.page_list = []
         self.display_list = []
+        self._validate_current_page()
         self._construct_pagination()
         self._set_next_and_previous()
-        self.current_page = self.page_list[self.current_page_index]
+        self.current_page = self.page_list[self.current_page_index - 1]
         self._create_display_list()
+
+    def _validate_current_page(self):
+        """
+        Ensure that the current page specified is valid
+        Update the page to min/max if outside of expected range
+        """
+        page_count = len(self.query_set) / self.items_per_page
+        if self.current_page_index > page_count:
+            self.current_page_index = page_count
+        if self.current_page_index < 1:
+            self.current_page_index = 1
 
     def _construct_pagination(self):
         """
@@ -56,6 +68,8 @@ class CustomPaginator(object):
                     current_page = RunPage(next_page_index, self.items_per_page, True)
                 else:
                     current_page = RunPage(next_page_index, self.items_per_page, False)
+                # Make sure we add the record to the new page we created
+                current_page.add_record(record)
 
     def _create_display_list(self):
         """

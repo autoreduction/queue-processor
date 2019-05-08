@@ -134,6 +134,11 @@ search#run_search {
     margin-right: 0px;
 }
 
+.run-row-top .run-status{
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
 .run-row {
     padding-top: 5px;
     padding-bottom: 5px;

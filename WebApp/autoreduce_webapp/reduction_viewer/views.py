@@ -410,8 +410,8 @@ def instrument_summary(request, instrument=None):
 
     try:
         max_items_per_page = request.GET.get('pagination', 50)
-        filter_by = request.GET.get('filter', 'Run Number')
-        current_page = request.GET.get('page_run', 10)
+        filter_by = request.GET.get('filter', 'run')
+        current_page = request.GET.get('page', 1)
         instrument_obj = Instrument.objects.get(name=instrument)
         runs = ReductionRun.objects.filter(instrument=instrument_obj).order_by('-run_number')
         custom_paginator = CustomPaginator(runs, max_items_per_page, 3, current_page)
@@ -436,6 +436,9 @@ def instrument_summary(request, instrument=None):
                                                   status=queued_status),
             'default_tab': 'run_number',
             'paginator': custom_paginator,
+            'last_page_index': len(custom_paginator.page_list),
+            'max_items': max_items_per_page,
+            'filtering': filter_by,
         }
     # pylint:disable=broad-except
     except Exception as exception:
