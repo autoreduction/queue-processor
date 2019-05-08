@@ -47,7 +47,7 @@
                 <div class="col-md-12 text-center">
                     <button type="button" class="btn btn-info btn-block" data-toggle="collapse" data-target="#variables"><i class="fa fa-chevron-down"></i>  Show Variables</button>
                     <div id="variables" class="collapse" style="background-color:#F0FFFF;">
-                        {% view "reduction_variables.views.instrument_summary" instrument=instrument_name %}
+                        {% view "reduction_variables.views.instrument_summary" instrument=instrument_name last_run_object=last_instrument_run %}
                     </div>
                 </div>
             </div>
@@ -72,89 +72,68 @@
             </div>
             <!-- Display table for reduction jobs -->
             <div class="row">
-                <div class="col-md-12">
-                    <!-- Navigation buttons for filtering reduction runs -->
-                    <ul class="nav nav-tabs hidden-xs js-run-tabs" role="tablist">
-                        <li class="{% if default_tab == 'experiment' %}active{% endif %}" id="by-experiment-tab"><a href="#by-experiment" role="tab" data-toggle="tab"><span class="hidden-xs">View </span>By Experiment Number</a></li>
-                        <li class="{% if default_tab == 'run_number' %}active{% endif %}" id="by-run-number-tab"><a href="#by-run-number" role="tab" data-toggle="tab"><span class="hidden-xs">View </span>By Job Number</a></li>
-                    </ul>
-                    <div class="row visible-xs">
-                        <div class="col-xs-12 text-center">
-                            <select id="by-tabs-mobile">
-                                <option value="by-experiment">View By Experiment Number</option>
-                                <option value="by-run-number">View By Job Number</option>
-                            </select>
-                        </div>
+                <form action="{{ request.path }}" method="get" id="filter_options">
+                    <div class="col-md-3">
+                        <select class="form-control" name="filter" form="filter_options">
+                            <option value="Run Number">Filter by ...</option> <!-- Defaults to Run Number -->
+                            <option>Run number</option>
+                            <option>Experiment Reference (RB)</option>
+                        </select>
                     </div>
+                    <div class="col-md-3">
+                        <select class="form-control" name="pagination" form="filter_options">
+                            <option value="50">Items per page... </option>  <!-- Defaults to 50 items per page -->
+                            <option>10</option>
+                            <option>25</option>
+                            <option>50</option>
+                            <option>100</option>
+                            <option>250</option>
+                            <option>500</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <input class="btn btn-primary" type="submit" value="Apply filters">
+                    </div>
+                </form>
+            </div>
+            <br/>
+            <div class="row">
                     <!-- Display table for every reduction job -->
                     <div class="tab-content col-md-12">
-                        <!-- Experiment filtered jobs -->
-                        <div class="tab-pane row {% if default_tab == 'experiment' %}active{% else %}hide{% endif %}" id="by-experiment">
-                            {% for experiment, associated_runs in experiments %}
-                            <div class="col-md-12 run-row" data-toggle="collapse" data-target="#RB{{ experiment.reference_number }}">
-                                <div class="col-md-1"></div>
-                                <a href="{% url 'experiment_summary' experiment.reference_number %}"> RB{{ experiment.reference_number }}</a>
-                            </div>
-                            <div id="RB{{ experiment.reference_number }}" class="collapse">
-                                {% for run in associated_runs %}
-                                <div class="row run-row">
-                                    <div class="col-md-5  col-sm-5 col-md-offset-1 col-xs-4"><a href="{% url 'run_summary' instrument_name=instrument_name run_number=run.run_number run_version=run.run_version %}">{{ run.title }}</a></div>
-                                    <div class="col-md-2 col-sm-2 col-xs-4 run-status text-{% colour_table_row run.status.value %}"><strong>{{ run.status }}</strong></div>
-                                    <div class="col-md-4 col-sm-5 col-xs-4"><strong>Last updated:</strong> {{ run.last_updated }}</div>
-                                </div>
-                                {% endfor %}
-                            </div>
-                            {% endfor %}
-                            {% if experiments.has_other_pages %}
-                                <div class="col-md-12 text-center">
-                                    <ul class="pagination ">
-                                        {% if experiments.has_previous %}
-                                            <li><a href="?page_exp={{ experiments.previous_page_number }}#by-experiment">&laquo;</a></li>
-                                        {% else %}
-                                            <li class="disabled"><span>&laquo;</span></li>
-                                        {% endif %}
-                                        {% for i in experiments.paginator.page_range %}
-                                            {% if runs.number == i %}
-                                                <li class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></li>
-                                            {% else %}
-                                                <li><a href="?page_exp={{ i }}#by-experiment">{{ i }}</a></li>
-                                            {% endif %}
-                                        {% endfor %}
-                                        {% if experiments.has_next %}
-                                            <li><a href="?page_exp={{ experiments.next_page_number }}#by-experiment">&raquo;</a></li>
-                                        {% else %}
-                                            <li class="disabled"><span>&raquo;</span></li>
-                                        {% endif %}
-                                    </ul>
-                                </div>
-                            {% endif %}
-                        </div>
                         <!-- Run number filtered jobs -->
                         <div class="tab-pane row {% if default_tab == 'run_number' %}active{% else %}hide{% endif %}" id="by-run-number">
-                            {% for run in runs %}
-                                <div class="row run-row">
+                            {% for run in paginator.current_page.records %}
+                                {% if forloop.first %}
+                                    <div class="row run-row-top">
+                                {% else %}
+                                    <div class="row run-row">
+                                {% endif %}
                                     <div class="col-md-5  col-sm-5 col-md-offset-1 col-xs-4"><a href="{% url 'run_summary' instrument_name=instrument_name run_number=run.run_number run_version=run.run_version %}">{{ run.title }}</a></div>
                                     <div class="col-md-2 col-sm-2 col-xs-4 run-status text-{% colour_table_row run.status.value %}"><strong>{{ run.status }}</strong></div>
                                     <div class="col-md-4 col-sm-5 col-xs-4"><strong>Last updated:</strong> {{ run.last_updated }}</div>
                                 </div>
                             {% endfor %}
-                            {% if runs.has_other_pages %}
+                            {% if paginator %}
                                 <div class="col-md-12 text-center">
                                     <ul class="pagination ">
-                                        {% if runs.has_previous %}
-                                            <li><a href="?page_run={{ runs.previous_page_number }}#by-run-number">&laquo;</a></li>
+                                        {% if paginator.has_previous %}
+                                            <li><a href="?page={{ paginator.previous_page_index }}#by-run-number">&laquo;</a></li>
                                         {% else %}
                                             <li class="disabled"><span>&laquo;</span></li>
                                         {% endif %}
-                                        {% for i in runs.paginator.page_range %}
-                                            {% if runs.number == i %}
-                                                <li class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></li>
+                                        {% for page in paginator.display_list %}
+                                            {% if page.is_visible %}
+                                                {% if page.number == paginator.current_page_index %}
+                                                    <li class="active"><span>{{ page.display_name }}<span class="sr-only">(current)</span></span></li>
+                                                {% else %}
+                                                    <li><a href="?page={{ page.number }}#by-run-number">{{ page.display_name }}</a></li>
+                                                {% endif %}
                                             {% else %}
-                                                <li><a href="?page_run={{ i }}#by-run-number">{{ i }}</a></li>
+                                                 <li class="disabled"><span>...</span></li>
                                             {% endif %}
                                         {% endfor %}
                                         {% if runs.has_next %}
-                                            <li><a href="?page_run={{ runs.next_page_number }}#by-run-number">&raquo;</a></li>
+                                            <li><a href="?page={{ paginator.next_page_index}}#by-run-number">&raquo;</a></li>
                                         {% else %}
                                             <li class="disabled"><span>&raquo;</span></li>
                                         {% endif %}
@@ -165,12 +144,6 @@
                     </div>
                 </div>
             </div>
-            <div class="row hide" id="no-search-results">
-                <div class="col-md-12 text-center">
-                    <h3>No matching results.</h3>
-                </div>
-            </div>
-
     {% else %}
         <div class="text-center col-md-6 col-md-offset-3 well well-small">
             Instrument not found.

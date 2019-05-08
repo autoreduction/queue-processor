@@ -125,6 +125,15 @@ search#run_search {
     margin-left: 15px;
 }
 
+.run-row-top {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    border-top: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+    margin-left: 0px;
+    margin-right: 0px;
+}
+
 .run-row {
     padding-top: 5px;
     padding-bottom: 5px;
