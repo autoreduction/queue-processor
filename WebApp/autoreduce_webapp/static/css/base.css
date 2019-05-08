@@ -139,6 +139,20 @@ search#run_search {
     font-size: 1.1em;
 }
 
+.run-row-internal {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #ddd;
+    margin-left: 0px;
+    margin-right: 0px;
+    background-color: #F0FFFF;
+}
+
+.run-row-internal .run-status{
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
 .run-row {
     padding-top: 5px;
     padding-bottom: 5px;

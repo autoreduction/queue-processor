@@ -73,6 +73,7 @@
                             <option value="experiment">Experiment Reference (RB)</option>
                         </select>
                     </div>
+                    {% if filtering == 'run' %}
                     <div class="col-md-3">
                         <select class="form-control" name="pagination" form="filter_options" id="pagination_select">
                             <option value="{{ max_items }}" selected="selected">Items per page... </option>  <!-- Defaults to 50 items per page -->
@@ -84,6 +85,7 @@
                             <option>500</option>
                         </select>
                     </div>
+                    {% endif %}
                     <div class="col-md-3">
                         <input class="btn btn-primary" type="submit" value="Apply filters">
                     </div>
@@ -93,51 +95,80 @@
             <!-- Display table for every reduction job -->
             <div class="row">
                 <div class="tab-content col-md-12">
+                    {% if filtering == 'run' %}
                     <!-- Run number filtered jobs -->
-                    <div class="tab-pane row {% if default_tab == 'run_number' %}active{% else %}hide{% endif %}" id="by-run-number">
-                        {% for run in paginator.current_page.records %}
+                        <div class="row" id="by-run-number">
+                            {% for run in paginator.current_page.records %}
+                                {% if forloop.first %}
+                                    <div class="row run-row-top">
+                                {% else %}
+                                    <div class="row run-row">
+                                {% endif %}
+                                    <div class="col-md-5 col-sm-5 col-md-offset-1 col-xs-4"><a href="{% url 'run_summary' instrument_name=instrument_name run_number=run.run_number run_version=run.run_version %}">{{ run.title }}</a></div>
+                                    <div class="col-md-2 col-sm-2 col-xs-4 run-status text-{% colour_table_row run.status.value %}"><strong>{{ run.status }}</strong></div>
+                                    <div class="col-md-4 col-sm-5 col-xs-4"><strong>Last updated:</strong> {{ run.last_updated }}</div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% elif filtering == 'experiment' %}
+                    <!-- Experiment filtered jobs -->
+                        <div class="row" id="by-experiment-number">
+                            {% for experiment, associated_runs in experiments.items %}
                             {% if forloop.first %}
-                                <div class="row run-row-top">
+                                <div class="col-md-12 run-row-top" data-toggle="collapse" data-target="#RB{{ experiment.reference_number }}">
                             {% else %}
-                                <div class="row run-row">
+                                <div class="col-md-12 run-row" data-toggle="collapse" data-target="#RB{{ experiment.reference_number }}">
                             {% endif %}
-                                <div class="col-md-5  col-sm-5 col-md-offset-1 col-xs-4"><a href="{% url 'run_summary' instrument_name=instrument_name run_number=run.run_number run_version=run.run_version %}">{{ run.title }}</a></div>
-                                <div class="col-md-2 col-sm-2 col-xs-4 run-status text-{% colour_table_row run.status.value %}"><strong>{{ run.status }}</strong></div>
-                                <div class="col-md-4 col-sm-5 col-xs-4"><strong>Last updated:</strong> {{ run.last_updated }}</div>
+                                <div class="col-md-1"></div>
+                                <a href="{% url 'experiment_summary' experiment.reference_number %}"> RB{{ experiment.reference_number }}</a>
                             </div>
-                        {% endfor %}
-                    </div>
+                            <div id="RB{{ experiment.reference_number }}" class="collapse">
+                                {% for run in associated_runs %}
+                                <div class="row run-row-internal">
+                                    <div class="col-md-5 col-sm-5 col-md-offset-1 col-xs-4"><a href="{% url 'run_summary' instrument_name=instrument_name run_number=run.run_number run_version=run.run_version %}">{{ run.title }}</a></div>
+                                    <div class="col-md-2 col-sm-2 col-xs-4 run-status text-{% colour_table_row run.status.value %}"><strong>{{ run.status }}</strong></div>
+                                    <div class="col-md-4 col-sm-5 col-xs-4"><strong>Last updated:</strong> {{ run.last_updated }}</div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="row">No runs to show</div>
+                    {% endif %}
                 </div>
             </div>
             <br/>
             <!-- Paginator -->
-            <div class="row">
-                {% if paginator %}
-                <div class="col-md-12 text-center">
-                    <div class="btn-group" role="group">
-                        {% if paginator.has_previous %}
-                            <button title="First Page" class="btn btn-default" onclick="changePage(1)"><i class="fa fa-step-backward"></i></button>
-                            <button title="Previous Page" class="btn btn-default" onclick="changePage({{ paginator.previous_page_index }})"><i class="fa fa-chevron-left"></i></button>
-                        {% endif %}
-                        {% for page in paginator.display_list %}
-                            {% if page.is_visible %}
-                                {% if page.number == paginator.current_page_index %}
-                                    <button title="Current Page" class="btn btn-primary inline">{{ page.display_name }}</button>
-                                {% else %}
-                                    <button class="btn btn-default" onclick="changePage({{ page.number }})">{{ page.display_name }}</button>
-                                {% endif %}
-                            {% else %}
-                                 <button title="There are additional pages. Please access them using the navigation buttons." class="btn btn-default disabled">...</button>
+            {% if filtering == 'run' %}
+                <div class="row">
+                    {% if paginator %}
+                    <div class="col-md-12 text-center">
+                        <div class="btn-group" role="group">
+                            {% if paginator.has_previous %}
+                                <button title="First Page" class="btn btn-default" onclick="changePage(1)"><i class="fa fa-step-backward"></i></button>
+                                <button title="Previous Page" class="btn btn-default" onclick="changePage({{ paginator.previous_page_index }})"><i class="fa fa-chevron-left"></i></button>
                             {% endif %}
-                        {% endfor %}
-                        {% if paginator.has_next %}
-                            <button title="Next Page" class="btn btn-default" onclick="changePage({{ paginator.next_page_index }})"><i class="fa fa-chevron-right"></i></button>
-                            <button title="Last page" class="btn btn-default" onclick="changePage({{ last_page_index }})"><i class="fa fa-step-forward"></i></button>
-                        {% endif %}
+                            {% for page in paginator.display_list %}
+                                {% if page.is_visible %}
+                                    {% if page.number == paginator.current_page_index %}
+                                        <button title="Current Page" class="btn btn-primary inline">{{ page.display_name }}</button>
+                                    {% else %}
+                                        <button class="btn btn-default" onclick="changePage({{ page.number }})">{{ page.display_name }}</button>
+                                    {% endif %}
+                                {% else %}
+                                     <button title="There are additional pages. Please access them using the navigation buttons." class="btn btn-default disabled">...</button>
+                                {% endif %}
+                            {% endfor %}
+                            {% if paginator.has_next %}
+                                <button title="Next Page" class="btn btn-default" onclick="changePage({{ paginator.next_page_index }})"><i class="fa fa-chevron-right"></i></button>
+                                <button title="Last page" class="btn btn-default" onclick="changePage({{ last_page_index }})"><i class="fa fa-step-forward"></i></button>
+                            {% endif %}
+                        </div>
                     </div>
+                    {% endif %}
                 </div>
-                {% endif %}
-            </div>
+            {% endif %}
         </div>
     {% else %}
         <div class="text-center col-md-6 col-md-offset-3 well well-small">

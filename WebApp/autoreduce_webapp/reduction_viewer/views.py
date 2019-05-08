@@ -406,40 +406,41 @@ def instrument_summary(request, instrument=None):
     processing_status = StatusUtils().get_processing()
     queued_status = StatusUtils().get_queued()
 
-    experiment_filter = False
-
     try:
-        max_items_per_page = request.GET.get('pagination', 50)
         filter_by = request.GET.get('filter', 'run')
-        current_page = request.GET.get('page', 1)
         instrument_obj = Instrument.objects.get(name=instrument)
         runs = ReductionRun.objects.filter(instrument=instrument_obj).order_by('-run_number')
-        custom_paginator = CustomPaginator(runs, max_items_per_page, 3, current_page)
         last_instrument_run = runs[0]
-        experiments = Experiment.objects.filter(reduction_runs__instrument=instrument_obj).order_by('-reference_number').distinct()
-        experiments_and_runs = {}
-        if experiment_filter:
-            for experiment in experiments:
-                associated_runs = ReductionRun.objects.filter(experiment=experiment,
-                                                              instrument=instrument_obj).order_by('-created')
-                experiments_and_runs[experiment] = associated_runs
 
         context_dictionary = {
             'instrument': instrument_obj,
             'instrument_name': instrument_obj.name,
             'runs': runs,
-            'experiments': experiments_and_runs,
             'last_instrument_run': last_instrument_run,
             'processing': ReductionRun.objects.filter(instrument=instrument_obj,
                                                       status=processing_status),
             'queued': ReductionRun.objects.filter(instrument=instrument_obj,
                                                   status=queued_status),
-            'default_tab': 'run_number',
-            'paginator': custom_paginator,
-            'last_page_index': len(custom_paginator.page_list),
-            'max_items': max_items_per_page,
             'filtering': filter_by,
         }
+
+        if filter_by == 'experiment':
+            experiments_and_runs = {}
+            experiments = Experiment.objects.filter(reduction_runs__instrument=instrument_obj). \
+                order_by('-reference_number').distinct()
+            for experiment in experiments:
+                associated_runs = ReductionRun.objects.filter(experiment=experiment,
+                                                              instrument=instrument_obj).order_by('-created')
+                experiments_and_runs[experiment] = associated_runs
+            context_dictionary['experiments'] = experiments_and_runs
+        else:
+            max_items_per_page = request.GET.get('pagination', 50)
+            current_page = request.GET.get('page', 1)
+            custom_paginator = CustomPaginator(runs, max_items_per_page, 3, current_page)
+            context_dictionary['paginator'] = custom_paginator
+            context_dictionary['last_page_index'] = len(custom_paginator.page_list)
+            context_dictionary['max_items'] = max_items_per_page
+
     # pylint:disable=broad-except
     except Exception as exception:
         LOGGER.error(exception.message)
