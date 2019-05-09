@@ -8,6 +8,8 @@ easier display names, as well as setting a maximum number of pages to display in
 This is currently used in the instrument_summary.html page
 """
 
+import math
+
 
 # pylint:disable=too-few-public-methods
 class PageLimitException(Exception):
@@ -41,7 +43,8 @@ class CustomPaginator(object):
         self._validate_current_page()
         self._construct_pagination()
         self._set_next_and_previous()
-        self.current_page = self.page_list[self.current_page_index - 1]
+        if self.page_list:
+            self.current_page = self.page_list[self.current_page_index - 1]
         self._create_display_list()
 
     def _validate_current_page(self):
@@ -49,7 +52,7 @@ class CustomPaginator(object):
         Ensure that the current page specified is valid
         Update the page to min/max if outside of expected range
         """
-        page_count = len(self.query_set) / self.items_per_page
+        page_count = int(math.ceil(float(len(self.query_set)) / float(self.items_per_page)))
         if self.current_page_index > page_count:
             self.current_page_index = page_count
         if self.current_page_index < 1:
