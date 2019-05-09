@@ -4,15 +4,19 @@
 {% block body %}
 <div class="container-fluid">
     <div class="row form-group">
-    {% for instrument in instrument_list %}
-            <div class="col-md-4  text-center">
-                <a href="/instrument/{{ instrument }}" class="btn btn-primary btn-lg btn-block">{{ instrument }}</a>
-            </div>
-    {% if forloop.counter|divisibleby:3 %}
-    </div>
-    <div class="row form-group">
+    {% if instrument_list %}
+        {% for instrument in instrument_list %}
+                <div class="col-md-4  text-center">
+                    <a href="/instrument/{{ instrument }}" class="btn btn-primary btn-lg btn-block">{{ instrument }}</a>
+                </div>
+        {% if forloop.counter|divisibleby:3 %}
+        </div>
+        <div class="row form-group">
+        {% endif %}
+        {% endfor %}
+    {% else %}
+            <div class="panel-body">No instruments registered with autoreduction were found. Please contact a member of the development team if the problem persists.</div>
     {% endif %}
-    {% endfor %}
     </div>
 </div>
 {% endblock %}

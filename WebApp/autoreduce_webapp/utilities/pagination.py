@@ -9,12 +9,19 @@ This is currently used in the instrument_summary.html page
 """
 
 
+# pylint:disable=too-few-public-methods
+class PageLimitException(Exception):
+    """ Custom Exception class to catch when page record limit is reached"""
+    pass
+
+
 class CustomPaginator(object):
     """
     CustomPaginator to allow for more complex functionality to be used without doing heavy
     lifting in the django template code
     """
 
+    # pylint:disable=too-many-instance-attributes
     def __init__(self, query_set, items_per_page, page_tolerance, current_page):
         """
         :param query_set: All data to show
@@ -70,7 +77,7 @@ class CustomPaginator(object):
                     current_page = RunPage(next_page_index, self.items_per_page, False)
                 # Make sure we add the record to the new page we created
                 current_page.add_record(record)
-        current_page._set_start_and_end()
+        current_page.set_start_and_end()
         self.page_list.append(current_page)
 
     def _create_display_list(self):
@@ -98,11 +105,7 @@ class CustomPaginator(object):
             self.has_previous = True
 
 
-class PageLimitException(Exception):
-    """ Custom Exception class to catch when page record limit is reached"""
-    pass
-
-
+# pylint:disable=too-few-public-methods
 class CustomPage(object):
     """
     Generic CustomPage class to model a single page in the pagination
@@ -122,7 +125,7 @@ class CustomPage(object):
         self.start = 0
         self.end = 0
 
-    def _set_start_and_end(self):
+    def set_start_and_end(self):
         """ Implemented by child class """
         pass
 
@@ -132,17 +135,18 @@ class CustomPage(object):
         set the start and end run number variables and throw an exception to be caught
         """
         if len(self.records) >= self.max_limit:
-            self._set_start_and_end()
+            self.set_start_and_end()
             raise PageLimitException("Unable to add record to page. Max number of records reached")
         self.records.append(record)
 
 
+# pylint:disable=too-few-public-methods
 class RunPage(CustomPage):
     """
     Specific implementation for rendering the pagination if sorting by Run Number
     """
 
-    def _set_start_and_end(self):
+    def set_start_and_end(self):
         """
         Custom function to set the start and end variables and
         construct the display name for the page

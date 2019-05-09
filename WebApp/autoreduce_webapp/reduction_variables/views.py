@@ -37,7 +37,8 @@ def instrument_summary(request, instrument, last_run_object):
 
     # pylint:disable=invalid-name
     current_variables, upcoming_variables_by_run, upcoming_variables_by_experiment = \
-        InstrumentVariablesUtils().get_current_and_upcoming_variables(instrument.name, last_run_object)
+        InstrumentVariablesUtils().get_current_and_upcoming_variables(instrument.name,
+                                                                      last_run_object)
 
     # Create a nested dictionary for by-run
     upcoming_variables_by_run_dict = {}

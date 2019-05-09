@@ -94,10 +94,15 @@ def logout(request):
 
 @login_and_uows_valid
 @render_with('overview.html')
-# pylint:disable=no-member
+# pylint:disable=no-member,unused-argument
 def overview(request):
+    """
+    Render the overview landing page (redirect from /index)
+    """
     instruments = Instrument.objects.order_by('name')
-    context_dictionary = {'instrument_list': instruments}
+    context_dictionary = {}
+    if instruments:
+        context_dictionary = {'instrument_list': instruments}
     return context_dictionary
 
 
@@ -403,24 +408,20 @@ def instrument_summary(request, instrument=None):
     """
     Render instrument summary
     """
-    processing_status = StatusUtils().get_processing()
-    queued_status = StatusUtils().get_queued()
-
     try:
         filter_by = request.GET.get('filter', 'run')
         instrument_obj = Instrument.objects.get(name=instrument)
         runs = ReductionRun.objects.filter(instrument=instrument_obj).order_by('-run_number')
-        last_instrument_run = runs[0]
 
         context_dictionary = {
             'instrument': instrument_obj,
             'instrument_name': instrument_obj.name,
             'runs': runs,
-            'last_instrument_run': last_instrument_run,
+            'last_instrument_run': runs[0],
             'processing': ReductionRun.objects.filter(instrument=instrument_obj,
-                                                      status=processing_status),
+                                                      status=StatusUtils().get_processing()),
             'queued': ReductionRun.objects.filter(instrument=instrument_obj,
-                                                  status=queued_status),
+                                                  status=StatusUtils().get_queued()),
             'filtering': filter_by,
         }
 
@@ -430,13 +431,16 @@ def instrument_summary(request, instrument=None):
                 order_by('-reference_number').distinct()
             for experiment in experiments:
                 associated_runs = ReductionRun.objects.filter(experiment=experiment,
-                                                              instrument=instrument_obj).order_by('-created')
+                                                              instrument=instrument_obj). \
+                    order_by('-created')
                 experiments_and_runs[experiment] = associated_runs
             context_dictionary['experiments'] = experiments_and_runs
         else:
             max_items_per_page = request.GET.get('pagination', 50)
-            current_page = request.GET.get('page', 1)
-            custom_paginator = CustomPaginator(runs, max_items_per_page, 3, current_page)
+            custom_paginator = CustomPaginator(query_set=runs,
+                                               items_per_page=max_items_per_page,
+                                               page_tolerance=3,
+                                               current_page=request.GET.get('page', 1))
             context_dictionary['paginator'] = custom_paginator
             context_dictionary['last_page_index'] = len(custom_paginator.page_list)
             context_dictionary['max_items'] = max_items_per_page

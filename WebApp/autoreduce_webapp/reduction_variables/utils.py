@@ -225,8 +225,10 @@ class InstrumentVariablesUtils(object):
         return VariableUtils().save_run_variables(variables, reduction_run)
 
     # pylint:disable=invalid-name
-    def get_current_and_upcoming_variables(self, instrument_name, last_run_object):
+    def get_current_and_upcoming_variables(self, instrument_name, last_run_object=None):
         """
+        :param instrument_name: The name of the instrument
+        :param last_run_object: Optionally provide an object of the last run on the instrument
         Fetches the instrument variables for:
         - The next run number
         - Upcoming run numbers
@@ -239,7 +241,7 @@ class InstrumentVariablesUtils(object):
 
         # First, we find the latest run number to determine what's upcoming.
         try:
-            if last_run_object.status.value == u'Completed':
+            if last_run_object and last_run_object.status.value == u'Completed':
                 latest_completed_run_number = last_run_object.run_number
             else:
                 latest_completed_run_number = ReductionRun.objects.filter(instrument=instrument,
