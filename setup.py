@@ -16,7 +16,6 @@ from build.commands.migrate_settings import MigrateTestSettings
 from build.commands.start import Start
 
 setup_requires = ['Django',
-                  'django-debug-toolbar',
                   'django_extensions',
                   'django-user-agents',
                   'gitpython',
