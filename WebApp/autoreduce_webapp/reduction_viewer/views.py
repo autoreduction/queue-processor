@@ -19,6 +19,7 @@ import operator
 from django.contrib.auth import logout as django_logout, authenticate, login
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
+from django.db.models.functions import Coalesce
 from django.http import JsonResponse, HttpResponseNotFound
 from django.shortcuts import redirect
 
@@ -411,7 +412,8 @@ def instrument_summary(request, instrument=None):
     try:
         filter_by = request.GET.get('filter', 'run')
         instrument_obj = Instrument.objects.get(name=instrument)
-        runs = ReductionRun.objects.filter(instrument=instrument_obj).order_by('-run_number')
+        runs = ReductionRun.objects.filter(instrument=instrument_obj).order_by('-run_number',
+                                                                               'run_version')
 
         context_dictionary = {
             'instrument': instrument_obj,
