@@ -19,7 +19,6 @@ import operator
 from django.contrib.auth import logout as django_logout, authenticate, login
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
-from django.db.models.functions import Coalesce
 from django.http import JsonResponse, HttpResponseNotFound
 from django.shortcuts import redirect
 
