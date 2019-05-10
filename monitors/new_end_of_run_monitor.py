@@ -141,6 +141,8 @@ class InstrumentMonitor(object):
                         return line_parts[-1]
 
             # Default to choosing the last row
+            EORM_LOG.info("Can't find run %s in summary file for %s defaulting to last entry",
+                          run_number, self.instrument_name)
             last_line = summary_lines[-1]
             line_parts = last_line.split()
             if line_parts:
