@@ -411,9 +411,12 @@ def instrument_summary(request, instrument=None):
     try:
         filter_by = request.GET.get('filter', 'run')
         instrument_obj = Instrument.objects.get(name=instrument)
-        runs = ReductionRun.objects.filter(instrument=instrument_obj).order_by('-run_number',
-                                                                               'run_version')
-
+        sort_by = request.GET.get('sort', 'Run')
+        if sort_by == 'run':
+            runs = ReductionRun.objects.filter(instrument=instrument_obj).order_by('-run_number',
+                                                                                   'run_version')
+        else:
+            runs = ReductionRun.objects.filter(instrument=instrument_obj).order_by('-last_updated')
         context_dictionary = {
             'instrument': instrument_obj,
             'instrument_name': instrument_obj.name,

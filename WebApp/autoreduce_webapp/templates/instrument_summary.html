@@ -69,13 +69,13 @@
                     <div class="col-md-3">
                         <select class="form-control" name="filter" form="filter_options" id="filter_select">
                             <option value="{{ filtering }}" selected="selected">Filter by ...</option> <!-- Defaults to Run Number -->
-                            <option value="run">Run number</option>
-                            <option value="experiment">Experiment Reference (RB)</option>
+                            <option value="run" title="Display run numbers">Run number</option>
+                            <option value="experiment" title="Display run number grouped by RB number">Experiment Reference (RB)</option>
                         </select>
                     </div>
                     {% if filtering == 'run' %}
                     <div class="col-md-3">
-                        <select class="form-control" name="pagination" form="filter_options" id="pagination_select">
+                        <select title="The number of reduction jobs that should be shown per page" class="form-control" name="pagination" form="filter_options" id="pagination_select">
                             <option value="{{ max_items }}" selected="selected">Items per page... </option>  <!-- Defaults to 50 items per page -->
                             <option>10</option>
                             <option>25</option>
@@ -86,6 +86,13 @@
                         </select>
                     </div>
                     {% endif %}
+                    <div class="col-md-3">
+                        <select class="form-control" name="sort" form="filter_options" id="sort_select">
+                            <option value="{{ sort }}" selected="selected">Sort by... </option>
+                            <option>Date</option>
+                            <option value="run">Run number</option>
+                        </select>
+                    </div>
                     <div class="col-md-3">
                         <input class="btn btn-primary" type="submit" value="Apply filters">
                     </div>
@@ -185,7 +192,8 @@
     function changePage(page) {
         var pagination_choice = document.getElementById("pagination_select").value;
         var filter_choice = document.getElementById("filter_select").value;
-        var new_url = window.location.origin + window.location.pathname + '?page=' + arguments[0] + '&filter=' + filter_choice + '&pagination=' + pagination_choice;
+        var sort_choice = document.getElementById("sort_select").value
+        var new_url = window.location.origin + window.location.pathname + '?page=' + arguments[0] + '&filter=' + filter_choice + '&pagination=' + pagination_choice + '&sort=' + sort_choice;
         document.location.href = new_url;
     }
     </script>
