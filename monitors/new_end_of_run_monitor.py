@@ -129,7 +129,8 @@ class InstrumentMonitor(object):
             # each run number in the summary file. This means that the same run
             # number could occur more than once. It should be assumed that the
             # latest is the correct run.
-            for line in reversed(summary.readlines()):
+            summary_lines = summary.readlines()
+            for line in reversed(summary_lines):
                 line_parts = line.split()
 
                 if line_parts:
@@ -138,6 +139,13 @@ class InstrumentMonitor(object):
                     if summary_run in str(run_number):
                         # The last entry is the RB number
                         return line_parts[-1]
+
+            # Default to choosing the last row
+            last_line = summary_lines[-1]
+            line_parts = last_line.split()
+            if line_parts:
+                return line_parts[-1]
+
         raise InstrumentMonitorError("Unable to find run number in summary.txt '{}'"
                                      .format(run_number))
 

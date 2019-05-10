@@ -34,6 +34,14 @@ CSV_FILE = "WISH,44733,lastrun_wish.txt,summary_wish.txt,data_dir,.nxs"
 
 # pylint:disable=missing-docstring,no-self-use,too-many-public-methods
 class TestEndOfRunMonitor(unittest.TestCase):
+    def tearDown(self):
+        if os.path.isfile('test_lastrun.txt'):
+            os.remove('test_lastrun.txt')
+        if os.path.isfile('test_summary.txt'):
+            os.remove('test_summary.txt')
+        if os.path.isfile('test_last_runs.csv'):
+            os.remove('test_last_runs.csv')
+
     def test_get_prefix_zeros(self):
         run_number = '00012345'
         zeros = eorm.get_prefix_zeros(run_number)
@@ -104,14 +112,21 @@ class TestEndOfRunMonitor(unittest.TestCase):
         self.assertEqual('1820461', rb_number)
         os.remove('test_summary.txt')
 
-    def test_read_rb_number_from_summary_invalid(self):
+    def test_read_rb_number_from_summary_run_not_found(self):
         with open('test_summary.txt', 'w') as summary:
             summary.write(SUMMARY_FILE)
 
         inst_mon = InstrumentMonitor(None, 'WISH')
         inst_mon.summary_file = 'test_summary.txt'
-        with self.assertRaises(InstrumentMonitorError):
-            inst_mon.read_rb_number_from_summary(12345)
+        self.assertEqual('1820461', inst_mon.read_rb_number_from_summary(12345))
+        os.remove('test_summary.txt')
+
+    def test_read_rb_number_from_summary_invalid(self):
+        with open('test_summary.txt', 'w') as summary:
+            summary.write(' ')
+        inst_mon = InstrumentMonitor(None, 'WISH')
+        inst_mon.summary_file = 'test_summary.txt'
+        self.assertRaises(InstrumentMonitorError, inst_mon.read_rb_number_from_summary, 12345)
         os.remove('test_summary.txt')
 
     def test_build_dict(self):
