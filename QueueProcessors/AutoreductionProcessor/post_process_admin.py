@@ -34,6 +34,14 @@ from QueueProcessors.AutoreductionProcessor.autoreduction_logging_setup import l
 from QueueProcessors.AutoreductionProcessor.timeout import timeout
 
 
+class SkippedRunException(Exception):
+    """
+    Exception for runs that have been skipped
+    Note: this is currently only the case for EnginX Event mode runs at ISIS
+    """
+    pass
+
+
 @contextmanager
 def channels_redirected(out_file, err_file, out_stream):
     """
@@ -322,7 +330,11 @@ class PostProcessAdmin(object):
                 self.delete_temp_directory(reduce_result_dir)
 
                 # Parent except block will discard exception type, so format the type as a string
-                error_str = "Error in user reduction script: %s - %s" % (type(exp).__name__, exp)
+                if 'skip' in str(exp).lower():
+                    raise SkippedRunException(exp)
+                else:
+                    error_str = "Error in user reduction script: %s - %s" % (type(exp).__name__,
+                                                                             exp)
                 logger.error(traceback.format_exc())
                 raise Exception(error_str)
 
@@ -350,6 +362,10 @@ class PostProcessAdmin(object):
             # no longer a need for the temp directory used for storing of reduction results
             self.delete_temp_directory(reduce_result_dir)
 
+        except SkippedRunException as skip_exception:
+            logger.info("Run %s has been skipped on %s" % (self.data['run_number'],
+                                                           self.data['instrument']))
+            self.data["message"] = "Reduction Skipped: %s" % str(skip_exception)
         except Exception as exp:
             logger.error(traceback.format_exc())
             self.data["message"] = "REDUCTION Error: %s " % exp
@@ -360,7 +376,11 @@ class PostProcessAdmin(object):
         if self.data["message"] != "":
             # This means an error has been produced somewhere
             try:
-                self._send_error_and_log()
+                if 'skip' in self.data['message'].lower():
+                    self._send_message_and_log(ACTIVEMQ['reduction_skipped'])
+                else:
+                    self._send_message_and_log(ACTIVEMQ['reduction_error'])
+
             except Exception as exp2:
                 logger.info("Failed to send to queue! - %s - %s", exp2, repr(exp2))
             finally:
@@ -372,10 +392,10 @@ class PostProcessAdmin(object):
             logger.info("Calling: " + ACTIVEMQ['reduction_complete'] + "\n" + prettify(self.data))
             logger.info("Reduction job successfully complete")
 
-    def _send_error_and_log(self):
+    def _send_message_and_log(self, destination):
         """ Send reduction run to error. """
-        logger.info("\nCalling " + ACTIVEMQ['reduction_error'] + " --- " + prettify(self.data))
-        self.client.send(ACTIVEMQ['reduction_error'], json.dumps(self.data))
+        logger.info("\nCalling " + destination + " --- " + prettify(self.data))
+        self.client.send(destination, json.dumps(self.data))
 
     def copy_temp_directory(self, temp_result_dir, copy_destination):
         """

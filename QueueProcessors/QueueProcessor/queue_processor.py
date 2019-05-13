@@ -83,6 +83,8 @@ class Listener(object):
                 self.reduction_complete()
             elif destination == '/queue/ReductionError':
                 self.reduction_error()
+            elif destination == '/queue/ReductionSkipped':
+                self.reduction_skipped()
             else:
                 logger.warning("Recieved a message on an unknown topic '%s'", destination)
         except Exception as exp:  # pylint: disable=broad-except
@@ -301,6 +303,38 @@ class Listener(object):
 
         except BaseException as exp:
             logger.error("Error: %s", exp)
+
+    def reduction_skipped(self):
+        """
+        Called when the destination was reduction skipped
+        Updates the run to Skipped status in database
+        Will NOT attempt re-run
+        """
+        if 'message' in self._data_dict:
+            logger.info("Run %s has been skipped - %s",
+                        self._data_dict['run_number'],
+                        self._data_dict['message'])
+        else:
+            logger.info("Run %s has been skipped - No error message was found",
+                        self._data_dict['run_number'])
+
+        reduction_run = self.find_run()
+        if not reduction_run:
+            logger.error("A reduction run that was skipped, could not be found in the database. "
+                         "Experiment: %s, "
+                         "Run Number: %s, "
+                         "Run Version %s",
+                         self._data_dict['rb_number'],
+                         self._data_dict['run_number'],
+                         self._data_dict['run_version'])
+            return
+
+        reduction_run.status = StatusUtils().get_skipped()
+        reduction_run.finished = datetime.datetime.utcnow()
+        for name in ['message', 'reduction_log', 'admin_log']:
+            setattr(reduction_run, name, self._data_dict.get(name, ""))
+        session.add(reduction_run)
+        session.commit()
 
     def reduction_error(self):
         """
