@@ -34,6 +34,14 @@ CSV_FILE = "WISH,44733,lastrun_wish.txt,summary_wish.txt,data_dir,.nxs"
 
 # pylint:disable=missing-docstring,no-self-use,too-many-public-methods
 class TestEndOfRunMonitor(unittest.TestCase):
+    def tearDown(self):
+        if os.path.isfile('test_lastrun.txt'):
+            os.remove('test_lastrun.txt')
+        if os.path.isfile('test_summary.txt'):
+            os.remove('test_summary.txt')
+        if os.path.isfile('test_last_runs.csv'):
+            os.remove('test_last_runs.csv')
+
     def test_get_prefix_zeros(self):
         run_number = '00012345'
         zeros = eorm.get_prefix_zeros(run_number)
@@ -80,7 +88,6 @@ class TestEndOfRunMonitor(unittest.TestCase):
         self.assertEqual('WISH', last_run_data[0])
         self.assertEqual('00044733', last_run_data[1])
         self.assertEqual('0', last_run_data[2])
-        os.remove('test_lastrun.txt')
 
     # pylint:disable=invalid-name
     def test_read_instrument_last_run_invalid_length(self):
@@ -91,7 +98,6 @@ class TestEndOfRunMonitor(unittest.TestCase):
         inst_mon.last_run_file = 'test_lastrun.txt'
         with self.assertRaises(InstrumentMonitorError):
             inst_mon.read_instrument_last_run()
-        os.remove('test_lastrun.txt')
 
     # pylint:disable=invalid-name
     def test_read_rb_number_from_summary(self):
@@ -102,17 +108,21 @@ class TestEndOfRunMonitor(unittest.TestCase):
         inst_mon.summary_file = 'test_summary.txt'
         rb_number = inst_mon.read_rb_number_from_summary(44733)
         self.assertEqual('1820461', rb_number)
-        os.remove('test_summary.txt')
 
-    def test_read_rb_number_from_summary_invalid(self):
+    def test_read_rb_number_from_summary_run_not_found(self):
         with open('test_summary.txt', 'w') as summary:
             summary.write(SUMMARY_FILE)
 
         inst_mon = InstrumentMonitor(None, 'WISH')
         inst_mon.summary_file = 'test_summary.txt'
-        with self.assertRaises(InstrumentMonitorError):
-            inst_mon.read_rb_number_from_summary(12345)
-        os.remove('test_summary.txt')
+        self.assertEqual('1820461', inst_mon.read_rb_number_from_summary(12345))
+
+    def test_read_rb_number_from_summary_invalid(self):
+        with open('test_summary.txt', 'w') as summary:
+            summary.write(' ')
+        inst_mon = InstrumentMonitor(None, 'WISH')
+        inst_mon.summary_file = 'test_summary.txt'
+        self.assertRaises(InstrumentMonitorError, inst_mon.read_rb_number_from_summary, 12345)
 
     def test_build_dict(self):
         client = QueueClient()
@@ -198,7 +208,6 @@ class TestEndOfRunMonitor(unittest.TestCase):
             csv_reader = csv.reader(csv_file)
             for row in csv_reader:
                 self.assertEqual('44736', row[1])
-        os.remove('test_last_runs.csv')
 
     @patch('monitors.new_end_of_run_monitor.InstrumentMonitor.__init__',
            return_value=None)
@@ -219,7 +228,6 @@ class TestEndOfRunMonitor(unittest.TestCase):
             csv_reader = csv.reader(csv_file)
             for row in csv_reader:
                 self.assertEqual('44733', row[1])
-        os.remove('test_last_runs.csv')
 
     @patch('monitors.new_end_of_run_monitor.update_last_runs')
     def test_main(self, update_last_runs_mock):
