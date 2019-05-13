@@ -377,6 +377,7 @@ class PostProcessAdmin(object):
             # This means an error has been produced somewhere
             try:
                 if 'skip' in self.data['message'].lower():
+                    self.data['message'].lstrip('skip: ')
                     self._send_message_and_log(ACTIVEMQ['reduction_skipped'])
                 else:
                     self._send_message_and_log(ACTIVEMQ['reduction_error'])

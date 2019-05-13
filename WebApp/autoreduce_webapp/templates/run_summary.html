@@ -19,9 +19,15 @@
             </div>
         </div>
         {% if run.message %}
-            <div class="alert alert-{% replace run.status.value 'Error' 'danger' %} word-wrap" role="alert">
-                <i class="fa fa-{% replace run.status.value 'Error' 'exclamation' %} fa-{% replace run.status.value 'Error' 'exclamation' %}-circle fa-lg"></i> <a href="#" class="js-log-display">{{ run.message }}</a>
-            </div>
+            {% if 'Skipped' in run.message %}
+                <div class="alert alert-{% replace run.status.value 'Skipped' 'info' %} word-wrap" role="alert">
+                    <i class="fa fa-{% replace run.status.value 'Skipped' 'question' %} fa-{% replace run.status.value 'Skipped' 'question' %}-circle fa-lg"></i> <a href="#" class="js-log-display">{{ run.message }}</a>
+                </div>
+            {% else %}
+                <div class="alert alert-{% replace run.status.value 'Error' 'danger' %} word-wrap" role="alert">
+                    <i class="fa fa-{% replace run.status.value 'Error' 'exclamation' %} fa-{% replace run.status.value 'Error' 'exclamation' %}-circle fa-lg"></i> <a href="#" class="js-log-display">{{ run.message }}</a>
+                </div>
+            {% endif %}
         {% endif %}
         <div class="row">
             <div class="col-md-8 col-md-offset-2">
