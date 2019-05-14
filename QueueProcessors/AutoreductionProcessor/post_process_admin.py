@@ -363,8 +363,8 @@ class PostProcessAdmin(object):
             self.delete_temp_directory(reduce_result_dir)
 
         except SkippedRunException as skip_exception:
-            logger.info("Run %s has been skipped on %s" % (self.data['run_number'],
-                                                           self.data['instrument']))
+            logger.info("Run %s has been skipped on %s", (self.data['run_number'],
+                                                          self.data['instrument']))
             self.data["message"] = "Reduction Skipped: %s" % str(skip_exception)
         except Exception as exp:
             logger.error(traceback.format_exc())

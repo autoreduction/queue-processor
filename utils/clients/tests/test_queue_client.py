@@ -112,7 +112,8 @@ class TestQueueClient(unittest.TestCase):
         expected_args = {'queue_list': ['/queue/DataReady',
                                         '/queue/ReductionStarted',
                                         '/queue/ReductionComplete',
-                                        '/queue/ReductionError'],
+                                        '/queue/ReductionError',
+                                        '/queue/ReductionSkipped'],
                          'ack': 'auto',
                          'listener': None,
                          'consumer_name': 'consumer'}
