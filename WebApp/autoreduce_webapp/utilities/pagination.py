@@ -156,4 +156,7 @@ class RunPage(CustomPage):
         """
         self.start = self.records[0].run_number
         self.end = self.records[-1].run_number
-        self.display_name = "{} - {}".format(self.start, self.end)
+        if self.start == self.end:
+            self.display_name = "{}".format(self.start)
+        else:
+            self.display_name = "{} - {}".format(self.start, self.end)
