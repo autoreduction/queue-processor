@@ -34,46 +34,6 @@
             </p>
         </div>
     </section>
-    <section class="help-topic panel panel-default" data-topics="experiments mine investigations">
-        <div class="panel-heading">
-            <h4>Why can't I see my experiments?</h4>
-        </div>
-        <div class="panel-body">
-            <p>
-                You will only see experiments for which you are a member of the experiment team or are an instrument scientist on the associated instrument and an autoreduction job has been performed.
-            </p>
-            <p>
-                Possible reasons you may not see an expected experiment are:
-                <ul>
-                    <li>If you have multiple accounts or changed accounts you may be logged in with the wrong one. To resolve this issue please <a href="http://www.isis.stfc.ac.uk/user-office/">contact</a> the user office who will be able to recover or merge accounts as needed.</li>
-                    <li>The experiment may not have completed or was completed without an autoreduction job having been recorded.</li>
-                    <li>The experiment was not found in ICAT.</li>
-                    <li>The experiment is now too old.</li>
-                </ul>
-            </p>
-            {% if support_email %}
-                <p>If you still feel you should be able to see an experiment please <a href="mailto:{{support_email}}">Contact Us</a>.</p>
-            {% endif %}
-        </div>
-    </section>
-    <section class="help-topic panel panel-default" data-topics="mine instruments">
-        <div class="panel-heading">
-            <h4>Why can't I see all instruments I'm responsible for?</h4>
-        </div>
-        <div class="panel-body">
-            <p>
-                If no autoreduction jobs have been run yet, the instrument will not show.
-            </p>
-            <p>
-                When a job is triggered on a new instrument, if a valid reduce script is found, it will create a new instrument and run that first job using the reduce script and its default variables. From this point it will be possible to modify variables and re-run experiments on that instrument.
-            </p>
-            {% if support_email %}
-                <p>
-                    It is also possible that the experiment wasn't found in ICAT. If you believe a reduction job should have run for your instrument and you are not seeing any results please <a href="mailto:{{support_email}}">Contact Us</a>.
-                </p>
-            {% endif %}
-        </div>
-    </section>
     <section class="help-topic panel panel-default" data-topics="instrument variables change new">
         <div class="panel-heading">
             <h4>How do I add new instrument variables?</h4>
