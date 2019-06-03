@@ -1,3 +1,9 @@
+# ############################################################################### #
+# Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
+#
+# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# SPDX - License - Identifier: GPL-3.0-or-later
+# ############################################################################### #
 """
 Tests for DataArchiveCreator class
 """
@@ -6,6 +12,31 @@ import unittest
 import tempfile
 
 from utils.data_archive.data_archive_creator import DataArchiveCreator
+
+
+class TestDataArchiveCreatorOverwrite(unittest.TestCase):
+    """
+    Can't use standard setup so requires a separate class
+    """
+
+    def test_valid_overwrite_init(self):
+        """
+        Test that the init can overwrite successfully if overwrite=True
+        """
+        test_output_directory = tempfile.mkdtemp()
+        os.mkdir(os.path.join(test_output_directory, 'data-archive'))
+        try:
+            _ = DataArchiveCreator(test_output_directory, overwrite=True)
+        except OSError as os_err:
+            self.fail('The overwrite functionality didn\'t work: {}'.format(os_err.message))
+
+    def test_invalid_overwrite_init(self):
+        """
+        Test that the init will throw if directory exists but no overwrite used
+        """
+        test_output_directory = tempfile.mkdtemp()
+        os.mkdir(os.path.join(test_output_directory, 'data-archive'))
+        self.assertRaises(OSError, DataArchiveCreator, test_output_directory, False)
 
 
 # pylint:disable=missing-docstring, protected-access, invalid-name, too-many-public-methods
@@ -108,6 +139,20 @@ class TestDataArchiveCreator(unittest.TestCase):
         self.dac.add_journal_file('GEM', 'test')
         expected_file_path = os.path.join(self.test_output_directory, 'data-archive', 'NDXGEM',
                                           'Instrument', 'logs', 'journal', 'summary.txt')
+        self.assertTrue(os.path.isfile(expected_file_path))
+
+    def test_add_reduce_script_valid(self):
+        self.dac.make_data_archive(['GEM'], 18, 18, 1)
+        self.dac.add_reduce_script('GEM', 'test')
+        expected_file_path = os.path.join(self.test_output_directory, 'data-archive', 'NDXGEM',
+                                          'user', 'scripts', 'autoreduction', 'reduce.py')
+        self.assertTrue(os.path.isfile(expected_file_path))
+
+    def test_add_reduce_vars_script_valid(self):
+        self.dac.make_data_archive(['GEM'], 18, 18, 1)
+        self.dac.add_reduce_vars_script('GEM', 'test')
+        expected_file_path = os.path.join(self.test_output_directory, 'data-archive', 'NDXGEM',
+                                          'user', 'scripts', 'autoreduction', 'reduce_vars.py')
         self.assertTrue(os.path.isfile(expected_file_path))
 
     def test_add_last_run_without_archive(self):

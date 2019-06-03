@@ -1,3 +1,9 @@
+# ############################################################################### #
+# Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
+#
+# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# SPDX - License - Identifier: GPL-3.0-or-later
+# ############################################################################### #
 """
 This module deals with the updating of the database backend.
 It consumes messages from the queues and then updates the reduction run status in the database.
@@ -13,6 +19,8 @@ import logging.config
 import smtplib
 import sys
 import traceback
+
+from sqlalchemy import sql
 
 from QueueProcessors.QueueProcessor.base import session
 from QueueProcessors.QueueProcessor.orm_mapping import (ReductionRun, Instrument,
@@ -131,7 +139,7 @@ class Listener(object):
         # increase the version by 1 for this job. However, if not then we will set it to -1 which
         # will be incremented to 0
         last_run = session.query(ReductionRun).filter_by(run_number=run_no).order_by(
-            '-run_version').first()
+            sql.text('-run_version')).first()
         if last_run is not None:
             highest_version = last_run.run_version
         else:
@@ -436,7 +444,6 @@ class Listener(object):
             MessagingUtils().send_pending(new_job, delay=retry_in * 1000)
         except Exception as exp:
             logger.error(traceback.format_exc())
-            new_job.delete()  # pylint: disable=no-member
             raise exp
 
 def setup_connection(consumer_name):

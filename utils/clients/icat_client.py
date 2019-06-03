@@ -1,13 +1,25 @@
+# ############################################################################### #
+# Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
+#
+# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# SPDX - License - Identifier: GPL-3.0-or-later
+# ############################################################################### #
 """
 Module to perform ICAT client functionality
 Functions for login and query available from class
 """
+import logging
 
 import icat
 
 from utils.settings import ICAT_SETTINGS
 from utils.clients.abstract_client import AbstractClient
 from utils.clients.connection_exception import ConnectionException
+from utils.project.structure import get_log_file
+from utils.project.static_content import LOG_FORMAT
+
+logging.basicConfig(filename=get_log_file('icat_client.log'), level=logging.INFO,
+                    format=LOG_FORMAT)
 
 
 class ICATClient(AbstractClient):
@@ -40,8 +52,12 @@ class ICATClient(AbstractClient):
             raise ConnectionException("ICAT")
         return True
 
+    def refresh(self):
+        """ Refreshes the ICAT session only if necessary """
+        self.client.refresh()
+
     def disconnect(self):
-        """ Log out of icat """
+        """ Disconnect the ICAT client """
         self.client.logout()
 
     def execute_query(self, query):

@@ -20,7 +20,7 @@
         </div>
         {% if run.message %}
             <div class="alert alert-{% replace run.status.value 'Error' 'danger' %} word-wrap" role="alert">
-                <i class="fa fa-{% replace run.status.value 'Error' 'exclamation' %} fa-{% replace run.status.value 'Error' 'exclamation' %}-circle fa-lg"></i> <a href="#" class="js-log-display">{{ run.message }}</a>
+                <i class="fa fa-{% replace run.status.value 'Error' 'exclamation' %} fa-{% replace run.status.value 'Error' 'exclamation' %}-circle fa-lg"></i> <a href="#" class="js-log-display">[{{ run.finished }}] {{ run.message }}</a>
             </div>
         {% endif %}
         <div class="row">
@@ -103,7 +103,10 @@
                             <div class="col-md-6">
                                 <div class="file-path">
                                     <strong>Reduced:</strong>
-                                    {% if run.reduction_location.all %}
+                                    {% if ceph_location %}
+                                        {{ ceph_location }}<br/>
+                                        <a href="{% url 'help' %}" target="_blank">How to use this link</a>
+                                    {% elif run.reduction_location.all %}
                                         {% for location in run.reduction_location.all %}
                                             {{ location }}<br/>
                                         {% endfor %}
@@ -111,8 +114,6 @@
                                         <em>No reduced data found</em>
                                     {% endif %}
                                 </div>
-                            </div>
-                            <div class="col-md-6">
                                 <strong>Logs:</strong>
                                 <a href="#" class="js-log-display">Show reduction logs</a>
                             </div>

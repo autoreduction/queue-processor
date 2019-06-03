@@ -1,3 +1,9 @@
+# ############################################################################### #
+# Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
+#
+# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# SPDX - License - Identifier: GPL-3.0-or-later
+# ############################################################################### #
 # pylint: skip-file
 """
 Settings for End of run monitor
@@ -19,3 +25,7 @@ INSTRUMENTS = [{'name': 'WISH', 'use_nexus': True},
                {'name': 'POLARIS', 'use_nexus': True},
                {'name': 'MUSR', 'use_nexus': True},
                {'name': 'POLREF', 'use_nexus': True}]
+
+# New EoRM
+CYCLE_FOLDER = "cycle_18_4"
+LAST_RUNS_CSV = "lastruns.csv"

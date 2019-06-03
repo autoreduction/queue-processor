@@ -1,3 +1,9 @@
+# ############################################################################### #
+# Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
+#
+# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# SPDX - License - Identifier: GPL-3.0-or-later
+# ############################################################################### #
 """
 Test functionality for the activemq client
 """
@@ -15,6 +21,7 @@ class TestQueueClient(unittest.TestCase):
     """
     Exercises the queue client
     """
+
     def setUp(self):
         self.incorrect_credentials = ClientSettingsFactory().create('queue',
                                                                     username='not-user',

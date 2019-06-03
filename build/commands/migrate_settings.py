@@ -1,3 +1,9 @@
+# ############################################################################### #
+# Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
+#
+# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# SPDX - License - Identifier: GPL-3.0-or-later
+# ############################################################################### #
 """
 Command to move test_settings.py to settings.py
 """
@@ -28,7 +34,6 @@ class MigrateTestSettings(Command):
         # pylint:disable=attribute-defined-outside-init
         self.test_settings_paths = [os.path.join(ROOT_DIR, 'build'),
                                     os.path.join(ROOT_DIR, 'monitors'),
-                                    os.path.join(ROOT_DIR, 'scripts', 'activemq_tests'),
                                     os.path.join(ROOT_DIR, 'utils'),
                                     os.path.join(ROOT_DIR, 'WebApp', 'autoreduce_webapp',
                                                  'autoreduce_webapp'),

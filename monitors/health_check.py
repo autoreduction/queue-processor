@@ -1,3 +1,9 @@
+# ############################################################################### #
+# Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
+#
+# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# SPDX - License - Identifier: GPL-3.0-or-later
+# ############################################################################### #
 """
 Threading class to check the health of the End of Run Monitor service
 """
@@ -30,6 +36,8 @@ class HealthCheckThread(threading.Thread):
         threading.Thread.__init__(self)
         self.time_interval = time_interval
         self.exit = False
+        self.icat_client = icat_monitor.icat_login()
+        self.db_client = HealthCheckThread.get_db_client()
 
     def run(self):
         """
@@ -37,7 +45,7 @@ class HealthCheckThread(threading.Thread):
         """
         try:
             while self.exit is False:
-                if self.health_check():
+                if self.health_check(self.icat_client, self.db_client):
                     logging.info("No Problems detected with service")
                 else:
                     logging.warning("Problem detected with service. Restarting service...")
@@ -57,12 +65,14 @@ class HealthCheckThread(threading.Thread):
         :return: Row from the reduction database
         """
         conn = db_cli.get_connection()
-        return conn.query(db_cli.reduction_run()) \
+        result = conn.query(db_cli.reduction_run()) \
             .join(db_cli.reduction_run().instrument) \
             .filter(db_cli.reduction_run().run_version == 0) \
             .filter(db_cli.instrument().name == inst) \
-            .order_by(db_cli.reduction_run().created.desc()) \
+            .order_by(db_cli.reduction_run().run_number.desc()) \
             .first()
+        conn.commit()
+        return result
 
     @staticmethod
     def get_db_last_run(db_client, inst):
@@ -123,16 +133,13 @@ class HealthCheckThread(threading.Thread):
         return True
 
     @staticmethod
-    def health_check():
+    def health_check(icat_client, db_client):
         """
         Check to see if the service is still running as expected
         :return: True: Service is okay, False: Service requires restart
         """
         logging.info('Performing Health Check at %s', datetime.now())
-
-        # Login to the reduction database and ICAT
-        db_client = HealthCheckThread.get_db_client()
-        icat_client = icat_monitor.icat_login()
+        icat_client.refresh()
 
         for inst in INSTRUMENTS:
             db_last_run = HealthCheckThread.get_db_last_run(db_client, inst['name'])
@@ -149,10 +156,8 @@ class HealthCheckThread(threading.Thread):
 
                     for run_number in range(db_last_run + 1, icat_last_run + 1):
                         HealthCheckThread.resubmit_run(icat_client, inst['name'], run_number)
-                    db_client.disconnect()
                     return False
 
-        db_client.disconnect()
         return True
 
     @staticmethod
@@ -168,4 +173,6 @@ class HealthCheckThread(threading.Thread):
         Send a signal to stop the main thread loop
         """
         logging.info('Received stop signal for the Health Check thread')
+        self.db_client.disconnect()
+        self.icat_client.disconnect()
         self.exit = True

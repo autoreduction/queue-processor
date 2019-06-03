@@ -1,17 +1,24 @@
+# ############################################################################### #
+# Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
+#
+# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# SPDX - License - Identifier: GPL-3.0-or-later
+# ############################################################################### #
 # pylint: skip-file
 import os
+from utils.project.structure import get_project_root
 
 FACILITY = 'ISIS'
 
 MYSQL = {
-    'HOST': 'YOUR-SQL-SERVER',
-    'USER': 'YOUR-SQL-USERNAME',
-    'PASSWD': 'YOUR-PASSWORD',
-    'DB': 'YOUR-SQL-DB-NAME'
+    'HOST': 'localhost:3306',
+    'USER': 'test-user',
+    'PASSWD': 'pass',
+    'DB': 'autoreduction'
 }
 
 # Logging
-LOG_FILE = 'YOUR-LOG-LOCATION'
+LOG_FILE = os.path.join(get_project_root(), 'logs', 'queue_processor.log')
 DEBUG = False
 
 if DEBUG:
@@ -59,16 +66,21 @@ if os.name == 'nt':
     REDUCTION_DIRECTORY = r'\\isis\inst$\NDX%s\user\scripts\autoreduction'
     # %(instrument, cycle, experiment_number, run_number)
     ARCHIVE_DIRECTORY = r'\\isis\inst$\NDX%s\Instrument\data\cycle_%s\autoreduced\%s\%s'
-    
+
     TEST_REDUCTION_DIRECTORY = r'\\reducedev\isis\output\NDX%s\user\scripts\autoreduction'
     TEST_ARCHIVE_DIRECTORY = '\\isis\inst$\NDX%s\Instrument\data\cycle_%s\autoreduced\%s\%s'
 
 else:
     # %(instrument)
-    REDUCTION_DIRECTORY = '/isis/NDX%s/user/scripts/autoreduction'
+    # REDUCTION_DIRECTORY = '/isis/NDX%s/user/scripts/autoreduction'
+    REDUCTION_DIRECTORY = os.path.join(get_project_root(), 'data-archive', 'NDX%s',
+                                       'user', 'scripts', 'autoreduction')
     # %(instrument, cycle, experiment_number, run_number)
-    ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s'
-    
+    # ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s'
+    ARCHIVE_DIRECTORY = os.path.join(get_project_root(), 'data-archive', 'NDX%s',
+                                     'Instrument', 'data', 'cycle_%s', 'autoreduced',
+                                     '%s', '%s')
+
     TEST_REDUCTION_DIRECTORY = '/reducedev/isis/output/NDX%s/user/scripts/autoreduction'
     TEST_ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s'
 

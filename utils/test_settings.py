@@ -1,3 +1,9 @@
+# ############################################################################### #
+# Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
+#
+# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# SPDX - License - Identifier: GPL-3.0-or-later
+# ############################################################################### #
 # pylint: skip-file
 """
 Settings for connecting to the test services that run locally
@@ -15,7 +21,7 @@ ICAT_SETTINGS = SETTINGS_FACTORY.create('icat',
                                         password='YOUR-PASSWORD',
                                         host='YOUR-ICAT-WSDL-URL',
                                         port='',
-                                        authentication_type='Simple')
+                                        authentication_type='simple')
 
 MYSQL_SETTINGS = SETTINGS_FACTORY.create('database',
                                          username='test-user',

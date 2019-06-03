@@ -1,3 +1,9 @@
+# ############################################################################### #
+# Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
+#
+# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# SPDX - License - Identifier: GPL-3.0-or-later
+# ############################################################################### #
 """
 The view for the django database model
 
@@ -196,7 +202,7 @@ def run_list(request):
 
     # Superuser sees everything
     if request.user.is_superuser or not USER_ACCESS_CHECKS:
-        instrument_names = Instrument.objects.values_list('name', flat=True)
+        instrument_names = Instrument.objects.order_by('name', 'name')
         is_instrument_scientist = True
         if instrument_names:
             for instrument_name in instrument_names:
@@ -346,7 +352,12 @@ def run_summary(request, instrument_name=None, run_number=None, run_version=0):
                                        run_number=run_number,
                                        run_version=run_version)
         history = ReductionRun.objects.filter(run_number=run_number).order_by('-run_version')
-        context_dictionary = {'run': run, 'history': history}
+        ceph_location = None
+        location_list = run.reduction_location.all()
+        if location_list:
+            reduction_location = str(location_list[0])
+            ceph_location = get_ceph_location(reduction_location, instrument_name)
+        context_dictionary = {'run': run, 'history': history, 'ceph_location': ceph_location}
     except PermissionDenied:
         raise
     except Exception as exception:
@@ -354,6 +365,23 @@ def run_summary(request, instrument_name=None, run_number=None, run_version=0):
         context_dictionary = {}
 
     return context_dictionary
+
+
+def get_ceph_location(reduction_location, instrument):
+    """
+    Creates the path to the data stored in CEPH (ISIS storage cluster)
+    :param reduction_location: reduction location on the computation node
+    :param instrument: instrument associated with the run
+    :return: string to reduced data storage location in CEPH
+    """
+    ceph_root_level = '//data.analysis.stfc.ac.uk/'
+    try:
+        data_location = reduction_location.split(instrument.upper())[1]
+    except IndexError:
+        # Return None if file path does not contain instrument name
+        return None
+    ceph_location = ceph_root_level + 'rb/' + instrument.upper() + data_location
+    return ceph_location.replace('/', '\\')
 
 
 @login_and_uows_valid
@@ -408,9 +436,15 @@ def experiment_summary(request, reference_number=None):
                 if location not in reduced_data:
                     reduced_data.append(location)
         try:
-            with ICATCache(AUTH='uows',
-                           SESSION={'sessionid': request.session['sessionid']}) as icat:
-                experiment_details = icat.get_experiment_details(int(reference_number))
+            if DEVELOPMENT_MODE:
+                # If we are in development mode use user/password for ICAT from django settings
+                # e.g. do not attempt to use same authentication as the user office
+                with ICATCache() as icat:
+                    experiment_details = icat.get_experiment_details(int(reference_number))
+            else:
+                with ICATCache(AUTH='uows',
+                               SESSION={'sessionid': request.session['sessionid']}) as icat:
+                    experiment_details = icat.get_experiment_details(int(reference_number))
         # pylint:disable=broad-except
         except Exception as icat_e:
             LOGGER.error(icat_e.message)

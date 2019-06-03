@@ -25,10 +25,12 @@ setup_requires = ['Django',
                   'requests',
                   'SQLAlchemy',
                   'mysql-connector',
+                  'service_identity',
                   'stomp.py',
                   'suds',
                   'Twisted',
-                  'watchdog']
+                  'watchdog',
+                  'filelock']
 
 if platform.system() == 'Windows':
     setup_requires.append('pypiwin32')

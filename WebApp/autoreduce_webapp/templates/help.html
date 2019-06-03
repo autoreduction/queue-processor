@@ -17,45 +17,22 @@
         </div>
     </div>
 
-    <section class="help-topic panel panel-default" data-topics="experiments mine investigations">
+    <section class="help-topic panel panel-default" data-topics="link reduced data">
         <div class="panel-heading">
-            <h4>Why can't I see my experiments?</h4>
+            <h4>How do I use the link to reduced data?</h4>
         </div>
         <div class="panel-body">
             <p>
-                You will only see experiments for which you are a member of the experiment team or are an instrument scientist on the associated instrument and an autoreduction job has been performed.
+                The link to reduced data points to a network drive that is accessible from within the RAL site (including by VPN).
+                On Windows, copy the link into the navigation bar at the top of a File Explorer window and hit enter.
+                Alternatively, the network drive (<code>\\data.analysis.stfc.ac.uk\rb\</code>) can be mapped to a location on your disk.
             </p>
             <p>
-                Possible reasons you may not see an expected experiment are:
-                <ul>
-                    <li>If you have multiple accounts or changed accounts you may be logged in with the wrong one. To resolve this issue please <a href="http://www.isis.stfc.ac.uk/user-office/">contact</a> the user office who will be able to recover or merge accounts as needed.</li>
-                    <li>The experiment may not have completed or was completed without an autoreduction job having been recorded.</li>
-                    <li>The experiment was not found in ICAT.</li>
-                    <li>The experiment is now too old.</li>
-                </ul>
+                If you follow the instructions above and still can't access your reduced data, it may be that you don't have permission
+                to access the experiment's reduced data directory. Email <a href="mailto:isisreduce@stfc.ac.uk">isisreduce@stfc.ac.uk</a>
+                and state the experiment RB number you are trying to access.
             </p>
-            {% if support_email %}
-                <p>If you still feel you should be able to see an experiment please <a href="mailto:{{support_email}}">Contact Us</a>.</p>
-            {% endif %}
         </div>
-    </section>
-    <section class="help-topic panel panel-default" data-topics="mine instruments">
-        <div class="panel-heading">
-            <h4>Why can't I see all instruments I'm responsible for?</h4>
-        </div>
-        <div class="panel-body">
-            <p>
-                If no autoreduction jobs have been run yet, the instrument will not show.
-            </p>
-            <p>
-                When a job is triggered on a new instrument, if a valid reduce script is found, it will create a new instrument and run that first job using the reduce script and its default variables. From this point it will be possible to modify variables and re-run experiments on that instrument.
-            </p>
-            {% if support_email %}
-                <p>
-                    It is also possible that the experiment wasn't found in ICAT. If you believe a reduction job should have run for your instrument and you are not seeing any results please <a href="mailto:{{support_email}}">Contact Us</a>.
-                </p>
-            {% endif %}
-        <div>
     </section>
     <section class="help-topic panel panel-default" data-topics="instrument variables change new">
         <div class="panel-heading">
@@ -65,7 +42,7 @@
             <p>
                 To add new instrument variables first you must be part of the instrument scientist team within ICAT. Once you are part of this team you should see an "Edit Reduction Variables" link on the right of the instrument name on the main run list page or a "Add new run variables" below the status panel on the instrument summary page. Clicking either of these links will take you to a form in which you can set the values of variables exposed by that instruments reduce script.
             </p>
-        <div>
+        </div>
     </section>
     <section class="help-topic panel panel-default" data-topics="invalid variables wrong error value">
         <div class="panel-heading">
@@ -99,7 +76,6 @@
             </p>
         </div>
     </section>
-    {% if request.user.is_staff %}
         <section class="help-topic panel panel-default" data-topics="script compatible work">
             <div class="panel-heading">
                 <h4>How can I make a reduction script compatible with autoreduction?</h4>
@@ -114,7 +90,7 @@
                 {% if support_email %}
                     <p>If you feel your script will need to save to additional locations please <a href="mailto:{{support_email}}">Contact Us</a> to ensure the locations are accessible from the autoreduction machine.</p>
                 {% endif %}
-            <div>
+            </div>
         </section>
         <section class="help-topic panel panel-default" data-topics="reduction script file location directory">
             <div class="panel-heading">
@@ -130,7 +106,7 @@
                     and the variables at: 
                     <code>\\isis\inst$\NDXMERLIN\user\scripts\autoreduction\reduce_vars.py</code>
                 </p>
-            <div>
+            </div>
         </section>
         <section class="help-topic panel panel-default" data-topics="reduction data file location directory output reduced">
             <div class="panel-heading">
@@ -138,18 +114,14 @@
             </div>
             <div class="panel-body">
                 <p>
-                    When a reduction job has completed the reduced data is moved to the cache under the appropriate cycle.
+                    When a reduction job has completed the reduced data is moved to the CEPH storage cluster. The full file path to the data is detailed in the run summary pages for completed runs.
                 </p>
                 <p>
-                    For example, for MERLIN the reduced data would be located at:
-                    <code>\\isis\inst$\NDXMERLIN\Instrument\data\[CYCLE]\autoreduced\[RB NUMBER]\[RUN NUMBER]</code>.
+                    An example file path in CEPH would be:
+                    <code>\\data.analysis.stfc.ac.uk\rb\GEM\RBNumber\[RB NUMBER]\autoreduced\[RUN NUMBER]</code>.
                 </p>
-                <p>
-                    Optionally the reduction script may specify additional locations for the reduced data to be saved to. These can be found either within the reduction script or on the run summary page where a list of all reduction locations can be found within the summary panel.
-                </p>
-            <div>
+            </div>
         </section>
-    {% endif %}
 
 
     <div class="no-results collapse row well">

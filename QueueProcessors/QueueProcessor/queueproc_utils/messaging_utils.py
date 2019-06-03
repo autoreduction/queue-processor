@@ -1,3 +1,9 @@
+# ############################################################################### #
+# Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
+#
+# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# SPDX - License - Identifier: GPL-3.0-or-later
+# ############################################################################### #
 """ Utils moudle for sending messages to queues. """
 import json
 import logging.config
@@ -31,7 +37,7 @@ class MessagingUtils(object):
     def _make_pending_msg(reduction_run):
         """ Creates a dict message from the given run, ready to be sent to ReductionPending. """
         # Deferred import to avoid circular dependencies
-        from ..utils.reduction_run_utils import ReductionRunUtils
+        from ..queueproc_utils.reduction_run_utils import ReductionRunUtils
 
         script, arguments = ReductionRunUtils().get_script_and_arguments(reduction_run)
 

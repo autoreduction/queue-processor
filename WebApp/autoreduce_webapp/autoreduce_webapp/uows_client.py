@@ -1,3 +1,9 @@
+# ############################################################################### #
+# Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
+#
+# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# SPDX - License - Identifier: GPL-3.0-or-later
+# ############################################################################### #
 """
 Client for accessing the user office logon
 """
@@ -56,7 +62,7 @@ class UOWSClient(object):
         Checks if a session ID is still active and valid
         """
         try:
-            return self.client.service.checkSession(session_id)
+            return self.client.service.isTokenValid(session_id)
         except suds.WebFault:
             LOGGER.warn("Session ID is not valid: %s", session_id)
             return False

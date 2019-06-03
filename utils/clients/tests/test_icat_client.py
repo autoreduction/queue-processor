@@ -1,3 +1,9 @@
+# ############################################################################### #
+# Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
+#
+# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# SPDX - License - Identifier: GPL-3.0-or-later
+# ############################################################################### #
 """
 Test ICAT client
 This performs a large amount of mocking of the actual ICAT functions.
@@ -29,7 +35,7 @@ class TestICATClient(unittest.TestCase):
         self.assertEqual(client.credentials.password, 'YOUR-PASSWORD')
         self.assertEqual(client.credentials.host, 'YOUR-ICAT-WSDL-URL')
         self.assertEqual(client.credentials.port, '')
-        self.assertEqual(client.credentials.auth, 'Simple')
+        self.assertEqual(client.credentials.auth, 'simple')
         mock_icat.assert_called_once_with('YOUR-ICAT-WSDL-URL')
 
     @patch('icat.Client.__init__', return_value=None)
@@ -39,7 +45,7 @@ class TestICATClient(unittest.TestCase):
         mock_icat.assert_called_once()
         client.connect()
         mock_icat_login.assert_called_once()
-        mock_icat_login.assert_called_once_with(auth='Simple',
+        mock_icat_login.assert_called_once_with(auth='simple',
                                                 credentials={'username': 'YOUR-ICAT-USERNAME',
                                                              'password': 'YOUR-PASSWORD'})
 
@@ -58,6 +64,13 @@ class TestICATClient(unittest.TestCase):
         client = ICATClient()
         client.disconnect()
         mock_logout.assert_called_once()
+
+    @patch('icat.Client.__init__', return_value=None)
+    @patch('icat.Client.refresh')
+    def test_refresh(self, mock_autorefresh, _):
+        client = ICATClient()
+        client.refresh()
+        mock_autorefresh.assert_called_once()
 
     @patch('icat.Client.__init__', return_value=None)
     @patch('icat.Client.refresh')
