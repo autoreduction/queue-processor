@@ -136,7 +136,7 @@ class TestPostProcessAdmin(unittest.TestCase):
     def test_send_error_and_log(self, mock_logger):
         activemq_client_mock = Mock()
         ppa = PostProcessAdmin(self.data, activemq_client_mock)
-        ppa._send_error_and_log()
+        ppa._send_message_and_log(ACTIVEMQ_SETTINGS.reduction_error)
         mock_logger.assert_called_once_with("\nCalling " + ACTIVEMQ_SETTINGS.reduction_error
                                             + " --- " + prettify(self.data))
         activemq_client_mock.send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_error,
