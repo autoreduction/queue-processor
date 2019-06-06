@@ -8,30 +8,32 @@
 """
 Settings for connecting to the test services that run locally
 """
-
+import configparser
 from utils.clients.settings.client_settings_factory import ClientSettingsFactory
 
 
 VALID_INSTRUMENTS = ['GEM', 'POLARIS', 'WISH', 'OSIRIS', 'MUSR', 'POLREF']
 
+
+CONFIG = configparser.ConfigParser()
 SETTINGS_FACTORY = ClientSettingsFactory()
 
 ICAT_SETTINGS = SETTINGS_FACTORY.create('icat',
-                                        username='YOUR-ICAT-USERNAME',
-                                        password='YOUR-PASSWORD',
-                                        host='YOUR-ICAT-WSDL-URL',
+                                        username=CONFIG.get('ICAT', 'user'),
+                                        password=CONFIG.get('ICAT', 'password'),
+                                        host=CONFIG.get('ICAT', 'host'),
                                         port='',
-                                        authentication_type='simple')
+                                        authentication_type=CONFIG.get('ICAT', 'auth'))
 
 MYSQL_SETTINGS = SETTINGS_FACTORY.create('database',
-                                         username='test-user',
-                                         password='pass',
-                                         host='localhost',
-                                         port='3306',
-                                         database_name='autoreduction')
+                                         username=CONFIG.get('DATABASE', 'user'),
+                                         password=CONFIG.get('DATABASE', 'password'),
+                                         host=CONFIG.get('DATABASE', 'host'),
+                                         port=CONFIG.get('DATABASE', 'port'),
+                                         database_name=CONFIG.get('DATABASE', 'name'))
 
 ACTIVEMQ_SETTINGS = SETTINGS_FACTORY.create('queue',
-                                            username='admin',
-                                            password='admin',
-                                            host='127.0.1.1',
-                                            port='61613')
+                                            username=CONFIG.get('QUEUE', 'user'),
+                                            password=CONFIG.get('QUEUE', 'password'),
+                                            host=CONFIG.get('QUEUE', 'host'),
+                                            port=CONFIG.get('QUEUE', 'port'))

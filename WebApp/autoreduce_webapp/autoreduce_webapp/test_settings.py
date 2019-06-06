@@ -6,8 +6,15 @@
 # ############################################################################### #
 # pylint: skip-file
 import os
+import configparser
+
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+
+# Read the utilities .ini file that contains service credentials
+INI_FILE = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'utils', 'credentials.ini')
+CONFIG = configparser.ConfigParser()
+CONFIG.read(INI_FILE)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/dev/howto/deployment/checklist/
@@ -54,6 +61,11 @@ MIDDLEWARE_CLASSES = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# Add debug toolbar only if in DEBUG mode
+if DEBUG:
+    INSTALLED_APPS.append('debug_toolbar')
+    MIDDLEWARE_CLASSES.insert(3, 'debug_toolbar.middleware.DebugToolbarMiddleware')
+
 AUTHENTICATION_BACKENDS = [
     'autoreduce_webapp.backends.UOWSAuthenticationBackend',
     'django.contrib.auth.backends.ModelBackend',
@@ -87,11 +99,11 @@ WSGI_APPLICATION = 'autoreduce_webapp.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'autoreduction',
-        'USER': 'test-user',
-        'PASSWORD': 'pass',
-        'HOST': 'localhost',
-        'PORT': '3306',
+        'NAME': CONFIG.get('DATABASE', 'name'),
+        'USER': CONFIG.get('DATABASE', 'user'),
+        'PASSWORD': CONFIG.get('DATABASE', 'password'),
+        'HOST': CONFIG.get('DATABASE', 'host'),
+        'PORT': CONFIG.get('DATABASE', 'port'),
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         },
@@ -168,9 +180,9 @@ ACTIVEMQ = {
         '/queue/ReductionComplete',
         '/queue/ReductionError'
     ],
-    'username': 'admin',
-    'password': 'admin',
-    'broker': [("127.0.1.1", 61613)],
+    'username': CONFIG.get('QUEUE', 'user'),
+    'password': CONFIG.get('QUEUE', 'password'),
+    'broker': [(CONFIG.get('QUEUE', 'host'), CONFIG.get('QUEUE', 'port'))],
     'SSL': False
 }
 
@@ -193,10 +205,10 @@ else:
 # ICAT
 
 ICAT = {
-    'AUTH': 'YOUR-ICAT-AUTH',
-    'URL': 'YOUR-ICAT-WSDL',
-    'USER': 'YOUR-ICAT-USERNAME',
-    'PASSWORD': 'YOUR-ICAT-PASSWORD'
+    'AUTH': CONFIG.get('ICAT', 'auth'),
+    'URL': CONFIG.get('ICAT', 'host'),
+    'USER': CONFIG.get('ICAT', 'user'),
+    'PASSWORD': CONFIG.get('ICAT', 'password')
 }
 
 # Outdated Browsers
