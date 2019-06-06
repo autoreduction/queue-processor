@@ -32,10 +32,11 @@ install:
   - python setup.py externals -s activemq,icat
   - python setup.py database
   - sudo python setup.py start
-
+  - cat build.log
 script:
   # ================ Assert Test Setup =============== #
   - pytest build/tests/test_db_generation.py
+  - exit(1)
 
   # ================ Static Analysis ================= #
   - ./build/tests/test_pylint.sh
