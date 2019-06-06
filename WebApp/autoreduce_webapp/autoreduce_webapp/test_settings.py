@@ -16,6 +16,11 @@ INI_FILE = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'utils', 'cr
 CONFIG = configparser.ConfigParser()
 CONFIG.read(INI_FILE)
 
+
+def get_str(section, key):
+    return str(CONFIG.get(section, key))
+
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/dev/howto/deployment/checklist/
 
@@ -46,7 +51,6 @@ INSTALLED_APPS = [
     'autoreduce_webapp',
     'reduction_viewer',
     'reduction_variables',
-    'django_user_agents',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -60,11 +64,6 @@ MIDDLEWARE_CLASSES = [
     'django_user_agents.middleware.UserAgentMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
-# Add debug toolbar only if in DEBUG mode
-if DEBUG:
-    INSTALLED_APPS.append('debug_toolbar')
-    MIDDLEWARE_CLASSES.insert(3, 'debug_toolbar.middleware.DebugToolbarMiddleware')
 
 AUTHENTICATION_BACKENDS = [
     'autoreduce_webapp.backends.UOWSAuthenticationBackend',
@@ -99,11 +98,11 @@ WSGI_APPLICATION = 'autoreduce_webapp.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': CONFIG.get('DATABASE', 'name'),
-        'USER': CONFIG.get('DATABASE', 'user'),
-        'PASSWORD': CONFIG.get('DATABASE', 'password'),
-        'HOST': CONFIG.get('DATABASE', 'host'),
-        'PORT': CONFIG.get('DATABASE', 'port'),
+        'NAME': get_str('DATABASE', 'name'),
+        'USER': get_str('DATABASE', 'user'),
+        'PASSWORD': get_str('DATABASE', 'password'),
+        'HOST': get_str('DATABASE', 'host'),
+        'PORT': get_str('DATABASE', 'port'),
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         },
@@ -180,9 +179,9 @@ ACTIVEMQ = {
         '/queue/ReductionComplete',
         '/queue/ReductionError'
     ],
-    'username': CONFIG.get('QUEUE', 'user'),
-    'password': CONFIG.get('QUEUE', 'password'),
-    'broker': [(CONFIG.get('QUEUE', 'host'), CONFIG.get('QUEUE', 'port'))],
+    'username': get_str('QUEUE', 'user'),
+    'password': get_str('QUEUE', 'password'),
+    'broker': [(get_str('QUEUE', 'host'), get_str('QUEUE', 'port'))],
     'SSL': False
 }
 
@@ -205,10 +204,10 @@ else:
 # ICAT
 
 ICAT = {
-    'AUTH': CONFIG.get('ICAT', 'auth'),
-    'URL': CONFIG.get('ICAT', 'host'),
-    'USER': CONFIG.get('ICAT', 'user'),
-    'PASSWORD': CONFIG.get('ICAT', 'password')
+    'AUTH': get_str('ICAT', 'auth'),
+    'URL': get_str('ICAT', 'host'),
+    'USER': get_str('ICAT', 'user'),
+    'PASSWORD': get_str('ICAT', 'password')
 }
 
 # Outdated Browsers

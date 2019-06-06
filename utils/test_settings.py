@@ -9,6 +9,9 @@
 Settings for connecting to the test services that run locally
 """
 import configparser
+import os
+
+from utils.project.structure import get_project_root
 from utils.clients.settings.client_settings_factory import ClientSettingsFactory
 
 
@@ -16,24 +19,32 @@ VALID_INSTRUMENTS = ['GEM', 'POLARIS', 'WISH', 'OSIRIS', 'MUSR', 'POLREF']
 
 
 CONFIG = configparser.ConfigParser()
+INI_FILE = os.path.join(get_project_root(), 'utils', 'credentials.ini')
+CONFIG.read(INI_FILE)
+
+
+def get_str(section, key):
+    return str(CONFIG.get(section, key))
+
+
 SETTINGS_FACTORY = ClientSettingsFactory()
 
 ICAT_SETTINGS = SETTINGS_FACTORY.create('icat',
-                                        username=CONFIG.get('ICAT', 'user'),
-                                        password=CONFIG.get('ICAT', 'password'),
-                                        host=CONFIG.get('ICAT', 'host'),
+                                        username=get_str('ICAT', 'user'),
+                                        password=get_str('ICAT', 'password'),
+                                        host=get_str('ICAT', 'host'),
                                         port='',
-                                        authentication_type=CONFIG.get('ICAT', 'auth'))
+                                        authentication_type=get_str('ICAT', 'auth'))
 
 MYSQL_SETTINGS = SETTINGS_FACTORY.create('database',
-                                         username=CONFIG.get('DATABASE', 'user'),
-                                         password=CONFIG.get('DATABASE', 'password'),
-                                         host=CONFIG.get('DATABASE', 'host'),
-                                         port=CONFIG.get('DATABASE', 'port'),
-                                         database_name=CONFIG.get('DATABASE', 'name'))
+                                         username=get_str('DATABASE', 'user'),
+                                         password=get_str('DATABASE', 'password'),
+                                         host=get_str('DATABASE', 'host'),
+                                         port=get_str('DATABASE', 'port'),
+                                         database_name=get_str('DATABASE', 'name'))
 
 ACTIVEMQ_SETTINGS = SETTINGS_FACTORY.create('queue',
-                                            username=CONFIG.get('QUEUE', 'user'),
-                                            password=CONFIG.get('QUEUE', 'password'),
-                                            host=CONFIG.get('QUEUE', 'host'),
-                                            port=CONFIG.get('QUEUE', 'port'))
+                                            username=get_str('QUEUE', 'user'),
+                                            password=get_str('QUEUE', 'password'),
+                                            host=get_str('QUEUE', 'host'),
+                                            port=get_str('QUEUE', 'port'))
