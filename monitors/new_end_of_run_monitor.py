@@ -60,19 +60,6 @@ def get_prefix_zeros(run_number_str):
     return zeros
 
 
-def is_integer(int_str):
-    """
-    Test to see if the provided string is an integer
-    :param int_str: Integer as a string
-    :return: True if the string represents an integer
-    """
-    try:
-        int(int_str)
-        return True
-    except ValueError:
-        return False
-
-
 class InstrumentMonitor(object):
     """
     Checks the ISIS archive for new runs on an instrument and submits them to ActiveMQ
@@ -97,7 +84,7 @@ class InstrumentMonitor(object):
                                              .format(self.last_run_file))
         return line_parts
 
-    def read_rb_number_from_summary(self, run_number):
+    def read_rb_number_from_summary(self):
         """
         Loads the summary file and reads off the experiment RB number
         :param run_number: Run number to lookup
@@ -110,8 +97,7 @@ class InstrumentMonitor(object):
             if line_parts:
                 return line_parts[-1]
 
-        raise InstrumentMonitorError("Unable to read RB number from summary.txt '{}'"
-                                     .format(run_number))
+        raise InstrumentMonitorError("Unable to read RB number from summary.txt")
 
     def build_dict(self, rb_number, run_number, file_location):
         """
@@ -155,7 +141,7 @@ class InstrumentMonitor(object):
         local_run_int = int(local_last_run)
         instrument_run_int = int(instrument_last_run)
 
-        rb_number = self.read_rb_number_from_summary(str(instrument_run_int))
+        rb_number = self.read_rb_number_from_summary()
         zeros = get_prefix_zeros(instrument_last_run)
         if instrument_run_int > local_run_int:
             EORM_LOG.info("Submitting runs in range %i - %i for %s",
