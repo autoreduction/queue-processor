@@ -41,15 +41,16 @@ class MigrateTestSettings(Command):
                                                  'AutoreductionProcessor'),
                                     os.path.join(ROOT_DIR, 'QueueProcessors',
                                                  'QueueProcessor')]
+        self.utils_path = os.path.join(ROOT_DIR, 'utils')
 
     def run(self):
         """ Copy all test files from the test files list to desired locations """
         BUILD_LOGGER.print_and_log("================== Migrate test settings ====================")
-        self._migrate_test_settings(self.test_settings_paths)
+        self._migrate_test_settings(self.test_settings_paths, self.utils_path)
         BUILD_LOGGER.print_and_log("Test settings successfully migrated\n")
 
     @staticmethod
-    def _migrate_test_settings(all_paths):
+    def _migrate_test_settings(all_paths, utils_path):
         """
         Copy any test_settings.py files in given directory list to settings.py files
         :param all_paths: All directories containing test_settings.py
@@ -59,6 +60,13 @@ class MigrateTestSettings(Command):
                 test_settings_path = os.path.join(path_to_dir, 'test_settings.py')
                 settings_path = os.path.join(path_to_dir, 'settings.py')
                 copyfile(test_settings_path, settings_path)
+        except OSError as error:
+            BUILD_LOGGER.logger.error(error)
+            raise
+        try:
+            test_credentials_path = os.path.join(utils_path, 'test_credentials.ini')
+            credentials_path = os.path.join(utils_path, 'credentials.ini')
+            copyfile(test_credentials_path, credentials_path)
         except OSError as error:
             BUILD_LOGGER.logger.error(error)
             raise

@@ -8,30 +8,43 @@
 """
 Settings for connecting to the test services that run locally
 """
+import configparser
+import os
 
+from utils.project.structure import get_project_root
 from utils.clients.settings.client_settings_factory import ClientSettingsFactory
 
 
 VALID_INSTRUMENTS = ['GEM', 'POLARIS', 'WISH', 'OSIRIS', 'MUSR', 'POLREF']
 
+
+CONFIG = configparser.ConfigParser()
+INI_FILE = os.path.join(get_project_root(), 'utils', 'credentials.ini')
+CONFIG.read(INI_FILE)
+
+
+def get_str(section, key):
+    return str(CONFIG.get(section, key))
+
+
 SETTINGS_FACTORY = ClientSettingsFactory()
 
 ICAT_SETTINGS = SETTINGS_FACTORY.create('icat',
-                                        username='YOUR-ICAT-USERNAME',
-                                        password='YOUR-PASSWORD',
-                                        host='YOUR-ICAT-WSDL-URL',
+                                        username=get_str('ICAT', 'user'),
+                                        password=get_str('ICAT', 'password'),
+                                        host=get_str('ICAT', 'host'),
                                         port='',
-                                        authentication_type='simple')
+                                        authentication_type=get_str('ICAT', 'auth'))
 
 MYSQL_SETTINGS = SETTINGS_FACTORY.create('database',
-                                         username='test-user',
-                                         password='pass',
-                                         host='localhost',
-                                         port='3306',
-                                         database_name='autoreduction')
+                                         username=get_str('DATABASE', 'user'),
+                                         password=get_str('DATABASE', 'password'),
+                                         host=get_str('DATABASE', 'host'),
+                                         port=get_str('DATABASE', 'port'),
+                                         database_name=get_str('DATABASE', 'name'))
 
 ACTIVEMQ_SETTINGS = SETTINGS_FACTORY.create('queue',
-                                            username='admin',
-                                            password='admin',
-                                            host='127.0.1.1',
-                                            port='61613')
+                                            username=get_str('QUEUE', 'user'),
+                                            password=get_str('QUEUE', 'password'),
+                                            host=get_str('QUEUE', 'host'),
+                                            port=get_str('QUEUE', 'port'))

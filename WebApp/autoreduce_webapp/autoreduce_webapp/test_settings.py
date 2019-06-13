@@ -6,8 +6,20 @@
 # ############################################################################### #
 # pylint: skip-file
 import os
+import configparser
+
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+
+# Read the utilities .ini file that contains service credentials
+INI_FILE = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'utils', 'credentials.ini')
+CONFIG = configparser.ConfigParser()
+CONFIG.read(INI_FILE)
+
+
+def get_str(section, key):
+    return str(CONFIG.get(section, key))
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/dev/howto/deployment/checklist/
@@ -39,7 +51,6 @@ INSTALLED_APPS = [
     'autoreduce_webapp',
     'reduction_viewer',
     'reduction_variables',
-    'django_user_agents',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -87,11 +98,11 @@ WSGI_APPLICATION = 'autoreduce_webapp.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'autoreduction',
-        'USER': 'test-user',
-        'PASSWORD': 'pass',
-        'HOST': 'localhost',
-        'PORT': '3306',
+        'NAME': get_str('DATABASE', 'name'),
+        'USER': get_str('DATABASE', 'user'),
+        'PASSWORD': get_str('DATABASE', 'password'),
+        'HOST': get_str('DATABASE', 'host'),
+        'PORT': get_str('DATABASE', 'port'),
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         },
@@ -168,9 +179,9 @@ ACTIVEMQ = {
         '/queue/ReductionComplete',
         '/queue/ReductionError'
     ],
-    'username': 'admin',
-    'password': 'admin',
-    'broker': [("127.0.1.1", 61613)],
+    'username': get_str('QUEUE', 'user'),
+    'password': get_str('QUEUE', 'password'),
+    'broker': [(get_str('QUEUE', 'host'), get_str('QUEUE', 'port'))],
     'SSL': False
 }
 
@@ -193,10 +204,10 @@ else:
 # ICAT
 
 ICAT = {
-    'AUTH': 'YOUR-ICAT-AUTH',
-    'URL': 'YOUR-ICAT-WSDL',
-    'USER': 'YOUR-ICAT-USERNAME',
-    'PASSWORD': 'YOUR-ICAT-PASSWORD'
+    'AUTH': get_str('ICAT', 'auth'),
+    'URL': get_str('ICAT', 'host'),
+    'USER': get_str('ICAT', 'user'),
+    'PASSWORD': get_str('ICAT', 'password')
 }
 
 # Outdated Browsers
