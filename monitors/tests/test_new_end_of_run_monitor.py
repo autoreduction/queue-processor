@@ -58,20 +58,6 @@ class TestEndOfRunMonitor(unittest.TestCase):
     def test_is_integer_not_integer(self):
         self.assertFalse(eorm.is_integer("F"))
 
-    # pylint:disable=invalid-name
-    def test_extract_run_number_from_summary(self):
-        test_part = "OSI38828Smith,Smith0.5ML"
-        self.assertEqual("38828", eorm.extract_run_number_from_summary(test_part))
-
-    # pylint:disable=invalid-name
-    def test_extract_run_number_from_summary_no_run(self):
-        test_part = "hello"
-        self.assertEqual("", eorm.extract_run_number_from_summary(test_part))
-
-    def test_extract_run_number_from_summary_run_only(self):
-        test_part = "MUSR1234"
-        self.assertEqual("1234", eorm.extract_run_number_from_summary(test_part))
-
     def test_get_prefix_zeros_all_zeros(self):
         run_number = '00000'
         zeros = eorm.get_prefix_zeros(run_number)

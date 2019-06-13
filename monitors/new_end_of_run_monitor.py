@@ -73,26 +73,6 @@ def is_integer(int_str):
         return False
 
 
-def extract_run_number_from_summary(first_part):
-    """
-    Look for the run number in the provided summary entry
-    :param first_part: First part of the summary entry
-    :return: Run number as printed in the summary file
-    """
-    run_number = ""
-    reading_run_number = False
-    for char in first_part:
-        # Find the first integer
-        if is_integer(char):
-            run_number += char
-            reading_run_number = True
-        elif reading_run_number:
-            # The first non-integer character indicates the end
-            # of the run number
-            return run_number
-    return run_number
-
-
 class InstrumentMonitor(object):
     """
     Checks the ISIS archive for new runs on an instrument and submits them to ActiveMQ
