@@ -87,7 +87,6 @@ class InstrumentMonitor(object):
     def read_rb_number_from_summary(self):
         """
         Loads the summary file and reads off the experiment RB number
-        :param run_number: Run number to lookup
         :return: Experiment RB number
         """
         with open(self.summary_file, 'rb') as summary:
