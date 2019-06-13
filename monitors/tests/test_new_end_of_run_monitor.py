@@ -89,14 +89,6 @@ class TestEndOfRunMonitor(unittest.TestCase):
         rb_number = inst_mon.read_rb_number_from_summary()
         self.assertEqual('1820461', rb_number)
 
-    def test_read_rb_number_from_summary_run_not_found(self):
-        with open('test_summary.txt', 'w') as summary:
-            summary.write(SUMMARY_FILE)
-
-        inst_mon = InstrumentMonitor(None, 'WISH')
-        inst_mon.summary_file = 'test_summary.txt'
-        self.assertEqual('1820461', inst_mon.read_rb_number_from_summary())
-
     def test_read_rb_number_from_summary_invalid(self):
         with open('test_summary.txt', 'w') as summary:
             summary.write(' ')
