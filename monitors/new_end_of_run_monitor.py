@@ -123,32 +123,14 @@ class InstrumentMonitor(object):
         :param run_number: Run number to lookup
         :return: Experiment RB number
         """
-        # Detect run number as a substring
         with open(self.summary_file, 'rb') as summary:
-            # Traverse file in reverse order because some instruments truncate
-            # each run number in the summary file. This means that the same run
-            # number could occur more than once. It should be assumed that the
-            # latest is the correct run.
             summary_lines = summary.readlines()
-            for line in reversed(summary_lines):
-                line_parts = line.split()
-
-                if line_parts:
-                    # Detect the run as a substring in summary.txt
-                    summary_run = extract_run_number_from_summary(line_parts[0])
-                    if summary_run in str(run_number):
-                        # The last entry is the RB number
-                        return line_parts[-1]
-
-            # Default to choosing the last row
-            EORM_LOG.info("Can't find run %s in summary file for %s defaulting to last entry",
-                          run_number, self.instrument_name)
             last_line = summary_lines[-1]
             line_parts = last_line.split()
             if line_parts:
                 return line_parts[-1]
 
-        raise InstrumentMonitorError("Unable to find run number in summary.txt '{}'"
+        raise InstrumentMonitorError("Unable to read RB number from summary.txt '{}'"
                                      .format(run_number))
 
     def build_dict(self, rb_number, run_number, file_location):
