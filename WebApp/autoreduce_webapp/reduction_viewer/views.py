@@ -429,10 +429,8 @@ def instrument_summary(request, instrument=None):
             'instrument_name': instrument_obj.name,
             'runs': runs,
             'last_instrument_run': runs[0],
-            'processing': ReductionRun.objects.filter(instrument=instrument_obj,
-                                                      status=StatusUtils().get_processing()),
-            'queued': ReductionRun.objects.filter(instrument=instrument_obj,
-                                                  status=StatusUtils().get_queued()),
+            'processing': runs.filter(status=StatusUtils().get_processing()),
+            'queued': runs.filter(status=StatusUtils().get_queued()),
             'filtering': filter_by,
         }
 
@@ -441,8 +439,7 @@ def instrument_summary(request, instrument=None):
             experiments = Experiment.objects.filter(reduction_runs__instrument=instrument_obj). \
                 order_by('-reference_number').distinct()
             for experiment in experiments:
-                associated_runs = ReductionRun.objects.filter(experiment=experiment,
-                                                              instrument=instrument_obj). \
+                associated_runs = runs.filter(experiment=experiment). \
                     order_by('-created')
                 experiments_and_runs[experiment] = associated_runs
             context_dictionary['experiments'] = experiments_and_runs
