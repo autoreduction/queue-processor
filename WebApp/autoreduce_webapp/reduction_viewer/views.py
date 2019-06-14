@@ -413,10 +413,17 @@ def instrument_summary(request, instrument=None):
         instrument_obj = Instrument.objects.get(name=instrument)
         sort_by = request.GET.get('sort', 'Run')
         if sort_by == 'run':
-            runs = ReductionRun.objects.filter(instrument=instrument_obj).order_by('-run_number',
-                                                                                   'run_version')
+            runs = (ReductionRun.objects
+                    .only('status', 'last_updated', 'run_number', 'run_version')
+                    .select_related('status')
+                    .filter(instrument=instrument_obj)
+                    .order_by('-run_number', 'run_version'))
         else:
-            runs = ReductionRun.objects.filter(instrument=instrument_obj).order_by('-last_updated')
+            runs = (ReductionRun.objects
+                    .only('status', 'last_updated', 'run_number', 'run_version')
+                    .select_related('status')
+                    .filter(instrument=instrument_obj)
+                    .order_by('-last_updated'))
         context_dictionary = {
             'instrument': instrument_obj,
             'instrument_name': instrument_obj.name,
