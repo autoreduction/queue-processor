@@ -413,19 +413,24 @@ def instrument_summary(request, instrument=None):
         instrument_obj = Instrument.objects.get(name=instrument)
         sort_by = request.GET.get('sort', 'Run')
         if sort_by == 'run':
-            runs = ReductionRun.objects.filter(instrument=instrument_obj).order_by('-run_number',
-                                                                                   'run_version')
+            runs = (ReductionRun.objects
+                    .only('status', 'last_updated', 'run_number', 'run_version')
+                    .select_related('status')
+                    .filter(instrument=instrument_obj)
+                    .order_by('-run_number', 'run_version'))
         else:
-            runs = ReductionRun.objects.filter(instrument=instrument_obj).order_by('-last_updated')
+            runs = (ReductionRun.objects
+                    .only('status', 'last_updated', 'run_number', 'run_version')
+                    .select_related('status')
+                    .filter(instrument=instrument_obj)
+                    .order_by('-last_updated'))
         context_dictionary = {
             'instrument': instrument_obj,
             'instrument_name': instrument_obj.name,
             'runs': runs,
             'last_instrument_run': runs[0],
-            'processing': ReductionRun.objects.filter(instrument=instrument_obj,
-                                                      status=StatusUtils().get_processing()),
-            'queued': ReductionRun.objects.filter(instrument=instrument_obj,
-                                                  status=StatusUtils().get_queued()),
+            'processing': runs.filter(status=StatusUtils().get_processing()),
+            'queued': runs.filter(status=StatusUtils().get_queued()),
             'filtering': filter_by,
         }
 
@@ -434,8 +439,7 @@ def instrument_summary(request, instrument=None):
             experiments = Experiment.objects.filter(reduction_runs__instrument=instrument_obj). \
                 order_by('-reference_number').distinct()
             for experiment in experiments:
-                associated_runs = ReductionRun.objects.filter(experiment=experiment,
-                                                              instrument=instrument_obj). \
+                associated_runs = runs.filter(experiment=experiment). \
                     order_by('-created')
                 experiments_and_runs[experiment] = associated_runs
             context_dictionary['experiments'] = experiments_and_runs
