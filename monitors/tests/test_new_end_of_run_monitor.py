@@ -52,26 +52,6 @@ class TestEndOfRunMonitor(unittest.TestCase):
         zeros = eorm.get_prefix_zeros(run_number)
         self.assertEqual('', zeros)
 
-    def test_is_integer(self):
-        self.assertTrue(eorm.is_integer("3"))
-
-    def test_is_integer_not_integer(self):
-        self.assertFalse(eorm.is_integer("F"))
-
-    # pylint:disable=invalid-name
-    def test_extract_run_number_from_summary(self):
-        test_part = "OSI38828Smith,Smith0.5ML"
-        self.assertEqual("38828", eorm.extract_run_number_from_summary(test_part))
-
-    # pylint:disable=invalid-name
-    def test_extract_run_number_from_summary_no_run(self):
-        test_part = "hello"
-        self.assertEqual("", eorm.extract_run_number_from_summary(test_part))
-
-    def test_extract_run_number_from_summary_run_only(self):
-        test_part = "MUSR1234"
-        self.assertEqual("1234", eorm.extract_run_number_from_summary(test_part))
-
     def test_get_prefix_zeros_all_zeros(self):
         run_number = '00000'
         zeros = eorm.get_prefix_zeros(run_number)
@@ -106,23 +86,15 @@ class TestEndOfRunMonitor(unittest.TestCase):
 
         inst_mon = InstrumentMonitor(None, 'WISH')
         inst_mon.summary_file = 'test_summary.txt'
-        rb_number = inst_mon.read_rb_number_from_summary(44733)
+        rb_number = inst_mon.read_rb_number_from_summary()
         self.assertEqual('1820461', rb_number)
-
-    def test_read_rb_number_from_summary_run_not_found(self):
-        with open('test_summary.txt', 'w') as summary:
-            summary.write(SUMMARY_FILE)
-
-        inst_mon = InstrumentMonitor(None, 'WISH')
-        inst_mon.summary_file = 'test_summary.txt'
-        self.assertEqual('1820461', inst_mon.read_rb_number_from_summary(12345))
 
     def test_read_rb_number_from_summary_invalid(self):
         with open('test_summary.txt', 'w') as summary:
             summary.write(' ')
         inst_mon = InstrumentMonitor(None, 'WISH')
         inst_mon.summary_file = 'test_summary.txt'
-        self.assertRaises(InstrumentMonitorError, inst_mon.read_rb_number_from_summary, 12345)
+        self.assertRaises(InstrumentMonitorError, inst_mon.read_rb_number_from_summary)
 
     def test_build_dict(self):
         client = QueueClient()

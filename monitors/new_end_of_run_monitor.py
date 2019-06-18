@@ -60,39 +60,6 @@ def get_prefix_zeros(run_number_str):
     return zeros
 
 
-def is_integer(int_str):
-    """
-    Test to see if the provided string is an integer
-    :param int_str: Integer as a string
-    :return: True if the string represents an integer
-    """
-    try:
-        int(int_str)
-        return True
-    except ValueError:
-        return False
-
-
-def extract_run_number_from_summary(first_part):
-    """
-    Look for the run number in the provided summary entry
-    :param first_part: First part of the summary entry
-    :return: Run number as printed in the summary file
-    """
-    run_number = ""
-    reading_run_number = False
-    for char in first_part:
-        # Find the first integer
-        if is_integer(char):
-            run_number += char
-            reading_run_number = True
-        elif reading_run_number:
-            # The first non-integer character indicates the end
-            # of the run number
-            return run_number
-    return run_number
-
-
 class InstrumentMonitor(object):
     """
     Checks the ISIS archive for new runs on an instrument and submits them to ActiveMQ
@@ -117,39 +84,19 @@ class InstrumentMonitor(object):
                                              .format(self.last_run_file))
         return line_parts
 
-    def read_rb_number_from_summary(self, run_number):
+    def read_rb_number_from_summary(self):
         """
         Loads the summary file and reads off the experiment RB number
-        :param run_number: Run number to lookup
         :return: Experiment RB number
         """
-        # Detect run number as a substring
         with open(self.summary_file, 'rb') as summary:
-            # Traverse file in reverse order because some instruments truncate
-            # each run number in the summary file. This means that the same run
-            # number could occur more than once. It should be assumed that the
-            # latest is the correct run.
             summary_lines = summary.readlines()
-            for line in reversed(summary_lines):
-                line_parts = line.split()
-
-                if line_parts:
-                    # Detect the run as a substring in summary.txt
-                    summary_run = extract_run_number_from_summary(line_parts[0])
-                    if summary_run in str(run_number):
-                        # The last entry is the RB number
-                        return line_parts[-1]
-
-            # Default to choosing the last row
-            EORM_LOG.info("Can't find run %s in summary file for %s defaulting to last entry",
-                          run_number, self.instrument_name)
             last_line = summary_lines[-1]
             line_parts = last_line.split()
             if line_parts:
                 return line_parts[-1]
 
-        raise InstrumentMonitorError("Unable to find run number in summary.txt '{}'"
-                                     .format(run_number))
+        raise InstrumentMonitorError("Unable to read RB number from summary.txt")
 
     def build_dict(self, rb_number, run_number, file_location):
         """
@@ -193,7 +140,7 @@ class InstrumentMonitor(object):
         local_run_int = int(local_last_run)
         instrument_run_int = int(instrument_last_run)
 
-        rb_number = self.read_rb_number_from_summary(str(instrument_run_int))
+        rb_number = self.read_rb_number_from_summary()
         zeros = get_prefix_zeros(instrument_last_run)
         if instrument_run_int > local_run_int:
             EORM_LOG.info("Submitting runs in range %i - %i for %s",
