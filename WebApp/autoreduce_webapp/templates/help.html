@@ -19,14 +19,41 @@
 
     <section class="help-topic panel panel-default" data-topics="link reduced data">
         <div class="panel-heading">
-            <h4>How do I use the link to reduced data?</h4>
+            <h4>How do I access my reduced data?</h4>
         </div>
         <div class="panel-body">
             <p>
-                The link to reduced data points to a network drive that is accessible from within the RAL site (including by VPN).
-                On Windows, copy the link into the navigation bar at the top of a File Explorer window and hit enter.
-                Alternatively, the network drive (<code>\\data.analysis.stfc.ac.uk\rb\</code>) can be mapped to a location on your disk.
+                In order to copy reduced data from CEPH to your local machine you will need to download an SFTP client.
+                We recommend <a href="https://winscp.net/eng/download.php">WinSCP</a> if you are using a windows operating system.
+                The step below are based on WinSCP as the <code>SFTP Client</code> and assume you have downloaded and installed it.
             </p>
+            <h2>IDAaaS</h2>
+            <ol>
+                <li>Visit the IDAaaS page <a href="https://isis.analysis.stfc.ac.uk">https://isis.analysis.stfc.ac.uk</a></li>
+                <li>Create a new IDAaaS instance for your instrument / technique.</li>
+                <li>Follow the instructions on the <a href="https://isis.analysis.stfc.ac.uk/#/help">IDAaaS help page</a>
+                    under the <em>Download/Upload Files</em> section that will walk you through the SFTP process </li>
+            </ol>
+            <h2>ISIS Compute</h2>
+            If you do not currently have your instrument supported by IDAaaS then you should use the ISIS Compute service.
+            <ol>
+                <li>Open your SFTP client</li>
+                <li>Host name: <strong>isiscompute.nd.rl.ac.uk</strong></li>
+                <li>Port: <strong>22</strong></li>
+                <li>Enter your federal ID and password</li>
+                <ul>
+                    <li>To avoid repeating these steps in the future, click save and fill in the save dialog box that opens</li>
+                </ul>
+                <li>Click Login</li>
+                <ul>
+                    <li>You may get a warning message about a potential security breach.
+                        This is nothing to worry about and is common especially if it's your first time accessing the server in a while.
+                        Simply click <strong>Update</strong> to continue.</li>
+                </ul>
+                <li>Once the client has connected to the server, you will see your files (default on the right) and the server files (default on the left)</li>
+                <li>From here you can now copy and paste between your local files and those on CEPH.</li>
+                <li>You can find the CEPH data at /instrument. See <em>Where does my reduced data go?</em> for more details.</li>
+            </ol>
             <p>
                 If you follow the instructions above and still can't access your reduced data, it may be that you don't have permission
                 to access the experiment's reduced data directory. Email <a href="mailto:isisreduce@stfc.ac.uk">isisreduce@stfc.ac.uk</a>
@@ -118,7 +145,7 @@
                 </p>
                 <p>
                     An example file path in CEPH would be:
-                    <code>\\data.analysis.stfc.ac.uk\rb\GEM\RBNumber\[RB NUMBER]\autoreduced\[RUN NUMBER]</code>.
+                    <code>\instrument\GEM\RBNumber\[RB NUMBER]\autoreduced\[RUN NUMBER]</code>.
                 </p>
             </div>
         </section>

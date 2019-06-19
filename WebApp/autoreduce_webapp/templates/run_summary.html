@@ -109,9 +109,8 @@
                             <div class="col-md-6">
                                 <div class="file-path">
                                     <strong>Reduced:</strong>
-                                    {% if ceph_location %}
-                                        {{ ceph_location }}<br/>
-                                        <a href="{% url 'help' %}" target="_blank">How to use this link</a>
+                                    {% if reduction_location %}
+                                        {{ reduction_location }}<br/>
                                     {% elif run.reduction_location.all %}
                                         {% for location in run.reduction_location.all %}
                                             {{ location }}<br/>
