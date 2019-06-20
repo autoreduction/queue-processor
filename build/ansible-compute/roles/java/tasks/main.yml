@@ -6,12 +6,12 @@
 # ############################################################################### #
 ---
 
-- hosts: autoreduce-hosts
-  become: true
-  roles:
-  - role: common
-  - role: java
-  - role: mariadb
-  - role: queue_processors
-  - role: webapp
-  - role: archive
+- include_vars: vars/redhat.yml
+  when: ansible_os_family == 'RedHat'
+
+- name: 'Install Java packages for RedHat systems'
+  package:
+    name: '{{ item }}'
+    state: present
+  with_items: '{{ java_pkgs }}'
+

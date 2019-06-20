@@ -1,0 +1,9 @@
+autoreduction_user: 'isisautoreduce'
+
+# Database
+db_host: 'localhost:3306'
+db_user: 'root'
+db_password: ''
+
+# Queue processors
+qp_log_file: 'queueProcessor.log'

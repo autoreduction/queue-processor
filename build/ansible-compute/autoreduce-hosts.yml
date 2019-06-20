@@ -11,7 +11,5 @@
   roles:
   - role: common
   - role: java
-  - role: mariadb
   - role: queue_processors
-  - role: webapp
   - role: archive

@@ -6,12 +6,6 @@
 # ############################################################################### #
 ---
 
-- hosts: autoreduce-hosts
-  become: true
-  roles:
-  - role: common
-  - role: java
-  - role: mariadb
-  - role: queue_processors
-  - role: webapp
-  - role: archive
+java_pkgs:
+- java-1.8.0-openjdk-headless
+- java-1.8.0-openjdk-devel
