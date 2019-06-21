@@ -3,7 +3,9 @@ Unit tests for the Custom pagination module
 """
 
 import unittest
+from datetime import datetime, timedelta
 from mock import patch
+
 
 from utilities.pagination import CustomPage, RunPage, CustomPaginator, PageLimitException
 
@@ -59,8 +61,9 @@ class TestCustomPage(unittest.TestCase):
 class MockRunData(object):
     """ Test class to simulate a Run record from the database """
 
-    def __init__(self, run_number):
+    def __init__(self, run_number, date):
         self.run_number = run_number
+        self.last_updated = date
 
 
 # pylint:disable=too-few-public-methods
@@ -72,8 +75,9 @@ class TestRunPage(unittest.TestCase):
         Ensure the start and end values for the page are calculated correctly
         """
         page = RunPage(1, 2, False)
-        page.add_record(MockRunData(1))
-        page.add_record(MockRunData(2))
+        today = datetime.now()
+        page.add_record(MockRunData(1, today))
+        page.add_record(MockRunData(2, today))
         page.set_start_and_end()
         self.assertEqual(page.start, 1)
         self.assertEqual(page.end, 2)
@@ -88,7 +92,12 @@ class TestCustomPaginator(unittest.TestCase):
         """
         Generate mock data to use for page population
         """
-        self.data = [MockRunData(1), MockRunData(2), MockRunData(3), MockRunData(4), MockRunData(5)]
+        now = datetime.now()
+        self.data = [MockRunData(1, now),
+                     MockRunData(2, now - timedelta(1)),
+                     MockRunData(3, now - timedelta(2)),
+                     MockRunData(4, now - timedelta(3)),
+                     MockRunData(5, now - timedelta(4))]
 
     @patch('utilities.pagination.CustomPaginator._validate_current_page')
     @patch('utilities.pagination.CustomPaginator._construct_pagination')
@@ -100,7 +109,7 @@ class TestCustomPaginator(unittest.TestCase):
         Ensure that all variables are set as expected in the __init__
         and the functions to populate / validate / render the paginator are run
         """
-        paginator = CustomPaginator(self.data, 3, 2, 1)
+        paginator = CustomPaginator('run', self.data, 3, 2, 1)
         self.assertEqual(paginator.query_set, self.data)
         self.assertEqual(paginator.items_per_page, 3)
         self.assertEqual(paginator.page_tolerance, 2)
@@ -120,28 +129,28 @@ class TestCustomPaginator(unittest.TestCase):
         """
         Ensure that current page index does not change if it is valid
         """
-        paginator = CustomPaginator(self.data, 3, 2, 1)
+        paginator = CustomPaginator('run', self.data, 3, 2, 1)
         self.assertEqual(paginator.current_page_index, 1)
 
     def test_validate_current_page_low(self):
         """
         Ensure that the current page is at least 1 when a number less than 1 is provided
         """
-        paginator = CustomPaginator(self.data, 3, 2, -1)
+        paginator = CustomPaginator('run', self.data, 3, 2, -1)
         self.assertEqual(paginator.current_page_index, 1)
 
     def test_validate_current_page_high(self):
         """
         Ensure that the current page is set to maximum page number if larger than maximum pages
         """
-        paginator = CustomPaginator(self.data, 3, 2, 10)
+        paginator = CustomPaginator('run', self.data, 3, 2, 10)
         self.assertEqual(paginator.current_page_index, 2)
 
     def test_construct_pagination_single_page(self):
         """
         Test that the pages are created correct if only a single page is required
         """
-        paginator = CustomPaginator(self.data, 5, 2, 1)
+        paginator = CustomPaginator('run', self.data, 5, 2, 1)
         self.assertEqual(len(paginator.page_list), 1)
         self.assertIsInstance(paginator.page_list[0], RunPage)
         self.assertTrue(paginator.page_list[0].is_visible)
@@ -150,14 +159,14 @@ class TestCustomPaginator(unittest.TestCase):
         """
         Test that the pages are created correctly if multiple pages are required
         """
-        paginator = CustomPaginator(self.data, 2, 2, 1)
+        paginator = CustomPaginator('run', self.data, 2, 2, 1)
         self.assertEqual(len(paginator.page_list), 3)
 
     def test_construct_pagination_visibility(self):
         """
         Test that the pages visibility are set correctly
         """
-        paginator = CustomPaginator(self.data, 1, 1, 1)
+        paginator = CustomPaginator('run', self.data, 1, 1, 1)
         self.assertEqual(len(paginator.page_list), 5)
         self.assertFalse(paginator.page_list[4].is_visible)
         self.assertFalse(paginator.page_list[3].is_visible)
@@ -169,17 +178,29 @@ class TestCustomPaginator(unittest.TestCase):
         """
         Ensure that the page display is made correctly
         """
-        paginator = CustomPaginator(self.data, 1, 1, 1)
+        paginator = CustomPaginator('run', self.data, 1, 1, 1)
         self.assertEqual(len(paginator.display_list), 3)
         self.assertEqual(paginator.display_list[0].records[0].run_number, 1)
         self.assertEqual(paginator.display_list[1].records[0].run_number, 2)
+        self.assertEqual(paginator.display_list[2], '...')
+
+    def test_create_display_date(self):
+        """
+        Ensure that the page display is made correctly for date filter
+        """
+        paginator = CustomPaginator('date', self.data, 1, 1, 1)
+        self.assertEqual(len(paginator.display_list), 3)
+        self.assertEqual(paginator.display_list[0].records[0].last_updated,
+                         self.data[0].last_updated)
+        self.assertEqual(paginator.display_list[1].records[0].last_updated,
+                         self.data[1].last_updated)
         self.assertEqual(paginator.display_list[2], '...')
 
     def test_set_next_and_previous_with_both(self):
         """
         Ensure that each the next and previous page are correctly set for the current page
         """
-        paginator = CustomPaginator(self.data, 1, 1, 2)
+        paginator = CustomPaginator('run', self.data, 1, 1, 2)
         self.assertTrue(paginator.has_next)
         self.assertTrue(paginator.has_previous)
         self.assertEqual(paginator.next_page_index, 3)
@@ -189,7 +210,7 @@ class TestCustomPaginator(unittest.TestCase):
         """
         Ensure that only a previous page is set when on the max page
         """
-        paginator = CustomPaginator(self.data, 1, 1, 5)
+        paginator = CustomPaginator('run', self.data, 1, 1, 5)
         self.assertFalse(paginator.has_next)
         self.assertTrue(paginator.has_previous)
         self.assertEqual(paginator.next_page_index, 0)
@@ -199,7 +220,7 @@ class TestCustomPaginator(unittest.TestCase):
         """
         Ensure that only a next page is set when on the max page
         """
-        paginator = CustomPaginator(self.data, 1, 1, 1)
+        paginator = CustomPaginator('run', self.data, 1, 1, 1)
         self.assertTrue(paginator.has_next)
         self.assertFalse(paginator.has_previous)
         self.assertEqual(paginator.next_page_index, 2)

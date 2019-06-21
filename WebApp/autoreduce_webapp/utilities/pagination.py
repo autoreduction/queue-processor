@@ -23,13 +23,14 @@ class CustomPaginator(object):
     lifting in the django template code
     """
 
-    # pylint:disable=too-many-instance-attributes
-    def __init__(self, query_set, items_per_page, page_tolerance, current_page):
+    # pylint:disable=too-many-instance-attributes,too-many-arguments
+    def __init__(self, page_type, query_set, items_per_page, page_tolerance, current_page):
         """
         :param query_set: All data to show
         :param items_per_page: Number of items per page
         :param page_tolerance: Number of pages to show
         """
+        self.page_type = page_type
         self.query_set = query_set
         self.items_per_page = int(items_per_page)
         self.page_tolerance = int(page_tolerance)
@@ -64,9 +65,9 @@ class CustomPaginator(object):
         and add them to the self.page_list variable.
         """
         if abs(self.current_page_index - 1) <= self.page_tolerance:
-            current_page = RunPage(1, self.items_per_page, True)
+            current_page = self._create_page(self.page_type, 1, self.items_per_page, True)
         else:
-            current_page = RunPage(1, self.items_per_page, False)
+            current_page = self._create_page(self.page_type, 1, self.items_per_page, False)
 
         for record in self.query_set:
             try:
@@ -75,13 +76,24 @@ class CustomPaginator(object):
                 self.page_list.append(current_page)
                 next_page_index = current_page.number + 1
                 if abs(self.current_page_index - next_page_index) <= self.page_tolerance:
-                    current_page = RunPage(next_page_index, self.items_per_page, True)
+                    current_page = self._create_page(self.page_type, next_page_index,
+                                                     self.items_per_page, True)
                 else:
-                    current_page = RunPage(next_page_index, self.items_per_page, False)
+                    current_page = self._create_page(self.page_type, next_page_index,
+                                                     self.items_per_page, False)
                 # Make sure we add the record to the new page we created
                 current_page.add_record(record)
         current_page.set_start_and_end()
         self.page_list.append(current_page)
+
+    @staticmethod
+    def _create_page(page_type, page_number, max_number_of_items, visible):
+        if page_type.lower() == 'run':
+            return RunPage(page_number, max_number_of_items, visible)
+        if page_type.lower() == 'date':
+            return DatePage(page_number, max_number_of_items, visible)
+        # This should never be triggered, but let's default to Run display if there is a problem
+        return 'run'
 
     def _create_display_list(self):
         """
@@ -160,3 +172,25 @@ class RunPage(CustomPage):
             self.display_name = "{}".format(self.start)
         else:
             self.display_name = "{} - {}".format(self.start, self.end)
+
+
+# pylint:disable=too-few-public-methods
+class DatePage(CustomPage):
+    """
+    Specific implementation for rendering the pagination if sorting by Date
+    """
+
+    def set_start_and_end(self):
+        """
+        Custom function to set the start and end variables and
+        construct the display name for the page
+        """
+        self.start = self.records[0].last_updated
+        self.end = self.records[-1].last_updated
+
+        if self.start == self.end:
+            self.display_name = "{}/{}/{}".format(self.start.day, self.start.month, self.start.year)
+        else:
+            self.display_name = "{}/{}/{} - {}/{}/{}".format(self.start.day, self.start.month,
+                                                             self.start.year, self.end.day,
+                                                             self.end.month, self.end.year)
