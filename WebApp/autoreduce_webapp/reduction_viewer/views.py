@@ -356,6 +356,8 @@ def run_summary(request, instrument_name=None, run_number=None, run_version=0):
         reduction_location = None
         if location_list:
             reduction_location = str(location_list[0])
+        if '\\' in reduction_location:
+            reduction_location = reduction_location.replace('\\', '/')
         context_dictionary = {'run': run,
                               'history': history,
                               'reduction_location': reduction_location}
