@@ -1,9 +1,9 @@
 autoreduction_user: 'isisautoreduce'
 
 # Database
-db_host: 'localhost:3306'
-db_user: 'root'
-db_password: ''
+db_host: '{{ vault_db_url }}'
+db_user: '{{ vault_db_root_username }}'
+db_password: '{{ vault_db_root_password }}'
 
 # Queue processors
 qp_log_file: 'queueProcessor.log'

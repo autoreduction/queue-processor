@@ -38,3 +38,4 @@ apache_django_wsgi.conf
 
 # Ignore site.retry from Ansible
 site.retry
+vault.yml
