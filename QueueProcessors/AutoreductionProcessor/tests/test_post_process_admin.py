@@ -30,11 +30,6 @@ from QueueProcessors.AutoreductionProcessor.post_process_admin import (linux_to_
 # pylint:disable=missing-docstring,invalid-name,protected-access,no-self-use,too-many-arguments
 class TestPostProcessAdminHelpers(unittest.TestCase):
 
-    def test_linux_to_windows_path(self):
-        linux_path = "/isis/some/more/path.nxs"
-        actual = linux_to_windows_path(linux_path)
-        self.assertEqual(actual, "\\\\isis\\inst$\\some\\more\\path.nxs")
-
     def test_windows_to_linux_data_path(self):
         windows_path = "\\\\isis\\inst$\\some\\more\\path.nxs"
         actual = windows_to_linux_path(windows_path, '')
