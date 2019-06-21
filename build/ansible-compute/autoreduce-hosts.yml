@@ -10,6 +10,5 @@
   become: true
   roles:
   - role: common
-  - role: java
   - role: queue_processors
   - role: archive
