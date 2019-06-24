@@ -19,10 +19,8 @@ from mock import patch, call, Mock
 from utils.settings import ACTIVEMQ_SETTINGS
 from utils.project.structure import get_project_root
 from QueueProcessors.AutoreductionProcessor.settings import MISC, ACTIVEMQ
-from QueueProcessors.AutoreductionProcessor.post_process_admin import (linux_to_windows_path,
-                                                                       windows_to_linux_path,
+from QueueProcessors.AutoreductionProcessor.post_process_admin import (windows_to_linux_path,
                                                                        prettify,
-                                                                       #channels_redirected,
                                                                        PostProcessAdmin,
                                                                        main)
 
