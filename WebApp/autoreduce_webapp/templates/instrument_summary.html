@@ -40,19 +40,14 @@
                 <div class="col-md-6 text-center">
                     <p><a href="{% url 'instrument_variables' instrument=instrument_name %}" class="btn btn-success btn-block"><i class="fa fa-plus"></i>&nbsp;&nbsp;Configure New Jobs</a></p>
                 </div>
+                {% if reduction_variables_on %}
+                <div class="col-md-6 col-md-offset-6 text-center">
+                    <p><a href="{% url 'instrument_variables_summary' instrument=instrument_name %}" class="btn btn-success btn-block"><i class="fa fa-eye"></i>&nbsp;&nbsp;See Instrument variables</a></p>
+                </div>
+                {% endif %}
+
             </div>
 
-            <!-- Collapsible widget for reduction variables present and future -->
-            {% if reduction_variables_on %}
-            <div class="row">
-                <div class="col-md-12 text-center">
-                    <button type="button" class="btn btn-info btn-block" data-toggle="collapse" data-target="#variables"><i class="fa fa-chevron-down"></i>  Show Variables</button>
-                    <div id="variables" class="collapse" style="background-color:#F0FFFF;">
-                        {% view "reduction_variables.views.instrument_summary" instrument=instrument_name last_run_object=last_instrument_run %}
-                    </div>
-                </div>
-            </div>
-            {% endif %}
         {% else %}
             <div class="text-center col-md-6 col-md-offset-3 well well-small">
                 Instrument is not active.

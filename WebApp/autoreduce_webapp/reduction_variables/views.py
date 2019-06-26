@@ -126,6 +126,25 @@ def delete_instrument_variables(request, instrument=None, start=0, end=0,
     return redirect('instrument_summary', instrument=instrument_name)
 
 
+@login_and_uows_valid
+@check_permissions
+@render_with('variables_summary.html')
+def instrument_variables_summary(request, instrument):
+    """
+    Handles request to view instrument variables
+    """
+    instrument = Instrument.objects.get(name=instrument)
+    runs = (ReductionRun.objects
+            .only('status', 'last_updated', 'run_number', 'run_version')
+            .select_related('status')
+            .filter(instrument=instrument)
+            .order_by('-run_number', 'run_version'))
+
+    context_dictionary = {'instrument': instrument,
+                          'last_instrument_run': runs[0]}
+    return context_dictionary
+
+
 # pylint:disable=too-many-statements,too-many-branches
 @login_and_uows_valid
 @check_permissions

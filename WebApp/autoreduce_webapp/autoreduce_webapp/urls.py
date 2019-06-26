@@ -53,6 +53,8 @@ urlpatterns = [
         reduction_variables_views.instrument_variables, name='instrument_variables'),
     url(r'^instrument/(?P<instrument>\w+)/variables(?:/(?P<start>[0-9]+))?(?:/(?P<end>[0-9]+))?/$',
         reduction_variables_views.instrument_variables, name='instrument_variables'),
+    url(r'^instrument/(?P<instrument>\w+)/variables_summary/$',
+        reduction_variables_views.instrument_variables_summary, name='instrument_variables_summary'),
     # pylint: disable=line-too-long
     url(r'^instrument/(?P<instrument>\w+)/variables(?:/(?P<start>[0-9]+))?(?:/(?P<end>[0-9]+))?/delete$',
         reduction_variables_views.delete_instrument_variables, name='delete_instrument_variables'),
