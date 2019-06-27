@@ -129,6 +129,7 @@ def delete_instrument_variables(request, instrument=None, start=0, end=0,
 @login_and_uows_valid
 @check_permissions
 @render_with('variables_summary.html')
+# pylint:disable=no-member
 def instrument_variables_summary(request, instrument):
     """
     Handles request to view instrument variables
