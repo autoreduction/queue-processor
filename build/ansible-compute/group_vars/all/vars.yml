@@ -2,8 +2,18 @@ autoreduction_user: 'isisautoreduce'
 
 # Database
 db_host: '{{ vault_db_url }}'
-db_user: '{{ vault_db_root_username }}'
+db_username: '{{ vault_db_root_username }}'
 db_password: '{{ vault_db_root_password }}'
 
 # Queue processors
 qp_log_file: 'queueProcessor.log'
+
+# ActiveMQ
+amq_url: '{{ vault_amq_url }}'
+amq_username: '{{ vault_amq_username }}'
+amq_password: '{{ vault_amq_password }}'
+
+# Archive
+archive_domain: '{{ vault_archive_domain }}'
+archive_username: '{{ vault_archive_username }}'
+archive_password: '{{ vault_archive_password }}'

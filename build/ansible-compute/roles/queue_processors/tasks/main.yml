@@ -23,6 +23,13 @@
     path: /home/{{ autoreduction_user }}/autoreduction
   register: autoreduce
 
+- name: 'Clone the autoreduce git repository'
+  git:
+    repo: https://github.com/ISISScientificComputing/autoreduce.git
+    dest: /home/{{ autoreduction_user }}/autoreduction
+    version: master
+  when: autoreduce.stat.exists == false
+
 - name: 'Updating Pip'
   shell: 'pip install -U pip'
 
@@ -39,21 +46,8 @@
   pip:
     name: GitPython
 
-- name: 'Install service_identity'
-  pip:
-    name: service_identity
-    state: forcereinstall
-    extra_args: --force --upgrade
-
 - name: 'Installing dependencies from setup.py'
   shell: 'pip install -e /home/{{ autoreduction_user }}/autoreduction'
-
-- name: 'Clone the autoreduce git repository'
-  git:
-    repo: https://github.com/ISISScientificComputing/autoreduce.git
-    dest: /home/{{ autoreduction_user }}/autoreduction
-    version: master
-  when: autoreduce.stat.exists == false
 
 - name: 'Create logs directory'
   file:
@@ -74,8 +68,16 @@
 
 - name: 'Copy queue processor settings file'
   template:
-    src: roles/queue_processors/templates/settings.py.j2
+    src: roles/queue_processors/templates/qp_settings.py.j2
     dest: /home/{{ autoreduction_user }}/autoreduction/QueueProcessors/QueueProcessor/settings.py
+    owner: '{{ autoreduction_user }}'
+    group: '{{ autoreduction_user }}'
+    mode: 0664
+
+- name: 'Copy Autoreduction processor settings file'
+  template:
+    src: roles/queue_processors/templates/ap_settings.py.j2
+    dest: /home/{{ autoreduction_user }}/autoreduction/QueueProcessors/AutoreductionProcessor/settings.py
     owner: '{{ autoreduction_user }}'
     group: '{{ autoreduction_user }}'
     mode: 0664
