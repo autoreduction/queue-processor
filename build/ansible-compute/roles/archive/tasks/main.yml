@@ -30,10 +30,24 @@
   file:
     path: /isis
     state: directory
-    owner: '{{ autoreduction_user }}'
 
-- name: 'Create second ISIS archive directory : You must mount the network drive in /archive'
-  file:
-    path: /archive
-    state: directory
-    owner: '{{ autoreduction_user }}'
+- name: 'Copy over the archive credentials template'
+  template:
+    src: roles/archive/templates/archive.creds.j2
+    dest: /archive.creds
+    owner: 'root'
+    group: 'root'
+    mode: 0700
+
+- name: 'Add the search path to /etc/resolv.conf'
+  lineinfile:
+    path: /etc/resolv.conf
+    line: 'search isis.cclrc.ac.uk'
+
+- name: 'Mount the ISIS archive'
+  mount:
+    path: /isis
+    src: '{{ archive_url }}'
+    fstype: cifs
+    opts: vers=2.1,credentials=/archive.creds
+    state: mounted

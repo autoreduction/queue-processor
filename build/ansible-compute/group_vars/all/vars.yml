@@ -14,6 +14,7 @@ amq_username: '{{ vault_amq_username }}'
 amq_password: '{{ vault_amq_password }}'
 
 # Archive
+archive_url: '{{ vault_archive_url }}'
 archive_domain: '{{ vault_archive_domain }}'
 archive_username: '{{ vault_archive_username }}'
 archive_password: '{{ vault_archive_password }}'
