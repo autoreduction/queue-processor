@@ -51,3 +51,14 @@
     fstype: cifs
     opts: vers=2.1,credentials=/archive.creds
     state: mounted
+
+- name: 'Delete the archive credentials file'
+  file:
+    path: /archive.creds
+    state: absent
+
+- name: 'Create a symlink in /archive'
+  file:
+    src: /isis
+    dest: /archive
+    state: link
