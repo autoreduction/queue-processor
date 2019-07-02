@@ -12,3 +12,4 @@
   - role: common
   - role: queue_processors
   - role: archive
+  - role: cephfs
