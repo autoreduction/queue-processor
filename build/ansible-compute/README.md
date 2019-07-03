@@ -17,10 +17,12 @@ A separate SL7 Ansible server is required in order to deploy the playbook. The f
 All install instructions should take place on the server VM. The setup on the host VM will
 be handled automatically by the playbook.
 
-Get ansible:
+The version of Ansible that will be installed by yum on SL7 is not recent enough to mount
+the network drives. You will need to grab and install the latest RPM:
 
 ```
-yum install ansible
+wget https://releases.ansible.com/ansible/rpm/release/epel-7-x86_64/ansible-2.8.1-1.el7.ans.noarch.rpm
+sudo yum install ./ansible-2.8.1-1.el7.ans.noarch.rpm
 ```
 
 Add the hostname of your VM to /etc/ansible/hosts
