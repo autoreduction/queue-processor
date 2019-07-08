@@ -56,35 +56,42 @@
 
         <br/>
         <hr/>
-        <br/>
             <!-- Display table for reduction jobs -->
             <div class="row">
-                <!-- Filter and Pagination options -->
+                <div class="col-md-3">
+                    <h3>Filter by</h3>
+                </div>
+                <div class="col-md-3">
+                    <h3>Sort by</h3>
+                </div>
+                <div class="col-md-3">
+                    <h3>Items per page</h3>
+                </div>
+            </div>
+            <div class="row">
+                <!-- Filter , Sort and Pagination options -->
                 <form action="{{ request.path }}" method="get" id="filter_options">
                     <div class="col-md-3">
                         <select class="form-control" name="filter" form="filter_options" id="filter_select">
-                            <option value="{{ filtering }}" selected="selected">Filter by ...</option> <!-- Defaults to Run Number -->
-                            <option value="run" title="Display run numbers">Run number</option>
-                            <option value="experiment" title="Display run number grouped by RB number">Experiment Reference (RB)</option>
+                            <option value="run" title="Display run numbers" {% if filtering == 'run' %}selected="selected"{% endif %}>Run number</option>
+                            <option value="experiment" title="Display run number grouped by RB number" {% if filtering == 'experiment' %} selected="selected" {% endif %}>Experiment Reference (RB)</option>
                         </select>
                     </div>
                     <div class="col-md-3">
                         <select class="form-control" name="sort" form="filter_options" id="sort_select">
-                            <option value="{{ sort }}" selected="selected">Sort by ...</option>
-                            <option value="date">Date</option>
-                            <option value="run">Number</option>
+                            <option value="run" {% if sort == 'run' %}selected="selected"{% endif %}>Number</option>>
+                            <option value="date" {% if sort == 'date' %}selected="selected"{% endif %}>Date</option>
                         </select>
                     </div>
                     {% if filtering == 'run' %}
                     <div class="col-md-3">
                         <select title="The number of reduction jobs that should be shown per page" class="form-control" name="pagination" form="filter_options" id="pagination_select">
-                            <option value="{{ max_items }}" selected="selected">Items per page ...</option>  <!-- Defaults to 50 items per page -->
-                            <option>10</option>
-                            <option>25</option>
-                            <option>50</option>
-                            <option>100</option>
-                            <option>250</option>
-                            <option>500</option>
+                            <option {% if max_items == '10' %}selected="selected"{% endif %}>10</option>
+                            <option {% if max_items == '25' %}selected="selected"{% endif %}>25</option>
+                            <option {% if max_items == '50' %}selected="selected"{% endif %}>50</option>
+                            <option {% if max_items == '100' %}selected="selected"{% endif %}>100</option>
+                            <option {% if max_items == '250' %}selected="selected"{% endif %}>250</option>
+                            <option {% if max_items == '500' %}selected="selected"{% endif %}>500</option>
                         </select>
                     </div>
                     {% endif %}
