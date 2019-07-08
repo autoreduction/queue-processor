@@ -16,6 +16,7 @@
 
             <!-- Instrument status and control buttons -->
             <div class="row">
+                <!-- Status panel -->
                 <div class="col-md-6">
                     {% include "snippets/instrument_status.html" with processing=processing queued=queued last_instrument_run=last_instrument_run only %}
                 </div>
@@ -41,7 +42,7 @@
                     <p><a href="{% url 'instrument_variables' instrument=instrument_name %}" class="btn btn-success btn-block"><i class="fa fa-plus"></i>&nbsp;&nbsp;Configure New Jobs</a></p>
                 </div>
                 {% if reduction_variables_on %}
-                <div class="col-md-6 col-md-offset-6 text-center">
+                <div class="col-md-6 text-center">
                     <p><a href="{% url 'instrument_variables_summary' instrument=instrument_name %}" class="btn btn-success btn-block"><i class="fa fa-eye"></i>&nbsp;&nbsp;See Instrument variables</a></p>
                 </div>
                 {% endif %}
