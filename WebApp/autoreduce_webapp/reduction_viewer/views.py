@@ -411,7 +411,7 @@ def instrument_summary(request, instrument=None):
     try:
         filter_by = request.GET.get('filter', 'run')
         instrument_obj = Instrument.objects.get(name=instrument)
-        sort_by = request.GET.get('sort', 'Run')
+        sort_by = request.GET.get('sort', 'run')
         if sort_by == 'run':
             runs = (ReductionRun.objects
                     .only('status', 'last_updated', 'run_number', 'run_version')
@@ -432,6 +432,7 @@ def instrument_summary(request, instrument=None):
             'processing': runs.filter(status=StatusUtils().get_processing()),
             'queued': runs.filter(status=StatusUtils().get_queued()),
             'filtering': filter_by,
+            'sort': sort_by
         }
 
         if filter_by == 'experiment':

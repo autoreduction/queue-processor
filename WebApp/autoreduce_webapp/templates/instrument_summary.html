@@ -70,15 +70,15 @@
                     </div>
                     <div class="col-md-3">
                         <select class="form-control" name="sort" form="filter_options" id="sort_select">
-                            <option value="{{ sort }}" selected="selected">Sort by... </option>
-                            <option>Date</option>
+                            <option value="{{ sort }}" selected="selected">Sort by ...</option>
+                            <option value="date">Date</option>
                             <option value="run">Number</option>
                         </select>
                     </div>
                     {% if filtering == 'run' %}
                     <div class="col-md-3">
                         <select title="The number of reduction jobs that should be shown per page" class="form-control" name="pagination" form="filter_options" id="pagination_select">
-                            <option value="{{ max_items }}" selected="selected">Items per page... </option>  <!-- Defaults to 50 items per page -->
+                            <option value="{{ max_items }}" selected="selected">Items per page ...</option>  <!-- Defaults to 50 items per page -->
                             <option>10</option>
                             <option>25</option>
                             <option>50</option>
