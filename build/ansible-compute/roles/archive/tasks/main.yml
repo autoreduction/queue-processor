@@ -17,7 +17,7 @@
     state: directory
     owner: '{{ autoreduction_user }}'
     group: '{{ autoreduction_user }}'
-    mode: 0664
+    mode: 0774
   with_items:
   - /autoreducetmp
   - /autoreducetmp/instrument 
