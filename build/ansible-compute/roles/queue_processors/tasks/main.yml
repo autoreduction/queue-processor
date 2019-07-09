@@ -46,6 +46,11 @@
   pip:
     name: GitPython
 
+- name: 'pyasn1'
+  pip:
+    name: pyasn1-modules
+    extra_args: --upgrade
+
 - name: 'Installing dependencies from setup.py'
   shell: 'pip install -e /home/{{ autoreduction_user }}/autoreduction'
 
@@ -81,6 +86,26 @@
     owner: '{{ autoreduction_user }}'
     group: '{{ autoreduction_user }}'
     mode: 0664
+
+- name: 'Copy utils settings file'
+  template:
+    src: roles/queue_processors/templates/utils_settings.py.j2
+    dest: /home/{{ autoreduction_user }}/autoreduction/utils/settings.py
+    owner: '{{ autoreduction_user }}'
+    group: '{{ autoreduction_user }}'
+    mode: 0664
+
+- name: 'Copy queue processors service file'
+  template:
+    src: roles/queue_processors/templates/queue_processors.service.j2
+    dest: /etc/systemd/system/queue_processors.service
+    owner: root
+    group: root
+
+- name: 'Start the queue processors service'
+  service:
+    name: 'queue_processors'
+    state: started
 
 - name: 'Set permissions on the autoreduction folder'
   file:

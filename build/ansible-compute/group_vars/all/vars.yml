@@ -10,6 +10,7 @@ qp_log_file: 'queueProcessor.log'
 
 # ActiveMQ
 amq_url: '{{ vault_amq_url }}'
+amq_port: '{{ vault_amq_port }}'
 amq_username: '{{ vault_amq_username }}'
 amq_password: '{{ vault_amq_password }}'
 

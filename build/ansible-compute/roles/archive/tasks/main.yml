@@ -16,6 +16,8 @@
     path: '{{ item }}'
     state: directory
     owner: '{{ autoreduction_user }}'
+    group: '{{ autoreduction_user }}'
+    mode: 0664
   with_items:
   - /autoreducetmp
   - /autoreducetmp/instrument 
@@ -26,7 +28,7 @@
     state: directory
     owner: '{{ autoreduction_user }}'
 
-- name: 'Create ISIS archive directory : You must mount the network drive in /isis'
+- name: 'Create ISIS archive directory'
   file:
     path: /isis
     state: directory

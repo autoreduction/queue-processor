@@ -14,7 +14,7 @@ from utils.project.structure import get_project_root
 
 # ActiveMQ
 ACTIVEMQ = {
-    "brokers": "{{ amq_url }}",
+    "brokers": "{{ amq_url }}:{{ amq_port }}",
     "amq_queues": ["/queue/ReductionPending"],
     "amq_user": "{{ amq_username }}",
     "amq_pwd": "{{ amq_password }}",
