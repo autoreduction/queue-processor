@@ -46,6 +46,7 @@
     owner: 'root'
     group: 'root'
     mode: 0700
+  when: development == 'false'
 
 - name: 'Add instrument (RB directories) mount to fstab'
   mount:
@@ -54,3 +55,4 @@
     fstype: ceph
     opts: 'name=isis,secretfile=/etc/ceph/isis.key,noatime,_netdev'
     state: mounted
+  when: development == 'false' 
