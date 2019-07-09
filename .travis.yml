@@ -48,8 +48,6 @@ script:
 
   - echo "Running System Tests"
   - py.test systemtests --cov-append
-  - cat logs/queue_processor.log
-  - cat logs/autoreductionProcessor.log
 
 
 after_success:

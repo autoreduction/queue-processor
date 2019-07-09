@@ -65,6 +65,11 @@ MIDDLEWARE_CLASSES = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# Add debug toolbar only if in DEBUG mode
+if DEBUG:
+    INSTALLED_APPS.append('debug_toolbar')
+    MIDDLEWARE_CLASSES.insert(3, 'debug_toolbar.middleware.DebugToolbarMiddleware')
+
 AUTHENTICATION_BACKENDS = [
     'autoreduce_webapp.backends.UOWSAuthenticationBackend',
     'django.contrib.auth.backends.ModelBackend',
