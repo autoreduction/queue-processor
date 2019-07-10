@@ -7,7 +7,7 @@ import csv
 import logging
 import os
 import json
-from nexusformat.nexus import nxload
+import nexusformat
 from filelock import (FileLock, Timeout)
 
 from monitors.settings import (LAST_RUNS_CSV, CYCLE_FOLDER)
@@ -63,11 +63,11 @@ def get_prefix_zeros(run_number_str):
 
 def read_rb_number_from_nexus_file(nxs_file_path):
     """
-    Extract the experiment RB number from the Nexus file
+    Extract the experiment RB number from a Nexus file
     :param nxs_file_path: Path to the Nexus file on disk
     :return: The RB number or None
     """
-    nxs_file = nxload(nxs_file_path)
+    nxs_file = nexusformat.nexus.nxload(nxs_file_path)
     for (_, entry) in nxs_file.iteritems():
         if hasattr(entry, 'experiment_identifier'):
             field_data = entry.experiment_identifier.nxdata
@@ -130,7 +130,7 @@ class InstrumentMonitor(object):
     def submit_run(self, summary_rb_number, run_number, file_name):
         """
         Submit a run to ActiveMQ
-        :param rb_number: RB number of the experiment
+        :param summary_rb_number: RB number of the experiment
         :param run_number: Run number as it appears in lastrun.txt
         :param file_name: File name e.g. GEM1234.nxs
         """
@@ -141,7 +141,7 @@ class InstrumentMonitor(object):
             rb_number = read_rb_number_from_nexus_file(file_path)
             if rb_number is None:
                 rb_number = summary_rb_number
-            EORM_LOG.info("Submitting '{}' with RB number '{}'".format(file_name, rb_number))
+            EORM_LOG.info("Submitting '%s' with RB number '%s'", file_name, rb_number)
             data_dict = self.build_dict(rb_number, run_number, file_path)
             self.client.send('/queue/DataReady', json.dumps(data_dict), priority='9')
         else:

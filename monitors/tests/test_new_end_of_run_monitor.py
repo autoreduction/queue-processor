@@ -31,6 +31,15 @@ RUN_DICT = {'instrument': 'WISH',
             'facility': 'ISIS'}
 CSV_FILE = "WISH,44733,lastrun_wish.txt,summary_wish.txt,data_dir,.nxs"
 
+# nexusformat mock objects
+NXENTRY_MOCK = Mock()
+NXENTRY_MOCK.experiment_identifier.nxdata = ['1910232']
+NXLOAD_MOCK = Mock()
+NXLOAD_MOCK.iteritems = Mock(return_value=[('raw_data_1', NXENTRY_MOCK)])
+
+NXLOAD_MOCK_EMPTY = Mock()
+NXLOAD_MOCK_EMPTY.iteritems = Mock(return_value=[('raw_data_1', Mock(spec=[]))])
+
 
 # pylint:disable=missing-docstring,no-self-use,too-many-public-methods
 class TestEndOfRunMonitor(unittest.TestCase):
@@ -106,7 +115,9 @@ class TestEndOfRunMonitor(unittest.TestCase):
         self.assertEqual(RUN_DICT, data_dict)
 
     @patch('os.path.isfile', return_value=True)
-    def test_submit_run(self, isfile_mock):
+    @patch('monitors.new_end_of_run_monitor.read_rb_number_from_nexus_file',
+           return_value='1820461')
+    def test_submit_run(self, read_rb_mock, isfile_mock):
         client = Mock()
         client.send = Mock(return_value=None)
         client.serialise_data = Mock(return_value=RUN_DICT)
@@ -114,9 +125,11 @@ class TestEndOfRunMonitor(unittest.TestCase):
         inst_mon = InstrumentMonitor(client, 'WISH')
         inst_mon.data_dir = '/my/data/dir'
         data_loc = os.path.join(inst_mon.data_dir, CYCLE_FOLDER, 'WISH00044733.nxs')
+
         inst_mon.submit_run('1820461', '00044733', 'WISH00044733.nxs')
         client.send.assert_called_with('/queue/DataReady', json.dumps(RUN_DICT), priority='9')
         isfile_mock.assert_called_with(data_loc)
+        read_rb_mock.assert_called_once_with(data_loc)
 
     @patch('os.path.isfile', return_value=False)
     def test_submit_run_file_not_found(self, isfile_mock):
@@ -130,6 +143,35 @@ class TestEndOfRunMonitor(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             inst_mon.submit_run('1820461', '00044733', 'WISH00044733.nxs')
         isfile_mock.assert_called_with(data_loc)
+
+    @patch('os.path.isfile', return_vaule=True)
+    @patch('monitors.new_end_of_run_monitor.read_rb_number_from_nexus_file',
+           return_vaule=None)
+    def test_submit_run_invalid_nexus(self, read_rb_mock, isfile_mock):
+        client = Mock()
+        client.send = Mock(return_value=None)
+        client.serialise_data = Mock(return_value=RUN_DICT)
+
+        inst_mon = InstrumentMonitor(client, 'WISH')
+        inst_mon.data_dir = '/my/data/dir'
+        data_loc = os.path.join(inst_mon.data_dir, CYCLE_FOLDER, 'WISH00044733.nxs')
+
+        inst_mon.submit_run('1820461', '00044733', 'WISH00044733.nxs')
+        client.send.assert_called_with('/queue/DataReady', json.dumps(RUN_DICT), priority='9')
+        isfile_mock.assert_called_with(data_loc)
+        read_rb_mock.assert_called_once_with(data_loc)
+
+    @patch('nexusformat.nexus.nxload', return_value=NXLOAD_MOCK)
+    def test_read_rb_number_from_nexus(self, nxload_mock):
+        rb_num = eorm.read_rb_number_from_nexus_file('mynexus.nxs')
+        self.assertEqual(rb_num, '1910232')
+        nxload_mock.assert_called_once_with('mynexus.nxs')
+
+    @patch('nexusformat.nexus.nxload', return_value=NXLOAD_MOCK_EMPTY)
+    def test_read_rb_number_from_nexus_invalid(self, nxload_mock):
+        rb_num = eorm.read_rb_number_from_nexus_file('mynexus.nxs')
+        self.assertIsNone(rb_num)
+        nxload_mock.assert_called_once_with('mynexus.nxs')
 
     def test_submit_run_difference(self):
         # Setup test
