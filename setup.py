@@ -30,7 +30,9 @@ setup_requires = ['Django',
                   'suds',
                   'Twisted',
                   'watchdog',
-                  'filelock']
+                  'filelock',
+                  'numpy',
+                  'nexusformat']
 
 if platform.system() == 'Windows':
     setup_requires.append('pypiwin32')

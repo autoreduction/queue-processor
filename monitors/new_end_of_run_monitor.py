@@ -7,6 +7,7 @@ import csv
 import logging
 import os
 import json
+from nexusformat.nexus import nxload
 from filelock import (FileLock, Timeout)
 
 from monitors.settings import (LAST_RUNS_CSV, CYCLE_FOLDER)
@@ -60,6 +61,21 @@ def get_prefix_zeros(run_number_str):
     return zeros
 
 
+def read_rb_number_from_nexus_file(nxs_file_path):
+    """
+    Extract the experiment RB number from the Nexus file
+    :param nxs_file_path: Path to the Nexus file on disk
+    :return: The RB number or None
+    """
+    nxs_file = nxload(nxs_file_path)
+    for (_, entry) in nxs_file.iteritems():
+        if hasattr(entry, 'experiment_identifier'):
+            field_data = entry.experiment_identifier.nxdata
+            if field_data:
+                return field_data[0]
+    return None
+
+
 class InstrumentMonitor(object):
     """
     Checks the ISIS archive for new runs on an instrument and submits them to ActiveMQ
@@ -111,7 +127,7 @@ class InstrumentMonitor(object):
                                           location=file_location,
                                           run_number=run_number)
 
-    def submit_run(self, rb_number, run_number, file_name):
+    def submit_run(self, summary_rb_number, run_number, file_name):
         """
         Submit a run to ActiveMQ
         :param rb_number: RB number of the experiment
@@ -122,6 +138,10 @@ class InstrumentMonitor(object):
         file_path = os.path.join(self.data_dir, CYCLE_FOLDER, file_name)
 
         if os.path.isfile(file_path):
+            rb_number = read_rb_number_from_nexus_file(file_path)
+            if rb_number is None:
+                rb_number = summary_rb_number
+            EORM_LOG.info("Submitting '{}' with RB number '{}'".format(file_name, rb_number))
             data_dict = self.build_dict(rb_number, run_number, file_path)
             self.client.send('/queue/DataReady', json.dumps(data_dict), priority='9')
         else:
@@ -140,7 +160,7 @@ class InstrumentMonitor(object):
         local_run_int = int(local_last_run)
         instrument_run_int = int(instrument_last_run)
 
-        rb_number = self.read_rb_number_from_summary()
+        summary_rb_number = self.read_rb_number_from_summary()
         zeros = get_prefix_zeros(instrument_last_run)
         if instrument_run_int > local_run_int:
             EORM_LOG.info("Submitting runs in range %i - %i for %s",
@@ -152,7 +172,7 @@ class InstrumentMonitor(object):
                 run_number = zeros + str(i)
                 file_name = last_run_data[0] + run_number + self.file_ext
                 try:
-                    self.submit_run(rb_number, run_number, file_name)
+                    self.submit_run(summary_rb_number, run_number, file_name)
                 except FileNotFoundError as ex:
                     # If the file isn't found then just return the last file sent
                     # and try again next time
