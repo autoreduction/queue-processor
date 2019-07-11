@@ -137,7 +137,7 @@ class InstrumentMonitor(object):
     def submit_run(self, summary_rb_number, run_number, file_name):
         """
         Submit a run to ActiveMQ
-        :param summary_rb_number: RB number of the experiment
+        :param summary_rb_number: RB number of the experiment as read from the summary file
         :param run_number: Run number as it appears in lastrun.txt
         :param file_name: File name e.g. GEM1234.nxs
         """
