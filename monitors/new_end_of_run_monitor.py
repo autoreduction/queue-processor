@@ -7,7 +7,7 @@ import csv
 import logging
 import os
 import json
-import nexusformat
+from nexusformat.nexus import nxload
 from filelock import (FileLock, Timeout)
 
 from monitors.settings import (LAST_RUNS_CSV, CYCLE_FOLDER)
@@ -67,7 +67,7 @@ def read_rb_number_from_nexus_file(nxs_file_path):
     :param nxs_file_path: Path to the Nexus file on disk
     :return: The RB number or None
     """
-    nxs_file = nexusformat.nexus.nxload(nxs_file_path)
+    nxs_file = nxload(nxs_file_path)
     for (_, entry) in nxs_file.iteritems():
         if hasattr(entry, 'experiment_identifier'):
             field_data = entry.experiment_identifier.nxdata
