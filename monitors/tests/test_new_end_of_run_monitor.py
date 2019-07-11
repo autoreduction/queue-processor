@@ -29,6 +29,11 @@ RUN_DICT = {'instrument': 'WISH',
             'data': '/my/data/dir/cycle_18_4/WISH00044733.nxs',
             'rb_number': '1820461',
             'facility': 'ISIS'}
+RUN_DICT_SUMMARY = {'instrument': 'WISH',
+                    'run_number': '00044733',
+                    'data': '/my/data/dir/cycle_18_4/WISH00044733.nxs',
+                    'rb_number': '1820333',
+                    'facility': 'ISIS'}
 CSV_FILE = "WISH,44733,lastrun_wish.txt,summary_wish.txt,data_dir,.nxs"
 
 # nexusformat mock objects
@@ -126,7 +131,7 @@ class TestEndOfRunMonitor(unittest.TestCase):
         inst_mon.data_dir = '/my/data/dir'
         data_loc = os.path.join(inst_mon.data_dir, CYCLE_FOLDER, 'WISH00044733.nxs')
 
-        inst_mon.submit_run('1820461', '00044733', 'WISH00044733.nxs')
+        inst_mon.submit_run('1820333', '00044733', 'WISH00044733.nxs')
         client.send.assert_called_with('/queue/DataReady', json.dumps(RUN_DICT), priority='9')
         isfile_mock.assert_called_with(data_loc)
         read_rb_mock.assert_called_once_with(data_loc)
@@ -141,23 +146,25 @@ class TestEndOfRunMonitor(unittest.TestCase):
         inst_mon.data_dir = '/my/data/dir'
         data_loc = os.path.join(inst_mon.data_dir, CYCLE_FOLDER, 'WISH00044733.nxs')
         with self.assertRaises(FileNotFoundError):
-            inst_mon.submit_run('1820461', '00044733', 'WISH00044733.nxs')
+            inst_mon.submit_run('1820333', '00044733', 'WISH00044733.nxs')
         isfile_mock.assert_called_with(data_loc)
 
     @patch('os.path.isfile', return_vaule=True)
     @patch('monitors.new_end_of_run_monitor.read_rb_number_from_nexus_file',
-           return_vaule=None)
+           return_value=None)
     def test_submit_run_invalid_nexus(self, read_rb_mock, isfile_mock):
         client = Mock()
         client.send = Mock(return_value=None)
-        client.serialise_data = Mock(return_value=RUN_DICT)
+        client.serialise_data = Mock(return_value=RUN_DICT_SUMMARY)
 
         inst_mon = InstrumentMonitor(client, 'WISH')
         inst_mon.data_dir = '/my/data/dir'
         data_loc = os.path.join(inst_mon.data_dir, CYCLE_FOLDER, 'WISH00044733.nxs')
 
-        inst_mon.submit_run('1820461', '00044733', 'WISH00044733.nxs')
-        client.send.assert_called_with('/queue/DataReady', json.dumps(RUN_DICT), priority='9')
+        inst_mon.submit_run('1820333', '00044733', 'WISH00044733.nxs')
+        client.send.assert_called_with('/queue/DataReady',
+                                       json.dumps(RUN_DICT_SUMMARY),
+                                       priority='9')
         isfile_mock.assert_called_with(data_loc)
         read_rb_mock.assert_called_once_with(data_loc)
 
