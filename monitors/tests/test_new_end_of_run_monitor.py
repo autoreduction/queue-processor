@@ -161,14 +161,20 @@ class TestEndOfRunMonitor(unittest.TestCase):
         isfile_mock.assert_called_with(data_loc)
         read_rb_mock.assert_called_once_with(data_loc)
 
-    @patch('nexusformat.nexus.nxload', return_value=NXLOAD_MOCK)
+    @patch('monitors.new_end_of_run_monitor.nxload', return_value=NXLOAD_MOCK)
     def test_read_rb_number_from_nexus(self, nxload_mock):
         rb_num = eorm.read_rb_number_from_nexus_file('mynexus.nxs')
         self.assertEqual(rb_num, '1910232')
         nxload_mock.assert_called_once_with('mynexus.nxs')
 
-    @patch('nexusformat.nexus.nxload', return_value=NXLOAD_MOCK_EMPTY)
+    @patch('monitors.new_end_of_run_monitor.nxload', return_value=NXLOAD_MOCK_EMPTY)
     def test_read_rb_number_from_nexus_invalid(self, nxload_mock):
+        rb_num = eorm.read_rb_number_from_nexus_file('mynexus.nxs')
+        self.assertIsNone(rb_num)
+        nxload_mock.assert_called_once_with('mynexus.nxs')
+
+    @patch('monitors.new_end_of_run_monitor.nxload', side_effect=IOError('HDF4 file'))
+    def test_read_rb_number_from_nexus_hdf4(self, nxload_mock):
         rb_num = eorm.read_rb_number_from_nexus_file('mynexus.nxs')
         self.assertIsNone(rb_num)
         nxload_mock.assert_called_once_with('mynexus.nxs')

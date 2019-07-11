@@ -63,11 +63,18 @@ def get_prefix_zeros(run_number_str):
 
 def read_rb_number_from_nexus_file(nxs_file_path):
     """
-    Extract the experiment RB number from a Nexus file
+    Extract the experiment RB number from a Nexus file encoded
+    in HDF5 format.
     :param nxs_file_path: Path to the Nexus file on disk
     :return: The RB number or None
     """
-    nxs_file = nxload(nxs_file_path)
+    try:
+        nxs_file = nxload(nxs_file_path)
+    except IOError:
+        # The most likely cause of this is the Nexus file being encoded
+        # in HDF4 format.
+        return None
+
     for (_, entry) in nxs_file.iteritems():
         if hasattr(entry, 'experiment_identifier'):
             field_data = entry.experiment_identifier.nxdata
@@ -138,6 +145,9 @@ class InstrumentMonitor(object):
         file_path = os.path.join(self.data_dir, CYCLE_FOLDER, file_name)
 
         if os.path.isfile(file_path):
+            # Attempt to read an RB number from the Nexus file. This is most
+            # useful for high frequency instruments like ENGINX where reading
+            # from the summary is unreliable.
             rb_number = read_rb_number_from_nexus_file(file_path)
             if rb_number is None:
                 rb_number = summary_rb_number
