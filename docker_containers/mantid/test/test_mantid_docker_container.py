@@ -4,7 +4,9 @@ Tests that the mantid docker container can be built and can run a simple reducti
 import unittest
 import os
 
-from docker_containers.mantid.operations import build, run
+import docker
+
+from docker_containers.mantid.operations import build, run, IMAGE_NAME
 from docker_containers.mantid.docker_settings import Mount
 
 
@@ -12,6 +14,9 @@ class TestMantidDockerContainer(unittest.TestCase):
 
     def test_build_container(self):
         build()
+        client = docker.from_env()
+        images = client.build.list()
+        self.assertTrue(IMAGE_NAME in images)
 
     def test_reduce_simple(self):
         test_directory = os.path.dirname(os.path.realpath(__file__))
