@@ -6,13 +6,6 @@ python:
 services:
   - mysql
 
-addons:
-  apt:
-    sources:
-      - mysql-5.7-trusty
-    packages:
-      - mysql-server
-
 dist: trusty
 
 before_install:
