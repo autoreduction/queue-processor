@@ -43,6 +43,7 @@ script:
   # ================ Nose unit tests ================ #
 
   # Utils tests
+  - echo " ================================== TESTS ============================================== "
   - echo "Running Unit tests"
   - py.test --ignore=systemtests --cov=build --cov=monitors --cov=QueueProcessors --cov=scripts --cov=utils --cov=WebApp/autoreduce_webapp
 
