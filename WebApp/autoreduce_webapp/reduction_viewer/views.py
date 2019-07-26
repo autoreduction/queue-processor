@@ -33,6 +33,8 @@ from reduction_viewer.models import Experiment, ReductionRun, Instrument, Status
 from reduction_viewer.utils import StatusUtils, ReductionRunUtils
 from reduction_viewer.view_utils import deactivate_invalid_instruments
 
+from utilities.pagination import CustomPaginator
+
 LOGGER = logging.getLogger('app')
 
 
@@ -46,7 +48,7 @@ def index(request):
         return_url = UOWS_LOGIN_URL + request.build_absolute_uri(request.GET.get('next'))
 
     use_query_next = request.build_absolute_uri(request.GET.get('next'))
-    default_next = 'run_list'
+    default_next = 'overview'
 
     authenticated = False
 
@@ -88,6 +90,20 @@ def logout(request):
     django_logout(request)
     request.session.flush()
     return redirect('index')
+
+
+@login_and_uows_valid
+@render_with('overview.html')
+# pylint:disable=no-member,unused-argument
+def overview(request):
+    """
+    Render the overview landing page (redirect from /index)
+    """
+    instruments = Instrument.objects.order_by('name')
+    context_dictionary = {}
+    if instruments:
+        context_dictionary = {'instrument_list': instruments}
+    return context_dictionary
 
 
 @login_and_uows_valid
@@ -352,12 +368,15 @@ def run_summary(request, instrument_name=None, run_number=None, run_version=0):
                                        run_number=run_number,
                                        run_version=run_version)
         history = ReductionRun.objects.filter(run_number=run_number).order_by('-run_version')
-        ceph_location = None
         location_list = run.reduction_location.all()
+        reduction_location = None
         if location_list:
             reduction_location = str(location_list[0])
-            ceph_location = get_ceph_location(reduction_location, instrument_name)
-        context_dictionary = {'run': run, 'history': history, 'ceph_location': ceph_location}
+        if reduction_location and '\\' in reduction_location:
+            reduction_location = reduction_location.replace('\\', '/')
+        context_dictionary = {'run': run,
+                              'history': history,
+                              'reduction_location': reduction_location}
     except PermissionDenied:
         raise
     except Exception as exception:
@@ -365,23 +384,6 @@ def run_summary(request, instrument_name=None, run_number=None, run_version=0):
         context_dictionary = {}
 
     return context_dictionary
-
-
-def get_ceph_location(reduction_location, instrument):
-    """
-    Creates the path to the data stored in CEPH (ISIS storage cluster)
-    :param reduction_location: reduction location on the computation node
-    :param instrument: instrument associated with the run
-    :return: string to reduced data storage location in CEPH
-    """
-    ceph_root_level = '//data.analysis.stfc.ac.uk/'
-    try:
-        data_location = reduction_location.split(instrument.upper())[1]
-    except IndexError:
-        # Return None if file path does not contain instrument name
-        return None
-    ceph_location = ceph_root_level + 'rb/' + instrument.upper() + data_location
-    return ceph_location.replace('/', '\\')
 
 
 @login_and_uows_valid
@@ -392,21 +394,53 @@ def instrument_summary(request, instrument=None):
     """
     Render instrument summary
     """
-    processing_status = StatusUtils().get_processing()
-    queued_status = StatusUtils().get_queued()
-    skipped_status = StatusUtils().get_skipped()
     try:
+        filter_by = request.GET.get('filter', 'run')
         instrument_obj = Instrument.objects.get(name=instrument)
+        sort_by = request.GET.get('sort', 'run')
+        if sort_by == 'run':
+            runs = (ReductionRun.objects
+                    .only('status', 'last_updated', 'run_number', 'run_version')
+                    .select_related('status')
+                    .filter(instrument=instrument_obj)
+                    .order_by('-run_number', 'run_version'))
+        else:
+            runs = (ReductionRun.objects
+                    .only('status', 'last_updated', 'run_number', 'run_version')
+                    .select_related('status')
+                    .filter(instrument=instrument_obj)
+                    .order_by('-last_updated'))
         context_dictionary = {
             'instrument': instrument_obj,
-            'last_instrument_run':
-                ReductionRun.objects.filter(instrument=instrument_obj).
-                exclude(status=skipped_status).order_by('-run_number')[0],
-            'processing': ReductionRun.objects.filter(instrument=instrument_obj,
-                                                      status=processing_status),
-            'queued': ReductionRun.objects.filter(instrument=instrument_obj,
-                                                  status=queued_status),
+            'instrument_name': instrument_obj.name,
+            'runs': runs,
+            'last_instrument_run': runs[0],
+            'processing': runs.filter(status=StatusUtils().get_processing()),
+            'queued': runs.filter(status=StatusUtils().get_queued()),
+            'filtering': filter_by,
+            'sort': sort_by
         }
+
+        if filter_by == 'experiment':
+            experiments_and_runs = {}
+            experiments = Experiment.objects.filter(reduction_runs__instrument=instrument_obj). \
+                order_by('-reference_number').distinct()
+            for experiment in experiments:
+                associated_runs = runs.filter(experiment=experiment). \
+                    order_by('-created')
+                experiments_and_runs[experiment] = associated_runs
+            context_dictionary['experiments'] = experiments_and_runs
+        else:
+            max_items_per_page = request.GET.get('pagination', 50)
+            custom_paginator = CustomPaginator(page_type=sort_by,
+                                               query_set=runs,
+                                               items_per_page=max_items_per_page,
+                                               page_tolerance=3,
+                                               current_page=request.GET.get('page', 1))
+            context_dictionary['paginator'] = custom_paginator
+            context_dictionary['last_page_index'] = len(custom_paginator.page_list)
+            context_dictionary['max_items'] = max_items_per_page
+
     # pylint:disable=broad-except
     except Exception as exception:
         LOGGER.error(exception.message)

@@ -3,6 +3,7 @@
 <div class="panel panel-primary panel-small">
     <div class="panel-heading">Status</div>
     <div class="panel-body">
+        <br/>
         {% if processing or queued %}
             <div class="row">
                 <div class="col-md-4"><strong>Last run on instrument:</strong></div>
@@ -47,6 +48,8 @@
             </div>
             <div class="text-center">
                 All reduction jobs complete.
+                <br/>
+                <br/>
             </div>
         {% endif %}
     </div>
