@@ -20,7 +20,7 @@ class TestMantidDockerContainer(unittest.TestCase):
         self.input_mount = self._create_test_input_mount(test_input_directory)
         self.output_mount = self._create_test_output_mount(test_output_directory)
         self.script_location = os.path.join(test_input_directory, 'load_script.py')
-        self.input_data_location = os.path.join(test_input_directory, 'SampleData-ISIS.nxs')
+        self.input_data_location = os.path.join(test_input_directory, 'FakeWorkspace.nxs')
         self.mantid_docker = MantidDocker(reduction_script=self.script_location,
                                           input_file=self.input_data_location,
                                           output_directory=self.output_mount.container_destination,
