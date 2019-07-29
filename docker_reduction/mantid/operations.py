@@ -33,7 +33,9 @@ class MantidDocker(object):
         Note that the Mantid.user.properties file MUST be in the same directory as this file
         """
         client = docker.from_env()
-        client.images.build(path=os.path.dirname(os.path.realpath(__file__)),
+        build_path = os.path.dirname(os.path.realpath(__file__))
+        client.images.build(path=build_path,
+                            dockerfile=os.path.join(build_path, 'Dockerfile'),
                             tag=self.image_name)
 
     def create_volumes(self):

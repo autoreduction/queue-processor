@@ -39,8 +39,12 @@ class TestMantidDockerContainer(unittest.TestCase):
     def test_build(self):
         self.mantid_docker.build()
         client = docker.from_env()
-        images = client.build.list()
-        self.assertTrue(self.mantid_docker.image_name in images)
+        for image in client.images.list():
+            for tag in image.tags:
+                if self.mantid_docker.image_name in str(tag):
+                    return
+        self.fail('Image name: {} . Not found in image list: {}'
+                  .format(self.mantid_docker.image_name, client.images.list()))
 
     def test_create_volumes_default(self):
         # Create a dummy MantidDocker object
