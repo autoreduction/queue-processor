@@ -51,8 +51,8 @@ class TestMantidDockerContainer(unittest.TestCase):
         default_mantid_docker = MantidDocker(reduction_script='test',
                                              input_file='test',
                                              output_directory='test')
-        self.assertEqual(default_mantid_docker.input_mount, DATA_IN)
-        self.assertEqual(default_mantid_docker.output_mount, DATA_OUT)
+        self.assertEqual(default_mantid_docker.input_mount, None)
+        self.assertEqual(default_mantid_docker.output_mount, None)
         actual = default_mantid_docker.create_volumes()
         expected = {DATA_IN.host_location: {'bind': DATA_IN.container_destination, 'mode': 'ro'},
                     DATA_OUT.host_location: {'bind': DATA_OUT.container_destination, 'mode': 'rw'}}
