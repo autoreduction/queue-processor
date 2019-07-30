@@ -1,3 +1,9 @@
+# ############################################################################### #
+# Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
+#
+# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# SPDX - License - Identifier: GPL-3.0-or-later
+# ############################################################################### #
 """
 Tests that the mantid docker container can be built and can run a simple reduction script
 """
@@ -19,8 +25,10 @@ class TestMantidDockerContainer(unittest.TestCase):
         test_output_directory = os.path.join(test_directory, 'output')
         self.input_mount = self._create_test_input_mount(test_input_directory)
         self.output_mount = self._create_test_output_mount(test_output_directory)
-        self.script_location = os.path.join(self.input_mount.container_destination, 'load_script.py')
-        self.input_data_location = os.path.join(self.input_mount.container_destination, 'FakeWorkspace.nxs')
+        self.script_location = os.path.join(self.input_mount.container_destination,
+                                            'load_script.py')
+        self.input_data_location = os.path.join(self.input_mount.container_destination,
+                                                'FakeWorkspace.nxs')
         self.mantid_docker = MantidDocker(reduction_script=self.script_location,
                                           input_file=self.input_data_location,
                                           output_directory=self.output_mount.container_destination,
@@ -79,8 +87,8 @@ class TestMantidDockerContainer(unittest.TestCase):
                                self.mantid_docker.create_environment_variables())
         self.assertTrue(os.path.isfile(os.path.join(self.output_mount.host_location,
                                                     'load-successful.nxs')))
+        self._clean_output_directory()
 
-    @staticmethod
     def _clean_output_directory(self):
         """
         Remove the files in the output directory
