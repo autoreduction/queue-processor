@@ -18,8 +18,15 @@ from docker_reduction.mantid.mounts import DATA_IN, DATA_OUT
 
 
 class TestMantidDockerContainer(unittest.TestCase):
+    """
+    Test the Mantid Docker container functionality
+    """
 
     def setUp(self):
+        """
+        Create a MantidDocker object using the input and output directories in the
+        docker_reduction/mantid/tests/ directory
+        """
         test_directory = os.path.dirname(os.path.realpath(__file__))
         test_input_directory = os.path.join(test_directory, 'input')
         test_output_directory = os.path.join(test_directory, 'output')
@@ -36,6 +43,7 @@ class TestMantidDockerContainer(unittest.TestCase):
                                           output_mount=self.output_mount)
 
     def test_init(self):
+        """ Ensure initialisation is successful """
         self.assertEqual(self.mantid_docker.image_name, 'mantid-reduction-container')
         self.assertEqual(self.mantid_docker.reduction_script, self.script_location)
         self.assertEqual(self.mantid_docker.input_file, self.input_data_location)
@@ -45,6 +53,7 @@ class TestMantidDockerContainer(unittest.TestCase):
         self.assertEqual(self.mantid_docker.output_mount, self.output_mount)
 
     def test_build(self):
+        """ Ensure that the image can be built from the Dockerfile"""
         self.mantid_docker.build()
         client = docker.from_env()
         for image in client.images.list():
@@ -55,6 +64,7 @@ class TestMantidDockerContainer(unittest.TestCase):
                   .format(self.mantid_docker.image_name, client.images.list()))
 
     def test_create_volumes_default(self):
+        """ Ensure the volumes are created correctly when volumes are specified """
         # Create a dummy MantidDocker object
         default_mantid_docker = MantidDocker(reduction_script='test',
                                              input_file='test',
@@ -67,6 +77,7 @@ class TestMantidDockerContainer(unittest.TestCase):
         self.assertEqual(actual, expected)
 
     def test_create_volumes_non_default(self):
+        """ Ensure the volumes are created correctly when volumes are NOT specified """
         self.assertEqual(self.mantid_docker.input_mount, self.input_mount)
         self.assertEqual(self.mantid_docker.output_mount, self.output_mount)
         actual = self.mantid_docker.create_volumes()
@@ -76,6 +87,7 @@ class TestMantidDockerContainer(unittest.TestCase):
         self.assertEqual(actual, expected)
 
     def test_create_environment_variables(self):
+        """ Ensure the environmental variables are created correctly """
         actual = self.mantid_docker.create_environment_variables()
         expected = {'SCRIPT': self.script_location,
                     'INPUT_FILE': self.input_data_location,
@@ -83,6 +95,10 @@ class TestMantidDockerContainer(unittest.TestCase):
         self.assertEqual(actual, expected)
 
     def test_reduce_simple(self):
+        """
+        Test if the container can successfully run the script in
+        docker_reduction/mantid/tests/input/load_script.py
+        """
         self.mantid_docker.run(self.mantid_docker.create_volumes(),
                                self.mantid_docker.create_environment_variables())
         self.assertTrue(os.path.isfile(os.path.join(self.output_mount.host_location,
@@ -99,8 +115,8 @@ class TestMantidDockerContainer(unittest.TestCase):
             try:
                 if os.path.isfile(file_path):
                     os.unlink(file_path)
-            except OSError as excep:
-                print(excep)
+            except OSError:
+                pass  # this only happens when the function is called but nothing is there!
 
     @staticmethod
     def _create_test_input_mount(input_directory):
