@@ -10,10 +10,11 @@ from mock import (Mock, patch, call)
 
 from utils.clients.queue_client import QueueClient
 from monitors.settings import (CYCLE_FOLDER, LAST_RUNS_CSV)
-import monitors.new_end_of_run_monitor as eorm
-from monitors.new_end_of_run_monitor import (InstrumentMonitor,
-                                             FileNotFoundError,
-                                             InstrumentMonitorError)
+import monitors.run_detection as eorm
+from monitors.run_detection import (InstrumentMonitor,
+                                    FileNotFoundError,
+
+                                    InstrumentMonitorError)
 
 # Test data
 SUMMARY_FILE = ("WIS44731Smith,Smith,"
