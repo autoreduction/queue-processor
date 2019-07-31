@@ -3,3 +3,4 @@ pylint
 coveralls
 python-coveralls
 mock
+django-debug-toolbar

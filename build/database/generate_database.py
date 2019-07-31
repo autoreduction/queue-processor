@@ -41,10 +41,12 @@ def run_sql_file(sql_file_location, logger):
         process_output, process_err = mysql_process.communicate()
         if process_output != '':
             logger.info(process_output)
-        if process_err.count('mysql: [Warning] Using a password on the '
-                             'command line interface can be insecure') == 1:
+        # For checking process_err, a special case is when a password is specified because
+        # that results in process_err being populated with an warning we accept
+        if 'Using a password on the command line interface can be insecure' in process_err:
             logger.warning(process_err)
         elif process_err != '':
+            logger.error("Error when running %s" % access_string)
             logger.error(process_err)
             print("Script did not complete. Check build.log for more details.")
             print(process_err, file=sys.stderr)
@@ -107,8 +109,9 @@ def add_test_user(logger):
     process_output, process_err = mysql_process.communicate(input=to_exec)
     if process_output != '':
         logger.info(process_output)
-    if process_err.count('mysql: [Warning] Using a password on the '
-                         'command line interface can be insecure') == 1:
+    # For checking process_err, a special case is when a password is specified because
+    # that results in process_err being populated with an warning we accept
+    if 'Using a password on the command line interface can be insecure' in process_err:
         logger.warning(process_err)
     elif process_err != '':
         logger.error(process_err)

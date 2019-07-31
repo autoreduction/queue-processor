@@ -79,14 +79,6 @@ def channels_redirected(out_file, err_file, out_stream):
             _redirect_channels(old_stdout, old_stderr)  # restore stderr.
 
 
-def linux_to_windows_path(path):
-    """ Convert linux path to windows path. """
-    # '/isis/' maps to '\\isis\inst$\'
-    path = path.replace('/', '\\')
-    path = path.replace('\\isis\\', '\\\\isis\\inst$\\')
-    return path
-
-
 def windows_to_linux_path(path, temp_root_directory):
     """ Convert windows path to linux path. """
     # '\\isis\inst$\' maps to '/isis/'
@@ -410,7 +402,7 @@ class PostProcessAdmin(object):
                 and self.instrument not in MISC["excitation_instruments"]:
             self._remove_directory(copy_destination)
 
-        self.data['reduction_data'].append(linux_to_windows_path(copy_destination))
+        self.data['reduction_data'].append(copy_destination)
         logger.info("Moving %s to %s", temp_result_dir, copy_destination)
         try:
             self._copy_tree(temp_result_dir, copy_destination)
