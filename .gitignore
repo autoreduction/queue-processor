@@ -41,4 +41,4 @@ apache_django_wsgi.conf
 site.retry
 vault.yml
 
-DS_Store
+.DS_Store
