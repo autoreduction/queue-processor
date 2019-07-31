@@ -9,7 +9,8 @@
 
 # Ignore log data
 *.log
-*.out
+
+# *.out
 
 # Ignore settings files
 settings.py
