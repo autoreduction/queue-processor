@@ -10,10 +10,11 @@ from mock import (Mock, patch, call)
 
 from utils.clients.queue_client import QueueClient
 from monitors.settings import (CYCLE_FOLDER, LAST_RUNS_CSV)
-import monitors.new_end_of_run_monitor as eorm
-from monitors.new_end_of_run_monitor import (InstrumentMonitor,
-                                             FileNotFoundError,
-                                             InstrumentMonitorError)
+import monitors.run_detection as eorm
+from monitors.run_detection import (InstrumentMonitor,
+                                    FileNotFoundError,
+
+                                    InstrumentMonitorError)
 
 # Test data
 SUMMARY_FILE = ("WIS44731Smith,Smith,"
@@ -120,7 +121,7 @@ class TestEndOfRunMonitor(unittest.TestCase):
         self.assertEqual(RUN_DICT, data_dict)
 
     @patch('os.path.isfile', return_value=True)
-    @patch('monitors.new_end_of_run_monitor.read_rb_number_from_nexus_file',
+    @patch('monitors.run_detection.read_rb_number_from_nexus_file',
            return_value='1820461')
     def test_submit_run(self, read_rb_mock, isfile_mock):
         client = Mock()
@@ -150,7 +151,7 @@ class TestEndOfRunMonitor(unittest.TestCase):
         isfile_mock.assert_called_with(data_loc)
 
     @patch('os.path.isfile', return_vaule=True)
-    @patch('monitors.new_end_of_run_monitor.read_rb_number_from_nexus_file',
+    @patch('monitors.run_detection.read_rb_number_from_nexus_file',
            return_value=None)
     def test_submit_run_invalid_nexus(self, read_rb_mock, isfile_mock):
         client = Mock()
@@ -168,19 +169,19 @@ class TestEndOfRunMonitor(unittest.TestCase):
         isfile_mock.assert_called_with(data_loc)
         read_rb_mock.assert_called_once_with(data_loc)
 
-    @patch('monitors.new_end_of_run_monitor.nxload', return_value=NXLOAD_MOCK)
+    @patch('monitors.run_detection.nxload', return_value=NXLOAD_MOCK)
     def test_read_rb_number_from_nexus(self, nxload_mock):
         rb_num = eorm.read_rb_number_from_nexus_file('mynexus.nxs')
         self.assertEqual(rb_num, '1910232')
         nxload_mock.assert_called_once_with('mynexus.nxs')
 
-    @patch('monitors.new_end_of_run_monitor.nxload', return_value=NXLOAD_MOCK_EMPTY)
+    @patch('monitors.run_detection.nxload', return_value=NXLOAD_MOCK_EMPTY)
     def test_read_rb_number_from_nexus_invalid(self, nxload_mock):
         rb_num = eorm.read_rb_number_from_nexus_file('mynexus.nxs')
         self.assertIsNone(rb_num)
         nxload_mock.assert_called_once_with('mynexus.nxs')
 
-    @patch('monitors.new_end_of_run_monitor.nxload', side_effect=IOError('HDF4 file'))
+    @patch('monitors.run_detection.nxload', side_effect=IOError('HDF4 file'))
     def test_read_rb_number_from_nexus_hdf4(self, nxload_mock):
         rb_num = eorm.read_rb_number_from_nexus_file('mynexus.nxs')
         self.assertIsNone(rb_num)
@@ -216,9 +217,9 @@ class TestEndOfRunMonitor(unittest.TestCase):
         run_number = inst_mon.submit_run_difference(44731)
         self.assertEqual(run_number, '44731')
 
-    @patch('monitors.new_end_of_run_monitor.InstrumentMonitor.__init__',
+    @patch('monitors.run_detection.InstrumentMonitor.__init__',
            return_value=None)
-    @patch('monitors.new_end_of_run_monitor.InstrumentMonitor.submit_run_difference',
+    @patch('monitors.run_detection.InstrumentMonitor.submit_run_difference',
            return_value='44736')
     def test_update_last_runs(self, run_diff_mock, inst_mon_mock):
         # Setup test
@@ -236,9 +237,9 @@ class TestEndOfRunMonitor(unittest.TestCase):
             for row in csv_reader:
                 self.assertEqual('44736', row[1])
 
-    @patch('monitors.new_end_of_run_monitor.InstrumentMonitor.__init__',
+    @patch('monitors.run_detection.InstrumentMonitor.__init__',
            return_value=None)
-    @patch('monitors.new_end_of_run_monitor.InstrumentMonitor.submit_run_difference',
+    @patch('monitors.run_detection.InstrumentMonitor.submit_run_difference',
            side_effect=InstrumentMonitorError('Error'))
     def test_update_last_runs_with_error(self, run_diff_mock, inst_mon_mock):
         # Setup test
@@ -256,13 +257,13 @@ class TestEndOfRunMonitor(unittest.TestCase):
             for row in csv_reader:
                 self.assertEqual('44733', row[1])
 
-    @patch('monitors.new_end_of_run_monitor.update_last_runs')
+    @patch('monitors.run_detection.update_last_runs')
     def test_main(self, update_last_runs_mock):
         eorm.main()
         update_last_runs_mock.assert_called_with(LAST_RUNS_CSV)
         update_last_runs_mock.assert_called_once()
 
-    @patch('monitors.new_end_of_run_monitor.update_last_runs')
+    @patch('monitors.run_detection.update_last_runs')
     def test_main_lock_timeout(self, _):
         with FileLock('{}.lock'.format(LAST_RUNS_CSV)):
             eorm.main()

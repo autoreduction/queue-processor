@@ -17,10 +17,10 @@ from utils.project.structure import get_log_file
 from utils.project.static_content import LOG_FORMAT
 
 # Setup logging
-EORM_LOG = logging.getLogger('end_of_run_monitor')
+EORM_LOG = logging.getLogger('run_detection')
 EORM_LOG.setLevel(logging.INFO)
 
-FH = logging.FileHandler(get_log_file('end_of_run_monitor.log'))
+FH = logging.FileHandler(get_log_file('run_detection.log'))
 CH = logging.StreamHandler()
 FORMATTER = logging.Formatter(LOG_FORMAT)
 FH.setFormatter(FORMATTER)
