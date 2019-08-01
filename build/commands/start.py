@@ -26,14 +26,16 @@ class Start(Command):
     description = 'Start the services that are required to test the project: ActiveMQ'
     user_options = []
 
+    # pylint:disable=no-self-use
     def initialize_options(self):
         """ Currently not required as we are only starting ActiveMQ
             If more services become required we will need to add parameters for this"""
-        pass
+        return
 
+    # pylint:disable=no-self-use
     def finalize_options(self):
         """ See above comment regarding only ActiveMQ """
-        pass
+        return
 
     def run(self):
         """

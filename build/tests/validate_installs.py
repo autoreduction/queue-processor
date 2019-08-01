@@ -47,7 +47,7 @@ def _validate_activemq():
 
 def _validate_icat():
     try:
-        # pylint:disable=unused-variable
+        # pylint:disable=unused-import
         import icat
     except ImportError:
         return False

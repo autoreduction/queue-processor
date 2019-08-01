@@ -15,7 +15,7 @@ import logging
 
 
 # pylint:disable=too-few-public-methods
-class BuildLogger(object):
+class BuildLogger:
     """
     Class to handle logging for build script
     """
@@ -25,8 +25,7 @@ class BuildLogger(object):
     def __init__(self, root_directory):
         # Clear log file
         self.location = os.path.join(root_directory, 'build.log')
-        with open(self.location, 'w'):
-            pass
+        open(self.location, 'w').close()
         self._initialise_logger(root_directory)
 
     def _initialise_logger(self, root_directory):

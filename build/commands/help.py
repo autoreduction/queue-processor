@@ -21,13 +21,15 @@ class Help(Command):
     description = "Provide help on using this setup"
     user_options = []
 
+    # pylint:disable=no-self-use
     def initialize_options(self):
-        """ No args hence pass """
-        pass
+        """ No args hence return """
+        return
 
+    # pylint:disable=no-self-use
     def finalize_options(self):
-        """ No args hence pass """
-        pass
+        """ No args hence return """
+        return
 
     # pylint:disable=no-self-use
     def run(self):

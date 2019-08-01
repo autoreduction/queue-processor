@@ -76,10 +76,10 @@ class TestDatabaseGeneration(unittest.TestCase):
                 cur.execute("SELECT * FROM {};".format(table))
                 if table == "reduction_viewer_status":
                     self.assertTrue(len(cur.fetchall()) == 5,
-                                    "{} does not contain 5 rows.{} : {}".
-                                    format(table, table, cur.fetchall()))
+                                    "{0} does not contain 5 rows.{0} : {1}".
+                                    format(table, cur.fetchall()))
                 else:
                     self.assertTrue(len(cur.fetchall()) >= 3,
-                                    "{} does not contain at least 3 rows.{} : {}".
-                                    format(table, table, cur.fetchall()))
+                                    "{0} does not contain at least 3 rows.{0} : {1}".
+                                    format(table, cur.fetchall()))
         database.close()

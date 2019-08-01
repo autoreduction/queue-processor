@@ -106,7 +106,7 @@ class InstallExternals(Command):
         :return: False if imports fail
         """
         try:
-            # pylint:disable=unused-variable
+            # pylint:disable=unused-variable,unused-import
             from build.install.install_services import (install_service, validate_input,
                                                         valid_services)
         except ImportError:
