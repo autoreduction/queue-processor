@@ -13,7 +13,7 @@ import argparse
 from utils.clients.database_client import DatabaseClient
 
 
-class ManualRemove(object):
+class ManualRemove:
     """
     Handles removing a run from the database
     """
@@ -78,11 +78,11 @@ class ManualRemove(object):
             print("\tv{} - {}".format(run.run_version, run.run_name))
 
         # Get user input for which versions they wish to delete
-        user_input = raw_input("Which runs would you like to delete (e.g. 1,2,3): ")
+        user_input = input("Which runs would you like to delete (e.g. 1,2,3): ")
         input_valid, user_input = self.validate_csv_input(user_input)
         while input_valid is False:
-            user_input = raw_input('Input of \'{}\' was invalid. '
-                                   'Please provide a comma separated list of values:')
+            user_input = input('Input of \'{}\' was invalid. '
+                               'Please provide a comma separated list of values:')
             input_valid, user_input = self.validate_csv_input(user_input)
 
         # Remove runs that the user does NOT want to delete from the delete list
