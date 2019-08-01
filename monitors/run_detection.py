@@ -30,18 +30,18 @@ EORM_LOG.addHandler(FH)
 EORM_LOG.addHandler(CH)
 
 
+# pylint:disable=unnecessary-pass
 class InstrumentMonitorError(Exception):
     """
-    Any fatal exception that occurs during execution of the
-    instrument monitor
+    Any fatal exception that occurs during execution of the instrument monitor
     """
     pass
 
 
-class FileNotFoundError(Exception):
+# pylint:disable=unnecessary-pass
+class RunFileNotFoundError(Exception):
     """
-    The run file couldn't be found. This may be because
-    of an inconsistency among DFS nodes.
+    The run file couldn't be found. This may be because of an inconsistency among DFS nodes.
     """
     pass
 
@@ -83,7 +83,7 @@ def read_rb_number_from_nexus_file(nxs_file_path):
     return None
 
 
-class InstrumentMonitor(object):
+class InstrumentMonitor:
     """
     Checks the ISIS archive for new runs on an instrument and submits them to ActiveMQ
     """
@@ -155,7 +155,7 @@ class InstrumentMonitor(object):
             data_dict = self.build_dict(rb_number, run_number, file_path)
             self.client.send('/queue/DataReady', json.dumps(data_dict), priority='9')
         else:
-            raise FileNotFoundError("File does not exist '{}'".format(file_path))
+            raise RunFileNotFoundError("File does not exist '{}'".format(file_path))
 
     def submit_run_difference(self, local_last_run):
         """
@@ -183,7 +183,7 @@ class InstrumentMonitor(object):
                 file_name = last_run_data[0] + run_number + self.file_ext
                 try:
                     self.submit_run(summary_rb_number, run_number, file_name)
-                except FileNotFoundError as ex:
+                except RunFileNotFoundError as ex:
                     # If the file isn't found then just return the last file sent
                     # and try again next time
                     EORM_LOG.error(ex)

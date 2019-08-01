@@ -12,7 +12,7 @@ from utils.clients.queue_client import QueueClient
 from monitors.settings import (CYCLE_FOLDER, LAST_RUNS_CSV)
 import monitors.run_detection as eorm
 from monitors.run_detection import (InstrumentMonitor,
-                                    FileNotFoundError,
+                                    RunFileNotFoundError,
 
                                     InstrumentMonitorError)
 
@@ -146,7 +146,7 @@ class TestEndOfRunMonitor(unittest.TestCase):
         inst_mon = InstrumentMonitor(client, 'WISH')
         inst_mon.data_dir = '/my/data/dir'
         data_loc = os.path.join(inst_mon.data_dir, CYCLE_FOLDER, 'WISH00044733.nxs')
-        with self.assertRaises(FileNotFoundError):
+        with self.assertRaises(RunFileNotFoundError):
             inst_mon.submit_run('1820333', '00044733', 'WISH00044733.nxs')
         isfile_mock.assert_called_with(data_loc)
 
@@ -206,7 +206,7 @@ class TestEndOfRunMonitor(unittest.TestCase):
     def test_submit_run_difference_no_file(self):
         # Setup test
         inst_mon = InstrumentMonitor(None, 'WISH')
-        inst_mon.submit_run = Mock(side_effect=FileNotFoundError('File not found'))
+        inst_mon.submit_run = Mock(side_effect=RunFileNotFoundError('File not found'))
         inst_mon.file_ext = '.nxs'
         inst_mon.read_instrument_last_run = Mock(return_value=['WISH',
                                                                '00044733',
