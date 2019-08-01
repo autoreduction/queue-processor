@@ -6,7 +6,7 @@ python:
 services:
   - mysql
 
-dist: trusty
+dist: xenial
 
 before_install:
   - mysql_upgrade --force
