@@ -21,7 +21,7 @@ from QueueProcessors.AutoreductionProcessor.autoreduction_logging_setup import l
 from QueueProcessors.AutoreductionProcessor.settings import MISC, ACTIVEMQ
 
 
-class Listener(object):
+class Listener:
     """ Listener class that is used to consume messages from ActiveMQ. """
     def __init__(self, client):
         """ Initialise listener. """
@@ -130,7 +130,7 @@ class Listener(object):
         self.cancel_list.remove(tup)
 
 
-class Consumer(object):
+class Consumer:
     # pylint: disable=too-few-public-methods
     """ Class used to setup the queue listener. """
     def __init__(self):

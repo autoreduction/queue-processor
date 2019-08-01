@@ -14,7 +14,7 @@
 """
 Post Process Administrator. It kicks off cataloging and reduction jobs.
 """
-import cStringIO
+import io
 import errno
 import imp
 import json
@@ -31,7 +31,7 @@ import stomp
 # pylint:disable=no-name-in-module,import-error
 from QueueProcessors.AutoreductionProcessor.settings import ACTIVEMQ, MISC
 from QueueProcessors.AutoreductionProcessor.autoreduction_logging_setup import logger
-from QueueProcessors.AutoreductionProcessor.timeout import timeout
+from QueueProcessors.AutoreductionProcessor.timeout import TimeOut
 
 
 class SkippedRunException(Exception):
@@ -39,6 +39,7 @@ class SkippedRunException(Exception):
     Exception for runs that have been skipped
     Note: this is currently only the case for EnginX Event mode runs at ISIS
     """
+    # pylint:disable=unnecessary-pass
     pass
 
 
@@ -51,7 +52,7 @@ def channels_redirected(out_file, err_file, out_stream):
     """
     old_stdout, old_stderr = sys.stdout, sys.stderr
 
-    class MultipleChannels(object):
+    class MultipleChannels:
         # pylint: disable=expression-not-assigned
         """ Behaves like a stream object, but outputs to multiple streams."""
         def __init__(self, *streams):
@@ -100,7 +101,7 @@ def prettify(data):
     return json.dumps(data_dict)
 
 
-class PostProcessAdmin(object):
+class PostProcessAdmin:
     """ Main class for the PostProcessAdmin """
 
     # pylint: disable=too-many-instance-attributes
@@ -110,8 +111,8 @@ class PostProcessAdmin(object):
         self.data = data
         self.client = connection
 
-        self.reduction_log_stream = cStringIO.StringIO()
-        self.admin_log_stream = cStringIO.StringIO()
+        self.reduction_log_stream = io.StringIO()
+        self.admin_log_stream = io.StringIO()
 
         try:
             self.data_file = windows_to_linux_path(self.validate_input('data'),
@@ -136,8 +137,7 @@ class PostProcessAdmin(object):
             value = self.data[key]
             logger.debug("%s: %s", key, str(value)[:50])
             return value
-        else:
-            raise ValueError('%s is missing' % key)
+        raise ValueError('%s is missing' % key)
 
     def replace_variables(self, reduce_script):
         """
@@ -188,7 +188,7 @@ class PostProcessAdmin(object):
         """ Start the reduction job.  """
         # pylint: disable=too-many-nested-blocks
         try:
-            logger.debug("Calling: " + ACTIVEMQ['reduction_started'] + "\n" + prettify(self.data))
+            logger.debug("Calling: %s\n%s", ACTIVEMQ['reduction_started'], prettify(self.data))
             self.client.send(ACTIVEMQ['reduction_started'], json.dumps(self.data))
 
             # Specify instrument directory
@@ -222,6 +222,7 @@ class PostProcessAdmin(object):
                     path_parts = final_result_dir.split('/')
                     new_path = '/'
                     for part in path_parts:
+                        # pylint:disable=consider-using-in
                         if part != 'autoreduced' and part != '':
                             new_path = new_path + part + '/'
                     maximum = 0
@@ -250,7 +251,7 @@ class PostProcessAdmin(object):
                 should_be_readable = [self.data_file]
 
                 # try to make directories which should exist
-                for path in filter(lambda p: not os.path.isdir(p), should_be_writable): # pylint: disable=deprecated-lambda
+                for path in filter(lambda p: not os.path.isdir(p), should_be_writable):
                     os.makedirs(path)
 
                 does_not_exist = lambda path: not os.access(path, os.F_OK)
@@ -259,11 +260,13 @@ class PostProcessAdmin(object):
 
                 # we want write access to these directories, plus the final output paths
                 if filter(not_writable, should_be_writable):
+                    # pylint:disable=unsubscriptable-object
                     fail_path = filter(not_writable, should_be_writable)[0]
                     problem = "does not exist" if does_not_exist(fail_path) else "no write access"
                     raise Exception("Couldn't write to %s  -  %s" % (fail_path, problem))
 
                 if filter(not_readable, should_be_readable):
+                    # pylint:disable=unsubscriptable-object
                     fail_path = filter(not_readable, should_be_readable)[0]
                     problem = "does not exist" if does_not_exist(fail_path) else "no read access"
                     raise Exception("Couldn't read %s  -  %s" % (fail_path, problem))
@@ -309,7 +312,7 @@ class PostProcessAdmin(object):
                         skip_numbers = []
                     if self.data['run_number'] not in skip_numbers:
                         reduce_script = self.replace_variables(reduce_script)
-                        with timeout(MISC["script_timeout"]):
+                        with TimeOut(MISC["script_timeout"]):
                             out_directories = reduce_script.main(input_file=str(self.data_file),
                                                                  output_dir=str(reduce_result_dir))
                     else:
@@ -324,9 +327,9 @@ class PostProcessAdmin(object):
                 # Parent except block will discard exception type, so format the type as a string
                 if 'skip' in str(exp).lower():
                     raise SkippedRunException(exp)
-                else:
-                    error_str = "Error in user reduction script: %s - %s" % (type(exp).__name__,
-                                                                             exp)
+
+                error_str = "Error in user reduction script: %s - %s" % (type(exp).__name__, exp)
+
                 logger.error(traceback.format_exc())
                 raise Exception(error_str)
 
@@ -382,12 +385,12 @@ class PostProcessAdmin(object):
         else:
             # reduction has successfully completed
             self.client.send(ACTIVEMQ['reduction_complete'], json.dumps(self.data))
-            logger.info("Calling: " + ACTIVEMQ['reduction_complete'] + "\n" + prettify(self.data))
+            logger.info("Calling: %s\n%s", ACTIVEMQ['reduction_complete'], prettify(self.data))
             logger.info("Reduction job successfully complete")
 
     def _send_message_and_log(self, destination):
         """ Send reduction run to error. """
-        logger.info("\nCalling " + destination + " --- " + prettify(self.data))
+        logger.info("\nCalling %s --- %s", destination, prettify(self.data))
         self.client.send(destination, json.dumps(self.data))
 
     def copy_temp_directory(self, temp_result_dir, copy_destination):
@@ -415,7 +418,7 @@ class PostProcessAdmin(object):
         logger.info("Remove temp dir %s", temp_result_dir)
         try:
             shutil.rmtree(temp_result_dir, ignore_errors=True)
-        except:
+        except OSError:
             logger.info("Unable to remove temporary directory - %s", temp_result_dir)
 
     def log_and_message(self, msg):
@@ -530,7 +533,7 @@ def main():
         logger.info("Something went wrong: %s", str(exp))
         try:
             stomp_connection.send(ACTIVEMQ['postprocess_error'], json.dumps(json_data))
-            logger.info("Called " + ACTIVEMQ['postprocess_error'] + "----" + prettify(json_data))
+            logger.info("Called %s ---- %s", ACTIVEMQ['postprocess_error'], prettify(json_data))
         finally:
             sys.exit()
 
