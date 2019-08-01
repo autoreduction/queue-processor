@@ -12,8 +12,8 @@ from __future__ import print_function
 import sys
 from os import path
 
-import MySQLdb
-import MySQLdb.cursors
+import pymysql
+import pymysql.cursors
 
 from scripts.NagiosChecks.autoreduce_settings import MYSQL, ISIS_MOUNT
 
@@ -26,9 +26,9 @@ def checkLastRun():
              2 - Failure
     """
     message = ""
-    db = MySQLdb.connect(host=MYSQL['host'], port=3306,
+    db = pymysql.connect(host=MYSQL['host'], port=3306,
                          user=MYSQL['username'], passwd=MYSQL['password'],
-                         db=MYSQL['db'], cursorclass=MySQLdb.cursors.DictCursor)
+                         db=MYSQL['db'], cursorclass=pymysql.cursors.DictCursor)
     cursor = db.cursor()
 
     # Get Instruments
@@ -60,6 +60,7 @@ def checkLastRun():
         print(message)
         return 2
     return 0
+
 
 # pylint: disable=using-constant-test
 if "__name__":

@@ -9,7 +9,7 @@ Validate the database has been correctly generated
 """
 import unittest
 
-import MySQLdb
+import pymysql
 
 
 # All TABLES in the database Schema
@@ -47,7 +47,7 @@ class TestDatabaseGeneration(unittest.TestCase):
         Test that the local host database on travis is correctly
         generated from the .sql construction files
         """
-        database = MySQLdb.connect(host="localhost",
+        database = pymysql.connect(host="localhost",
                                    user="test-user",
                                    passwd="pass",
                                    db="autoreduction")
@@ -66,7 +66,7 @@ class TestDatabaseGeneration(unittest.TestCase):
         Current test data adds 3 rows per table (so check this)
         exception to this is status that has 5 columns
         """
-        database = MySQLdb.connect(host="localhost",
+        database = pymysql.connect(host="localhost",
                                    user="test-user",
                                    passwd="pass",
                                    db="autoreduction")
