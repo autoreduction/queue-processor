@@ -65,9 +65,8 @@ class DatabaseClient(AbstractClient):
             # the exception name instead
             if type(exp).__name__ == 'OperationalError':
                 raise ConnectionException("MySQL")
-            else:
-                # re-raise the error if it's something we do not expect
-                raise
+            # re-raise the error if it's something we do not expect
+            raise
         return True
 
     def get_connection(self):

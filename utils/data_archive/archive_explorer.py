@@ -12,7 +12,7 @@ import os
 from utils.data_archive.file_filter import filter_files_by_time, filter_files_by_extension
 
 
-class ArchiveExplorer(object):
+class ArchiveExplorer:
     """
     Various functions for extracting data from different commonly
     accessed locations in the data archive
