@@ -8,7 +8,7 @@
 Client for accessing the user office logon
 """
 import ssl
-from urllib2 import HTTPSHandler
+from urllib.request import HTTPSHandler
 import logging
 
 import suds
@@ -16,7 +16,7 @@ from suds.transport.https import HttpAuthenticated
 from suds.client import Client
 
 # The below is a template on the repository
-# pylint: disable=relative-import
+# pylint: disable=relative-import,no-name-in-module
 from settings import CERTIFICATE_LOCATION, UOWS_URL
 
 
@@ -40,14 +40,13 @@ class CustomTransport(HttpAuthenticated):
         return handlers
 
 
-class UOWSClient(object):
+class UOWSClient:
     """
     A client for interacting with the User Office Web Service
     """
     def __init__(self, **kwargs):
         url = UOWS_URL
-        if 'URL' in kwargs:
-            url = kwargs['URL']
+        url = kwargs.get('URL')
         self.client = Client(url, transport=CustomTransport())
 
     # Add the ability to use 'with'
@@ -64,7 +63,7 @@ class UOWSClient(object):
         try:
             return self.client.service.isTokenValid(session_id)
         except suds.WebFault:
-            LOGGER.warn("Session ID is not valid: %s", session_id)
+            LOGGER.warning("Session ID is not valid: %s", session_id)
             return False
 
     def get_person(self, session_id):
@@ -88,7 +87,7 @@ class UOWSClient(object):
                 }
                 return trimmed_person
         except suds.WebFault:
-            LOGGER.warn("Session ID is not valid: %s", session_id)
+            LOGGER.warning("Session ID is not valid: %s", session_id)
         return None
 
     def logout(self, session_id):
@@ -99,4 +98,4 @@ class UOWSClient(object):
         try:
             self.client.service.logout(session_id)
         except suds.WebFault:
-            LOGGER.warn("Failed to logout Session ID %s", session_id)
+            LOGGER.warning("Failed to logout Session ID %s", session_id)

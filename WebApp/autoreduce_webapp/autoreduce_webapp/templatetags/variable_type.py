@@ -20,6 +20,7 @@ def variable_type(var_type):
     """
     if var_type == 'boolean':
         return 'checkbox'
-    if var_type == 'list_number' or var_type == 'list_text':
+    text_types = ['list_number', 'list_text']
+    if var_type in text_types:
         return 'text'
     return var_type

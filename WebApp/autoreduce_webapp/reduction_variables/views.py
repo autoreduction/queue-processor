@@ -60,9 +60,9 @@ def instrument_summary(request, instrument, last_run_object):
         run_end = max(run_number - 1, 0)
 
     current_start = current_variables[0].start_run
-    # pylint:disable=deprecated-lambda
     next_run_starts = filter(lambda start: start > current_start
                              , sorted(upcoming_variables_by_run_dict.keys()))
+    # pylint:disable=unsubscriptable-object
     current_end = next_run_starts[0] - 1 if next_run_starts else 0
 
     current_vars = {
@@ -157,6 +157,7 @@ def instrument_variables(request, instrument=None, start=0, end=0, experiment_re
     instrument_name = instrument
     start, end = int(start), int(end)
 
+    # pylint:disable=no-else-return
     if request.method == 'POST':
         # Submission to modify variables.
         # [("var-standard-"+name, value) or ("var-advanced-"+name, value)]
@@ -254,6 +255,7 @@ def instrument_variables(request, instrument=None, start=0, end=0, experiment_re
             InstrumentVariablesUtils().get_current_and_upcoming_variables(instrument.name)
 
         # Unique, comma-joined list of all start runs belonging to the upcoming variables.
+        # pylint:disable=consider-using-set-comprehension
         upcoming_run_variables = ','.join(list(set([str(var.start_run) for var in
                                                     upcoming_variables_by_run])))
 
@@ -579,6 +581,7 @@ def preview_script(request, instrument=None, run_number=0, experiment_reference=
         We also don't want to check the instrument in this case,
         since run-specific scripts ought to be viewable without owning the instrument.
         """
+        # pylint:disable=unnecessary-pass
         pass
 
     try:
@@ -627,7 +630,6 @@ def preview_script(request, instrument=None, run_number=0, experiment_reference=
         Gives a Python class declaration with variable dicts as required
         """
         lines = ["class " + name + ":"]
-        # pylint:disable=deprecated-lambda
         standard_vars, advanced_vars = filter(lambda var: not var.is_advanced, variables), filter(
             lambda var: var.is_advanced, variables)
 
@@ -651,10 +653,8 @@ def preview_script(request, instrument=None, run_number=0, experiment_reference=
         """
         # Find the import/s for the reduction variables and remove them.
         lines = text.split("\n")
-        # pylint:disable=deprecated-lambda
         imports = filter(lambda line: line.lstrip().startswith("import")
                          or line.lstrip().startswith("from"), lines)
-        # pylint:disable=deprecated-lambda
         import_vars = filter(lambda line: "reduce_vars" in line, imports)
         lines = [line for line in lines if line not in import_vars]
 
@@ -663,12 +663,12 @@ def preview_script(request, instrument=None, run_number=0, experiment_reference=
 
         # Figure out space/tabs
         indent = "    "  # Defaults to PEP 8 standard!
-        # pylint:disable=deprecated-lambda
         if filter(lambda line: line.startswith("\t"), lines):
             indent = "\t"
 
         if import_vars:
             # Assume import is of the form 'import reduce_vars as {name}' or 'import reduce_vars'
+            # pylint:disable=unsubscriptable-object
             classname = import_vars[0].rstrip().split(" ")[-1]
             # Print the variables and a header for them
             lines = format_header("Reduction variables") + \

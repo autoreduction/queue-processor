@@ -14,10 +14,11 @@ import math
 # pylint:disable=too-few-public-methods
 class PageLimitException(Exception):
     """ Custom Exception class to catch when page record limit is reached"""
+    # pylint:disable=unnecessary-pass
     pass
 
 
-class CustomPaginator(object):
+class CustomPaginator:
     """
     CustomPaginator to allow for more complex functionality to be used without doing heavy
     lifting in the django template code
@@ -121,7 +122,7 @@ class CustomPaginator(object):
 
 
 # pylint:disable=too-few-public-methods
-class CustomPage(object):
+class CustomPage:
     """
     Generic CustomPage class to model a single page in the pagination
     """
@@ -142,6 +143,7 @@ class CustomPage(object):
 
     def set_start_and_end(self):
         """ Implemented by child class """
+        # pylint:disable=unnecessary-pass
         pass
 
     def add_record(self, record):

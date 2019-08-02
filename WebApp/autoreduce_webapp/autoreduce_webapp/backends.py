@@ -17,7 +17,7 @@ from icat_cache import ICATCache
 LOGGER = logging.getLogger(__name__)
 
 
-class UOWSAuthenticationBackend(object):
+class UOWSAuthenticationBackend:
     """
     Custom authentication for use with the User Office Web Service
     """

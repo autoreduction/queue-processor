@@ -30,7 +30,7 @@ os.environ["DJANGO_SETTINGS_MODULE"] = "autoreduce_webapp.settings"
 LOGGER = logging.getLogger('app')
 
 
-class StatusUtils(object):
+class StatusUtils:
     """
     Utilities for the Status model
     """
@@ -67,7 +67,7 @@ class StatusUtils(object):
 
 
 # pylint:disable=too-few-public-methods
-class InstrumentUtils(object):
+class InstrumentUtils:
     """
     Utilities for the Instrument model
     """
@@ -86,7 +86,7 @@ class InstrumentUtils(object):
         return instrument
 
 
-class ReductionRunUtils(object):
+class ReductionRunUtils:
     """
     Utilities for the ReductionRun model
     """
@@ -255,7 +255,7 @@ class ReductionRunUtils(object):
         return script, arguments
 
 
-class ScriptUtils(object):
+class ScriptUtils:
     """
     Utilities for the scripts field
     """

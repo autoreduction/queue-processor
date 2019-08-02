@@ -13,7 +13,7 @@ from django.core.exceptions import PermissionDenied
 from django.shortcuts import render
 
 # The below is a template on the repository
-# pylint: disable=relative-import
+# pylint: disable=relative-import,no-name-in-module
 from settings import (DEVELOPMENT_MODE, INSTALLED_APPS, LOGIN_URL,
                       OUTDATED_BROWSERS, UOWS_LOGIN_URL, USER_ACCESS_CHECKS)
 # pylint: disable=relative-import
@@ -66,7 +66,7 @@ def require_staff(function_name):
     """
     Function decorator to check whether the user is a staff memeber
     """
-    # pylint: disable=missing-docstring
+    # pylint: disable=missing-docstring,no-else-return
     def request_processor(request, *args, **kws):
         if has_valid_login(request):
             if request.user.is_staff:
@@ -82,7 +82,7 @@ def require_admin(func):
     """
     Function decorator to check whether the user is a superuser
     """
-    # pylint: disable=missing-docstring
+    # pylint:disable=missing-docstring,no-else-return
     def request_processor(request, *args, **kws):
         if has_valid_login(request):
             if request.user.is_superuser:
@@ -195,6 +195,7 @@ def check_permissions(func):
                     experiment_obj = Experiment.objects.filter(reference_number=
                                                                experiment_reference).first()
                     if experiment_obj:
+                        # pylint:disable=consider-using-set-comprehension
                         optional_instrument_names = list(set([run.instrument.name for run in
                                                               experiment_obj.
                                                               reduction_runs.all()]))

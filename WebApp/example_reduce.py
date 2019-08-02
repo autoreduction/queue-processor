@@ -27,7 +27,7 @@ def main(*args, **kwargs):
    
     # If additional storage location are required,
     # return them as a list of accessible directory paths
-    print kwargs
+    print(kwargs)
     additional_save_location = reduce(kwargs['data'], kwargs['output'])
     return additional_save_location
 

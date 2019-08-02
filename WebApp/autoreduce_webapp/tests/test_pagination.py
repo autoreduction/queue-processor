@@ -58,7 +58,7 @@ class TestCustomPage(unittest.TestCase):
 
 
 # pylint:disable=too-few-public-methods
-class MockRunData(object):
+class MockRunData:
     """ Test class to simulate a Run record from the database """
 
     def __init__(self, run_number, date):

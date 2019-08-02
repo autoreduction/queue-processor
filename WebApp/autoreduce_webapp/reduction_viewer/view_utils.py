@@ -32,7 +32,7 @@ def deactivate_invalid_instruments(func):
         for instrument in instruments:
             reduction_path = os.path.join(REDUCTION_DIRECTORY % instrument.name, 'reduce.py')
             if not os.path.isfile(reduction_path):
-                LOGGER.warn("Could not find reduction file: %s", reduction_path)
+                LOGGER.warning("Could not find reduction file: %s", reduction_path)
                 instrument.is_active = False
                 instrument.save()
 

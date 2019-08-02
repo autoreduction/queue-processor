@@ -122,7 +122,6 @@ def run_queue(request):
     # Filter those which the user shouldn't be able to see
     if USER_ACCESS_CHECKS and not request.user.is_superuser:
         with ICATCache(AUTH='uows', SESSION={'sessionid': request.session['sessionid']}) as icat:
-            # pylint:disable=deprecated-lambda
             pending_jobs = filter(lambda job: job.experiment.reference_number in
                                   icat.get_associated_experiments(int(request.user.username)),
                                   pending_jobs)  # check RB numbers

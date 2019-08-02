@@ -7,7 +7,7 @@
 """
 Utility functions for reduction variables
 """
-import cgi
+import html
 import imp
 import io
 import json
@@ -33,6 +33,7 @@ LOGGER = logging.getLogger('django')
 
 class DataTooLong(ValueError):
     """ Specific valueError to add detail """
+    # pylint:disable=unnecessary-pass
     pass
 
 
@@ -52,7 +53,7 @@ def log_error_and_notify(message):
         notification.save()
 
 
-class VariableUtils(object):
+class VariableUtils:
     """
     Utilities for the generic Variable model
     """
@@ -74,10 +75,8 @@ class VariableUtils(object):
         """
         Create and save a run variable class
         """
-        # pylint:disable=deprecated-lambda
         run_variables = map(lambda i_var: self.derive_run_variable(i_var, reduction_run),
                             instrument_vars)
-        # pylint:disable=deprecated-lambda
         map(lambda r_var: r_var.save(), run_variables)
         return run_variables
 
@@ -176,7 +175,7 @@ class VariableUtils(object):
         var_type = type(value).__name__
         if var_type == 'str':
             return "text"
-        if var_type == 'int' or var_type == 'float':
+        if var_type in ['int', 'float']:
             return "number"
         if var_type == 'bool':
             return "boolean"
@@ -189,7 +188,7 @@ class VariableUtils(object):
         return "text"
 
 
-class InstrumentVariablesUtils(object):
+class InstrumentVariablesUtils:
     """
     Instrument variable specific helper functions
     """
@@ -258,6 +257,7 @@ class InstrumentVariablesUtils(object):
                    start_run__isnull=False,
                    start_run__gt=latest_completed_run_number + 1).order_by('start_run')
 
+        # pylint:disable=consider-using-set-comprehension
         upcoming_run_numbers = set([var.start_run for var in upcoming_run_variables])
         # pylint:disable=expression-not-assigned
         [self.show_variables_for_run(instrument_name, run_number)
@@ -300,7 +300,7 @@ class InstrumentVariablesUtils(object):
         used for subsequent runs under the given experiment reference.
         """
         # Delete old instrument variables if they exist.
-        # pylint:disable=deprecated-lambda
+
         map(lambda var: var.delete(), self.show_variables_for_experiment(instrument_name,
                                                                          experiment_reference))
         # Save the new ones.
@@ -358,7 +358,6 @@ class InstrumentVariablesUtils(object):
                 final_variables = self.get_default_variables(instrument_name)
 
         # Delete all currently saved variables that apply to the range.
-        # pylint:disable=deprecated-lambda
         map(lambda var: var.delete(), applicable_variables)
 
         # Modify the range of the final set to after the specified range, if there is one.
@@ -432,6 +431,7 @@ class InstrumentVariablesUtils(object):
 
         instrument = InstrumentUtils().get_instrument(instrument_name)
         variables = []
+        # pylint:disable=no-member
         if 'standard_vars' in dir(reduce_vars_module):
             variables.extend(
                 self._create_variables(instrument, reduce_vars_module,
@@ -480,14 +480,13 @@ class InstrumentVariablesUtils(object):
             """
             old_var.keep = True
             # Find the new variable from the script.
-            # pylint:disable=deprecated-lambda
             matching_vars = filter(lambda var: var.name == old_var.name,
                                    defaults)
             # Check whether we should and can update the old one.
             if matching_vars and old_var.tracks_script:
+                # pylint:disable=unsubscriptable-object
                 new_var = matching_vars[0]
                 # Copy the new one's important attributes onto the old variable.
-                # pylint:disable=deprecated-lambda
                 map(lambda name: setattr(old_var, name, getattr(new_var, name)),
                     ["value", "type", "is_advanced",
                      "help_text"])
@@ -513,7 +512,6 @@ class InstrumentVariablesUtils(object):
             source_var = variables[0]
             if isinstance(source_var, InstrumentVariable):
                 # Copy the source variable's metadata to the new one.
-                # pylint:disable=deprecated-lambda
                 map(lambda name: setattr(new_var, name, getattr(source_var, name)),
                     ["instrument", "experiment_reference", "start_run"])
             elif isinstance(source_var, RunVariable):
@@ -540,12 +538,12 @@ class InstrumentVariablesUtils(object):
         script_module = imp.new_module(module_name)
         try:
             # pylint:disable=exec-used
-            exec script_text in script_module.__dict__
+            exec(script_text in script_module.__dict__)
             return script_module
         except ImportError as exception:
             log_error_and_notify(
                 "Unable to load reduction script %s "
-                "due to missing import. (%s)" % (script_path, exception.message))
+                "due to missing import. (%s)" % (script_path, exception))
             return None
         except SyntaxError:
             log_error_and_notify("Syntax error in reduction script %s" % script_path)
@@ -618,12 +616,12 @@ class InstrumentVariablesUtils(object):
 
     @staticmethod
     def _replace_special_chars(help_text):
-        help_text = cgi.escape(help_text)  # Remove any HTML already in the help string
+        help_text = html.escape(help_text)  # Remove any HTML already in the help string
         help_text = help_text.replace('\n', '<br>').replace('\t', '&nbsp;&nbsp;&nbsp;&nbsp;')
         return help_text
 
 
-class MessagingUtils(object):
+class MessagingUtils:
     """
     Utilities for sending messages to ActiveMQ
     """

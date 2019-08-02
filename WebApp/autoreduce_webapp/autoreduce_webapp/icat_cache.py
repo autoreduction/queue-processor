@@ -10,7 +10,7 @@ Chached data from the ICAT service
 import datetime
 import logging
 from django.utils import timezone
-# pylint: disable=import-error, relative-import
+# pylint: disable=import-error,relative-import,no-name-in-module
 from settings import CACHE_LIFETIME
 from icat_communication import ICATCommunication
 from models import UserCache, InstrumentCache, ExperimentCache
@@ -22,10 +22,11 @@ class ICATConnectionException(Exception):
     """
     Used to handle exceptions that we might expect from ICAT
     """
+    # pylint:disable=unnecessary-pass
     pass
 
 
-class ICATCache(object):
+class ICATCache:
     """
     A wrapper for ICATCommunication that caches information, and in the case of
     ICAT failure will try to use this cache.
@@ -96,7 +97,7 @@ class ICATCache(object):
             # fields in one query, so we splice that into the constructor.
             new_obj = obj_type(**{attr: str(val)
                                   for attr, val in
-                                  self.icat.get_experiment_details(obj_id).iteritems()
+                                  self.icat.get_experiment_details(obj_id).items()
                                   if attr != "reference_number"})
         new_obj.id_name = obj_id
         new_obj.save()

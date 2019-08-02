@@ -80,10 +80,13 @@ class ReductionRun(models.Model):
     overwrite = models.NullBooleanField(default=True)
 
     # Foreign Keys
-    experiment = models.ForeignKey(Experiment, blank=False, related_name='reduction_runs')
-    instrument = models.ForeignKey(Instrument, related_name='reduction_runs', null=True)
+    experiment = models.ForeignKey(Experiment, blank=False, related_name='reduction_runs',
+                                   on_delete=models.PROTECT)
+    instrument = models.ForeignKey(Instrument, related_name='reduction_runs', null=True,
+                                   on_delete=models.PROTECT)
     retry_run = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
-    status = models.ForeignKey(Status, blank=False, related_name='+')
+    status = models.ForeignKey(Status, blank=False, related_name='+',
+                               on_delete=models.PROTECT)
 
     def __unicode__(self):
         """ :return: run_number and run_name if given """
@@ -111,7 +114,8 @@ class DataLocation(models.Model):
     Represents the location at which the unreduced data is stored on disk
     """
     file_path = models.CharField(max_length=255)
-    reduction_run = models.ForeignKey(ReductionRun, blank=False, related_name='data_location')
+    reduction_run = models.ForeignKey(ReductionRun, blank=False, related_name='data_location',
+                                      on_delete=models.PROTECT)
 
     def __unicode__(self):
         """ :return: the file path to the data"""
@@ -123,7 +127,8 @@ class ReductionLocation(models.Model):
     Represents the location at which the reduced data is stored on disk
     """
     file_path = models.CharField(max_length=255)
-    reduction_run = models.ForeignKey(ReductionRun, blank=False, related_name='reduction_location')
+    reduction_run = models.ForeignKey(ReductionRun, blank=False, related_name='reduction_location',
+                                      on_delete=models.PROTECT)
 
     def __unicode__(self):
         """ :return: the file path to the data"""
