@@ -24,6 +24,8 @@ install:
   # Externals must be after test_settings
   - python setup.py externals -s activemq,icat
   - python setup.py database
+  - cat ./build.log
+  - mysql -uroot
   - sudo python setup.py start
 
 script:
