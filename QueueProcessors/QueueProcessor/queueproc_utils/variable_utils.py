@@ -19,7 +19,7 @@ logging.config.dictConfig(LOGGING)
 logger = logging.getLogger("queue_processor")  # pylint: disable=invalid-name
 
 
-class VariableUtils(object):
+class VariableUtils:
     """ Class to deal with reduction run variables. """
     @staticmethod
     def derive_run_variable(instrument_var, reduction_run):
@@ -34,7 +34,6 @@ class VariableUtils(object):
     def save_run_variables(self, instrument_vars, reduction_run):
         """ Save reduction run variables in the database. """
         logger.info('Saving run variables for %s', str(reduction_run.run_number))
-        # pylint: disable=deprecated-lambda
         run_variables = map(lambda ins_var: self.derive_run_variable(ins_var, reduction_run),
                             instrument_vars)
         for run_variable in run_variables:
@@ -68,6 +67,7 @@ class VariableUtils(object):
         var_type = type(value).__name__
         if var_type == 'str':
             return "text"
+        # pylint:disable=consider-using-in
         if var_type == 'int' or var_type == 'float':
             return "number"
         if var_type == 'bool':

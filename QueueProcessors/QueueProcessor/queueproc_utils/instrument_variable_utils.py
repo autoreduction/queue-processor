@@ -7,8 +7,7 @@
 """
 Module for dealing with instrument reduction variables.
 """
-# pylint: disable=deprecated-lambda
-import cgi
+import html
 import imp
 import io
 import logging.config
@@ -33,10 +32,11 @@ logger = logging.getLogger("queue_processor")  # pylint: disable=invalid-name
 
 class DataTooLong(ValueError):
     """ Error class used for when reduction variables are too long. """
+    # pylint:disable=unnecessary-pass
     pass
 
 
-class InstrumentVariablesUtils(object):
+class InstrumentVariablesUtils:
     """ Class used to parse and process instrument reduction variables. """
     @staticmethod
     def log_error_and_notify(message):
@@ -103,6 +103,9 @@ class InstrumentVariablesUtils(object):
 
         instrument = InstrumentUtils().get_instrument(instrument_name)
         variables = []
+        # Pylint is unable to recognise the member variables of this object correctly due to the way
+        # it is loaded hence disable:no-member
+        # pylint:disable=no-member
         if 'standard_vars' in dir(reduce_vars_module):
             variables.extend(
                 self._create_variables(instrument,
@@ -147,7 +150,6 @@ class InstrumentVariablesUtils(object):
         # New variable set from the script
         defaults = self.get_default_variables(variables[0].instrument.name) if variables else []
 
-
         def update_variable(old_var):
             """ Update the existing variables. """
             old_var.keep = True
@@ -156,6 +158,7 @@ class InstrumentVariablesUtils(object):
 
             # Check whether we should and can update the old one.
             if matching_vars and old_var.tracks_script:
+                # pylint:disable=unsubscriptable-object
                 new_var = matching_vars[0]
                 map(lambda name: setattr(old_var, name, getattr(new_var, name)),
                     ["value", "type", "is_advanced",
@@ -220,12 +223,12 @@ class InstrumentVariablesUtils(object):
         module_name = os.path.basename(script_path).split(".")[0]  # file name without extension
         script_module = imp.new_module(module_name)
         try:
-            exec script_text in script_module.__dict__ # pylint: disable=exec-used
+            exec(script_text in script_module.__dict__)  # pylint: disable=exec-used
             return script_module
         except ImportError as exp:
             self.log_error_and_notify(
                 "Unable to load reduction script %s due to missing import. (%s)" % (script_path,
-                                                                                    exp.message))
+                                                                                    exp))
             return None
         except SyntaxError:
             self.log_error_and_notify("Syntax error in reduction script %s" % script_path)
@@ -416,6 +419,6 @@ class InstrumentVariablesUtils(object):
     @staticmethod
     def _replace_special_chars(help_text):
         """ Remove any special chars in the help text. """
-        help_text = cgi.escape(help_text)  # Remove any HTML already in the help string
+        help_text = html.escape(help_text)  # Remove any HTML already in the help string
         help_text = help_text.replace('\n', '<br>').replace('\t', '&nbsp;&nbsp;&nbsp;&nbsp;')
         return help_text

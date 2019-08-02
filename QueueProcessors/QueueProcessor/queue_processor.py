@@ -32,7 +32,6 @@ from QueueProcessors.QueueProcessor.queueproc_utils.instrument_variable_utils \
     import InstrumentVariablesUtils
 from QueueProcessors.QueueProcessor.queueproc_utils.status_utils import StatusUtils
 from QueueProcessors.QueueProcessor.queueproc_utils.reduction_run_utils import ReductionRunUtils
-# pylint: disable=import-error, no-name-in-module
 from QueueProcessors.QueueProcessor.settings import (LOGGING, EMAIL_HOST,
                                                      EMAIL_PORT, EMAIL_ERROR_RECIPIENTS,
                                                      EMAIL_ERROR_SENDER, BASE_URL)
@@ -42,6 +41,7 @@ from utils.clients.queue_client import QueueClient
 # Set up logging and attach the logging to the right part of the config.
 logging.config.dictConfig(LOGGING)
 logger = logging.getLogger("queue_processor")  # pylint: disable=invalid-name
+
 
 def is_integer_rb(rb_number):
     """
@@ -54,7 +54,8 @@ def is_integer_rb(rb_number):
     except ValueError:
         return False
 
-class Listener(object):
+
+class Listener:
     """ Listener class that is used to consume messages from ActiveMQ. """
     def __init__(self, client):
         """ Initialise listener. """
@@ -72,7 +73,7 @@ class Listener(object):
             self._data_dict = json.loads(message)
         except ValueError:
             logger.error("Could not decode message from %s", destination)
-            logger.error(sys.exc_value)
+            logger.error(sys.exc_info()[1])  # Return exc_value
             return
         try:
             if destination == '/queue/DataReady':
@@ -108,7 +109,7 @@ class Listener(object):
 
         # Make sure the RB number is an integer
         if not is_integer_rb(rb_number):
-            logger.warn("Skipping non-integer RB number: %s", rb_number)
+            logger.warning("Skipping non-integer RB number: %s", rb_number)
             return
 
         logger.info("Data ready for processing run %s on %s", run_no, instrument_name)
@@ -419,7 +420,6 @@ class Listener(object):
         """ Method for emailing when a run fails. """
         recipients = EMAIL_ERROR_RECIPIENTS
         #  This does not parse esoteric (but RFC-compliant) email addresses correctly
-        # pylint: disable=deprecated-lambda
         local_recipients = filter(lambda address: address.split('@')[-1] == BASE_URL, recipients)
         #  Don't send local emails
         if local_recipients:
@@ -480,6 +480,7 @@ class Listener(object):
             logger.error(traceback.format_exc())
             raise exp
 
+
 def setup_connection(consumer_name):
     """ Starts the ActiveMQ connection and registers the event listener """
     logger.info("Starting autoreduce queue connection")
@@ -493,9 +494,11 @@ def setup_connection(consumer_name):
     # Subscribe to queues
     activemq_client.subscribe_autoreduce(consumer_name, listener)
 
+
 def main():
     """ Main method. """
     setup_connection('Autoreduction_QueueProcessor')
+
 
 if __name__ == '__main__':
     main()

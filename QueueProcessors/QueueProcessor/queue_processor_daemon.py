@@ -9,10 +9,11 @@
 Module for daemonising the queue processor.
 """
 import sys
-from daemon import Daemon  # pylint: disable=relative-import
+from QueueProcessors.QueueProcessor.daemon import Daemon
 from QueueProcessors.QueueProcessor import queue_processor
 
 
+# pylint:disable=no-self-use,too-few-public-methods
 class QueueProcessorDaemon(Daemon):
     """ Queue processor daemoniser """
     def run(self):
@@ -33,11 +34,11 @@ def main():
         elif sys.argv[1] == 'restart':
             daemon.restart()
         else:
-            print "Unknown command"
+            print("Unknown command")
             sys.exit(2)
         sys.exit(0)
     else:
-        print "usage: %s start|stop|restart" % sys.argv[0]
+        print("usage: %s start|stop|restart" % sys.argv[0])
         sys.exit(2)
 
 

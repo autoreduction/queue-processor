@@ -26,7 +26,7 @@ logging.config.dictConfig(LOGGING)
 logger = logging.getLogger("queue_processor")  # pylint: disable=invalid-name
 
 
-class ReductionRunUtils(object):
+class ReductionRunUtils:
     """ Reduction run utils, deals with creating and canceling of runs. """
 
     @staticmethod

@@ -20,7 +20,7 @@ logging.config.dictConfig(LOGGING)
 logger = logging.getLogger("queue_processor") # pylint: disable=invalid-name
 
 
-class MessagingUtils(object):
+class MessagingUtils:
     """ Utils class for sending messages to queues. """
     def send_pending(self, reduction_run, delay=None):
         """ Sends a message to the queue with the details of the job to run. """
