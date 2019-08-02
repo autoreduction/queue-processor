@@ -226,6 +226,7 @@ else:
         This will be skipped on windows
         """
 
+        # pylint:disable=no-self-use
         @unittest.skip("System test skipped on windows")
         def test_windows(self):
             """
