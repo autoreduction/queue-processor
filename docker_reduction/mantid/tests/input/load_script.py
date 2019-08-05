@@ -15,6 +15,7 @@ import os
 from mantid.simpleapi import SaveNexusProcessed, Load
 
 
+#  pragma: no cover
 def reduce(input_file, output_dir):
     ws = Load(input_file)
     file_name = os.path.join(output_dir, 'load-successful.nxs')
@@ -22,5 +23,6 @@ def reduce(input_file, output_dir):
                        Filename=file_name)
 
 
+#  pragma: no cover
 if __name__ == "__main__":
     reduce(sys.argv[1], sys.argv[2])

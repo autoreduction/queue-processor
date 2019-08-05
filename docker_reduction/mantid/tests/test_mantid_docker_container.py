@@ -10,11 +10,13 @@ Tests that the mantid docker container can be built and can run a simple reducti
 import unittest
 import os
 
+from mock import patch
 import docker
 
 from docker_reduction.mount import Mount
 from docker_reduction.mantid.operations import MantidDocker
 from docker_reduction.mantid.mounts import DATA_IN, DATA_OUT
+
 
 
 class TestMantidDockerContainer(unittest.TestCase):
@@ -60,6 +62,7 @@ class TestMantidDockerContainer(unittest.TestCase):
             for tag in image.tags:
                 if self.mantid_docker.image_name in str(tag):
                     return
+        # pragma: no cover
         self.fail('Image name: {} . Not found in image list: {}'
                   .format(self.mantid_docker.image_name, client.images.list()))
 
@@ -104,6 +107,18 @@ class TestMantidDockerContainer(unittest.TestCase):
         self.assertTrue(os.path.isfile(os.path.join(self.output_mount.host_location,
                                                     'load-successful.nxs')))
         self._clean_output_directory()
+
+    @patch('docker_reduction.mantid.operations.MantidDocker.build')
+    @patch('docker_reduction.mantid.operations.MantidDocker.create_volumes')
+    @patch('docker_reduction.mantid.operations.MantidDocker.create_environment_variables')
+    @patch('docker_reduction.mantid.operations.MantidDocker.run')
+    def test_perform_reduction(self, mock_run, mock_env_var, mock_vol, mock_build):
+        """ Ensure all reduction steps are performed in workflow function """
+        self.mantid_docker.perform_reduction()
+        mock_build.assert_called_once()
+        mock_vol.assert_called_once()
+        mock_env_var.assert_called_once()
+        mock_run.assert_called_once()
 
     def _clean_output_directory(self):
         """
