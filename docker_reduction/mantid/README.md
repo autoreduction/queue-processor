@@ -14,12 +14,12 @@ Should you need to create and use the docker container for mantid manually you w
 
 * Build the docker file into an image:
 
-```$ Docker build -t mantid-reduction-container . ```
+```$ docker build -t mantid-reduction-container . ```
 
-* Run the image as a container:
+* Run the image as a container (use relative paths for your environment):
 
 ```
-$ Docker run  -v /path/to/local/input/directory:/isis/  \
+$ docker run  -v /path/to/local/input/directory:/isis/  \
               -v /path/to/local/output/directory:/instrument/  \
               -e SCRIPT=/path/to/reduction/script/inside/container  \
               -e INPUT_FILE=/path/to/input/data/inside/container  \
@@ -29,7 +29,7 @@ $ Docker run  -v /path/to/local/input/directory:/isis/  \
 
 *Note that if you use the scripts and data from `docker_reduction/mantid/tests/input`* then the above looks like this:
  ```
-$ Docker run  -v reduction_docker/mantid/tests/input:/isis/  \
+$ docker run  -v reduction_docker/mantid/tests/input:/isis/  \
               -v reduction_docker/mantid/tests/output:/instrument/  \
               -e SCRIPT=/isis/load_script.py  \
               -e INPUT_FILE=/isis/FakeWorkspace.nxs  \
@@ -41,7 +41,7 @@ This means that the docker container is running successfully.
 
 If you want to look inside the container for further manual testing change the run command like so:
 ```
-$ Docker run  -v /path/to/local/input/directory:/isis/  \
+$ docker run  -v /path/to/local/input/directory:/isis/  \
               -v /path/to/local/output/directory:/instrument/  \
               -e SCRIPT=/path/to/reduction/script/inside/container  \
               -e INPUT_FILE=/path/to/input/data/inside/container  \
