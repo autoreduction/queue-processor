@@ -23,3 +23,9 @@
 
 - name: 'Start Docker Daemon'
   shell: 'systemctl start docker'
+
+- name: 'Create Docker sudo group'
+  shell: 'sudo groupadd docker'
+
+- name: 'Add Docker to sudo group'
+  shell: 'sudo usermod -aG docker isisautoreduce'
