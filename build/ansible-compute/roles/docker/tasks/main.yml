@@ -20,3 +20,6 @@
   with_items:
     - docker-ce
     - docker-ce-cli
+
+-name: 'Start Docker Daemon'
+ shell: 'systemctl start docker'
