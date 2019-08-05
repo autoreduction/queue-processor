@@ -21,5 +21,5 @@
     - docker-ce
     - docker-ce-cli
 
--name: 'Start Docker Daemon'
- shell: 'systemctl start docker'
+- name: 'Start Docker Daemon'
+  shell: 'systemctl start docker'
