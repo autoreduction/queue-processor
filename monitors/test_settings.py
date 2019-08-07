@@ -12,6 +12,9 @@ import os
 
 from utils.project.structure import get_project_root
 
+from sentry_sdk import init
+init('http://4b7c7658e2204228ad1cfd640f478857@172.16.114.151:9000/1')
+
 # Config settings for cycle number, and instrument file arrangement
 INST_FOLDER = os.path.join(get_project_root(), 'data-archive', 'NDX%s', 'Instrument')
 DATA_LOC = os.path.join('data', 'cycle_%s')

@@ -33,6 +33,8 @@ from QueueProcessors.AutoreductionProcessor.settings import ACTIVEMQ, MISC
 from QueueProcessors.AutoreductionProcessor.autoreduction_logging_setup import logger
 from QueueProcessors.AutoreductionProcessor.timeout import timeout
 
+from sentry_sdk import init
+init('http://4b7c7658e2204228ad1cfd640f478857@172.16.114.151:9000/1')
 
 class SkippedRunException(Exception):
     """
