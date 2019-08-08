@@ -13,7 +13,7 @@ import os
 import sys
 
 # Ensure that Mantid does not attempt to plot to display
-os.environ['MPLBACKEND'] = 'Agg'
+#os.environ['MPLBACKEND'] = 'Agg'
 
 sys.path.append("/isis/NDXENGINX/user/scripts/autoreduction")
 sys.path.append("/opt/Mantid/scripts")  # Temporary solution until next Mantid release

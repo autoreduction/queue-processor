@@ -4,6 +4,10 @@
 # Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
+
+# Ensure that Mantid does not attempt to plot to display
+ARG MPLBACKEND='Agg'
+
 # Pull in stable mantid release
 FROM mantidproject/mantid
 
