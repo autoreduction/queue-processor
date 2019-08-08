@@ -49,3 +49,9 @@ $ docker run  -v /path/to/local/input/directory:/isis/  \
               -it mantid-reduction-container /bin/bash
 ```
 This will open a terminal inside the container.
+
+There are scenarios where you may wish to define a custom `reduce_vars.py` file rather than using the default.
+In this case add the following argument to the docker run command:
+```
+            -e REDUCE_VARS=/path/to/reduce_vars.py
+```
