@@ -27,6 +27,9 @@ import time
 import traceback
 from contextlib import contextmanager
 
+# Ensure that Mantid does not attempt to plot to display
+os.environ['MPLBACKEND'] = 'Agg'
+
 import stomp
 # pylint:disable=no-name-in-module,import-error
 from QueueProcessors.AutoreductionProcessor.settings import ACTIVEMQ, MISC
