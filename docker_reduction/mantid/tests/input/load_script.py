@@ -14,7 +14,8 @@ import Engineering.EnginX as Enginx
 # Require early load import to check for event file
 from mantid.simpleapi import Load
 
-
+from sentry_sdk import init
+init('http://4b7c7658e2204228ad1cfd640f478857@172.16.114.151:9000/1')
 
 import time
 
