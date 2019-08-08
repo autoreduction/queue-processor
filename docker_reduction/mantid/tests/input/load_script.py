@@ -4,11 +4,11 @@ import sys
 import time
 
 # Ensure that Mantid does not attempt to plot to display
-# os.environ['MPLBACKEND'] = 'Agg'
+os.environ['MPLBACKEND'] = 'Agg'
 
-import sentry_sdk
-from sentry_sdk import init
-init('http://4b7c7658e2204228ad1cfd640f478857@172.16.114.151:9000/1')
+# import sentry_sdk
+# from sentry_sdk import init
+# init('http://4b7c7658e2204228ad1cfd640f478857@172.16.114.151:9000/1')
 
 sys.path.append("/isis/NDXENGINX/user/scripts/autoreduction")
 sys.path.append("/opt/Mantid/scripts") # Temporary solution until next Mantid release
