@@ -6,7 +6,8 @@
 # ############################################################################### #
 
 # Ensure that Mantid does not attempt to plot to display
-ENV MPLBACKEND ='Agg'
+
+ENV MPLBACKEND = 'Agg'
 
 # Pull in stable mantid release
 FROM mantidproject/mantid
