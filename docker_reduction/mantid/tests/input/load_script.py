@@ -42,15 +42,15 @@ def validate(input_file, output_dir):
         raise RuntimeError("Unable to find file: {}".format(file_path))
 
 
-for dir in required_dirs:
-    if not os.path.isdir(dir):
-        raise RuntimeError("Unable to find directory: {}".format(dir))
-# Skip run if Event workspace
-enginx_ws = Load(input_file)
-workspace_type = str(type(enginx_ws))
-if 'Event' in workspace_type:
-    raise RuntimeError('Skip: Event mode currently not supported on EnginX')
-print("Validation successful")
+    for dir in required_dirs:
+        if not os.path.isdir(dir):
+            raise RuntimeError("Unable to find directory: {}".format(dir))
+    # Skip run if Event workspace
+    enginx_ws = Load(input_file)
+    workspace_type = str(type(enginx_ws))
+    if 'Event' in workspace_type:
+        raise RuntimeError('Skip: Event mode currently not supported on EnginX')
+    print("Validation successful")
 
 
 def main(input_file, output_dir):
