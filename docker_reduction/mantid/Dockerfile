@@ -7,13 +7,15 @@
 
 # Ensure that Mantid does not attempt to plot to display
 
-ENV MPLBACKEND = 'Agg'
+
 
 # Pull in stable mantid release
 FROM mantidproject/mantid
 
 # Make the .mantid file in the root directory to store the properties file
-RUN mkdir /root/.mantid
+RUN mkdir /root/.mantid ; \
+    EXPORT MPLBACKEND='Agg"
+
 
 
 
