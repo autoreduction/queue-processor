@@ -10,6 +10,8 @@ FROM mantidproject/mantid
 # Make the .mantid file in the root directory to store the properties file
 RUN mkdir /root/.mantid
 
+
+
 # Copy the Mantid.user.properties file into the expected location in the container
 COPY Mantid.user.properties /root/.mantid/Mantid.user.properties
 
