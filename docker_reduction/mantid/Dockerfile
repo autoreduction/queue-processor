@@ -14,7 +14,7 @@ FROM mantidproject/mantid
 
 # Make the .mantid file in the root directory to store the properties file
 RUN mkdir /root/.mantid ; \
-    EXPORT MPLBACKEND='Agg"
+    EXPORT MPLBACKEND=Agg
 
 
 
