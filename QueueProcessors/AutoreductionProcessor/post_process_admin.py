@@ -27,10 +27,6 @@ import time
 import traceback
 from contextlib import contextmanager
 
-
-# Ensure that Mantid does not attempt to plot to display
-os.environ['MPLBACKEND'] = 'Agg'
-
 import stomp
 # pylint:disable=no-name-in-module,import-error
 from QueueProcessors.AutoreductionProcessor.settings import ACTIVEMQ, MISC
@@ -44,7 +40,6 @@ class SkippedRunException(Exception):
     Note: this is currently only the case for EnginX Event mode runs at ISIS
     """
     pass
-
 
 @contextmanager
 def channels_redirected(out_file, err_file, out_stream):
