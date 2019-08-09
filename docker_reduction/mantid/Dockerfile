@@ -16,3 +16,5 @@ COPY Mantid.user.properties /root/.mantid/Mantid.user.properties
 # Run mantidpython with the autoreduction reduce.py script
 # INSTRUMENT, INPUT_FILE and OUTPUT_DIR should all be passed as environment variables to the Dockerfile at runtime
 CMD /opt/Mantid/bin/mantidpython "$SCRIPT" "$INPUT_FILE" "$OUTPUT_DIR" "$REDUCE_VARS"
+
+ENV MPLBACKEND='Agg'
