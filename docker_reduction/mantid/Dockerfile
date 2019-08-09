@@ -4,20 +4,11 @@
 # Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
-
-# Ensure that Mantid does not attempt to plot to display
-
-
-
 # Pull in stable mantid release
 FROM mantidproject/mantid
 
 # Make the .mantid file in the root directory to store the properties file
 RUN mkdir /root/.mantid ; \
-    EXPORT MPLBACKEND=Agg
-
-
-
 
 # Copy the Mantid.user.properties file into the expected location in the container
 COPY Mantid.user.properties /root/.mantid/Mantid.user.properties
