@@ -10,9 +10,12 @@ FROM mantidproject/mantid
 # Make the .mantid file in the root directory to store the properties file
 RUN mkdir /root/.mantid
 
+ENV MPLBACKEND='Agg'
+
 # Copy the Mantid.user.properties file into the expected location in the container
 COPY Mantid.user.properties /root/.mantid/Mantid.user.properties
 
 # Run mantidpython with the autoreduction reduce.py script
 # INSTRUMENT, INPUT_FILE and OUTPUT_DIR should all be passed as environment variables to the Dockerfile at runtime
-CMD /opt/Mantid/bin/mantidpython "$SCRIPT" "$INPUT_FILE" "$OUTPUT_DIR"
+CMD /opt/Mantid/bin/mantidpython "$SCRIPT" "$INPUT_FILE" "$OUTPUT_DIR" "$REDUCE_VARS"
+
