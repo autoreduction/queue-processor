@@ -6,12 +6,13 @@ python:
 services:
   - mysql
 
-dist: trusty
+dist: bionic
 
 before_install:
   - mysql_upgrade --force
   - sudo service mysql restart
   - mysql < build/database/test_db_setup.sql
+  - mysql --version
 
 install:
   # Install autoreduction
