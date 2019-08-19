@@ -40,7 +40,7 @@ class ReductionPathManager(object):
         """
         Validate all locations exist, they are files/directories, and readable
         """
-        paths = {
+        paths_input_paths = {
             'input_data_path': ['file', self.input_data_file_path],
             'reduction_script_path': ['file', self.reduction_script_file_path],
             'reduction_script_variables_path': ['file', self.reduction_script_variables_file_path],
@@ -48,11 +48,11 @@ class ReductionPathManager(object):
             'output_log_directory': ['dir', self.final_output_log_directory],
             'final_output_directory': ['dir', self.final_output_directory]
         }
-        for path_name, value in paths.items():
-            if not os.path.exists(value[1]):
-                raise ReductionPathError("{} - Doesn't exist: {}".format(path_name, value[1]))
+        for path_name, value in paths_input_paths.items():
             if not os.path.isabs(value[1]):
                 raise ReductionPathError("{} - Not absolute: {}".format(path_name, value[1]))
+            if not os.path.exists(value[1]):
+                raise ReductionPathError("{} - Doesn't exist: {}".format(path_name, value[1]))
             if not os.access(value[1], os.R_OK):
                 raise ReductionPathError("{} - Not readable: {}".format(path_name, value[1]))
             if value[0] == 'file':
