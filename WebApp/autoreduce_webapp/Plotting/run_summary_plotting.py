@@ -22,21 +22,11 @@ import plotly.graph_objs as go
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
-"""Generate random numbers and place inside dataframe for plotting."""
-# N = 100
-# x = np.random.randn(N)
-# y = np.random.randn(N)
-# z = np.random.randn(N)
-# w = np.random.randn(N)
-
+"""Use GEM data for plotting"""
 gem = pd.read_csv('GEM-Spectrum1.csv')
 gem.columns = ['X', 'Y', 'E']
 gem = gem.replace(np.nan, 0.0)
 gem = gem.drop(gem.index[0])
-
-#df = pd.DataFrame(list(zip(w, x, y, z)), columns=['w', 'x', 'y', 'z'])
-
-
 
 
 # Plot Styling
