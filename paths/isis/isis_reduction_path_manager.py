@@ -1,9 +1,9 @@
 """
 ISIS implementation of reduction path manager
 """
-from QueueProcessors.AutoreductionProcessor.paths.reduction_path_manager import ReductionPathManager
+from paths.reduction_path_manager import ReductionPathManager
 from QueueProcessors.AutoreductionProcessor.settings import MISC
-import QueueProcessors.AutoreductionProcessor.paths.path_manipulation as paths
+import paths.path_manipulation as paths
 
 
 class ISISReductionPathManager(ReductionPathManager):
@@ -34,6 +34,6 @@ class ISISReductionPathManager(ReductionPathManager):
         ReductionPathManager.__init__(self,
                                       input_data_path=input_data_path,
                                       reduction_script_path=reduction_script_path,
-                                      reduction_script_variables_path=reduction_script_vars_path,
-                                      temporary_output_directory=temp_output_dir,
+                                      reduction_variables_path=reduction_script_vars_path,
+                                      temporary_root_directory=temp_output_dir,
                                       final_output_directory=output_directory)

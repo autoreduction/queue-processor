@@ -6,8 +6,8 @@ import tempfile
 
 from mock import patch
 
-from QueueProcessors.AutoreductionProcessor.paths.reduction_path_manager import (ReductionPathManager,
-                                                                                 ReductionPathError)
+from paths.reduction_path_manager import (ReductionPathManager,
+                                          ReductionPathError)
 
 
 class TestReductionPathManager(unittest.TestCase):

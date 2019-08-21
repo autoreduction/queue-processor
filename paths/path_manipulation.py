@@ -3,6 +3,8 @@ Helper functions for paths
 """
 import os
 
+from paths.path import PathError
+
 
 def is_path_windows(path):
     """
@@ -10,6 +12,8 @@ def is_path_windows(path):
     :param path: The path to examine
     :return: True (Windows) or False (Unix)
     """
+    if '\\' in path and '/' in path:
+        raise PathError('Path contains a mix of windows and linux separators: {}'.format(path))
     if '\\' in path:
         return True
     return False

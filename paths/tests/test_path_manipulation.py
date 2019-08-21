@@ -1,6 +1,7 @@
 import unittest
 
-import QueueProcessors.AutoreductionProcessor.paths.path_manipulation as utils
+from paths.path import PathError
+import paths.path_manipulation as utils
 
 
 class TestUtils(unittest.TestCase):
@@ -14,6 +15,9 @@ class TestUtils(unittest.TestCase):
     def test_path_is_windows_false(self):
         self.assertFalse(utils.is_path_windows('/unix/path'))
         self.assertFalse(utils.is_path_windows('/unix/path/file.nxs'))
+
+    def test_mixed_path(self):
+        self.assertRaises(PathError, utils.is_path_windows, '\\mixed/path\\raise/error')
 
     def test_path_separator(self):
         self.assertEqual(utils.path_separator('/unix/path'), '/')
