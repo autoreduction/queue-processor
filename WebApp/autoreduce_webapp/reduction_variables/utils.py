@@ -27,6 +27,7 @@ from autoreduce_webapp.settings import ACTIVEMQ, REDUCTION_DIRECTORY, FACILITY
 from reduction_variables.models import InstrumentVariable, RunVariable
 from reduction_viewer.models import ReductionRun, Notification
 from reduction_viewer.utils import InstrumentUtils, StatusUtils, ReductionRunUtils
+from autoreduce_webapp.queue_processor import Client as ActiveMQClient
 
 LOGGER = logging.getLogger('django')
 
@@ -98,35 +99,6 @@ class VariableUtils(object):
                                   tracks_script=variable.tracks_script
                                  )
 
-    @staticmethod
-    def wrap_in_type_syntax(value, var_type):
-        """
-        Append the appropriate syntax around variables to be wrote to a preview script.
-        E.g. strings will be wrapped in single quotes, lists will be wrapped in brackets, etc.
-        """
-        value = str(value)
-        if var_type == 'text':
-            return "'%s'" % value.replace("'", "\\'")
-        if var_type == 'number':
-            return re.sub(r'[^0-9.\-]', "", value)
-        if var_type == 'boolean':
-            return str(value.lower() == 'true')
-        if var_type == 'list_number':
-            list_values = value.split(',')
-            number_list = []
-            for val in list_values:
-                if re.match(r'[\-0-9.]+', val.strip()):
-                    number_list.append(val)
-            return '[%s]' % ','.join(number_list)
-        if var_type == 'list_text':
-            list_values = value.split(',')
-            text_list = []
-            for val in list_values:
-                if val:
-                    val = "'%s'" % val.strip().replace("'", "\\'")
-                    text_list.append(val)
-            return '[%s]' % ','.join(text_list)
-        return value
 
     # pylint:disable=too-many-return-statements,too-many-branches
     @staticmethod
@@ -670,7 +642,6 @@ class MessagingUtils(object):
     def _send_pending_msg(data_dict, delay=None):
         """ Sends data_dict to ReductionPending (with the specified delay) """
         # To prevent circular dependencies
-        from autoreduce_webapp.queue_processor import Client as ActiveMQClient
 
         message_client = ActiveMQClient(ACTIVEMQ['broker'],
                                         ACTIVEMQ['username'],
