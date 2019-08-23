@@ -6,21 +6,24 @@ all of the input paths (e.g. data_file, reduction_script, reduction_variables)
 from paths.path import Path
 
 
-class AbstractPathCollection(object):
+class PathCollection(object):
     """
     Abstract class to ensure that the self.all_paths variable exists and the paths are validated
     """
 
+    all_paths = None
+
     def __init__(self):
         if not self.all_paths:
             raise RuntimeError('Collections must specify self.all_paths to allow for validation')
+        self.validate_paths()
 
-    def validate_files(self):
+    def validate_paths(self):
         for path in self.all_paths:
             path.validate_path()
 
 
-class InputPaths(AbstractPathCollection):
+class InputPaths(PathCollection):
     """
     Data object to hold paths for input locations
     """
@@ -33,10 +36,10 @@ class InputPaths(AbstractPathCollection):
         # Full path to the location of the reduction script variables
         self.reduction_variables_path = Path(reduction_variables_path, 'file')
         self.all_paths = [self.data_path, self.reduction_script_path, self.reduction_variables_path]
-        AbstractPathCollection.__init__(self)
+        PathCollection.__init__(self)
 
 
-class TemporaryPaths(AbstractPathCollection):
+class TemporaryPaths(PathCollection):
     """
     Data object to hold paths for temporary storage locations
     Temporary storage locations are required as an intermediate step to handle re-writing data
@@ -52,18 +55,18 @@ class TemporaryPaths(AbstractPathCollection):
         self.script_output_directory = Path(script_output_directory, 'directory')
         self.all_paths = [self.root_directory, self.data_output_directory,
                           self.script_output_directory]
-        AbstractPathCollection.__init__(self)
+        PathCollection.__init__(self)
 
 
-class OutputPaths(AbstractPathCollection):
+class OutputPaths(PathCollection):
     """
     Data object to hold paths for output locations
     """
 
-    def __init__(self, output_directory, output_script_directory):
+    def __init__(self, data_directory, script_directory):
         # Full path to the final location for the data
-        self.output_directory = Path(output_directory, 'directory')
+        self.data_directory = Path(data_directory, 'directory')
         # Full path to the directory to store log files (append to final output directory)
-        self.output_script_directory = Path(output_script_directory, 'directory')
-        self.all_paths = [self.output_directory, self.output_script_directory]
-        AbstractPathCollection.__init__(self)
+        self.script_directory = Path(script_directory, 'directory')
+        self.all_paths = [self.data_directory, self.script_directory]
+        PathCollection.__init__(self)

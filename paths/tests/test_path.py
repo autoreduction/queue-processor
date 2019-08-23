@@ -12,17 +12,17 @@ class TestPath(unittest.TestCase):
 
     def test_valid_init_for_file(self):
         path = Path('/test/path/file.nxs', 'file')
-        self.assertEqual(path.path_type, 'file')
+        self.assertEqual(path.type, 'file')
         self.assertEqual(path.value, '/test/path/file.nxs')
 
     def test_valid_init_for_dir(self):
         path = Path('/test/path/dir/', 'dir')
-        self.assertEqual(path.path_type, 'directory')
+        self.assertEqual(path.type, 'directory')
         self.assertEqual(path.value, '/test/path/dir/')
 
     def test_valid_init_for_directory(self):
         path = Path('/test/path/dir/', 'directory')
-        self.assertEqual(path.path_type, 'directory')
+        self.assertEqual(path.type, 'directory')
         self.assertEqual(path.value, '/test/path/dir/')
 
     def test_invalid_path_type(self):

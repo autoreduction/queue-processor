@@ -20,7 +20,7 @@ class Path(object):
             raise RuntimeError('Path type must be either \'directory\', \'dir\' or \'file\'.')
         if path_type == 'dir':
             path_type = 'directory'
-        self.path_type = path_type
+        self.type = path_type
 
     def validate_path(self):
         """
@@ -33,9 +33,14 @@ class Path(object):
             raise PathError("Path doesn't exist: {}".format(self.value))
         if not os.access(self.value, os.R_OK):
             raise PathError("Path is not readable: {}".format(self.value))
-        if self.path_type == 'file':
+        if self.type == 'file':
             if not os.path.isfile(self.value):
                 raise PathError("Path is not a file: {}".format(self.value))
-        if self.path_type == 'directory':
+        if self.type == 'directory':
             if not os.path.isdir(self.value):
                 raise PathError("Path is not a directory: {}".format(self.value))
+
+    def __eq__(self, other):
+        if other.value == self.value and other.type == self.type:
+            return True
+        return False
