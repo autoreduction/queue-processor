@@ -38,4 +38,4 @@ class Path(object):
                 raise PathError("Path is not a file: {}".format(self.value))
         if self.path_type == 'directory':
             if not os.path.isdir(self.value):
-                raise PathError("Path is not directory: {}".format(self.value))
+                raise PathError("Path is not a directory: {}".format(self.value))
