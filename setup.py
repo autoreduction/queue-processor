@@ -15,31 +15,24 @@ from build.commands.installs import InstallExternals
 from build.commands.migrate_settings import MigrateTestSettings
 from build.commands.start import Start
 
-setup_requires = [
-                  'dash',
-                  'dash_html_components',
-                  'dash_core_components','docker',
-                  'Django',
+setup_requires = ['Django',
                   'django_extensions',
                   'django-user-agents',
-                  'filelock',
                   'gitpython',
-                  'mysql-connector',
                   'MySQL-python',
-                  'nexusformat',
-                  'numpy',
-                  'plotly',
-                  'pandas',
                   'pytz',
                   'pymysql',
                   'requests',
-                  'sentry_sdk',
-                  'service_identity',
                   'SQLAlchemy',
+                  'mysql-connector',
+                  'service_identity',
                   'stomp.py',
                   'suds',
                   'Twisted',
-                  'watchdog']
+                  'watchdog',
+                  'filelock',
+                  'numpy',
+                  'nexusformat']
 
 if platform.system() == 'Windows':
     setup_requires.append('pypiwin32')
