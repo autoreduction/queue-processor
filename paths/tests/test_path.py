@@ -1,3 +1,12 @@
+# ############################################################################### #
+# Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
+#
+# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# SPDX - License - Identifier: GPL-3.0-or-later
+# ############################################################################### #
+"""
+Test the path class
+"""
 import unittest
 import os
 
@@ -8,6 +17,7 @@ FILE_PATH = os.path.realpath(__file__)
 DIR_PATH = os.path.dirname(FILE_PATH)
 
 
+# pylint:disable=missing-docstring
 class TestPath(unittest.TestCase):
 
     def test_valid_init_for_file(self):

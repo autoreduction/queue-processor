@@ -1,10 +1,20 @@
+# ############################################################################### #
+# Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
+#
+# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# SPDX - License - Identifier: GPL-3.0-or-later
+# ############################################################################### #
+"""
+Test path manipulation
+"""
 import unittest
 
 from paths.path import PathError
 import paths.path_manipulation as utils
 
 
-class TestUtils(unittest.TestCase):
+# pylint:disable=missing-docstring
+class TestPathManipulation(unittest.TestCase):
 
     def test_path_is_windows_true(self):
         self.assertTrue(utils.is_path_windows(r'C:\windows\path'))
@@ -22,6 +32,10 @@ class TestUtils(unittest.TestCase):
     def test_path_separator(self):
         self.assertEqual(utils.path_separator('/unix/path'), '/')
         self.assertEqual(utils.path_separator('C:\\windows\\path'), '\\')
+
+    def test_path_split(self):
+        self.assertEqual(utils.split_path('/unix/path'), ['unix', 'path'])
+        self.assertEqual(utils.split_path('C:\\windows\\path'), ['C:', 'windows', 'path'])
 
     def test_add_separator_to_end_of_dir_windows_dir_no_sep(self):
         self.assertEqual(utils.add_separator_to_end_of_directory('C:\\windows\\path'),
@@ -49,8 +63,8 @@ class TestUtils(unittest.TestCase):
 
     def test_add_to_windows_path(self):
         self.assertEqual(utils.add_to_path('C:\\windows', ['path', 'to', 'add', 'to']),
-                         'C:\\windows\\path\\to\\add\\to')
+                         'C:\\windows\\path\\to\\add\\to\\')
 
     def test_add_to_unix_path(self):
         self.assertEqual(utils.add_to_path('/unix', ['path', 'to', 'add', 'to']),
-                         '/unix/path/to/add/to')
+                         '/unix/path/to/add/to/')

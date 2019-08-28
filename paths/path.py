@@ -1,7 +1,13 @@
+# ############################################################################### #
+# Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
+#
+# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# SPDX - License - Identifier: GPL-3.0-or-later
+# ############################################################################### #
 """
-A class to hold a path, specify what type of path it is (directory or file) and validate that it
-exists in the specified state (e.g. isfile() / isdir())
+A better model for a file or directory path than just strings
 """
+
 import os
 
 
@@ -11,6 +17,10 @@ class PathError(RuntimeError):
 
 
 class Path(object):
+    """
+    A class to hold a path, specify what type of path it is (directory or file) and validate that it
+    exists in the specified state (e.g. isfile() / isdir())
+    """
 
     def __init__(self, value, path_type):
         self.value = value

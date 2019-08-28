@@ -1,3 +1,12 @@
+# ############################################################################### #
+# Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
+#
+# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# SPDX - License - Identifier: GPL-3.0-or-later
+# ############################################################################### #
+"""
+Test the collections classes
+"""
 import unittest
 import os
 
@@ -11,12 +20,14 @@ FILE_PATH = os.path.realpath(__file__)
 DIR_PATH = os.path.dirname(FILE_PATH)
 
 
+# pylint:disable=missing-docstring
 class TestPathCollection(unittest.TestCase):
 
     def test_path_collection_generic_init_raises_exp(self):
         self.assertRaises(RuntimeError, PathCollection)
 
 
+# pylint:disable=missing-docstring
 class TestInputPaths(unittest.TestCase):
 
     def test_init_valid_paths(self):
@@ -32,6 +43,7 @@ class TestInputPaths(unittest.TestCase):
                                 DIR_PATH, DIR_PATH)
 
 
+# pylint:disable=missing-docstring
 class TestTemporaryPaths(unittest.TestCase):
 
     def test_init_valid_paths(self):
@@ -47,6 +59,7 @@ class TestTemporaryPaths(unittest.TestCase):
                                 FILE_PATH, FILE_PATH)
 
 
+# pylint:disable=missing-docstring
 class TestOutputPaths(unittest.TestCase):
 
     def test_init_valid_paths(self):

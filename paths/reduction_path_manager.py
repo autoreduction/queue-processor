@@ -1,12 +1,18 @@
+# ############################################################################### #
+# Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
+#
+# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# SPDX - License - Identifier: GPL-3.0-or-later
+# ############################################################################### #
 """
-Contains all of the path related functionality to perform reduction
+Contains all of the paths to perform reduction
 """
-import os
 
 from paths.collections import InputPaths, TemporaryPaths, OutputPaths
-from paths.path_manipulation import add_to_path
+from paths.path_manipulation import add_to_path, split_path
 
 
+# pylint:disable=too-many-arguments,too-few-public-methods
 class ReductionPathManager(object):
     """
     Hold the required paths for reduction and some basic validation functionality
@@ -27,8 +33,8 @@ class ReductionPathManager(object):
                                                                   ['reduction_log']))
         # Holds all of the paths for temporary output locations before data is migrated
         # to final destination
-        temp_dir = add_to_path(temporary_root_directory, os.path.split(final_output_directory))
+        temp_dir = add_to_path(temporary_root_directory, split_path(final_output_directory))
         self.temporary_paths = TemporaryPaths(root_directory=temporary_root_directory,
                                               data_directory=temp_dir,
                                               log_directory=add_to_path(temp_dir, ['reduction_log'])
-                                              )
+                                             )

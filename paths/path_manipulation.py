@@ -1,7 +1,12 @@
+# ############################################################################### #
+# Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
+#
+# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# SPDX - License - Identifier: GPL-3.0-or-later
+# ############################################################################### #
 """
 Helper functions for paths
 """
-import os
 
 from paths.path import PathError
 
@@ -30,6 +35,18 @@ def path_separator(path):
     return '/'
 
 
+def split_path(path):
+    """
+    Get the correct path separator and split up the path based on it
+    :param path: The path to split up
+    :return: a list of items in the path
+    """
+    path_list = path.split(path_separator(path))
+    while '' in path_list:
+        path_list.remove('')
+    return path_list
+
+
 def add_separator_to_end_of_directory(path):
     """
     Add the correct separator to the end of a path if required
@@ -37,7 +54,7 @@ def add_separator_to_end_of_directory(path):
     :return: The path with a separator added to the end e.g. /test/path becomes /test/path/
     """
     # If the path ends in a file then return immediately
-    if '.' in os.path.split(path)[-1]:
+    if '.' in split_path(path)[-1]:
         return path
 
     separator = path_separator(path)
@@ -56,5 +73,5 @@ def add_to_path(path, list_to_append):
     for item in list_to_append:
         path = add_separator_to_end_of_directory(path)
         path += item
+    path = add_separator_to_end_of_directory(path)
     return path
-

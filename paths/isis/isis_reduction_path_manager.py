@@ -1,11 +1,18 @@
+# ############################################################################### #
+# Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
+#
+# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# SPDX - License - Identifier: GPL-3.0-or-later
+# ############################################################################### #
 """
 ISIS implementation of reduction path manager
 """
+import paths.path_manipulation as paths
 from paths.reduction_path_manager import ReductionPathManager
 from QueueProcessors.AutoreductionProcessor.settings import MISC
-import paths.path_manipulation as paths
 
 
+# pylint:disable=too-few-public-methods
 class ISISReductionPathManager(ReductionPathManager):
     """
     ISIS version of ReductionPathManager which applies any ISSI specific changes to the data
