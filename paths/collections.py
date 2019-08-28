@@ -46,15 +46,14 @@ class TemporaryPaths(PathCollection):
     and ensure we don't overwrite good data by mistake
     """
 
-    def __init__(self, root_directory, data_output_directory, script_output_directory):
+    def __init__(self, root_directory, data_directory, log_directory):
         # Full path to a temporary root directory (for data before it goes to final destination)
         self.root_directory = Path(root_directory, 'directory')
         # Full file path to the reduction data temporary directory (this is /temp/ + /output_dir/)
-        self.data_output_directory = Path(data_output_directory, 'directory')
+        self.data_directory = Path(data_directory, 'directory')
         # Full file path to the script output temporary directory (this is /temp/ + /reduction_log/)
-        self.script_output_directory = Path(script_output_directory, 'directory')
-        self.all_paths = [self.root_directory, self.data_output_directory,
-                          self.script_output_directory]
+        self.log_directory = Path(log_directory, 'directory')
+        self.all_paths = [self.root_directory, self.data_directory, self.log_directory]
         PathCollection.__init__(self)
 
 
@@ -63,10 +62,10 @@ class OutputPaths(PathCollection):
     Data object to hold paths for output locations
     """
 
-    def __init__(self, data_directory, script_directory):
+    def __init__(self, data_directory, log_directory):
         # Full path to the final location for the data
         self.data_directory = Path(data_directory, 'directory')
         # Full path to the directory to store log files (append to final output directory)
-        self.script_directory = Path(script_directory, 'directory')
-        self.all_paths = [self.data_directory, self.script_directory]
+        self.log_directory = Path(log_directory, 'directory')
+        self.all_paths = [self.data_directory, self.log_directory]
         PathCollection.__init__(self)

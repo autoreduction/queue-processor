@@ -36,11 +36,11 @@ class TestTemporaryPaths(unittest.TestCase):
 
     def test_init_valid_paths(self):
         temp_paths = TemporaryPaths(root_directory=DIR_PATH,
-                                    data_output_directory=DIR_PATH,
-                                    script_output_directory=DIR_PATH)
+                                    data_directory=DIR_PATH,
+                                    log_directory=DIR_PATH)
         self.assertEqual(temp_paths.root_directory, Path(DIR_PATH, 'directory'))
-        self.assertEqual(temp_paths.data_output_directory, Path(DIR_PATH, 'directory'))
-        self.assertEqual(temp_paths.script_output_directory, Path(DIR_PATH, 'directory'))
+        self.assertEqual(temp_paths.data_directory, Path(DIR_PATH, 'directory'))
+        self.assertEqual(temp_paths.log_directory, Path(DIR_PATH, 'directory'))
 
     def test_init_with_invalid_path_types(self):
         self.assertRaisesRegexp(PathError, "Path is not a directory", TemporaryPaths, FILE_PATH,
@@ -51,9 +51,9 @@ class TestOutputPaths(unittest.TestCase):
 
     def test_init_valid_paths(self):
         output_paths = OutputPaths(data_directory=DIR_PATH,
-                                   script_directory=DIR_PATH)
+                                   log_directory=DIR_PATH)
         self.assertEqual(output_paths.data_directory, Path(DIR_PATH, 'directory'))
-        self.assertEqual(output_paths.script_directory, Path(DIR_PATH, 'directory'))
+        self.assertEqual(output_paths.log_directory, Path(DIR_PATH, 'directory'))
 
     def test_init_with_invalid_path_types(self):
         self.assertRaisesRegexp(PathError, "Path is not a directory", OutputPaths, FILE_PATH,
