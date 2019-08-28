@@ -19,6 +19,7 @@ from build.commands.start import Start
 setup_requires = ['dash',
                   'dash_html_components',
                   'dash_core_components',
+                  'docker',
                   'Django',
                   'django_extensions',
                   'django-user-agents',
