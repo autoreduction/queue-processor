@@ -43,7 +43,6 @@ class SkippedRunException(Exception):
     """
     pass
 
-
 @contextmanager
 def channels_redirected(out_file, err_file, out_stream):
     """
