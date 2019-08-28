@@ -46,6 +46,10 @@
   pip:
     name: GitPython
 
+- name: 'Install numpy'
+  pip:
+    name: numpy
+
 - name: 'pyasn1'
   pip:
     name: pyasn1-modules

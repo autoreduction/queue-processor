@@ -4,13 +4,3 @@
 # Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
----
-
-- hosts: autoreduce-hosts
-  become: true
-  roles:
-  - role: common
-  - role: queue_processors
-  - role: archive
-  - role: cephfs
-  - role: docker
