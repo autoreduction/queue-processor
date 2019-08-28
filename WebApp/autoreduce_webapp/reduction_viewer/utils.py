@@ -230,31 +230,6 @@ class ReductionRunUtils(object):
 
         return new_job
 
-    @staticmethod
-    def get_script_and_arguments(reduction_run):
-        """
-        Fetch the reduction script from the given run and return it as a string,
-        along with a dictionary of arguments.
-        """
-        from reduction_variables.utils import VariableUtils
-
-        script = reduction_run.script
-
-        # pylint:disable=no-member
-        run_variables = RunVariable.objects.filter(reduction_run=reduction_run)
-        standard_vars, advanced_vars = {}, {}
-        for variables in run_variables:
-            value = VariableUtils().convert_variable_to_type(variables.value, variables.type)
-            if variables.is_advanced:
-                advanced_vars[variables.name] = value
-            else:
-                standard_vars[variables.name] = value
-
-        arguments = {'standard_vars': standard_vars, 'advanced_vars': advanced_vars}
-
-        return script, arguments
-
-
 class ScriptUtils(object):
     """
     Utilities for the scripts field

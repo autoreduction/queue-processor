@@ -99,45 +99,6 @@ class VariableUtils(object):
                                   tracks_script=variable.tracks_script
                                  )
 
-
-    # pylint:disable=too-many-return-statements,too-many-branches
-    @staticmethod
-    def convert_variable_to_type(value, var_type):
-        """
-        Convert the given value a type matching that of var_type.
-        Options for var_type: text, number, list_text, list_number, boolean
-        If the var_type isn't recognised, the value is returned unchanged
-        """
-        if var_type == "text":
-            return str(value)
-        if var_type == "number":
-            if not value or not re.match('(-)?[0-9]+', str(value)):
-                return None
-            if '.' in str(value):
-                return float(value)
-            return int(re.sub("[^0-9]+", "", str(value)))
-        if var_type == "list_text":
-            var_list = str(value).split(',')
-            list_text = []
-            for list_val in var_list:
-                item = list_val.strip().strip("'")
-                if item:
-                    list_text.append(item)
-            return list_text
-        if var_type == "list_number":
-            var_list = value.split(',')
-            list_number = []
-            for list_val in var_list:
-                if list_val:
-                    if '.' in str(list_val):
-                        list_number.append(float(list_val))
-                    else:
-                        list_number.append(int(list_val))
-            return list_number
-        if var_type == "boolean":
-            return value.lower() == 'true'
-        return value
-
     @staticmethod
     def get_type_string(value):
         """
@@ -593,63 +554,3 @@ class InstrumentVariablesUtils(object):
         help_text = cgi.escape(help_text)  # Remove any HTML already in the help string
         help_text = help_text.replace('\n', '<br>').replace('\t', '&nbsp;&nbsp;&nbsp;&nbsp;')
         return help_text
-
-
-class MessagingUtils(object):
-    """
-    Utilities for sending messages to ActiveMQ
-    """
-
-    def send_pending(self, reduction_run, delay=None):
-        """ Sends a message to the queue with the details of the job to run. """
-        data_dict = self._make_pending_msg(reduction_run)
-        self._send_pending_msg(data_dict, delay)
-
-    def send_cancel(self, reduction_run):
-        """ Sends a message to the queue telling it to cancel any reruns of the job. """
-        data_dict = self._make_pending_msg(reduction_run)
-        data_dict["cancel"] = True
-        self._send_pending_msg(data_dict)
-
-    @staticmethod
-    def _make_pending_msg(reduction_run):
-        """ Creates a dict message from the given run, ready to be sent to ReductionPending. """
-        script, arguments = ReductionRunUtils().get_script_and_arguments(reduction_run)
-
-        # Currently only support single location
-        data_location = reduction_run.data_location.first()
-        if data_location:
-            data_path = data_location.file_path
-        else:
-            raise Exception("No data path found for reduction run")
-
-        data_dict = {
-            'run_number': reduction_run.run_number,
-            'instrument': reduction_run.instrument.name,
-            'rb_number': str(reduction_run.experiment.reference_number),
-            'data': data_path,
-            'reduction_script': script,
-            'reduction_arguments': arguments,
-            'run_version': reduction_run.run_version,
-            'facility': FACILITY,
-            'message': '',
-            'overwrite': reduction_run.overwrite,
-        }
-
-        return data_dict
-
-    @staticmethod
-    def _send_pending_msg(data_dict, delay=None):
-        """ Sends data_dict to ReductionPending (with the specified delay) """
-        # To prevent circular dependencies
-
-        message_client = ActiveMQClient(ACTIVEMQ['broker'],
-                                        ACTIVEMQ['username'],
-                                        ACTIVEMQ['password'],
-                                        ACTIVEMQ['topics'],
-                                        'Webapp_QueueProcessor',
-                                        False, ACTIVEMQ['SSL'])
-        message_client.connect()
-        message_client.send('/queue/ReductionPending', json.dumps(data_dict),
-                            priority='0', delay=delay)
-        message_client.stop()
