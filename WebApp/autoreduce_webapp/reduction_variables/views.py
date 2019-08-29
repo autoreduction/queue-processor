@@ -416,142 +416,142 @@ def run_summary(request, instrument_name, run_number, run_version=0):
 @login_and_uows_valid
 @check_permissions
 @render_with('run_confirmation.html')
-def run_confirmation(request, instrument):
-    """
-    Handles request for user to confirm re-run
-    """
-    if request.method != 'POST':
-        return redirect('instrument_summary', instrument=instrument.name)
-
-    # POST
-    # pylint:disable=no-member
-    instrument = Instrument.objects.get(name=instrument)
-    range_string = request.POST.get('run_range')
-
-    queued_status = StatusUtils().get_queued()
-    # pylint:disable=no-member
-    queue_count = ReductionRun.objects.filter(instrument=instrument, status=queued_status).count()
-    context_dictionary = {
-        'runs': [],
-        'variables': None,
-        'queued': queue_count,
-    }
-
-    try:
-        run_numbers = input_processing.parse_user_run_numbers(range_string)
-    except SyntaxError as exception:
-        context_dictionary['error'] = exception.msg
-        return context_dictionary
-
-    # Determine user level to set a maximum limit to the number of runs that can be re-queued
-    if request.user.is_superuser:
-        max_runs = 500
-    elif request.user.is_staff:
-        max_runs = 50
-    else:
-        max_runs = 20
-
-    if len(run_numbers) > max_runs:
-        context_dictionary["error"] = "{0} runs were requested, but only {1} runs can be " \
-                                      "queued at a time".format(len(run_numbers), max_runs)
-        return context_dictionary
-
-    # Check that RB numbers are the same for the range entered
-    # pylint:disable=no-member
-    rb_number = ReductionRun.objects.filter(instrument=instrument, run_number__in=run_numbers) \
-        .values_list('experiment__reference_number', flat=True).distinct()
-    if len(rb_number) > 1:
-        context_dictionary['error'] = 'Runs span multiple experiment numbers ' \
-                                      '(' + ','.join(str(i) for i in rb_number) + ')' \
-                                      ' please select a different range.'
-        return context_dictionary
-
-    for run_number in run_numbers:
-        # pylint:disable=no-member
-        matching_previous_runs_queryset = ReductionRun.objects.\
-            filter(instrument=instrument,
-                   run_number=run_number).order_by('-run_version')
-        most_recent_previous_run = matching_previous_runs_queryset.first()
-
-        # Check old run exists
-        if most_recent_previous_run is None:
-            context_dictionary['error'] = "Run number %s hasn't been" \
-                                          "ran by autoreduction yet." % str(run_number)
-
-        # Check it is not currently queued
-        queued_runs = matching_previous_runs_queryset.filter(status=queued_status).first()
-        if queued_runs is not None:
-            context_dictionary['error'] = "Run number {0} is already queued to run".\
-                format(queued_runs.run_number)
-            return context_dictionary
-
-        use_current_script = request.POST.get('use_current_script', u"true").lower() == u"true"
-        if use_current_script:
-            script_text = InstrumentVariablesUtils().get_current_script_text(instrument.name)[0]
-            default_variables = InstrumentVariablesUtils().get_default_variables(instrument.name)
-        else:
-            script_text = most_recent_previous_run.script
-            default_variables = most_recent_previous_run.run_variables.all()
-
-        new_variables = []
-
-        for key, value in request.POST.iteritems():
-            if 'var-' in key:
-                name = None
-                if 'var-advanced-' in key:
-                    name = key.replace('var-advanced-', '').replace('-', ' ')
-                    is_advanced = True
-                if 'var-standard-' in key:
-                    name = key.replace('var-standard-', '').replace('-', ' ')
-                    is_advanced = False
-
-                if name is not None:
-                    default_var = next((x for x in default_variables if x.name == name), None)
-                    if not default_var:
-                        continue
-                    # pylint:disable=protected-access,no-member
-                    if len(value) > InstrumentVariable._meta.get_field('value').max_length:
-                        context_dictionary['error'] = 'Value given in {} is too long.'\
-                            .format(str(name))
-                    variable = RunVariable(name=default_var.name,
-                                           value=value,
-                                           is_advanced=is_advanced,
-                                           type=default_var.type,
-                                           help_text=default_var.help_text)
-                    new_variables.append(variable)
-
-        if not new_variables:
-            context_dictionary['error'] = 'No variables were found to be submitted.'
-
-        # User can choose whether to overwrite with the re-run or create new data
-        overwrite_previous_data = bool(request.POST.get('overwrite_checkbox') == 'on')
-
-        if 'error' in context_dictionary:
-            return context_dictionary
-
-        run_description = request.POST.get('run_description')
-        max_desc_len = 200
-        if len(run_description) > max_desc_len:
-            context_dictionary["error"] = "The description contains {0} characters, " \
-                                          "a maximum of {1} are allowed".\
-                format(len(run_description), max_desc_len)
-            return context_dictionary
-
-        new_job = ReductionRunUtils().createRetryRun(most_recent_previous_run,
-                                                     script=script_text,
-                                                     overwrite=overwrite_previous_data,
-                                                     variables=new_variables,
-                                                     username=request.user.username,
-                                                     description=run_description)
-
-        try:
-            MessagingUtils().send_pending(new_job)
-            context_dictionary['runs'].append(new_job)
-            context_dictionary['variables'] = new_variables
-
-        # pylint:disable=broad-except
-        except Exception as exception:
-            new_job.delete()
-            context_dictionary['error'] = 'Failed to send new job. (%s)' % str(exception)
-
-    return context_dictionary
+# def run_confirmation(request, instrument):
+#     """
+#     Handles request for user to confirm re-run
+#     """
+#     if request.method != 'POST':
+#         return redirect('instrument_summary', instrument=instrument.name)
+#
+#     # POST
+#     # pylint:disable=no-member
+#     instrument = Instrument.objects.get(name=instrument)
+#     range_string = request.POST.get('run_range')
+#
+#     queued_status = StatusUtils().get_queued()
+#     # pylint:disable=no-member
+#     queue_count = ReductionRun.objects.filter(instrument=instrument, status=queued_status).count()
+#     context_dictionary = {
+#         'runs': [],
+#         'variables': None,
+#         'queued': queue_count,
+#     }
+#
+#     try:
+#         run_numbers = input_processing.parse_user_run_numbers(range_string)
+#     except SyntaxError as exception:
+#         context_dictionary['error'] = exception.msg
+#         return context_dictionary
+#
+#     # Determine user level to set a maximum limit to the number of runs that can be re-queued
+#     if request.user.is_superuser:
+#         max_runs = 500
+#     elif request.user.is_staff:
+#         max_runs = 50
+#     else:
+#         max_runs = 20
+#
+#     if len(run_numbers) > max_runs:
+#         context_dictionary["error"] = "{0} runs were requested, but only {1} runs can be " \
+#                                       "queued at a time".format(len(run_numbers), max_runs)
+#         return context_dictionary
+#
+#     # Check that RB numbers are the same for the range entered
+#     # pylint:disable=no-member
+#     rb_number = ReductionRun.objects.filter(instrument=instrument, run_number__in=run_numbers) \
+#         .values_list('experiment__reference_number', flat=True).distinct()
+#     if len(rb_number) > 1:
+#         context_dictionary['error'] = 'Runs span multiple experiment numbers ' \
+#                                       '(' + ','.join(str(i) for i in rb_number) + ')' \
+#                                       ' please select a different range.'
+#         return context_dictionary
+#
+#     for run_number in run_numbers:
+#         # pylint:disable=no-member
+#         matching_previous_runs_queryset = ReductionRun.objects.\
+#             filter(instrument=instrument,
+#                    run_number=run_number).order_by('-run_version')
+#         most_recent_previous_run = matching_previous_runs_queryset.first()
+#
+#         # Check old run exists
+#         if most_recent_previous_run is None:
+#             context_dictionary['error'] = "Run number %s hasn't been" \
+#                                           "ran by autoreduction yet." % str(run_number)
+#
+#         # Check it is not currently queued
+#         queued_runs = matching_previous_runs_queryset.filter(status=queued_status).first()
+#         if queued_runs is not None:
+#             context_dictionary['error'] = "Run number {0} is already queued to run".\
+#                 format(queued_runs.run_number)
+#             return context_dictionary
+#
+#         use_current_script = request.POST.get('use_current_script', u"true").lower() == u"true"
+#         if use_current_script:
+#             script_text = InstrumentVariablesUtils().get_current_script_text(instrument.name)[0]
+#             default_variables = InstrumentVariablesUtils().get_default_variables(instrument.name)
+#         else:
+#             script_text = most_recent_previous_run.script
+#             default_variables = most_recent_previous_run.run_variables.all()
+#
+#         new_variables = []
+#
+#         for key, value in request.POST.iteritems():
+#             if 'var-' in key:
+#                 name = None
+#                 if 'var-advanced-' in key:
+#                     name = key.replace('var-advanced-', '').replace('-', ' ')
+#                     is_advanced = True
+#                 if 'var-standard-' in key:
+#                     name = key.replace('var-standard-', '').replace('-', ' ')
+#                     is_advanced = False
+#
+#                 if name is not None:
+#                     default_var = next((x for x in default_variables if x.name == name), None)
+#                     if not default_var:
+#                         continue
+#                     # pylint:disable=protected-access,no-member
+#                     if len(value) > InstrumentVariable._meta.get_field('value').max_length:
+#                         context_dictionary['error'] = 'Value given in {} is too long.'\
+#                             .format(str(name))
+#                     variable = RunVariable(name=default_var.name,
+#                                            value=value,
+#                                            is_advanced=is_advanced,
+#                                            type=default_var.type,
+#                                            help_text=default_var.help_text)
+#                     new_variables.append(variable)
+#
+#         if not new_variables:
+#             context_dictionary['error'] = 'No variables were found to be submitted.'
+#
+#         # User can choose whether to overwrite with the re-run or create new data
+#         overwrite_previous_data = bool(request.POST.get('overwrite_checkbox') == 'on')
+#
+#         if 'error' in context_dictionary:
+#             return context_dictionary
+#
+#         run_description = request.POST.get('run_description')
+#         max_desc_len = 200
+#         if len(run_description) > max_desc_len:
+#             context_dictionary["error"] = "The description contains {0} characters, " \
+#                                           "a maximum of {1} are allowed".\
+#                 format(len(run_description), max_desc_len)
+#             return context_dictionary
+#
+#         new_job = ReductionRunUtils().createRetryRun(most_recent_previous_run,
+#                                                      script=script_text,
+#                                                      overwrite=overwrite_previous_data,
+#                                                      variables=new_variables,
+#                                                      username=request.user.username,
+#                                                      description=run_description)
+#
+#         try:
+#             MessagingUtils().send_pending(new_job)
+#             context_dictionary['runs'].append(new_job)
+#             context_dictionary['variables'] = new_variables
+#
+#         # pylint:disable=broad-except
+#         except Exception as exception:
+#             new_job.delete()
+#             context_dictionary['error'] = 'Failed to send new job. (%s)' % str(exception)
+#
+#     return context_dictionary
