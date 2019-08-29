@@ -10,6 +10,8 @@ Test the path class
 import unittest
 import os
 
+from mock import patch
+
 from paths.path import Path, PathError
 
 NOT_ABSOLUTE_FILE = 'not/absolute/path'
@@ -46,6 +48,12 @@ class TestPath(unittest.TestCase):
         path = Path(os.path.join(DIR_PATH, 'file_does_not_exist.nxs'), 'file')
         self.assertRaisesRegexp(PathError, "Path doesn't exist", path.validate_path)
 
+    @patch('os.access')
+    def test_not_readable_path(self, mock_access):
+        mock_access.return_value = False
+        path = Path(FILE_PATH, 'file')
+        self.assertRaisesRegexp(PathError, "Path is not readable", path.validate_path)
+
     def test_not_file_validation(self):
         path = Path(DIR_PATH, 'file')
         self.assertRaisesRegexp(PathError, "Path is not a file", path.validate_path)
@@ -53,3 +61,18 @@ class TestPath(unittest.TestCase):
     def test_not_directory_validation(self):
         path = Path(FILE_PATH, 'dir')
         self.assertRaisesRegexp(PathError, "Path is not a directory", path.validate_path)
+
+    def test_path_equality_true(self):
+        path1 = Path(FILE_PATH, 'file')
+        path2 = Path(FILE_PATH, 'file')
+        self.assertTrue(path1 == path2)
+
+    def test_path_equality_mismatch_path_value(self):
+        path1 = Path(FILE_PATH, 'file')
+        path2 = Path(DIR_PATH, 'file')
+        self.assertFalse(path1 == path2)
+
+    def test_path_equality_mismatch_path_type(self):
+        path1 = Path(FILE_PATH, 'file')
+        path2 = Path(FILE_PATH, 'directory')
+        self.assertFalse(path1 == path2)
