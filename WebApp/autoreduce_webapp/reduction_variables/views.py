@@ -8,17 +8,17 @@
 View functions for displaying Variable data
 This imports into another view, thus no middleware
 """
-import json
+# import json
 import logging
 
 from django.shortcuts import redirect
-from django.core.exceptions import PermissionDenied
+# from django.core.exceptions import PermissionDenied
 from django.shortcuts import render
-from django.http import HttpResponse, HttpResponseForbidden
-from autoreduce_webapp.view_utils import (login_and_uows_valid, render_with, has_valid_login,
-                                          handle_redirect, check_permissions)
+# from django.http import HttpResponse, HttpResponseForbidden
+# from autoreduce_webapp.view_utils import (login_and_uows_valid, render_with, has_valid_login,
+#                                           handle_redirect, check_permissions)
 from reduction_variables.models import InstrumentVariable, RunVariable
-from reduction_variables.utils import VariableUtils, InstrumentVariablesUtils, MessagingUtils
+# from reduction_variables.utils import VariableUtils, InstrumentVariablesUtils, MessagingUtils
 from reduction_viewer.models import Instrument, ReductionRun
 from reduction_viewer.utils import InstrumentUtils, StatusUtils, ReductionRunUtils
 from utilities import input_processing
