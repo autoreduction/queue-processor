@@ -20,7 +20,7 @@ from QueueProcessors.AutoreductionProcessor.settings import MISC
 # pylint:disable=missing-docstring
 class TestISISReductionPathManager(unittest.TestCase):
 
-    @patch('paths.path.Path.validate_path')
+    @patch('paths.path.Path.validate')
     def test_valid_init(self, mock_validate):
         """
         Create expected paths from AutoreductionProcessor.settings.MISC and test that

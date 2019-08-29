@@ -22,7 +22,7 @@ class TestReductionPathManager(unittest.TestCase):
         self.test_file = tempfile.NamedTemporaryFile(suffix='.nxs', delete=False).name
         self.test_dir = tempfile.mkdtemp()
 
-    @patch('paths.path.Path.validate_path')
+    @patch('paths.path.Path.validate')
     def test_init(self, _):
         """ Ensure all variables are assigned correctly """
 
