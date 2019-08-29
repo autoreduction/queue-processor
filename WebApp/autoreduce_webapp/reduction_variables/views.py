@@ -8,13 +8,10 @@
 View functions for displaying Variable data
 This imports into another view, thus no middleware
 """
-# import json
 import logging
 
 from django.shortcuts import redirect
-# from django.core.exceptions import PermissionDenied
 from django.shortcuts import render
-# from django.http import HttpResponse, HttpResponseForbidden
 from autoreduce_webapp.view_utils import (login_and_uows_valid, render_with, check_permissions)
 from reduction_variables.models import InstrumentVariable, RunVariable
 from reduction_variables.utils import InstrumentVariablesUtils, MessagingUtils
@@ -554,130 +551,3 @@ def run_confirmation(request, instrument):
             context_dictionary['error'] = 'Failed to send new job. (%s)' % str(exception)
 
     return context_dictionary
-
-
-# def preview_script(request, instrument=None, run_number=0, experiment_reference=0):
-#     """
-#     Handles request to view a preview of the user script
-#     """
-#     # Can't use login decorator as this is requested via AJAX;
-#     # need to return an error message on failure.
-#     if not has_valid_login(request):
-#         redirect_response = handle_redirect(request)
-#         if request.method == 'GET':
-#             return redirect_response
-#         error = {'redirect_url': redirect_response.url}
-#         return HttpResponseForbidden(json.dumps(error))
-#
-#     @check_permissions
-#     def permission_test(request, run_number=0, experiment_reference=0):
-#         """
-#         Make our own function to use the permissions decorator on;
-#         if we catch a PermissionDenied, we should give a 403 error.
-#
-#         We also don't want to check the instrument in this case,
-#         since run-specific scripts ought to be viewable without owning the instrument.
-#         """
-#         pass
-#
-#     try:
-#         permission_test(request, run_number, experiment_reference)
-#     except PermissionDenied:
-#         return HttpResponseForbidden()
-#
-#     # Find the reduction run to get the script for.
-#     if request.method == 'GET':
-#         # pylint:disable=no-member
-#         reduction_run = ReductionRun.objects.filter(run_number=run_number)
-#         use_current_script = False
-#
-#     elif request.method == 'POST':
-#         lookup_run_number = request.POST.get('run_number', None)
-#         lookup_run_version = request.POST.get('run_version', None)
-#         use_current_script = request.POST.get('use_current_script',
-#                                               default=u"false").lower() == u"true"
-#         # pylint:disable=no-member
-#         reduction_run = ReductionRun.objects.filter(run_number=lookup_run_number,
-#                                                     run_version=lookup_run_version)
-#
-#     # Get the script text and variables from the given run;
-#     # note the differing types of the variables in the two cases,
-#     # which don't matter (we only access the parent Variable attributes).
-#     if reduction_run and not use_current_script:
-#         script_text = reduction_run[0].script
-#         script_variables = reduction_run[0].run_variables.all()  # [InstrumentVariable]
-#     else:
-#         script_text = InstrumentVariablesUtils().get_current_script_text(instrument)[0]
-#         # [RunVariable]
-#         script_variables = InstrumentVariablesUtils().show_variables_for_run(instrument)
-#
-#     def format_header(string):
-#         """
-#         Gives a #-enclosed string that looks header-y
-#         """
-#         lines = ["#" * (len(string) + 8)] * 4
-#         lines[2:2] = ["##" + " " * (len(string) + 4) + "##"] * 3
-#         lines[3] = lines[3][:4] + string + lines[3][-4:]
-#         lines += [""] * 1
-#         return lines
-#
-#     def format_class(variables, name, indent):
-#         """
-#         Gives a Python class declaration with variable dicts as required
-#         """
-#         lines = ["class " + name + ":"]
-#         # pylint:disable=deprecated-lambda
-#         standard_vars, advanced_vars = filter(lambda var: not var.is_advanced, variables), filter(
-#             lambda var: var.is_advanced, variables)
-#
-#         def make_dict(variables, name):
-#             """
-#             Create and return a dictionary for name, variable pairs
-#             """
-#             var_dict = {v.name: VariableUtils().convert_variable_to_type(v.value, v.type)
-#                         for v in variables}
-#             return indent + name + " = " + str(var_dict)
-#
-#         lines.append(make_dict(standard_vars, "standard_vars"))
-#         lines.append(make_dict(advanced_vars, "advanced_vars"))
-#         lines += [""] * 3
-#
-#         return lines
-#
-#     def replace_variables(text):
-#         """
-#         Replace variables with user defined text
-#         """
-#         # Find the import/s for the reduction variables and remove them.
-#         lines = text.split("\n")
-#         # pylint:disable=deprecated-lambda
-#         imports = filter(lambda line: line.lstrip().startswith("import")
-#                          or line.lstrip().startswith("from"), lines)
-#         # pylint:disable=deprecated-lambda
-#         import_vars = filter(lambda line: "reduce_vars" in line, imports)
-#         lines = [line for line in lines if line not in import_vars]
-#
-#         # Print the header for the reduce.py script
-#         lines = format_header("Reduction script - reduce.py") + lines
-#
-#         # Figure out space/tabs
-#         indent = "    "  # Defaults to PEP 8 standard!
-#         # pylint:disable=deprecated-lambda
-#         if filter(lambda line: line.startswith("\t"), lines):
-#             indent = "\t"
-#
-#         if import_vars:
-#             # Assume import is of the form 'import reduce_vars as {name}' or 'import reduce_vars'
-#             classname = import_vars[0].rstrip().split(" ")[-1]
-#             # Print the variables and a header for them
-#             lines = format_header("Reduction variables") + \
-#                     format_class(script_variables, classname, indent) + lines
-#
-#         return "\n".join(lines)
-#
-#     new_script_text = replace_variables(script_text)
-#
-#     response = HttpResponse(content_type='application/x-python')
-#     response['Content-Disposition'] = 'attachment; filename=reduce.py'
-#     response.write(new_script_text)
-#     return response
