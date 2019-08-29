@@ -30,7 +30,7 @@ class PathCollection(object):
         Runs the validate path function for all the paths in the self.all_paths variable
         """
         for path in self.all_paths:
-            path.validate_path()
+            path.validate()
 
 
 # pylint:disable=too-few-public-methods

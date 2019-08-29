@@ -13,7 +13,7 @@ import unittest
 from mock import patch
 
 from paths.isis.isis_reduction_path_manager import ISISReductionPathManager
-from paths.path_manipulation import add_to_path, split_path
+from paths.path_manipulation import append_path, split
 from QueueProcessors.AutoreductionProcessor.settings import MISC
 
 
@@ -35,23 +35,23 @@ class TestISISReductionPathManager(unittest.TestCase):
                                               run_number='54321')
         # Input Paths
         expected_data_path = os.path.realpath(__file__)
-        expected_script_path = add_to_path(MISC['scripts_directory'] % 'GEM', ['reduce.py'])
-        expected_vars_path = add_to_path(MISC['scripts_directory'] % 'GEM', ['reduce_vars.py'])
+        expected_script_path = append_path(MISC['scripts_directory'] % 'GEM', ['reduce.py'])
+        expected_vars_path = append_path(MISC['scripts_directory'] % 'GEM', ['reduce_vars.py'])
         self.assertEqual(expected_data_path, isis_paths.input_paths.data_path.value)
         self.assertEqual(expected_script_path, isis_paths.input_paths.reduction_script_path.value)
         self.assertEqual(expected_vars_path, isis_paths.input_paths.reduction_variables_path.value)
 
         # Output Paths
         expected_out_path = MISC['ceph_directory'] % ('GEM', '12345', '54321')
-        expected_log_path = add_to_path(MISC['ceph_directory'] % ('GEM', '12345', '54321'),
+        expected_log_path = append_path(MISC['ceph_directory'] % ('GEM', '12345', '54321'),
                                         ['reduction_log'])
         self.assertEqual(expected_out_path, isis_paths.output_paths.data_directory.value)
         self.assertEqual(expected_log_path, isis_paths.output_paths.log_directory.value)
 
         # Temporary Paths
         expected_temp_path = MISC['temp_root_directory']
-        expected_temp_out_path = add_to_path(expected_temp_path, split_path(expected_out_path))
-        expected_temp_log_path = add_to_path(expected_temp_path, split_path(expected_log_path))
+        expected_temp_out_path = append_path(expected_temp_path, split(expected_out_path))
+        expected_temp_log_path = append_path(expected_temp_path, split(expected_log_path))
         self.assertEqual(expected_temp_path, isis_paths.temporary_paths.root_directory.value)
         self.assertEqual(expected_temp_out_path, isis_paths.temporary_paths.data_directory.value)
         self.assertEqual(expected_temp_log_path, isis_paths.temporary_paths.log_directory.value)

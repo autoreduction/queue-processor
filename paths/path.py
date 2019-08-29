@@ -32,7 +32,7 @@ class Path(object):
             path_type = 'directory'
         self.type = path_type
 
-    def validate_path(self):
+    def validate(self):
         """
         Ensure that paths are: absolute, exist, have read access and are file/directory
         If these conditions are not met, an exception is thrown

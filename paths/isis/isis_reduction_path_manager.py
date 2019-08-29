@@ -27,9 +27,9 @@ class ISISReductionPathManager(ReductionPathManager):
         :param proposal: RB number that relates to the data file
         :param run_number: The run number for the input file
         """
-        reduction_script_path = paths.add_to_path(MISC['scripts_directory'] % instrument,
+        reduction_script_path = paths.append_path(MISC['scripts_directory'] % instrument,
                                                   ['reduce.py'])
-        reduction_script_vars_path = paths.add_to_path(MISC['scripts_directory'] % instrument,
+        reduction_script_vars_path = paths.append_path(MISC['scripts_directory'] % instrument,
                                                        ['reduce_vars.py'])
         temp_output_dir = MISC['temp_root_directory']
         output_directory = MISC['ceph_directory'] % (instrument, proposal, run_number)

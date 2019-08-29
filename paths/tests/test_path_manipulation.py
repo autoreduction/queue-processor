@@ -17,25 +17,25 @@ import paths.path_manipulation as utils
 class TestPathManipulation(unittest.TestCase):
 
     def test_path_is_windows_true(self):
-        self.assertTrue(utils.is_path_windows(r'C:\windows\path'))
-        self.assertTrue(utils.is_path_windows('C:\\windows\\path'))
-        self.assertTrue(utils.is_path_windows(r'C:\windows\path\file.nxs'))
-        self.assertTrue(utils.is_path_windows('C:\\windows\\path\\file.nxs'))
+        self.assertTrue(utils.is_windows(r'C:\windows\path'))
+        self.assertTrue(utils.is_windows('C:\\windows\\path'))
+        self.assertTrue(utils.is_windows(r'C:\windows\path\file.nxs'))
+        self.assertTrue(utils.is_windows('C:\\windows\\path\\file.nxs'))
 
     def test_path_is_windows_false(self):
-        self.assertFalse(utils.is_path_windows('/unix/path'))
-        self.assertFalse(utils.is_path_windows('/unix/path/file.nxs'))
+        self.assertFalse(utils.is_windows('/unix/path'))
+        self.assertFalse(utils.is_windows('/unix/path/file.nxs'))
 
     def test_mixed_path(self):
-        self.assertRaises(PathError, utils.is_path_windows, '\\mixed/path\\raise/error')
+        self.assertRaises(PathError, utils.is_windows, '\\mixed/path\\raise/error')
 
     def test_path_separator(self):
-        self.assertEqual(utils.path_separator('/unix/path'), '/')
-        self.assertEqual(utils.path_separator('C:\\windows\\path'), '\\')
+        self.assertEqual(utils.separator('/unix/path'), '/')
+        self.assertEqual(utils.separator('C:\\windows\\path'), '\\')
 
     def test_path_split(self):
-        self.assertEqual(utils.split_path('/unix/path'), ['unix', 'path'])
-        self.assertEqual(utils.split_path('C:\\windows\\path'), ['C:', 'windows', 'path'])
+        self.assertEqual(utils.split('/unix/path'), ['unix', 'path'])
+        self.assertEqual(utils.split('C:\\windows\\path'), ['C:', 'windows', 'path'])
 
     def test_add_separator_to_end_of_dir_windows_dir_no_sep(self):
         self.assertEqual(utils.add_separator_to_end_of_directory('C:\\windows\\path'),
@@ -62,9 +62,9 @@ class TestPathManipulation(unittest.TestCase):
                          '/unix/path/file.nxs')
 
     def test_add_to_windows_path(self):
-        self.assertEqual(utils.add_to_path('C:\\windows', ['path', 'to', 'add', 'to']),
+        self.assertEqual(utils.append_path('C:\\windows', ['path', 'to', 'add', 'to']),
                          'C:\\windows\\path\\to\\add\\to\\')
 
     def test_add_to_unix_path(self):
-        self.assertEqual(utils.add_to_path('/unix', ['path', 'to', 'add', 'to']),
+        self.assertEqual(utils.append_path('/unix', ['path', 'to', 'add', 'to']),
                          '/unix/path/to/add/to/')

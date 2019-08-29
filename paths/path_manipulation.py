@@ -11,7 +11,7 @@ Helper functions for paths
 from paths.path import PathError
 
 
-def is_path_windows(path):
+def is_windows(path):
     """
     Given a path, detect if the path is a windows path
     :param path: The path to examine
@@ -24,24 +24,24 @@ def is_path_windows(path):
     return False
 
 
-def path_separator(path):
+def separator(path):
     """
     Given a path, return the type of separator to use either / or \\
     :param path: The path to examine
     :return
     """
-    if is_path_windows(path):
+    if is_windows(path):
         return '\\'
     return '/'
 
 
-def split_path(path):
+def split(path):
     """
     Get the correct path separator and split up the path based on it
     :param path: The path to split up
     :return: a list of items in the path
     """
-    path_list = path.split(path_separator(path))
+    path_list = path.split(separator(path))
     while '' in path_list:
         path_list.remove('')
     return path_list
@@ -54,16 +54,16 @@ def add_separator_to_end_of_directory(path):
     :return: The path with a separator added to the end e.g. /test/path becomes /test/path/
     """
     # If the path ends in a file then return immediately
-    if '.' in split_path(path)[-1]:
+    if '.' in split(path)[-1]:
         return path
 
-    separator = path_separator(path)
+    sep = separator(path)
     if path.endswith('\\') or path.endswith('/'):
         return path
-    return path + separator
+    return path + sep
 
 
-def add_to_path(path, list_to_append):
+def append_path(path, list_to_append):
     """
     Given a path, append further directories / files with the correct separators
     :param path: The path to append to
