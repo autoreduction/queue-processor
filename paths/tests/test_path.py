@@ -26,6 +26,11 @@ class TestPath(unittest.TestCase):
         path = Path('/test/path/file.nxs', 'file')
         self.assertEqual(path.type, 'file')
         self.assertEqual(path.value, '/test/path/file.nxs')
+        self.assertEqual(path.validate_absolute, True)
+        self.assertEqual(path.validate_exists, True)
+        self.assertEqual(path.validate_readable, True)
+        self.assertEqual(path.validate_type, True)
+        self.assertEqual(path.validate_writable, False)
 
     def test_valid_init_for_dir(self):
         path = Path('/test/path/dir/', 'dir')
@@ -61,6 +66,10 @@ class TestPath(unittest.TestCase):
     def test_not_directory_validation(self):
         path = Path(FILE_PATH, 'dir')
         self.assertRaisesRegexp(PathError, "Path is not a directory", path.validate)
+
+    def test_no_validation(self):
+        path = Path('fake/path/directory', 'directory', False, False, False, False, False)
+        self.assertTrue(path.validate())
 
     def test_path_equality_true(self):
         path1 = Path(FILE_PATH, 'file')

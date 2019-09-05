@@ -15,13 +15,15 @@ Here, `value` is the string representation of the path, and `type` is either `fi
 ```
 log_file_path = Path('/some/file/path/test.log', 'file')
 ``` 
-In addition to storing paths, this class will also has a validate function to ensure that the path is:
- * `exists`
- * `absolute`
- * `readable`
- * Matches the type specified in `Path.type`
+In addition to storing paths, this class will also has a validate function to check:
+ * `existance`
+ * `absoluteness`
+ * `readablility`
+ * `writablility`
+ * `Path.type`
 
-If the the `Path` object does not match any of these criteria when the `validate` function is called, then a `PathError` exception will be raised.
+By default the path must, exist, be absolute, be readable and match the `path.type` given at initialisation. Write permissions are not checked by default.
+Any of these checks can be overridden in the  `__init__`.
 
 Two `Path` objects are said to be equal if the `value` and `type` are the same. In the following example `path1` and `path2` are equal:
 ```
