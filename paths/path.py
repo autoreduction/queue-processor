@@ -22,7 +22,7 @@ class Path(object):
     exists in the specified state (e.g. isfile() / isdir())
     """
 
-    # pylitn:disable=too-many-arguments
+    # pylint:disable=too-many-arguments
     def __init__(self, value, path_type,
                  validate_absolute=True,
                  validate_exists=True,
