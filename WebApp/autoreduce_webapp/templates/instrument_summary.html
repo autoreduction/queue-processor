@@ -1,48 +1,185 @@
 {% extends "base.html" %}
 {% load view %}
 {% load static from staticfiles %}
+{% load colour_table_rows %}
 
 {% block body %}
     {% if instrument %}
         {% if instrument.is_active %}
-            <title>{{ instrument.name }} - Upcoming Configurations</title>
+            <title>{{ instrument_name }}</title>
+            <!-- Instrument Name -->
             <div class="row">
                 <div class="col-md-12 text-center">
-                    <h2>{{ instrument.name }} - Upcoming Configurations</h2>
+                    <h2>{{ instrument_name }}</h2>
                 </div>
             </div>
+
+            <!-- Instrument status and control buttons -->
             <div class="row">
-                <div class="col-md-6 col-md-offset-3">
+                <!-- Status panel -->
+                <div class="col-md-6">
                     {% include "snippets/instrument_status.html" with processing=processing queued=queued last_instrument_run=last_instrument_run only %}
                 </div>
-            </div>
-                <div class="row">
-                    <div class="col-md-4 col-md-offset-4 text-center">
-                        {% if instrument.is_paused %}
-                            <a class="btn btn-danger btn-block" id="pause"><i class="fa fa-play"></i>&nbsp;&nbsp;Resume Autoreduction on {{instrument.name}}</a>
-                        {% else %}
-                            <a class="btn btn-success btn-block" id="pause"><i class="fa fa-pause"></i>&nbsp;&nbsp;Pause Autoreduction on {{instrument.name}}</a>
-                        {% endif %}
-                        <form id="form-pause" method="POST" action="{% url 'instrument_pause' instrument.name %}">
-                            {% csrf_token %}
-                            <input type="hidden" name="currently_paused" id="currently_paused" value="{{ instrument.is_paused }}">
-                        </form>
-                        <p></p>
-                    </div>
+                <!-- Pause / Resume Reduction button-->
+                <div class="col-md-6 text-center">
+                    {% if instrument.is_paused %}
+                        <a class="btn btn-danger btn-block" id="pause"><i class="fa fa-play"></i>&nbsp;&nbsp;Resume Autoreduction on {{instrument_name}}</a>
+                    {% else %}
+                        <a class="btn btn-success btn-block" id="pause"><i class="fa fa-pause"></i>&nbsp;&nbsp;Pause Autoreduction on {{instrument_name}}</a>
+                    {% endif %}
+                    <form id="form-pause" method="POST" action="{% url 'instrument_pause' instrument_name %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="currently_paused" id="currently_paused" value="{{ instrument.is_paused }}">
+                    </form>
+                    <p></p>
                 </div>
-            <div class="row">
-                <div class="col-md-4 col-md-offset-4 text-center">
-                    <p><a href="{% url 'instrument_submit_runs' instrument=instrument %}" class="btn btn-success btn-block"><i class="fa fa-plus"></i>&nbsp;&nbsp;Re-run past jobs</a></p>
+                <!-- Re-run past runs button -->
+                <div class="col-md-6 text-center">
+                    <p><a href="{% url 'instrument_submit_runs' instrument=instrument_name %}" class="btn btn-success btn-block"><i class="fa fa-arrow-left"></i>&nbsp;&nbsp;Re-run past jobs</a></p>
                 </div>
+                <!-- Configure new runs button -->
+                <div class="col-md-6 text-center">
+                    <p><a href="{% url 'instrument_variables' instrument=instrument_name %}" class="btn btn-success btn-block"><i class="fa fa-plus"></i>&nbsp;&nbsp;Configure New Jobs</a></p>
+                </div>
+                {% if reduction_variables_on %}
+                <div class="col-md-6 text-center">
+                    <p><a href="{% url 'instrument_variables_summary' instrument=instrument_name %}" class="btn btn-success btn-block"><i class="fa fa-eye"></i>&nbsp;&nbsp;See Instrument variables</a></p>
+                </div>
+                {% endif %}
+
             </div>
-            {% if reduction_variables_on %}  
-                {% view "reduction_variables.views.instrument_summary" instrument=instrument.name %}
-            {% endif %}
+
         {% else %}
             <div class="text-center col-md-6 col-md-offset-3 well well-small">
                 Instrument is not active.
             </div>
         {% endif %}
+
+        <br/>
+        <hr/>
+            <!-- Display table for reduction jobs -->
+            <div class="row">
+                <div class="col-md-3">
+                    <h3>Filter by</h3>
+                </div>
+                <div class="col-md-3">
+                    <h3>Sort by</h3>
+                </div>
+                <div class="col-md-3">
+                    <h3>Items per page</h3>
+                </div>
+            </div>
+            <div class="row">
+                <!-- Filter , Sort and Pagination options -->
+                <form action="{{ request.path }}" method="get" id="filter_options">
+                    <div class="col-md-3">
+                        <select class="form-control" name="filter" form="filter_options" id="filter_select">
+                            <option value="run" title="Display run numbers" {% if filtering == 'run' %}selected="selected"{% endif %}>Run number</option>
+                            <option value="experiment" title="Display run number grouped by RB number" {% if filtering == 'experiment' %} selected="selected" {% endif %}>Experiment Reference (RB)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-control" name="sort" form="filter_options" id="sort_select">
+                            <option value="run" {% if sort == 'run' %}selected="selected"{% endif %}>Number</option>>
+                            <option value="date" {% if sort == 'date' %}selected="selected"{% endif %}>Date</option>
+                        </select>
+                    </div>
+                    {% if filtering == 'run' %}
+                    <div class="col-md-3">
+                        <select title="The number of reduction jobs that should be shown per page" class="form-control" name="pagination" form="filter_options" id="pagination_select">
+                            <option {% if max_items == '10' %}selected="selected"{% endif %}>10</option>
+                            <option {% if max_items == '25' %}selected="selected"{% endif %}>25</option>
+                            <option {% if max_items == '50' %}selected="selected"{% endif %}>50</option>
+                            <option {% if max_items == '100' %}selected="selected"{% endif %}>100</option>
+                            <option {% if max_items == '250' %}selected="selected"{% endif %}>250</option>
+                            <option {% if max_items == '500' %}selected="selected"{% endif %}>500</option>
+                        </select>
+                    </div>
+                    {% endif %}
+                    <div class="col-md-3">
+                        <input class="btn btn-primary" type="submit" value="Apply filters">
+                    </div>
+                </form>
+            </div>
+            <br/>
+            <!-- Display table for every reduction job -->
+            <div class="row">
+                <div class="tab-content col-md-12">
+                    {% if filtering == 'run' %}
+                    <!-- Run number filtered jobs -->
+                        <div class="row" id="by-run-number">
+                            {% for run in paginator.current_page.records %}
+                                {% if forloop.first %}
+                                    <div class="row run-row-top">
+                                {% else %}
+                                    <div class="row run-row">
+                                {% endif %}
+                                    <div class="col-md-5 col-sm-5 col-md-offset-1 col-xs-4"><a href="{% url 'run_summary' instrument_name=instrument_name run_number=run.run_number run_version=run.run_version %}">{{ run.title }}</a></div>
+                                    <div class="col-md-2 col-sm-2 col-xs-4 run-status text-{% colour_table_row run.status.value %}"><strong>{{ run.status }}</strong></div>
+                                    <div class="col-md-4 col-sm-5 col-xs-4"><strong>Last updated:</strong> {{ run.last_updated }}</div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% elif filtering == 'experiment' %}
+                    <!-- Experiment filtered jobs -->
+                        <div class="row" id="by-experiment-number">
+                            {% for experiment, associated_runs in experiments.items %}
+                            {% if forloop.first %}
+                                <div class="col-md-12 run-row-top" data-toggle="collapse" data-target="#RB{{ experiment.reference_number }}">
+                            {% else %}
+                                <div class="col-md-12 run-row" data-toggle="collapse" data-target="#RB{{ experiment.reference_number }}">
+                            {% endif %}
+                                <div class="col-md-1"></div>
+                                <a href="{% url 'experiment_summary' experiment.reference_number %}"> RB{{ experiment.reference_number }}</a>
+                            </div>
+                            <div id="RB{{ experiment.reference_number }}" class="collapse">
+                                {% for run in associated_runs %}
+                                <div class="row run-row-internal">
+                                    <div class="col-md-5 col-sm-5 col-md-offset-1 col-xs-4"><a href="{% url 'run_summary' instrument_name=instrument_name run_number=run.run_number run_version=run.run_version %}">{{ run.title }}</a></div>
+                                    <div class="col-md-2 col-sm-2 col-xs-4 run-status text-{% colour_table_row run.status.value %}"><strong>{{ run.status }}</strong></div>
+                                    <div class="col-md-4 col-sm-5 col-xs-4"><strong>Last updated:</strong> {{ run.last_updated }}</div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="row">No runs to show</div>
+                    {% endif %}
+                </div>
+            </div>
+            <br/>
+            <!-- Paginator -->
+            {% if filtering == 'run' %}
+                <div class="row">
+                    {% if paginator %}
+                    <div class="col-md-12 text-center">
+                        <div class="btn-group" role="group">
+                            {% if paginator.has_previous %}
+                                <button title="First Page" class="btn btn-default" onclick="changePage(1)"><i class="fa fa-step-backward"></i></button>
+                                <button title="Previous Page" class="btn btn-default" onclick="changePage({{ paginator.previous_page_index }})"><i class="fa fa-chevron-left"></i></button>
+                            {% endif %}
+                            {% for page in paginator.display_list %}
+                                {% if page.is_visible %}
+                                    {% if page.number == paginator.current_page_index %}
+                                        <button title="Current Page" class="btn btn-primary inline">{{ page.display_name }}</button>
+                                    {% else %}
+                                        <button class="btn btn-default" onclick="changePage({{ page.number }})">{{ page.display_name }}</button>
+                                    {% endif %}
+                                {% else %}
+                                     <button title="There are additional pages. Please access them using the navigation buttons." class="btn btn-default disabled">...</button>
+                                {% endif %}
+                            {% endfor %}
+                            {% if paginator.has_next %}
+                                <button title="Next Page" class="btn btn-default" onclick="changePage({{ paginator.next_page_index }})"><i class="fa fa-chevron-right"></i></button>
+                                <button title="Last page" class="btn btn-default" onclick="changePage({{ last_page_index }})"><i class="fa fa-step-forward"></i></button>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
     {% else %}
         <div class="text-center col-md-6 col-md-offset-3 well well-small">
             Instrument not found.
@@ -51,6 +188,18 @@
 {% endblock %}
 
 {% block scripts %}
+    {% if preload_runs %}
+        <script>window.preload_runs = true;</script>
+    {% endif %}
+    <script>
+    function changePage(page) {
+        var pagination_choice = document.getElementById("pagination_select").value;
+        var filter_choice = document.getElementById("filter_select").value;
+        var sort_choice = document.getElementById("sort_select").value
+        var new_url = window.location.origin + window.location.pathname + '?page=' + arguments[0] + '&filter=' + filter_choice + '&pagination=' + pagination_choice + '&sort=' + sort_choice;
+        document.location.href = new_url;
+    }
+    </script>
     <script src="{% static "javascript/pause_instrument.js" %}"></script>
     <script src="{% static "javascript/instrument_variables.js" %}"></script>
 {% endblock %}

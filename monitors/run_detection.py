@@ -7,6 +7,7 @@ import csv
 import logging
 import os
 import json
+from nexusformat.nexus import nxload
 from filelock import (FileLock, Timeout)
 
 from monitors.settings import (LAST_RUNS_CSV, CYCLE_FOLDER)
@@ -16,10 +17,10 @@ from utils.project.structure import get_log_file
 from utils.project.static_content import LOG_FORMAT
 
 # Setup logging
-EORM_LOG = logging.getLogger('end_of_run_monitor')
+EORM_LOG = logging.getLogger('run_detection')
 EORM_LOG.setLevel(logging.INFO)
 
-FH = logging.FileHandler(get_log_file('end_of_run_monitor.log'))
+FH = logging.FileHandler(get_log_file('run_detection.log'))
 CH = logging.StreamHandler()
 FORMATTER = logging.Formatter(LOG_FORMAT)
 FH.setFormatter(FORMATTER)
@@ -60,37 +61,26 @@ def get_prefix_zeros(run_number_str):
     return zeros
 
 
-def is_integer(int_str):
+def read_rb_number_from_nexus_file(nxs_file_path):
     """
-    Test to see if the provided string is an integer
-    :param int_str: Integer as a string
-    :return: True if the string represents an integer
+    Extract the experiment RB number from a Nexus file encoded
+    in HDF5 format.
+    :param nxs_file_path: Path to the Nexus file on disk
+    :return: The RB number or None
     """
     try:
-        int(int_str)
-        return True
-    except ValueError:
-        return False
+        nxs_file = nxload(nxs_file_path)
+    except IOError:
+        # The most likely cause of this is the Nexus file being encoded
+        # in HDF4 format.
+        return None
 
-
-def extract_run_number_from_summary(first_part):
-    """
-    Look for the run number in the provided summary entry
-    :param first_part: First part of the summary entry
-    :return: Run number as printed in the summary file
-    """
-    run_number = ""
-    reading_run_number = False
-    for char in first_part:
-        # Find the first integer
-        if is_integer(char):
-            run_number += char
-            reading_run_number = True
-        elif reading_run_number:
-            # The first non-integer character indicates the end
-            # of the run number
-            return run_number
-    return run_number
+    for (_, entry) in nxs_file.iteritems():
+        if hasattr(entry, 'experiment_identifier'):
+            field_data = entry.experiment_identifier.nxdata
+            if field_data:
+                return field_data[0]
+    return None
 
 
 class InstrumentMonitor(object):
@@ -117,39 +107,19 @@ class InstrumentMonitor(object):
                                              .format(self.last_run_file))
         return line_parts
 
-    def read_rb_number_from_summary(self, run_number):
+    def read_rb_number_from_summary(self):
         """
         Loads the summary file and reads off the experiment RB number
-        :param run_number: Run number to lookup
         :return: Experiment RB number
         """
-        # Detect run number as a substring
         with open(self.summary_file, 'rb') as summary:
-            # Traverse file in reverse order because some instruments truncate
-            # each run number in the summary file. This means that the same run
-            # number could occur more than once. It should be assumed that the
-            # latest is the correct run.
             summary_lines = summary.readlines()
-            for line in reversed(summary_lines):
-                line_parts = line.split()
-
-                if line_parts:
-                    # Detect the run as a substring in summary.txt
-                    summary_run = extract_run_number_from_summary(line_parts[0])
-                    if summary_run in str(run_number):
-                        # The last entry is the RB number
-                        return line_parts[-1]
-
-            # Default to choosing the last row
-            EORM_LOG.info("Can't find run %s in summary file for %s defaulting to last entry",
-                          run_number, self.instrument_name)
             last_line = summary_lines[-1]
             line_parts = last_line.split()
             if line_parts:
                 return line_parts[-1]
 
-        raise InstrumentMonitorError("Unable to find run number in summary.txt '{}'"
-                                     .format(run_number))
+        raise InstrumentMonitorError("Unable to read RB number from summary.txt")
 
     def build_dict(self, rb_number, run_number, file_location):
         """
@@ -164,10 +134,10 @@ class InstrumentMonitor(object):
                                           location=file_location,
                                           run_number=run_number)
 
-    def submit_run(self, rb_number, run_number, file_name):
+    def submit_run(self, summary_rb_number, run_number, file_name):
         """
         Submit a run to ActiveMQ
-        :param rb_number: RB number of the experiment
+        :param summary_rb_number: RB number of the experiment as read from the summary file
         :param run_number: Run number as it appears in lastrun.txt
         :param file_name: File name e.g. GEM1234.nxs
         """
@@ -175,6 +145,13 @@ class InstrumentMonitor(object):
         file_path = os.path.join(self.data_dir, CYCLE_FOLDER, file_name)
 
         if os.path.isfile(file_path):
+            # Attempt to read an RB number from the Nexus file. This is most
+            # useful for high frequency instruments like ENGINX where reading
+            # from the summary is unreliable.
+            rb_number = read_rb_number_from_nexus_file(file_path)
+            if rb_number is None:
+                rb_number = summary_rb_number
+            EORM_LOG.info("Submitting '%s' with RB number '%s'", file_name, rb_number)
             data_dict = self.build_dict(rb_number, run_number, file_path)
             self.client.send('/queue/DataReady', json.dumps(data_dict), priority='9')
         else:
@@ -193,7 +170,7 @@ class InstrumentMonitor(object):
         local_run_int = int(local_last_run)
         instrument_run_int = int(instrument_last_run)
 
-        rb_number = self.read_rb_number_from_summary(str(instrument_run_int))
+        summary_rb_number = self.read_rb_number_from_summary()
         zeros = get_prefix_zeros(instrument_last_run)
         if instrument_run_int > local_run_int:
             EORM_LOG.info("Submitting runs in range %i - %i for %s",
@@ -205,7 +182,7 @@ class InstrumentMonitor(object):
                 run_number = zeros + str(i)
                 file_name = last_run_data[0] + run_number + self.file_ext
                 try:
-                    self.submit_run(rb_number, run_number, file_name)
+                    self.submit_run(summary_rb_number, run_number, file_name)
                 except FileNotFoundError as ex:
                     # If the file isn't found then just return the last file sent
                     # and try again next time

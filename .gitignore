@@ -1,5 +1,5 @@
 # Ignore IDE files
-.idea/
+.idea/*
 */target/**
 .pytest_cache/
 
@@ -9,10 +9,12 @@
 
 # Ignore log data
 *.log
-*.out
+
+# *.out
 
 # Ignore settings files
 settings.py
+credentials.ini
 
 # Ignore distutils installation
 dist/
@@ -37,3 +39,6 @@ apache_django_wsgi.conf
 
 # Ignore site.retry from Ansible
 site.retry
+vault.yml
+
+.DS_Store

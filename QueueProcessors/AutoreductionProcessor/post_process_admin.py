@@ -27,12 +27,22 @@ import time
 import traceback
 from contextlib import contextmanager
 
+from sentry_sdk import init
+
 import stomp
 # pylint:disable=no-name-in-module,import-error
 from QueueProcessors.AutoreductionProcessor.settings import ACTIVEMQ, MISC
 from QueueProcessors.AutoreductionProcessor.autoreduction_logging_setup import logger
 from QueueProcessors.AutoreductionProcessor.timeout import timeout
 
+init('http://4b7c7658e2204228ad1cfd640f478857@172.16.114.151:9000/1')
+
+class SkippedRunException(Exception):
+    """
+    Exception for runs that have been skipped
+    Note: this is currently only the case for EnginX Event mode runs at ISIS
+    """
+    pass
 
 @contextmanager
 def channels_redirected(out_file, err_file, out_stream):
@@ -69,14 +79,6 @@ def channels_redirected(out_file, err_file, out_stream):
             yield
         finally:
             _redirect_channels(old_stdout, old_stderr)  # restore stderr.
-
-
-def linux_to_windows_path(path):
-    """ Convert linux path to windows path. """
-    # '/isis/' maps to '\\isis\inst$\'
-    path = path.replace('/', '\\')
-    path = path.replace('\\isis\\', '\\\\isis\\inst$\\')
-    return path
 
 
 def windows_to_linux_path(path, temp_root_directory):
@@ -322,7 +324,11 @@ class PostProcessAdmin(object):
                 self.delete_temp_directory(reduce_result_dir)
 
                 # Parent except block will discard exception type, so format the type as a string
-                error_str = "Error in user reduction script: %s - %s" % (type(exp).__name__, exp)
+                if 'skip' in str(exp).lower():
+                    raise SkippedRunException(exp)
+                else:
+                    error_str = "Error in user reduction script: %s - %s" % (type(exp).__name__,
+                                                                             exp)
                 logger.error(traceback.format_exc())
                 raise Exception(error_str)
 
@@ -350,6 +356,10 @@ class PostProcessAdmin(object):
             # no longer a need for the temp directory used for storing of reduction results
             self.delete_temp_directory(reduce_result_dir)
 
+        except SkippedRunException as skip_exception:
+            logger.info("Run %s has been skipped on %s",
+                        self.data['run_number'], self.data['instrument'])
+            self.data["message"] = "Reduction Skipped: %s" % str(skip_exception)
         except Exception as exp:
             logger.error(traceback.format_exc())
             self.data["message"] = "REDUCTION Error: %s " % exp
@@ -360,7 +370,12 @@ class PostProcessAdmin(object):
         if self.data["message"] != "":
             # This means an error has been produced somewhere
             try:
-                self._send_error_and_log()
+                if 'skip' in self.data['message'].lower():
+                    self.data['message'].lstrip('skip: ')
+                    self._send_message_and_log(ACTIVEMQ['reduction_skipped'])
+                else:
+                    self._send_message_and_log(ACTIVEMQ['reduction_error'])
+
             except Exception as exp2:
                 logger.info("Failed to send to queue! - %s - %s", exp2, repr(exp2))
             finally:
@@ -372,10 +387,10 @@ class PostProcessAdmin(object):
             logger.info("Calling: " + ACTIVEMQ['reduction_complete'] + "\n" + prettify(self.data))
             logger.info("Reduction job successfully complete")
 
-    def _send_error_and_log(self):
+    def _send_message_and_log(self, destination):
         """ Send reduction run to error. """
-        logger.info("\nCalling " + ACTIVEMQ['reduction_error'] + " --- " + prettify(self.data))
-        self.client.send(ACTIVEMQ['reduction_error'], json.dumps(self.data))
+        logger.info("\nCalling " + destination + " --- " + prettify(self.data))
+        self.client.send(destination, json.dumps(self.data))
 
     def copy_temp_directory(self, temp_result_dir, copy_destination):
         """
@@ -389,7 +404,7 @@ class PostProcessAdmin(object):
                 and self.instrument not in MISC["excitation_instruments"]:
             self._remove_directory(copy_destination)
 
-        self.data['reduction_data'].append(linux_to_windows_path(copy_destination))
+        self.data['reduction_data'].append(copy_destination)
         logger.info("Moving %s to %s", temp_result_dir, copy_destination)
         try:
             self._copy_tree(temp_result_dir, copy_destination)

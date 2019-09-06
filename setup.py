@@ -15,22 +15,32 @@ from build.commands.installs import InstallExternals
 from build.commands.migrate_settings import MigrateTestSettings
 from build.commands.start import Start
 
-setup_requires = ['Django',
+
+setup_requires = ['dash',
+                  'dash_html_components',
+                  'dash_core_components',
+                  'docker',
+                  'Django',
                   'django_extensions',
                   'django-user-agents',
+                  'filelock',
                   'gitpython',
+                  'mysql-connector',
                   'MySQL-python',
+                  'nexusformat',
+                  'numpy',
+                  'plotly',
+                  'pandas',
                   'pytz',
                   'pymysql',
                   'requests',
-                  'SQLAlchemy',
-                  'mysql-connector',
+                  'sentry_sdk',
                   'service_identity',
+                  'SQLAlchemy',
                   'stomp.py',
                   'suds',
                   'Twisted',
-                  'watchdog',
-                  'filelock']
+                  'watchdog']
 
 if platform.system() == 'Windows':
     setup_requires.append('pypiwin32')
@@ -39,7 +49,7 @@ else:
 
 
 setup(name='AutoReduction',
-      version='1.0',
+      version='19.2',
       description='ISIS AutoReduction service',
       author='ISIS Autoreduction Team',
       url='https://github.com/ISISScientificComputing/autoreduce/',

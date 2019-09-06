@@ -10,10 +10,11 @@ from mock import (Mock, patch, call)
 
 from utils.clients.queue_client import QueueClient
 from monitors.settings import (CYCLE_FOLDER, LAST_RUNS_CSV)
-import monitors.new_end_of_run_monitor as eorm
-from monitors.new_end_of_run_monitor import (InstrumentMonitor,
-                                             FileNotFoundError,
-                                             InstrumentMonitorError)
+import monitors.run_detection as eorm
+from monitors.run_detection import (InstrumentMonitor,
+                                    FileNotFoundError,
+
+                                    InstrumentMonitorError)
 
 # Test data
 SUMMARY_FILE = ("WIS44731Smith,Smith,"
@@ -29,7 +30,21 @@ RUN_DICT = {'instrument': 'WISH',
             'data': '/my/data/dir/cycle_18_4/WISH00044733.nxs',
             'rb_number': '1820461',
             'facility': 'ISIS'}
+RUN_DICT_SUMMARY = {'instrument': 'WISH',
+                    'run_number': '00044733',
+                    'data': '/my/data/dir/cycle_18_4/WISH00044733.nxs',
+                    'rb_number': '1820333',
+                    'facility': 'ISIS'}
 CSV_FILE = "WISH,44733,lastrun_wish.txt,summary_wish.txt,data_dir,.nxs"
+
+# nexusformat mock objects
+NXENTRY_MOCK = Mock()
+NXENTRY_MOCK.experiment_identifier.nxdata = ['1910232']
+NXLOAD_MOCK = Mock()
+NXLOAD_MOCK.iteritems = Mock(return_value=[('raw_data_1', NXENTRY_MOCK)])
+
+NXLOAD_MOCK_EMPTY = Mock()
+NXLOAD_MOCK_EMPTY.iteritems = Mock(return_value=[('raw_data_1', Mock(spec=[]))])
 
 
 # pylint:disable=missing-docstring,no-self-use,too-many-public-methods
@@ -51,26 +66,6 @@ class TestEndOfRunMonitor(unittest.TestCase):
         run_number = '12345'
         zeros = eorm.get_prefix_zeros(run_number)
         self.assertEqual('', zeros)
-
-    def test_is_integer(self):
-        self.assertTrue(eorm.is_integer("3"))
-
-    def test_is_integer_not_integer(self):
-        self.assertFalse(eorm.is_integer("F"))
-
-    # pylint:disable=invalid-name
-    def test_extract_run_number_from_summary(self):
-        test_part = "OSI38828Smith,Smith0.5ML"
-        self.assertEqual("38828", eorm.extract_run_number_from_summary(test_part))
-
-    # pylint:disable=invalid-name
-    def test_extract_run_number_from_summary_no_run(self):
-        test_part = "hello"
-        self.assertEqual("", eorm.extract_run_number_from_summary(test_part))
-
-    def test_extract_run_number_from_summary_run_only(self):
-        test_part = "MUSR1234"
-        self.assertEqual("1234", eorm.extract_run_number_from_summary(test_part))
 
     def test_get_prefix_zeros_all_zeros(self):
         run_number = '00000'
@@ -106,23 +101,15 @@ class TestEndOfRunMonitor(unittest.TestCase):
 
         inst_mon = InstrumentMonitor(None, 'WISH')
         inst_mon.summary_file = 'test_summary.txt'
-        rb_number = inst_mon.read_rb_number_from_summary(44733)
+        rb_number = inst_mon.read_rb_number_from_summary()
         self.assertEqual('1820461', rb_number)
-
-    def test_read_rb_number_from_summary_run_not_found(self):
-        with open('test_summary.txt', 'w') as summary:
-            summary.write(SUMMARY_FILE)
-
-        inst_mon = InstrumentMonitor(None, 'WISH')
-        inst_mon.summary_file = 'test_summary.txt'
-        self.assertEqual('1820461', inst_mon.read_rb_number_from_summary(12345))
 
     def test_read_rb_number_from_summary_invalid(self):
         with open('test_summary.txt', 'w') as summary:
             summary.write(' ')
         inst_mon = InstrumentMonitor(None, 'WISH')
         inst_mon.summary_file = 'test_summary.txt'
-        self.assertRaises(InstrumentMonitorError, inst_mon.read_rb_number_from_summary, 12345)
+        self.assertRaises(InstrumentMonitorError, inst_mon.read_rb_number_from_summary)
 
     def test_build_dict(self):
         client = QueueClient()
@@ -134,7 +121,9 @@ class TestEndOfRunMonitor(unittest.TestCase):
         self.assertEqual(RUN_DICT, data_dict)
 
     @patch('os.path.isfile', return_value=True)
-    def test_submit_run(self, isfile_mock):
+    @patch('monitors.run_detection.read_rb_number_from_nexus_file',
+           return_value='1820461')
+    def test_submit_run(self, read_rb_mock, isfile_mock):
         client = Mock()
         client.send = Mock(return_value=None)
         client.serialise_data = Mock(return_value=RUN_DICT)
@@ -142,9 +131,11 @@ class TestEndOfRunMonitor(unittest.TestCase):
         inst_mon = InstrumentMonitor(client, 'WISH')
         inst_mon.data_dir = '/my/data/dir'
         data_loc = os.path.join(inst_mon.data_dir, CYCLE_FOLDER, 'WISH00044733.nxs')
-        inst_mon.submit_run('1820461', '00044733', 'WISH00044733.nxs')
+
+        inst_mon.submit_run('1820333', '00044733', 'WISH00044733.nxs')
         client.send.assert_called_with('/queue/DataReady', json.dumps(RUN_DICT), priority='9')
         isfile_mock.assert_called_with(data_loc)
+        read_rb_mock.assert_called_once_with(data_loc)
 
     @patch('os.path.isfile', return_value=False)
     def test_submit_run_file_not_found(self, isfile_mock):
@@ -156,8 +147,45 @@ class TestEndOfRunMonitor(unittest.TestCase):
         inst_mon.data_dir = '/my/data/dir'
         data_loc = os.path.join(inst_mon.data_dir, CYCLE_FOLDER, 'WISH00044733.nxs')
         with self.assertRaises(FileNotFoundError):
-            inst_mon.submit_run('1820461', '00044733', 'WISH00044733.nxs')
+            inst_mon.submit_run('1820333', '00044733', 'WISH00044733.nxs')
         isfile_mock.assert_called_with(data_loc)
+
+    @patch('os.path.isfile', return_vaule=True)
+    @patch('monitors.run_detection.read_rb_number_from_nexus_file',
+           return_value=None)
+    def test_submit_run_invalid_nexus(self, read_rb_mock, isfile_mock):
+        client = Mock()
+        client.send = Mock(return_value=None)
+        client.serialise_data = Mock(return_value=RUN_DICT_SUMMARY)
+
+        inst_mon = InstrumentMonitor(client, 'WISH')
+        inst_mon.data_dir = '/my/data/dir'
+        data_loc = os.path.join(inst_mon.data_dir, CYCLE_FOLDER, 'WISH00044733.nxs')
+
+        inst_mon.submit_run('1820333', '00044733', 'WISH00044733.nxs')
+        client.send.assert_called_with('/queue/DataReady',
+                                       json.dumps(RUN_DICT_SUMMARY),
+                                       priority='9')
+        isfile_mock.assert_called_with(data_loc)
+        read_rb_mock.assert_called_once_with(data_loc)
+
+    @patch('monitors.run_detection.nxload', return_value=NXLOAD_MOCK)
+    def test_read_rb_number_from_nexus(self, nxload_mock):
+        rb_num = eorm.read_rb_number_from_nexus_file('mynexus.nxs')
+        self.assertEqual(rb_num, '1910232')
+        nxload_mock.assert_called_once_with('mynexus.nxs')
+
+    @patch('monitors.run_detection.nxload', return_value=NXLOAD_MOCK_EMPTY)
+    def test_read_rb_number_from_nexus_invalid(self, nxload_mock):
+        rb_num = eorm.read_rb_number_from_nexus_file('mynexus.nxs')
+        self.assertIsNone(rb_num)
+        nxload_mock.assert_called_once_with('mynexus.nxs')
+
+    @patch('monitors.run_detection.nxload', side_effect=IOError('HDF4 file'))
+    def test_read_rb_number_from_nexus_hdf4(self, nxload_mock):
+        rb_num = eorm.read_rb_number_from_nexus_file('mynexus.nxs')
+        self.assertIsNone(rb_num)
+        nxload_mock.assert_called_once_with('mynexus.nxs')
 
     def test_submit_run_difference(self):
         # Setup test
@@ -189,9 +217,9 @@ class TestEndOfRunMonitor(unittest.TestCase):
         run_number = inst_mon.submit_run_difference(44731)
         self.assertEqual(run_number, '44731')
 
-    @patch('monitors.new_end_of_run_monitor.InstrumentMonitor.__init__',
+    @patch('monitors.run_detection.InstrumentMonitor.__init__',
            return_value=None)
-    @patch('monitors.new_end_of_run_monitor.InstrumentMonitor.submit_run_difference',
+    @patch('monitors.run_detection.InstrumentMonitor.submit_run_difference',
            return_value='44736')
     def test_update_last_runs(self, run_diff_mock, inst_mon_mock):
         # Setup test
@@ -209,9 +237,9 @@ class TestEndOfRunMonitor(unittest.TestCase):
             for row in csv_reader:
                 self.assertEqual('44736', row[1])
 
-    @patch('monitors.new_end_of_run_monitor.InstrumentMonitor.__init__',
+    @patch('monitors.run_detection.InstrumentMonitor.__init__',
            return_value=None)
-    @patch('monitors.new_end_of_run_monitor.InstrumentMonitor.submit_run_difference',
+    @patch('monitors.run_detection.InstrumentMonitor.submit_run_difference',
            side_effect=InstrumentMonitorError('Error'))
     def test_update_last_runs_with_error(self, run_diff_mock, inst_mon_mock):
         # Setup test
@@ -229,13 +257,13 @@ class TestEndOfRunMonitor(unittest.TestCase):
             for row in csv_reader:
                 self.assertEqual('44733', row[1])
 
-    @patch('monitors.new_end_of_run_monitor.update_last_runs')
+    @patch('monitors.run_detection.update_last_runs')
     def test_main(self, update_last_runs_mock):
         eorm.main()
         update_last_runs_mock.assert_called_with(LAST_RUNS_CSV)
         update_last_runs_mock.assert_called_once()
 
-    @patch('monitors.new_end_of_run_monitor.update_last_runs')
+    @patch('monitors.run_detection.update_last_runs')
     def test_main_lock_timeout(self, _):
         with FileLock('{}.lock'.format(LAST_RUNS_CSV)):
             eorm.main()

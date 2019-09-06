@@ -21,7 +21,8 @@ ACTIVEMQ = {
     "postprocess_error": "/queue/ReductionError",
     "reduction_started": "/queue/ReductionStarted",
     "reduction_complete": "/queue/ReductionComplete",
-    "reduction_error": "/queue/ReductionError"
+    "reduction_error": "/queue/ReductionError",
+    "reduction_skipped": "/queue/ReductionSkipped"
 }
 
 # MISC

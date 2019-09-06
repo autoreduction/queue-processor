@@ -15,4 +15,6 @@
 *.ttf binary
 *.woff binary
 *.eot binary
+*.nxs binary
+*.jpeg binary
 

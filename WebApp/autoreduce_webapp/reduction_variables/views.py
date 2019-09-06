@@ -28,7 +28,7 @@ LOGGER = logging.getLogger("app")
 
 
 # pylint:disable=too-many-locals
-def instrument_summary(request, instrument):
+def instrument_summary(request, instrument, last_run_object):
     """
     Handles view request for the instrument summary page
     """
@@ -37,7 +37,8 @@ def instrument_summary(request, instrument):
 
     # pylint:disable=invalid-name
     current_variables, upcoming_variables_by_run, upcoming_variables_by_experiment = \
-        InstrumentVariablesUtils().get_current_and_upcoming_variables(instrument.name)
+        InstrumentVariablesUtils().get_current_and_upcoming_variables(instrument.name,
+                                                                      last_run_object)
 
     # Create a nested dictionary for by-run
     upcoming_variables_by_run_dict = {}
@@ -123,6 +124,26 @@ def delete_instrument_variables(request, instrument=None, start=0, end=0,
         InstrumentVariablesUtils().set_variables_for_runs(instrument_name, [], start, end)
 
     return redirect('instrument_summary', instrument=instrument_name)
+
+
+@login_and_uows_valid
+@check_permissions
+@render_with('variables_summary.html')
+# pylint:disable=no-member
+def instrument_variables_summary(request, instrument):
+    """
+    Handles request to view instrument variables
+    """
+    instrument = Instrument.objects.get(name=instrument)
+    runs = (ReductionRun.objects
+            .only('status', 'last_updated', 'run_number', 'run_version')
+            .select_related('status')
+            .filter(instrument=instrument)
+            .order_by('-run_number', 'run_version'))
+
+    context_dictionary = {'instrument': instrument,
+                          'last_instrument_run': runs[0]}
+    return context_dictionary
 
 
 # pylint:disable=too-many-statements,too-many-branches
