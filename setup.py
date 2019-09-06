@@ -49,7 +49,7 @@ else:
 
 
 setup(name='AutoReduction',
-      version='1.0',
+      version='19.2',
       description='ISIS AutoReduction service',
       author='ISIS Autoreduction Team',
       url='https://github.com/ISISScientificComputing/autoreduce/',
