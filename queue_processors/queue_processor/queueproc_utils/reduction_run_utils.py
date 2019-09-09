@@ -14,13 +14,11 @@ from queue_processors.queue_processor.base import session
 # pylint:disable=no-name-in-module,import-error
 from queue_processors.queue_processor.settings import LOGGING
 from queue_processors.queue_processor.orm_mapping import DataLocation, ReductionRun, RunJoin
-
-from queue_processors.queue_processor.queueproc_utils.instrument_variable_utils \
-    import InstrumentVariablesUtils
 from queue_processors.queue_processor.queueproc_utils.messaging_utils import MessagingUtils
 from queue_processors.queue_processor.queueproc_utils.status_utils import StatusUtils
 from queue_processors.queue_processor.queueproc_utils.variable_utils import VariableUtils
 
+from Reduction_Job.reduction_job_handler import InstrumentVariableHandler
 # Set up logging and attach the logging to the right part of the config.
 logging.config.dictConfig(LOGGING)
 logger = logging.getLogger("queue_processor")  # pylint: disable=invalid-name
@@ -139,7 +137,7 @@ class ReductionRunUtils(object):
                     session.commit()
             else:
                 # provide variables if they aren't already
-                InstrumentVariablesUtils().create_variables_for_run(new_job)
+                InstrumentVariableHandler().create_variables_for_run(new_job)
 
             return new_job
 

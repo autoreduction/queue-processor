@@ -384,67 +384,67 @@ class InstrumentVariablesUtils(object):
         self._update_variables(variables)
         return [VariableUtils().copy_variable(var) for var in variables]
 
-    # def show_variables_for_run(self, instrument_name, run_number=None):
-    #     """
-    #     Look for the applicable variables for the given run number.
-    #     If none are set, return an empty list (or QuerySet) anyway.
-    #     If run_number isn't given, we'll look for variables for the last run number.
-    #     """
-    #     instrument = InstrumentUtils().get_instrument(instrument_name)
-    #
-    #     # Find the run number of the latest set of variables that apply to this run;
-    #     # descending order, so the first will be the most recent run number.
-    #     # pylint:disable=no-member
-    #     if run_number:
-    #         applicable_variables = InstrumentVariable.objects\
-    #             .filter(instrument=instrument,
-    #                     start_run__lte=run_number).order_by('-start_run')
-    #     else:
-    #         applicable_variables = InstrumentVariable.objects\
-    #             .filter(instrument=instrument).order_by('-start_run')
-    #
-    #     if applicable_variables:
-    #         variable_run_number = applicable_variables.first().start_run
-    #         # Select all variables with that run number.
-    #         # pylint:disable=no-member
-    #         variables = list(InstrumentVariable.objects.filter(instrument=instrument,
-    #                                                            start_run=variable_run_number))
-    #         self._update_variables(variables)
-    #         return [VariableUtils().copy_variable(var) for var in variables]
-    #     return []
+    def show_variables_for_run(self, instrument_name, run_number=None):
+        """
+        Look for the applicable variables for the given run number.
+        If none are set, return an empty list (or QuerySet) anyway.
+        If run_number isn't given, we'll look for variables for the last run number.
+        """
+        instrument = InstrumentUtils().get_instrument(instrument_name)
 
-    # def get_default_variables(self, instrument_name, reduce_script=None):
-    #     """
-    #     Creates and returns a list of variables from the reduction script
-    #     on disk for the instrument.
-    #     If reduce_script is supplied, return variables using that script
-    #     instead of the one on disk.
-    #     """
-    #     if not reduce_script:
-    #         reduce_script = self._load_reduction_vars_script(instrument_name)
-    #
-    #     reduce_vars_module = self._read_script(reduce_script, os.path.join(
-    #         self._reduction_script_location(instrument_name),
-    #         'reduce_vars.py'))
-    #
-    #     if not reduce_vars_module:
-    #         return []
-    #
-    #     instrument = InstrumentUtils().get_instrument(instrument_name)
-    #     variables = []
-    #     if 'standard_vars' in dir(reduce_vars_module):
-    #         variables.extend(
-    #             self._create_variables(instrument, reduce_vars_module,
-    #                                    reduce_vars_module.standard_vars, False))
-    #     if 'advanced_vars' in dir(reduce_vars_module):
-    #         variables.extend(
-    #             self._create_variables(instrument, reduce_vars_module,
-    #                                    reduce_vars_module.advanced_vars, True))
-    #
-    #     for var in variables:
-    #         var.tracks_script = True
-    #
-    #     return variables
+        # Find the run number of the latest set of variables that apply to this run;
+        # descending order, so the first will be the most recent run number.
+        # pylint:disable=no-member
+        if run_number:
+            applicable_variables = InstrumentVariable.objects\
+                .filter(instrument=instrument,
+                        start_run__lte=run_number).order_by('-start_run')
+        else:
+            applicable_variables = InstrumentVariable.objects\
+                .filter(instrument=instrument).order_by('-start_run')
+
+        if applicable_variables:
+            variable_run_number = applicable_variables.first().start_run
+            # Select all variables with that run number.
+            # pylint:disable=no-member
+            variables = list(InstrumentVariable.objects.filter(instrument=instrument,
+                                                               start_run=variable_run_number))
+            self._update_variables(variables)
+            return [VariableUtils().copy_variable(var) for var in variables]
+        return []
+
+    def get_default_variables(self, instrument_name, reduce_script=None):
+        """
+        Creates and returns a list of variables from the reduction script
+        on disk for the instrument.
+        If reduce_script is supplied, return variables using that script
+        instead of the one on disk.
+        """
+        if not reduce_script:
+            reduce_script = self._load_reduction_vars_script(instrument_name)
+
+        reduce_vars_module = self._read_script(reduce_script, os.path.join(
+            self._reduction_script_location(instrument_name),
+            'reduce_vars.py'))
+
+        if not reduce_vars_module:
+            return []
+
+        instrument = InstrumentUtils().get_instrument(instrument_name)
+        variables = []
+        if 'standard_vars' in dir(reduce_vars_module):
+            variables.extend(
+                self._create_variables(instrument, reduce_vars_module,
+                                       reduce_vars_module.standard_vars, False))
+        if 'advanced_vars' in dir(reduce_vars_module):
+            variables.extend(
+                self._create_variables(instrument, reduce_vars_module,
+                                       reduce_vars_module.advanced_vars, True))
+
+        for var in variables:
+            var.tracks_script = True
+
+        return variables
 
     def get_current_script_text(self, instrument_name):
         """

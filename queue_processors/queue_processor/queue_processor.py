@@ -28,8 +28,6 @@ from queue_processors.queue_processor.orm_mapping import (ReductionRun, Instrume
                                                           DataLocation, ReductionLocation)
 # pylint: disable=cyclic-import
 from queue_processors.queue_processor.queueproc_utils.messaging_utils import MessagingUtils
-from queue_processors.queue_processor.queueproc_utils.instrument_variable_utils \
-    import InstrumentVariablesUtils
 from queue_processors.queue_processor.queueproc_utils.status_utils import StatusUtils
 from queue_processors.queue_processor.queueproc_utils.reduction_run_utils import ReductionRunUtils
 # pylint: disable=import-error, no-name-in-module
@@ -38,6 +36,8 @@ from queue_processors.queue_processor.settings import (LOGGING, EMAIL_HOST,
                                                        EMAIL_ERROR_SENDER, BASE_URL)
 
 from utils.clients.queue_client import QueueClient
+
+from Reduction_Job.reduction_job_handler import InstrumentVariableHandler
 
 # Set up logging and attach the logging to the right part of the config.
 logging.config.dictConfig(LOGGING)
@@ -160,7 +160,7 @@ class Listener(object):
 
         # Get the script text for the current instrument. If the script text is null then send to
         # error queue
-        script_text = InstrumentVariablesUtils().get_current_script_text(instrument.name)[0]
+        script_text = InstrumentVariableHandler().get_current_script_text(instrument.name)[0]
         if script_text is None:
             self.reduction_error()
             return
@@ -198,7 +198,7 @@ class Listener(object):
         # We now need to create all of the variables for the run such that the script can run
         # through in the desired way
         logger.info('Creating variables for run')
-        variables = InstrumentVariablesUtils().create_variables_for_run(reduction_run)
+        variables = InstrumentVariableHandler().create_variables_for_run(reduction_run)
         if not variables:
             logger.warning("No instrument variables found on %s for run %s",
                            instrument.name,
