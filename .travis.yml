@@ -23,7 +23,7 @@ install:
   - python setup.py test_settings
   # Externals must be after test_settings
   - python setup.py externals -s activemq,icat
-  - python setup.py database
+  - sudo python setup.py database
   - cat ./build.log
   - sudo python setup.py start
 
