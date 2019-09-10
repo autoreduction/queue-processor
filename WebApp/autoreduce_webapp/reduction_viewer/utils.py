@@ -18,11 +18,13 @@ import sys
 import time
 import traceback
 
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'reduction_variables'))
+
 import django.core.exceptions
 import django.http
 
 from django.utils import timezone
-from reduction_viewer.models import Instrument, Status, ReductionRun, DataLocation
+from .models import Instrument, Status, ReductionRun, DataLocation
 from reduction_variables.models import RunVariable
 
 sys.path.append(os.path.join("../", os.path.dirname(os.path.dirname(__file__))))

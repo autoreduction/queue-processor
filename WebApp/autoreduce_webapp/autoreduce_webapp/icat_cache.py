@@ -11,9 +11,9 @@ import datetime
 import logging
 from django.utils import timezone
 # pylint: disable=import-error,relative-import,no-name-in-module
-from settings import CACHE_LIFETIME
-from icat_communication import ICATCommunication
-from models import UserCache, InstrumentCache, ExperimentCache
+from .settings import CACHE_LIFETIME
+from .icat_communication import ICATCommunication
+from .models import UserCache, InstrumentCache, ExperimentCache
 
 LOGGER = logging.getLogger("app")
 

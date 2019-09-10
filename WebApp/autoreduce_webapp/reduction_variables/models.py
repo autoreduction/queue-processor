@@ -7,6 +7,10 @@
 """
 Definition of Variable classes used for the WebApp model
 """
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'reduction_viewer'))
+
 from django.db import models
 from reduction_viewer.models import Instrument, ReductionRun
 

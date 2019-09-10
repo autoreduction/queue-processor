@@ -18,7 +18,7 @@ import stomp
 
 # The below is a template on the repository
 # pylint: disable=relative-import,no-name-in-module
-from settings import ACTIVEMQ, BASE_DIR, LOGGING
+from .settings import ACTIVEMQ, BASE_DIR, LOGGING
 
 logging.config.dictConfig(LOGGING)
 LOGGER = logging.getLogger("django")

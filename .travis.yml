@@ -15,15 +15,15 @@ before_install:
 
 install:
   # Install autoreduction
-  - pip install -e .
+  - pip3 install -e .
   # Install test suite dependencies
-  - pip install -r requirements.txt
+  - pip3 install -r requirements.txt
 
   # ================== Test setup ==================== #
-  - python setup.py test_settings
+  - python3 setup.py test_settings
   # Externals must be after test_settings
-  - python setup.py externals -s activemq,icat
-  - python setup.py database
+  - python3 setup.py externals -s activemq,icat
+  - python3 setup.py database
   - cat ./build.log
   - sudo python setup.py start
 

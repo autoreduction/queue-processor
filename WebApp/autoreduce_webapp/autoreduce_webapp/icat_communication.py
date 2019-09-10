@@ -16,7 +16,7 @@ from django.utils.encoding import smart_str
 
 # The below is a template on the repository
 # pylint: disable=relative-import,no-name-in-module
-from settings import ICAT, BASE_DIR
+from .settings import ICAT, BASE_DIR
 
 
 LOGGER = logging.getLogger(__name__)
