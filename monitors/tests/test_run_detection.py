@@ -102,7 +102,7 @@ class TestEndOfRunMonitor(unittest.TestCase):
         inst_mon = InstrumentMonitor(None, 'WISH')
         inst_mon.summary_file = 'test_summary.txt'
         rb_number = inst_mon.read_rb_number_from_summary()
-        self.assertEqual('1820461', rb_number)
+        self.assertEqual(b'1820461', rb_number)
 
     def test_read_rb_number_from_summary_invalid(self):
         with open('test_summary.txt', 'w') as summary:
