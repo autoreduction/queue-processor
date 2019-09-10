@@ -18,6 +18,8 @@ install:
   - pip install -e .
   # Install test suite dependencies
   - pip install -r requirements.txt
+  - pip freeze
+  - sudo pip freeze
 
   # ================== Test setup ==================== #
   - python setup.py test_settings
