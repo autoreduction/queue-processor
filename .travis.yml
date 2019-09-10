@@ -19,7 +19,6 @@ install:
   # Install test suite dependencies
   - pip3 install -r requirements.txt
   - pip3 freeze
-  - sudo pip3 freeze
 
   # ================== Test setup ==================== #
   - python3 setup.py test_settings
@@ -27,6 +26,10 @@ install:
   - python3 setup.py externals -s activemq,icat
   - python3 setup.py database
   - cat ./build.log
+  - sudo python --version
+  - python --version
+  - pip --version
+  - sudo pip --version
   - sudo python3 setup.py start
 
 script:
