@@ -39,8 +39,7 @@ setup_requires = ['dash',
                   'SQLAlchemy',
                   'stomp.py',
                   'suds-py3',
-                  'Twisted',
-                  'watchdog']
+                  'Twisted']
 
 if platform.system() == 'Windows':
     setup_requires.append('pypiwin32')
