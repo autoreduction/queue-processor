@@ -9,9 +9,12 @@ Utility functions for the view of django models
 """
 import logging
 import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'autoreduce_webapp'))
 
 from autoreduce_webapp.settings import REDUCTION_DIRECTORY
-from reduction_viewer.models import Instrument
+from .models import Instrument
 
 
 LOGGER = logging.getLogger(__name__)

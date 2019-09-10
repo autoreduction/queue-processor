@@ -97,7 +97,7 @@ def add_test_user(logger):
                     "IDENTIFIED BY '{1}';".format(user_to_add, MYSQL_SETTINGS.password),
                     "FLUSH PRIVILEGES;"]
 
-    to_exec = '\n'.join(sql_commands)
+    to_exec = bytes('\n'.join(sql_commands), 'utf8')
 
     # This is duplicated from above, ideally we should switch to using Python-MySQL connectors
     password = '' if not DB_ROOT_PASSWORD else '-p%s ' % DB_ROOT_PASSWORD
@@ -106,12 +106,12 @@ def add_test_user(logger):
                                      stdin=subprocess.PIPE, shell=True,
                                      stdout=subprocess.PIPE,
                                      stderr=subprocess.PIPE)
-    process_output, process_err = mysql_process.communicate(input=to_exec)
+    process_output, process_err = mysql_process.communicate(to_exec)
     if process_output != '':
         logger.info(process_output)
     # For checking process_err, a special case is when a password is specified because
     # that results in process_err being populated with an warning we accept
-    if 'Using a password on the command line interface can be insecure' in process_err:
+    if b'Using a password on the command line interface can be insecure' in process_err:
         logger.warning(process_err)
     elif process_err != '':
         logger.error(process_err)

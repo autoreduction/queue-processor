@@ -7,9 +7,15 @@
 """
 Routing for URI to page contents
 """
+import os
+import sys
+
 from django.conf import settings
-from django.conf.urls import include, url
+from django.conf.urls import url, include
 from django.contrib import admin
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'reduction_viewer'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'reduction_variables'))
 
 from reduction_viewer import views as reduction_viewer_views
 from reduction_variables import views as reduction_variables_views
@@ -22,7 +28,7 @@ handler500 = 'autoreduce_webapp.views.handler500'
 
 urlpatterns = [
     # ===========================MISC================================= #
-    url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin/', admin.site.urls),
     url(r'^$', reduction_viewer_views.index, name='index'),
     url(r'^logout/$', reduction_viewer_views.logout, name='logout'),
     url(r'^help/$', reduction_viewer_views.help, name='help'),
@@ -86,8 +92,5 @@ if settings.DEBUG:
     import debug_toolbar
     urlpatterns = [
         url('__debug__/', include(debug_toolbar.urls)),
-
-        # For django versions before 2.0:
-        # url(r'^__debug__/', include(debug_toolbar.urls)),
 
     ] + urlpatterns

@@ -17,7 +17,7 @@ from suds.client import Client
 
 # The below is a template on the repository
 # pylint: disable=relative-import,no-name-in-module
-from settings import CERTIFICATE_LOCATION, UOWS_URL
+from .settings import CERTIFICATE_LOCATION, UOWS_URL
 
 
 LOGGER = logging.getLogger(__name__)

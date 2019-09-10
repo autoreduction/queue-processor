@@ -19,12 +19,15 @@ import sys
 import chardet
 
 sys.path.append(os.path.join("../", os.path.dirname(os.path.dirname(__file__))))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'reduction_viewer'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'autoreduce_webapp'))
+
 os.environ["DJANGO_SETTINGS_MODULE"] = "autoreduce_webapp.settings"
 
 # pylint:disable=wrong-import-position
 from autoreduce_webapp.icat_communication import ICATCommunication
 from autoreduce_webapp.settings import ACTIVEMQ, REDUCTION_DIRECTORY, FACILITY
-from reduction_variables.models import InstrumentVariable, RunVariable
+from .models import InstrumentVariable, RunVariable
 from reduction_viewer.models import ReductionRun, Notification
 from reduction_viewer.utils import InstrumentUtils, StatusUtils, ReductionRunUtils
 

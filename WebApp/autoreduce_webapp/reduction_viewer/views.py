@@ -15,6 +15,8 @@ can be more confident we are not affecting the execution
 import json
 import logging
 import operator
+import os
+import sys
 
 from django.contrib.auth import logout as django_logout, authenticate, login
 from django.core.exceptions import PermissionDenied
@@ -22,16 +24,21 @@ from django.db.models import Q
 from django.http import JsonResponse, HttpResponseNotFound
 from django.shortcuts import redirect
 
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'reduction_variable'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'autoreduce_webapp'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'utilities'))
+
+
 from autoreduce_webapp.icat_cache import ICATCache
 from autoreduce_webapp.settings import (UOWS_LOGIN_URL, PRELOAD_RUNS_UNDER,
-                                        USER_ACCESS_CHECKS, DEVELOPMENT_MODE)
+                                          USER_ACCESS_CHECKS, DEVELOPMENT_MODE)
 from autoreduce_webapp.uows_client import UOWSClient
 from autoreduce_webapp.view_utils import (login_and_uows_valid, render_with,
-                                          require_admin, check_permissions)
+                                            require_admin, check_permissions)
 from reduction_variables.utils import MessagingUtils
-from reduction_viewer.models import Experiment, ReductionRun, Instrument, Status
-from reduction_viewer.utils import StatusUtils, ReductionRunUtils
-from reduction_viewer.view_utils import deactivate_invalid_instruments
+from .models import Experiment, ReductionRun, Instrument, Status
+from .utils import StatusUtils, ReductionRunUtils
+from .view_utils import deactivate_invalid_instruments
 
 from utilities.pagination import CustomPaginator
 
