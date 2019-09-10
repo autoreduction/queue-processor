@@ -27,13 +27,13 @@ def run_sql_file(sql_file_location, logger):
              False: exit code of script was non-zero
     """
     # Must be imported at run-time for migrate test settings to work
-    from build.settings import DB_ROOT_PASSWORD
+    from build.settings import DB_ROOT_PASSWORD, DB_USER
     logger.info("Running script: %s" % sql_file_location)
     with open(sql_file_location, 'r') as input_file:
         password = ''
         if DB_ROOT_PASSWORD:
             password = '-p%s ' % DB_ROOT_PASSWORD
-        access_string = "sudo mysql -u{0} {1}".format('root', password)
+        access_string = "mysql -u{0} {1}".format(DB_USER, password)
         mysql_process = subprocess.Popen(access_string,
                                          stdin=input_file, shell=True,
                                          stdout=subprocess.PIPE,
