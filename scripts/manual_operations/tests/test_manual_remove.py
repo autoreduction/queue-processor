@@ -110,7 +110,7 @@ class TestManualSubmission(unittest.TestCase):
         self.assertEqual('2', self.manual_remove.to_delete['123'][0].run_version)
 
     @patch('scripts.manual_operations.manual_remove.ManualRemove.validate_csv_input')
-    @patch.object('builtins.input', 'raw_input')
+    @patch.object('builtins.input', 'input')
     def test_multiple_versions_retry_user_input(self, mock_raw_input, mock_validate_csv):
         """
         Test if the user gives incorrect input it is re-validated
@@ -125,7 +125,7 @@ class TestManualSubmission(unittest.TestCase):
         mock_validate_csv.assert_has_calls([call('invalid'), call('2')])
 
     @patch('scripts.manual_operations.manual_remove.ManualRemove.validate_csv_input')
-    @patch.object('builtins.input', 'raw_input')
+    @patch.object('builtins.input', 'input')
     def test_multiple_versions_found_list_input(self, mock_raw_input, mock_validate_csv):
         """
         Test that the user is not asked more than once for input if the input is valid
