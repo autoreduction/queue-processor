@@ -33,7 +33,7 @@ def run_sql_file(sql_file_location, logger):
         password = ''
         if DB_ROOT_PASSWORD:
             password = '-p%s ' % DB_ROOT_PASSWORD
-        access_string = "mysql -u{0} {1}".format('root', password)
+        access_string = "sudo mysql -u{0} {1}".format('root', password)
         mysql_process = subprocess.Popen(access_string,
                                          stdin=input_file, shell=True,
                                          stdout=subprocess.PIPE,
