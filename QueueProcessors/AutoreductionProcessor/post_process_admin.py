@@ -392,7 +392,7 @@ class PostProcessAdmin:
 
     def _send_message_and_log(self, destination):
         """ Send reduction run to error. """
-        logger.info("\nCalling %s --- %s", destination, prettify(self.data))
+        logger.info("\nCalling  {} --- {}".format(destination, prettify(self.data)))
         self.client.send(destination, json.dumps(self.data))
 
     def copy_temp_directory(self, temp_result_dir, copy_destination):
