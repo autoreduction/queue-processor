@@ -94,7 +94,7 @@ class TestManualSubmission(unittest.TestCase):
         self.assertEqual(0, len(self.manual_remove.to_delete))
 
     @patch('scripts.manual_operations.manual_remove.ManualRemove.validate_csv_input')
-    @patch.object('builtins.input')
+    @patch('builtins.input')
     def test_multiple_versions_found_single_input(self, mock_raw_input, mock_validate_csv):
         """
         Test that the user is not asked more than once for input if the input is valid
