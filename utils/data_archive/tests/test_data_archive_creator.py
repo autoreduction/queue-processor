@@ -120,7 +120,7 @@ class TestDataArchiveCreator(unittest.TestCase):
 
     def test_add_dat_files_invalid_type(self):
         self.dac.make_data_archive(['GEM'], 17, 18, 2)
-        self.assertRaisesRegex(TypeError, "data_files is of: <type 'NoneType'>.",
+        self.assertRaisesRegex(TypeError, "data_files is of: <class 'NoneType'>. Valid type are list or str",
                                self.dac.add_data_to_most_recent_cycle,
                                'GEM', None)
 

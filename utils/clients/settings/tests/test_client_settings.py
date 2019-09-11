@@ -27,7 +27,7 @@ class TestClientSettings(unittest.TestCase):
         self.assertEqual(settings.port, '123')
 
     def test_invalid_init(self):
-        self.assertRaisesRegex(ValueError, "123 of <type 'int'> is not a string",
+        self.assertRaisesRegex(ValueError, "123 of <class 'int'> is not a string",
                                ClientSettings, 'string', 123, True, 99.99)
         self.assertRaisesRegex(ValueError, "True of <type 'bool'> is not a string",
                                ClientSettings, 'string', 'string', True, 99.99)
