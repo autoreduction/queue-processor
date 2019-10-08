@@ -431,7 +431,7 @@ def instrument_summary(request, instrument=None):
                 experiments_and_runs[experiment] = associated_runs
             context_dictionary['experiments'] = experiments_and_runs
         else:
-            max_items_per_page = request.GET.get('pagination', 10)
+            max_items_per_page = request.GET.get('pagination', 50)
             custom_paginator = CustomPaginator(page_type=sort_by,
                                                query_set=runs,
                                                items_per_page=max_items_per_page,
