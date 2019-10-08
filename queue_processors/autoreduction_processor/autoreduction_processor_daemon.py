@@ -9,7 +9,7 @@
 Module to demonise the autoreduction processor.
 """
 import sys
-from queue_processors.autoreduction_processor.daemon import Daemon
+from queue_processors.daemon import Daemon
 from queue_processors.autoreduction_processor import autoreduction_processor
 
 

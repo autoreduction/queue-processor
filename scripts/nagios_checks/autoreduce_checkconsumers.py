@@ -12,14 +12,9 @@ from __future__ import print_function
 import sys
 
 import requests
-from requests.auth import HTTPBasicAuth
 
 # pylint: disable=import-error
-from scripts.nagios_checks.autoreduce_settings import ACTIVEMQ
-
-
-ACTIVEMQ_URL = "http://" + ACTIVEMQ['host'] + ACTIVEMQ['api-path']
-ACTIVEMQ_AUTH = HTTPBasicAuth(ACTIVEMQ['username'], ACTIVEMQ['password'])
+from scripts.nagios_checks.autoreduce_settings import ACTIVEMQ, ACTIVEMQ_URL, ACTIVEMQ_AUTH
 
 
 # pylint: disable=invalid-name

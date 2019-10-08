@@ -7,6 +7,7 @@
 """
 Settings for Nagios checks
 """
+from requests.auth import HTTPBasicAuth
 
 # ActiveMQ
 ACTIVEMQ = {
@@ -24,3 +25,6 @@ MYSQL = {
     "db": "autoreduction"}
 
 ISIS_MOUNT = 'Z:\\'
+
+ACTIVEMQ_URL = "http://" + ACTIVEMQ['host'] + ACTIVEMQ['api-path']
+ACTIVEMQ_AUTH = HTTPBasicAuth(ACTIVEMQ['username'], ACTIVEMQ['password'])
