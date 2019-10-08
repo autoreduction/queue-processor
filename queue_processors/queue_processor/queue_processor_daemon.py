@@ -4,27 +4,27 @@
 # Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
-# !/usr/bin/env python
+#!/usr/bin/env python
 """
-Module to demonise the autoreduction processor.
+Module for daemonising the queue processor.
 """
 import sys
-from QueueProcessors.AutoreductionProcessor.daemon import Daemon
-from QueueProcessors.AutoreductionProcessor import autoreduction_processor
+from daemon import Daemon  # pylint: disable=relative-import
+from queue_processors.queue_processor import queue_processor
 
 
-class AutoreduceQueueProcessorDaemon(Daemon):  # pragma: no cover
-    """ Class responsible for running the autoreduction processor. """
+class QueueProcessorDaemon(Daemon):
+    """ Queue processor daemoniser """
     def run(self):
-        """ Run autoreduction_processor. """
-        autoreduction_processor.main()
+        """ Run queue processor. """
+        queue_processor.main()
         while True:
             pass
 
 
 def main():
     """ Main method. """
-    daemon = AutoreduceQueueProcessorDaemon('/tmp/AutoreduceQueueProcessorDaemon.pid')
+    daemon = QueueProcessorDaemon('/tmp/QueueProcessorDaemon.pid')
     if len(sys.argv) == 2:
         if sys.argv[1] == 'start':
             daemon.start()
@@ -41,5 +41,5 @@ def main():
         sys.exit(2)
 
 
-if __name__ == "__main__":  # pragma: no cover
+if __name__ == "__main__":
     main()

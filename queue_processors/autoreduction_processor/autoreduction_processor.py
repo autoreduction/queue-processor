@@ -16,9 +16,9 @@ from twisted.internet import reactor
 
 import stomp
 
-from QueueProcessors.AutoreductionProcessor.autoreduction_logging_setup import logger
+from queue_processors.autoreduction_processor.autoreduction_logging_setup import logger
 # pylint:disable=no-name-in-module,import-error
-from QueueProcessors.AutoreductionProcessor.settings import MISC, ACTIVEMQ
+from queue_processors.autoreduction_processor.settings import MISC, ACTIVEMQ
 
 
 class Listener(object):

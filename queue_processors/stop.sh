@@ -8,7 +8,7 @@
 ROOT_DIR="$(dirname "$0")"
 
 ## Autoreduction Processor
-pgrep -f "python.* .*AutoreductionProcessor/autoreduction_processor_daemon.py start" | xargs kill -9 &&
+pgrep -f "python.* .*autoreduction_processor/autoreduction_processor_daemon.py start" | xargs kill -9 &&
 echo "Stopped autoreduction_processor_daemon.py";
 if [ -e /tmp/AutoreduceQueueProcessorDaemon.pid ]
 then
@@ -20,7 +20,7 @@ echo ""; # New line
 
 
 ## QueueProcessor
-pgrep -f "python.* .*QueueProcessor/queue_processor_daemon.py start" | xargs kill -9 &&
+pgrep -f "python.* .*queue_processor/queue_processor_daemon.py start" | xargs kill -9 &&
 echo "Stopped queue_processor_daemon";
 if [ -e /tmp/QueueProcessorDaemon.pid ]
 then

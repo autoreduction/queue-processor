@@ -15,10 +15,10 @@ import sys
 
 from mock import patch, Mock, call
 
-from QueueProcessors.AutoreductionProcessor.autoreduction_processor import (Listener,
-                                                                            Consumer,
-                                                                            main)
-from QueueProcessors.AutoreductionProcessor.settings import MISC, ACTIVEMQ
+from queue_processors.autoreduction_processor.autoreduction_processor import (Listener,
+                                                                              Consumer,
+                                                                              main)
+from queue_processors.autoreduction_processor.settings import MISC, ACTIVEMQ
 
 
 # pylint:disable=missing-docstring,too-many-arguments,no-self-use,protected-access
@@ -44,24 +44,24 @@ class TestAutoreductionProcessorListener(unittest.TestCase):
         self.assertEqual(listener.rb_list, [])
         self.assertEqual(listener.cancel_list, [])
 
-    @patch('QueueProcessors.AutoreductionProcessor.autoreduction_logging_setup.logger.error')
+    @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.error')
     def test_on_error(self, mock_err_log):
         self.listener.on_error('test error')
         mock_err_log.assert_called_once_with("Error message received - %s", 'test error')
 
-    @patch('QueueProcessors.AutoreductionProcessor.autoreduction_processor.Listener.hold_message')
+    @patch('queue_processors.autoreduction_processor.autoreduction_processor.Listener.hold_message')
     def test_on_message(self, mock_hold_message):
         self.listener.on_message(self.headers, self.json_data)
         mock_hold_message.assert_called_once_with('/queue/topic', self.json_data, self.headers)
 
-    @patch('QueueProcessors.AutoreductionProcessor.autoreduction_processor.Listener.add_cancel')
+    @patch('queue_processors.autoreduction_processor.autoreduction_processor.Listener.add_cancel')
     def test_on_message_cancel(self, mock_add_cancel):
         self.data['cancel'] = True
         self.listener.on_message(self.headers, json.dumps(self.data))
         mock_add_cancel.assert_called_once_with(self.data)
 
     if os.name != 'nt':  # pragma: no cover
-        @patch('QueueProcessors.AutoreductionProcessor.'
+        @patch('queue_processors.autoreduction_processor.'
                'autoreduction_processor.Listener.should_proceed',
                return_value=False)
         @patch('twisted.internet.reactor.callLater')
@@ -72,23 +72,23 @@ class TestAutoreductionProcessorListener(unittest.TestCase):
                                                     '/queue/topic', self.json_data,
                                                     self.headers)
 
-    @patch('QueueProcessors.AutoreductionProcessor.autoreduction_processor.Listener.should_proceed',
+    @patch('queue_processors.autoreduction_processor.autoreduction_processor.Listener.should_proceed',
            return_value=True)
-    @patch('QueueProcessors.AutoreductionProcessor.autoreduction_processor.Listener.should_cancel',
+    @patch('queue_processors.autoreduction_processor.autoreduction_processor.Listener.should_cancel',
            return_value=True)
-    @patch('QueueProcessors.AutoreductionProcessor.autoreduction_processor.Listener.cancel_run')
+    @patch('queue_processors.autoreduction_processor.autoreduction_processor.Listener.cancel_run')
     def test_hold_message_cancel(self, mock_cancel_run, mock_should_cancel, mock_should_proceed):
         self.listener.hold_message('/queue/topic', self.json_data, self.headers)
         mock_should_proceed.assert_called_once()
         mock_should_cancel.assert_called_once()
         mock_cancel_run.assert_called_once_with(self.data)
 
-    @patch('QueueProcessors.AutoreductionProcessor.autoreduction_processor.Listener.add_process')
+    @patch('queue_processors.autoreduction_processor.autoreduction_processor.Listener.add_process')
     @patch('subprocess.Popen')
-    @patch('QueueProcessors.AutoreductionProcessor.autoreduction_logging_setup.logger.warning')
-    @patch('QueueProcessors.AutoreductionProcessor.autoreduction_processor.Listener.should_proceed',
+    @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.warning')
+    @patch('queue_processors.autoreduction_processor.autoreduction_processor.Listener.should_proceed',
            return_value=True)
-    @patch('QueueProcessors.AutoreductionProcessor.autoreduction_processor.Listener.should_cancel',
+    @patch('queue_processors.autoreduction_processor.autoreduction_processor.Listener.should_cancel',
            return_value=False)
     @patch('os.path.isfile', return_value=False)
     def test_hold_message_invalid_dir(self, mock_is_file, mock_should_cancel, mock_should_proceed,

@@ -22,26 +22,27 @@ import traceback
 
 from sqlalchemy import sql
 
-from QueueProcessors.QueueProcessor.base import session
-from QueueProcessors.QueueProcessor.orm_mapping import (ReductionRun, Instrument,
-                                                        Status, Experiment,
-                                                        DataLocation, ReductionLocation)
+from queue_processors.queue_processor.base import session
+from queue_processors.queue_processor.orm_mapping import (ReductionRun, Instrument,
+                                                          Status, Experiment,
+                                                          DataLocation, ReductionLocation)
 # pylint: disable=cyclic-import
-from QueueProcessors.QueueProcessor.queueproc_utils.messaging_utils import MessagingUtils
-from QueueProcessors.QueueProcessor.queueproc_utils.instrument_variable_utils \
+from queue_processors.queue_processor.queueproc_utils.messaging_utils import MessagingUtils
+from queue_processors.queue_processor.queueproc_utils.instrument_variable_utils \
     import InstrumentVariablesUtils
-from QueueProcessors.QueueProcessor.queueproc_utils.status_utils import StatusUtils
-from QueueProcessors.QueueProcessor.queueproc_utils.reduction_run_utils import ReductionRunUtils
+from queue_processors.queue_processor.queueproc_utils.status_utils import StatusUtils
+from queue_processors.queue_processor.queueproc_utils.reduction_run_utils import ReductionRunUtils
 # pylint: disable=import-error, no-name-in-module
-from QueueProcessors.QueueProcessor.settings import (LOGGING, EMAIL_HOST,
-                                                     EMAIL_PORT, EMAIL_ERROR_RECIPIENTS,
-                                                     EMAIL_ERROR_SENDER, BASE_URL)
+from queue_processors.queue_processor.settings import (LOGGING, EMAIL_HOST,
+                                                       EMAIL_PORT, EMAIL_ERROR_RECIPIENTS,
+                                                       EMAIL_ERROR_SENDER, BASE_URL)
 
 from utils.clients.queue_client import QueueClient
 
 # Set up logging and attach the logging to the right part of the config.
 logging.config.dictConfig(LOGGING)
 logger = logging.getLogger("queue_processor")  # pylint: disable=invalid-name
+
 
 def is_integer_rb(rb_number):
     """
@@ -53,6 +54,7 @@ def is_integer_rb(rb_number):
         return True
     except ValueError:
         return False
+
 
 class Listener(object):
     """ Listener class that is used to consume messages from ActiveMQ. """
@@ -480,6 +482,7 @@ class Listener(object):
             logger.error(traceback.format_exc())
             raise exp
 
+
 def setup_connection(consumer_name):
     """ Starts the ActiveMQ connection and registers the event listener """
     logger.info("Starting autoreduce queue connection")
@@ -493,9 +496,11 @@ def setup_connection(consumer_name):
     # Subscribe to queues
     activemq_client.subscribe_autoreduce(consumer_name, listener)
 
+
 def main():
     """ Main method. """
     setup_connection('Autoreduction_QueueProcessor')
+
 
 if __name__ == '__main__':
     main()

@@ -18,11 +18,11 @@ from mock import patch, call, Mock
 
 from utils.settings import ACTIVEMQ_SETTINGS
 from utils.project.structure import get_project_root
-from QueueProcessors.AutoreductionProcessor.settings import MISC, ACTIVEMQ
-from QueueProcessors.AutoreductionProcessor.post_process_admin import (windows_to_linux_path,
-                                                                       prettify,
-                                                                       PostProcessAdmin,
-                                                                       main)
+from queue_processors.autoreduction_processor.settings import MISC, ACTIVEMQ
+from queue_processors.autoreduction_processor.post_process_admin import (windows_to_linux_path,
+                                                                         prettify,
+                                                                         PostProcessAdmin,
+                                                                         main)
 
 
 # pylint:disable=missing-docstring,invalid-name,protected-access,no-self-use,too-many-arguments
@@ -79,10 +79,10 @@ class TestPostProcessAdmin(unittest.TestCase):
         location = PostProcessAdmin._reduction_script_location('WISH')
         self.assertEqual(location, MISC['scripts_directory'] % 'WISH')
 
-    @patch('QueueProcessors.AutoreductionProcessor.post_process_admin.'
+    @patch('queue_processors.autoreduction_processor.post_process_admin.'
            'PostProcessAdmin._remove_directory')
-    @patch('QueueProcessors.AutoreductionProcessor.post_process_admin.PostProcessAdmin._copy_tree')
-    @patch('QueueProcessors.AutoreductionProcessor.autoreduction_logging_setup.logger.info')
+    @patch('queue_processors.autoreduction_processor.post_process_admin.PostProcessAdmin._copy_tree')
+    @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.info')
     def test_copy_temp_dir(self, mock_logger, mock_copy, mock_remove):
         result_dir = mkdtemp()
         copy_dir = mkdtemp()
@@ -96,8 +96,8 @@ class TestPostProcessAdmin(unittest.TestCase):
         shutil.rmtree(result_dir)
         shutil.rmtree(copy_dir)
 
-    @patch('QueueProcessors.AutoreductionProcessor.post_process_admin.PostProcessAdmin._copy_tree')
-    @patch('QueueProcessors.AutoreductionProcessor.autoreduction_logging_setup.logger.info')
+    @patch('queue_processors.autoreduction_processor.post_process_admin.PostProcessAdmin._copy_tree')
+    @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.info')
     def test_copy_temp_dir_with_excitation(self, _, mock_copy):
         result_dir = mkdtemp()
         ppa = PostProcessAdmin(self.data, None)
@@ -107,10 +107,10 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_copy.assert_called_once_with(result_dir, 'copy-dir')
         shutil.rmtree(result_dir)
 
-    @patch('QueueProcessors.AutoreductionProcessor.post_process_admin.PostProcessAdmin._copy_tree')
-    @patch('QueueProcessors.AutoreductionProcessor.post_process_admin.PostProcessAdmin.'
+    @patch('queue_processors.autoreduction_processor.post_process_admin.PostProcessAdmin._copy_tree')
+    @patch('queue_processors.autoreduction_processor.post_process_admin.PostProcessAdmin.'
            'log_and_message')
-    @patch('QueueProcessors.AutoreductionProcessor.autoreduction_logging_setup.logger.info')
+    @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.info')
     def test_copy_temp_dir_with_error(self, _, mock_log_and_msg, mock_copy):
         # pylint:disable=unused-argument
         def raise_runtime(arg1, arg2):  # pragma : no cover
@@ -125,7 +125,7 @@ class TestPostProcessAdmin(unittest.TestCase):
                                                                                 'test'))
         shutil.rmtree(result_dir)
 
-    @patch('QueueProcessors.AutoreductionProcessor.autoreduction_logging_setup.logger.info')
+    @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.info')
     def test_send_error_and_log(self, mock_logger):
         activemq_client_mock = Mock()
         ppa = PostProcessAdmin(self.data, activemq_client_mock)
@@ -136,7 +136,7 @@ class TestPostProcessAdmin(unittest.TestCase):
                                                           json.dumps(ppa.data))
 
     @patch('shutil.rmtree')
-    @patch('QueueProcessors.AutoreductionProcessor.autoreduction_logging_setup.logger.info')
+    @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.info')
     def test_delete_temp_dir_valid(self, mock_logger, mock_remove_dir):
         temp_dir = mkdtemp()
         PostProcessAdmin.delete_temp_directory(temp_dir)
@@ -146,7 +146,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         shutil.rmtree(temp_dir)
 
     @patch('shutil.rmtree')
-    @patch('QueueProcessors.AutoreductionProcessor.autoreduction_logging_setup.logger.info')
+    @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.info')
     def test_delete_temp_dir_invalid(self, mock_logger, mock_remove_dir):
         def raise_runtime():  # pragma: no cover
             raise RuntimeError('test')
@@ -156,7 +156,7 @@ class TestPostProcessAdmin(unittest.TestCase):
                                       call('Unable to remove temporary directory - %s',
                                            'not-a-file-path.test')])
 
-    @patch('QueueProcessors.AutoreductionProcessor.autoreduction_logging_setup.logger.info')
+    @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.info')
     def test_empty_log_and_message(self, mock_logger):
         ppa = PostProcessAdmin(self.data, None)
         ppa.data['message'] = ''
@@ -164,7 +164,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         self.assertEqual(ppa.data['message'], 'test')
         mock_logger.assert_called_once_with('test')
 
-    @patch('QueueProcessors.AutoreductionProcessor.autoreduction_logging_setup.logger.info')
+    @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.info')
     def test_load_and_message_with_preexisting_message(self, mock_logger):
         ppa = PostProcessAdmin(self.data, None)
         ppa.data['message'] = 'Old message'
@@ -207,9 +207,9 @@ class TestPostProcessAdmin(unittest.TestCase):
         ppa._remove_directory(directory_to_remove)
         self.assertFalse(os.path.exists(directory_to_remove))
 
-    @patch('QueueProcessors.AutoreductionProcessor.post_process_admin.windows_to_linux_path',
+    @patch('queue_processors.autoreduction_processor.post_process_admin.windows_to_linux_path',
            return_value='path')
-    @patch('QueueProcessors.AutoreductionProcessor.post_process_admin.PostProcessAdmin.reduce')
+    @patch('queue_processors.autoreduction_processor.post_process_admin.PostProcessAdmin.reduce')
     @patch('stomp.Connection.connect')
     @patch('stomp.Connection.start')
     @patch('stomp.Connection.__init__', return_value=None)
@@ -228,12 +228,12 @@ class TestPostProcessAdmin(unittest.TestCase):
                                              **connect_args)
         mock_reduce.assert_called_once()
 
-    @patch('QueueProcessors.AutoreductionProcessor.post_process_admin.prettify',
+    @patch('queue_processors.autoreduction_processor.post_process_admin.prettify',
            return_value='test')
     @patch('stomp.Connection.send')
     @patch('sys.exit')
-    @patch('QueueProcessors.AutoreductionProcessor.autoreduction_logging_setup.logger.info')
-    @patch('QueueProcessors.AutoreductionProcessor.post_process_admin.PostProcessAdmin.__init__',
+    @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.info')
+    @patch('queue_processors.autoreduction_processor.post_process_admin.PostProcessAdmin.__init__',
            return_value=None)
     @patch('stomp.Connection.connect')
     @patch('stomp.Connection.start')
@@ -256,8 +256,8 @@ class TestPostProcessAdmin(unittest.TestCase):
 
     @patch('stomp.Connection.send')
     @patch('sys.exit')
-    @patch('QueueProcessors.AutoreductionProcessor.autoreduction_logging_setup.logger.info')
-    @patch('QueueProcessors.AutoreductionProcessor.post_process_admin.PostProcessAdmin.__init__',
+    @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.info')
+    @patch('queue_processors.autoreduction_processor.post_process_admin.PostProcessAdmin.__init__',
            return_value=None)
     @patch('stomp.Connection.connect')
     @patch('stomp.Connection.start')

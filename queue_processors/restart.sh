@@ -10,7 +10,7 @@ ROOT_DIR="$(dirname "$0")"
 EXECUTABLE_PATH=$1
 
 ## Autoreduction Processor
-pkill -9 -f "python .*AutoreductionProcessor/autoreduction_processor_daemon.py start" &&
+pkill -9 -f "python .*autoreduction_processor/autoreduction_processor_daemon.py start" &&
 echo "Stopped autoreduction_processor_daemon.py";
 if [ -e /tmp/AutoreduceQueueProcessorDaemon.pid ]
 then
@@ -21,11 +21,11 @@ else
 fi
 if [ $EXECUTABLE_PATH ];
 then
-    $EXECUTABLE_PATH $ROOT_DIR/AutoreductionProcessor/autoreduction_processor_daemon.py start &&
+    $EXECUTABLE_PATH $ROOT_DIR/autoreduction_processor/autoreduction_processor_daemon.py start &&
     echo "Started autoreduction_processor_daemon";
 else
     echo "Using default python";
-    python $ROOT_DIR/AutoreductionProcessor/autoreduction_processor_daemon.py start &&
+    python $ROOT_DIR/autoreduction_processor/autoreduction_processor_daemon.py start &&
     echo "Started autoreduction_processor_daemon";
 fi
 
@@ -33,7 +33,7 @@ echo ""; # New line
 
 
 ## QueueProcessor
-pkill -9 -f "python .*QueueProcessor/queue_processor_daemon.py start" &&
+pkill -9 -f "python .*queue_processor/queue_processor_daemon.py start" &&
 echo "Stopped queue_processor_daemon";
 if [ -e /tmp/QueueProcessorDaemon.pid ]
 then
@@ -44,10 +44,10 @@ else
 fi
 if [ $EXECUTABLE_PATH ];
 then
-    $EXECUTABLE_PATH $ROOT_DIR/QueueProcessor/queue_processor_daemon.py start &&
+    $EXECUTABLE_PATH $ROOT_DIR/queue_processor/queue_processor_daemon.py start &&
     echo "Started queue_processor_daemon";
 else
     echo "Using default python";
-    python $ROOT_DIR/QueueProcessor/queue_processor_daemon.py start &&
+    python $ROOT_DIR/queue_processor/queue_processor_daemon.py start &&
     echo "Started queue_processor_daemon";
 fi

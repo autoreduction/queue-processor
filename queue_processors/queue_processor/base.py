@@ -14,7 +14,7 @@ from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import sessionmaker
 
 # pylint: disable=import-error,no-name-in-module
-from QueueProcessors.QueueProcessor.settings import MYSQL
+from queue_processors.queue_processor.settings import MYSQL
 
 Base = declarative_base()
 

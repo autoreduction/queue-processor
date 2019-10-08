@@ -13,14 +13,14 @@ import signal
 
 from mock import patch
 
-from QueueProcessors.AutoreductionProcessor.timeout import timeout
+from queue_processors.autoreduction_processor.timeout import TimeOut
 
 
 # pylint:disable=missing-docstring
 class TestTimeOut(unittest.TestCase):
 
     def setUp(self):
-        self.timeout = timeout(seconds=10,
+        self.timeout = TimeOut(seconds=10,
                                error_message='test error message')
 
     def test_init(self):

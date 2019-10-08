@@ -9,10 +9,10 @@ import json
 import logging.config
 
 # pylint: disable=cyclic-import
-from QueueProcessors.QueueProcessor.base import session
-from QueueProcessors.QueueProcessor.orm_mapping import DataLocation
+from queue_processors.queue_processor.base import session
+from queue_processors.queue_processor.orm_mapping import DataLocation
 # pylint:disable=no-name-in-module,import-error
-from QueueProcessors.QueueProcessor.settings import LOGGING, FACILITY
+from queue_processors.queue_processor.settings import LOGGING, FACILITY
 from utils.clients.queue_client import QueueClient
 
 # Set up logging and attach the logging to the right part of the config.
