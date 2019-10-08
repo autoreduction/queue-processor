@@ -16,7 +16,7 @@ import requests
 from requests.auth import HTTPBasicAuth
 
 # pylint: disable=import-error
-from scripts.NagiosChecks.autoreduce_settings import ACTIVEMQ
+from scripts.nagios_checks.autoreduce_settings import ACTIVEMQ
 
 
 ACTIVEMQ_URL = "http://" + ACTIVEMQ['host'] + ACTIVEMQ['api-path']
