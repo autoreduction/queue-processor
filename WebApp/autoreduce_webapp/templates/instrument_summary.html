@@ -89,7 +89,7 @@
                         <select title="The number of reduction jobs that should be shown per page" class="form-control" name="pagination" form="filter_options" id="pagination_select">
                             <option {% if max_items == '10' %}selected="selected"{% endif %}>10</option>
                             <option {% if max_items == '25' %}selected="selected"{% endif %}>25</option>
-                            <option selected=""selected" {% if max_items == '50' %}selected="selected"{% endif %}>50</option>
+                            <option {% if max_items == '50' %}selected="selected"{% endif %}>50</option>
                             <option {% if max_items == '100' %}selected="selected"{% endif %}>100</option>
                             <option {% if max_items == '250' %}selected="selected"{% endif %}>250</option>
                             <option {% if max_items == '500' %}selected="selected"{% endif %}>500</option>
