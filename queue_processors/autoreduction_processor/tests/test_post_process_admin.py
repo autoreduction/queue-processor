@@ -81,7 +81,8 @@ class TestPostProcessAdmin(unittest.TestCase):
 
     @patch('queue_processors.autoreduction_processor.post_process_admin.'
            'PostProcessAdmin._remove_directory')
-    @patch('queue_processors.autoreduction_processor.post_process_admin.PostProcessAdmin._copy_tree')
+    @patch('queue_processors.autoreduction_processor.post_process_admin.'
+           'PostProcessAdmin._copy_tree')
     @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.info')
     def test_copy_temp_dir(self, mock_logger, mock_copy, mock_remove):
         result_dir = mkdtemp()
@@ -96,7 +97,8 @@ class TestPostProcessAdmin(unittest.TestCase):
         shutil.rmtree(result_dir)
         shutil.rmtree(copy_dir)
 
-    @patch('queue_processors.autoreduction_processor.post_process_admin.PostProcessAdmin._copy_tree')
+    @patch('queue_processors.autoreduction_processor.post_process_admin.'
+           'PostProcessAdmin._copy_tree')
     @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.info')
     def test_copy_temp_dir_with_excitation(self, _, mock_copy):
         result_dir = mkdtemp()
@@ -107,7 +109,8 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_copy.assert_called_once_with(result_dir, 'copy-dir')
         shutil.rmtree(result_dir)
 
-    @patch('queue_processors.autoreduction_processor.post_process_admin.PostProcessAdmin._copy_tree')
+    @patch('queue_processors.autoreduction_processor.post_process_admin.'
+           'PostProcessAdmin._copy_tree')
     @patch('queue_processors.autoreduction_processor.post_process_admin.PostProcessAdmin.'
            'log_and_message')
     @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.info')

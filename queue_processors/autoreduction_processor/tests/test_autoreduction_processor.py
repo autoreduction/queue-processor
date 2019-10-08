@@ -72,10 +72,10 @@ class TestAutoreductionProcessorListener(unittest.TestCase):
                                                     '/queue/topic', self.json_data,
                                                     self.headers)
 
-    @patch('queue_processors.autoreduction_processor.autoreduction_processor.Listener.should_proceed',
-           return_value=True)
-    @patch('queue_processors.autoreduction_processor.autoreduction_processor.Listener.should_cancel',
-           return_value=True)
+    @patch('queue_processors.autoreduction_processor.autoreduction_processor.'
+           'Listener.should_proceed', return_value=True)
+    @patch('queue_processors.autoreduction_processor.autoreduction_processor.'
+           'Listener.should_cancel', return_value=True)
     @patch('queue_processors.autoreduction_processor.autoreduction_processor.Listener.cancel_run')
     def test_hold_message_cancel(self, mock_cancel_run, mock_should_cancel, mock_should_proceed):
         self.listener.hold_message('/queue/topic', self.json_data, self.headers)
@@ -86,10 +86,10 @@ class TestAutoreductionProcessorListener(unittest.TestCase):
     @patch('queue_processors.autoreduction_processor.autoreduction_processor.Listener.add_process')
     @patch('subprocess.Popen')
     @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.warning')
-    @patch('queue_processors.autoreduction_processor.autoreduction_processor.Listener.should_proceed',
-           return_value=True)
-    @patch('queue_processors.autoreduction_processor.autoreduction_processor.Listener.should_cancel',
-           return_value=False)
+    @patch('queue_processors.autoreduction_processor.autoreduction_processor.'
+           'Listener.should_proceed', return_value=True)
+    @patch('queue_processors.autoreduction_processor.autoreduction_processor.'
+           'Listener.should_cancel', return_value=False)
     @patch('os.path.isfile', return_value=False)
     def test_hold_message_invalid_dir(self, mock_is_file, mock_should_cancel, mock_should_proceed,
                                       mock_log, mock_popen, mock_add_process):
