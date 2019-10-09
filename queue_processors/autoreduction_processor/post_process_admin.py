@@ -34,6 +34,7 @@ import stomp
 from queue_processors.autoreduction_processor.settings import ACTIVEMQ, MISC
 from queue_processors.autoreduction_processor.autoreduction_logging_setup import logger
 from queue_processors.autoreduction_processor.timeout import TimeOut
+import queue_processors.autoreduction_processor.path_handling as path_handler
 
 init('http://4b7c7658e2204228ad1cfd640f478857@172.16.114.151:9000/1')
 
@@ -179,69 +180,6 @@ class PostProcessAdmin(object):
         map(merge_dicts, ["standard_vars", "advanced_vars"])
         return reduce_script
 
-    @staticmethod
-    def _reduction_script_location(instrument_name):
-        """ Returns the reduction script location. """
-        return MISC["scripts_directory"] % instrument_name
-
-    def _get_reduction_script(self, instrument_name):
-        """ Returns the path of the reduction script for an instrument. """
-        return os.path.join(self._reduction_script_location(instrument_name), 'reduce.py')
-
-    @staticmethod
-    def _is_excitations_instrument(instrument):
-        """ Check if an instrument string exists in the Excitations instrument list """
-        return instrument in MISC["excitation_instruments"]
-
-    @staticmethod
-    def _manipulate_excitations_output_dir(output_directory):
-        """
-        Excitations would like to remove the run number folder at the end
-        :param output_directory: The current output directory (with run_number)
-        :return: output_directory (without run_number)
-        """
-        # ToDo: Should use split as this function doesn't work if output_directory ends with '/'
-        return output_directory[:output_directory.rfind('/') + 1]
-
-    @staticmethod
-    def _construct_log_directory(base_directory):
-        """
-        Construct the directory to store the log files
-        :param base_directory: The root of the directory tree
-        :return: base_directory + /reduction_logs/
-        """
-        return base_directory + "/reduction_log/"
-
-    @staticmethod
-    def _construct_log_file_paths(log_directory, rb_number, run_number):
-        """
-        Create the paths to the log files for mantid and script output
-        :param log_directory: root directory where logs are stored
-        :param rb_number: RB number of experiment
-        :param run_number: Run number of experiment
-        :return: Tuple of (script_log, mantid log)
-        """
-        log_and_err_name = "RB" + rb_number + "Run" + run_number
-        script_log = os.path.join(log_directory, log_and_err_name + "Script.out")
-        mantid_log = os.path.join(log_directory, log_and_err_name + "Mantid.log")
-        return script_log, mantid_log
-
-    @staticmethod
-    def _construct_file_paths(instrument, rb_number, run_number):
-        """
-        Construct the output, output log, temp output and temp output log directories
-        :return: Tuple of (output_dir, log_dir, temp_output_dir, temp_output_log_dir)
-        """
-        output_dir = MISC["ceph_directory"] % (instrument, rb_number, run_number)
-        if PostProcessAdmin._is_excitations_instrument(instrument):
-            output_dir = PostProcessAdmin._manipulate_excitations_output_dir(output_dir)
-        log_dir = PostProcessAdmin._construct_log_directory(output_dir)
-
-        temp_output_dir = MISC["temp_root_directory"] + output_dir
-        temp_output_log_dir = MISC["temp_root_directory"] + log_dir
-
-        return output_dir, log_dir, temp_output_dir, temp_output_log_dir
-
     def reduce(self):
         """ Start the reduction job.  """
         # pylint: disable=too-many-nested-blocks
@@ -256,13 +194,13 @@ class PostProcessAdmin(object):
             final_result_dir,\
                 final_log_dir,\
                 reduce_result_dir,\
-                log_dir = self._construct_file_paths(instrument=self.instrument,
-                                                     rb_number=self.proposal,
-                                                     run_number=self.run_number)
+                log_dir = path_handler.construct_file_paths(instrument=self.instrument,
+                                                            rb_number=self.proposal,
+                                                            run_number=self.run_number)
 
-            script_out, mantid_log = self._construct_log_file_paths(log_dir,
-                                                                    self.proposal,
-                                                                    self.run_number)
+            script_out, mantid_log = path_handler.construct_log_file_paths(log_dir,
+                                                                           self.proposal,
+                                                                           self.run_number)
 
             if 'overwrite' in self.data:
                 if not self.data["overwrite"]:
@@ -348,7 +286,7 @@ class PostProcessAdmin(object):
 
                     # Add Mantid path to system path so we can use Mantid to run the user's script
                     sys.path.append(MISC["mantid_path"])
-                    reduce_script_location = self._get_reduction_script(self.instrument)
+                    reduce_script_location = path_handler.get_reduction_script(self.instrument)
                     reduce_script = imp.load_source('reducescript', reduce_script_location)
 
                     try:
