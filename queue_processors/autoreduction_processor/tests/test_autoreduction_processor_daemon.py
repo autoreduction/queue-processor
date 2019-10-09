@@ -19,7 +19,7 @@ from queue_processors.autoreduction_processor.\
 # pylint:disable=missing-docstring,no-self-use
 class TestAutoreductionProcessorDaemon(unittest.TestCase):
 
-    @patch('queue_processors.autoreduction_processor.daemon.Daemon.start')
+    @patch('queue_processors.daemon.Daemon.start')
     @patch('sys.exit')
     def test_main_start(self, mock_exit, mock_start):
         sys.argv = ['', 'start']
@@ -27,7 +27,7 @@ class TestAutoreductionProcessorDaemon(unittest.TestCase):
         mock_start.assert_called_once()
         mock_exit.assert_called_once_with(0)
 
-    @patch('queue_processors.autoreduction_processor.daemon.Daemon.stop')
+    @patch('queue_processors.daemon.Daemon.stop')
     @patch('sys.exit')
     def test_main_stop(self, mock_exit, mock_stop):
         sys.argv = ['', 'stop']
@@ -35,7 +35,7 @@ class TestAutoreductionProcessorDaemon(unittest.TestCase):
         mock_stop.assert_called_once()
         mock_exit.assert_called_once_with(0)
 
-    @patch('queue_processors.autoreduction_processor.daemon.Daemon.restart')
+    @patch('queue_processors.daemon.Daemon.restart')
     @patch('sys.exit')
     def test_main_restart(self, mock_exit, mock_restart):
         sys.argv = ['', 'restart']
