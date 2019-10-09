@@ -4,6 +4,8 @@ Test cases of path handling helper in autoreduction processor
 import os
 import unittest
 
+from mock import patch
+
 from queue_processors.autoreduction_processor.settings import MISC
 import queue_processors.autoreduction_processor.path_handling as path_handler
 
@@ -40,6 +42,7 @@ class TestPathHandling(unittest.TestCase):
         """
         Function uses os.path.join hence need windows / linux variant
         """
+        # pragma: no cover
         if os.name == 'nt':
             expected_script = 'test\\RB123Run321Script.out'
             expected_mantid = 'test\\RB123Run321Mantid.log'
@@ -60,3 +63,22 @@ class TestPathHandling(unittest.TestCase):
         expected = (expected_result_dir, expected_log_dir,
                     expected_temp_result_dir, expected_temp_log_dir)
         self.assertEqual(expected, path_handler.construct_file_paths(instrument, rb_num, run))
+
+    @patch('queue_processors.autoreduction_processor.path_handling.'
+           'manipulate_excitations_output_dir')
+    def test_construct_files_excitations(self, mock_path_manipulate):
+        instrument = 'WISH'
+        rb_num = '123'
+        run = '321'
+        # ToDo: Improve this to not use Mocks
+        # return what we would normally expect for the sake of easy tests
+        mock_path_manipulate.return_value = MISC["ceph_directory"] % (instrument, rb_num, run)
+
+        expected_result_dir = MISC["ceph_directory"] % (instrument, rb_num, run)
+        expected_log_dir = MISC["ceph_directory"] % (instrument, rb_num, run) + '/reduction_log/'
+        expected_temp_result_dir = MISC["temp_root_directory"] + expected_result_dir
+        expected_temp_log_dir = MISC["temp_root_directory"] + expected_log_dir
+        expected = (expected_result_dir, expected_log_dir,
+                    expected_temp_result_dir, expected_temp_log_dir)
+        self.assertEqual(expected, path_handler.construct_file_paths(instrument, rb_num, run))
+        mock_path_manipulate.assert_called_once()
