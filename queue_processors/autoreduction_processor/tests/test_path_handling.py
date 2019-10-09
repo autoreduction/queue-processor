@@ -82,3 +82,27 @@ class TestPathHandling(unittest.TestCase):
                     expected_temp_result_dir, expected_temp_log_dir)
         self.assertEqual(expected, path_handler.construct_file_paths(instrument, rb_num, run))
         mock_path_manipulate.assert_called_once()
+
+    @patch('os.listdir')
+    def test_handle_non_overwrite_non_excitations_0th_overwrite(self, mock_listdir):
+        mock_listdir.return_value = []
+        file_path = '/base/WISH/RB123/autoreduced/'
+        expected = ('/base/WISH/RB123/autoreduced/',
+                    '/base/WISH/RB123/autoreduced/reduction_log/')
+        self.assertEqual(expected, path_handler.handle_non_overwrite(file_path))
+
+    @patch('os.listdir')
+    def test_handle_non_overwrite_non_excitations_1st_overwrite(self, mock_listdir):
+        mock_listdir.return_value = ['autoreduced']
+        file_path = '/base/WISH/RB123/autoreduced/'
+        expected = ('/base/WISH/RB123/autoreduced1/',
+                    '/base/WISH/RB123/autoreduced1/reduction_log/')
+        self.assertEqual(expected, path_handler.handle_non_overwrite(file_path))
+
+    @patch('os.listdir')
+    def test_handle_non_overwrite_non_excitations_3rd_overwrite(self, mock_listdir):
+        mock_listdir.return_value = ['autoreduced2']
+        file_path = '/base/WISH/RB123/autoreduced/'
+        expected = ('/base/WISH/RB123/autoreduced3/',
+                    '/base/WISH/RB123/autoreduced3/reduction_log/')
+        self.assertEqual(expected, path_handler.handle_non_overwrite(file_path))

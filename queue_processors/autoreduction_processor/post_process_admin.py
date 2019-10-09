@@ -181,7 +181,7 @@ class PostProcessAdmin(object):
         return reduce_script
 
     def reduce(self):
-        """ Start the reduction job.  """
+        """ Start the reduction job. """
         # pylint: disable=too-many-nested-blocks
         try:
             logger.debug("Calling: " + ACTIVEMQ['reduction_started'] + "\n" + prettify(self.data))
@@ -201,31 +201,11 @@ class PostProcessAdmin(object):
             script_out, mantid_log = path_handler.construct_log_file_paths(log_dir,
                                                                            self.proposal,
                                                                            self.run_number)
-
             if 'overwrite' in self.data:
                 if not self.data["overwrite"]:
                     logger.info('Don\'t want to overwrite previous data')
-                    path_parts = final_result_dir.split('/')
-                    new_path = '/'
-                    for part in path_parts:
-                        if part != 'autoreduced' and part != '':
-                            new_path = new_path + part + '/'
-                    maximum = 0
-                    for folder in os.listdir(new_path):
-                        if folder.startswith('autoreduced'):
-                            number = folder.replace('autoreduced', '')
-                            if number != '':
-                                number = int(number) + 1
-                                if number > maximum:
-                                    maximum = number
-                            else:
-                                maximum = 1
-                    if maximum == 0:
-                        new_path = new_path + 'autoreduced'
-                    else:
-                        new_path = new_path + 'autoreduced' + str(maximum) + '/'
-                    final_result_dir = new_path
-                    final_log_dir = new_path + 'reduction_log/'
+                    final_result_dir, final_log_dir = path_handler.handle_non_overwrite(
+                        final_result_dir)
 
             logger.info('Final Result Directory = %s', final_result_dir)
             logger.info('Final Log Directory = %s', final_log_dir)

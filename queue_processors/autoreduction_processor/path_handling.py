@@ -68,3 +68,31 @@ def construct_file_paths(instrument, rb_number, run_number):
     temp_output_log_dir = MISC["temp_root_directory"] + log_dir
 
     return output_dir, log_dir, temp_output_dir, temp_output_log_dir
+
+
+def handle_non_overwrite(output_directory):
+    """
+    Update the expected output path if we do NOT want to overwrite
+    :param output_directory: The original output directory
+    :return:
+    """
+    path_parts = output_directory.split('/')
+    new_path = '/'
+    for part in path_parts:
+        if part != 'autoreduced' and part != '':
+            new_path = new_path + part + '/'
+    maximum = 0
+    for folder in os.listdir(new_path):
+        if folder.startswith('autoreduced'):
+            number = folder.replace('autoreduced', '')
+            if number != '':
+                number = int(number) + 1
+                if number > maximum:
+                    maximum = number
+            else:
+                maximum = 1
+    if maximum == 0:
+        new_path = new_path + 'autoreduced' + '/'
+    else:
+        new_path = new_path + 'autoreduced' + str(maximum) + '/'
+    return new_path, new_path + 'reduction_log/'
