@@ -37,12 +37,14 @@ from queue_processors.autoreduction_processor.timeout import TimeOut
 
 init('http://4b7c7658e2204228ad1cfd640f478857@172.16.114.151:9000/1')
 
+
 class SkippedRunException(Exception):
     """
     Exception for runs that have been skipped
     Note: this is currently only the case for EnginX Event mode runs at ISIS
     """
     pass
+
 
 @contextmanager
 def channels_redirected(out_file, err_file, out_stream):
@@ -182,9 +184,63 @@ class PostProcessAdmin(object):
         """ Returns the reduction script location. """
         return MISC["scripts_directory"] % instrument_name
 
-    def _load_reduction_script(self, instrument_name):
+    def _get_reduction_script(self, instrument_name):
         """ Returns the path of the reduction script for an instrument. """
         return os.path.join(self._reduction_script_location(instrument_name), 'reduce.py')
+
+    @staticmethod
+    def _is_excitations_instrument(instrument):
+        """ Check if an instrument string exists in the Excitations instrument list """
+        return instrument in MISC["excitation_instruments"]
+
+    @staticmethod
+    def _manipulate_excitations_output_dir(output_directory):
+        """
+        Excitations would like to remove the run number folder at the end
+        :param output_directory: The current output directory (with run_number)
+        :return: output_directory (without run_number)
+        """
+        # ToDo: Should use split as this function doesn't work if output_directory ends with '/'
+        return output_directory[:output_directory.rfind('/') + 1]
+
+    @staticmethod
+    def _construct_log_directory(base_directory):
+        """
+        Construct the directory to store the log files
+        :param base_directory: The root of the directory tree
+        :return: base_directory + /reduction_logs/
+        """
+        return base_directory + "/reduction_log/"
+
+    @staticmethod
+    def _construct_log_file_paths(log_directory, rb_number, run_number):
+        """
+        Create the paths to the log files for mantid and script output
+        :param log_directory: root directory where logs are stored
+        :param rb_number: RB number of experiment
+        :param run_number: Run number of experiment
+        :return: Tuple of (script_log, mantid log)
+        """
+        log_and_err_name = "RB" + rb_number + "Run" + run_number
+        script_log = os.path.join(log_directory, log_and_err_name + "Script.out")
+        mantid_log = os.path.join(log_directory, log_and_err_name + "Mantid.log")
+        return script_log, mantid_log
+
+    @staticmethod
+    def _construct_file_paths(instrument, rb_number, run_number):
+        """
+        Construct the output, output log, temp output and temp output log directories
+        :return: Tuple of (output_dir, log_dir, temp_output_dir, temp_output_log_dir)
+        """
+        output_dir = MISC["ceph_directory"] % (instrument, rb_number, run_number)
+        if PostProcessAdmin._is_excitations_instrument(instrument):
+            output_dir = PostProcessAdmin._manipulate_excitations_output_dir(output_dir)
+        log_dir = PostProcessAdmin._construct_log_directory(output_dir)
+
+        temp_output_dir = MISC["temp_root_directory"] + output_dir
+        temp_output_log_dir = MISC["temp_root_directory"] + log_dir
+
+        return output_dir, log_dir, temp_output_dir, temp_output_log_dir
 
     def reduce(self):
         """ Start the reduction job.  """
@@ -193,30 +249,20 @@ class PostProcessAdmin(object):
             logger.debug("Calling: " + ACTIVEMQ['reduction_started'] + "\n" + prettify(self.data))
             self.client.send(ACTIVEMQ['reduction_started'], json.dumps(self.data))
 
-            # Specify instrument directory
-            instrument_output_dir = MISC["ceph_directory"] % (self.instrument,
-                                                              self.proposal,
-                                                              self.run_number)
-
-            if self.instrument in MISC["excitation_instruments"]:
-                # Excitations would like to remove the run number folder at the end
-                instrument_output_dir = instrument_output_dir[:instrument_output_dir.rfind('/') + 1]
-
-            # Specify directories where autoreduction output will go
-            reduce_result_dir = MISC["temp_root_directory"] + instrument_output_dir
-
             if 'run_description' in self.data:
                 logger.info("DESCRIPTION: %s", self.data["run_description"])
 
-            log_dir = reduce_result_dir + "/reduction_log/"
-            log_and_err_name = "RB" + self.proposal + "Run" + self.run_number
-            script_out = os.path.join(log_dir, log_and_err_name + "Script.out")
-            mantid_log = os.path.join(log_dir, log_and_err_name + "Mantid.log")
+            # Construct output directories
+            final_result_dir,\
+                final_log_dir,\
+                reduce_result_dir,\
+                log_dir = self._construct_file_paths(instrument=self.instrument,
+                                                     rb_number=self.proposal,
+                                                     run_number=self.run_number)
 
-            # strip the temp path off the front of the temp directory to get the final archives
-            # directory.
-            final_result_dir = reduce_result_dir[len(MISC["temp_root_directory"]):]
-            final_log_dir = log_dir[len(MISC["temp_root_directory"]):]
+            script_out, mantid_log = self._construct_log_file_paths(log_dir,
+                                                                    self.proposal,
+                                                                    self.run_number)
 
             if 'overwrite' in self.data:
                 if not self.data["overwrite"]:
@@ -302,7 +348,7 @@ class PostProcessAdmin(object):
 
                     # Add Mantid path to system path so we can use Mantid to run the user's script
                     sys.path.append(MISC["mantid_path"])
-                    reduce_script_location = self._load_reduction_script(self.instrument)
+                    reduce_script_location = self._get_reduction_script(self.instrument)
                     reduce_script = imp.load_source('reducescript', reduce_script_location)
 
                     try:

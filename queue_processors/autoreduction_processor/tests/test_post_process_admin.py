@@ -70,7 +70,7 @@ class TestPostProcessAdmin(unittest.TestCase):
 
     def test_load_reduction_script(self):
         ppa = PostProcessAdmin(self.data, None)
-        file_path = ppa._load_reduction_script('WISH')
+        file_path = ppa._get_reduction_script('WISH')
         self.assertEqual(file_path, os.path.join(MISC['scripts_directory'] % 'WISH',
                                                  'reduce.py'))
 
@@ -279,3 +279,43 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_logger.assert_has_calls([call('PostProcessAdmin error: %s', 'error-message')])
         mock_exit.assert_called_once()
         mock_send.assert_called_once_with(ACTIVEMQ['postprocess_error'], json.dumps(self.data))
+
+    def test_is_excitations_instrument(self):
+        excitation_inst = 'MARI'
+        non_excitations_inst = 'POLARIS'
+        self.assertTrue(PostProcessAdmin._is_excitations_instrument(excitation_inst))
+        self.assertFalse(PostProcessAdmin._is_excitations_instrument(non_excitations_inst))
+
+    def test_manipulate_excitations_output_dir(self):
+        test_dir = '/test/path/with/many/folders'
+        expected = '/test/path/with/many/'
+        self.assertEqual(expected, PostProcessAdmin._manipulate_excitations_output_dir(test_dir))
+
+    def test_construct_log_directory(self):
+        expected = '/test/dir/reduction_log/'
+        self.assertEqual(expected, PostProcessAdmin._construct_log_directory('/test/dir'))
+
+    def test_construct_log_files(self):
+        """
+        Function uses os.path.join hence need windows / linux variant
+        """
+        if os.name == 'nt':
+            expected_script = 'test\\RB123Run321Script.out'
+            expected_mantid = 'test\\RB123Run321Mantid.log'
+        else:
+            expected_script = 'test/RB123Run321Script.out'
+            expected_mantid = 'test/RB123Run321Mantid.log'
+        expected = (expected_script, expected_mantid)
+        self.assertEqual(expected, PostProcessAdmin._construct_log_file_paths('test', '123', '321'))
+
+    def test_construct_files_non_excitations(self):
+        instrument = 'POLARIS'
+        rb = '123'
+        run = '321'
+        expected_result_dir = MISC["ceph_directory"] % (instrument, rb, run)
+        expected_log_dir = MISC["ceph_directory"] % (instrument, rb, run) + '/reduction_log/'
+        expected_temp_result_dir = MISC["temp_root_directory"] + expected_result_dir
+        expected_temp_log_dir = MISC["temp_root_directory"] + expected_log_dir
+        expected = (expected_result_dir, expected_log_dir,
+                    expected_temp_result_dir, expected_temp_log_dir)
+        self.assertEqual(expected, PostProcessAdmin._construct_file_paths(instrument, rb, run))
