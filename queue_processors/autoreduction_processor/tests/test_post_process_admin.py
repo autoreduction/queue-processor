@@ -19,6 +19,7 @@ from mock import patch, call, Mock
 from utils.settings import ACTIVEMQ_SETTINGS
 from utils.project.structure import get_project_root
 from queue_processors.autoreduction_processor.settings import ACTIVEMQ
+import queue_processors.autoreduction_processor.file_access as file_access
 from queue_processors.autoreduction_processor.post_process_admin import (windows_to_linux_path,
                                                                          prettify,
                                                                          PostProcessAdmin,
@@ -265,3 +266,29 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_logger.assert_has_calls([call('PostProcessAdmin error: %s', 'error-message')])
         mock_exit.assert_called_once()
         mock_send.assert_called_once_with(ACTIVEMQ['postprocess_error'], json.dumps(self.data))
+
+    @patch('queue_processors.autoreduction_processor.file_access.check_exists', return_value=True)
+    @patch('queue_processors.autoreduction_processor.file_access.check_write', return_value=True)
+    @patch('queue_processors.autoreduction_processor.file_access.check_read', return_value=True)
+    @patch('queue_processors.autoreduction_processor.file_access.create_dir_if_does_not_exist',
+           return_value=True)
+    def test_check_file_permissions_valid(self, mock_e, mock_w, mock_r, mock_create):
+        """
+        Not required to test actual permission functionality as this is done by
+        the file access module
+        """
+        ppa = PostProcessAdmin(self.data, None)
+        ppa.check_file_permissions([], [])
+        self.assertTrue("message" not in ppa.data.keys())
+        self.assertTrue("retry_in" not in ppa.data.keys())
+
+    @patch('os.access', return_value=False)
+    def test_check_file_permissions_invalid(self, _):
+        """
+        Mock underlying os access call to return False and raise error from access functions
+        """
+        ppa = PostProcessAdmin(self.data, None)
+        self.assertRaises(file_access.PermissionException, ppa.check_file_permissions, ['test'],
+                          ['test'])
+        self.assertTrue("Permission error:" in ppa.data["message"])
+        self.assertEqual(ppa.data["retry_in"], 21600)

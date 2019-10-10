@@ -42,13 +42,12 @@ class TestPathHandling(unittest.TestCase):
         """
         Function uses os.path.join hence need windows / linux variant
         """
-        # pragma: no cover
         if os.name == 'nt':
-            expected_script = 'test\\RB123Run321Script.out'
-            expected_mantid = 'test\\RB123Run321Mantid.log'
+            expected_script = 'test\\RB123Run321Script.out'  # pragma: no cover
+            expected_mantid = 'test\\RB123Run321Mantid.log'  # pragma: no cover
         else:
-            expected_script = 'test/RB123Run321Script.out'
-            expected_mantid = 'test/RB123Run321Mantid.log'
+            expected_script = 'test/RB123Run321Script.out'  # pragma: no cover
+            expected_mantid = 'test/RB123Run321Mantid.log'  # pragma: no cover
         expected = (expected_script, expected_mantid)
         self.assertEqual(expected, path_handler.construct_log_file_paths('test', '123', '321'))
 

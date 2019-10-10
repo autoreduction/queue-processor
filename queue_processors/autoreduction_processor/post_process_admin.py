@@ -35,6 +35,7 @@ from queue_processors.autoreduction_processor.settings import ACTIVEMQ, MISC
 from queue_processors.autoreduction_processor.autoreduction_logging_setup import logger
 from queue_processors.autoreduction_processor.timeout import TimeOut
 import queue_processors.autoreduction_processor.path_handling as path_handler
+import queue_processors.autoreduction_processor.file_access as file_access
 
 init('http://4b7c7658e2204228ad1cfd640f478857@172.16.114.151:9000/1')
 
@@ -180,6 +181,25 @@ class PostProcessAdmin(object):
         map(merge_dicts, ["standard_vars", "advanced_vars"])
         return reduce_script
 
+    def check_file_permissions(self, should_be_writable, should_be_readable):
+        try:
+            for path in should_be_writable:
+                file_access.create_dir_if_does_not_exist(path)
+                file_access.check_exists(path)
+                file_access.check_write(path)
+
+            for path in should_be_readable:
+                file_access.check_exists(path)
+                file_access.check_read(path)
+
+        except file_access.PermissionException as exp:
+            # if we can't access now, we should abort the run, and tell the server that it
+            # should be re-run at a later time.
+            self.data["message"] = "Permission error: %s" % exp
+            self.data["retry_in"] = 6 * 60 * 60  # 6 hours
+            logger.error(traceback.format_exc())
+            raise exp
+
     def reduce(self):
         """ Start the reduction job. """
         # pylint: disable=too-many-nested-blocks
@@ -191,9 +211,7 @@ class PostProcessAdmin(object):
                 logger.info("DESCRIPTION: %s", self.data["run_description"])
 
             # Construct output directories
-            final_result_dir,\
-                final_log_dir,\
-                reduce_result_dir,\
+            final_result_dir, final_log_dir, reduce_result_dir,\
                 log_dir = path_handler.construct_file_paths(instrument=self.instrument,
                                                             rb_number=self.proposal,
                                                             run_number=self.run_number)
@@ -210,37 +228,10 @@ class PostProcessAdmin(object):
             logger.info('Final Result Directory = %s', final_result_dir)
             logger.info('Final Log Directory = %s', final_log_dir)
 
-            # test for access to result paths
-            try:
-                should_be_writable = [reduce_result_dir, log_dir, final_result_dir, final_log_dir]
-                should_be_readable = [self.data_file]
-
-                # try to make directories which should exist
-                for path in filter(lambda p: not os.path.isdir(p), should_be_writable): # pylint: disable=deprecated-lambda
-                    os.makedirs(path)
-
-                does_not_exist = lambda path: not os.access(path, os.F_OK)
-                not_readable = lambda path: not os.access(path, os.R_OK)
-                not_writable = lambda path: not os.access(path, os.W_OK)
-
-                # we want write access to these directories, plus the final output paths
-                if filter(not_writable, should_be_writable):
-                    fail_path = filter(not_writable, should_be_writable)[0]
-                    problem = "does not exist" if does_not_exist(fail_path) else "no write access"
-                    raise Exception("Couldn't write to %s  -  %s" % (fail_path, problem))
-
-                if filter(not_readable, should_be_readable):
-                    fail_path = filter(not_readable, should_be_readable)[0]
-                    problem = "does not exist" if does_not_exist(fail_path) else "no read access"
-                    raise Exception("Couldn't read %s  -  %s" % (fail_path, problem))
-
-            except Exception as exp:
-                # if we can't access now, we should abort the run, and tell the server that it
-                # should be re-run at a later time.
-                self.data["message"] = "Permission error: %s" % exp
-                self.data["retry_in"] = 6 * 60 * 60 # 6 hours
-                logger.error(traceback.format_exc())
-                raise exp
+            # test for access to required directories
+            self.check_file_permissions(should_be_writable=[reduce_result_dir, log_dir,
+                                                            final_result_dir, final_log_dir],
+                                        should_be_readable=[self.data])
 
             self.data['reduction_data'] = []
             if "message" not in self.data:
