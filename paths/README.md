@@ -15,7 +15,7 @@ Here, `value` is the string representation of the path, and `type` is either `fi
 ```
 log_file_path = Path('/some/file/path/test.log', 'file')
 ``` 
-In addition to storing paths, this class will also has a validate function to check:
+In addition to storing paths, this class also has a validate function to check:
  * `existance`
  * `absoluteness`
  * `readablility`
@@ -34,9 +34,9 @@ path1 == path2 -> True
 ```
 
 ### <a name="path-man">Path Manipulation</a>
-Contains a set of functions that are designed to manipulate string paths (e.g. `Path.value` or a plan string representing a path).
+Contains a set of functions that are designed to manipulate string paths (e.g. `Path.value` or a plain string representing a path).
 These functions include:
- * `is_windows(path)` - Determines is a path is to a windows location by looking at the path separators (`/` or `\\`) will raise a `PathError` if the separators are mixed.
+ * `is_windows(path)` - Determines if a path is to a windows location by looking at the path separators (`/` or `\\`) will raise a `PathError` if the separators are mixed.
  * `separator(path)` - Will return the correct separator (`/` or `\\`) depending on the result of `is_path`
  * `split(path)` - Will split a path into a list of items e.g. `split('/path/to/file') -> ['path', 'to', 'file']`
  * `add_separator_to_end_of_directory(path)` - Will add the correct separator to the end of the path unless the final item is a file. This is mostly used to normalise paths to directories or as part `append_path` e.g. 
@@ -48,13 +48,13 @@ These functions include:
 ```
  append_path('/path/', ['items', 'to', 'add']) -> '/path/items/to/add/
 ``` 
-The main advantage of all of these functions is there are designed to work on the files path operating system rather than the current operating system. This makes handling Windows paths on Unix based systems (and visa versa) much easier.
+The purpose of the above functions is to work with the file path of operating system rather than the current operating system. This makes handling Windows paths on Unix based systems (and visa versa) much easier.
 
 
 ### <a name="collections">Collections</a>
 Contains more autoreduction specific groups of `Path` objects.
 * `InputPaths` - Paths required for reduction (data file, reduction script and reduction variables)
-* `TemporaryPaths` - Paths for a temporary location to store output data. This is required to ensure ensure that overwriting of data is handled correctly.
+* `TemporaryPaths` - Paths for a temporary location to store output data. This is required to ensure that overwriting of data is handled correctly.
 * `OutputPaths` - Paths for the final location where the data is to be stored (at ISIS this is on CEPH)
 
 In addition to these, there is a `PathCollection` class that is generic and implemented by all 3 of the above. The only responsiblity of this class is to ensure that all the `Path` objects created are validated on initialisation. 
