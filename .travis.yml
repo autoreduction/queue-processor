@@ -31,12 +31,17 @@ script:
   - pytest build/tests/test_db_generation.py
 
   # ================ Static Analysis ================= #
-  - ./build/tests/test_pylint.sh
+  # ToDo: These should all be collapsed into one once autoreduction gets a single code package
+  - pylint build
+  - pylint docker_reduction
+  - pylint monitors
+  - pylint queue_processors
+  - pylint scripts
+  - pylint systemtests
+  - pylint utils
 
-  # ================ Nose unit tests ================ #
-
+  # ================ pytest unit tests ================ #
   # Utils tests
-  - echo " ================================== TESTS ============================================== "
   - echo "Running Unit tests"
   - py.test --ignore=systemtests --cov=build --cov=monitors --cov=QueueProcessors --cov=scripts --cov=utils --cov=WebApp/autoreduce_webapp --cov=docker_reduction --cov=paths
 
