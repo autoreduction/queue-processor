@@ -21,6 +21,9 @@ dist/
 
 # Ignore virtual environment
 venv/
+venv3/
+venv36/
+venv37/
 
 # Ignore migrations files
 migrations/
