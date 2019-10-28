@@ -26,7 +26,7 @@ from queue_processors.queue_processor.orm_mapping import (InstrumentJoin, Notifi
                                                         InstrumentVariable, RunVariable,
                                                         Variable)
 # pylint:disable=no-name-in-module,import-error
-from qqueue_processors.queue_processor.settings import REDUCTION_DIRECTORY, LOGGING
+from queue_processors.queue_processor.settings import REDUCTION_DIRECTORY, LOGGING
 from queue_processors.queue_processor.queueproc_utils.instrument_utils import InstrumentUtils
 from queue_processors.queue_processor.queueproc_utils.variable_utils import VariableUtils
 
