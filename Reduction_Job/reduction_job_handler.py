@@ -37,6 +37,7 @@ os.environ["DJANGO_SETTINGS_MODULE"] = "autoreduce_webapp.settings"
 from autoreduce_webapp.icat_communication import ICATCommunication
 from autoreduce_webapp.settings import ACTIVEMQ, REDUCTION_DIRECTORY, FACILITY
 from reduction_variables.models import InstrumentVariable, RunVariable
+from reduction_variables.utils import InstrumentVariablesUtils
 from reduction_viewer.models import ReductionRun, Notification
 from reduction_viewer.utils import InstrumentUtils, StatusUtils, ReductionRunUtils
 
@@ -316,8 +317,7 @@ class InstrumentVariableHandler(object):
         if not variables:
             logger.info('Finding variables from experiment')
             # No previous run versions. Find the instrument variables we want to use.
-            variables = self.\
-                show_variables_for_experiment(instrument_name,
+            variables = InstrumentVariablesUtils.show_variables_for_experiment(instrument_name,
                                               reduction_run.experiment.reference_number)
 
         if not variables:
