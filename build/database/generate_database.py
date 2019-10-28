@@ -43,7 +43,7 @@ def run_sql_file(sql_file_location, logger):
             logger.info(process_output)
         # For checking process_err, a special case is when a password is specified because
         # that results in process_err being populated with an warning we accept
-        if 'Using a password on the command line interface can be insecure' in process_err:
+        if 'Using a password on the command line interface can be insecure' in str(process_err):
             logger.warning(process_err)
         elif process_err != '':
             logger.error("Error when running %s" % access_string)
