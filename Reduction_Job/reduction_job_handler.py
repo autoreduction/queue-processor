@@ -21,14 +21,14 @@ import sys
 
 import chardet
 
-from QueueProcessors.QueueProcessor.base import session
-from QueueProcessors.QueueProcessor.orm_mapping import (InstrumentJoin, Notification,
+from queueprocessors.queueprocessor.base import session
+from queueprocessors.queueprocessor.orm_mapping import (InstrumentJoin, Notification,
                                                         InstrumentVariable, RunVariable,
                                                         Variable)
 # pylint:disable=no-name-in-module,import-error
-from QueueProcessors.QueueProcessor.settings import REDUCTION_DIRECTORY, LOGGING
-from QueueProcessors.QueueProcessor.queueproc_utils.instrument_utils import InstrumentUtils
-from QueueProcessors.QueueProcessor.queueproc_utils.variable_utils import VariableUtils
+from queueprocessors.queueprocessor.settings import REDUCTION_DIRECTORY, LOGGING
+from queueprocessors.queueprocessor.queueproc_utils.instrument_utils import InstrumentUtils
+from queueprocessors.queueprocessor.queueproc_utils.variable_utils import VariableUtils
 
 sys.path.append(os.path.join("../", os.path.dirname(os.path.dirname(__file__))))
 os.environ["DJANGO_SETTINGS_MODULE"] = "autoreduce_webapp.settings"
