@@ -42,10 +42,10 @@ script:
 
   # ================ pytest unit tests ================ #
   # Utils tests
-  - echo "Running Unit tests"
+  - echo "===================== UNIT TESTS ====================="
   - py.test --ignore=systemtests --cov=build --cov=monitors --cov=QueueProcessors --cov=scripts --cov=utils --cov=WebApp/autoreduce_webapp --cov=docker_reduction --cov=paths
 
-  - echo "Running System Tests"
+  - echo "==================== SYSTEM TESTS ===================="
   - py.test systemtests --cov-append
 
 
