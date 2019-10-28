@@ -25,22 +25,21 @@ setup_requires = ['dash',
                   'django-user-agents',
                   'filelock',
                   'gitpython',
+                  'mysqlclient',
                   'mysql-connector',
-                  'MySQL-python',
                   'nexusformat',
                   'numpy',
-                  'plotly',
                   'pandas',
+                  'plotly',
                   'pytz',
-                  'pymysql',
+                  'PyMySQL',
                   'requests',
                   'sentry_sdk',
                   'service_identity',
                   'SQLAlchemy',
                   'stomp.py',
-                  'suds',
-                  'Twisted',
-                  'watchdog']
+                  'suds-py3',
+                  'Twisted']
 
 if platform.system() == 'Windows':
     setup_requires.append('pypiwin32')
