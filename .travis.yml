@@ -11,7 +11,8 @@ dist: trusty
 before_install:
   - mysql_upgrade --force
   - sudo service mysql restart
-  - mysql < build/database/test_db_setup.sql
+  # Need to do this first time
+  - mysql < build/database/reset_autoreduction_db.sql
 
 install:
   # Install autoreduction
@@ -24,6 +25,7 @@ install:
   # Externals must be after test_settings
   - python setup.py externals -s activemq,icat
   - python setup.py database
+  - cat build.log
   - sudo python setup.py start
 
 script:

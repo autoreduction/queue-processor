@@ -29,6 +29,7 @@ else:
     # 7Zip not required on linux
 
 DB_ROOT_PASSWORD = ''
+
 ACTIVEMQ_EXECUTABLE = os.path.join(INSTALL_DIRS['activemq'],
                                    'apache-activemq-5.15.9', 'bin',
                                    'activemq')
