@@ -35,6 +35,7 @@ os.environ["DJANGO_SETTINGS_MODULE"] = "autoreduce_webapp.settings"
 
 # pylint:disable=wrong-import-position
 sys.path.append("WebApp/autoreduce_webapp/")
+from autoreduce_webapp.settings import ACTIVEMQ, REDUCTION_DIRECTORY, FACILITY
 from reduction_variables.models import InstrumentVariable, RunVariable
 from reduction_variables.utils import InstrumentVariablesUtils
 from reduction_viewer.models import ReductionRun, Notification
