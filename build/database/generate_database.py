@@ -53,12 +53,8 @@ def get_test_user_sql():
     :return: True if process completed successfully
     """
     from utils.settings import MYSQL_SETTINGS
-    user_to_add = MYSQL_SETTINGS.username
-    sql_commands = ["GRANT ALL ON *.* TO '{0}'@'localhost' "
-                    "IDENTIFIED BY '{1}';".format(user_to_add, MYSQL_SETTINGS.password),
-                    "FLUSH PRIVILEGES;"]
-
-    return '\n'.join(sql_commands)
+    return "GRANT ALL ON *.* TO '{0}'@'localhost' IDENTIFIED BY '{1}';\n" \
+           "FLUSH PRIVILEGES;".format(MYSQL_SETTINGS.username, MYSQL_SETTINGS.password)
 
 
 def generate_schema(project_root_path, logger):
