@@ -10,49 +10,51 @@ Python wraps to windows/linux schema generation scripts for services
 from __future__ import print_function
 
 import os
-import subprocess
-import sys
 
 from build.utils.process_runner import run_process_and_log
+
 
 PATH_TO_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
-def run_sql_file(sql_file_location, logger):
+def run_sql(connection, sql, logger):
     """
-    Runs a sql file on the localhost database
-    :param sql_file_location: file path to the sql file
-    :param logger: log handler
-    :return: True: exit code of script was 0
-             False: exit code of script was non-zero
+    Execute an SQL command and then commit the changes to the database
+    :param connection: The connection to the database
+    :param sql: The sql command to run as a string
+    :param logger: Where to log the errors to
+    :return: True / False depending on command success
     """
-    # Must be imported at run-time for migrate test settings to work
-    from build.settings import DB_ROOT_PASSWORD
-    logger.info("Running script: %s" % sql_file_location)
-    with open(sql_file_location, 'r') as input_file:
-        password = ''
-        if DB_ROOT_PASSWORD:
-            password = '-p%s ' % DB_ROOT_PASSWORD
-        access_string = "mysql -u{0} {1}".format('root', password)
-        mysql_process = subprocess.Popen(access_string,
-                                         stdin=input_file, shell=True,
-                                         stdout=subprocess.PIPE,
-                                         stderr=subprocess.PIPE)
-        process_output, process_err = mysql_process.communicate()
-        if process_output != '':
-            logger.info(process_output)
-        # For checking process_err, a special case is when a password is specified because
-        # that results in process_err being populated with an warning we accept
-        if 'Using a password on the command line interface can be insecure' in process_err:
-            logger.warning(process_err)
-        elif process_err != '':
-            logger.error("Error when running %s" % access_string)
-            logger.error(process_err)
-            print("Script did not complete. Check build.log for more details.")
-            print(process_err, file=sys.stderr)
-            return False
-    logger.info("Script completed successfully")
+    from sqlalchemy.exc import OperationalError
+    logger.info("Running sql: %s" % sql)
+    try:
+        connection.execute(sql)
+        connection.commit()
+    except OperationalError as exp:
+        logger.error("SQL command failed with exception: %s" % exp)
+        return False
+    logger.info("SQL command completed successfully")
     return True
+
+
+def get_sql_from_file(sql_file_location):
+    """
+    Runs a sql file using the database client
+    :param sql_file_location: file path to the sql file
+    :return: The contents of the sql file as a string
+    """
+    with open(sql_file_location, 'r') as sql_file:
+        return " ".join(sql_file.readlines())
+
+
+def get_test_user_sql():
+    """
+    Generate sql to add a new user to the database
+    :return: True if process completed successfully
+    """
+    from utils.settings import MYSQL_SETTINGS
+    return "GRANT ALL ON *.* TO '{0}'@'localhost' IDENTIFIED BY '{1}';\n" \
+           "FLUSH PRIVILEGES;".format(MYSQL_SETTINGS.username, MYSQL_SETTINGS.password)
 
 
 def generate_schema(project_root_path, logger):
@@ -79,43 +81,4 @@ def generate_schema(project_root_path, logger):
         logger.error("Error encountered when adding super user")
         return False
     logger.info("Database migrated successfully")
-    return True
-
-
-def add_test_user(logger):
-    """
-    Add the test user account to the database
-    :param logger: Handle to the logging file
-    :return: True if process completed successfully
-    """
-    # Must be imported at run-time for migrate test settings to work
-    from build.settings import DB_ROOT_PASSWORD
-    from utils.settings import MYSQL_SETTINGS
-    user_to_add = MYSQL_SETTINGS.username
-    logger.info("Adding user: {0}".format(user_to_add))
-    sql_commands = ["GRANT ALL ON *.* TO '{0}'@'localhost' "
-                    "IDENTIFIED BY '{1}';".format(user_to_add, MYSQL_SETTINGS.password),
-                    "FLUSH PRIVILEGES;"]
-
-    to_exec = '\n'.join(sql_commands)
-
-    # This is duplicated from above, ideally we should switch to using Python-MySQL connectors
-    password = '' if not DB_ROOT_PASSWORD else '-p%s ' % DB_ROOT_PASSWORD
-    access_string = "mysql -u{0} {1}".format('root', password)
-    mysql_process = subprocess.Popen(access_string,
-                                     stdin=subprocess.PIPE, shell=True,
-                                     stdout=subprocess.PIPE,
-                                     stderr=subprocess.PIPE)
-    process_output, process_err = mysql_process.communicate(input=to_exec)
-    if process_output != '':
-        logger.info(process_output)
-    # For checking process_err, a special case is when a password is specified because
-    # that results in process_err being populated with an warning we accept
-    if 'Using a password on the command line interface can be insecure' in process_err:
-        logger.warning(process_err)
-    elif process_err != '':
-        logger.error(process_err)
-        print("Script did not complete. Check build.log for more details.")
-        print(process_err, file=sys.stderr)
-        return False
     return True

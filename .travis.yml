@@ -11,7 +11,8 @@ dist: trusty
 before_install:
   - mysql_upgrade --force
   - sudo service mysql restart
-  - mysql < build/database/test_db_setup.sql
+  # Need to do this first time
+  - mysql < build/database/reset_autoreduction_db.sql
 
 install:
   # Install autoreduction
@@ -27,8 +28,12 @@ install:
   - sudo python setup.py start
 
 script:
-  # ================ Assert Test Setup =============== #
-  - pytest build/tests/test_db_generation.py
+  # ================ Functional tests =============== #
+  - echo "Running Unit tests"
+  - py.test --ignore=systemtests --cov=build --cov=monitors --cov=queue_processors --cov=scripts --cov=utils --cov=WebApp/autoreduce_webapp --cov=docker_reduction --cov=paths
+
+  - echo "Running System Tests"
+  - py.test systemtests --cov-append
 
   # ================ Static Analysis ================= #
   # ToDo: These should all be collapsed into one once autoreduction gets a single code package
@@ -39,15 +44,6 @@ script:
   - pylint scripts
   - pylint systemtests
   - pylint utils
-
-  # ================ pytest unit tests ================ #
-  # Utils tests
-  - echo "Running Unit tests"
-  - py.test --ignore=systemtests --cov=build --cov=monitors --cov=QueueProcessors --cov=scripts --cov=utils --cov=WebApp/autoreduce_webapp --cov=docker_reduction --cov=paths
-
-  - echo "Running System Tests"
-  - py.test systemtests --cov-append
-
 
 after_success:
   - coveralls

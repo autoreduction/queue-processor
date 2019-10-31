@@ -48,3 +48,9 @@ ACTIVEMQ_SETTINGS = SETTINGS_FACTORY.create('queue',
                                             password=get_str('QUEUE', 'password'),
                                             host=get_str('QUEUE', 'host'),
                                             port=get_str('QUEUE', 'port'))
+
+LOCAL_MYSQL_SETTINGS = SETTINGS_FACTORY.create('database',
+                                               username='root',
+                                               password='',
+                                               host='localhost',
+                                               port='3306')
