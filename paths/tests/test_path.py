@@ -47,25 +47,25 @@ class TestPath(unittest.TestCase):
 
     def test_not_absolute_path(self):
         path = Path(NOT_ABSOLUTE_FILE, 'file')
-        self.assertRaisesRegexp(PathError, "Path is not absolute", path.validate)
+        self.assertRaisesRegex(PathError, "Path is not absolute", path.validate)
 
     def test_not_exist_path(self):
         path = Path(os.path.join(DIR_PATH, 'file_does_not_exist.nxs'), 'file')
-        self.assertRaisesRegexp(PathError, "Path doesn't exist", path.validate)
+        self.assertRaisesRegex(PathError, "Path doesn't exist", path.validate)
 
     @patch('os.access')
     def test_not_readable_path(self, mock_access):
         mock_access.return_value = False
         path = Path(FILE_PATH, 'file')
-        self.assertRaisesRegexp(PathError, "Path is not readable", path.validate)
+        self.assertRaisesRegex(PathError, "Path is not readable", path.validate)
 
     def test_not_file_validation(self):
         path = Path(DIR_PATH, 'file')
-        self.assertRaisesRegexp(PathError, "Path is not a file", path.validate)
+        self.assertRaisesRegex(PathError, "Path is not a file", path.validate)
 
     def test_not_directory_validation(self):
         path = Path(FILE_PATH, 'dir')
-        self.assertRaisesRegexp(PathError, "Path is not a directory", path.validate)
+        self.assertRaisesRegex(PathError, "Path is not a directory", path.validate)
 
     def test_no_validation(self):
         path = Path('fake/path/directory', 'directory', False, False, False, False, False)

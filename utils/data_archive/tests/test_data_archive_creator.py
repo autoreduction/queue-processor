@@ -55,16 +55,16 @@ class TestDataArchiveCreator(unittest.TestCase):
         self.assertFalse(self.dac.archive_deleted)
 
     def test_invalid_init(self):
-        self.assertRaisesRegexp(RuntimeError, 'Unable to find base_directory not a directory',
-                                DataArchiveCreator, 'not a directory')
+        self.assertRaisesRegex(RuntimeError, 'Unable to find base_directory not a directory',
+                               DataArchiveCreator, 'not a directory')
 
     def test_good_valid_inst(self):
         self.dac._check_valid_inst('GEM')
         self.dac._check_valid_inst('POLARIS')
 
     def test_bad_valid_inst(self):
-        self.assertRaisesRegexp(ValueError, "Instrument provided: \'not instrument\'",
-                                self.dac._check_valid_inst, 'not instrument')
+        self.assertRaisesRegex(ValueError, "Instrument provided: \'not instrument\'",
+                               self.dac._check_valid_inst, 'not instrument')
 
     def test_valid_make_data_archive(self):
         self.dac.make_data_archive(['GEM'], 17, 18, 2)
@@ -101,8 +101,8 @@ class TestDataArchiveCreator(unittest.TestCase):
                                                    'cycle_01_1')))
 
     def test_non_inst_make_data_archive(self):
-        self.assertRaisesRegexp(ValueError, "Instrument provided: \'not instrument\'",
-                                self.dac.make_data_archive, ['not instrument'], 17, 18, 2)
+        self.assertRaisesRegex(ValueError, "Instrument provided: \'not instrument\'",
+                               self.dac.make_data_archive, ['not instrument'], 17, 18, 2)
 
     def test_add_data_to_recent(self):
         self.dac.make_data_archive(['GEM'], 17, 18, 2)
@@ -120,19 +120,19 @@ class TestDataArchiveCreator(unittest.TestCase):
 
     def test_add_dat_files_invalid_type(self):
         self.dac.make_data_archive(['GEM'], 17, 18, 2)
-        self.assertRaisesRegexp(TypeError, "data_files is of: <class 'NoneType'>.",
-                                self.dac.add_data_to_most_recent_cycle,
-                                'GEM', None)
+        self.assertRaisesRegex(TypeError, "data_files is of: <class 'NoneType'>.",
+                               self.dac.add_data_to_most_recent_cycle,
+                               'GEM', None)
 
     def test_add_data_to_recent_invalid_inst(self):
         self.dac.make_data_archive(['GEM'], 17, 18, 2)
-        self.assertRaisesRegexp(RuntimeError, "Unable to create file at ",
-                                self.dac.add_data_to_most_recent_cycle, 'POLARIS',
-                                'test-file.nxs')
+        self.assertRaisesRegex(RuntimeError, "Unable to create file at ",
+                               self.dac.add_data_to_most_recent_cycle, 'POLARIS',
+                               'test-file.nxs')
 
     def test_add_journal_file_without_archive(self):
-        self.assertRaisesRegexp(RuntimeError, "Unable to create file at ",
-                                self.dac.add_journal_file, 'GEM', 'test')
+        self.assertRaisesRegex(RuntimeError, "Unable to create file at ",
+                               self.dac.add_journal_file, 'GEM', 'test')
 
     def test_add_journal_file_valid(self):
         self.dac.make_data_archive(['GEM'], 18, 18, 1)
@@ -156,8 +156,8 @@ class TestDataArchiveCreator(unittest.TestCase):
         self.assertTrue(os.path.isfile(expected_file_path))
 
     def test_add_last_run_without_archive(self):
-        self.assertRaisesRegexp(RuntimeError, "Unable to create file at ",
-                                self.dac.add_last_run_file, 'GEM', 'test')
+        self.assertRaisesRegex(RuntimeError, "Unable to create file at ",
+                               self.dac.add_last_run_file, 'GEM', 'test')
 
     def test_add_last_run_valid(self):
         self.dac.make_data_archive(['GEM'], 18, 18, 1)
