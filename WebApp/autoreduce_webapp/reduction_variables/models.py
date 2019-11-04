@@ -38,7 +38,7 @@ class InstrumentVariable(Variable):
     """
     Instrument specific variable class
     """
-    instrument = models.ForeignKey(Instrument)
+    instrument = models.ForeignKey(Instrument, on_delete=models.CASCADE)
     experiment_reference = models.IntegerField(blank=True, null=True)
     start_run = models.IntegerField(blank=True, null=True)
     tracks_script = models.BooleanField(default=False)
@@ -48,4 +48,5 @@ class RunVariable(Variable):
     """
     Run specific Variable class
     """
-    reduction_run = models.ForeignKey(ReductionRun, related_name="run_variables")
+    reduction_run = models.ForeignKey(ReductionRun, related_name="run_variables",
+                                      on_delete=models.CASCADE)

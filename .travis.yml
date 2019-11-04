@@ -20,14 +20,16 @@ install:
   # Install test suite dependencies
   - pip3 install -r requirements.txt
 
-  # ================== Test setup ==================== #
+  # ================== setup test environment ==================== #
   - python3 setup.py test_settings
   # Externals must be after test_settings
   - python3 setup.py externals -s activemq,icat
   - python3 setup.py database
-  - sudo python3 setup.py start
+  - _LOCAL_PYTHON_PATH=$(which python3)
+  - sudo $_LOCAL_PYTHON_PATH setup.py start
 
 script:
+  - py.test build/tests/test_db_generation.py  # perform initial check of database
   # ================ Functional tests =============== #
   - echo "Running Unit tests"
   - py.test --ignore=systemtests --cov=build --cov=monitors --cov=queue_processors --cov=scripts --cov=utils --cov=WebApp/autoreduce_webapp --cov=docker_reduction --cov=paths

@@ -53,7 +53,7 @@ INSTALLED_APPS = [
     'reduction_variables',
 ]
 
-MIDDLEWARE_CLASSES = [
+MIDDLEWARE = [
 
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -68,7 +68,7 @@ MIDDLEWARE_CLASSES = [
 # Add debug toolbar only if in DEBUG mode
 if DEBUG:
     INSTALLED_APPS.append('debug_toolbar')
-    MIDDLEWARE_CLASSES.insert(3, 'debug_toolbar.middleware.DebugToolbarMiddleware')
+    MIDDLEWARE.insert(3, 'debug_toolbar.middleware.DebugToolbarMiddleware')
 
 AUTHENTICATION_BACKENDS = [
     'autoreduce_webapp.backends.UOWSAuthenticationBackend',
@@ -197,7 +197,7 @@ if os.name == 'nt':
     ARCHIVE_DIRECTORY = r'\\isis\inst$\NDX%s\Instrument\data\cycle_%s\autoreduced\%s\%s'  # %(instrument, cycle, experiment_number, run_number)
 
     TEST_REDUCTION_DIRECTORY = r'\\reducedev\isis\output\NDX%s\user\scripts\autoreduction'
-    TEST_ARCHIVE_DIRECTORY = '\\isis\inst$\NDX%s\Instrument\data\cycle_%s\autoreduced\%s\%s'
+    TEST_ARCHIVE_DIRECTORY = r'\\isis\inst$\NDX%s\Instrument\data\cycle_%s\autoreduced\%s\%s'
 
 else:
     REDUCTION_DIRECTORY = '/isis/NDX%s/user/scripts/autoreduction'  # %(instrument)
