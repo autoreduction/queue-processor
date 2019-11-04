@@ -9,7 +9,7 @@ Node for handling replacing
 """
 from django.template import Library, Node, Variable, TemplateSyntaxError
 # pylint: disable=relative-import
-from common_helpers import get_var
+from .common_helpers import get_var
 
 
 # pylint:disable=invalid-name

@@ -13,7 +13,7 @@ from django.contrib.auth.models import User
 from django.utils.safestring import mark_safe
 from django.core.exceptions import ObjectDoesNotExist
 # pylint: disable=relative-import
-from common_helpers import get_var
+from .common_helpers import get_var
 
 # pylint:disable=invalid-name
 register = Library()

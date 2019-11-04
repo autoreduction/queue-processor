@@ -540,7 +540,7 @@ class InstrumentVariablesUtils(object):
         script_module = imp.new_module(module_name)
         try:
             # pylint:disable=exec-used
-            exec script_text in script_module.__dict__
+            exec(script_text in script_module.__dict__)
             return script_module
         except ImportError as exception:
             log_error_and_notify(

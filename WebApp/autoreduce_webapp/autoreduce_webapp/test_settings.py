@@ -53,7 +53,7 @@ INSTALLED_APPS = [
     'reduction_variables',
 ]
 
-MIDDLEWARE_CLASSES = [
+MIDDLEWARE = [
 
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -68,7 +68,7 @@ MIDDLEWARE_CLASSES = [
 # Add debug toolbar only if in DEBUG mode
 if DEBUG:
     INSTALLED_APPS.append('debug_toolbar')
-    MIDDLEWARE_CLASSES.insert(3, 'debug_toolbar.middleware.DebugToolbarMiddleware')
+    MIDDLEWARE.insert(3, 'debug_toolbar.middleware.DebugToolbarMiddleware')
 
 AUTHENTICATION_BACKENDS = [
     'autoreduce_webapp.backends.UOWSAuthenticationBackend',
