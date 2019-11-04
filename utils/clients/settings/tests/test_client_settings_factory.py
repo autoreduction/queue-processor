@@ -70,21 +70,21 @@ class TestClientSettingsFactory(unittest.TestCase):
         self.assertEqual(actual.auth, 'test-auth')
 
     def test_invalid_not_a_factory(self):
-        self.assertRaisesRegexp(ValueError, "Factories creation settings type must be one of: "
-                                            "'database', 'icat', 'queue'",
-                                self.factory.create, 'not-factory', 'user', 'pass', 'host', 'port')
+        self.assertRaisesRegex(ValueError, "Factories creation settings type must be one of: "
+                                           "'database', 'icat', 'queue'",
+                               self.factory.create, 'not-factory', 'user', 'pass', 'host', 'port')
 
     def test_invalid_database_args(self):
-        self.assertRaisesRegexp(ValueError, "database_invalid is not a recognised key "
-                                "word argument.", self.factory.create, 'database', 'user',
-                                'pass', 'host', 'port', database_invalid='invalid')
+        self.assertRaisesRegex(ValueError, "database_invalid is not a recognised key "
+                               "word argument.", self.factory.create, 'database', 'user',
+                               'pass', 'host', 'port', database_invalid='invalid')
 
     def test_invalid_queue_args(self):
-        self.assertRaisesRegexp(ValueError, "queue_invalid is not a recognised key word argument.",
-                                self.factory.create, 'queue', 'user', 'pass', 'host', 'port',
-                                queue_invalid='invalid')
+        self.assertRaisesRegex(ValueError, "queue_invalid is not a recognised key word argument.",
+                               self.factory.create, 'queue', 'user', 'pass', 'host', 'port',
+                               queue_invalid='invalid')
 
     def test_invalid_icat_args(self):
-        self.assertRaisesRegexp(ValueError, "icat_invalid is not a recognised key word argument."
-                                , self.factory.create, 'icat', 'user', 'pass', 'host', 'port',
-                                icat_invalid='invalid')
+        self.assertRaisesRegex(ValueError, "icat_invalid is not a recognised key word argument."
+                               , self.factory.create, 'icat', 'user', 'pass', 'host', 'port',
+                               icat_invalid='invalid')

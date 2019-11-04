@@ -86,7 +86,7 @@ class TestICATClient(unittest.TestCase):
         mock_refresh.side_effect = raise_icat_session_error
         client = ICATClient()
         # pylint:disable=protected-access
-        self.assertRaisesRegexp(ConnectionException, 'ICAT', client._test_connection)
+        self.assertRaisesRegex(ConnectionException, 'ICAT', client._test_connection)
 
     @patch('icat.Client.__init__', return_value=None)
     @patch('icat.Client.__setattr__')

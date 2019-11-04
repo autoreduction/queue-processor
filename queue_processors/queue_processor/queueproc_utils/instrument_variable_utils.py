@@ -220,7 +220,7 @@ class InstrumentVariablesUtils(object):
         module_name = os.path.basename(script_path).split(".")[0]  # file name without extension
         script_module = imp.new_module(module_name)
         try:
-            exec script_text in script_module.__dict__ # pylint: disable=exec-used
+            exec(script_text in script_module.__dict__)  # pylint: disable=exec-used
             return script_module
         except ImportError as exp:
             self.log_error_and_notify(

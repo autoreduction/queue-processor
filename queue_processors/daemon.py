@@ -41,7 +41,7 @@ class Daemon(object):
             if pid > 0:
                 # exit first parent
                 sys.exit(0)
-        except OSError, exp:
+        except OSError as exp:
             logging.error("fork #1 failed: %d (%s)\n", exp.errno, exp.strerror)
             sys.exit(1)
 
@@ -58,7 +58,7 @@ class Daemon(object):
             if pid > 0:
                 # exit from second parent
                 sys.exit(0)
-        except OSError, exp:
+        except OSError as exp:
             logging.error("fork #2 failed: %d (%s)\n", exp.errno, exp.strerror)
             sys.exit(1)
 
@@ -129,7 +129,7 @@ class Daemon(object):
             while 1:
                 os.kill(pid, SIGTERM)
                 time.sleep(0.1)
-        except OSError, err:
+        except OSError as err:
             err = str(err)
             if err.find("No such process") > 0:
                 if os.path.exists(self.pidfile):
@@ -167,9 +167,9 @@ def control_daemon_from_cli(daemon):
         elif sys.argv[1] == 'restart':
             daemon.restart()
         else:
-            print "Unknown command"
+            print("Unknown command")
             sys.exit(2)
         sys.exit(0)
     else:
-        print "usage: %s start|stop|restart" % sys.argv[0]
+        print("usage: %s start|stop|restart" % sys.argv[0])
         sys.exit(2)
