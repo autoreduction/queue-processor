@@ -37,11 +37,11 @@ class TestAbstractClient(unittest.TestCase):
         self.assertIsNotNone(interface)
 
     def test_invalid_init(self):
-        self.assertRaisesRegexp(TypeError, "Expected instance of ClientSettings not <type 'int'>",
+        self.assertRaisesRegexp(TypeError, "Expected instance of ClientSettings not <class 'int'>",
                                 ClientWrapper, 10)
-        self.assertRaisesRegexp(TypeError, "Expected instance of ClientSettings not <type 'str'>",
+        self.assertRaisesRegexp(TypeError, "Expected instance of ClientSettings not <class 'str'>",
                                 ClientWrapper, 'string')
-        self.assertRaisesRegexp(TypeError, "Expected instance of ClientSettings not <type 'list'>",
+        self.assertRaisesRegexp(TypeError, "Expected instance of ClientSettings not <class 'list'>",
                                 ClientWrapper, [1, 2, 3, 4])
 
 
