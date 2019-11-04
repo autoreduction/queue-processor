@@ -14,7 +14,7 @@
 """
 Post Process Administrator. It kicks off cataloging and reduction jobs.
 """
-import cStringIO
+import io
 import errno
 import imp
 import json
@@ -37,12 +37,14 @@ from queue_processors.autoreduction_processor.timeout import TimeOut
 
 init('http://4b7c7658e2204228ad1cfd640f478857@172.16.114.151:9000/1')
 
+
 class SkippedRunException(Exception):
     """
     Exception for runs that have been skipped
     Note: this is currently only the case for EnginX Event mode runs at ISIS
     """
     pass
+
 
 @contextmanager
 def channels_redirected(out_file, err_file, out_stream):
@@ -112,8 +114,8 @@ class PostProcessAdmin(object):
         self.data = data
         self.client = connection
 
-        self.reduction_log_stream = cStringIO.StringIO()
-        self.admin_log_stream = cStringIO.StringIO()
+        self.reduction_log_stream = io.StringIO()
+        self.admin_log_stream = io.StringIO()
 
         try:
             self.data_file = windows_to_linux_path(self.validate_input('data'),
