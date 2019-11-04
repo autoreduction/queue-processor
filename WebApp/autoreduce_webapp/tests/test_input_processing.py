@@ -29,7 +29,7 @@ class RunParsingTestCase(unittest.TestCase):
     def test_list_case(self):
         input_value = "10-20"
         # Returns inclusive values
-        expected_value = range(10, 21)
+        expected_value = list(range(10, 21))
 
         result = input_processing.parse_user_run_numbers(input_value)
         self.assertEqual(expected_value, result)
@@ -67,7 +67,7 @@ class RunParsingTestCase(unittest.TestCase):
 
     def test_negative_ranges(self):
         input_string = "-5-2"
-        expected_val = range(-5, 2 + 1)
+        expected_val = list(range(-5, 2 + 1))
 
         result = input_processing.parse_user_run_numbers(input_string)
         self.assertEqual(expected_val, result)
