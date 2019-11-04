@@ -201,7 +201,7 @@ def update_last_runs(csv_name):
 
     # Loop over instruments
     output = []
-    with open(csv_name, 'rb') as csv_file:
+    with open(csv_name, 'r') as csv_file:
         csv_reader = csv.reader(csv_file)
         for row in csv_reader:
             inst_mon = InstrumentMonitor(connection, row[0])
@@ -218,7 +218,7 @@ def update_last_runs(csv_name):
             output.append(row)
 
     # Write any changes to the CSV
-    with open(csv_name, 'wb') as csv_file:
+    with open(csv_name, 'w') as csv_file:
         csv_writer = csv.writer(csv_file)
         for row in output:
             csv_writer.writerow(row)

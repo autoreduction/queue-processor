@@ -13,7 +13,6 @@ from monitors.settings import (CYCLE_FOLDER, LAST_RUNS_CSV)
 import monitors.run_detection as eorm
 from monitors.run_detection import (InstrumentMonitor,
                                     FileNotFoundError,
-
                                     InstrumentMonitorError)
 
 # Test data
@@ -48,7 +47,7 @@ NXLOAD_MOCK_EMPTY.iteritems = Mock(return_value=[('raw_data_1', Mock(spec=[]))])
 
 
 # pylint:disable=missing-docstring,no-self-use,too-many-public-methods
-class TestEndOfRunMonitor(unittest.TestCase):
+class TestRunDetection(unittest.TestCase):
     def tearDown(self):
         if os.path.isfile('test_lastrun.txt'):
             os.remove('test_lastrun.txt')
@@ -102,7 +101,7 @@ class TestEndOfRunMonitor(unittest.TestCase):
         inst_mon = InstrumentMonitor(None, 'WISH')
         inst_mon.summary_file = 'test_summary.txt'
         rb_number = inst_mon.read_rb_number_from_summary()
-        self.assertEqual('1820461', rb_number)
+        self.assertEqual(b'1820461', rb_number)
 
     def test_read_rb_number_from_summary_invalid(self):
         with open('test_summary.txt', 'w') as summary:
@@ -235,7 +234,8 @@ class TestEndOfRunMonitor(unittest.TestCase):
         with open('test_last_runs.csv') as csv_file:
             csv_reader = csv.reader(csv_file)
             for row in csv_reader:
-                self.assertEqual('44736', row[1])
+                if row:  # Avoid the empty rows
+                    self.assertEqual('44736', row[1])
 
     @patch('monitors.run_detection.InstrumentMonitor.__init__',
            return_value=None)
@@ -255,7 +255,8 @@ class TestEndOfRunMonitor(unittest.TestCase):
         with open('test_last_runs.csv') as csv_file:
             csv_reader = csv.reader(csv_file)
             for row in csv_reader:
-                self.assertEqual('44733', row[1])
+                if row:  # Avoid the empty rows
+                    self.assertEqual('44733', row[1])
 
     @patch('monitors.run_detection.update_last_runs')
     def test_main(self, update_last_runs_mock):
