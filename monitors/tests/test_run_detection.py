@@ -12,7 +12,6 @@ from utils.clients.queue_client import QueueClient
 from monitors.settings import (CYCLE_FOLDER, LAST_RUNS_CSV)
 import monitors.run_detection as eorm
 from monitors.run_detection import (InstrumentMonitor,
-                                    FileNotFoundError,
                                     InstrumentMonitorError)
 
 # Test data
