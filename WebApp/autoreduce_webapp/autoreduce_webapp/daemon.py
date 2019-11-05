@@ -146,29 +146,7 @@ class Daemon(object):
 
     def run(self):
         """
-        You should override this method when you subclass Daemon. It will be called after the
-        process has been daemonized by start() or restart().
+        You should override this method when you subclass Daemon.
+        It will be called after the process has been
+        daemonized by start() or restart().
         """
-
-
-def control_daemon_from_cli(daemon):
-    """
-    Small helper function required in implementations of the Daemon class to validate and respond
-    to CLI user input
-    :param daemon: The daemon process to perform actions on
-    :return: Will sys.exit() on completion, leaving the daemon in the state specified by user
-    """
-    if len(sys.argv) == 2:
-        if sys.argv[1] == 'start':
-            daemon.start()
-        elif sys.argv[1] == 'stop':
-            daemon.stop()
-        elif sys.argv[1] == 'restart':
-            daemon.restart()
-        else:
-            print("Unknown command")
-            sys.exit(2)
-        sys.exit(0)
-    else:
-        print("usage: %s start|stop|restart" % sys.argv[0])
-        sys.exit(2)
