@@ -45,7 +45,7 @@ from utils.settings import VALID_INSTRUMENTS
 GENERIC_CYCLE_PATH = os.path.join('NDX{}', 'Instrument', 'data', 'cycle_{}_{}')
 
 
-class DataArchiveCreator(object):
+class DataArchiveCreator:
     """
     Generates a data in the current working directory.
     The archive is designed to look identical to the
