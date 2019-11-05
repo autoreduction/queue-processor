@@ -232,4 +232,3 @@ else:
             Just Skip on windows
             function is here to make it more obvious that tests are not for windows
             """
-            pass

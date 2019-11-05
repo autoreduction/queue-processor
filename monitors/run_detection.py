@@ -35,15 +35,6 @@ class InstrumentMonitorError(Exception):
     Any fatal exception that occurs during execution of the
     instrument monitor
     """
-    pass
-
-
-class FileNotFoundError(Exception):
-    """
-    The run file couldn't be found. This may be because
-    of an inconsistency among DFS nodes.
-    """
-    pass
 
 
 def get_prefix_zeros(run_number_str):
@@ -83,7 +74,7 @@ def read_rb_number_from_nexus_file(nxs_file_path):
     return None
 
 
-class InstrumentMonitor(object):
+class InstrumentMonitor:
     """
     Checks the ISIS archive for new runs on an instrument and submits them to ActiveMQ
     """

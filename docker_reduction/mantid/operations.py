@@ -13,7 +13,7 @@ import docker
 from docker_reduction.mantid.mounts import (DATA_IN, DATA_OUT)
 
 
-class MantidDocker(object):
+class MantidDocker:
     """
     Class that contains the information required to perform
     a data reduction inside the mantid docker container

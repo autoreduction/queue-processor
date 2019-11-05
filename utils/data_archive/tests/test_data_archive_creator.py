@@ -28,7 +28,7 @@ class TestDataArchiveCreatorOverwrite(unittest.TestCase):
         try:
             _ = DataArchiveCreator(test_output_directory, overwrite=True)
         except OSError as os_err:
-            self.fail('The overwrite functionality didn\'t work: {}'.format(os_err.message))
+            self.fail('The overwrite functionality didn\'t work: {}'.format(os_err))
 
     def test_invalid_overwrite_init(self):
         """

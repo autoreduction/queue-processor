@@ -23,11 +23,9 @@ class Help(Command):
 
     def initialize_options(self):
         """ No args hence pass """
-        pass
 
     def finalize_options(self):
         """ No args hence pass """
-        pass
 
     # pylint:disable=no-self-use
     def run(self):

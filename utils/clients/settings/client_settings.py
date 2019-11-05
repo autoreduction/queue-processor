@@ -10,7 +10,7 @@ Generic settings class for client access
 
 
 # pylint:disable=too-few-public-methods
-class ClientSettings(object):
+class ClientSettings:
     """
     Hold common values for all Settings object
     """

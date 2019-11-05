@@ -19,7 +19,7 @@ import pymysql
 
 # pylint:disable=too-many-instance-attributes,too-few-public-methods
 # pylint:disable=too-many-arguments,attribute-defined-outside-init
-class DatabaseReset(object):
+class DatabaseReset:
     """
     Handles resetting the database after cycle
     """
@@ -56,11 +56,10 @@ class DatabaseReset(object):
             raise RuntimeError('\'Host\' for database required')
         if not self.port:
             raise RuntimeError('\'Port\' for database required')
-        else:
-            try:
-                int(self.port)
-            except ValueError:
-                raise RuntimeError('\'Port\' must be an integer')
+        try:
+            int(self.port)
+        except ValueError:
+            raise RuntimeError('\'Port\' must be an integer')
 
     def _validate_backfile_location(self):
         # Make the directory if it doesn't exist
@@ -142,12 +141,12 @@ def main():
     As this script should only ever be run on the machine with the database on it,
     we should use localhost:3306 to connect
     """
-    choice = raw_input('\'Backup\' or \'Wipe\': ')
+    choice = input('\'Backup\' or \'Wipe\': ')
     while choice.lower() != 'backup' and choice.lower() != 'wipe':
-        choice = raw_input('Invalid option - \'Backup\' or \'Wipe\':')
+        choice = input('Invalid option - \'Backup\' or \'Wipe\':')
     choice = choice.lower()
-    cycle = raw_input('Current cycle name: ')
-    user = raw_input('Database user name: ')
+    cycle = input('Current cycle name: ')
+    user = input('Database user name: ')
     password = getpass.getpass('Database password (leave blank if none): ')
     print('Using \'localhost\' as database host')
     print('Using \'3306\' as database port')

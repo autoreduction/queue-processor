@@ -13,7 +13,7 @@ import argparse
 from utils.clients.database_client import DatabaseClient
 
 
-class ManualRemove(object):
+class ManualRemove:
     """
     Handles removing a run from the database
     """

@@ -15,7 +15,7 @@ from utils.clients.queue_client import QueueClient
 
 
 # pylint:disable=too-few-public-methods
-class DataFile(object):
+class DataFile:
     """
     Basic data file representation for testing
     """
