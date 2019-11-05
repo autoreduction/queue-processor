@@ -38,6 +38,7 @@ class InitialiseTestDatabase(Command):
 
     def run(self):
         """ Run the setup scripts required for localhost database """
+        # pylint:disable=import-outside-toplevel
         from utils.clients.database_client import DatabaseClient
         from utils.settings import LOCAL_MYSQL_SETTINGS
         local_db_connection = DatabaseClient(LOCAL_MYSQL_SETTINGS).connect()

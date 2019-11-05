@@ -29,6 +29,7 @@ def raise_operational_error(_):
 class TestGenerateDatabase(unittest.TestCase):
 
     def test_get_test_user_sql(self):
+        # pylint:disable=import-outside-toplevel
         from utils.settings import MYSQL_SETTINGS
         actual = get_test_user_sql()
         expected = "GRANT ALL ON *.* TO '{0}'@'localhost' IDENTIFIED BY '{1}';\n" \
