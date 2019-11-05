@@ -70,7 +70,7 @@ class Daemon(object):
                 os.dup2(s_in.fileno(), sys.stdin.fileno())
             with open(self.stdout, 'a+') as s_out:
                 os.dup2(s_out.fileno(), sys.stdout.fileno())
-            with open(self.stderr, 'a+', 0) as s_err:
+            with open(self.stderr, 'a+') as s_err:
                 os.dup2(s_err.fileno(), sys.stderr.fileno())
 
         # write pidfile
