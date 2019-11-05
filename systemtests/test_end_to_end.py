@@ -91,7 +91,7 @@ if os.name != 'nt':
             self.assertEqual(self.run_number, results[0].run_number)
             self.assertEqual('Completed', results[0].status.value)
 
-        '''def test_wish_user_script_failure(self):
+        def test_wish_user_script_failure(self):
             """
             Test that WISH data goes through the system without issue
             """
@@ -119,7 +119,7 @@ if os.name != 'nt':
             self.assertEqual(self.instrument, results[0].instrument.name)
             self.assertEqual(self.rb_number, results[0].experiment.reference_number)
             self.assertEqual(self.run_number, results[0].run_number)
-            self.assertEqual('Error', results[0].status.value)'''
+            self.assertEqual('Error', results[0].status.value)
 
         def _setup_data_structures(self, reduce_script, vars_script):
             """

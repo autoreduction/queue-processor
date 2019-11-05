@@ -11,7 +11,7 @@ from utils.project.structure import get_project_root
 FACILITY = 'ISIS'
 
 MYSQL = {
-    'HOST': 'localhost',
+    'HOST': 'localhost:3306',
     'USER': 'test-user',
     'PASSWD': 'pass',
     'DB': 'autoreduction'
