@@ -9,19 +9,18 @@
     Code taken from:
     http://www.jejik.com/articles/2007/02/a_simple_unix_linux_daemon_in_python/
 """
-from __future__ import print_function
-import sys
+import logging
 import os
+import sys
 import time
+
 import atexit
 from signal import SIGTERM
-import logging
 
 
 class Daemon(object):
     """
     A generic daemon class.
-
     Usage: subclass the Daemon class and override the run() method
     """
     def __init__(self, pidfile, stdin='/dev/null', stdout='/dev/null', stderr='/dev/null'):
@@ -42,7 +41,7 @@ class Daemon(object):
             if pid > 0:
                 # exit first parent
                 sys.exit(0)
-        except OSError, exp:
+        except OSError as exp:
             logging.error("fork #1 failed: %d (%s)\n", exp.errno, exp.strerror)
             sys.exit(1)
 
@@ -59,7 +58,7 @@ class Daemon(object):
             if pid > 0:
                 # exit from second parent
                 sys.exit(0)
-        except OSError, exp:
+        except OSError as exp:
             logging.error("fork #2 failed: %d (%s)\n", exp.errno, exp.strerror)
             sys.exit(1)
 
@@ -67,23 +66,22 @@ class Daemon(object):
         if self.stdin is not None and self.stdout is not None and self.stderr is not None:
             sys.stdout.flush()
             sys.stderr.flush()
-            s_in = file(self.stdin, 'r')
-            s_out = file(self.stdout, 'a+')
-            s_err = file(self.stderr, 'a+', 0)
-            os.dup2(s_in.fileno(), sys.stdin.fileno())
-            os.dup2(s_out.fileno(), sys.stdout.fileno())
-            os.dup2(s_err.fileno(), sys.stderr.fileno())
+            with open(self.stdin, 'r') as s_in:
+                os.dup2(s_in.fileno(), sys.stdin.fileno())
+            with open(self.stdout, 'a+') as s_out:
+                os.dup2(s_out.fileno(), sys.stdout.fileno())
+            with open(self.stderr, 'a+', 0) as s_err:
+                os.dup2(s_err.fileno(), sys.stderr.fileno())
 
         # write pidfile
         atexit.register(self.delpid)
         pid = str(os.getpid())
-        file(self.pidfile, 'w+').write("%s\n" % pid)
+        with open(self.pidfile, 'w+') as pid_file:
+            pid_file.write("%s\n" % pid)
         logging.info("Started daemon with PID %s", str(pid))
 
     def delpid(self):
-        """
-        delete the pid file
-        """
+        """ delete the pid file """
         os.remove(self.pidfile)
 
     def start(self):
@@ -92,9 +90,8 @@ class Daemon(object):
         """
         # Check for a pidfile to see if the daemon already runs
         try:
-            pid_file = file(self.pidfile, 'r')
-            pid = int(pid_file.read().strip())
-            pid_file.close()
+            with open(self.pidfile, 'r') as pid_file:
+                pid = int(pid_file.read().strip())
         except IOError:
             pid = None
 
@@ -113,16 +110,16 @@ class Daemon(object):
         """
         # Get the pid from the pidfile
         try:
-            pid_file = file(self.pidfile, 'r')
-            pid = int(pid_file.read().strip())
-            pid_file.close()
+            with open(self.pidfile, 'r') as pid_file:
+                pid = int(pid_file.read().strip())
         except IOError:
             pid = None
 
         if not pid:
             message = "pidfile %s does not exist. Daemon not running?\n"
             logging.error(message, self.pidfile)
-            return  # not an error in a restart
+            # Not an error in a restart
+            return
 
         logging.info("Stopping daemon with PID %s", str(pid))
 
@@ -131,7 +128,7 @@ class Daemon(object):
             while 1:
                 os.kill(pid, SIGTERM)
                 time.sleep(0.1)
-        except OSError, err:
+        except OSError as err:
             err = str(err)
             if err.find("No such process") > 0:
                 if os.path.exists(self.pidfile):
@@ -149,7 +146,29 @@ class Daemon(object):
 
     def run(self):
         """
-        You should override this method when you subclass Daemon.
-        It will be called after the process has been
-        daemonized by start() or restart().
+        You should override this method when you subclass Daemon. It will be called after the
+        process has been daemonized by start() or restart().
         """
+
+
+def control_daemon_from_cli(daemon):
+    """
+    Small helper function required in implementations of the Daemon class to validate and respond
+    to CLI user input
+    :param daemon: The daemon process to perform actions on
+    :return: Will sys.exit() on completion, leaving the daemon in the state specified by user
+    """
+    if len(sys.argv) == 2:
+        if sys.argv[1] == 'start':
+            daemon.start()
+        elif sys.argv[1] == 'stop':
+            daemon.stop()
+        elif sys.argv[1] == 'restart':
+            daemon.restart()
+        else:
+            print("Unknown command")
+            sys.exit(2)
+        sys.exit(0)
+    else:
+        print("usage: %s start|stop|restart" % sys.argv[0])
+        sys.exit(2)

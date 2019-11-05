@@ -66,17 +66,18 @@ class Daemon(object):
         if self.stdin is not None and self.stdout is not None and self.stderr is not None:
             sys.stdout.flush()
             sys.stderr.flush()
-            s_in = file(self.stdin, 'r')
-            s_out = file(self.stdout, 'a+')
-            s_err = file(self.stderr, 'a+', 0)
-            os.dup2(s_in.fileno(), sys.stdin.fileno())
-            os.dup2(s_out.fileno(), sys.stdout.fileno())
-            os.dup2(s_err.fileno(), sys.stderr.fileno())
+            with open(self.stdin, 'r') as s_in:
+                os.dup2(s_in.fileno(), sys.stdin.fileno())
+            with open(self.stdout, 'a+') as s_out:
+                os.dup2(s_out.fileno(), sys.stdout.fileno())
+            with open(self.stderr, 'a+', 0) as s_err:
+                os.dup2(s_err.fileno(), sys.stderr.fileno())
 
         # write pidfile
         atexit.register(self.delpid)
         pid = str(os.getpid())
-        file(self.pidfile, 'w+').write("%s\n" % pid)
+        with open(self.pidfile, 'w+') as pid_file:
+            pid_file.write("%s\n" % pid)
         logging.info("Started daemon with PID %s", str(pid))
 
     def delpid(self):
@@ -89,9 +90,8 @@ class Daemon(object):
         """
         # Check for a pidfile to see if the daemon already runs
         try:
-            pid_file = file(self.pidfile, 'r')
-            pid = int(pid_file.read().strip())
-            pid_file.close()
+            with open(self.pidfile, 'r') as pid_file:
+                pid = int(pid_file.read().strip())
         except IOError:
             pid = None
 
@@ -110,9 +110,8 @@ class Daemon(object):
         """
         # Get the pid from the pidfile
         try:
-            pid_file = file(self.pidfile, 'r')
-            pid = int(pid_file.read().strip())
-            pid_file.close()
+            with open(self.pidfile, 'r') as pid_file:
+                pid = int(pid_file.read().strip())
         except IOError:
             pid = None
 
