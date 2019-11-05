@@ -263,12 +263,12 @@ class PostProcessAdmin(object):
 
                 # we want write access to these directories, plus the final output paths
                 if filter(not_writable, should_be_writable):
-                    fail_path = filter(not_writable, should_be_writable)[0]
+                    fail_path = next(filter(not_writable, should_be_writable))
                     problem = "does not exist" if does_not_exist(fail_path) else "no write access"
                     raise Exception("Couldn't write to %s  -  %s" % (fail_path, problem))
 
                 if filter(not_readable, should_be_readable):
-                    fail_path = filter(not_readable, should_be_readable)[0]
+                    fail_path = next(filter(not_readable, should_be_readable))
                     problem = "does not exist" if does_not_exist(fail_path) else "no read access"
                     raise Exception("Couldn't read %s  -  %s" % (fail_path, problem))
 
