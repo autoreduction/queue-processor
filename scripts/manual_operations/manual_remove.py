@@ -48,7 +48,8 @@ class ManualRemove(object):
         """
         Process all the results what to do with the run based on the result of database query
         """
-        for key, value in self.to_delete.items():
+        copy_to_delete = self.to_delete.copy()
+        for key, value in copy_to_delete.items():
             if not value:
                 self.run_not_found(run_number=key)
             if len(value) == 1:
@@ -82,7 +83,7 @@ class ManualRemove(object):
         input_valid, user_input = self.validate_csv_input(user_input)
         while input_valid is False:
             user_input = input('Input of \'{}\' was invalid. '
-                                   'Please provide a comma separated list of values:')
+                               'Please provide a comma separated list of values:')
             input_valid, user_input = self.validate_csv_input(user_input)
 
         # Remove runs that the user does NOT want to delete from the delete list

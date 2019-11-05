@@ -257,20 +257,21 @@ class PostProcessAdmin(object):
                 for path in filter(lambda p: not os.path.isdir(p), should_be_writable): # pylint: disable=deprecated-lambda
                     os.makedirs(path)
 
-                does_not_exist = lambda path: not os.access(path, os.F_OK)
-                not_readable = lambda path: not os.access(path, os.R_OK)
-                not_writable = lambda path: not os.access(path, os.W_OK)
+                for location in should_be_writable:
+                    if not os.access(location, os.W_OK):
+                        if not os.access(location, os.F_OK):
+                            problem = "does not exist"
+                        else:
+                            problem = "no write access"
+                        raise Exception("Couldn't write to %s  -  %s" % (location, problem))
 
-                # we want write access to these directories, plus the final output paths
-                if filter(not_writable, should_be_writable):
-                    fail_path = filter(not_writable, should_be_writable)[0]
-                    problem = "does not exist" if does_not_exist(fail_path) else "no write access"
-                    raise Exception("Couldn't write to %s  -  %s" % (fail_path, problem))
-
-                if filter(not_readable, should_be_readable):
-                    fail_path = filter(not_readable, should_be_readable)[0]
-                    problem = "does not exist" if does_not_exist(fail_path) else "no read access"
-                    raise Exception("Couldn't read %s  -  %s" % (fail_path, problem))
+                for location in should_be_readable:
+                    if not os.access(location, os.R_OK):
+                        if not os.access(location, os.F_OK):
+                            problem = "does not exist"
+                        else:
+                            problem = "no read access"
+                        raise Exception("Couldn't read %s  -  %s" % (location, problem))
 
             except Exception as exp:
                 # if we can't access now, we should abort the run, and tell the server that it

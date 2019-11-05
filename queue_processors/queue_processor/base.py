@@ -25,8 +25,8 @@ connect_string = 'mysql+mysqldb://' + MYSQL['USER'] + ':' + MYSQL['PASSWD'] + \
 # Create the engine and the metadata which will be passed to the mapping script
 # The pool_recycle will ensure that MySQL will not close this connection if it
 # is idle for more than 8 hours.
-engine = create_engine(connect_string, pool_recycle=280)
+engine = create_engine(connect_string, pool_recycle=280, pool_pre_ping=True)
 metadata = MetaData(engine)
 
-Session = sessionmaker(bind=engine)
-session = Session()
+session_maker = sessionmaker(bind=engine)
+session = session_maker()
