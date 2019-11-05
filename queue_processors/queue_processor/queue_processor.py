@@ -22,7 +22,7 @@ import traceback
 
 from sqlalchemy import sql
 
-from queue_processors.queue_processor.base import session_maker
+from queue_processors.queue_processor.base import session
 from queue_processors.queue_processor.orm_mapping import (ReductionRun, Instrument,
                                                           Status, Experiment,
                                                           DataLocation, ReductionLocation)
@@ -101,7 +101,6 @@ class Listener(object):
         # pylint: disable=too-many-statements
         # Rollback the session to avoid getting caught in a loop where we have uncommitted
         # changes causing problems
-        session = session_maker()
         session.rollback()
 
         # Strip information from the JSON file (_data_dict)
