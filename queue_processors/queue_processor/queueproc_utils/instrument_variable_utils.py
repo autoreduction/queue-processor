@@ -7,12 +7,11 @@
 """
 Module for dealing with instrument reduction variables.
 """
-# pylint: disable=deprecated-lambda
-import cgi
 import imp
 import io
 import logging.config
 import os
+import html
 
 import chardet
 
@@ -33,10 +32,9 @@ logger = logging.getLogger("queue_processor")  # pylint: disable=invalid-name
 
 class DataTooLong(ValueError):
     """ Error class used for when reduction variables are too long. """
-    pass
 
 
-class InstrumentVariablesUtils(object):
+class InstrumentVariablesUtils:
     """ Class used to parse and process instrument reduction variables. """
     @staticmethod
     def log_error_and_notify(message):
@@ -103,6 +101,7 @@ class InstrumentVariablesUtils(object):
 
         instrument = InstrumentUtils().get_instrument(instrument_name)
         variables = []
+        # pylint:disable=no-member
         if 'standard_vars' in dir(reduce_vars_module):
             variables.extend(
                 self._create_variables(instrument,
@@ -147,7 +146,6 @@ class InstrumentVariablesUtils(object):
         # New variable set from the script
         defaults = self.get_default_variables(variables[0].instrument.name) if variables else []
 
-
         def update_variable(old_var):
             """ Update the existing variables. """
             old_var.keep = True
@@ -156,7 +154,7 @@ class InstrumentVariablesUtils(object):
 
             # Check whether we should and can update the old one.
             if matching_vars and old_var.tracks_script:
-                new_var = matching_vars[0]
+                new_var = next(matching_vars)
                 map(lambda name: setattr(old_var, name, getattr(new_var, name)),
                     ["value", "type", "is_advanced",
                      "help_text"])  # Copy the new one's important attributes onto the old variable.
@@ -225,7 +223,7 @@ class InstrumentVariablesUtils(object):
         except ImportError as exp:
             self.log_error_and_notify(
                 "Unable to load reduction script %s due to missing import. (%s)" % (script_path,
-                                                                                    exp.message))
+                                                                                    exp))
             return None
         except SyntaxError:
             self.log_error_and_notify("Syntax error in reduction script %s" % script_path)
@@ -284,7 +282,7 @@ class InstrumentVariablesUtils(object):
             f_decoded = io.open(path, 'r', encoding=encoding)
             script_text = f_decoded.read()
             return script_text
-        except Exception as exp: # pylint: disable = broad-except
+        except Exception as exp:  # pylint: disable = broad-except
             self.log_error_and_notify("Unable to load reduction script %s - %s" % (path, exp))
             return None
 
@@ -343,11 +341,13 @@ class InstrumentVariablesUtils(object):
         final_variables = []
         if end_run:
             applicable_variables = applicable_variables.filter(start_run__lte=end_run)
-            after_variables = InstrumentVariable.objects.filter(instrument=instrument,  # pylint: disable=no-member
+            # pylint: disable=no-member
+            after_variables = InstrumentVariable.objects.filter(instrument=instrument,
                                                                 start_run=end_run + 1)\
                 .order_by('start_run')
 
-            previous_variables = InstrumentVariable.objects.filter(instrument=instrument, # pylint: disable=no-member
+            # pylint: disable=no-member
+            previous_variables = InstrumentVariable.objects.filter(instrument=instrument,
                                                                    start_run__lt=start_run)
 
             if applicable_variables and not after_variables:
@@ -365,9 +365,10 @@ class InstrumentVariablesUtils(object):
                 # Find the last set.
                 final_start = previous_variables.order_by('-start_run').first().start_run
                 # Set them to apply after our variables.
+                # pylint: disable=expression-not-assigned,no-member
                 final_variables = list(
                     previous_variables.filter(start_run=final_start))
-                [VariableUtils().copy_variable(var).save() for var in  # pylint: disable=expression-not-assigned,no-member
+                [VariableUtils().copy_variable(var).save() for var in
                  final_variables]  # Also copy them to apply before our variables.
 
             elif not applicable_variables and not after_variables and not previous_variables:
@@ -416,6 +417,6 @@ class InstrumentVariablesUtils(object):
     @staticmethod
     def _replace_special_chars(help_text):
         """ Remove any special chars in the help text. """
-        help_text = cgi.escape(help_text)  # Remove any HTML already in the help string
+        help_text = html.escape(help_text)  # Remove any HTML already in the help string
         help_text = help_text.replace('\n', '<br>').replace('\t', '&nbsp;&nbsp;&nbsp;&nbsp;')
         return help_text

@@ -56,7 +56,7 @@ def is_integer_rb(rb_number):
         return False
 
 
-class Listener(object):
+class Listener:
     """ Listener class that is used to consume messages from ActiveMQ. """
     def __init__(self, client):
         """ Initialise listener. """
@@ -74,7 +74,7 @@ class Listener(object):
             self._data_dict = json.loads(message)
         except ValueError:
             logger.error("Could not decode message from %s", destination)
-            logger.error(sys.exc_value)
+            logger.error(sys.exc_info()[1])
             return
         try:
             if destination == '/queue/DataReady':
@@ -110,7 +110,7 @@ class Listener(object):
 
         # Make sure the RB number is an integer
         if not is_integer_rb(rb_number):
-            logger.warn("Skipping non-integer RB number: %s", rb_number)
+            logger.warning("Skipping non-integer RB number: %s", rb_number)
             return
 
         logger.info("Data ready for processing run %s on %s", run_no, instrument_name)
@@ -421,7 +421,6 @@ class Listener(object):
         """ Method for emailing when a run fails. """
         recipients = EMAIL_ERROR_RECIPIENTS
         #  This does not parse esoteric (but RFC-compliant) email addresses correctly
-        # pylint: disable=deprecated-lambda
         local_recipients = filter(lambda address: address.split('@')[-1] == BASE_URL, recipients)
         #  Don't send local emails
         if local_recipients:

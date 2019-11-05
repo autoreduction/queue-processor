@@ -75,7 +75,6 @@ class TestPostProcessAdmin(unittest.TestCase):
                                                  'reduce.py'))
 
     def test_reduction_script_location(self):
-        # ToDo: Should use archive explorer
         location = PostProcessAdmin._reduction_script_location('WISH')
         self.assertEqual(location, MISC['scripts_directory'] % 'WISH')
 

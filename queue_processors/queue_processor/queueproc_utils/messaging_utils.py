@@ -20,7 +20,7 @@ logging.config.dictConfig(LOGGING)
 logger = logging.getLogger("queue_processor") # pylint: disable=invalid-name
 
 
-class MessagingUtils(object):
+class MessagingUtils:
     """ Utils class for sending messages to queues. """
     def send_pending(self, reduction_run, delay=None):
         """ Sends a message to the queue with the details of the job to run. """
@@ -37,6 +37,7 @@ class MessagingUtils(object):
     def _make_pending_msg(reduction_run):
         """ Creates a dict message from the given run, ready to be sent to ReductionPending. """
         # Deferred import to avoid circular dependencies
+        # pylint:disable=import-outside-toplevel
         from ..queueproc_utils.reduction_run_utils import ReductionRunUtils
 
         script, arguments = ReductionRunUtils().get_script_and_arguments(reduction_run)

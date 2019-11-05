@@ -21,7 +21,7 @@ logger = logging.getLogger("queue_processor")  # pylint: disable=invalid-name
 
 # pylint: disable=missing-docstring
 # pylint: disable=too-few-public-methods
-class InstrumentUtils(object):
+class InstrumentUtils:
     @staticmethod
     def get_instrument(instrument_name):
         """
@@ -33,5 +33,5 @@ class InstrumentUtils(object):
             instrument = Instrument(name=instrument_name, is_active=1, is_paused=0)
             session.add(instrument)
             session.commit()
-            logger.warn("%s instrument was not found, created it.", instrument_name)
+            logger.warning("%s instrument was not found, created it.", instrument_name)
         return instrument
