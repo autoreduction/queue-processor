@@ -22,7 +22,7 @@ import traceback
 
 from sqlalchemy import sql
 
-from queue_processors.queue_processor.base import session
+from queue_processors.queue_processor.base import session_maker
 from queue_processors.queue_processor.orm_mapping import (ReductionRun, Instrument,
                                                           Status, Experiment,
                                                           DataLocation, ReductionLocation)
@@ -101,6 +101,7 @@ class Listener(object):
         # pylint: disable=too-many-statements
         # Rollback the session to avoid getting caught in a loop where we have uncommitted
         # changes causing problems
+        session = session_maker()
         session.rollback()
 
         # Strip information from the JSON file (_data_dict)
@@ -116,7 +117,9 @@ class Listener(object):
         logger.info("Data ready for processing run %s on %s", run_no, instrument_name)
 
         # Check if the instrument is active or not in the MySQL database
+
         instrument = session.query(Instrument).filter_by(name=instrument_name).first()
+        logger.info("Instrument is: {}".format(instrument))
 
         # Add the instrument if it doesn't exist
         if not instrument:
@@ -144,6 +147,7 @@ class Listener(object):
         # will be incremented to 0
         last_run = session.query(ReductionRun).filter_by(run_number=run_no).order_by(
             sql.text('-run_version')).first()
+        logger.info("Found last run: {}".format(last_run))
         if last_run is not None:
             highest_version = last_run.run_version
         else:
@@ -161,6 +165,7 @@ class Listener(object):
         # Get the script text for the current instrument. If the script text is null then send to
         # error queue
         script_text = InstrumentVariablesUtils().get_current_script_text(instrument.name)[0]
+        logger.info("Current script text: {}".format(script_text))
         if script_text is None:
             self.reduction_error()
             return
@@ -183,6 +188,7 @@ class Listener(object):
                                      script=script_text)
         session.add(reduction_run)
         session.commit()
+        logger.info("Successfully added reduction run: {}".format(reduction_run))
 
         # Set our run_version to be the one we have just calculated
         self._data_dict['run_version'] = reduction_run.run_version  # pylint: disable=no-member
@@ -191,9 +197,10 @@ class Listener(object):
         # reduction run. The file path itself will point to a datafile
         # (e.g. "\isis\inst$\NDXWISH\Instrument\data\cycle_17_1\WISH00038774.nxs")
         data_location = DataLocation(file_path=self._data_dict['data'],
-                                     reduction_run_id=reduction_run.id) # pylint: disable=no-member
+                                     reduction_run_id=reduction_run.id)  # pylint: disable=no-member
         session.add(data_location)
         session.commit()
+        logger.info("Successfully added data location: {}".format(data_location))
 
         # We now need to create all of the variables for the run such that the script can run
         # through in the desired way

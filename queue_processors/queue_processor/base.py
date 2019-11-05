@@ -28,5 +28,4 @@ connect_string = 'mysql+mysqldb://' + MYSQL['USER'] + ':' + MYSQL['PASSWD'] + \
 engine = create_engine(connect_string, pool_recycle=280)
 metadata = MetaData(engine)
 
-Session = sessionmaker(bind=engine)
-session = Session()
+session_maker = sessionmaker(bind=engine)

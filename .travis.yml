@@ -36,16 +36,20 @@ script:
 
   - echo "Running System Tests"
   - py.test systemtests --cov-append
+  - cat logs/queue_processor.log
+  - cat logs/autoreductionProcessor.log
+  - cat logs/queue_client.log
+  - cat logs/database_client.log
 
   # ================ Static Analysis ================= #
   # ToDo: These should all be collapsed into one once autoreduction gets a single code package
-  - pylint build
-  - pylint docker_reduction
-  - pylint monitors
-  - pylint queue_processors
-  - pylint scripts
-  - pylint systemtests
-  - pylint utils
+  #- pylint build
+  #- pylint docker_reduction
+  #- pylint monitors
+  #- pylint queue_processors
+  #- pylint scripts
+  #- pylint systemtests
+  #- pylint utils
 
 after_success:
   - coveralls
