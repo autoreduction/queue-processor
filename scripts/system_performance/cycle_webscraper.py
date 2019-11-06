@@ -30,7 +30,7 @@ class TableWebScraper(object):
 
     def __init__(self, url, local_data=None):
         self.url = url
-        if local_data is None:
+        if not local_data:
             # By default, a local copy of cycle data is stored in the current working directory
             self.local_data = "cycle_dates.csv"
         else:
@@ -51,7 +51,7 @@ class TableWebScraper(object):
             return data
         else:
             # Directory doesn't exist
-            logging.error("No file named {} found".format(local_data))
+            return logging.error("No file named %s found" % local_data)
 
     # -/////////////////////////////////////// Web scraping //////////////////////////////////-#
 
@@ -59,6 +59,10 @@ class TableWebScraper(object):
         """Private function to format data scraped ready to be placed into a pandas data frame"""
 
         def _create_header_cols(elements, column):
+            """
+            :param elements: data in each row formatted as nested list
+            :param column: Empty list to be used as header
+            """
             # For each row, store each first element (header) and an empty list col
             for text in elements[0]:
                 name = text.text_content()
@@ -120,6 +124,7 @@ class TableWebScraper(object):
 
 # #-/////////////////////////////////// Data cleaning /////////////////////////////////////-#
 class DataClean(object):
+    """Cleans and normalises data frame"""
 
     def __init__(self, raw_data):
         self.raw_data = raw_data
@@ -163,10 +168,10 @@ class DataClean(object):
 
     # Re-format date in Start and End columns to separate days, months and year by a , and space
     @staticmethod
-    def date_formatter(df, index):
+    def date_formatter(data, index):
         """ Format Start and End columns to comma separated values for MySQL date queries"""
         new_col = []
-        for i in df[index]:
+        for i in data[index]:
             month = ''.join(re.findall(r"\D", i))
             numerical = re.findall(r"\d", i)
             if len(numerical) == 6:
@@ -182,7 +187,6 @@ class DataClean(object):
 
 
 # Set url to scrape from, put inside pandas table and clean data frame ready for queries
-website = 'https://www.isis.stfc.ac.uk/Pages/Beam-Status.aspx'
+WEBSITE = 'https://www.isis.stfc.ac.uk/Pages/Beam-Status.aspx'
 # Normalise is kept separate in case table no longer needs to be normalised.
-data_frame = DataClean(TableWebScraper(website).create_table()).normalise()
-print data_frame
+DATA_FRAME = DataClean(TableWebScraper(WEBSITE).create_table()).normalise()
