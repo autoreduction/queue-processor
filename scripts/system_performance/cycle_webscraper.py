@@ -49,10 +49,8 @@ class TableWebScraper(object):
             # Directory exists
             data = pd.read_csv("{}".format(local_data), index_col=0, encoding='utf8')
             return data
-        else:
-            # Directory doesn't exist
-            message = logging.error("No file named %s found" % local_data)
-            return message
+        # Directory doesn't exist
+        return logging.error("No file named %s found", local_data)
 
     # -/////////////////////////////////////// Web scraping //////////////////////////////////-#
 
