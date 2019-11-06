@@ -15,13 +15,14 @@ use in MySQL queries.
 # Web-scraping dependencies
 import os
 import logging
+import re
 import requests
 import lxml.html as lh
 import pandas as pd
-import re
 
 
-class TableWebScraper:
+
+class TableWebScraper(object):
     """
     Web-scrapes beam cycle data from https://www.isis.stfc.ac.uk/Pages/Beam-Status.aspx
     for MySQL system checks. This URl can be changed at the bottom of the script
@@ -59,9 +60,7 @@ class TableWebScraper:
 
         def _create_header_cols(elements, column):
             # For each row, store each first element (header) and an empty list col
-            index = 0
             for text in elements[0]:
-                index += 1
                 name = text.text_content()
                 column.append((name, []))
 
@@ -79,10 +78,10 @@ class TableWebScraper:
 
                 # Iterate through each element of the row
                 index = 0
-                for t in tr_elem.iterchildren():
-                    data = t.text_content()
+                for text in tr_elem.iterchildren():
+                    data_table = text.text_content()
                     # Append data to empty list of index column
-                    col[index][1].append(data)
+                    col[index][1].append(data_table)
                     index += 1
 
         def _datatable_constructor(col):
@@ -100,50 +99,50 @@ class TableWebScraper:
             tr_elements = doc.xpath('//tr')  # Parse data stored between <tr>..</tr> of HTML
             _create_header_cols(tr_elements, col)
             _populate_table(tr_elements, col)
-            data = _datatable_constructor(col)
-            return data
+            data_table = _datatable_constructor(col)
+            return data_table
 
         def _check_connection(url):
             """Web scrape if URL can be pinged else retrieve local copy made"""
             request = requests.get('{}'.format(url))
             if request.status_code == 200:
-                data = _web_scrape(url)
+                data_table = _web_scrape(url)
                 logging.info('Connection to URL established')
             else:
-                data = TableWebScraper.read_csv(self.local_data)
+                data_table = TableWebScraper.read_csv(self.local_data)
                 logging.info('URL currently not available')
 
-            return data
+            return data_table
 
         data = _check_connection(website)
         return data
 
 
 # #-/////////////////////////////////// Data cleaning /////////////////////////////////////-#
-class DataClean:
+class DataClean(object):
 
-    def __init__(self, df):
-        self.df = df
+    def __init__(self, raw_data):
+        self.raw_data = raw_data
 
     def normalise(self):
         """Contains a range of private methods for normalising dataframe"""
 
         # Encode in ascii and decode utf-8 to remove zero width spaces
-        for i in list(self.df):
-            self.df[i] = (self.df[i].str.encode('ascii', 'ignore')).str.decode("utf-8")
+        for i in list(self.raw_data):
+            self.raw_data[i] = (self.raw_data[i].str.encode('ascii', 'ignore')).str.decode("utf-8")
 
         # Drop all rows containing empty strings
-        self.df = self.df[self.df.loc[:] != ''].dropna()
+        self.raw_data = self.raw_data[self.raw_data.loc[:] != ''].dropna()
 
         # Remove references of "Add to calender" from Cycle Column
-        self.df.Cycle = [x.strip('Add to calendar') for x in self.df.Cycle]
+        self.raw_data.Cycle = [x.strip('Add to calendar') for x in self.raw_data.Cycle]
 
         # Format Start and End columns to comma separated values for MySQL date queries
         cycle_period = ['Start', 'End']
         for index in cycle_period:
-            self.df[index] = DataClean.date_formatter(self.df, index)
+            self.raw_data[index] = DataClean.date_formatter(self.raw_data, index)
 
-        return self.df
+        return self.raw_data
 
     @staticmethod
     def month_str_to_int(string):
@@ -160,7 +159,7 @@ class DataClean:
             return month_compare[string]
         except ValueError:
             # Month is not recognised as key in month_compare
-            print("{} is not a month".format(string))
+            print "{} is not a month".format(string)
 
     # Re-format date in Start and End columns to separate days, months and year by a , and space
     @staticmethod
@@ -168,8 +167,8 @@ class DataClean:
         """ Format Start and End columns to comma separated values for MySQL date queries"""
         new_col = []
         for i in df[index]:
-            month = ''.join(re.findall("\D", i))
-            numerical = re.findall("\d", i)
+            month = ''.join(re.findall(r"\D", i))
+            numerical = re.findall(r"\d", i)
             if len(numerical) == 6:
                 day = '{}{}'.format(numerical.pop(0), numerical.pop(0))
             else:
@@ -186,3 +185,4 @@ class DataClean:
 website = 'https://www.isis.stfc.ac.uk/Pages/Beam-Status.aspx'
 # Normalise is kept separate in case table no longer needs to be normalised.
 data_frame = DataClean(TableWebScraper(website).create_table()).normalise()
+print data_frame

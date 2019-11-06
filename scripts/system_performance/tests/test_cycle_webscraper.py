@@ -10,32 +10,38 @@ Test cases for the cycle_webscraper script
 """
 
 import unittest
-import __builtin__
-import sys
-import pandas.util.testing as pdt
+# import __builtin__
+# import sys
+# import pandas.util.testing as pdt
+#
+# from mock import Mock, patch, call
 
-from mock import Mock, patch, call
-
-from scripts.system_performance.cycle_webscraper import TableWebScraper, DataClean
+from scripts.system_performance.cycle_webscraper import TableWebScraper
 
 
 class TestCycleWebscraper(unittest.TestCase):
+    """Test class for web scraper"""
 
     def setUp(self):
-        print('setUp')
-        self.web_df = TableWebScraper('https://www.isis.stfc.ac.uk/Pages/Beam-Status.aspx').create_table()
+        """Set Up"""
+        print 'setUp'
+        host = 'https://www.isis.stfc.ac.uk/Pages/Beam-Status.aspx'
+        self.web_df = TableWebScraper(host).create_table()
         self.local_df = TableWebScraper('invalid_url').create_table()
 
     def tearDown(self):
-        print('tearDown\n')
+        """Tear Down"""
+        print 'tearDown\n'
 
     @classmethod
     def setUpClass(cls):
-        print('setupClass')
+        """Set Up"""
+        print 'setupClass'
 
     @classmethod
     def tearDownClass(cls):
-        print('teardownClass')
+        """Tear Down"""
+        print 'teardownClass'
 
     def test_save_to_cvs(self):
         """Check file named cycles_dates.csv now exists in current or specified directory"""
@@ -51,6 +57,7 @@ class TestCycleWebscraper(unittest.TestCase):
 
 
 class TestDataClean(unittest.TestCase):
+    """Test Class for cleaning data frame"""
 
     def test_normalise(self):
         """ Check data frame contains no NAN values and both start
