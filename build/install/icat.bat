@@ -17,7 +17,7 @@ if not exist %folder% (
 
 
 if not exist %destination%\setup.py (
-    powershell -Command "(new-object System.Net.WebClient).DownloadFile('https://icatproject.org/misc/python-icat/download/python-icat-0.13.1.tar.gz', '"%destination%"')"
+    powershell -Command "(new-object System.Net.WebClient).DownloadFile('https://icatproject.org/misc/python-icat/download/python-icat-0.16.0.tar.gz', '"%destination%"')"
     %path_to_7z%\7z e %destination% -o%folder%\icat.tar
     %path_to_7z%\7z x %folder%\icat.tar -o%folder%
     rd /s /q %folder%\icat.tar
@@ -26,6 +26,6 @@ if not exist %destination%\setup.py (
 )
 
 REM install:
-cd %folder%\python-icat-0.13.1
+cd %folder%\python-icat-0.16.0
 python setup.py build
 python setup.py install
