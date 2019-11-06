@@ -51,7 +51,8 @@ class TableWebScraper(object):
             return data
         else:
             # Directory doesn't exist
-            return logging.error("No file named %s found" % local_data)
+            message = logging.error("No file named %s found" % local_data)
+            return message
 
     # -/////////////////////////////////////// Web scraping //////////////////////////////////-#
 
@@ -118,7 +119,7 @@ class TableWebScraper(object):
 
             return data_table
 
-        data = _check_connection(website)
+        data = _check_connection(WEBSITE)
         return data
 
 
