@@ -36,7 +36,7 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div>
-                                    <strong>Status:</strong> <strong class="text-{% colour_table_row run.status.value %}">{{ run.status }}</strong>
+                                    <strong>Status:</strong> <strong class="text-{% colour_table_row run.status.value %}">{{ run.status.value }}</strong>
                                 </div>
                                 <div>
                                     <strong>Instrument:</strong> <a href="{% url 'instrument_summary' instrument=run.instrument %}">{{ run.instrument }}</a>
@@ -82,7 +82,7 @@
                                                 <span> (Last attempt)</span>
                                             {% endif %}
                                             {% if run.retry_run %}
-                                                <a href="{% url 'run_summary' instrument_name=run.instrument.name run_number=run.retry_run.run_number run_version=run.retry_run.run_version %}"> ({{ run.retry_run.status }})</a>
+                                                <a href="{% url 'run_summary' instrument_name=run.instrument.name run_number=run.retry_run.run_number run_version=run.retry_run.run_version %}"> ({{ run.retry_run.status.value }})</a>
                                             {% endif %}
                                         {% else %}
                                             Never
