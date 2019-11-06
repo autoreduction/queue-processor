@@ -19,9 +19,6 @@ from mock import Mock, patch, call
 from scripts.system_performance.cycle_webscraper import TableWebScraper, DataClean
 
 
-# from scripts.system_performance.cycle_webscraper import TableWebScraper, DataClean
-
-
 class TestCycleWebscraper(unittest.TestCase):
 
     def setUp(self):
@@ -40,36 +37,32 @@ class TestCycleWebscraper(unittest.TestCase):
     def tearDownClass(cls):
         print('teardownClass')
 
-    def test_TableWebScraper(self):
-        pass
-
     def test_save_to_cvs(self):
-        # Check file named cycles_dates.csv now exists in current or specified directory
+        """Check file named cycles_dates.csv now exists in current or specified directory"""
         pass
 
     def test_read_csv(self):
-        # Test looking for file if not existent in directory
+        """Test looking for file if not existent in directory"""
         pass
 
     def test_create_table(self):
-        # Test if df is of type dataframe
+        """ Test if df is of type dataframe"""
         pass
 
 
 class TestDataClean(unittest.TestCase):
 
     def test_normalise(self):
-        # Check data frame contains no NAN values
-
-        # Check both start and end columns are no longer than 10 characters
+        """ Check data frame contains no NAN values and both start
+        and end columns are no longer than 10 characters"""
         pass
 
     def test_month_str_to_int(self):
-        # check date is now of numerical format
+        """check date is now of numerical format"""
         pass
 
     def test_date_formatter(self):
-        # check date format is off yyyy/mm/dd
+        """check date format is off yyyy/mm/dd"""
         pass
 
 
