@@ -108,7 +108,7 @@ class TableWebScraper:
             """Web scrape if URL can be pinged else retrieve local copy made"""
             hostname = url
 
-            request = requests.get('http://www.example.com')
+            request = requests.get('{}'.format(url))
             if request.status_code == 200:
                 df = _web_scrape(url)
                 logging.info('Connection to URL established')
