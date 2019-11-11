@@ -16,10 +16,10 @@ use in MySQL queries.
 import os
 import logging
 import re
+import datetime
 import requests
 import lxml.html as lh
 import pandas as pd
-
 
 
 class TableWebScraper(object):
@@ -90,9 +90,9 @@ class TableWebScraper(object):
         def _datatable_constructor(col):
             """Construct data frame from list of columns"""
             dictionary = {title: column for (title, column) in col}
-            data = pd.DataFrame(dictionary)
-            self.save_to_csv(data)
-            return data
+            data_table = pd.DataFrame(dictionary)
+            self.save_to_csv(data_table)
+            return data_table
 
         def _web_scrape(url):
             """Web scrape URL input"""
@@ -146,6 +146,8 @@ class DataClean(object):
         for index in cycle_period:
             self.raw_data[index] = DataClean.date_formatter(self.raw_data, index)
 
+        # Reset index as some indexes are removed when rows containing NAN values are removed
+        self.raw_data = self.raw_data.reset_index(drop=True)
         return self.raw_data
 
     @staticmethod
@@ -181,6 +183,11 @@ class DataClean(object):
             converted_row = '{}-{}-{}'.format(year.strip(),
                                               DataClean.month_str_to_int((month.strip())),
                                               day.strip())
+            # Validate datetime is in the correct format
+            try:
+                datetime.datetime.strptime(converted_row, '%Y-%m-%d')
+            except ValueError:
+                raise ValueError("Incorrect data format, should be YYYY-MM-DD")
             new_col.append(converted_row)
         return new_col
 

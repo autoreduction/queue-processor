@@ -13,10 +13,11 @@ import unittest
 # import __builtin__
 # import sys
 # import pandas.util.testing as pdt
-#
+from pandas.util.testing import assert_frame_equal
+import pandas as pd
 # from mock import Mock, patch, call
 
-from scripts.system_performance.cycle_webscraper import TableWebScraper
+from scripts.system_performance.cycle_webscraper import TableWebScraper, DataClean
 
 
 class TestCycleWebscraper(unittest.TestCase):
@@ -24,9 +25,9 @@ class TestCycleWebscraper(unittest.TestCase):
 
     def setUp(self):
         """Set Up"""
-        print 'setUp'
+        # print 'setUp'
         host = 'https://www.isis.stfc.ac.uk/Pages/Beam-Status.aspx'
-        self.web_df = TableWebScraper(host).create_table()
+        # self.web_df = TableWebScraper(host).create_table()
         self.local_df = TableWebScraper('invalid_url').create_table()
 
     def tearDown(self):
@@ -52,12 +53,12 @@ class TestCycleWebscraper(unittest.TestCase):
         pass
 
     def test_create_table(self):
-        """ Test if df is of type dataframe"""
+        """ Test if df is of type data frame"""
         pass
 
 
-class TestDataClean(unittest.TestCase):
-    """Test Class for cleaning data frame"""
+# class TestDataClean(unittest.TestCase):
+#     """Test Class for cleaning data frame"""
 
     def test_normalise(self):
         """ Check data frame contains no NAN values and both start
@@ -70,6 +71,9 @@ class TestDataClean(unittest.TestCase):
 
     def test_date_formatter(self):
         """check date format is off yyyy/mm/dd"""
+        data = pd.read_csv("cycle_dates.csv", encoding='utf-8')
+        test = DataClean.date_formatter(data, 'Start')
+        assert_frame_equal(test, self.local_df['Start'])
         pass
 
 
