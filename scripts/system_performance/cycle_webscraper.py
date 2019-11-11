@@ -45,7 +45,7 @@ class TableWebScraper(object):
     @staticmethod
     def read_csv(local_data):
         """Reads csv into a pandas data frame """
-        if os.path.isfile("{}".format(local_data)):
+        if os.path.isfile(str(local_data)):
             # Directory exists
             data = pd.read_csv("{}".format(local_data), index_col=0, encoding='utf8')
             return data
@@ -80,8 +80,7 @@ class TableWebScraper(object):
                     break
 
                 # Iterate through each element of the row
-                index = 0
-                for text in tr_elem.iterchildren():
+                for index, text in enumerate(tr_elem.iterchildren()):
                     data_table = text.text_content()
                     # Append data to empty list of index column
                     col[index][1].append(data_table)
@@ -107,7 +106,7 @@ class TableWebScraper(object):
 
         def _check_connection(url):
             """Web scrape if URL can be pinged else retrieve local copy made"""
-            request = requests.get('{}'.format(url))
+            request = requests.get(str(url))
             if request.status_code == 200:
                 data_table = _web_scrape(url)
                 logging.info('Connection to URL established')
