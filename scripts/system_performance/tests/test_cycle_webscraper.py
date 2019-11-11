@@ -17,7 +17,7 @@ import unittest
 # import pandas as pd
 # from mock import Mock, patch, call
 
-from scripts.system_performance.cycle_webscraper import TableWebScraper
+# from scripts.system_performance.cycle_webscraper import TableWebScraper
 
 
 class TestCycleWebscraper(unittest.TestCase):
