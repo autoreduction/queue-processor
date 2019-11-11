@@ -13,20 +13,21 @@ import unittest
 # import __builtin__
 # import sys
 # import pandas.util.testing as pdt
-from pandas.util.testing import assert_frame_equal
-import pandas as pd
+# from pandas.util.testing import assert_frame_equal
+# import pandas as pd
 # from mock import Mock, patch, call
 
-from scripts.system_performance.cycle_webscraper import TableWebScraper, DataClean
+from scripts.system_performance.cycle_webscraper import TableWebScraper
 
 
 class TestCycleWebscraper(unittest.TestCase):
     """Test class for web scraper"""
 
+
     def setUp(self):
         """Set Up"""
         # print 'setUp'
-        host = 'https://www.isis.stfc.ac.uk/Pages/Beam-Status.aspx'
+        # host = 'https://www.isis.stfc.ac.uk/Pages/Beam-Status.aspx'
         # self.web_df = TableWebScraper(host).create_table()
         self.local_df = TableWebScraper('invalid_url').create_table()
 
@@ -55,7 +56,6 @@ class TestCycleWebscraper(unittest.TestCase):
     def test_create_table(self):
         """ Test if df is of type data frame"""
         pass
-
 
 # class TestDataClean(unittest.TestCase):
 #     """Test Class for cleaning data frame"""
