@@ -29,7 +29,7 @@ class TestCycleWebscraper(unittest.TestCase):
         # print 'setUp'
         # host = 'https://www.isis.stfc.ac.uk/Pages/Beam-Status.aspx'
         # self.web_df = TableWebScraper(host).create_table()
-        self.local_df = TableWebScraper('invalid_url').create_table()
+        # self.local_df = TableWebScraper('invalid_url').create_table()
 
     def tearDown(self):
         """Tear Down"""
