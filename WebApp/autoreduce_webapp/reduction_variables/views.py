@@ -373,7 +373,7 @@ def run_summary(request, instrument_name, run_number, run_version=0):
     Handles request to view the summary of a run
     """
     # pylint:disable=no-member
-    instrument = Instrument.objects.filter(name=instrument_name)
+    instrument = Instrument.objects.get(name=instrument_name)
     # pylint:disable=no-member
     reduction_run = ReductionRun.objects.get(instrument=instrument,
                                              run_number=run_number,

@@ -481,8 +481,8 @@ class InstrumentVariablesUtils(object):
             old_var.keep = True
             # Find the new variable from the script.
             # pylint:disable=deprecated-lambda
-            matching_vars = filter(lambda var: var.name == old_var.name,
-                                   defaults)
+            matching_vars = list(filter(lambda var: var.name == old_var.name,
+                                 defaults))
             # Check whether we should and can update the old one.
             if matching_vars and old_var.tracks_script:
                 new_var = matching_vars[0]
@@ -499,7 +499,7 @@ class InstrumentVariablesUtils(object):
                     old_var.delete()
                 old_var.keep = False
 
-        map(update_variable, variables)
+        variables = list(map(update_variable, variables))
         variables[:] = [var for var in variables if var.keep]
 
         # Add any new ones
@@ -540,8 +540,8 @@ class InstrumentVariablesUtils(object):
         script_module = imp.new_module(module_name)
         try:
             # pylint:disable=exec-used
-            exec(script_text in script_module.__dict__)
-            return script_module
+            if script_text in script_module.__dict__:
+                return script_module
         except ImportError as exception:
             log_error_and_notify(
                 "Unable to load reduction script %s "

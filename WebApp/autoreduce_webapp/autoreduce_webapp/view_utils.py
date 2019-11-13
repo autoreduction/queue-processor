@@ -113,7 +113,7 @@ def render_with(template):
             # pylint: disable=no-member
             notifications = Notification.objects.filter(is_active=True,
                                                         is_staff_only=
-                                                        (request.user.is_authenticated()
+                                                        (request.user.is_authenticated
                                                          and request.user.is_staff))
             if 'notifications' not in output:
                 output['notifications'] = notifications
