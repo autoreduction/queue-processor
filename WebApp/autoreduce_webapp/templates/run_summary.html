@@ -42,7 +42,7 @@
                                     <strong>Instrument:</strong> <a href="{% url 'instrument_summary' instrument=run.instrument.name %}">{{ run.instrument.name }}</a>
                                 </div>
                                 <div>
-                                    <strong>RB Number:</strong> <a href="{% url 'experiment_summary' reference_number=run.experiment.reference_number %}">{{ run.experiment }}</a>
+                                    <strong>RB Number:</strong> <a href="{% url 'experiment_summary' reference_number=run.experiment.reference_number %}">{{ run.experiment.reference_number }}</a>
                                 </div>
                                 <div>
                                     <strong>Last Updated:</strong> {{ run.last_updated }}

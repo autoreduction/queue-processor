@@ -371,7 +371,7 @@ def run_summary(request, instrument_name=None, run_number=None, run_version=0):
         location_list = run.reduction_location.all()
         reduction_location = None
         if location_list:
-            reduction_location = str(location_list[0])
+            reduction_location = location_list[0].file_path
         if reduction_location and '\\' in reduction_location:
             reduction_location = reduction_location.replace('\\', '/')
         context_dictionary = {'run': run,

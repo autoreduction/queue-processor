@@ -495,7 +495,7 @@ def run_confirmation(request, instrument):
 
         new_variables = []
 
-        for key, value in request.POST.iteritems():
+        for key, value in list(request.POST.items()):
             if 'var-' in key:
                 name = None
                 if 'var-advanced-' in key:
