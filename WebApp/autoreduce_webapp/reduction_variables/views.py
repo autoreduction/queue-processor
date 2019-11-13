@@ -55,7 +55,7 @@ def instrument_summary(request, instrument, last_run_object):
 
     # Fill in the run end numbers
     run_end = 0
-    for run_number in sorted(upcoming_variables_by_run_dict.iterkeys(), reverse=True):
+    for run_number in sorted(list(upcoming_variables_by_run_dict.keys()), reverse=True):
         upcoming_variables_by_run_dict[run_number]['run_end'] = run_end
         run_end = max(run_number - 1, 0)
 
@@ -287,7 +287,7 @@ def instrument_variables(request, instrument=None, start=0, end=0, experiment_re
             'minimum_run_start': max(latest_completed_run, latest_processing_run),
             'upcoming_run_variables': upcoming_run_variables,
             'editing': editing,
-            'tracks_script': variables[0].tracks_script,
+            'tracks_script': '',
         }
 
         return context_dictionary
