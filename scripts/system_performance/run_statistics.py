@@ -11,12 +11,15 @@ Contains pre-logic data manipulation for more complex system performance MySQL q
 from datetime import date
 
 # Database Client
-# import logging
+import logging
 # import os
 # import sys
+import datetime
+import time
 
 # sys.path.append(os.path.join(os.path.dirname(__file__), '../..', 'utils'))
 from scripts.system_performance.beam_status_webscraper import Data_Clean, TableWebScraper
+from scripts.system_performance.beam_status_webscraper import DatabaseMonitorChecks
 from utils.clients.database_client import DatabaseClient
 
 # Set url to scrape from, put inside pandas table and clean data frame ready for queries
@@ -102,9 +105,89 @@ class DateInCycle:
 
     def run_fail_count(self, start_date, end_date):
         """Returns the count of failed runs that have occurred  between two dates."""
-        total_runs = run_count(start_date, self.current_date)
-        total_fails = fail_count(start_date, self.current_date)
+        total_runs = DatabaseMonitorChecks.run_count(start_date, self.current_date)
+        total_fails = DatabaseMonitorChecks.fail_count(start_date, self.current_date)
         return [total_runs, total_fails]
+
+    @staticmethod
+    def failures_per():
+        # Returns previous 24 hours of failures with the exception of Monday which returns Friday, Saturday and Sunday
+
+        # Below private functions exist to be called as standalone functions when run manually.
+        def _weekend_failures():
+            return DatabaseMonitorChecks.get_status_time_period(interval=3)
+
+        def _one_day_failures():
+            return DatabaseMonitorChecks.get_status_time_period()
+
+        if date.today().weekday() == 0:  # Returns saturday, sunday and monday
+            return _weekend_failures
+        else:  # Returns failures within past 24 hours
+            return _one_day_failures
+
+    @staticmethod
+    def missing_run_numbers_report(self):
+
+        # returned query format: [number_of_rows, max_rb_number, min_rb_number, [table_list]]
+        returned_query = DatabaseClient.missing_rb_report()
+        reference_list = [item for item in range(returned_query[2],
+                                                 returned_query[1] + 1)]  # make ordered list from min_rb to max_rb
+        row_range = returned_query[1] - returned_query[2]
+
+        # Shouldn't be possible to have a higher row range than there are rows
+        if row_range > returned_query[0]:
+            logging.ERROR(
+                'bd_state_checks: Row range is larger than row count {} > {}'.format(row_range, returned_query[0]))
+        # Means Missing Values are present invoking the need to query which run numbers are missing
+        elif row_range < returned_query[0]:
+            logging.warning(
+                'bd_state_checks: Missing run numbers are present - row range is smaller than row count {} < {}'.format(
+                    row_range, returned_query[0]))
+            # Compare reference list to actual run numbers to find missing run numbers
+            missing_reduction_numbers = list(set(reference_list) - set(returned_query[3]))
+            return missing_reduction_numbers
+        # Else all run numbers are present in asynchronous order
+        else:
+            logging.info('All run numbers are present in asynchronous order.')
+
+    @staticmethod
+    def execution_time(self, instrument=None):
+
+        if not instrument:
+            # look through all id's
+            pass
+
+        # start_end_times returned format: [[id, run_number, start_time, id, run_number, end_time], [ ...], ... ]
+        start_end_times = DatabaseMonitorChecks.run_times(instrument)
+
+        for execution_list in start_end_times:
+            start, end = execution_list[2], execution_list[5]
+
+            # Converts time HH:MM:SS into seconds to calculate execution time then converts back to time HH:MM:SS
+            time_duration_list = []
+            start_end = [start, end]
+            for time_returned in start_end:
+                # Convert to seconds
+                reformatted_time = time.strptime(time_returned, '%H:%M:%S')
+                convert_to_time = datetime.timedelta(hours=reformatted_time.tm_hour,
+                                                     minutes=reformatted_time.tm_min,
+                                                     seconds=reformatted_time.tm_sec).total_seconds()
+                # Appends to list
+                time_duration_list.append(int(convert_to_time))
+            # Calculate difference in time
+            time_duration = time_duration_list[1] - time_duration_list[0]
+            # Converts back ot datetime
+            execution = str(datetime.timedelta(seconds=time_duration))
+
+            # Append to the end of each nested list
+            start_end_execution = iter(execution)
+            for nested_list in start_end_times:
+                for element in nested_list:
+                    if isinstance(element, list):
+                        element.append(next(start_end_execution))
+                    else:
+                        nested_list.append(next(start_end_execution))
+                        break
 
     def execution_time_average(self):
         """
