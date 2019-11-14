@@ -36,13 +36,13 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div>
-                                    <strong>Status:</strong> <strong class="text-{% colour_table_row run.status.value %}">{{ run.status }}</strong>
+                                    <strong>Status:</strong> <strong class="text-{% colour_table_row run.status.value %}">{{ run.status.value }}</strong>
                                 </div>
                                 <div>
-                                    <strong>Instrument:</strong> <a href="{% url 'instrument_summary' instrument=run.instrument %}">{{ run.instrument }}</a>
+                                    <strong>Instrument:</strong> <a href="{% url 'instrument_summary' instrument=run.instrument.name %}">{{ run.instrument.name }}</a>
                                 </div>
                                 <div>
-                                    <strong>RB Number:</strong> <a href="{% url 'experiment_summary' reference_number=run.experiment %}">{{ run.experiment }}</a>
+                                    <strong>RB Number:</strong> <a href="{% url 'experiment_summary' reference_number=run.experiment.reference_number %}">{{ run.experiment.reference_number }}</a>
                                 </div>
                                 <div>
                                     <strong>Last Updated:</strong> {{ run.last_updated }}
@@ -82,7 +82,7 @@
                                                 <span> (Last attempt)</span>
                                             {% endif %}
                                             {% if run.retry_run %}
-                                                <a href="{% url 'run_summary' instrument_name=run.instrument.name run_number=run.retry_run.run_number run_version=run.retry_run.run_version %}"> ({{ run.retry_run.status }})</a>
+                                                <a href="{% url 'run_summary' instrument_name=run.instrument.name run_number=run.retry_run.run_number run_version=run.retry_run.run_version %}"> ({{ run.retry_run.status.value }})</a>
                                             {% endif %}
                                         {% else %}
                                             Never
@@ -99,7 +99,7 @@
                                     <strong>Data:</strong>
                                     {% if run.data_location.all %}
                                         {% for location in run.data_location.all %}
-                                            {{ location }}<br/>
+                                            {{ location.file_path }}<br/>
                                         {% endfor %}
                                     {% else %}
                                         <em>No data found</em>
@@ -113,7 +113,7 @@
                                         {{ reduction_location }}<br/>
                                     {% elif run.reduction_location.all %}
                                         {% for location in run.reduction_location.all %}
-                                            {{ location }}<br/>
+                                            {{ location.file_path }}<br/>
                                         {% endfor %}
                                     {% else %}
                                         <em>No reduced data found</em>
@@ -139,8 +139,10 @@
                 </div>
             </div>
         {% endif %}        
-        {% if reduction_variables_on %}  
-            {% view "reduction_variables.views.run_summary" run.instrument.name run.run_number run.run_version %}
+        {% if reduction_variables_on %}
+            {% autoescape on %}
+                {% view "reduction_variables.views.run_summary" run.instrument.name run.run_number run.run_version %}
+            {% endautoescape %}
         {% endif %}
 
         <div class="run-history modal fade" tabindex="-1" role="dialog" aria-hidden="true">

@@ -55,14 +55,14 @@ def instrument_summary(request, instrument, last_run_object):
 
     # Fill in the run end numbers
     run_end = 0
-    for run_number in sorted(upcoming_variables_by_run_dict.iterkeys(), reverse=True):
+    for run_number in sorted(list(upcoming_variables_by_run_dict.keys()), reverse=True):
         upcoming_variables_by_run_dict[run_number]['run_end'] = run_end
         run_end = max(run_number - 1, 0)
 
     current_start = current_variables[0].start_run
     # pylint:disable=deprecated-lambda
-    next_run_starts = filter(lambda start: start > current_start
-                             , sorted(upcoming_variables_by_run_dict.keys()))
+    next_run_starts = list(filter(lambda start: start > current_start,
+                                  sorted(upcoming_variables_by_run_dict.keys())))
     current_end = next_run_starts[0] - 1 if next_run_starts else 0
 
     current_vars = {
@@ -287,7 +287,7 @@ def instrument_variables(request, instrument=None, start=0, end=0, experiment_re
             'minimum_run_start': max(latest_completed_run, latest_processing_run),
             'upcoming_run_variables': upcoming_run_variables,
             'editing': editing,
-            'tracks_script': variables[0].tracks_script,
+            'tracks_script': '',
         }
 
         return context_dictionary
@@ -373,7 +373,7 @@ def run_summary(request, instrument_name, run_number, run_version=0):
     Handles request to view the summary of a run
     """
     # pylint:disable=no-member
-    instrument = Instrument.objects.filter(name=instrument_name)
+    instrument = Instrument.objects.get(name=instrument_name)
     # pylint:disable=no-member
     reduction_run = ReductionRun.objects.get(instrument=instrument,
                                              run_number=run_number,
@@ -495,7 +495,7 @@ def run_confirmation(request, instrument):
 
         new_variables = []
 
-        for key, value in request.POST.iteritems():
+        for key, value in list(request.POST.items()):
             if 'var-' in key:
                 name = None
                 if 'var-advanced-' in key:

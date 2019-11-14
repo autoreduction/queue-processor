@@ -363,7 +363,7 @@ def run_summary(request, instrument_name=None, run_number=None, run_version=0):
     """
     # pylint:disable=broad-except
     try:
-        instrument = Instrument.objects.filter(name=instrument_name)
+        instrument = Instrument.objects.get(name=instrument_name)
         run = ReductionRun.objects.get(instrument=instrument,
                                        run_number=run_number,
                                        run_version=run_version)
@@ -371,7 +371,7 @@ def run_summary(request, instrument_name=None, run_number=None, run_version=0):
         location_list = run.reduction_location.all()
         reduction_location = None
         if location_list:
-            reduction_location = str(location_list[0])
+            reduction_location = location_list[0].file_path
         if reduction_location and '\\' in reduction_location:
             reduction_location = reduction_location.replace('\\', '/')
         context_dictionary = {'run': run,
@@ -380,7 +380,7 @@ def run_summary(request, instrument_name=None, run_number=None, run_version=0):
     except PermissionDenied:
         raise
     except Exception as exception:
-        LOGGER.error(exception.message)
+        LOGGER.error(exception)
         context_dictionary = {}
 
     return context_dictionary
@@ -443,7 +443,7 @@ def instrument_summary(request, instrument=None):
 
     # pylint:disable=broad-except
     except Exception as exception:
-        LOGGER.error(exception.message)
+        LOGGER.error(exception)
         context_dictionary = {}
 
     return context_dictionary
@@ -481,7 +481,7 @@ def experiment_summary(request, reference_number=None):
                     experiment_details = icat.get_experiment_details(int(reference_number))
         # pylint:disable=broad-except
         except Exception as icat_e:
-            LOGGER.error(icat_e.message)
+            LOGGER.error(icat_e)
             experiment_details = {
                 'reference_number': '',
                 'start_date': '',
@@ -500,7 +500,7 @@ def experiment_summary(request, reference_number=None):
         }
     # pylint:disable=broad-except
     except Exception as exception:
-        LOGGER.error(exception.message)
+        LOGGER.error(exception)
         context_dictionary = {}
 
     return context_dictionary
