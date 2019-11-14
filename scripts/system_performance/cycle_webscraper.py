@@ -95,30 +95,36 @@ class TableWebScraper(object):
 
         def _web_scrape(url):
             """Web scrape URL input"""
-            col = []  # empty list to store list of columns
-            response = requests.get(url)
-            doc = lh.fromstring(response.content)  # Store the contents of the website under doc
-            tr_elements = doc.xpath('//tr')  # Parse data stored between <tr>..</tr> of HTML
-            _create_header_cols(tr_elements, col)
-            _populate_table(tr_elements, col)
-            data_table = _datatable_constructor(col)
-            return data_table
+            try:
+                col = []  # empty list to store list of columns
+                response = requests.get(url)
+                doc = lh.fromstring(response.content)  # Store the contents of the website under doc
+                tr_elements = doc.xpath('//tr')  # Parse data stored between <tr>..</tr> of HTML
+                _create_header_cols(tr_elements, col)
+                _populate_table(tr_elements, col)
+                data_table = _datatable_constructor(col)
+                return data_table
+            except ValueError:
+                print("The URL you are trying to access is invalid: {}".format(url))
 
         def _check_connection(url):
             """Web scrape if URL can be pinged else retrieve local copy made"""
-            request = requests.get(str(url))
-            if request.status_code == 200:
-                data_table = _web_scrape(url)
-                logging.info('Connection to URL established')
-            else:
-                data_table = TableWebScraper.read_csv(self.local_data)
-                logging.info('URL currently not available')
+            try:
+                request = requests.get(str(url))
+                if request.status_code == 200:
+                    data_table = _web_scrape(url)
+                    logging.info('Connection to URL established')
+                else:
+                    data_table = TableWebScraper.read_csv(self.local_data)
+                    logging.info('URL currently not available')
 
+            except requests.exceptions.ConnectionError:
+                data_table = TableWebScraper.read_csv(self.local_data)
+                print("THE URL YOU ARE TRYING TO ACCESS IS INVALID {}".format(url))
             return data_table
 
         data = _check_connection(WEBSITE)
         return data
-
 
 # #-/////////////////////////////////// Data cleaning /////////////////////////////////////-#
 class DataClean(object):
@@ -192,6 +198,7 @@ class DataClean(object):
 
 
 # Set url to scrape from, put inside pandas table and clean data frame ready for queries
-WEBSITE = 'https://www.isis.stfc.ac.uk/Pages/Beam-Status.aspx'
+# WEBSITE = 'https://www.isis.stfc.ac.uk/Pages/Beam-Status.aspx'
+WEBSITE = 'https://www.isi.stc.ac.uk/Pages/'
 # Normalise is kept separate in case table no longer needs to be normalised.
 DATA_FRAME = DataClean(TableWebScraper(WEBSITE).create_table()).normalise()
