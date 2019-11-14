@@ -103,6 +103,11 @@ class DateInCycle:
             in_cycle = None
             return in_cycle
 
+    @staticmethod
+    def list_all_instruments():
+        instrument_list = DatabaseMonitorChecks.list_instruments()
+        return instrument_list
+
     def run_fail_count(self, start_date, end_date):
         """Returns the count of failed runs that have occurred  between two dates."""
         total_runs = DatabaseMonitorChecks.run_count(start_date, self.current_date)
@@ -151,52 +156,89 @@ class DateInCycle:
             logging.info('All run numbers are present in asynchronous order.')
 
     @staticmethod
-    def execution_time(self, instrument=None):
+    def execution_time(instruments=None):
+        """
+        :param instruments: Instrument name taken as input and convert to instrument id
+                            - Data type is assumed to ba of type list if not None.
 
-        if not instrument:
-            # look through all id's
-            pass
+        Returns a dictionary containing one or many instruments as keys containing nested lists of execution times
+        """
+        def _execution_time(current_instrument):
 
-        # start_end_times returned format: [[id, run_number, start_time, id, run_number, end_time], [ ...], ... ]
-        start_end_times = DatabaseMonitorChecks.run_times(instrument)
+            def _append_execution_times(start_end_times, execution):
+                """ Append to the end of each nested list
+                    start_end_times now returns format:
+                    [[id, run_number, start_time, end_time, execution_time], [ ...], ... ] """
 
-        for execution_list in start_end_times:
-            start, end = execution_list[2], execution_list[5]
+                start_end_execution = iter(execution)
+                for nested_list in start_end_times:
+                    for element in nested_list:
+                        if isinstance(element, list):
+                            element.append(next(start_end_execution))
+                        else:
+                            nested_list.append(next(start_end_execution))
+                            break
+                return start_end_times
 
-            # Converts time HH:MM:SS into seconds to calculate execution time then converts back to time HH:MM:SS
-            time_duration_list = []
-            start_end = [start, end]
-            for time_returned in start_end:
-                # Convert to seconds
-                reformatted_time = time.strptime(time_returned, '%H:%M:%S')
-                convert_to_time = datetime.timedelta(hours=reformatted_time.tm_hour,
-                                                     minutes=reformatted_time.tm_min,
-                                                     seconds=reformatted_time.tm_sec).total_seconds()
-                # Appends to list
-                time_duration_list.append(int(convert_to_time))
-            # Calculate difference in time
-            time_duration = time_duration_list[1] - time_duration_list[0]
-            # Converts back ot datetime
-            execution = str(datetime.timedelta(seconds=time_duration))
+            def _calc_execution_times(start_end_times):
+                for execution_list in start_end_times:
+                    # Convert time HH:MM:SS into seconds to calculate execution time then converts back to time HH:MM:SS
+                    time_duration_list = []
+                    start_end = [execution_list[2], execution_list[3]]
+                    for time_returned in start_end:
+                        # Convert to seconds
+                        reformat_time = time.strptime(time_returned, '%H:%M:%S')
+                        convert_to_time = datetime.timedelta(hours=reformat_time.tm_hour,
+                                                             minutes=reformat_time.tm_min,
+                                                             seconds=reformat_time.tm_sec).total_seconds()
+                        # Appends to list
+                        time_duration_list.append(int(convert_to_time))
+                    # Calculate difference in time
+                    time_duration = time_duration_list[1] - time_duration_list[0]
+                    # Converts back ot datetime
+                    execution = str(datetime.timedelta(seconds=time_duration))
+                    # Appends execution time to the end of each sublist
+                    return _append_execution_times(start_end_times, execution)
 
-            # Append to the end of each nested list
-            start_end_execution = iter(execution)
-            for nested_list in start_end_times:
-                for element in nested_list:
-                    if isinstance(element, list):
-                        element.append(next(start_end_execution))
+            # start_end_times returned format: [[id, run_number, start_time, end_time], [ ...], ... ]
+            start_end_times = DatabaseMonitorChecks.run_times(current_instrument)
+
+            return _calc_execution_times(start_end_times)
+
+        def input_verification(instrument_input):
+            # look through all instrument items formatted as: [instrument_id, instrument_name]
+            # Checking n instruments in input to see if they exist and handling accordingly.
+            instrument_dict = {}
+            for sublist in DateInCycle.list_all_instruments():
+                if not instrument_input:
+                    # run all instruments
+                    return run_every_instruments(instrument_dict)
+                for instrument in instrument_input:
+                    if sublist == instrument:
+                        # Dict has the format: "instrument name" : [[id, rb_number , start, end, execution_time ][...]]
+                        instrument_dict[sublist[1]] = _execution_time(sublist[0])
+                        break
+                    elif instrument == 'all':
+                        # run all instruments
+                        return run_every_instruments(instrument_dict)
                     else:
-                        nested_list.append(next(start_end_execution))
+                        logging.error('The instrument: {} is not currently using Autoreduction'.format(instrument))
                         break
 
+        def run_every_instruments(instrument_dict):
+            """returns all instruments and executions times in a dictionary : instrument_name : execution time"""
+            for sublist in DateInCycle.list_all_instruments():
+                instrument_dict[sublist[1]] = _execution_time(sublist[0])
+            return instrument_dict
+
+        return input_verification(instruments)
+
     def execution_time_average(self):
-        """
-        Returns the average execution times of runs between two dates
-        """
+        """Returns the average execution times of runs between two dates for n instruments"""
+
         pass
 
     def run_frequency_average(self):
-        """
-        Returns the run frequency average between two runs.
-        """
+        """Returns the run frequency average between two runs."""
+
         pass
