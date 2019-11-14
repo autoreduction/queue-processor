@@ -61,8 +61,8 @@ def instrument_summary(request, instrument, last_run_object):
 
     current_start = current_variables[0].start_run
     # pylint:disable=deprecated-lambda
-    next_run_starts = filter(lambda start: start > current_start
-                             , sorted(upcoming_variables_by_run_dict.keys()))
+    next_run_starts = list(filter(lambda start: start > current_start,
+                                  sorted(upcoming_variables_by_run_dict.keys())))
     current_end = next_run_starts[0] - 1 if next_run_starts else 0
 
     current_vars = {
