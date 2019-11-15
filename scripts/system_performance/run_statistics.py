@@ -94,7 +94,7 @@ class DateInCycle:
 
                 in_cycle = None
                 return in_cycle
-            #Edge case for current date not in a cycle or between cycles (covers maintenance days when added)
+            # Edge case for current date not in a cycle or between cycles (covers maintenance days when added)
             else:
                 in_cycle = None
                 return in_cycle
@@ -131,10 +131,10 @@ class DateInCycle:
             return _one_day_failures
 
     @staticmethod
-    def missing_run_numbers_report(self):
+    def missing_run_numbers_report():
 
         # returned query format: [number_of_rows, max_rb_number, min_rb_number, [table_list]]
-        returned_query = DatabaseClient.missing_rb_report()
+        returned_query = DatabaseMonitorChecks.missing_rb_report()
         reference_list = [item for item in range(returned_query[2],
                                                  returned_query[1] + 1)]  # make ordered list from min_rb to max_rb
         row_range = returned_query[1] - returned_query[2]
@@ -154,6 +154,20 @@ class DateInCycle:
         # Else all run numbers are present in asynchronous order
         else:
             logging.info('All run numbers are present in asynchronous order.')
+
+    @staticmethod
+    def convert_time_to_seconds(time_format):
+        # Convert to seconds
+        reformat_time = time.strptime(time_format, '%H:%M:%S')
+        convert_to_time = datetime.timedelta(hours=reformat_time.tm_hour,
+                                             minutes=reformat_time.tm_min,
+                                             seconds=reformat_time.tm_sec).total_seconds()
+        return convert_to_time
+
+    @staticmethod
+    def convert_seconds_to_time(time_in_seconds):
+        return str(datetime.timedelta(seconds=time_in_seconds))
+        pass
 
     @staticmethod
     def execution_time(instruments=None):
@@ -180,30 +194,24 @@ class DateInCycle:
                             break
                 return start_end_times
 
-            def _calc_execution_times(start_end_times):
-                for execution_list in start_end_times:
+            def _calc_execution_times(list_of_times):
+                for execution_list in list_of_times:
                     # Convert time HH:MM:SS into seconds to calculate execution time then converts back to time HH:MM:SS
                     time_duration_list = []
                     start_end = [execution_list[2], execution_list[3]]
                     for time_returned in start_end:
-                        # Convert to seconds
-                        reformat_time = time.strptime(time_returned, '%H:%M:%S')
-                        convert_to_time = datetime.timedelta(hours=reformat_time.tm_hour,
-                                                             minutes=reformat_time.tm_min,
-                                                             seconds=reformat_time.tm_sec).total_seconds()
-                        # Appends to list
-                        time_duration_list.append(int(convert_to_time))
+                        # Appends time in seconds to list
+                        time_duration_list.append(int(DateInCycle.convert_time_to_seconds(time_returned)))
                     # Calculate difference in time
                     time_duration = time_duration_list[1] - time_duration_list[0]
                     # Converts back ot datetime
-                    execution = str(datetime.timedelta(seconds=time_duration))
+                    execution = DateInCycle.convert_seconds_to_time(time_duration)
                     # Appends execution time to the end of each sublist
-                    return _append_execution_times(start_end_times, execution)
+                    return _append_execution_times(list_of_times, execution)
 
-            # start_end_times returned format: [[id, run_number, start_time, end_time], [ ...], ... ]
-            start_end_times = DatabaseMonitorChecks.run_times(current_instrument)
-
-            return _calc_execution_times(start_end_times)
+            # new_start_end_times returned format: [[id, run_number, start_time, end_time], [ ...], ... ]
+            new_start_end_times = DatabaseMonitorChecks.run_times(current_instrument)
+            return _calc_execution_times(new_start_end_times)
 
         def input_verification(instrument_input):
             # look through all instrument items formatted as: [instrument_id, instrument_name]
@@ -233,12 +241,30 @@ class DateInCycle:
 
         return input_verification(instruments)
 
-    def execution_time_average(self):
-        """Returns the average execution times of runs between two dates for n instruments"""
+    def execution_time_average(self, instruments):
+        """Returns the average execution times of runs between two dates for n instruments
+        :param instruments: expects same inout as execution_time - None or list containing string
+               'all' or a list of desired instruments"""
 
+        average_execution = {}
+        for instrument in self.execution_time(instruments):
+            execution_time_count = 0
+            for instrument_item in self.execution_time(instruments)[instrument]:
+                # Total execution times placed inside var: execution_time_count
+                execution_time_in_seconds = instrument_item[4]
+                execution_time_count = execution_time_count + execution_time_in_seconds
+            # Calculate mean average execution time
+            mean_execution = execution_time_count/len(instrument)
+            average_execution[instrument] = mean_execution
+        return average_execution
+
+    def run_frequency(self):
+        """Return run frequencies for N instruments following the format:Dict{instrument_N: [rpd, tr, rpw, rpw, rpm]}"""
         pass
 
     def run_frequency_average(self):
         """Returns the run frequency average between two runs."""
+        # Return as list
 
+        # return as dataframe
         pass
