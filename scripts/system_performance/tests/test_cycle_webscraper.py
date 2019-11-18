@@ -75,7 +75,3 @@ class TestCycleWebscraper(unittest.TestCase):
         # test = DataClean.date_formatter(data, 'Start')
         # assert_frame_equal(test, self.local_df['Start'])
         pass
-
-
-if __name__ == '__main__':
-    unittest.main()
