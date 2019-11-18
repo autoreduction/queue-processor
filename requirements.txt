@@ -1,3 +1,7 @@
+ipython
+pandas
+lxml
+requests
 pytest-cov
 pylint
 coveralls
