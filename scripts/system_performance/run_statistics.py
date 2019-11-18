@@ -105,16 +105,15 @@ class DateInCycle:
 
     def create_method_mappings(self):
         """A dictionary to map on input, user specified methods to return to equivalent method to be called"""
-        method_mappings = {'missing_run_numbers_report': self.missing_run_numbers_report,
-                           'execution_time': self.execution_time,
-                           'execution_time_average': self.execution_time_average,
-                           'run_frequency': self.run_frequency,
-                           'run_frequency_average': self.run_frequency_average
-                           }
-        return method_mappings
+        return {'missing_run_numbers_report': self.missing_run_numbers_report,
+                'execution_time': self.execution_time,
+                'execution_time_average': self.execution_time_average,
+                'run_frequency': self.run_frequency,
+                'run_frequency_average': self.run_frequency_average
+                }
 
     @staticmethod
-    def list_all_instruments():
+    def get_instrument_models():
         """Returns a list of all currently active instruments"""
         instrument_list = DatabaseMonitorChecks.list_instruments()
         return instrument_list
@@ -122,39 +121,47 @@ class DateInCycle:
     def run_every_instruments(self, instrument_dict, method_name):
         """Returns all existing instruments in a dictionary for a given method as:
         {instrument_name : [[method output row 1]],[[method output row 2] etc] ...}"""
-        for sublist in self.list_all_instruments():
+        for instrument in self.get_instrument_models():
             try:
                 if method_name in self.create_method_mappings():
-                    instrument_dict[sublist[1]] = self.create_method_mappings()[method_name](sublist[0])
+                    instrument_dict[instrument[1]] = self.create_method_mappings()[method_name](instrument[0])
             except KeyError:
                 raise ValueError('Invalid Input - method {} does not exist'.format(method_name))
         return instrument_dict
 
-    def input_verification(self, instrument_input, method_name):
+    def get_query_for_instruments(self, instrument_input, method_name):
         """Checks that the instrument's in method input exist and then calls
         and returns the methods used as input for each instrument placing in
         a dictionary as a nested list for each instrument as:
-         {instrument_name : [[method output row 1]],[[method output row 2] etc.] ...}"""
+         {instrument_name : [[method output row 1]],[[method output row 2] etc.] ...}
+
+        Run methods for each instrument name
+        :param instrument_input: [(str), (str), ...] - Represents the instruments to be used in queries
+        :param method_name: (str) -  The name of the methods to run
+        :return: A dictionary of instrument name (key) and list of method output (value)
+
+         """
         instrument_dict = {}
 
-        for sublist in self.list_all_instruments():
+        for instrument in self.get_instrument_models():
             # if input is None, run all instruments by default
             if not isinstance(instrument_input, list):
                 logging.error("Value is not iterable, the first argument must be of type list")
                 return None
-            for instrument in instrument_input:
-                if sublist[1] == instrument:
+            for instrument_element in instrument_input:
+                if instrument[1] == instrument_element:
                     # check input is in mapping and place method output in instrument_dict
                     try:
                         if method_name in self.create_method_mappings():
-                            instrument_dict[sublist[1]] = self.create_method_mappings()[method_name](sublist[0])
+                            instrument_dict[instrument[1]] = self.create_method_mappings()[method_name](instrument[0])
                     except KeyError:
                         raise ValueError('Invalid Input - method {} does not exist'.format(method_name))
                 # Run all methods is user specifies "all"
-                elif instrument == 'all' or not instrument:
+                elif instrument_element == 'all' or not instrument_element:
                     self.run_every_instruments(instrument_dict, method_name)
                 else:
-                    logging.info('The instrument: {} is not currently using Autoreduction'.format(instrument))
+                    logging.info('The instrument: {} has not been found in the autoreduction'
+                                 ' database'.format(instrument_element))
         return instrument_dict
 
     def run_fail_count(self, start_date, end_date):
@@ -260,7 +267,7 @@ class DateInCycle:
         # new_start_end_times returned format: [[id, run_number, start_time, end_time], [ ...], ... ]
         new_start_end_times = DatabaseMonitorChecks.run_times(current_instrument)
         return _calc_execution_times(new_start_end_times)
-        # DateInCycle.input_verification(instruments)
+        # DateInCycle.get_query_for_instruments(instruments)
 
     def execution_time_average(self, instruments):
         """Returns the average execution times of runs between two dates for n instruments
