@@ -105,7 +105,7 @@ class TableWebScraper(object):
                 data_table = _datatable_constructor(col)
                 return data_table
             except ValueError:
-                print("The URL you are trying to access is invalid: {}".format(url))
+                print "The URL you are trying to access is invalid: {}".format(url)
 
         def _check_connection(url):
             """Web scrape if URL can be pinged else retrieve local copy made"""
@@ -120,7 +120,7 @@ class TableWebScraper(object):
 
             except requests.exceptions.ConnectionError:
                 data_table = TableWebScraper.read_csv(self.local_data)
-                print("THE URL YOU ARE TRYING TO ACCESS IS INVALID {}".format(url))
+                print "THE URL YOU ARE TRYING TO ACCESS IS INVALID {}".format(url)
             return data_table
 
         data = _check_connection(WEBSITE)
