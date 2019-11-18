@@ -103,10 +103,59 @@ class DateInCycle:
             in_cycle = None
             return in_cycle
 
+    def create_method_mappings(self):
+        """A dictionary to map on input, user specified methods to return to equivalent method to be called"""
+        method_mappings = {'missing_run_numbers_report': self.missing_run_numbers_report,
+                           'execution_time': self.execution_time,
+                           'execution_time_average': self.execution_time_average,
+                           'run_frequency': self.run_frequency,
+                           'run_frequency_average': self.run_frequency_average
+                           }
+        return method_mappings
+
     @staticmethod
     def list_all_instruments():
+        """Returns a list of all currently active instruments"""
         instrument_list = DatabaseMonitorChecks.list_instruments()
         return instrument_list
+
+    def run_every_instruments(self, instrument_dict, method_name):
+        """Returns all existing instruments in a dictionary for a given method as:
+        {instrument_name : [[method output row 1]],[[method output row 2] etc] ...}"""
+        for sublist in self.list_all_instruments():
+            try:
+                if method_name in self.create_method_mappings():
+                    instrument_dict[sublist[1]] = self.create_method_mappings()[method_name](sublist[0])
+            except KeyError:
+                raise ValueError('Invalid Input - method {} does not exist'.format(method_name))
+        return instrument_dict
+
+    def input_verification(self, instrument_input, method_name):
+        """Checks that the instrument's in method input exist and then calls
+        and returns the methods used as input for each instrument placing in
+        a dictionary as a nested list for each instrument as:
+         {instrument_name : [[method output row 1]],[[method output row 2] etc.] ...}"""
+        instrument_dict = {}
+
+        for sublist in self.list_all_instruments():
+            # if input is None, run all instruments by default
+            if not isinstance(instrument_input, list):
+                logging.error("Value is not iterable, the first argument must be of type list")
+                return None
+            for instrument in instrument_input:
+                if sublist[1] == instrument:
+                    # check input is in mapping and place method output in instrument_dict
+                    try:
+                        if method_name in self.create_method_mappings():
+                            instrument_dict[sublist[1]] = self.create_method_mappings()[method_name](sublist[0])
+                    except KeyError:
+                        raise ValueError('Invalid Input - method {} does not exist'.format(method_name))
+                # Run all methods is user specifies "all"
+                elif instrument == 'all' or not instrument:
+                    self.run_every_instruments(instrument_dict, method_name)
+                else:
+                    logging.info('The instrument: {} is not currently using Autoreduction'.format(instrument))
+        return instrument_dict
 
     def run_fail_count(self, start_date, end_date):
         """Returns the count of failed runs that have occurred  between two dates."""
@@ -131,10 +180,10 @@ class DateInCycle:
             return _one_day_failures
 
     @staticmethod
-    def missing_run_numbers_report():
+    def missing_run_numbers_report(instrument_id):
 
         # returned query format: [number_of_rows, max_rb_number, min_rb_number, [table_list]]
-        returned_query = DatabaseMonitorChecks.missing_rb_report()
+        returned_query = DatabaseMonitorChecks.missing_rb_report(instrument_id)
         reference_list = [item for item in range(returned_query[2],
                                                  returned_query[1] + 1)]  # make ordered list from min_rb to max_rb
         row_range = returned_query[1] - returned_query[2]
@@ -167,79 +216,51 @@ class DateInCycle:
     @staticmethod
     def convert_seconds_to_time(time_in_seconds):
         return str(datetime.timedelta(seconds=time_in_seconds))
-        pass
 
     @staticmethod
-    def execution_time(instruments=None):
+    def execution_time(self, instruments=None):
         """
         :param instruments: Instrument name taken as input and convert to instrument id
                             - Data type is assumed to ba of type list if not None.
 
         Returns a dictionary containing one or many instruments as keys containing nested lists of execution times
         """
-        def _execution_time(current_instrument):
+        # def _execution_time(current_instrument):
 
-            def _append_execution_times(start_end_times, execution):
-                """ Append to the end of each nested list
-                    start_end_times now returns format:
-                    [[id, run_number, start_time, end_time, execution_time], [ ...], ... ] """
+        def _append_execution_times(start_end_times, execution):
+            """ Append to the end of each nested list
+                start_end_times now returns format:
+                [[id, run_number, start_time, end_time, execution_time], [ ...], ... ] """
 
-                start_end_execution = iter(execution)
-                for nested_list in start_end_times:
-                    for element in nested_list:
-                        if isinstance(element, list):
-                            element.append(next(start_end_execution))
-                        else:
-                            nested_list.append(next(start_end_execution))
-                            break
-                return start_end_times
-
-            def _calc_execution_times(list_of_times):
-                for execution_list in list_of_times:
-                    # Convert time HH:MM:SS into seconds to calculate execution time then converts back to time HH:MM:SS
-                    time_duration_list = []
-                    start_end = [execution_list[2], execution_list[3]]
-                    for time_returned in start_end:
-                        # Appends time in seconds to list
-                        time_duration_list.append(int(DateInCycle.convert_time_to_seconds(time_returned)))
-                    # Calculate difference in time
-                    time_duration = time_duration_list[1] - time_duration_list[0]
-                    # Converts back ot datetime
-                    execution = DateInCycle.convert_seconds_to_time(time_duration)
-                    # Appends execution time to the end of each sublist
-                    return _append_execution_times(list_of_times, execution)
-
-            # new_start_end_times returned format: [[id, run_number, start_time, end_time], [ ...], ... ]
-            new_start_end_times = DatabaseMonitorChecks.run_times(current_instrument)
-            return _calc_execution_times(new_start_end_times)
-
-        def input_verification(instrument_input):
-            # look through all instrument items formatted as: [instrument_id, instrument_name]
-            # Checking n instruments in input to see if they exist and handling accordingly.
-            instrument_dict = {}
-            for sublist in DateInCycle.list_all_instruments():
-                if not instrument_input:
-                    # run all instruments
-                    return run_every_instruments(instrument_dict)
-                for instrument in instrument_input:
-                    if sublist == instrument:
-                        # Dict has the format: "instrument name" : [[id, rb_number , start, end, execution_time ][...]]
-                        instrument_dict[sublist[1]] = _execution_time(sublist[0])
-                        break
-                    elif instrument == 'all':
-                        # run all instruments
-                        return run_every_instruments(instrument_dict)
+            start_end_execution = iter(execution)
+            for nested_list in start_end_times:
+                for element in nested_list:
+                    if isinstance(element, list):
+                        element.append(next(start_end_execution))
                     else:
-                        logging.error('The instrument: {} is not currently using Autoreduction'.format(instrument))
+                        nested_list.append(next(start_end_execution))
                         break
+            return start_end_times
 
-        def run_every_instruments(instrument_dict):
-            """returns all instruments and executions times in a dictionary : instrument_name : execution time"""
-            for sublist in DateInCycle.list_all_instruments():
-                instrument_dict[sublist[1]] = _execution_time(sublist[0])
-            return instrument_dict
+        def _calc_execution_times(list_of_times):
+            for execution_list in list_of_times:
+                # Convert time HH:MM:SS into seconds to calculate execution time then converts back to time HH:MM:SS
+                time_duration_list = []
+                start_end = [execution_list[2], execution_list[3]]
+                for time_returned in start_end:
+                    # Appends time in seconds to list
+                    time_duration_list.append(int(DateInCycle.convert_time_to_seconds(time_returned)))
+                # Calculate difference in time
+                time_duration = time_duration_list[1] - time_duration_list[0]
+                # Converts back ot datetime
+                execution = DateInCycle.convert_seconds_to_time(time_duration)
+                # Appends execution time to the end of each sublist
+                return _append_execution_times(list_of_times, execution)
 
-        return input_verification(instruments)
+        # new_start_end_times returned format: [[id, run_number, start_time, end_time], [ ...], ... ]
+        new_start_end_times = DatabaseMonitorChecks.run_times(current_instrument)
+        return _calc_execution_times(new_start_end_times)
+        # DateInCycle.input_verification(instruments)
 
     def execution_time_average(self, instruments):
         """Returns the average execution times of runs between two dates for n instruments
@@ -259,7 +280,8 @@ class DateInCycle:
         return average_execution
 
     def run_frequency(self):
-        """Return run frequencies for N instruments following the format:Dict{instrument_N: [rpd, tr, rpw, rpw, rpm]}"""
+        """Return run frequencies for N instruments of type: successful run, failed run, or retry run.
+        Method output follows the format: Dict {instrument_N : [rpd, tr, rpw, rpw, rpm]}"""
         pass
 
     def run_frequency_average(self):
