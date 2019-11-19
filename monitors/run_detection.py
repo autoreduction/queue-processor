@@ -67,8 +67,9 @@ def read_rb_number_from_nexus_file(nxs_file_path):
         return None
 
     for (_, entry) in nxs_file.items():
-        if entry.get('experiment_identifier').value[0]:
-            return entry.get('experiment_identifier').value[0].decode("utf-8")
+        rb_number = entry.get('experiment_identifier').value[0]
+        if rb_number:
+            return str(rb_number, "utf-8")
     return None
 
 
@@ -106,7 +107,7 @@ class InstrumentMonitor:
             last_line = summary_lines[-1]
             line_parts = last_line.split()
             if line_parts:
-                return line_parts[-1]
+                return str(line_parts[-1], "utf-8")
 
         raise InstrumentMonitorError("Unable to read RB number from summary.txt")
 
