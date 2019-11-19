@@ -7,7 +7,7 @@ import csv
 import logging
 import os
 import json
-from nexusformat.nexus import nxload
+import h5py
 from filelock import (FileLock, Timeout)
 
 from monitors.settings import (LAST_RUNS_CSV, CYCLE_FOLDER)
@@ -60,17 +60,15 @@ def read_rb_number_from_nexus_file(nxs_file_path):
     :return: The RB number or None
     """
     try:
-        nxs_file = nxload(nxs_file_path)
+        nxs_file = h5py.File(nxs_file_path)
     except IOError:
         # The most likely cause of this is the Nexus file being encoded
         # in HDF4 format.
         return None
 
-    for (_, entry) in nxs_file.iteritems():
-        if hasattr(entry, 'experiment_identifier'):
-            field_data = entry.experiment_identifier.nxdata
-            if field_data:
-                return field_data[0]
+    for (_, entry) in nxs_file.items():
+        if entry.get('experiment_identifier').value[0]:
+            return entry.get('experiment_identifier').value[0].decode("utf-8")
     return None
 
 

@@ -35,14 +35,24 @@ RUN_DICT_SUMMARY = {'instrument': 'WISH',
                     'facility': 'ISIS'}
 CSV_FILE = "WISH,44733,lastrun_wish.txt,summary_wish.txt,data_dir,.nxs"
 
+
+class DataHolder:
+
+    def __init__(self, data):
+        self.data = data
+
+    def get(self, _):
+        mock_value = Mock()
+        mock_value.value = self.data
+        return mock_value
+
+
 # nexusformat mock objects
-NXENTRY_MOCK = Mock()
-NXENTRY_MOCK.experiment_identifier.nxdata = ['1910232']
 NXLOAD_MOCK = Mock()
-NXLOAD_MOCK.iteritems = Mock(return_value=[('raw_data_1', NXENTRY_MOCK)])
+NXLOAD_MOCK.items = Mock(return_value=[('raw_data_1', DataHolder([b'1910232']))])
 
 NXLOAD_MOCK_EMPTY = Mock()
-NXLOAD_MOCK_EMPTY.iteritems = Mock(return_value=[('raw_data_1', Mock(spec=[]))])
+NXLOAD_MOCK_EMPTY.items = Mock(return_value=[('raw_data_1', DataHolder(['']))])
 
 
 # pylint:disable=missing-docstring,no-self-use,too-many-public-methods
@@ -54,6 +64,7 @@ class TestRunDetection(unittest.TestCase):
             os.remove('test_summary.txt')
         if os.path.isfile('test_last_runs.csv'):
             os.remove('test_last_runs.csv')
+
 
     def test_get_prefix_zeros(self):
         run_number = '00012345'
@@ -167,19 +178,19 @@ class TestRunDetection(unittest.TestCase):
         isfile_mock.assert_called_with(data_loc)
         read_rb_mock.assert_called_once_with(data_loc)
 
-    @patch('monitors.run_detection.nxload', return_value=NXLOAD_MOCK)
+    @patch('monitors.run_detection.h5py.File', return_value=NXLOAD_MOCK)
     def test_read_rb_number_from_nexus(self, nxload_mock):
         rb_num = eorm.read_rb_number_from_nexus_file('mynexus.nxs')
         self.assertEqual(rb_num, '1910232')
         nxload_mock.assert_called_once_with('mynexus.nxs')
 
-    @patch('monitors.run_detection.nxload', return_value=NXLOAD_MOCK_EMPTY)
+    @patch('monitors.run_detection.h5py.File', return_value=NXLOAD_MOCK_EMPTY)
     def test_read_rb_number_from_nexus_invalid(self, nxload_mock):
         rb_num = eorm.read_rb_number_from_nexus_file('mynexus.nxs')
         self.assertIsNone(rb_num)
         nxload_mock.assert_called_once_with('mynexus.nxs')
 
-    @patch('monitors.run_detection.nxload', side_effect=IOError('HDF4 file'))
+    @patch('monitors.run_detection.h5py.File', side_effect=IOError('HDF4 file'))
     def test_read_rb_number_from_nexus_hdf4(self, nxload_mock):
         rb_num = eorm.read_rb_number_from_nexus_file('mynexus.nxs')
         self.assertIsNone(rb_num)
