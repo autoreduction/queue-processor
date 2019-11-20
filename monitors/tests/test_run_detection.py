@@ -36,7 +36,11 @@ RUN_DICT_SUMMARY = {'instrument': 'WISH',
 CSV_FILE = "WISH,44733,lastrun_wish.txt,summary_wish.txt,data_dir,.nxs"
 
 
+# pylint:disable=too-few-public-methods,missing-function-docstring
 class DataHolder:
+    """
+    Small helper class to represent expected nexus data format
+    """
 
     def __init__(self, data):
         self.data = data
@@ -64,7 +68,6 @@ class TestRunDetection(unittest.TestCase):
             os.remove('test_summary.txt')
         if os.path.isfile('test_last_runs.csv'):
             os.remove('test_last_runs.csv')
-
 
     def test_get_prefix_zeros(self):
         run_number = '00012345'
