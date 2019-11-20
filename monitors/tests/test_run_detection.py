@@ -35,14 +35,28 @@ RUN_DICT_SUMMARY = {'instrument': 'WISH',
                     'facility': 'ISIS'}
 CSV_FILE = "WISH,44733,lastrun_wish.txt,summary_wish.txt,data_dir,.nxs"
 
+
+# pylint:disable=too-few-public-methods,missing-function-docstring
+class DataHolder:
+    """
+    Small helper class to represent expected nexus data format
+    """
+
+    def __init__(self, data):
+        self.data = data
+
+    def get(self, _):
+        mock_value = Mock()
+        mock_value.value = self.data
+        return mock_value
+
+
 # nexusformat mock objects
-NXENTRY_MOCK = Mock()
-NXENTRY_MOCK.experiment_identifier.nxdata = ['1910232']
 NXLOAD_MOCK = Mock()
-NXLOAD_MOCK.iteritems = Mock(return_value=[('raw_data_1', NXENTRY_MOCK)])
+NXLOAD_MOCK.items = Mock(return_value=[('raw_data_1', DataHolder([b'1910232']))])
 
 NXLOAD_MOCK_EMPTY = Mock()
-NXLOAD_MOCK_EMPTY.iteritems = Mock(return_value=[('raw_data_1', Mock(spec=[]))])
+NXLOAD_MOCK_EMPTY.items = Mock(return_value=[('raw_data_1', DataHolder(['']))])
 
 
 # pylint:disable=missing-docstring,no-self-use,too-many-public-methods
@@ -100,7 +114,7 @@ class TestRunDetection(unittest.TestCase):
         inst_mon = InstrumentMonitor(None, 'WISH')
         inst_mon.summary_file = 'test_summary.txt'
         rb_number = inst_mon.read_rb_number_from_summary()
-        self.assertEqual(b'1820461', rb_number)
+        self.assertEqual('1820461', rb_number)
 
     def test_read_rb_number_from_summary_invalid(self):
         with open('test_summary.txt', 'w') as summary:
@@ -167,23 +181,26 @@ class TestRunDetection(unittest.TestCase):
         isfile_mock.assert_called_with(data_loc)
         read_rb_mock.assert_called_once_with(data_loc)
 
-    @patch('monitors.run_detection.nxload', return_value=NXLOAD_MOCK)
+    @patch('monitors.run_detection.h5py.File', return_value=NXLOAD_MOCK)
     def test_read_rb_number_from_nexus(self, nxload_mock):
         rb_num = eorm.read_rb_number_from_nexus_file('mynexus.nxs')
         self.assertEqual(rb_num, '1910232')
-        nxload_mock.assert_called_once_with('mynexus.nxs')
+        kwargs = {"mode": "r"}
+        nxload_mock.assert_called_once_with('mynexus.nxs', **kwargs)
 
-    @patch('monitors.run_detection.nxload', return_value=NXLOAD_MOCK_EMPTY)
+    @patch('monitors.run_detection.h5py.File', return_value=NXLOAD_MOCK_EMPTY)
     def test_read_rb_number_from_nexus_invalid(self, nxload_mock):
         rb_num = eorm.read_rb_number_from_nexus_file('mynexus.nxs')
         self.assertIsNone(rb_num)
-        nxload_mock.assert_called_once_with('mynexus.nxs')
+        kwargs = {"mode": "r"}
+        nxload_mock.assert_called_once_with('mynexus.nxs', **kwargs)
 
-    @patch('monitors.run_detection.nxload', side_effect=IOError('HDF4 file'))
+    @patch('monitors.run_detection.h5py.File', side_effect=IOError('HDF4 file'))
     def test_read_rb_number_from_nexus_hdf4(self, nxload_mock):
         rb_num = eorm.read_rb_number_from_nexus_file('mynexus.nxs')
         self.assertIsNone(rb_num)
-        nxload_mock.assert_called_once_with('mynexus.nxs')
+        kwargs = {"mode": "r"}
+        nxload_mock.assert_called_once_with('mynexus.nxs', **kwargs)
 
     def test_submit_run_difference(self):
         # Setup test
