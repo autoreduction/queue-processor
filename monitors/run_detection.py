@@ -60,7 +60,7 @@ def read_rb_number_from_nexus_file(nxs_file_path):
     :return: The RB number or None
     """
     try:
-        nxs_file = h5py.File(nxs_file_path)
+        nxs_file = h5py.File(nxs_file_path, mode="r")
     except IOError:
         # The most likely cause of this is the Nexus file being encoded
         # in HDF4 format.
@@ -208,7 +208,7 @@ def update_last_runs(csv_name):
             output.append(row)
 
     # Write any changes to the CSV
-    with open(csv_name, 'w') as csv_file:
+    with open(csv_name, 'w', newline='') as csv_file:
         csv_writer = csv.writer(csv_file)
         for row in output:
             csv_writer.writerow(row)
