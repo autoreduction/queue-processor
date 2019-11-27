@@ -8,108 +8,33 @@
 Contains pre-logic data manipulation for more complex system performance MySQL queries.
 """
 
+# Dependencies
 from datetime import date
-
-# Database Client
-import logging
-# import os
-# import sys
+from calendar import monthrange
 import datetime
 import time
 
-# sys.path.append(os.path.join(os.path.dirname(__file__), '../..', 'utils'))
-from scripts.system_performance.beam_status_webscraper import Data_Clean, TableWebScraper
+import logging
+
 from scripts.system_performance.beam_status_webscraper import DatabaseMonitorChecks
-from utils.clients.database_client import DatabaseClient
-
-# Set url to scrape from, put inside pandas table and clean data frame ready for queries
-url = 'https://www.isis.stfc.ac.uk/Pages/Beam-Status.aspx'
-df = Data_Clean(TableWebScraper(url).create_table()).normalise()
+from scripts.system_performance.date_in_cycle import DateInCycle
 
 
-# -///////////////////////////////////////// Query Pre Logic  /////////////////////////////////////////-#
+class QueryHandler:
+    """The query handler class returns one one or a list of query results to the user handler script"""
 
-class DateInCycle:
-
-    def __init__(self, data_frame, start_col, end_col, current_date=None):
-        self.data_frame = data_frame
-        self.start_col = start_col
-        self.end_col = end_col
-
-        # By default use the current date, but allow custom date for a given instance of date_in_cycle
-        if not self.current_date:
-            self.current_date = date.today()
-        else:
-            self.current_date = current_date
-
-    # Get cycle start and end date for a given row in start and end columns
-
-    # Compare start and end date returned from above function.
-
-    # (A) Check if current_date is in between start and end start < today < end
-
-    # (B) Check if current date is between end date and start date  end > today < next rows start
-
-    @staticmethod
-    def cycle_dates(row):
-        """Returns cycle start and end dates row from df"""
-        dates = []
-        dates.extend(row[0], row['Start'], row['End'])
-        return dates
-
-    def cycle_search(self, column, row_id):
-        """Search for a specific row in cycle data frame"""
-        target_row = []
-        for col in column:
-
-            target_row.append(self.data_frame.iloc[row_id][col])
-        return target_row
-
-    def in_cycle(self):
-        """Check if current date is in or between a cycle"""
-        point_in_cycle = None
-        while not point_in_cycle:
-            for row in self.data_frame:
-                cycle = self.cycle_dates(row)
-                point_in_cycle = self.date_in_cycle(cycle[0], cycle[1], cycle[2])
-                return point_in_cycle
-
-    def date_in_cycle(self, index, start, end):
-        """Actions performed based on current date being inside a cycle or between cycles"""
-        # Current date in cycle
-        if start < self.current_date < end:
-            # Want to look in current cycle
-            run_performance_count = self.run_fail_count(start, end)
-
-            in_cycle = None
-            return in_cycle
-
-        # checking if current date is between cycles (# "index+1" to look at next rows start date)
-        if index < self.data_frame.tail(1).index.item():
-            if self.current_date > end < self.cycle_search([self.start_col], index+1):
-                # want to look at previous cycle
-                dates = self.cycle_search([self.start_col, self.end_col],index+1)
-                start, end = dates[0], dates[1]
-                run_performance_count = self.run_fail_count(start, end)
-
-                in_cycle = None
-                return in_cycle
-            # Edge case for current date not in a cycle or between cycles (covers maintenance days when added)
-            else:
-                in_cycle = None
-                return in_cycle
-        # Looking at last row in data frame. Current date can't be checked any further back in time
-        else:
-            in_cycle = None
-            return in_cycle
+    def __init__(self):
+        pass
 
     def create_method_mappings(self):
-        """A dictionary to map on input, user specified methods to return to equivalent method to be called"""
+        """A dictionary to map input, user specified methods to return equivalent method to be called
+        TODO: Create execution_time_average and run_frequency_average methods"""
+
         return {'missing_run_numbers_report': self.missing_run_numbers_report,
                 'execution_time': self.execution_time,
-                'execution_time_average': self.execution_time_average,
+                # 'execution_time_average': self.execution_time_average,
                 'run_frequency': self.run_frequency,
-                'run_frequency_average': self.run_frequency_average
+                # 'run_frequency_average': self.run_frequency_average
                 }
 
     @staticmethod
@@ -118,88 +43,78 @@ class DateInCycle:
         instrument_list = DatabaseMonitorChecks.list_instruments()
         return instrument_list
 
-    def run_every_instruments(self, instrument_dict, method_name):
+    def run_every_instruments(self, instrument_dict, method_name, method_arguments=None):
         """Returns all existing instruments in a dictionary for a given method as:
         {instrument_name : [[method output row 1]],[[method output row 2] etc] ...}"""
         for instrument in self.get_instrument_models():
             try:
                 if method_name in self.create_method_mappings():
-                    instrument_dict[instrument[1]] = self.create_method_mappings()[method_name](instrument[0])
+                    instrument_dict[instrument[1]] = self.create_method_mappings()[method_name](*method_arguments)
             except KeyError:
                 raise ValueError('Invalid Input - method {} does not exist'.format(method_name))
         return instrument_dict
 
-    def get_query_for_instruments(self, instrument_input, method_name):
+    def get_query_for_instruments(self, instrument_input, method_name, additional_method_arguments=None):
         """Checks that the instrument's in method input exist and then calls
-        and returns the methods used as input for each instrument placing in
+        and returns the method used as input for each instrument placing in
         a dictionary as a nested list for each instrument as:
          {instrument_name : [[method output row 1]],[[method output row 2] etc.] ...}
 
         Run methods for each instrument name
         :param instrument_input: [(str), (str), ...] - Represents the instruments to be used in queries
         :param method_name: (str) -  The name of the methods to run
+        :param additional_method_arguments - method arguments specified by user
         :return: A dictionary of instrument name (key) and list of method output (value)
-
          """
+
         instrument_dict = {}
 
         for instrument in self.get_instrument_models():
+            # Check for additional arguments and place in list with instrument id to pass as argument in method
+            if not additional_method_arguments:
+                method_arguments = [instrument[0]]
+            else:
+                # convert arguments to list
+                method_arguments = [instrument[0]] + additional_method_arguments
+
             # if input is None, run all instruments by default
             if not isinstance(instrument_input, list):
                 logging.error("Value is not iterable, the first argument must be of type list")
                 return None
             for instrument_element in instrument_input:
                 if instrument[1] == instrument_element:
-                    # check input is in mapping and place method output in instrument_dict
+                    # Check input is in mapping and place method N output in instrument_dict to return
                     try:
                         if method_name in self.create_method_mappings():
-                            instrument_dict[instrument[1]] = self.create_method_mappings()[method_name](instrument[0])
+                            instrument_dict[instrument[1]] = \
+                                self.create_method_mappings()[method_name](*method_arguments)
                     except KeyError:
-                        raise ValueError('Invalid Input - method {} does not exist'.format(method_name))
-                # Run all methods is user specifies "all"
+                        raise ValueError('Invalid Input - method {} does not exist use type -help '
+                                         'to look at existing methods and arguments'.format(method_name))
+                # Run all instruments if user input specified "all"
                 elif instrument_element == 'all' or not instrument_element:
-                    self.run_every_instruments(instrument_dict, method_name)
+                    self.run_every_instruments(instrument_dict, method_name, method_arguments)
                 else:
                     logging.info('The instrument: {} has not been found in the autoreduction'
                                  ' database'.format(instrument_element))
         return instrument_dict
 
-    def run_fail_count(self, start_date, end_date):
-        """Returns the count of failed runs that have occurred  between two dates."""
-        total_runs = DatabaseMonitorChecks.run_count(start_date, self.current_date)
-        total_fails = DatabaseMonitorChecks.fail_count(start_date, self.current_date)
-        return [total_runs, total_fails]
-
-    @staticmethod
-    def failures_per():
-        # Returns previous 24 hours of failures with the exception of Monday which returns Friday, Saturday and Sunday
-
-        # Below private functions exist to be called as standalone functions when run manually.
-        def _weekend_failures():
-            return DatabaseMonitorChecks.get_status_time_period(interval=3)
-
-        def _one_day_failures():
-            return DatabaseMonitorChecks.get_status_time_period()
-
-        if date.today().weekday() == 0:  # Returns saturday, sunday and monday
-            return _weekend_failures
-        else:  # Returns failures within past 24 hours
-            return _one_day_failures
-
     @staticmethod
     def missing_run_numbers_report(instrument_id):
+        """Retrieves missing run numbers from reduction to be analysed"""
 
         # returned query format: [number_of_rows, max_rb_number, min_rb_number, [table_list]]
         returned_query = DatabaseMonitorChecks.missing_rb_report(instrument_id)
+        # Make ordered list from min_rb to max_rb
         reference_list = [item for item in range(returned_query[2],
-                                                 returned_query[1] + 1)]  # make ordered list from min_rb to max_rb
+                                                 returned_query[1] + 1)]
         row_range = returned_query[1] - returned_query[2]
 
         # Shouldn't be possible to have a higher row range than there are rows
         if row_range > returned_query[0]:
             logging.ERROR(
                 'bd_state_checks: Row range is larger than row count {} > {}'.format(row_range, returned_query[0]))
-        # Means Missing Values are present invoking the need to query which run numbers are missing
+        # Missing Values are present invoking the need to query which run numbers are missing
         elif row_range < returned_query[0]:
             logging.warning(
                 'bd_state_checks: Missing run numbers are present - row range is smaller than row count {} < {}'.format(
@@ -213,26 +128,26 @@ class DateInCycle:
 
     @staticmethod
     def convert_time_to_seconds(time_format):
-        # Convert to seconds
+        """Converts time into seconds for calculating difference"""
         reformat_time = time.strptime(time_format, '%H:%M:%S')
-        convert_to_time = datetime.timedelta(hours=reformat_time.tm_hour,
-                                             minutes=reformat_time.tm_min,
-                                             seconds=reformat_time.tm_sec).total_seconds()
-        return convert_to_time
+        return datetime.timedelta(hours=reformat_time.tm_hour,
+                                  minutes=reformat_time.tm_min,
+                                  seconds=reformat_time.tm_sec).total_seconds()
 
     @staticmethod
     def convert_seconds_to_time(time_in_seconds):
+        """Converts seconds back into time format for output"""
         return str(datetime.timedelta(seconds=time_in_seconds))
 
     @staticmethod
-    def execution_time(self, instruments=None):
+    def execution_time(instrument=None):
         """
-        :param instruments: Instrument name taken as input and convert to instrument id
-                            - Data type is assumed to ba of type list if not None.
+        Calculates the execution time taken for each run returning in time format
 
-        Returns a dictionary containing one or many instruments as keys containing nested lists of execution times
+        :param instrument: Instrument name taken as input and convert to instrument id
+                            - Data type is assumed to ba of type list if not None.
+        :return Dictionary containing one or many instruments as keys containing nested lists of execution times
         """
-        # def _execution_time(current_instrument):
 
         def _append_execution_times(start_end_times, execution):
             """ Append to the end of each nested list
@@ -250,6 +165,7 @@ class DateInCycle:
             return start_end_times
 
         def _calc_execution_times(list_of_times):
+            """Calculate execution time and append to list"""
             for execution_list in list_of_times:
                 # Convert time HH:MM:SS into seconds to calculate execution time then converts back to time HH:MM:SS
                 time_duration_list = []
@@ -259,41 +175,102 @@ class DateInCycle:
                     time_duration_list.append(int(DateInCycle.convert_time_to_seconds(time_returned)))
                 # Calculate difference in time
                 time_duration = time_duration_list[1] - time_duration_list[0]
-                # Converts back ot datetime
+                # Converts back to datetime
                 execution = DateInCycle.convert_seconds_to_time(time_duration)
                 # Appends execution time to the end of each sublist
                 return _append_execution_times(list_of_times, execution)
 
         # new_start_end_times returned format: [[id, run_number, start_time, end_time], [ ...], ... ]
-        new_start_end_times = DatabaseMonitorChecks.run_times(current_instrument)
+        new_start_end_times = DatabaseMonitorChecks.run_times(instrument)
         return _calc_execution_times(new_start_end_times)
-        # DateInCycle.get_query_for_instruments(instruments)
 
-    def execution_time_average(self, instruments):
-        """Returns the average execution times of runs between two dates for n instruments
-        :param instruments: expects same inout as execution_time - None or list containing string
-               'all' or a list of desired instruments"""
+    # pylint: disable=line-too-long
+    @staticmethod
+    def run_frequency(instrument_id, status, retry=None, end_date=None, start_date=None, time_interval=None, sub_method_preference=None):
+        # pylint: enable=line-too-long
 
-        average_execution = {}
-        for instrument in self.execution_time(instruments):
-            execution_time_count = 0
-            for instrument_item in self.execution_time(instruments)[instrument]:
-                # Total execution times placed inside var: execution_time_count
-                execution_time_in_seconds = instrument_item[4]
-                execution_time_count = execution_time_count + execution_time_in_seconds
-            # Calculate mean average execution time
-            mean_execution = execution_time_count/len(instrument)
-            average_execution[instrument] = mean_execution
-        return average_execution
-
-    def run_frequency(self):
         """Return run frequencies for N instruments of type: successful run, failed run, or retry run.
-        Method output follows the format: Dict {instrument_N : [rpd, tr, rpw, rpw, rpm]}"""
-        pass
+        Method output follows the format: Dict {instrument_N : [rpd, tr, rpw, rpw, rpm]}
+        :param instrument_id Instrument by id 1=GEM; 2=Wish etc. - Check documentation for reference or use help method
+        :param status Completion status e.g Error = 1; Queued = 2' Processing = 3; Completed = 4; Skipped = 5
+        :param retry Takes input as True or left as None to obtain the count of retry runs
+        :param end_date The most recent date you wish to get the count of dates up to - by default the value is now()
+        :param start_date The Date you wish to count from up to the end date/ - by default this is set to None
+        :param time_interval Interval of time as int to specify number of a time scale (1 DAY, 2 DAY etc) defaults to 1
+        :param time_scale Time scale of choice such as DAY, WEEK, MONTH, YEAR. - by default this value will be set to 1
+        :param sub_method_preference Allows all previous arguments other than instrument_id and status to be left empty
+        to run a predefined argument such as runs in the last 24 hours, per day, per week, per month
 
-    def run_frequency_average(self):
-        """Returns the run frequency average between two runs."""
-        # Return as list
+        :return list of sub method values [_runs_per_day(), _runs_today(), _runs_per_week(), _runs_per_month()]
 
-        # return as dataframe
+        TODO: Create means to use sub_method_preference input to choose only specified sub methods as to running all \
+               methods by default unless set to None
+
+        """
+
+        if start_date is None:
+            start_date = 'curdate()'
+
+        if time_interval is None:
+            time_interval = 1
+
+        def _runs_per_day(**args):
+            """"""
+            # Defaults for time, only exception is changing end_date to look at one day in the past
+            return DatabaseMonitorChecks.get_data_by_status_over_time(instrument_id,
+                                                                      status,
+                                                                      retry,
+                                                                      end_date)
+
+        def _runs_today(**args):
+            """"""
+            # start_date = curdate()
+            return DatabaseMonitorChecks.get_data_by_status_over_time(instrument_id,
+                                                                      status,
+                                                                      retry,
+                                                                      end_date,
+                                                                      start_date)
+
+        def _runs_per_week(**args):
+            """"""
+            # times_scale = week
+            # if today is last day of week (sunday in this case) run, otherwise don't unless user specified to
+            if date.today().weekday() == 7:
+                return DatabaseMonitorChecks.get_data_by_status_over_time(instrument_id,
+                                                                          status,
+                                                                          retry,
+                                                                          end_date,
+                                                                          time_interval,
+                                                                          time_scale='WEEK')
+            else:
+                return None
+
+        def _runs_per_month(**args):
+            """"""
+            # time_scale = month
+            # if today is last day of month run, otherwise don't, unless user specified to
+            if date.today() == monthrange(date.today().year, date.today().month)[1]:
+                return DatabaseMonitorChecks.get_data_by_status_over_time(instrument_id,
+                                                                          status,
+                                                                          retry,
+                                                                          end_date,
+                                                                          time_interval,
+                                                                          time_scale='MONTH')
+            else:
+                return None
+
+        def _query_execute(**args):
+            """Converts sub_method outputs into a dictionary where key is instrument
+            - If not friday, _runs_per_week will return none
+            - If not last day of the month, _runs_per_month will return none
+            """
+
+            run_frequency_list = [_runs_per_day(), _runs_today(), _runs_per_week(), _runs_per_month()]
+            return run_frequency_list
+        return _query_execute()
+
+    def custom_query(self):
+        # TODO: Create this method
+        # To allow for the creation of a custom query between any dates/time period using get_status_over_time method
+        # This method will be for users and therefore will not be executed in the production script.
         pass
