@@ -16,8 +16,9 @@ import time
 
 import logging
 
-from scripts.system_performance.beam_status_webscraper import DatabaseMonitorChecks
-from scripts.system_performance.date_in_cycle import DateInCycle
+# from scripts.system_performance.beam_status_webscraper import TableWebScraper, Data_Clean
+import reduction_run_queries
+# from scripts.system_performance.test_date_cycle import DateInCycle
 
 
 class QueryHandler:
@@ -31,16 +32,16 @@ class QueryHandler:
         TODO: Create execution_time_average and run_frequency_average methods"""
 
         return {'missing_run_numbers_report': self.missing_run_numbers_report,
-                'execution_time': self.execution_time,
+               # # 'execution_time': self.execution_time,
                 # 'execution_time_average': self.execution_time_average,
-                'run_frequency': self.run_frequency,
+               # # 'run_frequency': self.run_frequency,
                 # 'run_frequency_average': self.run_frequency_average
                 }
 
     @staticmethod
     def get_instrument_models():
         """Returns a list of all currently active instruments"""
-        instrument_list = DatabaseMonitorChecks.list_instruments()
+        instrument_list = reduction_run_queries.DatabaseMonitorChecks().instruments_list()
         return instrument_list
 
     def run_every_instruments(self, instrument_dict, method_name, method_arguments=None):
@@ -100,89 +101,172 @@ class QueryHandler:
         return instrument_dict
 
     @staticmethod
-    def missing_run_numbers_report(instrument_id):
+    def missing_run_numbers_report(instrument):
         """Retrieves missing run numbers from reduction to be analysed"""
 
-        # returned query format: [number_of_rows, max_rb_number, min_rb_number, [table_list]]
-        returned_query = DatabaseMonitorChecks.missing_rb_report(instrument_id)
-        # Make ordered list from min_rb to max_rb
-        reference_list = [item for item in range(returned_query[2],
-                                                 returned_query[1] + 1)]
-        row_range = returned_query[1] - returned_query[2]
+        def _find_missing(lst):
+            """Find all missing numbers in a given list"""
+            return [x for x in range(lst[0], lst[-1] + 1) if x not in lst]
 
-        # Shouldn't be possible to have a higher row range than there are rows
-        if row_range > returned_query[0]:
-            logging.ERROR(
-                'bd_state_checks: Row range is larger than row count {} > {}'.format(row_range, returned_query[0]))
-        # Missing Values are present invoking the need to query which run numbers are missing
-        elif row_range < returned_query[0]:
-            logging.warning(
-                'bd_state_checks: Missing run numbers are present - row range is smaller than row count {} < {}'.format(
-                    row_range, returned_query[0]))
-            # Compare reference list to actual run numbers to find missing run numbers
-            missing_reduction_numbers = list(set(reference_list) - set(returned_query[3]))
-            return missing_reduction_numbers
-        # Else all run numbers are present in asynchronous order
-        else:
-            logging.info('All run numbers are present in asynchronous order.')
+        returned_query = reduction_run_queries.DatabaseMonitorChecks().missing_rb_report(instrument)
+
+        # Sort returned query run numbers into ascending order
+        returned_query.sort()
+        sorted_run_numbers = sorted(returned_query)
+        missing_run_numbers = _find_missing(sorted_run_numbers)
+
+        # return list containing count of runs vs count of missing runs
+        return [len(sorted_run_numbers), len(missing_run_numbers), missing_run_numbers]
+
+    # @staticmethod
+    # def execution_time(instrument=None):
+    #     """
+    #     Calculates the execution time taken for each run returning in time format
+    #
+    #     :param instrument: Instrument name taken as input and convert to instrument id
+    #                         - Data type is assumed to ba of type list if not None.
+    #     :return Dictionary containing one or many instruments as keys containing nested lists of execution times
+    #     """
+    #
+    #     def convert_time_to_seconds(time_format):
+    #         """Converts time into seconds for calculating difference"""
+    #         reformat_time = time.strptime(time_format, '%H:%M:%S')
+    #         return datetime.timedelta(hours=reformat_time.tm_hour,
+    #                                   minutes=reformat_time.tm_min,
+    #                                   seconds=reformat_time.tm_sec).total_seconds()
+    #
+    #     def convert_seconds_to_time(time_in_seconds):
+    #         """Converts seconds back into time format for output"""
+    #         return str(datetime.timedelta(seconds=time_in_seconds))
+    #
+    #     def _append_execution_times(start_end_times, execution):
+    #         """ Append to the end of each nested list
+    #             start_end_times now returns format:
+    #             [[id, run_number, start_time, end_time, execution_time], [ ...], ... ] """
+    #
+    #         new_list = [list(elem) for elem in start_end_times]
+    #
+    #         start_end_execution = iter(execution)
+    #         for execution_list in new_list:
+    #             for items in execution_list:
+    #         # for nested_list in start_end_times:
+    #         #     for element in nested_list:
+    #                 if isinstance(items, list):
+    #                     # element.append(next(start_end_execution))
+    #                     new_list.append(next(start_end_execution))
+    #                 else:
+    #                     # nested_list.append(next(start_end_execution))
+    #                     # new_list.append(next(start_end_execution))
+    #                     break
+    #         # return start_end_times
+    #         return new_list
+    #
+    #     def _calc_execution_times(list_of_times):
+    #         """Calculate execution time and append to list"""
+    #         execution = []
+    #         for execution_list in list_of_times:
+    #             # for items in execution_list:
+    #             # Convert time HH:MM:SS into seconds to calculate execution time then converts back to time HH:MM:SS
+    #             time_duration_list = []
+    #             start_end = [execution_list[2], execution_list[3]]
+    #             for time_returned in start_end:
+    #             #     # if time_returned is not None:
+    #             #         # Appends time in seconds to list
+    #                 time_duration_list.append(int(convert_time_to_seconds(time_returned)))
+    #                 # else:
+    #                 #     break
+    #             # Calculate difference in time
+    #             # if time_duration_list[1] and time_duration_list[0] is not None:
+    #             # time_duration = time_duration_list[1] - time_duration_list[0]
+    #             time_duration = time_duration_list[0] - time_duration_list[1]
+    #             # else:
+    #             #     break
+    #             # Converts back to datetime
+    #             # execution = convert_seconds_to_time(time_duration)
+    #             execution.append(convert_seconds_to_time(time_duration))
+    #             # Appends execution time to the end of each sublist
+    #             # return _append_execution_times(list_of_times, execution)
+    #         return _append_execution_times(list_of_times, execution)
+    #             # return time_duration_list
+    #
+    #     # new_start_end_times returned format: [[id, run_number, start_time, end_time], [ ...], ... ]
+    #     new_start_end_times = reduction_run_queries.DatabaseMonitorChecks().run_times(instrument)
+    #     return _calc_execution_times(new_start_end_times)
 
     @staticmethod
-    def convert_time_to_seconds(time_format):
-        """Converts time into seconds for calculating difference"""
-        reformat_time = time.strptime(time_format, '%H:%M:%S')
-        return datetime.timedelta(hours=reformat_time.tm_hour,
-                                  minutes=reformat_time.tm_min,
-                                  seconds=reformat_time.tm_sec).total_seconds()
+    def execution_times(instrument):
+        def convert_seconds_to_time(time_in_seconds):
+            """Converts seconds back into time format for output"""
+            return str(datetime.timedelta(seconds=time_in_seconds))
 
-    @staticmethod
-    def convert_seconds_to_time(time_in_seconds):
-        """Converts seconds back into time format for output"""
-        return str(datetime.timedelta(seconds=time_in_seconds))
-
-    @staticmethod
-    def execution_time(instrument=None):
-        """
-        Calculates the execution time taken for each run returning in time format
-
-        :param instrument: Instrument name taken as input and convert to instrument id
-                            - Data type is assumed to ba of type list if not None.
-        :return Dictionary containing one or many instruments as keys containing nested lists of execution times
-        """
+        def convert_time_to_seconds(time_format):
+            """Converts time into seconds for calculating difference"""
+            reformat_time = time.strptime(time_format, '%H:%M:%S')
+            return datetime.timedelta(hours=reformat_time.tm_hour,
+                                      minutes=reformat_time.tm_min,
+                                      seconds=reformat_time.tm_sec).total_seconds()
 
         def _append_execution_times(start_end_times, execution):
-            """ Append to the end of each nested list
-                start_end_times now returns format:
-                [[id, run_number, start_time, end_time, execution_time], [ ...], ... ] """
+            # convert list of tuple to list of lists
+            # newlist = [list(elem) for elem in start_end_times_tuple]
+            # print start_end_times
+            # for execution_time in range(len(execution) - 1):
+            #     print(execution_time)
+            #     print(execution)
+            #     newlist[execution_time].append(execution[execution_time])
+            #     print len(execution)
 
-            start_end_execution = iter(execution)
-            for nested_list in start_end_times:
-                for element in nested_list:
-                    if isinstance(element, list):
-                        element.append(next(start_end_execution))
-                    else:
-                        nested_list.append(next(start_end_execution))
-                        break
+            new_list = [list(elem) for elem in start_end_times]
+
+            for execution_time in range(len(execution)):
+                start_end_times[execution_time].append(execution[execution_time])
+
             return start_end_times
 
         def _calc_execution_times(list_of_times):
-            """Calculate execution time and append to list"""
-            for execution_list in list_of_times:
-                # Convert time HH:MM:SS into seconds to calculate execution time then converts back to time HH:MM:SS
-                time_duration_list = []
-                start_end = [execution_list[2], execution_list[3]]
-                for time_returned in start_end:
-                    # Appends time in seconds to list
-                    time_duration_list.append(int(DateInCycle.convert_time_to_seconds(time_returned)))
-                # Calculate difference in time
-                time_duration = time_duration_list[1] - time_duration_list[0]
-                # Converts back to datetime
-                execution = DateInCycle.convert_seconds_to_time(time_duration)
-                # Appends execution time to the end of each sublist
-                return _append_execution_times(list_of_times, execution)
+            time_duration_list = []
+            time_in_seconds_list = []
 
-        # new_start_end_times returned format: [[id, run_number, start_time, end_time], [ ...], ... ]
-        new_start_end_times = DatabaseMonitorChecks.run_times(instrument)
-        return _calc_execution_times(new_start_end_times)
+            # print(list_of_times)
+
+            for execution_list in list_of_times:
+                for sublist in execution_list:
+                    start_end = [sublist[2], sublist[3]]
+
+                    # for start and end times in list, convert into seconds
+                    for time_returned in start_end:
+                        time_duration_list.append(int(convert_time_to_seconds(time_returned)))
+
+                        # convert every 2 items into set
+                [((item), (item + 1) % len(time_duration_list)) for item in range(len(time_duration_list))]
+
+                # Calculate execution times and append to new list
+                time_duration = time_duration_list[3] - time_duration_list[2]
+                print time_duration_list[3]
+                print time_duration_list[2]
+                print time_duration
+                time_in_seconds_list.append(time_duration)
+
+            # convert execution times from seconds to datetime format
+            execution_list = []
+            for times in time_in_seconds_list:
+                execution_list.append(convert_seconds_to_time(times))
+            # return list_of_times
+
+            # return time_in_seconds_list
+            # return _append_execution_times([element for element in list_of_times], execution_list)
+
+            print( time_in_seconds_list)
+            for exe_times_lists in range(len(execution_list)):
+                # for exe_times in execution_list:
+                if execution_list[exe_times_lists] is not None:
+                    list_of_times[exe_times_lists].append(execution_list[exe_times_lists])
+
+
+        start_end_times_tuple = reduction_run_queries.DatabaseMonitorChecks().run_times(instrument)
+
+        # return start_end_times_tuple
+        return _calc_execution_times(start_end_times_tuple)
 
     # pylint: disable=line-too-long
     @staticmethod
@@ -205,72 +289,104 @@ class QueryHandler:
 
         TODO: Create means to use sub_method_preference input to choose only specified sub methods as to running all \
                methods by default unless set to None
-
         """
 
         if start_date is None:
-            start_date = 'curdate()'
+            start_date = 'curdate() - 2'
 
         if time_interval is None:
             time_interval = 1
 
-        def _runs_per_day(**args):
+        if end_date is None:
+            end_date = 'curdate()'
+
+        def _runs_per_day():
             """"""
             # Defaults for time, only exception is changing end_date to look at one day in the past
-            return DatabaseMonitorChecks.get_data_by_status_over_time(instrument_id,
-                                                                      status,
-                                                                      retry,
-                                                                      end_date)
+            return reduction_run_queries.DatabaseMonitorChecks().get_data_by_status_over_time(
+                instrument_id=instrument_id,
+                status_id=status,
+                retry_run=retry,
+                end_date=end_date)
 
-        def _runs_today(**args):
+        def _runs_today():
             """"""
-            # start_date = curdate()
-            return DatabaseMonitorChecks.get_data_by_status_over_time(instrument_id,
-                                                                      status,
-                                                                      retry,
-                                                                      end_date,
-                                                                      start_date)
+            # start_date = current date
+            return reduction_run_queries.DatabaseMonitorChecks().get_data_by_status_over_time(
+                instrument_id=instrument_id,
+                status_id=status,
+                retry_run=retry,
+                end_date=end_date,
+                start_date=start_date)
 
-        def _runs_per_week(**args):
+        def _runs_per_week():
             """"""
             # times_scale = week
             # if today is last day of week (sunday in this case) run, otherwise don't unless user specified to
-            if date.today().weekday() == 7:
-                return DatabaseMonitorChecks.get_data_by_status_over_time(instrument_id,
-                                                                          status,
-                                                                          retry,
-                                                                          end_date,
-                                                                          time_interval,
-                                                                          time_scale='WEEK')
+            if date.today().weekday() == 4:
+                return reduction_run_queries.DatabaseMonitorChecks().get_data_by_status_over_time(
+                    instrument_id=instrument_id,
+                    status_id=status,
+                    retry_run=retry,
+                    end_date=end_date,
+                    interval=time_interval,
+                    time_scale='WEEK')
             else:
                 return None
 
-        def _runs_per_month(**args):
+        def _runs_per_month():
             """"""
             # time_scale = month
             # if today is last day of month run, otherwise don't, unless user specified to
             if date.today() == monthrange(date.today().year, date.today().month)[1]:
-                return DatabaseMonitorChecks.get_data_by_status_over_time(instrument_id,
-                                                                          status,
-                                                                          retry,
-                                                                          end_date,
-                                                                          time_interval,
-                                                                          time_scale='MONTH')
+                return reduction_run_queries.DatabaseMonitorChecks().get_data_by_status_over_time(
+                    instrument_id=instrument_id,
+                    status_id=status,
+                    retry_run=retry,
+                    end_date=end_date,
+                    interval=time_interval,
+                    time_scale='MONTH')
             else:
                 return None
 
-        def _query_execute(**args):
+        def _query_execute():
             """Converts sub_method outputs into a dictionary where key is instrument
             - If not friday, _runs_per_week will return none
             - If not last day of the month, _runs_per_month will return none
             """
 
+            def list_lengths(nested_list_of_runs):
+                """ Returning run count of runs for each frequency range"""
+                run_frequency_list_counts = []
+                for frequency_interval in nested_list_of_runs:
+                    if frequency_interval:
+                        run_frequency_list_counts.append(len(frequency_interval))
+                    else:
+                        run_frequency_list_counts.append(frequency_interval)
+                return run_frequency_list_counts
+
+            # Nested list containing run numbers for each frequency range
             run_frequency_list = [_runs_per_day(), _runs_today(), _runs_per_week(), _runs_per_month()]
+
+            # mapping both list together to return in the form [[()), (), ... _runs_per_day frequency], ... ]
+            frequencies = list_lengths(run_frequency_list)
+            for frequency_count in range(len(frequencies)):
+                if frequencies[frequency_count] is not None:
+                    run_frequency_list[frequency_count].append(frequencies[frequency_count])
+
             return run_frequency_list
         return _query_execute()
 
-    def custom_query(self):
-        # TODO: Create this method
-        # To allow for the creation of a custom query between any dates/time period using get_status_over_time method
-        # This method will be for users and therefore will not be executed in the production script.
-        pass
+
+# print(QueryHandler().run_frequency(instrument_id=8, status=4))
+
+print(QueryHandler().execution_times(8))
+
+# print(QueryHandler().missing_run_numbers_report(8))
+
+#  def custom_query(self):
+# TODO: Create this method
+# To allow for the creation of a custom query between any dates/time period using get_status_over_time method
+# This method will be for users and therefore will not be executed in the production script.
+
+# pass
