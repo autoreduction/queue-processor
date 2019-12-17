@@ -7,14 +7,14 @@
 """
 Module for dealing with instrument reduction variables.
 """
-import imp
+import importlib.util as imp
 import io
 import logging.config
 import os
 import html
 
 import chardet
-
+from sqlalchemy import text
 from queue_processors.queue_processor.base import session
 from queue_processors.queue_processor.orm_mapping import (InstrumentJoin, Notification,
                                                           InstrumentVariable, RunVariable,
@@ -60,7 +60,7 @@ class InstrumentVariablesUtils:
         # If we haven't been given a run number, we should try to find it.
         if not run_number:
             applicable_variables = session.query(InstrumentVariable).\
-                filter_by(instrument=instrument).order_by('-start_run').all()
+                filter_by(instrument=instrument).order_by(text('-start_run')).all()
             if applicable_variables:
                 variable_run_number = applicable_variables[0].start_run
         else:
@@ -120,7 +120,7 @@ class InstrumentVariablesUtils:
             var.tracks_script = True
 
         applicable_variables = session.query(InstrumentVariable).filter_by(instrument=instrument) \
-            .order_by('-start_run').all()
+            .order_by(text('-start_run')).all()
         variable_run_number = applicable_variables[0].start_run
 
         # Now use the InstrumentJoin class (which is a join of the InstrumentVariable and Variable
@@ -215,11 +215,13 @@ class InstrumentVariablesUtils:
         if not script_text or not script_path:
             return None
 
-        module_name = os.path.basename(script_path).split(".")[0]  # file name without extension
-        script_module = imp.new_module(module_name)
+        # file name without extension
+        module_name = os.path.basename(script_path).split(".")[0]
         try:
-            exec(script_text in script_module.__dict__)  # pylint: disable=exec-used
-            return script_module
+            spec = imp.spec_from_file_location(module_name, script_path)
+            module = imp.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module
         except ImportError as exp:
             self.log_error_and_notify(
                 "Unable to load reduction script %s due to missing import. (%s)" % (script_path,
@@ -232,7 +234,7 @@ class InstrumentVariablesUtils:
     def _create_variables(self, instrument, script, variable_dict, is_advanced):
         """ Create variables in the database. """
         variables = []
-        for key, value in variable_dict.iteritems():
+        for key, value in list(variable_dict.items()):
             str_value = str(value).replace('[', '').replace(']', '')
             if len(str_value) > 300:
                 raise DataTooLong
@@ -344,7 +346,7 @@ class InstrumentVariablesUtils:
             # pylint: disable=no-member
             after_variables = InstrumentVariable.objects.filter(instrument=instrument,
                                                                 start_run=end_run + 1)\
-                .order_by('start_run')
+                .order_by(text('start_run'))
 
             # pylint: disable=no-member
             previous_variables = InstrumentVariable.objects.filter(instrument=instrument,
@@ -354,7 +356,7 @@ class InstrumentVariablesUtils:
                 # The last set of applicable variables extends outside our range.
 
                 # Find the last set.
-                final_start = applicable_variables.order_by('-start_run').first().start_run
+                final_start = applicable_variables.order_by(text('-start_run')).first().start_run
                 final_variables = list(applicable_variables.filter(start_run=final_start))
                 applicable_variables = applicable_variables.exclude(
                     start_run=final_start)  # Don't delete the final set.
