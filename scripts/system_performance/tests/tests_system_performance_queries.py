@@ -34,11 +34,6 @@ class TESTDatabaseMonitorChecks(unittest.TestCase):
 
         self.assertIsInstance(missing_rb_report, list)
 
-    def test_run_times(self):
-        run_times = DatabaseMonitorChecks().run_times(7, start_date='2019:11:12', end_date='2019:12:20')
-
-        self.assertIsInstance(run_times, list)
-
     def test_get_data_by_status_over_time(self):
         status_over_time = DatabaseMonitorChecks().get_data_by_status_over_time(selection='COUNT(id)', instrument_id=7)
 

@@ -10,12 +10,9 @@ The purpose of this script is for performing MySQL queries to monitor system sta
 db_state_checks
 """
 
-# sys.path.append(os.path.join(os.path.dirname(__file__), '../..', 'utils'))
-# from scripts.system_performance.beam_status_webscraper import Data_Clean, TableWebScraper
 from utils.clients.database_client import DatabaseClient
 import requests
 import itertools
-from datetime import date
 
 
 class DatabaseMonitorChecks:
@@ -113,7 +110,7 @@ class DatabaseMonitorChecks:
             interval_range = "INTERVAL {} {}".format(query_arguments['interval'], query_arguments['time_scale'])
             date_range = "BETWEEN '{}' AND '{}'".format(start_date, end_date)
             current_date = "CURDATE()"
-            # curr_date = '= {}'.format(date_arg) # Equal to user specified date -_-_-_-_-_-_-: Need/want this?
+            # curr_date = '= str(date_arg) # Equal to user specified date -_-_-_-_-_-_-: Need/want this?
 
             def query_sub_segment_replace():
                 """Select last query argument based on argument input - sub_segment selection"""
@@ -171,4 +168,5 @@ class DatabaseMonitorChecks:
         _default_argument_assign(arguments)  # Setting default variables
         interchangeable_query_args = _dynamic_query_segment_replace(arguments)  # Determining query segment to use
 
+        # Interchangeable_query_args is a nested list of set instrument arguments and query segments to be used in query
         return _query_out(self.establish_connection(), interchangeable_query_args[0][1], interchangeable_query_args[0][0])
