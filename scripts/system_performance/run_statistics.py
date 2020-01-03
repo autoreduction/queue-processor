@@ -217,13 +217,13 @@ class QueryHandler:
         """
 
         if start_date is None:
-            start_date = 'CURDATE() - 2'
+            start_date = datetime.date.today() - datetime.timedelta(days=2)
 
         if time_interval is None:
             time_interval = 1
 
         if end_date is None:
-            end_date = 'CURDATE()'
+            end_date = datetime.date.today()
 
         def _runs_per_day():
             """"""
@@ -304,7 +304,7 @@ class QueryHandler:
 
 
 # print(QueryHandler().run_frequency(instrument_id=8, status=4, start_date='2019-12-12', end_date='2019-12-13'))
-print(QueryHandler().run_frequency(instrument_id=8, status=4))
+# print(QueryHandler().run_frequency(instrument_id=8, status=4, start_date='2019-12-12'))
 
 # print(QueryHandler().execution_times(8))
 
