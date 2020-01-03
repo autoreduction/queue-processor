@@ -63,42 +63,6 @@ class DatabaseMonitorChecks:
         # Converts list of run number sets containing longs into list of integers [(123L), (456L)] -> [123, 456]
         return [int(elem) for elem in list(itertools.chain.from_iterable(missing_rb_calc_vars['run_numbers']))]
 
-    def run_times(self, instrument, start_date, end_date):
-        """
-        Get the start and end times of a run for a given instrument separated into sub lists by status_id
-        :returns run times in nested list formatted as: [[id, run_number, start time, end time], [...]...]"""
-        connection = self.establish_connection()
-
-        statuses = [4]  # You can add status id's of interest to list to be returned as nested lists in output
-
-        if not start_date:
-            start_date = date.today()
-
-        nested_list_of_tuples_of_times_by_id = []
-        for status_id in statuses:
-            nested_list_of_tuples_of_times_by_id.append(connection.execute(
-                "SELECT id, "
-                "run_number, "
-                "DATE_FORMAT(started, '%H:%i:%s') TIMEONLY, "
-                "DATE_FORMAT(finished, '%H:%i:%s') TIMEONLY "
-                "FROM {} Where instrument_id = {} "
-                "AND status_id = {} "
-                "AND created "
-                "BETWEEN '{}' "
-                "AND '{}'".format(DatabaseMonitorChecks.table,
-                                              instrument,
-                                              status_id,
-                                              start_date,
-                                              end_date)).fetchall())  # works
-
-        # Converting tuples to list of items
-        nested_list_of_times_by_id = []
-        for i in range(len(nested_list_of_tuples_of_times_by_id)):
-            temp_list = [list(elem) for elem in nested_list_of_tuples_of_times_by_id[i]]
-            nested_list_of_times_by_id.append(temp_list)
-
-        return nested_list_of_times_by_id
-
     def get_data_by_status_over_time(self, selection=None, status_id=None, retry_run=None, instrument_id=None,
                                      anomic_aphasia=None, end_date=None, interval=None, time_scale=None,
                                      start_date=None):
