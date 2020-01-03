@@ -65,7 +65,7 @@ class QueryHandler:
         :param instrument_input: [(str), (str), ...] - Represents the instruments to be used in queries
         :param method_name: (str) -  The name of the methods to run
         :param additional_method_arguments - method arguments specified by user
-        :return: A dictionary of instrument name (key) and list of method output (value)
+        :return: A dictionary of instrument names (key) and list of method output (value)
          """
 
         instrument_dict = {}
@@ -75,10 +75,10 @@ class QueryHandler:
             if not additional_method_arguments:
                 method_arguments = [instrument[0]]
             else:
-                # convert arguments to list
+                # joins arguments to list
                 method_arguments = [instrument[0]] + additional_method_arguments
 
-            # if input is None, run all instruments by default
+            # If input is None, run all instruments by default
             if not isinstance(instrument_input, list):
                 logging.error("Value is not iterable, the first argument must be of type list")
                 return None
@@ -102,7 +102,10 @@ class QueryHandler:
 
     @staticmethod
     def missing_run_numbers_report(instrument):
-        """Retrieves missing run numbers from reduction to be analysed"""
+        """Retrieves missing run numbers from reduction to be analysed
+        :returns [count of run run number between two dates/time,
+        the count of missing run numbers,
+        [nester list of missing run numbers id's]]"""
 
         def _find_missing(lst):
             """Find all missing numbers in a given list"""
@@ -132,7 +135,7 @@ class QueryHandler:
                                       seconds=reformat_time.tm_sec).total_seconds()
 
         def _execution_times_in_seconds_mapping(start_end_times):
-            """Returns a nested list of start and end times in seconds"""
+            """:returns a nested list of start and end times in seconds"""
             time_duration_list = []
             grouped_start_end_times = []
 
@@ -155,6 +158,7 @@ class QueryHandler:
             return list_of_times
 
         def _calc_execution_times(list_of_times):
+            """:returns list of execution times"""
             time_in_seconds_list = []
 
             # Calculate execution times and append to new list
@@ -185,7 +189,8 @@ class QueryHandler:
                 start_date=start_date,
                 end_date=end_date)
 
-        start_end_dates = ['2019-12-12', '2019-12-13']  # Need to make sure this becomes argument as to static variable
+        # TODO Need to make sure this becomes argument as to static variable
+        start_end_dates = ['2019-12-12', '2019-12-13']
 
         return _run_execution_times(_query_argument_specify(start_end_dates[0], start_end_dates[1]))
 
@@ -222,7 +227,7 @@ class QueryHandler:
 
         def _runs_per_day():
             """"""
-            # Defaults for time, only exception is changing end_date to look at one day in the past
+            # Defaults for time, only exception is changing end_date to look in the past
             return reduction_run_queries.DatabaseMonitorChecks().get_data_by_status_over_time(
                 instrument_id=instrument_id,
                 status_id=status,
@@ -242,7 +247,7 @@ class QueryHandler:
         def _runs_per_week():
             """"""
             # times_scale = week
-            # if today is last day of week (sunday in this case) run, otherwise don't unless user specified to
+            # If today is last day of week (Friday in this case) run, otherwise don't unless user specified to
             if date.today().weekday() == 4:
                 return reduction_run_queries.DatabaseMonitorChecks().get_data_by_status_over_time(
                     instrument_id=instrument_id,
@@ -257,7 +262,7 @@ class QueryHandler:
         def _runs_per_month():
             """"""
             # time_scale = month
-            # if today is last day of month run, otherwise don't, unless user specified to
+            # If today is last day of month, run, otherwise don't unless user specified to
             if date.today() == monthrange(date.today().year, date.today().month)[1]:
                 return reduction_run_queries.DatabaseMonitorChecks().get_data_by_status_over_time(
                     instrument_id=instrument_id,
@@ -288,7 +293,7 @@ class QueryHandler:
             # Nested list containing run numbers for each frequency range
             run_frequency_list = [_runs_per_day(), _runs_today(), _runs_per_week(), _runs_per_month()]
 
-            # mapping both list together to return in the form [[()), (), ... _runs_per_day frequency], ... ]
+            # Mapping both lists together to return in the form [[()), (), ... _runs_per_day frequency], ... ]
             frequencies = list_lengths(run_frequency_list)
             for frequency_count in range(len(frequencies)):
                 if frequencies[frequency_count] is not None:
