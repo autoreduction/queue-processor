@@ -108,7 +108,7 @@ class QueryHandler:
             """Find all missing numbers in a given list"""
             return [x for x in range(lst[0], lst[-1] + 1) if x not in lst]
 
-        returned_query = reduction_run_queries.DatabaseMonitorChecks().missing_rb_report(instrument)
+        returned_query = reduction_run_queries.DatabaseMonitorChecks().missing_rb_report(instrument=instrument, start_date='2019-12-12', end_date='2019-12-14')
 
         # Sort returned query run numbers into ascending order
         returned_query.sort()
@@ -118,159 +118,80 @@ class QueryHandler:
         # return list containing count of runs vs count of missing runs
         return [len(sorted_run_numbers), len(missing_run_numbers), missing_run_numbers]
 
-    # @staticmethod
-    # def execution_time(instrument=None):
-    #     """
-    #     Calculates the execution time taken for each run returning in time format
-    #
-    #     :param instrument: Instrument name taken as input and convert to instrument id
-    #                         - Data type is assumed to ba of type list if not None.
-    #     :return Dictionary containing one or many instruments as keys containing nested lists of execution times
-    #     """
-    #
-    #     def convert_time_to_seconds(time_format):
-    #         """Converts time into seconds for calculating difference"""
-    #         reformat_time = time.strptime(time_format, '%H:%M:%S')
-    #         return datetime.timedelta(hours=reformat_time.tm_hour,
-    #                                   minutes=reformat_time.tm_min,
-    #                                   seconds=reformat_time.tm_sec).total_seconds()
-    #
-    #     def convert_seconds_to_time(time_in_seconds):
-    #         """Converts seconds back into time format for output"""
-    #         return str(datetime.timedelta(seconds=time_in_seconds))
-    #
-    #     def _append_execution_times(start_end_times, execution):
-    #         """ Append to the end of each nested list
-    #             start_end_times now returns format:
-    #             [[id, run_number, start_time, end_time, execution_time], [ ...], ... ] """
-    #
-    #         new_list = [list(elem) for elem in start_end_times]
-    #
-    #         start_end_execution = iter(execution)
-    #         for execution_list in new_list:
-    #             for items in execution_list:
-    #         # for nested_list in start_end_times:
-    #         #     for element in nested_list:
-    #                 if isinstance(items, list):
-    #                     # element.append(next(start_end_execution))
-    #                     new_list.append(next(start_end_execution))
-    #                 else:
-    #                     # nested_list.append(next(start_end_execution))
-    #                     # new_list.append(next(start_end_execution))
-    #                     break
-    #         # return start_end_times
-    #         return new_list
-    #
-    #     def _calc_execution_times(list_of_times):
-    #         """Calculate execution time and append to list"""
-    #         execution = []
-    #         for execution_list in list_of_times:
-    #             # for items in execution_list:
-    #             # Convert time HH:MM:SS into seconds to calculate execution time then converts back to time HH:MM:SS
-    #             time_duration_list = []
-    #             start_end = [execution_list[2], execution_list[3]]
-    #             for time_returned in start_end:
-    #             #     # if time_returned is not None:
-    #             #         # Appends time in seconds to list
-    #                 time_duration_list.append(int(convert_time_to_seconds(time_returned)))
-    #                 # else:
-    #                 #     break
-    #             # Calculate difference in time
-    #             # if time_duration_list[1] and time_duration_list[0] is not None:
-    #             # time_duration = time_duration_list[1] - time_duration_list[0]
-    #             time_duration = time_duration_list[0] - time_duration_list[1]
-    #             # else:
-    #             #     break
-    #             # Converts back to datetime
-    #             # execution = convert_seconds_to_time(time_duration)
-    #             execution.append(convert_seconds_to_time(time_duration))
-    #             # Appends execution time to the end of each sublist
-    #             # return _append_execution_times(list_of_times, execution)
-    #         return _append_execution_times(list_of_times, execution)
-    #             # return time_duration_list
-    #
-    #     # new_start_end_times returned format: [[id, run_number, start_time, end_time], [ ...], ... ]
-    #     new_start_end_times = reduction_run_queries.DatabaseMonitorChecks().run_times(instrument)
-    #     return _calc_execution_times(new_start_end_times)
-
     @staticmethod
     def execution_times(instrument):
-        def convert_seconds_to_time(time_in_seconds):
+        def _convert_seconds_to_time(time_in_seconds):
             """Converts seconds back into time format for output"""
             return str(datetime.timedelta(seconds=time_in_seconds))
 
-        def convert_time_to_seconds(time_format):
+        def _convert_time_to_seconds(time_format):
             """Converts time into seconds for calculating difference"""
             reformat_time = time.strptime(time_format, '%H:%M:%S')
             return datetime.timedelta(hours=reformat_time.tm_hour,
                                       minutes=reformat_time.tm_min,
                                       seconds=reformat_time.tm_sec).total_seconds()
 
-        def _append_execution_times(start_end_times, execution):
-            # convert list of tuple to list of lists
-            # newlist = [list(elem) for elem in start_end_times_tuple]
-            # print start_end_times
-            # for execution_time in range(len(execution) - 1):
-            #     print(execution_time)
-            #     print(execution)
-            #     newlist[execution_time].append(execution[execution_time])
-            #     print len(execution)
+        def _execution_times_in_seconds_mapping(start_end_times):
+            """Returns a nested list of start and end times in seconds"""
+            time_duration_list = []
+            grouped_start_end_times = []
 
-            new_list = [list(elem) for elem in start_end_times]
+            for sublist in start_end_times:
+                start_end = [sublist[2], sublist[3]]
+                # Converting start and end times into seconds
+                for time_returned in start_end:
+                    time_duration_list.append(int(_convert_time_to_seconds(time_returned)))
+                    if len(time_duration_list) == 2:
+                        isolated_start_end_times = [time_duration_list[0], time_duration_list[1]]
+                        grouped_start_end_times.append(isolated_start_end_times)
+                        time_duration_list = []
+            return grouped_start_end_times
 
-            for execution_time in range(len(execution)):
-                start_end_times[execution_time].append(execution[execution_time])
-
-            return start_end_times
+        def _list_zip(execution_list, list_of_times):
+            """Appending execution times to the ends of each start end sublist."""
+            for execution_times in range(len(execution_list)):
+                if execution_list[execution_times] is not None:
+                    list_of_times[execution_times].append(execution_list[execution_times])
+            return list_of_times
 
         def _calc_execution_times(list_of_times):
-            time_duration_list = []
             time_in_seconds_list = []
 
-            # print(list_of_times)
+            # Calculate execution times and append to new list
+            for start_end_sublist in _execution_times_in_seconds_mapping(list_of_times):
+                time_in_seconds_list.append(start_end_sublist[1] - start_end_sublist[0])
 
-            for execution_list in list_of_times:
-                for sublist in execution_list:
-                    start_end = [sublist[2], sublist[3]]
-
-                    # for start and end times in list, convert into seconds
-                    for time_returned in start_end:
-                        time_duration_list.append(int(convert_time_to_seconds(time_returned)))
-
-                        # convert every 2 items into set
-                [((item), (item + 1) % len(time_duration_list)) for item in range(len(time_duration_list))]
-
-                # Calculate execution times and append to new list
-                time_duration = time_duration_list[3] - time_duration_list[2]
-                print time_duration_list[3]
-                print time_duration_list[2]
-                print time_duration
-                time_in_seconds_list.append(time_duration)
-
-            # convert execution times from seconds to datetime format
+            # Convert execution times from seconds to datetime format
             execution_list = []
             for times in time_in_seconds_list:
-                execution_list.append(convert_seconds_to_time(times))
-            # return list_of_times
+                execution_list.append(_convert_seconds_to_time(times))
+            return execution_list
 
-            # return time_in_seconds_list
-            # return _append_execution_times([element for element in list_of_times], execution_list)
+        def _run_execution_times(list_of_times):
+            """:returns list_of_times & execution time as [[id, run_number, start_time, end_time, execution_time]...]"""
+            return _list_zip(_calc_execution_times(list_of_times), list_of_times)
 
-            print( time_in_seconds_list)
-            for exe_times_lists in range(len(execution_list)):
-                # for exe_times in execution_list:
-                if execution_list[exe_times_lists] is not None:
-                    list_of_times[exe_times_lists].append(execution_list[exe_times_lists])
+        def _query_argument_specify(start_date, end_date):
+            """Specifies arguments for query and returns data from Autoreduce database"""
+            selection = "id, " \
+                        "run_number, " \
+                        "DATE_FORMAT(started, '%H:%i:%s') TIMEONLY, " \
+                        "DATE_FORMAT(finished, '%H:%i:%s') TIMEONLY"
 
+            return reduction_run_queries.DatabaseMonitorChecks().get_data_by_status_over_time(
+                selection=selection,
+                instrument_id=instrument,
+                anomic_aphasia='created',
+                start_date=start_date,
+                end_date=end_date)
 
-        start_end_times_tuple = reduction_run_queries.DatabaseMonitorChecks().run_times(instrument)
+        start_end_dates = ['2019-12-12', '2019-12-13']  # Need to make sure this becomes argument as to static variable
 
-        # return start_end_times_tuple
-        return _calc_execution_times(start_end_times_tuple)
+        return _run_execution_times(_query_argument_specify(start_end_dates[0], start_end_dates[1]))
 
     # pylint: disable=line-too-long
     @staticmethod
-    def run_frequency(instrument_id, status, retry=None, end_date=None, start_date=None, time_interval=None, sub_method_preference=None):
+    def run_frequency(instrument_id, status, retry=None, end_date=None, start_date=None, time_interval=None):
         # pylint: enable=line-too-long
 
         """Return run frequencies for N instruments of type: successful run, failed run, or retry run.
@@ -287,18 +208,17 @@ class QueryHandler:
 
         :return list of sub method values [_runs_per_day(), _runs_today(), _runs_per_week(), _runs_per_month()]
 
-        TODO: Create means to use sub_method_preference input to choose only specified sub methods as to running all \
-               methods by default unless set to None
+        TODO: Remove speech marks from curdate default variables to make query valid when start and end dates are none.
         """
 
         if start_date is None:
-            start_date = 'curdate() - 2'
+            start_date = 'CURDATE() - 2'
 
         if time_interval is None:
             time_interval = 1
 
         if end_date is None:
-            end_date = 'curdate()'
+            end_date = 'CURDATE()'
 
         def _runs_per_day():
             """"""
@@ -378,9 +298,10 @@ class QueryHandler:
         return _query_execute()
 
 
-# print(QueryHandler().run_frequency(instrument_id=8, status=4))
+# print(QueryHandler().run_frequency(instrument_id=8, status=4, start_date='2019-12-12', end_date='2019-12-13'))
+print(QueryHandler().run_frequency(instrument_id=8, status=4))
 
-print(QueryHandler().execution_times(8))
+# print(QueryHandler().execution_times(8))
 
 # print(QueryHandler().missing_run_numbers_report(8))
 
