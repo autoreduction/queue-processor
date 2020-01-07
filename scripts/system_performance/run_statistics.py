@@ -13,7 +13,6 @@ from datetime import date
 from calendar import monthrange
 import datetime
 import time
-
 import logging
 
 # from scripts.system_performance.beam_status_webscraper import TableWebScraper, Data_Clean
@@ -32,9 +31,9 @@ class QueryHandler:
         TODO: Create execution_time_average and run_frequency_average methods"""
 
         return {'missing_run_numbers_report': self.missing_run_numbers_report,
-               # # 'execution_time': self.execution_time,
+               'execution_times': self.execution_times,
                 # 'execution_time_average': self.execution_time_average,
-               # # 'run_frequency': self.run_frequency,
+               'run_frequency': self.run_frequency,
                 # 'run_frequency_average': self.run_frequency_average
                 }
 
@@ -50,12 +49,15 @@ class QueryHandler:
         for instrument in self.get_instrument_models():
             try:
                 if method_name in self.create_method_mappings():
+                    method_arguments[0] = int(instrument.id)
+                    logging.info("Querying for instrument: {}".format(method_arguments))
+                    print("Querying instrument: {}".format(instrument[1]))
                     instrument_dict[instrument[1]] = self.create_method_mappings()[method_name](*method_arguments)
             except KeyError:
                 raise ValueError('Invalid Input - method {} does not exist'.format(method_name))
         return instrument_dict
 
-    def get_query_for_instruments(self, instrument_input, method_name, additional_method_arguments=None):
+    def get_query_for_instruments(self, method_name, instrument_input=None, additional_method_arguments=None):
         """Checks that the instrument's in method input exist and then calls
         and returns the method used as input for each instrument placing in
         a dictionary as a nested list for each instrument as:
@@ -93,8 +95,8 @@ class QueryHandler:
                         raise ValueError('Invalid Input - method {} does not exist use type -help '
                                          'to look at existing methods and arguments'.format(method_name))
                 # Run all instruments if user input specified "all"
-                elif instrument_element == 'all' or not instrument_element:
-                    self.run_every_instruments(instrument_dict, method_name, method_arguments)
+                elif instrument_element == 'all':
+                    return self.run_every_instruments(instrument_dict, method_name, method_arguments)
                 else:
                     logging.info('The instrument: {} has not been found in the autoreduction'
                                  ' database'.format(instrument_element))
@@ -111,7 +113,9 @@ class QueryHandler:
             """Find all missing numbers in a given list"""
             return [x for x in range(lst[0], lst[-1] + 1) if x not in lst]
 
-        returned_query = reduction_run_queries.DatabaseMonitorChecks().missing_rb_report(instrument=instrument, start_date='2019-12-12', end_date='2019-12-14')
+        returned_query = reduction_run_queries.DatabaseMonitorChecks().missing_rb_report(instrument=instrument,
+                                                                                         start_date='2019-12-12',
+                                                                                         end_date='2019-12-14')
 
         # Sort returned query run numbers into ascending order
         returned_query.sort()
@@ -303,12 +307,35 @@ class QueryHandler:
         return _query_execute()
 
 
+# print(QueryHandler().run_frequency(instrument_id=8, status=4, start_date='2019-12-13', end_date='2019-12-12'))
 # print(QueryHandler().run_frequency(instrument_id=8, status=4, start_date='2019-12-12', end_date='2019-12-13'))
-# print(QueryHandler().run_frequency(instrument_id=8, status=4, start_date='2019-12-12'))
+# print(QueryHandler().run_frequency(instrument_id=7, status=4, start_date='2019-12-12'))
+# print(QueryHandler().run_frequency(instrument_id=7, status=4))
 
 # print(QueryHandler().execution_times(8))
 
 # print(QueryHandler().missing_run_numbers_report(8))
+
+# - currently doesnt work with no instrument input
+# print(QueryHandler().get_query_for_instruments(method_name='missing_run_numbers_report'))
+
+def cust_query_return(test_message, dictionary_out):
+    """For use with manual testing only - REMOVE AFTER"""
+    print("\n {}".format(test_message))
+    for item in dictionary_out:
+        print(item, dictionary_out[item])
+
+# Missing run numbers
+cust_query_return(test_message='missing_run_numbers_report - Select Instruments:', dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['MARI', 'MAPS', 'WISH'], method_name='missing_run_numbers_report'))
+cust_query_return(test_message='missing_run_numbers_report - All Instruments:', dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['all'], method_name='missing_run_numbers_report'))
+
+# Execution time
+cust_query_return(test_message='execution_times - Select Instruments', dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['MARI', 'MAPS', 'WISH'], method_name='execution_times'))
+cust_query_return(test_message='execution_times - All Instruments:', dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['all'], method_name='execution_times'))
+
+# Run frequency
+cust_query_return(test_message='run_frequency - Select Instruments', dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['MARI', 'MAPS', 'WISH'], method_name='run_frequency', additional_method_arguments=["4", "", '2019-12-13', '2019-12-12']))
+cust_query_return(test_message='run_frequency - All Instruments', dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['all'], method_name='run_frequency', additional_method_arguments=["4", "", '2019-12-13', '2019-12-12']))
 
 #  def custom_query(self):
 # TODO: Create this method
