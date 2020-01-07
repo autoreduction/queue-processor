@@ -21,7 +21,8 @@ import reduction_run_queries
 
 
 class QueryHandler:
-    """The query handler class returns one one or a list of query results to the user handler script"""
+    """The query handler class returnsa dictionary containing nested lists for each instrument and
+     each query called in the user handler script"""
 
     def __init__(self):
         pass
@@ -31,11 +32,11 @@ class QueryHandler:
         TODO: Create execution_time_average and run_frequency_average methods"""
 
         return {'missing_run_numbers_report': self.missing_run_numbers_report,
-               'execution_times': self.execution_times,
+                'execution_times': self.execution_times,
                 # 'execution_time_average': self.execution_time_average,
-               'run_frequency': self.run_frequency,
+                'run_frequency': self.run_frequency,
                 # 'run_frequency_average': self.run_frequency_average
-                }
+               }
 
     @staticmethod
     def get_instrument_models():
@@ -49,10 +50,10 @@ class QueryHandler:
         for instrument in self.get_instrument_models():
             try:
                 if method_name in self.create_method_mappings():
-                    method_arguments[0] = int(instrument.id)
+                    method_arguments['instrument_id'] = int(instrument.id)
                     logging.info("Querying for instrument: {}".format(method_arguments))
                     print("Querying instrument: {}".format(instrument[1]))
-                    instrument_dict[instrument[1]] = self.create_method_mappings()[method_name](*method_arguments)
+                    instrument_dict[instrument[1]] = self.create_method_mappings()[method_name](**method_arguments)
             except KeyError:
                 raise ValueError('Invalid Input - method {} does not exist'.format(method_name))
         return instrument_dict
@@ -72,13 +73,17 @@ class QueryHandler:
 
         instrument_dict = {}
 
+        # To allow for keys to still be added to dictionary such as the instrument_id
+        if not additional_method_arguments:
+            additional_method_arguments = {}
+
         for instrument in self.get_instrument_models():
             # Check for additional arguments and place in list with instrument id to pass as argument in method
             if not additional_method_arguments:
-                method_arguments = [instrument[0]]
+                additional_method_arguments['instrument_id'] = instrument[0]
             else:
-                # joins arguments to list
-                method_arguments = [instrument[0]] + additional_method_arguments
+                # Adds minimum arguments needed for method call to dictionary
+                additional_method_arguments['instrument_id'] = instrument[0]
 
             # If input is None, run all instruments by default
             if not isinstance(instrument_input, list):
@@ -90,20 +95,20 @@ class QueryHandler:
                     try:
                         if method_name in self.create_method_mappings():
                             instrument_dict[instrument[1]] = \
-                                self.create_method_mappings()[method_name](*method_arguments)
+                                self.create_method_mappings()[method_name](**additional_method_arguments)
                     except KeyError:
                         raise ValueError('Invalid Input - method {} does not exist use type -help '
                                          'to look at existing methods and arguments'.format(method_name))
                 # Run all instruments if user input specified "all"
                 elif instrument_element == 'all':
-                    return self.run_every_instruments(instrument_dict, method_name, method_arguments)
+                    return self.run_every_instruments(instrument_dict, method_name, additional_method_arguments)
                 else:
                     logging.info('The instrument: {} has not been found in the autoreduction'
                                  ' database'.format(instrument_element))
         return instrument_dict
 
     @staticmethod
-    def missing_run_numbers_report(instrument):
+    def missing_run_numbers_report(instrument_id):
         """Retrieves missing run numbers from reduction to be analysed
         :returns [count of run run number between two dates/time,
         the count of missing run numbers,
@@ -113,7 +118,7 @@ class QueryHandler:
             """Find all missing numbers in a given list"""
             return [x for x in range(lst[0], lst[-1] + 1) if x not in lst]
 
-        returned_query = reduction_run_queries.DatabaseMonitorChecks().missing_rb_report(instrument=instrument,
+        returned_query = reduction_run_queries.DatabaseMonitorChecks().missing_rb_report(instrument=instrument_id,
                                                                                          start_date='2019-12-12',
                                                                                          end_date='2019-12-14')
 
@@ -126,7 +131,8 @@ class QueryHandler:
         return [len(sorted_run_numbers), len(missing_run_numbers), missing_run_numbers]
 
     @staticmethod
-    def execution_times(instrument):
+    def execution_times(instrument_id):
+        """returns execution times for each instrument specified in method argument in a dictionary."""
         def _convert_seconds_to_time(time_in_seconds):
             """Converts seconds back into time format for output"""
             return str(datetime.timedelta(seconds=time_in_seconds))
@@ -176,7 +182,7 @@ class QueryHandler:
             return execution_list
 
         def _run_execution_times(list_of_times):
-            """:returns list_of_times & execution time as [[id, run_number, start_time, end_time, execution_time]...]"""
+            """:returns list_of_times & execution times as [[id, run_number, start_time, end_time, execution_time]..]"""
             return _list_zip(_calc_execution_times(list_of_times), list_of_times)
 
         def _query_argument_specify(start_date, end_date):
@@ -188,7 +194,7 @@ class QueryHandler:
 
             return reduction_run_queries.DatabaseMonitorChecks().get_data_by_status_over_time(
                 selection=selection,
-                instrument_id=instrument,
+                instrument_id=instrument_id,
                 anomic_aphasia='created',
                 start_date=start_date,
                 end_date=end_date)
@@ -217,7 +223,6 @@ class QueryHandler:
 
         :return list of sub method values [_runs_per_day(), _runs_today(), _runs_per_week(), _runs_per_month()]
 
-        TODO: Remove speech marks from curdate default variables to make query valid when start and end dates are none.
         """
 
         if start_date is None:
@@ -230,7 +235,7 @@ class QueryHandler:
             end_date = datetime.date.today()
 
         def _runs_per_day():
-            """"""
+            """Returns count of runs in the last 24 hours for current date of specified date """
             # Defaults for time, only exception is changing end_date to look in the past
             return reduction_run_queries.DatabaseMonitorChecks().get_data_by_status_over_time(
                 instrument_id=instrument_id,
@@ -239,7 +244,7 @@ class QueryHandler:
                 end_date=end_date)
 
         def _runs_today():
-            """"""
+            """Returns all runs equal to current date."""
             # start_date = current date
             return reduction_run_queries.DatabaseMonitorChecks().get_data_by_status_over_time(
                 instrument_id=instrument_id,
@@ -249,8 +254,7 @@ class QueryHandler:
                 start_date=start_date)
 
         def _runs_per_week():
-            """"""
-            # times_scale = week
+            """Returns count of runs that have taken place over the course of the week if the day of week is Friday."""
             # If today is last day of week (Friday in this case) run, otherwise don't unless user specified to
             if date.today().weekday() == 4:
                 return reduction_run_queries.DatabaseMonitorChecks().get_data_by_status_over_time(
@@ -264,8 +268,7 @@ class QueryHandler:
                 return None
 
         def _runs_per_month():
-            """"""
-            # time_scale = month
+            """Returns count of runs that occurred over the last month if day is equal to end of month"""
             # If today is last day of month, run, otherwise don't unless user specified to
             if date.today() == monthrange(date.today().year, date.today().month)[1]:
                 return reduction_run_queries.DatabaseMonitorChecks().get_data_by_status_over_time(
@@ -306,6 +309,8 @@ class QueryHandler:
             return run_frequency_list
         return _query_execute()
 
+# ALL CODE BELOW IS FOR MANUAL TESTING ONLY AND SHOULD BE REMOVED ON FULL INTEGRATION
+# -------------------------------------------------------------------------------------------------------------------- #
 
 # print(QueryHandler().run_frequency(instrument_id=8, status=4, start_date='2019-12-13', end_date='2019-12-12'))
 # print(QueryHandler().run_frequency(instrument_id=8, status=4, start_date='2019-12-12', end_date='2019-12-13'))
@@ -326,18 +331,33 @@ def cust_query_return(test_message, dictionary_out):
         print(item, dictionary_out[item])
 
 # Missing run numbers
-cust_query_return(test_message='missing_run_numbers_report - Select Instruments:', dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['MARI', 'MAPS', 'WISH'], method_name='missing_run_numbers_report'))
-cust_query_return(test_message='missing_run_numbers_report - All Instruments:', dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['all'], method_name='missing_run_numbers_report'))
+cust_query_return(test_message='missing_run_numbers_report - Select Instruments:',
+                  dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['MARI', 'MAPS', 'WISH'],
+                                                                          method_name='missing_run_numbers_report'))
+cust_query_return(test_message='missing_run_numbers_report - All Instruments:',
+                  dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['all'],
+                                                                          method_name='missing_run_numbers_report'))
 
 # Execution time
-cust_query_return(test_message='execution_times - Select Instruments', dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['MARI', 'MAPS', 'WISH'], method_name='execution_times'))
-cust_query_return(test_message='execution_times - All Instruments:', dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['all'], method_name='execution_times'))
+cust_query_return(test_message='execution_times - Select Instruments',
+                  dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['MARI', 'MAPS', 'WISH'],
+                                                                          method_name='execution_times'))
+cust_query_return(test_message='execution_times - All Instruments:',
+                  dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['all'],
+                                                                          method_name='execution_times'))
 
-# Run frequency
-cust_query_return(test_message='run_frequency - Select Instruments', dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['MARI', 'MAPS', 'WISH'], method_name='run_frequency', additional_method_arguments=["4", "", '2019-12-13', '2019-12-12']))
-cust_query_return(test_message='run_frequency - All Instruments', dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['all'], method_name='run_frequency', additional_method_arguments=["4", "", '2019-12-13', '2019-12-12']))
+# # Run frequency
+additional_args = {'status': 4, 'start_date': '2019-12-19', 'end_date': '2019-12-19'}
+cust_query_return(test_message='run_frequency - Select Instruments',
+                  dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['MARI', 'MAPS', 'WISH'],
+                                                                          method_name='run_frequency',
+                                                                          additional_method_arguments=additional_args))
 
-#  def custom_query(self):
+cust_query_return(test_message='run_frequency - Select Instruments',
+                  dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['all'],
+                                                                          method_name='run_frequency',
+                                                                          additional_method_arguments=additional_args))
+
 # TODO: Create this method
 # To allow for the creation of a custom query between any dates/time period using get_status_over_time method
 # This method will be for users and therefore will not be executed in the production script.
