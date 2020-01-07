@@ -10,9 +10,12 @@ The purpose of this script is for performing MySQL queries to monitor system sta
 db_state_checks
 """
 
+# sys.path.append(os.path.join(os.path.dirname(__file__), '../..', 'utils'))
+# from scripts.system_performance.beam_status_webscraper import Data_Clean, TableWebScraper
 from utils.clients.database_client import DatabaseClient
 import requests
 import itertools
+import logging
 
 
 class DatabaseMonitorChecks:
@@ -34,28 +37,33 @@ class DatabaseMonitorChecks:
         except requests.exceptions.ConnectionError:
             print("Unable to connect to database")
 
+    def query_log_and_execute(self, constructed_query):
+        """Logs and executes all queries ran in script"""
+        connection = self.establish_connection()
+        logging.info('SQL QUERY: {}'.format(constructed_query))
+        print(constructed_query)
+        return connection.execute(constructed_query).fetchall()
+
     def instruments_list(self):
         """Retrieve current list of instruments"""
-        connection = self.establish_connection()
-        result = connection.execute("SELECT id, name "
-                                    "FROM reduction_viewer_instrument").fetchall()
-        return result
+        all_instruments = "SELECT id, name "\
+                         "FROM reduction_viewer_instrument"
+        return self.query_log_and_execute(all_instruments)
 
     def missing_rb_report(self, instrument, start_date, end_date):
         """Retrieves run_number column and return missing sequential values """
-        connection = self.establish_connection()
         missing_rb_calc_vars = {}
 
-        missing_rb_calc_vars['run_numbers'] = \
-            connection.execute("SELECT run_number "
-                               "FROM {} "
-                               "WHERE instrument_id = {} "
-                               "AND created "
-                               "BETWEEN '{}' "
-                               "AND '{}'".format(DatabaseMonitorChecks.table,
+        missing_rb_query = "SELECT run_number "\
+                           "FROM {} " \
+                           "WHERE instrument_id = {} " \
+                           "AND created " \
+                           "BETWEEN '{}' " \
+                           "AND '{}'".format(DatabaseMonitorChecks.table,
                                                               instrument,
                                                               start_date,
-                                                              end_date)).fetchall()
+                                                              end_date)
+        missing_rb_calc_vars['run_numbers'] = self.query_log_and_execute(missing_rb_query)
 
         # Converts list of run number sets containing longs into list of integers [(123L), (456L)] -> [123, 456]
         return [int(elem) for elem in list(itertools.chain.from_iterable(missing_rb_calc_vars['run_numbers']))]
@@ -110,12 +118,12 @@ class DatabaseMonitorChecks:
             interval_range = "INTERVAL {} {}".format(query_arguments['interval'], query_arguments['time_scale'])
             date_range = "BETWEEN '{}' AND '{}'".format(start_date, end_date)
             current_date = "CURDATE()"
-            # curr_date = '= str(date_arg) # Equal to user specified date -_-_-_-_-_-_-: Need/want this?
+            # curr_date = '= {}'.format(date_arg) # Equal to user specified date -_-_-_-_-_-_-: Need/want this?
 
             def query_sub_segment_replace():
                 """Select last query argument based on argument input - sub_segment selection"""
                 if not query_arguments['start_date']:
-                    query_sub_segment = '>= {} - {}'.format(arguments['end_date'], interval_range)
+                    query_sub_segment = ">= DATE_SUB('{}', {})".format(arguments['end_date'], interval_range)
                 else:
                     # When both start and end date inputs are populated, query between those dates.
                     query_sub_segment = date_range
@@ -148,7 +156,7 @@ class DatabaseMonitorChecks:
                 return returned_args
             return [query_segment_replace()]
 
-        def _query_out(connection, instrument_id_arg, query_type_segment):
+        def _query_out(instrument_id_arg, query_type_segment):
             """Executes and returns built query as list"""
             query_argument = "SELECT {} " \
                  "FROM {} " \
@@ -161,22 +169,23 @@ class DatabaseMonitorChecks:
                                     arguments['retry_run'],
                                     arguments['anomic_aphasia'],
                                     query_type_segment)
-            print(query_argument)
-            return [list(elem) for elem in connection.execute(query_argument).fetchall()]
+
+            return [list(elem) for elem in self.query_log_and_execute(query_argument)]
 
         arguments = locals()  # Retrieving user specified variables
         _default_argument_assign(arguments)  # Setting default variables
         interchangeable_query_args = _dynamic_query_segment_replace(arguments)  # Determining query segment to use
 
-        # Interchangeable_query_args is a nested list of set instrument arguments and query segments to be used in query
-        return _query_out(self.establish_connection(), interchangeable_query_args[0][1], interchangeable_query_args[0][0])
+        return _query_out(interchangeable_query_args[0][1], interchangeable_query_args[0][0])
 
-# Below method calls can be used for manual testing
+# Hard coded queries for manual testing only and to be removed before full integration
+
 # print(DatabaseMonitorChecks().get_data_by_status_over_time(instrument_id=6, end_date='CURDATE()', start_date='CURDATE()'))
 # print(DatabaseMonitorChecks().get_data_by_status_over_time(instrument_id=6, end_date='2019-12-13', start_date='2019-12-12'))
-# print(DatabaseMonitorChecks().get_data_by_status_over_time(selection='COUNT(id)', instrument_id=8, end_date='2019-12-13', start_date='2019-12-12'))
+# print(DatabaseMonitorChecks().get_data_by_status_over_time(selection='COUNT(id)', instrument_id=8))
 # print(DatabaseMonitorChecks().instruments_list())
-# print(DatabaseMonitorChecks().missing_rb_report(7, start_date='2019:11:12', end_date='2019:12:20'))
+# DatabaseMonitorChecks().missing_rb_report(7, start_date='2019:11:12', end_date='2019:12:13')
+
 # print(DatabaseMonitorChecks().get_data_by_status_over_time(selection="id, "
 #                                                                      "run_number, "
 #                                                                      "DATE_FORMAT(started, '%H:%i:%s') TIMEONLY,"
