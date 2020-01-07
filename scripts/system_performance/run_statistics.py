@@ -9,6 +9,7 @@ Contains pre-logic data manipulation for more complex system performance MySQL q
 """
 
 # Dependencies
+from __future__ import print_function
 from datetime import date
 from calendar import monthrange
 import datetime
@@ -324,39 +325,39 @@ class QueryHandler:
 # - currently doesnt work with no instrument input
 # print(QueryHandler().get_query_for_instruments(method_name='missing_run_numbers_report'))
 
-def cust_query_return(test_message, dictionary_out):
-    """For use with manual testing only - REMOVE AFTER"""
-    print("\n {}".format(test_message))
-    for item in dictionary_out:
-        print(item, dictionary_out[item])
-
-# Missing run numbers
-cust_query_return(test_message='missing_run_numbers_report - Select Instruments:',
-                  dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['MARI', 'MAPS', 'WISH'],
-                                                                          method_name='missing_run_numbers_report'))
-cust_query_return(test_message='missing_run_numbers_report - All Instruments:',
-                  dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['all'],
-                                                                          method_name='missing_run_numbers_report'))
-
-# Execution time
-cust_query_return(test_message='execution_times - Select Instruments',
-                  dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['MARI', 'MAPS', 'WISH'],
-                                                                          method_name='execution_times'))
-cust_query_return(test_message='execution_times - All Instruments:',
-                  dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['all'],
-                                                                          method_name='execution_times'))
-
-# # Run frequency
-additional_args = {'status': 4, 'start_date': '2019-12-19', 'end_date': '2019-12-19'}
-cust_query_return(test_message='run_frequency - Select Instruments',
-                  dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['MARI', 'MAPS', 'WISH'],
-                                                                          method_name='run_frequency',
-                                                                          additional_method_arguments=additional_args))
-
-cust_query_return(test_message='run_frequency - Select Instruments',
-                  dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['all'],
-                                                                          method_name='run_frequency',
-                                                                          additional_method_arguments=additional_args))
+# def cust_query_return(test_message, dictionary_out):
+#     """For use with manual testing only - REMOVE AFTER"""
+#     print("\n {}".format(test_message))
+#     for item in dictionary_out:
+#         print(item, dictionary_out[item])
+#
+# # Missing run numbers
+# cust_query_return(test_message='missing_run_numbers_report - Select Instruments:',
+#                   dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['MARI', 'MAPS', 'WISH'],
+#                                                                           method_name='missing_run_numbers_report'))
+# cust_query_return(test_message='missing_run_numbers_report - All Instruments:',
+#                   dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['all'],
+#                                                                           method_name='missing_run_numbers_report'))
+#
+# # Execution time
+# cust_query_return(test_message='execution_times - Select Instruments',
+#                   dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['MARI', 'MAPS', 'WISH'],
+#                                                                           method_name='execution_times'))
+# cust_query_return(test_message='execution_times - All Instruments:',
+#                   dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['all'],
+#                                                                           method_name='execution_times'))
+#
+# # # Run frequency
+# additional_args = {'status': 4, 'start_date': '2019-12-19', 'end_date': '2019-12-19'}
+# cust_query_return(test_message='run_frequency - Select Instruments',
+#                   dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['MARI', 'MAPS', 'WISH'],
+#                                                                           method_name='run_frequency',
+#                                                                           additional_method_arguments=additional_args))
+#
+# cust_query_return(test_message='run_frequency - Select Instruments',
+#                   dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['all'],
+#                                                                           method_name='run_frequency',
+#                                                                           additional_method_arguments=additional_args))
 
 # TODO: Create this method
 # To allow for the creation of a custom query between any dates/time period using get_status_over_time method
