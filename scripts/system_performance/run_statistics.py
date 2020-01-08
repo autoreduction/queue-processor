@@ -15,10 +15,7 @@ from calendar import monthrange
 import datetime
 import time
 import logging
-
-# from scripts.system_performance.beam_status_webscraper import TableWebScraper, Data_Clean
 import reduction_run_queries
-# from scripts.system_performance.test_date_cycle import DateInCycle
 
 
 class QueryHandler:
@@ -109,7 +106,7 @@ class QueryHandler:
         return instrument_dict
 
     @staticmethod
-    def missing_run_numbers_report(instrument_id):
+    def missing_run_numbers_report(instrument_id, start_date, end_date):
         """Retrieves missing run numbers from reduction to be analysed
         :returns [count of run run number between two dates/time,
         the count of missing run numbers,
@@ -120,8 +117,8 @@ class QueryHandler:
             return [x for x in range(lst[0], lst[-1] + 1) if x not in lst]
 
         returned_query = reduction_run_queries.DatabaseMonitorChecks().missing_rb_report(instrument=instrument_id,
-                                                                                         start_date='2019-12-12',
-                                                                                         end_date='2019-12-14')
+                                                                                         start_date=start_date,
+                                                                                         end_date=end_date)
 
         # Sort returned query run numbers into ascending order
         returned_query.sort()
@@ -132,7 +129,7 @@ class QueryHandler:
         return [len(sorted_run_numbers), len(missing_run_numbers), missing_run_numbers]
 
     @staticmethod
-    def execution_times(instrument_id):
+    def execution_times(instrument_id, start_date, end_date):
         """returns execution times for each instrument specified in method argument in a dictionary."""
         def _convert_seconds_to_time(time_in_seconds):
             """Converts seconds back into time format for output"""
@@ -200,10 +197,7 @@ class QueryHandler:
                 start_date=start_date,
                 end_date=end_date)
 
-        # TODO Need to make sure this becomes argument as to static variable
-        start_end_dates = ['2019-12-12', '2019-12-13']
-
-        return _run_execution_times(_query_argument_specify(start_end_dates[0], start_end_dates[1]))
+        return _run_execution_times(_query_argument_specify(start_date=start_date, end_date=end_date))
 
     # pylint: disable=line-too-long
     @staticmethod
@@ -313,18 +307,6 @@ class QueryHandler:
 # ALL CODE BELOW IS FOR MANUAL TESTING ONLY AND SHOULD BE REMOVED ON FULL INTEGRATION
 # -------------------------------------------------------------------------------------------------------------------- #
 
-# print(QueryHandler().run_frequency(instrument_id=8, status=4, start_date='2019-12-13', end_date='2019-12-12'))
-# print(QueryHandler().run_frequency(instrument_id=8, status=4, start_date='2019-12-12', end_date='2019-12-13'))
-# print(QueryHandler().run_frequency(instrument_id=7, status=4, start_date='2019-12-12'))
-# print(QueryHandler().run_frequency(instrument_id=7, status=4))
-
-# print(QueryHandler().execution_times(8))
-
-# print(QueryHandler().missing_run_numbers_report(8))
-
-# - currently doesnt work with no instrument input
-# print(QueryHandler().get_query_for_instruments(method_name='missing_run_numbers_report'))
-
 # def cust_query_return(test_message, dictionary_out):
 #     """For use with manual testing only - REMOVE AFTER"""
 #     print("\n {}".format(test_message))
@@ -334,18 +316,31 @@ class QueryHandler:
 # # Missing run numbers
 # cust_query_return(test_message='missing_run_numbers_report - Select Instruments:',
 #                   dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['MARI', 'MAPS', 'WISH'],
-#                                                                           method_name='missing_run_numbers_report'))
+#                                                                           method_name='missing_run_numbers_report',
+#                                                                           additional_method_arguments={
+#                                                                               'start_date':'2019-12-12',
+#                                                                               'end_date': '2019-12-14'}))
+#
 # cust_query_return(test_message='missing_run_numbers_report - All Instruments:',
 #                   dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['all'],
-#                                                                           method_name='missing_run_numbers_report'))
+#                                                                           method_name='missing_run_numbers_report',
+#                                                                           additional_method_arguments={
+#                                                                               'start_date': '2019-12-12',
+#                                                                               'end_date': '2019-12-14'}))
 #
 # # Execution time
 # cust_query_return(test_message='execution_times - Select Instruments',
 #                   dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['MARI', 'MAPS', 'WISH'],
-#                                                                           method_name='execution_times'))
+#                                                                           method_name='execution_times',
+#                                                                           additional_method_arguments={
+#                                                                               'start_date': '2019-12-12',
+#                                                                               'end_date': '2019-12-14'}))
 # cust_query_return(test_message='execution_times - All Instruments:',
 #                   dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['all'],
-#                                                                           method_name='execution_times'))
+#                                                                           method_name='execution_times',
+#                                                                           additional_method_arguments={
+#                                                                               'start_date': '2019-12-12',
+#                                                                               'end_date': '2019-12-14'}))
 #
 # # # Run frequency
 # additional_args = {'status': 4, 'start_date': '2019-12-19', 'end_date': '2019-12-19'}
@@ -362,5 +357,4 @@ class QueryHandler:
 # TODO: Create this method
 # To allow for the creation of a custom query between any dates/time period using get_status_over_time method
 # This method will be for users and therefore will not be executed in the production script.
-
 # pass
