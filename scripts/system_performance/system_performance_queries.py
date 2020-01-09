@@ -13,7 +13,7 @@ db_state_checks
 # sys.path.append(os.path.join(os.path.dirname(__file__), '../..', 'utils'))
 # from scripts.system_performance.beam_status_webscraper import Data_Clean, TableWebScraper
 from utils.clients.database_client import DatabaseClient
-import requests
+from utils.clients.connection_exception import ConnectionException
 import itertools
 import logging
 
@@ -23,31 +23,23 @@ class DatabaseMonitorChecks:
     table = "reduction_viewer_reductionrun"
 
     # Establishing a connection with Database using Database Client
-    def __init__(self, credentials=None):
-        if credentials:
-            self.database = DatabaseClient(credentials)
-        else:
-            self.database = DatabaseClient()
-        self.database.connect()
-
-    def establish_connection(self):
-        """Established connection ready to perform queries"""
+    def __init__(self):
+        self.database = DatabaseClient()
         try:
-            return self.database.get_connection()
-        except requests.exceptions.ConnectionError:
-            print("Unable to connect to database")
+            self.connection = self.database.connect()
+        except ConnectionException:
+            raise ConnectionException('database')
 
     def query_log_and_execute(self, constructed_query):
         """Logs and executes all queries ran in script"""
-        connection = self.establish_connection()
         logging.info('SQL QUERY: {}'.format(constructed_query))
         print(constructed_query)
-        return connection.execute(constructed_query).fetchall()
+        return self.connection.execute(constructed_query).fetchall()
 
     def instruments_list(self):
         """Retrieve current list of instruments"""
         all_instruments = "SELECT id, name "\
-                         "FROM reduction_viewer_instrument"
+                          "FROM reduction_viewer_instrument"
         return self.query_log_and_execute(all_instruments)
 
     def missing_rb_report(self, instrument, start_date, end_date):
@@ -68,9 +60,53 @@ class DatabaseMonitorChecks:
         # Converts list of run number sets containing longs into list of integers [(123L), (456L)] -> [123, 456]
         return [int(elem) for elem in list(itertools.chain.from_iterable(missing_rb_calc_vars['run_numbers']))]
 
-    def get_data_by_status_over_time(self, selection=None, status_id=None, retry_run=None, instrument_id=None,
-                                     anomic_aphasia=None, end_date=None, interval=None, time_scale=None,
-                                     start_date=None):
+    @staticmethod
+    def query_sub_segment_replace(query_arguments, start_date, end_date):
+        """Select last query argument based on argument input - sub_segment selection"""
+        interval_range = "INTERVAL {} {}".format(query_arguments['interval'], query_arguments['time_scale'])
+        date_range = "BETWEEN '{}' AND '{}'".format(start_date, end_date)
+        if not query_arguments['start_date']:
+            query_sub_segment = ">= DATE_SUB('{}', {})".format(end_date, interval_range)
+        else:
+            # When both start and end date inputs are populated, query between those dates.
+            query_sub_segment = date_range
+        return query_sub_segment
+
+    def query_segment_replace(self, query_arguments, start_date, end_date):
+        """Handles the interchangeable segment of query to return either intervals of time or period between two
+        user specified dates and whether or not to include a filter by retry run or not."""
+
+        #If end date is None, query only for rows created on current date
+        returned_args = []
+        current_date = 'CURDATE()'
+
+        if query_arguments['start_date'] == query_arguments['end_date']:
+            query_segment = "= {}".format(current_date)
+            query_arguments['start_date'] = ''
+            returned_args.append(query_segment)
+
+        else:
+            # Determining which sub query segment to place in query.
+            query_segment = self.query_sub_segment_replace(query_arguments, start_date, end_date)
+            returned_args.append(query_segment)
+
+        if not query_arguments['instrument_id']:
+            # Removing relevant instrument_id query argument segments when not specified as method arg
+            instrument_id_arg = ""
+            query_arguments['instrument_id'] = ''
+            returned_args.append(instrument_id_arg)
+
+        else:
+            # Applying instrument_id query argument segments when instrument_id argument populated as method arg
+            instrument_id_arg = ", instrument_id"
+            query_arguments['instrument_id'] = ', {}'.format(query_arguments['instrument_id'])
+            returned_args.append(instrument_id_arg)
+
+        return [returned_args]
+
+    def get_data_by_status_over_time(self, selection='run_number', status_id=4, retry_run='',
+                                     anomic_aphasia='finished', end_date='CURDATE()', interval=1, time_scale='DAY',
+                                     start_date=None, instrument_id=None):
         """
         Default Variables
         :param selection : * Which column you would like to select or all columns by default
@@ -83,78 +119,6 @@ class DatabaseMonitorChecks:
         :param time_scale : "DAY" Expected inputs include DAY, Month or YEAR
         :param start_date : The furthest date from today you wish to query from e.g the start of start of cycle.
         """
-
-        def _key_value_replace(key_to_find, definition, dictionary):
-            """ Update arguments == to None with default variables """
-            for key in dictionary.keys():
-                if key == key_to_find:
-                    dictionary[key] = definition
-                    yield True
-            yield False
-
-        def _default_argument_assign(user_defined_arguments):
-            # To assign all variables of type None a default variable
-            defaults = {'selection': 'run_number',
-                        'status_id': 4,
-                        'retry_run': '',
-                        'anomic_aphasia': 'finished',
-                        'end_date': 'CURDATE()',
-                        'interval': 1,
-                        'time_scale': 'DAY',
-                        'start_date': None,
-                        'instrument_id': None}
-            # reassigning None values to defaults.
-            for argument in user_defined_arguments:
-                if not user_defined_arguments[argument]:
-                    found = False
-                    while not found:
-                        found = next(_key_value_replace(argument, defaults[argument], user_defined_arguments))
-
-        def _dynamic_query_segment_replace(query_arguments):
-            """Handles the interchangeable segment of query to return either intervals of time or period between two
-                 user specified dates and whether or not to include a filter by retry run or not."""
-            # Interchangeable last query argument
-            returned_args = []
-            interval_range = "INTERVAL {} {}".format(query_arguments['interval'], query_arguments['time_scale'])
-            date_range = "BETWEEN '{}' AND '{}'".format(start_date, end_date)
-            current_date = "CURDATE()"
-            # curr_date = '= {}'.format(date_arg) # Equal to user specified date -_-_-_-_-_-_-: Need/want this?
-
-            def query_sub_segment_replace():
-                """Select last query argument based on argument input - sub_segment selection"""
-                if not query_arguments['start_date']:
-                    query_sub_segment = ">= DATE_SUB('{}', {})".format(arguments['end_date'], interval_range)
-                else:
-                    # When both start and end date inputs are populated, query between those dates.
-                    query_sub_segment = date_range
-                return query_sub_segment
-
-            def query_segment_replace():
-                """If end date is None, query only for rows created on current date"""
-                if query_arguments['start_date'] == query_arguments['end_date']:
-                    query_segment = "= {}".format(current_date)
-                    query_arguments['start_date'] = ''
-                    returned_args.append(query_segment)
-
-                else:
-                    # Determining which sub query segment to place in query.
-                    query_segment = query_sub_segment_replace()
-                    returned_args.append(query_segment)
-
-                if not query_arguments['instrument_id']:
-                    # Removing relevant instrument_id query argument segments when not specified as method arg
-                    instrument_id_arg = ""
-                    query_arguments['instrument_id'] = ''
-                    returned_args.append(instrument_id_arg)
-
-                else:
-                    # Applying instrument_id query argument segments when instrument_id argument populated as method arg
-                    instrument_id_arg = ", instrument_id"
-                    query_arguments['instrument_id'] = ', {}'.format(query_arguments['instrument_id'])
-                    returned_args.append(instrument_id_arg)
-
-                return returned_args
-            return [query_segment_replace()]
 
         def _query_out(instrument_id_arg, query_type_segment):
             """Executes and returns built query as list"""
@@ -173,9 +137,9 @@ class DatabaseMonitorChecks:
             return [list(elem) for elem in self.query_log_and_execute(query_argument)]
 
         arguments = locals()  # Retrieving user specified variables
-        _default_argument_assign(arguments)  # Setting default variables
-        interchangeable_query_args = _dynamic_query_segment_replace(arguments)  # Determining query segment to use
-
+        # _default_argument_assign(arguments)  # Setting default variables
+        # interchangeable_query_args = self._dynamic_query_segment_replace(arguments)  # Determining query segment to use
+        interchangeable_query_args = self.query_segment_replace(arguments, start_date=start_date, end_date=end_date)
         return _query_out(interchangeable_query_args[0][1], interchangeable_query_args[0][0])
 
 # Hard coded queries for manual testing only and to be removed before full integration
