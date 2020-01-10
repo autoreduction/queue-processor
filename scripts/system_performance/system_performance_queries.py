@@ -1,7 +1,7 @@
 # ############################################################################### #
 # Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
 #
-# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 
@@ -10,8 +10,6 @@ The purpose of this script is for performing MySQL queries to monitor system sta
 db_state_checks
 """
 
-# sys.path.append(os.path.join(os.path.dirname(__file__), '../..', 'utils'))
-# from scripts.system_performance.beam_status_webscraper import Data_Clean, TableWebScraper
 from utils.clients.database_client import DatabaseClient
 from utils.clients.connection_exception import ConnectionException
 import itertools
@@ -76,7 +74,7 @@ class DatabaseMonitorChecks:
         """Handles the interchangeable segment of query to return either intervals of time or period between two
         user specified dates and whether or not to include a filter by retry run or not."""
 
-        #If end date is None, query only for rows created on current date
+        # If end date is None, query only for rows created on current date
         returned_args = []
         current_date = 'CURDATE()'
 
@@ -137,8 +135,7 @@ class DatabaseMonitorChecks:
             return [list(elem) for elem in self.query_log_and_execute(query_argument)]
 
         arguments = locals()  # Retrieving user specified variables
-        # _default_argument_assign(arguments)  # Setting default variables
-        # interchangeable_query_args = self._dynamic_query_segment_replace(arguments)  # Determining query segment to use
+        # Determining query segment to use
         interchangeable_query_args = self.query_segment_replace(arguments, start_date=start_date, end_date=end_date)
         return _query_out(interchangeable_query_args[0][1], interchangeable_query_args[0][0])
 
