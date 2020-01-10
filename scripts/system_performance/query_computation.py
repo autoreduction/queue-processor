@@ -91,9 +91,8 @@ class QueryHandler:
                 if instrument[1] == instrument_element:
                     # Check input is in mapping and place method N output in instrument_dict to return
                     try:
-                        if method_name in self.create_method_mappings():
-                            instrument_dict[instrument[1]] = \
-                                self.create_method_mappings()[method_name](**additional_method_arguments)
+                        instrument_dict[instrument[1]] = \
+                            self.create_method_mappings()[method_name](**additional_method_arguments)
                     except KeyError:
                         raise ValueError('Invalid Input - method {} does not exist use type -help '
                                          'to look at existing methods and arguments'.format(method_name))
@@ -309,7 +308,6 @@ class QueryHandler:
 #                                                                           additional_method_arguments={
 #                                                                               'start_date':'2019-12-12',
 #                                                                               'end_date': '2019-12-14'}))
-#
 # cust_query_return(test_message='missing_run_numbers_report - All Instruments:',
 #                   dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['all'],
 #                                                                           method_name='missing_run_numbers_report',
