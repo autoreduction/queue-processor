@@ -1,7 +1,7 @@
 # ############################################################################### #
 # Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
 #
-# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 """
@@ -10,16 +10,17 @@ Contains pre-logic data manipulation for more complex system performance MySQL q
 
 # Dependencies
 from __future__ import print_function
-from datetime import date
-from calendar import monthrange
 import datetime
 import time
 import logging
 import reduction_run_queries
 
+# from scripts.system_performance.query_constructor.py import QueryConstructor
+import query_constructor
+
 
 class QueryHandler:
-    """The query handler class returnsa dictionary containing nested lists for each instrument and
+    """The query handler class returns a dictionary containing nested lists for each instrument and
      each query called in the user handler script"""
 
     def __init__(self):
@@ -109,16 +110,17 @@ class QueryHandler:
     def missing_run_numbers_report(instrument_id, start_date, end_date):
         """Retrieves missing run numbers from reduction to be analysed
         :returns [count of run run number between two dates/time,
-        the count of missing run numbers,
-        [nester list of missing run numbers id's]]"""
+                 the count of missing run numbers,
+                 [nested list of missing run numbers id's]]"""
 
         def _find_missing(lst):
             """Find all missing numbers in a given list"""
             return [x for x in range(lst[0], lst[-1] + 1) if x not in lst]
 
-        returned_query = reduction_run_queries.DatabaseMonitorChecks().missing_rb_report(instrument=instrument_id,
-                                                                                         start_date=start_date,
-                                                                                         end_date=end_date)
+        returned_query = query_constructor.QueryConstructor().missing_run_numbers_constructor(
+            instrument_id=instrument_id,
+            start_date=start_date,
+            end_date=end_date)
 
         # Sort returned query run numbers into ascending order
         returned_query.sort()
@@ -166,7 +168,8 @@ class QueryHandler:
             return list_of_times
 
         def _calc_execution_times(list_of_times):
-            """:returns list of execution times"""
+            """  Calculates execution times as appends to returned query list
+            :returns list_of_times & execution times as [[id, run_number, start_time, end_time, execution_time]..]"""
             time_in_seconds_list = []
 
             # Calculate execution times and append to new list
@@ -177,27 +180,19 @@ class QueryHandler:
             execution_list = []
             for times in time_in_seconds_list:
                 execution_list.append(_convert_seconds_to_time(times))
-            return execution_list
-
-        def _run_execution_times(list_of_times):
-            """:returns list_of_times & execution times as [[id, run_number, start_time, end_time, execution_time]..]"""
-            return _list_zip(_calc_execution_times(list_of_times), list_of_times)
+            return _list_zip(execution_list, list_of_times)
 
         def _query_argument_specify(start_date, end_date):
-            """Specifies arguments for query and returns data from Autoreduce database"""
-            selection = "id, " \
-                        "run_number, " \
-                        "DATE_FORMAT(started, '%H:%i:%s') TIMEONLY, " \
-                        "DATE_FORMAT(finished, '%H:%i:%s') TIMEONLY"
+            """Specifies arguments for query and returns formatted data from Autoreduce database"""
 
-            return reduction_run_queries.DatabaseMonitorChecks().get_data_by_status_over_time(
-                selection=selection,
+            set_query_arguments = query_constructor.QueryConstructor.query_argument_specify(
                 instrument_id=instrument_id,
-                anomic_aphasia='created',
                 start_date=start_date,
                 end_date=end_date)
 
-        return _run_execution_times(_query_argument_specify(start_date=start_date, end_date=end_date))
+            return _calc_execution_times(set_query_arguments)
+
+        return _query_argument_specify(start_date=start_date, end_date=end_date)
 
     # pylint: disable=line-too-long
     @staticmethod
@@ -216,7 +211,7 @@ class QueryHandler:
         :param sub_method_preference Allows all previous arguments other than instrument_id and status to be left empty
         to run a predefined argument such as runs in the last 24 hours, per day, per week, per month
 
-        :return list of sub method values [_runs_per_day(), _runs_today(), _runs_per_week(), _runs_per_month()]
+        :return list of sub method values [runs_per_day(), runs_today(), runs_per_week(), runs_per_month()]
 
         """
 
@@ -232,54 +227,49 @@ class QueryHandler:
         def _runs_per_day():
             """Returns count of runs in the last 24 hours for current date of specified date """
             # Defaults for time, only exception is changing end_date to look in the past
-            return reduction_run_queries.DatabaseMonitorChecks().get_data_by_status_over_time(
+
+            return query_constructor.QueryConstructor().runs_per_day(
                 instrument_id=instrument_id,
-                status_id=status,
-                retry_run=retry,
-                end_date=end_date)
+                status=status,
+                retry=retry,
+                end_date=end_date
+            )
 
         def _runs_today():
             """Returns all runs equal to current date."""
-            # start_date = current date
-            return reduction_run_queries.DatabaseMonitorChecks().get_data_by_status_over_time(
+
+            return query_constructor.QueryConstructor().runs_today(
                 instrument_id=instrument_id,
-                status_id=status,
-                retry_run=retry,
+                status=status,
+                retry=retry,
                 end_date=end_date,
                 start_date=start_date)
 
         def _runs_per_week():
             """Returns count of runs that have taken place over the course of the week if the day of week is Friday."""
             # If today is last day of week (Friday in this case) run, otherwise don't unless user specified to
-            if date.today().weekday() == 4:
-                return reduction_run_queries.DatabaseMonitorChecks().get_data_by_status_over_time(
-                    instrument_id=instrument_id,
-                    status_id=status,
-                    retry_run=retry,
-                    end_date=end_date,
-                    interval=time_interval,
-                    time_scale='WEEK')
-            else:
-                return None
+            return query_constructor.QueryConstructor().runs_per_week(
+                instrument_id=instrument_id,
+                status=status,
+                retry=retry,
+                end_date=end_date,
+                time_interval=time_interval)
 
         def _runs_per_month():
             """Returns count of runs that occurred over the last month if day is equal to end of month"""
             # If today is last day of month, run, otherwise don't unless user specified to
-            if date.today() == monthrange(date.today().year, date.today().month)[1]:
-                return reduction_run_queries.DatabaseMonitorChecks().get_data_by_status_over_time(
-                    instrument_id=instrument_id,
-                    status_id=status,
-                    retry_run=retry,
-                    end_date=end_date,
-                    interval=time_interval,
-                    time_scale='MONTH')
-            else:
-                return None
+
+            return query_constructor.QueryConstructor().runs_per_month(
+                instrument_id=instrument_id,
+                status=status,
+                retry=retry,
+                end_date=end_date,
+                time_interval=time_interval)
 
         def _query_execute():
             """Converts sub_method outputs into a dictionary where key is instrument
-            - If not friday, _runs_per_week will return none
-            - If not last day of the month, _runs_per_month will return none
+            - If not friday, runs_per_week will return none
+            - If not last day of the month, runs_per_month will return none
             """
 
             def list_lengths(nested_list_of_runs):
@@ -295,7 +285,7 @@ class QueryHandler:
             # Nested list containing run numbers for each frequency range
             run_frequency_list = [_runs_per_day(), _runs_today(), _runs_per_week(), _runs_per_month()]
 
-            # Mapping both lists together to return in the form [[()), (), ... _runs_per_day frequency], ... ]
+            # Mapping both lists together to return in the form [[()), (), ... runs_per_day frequency], ... ]
             frequencies = list_lengths(run_frequency_list)
             for frequency_count in range(len(frequencies)):
                 if frequencies[frequency_count] is not None:
