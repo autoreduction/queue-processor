@@ -15,8 +15,7 @@ import time
 import logging
 import reduction_run_queries
 
-# from scripts.system_performance.query_constructor.py import QueryConstructor
-import query_constructor
+from scripts.system_performance.query_constructor import QueryConstructor
 
 
 class QueryHandler:
@@ -117,7 +116,7 @@ class QueryHandler:
             """Find all missing numbers in a given list"""
             return [x for x in range(lst[0], lst[-1] + 1) if x not in lst]
 
-        returned_query = query_constructor.QueryConstructor().missing_run_numbers_constructor(
+        returned_query = QueryConstructor().missing_run_numbers_constructor(
             instrument_id=instrument_id,
             start_date=start_date,
             end_date=end_date)
@@ -185,7 +184,7 @@ class QueryHandler:
         def _query_argument_specify(start_date, end_date):
             """Specifies arguments for query and returns formatted data from Autoreduce database"""
 
-            set_query_arguments = query_constructor.QueryConstructor.query_argument_specify(
+            set_query_arguments = QueryConstructor.query_argument_specify(
                 instrument_id=instrument_id,
                 start_date=start_date,
                 end_date=end_date)
@@ -228,7 +227,7 @@ class QueryHandler:
             """Returns count of runs in the last 24 hours for current date of specified date """
             # Defaults for time, only exception is changing end_date to look in the past
 
-            return query_constructor.QueryConstructor().runs_per_day(
+            return QueryConstructor().runs_per_day(
                 instrument_id=instrument_id,
                 status=status,
                 retry=retry,
@@ -238,7 +237,7 @@ class QueryHandler:
         def _runs_today():
             """Returns all runs equal to current date."""
 
-            return query_constructor.QueryConstructor().runs_today(
+            return QueryConstructor().runs_today(
                 instrument_id=instrument_id,
                 status=status,
                 retry=retry,
@@ -248,7 +247,7 @@ class QueryHandler:
         def _runs_per_week():
             """Returns count of runs that have taken place over the course of the week if the day of week is Friday."""
             # If today is last day of week (Friday in this case) run, otherwise don't unless user specified to
-            return query_constructor.QueryConstructor().runs_per_week(
+            return QueryConstructor().runs_per_week(
                 instrument_id=instrument_id,
                 status=status,
                 retry=retry,
@@ -259,7 +258,7 @@ class QueryHandler:
             """Returns count of runs that occurred over the last month if day is equal to end of month"""
             # If today is last day of month, run, otherwise don't unless user specified to
 
-            return query_constructor.QueryConstructor().runs_per_month(
+            return QueryConstructor().runs_per_month(
                 instrument_id=instrument_id,
                 status=status,
                 retry=retry,
@@ -302,8 +301,8 @@ class QueryHandler:
 #     print("\n {}".format(test_message))
 #     for item in dictionary_out:
 #         print(item, dictionary_out[item])
-#
-# # Missing run numbers
+# #
+# # # Missing run numbers
 # cust_query_return(test_message='missing_run_numbers_report - Select Instruments:',
 #                   dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['MARI', 'MAPS', 'WISH'],
 #                                                                           method_name='missing_run_numbers_report',
