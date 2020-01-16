@@ -37,7 +37,7 @@ setup_requires = ['dash',
                   'sentry_sdk',
                   'service_identity',
                   'SQLAlchemy',
-                  'stomp.py',
+                  'stomp.py==4.1.22',  # ToDo: can remove version requirement when we move to py3
                   'suds',
                   'Twisted',
                   'watchdog']
@@ -49,7 +49,7 @@ else:
 
 
 setup(name='AutoReduction',
-      version='19.2',
+      version='19.4',
       description='ISIS AutoReduction service',
       author='ISIS Autoreduction Team',
       url='https://github.com/ISISScientificComputing/autoreduce/',

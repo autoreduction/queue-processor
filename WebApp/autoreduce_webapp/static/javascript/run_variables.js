@@ -14,43 +14,6 @@
         return $form;
     }
 
-    var previewScript = function previewScript(event) {
-        var submitAction = function submitAction() {
-            var url = $('#preview_url').val();
-            $form = getForm();
-            $form.attr('action', url);
-
-            $('.js-script-container').text('');
-            $('#script-preview-modal .progress').show();
-            $('#script-preview-modal').modal();
-            $.ajax({
-                type: "POST",
-                url: url,
-                data: $form.serialize(),
-                success: function (data) {
-                    $('.js-script-container').removeClass('prettyprinted').text(data);
-                    prettyPrint();
-                    $('#script-preview-modal .progress').hide();
-                },
-                error: function (data) {
-                    //Redirect to login page
-                    var redirect = $.parseJSON(data.responseText).redirect_url;
-                    window.location = redirect;
-                }
-            });
-        };
-        var cancelAction = function cancelAction() {
-            return false;
-        };
-
-        event.preventDefault();
-        if (validateForm()) {
-            submitAction();
-        } else {
-            cancelAction();
-        }
-    };
-
     var downloadScript = function downloadScript(event) {
         var submitAction = function submitAction() {
             var url = $('#preview_url').val();

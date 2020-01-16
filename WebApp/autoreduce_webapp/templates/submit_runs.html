@@ -35,7 +35,7 @@
                             <div class="row">
                                 <label for="run_range" class="control-label col-md-3">
                                     Run Numbers
-                                    <a href="#" data-toggle="popover" data-content="A list of runs to re-run, the list can include ranges e.g. 1, 4-6" data-trigger="hover click focus" data-placement="top" data-container="body"><i class="fa fa-info-circle"></i></a>
+                                    <a href="#" data-toggle="popover" data-content="A list of run number to re-run, the list can include ranges e.g. 1, 4-6. All the run numbers must be in the same experiment in order to apply the desired variables." data-trigger="hover click focus" data-placement="top" data-container="body"><i class="fa fa-info-circle"></i></a>
                                 </label>
                                 <div class="col-md-5">
                                     <input type="text" id="run_range" name="run_range" value="{{last_instrument_run.run_number}}" class="form-control"/>
@@ -70,10 +70,6 @@
                             </div>
                             <div class="row">
                                 <ul class="js-form-actions">
-                                    <li>
-                                        <a href="#previewScript" id="previewScript">Preview Reduction Script</a>
-                                        <div class="js-explaination visible-xs-block">Download the reduction script with the selected variables inserted.</div>
-                                    </li>
                                     <li>
                                         <a href="#currentScript" id="currentScript">Reset to values in current script</a>
                                         <div class="js-explaination visible-xs-block">Reset all variables to those set in the script. This will pick up any changes made to the reduce_vars.py script.</div>
@@ -135,10 +131,6 @@
             <div class="modal fade" id="script-preview-modal">
                 <div class="modal-dialog">
                     <div class="modal-content">
-                        <div class="modal-header">
-                            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-                            <h4 class="modal-title">Preview Reduction Script</h4>
-                        </div>
                         <div class="modal-body">
                             <div class="progress">
                                 <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="100" aria-valuemax="100" style="width: 100%">

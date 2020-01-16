@@ -1,6 +1,11 @@
+ipython
+pandas
+lxml
+requests
 pytest-cov
 pylint
-coveralls
+coverage==4.5.4
+coveralls==1.9.2
 python-coveralls
 mock
 django-debug-toolbar

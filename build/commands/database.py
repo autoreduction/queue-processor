@@ -11,7 +11,8 @@ import os
 # pylint:disable=no-name-in-module,import-error
 from distutils.core import Command
 
-from build.database.generate_database import add_test_user, run_sql_file, generate_schema
+from build.database.generate_database import (get_sql_from_file, get_test_user_sql,
+                                              run_sql, generate_schema)
 from build.utils.common import BUILD_LOGGER, ROOT_DIR
 
 
@@ -32,22 +33,32 @@ class InitialiseTestDatabase(Command):
         """ Generate paths to sql scripts """
         database_build_dir = os.path.join(ROOT_DIR, 'build', 'database')
         # pylint:disable=attribute-defined-outside-init
-        self.setup_sql_path = os.path.join(database_build_dir, 'test_db_setup.sql')
+        self.setup_sql_path = os.path.join(database_build_dir, 'reset_autoreduction_db.sql')
         self.populate_sql_path = os.path.join(database_build_dir, 'populate_reduction_viewer.sql')
 
     def run(self):
         """ Run the setup scripts required for localhost database """
+        from utils.clients.database_client import DatabaseClient
+        from utils.settings import LOCAL_MYSQL_SETTINGS
+        local_db_connection = DatabaseClient(LOCAL_MYSQL_SETTINGS).connect()
+
         BUILD_LOGGER.print_and_log("==================== Building Database ======================")
-        BUILD_LOGGER.print_and_log("Setting up database on local host")
-        if run_sql_file(self.setup_sql_path, BUILD_LOGGER.logger) is False:
+        BUILD_LOGGER.print_and_log("DROPPING and creating Autoreduction table")
+        if run_sql(connection=local_db_connection,
+                   sql=get_sql_from_file(self.setup_sql_path),
+                   logger=BUILD_LOGGER.logger) is False:
+            return
+        BUILD_LOGGER.print_and_log("Adding test user from settings")
+        if run_sql(connection=local_db_connection,
+                   sql=get_test_user_sql(),
+                   logger=BUILD_LOGGER.logger) is False:
             return
         BUILD_LOGGER.print_and_log("Migrating databases from django model")
         if generate_schema(ROOT_DIR, BUILD_LOGGER.logger) is False:
             return
         BUILD_LOGGER.print_and_log("Populating database with test data")
-        if run_sql_file(self.populate_sql_path, BUILD_LOGGER.logger) is False:
-            return
-        BUILD_LOGGER.print_and_log("Adding test user from settings")
-        if add_test_user(BUILD_LOGGER.logger) is False:
+        if run_sql(connection=local_db_connection,
+                   sql=get_sql_from_file(self.populate_sql_path),
+                   logger=BUILD_LOGGER.logger) is False:
             return
         BUILD_LOGGER.print_and_log("Test database successfully initialised\n")
