@@ -70,8 +70,8 @@ class QueueClient(AbstractClient):
                 host_port = [(self.credentials.host, int(self.credentials.port))]
                 connection = stomp.Connection(host_and_ports=host_port,
                                               use_ssl=False)
+
                 logging.info("Starting connection to %s", host_port)
-                connection.start()
                 connection.connect(username=self.credentials.username,
                                    passcode=self.credentials.password,
                                    wait=False,

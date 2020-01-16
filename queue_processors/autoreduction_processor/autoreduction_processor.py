@@ -145,7 +145,6 @@ class Consumer:
         connection = stomp.Connection(host_and_ports=brokers, use_ssl=False)
         connection.set_listener(self.consumer_name, Listener(connection))
         logger.info("Starting ActiveMQ Connection to %s", ACTIVEMQ['brokers'])
-        connection.start()
         logger.info("Completed ActiveMQ Connection")
         connection.connect(ACTIVEMQ['amq_user'],
                            ACTIVEMQ['amq_pwd'],

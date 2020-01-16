@@ -493,7 +493,6 @@ def main():
     json_data = None
     try:
         logger.info("PostProcessAdmin Connecting to ActiveMQ")
-        stomp_connection.start()
         stomp_connection.connect(ACTIVEMQ['amq_user'],
                                  ACTIVEMQ['amq_pwd'],
                                  wait=True,

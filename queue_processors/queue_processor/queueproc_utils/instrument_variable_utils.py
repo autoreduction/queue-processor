@@ -150,11 +150,11 @@ class InstrumentVariablesUtils:
             """ Update the existing variables. """
             old_var.keep = True
             # Find the new variable from the script.
-            matching_vars = filter(lambda temp_var: temp_var.name == old_var.name, defaults)
+            matching_vars = [variable for variable in defaults if old_var.name == variable.name]
 
             # Check whether we should and can update the old one.
             if matching_vars and old_var.tracks_script:
-                new_var = next(matching_vars)
+                new_var = matching_vars[0]
                 map(lambda name: setattr(old_var, name, getattr(new_var, name)),
                     ["value", "type", "is_advanced",
                      "help_text"])  # Copy the new one's important attributes onto the old variable.
@@ -167,8 +167,9 @@ class InstrumentVariablesUtils:
                     session.delete(old_var)
                     session.commit()
                 old_var.keep = False
+            return old_var
 
-        map(update_variable, variables)
+        variables = list(map(update_variable, variables))
         variables[:] = [var for var in variables if var.keep]
 
         # Add any new ones
