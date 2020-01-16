@@ -37,7 +37,7 @@ setup_requires = ['dash',
                   'sentry_sdk',
                   'service_identity',
                   'SQLAlchemy',
-                  'stomp.py',
+                  'stomp.py==4.1.22',  # ToDo: can remove version requirement when we move to py3
                   'suds',
                   'Twisted',
                   'watchdog']
