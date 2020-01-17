@@ -40,7 +40,7 @@ class DatabaseMonitorChecks:
                           "FROM reduction_viewer_instrument"
         return self.query_log_and_execute(all_instruments)
 
-    def missing_rb_report(self, instrument, start_date, end_date):
+    def rb_range_by_instrument(self, instrument, start_date, end_date):
         """Retrieves run_number column and return missing sequential values """
         missing_rb_calc_vars = {}
 
@@ -145,7 +145,7 @@ class DatabaseMonitorChecks:
 # print(DatabaseMonitorChecks().get_data_by_status_over_time(instrument_id=6, end_date='2019-12-13', start_date='2019-12-12'))
 # print(DatabaseMonitorChecks().get_data_by_status_over_time(selection='COUNT(id)', instrument_id=8))
 # print(DatabaseMonitorChecks().instruments_list())
-# DatabaseMonitorChecks().missing_rb_report(7, start_date='2019:11:12', end_date='2019:12:13')
+# print(DatabaseMonitorChecks().rb_range_by_instrument(4, start_date='2019:11:12', end_date='2019:12:13'))
 
 # print(DatabaseMonitorChecks().get_data_by_status_over_time(selection="id, "
 #                                                                      "run_number, "

@@ -1,5 +1,6 @@
 import unittest
 from mock import patch, Mock
+
 from scripts.system_performance.system_performance_queries import DatabaseMonitorChecks
 from utils.settings import MYSQL_SETTINGS
 from utils.clients.connection_exception import ConnectionException
@@ -31,7 +32,17 @@ class TESTDatabaseMonitorChecks(unittest.TestCase):
         self.mocked_conn_db_mon_checks.connection.execute.called_once_with("test")
 
     def test_instrument_list(self):
-        pass
+        db = DatabaseMonitorChecks()
+        actual = db.instruments_list()
+        expected = ['GEM', 'WISH', 'MUSR']
+        actual_instruments = []
+        for index, instrument in actual:
+            self.assertIsInstance(index, long)
+            actual_instruments.append(instrument)
+
+        for expected_instrument in expected:
+            self.assertIn(expected_instrument, actual_instruments)
+
 
 
     #def test_query_log_and_execute(self, constructor_query):
@@ -43,9 +54,9 @@ class TESTDatabaseMonitorChecks(unittest.TestCase):
     #     self.assertIsInstance(list_of_instruments, list)
     #
     # def test_missing_rb_report(self):
-    #     missing_rb_report = DatabaseMonitorChecks().missing_rb_report(7, start_date='2019:11:12', end_date='2019:12:20')
+    #     rb_range_by_instrument = DatabaseMonitorChecks().rb_range_by_instrument(7, start_date='2019:11:12', end_date='2019:12:20')
     #
-    #     self.assertIsInstance(missing_rb_report, list)
+    #     self.assertIsInstance(rb_range_by_instrument, list)
     #
     # def test_get_data_by_status_over_time(self):
     #     status_over_time = DatabaseMonitorChecks().get_data_by_status_over_time(selection='COUNT(id)', instrument_id=7)
