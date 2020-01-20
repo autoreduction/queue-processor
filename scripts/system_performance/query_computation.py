@@ -126,7 +126,9 @@ class QueryHandler:
         missing_run_numbers = _find_missing(sorted_run_numbers)
 
         # return list containing count of runs vs count of missing runs
-        return [len(sorted_run_numbers), len(missing_run_numbers), missing_run_numbers]
+        return {'Count_of_runs': len(sorted_run_numbers),
+                'Missing_runs_count': len(missing_run_numbers),
+                'Missing_runs': missing_run_numbers}
 
     @staticmethod
     def execution_times(instrument_id, start_date, end_date):
@@ -180,6 +182,21 @@ class QueryHandler:
                 execution_list.append(_convert_seconds_to_time(times))
             return _list_zip(execution_list, list_of_times)
 
+        def _nested_lists_to_dict(list_of_lists):
+            execution_cols = ['id', 'run_number', 'start_time', 'end_time', 'execution_time']
+            execution_times_dict = {'id': [], 'run_number': [], 'start_time': [], 'end_time': [], 'execution_time': []}
+
+            for execution_times_list in list_of_lists:
+                col_index = 0
+                while col_index < 5:
+                    try:
+                        execution_times_dict[execution_cols[col_index]].append(execution_times_list[col_index])
+                    except KeyError:
+                        execution_times_dict[execution_cols[col_index]] = execution_times_list[col_index]
+                    col_index = col_index + 1
+
+            return execution_times_dict
+
         def _query_argument_specify(start_date, end_date):
             """Specifies arguments for query and returns formatted data from Autoreduce database"""
 
@@ -190,7 +207,7 @@ class QueryHandler:
 
             return _calc_execution_times(set_query_arguments)
 
-        return _query_argument_specify(start_date=start_date, end_date=end_date)
+        return _nested_lists_to_dict(_query_argument_specify(start_date=start_date, end_date=end_date))
 
     # pylint: disable=line-too-long
     @staticmethod
