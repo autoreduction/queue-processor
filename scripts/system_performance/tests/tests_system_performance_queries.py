@@ -16,6 +16,10 @@ class TESTDatabaseMonitorChecks(unittest.TestCase):
     def setUp(self, _):
         self.mocked_conn_db_mon_checks = DatabaseMonitorChecks()
 
+        self.arguments_dict = {'end_date': 'CURDATE()', 'interval': 1, 'time_scale': 'DAY', 'start_date': None}
+
+        self.db = DatabaseMonitorChecks()
+
     def test_valid_init(self):
         self.assertEquals(self.mocked_conn_db_mon_checks.database.credentials, MYSQL_SETTINGS)
         self.assertIsInstance(self.mocked_conn_db_mon_checks.connection, MockConnection)
@@ -42,6 +46,30 @@ class TESTDatabaseMonitorChecks(unittest.TestCase):
 
         for expected_instrument in expected:
             self.assertIn(expected_instrument, actual_instruments)
+
+    def test_query_sub_segment_replace_intervals(self):
+        db = DatabaseMonitorChecks()
+        expected_intervals = ">= DATE_SUB('{}', INTERVAL {} {})".format(self.arguments_dict['end_date'],
+                                                                        self.arguments_dict['interval'],
+                                                                        self.arguments_dict['time_scale'])
+        actual_intervals = db.query_sub_segment_replace(query_arguments=self.arguments_dict)
+
+        # tests intervals
+        self.assertEqual(expected_intervals, actual_intervals)
+
+    def test_query_sub_segment_replace_date_range(self):
+        db = DatabaseMonitorChecks()
+        self.arguments_dict['start_date'], self.arguments_dict['end_date'] = '2019-12-13', '2019-12-12'
+        expected_dates_range = "BETWEEN '{}' AND '{}'".format(self.arguments_dict['start_date'],
+                                                              self.arguments_dict['end_date'])
+        actual_dates_range = db.query_sub_segment_replace(query_arguments=self.arguments_dict)
+
+        # tests dates range
+        self.assertEqual(expected_dates_range, actual_dates_range)
+
+    def test_query_segment_replace(self):
+
+        pass
 
 
 

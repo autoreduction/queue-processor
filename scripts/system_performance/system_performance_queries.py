@@ -59,18 +59,17 @@ class DatabaseMonitorChecks:
         return [int(elem) for elem in list(itertools.chain.from_iterable(missing_rb_calc_vars['run_numbers']))]
 
     @staticmethod
-    def query_sub_segment_replace(query_arguments, start_date, end_date):
+    def query_sub_segment_replace(query_arguments):
         """Select last query argument based on argument input - sub_segment selection"""
-        interval_range = "INTERVAL {} {}".format(query_arguments['interval'], query_arguments['time_scale'])
-        date_range = "BETWEEN '{}' AND '{}'".format(start_date, end_date)
         if not query_arguments['start_date']:
-            query_sub_segment = ">= DATE_SUB('{}', {})".format(end_date, interval_range)
+            interval_range = "INTERVAL {} {}".format(query_arguments['interval'], query_arguments['time_scale'])
+            query_sub_segment = ">= DATE_SUB('{}', {})".format(query_arguments['end_date'], interval_range)
         else:
             # When both start and end date inputs are populated, query between those dates.
-            query_sub_segment = date_range
+            query_sub_segment = "BETWEEN '{}' AND '{}'".format(query_arguments['start_date'], query_arguments['end_date'])
         return query_sub_segment
 
-    def query_segment_replace(self, query_arguments, start_date, end_date):
+    def query_segment_replace(self, query_arguments):
         """Handles the interchangeable segment of query to return either intervals of time or period between two
         user specified dates and whether or not to include a filter by retry run or not."""
 
@@ -85,7 +84,7 @@ class DatabaseMonitorChecks:
 
         else:
             # Determining which sub query segment to place in query.
-            query_segment = self.query_sub_segment_replace(query_arguments, start_date, end_date)
+            query_segment = self.query_sub_segment_replace(query_arguments,)
             returned_args.append(query_segment)
 
         if not query_arguments['instrument_id']:
@@ -136,22 +135,22 @@ class DatabaseMonitorChecks:
 
         arguments = locals()  # Retrieving user specified variables
         # Determining query segment to use
-        interchangeable_query_args = self.query_segment_replace(arguments, start_date=start_date, end_date=end_date)
+        interchangeable_query_args = self.query_segment_replace(arguments)
         return _query_out(interchangeable_query_args[0][1], interchangeable_query_args[0][0])
 
 # Hard coded queries for manual testing only and to be removed before full integration
 
 # print(DatabaseMonitorChecks().get_data_by_status_over_time(instrument_id=6, end_date='CURDATE()', start_date='CURDATE()'))
-# print(DatabaseMonitorChecks().get_data_by_status_over_time(instrument_id=6, end_date='2019-12-13', start_date='2019-12-12'))
-# print(DatabaseMonitorChecks().get_data_by_status_over_time(selection='COUNT(id)', instrument_id=8))
+print(DatabaseMonitorChecks().get_data_by_status_over_time(instrument_id=6, end_date='2019-12-13', start_date='2019-12-12'))
+print(DatabaseMonitorChecks().get_data_by_status_over_time(selection='COUNT(id)', instrument_id=8))
 # print(DatabaseMonitorChecks().instruments_list())
 # print(DatabaseMonitorChecks().rb_range_by_instrument(4, start_date='2019:11:12', end_date='2019:12:13'))
 
-# print(DatabaseMonitorChecks().get_data_by_status_over_time(selection="id, "
-#                                                                      "run_number, "
-#                                                                      "DATE_FORMAT(started, '%H:%i:%s') TIMEONLY,"
-#                                                                      "DATE_FORMAT(finished, '%H:%i:%s') TIMEONLY",
-#                                                            instrument_id=7,
-#                                                            anomic_aphasia='created',
-#                                                            end_date='2019-12-13',
-#                                                            start_date='2019-12-12'))
+print(DatabaseMonitorChecks().get_data_by_status_over_time(selection="id, "
+                                                                     "run_number, "
+                                                                     "DATE_FORMAT(started, '%H:%i:%s') TIMEONLY,"
+                                                                     "DATE_FORMAT(finished, '%H:%i:%s') TIMEONLY",
+                                                           instrument_id=7,
+                                                           anomic_aphasia='created',
+                                                           end_date='2019-12-13',
+                                                           start_date='2019-12-12'))
