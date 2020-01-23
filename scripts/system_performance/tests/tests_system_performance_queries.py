@@ -12,17 +12,24 @@ class MockConnection(Mock):
 
 class TESTDatabaseMonitorChecks(unittest.TestCase):
 
+
+    def setUp(self):
+       self.db = DatabaseMonitorChecks()
+       self.arguments_dict = {'selection': 'run_number',
+                              'status_id': 4,
+                              'retry_run': '',
+                              'anomic_aphasia': 'finished',
+                              'end_date': 'CURDATE()',
+                              'interval': 1,
+                              'time_scale': 'DAY',
+                              'start_date': None,
+                              'instrument_id': None}
+
     @patch('utils.clients.database_client.DatabaseClient.connect', return_value=MockConnection())
-    def setUp(self, _):
-        self.mocked_conn_db_mon_checks = DatabaseMonitorChecks()
-
-        self.arguments_dict = {'end_date': 'CURDATE()', 'interval': 1, 'time_scale': 'DAY', 'start_date': None}
-
-        self.db = DatabaseMonitorChecks()
-
-    def test_valid_init(self):
-        self.assertEquals(self.mocked_conn_db_mon_checks.database.credentials, MYSQL_SETTINGS)
-        self.assertIsInstance(self.mocked_conn_db_mon_checks.connection, MockConnection)
+    def test_valid_init(self, _):
+        db = DatabaseMonitorChecks()
+        self.assertEquals(db.database.credentials, MYSQL_SETTINGS)
+        self.assertIsInstance(db.connection, MockConnection)
 
     @patch('utils.clients.database_client.DatabaseClient.connect')
     def test_invalid_init(self, mock_connect):
@@ -31,13 +38,14 @@ class TESTDatabaseMonitorChecks(unittest.TestCase):
         mock_connect.side_effect = raise_connection_error
         self.assertRaises(ConnectionException, DatabaseMonitorChecks)
 
-    def test_query_log_and_execute(self):
-        self.mocked_conn_db_mon_checks.query_log_and_execute("test")
-        self.mocked_conn_db_mon_checks.connection.execute.called_once_with("test")
+    @patch('utils.clients.database_client.DatabaseClient.connect', return_value=MockConnection())
+    def test_query_log_and_execute(self, _):
+        db = DatabaseMonitorChecks()
+        db.query_log_and_execute("test")
+        db.connection.execute.called_once_with("test")
 
     def test_instrument_list(self):
-        db = DatabaseMonitorChecks()
-        actual = db.instruments_list()
+        actual = self.db.instruments_list()
         expected = ['GEM', 'WISH', 'MUSR']
         actual_instruments = []
         for index, instrument in actual:
@@ -48,29 +56,50 @@ class TESTDatabaseMonitorChecks(unittest.TestCase):
             self.assertIn(expected_instrument, actual_instruments)
 
     def test_query_sub_segment_replace_intervals(self):
-        db = DatabaseMonitorChecks()
         expected_intervals = ">= DATE_SUB('{}', INTERVAL {} {})".format(self.arguments_dict['end_date'],
                                                                         self.arguments_dict['interval'],
                                                                         self.arguments_dict['time_scale'])
-        actual_intervals = db.query_sub_segment_replace(query_arguments=self.arguments_dict)
+        actual_intervals = self.db.query_sub_segment_replace(query_arguments=self.arguments_dict)
 
         # tests intervals
         self.assertEqual(expected_intervals, actual_intervals)
 
     def test_query_sub_segment_replace_date_range(self):
-        db = DatabaseMonitorChecks()
         self.arguments_dict['start_date'], self.arguments_dict['end_date'] = '2019-12-13', '2019-12-12'
         expected_dates_range = "BETWEEN '{}' AND '{}'".format(self.arguments_dict['start_date'],
                                                               self.arguments_dict['end_date'])
-        actual_dates_range = db.query_sub_segment_replace(query_arguments=self.arguments_dict)
+        actual_dates_range = self.db.query_sub_segment_replace(query_arguments=self.arguments_dict)
 
         # tests dates range
         self.assertEqual(expected_dates_range, actual_dates_range)
 
-    def test_query_segment_replace(self):
+    def test_set_date_segment_same_dates(self):
+        expected_out = '= 2019-12-13'
+        actual_out = self.db.set_date_segment(start_date='2019-12-13', end_date='2019-12-13')
+        self.assertEqual(expected_out, actual_out)
 
-        pass
+    def test_set_date_segment_curdates(self):
+        expected_out = '= CURDATE()'
+        actual_out = self.db.set_date_segment(start_date='CURDATE()', end_date='CURDATE()')
+        self.assertEqual(expected_out, actual_out)
 
+    def test_query_segment_replace_no_id(self):
+        expected_out = [[">= DATE_SUB('CURDATE()', INTERVAL 1 DAY)", '']]
+        actual = self.db.query_segment_replace(self.arguments_dict)
+        self.assertEqual(expected_out, actual)
+
+    def test_query_segment_replace_id(self):
+        self.arguments_dict['instrument_id'] = 6
+        expected_out = [[">= DATE_SUB('CURDATE()', INTERVAL 1 DAY)", ', instrument_id']]
+        actual = self.db.query_segment_replace(self.arguments_dict)
+        self.assertEqual(expected_out, actual)
+
+    # def test_query_segment_replace_no_instrument_id(self):
+    #     pass
+    #
+    # def test_query_segment_replace_instrument_id(self):
+    #     self.arguments_dict['instrument_id'] = 4
+    #     pass
 
 
     #def test_query_log_and_execute(self, constructor_query):

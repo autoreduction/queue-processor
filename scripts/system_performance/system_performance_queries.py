@@ -69,36 +69,46 @@ class DatabaseMonitorChecks:
             query_sub_segment = "BETWEEN '{}' AND '{}'".format(query_arguments['start_date'], query_arguments['end_date'])
         return query_sub_segment
 
+    @staticmethod
+    def set_date_segment(start_date, end_date):
+        if start_date == 'CURDATE()':
+            date_segment = 'CURDATE()'
+        else:
+            date_segment = end_date
+        return "= {}".format(date_segment)
+
+    @staticmethod
+    def set_instrument_id_segment(instrument_id):
+
+        pass
+
     def query_segment_replace(self, query_arguments):
         """Handles the interchangeable segment of query to return either intervals of time or period between two
         user specified dates and whether or not to include a filter by retry run or not."""
 
-        # If end date is None, query only for rows created on current date
         returned_args = []
-        current_date = 'CURDATE()'
 
+        # If end date is None, query only for rows created on or up to current date
         if query_arguments['start_date'] == query_arguments['end_date']:
-            query_segment = "= {}".format(current_date)
+            query_segment = self.set_date_segment(start_date=query_arguments['start_date'],
+                                                  end_date=query_arguments['end_date'])
             query_arguments['start_date'] = ''
             returned_args.append(query_segment)
-
         else:
             # Determining which sub query segment to place in query.
             query_segment = self.query_sub_segment_replace(query_arguments,)
             returned_args.append(query_segment)
 
-        if not query_arguments['instrument_id']:
-            # Removing relevant instrument_id query argument segments when not specified as method arg
-            instrument_id_arg = ""
-            query_arguments['instrument_id'] = ''
-            returned_args.append(instrument_id_arg)
-
-        else:
+        if query_arguments['instrument_id'] is not None:
             # Applying instrument_id query argument segments when instrument_id argument populated as method arg
             instrument_id_arg = ", instrument_id"
             query_arguments['instrument_id'] = ', {}'.format(query_arguments['instrument_id'])
-            returned_args.append(instrument_id_arg)
+        else:
+            query_arguments['instrument_id'] = ''
+            instrument_id_arg = ''
 
+        returned_args.append(instrument_id_arg)  # Appending instrument_id_arg
+        print(returned_args)
         return [returned_args]
 
     def get_data_by_status_over_time(self, selection='run_number', status_id=4, retry_run='',
@@ -140,17 +150,21 @@ class DatabaseMonitorChecks:
 
 # Hard coded queries for manual testing only and to be removed before full integration
 
-# print(DatabaseMonitorChecks().get_data_by_status_over_time(instrument_id=6, end_date='CURDATE()', start_date='CURDATE()'))
-print(DatabaseMonitorChecks().get_data_by_status_over_time(instrument_id=6, end_date='2019-12-13', start_date='2019-12-12'))
-print(DatabaseMonitorChecks().get_data_by_status_over_time(selection='COUNT(id)', instrument_id=8))
+
+
 # print(DatabaseMonitorChecks().instruments_list())
 # print(DatabaseMonitorChecks().rb_range_by_instrument(4, start_date='2019:11:12', end_date='2019:12:13'))
-
-print(DatabaseMonitorChecks().get_data_by_status_over_time(selection="id, "
-                                                                     "run_number, "
-                                                                     "DATE_FORMAT(started, '%H:%i:%s') TIMEONLY,"
-                                                                     "DATE_FORMAT(finished, '%H:%i:%s') TIMEONLY",
-                                                           instrument_id=7,
-                                                           anomic_aphasia='created',
-                                                           end_date='2019-12-13',
-                                                           start_date='2019-12-12'))
+#
+print(DatabaseMonitorChecks().get_data_by_status_over_time(instrument_id=6, end_date='CURDATE()', start_date='CURDATE()'))
+# print(DatabaseMonitorChecks().get_data_by_status_over_time(end_date='2019-12-13', start_date='2019-12-13'))
+# print(DatabaseMonitorChecks().get_data_by_status_over_time(instrument_id=6, end_date='2019-12-13', start_date='2019-12-12'))
+# print(DatabaseMonitorChecks().get_data_by_status_over_time(selection='COUNT(id)', instrument_id=8))
+#
+# print(DatabaseMonitorChecks().get_data_by_status_over_time(selection="id, "
+#                                                                      "run_number, "
+#                                                                      "DATE_FORMAT(started, '%H:%i:%s') TIMEONLY,"
+#                                                                      "DATE_FORMAT(finished, '%H:%i:%s') TIMEONLY",
+#                                                            instrument_id=7,
+#                                                            anomic_aphasia='created',
+#                                                            end_date='2019-12-13',
+#                                                            start_date='2019-12-12'))
