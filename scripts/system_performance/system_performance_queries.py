@@ -75,7 +75,7 @@ class DatabaseMonitorChecks:
             date_segment = 'CURDATE()'
         else:
             date_segment = end_date
-        return "= {}".format(date_segment)
+        return "= '{}'".format(date_segment)
 
     @staticmethod
     def set_instrument_id_segment(instrument_id):
@@ -154,9 +154,10 @@ class DatabaseMonitorChecks:
 
 # print(DatabaseMonitorChecks().instruments_list())
 # print(DatabaseMonitorChecks().rb_range_by_instrument(4, start_date='2019:11:12', end_date='2019:12:13'))
+
 #
-print(DatabaseMonitorChecks().get_data_by_status_over_time(instrument_id=6, end_date='CURDATE()', start_date='CURDATE()'))
-# print(DatabaseMonitorChecks().get_data_by_status_over_time(end_date='2019-12-13', start_date='2019-12-13'))
+# print(DatabaseMonitorChecks().get_data_by_status_over_time(instrument_id=6, start_date='CURDATE()'))
+# print(DatabaseMonitorChecks().get_data_by_status_over_time(retry_run='AND retry_run_id is not null'))
 # print(DatabaseMonitorChecks().get_data_by_status_over_time(instrument_id=6, end_date='2019-12-13', start_date='2019-12-12'))
 # print(DatabaseMonitorChecks().get_data_by_status_over_time(selection='COUNT(id)', instrument_id=8))
 #
