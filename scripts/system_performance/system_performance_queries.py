@@ -71,16 +71,12 @@ class DatabaseMonitorChecks:
 
     @staticmethod
     def set_date_segment(start_date, end_date):
+        """Set date segment within query"""
         if start_date == 'CURDATE()':
             date_segment = 'CURDATE()'
         else:
             date_segment = end_date
         return "= '{}'".format(date_segment)
-
-    @staticmethod
-    def set_instrument_id_segment(instrument_id):
-
-        pass
 
     def query_segment_replace(self, query_arguments):
         """Handles the interchangeable segment of query to return either intervals of time or period between two
@@ -148,24 +144,3 @@ class DatabaseMonitorChecks:
         interchangeable_query_args = self.query_segment_replace(arguments)
         return _query_out(interchangeable_query_args[0][1], interchangeable_query_args[0][0])
 
-# Hard coded queries for manual testing only and to be removed before full integration
-
-
-
-# print(DatabaseMonitorChecks().instruments_list())
-# print(DatabaseMonitorChecks().rb_range_by_instrument(4, start_date='2019:11:12', end_date='2019:12:13'))
-
-#
-# print(DatabaseMonitorChecks().get_data_by_status_over_time(instrument_id=6, start_date='CURDATE()'))
-# print(DatabaseMonitorChecks().get_data_by_status_over_time(retry_run='AND retry_run_id is not null'))
-# print(DatabaseMonitorChecks().get_data_by_status_over_time(instrument_id=6, end_date='2019-12-13', start_date='2019-12-12'))
-# print(DatabaseMonitorChecks().get_data_by_status_over_time(selection='COUNT(id)', instrument_id=8))
-#
-# print(DatabaseMonitorChecks().get_data_by_status_over_time(selection="id, "
-#                                                                      "run_number, "
-#                                                                      "DATE_FORMAT(started, '%H:%i:%s') TIMEONLY,"
-#                                                                      "DATE_FORMAT(finished, '%H:%i:%s') TIMEONLY",
-#                                                            instrument_id=7,
-#                                                            anomic_aphasia='created',
-#                                                            end_date='2019-12-13',
-#                                                            start_date='2019-12-12'))
