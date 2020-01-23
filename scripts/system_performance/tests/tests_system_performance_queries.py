@@ -1,5 +1,5 @@
 import unittest
-from mock import patch, Mock
+from mock import patch, Mock, MagicMock
 
 from scripts.system_performance.system_performance_queries import DatabaseMonitorChecks
 from utils.settings import MYSQL_SETTINGS
@@ -25,9 +25,10 @@ class TESTDatabaseMonitorChecks(unittest.TestCase):
                                'instrument_id': None}
 
     @patch('utils.clients.database_client.DatabaseClient.connect', return_value=MockConnection())
-    @patch('scripts.system_performance.system_performance_queries.DatabaseMonitorChecks.query_log_and_execute')
-    def test_patch_applicator(self, mock_query_log_and_execute, _):
-        return mock_query_log_and_execute, DatabaseMonitorChecks()
+    def test_patch_applicator(self, _):
+        db = DatabaseMonitorChecks()
+        db.query_log_and_execute = MagicMock(name='query_log_and_execute')
+        return db
 
     @patch('utils.clients.database_client.DatabaseClient.connect', return_value=MockConnection())
     def test_valid_init(self, _):
@@ -53,7 +54,7 @@ class TESTDatabaseMonitorChecks(unittest.TestCase):
         expected = ['GEM', 'WISH', 'MUSR']
         actual_instruments = []
         for index, instrument in actual:
-            self.assertIsInstance(index, long)
+            self.assertIsInstance(int(index), int)
             actual_instruments.append(instrument)
 
         for expected_instrument in expected:
@@ -99,65 +100,57 @@ class TESTDatabaseMonitorChecks(unittest.TestCase):
         self.assertEqual(expected_out, actual)
 
     def test_get_data_by_status_over_time(self):
-        mocked_query, db = self.test_patch_applicator()
+        db = self.test_patch_applicator()
         expected ="SELECT run_number " \
                   "FROM reduction_viewer_reductionrun " \
                   "WHERE (status_id ) = (4 )  " \
                   "AND finished >= DATE_SUB('CURDATE()', INTERVAL 1 DAY)"
         db.get_data_by_status_over_time(**self.arguments_dict)
-        mocked_query.called_once_with(expected)
+        db.query_log_and_execute.called_once_with(expected)
 
-    @patch('utils.clients.database_client.DatabaseClient.connect', return_value=MockConnection())
-    @patch('scripts.system_performance.system_performance_queries.DatabaseMonitorChecks.query_log_and_execute')
-    def test_get_data_by_status_over_time_with_instrument_id(self, mock_query_log_and_execute, _):
+    def test_get_data_by_status_over_time_with_instrument_id(self):
+        db = self.test_patch_applicator()
         self.arguments_dict['instrument_id'] = 6
-        db = DatabaseMonitorChecks()
         expected = "SELECT run_number " \
                    "FROM reduction_viewer_reductionrun " \
                    "WHERE (status_id , instrument_id) = (4 , 6)  " \
                    "AND finished >= DATE_SUB('CURDATE()', INTERVAL 1 DAY)"
         db.get_data_by_status_over_time(**self.arguments_dict)
-        mock_query_log_and_execute.called_once_with(expected)
+        db.query_log_and_execute.called_once_with(expected)
 
-    @patch('utils.clients.database_client.DatabaseClient.connect', return_value=MockConnection())
-    @patch('scripts.system_performance.system_performance_queries.DatabaseMonitorChecks.query_log_and_execute')
-    def test_get_data_by_status_over_time_with_date_range(self, mock_query_log_and_execute, _):
+    def test_get_data_by_status_over_time_with_date_range(self):
+        db = self.test_patch_applicator()
         self.arguments_dict['instrument_id'] = 6
         self.arguments_dict['start_date'] = '2019:11:12'
         self.arguments_dict['end_date'] = '2019:11:13'
-        db = DatabaseMonitorChecks()
         expected = "SELECT run_number " \
                    "FROM reduction_viewer_reductionrun " \
                    "WHERE (status_id , instrument_id) = (4 , 6)  " \
                    "AND finished " \
                    "BETWEEN '2019:11:12' AND '2019:12:13'"
         db.get_data_by_status_over_time(**self.arguments_dict)
-        mock_query_log_and_execute.called_once_with(expected)
+        db.query_log_and_execute.called_once_with(expected)
 
-    @patch('utils.clients.database_client.DatabaseClient.connect', return_value=MockConnection())
-    @patch('scripts.system_performance.system_performance_queries.DatabaseMonitorChecks.query_log_and_execute')
-    def test_get_data_by_status_over_time_with_duplicate_dates(self, mock_query_log_and_execute, _):
+    def test_get_data_by_status_over_time_with_duplicate_dates(self):
+        db = self.test_patch_applicator()
         self.arguments_dict['instrument_id'] = 6
-        db = DatabaseMonitorChecks()
         expected = "SELECT run_number " \
                    "FROM reduction_viewer_reductionrun " \
                    "WHERE (status_id , instrument_id) = (4 , 6)  " \
                    "AND finished = '2019:11:12'"
         db.get_data_by_status_over_time(**self.arguments_dict)
-        mock_query_log_and_execute.called_once_with(expected)
+        db.query_log_and_execute.called_once_with(expected)
 
-    @patch('utils.clients.database_client.DatabaseClient.connect', return_value=MockConnection())
-    @patch('scripts.system_performance.system_performance_queries.DatabaseMonitorChecks.query_log_and_execute')
-    def test_get_data_by_status_over_time_by_retry(self, mock_query_log_and_execute, _):
+    def test_get_data_by_status_over_time_by_retry(self):
+        db = self.test_patch_applicator()
         self.arguments_dict['retry_run'] = 'AND retry_run_id is not null'
-        db = DatabaseMonitorChecks()
         expected = "SELECT run_number " \
                    "FROM reduction_viewer_reductionrun " \
                    "WHERE (status_id ) = (4 ) " \
                    "AND retry_run_id is not null " \
                    "AND finished >= DATE_SUB('CURDATE()', INTERVAL 1 DAY)"
         db.get_data_by_status_over_time(**self.arguments_dict)
-        mock_query_log_and_execute.called_once_with(expected)
+        db.query_log_and_execute.called_once_with(expected)
 
 
 if __name__ == '__main__':
