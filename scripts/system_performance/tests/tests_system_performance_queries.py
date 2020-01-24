@@ -87,22 +87,26 @@ class TESTDatabaseMonitorChecks(unittest.TestCase):
 
     def test_query_sub_segment_replace_intervals(self):
         """Testing appropriate sub segment interval is returned to be inserted in query"""
+        # pylint: disable=line-too-long
         expected_intervals = ">= DATE_SUB('{}', INTERVAL {} {})".format(self.arguments_dict['end_date'],
                                                                         self.arguments_dict['interval'],
                                                                         self.arguments_dict['time_scale'])
         actual_intervals = self.db_monitor_checks.query_sub_segment_replace(query_arguments=self.arguments_dict)
+        # pylint: enable=line-too-long
         self.assertEqual(expected_intervals, actual_intervals)  # Tests intervals
 
     def test_query_sub_segment_replace_date_range(self):
         """Testing appropriate sub segment interval is returned to be inserted in query"""
+        # pylint: disable=line-too-long
         self.arguments_dict['start_date'], self.arguments_dict['end_date'] = '2019-12-13', '2019-12-12'
         expected_dates_range = "BETWEEN '{}' AND '{}'".format(self.arguments_dict['start_date'],
                                                               self.arguments_dict['end_date'])
         actual_dates_range = self.db_monitor_checks.query_sub_segment_replace(query_arguments=self.arguments_dict)
+        # pylint: enable=line-too-long
         self.assertEqual(expected_dates_range, actual_dates_range)        # Tests dates range
 
     def test_set_date_segment_same_dates(self):
-        """Testing appropriate sub segment interval is returned to be inserted in query"""
+        """Testing appropriate sub-segment interval is returned """
         expected_out = "= '2019-12-13'"
         actual_out = self.db_monitor_checks.set_date_segment(start_date='2019-12-13',
                                                              end_date='2019-12-13')
@@ -111,8 +115,10 @@ class TESTDatabaseMonitorChecks(unittest.TestCase):
     def test_set_date_segment_curdates(self):
         """Testing appropriate sub segment interval is returned to be inserted in query"""
         expected_out = "= 'CURDATE()'"
+        # pylint: disable=line-too-long
         actual_out = self.db_monitor_checks.set_date_segment(start_date='CURDATE()',
                                                              end_date=self.arguments_dict['end_date'])
+        # pylint: enable=line-too-long
         self.assertEqual(expected_out, actual_out)  # Tests that CURDATE is returned sub segment
 
     def test_query_segment_replace_no_id(self):

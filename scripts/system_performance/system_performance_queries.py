@@ -6,8 +6,8 @@
 # ############################################################################### #
 
 """
-The purpose of this script is for performing MySQL queries to monitor system state performance and health.
-db_state_checks
+The purpose of this script is for performing MySQL queries to monitor system state
+performance and health.
 """
 from __future__ import print_function
 import itertools
@@ -30,7 +30,7 @@ class DatabaseMonitorChecks(object):
 
     def query_log_and_execute(self, constructed_query):
         """Logs and executes all queries ran in script"""
-        logging.info('SQL QUERY: {}'.format(constructed_query))
+        logging.info('SQL QUERY: %s'.format(constructed_query))
         print(constructed_query)
         return self.connection.execute(constructed_query).fetchall()
 
@@ -54,9 +54,10 @@ class DatabaseMonitorChecks(object):
                                              start_date,
                                              end_date)
         missing_rb_calc_vars['run_numbers'] = self.query_log_and_execute(missing_rb_query)
-
+        # pylint: disable=line-too-long
         # Converts list of run number sets containing longs into list of integers [(123L), (456L)] -> [123, 456]
         return [int(elem) for elem in list(itertools.chain.from_iterable(missing_rb_calc_vars['run_numbers']))]
+        # pylint: enable=line-too-long
 
     @staticmethod
     def query_sub_segment_replace(query_arguments):
