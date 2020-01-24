@@ -59,6 +59,7 @@ class TESTDatabaseMonitorChecks(unittest.TestCase):
     def test_invalid_init(self, mock_connect):
         """Testing that db initialization return when invalid"""
         def raise_connection_error():
+            """Testing expected invalid database connection return"""
             raise ConnectionException('database')
         mock_connect.side_effect = raise_connection_error
         self.assertRaises(ConnectionException, DatabaseMonitorChecks)
