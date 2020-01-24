@@ -71,9 +71,9 @@ class TestDatabaseMonitorChecks(unittest.TestCase):
         db_monitor_checks.query_log_and_execute("test")
         db_monitor_checks.connection.execute.called_once_with("test")
 
-    def test_instrument_list(self):
+    def test_get_instruments_from_database(self):
         """Testing that a list of instruments is returned and that index can be cast to int"""
-        actual = self.db_monitor_checks.instruments_list()
+        actual = self.db_monitor_checks.get_instruments_from_database()
         expected = ['GEM', 'WISH', 'MUSR']
         actual_instruments = []
         for index, instrument in actual:
@@ -83,34 +83,34 @@ class TestDatabaseMonitorChecks(unittest.TestCase):
         for expected_instrument in expected:
             self.assertIn(expected_instrument, actual_instruments)
 
-    def test_query_sub_segment_replace_intervals(self):
+    def test_time_scale_format_segment_replace_intervals(self):
         """Testing appropriate sub segment interval is returned to be inserted in query"""
         # pylint: disable=line-too-long
         expected_intervals = ">= DATE_SUB('{}', INTERVAL {} {})".format(self.arguments_dict['end_date'],
                                                                         self.arguments_dict['interval'],
                                                                         self.arguments_dict['time_scale'])
-        actual_intervals = self.db_monitor_checks.query_sub_segment_replace(query_arguments=self.arguments_dict)
+        actual_intervals = self.db_monitor_checks.time_scale_format_segment_replace(query_arguments=self.arguments_dict)
         # pylint: enable=line-too-long
         self.assertEqual(expected_intervals, actual_intervals)  # Tests intervals
 
-    def test_query_sub_segment_replace_date_range(self):
+    def test_time_scale_format_segment_replace_date_range(self):
         """Testing appropriate sub segment interval is returned to be inserted in query"""
         # pylint: disable=line-too-long
         self.arguments_dict['start_date'], self.arguments_dict['end_date'] = '2019-12-13', '2019-12-12'
         expected_dates_range = "BETWEEN '{}' AND '{}'".format(self.arguments_dict['start_date'],
                                                               self.arguments_dict['end_date'])
-        actual_dates_range = self.db_monitor_checks.query_sub_segment_replace(query_arguments=self.arguments_dict)
+        actual_dates_range = self.db_monitor_checks.time_scale_format_segment_replace(query_arguments=self.arguments_dict)
         # pylint: enable=line-too-long
         self.assertEqual(expected_dates_range, actual_dates_range)        # Tests dates range
 
-    def test_set_date_segment_same_dates(self):
+    def test_construct_date_segment_same_dates(self):
         """Testing appropriate sub-segment interval is returned """
         expected_out = "= '2019-12-13'"
         actual_out = self.db_monitor_checks.construct_date_segment(start_date='2019-12-13',
                                                                    end_date='2019-12-13')
         self.assertEqual(expected_out, actual_out)  # Tests handling of duplicate dates
 
-    def test_set_date_segment_curdates(self):
+    def test_construct_date_segment_curdates(self):
         """Testing appropriate sub segment interval is returned to be inserted in query"""
         expected_out = "= 'CURDATE()'"
         # pylint: disable=line-too-long

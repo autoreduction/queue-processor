@@ -23,10 +23,7 @@ class DatabaseMonitorChecks(object):
     # Establishing a connection with Database using Database Client
     def __init__(self):
         self.database = DatabaseClient()
-        try:
-            self.connection = self.database.connect()
-        except ConnectionException:
-            raise ConnectionException('database')
+        self.connection = self.database.connect()
 
     def query_log_and_execute(self, constructed_query):
         """Logs and executes all queries ran in script"""
@@ -34,14 +31,15 @@ class DatabaseMonitorChecks(object):
         print(constructed_query)
         return self.connection.execute(constructed_query).fetchall()
 
-    def instruments_list(self):
-        """Retrieve current list of instruments"""
+    def get_instruments_from_database(self):
+        """Retrieve current list of instruments from database"""
         all_instruments = "SELECT id, name "\
                           "FROM reduction_viewer_instrument"
         return self.query_log_and_execute(all_instruments)
 
     def rb_range_by_instrument(self, instrument, start_date, end_date):
-        """Retrieves run_number column and return missing sequential values """
+        """Retrieves run_numbers as longs for a given instrument
+        between two dates as a list of integers"""
         missing_rb_calc_vars = {}
 
         missing_rb_query = "SELECT run_number "\
@@ -53,14 +51,15 @@ class DatabaseMonitorChecks(object):
                                              instrument,
                                              start_date,
                                              end_date)
+        # Execute query and append to dictionary
         missing_rb_calc_vars['run_numbers'] = self.query_log_and_execute(missing_rb_query)
-        # pylint: disable=line-too-long
-        # Converts list of run number sets containing longs into list of integers [(123L), (456L)] -> [123, 456]
-        return [int(elem) for elem in list(itertools.chain.from_iterable(missing_rb_calc_vars['run_numbers']))]
-        # pylint: enable=line-too-long
+
+        # Converts list of run number sets containing longs into list of integers
+        # [(123L), (456L)] -> [123, 456]
+        return [int(elem) for elem in list(itertools.chain.from_iterable(missing_rb_calc_vars['run_numbers']))]  # pylint: disable=line-too-long
 
     @staticmethod
-    def query_sub_segment_replace(query_arguments):
+    def time_scale_format_segment_replace(query_arguments):
         """Select last query argument based on argument input - sub_segment selection"""
         if not query_arguments['start_date']:
             interval_range = "INTERVAL {} {}".format(query_arguments['interval'],
@@ -77,11 +76,7 @@ class DatabaseMonitorChecks(object):
     @staticmethod
     def construct_date_segment(start_date, end_date):
         """Set date segment within query"""
-        if start_date == 'CURDATE()':
-            date_segment = 'CURDATE()'
-        else:
-            date_segment = end_date
-        return "= '{}'".format(date_segment)
+        return "= '{}'".format('CURDATE()' if start_date == 'CURDATE()' else end_date)
 
     def query_segment_replace(self, query_arguments):
         """Handles the interchangeable segment of query to return either intervals of
@@ -98,7 +93,7 @@ class DatabaseMonitorChecks(object):
             returned_args.append(query_segment)
         else:
             # Determining which sub query segment to place in query.
-            query_segment = self.query_sub_segment_replace(query_arguments,)
+            query_segment = self.time_scale_format_segment_replace(query_arguments, )
             returned_args.append(query_segment)
 
         if query_arguments['instrument_id'] is not None:
@@ -129,7 +124,7 @@ class DatabaseMonitorChecks(object):
                                             arguments['run_state_column'],
                                             query_type_segment)
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments, unused-argument
     def get_data_by_status_over_time(self, selection='run_number', status_id=4, retry_run='',
                                      run_state_column='finished', end_date='CURDATE()', interval=1,
                                      time_scale='DAY', start_date=None, instrument_id=None):
