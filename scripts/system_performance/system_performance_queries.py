@@ -13,7 +13,6 @@ from __future__ import print_function
 import itertools
 import logging
 from utils.clients.database_client import DatabaseClient
-from utils.clients.connection_exception import ConnectionException
 
 
 class DatabaseMonitorChecks(object):
