@@ -75,7 +75,7 @@ class DatabaseMonitorChecks(object):
         return query_sub_segment
 
     @staticmethod
-    def set_date_segment(start_date, end_date):
+    def construct_date_segment(start_date, end_date):
         """Set date segment within query"""
         if start_date == 'CURDATE()':
             date_segment = 'CURDATE()'
@@ -92,8 +92,8 @@ class DatabaseMonitorChecks(object):
 
         # If end date is None, query only for rows created on or up to current date
         if query_arguments['start_date'] == query_arguments['end_date']:
-            query_segment = self.set_date_segment(start_date=query_arguments['start_date'],
-                                                  end_date=query_arguments['end_date'])
+            query_segment = self.construct_date_segment(start_date=query_arguments['start_date'],
+                                                        end_date=query_arguments['end_date'])
             query_arguments['start_date'] = ''
             returned_args.append(query_segment)
         else:
@@ -114,9 +114,24 @@ class DatabaseMonitorChecks(object):
         print(returned_args)
         return [returned_args]
 
+    @staticmethod
+    def query_construction(arguments, instrument_id_arg, query_type_segment):
+        """Constructs query ready for execution"""
+        return "SELECT {} " \
+                         "FROM {} " \
+                         "WHERE (status_id {}) = ({} {}) {} " \
+                         "AND {} {}".format(arguments['selection'],
+                                            DatabaseMonitorChecks.table,
+                                            instrument_id_arg,
+                                            arguments['status_id'],
+                                            arguments['instrument_id'],
+                                            arguments['retry_run'],
+                                            arguments['run_state_column'],
+                                            query_type_segment)
+
     # pylint: disable=too-many-arguments
     def get_data_by_status_over_time(self, selection='run_number', status_id=4, retry_run='',
-                                     anomic_aphasia='finished', end_date='CURDATE()', interval=1,
+                                     run_state_column='finished', end_date='CURDATE()', interval=1,
                                      time_scale='DAY', start_date=None, instrument_id=None):
         """
         Default Variables
@@ -126,7 +141,7 @@ class DatabaseMonitorChecks(object):
         :param retry_run : Whether or not a user is looking for runs that have
         been retried
         :param instrument_id : the instrument id of the instrument to be queried.
-        :param anomic_aphasia : "finished" DateTime column in database (created,
+        :param run_state_column : "finished" DateTime column in database (created,
         last_updated, started, finished)
         :param end_date : Most recent date you wish to query up too. By default
         this is the current date.
@@ -135,25 +150,13 @@ class DatabaseMonitorChecks(object):
         :param start_date : The furthest date from today you wish to query from
         e.g the start of start of cycle.
         """
-        # pylint: disable=unused-argument
-
-        def _query_out(instrument_id_arg, query_type_segment):
-            """Executes and returns built query as list"""
-            query_argument = "SELECT {} " \
-                 "FROM {} " \
-                 "WHERE (status_id {}) = ({} {}) {} " \
-                 "AND {} {}".format(arguments['selection'],
-                                    DatabaseMonitorChecks.table,
-                                    instrument_id_arg,
-                                    arguments['status_id'],
-                                    arguments['instrument_id'],
-                                    arguments['retry_run'],
-                                    arguments['anomic_aphasia'],
-                                    query_type_segment)
-
-            return [list(elem) for elem in self.query_log_and_execute(query_argument)]
-
         arguments = locals()  # Retrieving user specified variables
         # Determining query segment to use
-        interchangeable_query_args = self.query_segment_replace(arguments)
-        return _query_out(interchangeable_query_args[0][1], interchangeable_query_args[0][0])
+        interchangeable_query_args = self.query_segment_replace(arguments)[0]
+        # Constructing Query
+        constructed_query = self.query_construction(
+            arguments=arguments,
+            instrument_id_arg=interchangeable_query_args[1],
+            query_type_segment=interchangeable_query_args[0])
+
+        return [list(elem) for elem in self.query_log_and_execute(constructed_query)]

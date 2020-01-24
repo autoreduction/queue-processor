@@ -22,7 +22,7 @@ class MockConnection(Mock):
     pass
 
 
-class TESTDatabaseMonitorChecks(unittest.TestCase):
+class TestDatabaseMonitorChecks(unittest.TestCase):
     """Test class for DatabaseMonitorChecks class"""
 
     def setUp(self):
@@ -31,7 +31,7 @@ class TESTDatabaseMonitorChecks(unittest.TestCase):
         self.arguments_dict = {'selection': 'run_number',
                                'status_id': 4,
                                'retry_run': '',
-                               'anomic_aphasia': 'finished',
+                               'run_state_column': 'finished',
                                'end_date': 'CURDATE()',
                                'interval': 1,
                                'time_scale': 'DAY',
@@ -39,8 +39,7 @@ class TESTDatabaseMonitorChecks(unittest.TestCase):
                                'instrument_id': None}
 
     @patch('utils.clients.database_client.DatabaseClient.connect', return_value=MockConnection())
-    # pylint: disable=no-value-for-parameter
-    # pylint: disable=R0201
+    # pylint: disable=no-value-for-parameter, no-self-use
     def test_patch_applicator(self, _):
         """Applies patches to method called inside"""
         db_monitor_checks = DatabaseMonitorChecks()
@@ -65,8 +64,7 @@ class TESTDatabaseMonitorChecks(unittest.TestCase):
         self.assertRaises(ConnectionException, DatabaseMonitorChecks)
 
     @patch('utils.clients.database_client.DatabaseClient.connect', return_value=MockConnection())
-    # pylint: disable=no-value-for-parameter
-    # pylint: disable=R0201
+    # pylint: disable=no-value-for-parameter, no-self-use
     def test_query_log_and_execute(self, _):
         """Testing log and execute method returns expected log and execution of queries passed """
         db_monitor_checks = DatabaseMonitorChecks()
@@ -108,16 +106,16 @@ class TESTDatabaseMonitorChecks(unittest.TestCase):
     def test_set_date_segment_same_dates(self):
         """Testing appropriate sub-segment interval is returned """
         expected_out = "= '2019-12-13'"
-        actual_out = self.db_monitor_checks.set_date_segment(start_date='2019-12-13',
-                                                             end_date='2019-12-13')
+        actual_out = self.db_monitor_checks.construct_date_segment(start_date='2019-12-13',
+                                                                   end_date='2019-12-13')
         self.assertEqual(expected_out, actual_out)  # Tests handling of duplicate dates
 
     def test_set_date_segment_curdates(self):
         """Testing appropriate sub segment interval is returned to be inserted in query"""
         expected_out = "= 'CURDATE()'"
         # pylint: disable=line-too-long
-        actual_out = self.db_monitor_checks.set_date_segment(start_date='CURDATE()',
-                                                             end_date=self.arguments_dict['end_date'])
+        actual_out = self.db_monitor_checks.construct_date_segment(start_date='CURDATE()',
+                                                                   end_date=self.arguments_dict['end_date'])
         # pylint: enable=line-too-long
         self.assertEqual(expected_out, actual_out)  # Tests that CURDATE is returned sub segment
 
