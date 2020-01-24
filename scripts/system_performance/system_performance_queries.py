@@ -9,14 +9,14 @@
 The purpose of this script is for performing MySQL queries to monitor system state performance and health.
 db_state_checks
 """
+from __future__ import print_function
 import itertools
 import logging
-
 from utils.clients.database_client import DatabaseClient
 from utils.clients.connection_exception import ConnectionException
 
 
-class DatabaseMonitorChecks:
+class DatabaseMonitorChecks(object):
     """Class to query system performance"""
     table = "reduction_viewer_reductionrun"
 
@@ -156,4 +156,3 @@ class DatabaseMonitorChecks:
         # Determining query segment to use
         interchangeable_query_args = self.query_segment_replace(arguments)
         return _query_out(interchangeable_query_args[0][1], interchangeable_query_args[0][0])
-

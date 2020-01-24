@@ -1,7 +1,7 @@
 # ############################################################################### #
 # Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
 #
-# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 
@@ -39,6 +39,7 @@ class TESTDatabaseMonitorChecks(unittest.TestCase):
                                'instrument_id': None}
 
     @patch('utils.clients.database_client.DatabaseClient.connect', return_value=MockConnection())
+    # pylint: disable=no-value-for-parameter
     def test_patch_applicator(self, _):
         # Applies patches to method called in
         db_monitor_checks = DatabaseMonitorChecks()
@@ -46,6 +47,7 @@ class TESTDatabaseMonitorChecks(unittest.TestCase):
         return db_monitor_checks
 
     @patch('utils.clients.database_client.DatabaseClient.connect', return_value=MockConnection())
+    # pylint: disable=no-value-for-parameter
     def test_valid_init(self, _):
         """Testing that db_monitor_checks initialization return when valid"""
         db_monitor_checks = DatabaseMonitorChecks()
@@ -61,8 +63,9 @@ class TESTDatabaseMonitorChecks(unittest.TestCase):
         self.assertRaises(ConnectionException, DatabaseMonitorChecks)
 
     @patch('utils.clients.database_client.DatabaseClient.connect', return_value=MockConnection())
+    # pylint: disable=no-value-for-parameter
     def test_query_log_and_execute(self, _):
-        # Testing log and execute method returns expected log and execution of queries passed
+        """Testing log and execute method returns expected log and execution of queries passed """
         db_monitor_checks = DatabaseMonitorChecks()
         db_monitor_checks.query_log_and_execute("test")
         db_monitor_checks.connection.execute.called_once_with("test")
@@ -127,10 +130,10 @@ class TESTDatabaseMonitorChecks(unittest.TestCase):
     def test_get_data_by_status_over_time(self):
         """Tests that correct query is build - No args set"""
         db_monitor_checks = self.test_patch_applicator()
-        expected ="SELECT run_number " \
-                  "FROM reduction_viewer_reductionrun " \
-                  "WHERE (status_id ) = (4 )  " \
-                  "AND finished >= DATE_SUB('CURDATE()', INTERVAL 1 DAY)"
+        expected = "SELECT run_number " \
+                   "FROM reduction_viewer_reductionrun " \
+                   "WHERE (status_id ) = (4 )  " \
+                   "AND finished >= DATE_SUB('CURDATE()', INTERVAL 1 DAY)"
         db_monitor_checks.get_data_by_status_over_time(**self.arguments_dict)
         db_monitor_checks.query_log_and_execute.called_once_with(expected)
 
