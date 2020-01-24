@@ -110,7 +110,7 @@ class TESTDatabaseMonitorChecks(unittest.TestCase):
         expected_out = "= '2019-12-13'"
         actual_out = self.db_monitor_checks.set_date_segment(start_date='2019-12-13',
                                                              end_date='2019-12-13')
-        self.assertEqual(expected_out, actual_out)  # Tests handling of duplicate dates for start and end
+        self.assertEqual(expected_out, actual_out)  # Tests handling of duplicate dates
 
     def test_set_date_segment_curdates(self):
         """Testing appropriate sub segment interval is returned to be inserted in query"""

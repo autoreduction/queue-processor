@@ -30,7 +30,7 @@ class DatabaseMonitorChecks(object):
 
     def query_log_and_execute(self, constructed_query):
         """Logs and executes all queries ran in script"""
-        logging.info('SQL QUERY: %s'.format(constructed_query))
+        logging.info('SQL QUERY: %s' % constructed_query)
         print(constructed_query)
         return self.connection.execute(constructed_query).fetchall()
 
