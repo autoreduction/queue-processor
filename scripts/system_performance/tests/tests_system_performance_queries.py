@@ -40,8 +40,9 @@ class TESTDatabaseMonitorChecks(unittest.TestCase):
 
     @patch('utils.clients.database_client.DatabaseClient.connect', return_value=MockConnection())
     # pylint: disable=no-value-for-parameter
+    # pylint: disable=R0201
     def test_patch_applicator(self, _):
-        # Applies patches to method called in
+        """Applies patches to method called inside"""
         db_monitor_checks = DatabaseMonitorChecks()
         db_monitor_checks.query_log_and_execute = MagicMock(name='query_log_and_execute')
         return db_monitor_checks
@@ -51,7 +52,7 @@ class TESTDatabaseMonitorChecks(unittest.TestCase):
     def test_valid_init(self, _):
         """Testing that db_monitor_checks initialization return when valid"""
         db_monitor_checks = DatabaseMonitorChecks()
-        self.assertEquals(db_monitor_checks.database.credentials, MYSQL_SETTINGS)
+        self.assertEqual(db_monitor_checks.database.credentials, MYSQL_SETTINGS)
         self.assertIsInstance(db_monitor_checks.connection, MockConnection)
 
     @patch('utils.clients.database_client.DatabaseClient.connect')
@@ -64,6 +65,7 @@ class TESTDatabaseMonitorChecks(unittest.TestCase):
 
     @patch('utils.clients.database_client.DatabaseClient.connect', return_value=MockConnection())
     # pylint: disable=no-value-for-parameter
+    # pylint: disable=R0201
     def test_query_log_and_execute(self, _):
         """Testing log and execute method returns expected log and execution of queries passed """
         db_monitor_checks = DatabaseMonitorChecks()
@@ -129,6 +131,7 @@ class TESTDatabaseMonitorChecks(unittest.TestCase):
 
     def test_get_data_by_status_over_time(self):
         """Tests that correct query is build - No args set"""
+        # pylint: disable=no-value-for-parameter
         db_monitor_checks = self.test_patch_applicator()
         expected = "SELECT run_number " \
                    "FROM reduction_viewer_reductionrun " \
@@ -139,6 +142,7 @@ class TESTDatabaseMonitorChecks(unittest.TestCase):
 
     def test_get_data_by_status_over_time_with_instrument_id(self):
         """Tests that correct query is build -  ID set in args"""
+        # pylint: disable=no-value-for-parameter
         db_monitor_checks = self.test_patch_applicator()
         self.arguments_dict['instrument_id'] = 6
         expected = "SELECT run_number " \
@@ -150,6 +154,7 @@ class TESTDatabaseMonitorChecks(unittest.TestCase):
 
     def test_get_data_by_status_over_time_with_date_range(self):
         """Tests that correct query is build - id, start_date and end_date set in args"""
+        # pylint: disable=no-value-for-parameter
         db_monitor_checks = self.test_patch_applicator()
         self.arguments_dict['instrument_id'] = 6
         self.arguments_dict['start_date'] = '2019:11:12'
@@ -164,6 +169,7 @@ class TESTDatabaseMonitorChecks(unittest.TestCase):
 
     def test_get_data_by_status_over_time_with_duplicate_dates(self):
         """Tests that correct query is build - id and duplicate start_date and end_date set"""
+        # pylint: disable=no-value-for-parameter
         db_monitor_checks = self.test_patch_applicator()
         self.arguments_dict['instrument_id'] = 6
         self.arguments_dict['start_date'] = '2019:11:12'
@@ -177,6 +183,7 @@ class TESTDatabaseMonitorChecks(unittest.TestCase):
 
     def test_get_data_by_status_over_time_by_retry(self):
         """Tests that correct query is build - set retry_run arg"""
+        # pylint: disable=no-value-for-parameter
         db_monitor_checks = self.test_patch_applicator()
         self.arguments_dict['retry_run'] = 'AND retry_run_id is not null'
         expected = "SELECT run_number " \
