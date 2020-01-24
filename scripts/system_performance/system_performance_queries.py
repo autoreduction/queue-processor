@@ -9,11 +9,11 @@
 The purpose of this script is for performing MySQL queries to monitor system state performance and health.
 db_state_checks
 """
+import itertools
+import logging
 
 from utils.clients.database_client import DatabaseClient
 from utils.clients.connection_exception import ConnectionException
-import itertools
-import logging
 
 
 class DatabaseMonitorChecks:
@@ -50,9 +50,9 @@ class DatabaseMonitorChecks:
                            "AND created " \
                            "BETWEEN '{}' " \
                            "AND '{}'".format(DatabaseMonitorChecks.table,
-                                                              instrument,
-                                                              start_date,
-                                                              end_date)
+                                             instrument,
+                                             start_date,
+                                             end_date)
         missing_rb_calc_vars['run_numbers'] = self.query_log_and_execute(missing_rb_query)
 
         # Converts list of run number sets containing longs into list of integers [(123L), (456L)] -> [123, 456]
@@ -62,11 +62,15 @@ class DatabaseMonitorChecks:
     def query_sub_segment_replace(query_arguments):
         """Select last query argument based on argument input - sub_segment selection"""
         if not query_arguments['start_date']:
-            interval_range = "INTERVAL {} {}".format(query_arguments['interval'], query_arguments['time_scale'])
-            query_sub_segment = ">= DATE_SUB('{}', {})".format(query_arguments['end_date'], interval_range)
+            interval_range = "INTERVAL {} {}".format(query_arguments['interval'],
+                                                     query_arguments['time_scale'])
+
+            query_sub_segment = ">= DATE_SUB('{}', {})".format(query_arguments['end_date'],
+                                                               interval_range)
         else:
             # When both start and end date inputs are populated, query between those dates.
-            query_sub_segment = "BETWEEN '{}' AND '{}'".format(query_arguments['start_date'], query_arguments['end_date'])
+            query_sub_segment = "BETWEEN '{}' AND '{}'".format(query_arguments['start_date'],
+                                                               query_arguments['end_date'])
         return query_sub_segment
 
     @staticmethod
@@ -79,8 +83,9 @@ class DatabaseMonitorChecks:
         return "= '{}'".format(date_segment)
 
     def query_segment_replace(self, query_arguments):
-        """Handles the interchangeable segment of query to return either intervals of time or period between two
-        user specified dates and whether or not to include a filter by retry run or not."""
+        """Handles the interchangeable segment of query to return either intervals of
+        time or period between two user specified dates and whether or not to
+        include a filter by retry run or not."""
 
         returned_args = []
 
@@ -96,7 +101,8 @@ class DatabaseMonitorChecks:
             returned_args.append(query_segment)
 
         if query_arguments['instrument_id'] is not None:
-            # Applying instrument_id query argument segments when instrument_id argument populated as method arg
+            # Applying instrument_id query argument segments when instrument_id argument
+            # populated as method arg
             instrument_id_arg = ", instrument_id"
             query_arguments['instrument_id'] = ', {}'.format(query_arguments['instrument_id'])
         else:
@@ -107,21 +113,28 @@ class DatabaseMonitorChecks:
         print(returned_args)
         return [returned_args]
 
+    # pylint: disable=too-many-arguments
     def get_data_by_status_over_time(self, selection='run_number', status_id=4, retry_run='',
-                                     anomic_aphasia='finished', end_date='CURDATE()', interval=1, time_scale='DAY',
-                                     start_date=None, instrument_id=None):
+                                     anomic_aphasia='finished', end_date='CURDATE()', interval=1,
+                                     time_scale='DAY', start_date=None, instrument_id=None):
         """
         Default Variables
-        :param selection : * Which column you would like to select or all columns by default
+        :param selection : * Which column you would like to select or all columns
+        by default
         :param status_id : 1 Interchangeable id to look at different run status's
-        :param retry_run : Whether or not a user is looking for runs that have been retried
+        :param retry_run : Whether or not a user is looking for runs that have
+        been retried
         :param instrument_id : the instrument id of the instrument to be queried.
-        :param anomic_aphasia : "finished" DateTime column in database (created, last_updated, started, finished)
-        :param end_date : Most recent date you wish to query up too. By default this is the current date.
+        :param anomic_aphasia : "finished" DateTime column in database (created,
+        last_updated, started, finished)
+        :param end_date : Most recent date you wish to query up too. By default
+        this is the current date.
         :param interval : 1 Interval for time_scale
         :param time_scale : "DAY" Expected inputs include DAY, Month or YEAR
-        :param start_date : The furthest date from today you wish to query from e.g the start of start of cycle.
+        :param start_date : The furthest date from today you wish to query from
+        e.g the start of start of cycle.
         """
+        # pylint: disable=unused-argument
 
         def _query_out(instrument_id_arg, query_type_segment):
             """Executes and returns built query as list"""
