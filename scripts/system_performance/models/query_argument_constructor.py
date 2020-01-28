@@ -35,7 +35,7 @@ class QueryConstructor:
             end_date=end_date)
 
     @staticmethod
-    def query_argument_specify(instrument_id, start_date, end_date):
+    def start_and_end_times_by_instrument(instrument_id, start_date, end_date):
         """Specifies arguments for query and returns data from Autoreduce database"""
         selection = "id, " \
                     "run_number, " \

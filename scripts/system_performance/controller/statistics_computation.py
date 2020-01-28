@@ -35,7 +35,7 @@ class QueryHandler:
                }
 
     def method_call(self, method_name, method_args):
-        """Calls user specified method"""
+        """Calls user specified method and returns statistics for a given instrument"""
         # Check input is in mapping and place method N output in instrument_dict to return
         try:
             return self.create_method_mappings()[method_name](**method_args)
@@ -64,6 +64,42 @@ class QueryHandler:
             if execution_list[execution_times] is not None:
                 list_of_times[execution_times].append(execution_list[execution_times])
         return list_of_times
+
+    def list_extraction_and_isolation(self, start_end_times, start_time_index, end_time_index):
+        """ Extracts execution times from each sublist into a separate nested
+        list converted to seconds
+        :returns a nested list of start and end times in seconds"""
+        grouped_start_end_times = []
+
+        for sublist in start_end_times:
+            start_end = [sublist[start_time_index], sublist[end_time_index]]
+
+            time_duration_list = []
+            # Converting start and end times into seconds
+            for time_returned in start_end:
+                time_duration_list.append(int(self.convert_time_to_seconds(time_returned)))
+
+                # Placing pairs of start and end times inside sublist
+                if len(time_duration_list) == 2:
+                    grouped_start_end_times.append([time_duration_list[0], time_duration_list[1]])
+
+        return grouped_start_end_times
+
+    @staticmethod
+    def nested_lists_to_dict(list_of_lists, execution_dict):
+        execution_cols = list(execution_dict.keys())
+
+        for execution_times_list in list_of_lists:
+            col_index = 0
+            while col_index < 5:
+                try:
+                    execution_dict[execution_cols[col_index]].append(
+                        execution_times_list[col_index])
+                except KeyError:
+                    execution_dict[execution_cols[col_index]] = execution_times_list[col_index]
+                col_index = col_index + 1
+
+        return execution_dict
 
     @staticmethod
     def get_instrument_models():
@@ -161,71 +197,34 @@ class QueryHandler:
     def execution_times(self, instrument_id, start_date, end_date):
         """returns execution times for each instrument specified in method argument
         in a dictionary."""
-
-        def _execution_times_in_seconds_mapping(start_end_times):
-            """:returns a nested list of start and end times in seconds"""
-            time_duration_list = []
-            grouped_start_end_times = []
-
-            for sublist in start_end_times:
-                start_end = [sublist[2], sublist[3]]
-                # Converting start and end times into seconds
-                for time_returned in start_end:
-                    time_duration_list.append(int(self.convert_time_to_seconds(time_returned)))
-
-                    if len(time_duration_list) == 2:
-                        isolated_start_end_times = [time_duration_list[0], time_duration_list[1]]
-                        grouped_start_end_times.append(isolated_start_end_times)
-                        time_duration_list = []
-
-            return grouped_start_end_times
-
-        def _calc_execution_times(list_of_times):
-            """  Calculates execution times as appends to returned query list
-            :returns list_of_times & execution times as [[id, run_number, start_time, end_time, execution_time]..]"""
-            time_in_seconds_list = []
-
-            # Calculate execution times and append to new list
-            for start_end_sublist in _execution_times_in_seconds_mapping(list_of_times):
-                time_in_seconds_list.append(start_end_sublist[1] - start_end_sublist[0])
-
-            # Convert execution times from seconds to datetime format
-            execution_list = []
-            for times in time_in_seconds_list:
-                execution_list.append(self.convert_seconds_to_time(times))
-            return self.list_zip(execution_list, list_of_times)
-
-        def _nested_lists_to_dict(list_of_lists):
-            execution_cols = ['id', 'run_number', 'start_time', 'end_time', 'execution_time']
-            execution_times_dict = {'id': [], 'run_number': [], 'start_time': [], 'end_time': [], 'execution_time': []}
-
-            for execution_times_list in list_of_lists:
-                col_index = 0
-                while col_index < 5:
-                    try:
-                        execution_times_dict[execution_cols[col_index]].append(execution_times_list[col_index])
-                    except KeyError:
-                        execution_times_dict[execution_cols[col_index]] = execution_times_list[col_index]
-                    col_index = col_index + 1
-
-            return execution_times_dict
+        time_in_seconds_list = []
+        execution_times_dict = {'id': [], 'run_number': [], 'start_time': [], 'end_time': [],
+                                'execution_time': []}
 
         def _query_argument_specify(start_date, end_date):
             """Specifies arguments for query and returns formatted data from Autoreduce database"""
 
-            set_query_arguments = QueryConstructor.query_argument_specify(
+            return QueryConstructor.start_and_end_times_by_instrument(
                 instrument_id=instrument_id,
                 start_date=start_date,
                 end_date=end_date)
 
-            return _calc_execution_times(set_query_arguments)
+        # Calculate execution times and append to new list
+        list_of_times = _query_argument_specify(start_date, end_date)
 
-        return _nested_lists_to_dict(_query_argument_specify(start_date=start_date, end_date=end_date))
+        # Isolate start and end times and place in separate list of lists
+        for start_end_sublist in self.list_extraction_and_isolation(list_of_times, 2, 3):
+            # Calc exe times from isolated start end times, placing in new list in datetime format
+            time_in_seconds_list.append(self.convert_seconds_to_time(start_end_sublist[1] - start_end_sublist[0]))
 
-    # pylint: disable=line-too-long
+        # Construction of output for a given instrument
+        execution_times = self.list_zip(time_in_seconds_list, list_of_times)
+
+        # Return in dictionary per instrument
+        return self.nested_lists_to_dict(execution_times, execution_times_dict)
+
     @staticmethod
-    def run_frequency(instrument_id, status, retry=None, end_date=None, start_date=None, time_interval=None):
-        # pylint: enable=line-too-long
+    def run_frequency(instrument_id, status, retry=None, end_date=None, start_date=None, time_interval=None):  # pylint: disable=line-too-long
 
         """Return run frequencies for N instruments of type: successful run, failed run, or retry run.
         Method output follows the format: Dict {instrument_N : [rpd, tr, rpw, rpw, rpm]}
@@ -334,11 +333,11 @@ def cust_query_return(test_message, dictionary_out):
 
 
 cust_query_return(test_message='Minimal Arguments - Select Instruments:',
-                  dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['MAPS', 'ENGINX'],
+                  dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['MAPS'],
                                                                           method_name='execution_times',
                                                                           additional_method_arguments={
                                                                               'start_date':'2019-12-12',
-                                                                              'end_date': '2019-12-14'}))
+                                                                              'end_date': '2019-12-13'}))
 
 
 # # # Missing run numbers
