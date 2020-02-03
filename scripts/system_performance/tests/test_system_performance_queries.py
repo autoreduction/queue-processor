@@ -105,7 +105,7 @@ class TestDatabaseMonitorChecks(unittest.TestCase):
 
     def test_construct_date_segment_same_dates(self):
         """Testing appropriate sub-segment interval is returned """
-        expected_out = "= '2019-12-13'"
+        expected_out = "DATE('2019-12-13')"
         self.arguments_dict['start_date'] = '2019-12-13'
         self.arguments_dict['end_date'] = '2019-12-13'
         actual_out = self.db_monitor_checks.construct_date_segment(self.arguments_dict)
@@ -114,7 +114,7 @@ class TestDatabaseMonitorChecks(unittest.TestCase):
     def test_construct_date_segment_curdates(self):
         """Testing appropriate sub segment interval is returned to be inserted in query"""
         self.arguments_dict['start_date'] = 'CURDATE()'
-        expected_out = "= 'CURDATE()'"
+        expected_out = '= CURDATE()'
         # pylint: disable=line-too-long
         actual_out = self.db_monitor_checks.construct_date_segment(self.arguments_dict)
         # pylint: enable=line-too-long

@@ -25,13 +25,14 @@ class DatabaseMonitorChecks(object):
 
     def query_log_and_execute(self, constructed_query):
         """Logs and executes all queries ran in script
-        @:param constructed_query - SQL query in string format"""
+        :param constructed_query - SQL query in string format"""
         logging.info('SQL QUERY: %s', constructed_query)
+        print(constructed_query)
         return self.connection.execute(constructed_query).fetchall()
 
     def get_instruments_from_database(self):
         """Retrieve current list of instruments from database
-        @:return Constructed SQL query in string format to select all instrument id's and names
+        :return Constructed SQL query in string format to select all instrument id's and names
         from the autoreduction database"""
         all_instruments = "SELECT id, name "\
                           "FROM reduction_viewer_instrument"
@@ -40,9 +41,9 @@ class DatabaseMonitorChecks(object):
     def runs_by_instrument_over_date_range(self, instrument, start_date, end_date):
         """Retrieves run_numbers as longs for a given instrument
         between two dates as a list of integers
-        @:param instrument - Instrument ID as used in database
-        @:param start_date - The start date from which to query from
-        @:param end_date - The end date from which to query up too"""
+        :param instrument - Instrument ID as used in database
+        :param start_date - The start date from which to query from
+        :param end_date - The end date from which to query up too"""
         missing_rb_calc_vars = {}
 
         missing_rb_query = "SELECT run_number "\
@@ -64,8 +65,8 @@ class DatabaseMonitorChecks(object):
     @staticmethod
     def time_scale_format_segment_replace(query_arguments):
         """construct a subsection of the last query segment based on argument input
-        @:param Query_arguments - dictionary of query arguments
-        @:return sub_segment - a subsection of the end section of query being constructed"""
+        :param Query_arguments - dictionary of query arguments
+        :return sub_segment - a subsection of the end section of query being constructed"""
         if not query_arguments['start_date']:
             interval_range = "INTERVAL {} {}".format(query_arguments['interval'],
                                                      query_arguments['time_scale'])
@@ -84,22 +85,23 @@ class DatabaseMonitorChecks(object):
         By default, end_date is set to CURDATE if not specified otherwise by user.
         Set date segment within query to CURDATE if start date is CURDATE meaning end_date
         is also set the CURDATE()
-        @:param arguments_dictionary - dictionary of argument filters
-        @:return date segment of query formatted as string
+        :param arguments_dictionary - dictionary of argument filters
+        :return date segment of query formatted as string
         """
         if arguments_dictionary['start_date'] == 'CURDATE()':  # pylint disable=no-else-return
-            return "= {}".format(arguments_dictionary['end_date'])
+            date_segment_string_format = "= {}".format(arguments_dictionary['end_date'])
         else:
-            # pylint: disable=line-too-long
-            arguments_dictionary['run_state_column'] = "CAST({} AS DATE) =".format(arguments_dictionary['run_state_column'])
-            return "DATE('{}')".format(arguments_dictionary['end_date'])  # pylint disable=no-else-return
-            # pylint: enable=line-too-long
+            arguments_dictionary['run_state_column'] = "CAST({} AS DATE) =".format(arguments_dictionary['run_state_column'])  # pylint: disable=line-too-long
+            date_segment_string_format = "DATE('{}')".format(arguments_dictionary['end_date'])
+
+        return date_segment_string_format
+
     def query_segment_replace(self, query_arguments):
         """Handles the interchangeable segment of query to return either intervals of
         time or period between two user specified dates and whether or not to
         include a filter by retry run or not.
-        @:param query_arguments - dictionary of query argument filters
-        @:return sql query_segment to be used in query_construction"""
+        :param query_arguments - dictionary of query argument filters
+        :return sql query_segment to be used in query_construction"""
 
         returned_args = []
 
@@ -129,11 +131,11 @@ class DatabaseMonitorChecks(object):
 
     def query_construction(self, arguments, instrument_id_arg, query_type_segment):
         """Constructs query as a string ready for execution\
-        @:param arguments - dictionary of query filters
-        @:param instrument_id_arg - instrument_id_argument
-        @:param query_type_segment - segments of the query to change the structure
+        :param arguments - dictionary of query filters
+        :param instrument_id_arg - instrument_id_argument
+        :param query_type_segment - segments of the query to change the structure
         of the date range queried within
-        @:return sql query in string format"""
+        :return sql query in string format"""
 
         return "SELECT {} " \
                          "FROM {} " \
@@ -167,7 +169,7 @@ class DatabaseMonitorChecks(object):
         :param time_scale : "DAY" Expected inputs include DAY, Month or YEAR
         :param start_date : The furthest date from today you wish to query from
         e.g the start of start of cycle.
-        @:return raw queried data as a list
+        :return raw queried data as a list
         """
         arguments = locals()  # Retrieving user specified variables
         # Determining query segment to use
