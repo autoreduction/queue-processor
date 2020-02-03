@@ -106,16 +106,17 @@ class TestDatabaseMonitorChecks(unittest.TestCase):
     def test_construct_date_segment_same_dates(self):
         """Testing appropriate sub-segment interval is returned """
         expected_out = "= '2019-12-13'"
-        actual_out = self.db_monitor_checks.construct_date_segment(start_date='2019-12-13',
-                                                                   end_date='2019-12-13')
+        self.arguments_dict['start_date'] = '2019-12-13'
+        self.arguments_dict['end_date'] = '2019-12-13'
+        actual_out = self.db_monitor_checks.construct_date_segment(self.arguments_dict)
         self.assertEqual(expected_out, actual_out)  # Tests handling of duplicate dates
 
     def test_construct_date_segment_curdates(self):
         """Testing appropriate sub segment interval is returned to be inserted in query"""
+        self.arguments_dict['start_date'] = 'CURDATE()'
         expected_out = "= 'CURDATE()'"
         # pylint: disable=line-too-long
-        actual_out = self.db_monitor_checks.construct_date_segment(start_date='CURDATE()',
-                                                                   end_date=self.arguments_dict['end_date'])
+        actual_out = self.db_monitor_checks.construct_date_segment(self.arguments_dict)
         # pylint: enable=line-too-long
         self.assertEqual(expected_out, actual_out)  # Tests that CURDATE is returned sub segment
 

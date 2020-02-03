@@ -82,15 +82,16 @@ class DatabaseMonitorChecks(object):
     def construct_date_segment(arguments_dictionary):
         """Called when start and end dates are equivalent
         By default, end_date is set to CURDATE if not specified otherwise by user.
-        Set date segment within query to CURDATE if start date is CURDATE meaning end_date is also set the CURDATE()
+        Set date segment within query to CURDATE if start date is CURDATE meaning end_date
+        is also set the CURDATE()
         @:param arguments_dictionary - dictionary of argument filters
         @:return date segment of query formatted as string
         """
         if arguments_dictionary['start_date'] == 'CURDATE()':
             return "= {}".format(arguments_dictionary['end_date'])
         else:
-            arguments_dictionary['run_state_column'] = "CAST({} AS DATE) =".format(arguments_dictionary['run_state_column'])
-            return "DATE('{}')".format(arguments_dictionary['end_date'])
+            arguments_dictionary['run_state_column'] = "CAST({} AS DATE) =".format(arguments_dictionary['run_state_column'])  # pylint: disable=line-too-long
+            return "DATE('{}')".format(arguments_dictionary['end_date'])  # pylint disable=no-else-return
 
     def query_segment_replace(self, query_arguments):
         """Handles the interchangeable segment of query to return either intervals of
