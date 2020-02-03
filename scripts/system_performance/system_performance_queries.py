@@ -87,12 +87,13 @@ class DatabaseMonitorChecks(object):
         @:param arguments_dictionary - dictionary of argument filters
         @:return date segment of query formatted as string
         """
-        if arguments_dictionary['start_date'] == 'CURDATE()': # pylint disable=no-else-return
-            return "= {}".format(arguments_dictionary['end_date'])
+        if arguments_dictionary['start_date'] == 'CURDATE()':
+            return "= {}".format(arguments_dictionary['end_date']) # pylint disable=no-else-return
         else:
-            arguments_dictionary['run_state_column'] = "CAST({} AS DATE) =".format(arguments_dictionary['run_state_column'])  # pylint: disable=line-too-long
-            return "DATE('{}')".format(arguments_dictionary['end_date'])  # pylint disable=no-else-return, line-too-long
-
+            # pylint: disable=line-too-long
+            arguments_dictionary['run_state_column'] = "CAST({} AS DATE) =".format(arguments_dictionary['run_state_column'])
+            return "DATE('{}')".format(arguments_dictionary['end_date'])  # pylint disable=no-else-return
+            # pylint: enable=line-too-long
     def query_segment_replace(self, query_arguments):
         """Handles the interchangeable segment of query to return either intervals of
         time or period between two user specified dates and whether or not to
