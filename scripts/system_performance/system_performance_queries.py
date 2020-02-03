@@ -87,8 +87,8 @@ class DatabaseMonitorChecks(object):
         @:param arguments_dictionary - dictionary of argument filters
         @:return date segment of query formatted as string
         """
-        if arguments_dictionary['start_date'] == 'CURDATE()':
-            return "= {}".format(arguments_dictionary['end_date']) # pylint disable=no-else-return
+        if arguments_dictionary['start_date'] == 'CURDATE()':  # pylint disable=no-else-return
+            return "= {}".format(arguments_dictionary['end_date'])
         else:
             # pylint: disable=line-too-long
             arguments_dictionary['run_state_column'] = "CAST({} AS DATE) =".format(arguments_dictionary['run_state_column'])
