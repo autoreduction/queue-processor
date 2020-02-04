@@ -198,7 +198,6 @@ class DataClean(object):
 
 
 # Set url to scrape from, put inside pandas table and clean data frame ready for queries
-# WEBSITE = 'https://www.isis.stfc.ac.uk/Pages/Beam-Status.aspx'
-WEBSITE = 'https://www.isi.stc.ac.uk/Pages/'
+WEBSITE = 'https://www.isis.stfc.ac.uk/Pages/Beam-Status.aspx'
 # Normalise is kept separate in case table no longer needs to be normalised.
 DATA_FRAME = DataClean(TableWebScraper(WEBSITE).create_table()).normalise()
