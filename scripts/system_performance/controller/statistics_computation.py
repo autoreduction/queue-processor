@@ -13,6 +13,8 @@ from __future__ import print_function
 import datetime
 import time
 import logging
+from collections import OrderedDict
+
 from scripts.system_performance.models.query_argument_constructor import QueryConstructor
 
 
@@ -22,27 +24,6 @@ class QueryHandler:
 
     def __init__(self):
         pass
-
-    def create_method_mappings(self):
-        """A dictionary to map input, user specified methods to return equivalent method to be called
-        TODO: Create execution_time_average and run_frequency_average methods"""
-
-        return {'missing_run_numbers_report': self.missing_run_numbers_report,
-                'execution_times': self.execution_times,
-                # 'execution_time_average': self.execution_time_average,
-                'run_frequency': self.run_frequency,
-                # 'run_frequency_average': self.run_frequency_average
-               }
-
-    def method_call(self, method_name, method_args):
-        """Calls user specified method and returns statistics for a given instrument"""
-        # Check input is in mapping and place method N output in instrument_dict to return
-        try:
-            return self.create_method_mappings()[method_name](**method_args)
-        except KeyError:
-            logging.error("Invalid Input - method '%s' does not exist try -help "
-                          "to look at existing methods and arguments", method_name)
-            return None
 
     @staticmethod
     def convert_seconds_to_time(time_in_seconds):
@@ -58,8 +39,15 @@ class QueryHandler:
                                   seconds=reformat_time.tm_sec).total_seconds()
 
     @staticmethod
+    def find_missing_numbers_in_list(list_of_rb_numbers):
+        """Find all missing numbers in a given list"""
+        return [rb_number for rb_number in range(list_of_rb_numbers[0],
+                                                 list_of_rb_numbers[-1] + 1)
+                if rb_number not in list_of_rb_numbers]
+
+    @staticmethod
     def list_zip(execution_list, list_of_times):
-        """Appending execution times to the ends of each start end sublist."""
+        """Appending execution times to the ends of each start-end sublist."""
         for execution_times in range(len(execution_list)):
             if execution_list[execution_times] is not None:
                 list_of_times[execution_times].append(execution_list[execution_times])
@@ -82,13 +70,15 @@ class QueryHandler:
                 # Placing pairs of start and end times inside sublist
                 if len(time_duration_list) == 2:
                     grouped_start_end_times.append([time_duration_list[0], time_duration_list[1]])
-
         return grouped_start_end_times
 
     @staticmethod
     def nested_lists_to_dict(list_of_lists, execution_dict):
         execution_cols = list(execution_dict.keys())
-
+        print('list of lists')
+        print(list_of_lists)
+        print('execution_dict')
+        print(execution_dict)
         for execution_times_list in list_of_lists:
             col_index = 0
             while col_index < 5:
@@ -98,88 +88,15 @@ class QueryHandler:
                 except KeyError:
                     execution_dict[execution_cols[col_index]] = execution_times_list[col_index]
                 col_index = col_index + 1
-
+        print('modified execution dict')
+        print(execution_dict)
         return execution_dict
 
-    @staticmethod
-    def get_instrument_models():
-        """Returns a list of all currently active instruments"""
-        instrument_list = QueryConstructor().get_list_of_instruments()
-        return instrument_list
-
-    def run_every_instruments(self, instrument_dict, method_name, method_arguments=None):
-        """Returns all existing instruments in a dictionary for a given method as:
-        {instrument_name : [[method output row 1]],[[method output row 2] etc] ...}"""
-        for instrument in self.get_instrument_models():
-            try:
-                if method_name in self.create_method_mappings():
-                    method_arguments['instrument_id'] = int(instrument.id)
-                    logging.info("Querying for instrument: {}".format(method_arguments))
-                    instrument_dict[instrument[1]] = self.create_method_mappings()[method_name](**method_arguments)
-            except KeyError:
-                raise ValueError("Invalid Input - method '%s' does not exist try -help "
-                                 "to look at existing methods and arguments", method_name)
-        return instrument_dict
-
-    def get_query_for_instruments(self, method_name, instrument_input=None, additional_method_arguments=None):
-        """Checks that the instrument_from_db's in method input exist and then calls
-        and returns the method used as input for each instrument_from_db placing in
-        a dictionary as a nested list for each instrument_from_db as:
-         {instrument_name : [[method output row 1]],[[method output row 2] etc.] ...}
-
-        Run methods for each instrument_from_db name
-        :param instrument_input: [(str), (str), ...] - Represents the instruments to be used in queries
-        :param method_name: (str) -  The name of the methods to run
-        :param additional_method_arguments - method arguments specified by user
-        :return: A dictionary of instrument_from_db names (key) and list of method output (value)
-         """
-
-        instrument_dict = {}
-
-        # To allow for keys to still be added to dictionary such as the instrument_id
-        if not additional_method_arguments:
-            additional_method_arguments = {}
-
-        # If input is None, run all instruments by default
-        if not isinstance(instrument_input, list):
-            logging.error("Value is not iterable, the first argument must be of type list")
-            return None
-
-        list_of_instruments_from_db = self.get_instrument_models()
-
-        for instrument_from_db in list_of_instruments_from_db:
-            # Add instrument_from_db id to dictionary of method arguments
-            additional_method_arguments['instrument_id'] = instrument_from_db[0]
-
-            # for instrument_from_db in method input
-            for instrument_from_user in instrument_input:
-                # Run all instruments if user input specified "all"
-                if instrument_from_user == 'all':
-                    return self.run_every_instruments(instrument_dict,
-                                                      method_name,
-                                                      additional_method_arguments)
-
-                elif instrument_from_db[1] == instrument_from_user:
-
-                    instrument_dict[instrument_from_db[1]] = self.method_call(
-                        method_name=method_name,
-                        method_args=additional_method_arguments)
-                else:
-                    logging.info('The instrument_from_db: {} has not been found in '
-                                 'the autoreduction database'.format(instrument_from_user))
-
-        return instrument_dict
-
-    @staticmethod
-    def missing_run_numbers_report(instrument_id, start_date, end_date):
+    def missing_run_numbers_report(self, instrument_id, start_date, end_date):
         """Retrieves missing run numbers from reduction to be analysed
         :returns [count of run run number between two dates/time,
                  the count of missing run numbers,
                  [nested list of missing run numbers id's]]"""
-
-        def _find_missing(lst):
-            """Find all missing numbers in a given list"""
-            return [x for x in range(lst[0], lst[-1] + 1) if x not in lst]
 
         # Sort returned query run numbers into ascending order
         sorted_run_numbers = sorted(QueryConstructor().missing_run_numbers_constructor(
@@ -187,7 +104,7 @@ class QueryHandler:
             start_date=start_date,
             end_date=end_date))
 
-        missing_run_numbers = _find_missing(sorted_run_numbers)
+        missing_run_numbers = self.find_missing_numbers_in_list(sorted_run_numbers)
 
         # return list containing count of runs vs count of missing runs
         return {'Count_of_runs': len(sorted_run_numbers),
@@ -198,8 +115,14 @@ class QueryHandler:
         """returns execution times for each instrument specified in method argument
         in a dictionary."""
         time_in_seconds_list = []
-        execution_times_dict = {'id': [], 'run_number': [], 'start_time': [], 'end_time': [],
-                                'execution_time': []}
+        execution_times_dict = OrderedDict()
+        execution_times_dict['id'] = []
+        execution_times_dict['run_number'] = []
+        execution_times_dict['start_time'] = []
+        execution_times_dict['end_time'] = []
+        execution_times_dict['execution_time'] = []
+        # {'id': [], 'run_number': [], 'start_time': [], 'end_time': [],
+        #                         'execution_time': []}
 
         def _query_argument_specify(start_date, end_date):
             """Specifies arguments for query and returns formatted data from Autoreduce database"""
@@ -217,11 +140,10 @@ class QueryHandler:
             # Calc exe times from isolated start end times, placing in new list in datetime format
             time_in_seconds_list.append(self.convert_seconds_to_time(start_end_sublist[1] - start_end_sublist[0]))
 
-        # Construction of output for a given instrument
-        execution_times = self.list_zip(time_in_seconds_list, list_of_times)
-
-        # Return in dictionary per instrument
-        return self.nested_lists_to_dict(execution_times, execution_times_dict)
+        # Construction of output for a given instrument and return in dictionary
+        return self.nested_lists_to_dict(self.list_zip(time_in_seconds_list,
+                                                       list_of_times),
+                                         execution_times_dict)
 
     @staticmethod
     def run_frequency(instrument_id, status, retry=None, end_date=None, start_date=None, time_interval=None):  # pylint: disable=line-too-long
@@ -250,6 +172,9 @@ class QueryHandler:
 
         if end_date is None:
             end_date = datetime.date.today()
+
+        if retry is None:
+            retry = ''
 
         def _runs_per_day():
             """Returns count of runs in the last 24 hours for current date of specified date """
@@ -320,65 +245,6 @@ class QueryHandler:
 
             return run_frequency_list
         return _query_execute()
-
-# ALL CODE BELOW IS FOR MANUAL TESTING ONLY AND SHOULD BE REMOVED ON FULL INTEGRATION
-# -------------------------------------------------------------------------------------------------------------------- #
-
-
-def cust_query_return(test_message, dictionary_out):
-    """For use with manual testing only - REMOVE AFTER"""
-    print("\n {}".format(test_message))
-    for item in dictionary_out:
-        print(item, dictionary_out[item])
-
-
-cust_query_return(test_message='Minimal Arguments - Select Instruments:',
-                  dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['MAPS'],
-                                                                          method_name='execution_times',
-                                                                          additional_method_arguments={
-                                                                              'start_date':'2019-12-12',
-                                                                              'end_date': '2019-12-13'}))
-
-
-# # # Missing run numbers
-# cust_query_return(test_message='missing_run_numbers_report - Select Instruments:',
-#                   dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['MARI', 'MAPS', 'WISH'],
-#                                                                           method_name='missing_run_numbers_report',
-#                                                                           additional_method_arguments={
-#                                                                               'start_date':'2019-12-12',
-#                                                                               'end_date': '2019-12-14'}))
-# cust_query_return(test_message='missing_run_numbers_report - All Instruments:',
-#                   dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['all'],
-#                                                                           method_name='missing_run_numbers_report',
-#                                                                           additional_method_arguments={
-#                                                                               'start_date': '2019-12-12',
-#                                                                               'end_date': '2019-12-14'}))
-#
-# # Execution time
-# cust_query_return(test_message='execution_times - Select Instruments',
-#                   dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['MARI', 'MAPS', 'WISH'],
-#                                                                           method_name='execution_times',
-#                                                                           additional_method_arguments={
-#                                                                               'start_date': '2019-12-12',
-#                                                                               'end_date': '2019-12-14'}))
-# cust_query_return(test_message='execution_times - All Instruments:',
-#                   dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['all'],
-#                                                                           method_name='execution_times',
-#                                                                           additional_method_arguments={
-#                                                                               'start_date': '2019-12-12',
-#                                                                               'end_date': '2019-12-14'}))
-#
-# # # Run frequency
-# additional_args = {'status': 4, 'start_date': '2019-12-19', 'end_date': '2019-12-19'}
-# cust_query_return(test_message='run_frequency - Select Instruments',
-#                   dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['MARI', 'MAPS', 'WISH'],
-#                                                                           method_name='run_frequency',
-#                                                                           additional_method_arguments=additional_args))
-#
-# cust_query_return(test_message='run_frequency - Select Instruments',
-#                   dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['all'],
-#                                                                           method_name='run_frequency',
-#                                                                           additional_method_arguments=additional_args))
 
 # TODO: Create this method
 # To allow for the creation of a custom query between any dates/time period using get_status_over_time method
