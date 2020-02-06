@@ -8,3 +8,6 @@
 <!---Anything else: e.g. was the estimate reasonable for this issue?---> 
 
 Fixes #xyz
+
+
+**Before merging ensure the release notes have been updated**

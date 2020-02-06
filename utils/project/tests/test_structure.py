@@ -18,7 +18,8 @@ class TestStructure(unittest.TestCase):
 
     def test_get_project_root(self):
         path = get_project_root()
-        expected = ['build', 'Documentation', 'scripts', 'queue_processors', 'utils', 'WebApp']
+        expected = ['build', 'docker_reduction', 'documentation', 'scripts', 'queue_processors',
+                    'utils', 'WebApp', 'monitors']
         actual = os.listdir(path)
         for directory in expected:
             self.assertTrue(directory in actual)

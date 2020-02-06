@@ -42,6 +42,7 @@ setup_requires = ['dash',
                   'suds-py3',
                   'Twisted']
 
+
 if platform.system() == 'Windows':
     setup_requires.append('pypiwin32')
 else:
@@ -49,7 +50,7 @@ else:
 
 
 setup(name='AutoReduction',
-      version='19.2',
+      version='19.4',
       description='ISIS AutoReduction service',
       author='ISIS Autoreduction Team',
       url='https://github.com/ISISScientificComputing/autoreduce/',
