@@ -57,7 +57,6 @@ class QueueClient(AbstractClient):
         logging.info("Disconnecting from activemq")
         if self._connection is not None and self._connection.is_connected():
             self._connection.disconnect()
-            self._connection.stop()
         self._connection = None
 
     def _create_connection(self):
