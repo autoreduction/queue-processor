@@ -19,6 +19,7 @@ from utils.clients.connection_exception import ConnectionException
 
 class MockConnection(Mock):
     """Mock object class"""
+    # pylint:disable=unnecessary-pass
     pass
 
 
@@ -122,15 +123,14 @@ class TestDatabaseMonitorChecks(unittest.TestCase):
 
     def test_query_segment_replace_no_id(self):
         """Tests that construction of query segment is as expected - No ID set in args"""
-        expected_out = [[">= DATE_SUB('CURDATE()'," " INTERVAL 1 DAY)", '']]
+        expected_out = [[">= DATE_SUB('CURDATE()', INTERVAL 1 DAY)", '']]
         actual = self.db_monitor_checks.query_segment_replace(self.arguments_dict)
         self.assertEqual(expected_out, actual)
 
     def test_query_segment_replace_id(self):
         """Tests that construction of query segment is as expected - ID set in args"""
         self.arguments_dict['instrument_id'] = 6
-        expected_out = [[">= DATE_SUB('CURDATE()', "
-                         "INTERVAL 1 DAY)",
+        expected_out = [[">= DATE_SUB('CURDATE()', INTERVAL 1 DAY)",
                          ', instrument_id']]
         actual = self.db_monitor_checks.query_segment_replace(self.arguments_dict)
         self.assertEqual(expected_out, actual)
