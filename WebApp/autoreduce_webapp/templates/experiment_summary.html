@@ -43,7 +43,7 @@
                                     <strong>Data:</strong> 
                                     {% if data %}
                                         {% for location in data %}
-                                            {{ location }}<br/>
+                                            {{ location.file_path }}<br/>
                                         {% endfor %}
                                     {% else %}
                                         <em>No experiment data found</em>
@@ -55,7 +55,7 @@
                                     <strong>Reduced:</strong> 
                                     {% if reduced_data %}
                                         {% for location in reduced_data %}
-                                            {{ location }}<br/>
+                                            {{ location.file_path }}<br/>
                                         {% endfor %}
                                     {% else %}
                                         <em>No reduced data found</em>
@@ -84,7 +84,7 @@
                             {% for job in runs %}
                                 <tr>
                                     <td>
-                                        <a href="{% url 'run_summary' instrument_name=job.instrument run_number=job.run_number run_version=job.run_version %}">{{ job.title }}</a>
+                                        <a href="{% url 'run_summary' instrument_name=job.instrument.name run_number=job.run_number run_version=job.run_version %}">{{ job.title }}</a>
                                     </td>
                                     <td class="text-{% colour_table_row job.status.value %}"><strong>{{ job.status.value }}</strong></td>
                                     <td title="{{ job.last_updated|date:'SHORT_DATETIME_FORMAT' }}">{{ job.last_updated|naturaltime }}</td>

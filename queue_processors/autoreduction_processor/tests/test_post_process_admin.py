@@ -75,7 +75,6 @@ class TestPostProcessAdmin(unittest.TestCase):
                                                  'reduce.py'))
 
     def test_reduction_script_location(self):
-        # ToDo: Should use archive explorer
         location = PostProcessAdmin._reduction_script_location('WISH')
         self.assertEqual(location, MISC['scripts_directory'] % 'WISH')
 
@@ -214,16 +213,14 @@ class TestPostProcessAdmin(unittest.TestCase):
            return_value='path')
     @patch('queue_processors.autoreduction_processor.post_process_admin.PostProcessAdmin.reduce')
     @patch('stomp.Connection.connect')
-    @patch('stomp.Connection.start')
     @patch('stomp.Connection.__init__', return_value=None)
-    def test_main(self, mock_init, mock_start, mock_connect, mock_reduce, _):
+    def test_main(self, mock_init, mock_connect, mock_reduce, _):
         sys.argv = ['', '/queue/ReductionPending', json.dumps(self.data)]
         main()
         init_args = {'host_and_ports': [(ACTIVEMQ['brokers'].split(':')[0],
                                          int(ACTIVEMQ['brokers'].split(':')[1]))],
                      'use_ssl': False}
         mock_init.assert_called_once_with(**init_args)
-        mock_start.assert_called_once()
         connect_args = {'wait': True,
                         'header': {'activemq.prefetchSize': '1'}}
         mock_connect.assert_called_once_with(ACTIVEMQ['amq_user'],
@@ -239,9 +236,8 @@ class TestPostProcessAdmin(unittest.TestCase):
     @patch('queue_processors.autoreduction_processor.post_process_admin.PostProcessAdmin.__init__',
            return_value=None)
     @patch('stomp.Connection.connect')
-    @patch('stomp.Connection.start')
     @patch('stomp.Connection.__init__', return_value=None)
-    def test_main_inner_value_error(self, mock_conn_init, mock_connect, mock_start, mock_ppa_init,
+    def test_main_inner_value_error(self, mock_conn_init, mock_connect, mock_ppa_init,
                                     mock_logger, mock_exit, mock_send, _):
         def raise_value_error(arg1, _):
             self.assertEqual(arg1, self.data)
@@ -250,7 +246,6 @@ class TestPostProcessAdmin(unittest.TestCase):
         sys.argv = ['', '/queue/ReductionPending', json.dumps(self.data)]
         main()
         mock_connect.assert_called_once()
-        mock_start.assert_called_once()
         mock_conn_init.assert_called_once()
         mock_logger.assert_has_calls([call('JSON data error: %s', 'test')])
         mock_exit.assert_called_once()
@@ -263,9 +258,8 @@ class TestPostProcessAdmin(unittest.TestCase):
     @patch('queue_processors.autoreduction_processor.post_process_admin.PostProcessAdmin.__init__',
            return_value=None)
     @patch('stomp.Connection.connect')
-    @patch('stomp.Connection.start')
     @patch('stomp.Connection.__init__', return_value=None)
-    def test_main_inner_exception(self, mock_conn_init, mock_connect, mock_start, mock_ppa_init,
+    def test_main_inner_exception(self, mock_conn_init, mock_connect, mock_ppa_init,
                                   mock_logger, mock_exit, mock_send):
         def raise_exception(arg1, _):
             self.assertEqual(arg1, self.data)
@@ -274,7 +268,6 @@ class TestPostProcessAdmin(unittest.TestCase):
         sys.argv = ['', '/queue/ReductionPending', json.dumps(self.data)]
         main()
         mock_connect.assert_called_once()
-        mock_start.assert_called_once()
         mock_conn_init.assert_called_once()
         mock_logger.assert_has_calls([call('PostProcessAdmin error: %s', 'error-message')])
         mock_exit.assert_called_once()

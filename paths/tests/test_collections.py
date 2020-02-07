@@ -39,8 +39,8 @@ class TestInputPaths(unittest.TestCase):
         self.assertEqual(input_paths.reduction_variables_path, Path(FILE_PATH, 'file'))
 
     def test_init_with_invalid_path_types(self):
-        self.assertRaisesRegexp(PathError, "Path is not a file", InputPaths, DIR_PATH,
-                                DIR_PATH, DIR_PATH)
+        self.assertRaisesRegex(PathError, "Path is not a file", InputPaths, DIR_PATH,
+                               DIR_PATH, DIR_PATH)
 
 
 # pylint:disable=missing-docstring
@@ -55,8 +55,8 @@ class TestTemporaryPaths(unittest.TestCase):
         self.assertEqual(temp_paths.log_directory, Path(DIR_PATH, 'directory'))
 
     def test_init_with_invalid_path_types(self):
-        self.assertRaisesRegexp(PathError, "Path is not a directory", TemporaryPaths, FILE_PATH,
-                                FILE_PATH, FILE_PATH)
+        self.assertRaisesRegex(PathError, "Path is not a directory", TemporaryPaths, FILE_PATH,
+                               FILE_PATH, FILE_PATH)
 
 
 # pylint:disable=missing-docstring
@@ -69,5 +69,5 @@ class TestOutputPaths(unittest.TestCase):
         self.assertEqual(output_paths.log_directory, Path(DIR_PATH, 'directory'))
 
     def test_init_with_invalid_path_types(self):
-        self.assertRaisesRegexp(PathError, "Path is not a directory", OutputPaths, FILE_PATH,
-                                FILE_PATH)
+        self.assertRaisesRegex(PathError, "Path is not a directory", OutputPaths, FILE_PATH,
+                               FILE_PATH)

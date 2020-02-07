@@ -29,16 +29,15 @@ class Start(Command):
     def initialize_options(self):
         """ Currently not required as we are only starting ActiveMQ
             If more services become required we will need to add parameters for this"""
-        pass
 
     def finalize_options(self):
         """ See above comment regarding only ActiveMQ """
-        pass
 
     def run(self):
         """
         If activemq in expected install path, run `activemq start`
         """
+        # pylint:disable=import-outside-toplevel
         from build.settings import ACTIVEMQ_EXECUTABLE
         location = ACTIVEMQ_EXECUTABLE
         if os.name == 'nt':

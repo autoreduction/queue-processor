@@ -173,10 +173,9 @@ class TestAutoReductionProcessorConsumer(unittest.TestCase):
 
     @patch('stomp.Connection.subscribe')
     @patch('stomp.Connection.connect')
-    @patch('stomp.Connection.start')
     @patch('stomp.Connection.set_listener')
     @patch('stomp.Connection.__init__', return_value=None)
-    def test_run(self, mock_connection, mock_set_listener, mock_start,
+    def test_run(self, mock_connection, mock_set_listener,
                  mock_connect, mock_subscribe):
         self.consumer.run()
         init_args = {'host_and_ports': [(ACTIVEMQ['brokers'].split(':')[0],
@@ -184,7 +183,6 @@ class TestAutoReductionProcessorConsumer(unittest.TestCase):
                      'use_ssl': False}
         mock_connection.assert_called_once_with(**init_args)
         mock_set_listener.assert_called_once()
-        mock_start.assert_called_once()
         connect_args = {'wait': False,
                         'header': {'activemq.prefetchSize': '1'}}
         mock_connect.assert_called_once_with(ACTIVEMQ['amq_user'],

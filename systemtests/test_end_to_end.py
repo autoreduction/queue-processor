@@ -166,7 +166,7 @@ if os.name != 'nt':
             the record in question
             :return: The resulting record
             """
-            wait_times = [0, 2, 5, 10, 20]
+            wait_times = [0, 1, 2, 3, 5]
             results = []
             for timeout in wait_times:
                 # Wait before attempting database access
@@ -232,4 +232,3 @@ else:
             Just Skip on windows
             function is here to make it more obvious that tests are not for windows
             """
-            pass

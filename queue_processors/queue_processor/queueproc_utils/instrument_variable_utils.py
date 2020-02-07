@@ -7,15 +7,14 @@
 """
 Module for dealing with instrument reduction variables.
 """
-# pylint: disable=deprecated-lambda
-import cgi
-import imp
+import importlib.util as imp
 import io
 import logging.config
 import os
+import html
 
 import chardet
-
+from sqlalchemy import text
 from queue_processors.queue_processor.base import session
 from queue_processors.queue_processor.orm_mapping import (InstrumentJoin, Notification,
                                                           InstrumentVariable, RunVariable,
@@ -33,10 +32,9 @@ logger = logging.getLogger("queue_processor")  # pylint: disable=invalid-name
 
 class DataTooLong(ValueError):
     """ Error class used for when reduction variables are too long. """
-    pass
 
 
-class InstrumentVariablesUtils(object):
+class InstrumentVariablesUtils:
     """ Class used to parse and process instrument reduction variables. """
     @staticmethod
     def log_error_and_notify(message):
@@ -62,7 +60,7 @@ class InstrumentVariablesUtils(object):
         # If we haven't been given a run number, we should try to find it.
         if not run_number:
             applicable_variables = session.query(InstrumentVariable).\
-                filter_by(instrument=instrument).order_by('-start_run').all()
+                filter_by(instrument=instrument).order_by(text('-start_run')).all()
             if applicable_variables:
                 variable_run_number = applicable_variables[0].start_run
         else:
@@ -103,6 +101,7 @@ class InstrumentVariablesUtils(object):
 
         instrument = InstrumentUtils().get_instrument(instrument_name)
         variables = []
+        # pylint:disable=no-member
         if 'standard_vars' in dir(reduce_vars_module):
             variables.extend(
                 self._create_variables(instrument,
@@ -121,7 +120,7 @@ class InstrumentVariablesUtils(object):
             var.tracks_script = True
 
         applicable_variables = session.query(InstrumentVariable).filter_by(instrument=instrument) \
-            .order_by('-start_run').all()
+            .order_by(text('-start_run')).all()
         variable_run_number = applicable_variables[0].start_run
 
         # Now use the InstrumentJoin class (which is a join of the InstrumentVariable and Variable
@@ -147,12 +146,11 @@ class InstrumentVariablesUtils(object):
         # New variable set from the script
         defaults = self.get_default_variables(variables[0].instrument.name) if variables else []
 
-
         def update_variable(old_var):
             """ Update the existing variables. """
             old_var.keep = True
             # Find the new variable from the script.
-            matching_vars = filter(lambda temp_var: temp_var.name == old_var.name, defaults)
+            matching_vars = [variable for variable in defaults if old_var.name == variable.name]
 
             # Check whether we should and can update the old one.
             if matching_vars and old_var.tracks_script:
@@ -169,8 +167,9 @@ class InstrumentVariablesUtils(object):
                     session.delete(old_var)
                     session.commit()
                 old_var.keep = False
+            return old_var
 
-        map(update_variable, variables)
+        variables = list(map(update_variable, variables))
         variables[:] = [var for var in variables if var.keep]
 
         # Add any new ones
@@ -217,15 +216,17 @@ class InstrumentVariablesUtils(object):
         if not script_text or not script_path:
             return None
 
-        module_name = os.path.basename(script_path).split(".")[0]  # file name without extension
-        script_module = imp.new_module(module_name)
+        # file name without extension
+        module_name = os.path.basename(script_path).split(".")[0]
         try:
-            exec script_text in script_module.__dict__ # pylint: disable=exec-used
-            return script_module
+            spec = imp.spec_from_file_location(module_name, script_path)
+            module = imp.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module
         except ImportError as exp:
             self.log_error_and_notify(
                 "Unable to load reduction script %s due to missing import. (%s)" % (script_path,
-                                                                                    exp.message))
+                                                                                    exp))
             return None
         except SyntaxError:
             self.log_error_and_notify("Syntax error in reduction script %s" % script_path)
@@ -234,7 +235,7 @@ class InstrumentVariablesUtils(object):
     def _create_variables(self, instrument, script, variable_dict, is_advanced):
         """ Create variables in the database. """
         variables = []
-        for key, value in variable_dict.iteritems():
+        for key, value in list(variable_dict.items()):
             str_value = str(value).replace('[', '').replace(']', '')
             if len(str_value) > 300:
                 raise DataTooLong
@@ -284,7 +285,7 @@ class InstrumentVariablesUtils(object):
             f_decoded = io.open(path, 'r', encoding=encoding)
             script_text = f_decoded.read()
             return script_text
-        except Exception as exp: # pylint: disable = broad-except
+        except Exception as exp:  # pylint: disable = broad-except
             self.log_error_and_notify("Unable to load reduction script %s - %s" % (path, exp))
             return None
 
@@ -343,18 +344,20 @@ class InstrumentVariablesUtils(object):
         final_variables = []
         if end_run:
             applicable_variables = applicable_variables.filter(start_run__lte=end_run)
-            after_variables = InstrumentVariable.objects.filter(instrument=instrument,  # pylint: disable=no-member
+            # pylint: disable=no-member
+            after_variables = InstrumentVariable.objects.filter(instrument=instrument,
                                                                 start_run=end_run + 1)\
-                .order_by('start_run')
+                .order_by(text('start_run'))
 
-            previous_variables = InstrumentVariable.objects.filter(instrument=instrument, # pylint: disable=no-member
+            # pylint: disable=no-member
+            previous_variables = InstrumentVariable.objects.filter(instrument=instrument,
                                                                    start_run__lt=start_run)
 
             if applicable_variables and not after_variables:
                 # The last set of applicable variables extends outside our range.
 
                 # Find the last set.
-                final_start = applicable_variables.order_by('-start_run').first().start_run
+                final_start = applicable_variables.order_by(text('-start_run')).first().start_run
                 final_variables = list(applicable_variables.filter(start_run=final_start))
                 applicable_variables = applicable_variables.exclude(
                     start_run=final_start)  # Don't delete the final set.
@@ -365,9 +368,10 @@ class InstrumentVariablesUtils(object):
                 # Find the last set.
                 final_start = previous_variables.order_by('-start_run').first().start_run
                 # Set them to apply after our variables.
+                # pylint: disable=expression-not-assigned,no-member
                 final_variables = list(
                     previous_variables.filter(start_run=final_start))
-                [VariableUtils().copy_variable(var).save() for var in  # pylint: disable=expression-not-assigned,no-member
+                [VariableUtils().copy_variable(var).save() for var in
                  final_variables]  # Also copy them to apply before our variables.
 
             elif not applicable_variables and not after_variables and not previous_variables:
@@ -416,6 +420,6 @@ class InstrumentVariablesUtils(object):
     @staticmethod
     def _replace_special_chars(help_text):
         """ Remove any special chars in the help text. """
-        help_text = cgi.escape(help_text)  # Remove any HTML already in the help string
+        help_text = html.escape(help_text)  # Remove any HTML already in the help string
         help_text = help_text.replace('\n', '<br>').replace('\t', '&nbsp;&nbsp;&nbsp;&nbsp;')
         return help_text

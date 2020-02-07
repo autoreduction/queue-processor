@@ -7,7 +7,7 @@ import csv
 import logging
 import os
 import json
-from nexusformat.nexus import nxload
+import h5py
 from filelock import (FileLock, Timeout)
 
 from monitors.settings import (LAST_RUNS_CSV, CYCLE_FOLDER)
@@ -35,15 +35,6 @@ class InstrumentMonitorError(Exception):
     Any fatal exception that occurs during execution of the
     instrument monitor
     """
-    pass
-
-
-class FileNotFoundError(Exception):
-    """
-    The run file couldn't be found. This may be because
-    of an inconsistency among DFS nodes.
-    """
-    pass
 
 
 def get_prefix_zeros(run_number_str):
@@ -69,21 +60,20 @@ def read_rb_number_from_nexus_file(nxs_file_path):
     :return: The RB number or None
     """
     try:
-        nxs_file = nxload(nxs_file_path)
+        nxs_file = h5py.File(nxs_file_path, mode="r")
     except IOError:
         # The most likely cause of this is the Nexus file being encoded
         # in HDF4 format.
         return None
 
-    for (_, entry) in nxs_file.iteritems():
-        if hasattr(entry, 'experiment_identifier'):
-            field_data = entry.experiment_identifier.nxdata
-            if field_data:
-                return field_data[0]
+    for (_, entry) in nxs_file.items():
+        rb_number = entry.get('experiment_identifier').value[0]
+        if rb_number:
+            return str(rb_number, "utf-8")
     return None
 
 
-class InstrumentMonitor(object):
+class InstrumentMonitor:
     """
     Checks the ISIS archive for new runs on an instrument and submits them to ActiveMQ
     """
@@ -117,7 +107,7 @@ class InstrumentMonitor(object):
             last_line = summary_lines[-1]
             line_parts = last_line.split()
             if line_parts:
-                return line_parts[-1]
+                return str(line_parts[-1], "utf-8")
 
         raise InstrumentMonitorError("Unable to read RB number from summary.txt")
 
@@ -201,7 +191,7 @@ def update_last_runs(csv_name):
 
     # Loop over instruments
     output = []
-    with open(csv_name, 'rb') as csv_file:
+    with open(csv_name, 'r') as csv_file:
         csv_reader = csv.reader(csv_file)
         for row in csv_reader:
             inst_mon = InstrumentMonitor(connection, row[0])
@@ -218,7 +208,7 @@ def update_last_runs(csv_name):
             output.append(row)
 
     # Write any changes to the CSV
-    with open(csv_name, 'wb') as csv_file:
+    with open(csv_name, 'w', newline='') as csv_file:
         csv_writer = csv.writer(csv_file)
         for row in output:
             csv_writer.writerow(row)

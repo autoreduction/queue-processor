@@ -9,7 +9,7 @@ Taken from: https://djangosnippets.org/snippets/1568/
 """
 from django.template import Library, Node, TemplateSyntaxError, Variable
 from django.conf import settings
-from django.core import urlresolvers
+from django.urls import get_callable, URLResolver
 
 # pylint:disable=invalid-name
 register = Library()
@@ -35,11 +35,11 @@ class ViewNode(Node):
         url_or_view = Variable(self.url_or_view).resolve(context)
         try:
             urlconf = getattr(request, "urlconf", settings.ROOT_URLCONF)
-            resolver = urlresolvers.RegexURLResolver(r'^/', urlconf)
+            resolver = URLResolver(r'^/', urlconf)
             view, args, kwargs = resolver.resolve(url_or_view)
         # pylint: disable=bare-except
         except:
-            view = urlresolvers.get_callable(url_or_view)
+            view = get_callable(url_or_view)
             args = [Variable(arg).resolve(context) for arg in self.args]
             kwargs = {}
             for key, value in self.kwargs.items():
@@ -47,7 +47,9 @@ class ViewNode(Node):
 
         try:
             if callable(view):
-                return view(context['request'], *args, **kwargs).content
+                render_fnc = view(context['request'], *args, **kwargs).content.\
+                    decode('unicode_escape')
+                return render_fnc
             raise "%r is not callable" % view
         # pylint: disable=bare-except
         except:

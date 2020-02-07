@@ -11,8 +11,8 @@ import logging
 from django.contrib.auth.models import User
 
 # pylint: disable=relative-import
-from uows_client import UOWSClient
-from icat_cache import ICATCache
+from .uows_client import UOWSClient
+from .icat_cache import ICATCache
 
 LOGGER = logging.getLogger(__name__)
 

@@ -13,7 +13,7 @@ from django.contrib.auth.models import User
 from django.utils.safestring import mark_safe
 from django.core.exceptions import ObjectDoesNotExist
 # pylint: disable=relative-import
-from common_helpers import get_var
+from .common_helpers import get_var
 
 # pylint:disable=invalid-name
 register = Library()
@@ -30,7 +30,7 @@ class UserNameNode(Node):
         """
         Render the user name node
         """
-        user_number = unicode(get_var(self.user_number, context))
+        user_number = str(get_var(self.user_number, context))
         try:
             person = User.objects.get(username=user_number)
         except ObjectDoesNotExist:

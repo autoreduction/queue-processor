@@ -8,7 +8,6 @@
 Utility functions for reduction variables
 """
 import cgi
-import imp
 import io
 import json
 import logging
@@ -17,6 +16,7 @@ import re
 import sys
 
 import chardet
+import importlib.util as imp
 
 sys.path.append(os.path.join("../", os.path.dirname(os.path.dirname(__file__))))
 os.environ["DJANGO_SETTINGS_MODULE"] = "autoreduce_webapp.settings"
@@ -470,7 +470,7 @@ class InstrumentVariablesUtils(object):
         if not any([hasattr(var, "tracks_script") and var.tracks_script for var in variables]):
             return
 
-            # New variable set from the script
+        # New variable set from the script
         defaults = self.get_default_variables(variables[0].instrument.name) if variables else []
 
         # Update the existing variables
@@ -479,10 +479,9 @@ class InstrumentVariablesUtils(object):
             Update internal values of a variable
             """
             old_var.keep = True
-            # Find the new variable from the script.
-            # pylint:disable=deprecated-lambda
-            matching_vars = filter(lambda var: var.name == old_var.name,
-                                   defaults)
+            # Find the new variable from the script
+            matching_vars = [variable for variable in defaults if old_var.name == variable.name]
+
             # Check whether we should and can update the old one.
             if matching_vars and old_var.tracks_script:
                 new_var = matching_vars[0]
@@ -498,8 +497,9 @@ class InstrumentVariablesUtils(object):
                 if save:
                     old_var.delete()
                 old_var.keep = False
+            return old_var
 
-        map(update_variable, variables)
+        variables = list(map(update_variable, variables))
         variables[:] = [var for var in variables if var.keep]
 
         # Add any new ones
@@ -537,15 +537,15 @@ class InstrumentVariablesUtils(object):
 
         # file name without extension
         module_name = os.path.basename(script_path).split(".")[0]
-        script_module = imp.new_module(module_name)
         try:
-            # pylint:disable=exec-used
-            exec script_text in script_module.__dict__
-            return script_module
+            spec = imp.spec_from_file_location(module_name, script_path)
+            module = imp.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module
         except ImportError as exception:
             log_error_and_notify(
                 "Unable to load reduction script %s "
-                "due to missing import. (%s)" % (script_path, exception.message))
+                "due to missing import. (%s)" % (script_path, exception))
             return None
         except SyntaxError:
             log_error_and_notify("Syntax error in reduction script %s" % script_path)
@@ -586,7 +586,7 @@ class InstrumentVariablesUtils(object):
 
     def _create_variables(self, instrument, script, variable_dict, is_advanced):
         variables = []
-        for key, value in variable_dict.iteritems():
+        for key, value in list(variable_dict.items()):
             str_value = str(value).replace('[', '').replace(']', '')
             # pylint:disable=protected-access,no-member
             if len(str_value) > InstrumentVariable._meta.get_field('value').max_length:

@@ -11,7 +11,7 @@ Used to create a fake data-archive structure for testing
 Usage example:
 
 #  Creating an archive:
-data_archive = DataArchiveCreator('C:\..\test\data-archive')
+data_archive = DataArchiveCreator('/../test/data-archive')
 data_archive.make_data_archive(['GEM', 'POLARIS'], start_year=5, end_year=18, current_cycle=1)
 
 
@@ -45,7 +45,7 @@ from utils.settings import VALID_INSTRUMENTS
 GENERIC_CYCLE_PATH = os.path.join('NDX{}', 'Instrument', 'data', 'cycle_{}_{}')
 
 
-class DataArchiveCreator(object):
+class DataArchiveCreator:
     """
     Generates a data in the current working directory.
     The archive is designed to look identical to the

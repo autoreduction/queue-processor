@@ -15,7 +15,7 @@ import logging
 from utils.clients.database_client import DatabaseClient
 
 
-class DatabaseMonitorChecks(object):
+class DatabaseMonitorChecks:
     """Class to query system performance"""
 
     def __init__(self):

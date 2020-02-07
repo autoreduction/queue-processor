@@ -21,7 +21,7 @@ from queue_processors.autoreduction_processor.autoreduction_logging_setup import
 from queue_processors.autoreduction_processor.settings import MISC, ACTIVEMQ
 
 
-class Listener(object):
+class Listener:
     """ Listener class that is used to consume messages from ActiveMQ. """
     def __init__(self, client):
         """ Initialise listener. """
@@ -130,7 +130,7 @@ class Listener(object):
         self.cancel_list.remove(tup)
 
 
-class Consumer(object):
+class Consumer:
     # pylint: disable=too-few-public-methods
     """ Class used to setup the queue listener. """
     def __init__(self):
@@ -145,7 +145,6 @@ class Consumer(object):
         connection = stomp.Connection(host_and_ports=brokers, use_ssl=False)
         connection.set_listener(self.consumer_name, Listener(connection))
         logger.info("Starting ActiveMQ Connection to %s", ACTIVEMQ['brokers'])
-        connection.start()
         logger.info("Completed ActiveMQ Connection")
         connection.connect(ACTIVEMQ['amq_user'],
                            ACTIVEMQ['amq_pwd'],

@@ -25,22 +25,23 @@ setup_requires = ['dash',
                   'django-user-agents',
                   'filelock',
                   'gitpython',
+                  'IPython',
+                  'mysqlclient',
                   'mysql-connector',
-                  'MySQL-python',
                   'nexusformat',
                   'numpy',
-                  'plotly',
                   'pandas',
+                  'plotly',
                   'pytz',
-                  'pymysql',
+                  'PyMySQL',
                   'requests',
                   'sentry_sdk',
                   'service_identity',
                   'SQLAlchemy',
-                  'stomp.py==4.1.22',  # ToDo: can remove version requirement when we move to py3
-                  'suds',
-                  'Twisted',
-                  'watchdog']
+                  'stomp.py',
+                  'suds-py3',
+                  'Twisted']
+
 
 if platform.system() == 'Windows':
     setup_requires.append('pypiwin32')

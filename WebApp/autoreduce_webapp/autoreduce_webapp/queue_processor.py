@@ -18,7 +18,7 @@ import stomp
 
 # The below is a template on the repository
 # pylint: disable=relative-import
-from settings import ACTIVEMQ, BASE_DIR, LOGGING
+from .settings import ACTIVEMQ, BASE_DIR, LOGGING
 
 logging.config.dictConfig(LOGGING)
 LOGGER = logging.getLogger("django")
@@ -55,7 +55,6 @@ class Client(object):
 
         connection = stomp.Connection(host_and_ports=self._brokers,
                                       use_ssl=self._use_ssl, ssl_version=3)
-        connection.start()
         connection.connect(self._user, self._password, wait=False)
 
         time.sleep(0.5)

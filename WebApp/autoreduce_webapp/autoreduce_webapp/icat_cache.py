@@ -11,9 +11,9 @@ import datetime
 import logging
 from django.utils import timezone
 # pylint: disable=import-error, relative-import
-from settings import CACHE_LIFETIME
-from icat_communication import ICATCommunication
-from models import UserCache, InstrumentCache, ExperimentCache
+from .settings import CACHE_LIFETIME
+from .icat_communication import ICATCommunication
+from .models import UserCache, InstrumentCache, ExperimentCache
 
 LOGGER = logging.getLogger("app")
 
@@ -96,7 +96,7 @@ class ICATCache(object):
             # fields in one query, so we splice that into the constructor.
             new_obj = obj_type(**{attr: str(val)
                                   for attr, val in
-                                  self.icat.get_experiment_details(obj_id).iteritems()
+                                  list(self.icat.get_experiment_details(obj_id).items())
                                   if attr != "reference_number"})
         new_obj.id_name = obj_id
         new_obj.save()

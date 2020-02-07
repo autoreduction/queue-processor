@@ -13,7 +13,7 @@ import argparse
 from utils.clients.database_client import DatabaseClient
 
 
-class ManualRemove(object):
+class ManualRemove:
     """
     Handles removing a run from the database
     """
@@ -48,7 +48,8 @@ class ManualRemove(object):
         """
         Process all the results what to do with the run based on the result of database query
         """
-        for key, value in self.to_delete.items():
+        copy_to_delete = self.to_delete.copy()
+        for key, value in copy_to_delete.items():
             if not value:
                 self.run_not_found(run_number=key)
             if len(value) == 1:
@@ -78,11 +79,11 @@ class ManualRemove(object):
             print("\tv{} - {}".format(run.run_version, run.run_name))
 
         # Get user input for which versions they wish to delete
-        user_input = raw_input("Which runs would you like to delete (e.g. 1,2,3): ")
+        user_input = input("Which runs would you like to delete (e.g. 1,2,3): ")
         input_valid, user_input = self.validate_csv_input(user_input)
         while input_valid is False:
-            user_input = raw_input('Input of \'{}\' was invalid. '
-                                   'Please provide a comma separated list of values:')
+            user_input = input('Input of \'{}\' was invalid. '
+                               'Please provide a comma separated list of values:')
             input_valid, user_input = self.validate_csv_input(user_input)
 
         # Remove runs that the user does NOT want to delete from the delete list
@@ -94,7 +95,9 @@ class ManualRemove(object):
         """
         Delete all records from the database that match those found in self.to_delete
         """
-        for run_number, job_list in self.to_delete.items():
+        # Make a copy to ensure dict being iterated stays same size through processing
+        to_delete_copy = self.to_delete.copy()
+        for run_number, job_list in to_delete_copy.items():
             for version in job_list:
                 # Delete the specified version
                 print('{}{}:'.format(self.instrument, run_number))

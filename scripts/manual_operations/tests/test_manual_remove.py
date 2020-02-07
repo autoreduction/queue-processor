@@ -8,7 +8,7 @@
 Test cases for the manual job submission script
 """
 import unittest
-import __builtin__
+import builtins
 import sys
 
 from mock import Mock, patch, call
@@ -95,15 +95,15 @@ class TestManualSubmission(unittest.TestCase):
         self.assertEqual(0, len(self.manual_remove.to_delete))
 
     @patch('scripts.manual_operations.manual_remove.ManualRemove.validate_csv_input')
-    @patch.object(__builtin__, 'raw_input')
-    def test_multiple_versions_found_single_input(self, mock_raw_input, mock_validate_csv):
+    @patch.object(builtins, 'input')
+    def test_multiple_versions_found_single_input(self, mock_input, mock_validate_csv):
         """
         Test that the user is not asked more than once for input if the input is valid
         """
         self.manual_remove.to_delete['123'] = [self.gem_object_1,
                                                self.gem_object_2]
         self.assertEqual(2, len(self.manual_remove.to_delete['123']))
-        mock_raw_input.return_value = '2'
+        mock_input.return_value = '2'
         mock_validate_csv.return_value = (True, [2])
         self.manual_remove.multiple_versions_found('123')
         # We said to delete version 2 so it should be the only entry for that run number
@@ -111,30 +111,30 @@ class TestManualSubmission(unittest.TestCase):
         self.assertEqual('2', self.manual_remove.to_delete['123'][0].run_version)
 
     @patch('scripts.manual_operations.manual_remove.ManualRemove.validate_csv_input')
-    @patch.object(__builtin__, 'raw_input')
-    def test_multiple_versions_retry_user_input(self, mock_raw_input, mock_validate_csv):
+    @patch.object(builtins, 'input')
+    def test_multiple_versions_retry_user_input(self, mock_input, mock_validate_csv):
         """
         Test if the user gives incorrect input it is re-validated
         """
         self.manual_remove.to_delete['123'] = [self.gem_object_1,
                                                self.gem_object_2]
         self.assertEqual(2, len(self.manual_remove.to_delete['123']))
-        mock_raw_input.side_effect = ['invalid', '2']
+        mock_input.side_effect = ['invalid', '2']
         mock_validate_csv.side_effect = [(False, []), (True, [2])]
         self.manual_remove.multiple_versions_found('123')
         self.assertEqual(2, mock_validate_csv.call_count)
         mock_validate_csv.assert_has_calls([call('invalid'), call('2')])
 
     @patch('scripts.manual_operations.manual_remove.ManualRemove.validate_csv_input')
-    @patch.object(__builtin__, 'raw_input')
-    def test_multiple_versions_found_list_input(self, mock_raw_input, mock_validate_csv):
+    @patch.object(builtins, 'input')
+    def test_multiple_versions_found_list_input(self, mock_input, mock_validate_csv):
         """
         Test that the user is not asked more than once for input if the input is valid
         """
         self.manual_remove.to_delete['123'] = [self.gem_object_1,
                                                self.gem_object_2]
         self.assertEqual(2, len(self.manual_remove.to_delete['123']))
-        mock_raw_input.return_value = '1,2'
+        mock_input.return_value = '1,2'
         mock_validate_csv.return_value = (True, [1, 2])
         self.manual_remove.multiple_versions_found('123')
         # We said to delete version 2 so it should be the only entry for that run number
@@ -149,7 +149,7 @@ class TestManualSubmission(unittest.TestCase):
         self.assertEqual(2, len(self.manual_remove.to_delete['1']))
         del self.manual_remove.to_delete['1'][0]
         # have to use long as this is supported type in DB
-        self.assertEqual(long(1), self.manual_remove.to_delete['1'][0].run_version)
+        self.assertEqual(int(1), self.manual_remove.to_delete['1'][0].run_version)
         self.manual_remove.delete_records()
         self.assertEqual(0, len(self.manual_remove.to_delete))
         # Ensure that the delete functions were called on the expected tables

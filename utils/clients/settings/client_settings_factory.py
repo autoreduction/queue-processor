@@ -11,7 +11,7 @@ from utils.clients.settings.client_settings import ClientSettings
 
 
 # pylint:disable=too-few-public-methods
-class ClientSettingsFactory(object):
+class ClientSettingsFactory:
     """
     Class for the settings factory
     """

@@ -25,6 +25,7 @@ def run_sql(connection, sql, logger):
     :param logger: Where to log the errors to
     :return: True / False depending on command success
     """
+    # pylint:disable=import-outside-toplevel
     from sqlalchemy.exc import OperationalError
     logger.info("Running sql: %s" % sql)
     try:
@@ -52,6 +53,7 @@ def get_test_user_sql():
     Generate sql to add a new user to the database
     :return: True if process completed successfully
     """
+    # pylint:disable=import-outside-toplevel
     from utils.settings import MYSQL_SETTINGS
     return "GRANT ALL ON *.* TO '{0}'@'localhost' IDENTIFIED BY '{1}';\n" \
            "FLUSH PRIVILEGES;".format(MYSQL_SETTINGS.username, MYSQL_SETTINGS.password)
