@@ -92,7 +92,7 @@ class TestQueryHandler(unittest.TestCase):
     def test_run_every_instrument(self):
         # TODO need  to mock
         self.arguments_dict['start_date'] = '2019-12-12'
-        self.arguments_dict['end_date']= '2019-12-14'
+        self.arguments_dict['end_date'] = '2019-12-14'
         actual_output = MethodSelectorConfigurator().run_every_instrument({},
                                                                           self.valid_method,
                                                                           {'instrument_id': 8,
@@ -115,6 +115,7 @@ class TestQueryHandler(unittest.TestCase):
 
     @patch('scripts.system_performance.controller.method_mapping.logging.warn')
     def test_run_every_instrument_log_invalid(self, mock_logger):
+        """Testing invalid method name logging takes place"""
         # TODO need to mock
 
         MethodSelectorConfigurator().run_every_instrument({},
@@ -143,7 +144,12 @@ class TestQueryHandler(unittest.TestCase):
 
         pass
 
-    def test_get_query_for_instruments_assert_instruments(self):
+    def test_get_query_for_instruments_assert_instruments_all(self):
+        """Assert expected output for a given method and all instruments is returned"""
+        # need to mock
+        pass
+
+    def test_get_query_for_instruments_assert_instruments_specific_instrument(self):
         """Assert expected output for a given method and instrument is returned"""
         # need to mock
         pass

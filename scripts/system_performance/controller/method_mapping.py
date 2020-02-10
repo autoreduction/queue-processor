@@ -16,12 +16,17 @@ any additional arguments specified.
 import logging
 
 from scripts.system_performance.controller.statistics_computation import QueryHandler
-from scripts.system_performance.models.query_argument_constructor import QueryConstructor
+from scripts.system_performance.models import query_argument_constructor
 
 
 class MethodSelectorConfigurator(object):
     """Class containing logic to call N methods specified by user for N instruments + any additional
      method arguments specified"""
+
+    def __init__(self):
+        # create_method_mappings
+        pass
+
     @staticmethod
     def create_method_mappings():
         """A dictionary to map input, user specified methods to return equivalent method to be called
@@ -37,6 +42,7 @@ class MethodSelectorConfigurator(object):
     def method_call(self, method_name, method_args):
         """Calls user specified method and returns statistics for a given instrument"""
         # Check input is in mapping and place method N output in instrument_dict to return
+
         try:
             method_output = self.create_method_mappings()[method_name](**method_args)
         except KeyError:
@@ -53,14 +59,12 @@ class MethodSelectorConfigurator(object):
     @staticmethod
     def get_instrument_models():
         """Returns a list of all currently active instruments"""
-        instrument_list = QueryConstructor().get_list_of_instruments()
+        instrument_list = query_argument_constructor.get_list_of_instruments()
         return instrument_list
 
     def run_every_instrument(self, instrument_dict, method_name, method_arguments=None):
         """Returns all existing instruments in a dictionary for a given method as:
         {instrument_name : [[method output row 1]],[[method output row 2] etc] ...}"""
-
-        print('instrument dict')
 
         for instrument in self.get_instrument_models():
             try:
@@ -71,9 +75,22 @@ class MethodSelectorConfigurator(object):
             except KeyError:
                 logging.warn("Invalid Input - method '%s' does not exist try -help "
                                  "to look at existing methods and arguments", method_name)
-            print('Instrument dict')
-            print(instrument_dict)
         return instrument_dict
+
+    def user_instrument_list_validate(self, instrument_input):
+        """compares list of instruments from user input with instruments in db.
+        :return tuple of valid instruments in user input"""
+
+        valid_instruments_list = []
+        list_of_instruments_from_db = self.get_instrument_models()
+
+        for instrument_from_db in list_of_instruments_from_db:
+
+            for instrument_from_user in instrument_input:
+                if instrument_from_db[1] == instrument_from_user:
+                    valid_instruments_list.append(instrument_from_db)
+
+        return valid_instruments_list
 
     def get_query_for_instruments(self, method_name, instrument_input=None, additional_method_arguments=None):
         """Checks that the instrument_from_db's in method input exist and then calls
@@ -99,35 +116,27 @@ class MethodSelectorConfigurator(object):
             logging.error("Value is not iterable, the first argument must be of type list")
             return None
 
-        list_of_instruments_from_db = self.get_instrument_models()
+        for instrument in instrument_input:
+            # Run all instruments if user input specified "all"
+            if instrument == 'all':
+                return self.run_every_instrument(instrument_dict,
+                                                 method_name,
+                                                 additional_method_arguments)
+            else:
 
-        for instrument_from_db in list_of_instruments_from_db:
-            # Add instrument_from_db id to dictionary of method arguments
-            additional_method_arguments['instrument_id'] = instrument_from_db[0]
-
-            # for instrument_from_db in method input
-            for instrument_from_user in instrument_input:
-                # Run all instruments if user input specified "all"
-                if instrument_from_user == 'all':
-                    return self.run_every_instrument(instrument_dict,
-                                                     method_name,
-                                                     additional_method_arguments)
-
-                elif instrument_from_db[1] == instrument_from_user:
-                    instrument_dict[instrument_from_db[1]] = self.method_call(
+                for instrument_from_user in self.user_instrument_list_validate(instrument_input):
+                    # Add instrument_from_db id to dictionary of method arguments
+                    additional_method_arguments['instrument_id'] = instrument_from_user[0]
+                    instrument_dict[instrument_from_user[1]] = self.method_call(
                         method_name=method_name,
                         method_args=additional_method_arguments)
-                else:
-                    logging.info('The instrument_from_db: {} has not been found in '
-                                 'the autoreduction database'.format(instrument_from_user))
 
         return instrument_dict
-
 
 # ALL CODE BELOW IS FOR MANUAL TESTING ONLY AND SHOULD BE REMOVED ON FULL INTEGRATION
 # -------------------------------------------------------------------------------------------------------------------- #
 
-#
+
 def cust_query_return(test_message, dictionary_out):
     """For use with manual testing only - REMOVE AFTER"""
     print("\n {}".format(test_message))
@@ -159,12 +168,36 @@ def cust_query_return(test_message, dictionary_out):
 #                                                                               'end_date': '2019-12-14'}))
 #
 # # Execution time
-cust_query_return(test_message='execution_times - Select Instruments',
-                  dictionary_out=MethodSelectorConfigurator().get_query_for_instruments(instrument_input=['MARI'],
-                                                                          method_name='execution_times',
-                                                                          additional_method_arguments={
-                                                                              'start_date': '2019-12-12',
-                                                                              'end_invalid': '2019-12-14'}))
+# cust_query_return(test_message='Run frequency - All Instruments',
+#                   dictionary_out=MethodSelectorConfigurator().get_query_for_instruments(instrument_input=['all'],
+#                                                                           method_name='run_frequency',
+#                                                                           additional_method_arguments={
+#                                                                               'status': 4,
+#                                                                               'start_date': '2019-12-12',
+#                                                                               'end_date': '2019-12-14'}))
+
+# cust_query_return(test_message='Run frequency - All Instruments',
+#                   dictionary_out=MethodSelectorConfigurator().get_query_for_instruments(instrument_input=['all'],
+#                                                                           method_name='run_frequency',
+#                                                                           additional_method_arguments={
+#                                                                               'status': 4,
+#                                                                               'start_date': 'CURDATE()'}))
+#
+# cust_query_return(test_message='Misssing run numbers  report - All Instruments',
+#                   dictionary_out=MethodSelectorConfigurator().get_query_for_instruments(instrument_input=['all'],
+#                                                                           method_name='missing_run_number_report',
+#                                                                           additional_method_arguments={
+#                                                                               'start_date': '2019-12-12',
+#                                                                               'end_date': '2019-12-14'}))
+
+# cust_query_return(test_message='execution_times - All Instruments',
+#                   dictionary_out=MethodSelectorConfigurator().get_query_for_instruments(instrument_input=['all'],
+#                                                                           method_name='execution_times',
+#                                                                           additional_method_arguments={
+#                                                                               'start_date': '2019-12-12',
+#                                                                               'end_date': '2019-12-14'}))
+
+
 # cust_query_return(test_message='execution_times - All Instruments:',
 #                   dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['all'],
 #                                                                           method_name='execution_times',

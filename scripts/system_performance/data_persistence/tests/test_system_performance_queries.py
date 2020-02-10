@@ -12,7 +12,7 @@ Test cases for system_performance_queries script
 import unittest
 from mock import patch, Mock, MagicMock
 
-from scripts.system_performance.system_performance_queries import DatabaseMonitorChecks
+from scripts.system_performance.data_persistence.system_performance_queries import DatabaseMonitorChecks
 from utils.settings import MYSQL_SETTINGS
 from utils.clients.connection_exception import ConnectionException
 
@@ -144,7 +144,7 @@ class TestDatabaseMonitorChecks(unittest.TestCase):
                    "WHERE (status_id ) = (4 )  " \
                    "AND finished >= DATE_SUB('CURDATE()', INTERVAL 1 DAY)"
         db_monitor_checks.get_data_by_status_over_time(**self.arguments_dict)
-        db_monitor_checks.query_log_and_execute.called_once_with(expected)
+        db_monitor_checks.query_log_and_execute.assert_called_once_with(expected)
 
     def test_get_data_by_status_over_time_with_instrument_id(self):
         """Tests that correct query is build -  ID set in args"""
@@ -156,7 +156,7 @@ class TestDatabaseMonitorChecks(unittest.TestCase):
                    "WHERE (status_id , instrument_id) = (4 , 6)  " \
                    "AND finished >= DATE_SUB('CURDATE()', INTERVAL 1 DAY)"
         db_monitor_checks.get_data_by_status_over_time(**self.arguments_dict)
-        db_monitor_checks.query_log_and_execute.called_once_with(expected)
+        db_monitor_checks.query_log_and_execute.assert_called_once_with(expected)
 
     def test_get_data_by_status_over_time_with_date_range(self):
         """Tests that correct query is build - id, start_date and end_date set in args"""
@@ -169,9 +169,9 @@ class TestDatabaseMonitorChecks(unittest.TestCase):
                    "FROM reduction_viewer_reductionrun " \
                    "WHERE (status_id , instrument_id) = (4 , 6)  " \
                    "AND finished " \
-                   "BETWEEN '2019:11:12' AND '2019:12:13'"
+                   "BETWEEN '2019:11:12' AND '2019:11:13'"
         db_monitor_checks.get_data_by_status_over_time(**self.arguments_dict)
-        db_monitor_checks.query_log_and_execute.called_once_with(expected)
+        db_monitor_checks.query_log_and_execute.assert_called_once_with(expected)
 
     def test_get_data_by_status_over_time_with_duplicate_dates(self):
         """Tests that correct query is build - id and duplicate start_date and end_date set"""
@@ -183,9 +183,9 @@ class TestDatabaseMonitorChecks(unittest.TestCase):
         expected = "SELECT run_number " \
                    "FROM reduction_viewer_reductionrun " \
                    "WHERE (status_id , instrument_id) = (4 , 6)  " \
-                   "AND finished = '2019:11:12'"
+                   "AND CAST(finished AS DATE) = DATE('2019:11:12')"
         db_monitor_checks.get_data_by_status_over_time(**self.arguments_dict)
-        db_monitor_checks.query_log_and_execute.called_once_with(expected)
+        db_monitor_checks.query_log_and_execute.assert_called_once_with(expected)
 
     def test_get_data_by_status_over_time_by_retry(self):
         """Tests that correct query is build - set retry_run arg"""
@@ -198,7 +198,7 @@ class TestDatabaseMonitorChecks(unittest.TestCase):
                    "AND retry_run_id is not null " \
                    "AND finished >= DATE_SUB('CURDATE()', INTERVAL 1 DAY)"
         db_monitor_checks.get_data_by_status_over_time(**self.arguments_dict)
-        db_monitor_checks.query_log_and_execute.called_once_with(expected)
+        db_monitor_checks.query_log_and_execute.assert_called_once_with(expected)
 
 
 if __name__ == '__main__':
