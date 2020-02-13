@@ -16,7 +16,6 @@ Post Process Administrator. It kicks off cataloging and reduction jobs.
 """
 import io
 import errno
-import imp
 import json
 import logging
 import os
@@ -24,8 +23,10 @@ import shutil
 import socket
 import sys
 import time
+import types
 import traceback
 from contextlib import contextmanager
+import importlib.util as imp
 
 from sentry_sdk import init
 
@@ -173,7 +174,7 @@ class PostProcessAdmin:
             merge_dict_to_name(dict_name, encoded_dict)
 
         if not hasattr(reduce_script, "web_var"):
-            reduce_script.web_var = imp.new_module("reduce_vars")
+            reduce_script.web_var = types.ModuleType("reduce_vars")
         map(merge_dicts, ["standard_vars", "advanced_vars"])
         return reduce_script
 
@@ -304,7 +305,9 @@ class PostProcessAdmin:
                     # Add Mantid path to system path so we can use Mantid to run the user's script
                     sys.path.append(MISC["mantid_path"])
                     reduce_script_location = self._load_reduction_script(self.instrument)
-                    reduce_script = imp.load_source('reducescript', reduce_script_location)
+                    spec = imp.spec_from_file_location('reducescript', reduce_script_location)
+                    reduce_script = imp.module_from_spec(spec)
+                    spec.loader.exec_module(reduce_script)
 
                     try:
                         skip_numbers = reduce_script.SKIP_RUNS
