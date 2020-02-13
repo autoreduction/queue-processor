@@ -116,7 +116,8 @@ class Listener:
             self._data_dict['message'] = 'Reduction Skipped: {}. Assuming run number to be ' \
                                          'a calibration run.'.format(error_message)
             skipped_queue = ACTIVEMQ_SETTINGS.reduction_skipped
-            self._client.send(skipped_queue, self._data_dict)
+            self._client.send(skipped_queue, json.dumps(self._data_dict),
+                              priority=self._priority)
             return
 
         logger.info("Data ready for processing run %s on %s", run_no, instrument_name)
