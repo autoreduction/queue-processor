@@ -26,7 +26,7 @@ import time
 import types
 import traceback
 from contextlib import contextmanager
-from importlib.machinery import SourceFileLoader
+import importlib.util as imp
 
 from sentry_sdk import init
 
@@ -305,7 +305,9 @@ class PostProcessAdmin:
                     # Add Mantid path to system path so we can use Mantid to run the user's script
                     sys.path.append(MISC["mantid_path"])
                     reduce_script_location = self._load_reduction_script(self.instrument)
-                    reduce_script = SourceFileLoader('reducescript', reduce_script_location).load_module()
+                    spec = imp.spec_from_file_location('reducescript', reduce_script_location)
+                    reduce_script = imp.module_from_spec(spec)
+                    spec.loader.exec_module(reduce_script)
 
                     try:
                         skip_numbers = reduce_script.SKIP_RUNS
