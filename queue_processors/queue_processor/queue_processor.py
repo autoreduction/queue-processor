@@ -109,17 +109,6 @@ class Listener:
         instrument_name = str(self._data_dict['instrument'])
         rb_number = self._data_dict['rb_number']
 
-        # Make sure the RB number is valid
-        error_message = is_valid_rb(rb_number)
-        if error_message:
-            logger.warning("Skipping non-integer RB number: %s", rb_number)
-            self._data_dict['message'] = 'Reduction Skipped: {}. Assuming run number to be ' \
-                                         'a calibration run.'.format(error_message)
-            skipped_queue = ACTIVEMQ_SETTINGS.reduction_skipped
-            self._client.send(skipped_queue, json.dumps(self._data_dict),
-                              priority=self._priority)
-            return
-
         logger.info("Data ready for processing run %s on %s", run_no, instrument_name)
 
         # Check if the instrument is active or not in the MySQL database
@@ -215,6 +204,17 @@ class Listener:
         reduction_script, arguments = ReductionRunUtils().get_script_and_arguments(reduction_run)
         self._data_dict['reduction_script'] = reduction_script
         self._data_dict['reduction_arguments'] = arguments
+
+        # Make sure the RB number is valid
+        error_message = is_valid_rb(rb_number)
+        if error_message:
+            logger.warning("Skipping non-integer RB number: %s", rb_number)
+            self._data_dict['message'] = 'Reduction Skipped: {}. Assuming run number to be ' \
+                                         'a calibration run.'.format(error_message)
+            skipped_queue = ACTIVEMQ_SETTINGS.reduction_skipped
+            self._client.send(skipped_queue, json.dumps(self._data_dict),
+                              priority=self._priority)
+            return
 
         if instrument.is_paused:
             logger.info("Run %s has been skipped", self._data_dict['run_number'])
