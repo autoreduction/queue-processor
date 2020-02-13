@@ -35,22 +35,26 @@ from queue_processors.queue_processor.queueproc_utils.reduction_run_utils import
 from queue_processors.queue_processor.settings import LOGGING
 
 from utils.clients.queue_client import QueueClient
+from utils.settings import ACTIVEMQ_SETTINGS
 
 # Set up logging and attach the logging to the right part of the config.
 logging.config.dictConfig(LOGGING)
 logger = logging.getLogger("queue_processor")  # pylint: disable=invalid-name
 
 
-def is_integer_rb(rb_number):
+def is_valid_rb(rb_number):
     """
-    Detects string RB numbers. These tend to
-    be used by calibration experiments.
+    Detects if the RB number is valid e.g. (above 0 and not a string)
+    :param rb_number:
+    :return: An error message if one is generated or None if the RB is valid
     """
     try:
         int(rb_number)
-        return True
+        if rb_number > 0:
+            return None
+        return "RB Number is less than or equal to 0"
     except ValueError:
-        return False
+        return "RB Number is a string"
 
 
 class Listener:
@@ -105,9 +109,14 @@ class Listener:
         instrument_name = str(self._data_dict['instrument'])
         rb_number = self._data_dict['rb_number']
 
-        # Make sure the RB number is an integer
-        if not is_integer_rb(rb_number):
+        # Make sure the RB number is valid
+        error_message = is_valid_rb(rb_number)
+        if error_message:
             logger.warning("Skipping non-integer RB number: %s", rb_number)
+            self._data_dict['message'] = 'Reduction Skipped: {}. Assuming run number to be ' \
+                                         'a calibration run.'.format(error_message)
+            skipped_queue = ACTIVEMQ_SETTINGS.reduction_skipped
+            self._client.send(skipped_queue, self._data_dict)
             return
 
         logger.info("Data ready for processing run %s on %s", run_no, instrument_name)
