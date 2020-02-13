@@ -16,7 +16,6 @@ import datetime
 import glob
 import json
 import logging.config
-import smtplib
 import sys
 import traceback
 
@@ -33,9 +32,7 @@ from queue_processors.queue_processor.queueproc_utils.instrument_variable_utils 
 from queue_processors.queue_processor.queueproc_utils.status_utils import StatusUtils
 from queue_processors.queue_processor.queueproc_utils.reduction_run_utils import ReductionRunUtils
 # pylint: disable=import-error, no-name-in-module
-from queue_processors.queue_processor.settings import (LOGGING, EMAIL_HOST,
-                                                       EMAIL_PORT, EMAIL_ERROR_RECIPIENTS,
-                                                       EMAIL_ERROR_SENDER, BASE_URL)
+from queue_processors.queue_processor.settings import LOGGING
 
 from utils.clients.queue_client import QueueClient
 
@@ -391,8 +388,6 @@ class Listener:
                 # doesn't report a false retry instance.
                 del self._data_dict['retry_in']
 
-        self.notify_run_failure(reduction_run)
-
     def find_run(self):
         """ Find a reduction run in the database. """
         # Commit before we attempt to find the run. Committing will sync any values that have
@@ -415,54 +410,6 @@ class Listener:
                                                                   self._data_dict['run_version']))\
             .first()
         return reduction_run
-
-    @staticmethod
-    def notify_run_failure(reduction_run):
-        """ Method for emailing when a run fails. """
-        recipients = EMAIL_ERROR_RECIPIENTS
-        #  This does not parse esoteric (but RFC-compliant) email addresses correctly
-        local_recipients = filter(lambda address: address.split('@')[-1] == BASE_URL, recipients)
-        #  Don't send local emails
-        if local_recipients:
-            raise Exception("Local email address specified in ERROR_EMAILS - %s match %s" %
-                            (local_recipients, BASE_URL))
-
-        sender_address = EMAIL_ERROR_SENDER
-
-        error_message = "A reduction run - " \
-                        "experiment %s, " \
-                        "run %s," \
-                        " version %s - has failed:\n%s\n\n" % \
-                        (reduction_run.experiment.reference_number,
-                         reduction_run.run_number,
-                         reduction_run.run_version,
-                         reduction_run.message)
-
-        if not reduction_run.retry_when:
-            error_message += "The run will not retry automatically.\n"
-        else:
-            error_message += "The run will automatically retry on %s.\n" % reduction_run.retry_when
-
-        error_message += "Retry manually at %s%i/%i/ or on %sruns/failed/." % \
-                         (BASE_URL,
-                          reduction_run.run_number,
-                          reduction_run.run_version,
-                          BASE_URL)
-
-        email_content = "From: %s\nTo: %s\nSubject:Autoreduction error\n\n%s" % \
-                        (sender_address,
-                         ", ".join(recipients),
-                         error_message)
-
-        logger.info("Sending email: %s", email_content)
-
-        try:
-            mail = smtplib.SMTP(EMAIL_HOST, EMAIL_PORT)
-            mail.sendmail(sender_address, recipients, email_content)
-            mail.close()
-        except Exception as exp:  # pylint: disable=broad-except
-            logger.error("Failed to send emails %s", email_content)
-            logger.error("Exception %s - %s", type(exp).__name__, str(exp))
 
     @staticmethod
     def retry_run(reduction_run, retry_in):
