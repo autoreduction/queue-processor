@@ -49,7 +49,7 @@ def is_valid_rb(rb_number):
     :return: An error message if one is generated or None if the RB is valid
     """
     try:
-        int(rb_number)
+        rb_number = int(rb_number)
         if rb_number > 0:
             return None
         return "RB Number is less than or equal to 0"
