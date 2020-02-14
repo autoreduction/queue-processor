@@ -33,6 +33,7 @@ class TestQueryArgumentsConstructor(unittest.TestCase):
     @staticmethod
     def mock_datetime_today(target, dt):
         real_datetime_class = datetime.datetime
+
         class DatetimeSubclassMeta(type):
             @classmethod
             def __instancecheck__(mcs, obj):
@@ -142,7 +143,7 @@ class TestQueryArgumentsConstructor(unittest.TestCase):
                                                      time_interval=1)
 
             mock_rpw.assert_called_once_with(expected)
-        pass
+        # pass
 
 
 

@@ -20,7 +20,7 @@ from scripts.system_performance.models import query_argument_constructor
 
 class QueryHandler:
     """The query handler class returns a dictionary containing nested lists for each instrument and
-     each query called in the user handler script"""
+     each query called"""
 
     def __init__(self):
         pass
@@ -104,14 +104,17 @@ class QueryHandler:
             start_date=start_date,
             end_date=end_date))
 
-        print('sorted run numbers')
-        print(sorted_run_numbers)
-
         missing_run_numbers = self.find_missing_numbers_in_list(sorted_run_numbers)
+        if sorted_run_numbers:
+            count_of_runs = len(sorted_run_numbers)
+            missing_runs_count = len(missing_run_numbers)
+        else:
+            count_of_runs = None
+            missing_runs_count = None
 
         # return list containing count of runs vs count of missing runs
-        return {'Count_of_runs': len(sorted_run_numbers),
-                'Missing_runs_count': len(missing_run_numbers),
+        return {'Count_of_runs': count_of_runs,
+                'Missing_runs_count': missing_runs_count,
                 'Missing_runs': missing_run_numbers}
 
     def execution_times(self, instrument_id, start_date, end_date):
@@ -137,6 +140,9 @@ class QueryHandler:
 
         # Calculate execution times and append to new list
         list_of_times = _query_argument_specify(start_date, end_date)
+
+        print("list of times")
+        print(list_of_times)
 
         # Isolate start and end times and place in separate list of lists
         for start_end_sublist in self.list_extraction_and_isolation(list_of_times, 2, 3):

@@ -180,15 +180,16 @@ def cust_query_return(test_message, dictionary_out):
 #                   dictionary_out=MethodSelectorConfigurator().get_query_for_instruments(instrument_input=['all'],
 #                                                                           method_name='run_frequency',
 #                                                                           additional_method_arguments={
-#                                                                               'status': 4,
+#                                                                               'status': 1,
 #                                                                               'start_date': 'CURDATE()'}))
 #
-# cust_query_return(test_message='Misssing run numbers  report - All Instruments',
-#                   dictionary_out=MethodSelectorConfigurator().get_query_for_instruments(instrument_input=['all'],
-#                                                                           method_name='missing_run_number_report',
-#                                                                           additional_method_arguments={
-#                                                                               'start_date': '2019-12-12',
-#                                                                               'end_date': '2019-12-14'}))
+cust_query_return(test_message='Misssing run numbers  report - All Instruments',
+                  dictionary_out=MethodSelectorConfigurator().get_query_for_instruments(instrument_input=['GEM'],
+                                                                          method_name='run_frequency',
+                                                                          additional_method_arguments={
+                                                                              'status': 4,
+                                                                              'start_date':'2020-02-11',
+                                                                              'end_date':'2020-02-13'}))
 
 # cust_query_return(test_message='execution_times - All Instruments',
 #                   dictionary_out=MethodSelectorConfigurator().get_query_for_instruments(instrument_input=['all'],
