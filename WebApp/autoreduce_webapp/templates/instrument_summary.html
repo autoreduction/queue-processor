@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load view %}
-{% load static from staticfiles %}
+{% load static %}
 {% load colour_table_rows %}
 
 {% block body %}
@@ -75,12 +75,14 @@
                 <!-- Filter , Sort and Pagination options -->
                 <form action="{{ request.path }}" method="get" id="filter_options">
                     <div class="col-md-3">
+                        <h3>Filter by</h3>
                         <select class="form-control" name="filter" form="filter_options" id="filter_select">
                             <option value="run" title="Display run numbers" {% if filtering == 'run' %}selected="selected"{% endif %}>Run number</option>
                             <option value="experiment" title="Display run number grouped by RB number" {% if filtering == 'experiment' %} selected="selected" {% endif %}>Experiment Reference (RB)</option>
                         </select>
                     </div>
                     <div class="col-md-3">
+                        <h3>Sort by</h3>
                         <select class="form-control" name="sort" form="filter_options" id="sort_select">
                             <option value="run" {% if sort == 'run' %}selected="selected"{% endif %}>Number</option>>
                             <option value="date" {% if sort == 'date' %}selected="selected"{% endif %}>Date</option>
@@ -88,6 +90,7 @@
                     </div>
                     {% if filtering == 'run' %}
                     <div class="col-md-3">
+                        <h3>Items per page</h3>
                         <select title="The number of reduction jobs that should be shown per page" class="form-control" name="pagination" form="filter_options" id="pagination_select">
                             <option {% if max_items == '10' %}selected="selected"{% endif %}>10</option>
                             <option {% if max_items == '25' %}selected="selected"{% endif %}>25</option>
