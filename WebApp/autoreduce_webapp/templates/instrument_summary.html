@@ -59,19 +59,6 @@
         <hr/>
             <!-- Display table for reduction jobs -->
             <div class="row">
-                <div class="col-md-3">
-                    <h3>Filter by</h3>
-                </div>
-                <div class="col-md-3">
-                    <h3>Sort by</h3>
-                </div>
-                {% if filtering == 'run' %}
-                <div class="col-md-3">
-                    <h3>Items per page</h3>
-                </div>
-                {% endif %}
-            </div>
-            <div class="row">
                 <!-- Filter , Sort and Pagination options -->
                 <form action="{{ request.path }}" method="get" id="filter_options">
                     <div class="col-md-3">
