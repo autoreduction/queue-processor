@@ -9,11 +9,22 @@ Contains query constructors for system performance check MySQL queries.
 """
 
 # Dependencies
-from datetime import date
+from datetime import date, datetime
 from calendar import monthrange
 
 # from scripts.system_performance.data_persistence.reduction_run_queries_test import DatabaseMonitorChecks
 from scripts.system_performance.data_persistence.system_performance_queries import DatabaseMonitorChecks
+
+
+def get_day_of_week():
+    # print(date.today())
+    # todays_date = '2020-02-14'
+    # temp = date(*map(int, todays_date.split('-')))
+    return date.today()
+
+# def get_last_day_of_month():
+#
+#     pass
 
 
 def get_list_of_instruments():
@@ -46,6 +57,7 @@ def start_and_end_times_by_instrument(instrument_id, start_date, end_date):
 def runs_per_day(instrument_id, status, retry, end_date):
     """Returns count of runs in the last 24 hours for current date of specified date """
     # Defaults for time, only exception is changing end_date to look in the past
+    print('per day')
     return DatabaseMonitorChecks().get_data_by_status_over_time(
         instrument_id=instrument_id,
         status_id=status,
@@ -56,6 +68,7 @@ def runs_per_day(instrument_id, status, retry, end_date):
 def runs_today(instrument_id, status, retry, start_date, end_date):
     """Returns all runs equal to current date."""
     # start_date = current date
+    print('today')
     return DatabaseMonitorChecks().get_data_by_status_over_time(
         instrument_id=instrument_id,
         status_id=status,
@@ -68,8 +81,13 @@ def runs_per_week(instrument_id, status, retry, end_date, time_interval):
     """Returns count of runs that have taken place over the course of the week if the day of
     week is Friday."""
 
+    todays_date = get_day_of_week()
+
+    print(todays_date.weekday())
+
     # If today is last day of week (Friday) run, otherwise don't unless user specified to
-    if date.today().weekday() == 4:
+    if todays_date.weekday() == 4:
+        print('week')
         return DatabaseMonitorChecks().get_data_by_status_over_time(
             instrument_id=instrument_id,
             status_id=status,
@@ -84,7 +102,9 @@ def runs_per_week(instrument_id, status, retry, end_date, time_interval):
 def runs_per_month(instrument_id, status, retry, end_date, time_interval):
     """Returns count of runs that occurred over the last month if day is equal to end of month"""
     # If today is last day of month, run, otherwise don't unless user specified to
-    if date.today() == monthrange(date.today().year, date.today().month)[1]:
+    todays_date = get_day_of_week()
+    if todays_date == monthrange(date.today().year, date.today().month)[1]:
+        print('month')
         return DatabaseMonitorChecks().get_data_by_status_over_time(
             instrument_id=instrument_id,
             status_id=status,

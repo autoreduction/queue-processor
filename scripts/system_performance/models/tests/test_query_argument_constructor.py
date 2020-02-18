@@ -119,54 +119,56 @@ class TestQueryArgumentsConstructor(unittest.TestCase):
 
         mock_qle.assert_called_once_with(expected)
 
-    @patch('scripts.system_performance.data_persistence.system_performance_queries.DatabaseMonitorChecks.query_log_and_execute')
-    def test_runs_per_week_friday(self, mock_rpw):
+    @patch('scripts.system_performance.models.query_argument_constructor.get_day_of_week')
+    def test_runs_per_week_not_friday(self, mock_gdw):
         """"""
-        #  TODO add mock for runs_per_week return
         # mock datetime
+        todays_date = '2020-02-13'
+        mock_gdw.return_value = datetime.date(*map(int, todays_date.split('-')))
 
-        expected = "SELECT run_number " \
-                   "FROM reduction_viewer_reductionrun " \
-                   "WHERE (status_id , instrument_id) = (4 , 9)  " \
-                   "AND finished >= DATE_SUB('2020-2-7', INTERVAL 1 WEEK)"
+        actual = query_argument_constructor.runs_per_week(instrument_id=1,
+                                                          status=4,
+                                                          retry='',
+                                                          end_date='2020-2-13',
+                                                          time_interval=1)
+        self.assertEqual(None, actual)
 
-        target = datetime.datetime(2020, 2, 7)
-        # with patch.object(datetime, 'datetime', Mock(wraps=datetime.datetime)) as patched:
-        with self.mock_datetime_today(target, datetime):
-            # patched.today.return_value = target
-            # print(datetime.datetime.today().weekday())
-            # print(isinstance(datetime.datetime.now(), datetime.datetime))
-            query_argument_constructor.runs_per_week(instrument_id=9,
-                                                     status=4,
-                                                     retry='',
-                                                     end_date='2020-2-7',
-                                                     time_interval=1)
+    @patch('scripts.system_performance.data_persistence.system_performance_queries.DatabaseMonitorChecks.get_data_by_status_over_time')
+    @patch('scripts.system_performance.models.query_argument_constructor.get_day_of_week')
+    def test_runs_per_week_friday(self, mock_gdw, mock_gdsot):
+        """"""
+        # mock datetime
+        todays_date = '2020-02-14'
+        mock_gdw.return_value = datetime.date(*map(int, todays_date.split('-')))
+        mock_gdsot.return_value = 'Friday!'
 
-            mock_rpw.assert_called_once_with(expected)
-        # pass
+        actual = query_argument_constructor.runs_per_week(instrument_id=1,
+                                                          status=4,
+                                                          retry='',
+                                                          end_date='2020-2-14',
+                                                          time_interval=1)
 
+        mock_gdsot.assert_called_once_with(instrument_id=1,
+                                           status_id=4,
+                                           retry_run='',
+                                           end_date='2020-2-14',
+                                           interval=1,
+                                           time_scale='WEEK')
+        self.assertEqual('Friday!', actual)
 
+    @patch('scripts.system_performance.data_persistence.system_performance_queries.DatabaseMonitorChecks.get_data_by_status_over_time')
+    @patch('scripts.system_performance.models.query_argument_constructor.get_day_of_week')
+    def test_runs_per_month_end_of_month(self, mock_gdw):
+        todays_date = '2020-02-29'
 
-   # patch('scripts.system_performance.models.query_argument_constructor.runs_per_week') as mock_date:
-   #          mock_date.today.return_value = date(2020, 2, 7)
-   #          mock_date.side_effect = lambda *args, **kw: date(*args, **kw)
-   #
-   #          assert query_argument_constructor.runs_per_week.date.today() == date(2020, 2, 7)
-
-        pass
-
-    def test_runs_per_week_not_friday(self):
-
-        pass
-
-    def test_runs_per_month_end_of_month(self):
-
-        pass
-
-    def test_runs_per_month_not_end_of_month(self):
 
         pass
 
+    def test_runs_per_month_not_end_of_month(self, mock_gdw):
+        todays_date = '2020-02-14'
+        mock_gdw.return_value = datetime.date(*map(int, todays_date.split('-')))
+
+        pass
 
 if __name__ == '__main__':
     unittest.main()
