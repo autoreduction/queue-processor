@@ -567,7 +567,7 @@ def graph_instrument(request, instrument_name):
 
     try:
         if 'last' in request.GET:
-            runs = runs[:request.GET.get('last')]
+            runs = runs[:int(request.GET.get('last'))]
     except ValueError:
         # Non integer value entered as 'last' parameter.
         # Just show all runs.
