@@ -22,9 +22,6 @@ class QueryHandler:
     """The query handler class returns a dictionary containing nested lists for each instrument and
      each query called"""
 
-    def __init__(self):
-        pass
-
     @staticmethod
     def convert_seconds_to_time(time_in_seconds):
         """Converts seconds back into time format for output
