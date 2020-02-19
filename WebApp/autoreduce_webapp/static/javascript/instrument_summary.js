@@ -10,8 +10,7 @@
 
     var init = function init(){
         document.addEventListener("DOMContentLoaded", function(){
-            var thisElem = $(this);
-            setDefaultCursor(thisElem);
+            setDefaultCursor($(this));
         });
 
         var select = document.getElementById('filter_select');
