@@ -15,7 +15,8 @@ from utils.project.structure import get_project_root
 from utils.clients.settings.client_settings_factory import ClientSettingsFactory
 
 
-VALID_INSTRUMENTS = ['GEM', 'POLARIS', 'WISH', 'OSIRIS', 'MUSR', 'POLREF']
+VALID_INSTRUMENTS = ['ENGINX', 'GEM', 'HRPD', 'MAPS', 'MARI', 'MUSR',
+                     'OSIRIS', 'POLARIS', 'POLREF', 'WISH']
 
 
 CONFIG = configparser.ConfigParser()
