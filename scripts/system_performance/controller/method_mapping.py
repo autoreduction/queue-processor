@@ -23,13 +23,18 @@ class MethodSelectorConfigurator(object):
     """Class containing logic to call N methods specified by user for N instruments + any additional
      method arguments specified"""
 
-    def __init__(self):
-        # create_method_mappings
-        pass
-
     @staticmethod
     def create_method_mappings():
         """A dictionary to map input, user specified methods to return equivalent method to be called
+         =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
+
+        :parameter
+        ----------
+
+
+        :returns:
+        ----------
+
         TODO: Create execution_time_average and run_frequency_average methods"""
 
         return {'missing_run_numbers_report': QueryHandler().missing_run_numbers_report,
@@ -40,7 +45,16 @@ class MethodSelectorConfigurator(object):
                }
 
     def method_call(self, method_name, method_args):
-        """Calls user specified method and returns statistics for a given instrument"""
+        """Calls user specified method and returns statistics for a given instrument
+         =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
+
+        :parameter
+        ----------
+        time_format (datetime.time): Time in seconds as integer
+
+        :returns:
+        ----------
+        """
         # Check input is in mapping and place method N output in instrument_dict to return
 
         try:
@@ -124,10 +138,10 @@ class MethodSelectorConfigurator(object):
                                                  additional_method_arguments)
             else:
 
-                for instrument_from_user in self.user_instrument_list_validate(instrument_input):
-                    # Add instrument_from_db id to dictionary of method arguments
-                    additional_method_arguments['instrument_id'] = instrument_from_user[0]
-                    instrument_dict[instrument_from_user[1]] = self.method_call(
+                valid_instruments = self.user_instrument_list_validate(instrument_input)
+                for instruments in valid_instruments:
+                    additional_method_arguments['instrument_id'] = instruments[0]
+                    instrument_dict[instruments[1]] = self.method_call(
                         method_name=method_name,
                         method_args=additional_method_arguments)
 
@@ -145,12 +159,12 @@ def cust_query_return(test_message, dictionary_out):
     #     print(item, dictionary_out[item])
 
 #
-# cust_query_return(test_message='Minimal Arguments - Select Instruments:',
-#                   dictionary_out=MethodSelectorConfigurator().get_query_for_instruments(instrument_input=['MARI', 'MAPS'],
-#                                                                           method_name='missing_run_numbers_report',
-#                                                                           additional_method_arguments={
-#                                                                               'start_date':'2019-12-12',
-#                                                                               'end_date': '2019-12-13',}))
+cust_query_return(test_message='Minimal Arguments - Select Instruments:',
+                  dictionary_out=MethodSelectorConfigurator().get_query_for_instruments(instrument_input=['MARI', 'MAPS'],
+                                                                          method_name='missing_run_numbers_report',
+                                                                          additional_method_arguments={
+                                                                              'start_date':'2020-02-11',
+                                                                              'end_date': '2020-02-19'}))
 
 
 # # # Missing run numbers
@@ -183,12 +197,12 @@ def cust_query_return(test_message, dictionary_out):
 #                                                                               'status': 1,
 #                                                                               'start_date': 'CURDATE()'}))
 #
-cust_query_return(test_message='Misssing run numbers  report - All Instruments',
-                  dictionary_out=MethodSelectorConfigurator().get_query_for_instruments(instrument_input=['GEM'],
-                                                                          method_name='run_frequency',
-                                                                          additional_method_arguments={
-                                                                              'status': 4,
-                                                                              'end_date': '2020-2-14'}))
+# cust_query_return(test_message='Misssing run numbers  report - All Instruments',
+#                   dictionary_out=MethodSelectorConfigurator().get_query_for_instruments(instrument_input=['GEM'],
+#                                                                           method_name='run_frequency',
+#                                                                           additional_method_arguments={
+#                                                                               'status': 4,
+#                                                                               'end_date': '2020-2-14'}))
 
 # cust_query_return(test_message='execution_times - All Instruments',
 #                   dictionary_out=MethodSelectorConfigurator().get_query_for_instruments(instrument_input=['all'],

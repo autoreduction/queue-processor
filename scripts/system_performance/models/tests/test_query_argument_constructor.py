@@ -1,8 +1,8 @@
 import unittest
 
 # from datetime import datetime, date
-import datetime
-
+# import datetime
+from datetime import date
 from mock import patch, Mock, MagicMock
 
 from scripts.system_performance.models import query_argument_constructor
@@ -30,25 +30,6 @@ class TestQueryArgumentsConstructor(unittest.TestCase):
                                'start_date': None,
                                'instrument_id': None}
 
-    @staticmethod
-    def mock_datetime_today(target, dt):
-        real_datetime_class = datetime.datetime
-
-        class DatetimeSubclassMeta(type):
-            @classmethod
-            def __instancecheck__(mcs, obj):
-                return isinstance(obj, real_datetime_class)
-
-        class BaseMockedDatetime(real_datetime_class):
-            @classmethod
-            def today(cls, tz=None):
-                return target.replace(tzinfo=tz)
-
-        # Python2 & Python3 compatible metaclass
-        MockedDatetime = DatetimeSubclassMeta('datetime', (BaseMockedDatetime,), {})
-
-        return patch.object(dt, 'datetime', MockedDatetime)
-
     @patch('utils.clients.database_client.DatabaseClient.connect', return_value=MockConnection())
     # pylint: disable=no-value-for-parameter, no-self-use
     def test_patch_applicator(self, _):
@@ -56,6 +37,16 @@ class TestQueryArgumentsConstructor(unittest.TestCase):
         db_monitor_checks = DatabaseMonitorChecks()
         db_monitor_checks.query_log_and_execute = MagicMock(name='query_log_and_execute')
         return db_monitor_checks
+
+    def test_get_day_of_week(self):
+        invalid = 10
+        actual = query_argument_constructor.get_day_of_week()
+        self.assertNotEqual(invalid, actual)
+
+    def test_get_day_of_week_invalid(self):
+        expected = date.today()
+        actual = query_argument_constructor.get_day_of_week()
+        self.assertEqual(expected, actual)
 
     def test_get_list_of_instruments(self):
         """Assert that a list of instruments is returned """
@@ -69,9 +60,19 @@ class TestQueryArgumentsConstructor(unittest.TestCase):
         for expected_instrument in expected:
             self.assertIn(expected_instrument, actual_instruments)
 
-    def test_missing_run_numbers_constructor(self):
+    @patch('scripts.system_performance.data_persistence.system_performance_queries.DatabaseMonitorChecks.query_log_and_execute')
+    def test_missing_run_numbers_constructor(self, mock_qle):
         """Assert number of lists is 4"""
-        pass
+
+        expected = "SELECT run_number " \
+                   "FROM reduction_viewer_reductionrun " \
+                   "WHERE instrument_id = 8 " \
+                   "AND created " \
+                   "BETWEEN '2020-02-17' AND '2020-02-19'"
+
+        query_argument_constructor.missing_run_numbers_constructor(8, '2020-02-17', '2020-02-19')
+
+        mock_qle.assert_called_once_with(expected)
 
     @patch('scripts.system_performance.data_persistence.system_performance_queries.DatabaseMonitorChecks.query_log_and_execute')
     def test_start_and_end_times_by_instrument(self, mock_qle):
@@ -124,7 +125,7 @@ class TestQueryArgumentsConstructor(unittest.TestCase):
         """"""
         # mock datetime
         todays_date = '2020-02-13'
-        mock_gdw.return_value = datetime.date(*map(int, todays_date.split('-')))
+        mock_gdw.return_value = date(*map(int, todays_date.split('-')))
 
         actual = query_argument_constructor.runs_per_week(instrument_id=1,
                                                           status=4,
@@ -139,7 +140,7 @@ class TestQueryArgumentsConstructor(unittest.TestCase):
         """"""
         # mock datetime
         todays_date = '2020-02-14'
-        mock_gdw.return_value = datetime.date(*map(int, todays_date.split('-')))
+        mock_gdw.return_value = date(*map(int, todays_date.split('-')))
         mock_gdsot.return_value = 'Friday!'
 
         actual = query_argument_constructor.runs_per_week(instrument_id=1,
@@ -158,17 +159,39 @@ class TestQueryArgumentsConstructor(unittest.TestCase):
 
     @patch('scripts.system_performance.data_persistence.system_performance_queries.DatabaseMonitorChecks.get_data_by_status_over_time')
     @patch('scripts.system_performance.models.query_argument_constructor.get_day_of_week')
-    def test_runs_per_month_end_of_month(self, mock_gdw):
+    def test_runs_per_month_end_of_month(self, mock_gdw, mock_gdsot):
         todays_date = '2020-02-29'
+        mock_gdw.return_value = date(*map(int, todays_date.split('-')))
+        mock_gdsot.return_value = 'End of month'
 
+        actual = query_argument_constructor.runs_per_month(instrument_id=1,
+                                                          status=4,
+                                                          retry='',
+                                                          end_date='2020-02-29',
+                                                          time_interval=1)
 
-        pass
+        mock_gdsot.assert_called_once_with(instrument_id=1,
+                                           status_id=4,
+                                           retry_run='',
+                                           end_date='2020-02-29',
+                                           interval=1,
+                                           time_scale='MONTH')
+        self.assertEqual('End of month', actual)
 
-    def test_runs_per_month_not_end_of_month(self, mock_gdw):
+    @patch('scripts.system_performance.data_persistence.system_performance_queries.DatabaseMonitorChecks.get_data_by_status_over_time')
+    @patch('scripts.system_performance.models.query_argument_constructor.get_day_of_week')
+    def test_runs_per_month_not_end_of_month(self, mock_gdw, mock_gdsot):
         todays_date = '2020-02-14'
-        mock_gdw.return_value = datetime.date(*map(int, todays_date.split('-')))
+        mock_gdw.return_value = date(*map(int, todays_date.split('-')))
 
-        pass
+        mock_gdsot.return_value = 'End of month'
+
+        actual = query_argument_constructor.runs_per_month(instrument_id=1,
+                                                           status=4,
+                                                           retry='',
+                                                           end_date='2020-02-14',
+                                                           time_interval=1)
+        self.assertEqual(None, actual)
 
 if __name__ == '__main__':
     unittest.main()

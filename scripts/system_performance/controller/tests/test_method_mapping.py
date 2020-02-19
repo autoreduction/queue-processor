@@ -116,8 +116,6 @@ class TestQueryHandler(unittest.TestCase):
     @patch('scripts.system_performance.controller.method_mapping.logging.warn')
     def test_run_every_instrument_log_invalid(self, mock_logger):
         """Testing invalid method name logging takes place"""
-        # TODO need to mock
-
         MethodSelectorConfigurator().run_every_instrument({},
                                                           self.invalid_method,
                                                           {'instrument_id': 8})
@@ -126,7 +124,22 @@ class TestQueryHandler(unittest.TestCase):
                                        "to look at existing methods and arguments",
                                        self.invalid_method)
 
-    def test_get_query_for_instruments_assert_methods(self):
+    @patch('scripts.system_performance.controller.method_mapping.MethodSelectorConfigurator.method_call')
+    @patch('scripts.system_performance.controller.method_mapping.MethodSelectorConfigurator.user_instrument_list_validate')
+    @patch('scripts.system_performance.controller.method_mapping.MethodSelectorConfigurator.run_every_instrument')
+    def test_get_query_for_instruments_assert_methods(self, mock_rei, mock_uilv, mock_method_call):
+        """Assert dictionary containing N instruments taken from valid instrument"""
+        mock_rei.return_value = None
+        mock_uilv.return_value = None
+
+        MethodSelectorConfigurator().get_query_for_instruments(instrument_input=['MARI', 'MAPS'],
+                                                               method_name='missing_run_numbers_report',
+                                                               additional_method_arguments={
+                                                                   'start_date':'2020-02-11',
+                                                                   'end_date': '2020-02-19'})
+
+
+
         # mock methods
         # create list of methods to use
         # create list of instruments

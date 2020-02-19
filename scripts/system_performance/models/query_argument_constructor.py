@@ -12,19 +12,11 @@ Contains query constructors for system performance check MySQL queries.
 from datetime import date, datetime
 from calendar import monthrange
 
-# from scripts.system_performance.data_persistence.reduction_run_queries_test import DatabaseMonitorChecks
 from scripts.system_performance.data_persistence.system_performance_queries import DatabaseMonitorChecks
 
 
 def get_day_of_week():
-    # print(date.today())
-    # todays_date = '2020-02-14'
-    # temp = date(*map(int, todays_date.split('-')))
     return date.today()
-
-# def get_last_day_of_month():
-#
-#     pass
 
 
 def get_list_of_instruments():
@@ -103,7 +95,8 @@ def runs_per_month(instrument_id, status, retry, end_date, time_interval):
     """Returns count of runs that occurred over the last month if day is equal to end of month"""
     # If today is last day of month, run, otherwise don't unless user specified to
     todays_date = get_day_of_week()
-    if todays_date == monthrange(date.today().year, date.today().month)[1]:
+    # temp = todays_date.month
+    if todays_date.day == monthrange(date.today().year, date.today().month)[1]:
         print('month')
         return DatabaseMonitorChecks().get_data_by_status_over_time(
             instrument_id=instrument_id,
