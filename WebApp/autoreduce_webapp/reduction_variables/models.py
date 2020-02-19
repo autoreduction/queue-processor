@@ -33,6 +33,9 @@ class Variable(models.Model):
         # pylint:disable=no-member
         return self.name.replace(' ', '-')
 
+    class Meta:
+        unique_together = ('name', 'value', 'type', 'is_advanced', 'help_text')
+
 
 class InstrumentVariable(Variable):
     """
