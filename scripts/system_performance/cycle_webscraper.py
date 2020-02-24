@@ -180,12 +180,12 @@ class DataClean:
     @staticmethod
     def date_formatter(data, index):
         """ Format Start and End columns to comma separated values,
-        and Maintenance day(s) column into list values, for MySQL date queries"""
+        and Maintenance day(s) column into list values, for MySQL date queries """
         new_col = []
         for i in data[index]:
             if index == 'Maintenance day(s)':
                 new_dates = []
-                for date in DataClean.convert_multi_date(i):
+                for date in DataClean.date_string_to_list(i):
                     new_dates.append(DataClean.format_single_date(date))
                 new_col.append(new_dates)
             else:
@@ -195,6 +195,7 @@ class DataClean:
     # Re-format a date value to separate days, months and year by a , and space
     @staticmethod
     def format_single_date(date):
+        """ Format a single date value into a MySQL-acceptable format """
         month = ''.join(re.findall(r"\D", date))
         numerical = re.findall(r"\d", date)
         if len(numerical) == 6:
@@ -212,9 +213,12 @@ class DataClean:
             raise ValueError("Incorrect data format, should be YYYY-MM-DD")
         return converted_row
 
-    # Converts a date string in a 'Maintenance day(s)' format to a format expected by DataClean.format_single_date
+    # Converts a date string in a 'Maintenance day(s)' format
+    # to a format expected by DataClean.format_single_date
     @staticmethod
-    def convert_multi_date(date_string):
+    def date_string_to_list(date_string):
+        """ Convert a string with >=1 date(s) (separated by '&')
+        into a list with an entry per date """
         date_list = re.split("&", date_string)
         last_date = date_list[len(date_list)-1]
         numerical = re.findall(r"\d", last_date)
