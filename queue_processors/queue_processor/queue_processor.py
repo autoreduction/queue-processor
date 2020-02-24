@@ -177,7 +177,8 @@ class Listener:
                                      experiment_id=experiment.id,
                                      instrument_id=instrument.id,
                                      status_id=status.id,
-                                     script=script_text)
+                                     script=script_text,
+                                     started_by=self._data_dict['started_by'])
         session.add(reduction_run)
         session.commit()
 

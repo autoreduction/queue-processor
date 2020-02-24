@@ -121,7 +121,9 @@ class QueueClient(AbstractClient):
         self._connection.ack(frame)
 
     @staticmethod
-    def serialise_data(rb_number, instrument, location, run_number):
+    # started_by defaults to "unknown" to account for message creation outside of
+    # manual_submission.py and run_detection.py
+    def serialise_data(rb_number, instrument, location, run_number, started_by="unknown"):
         """
         Packs the specified data into a dictionary ready to send to a processor queue
         """
@@ -129,7 +131,8 @@ class QueueClient(AbstractClient):
                 'instrument': instrument,
                 'data': location,
                 'run_number': run_number,
-                'facility': 'ISIS'}
+                'facility': 'ISIS',
+                'started_by': started_by}
 
     # pylint:disable=too-many-arguments
     def send(self, destination, message, persistent='true', priority='4', delay=None):
