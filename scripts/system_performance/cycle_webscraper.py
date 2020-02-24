@@ -150,7 +150,7 @@ class DataClean:
         self.raw_data.Cycle = [x.strip('Add to calendar') for x in self.raw_data.Cycle]
 
         # Format Start and End columns to comma separated values for MySQL date queries
-        cycle_period = ['Start', 'End']
+        cycle_period = ['Start', 'End', 'Maintenance day(s)']
         for index in cycle_period:
             self.raw_data[index] = DataClean.date_formatter(self.raw_data, index)
 
@@ -175,29 +175,60 @@ class DataClean:
             # Month is not recognised as key in month_compare
             print("{} is not a month".format(string))
 
-    # Re-format date in Start and End columns to separate days, months and year by a , and space
+    # Re-format a date column to separate days, months and year by a , and space
+    # Returns as a list for if index is 'Maintenance day(s)'
     @staticmethod
     def date_formatter(data, index):
-        """ Format Start and End columns to comma separated values for MySQL date queries"""
+        """ Format Start and End columns to comma separated values,
+        and Maintenance day(s) column into list values, for MySQL date queries"""
         new_col = []
         for i in data[index]:
-            month = ''.join(re.findall(r"\D", i))
-            numerical = re.findall(r"\d", i)
-            if len(numerical) == 6:
-                day = '{}{}'.format(numerical.pop(0), numerical.pop(0))
+            if index == 'Maintenance day(s)':
+                new_dates = []
+                for date in DataClean.convert_multi_date(i):
+                    new_dates.append(DataClean.format_single_date(date))
+                new_col.append(new_dates)
             else:
-                day = numerical.pop(0)
-            year = ''.join(numerical)
-            converted_row = '{}-{}-{}'.format(year.strip(),
-                                              DataClean.month_str_to_int((month.strip())),
-                                              day.strip())
-            # Validate datetime is in the correct format
-            try:
-                datetime.datetime.strptime(converted_row, '%Y-%m-%d')
-            except ValueError:
-                raise ValueError("Incorrect data format, should be YYYY-MM-DD")
-            new_col.append(converted_row)
+                new_col.append(DataClean.format_single_date(i))
         return new_col
+
+    # Re-format a date value to separate days, months and year by a , and space
+    @staticmethod
+    def format_single_date(date):
+        month = ''.join(re.findall(r"\D", date))
+        numerical = re.findall(r"\d", date)
+        if len(numerical) == 6:
+            day = '{}{}'.format(numerical.pop(0), numerical.pop(0))
+        else:
+            day = numerical.pop(0)
+        year = ''.join(numerical)
+        converted_row = '{}-{}-{}'.format(year.strip(),
+                                          DataClean.month_str_to_int((month.strip())),
+                                          day.strip())
+        # Validate datetime is in the correct format
+        try:
+            datetime.datetime.strptime(converted_row, '%Y-%m-%d')
+        except ValueError:
+            raise ValueError("Incorrect data format, should be YYYY-MM-DD")
+        return converted_row
+
+    # Converts a date string in a 'Maintenance day(s)' format to a format expected by DataClean.format_single_date
+    @staticmethod
+    def convert_multi_date(date_string):
+        date_list = re.split("&", date_string)
+        last_date = date_list[len(date_list)-1]
+        numerical = re.findall(r"\d", last_date)
+        year = ''.join(numerical[2:])
+
+        new_date_list = []
+        for date in date_list:
+            numerical = re.findall(r"\d", date)
+            full_date = date
+            if len(numerical) <= 2:
+                full_date += year
+            new_date_list.append(full_date)
+
+        return new_date_list
 
 
 # Set url to scrape from, put inside pandas table and clean data frame ready for queries
