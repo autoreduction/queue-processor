@@ -123,7 +123,7 @@ class InstrumentMonitor:
                                           instrument=self.instrument_name,
                                           location=file_location,
                                           run_number=run_number,
-                                          started_by="run_detection")
+                                          started_by=0)
 
     def submit_run(self, summary_rb_number, run_number, file_name):
         """
