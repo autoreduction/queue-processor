@@ -79,7 +79,7 @@ class ReductionRunUtils:
             reduction_run.retry_run.save()
 
     @staticmethod
-    def create_retry_run(reduction_run, script=None, variables=None, delay=0, username=None):
+    def create_retry_run(user_id, reduction_run, script=None, variables=None, delay=0):
         """
         Create a run ready for re-running based on the run provided. If variables (RunVariable) are
         provided, copy them and associate them with the new one, otherwise use the previous run's.
@@ -105,7 +105,7 @@ class ReductionRunUtils:
                                created=datetime.datetime.utcnow(),
                                last_updated=datetime.datetime.utcnow(),
                                message="",
-                               started_by=username,
+                               started_by=user_id,
                                cancel=0,
                                hidden_in_failviewer=0,
                                admin_log="",

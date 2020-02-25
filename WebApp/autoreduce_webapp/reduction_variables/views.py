@@ -537,11 +537,11 @@ def run_confirmation(request, instrument):
                 format(len(run_description), max_desc_len)
             return context_dictionary
 
-        new_job = ReductionRunUtils().createRetryRun(most_recent_previous_run,
+        new_job = ReductionRunUtils().createRetryRun(user_id=request.user.id,
+                                                     reduction_run=most_recent_previous_run,
                                                      script=script_text,
                                                      overwrite=overwrite_previous_data,
                                                      variables=new_variables,
-                                                     username=request.user.username,
                                                      description=run_description)
 
         try:
