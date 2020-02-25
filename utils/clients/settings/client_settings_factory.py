@@ -49,6 +49,8 @@ class ClientSettingsFactory:
             settings = self._create_icat(**kwargs)
         elif settings_type.lower() == 'queue':
             settings = self._create_queue(**kwargs)
+        elif settings_type.lower() == 'sftp':
+            settings = self._create_sftp(**kwargs)
         return settings
 
     def _create_database(self, **kwargs):
@@ -75,6 +77,14 @@ class ClientSettingsFactory:
         icat_kwargs = ['authentication_type']
         self._test_kwargs(icat_kwargs, kwargs)
         return ICATSettings(**kwargs)
+
+    def _create_sftp(self, **kwargs):
+        """
+        :return: SFTP compatible settings object
+        """
+        sftp_kwargs = []  # TODO: figure out what the sftp_kwargs should be
+        self._test_kwargs(sftp_kwargs, kwargs)
+        return SFTPSettings(**kwargs)
 
     def _test_kwargs(self, expected, actual):
         """
@@ -149,3 +159,13 @@ class ActiveMQSettings(ClientSettings):
         self.reduction_skipped = reduction_skipped
         self.all_subscriptions = [data_ready, reduction_started,
                                   reduction_complete, reduction_error, reduction_skipped]
+
+
+class SFTPSettings(ClientSettings):
+    """
+    SFTP settings object
+    """
+
+    # TODO: figure out what to populate this class with
+    def __init__(self, **kwargs):
+        super(SFTPSettings, self).__init__(**kwargs)
