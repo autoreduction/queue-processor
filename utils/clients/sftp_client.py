@@ -9,6 +9,8 @@ Client class for retrieving files via SFTP from servers (e.g. CEPH)
 """
 from utils.clients.abstract_client import AbstractClient
 from utils.test_settings import SFTP_SETTINGS
+import pysftp
+import os.path
 
 
 class SFTPClient(AbstractClient):
@@ -28,13 +30,19 @@ class SFTPClient(AbstractClient):
         """
         # TODO: do I need to check for existing connection? (like with queue & database clients)
         if self._connection is None:
-            pass  # TODO: figure out how to write connection code
+            self._connection = pysftp.Connection(host=self.credentials.host,
+                                                 username=self.credentials.username,
+                                                 password=self.credentials.password,
+                                                 port=self.credentials.port)
+            self._test_connection()  # TODO: Currently just returns True
+        return self._connection
 
     def disconnect(self):
         """
         Disconnect from the SFTP server
         """
-        # TODO: figure out how to write disconnection code
+        if self._connection is not None:
+            self._connection.close()
         self._connection = None
 
     def _test_connection(self):
@@ -42,7 +50,7 @@ class SFTPClient(AbstractClient):
         Test whether there is a connection to the SFTP server
         :return: True if there is a connection
         """
-        # TODO: figure out how to write test connection code
+        # TODO: figure out how to write test connection code | Perhaps pwd, i.e. print to current dir?
         if self._connection is not None:
             return True
 
@@ -53,3 +61,12 @@ class SFTPClient(AbstractClient):
         :param local_path: The location to download the file to
         :return: True if there is a connection
         """
+        if not os.path.isfile(server_path):
+            # TODO: Tell user they need to provide server_path to file
+            return
+        elif not os.path.isfile(local_path):
+            # TODO: Tell user they need to provide local_path to file
+            # TODO: Might want to have this use the existing file name (from server_path) if pysftp requires name
+            return
+        else:
+            self._connection.get(server_path, local_path)
