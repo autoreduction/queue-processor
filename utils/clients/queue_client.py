@@ -121,9 +121,7 @@ class QueueClient(AbstractClient):
         self._connection.ack(frame)
 
     @staticmethod
-    # started_by defaults to None to account for message creation outside of
-    # manual_submission.py and run_detection.py
-    def serialise_data(rb_number, instrument, location, run_number, started_by=None):
+    def serialise_data(rb_number, instrument, location, run_number, started_by):
         """
         Packs the specified data into a dictionary ready to send to a processor queue
         """
