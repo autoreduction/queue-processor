@@ -1,0 +1,17 @@
+
+
+figure:
+  type: line      # Type of graph [Line, scatter]
+  name: data      # Display name in legend
+  xaxis:
+    type: log       # [linear, log]
+    title: x_axis   # Title of X axis
+    unit: unit      # Unit of X Axis e.g. (&mu;s)<sup>-1</sup> for mu^-1
+  yaxis:
+    type: log       # [linear, log]
+    title: y_axis   # Title of Y Axis
+    unit: unit      # Unit of Y Axis
+
+
+
+figure: parent
