@@ -34,9 +34,9 @@ class ClientSettingsFactory:
                                                 reduction_complete, reduction_error
         :return: A ClientSettings object
         """
-        if settings_type.lower() not in ['database', 'icat', 'queue']:
-            raise ValueError("Factories creation settings type must be one of: 'database', "
-                             "'icat', 'queue'")
+        if settings_type.lower() not in ['database', 'icat', 'queue', 'sftp']:
+            raise ValueError("Factories creation settings type must be one of:"
+                             "'database','icat', 'queue', 'sftp'")
         kwargs['username'] = username
         kwargs['password'] = password
         kwargs['host'] = host

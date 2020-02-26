@@ -11,6 +11,12 @@ from utils.clients.abstract_client import AbstractClient
 from utils.test_settings import SFTP_SETTINGS
 import pysftp
 import os.path
+from utils.project.structure import get_log_file
+from utils.project.static_content import LOG_FORMAT
+import logging
+
+logging.basicConfig(filename=get_log_file('sftp_client.log'), level=logging.INFO,
+                    format=LOG_FORMAT)
 
 
 class SFTPClient(AbstractClient):
@@ -28,13 +34,21 @@ class SFTPClient(AbstractClient):
         Create the connection to the SFTP server
         :return: connection object
         """
+
         # TODO: do I need to check for existing connection? (like with queue & database clients)
         if self._connection is None:
+            cnopts = pysftp.CnOpts()
+            cnopts.hostkeys = None  # TODO: ! This makes the connection vulnerable to man-in-the-middle attacks
+                                    #   source: https://stackoverflow.com/questions/38939454/verify-host-key-with-pysftp
             self._connection = pysftp.Connection(host=self.credentials.host,
                                                  username=self.credentials.username,
                                                  password=self.credentials.password,
-                                                 port=self.credentials.port)
-            self._test_connection()  # TODO: Currently just returns True
+                                                 port=int(self.credentials.port),
+                                                 cnopts=cnopts)
+        if self._test_connection():  # TODO: Currently just returns True
+            print("Connection Success")
+        else:
+            print("Connection Failure")
         return self._connection
 
     def disconnect(self):
@@ -57,16 +71,19 @@ class SFTPClient(AbstractClient):
     def retrieve(self, server_path, local_path):
         """
         Retrieves file from the given server_path and downloads it to the given local_path
-        :param server_path: The location of the file on the SFTP server
-        :param local_path: The location to download the file to
-        :return: True if there is a connection
+        :param server_path:
+            The location of the file on the SFTP server.
+        :param local_path:
+            The location to download the file to.
+            If a filename (with file extension) is provided at the end of the path,
+            the file will be stored under this name and extension.
         """
-        if not os.path.isfile(server_path):
-            # TODO: Tell user they need to provide server_path to file
-            return
-        elif not os.path.isfile(local_path):
-            # TODO: Tell user they need to provide local_path to file
-            # TODO: Might want to have this use the existing file name (from server_path) if pysftp requires name
-            return
-        else:
-            self._connection.get(server_path, local_path)
+
+        # TODO: Might consider adding the follow:
+        #   (1) _test_connection, connect is False? BUT allows people to retrieve without connecting
+        #   (2) check local_path exists
+        #   (2b) offering to create directory if doesn't exist
+        #   (3) warn user before overriding an existing file
+        #   (3b) offering to rename "<filename> (2)"
+
+        self._connection.get(server_path, local_path)
