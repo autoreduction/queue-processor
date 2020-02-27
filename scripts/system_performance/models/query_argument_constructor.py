@@ -9,9 +9,10 @@ Contains query constructors for system performance check MySQL queries.
 """
 
 # Dependencies
-from datetime import date, datetime
+from datetime import date
 from calendar import monthrange
 
+# pylint:disable=line-too-long
 from scripts.system_performance.data_persistence.system_performance_queries import DatabaseMonitorChecks
 
 
@@ -87,8 +88,7 @@ def runs_per_week(instrument_id, status, retry, end_date, time_interval):
             end_date=end_date,
             interval=time_interval,
             time_scale='WEEK')
-    else:
-        return None
+    return None
 
 
 def runs_per_month(instrument_id, status, retry, end_date, time_interval):
@@ -105,5 +105,4 @@ def runs_per_month(instrument_id, status, retry, end_date, time_interval):
             end_date=end_date,
             interval=time_interval,
             time_scale='MONTH')
-    else:
-        return None
+    return None

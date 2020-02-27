@@ -19,9 +19,11 @@ from scripts.system_performance.controller.statistics_computation import QueryHa
 from scripts.system_performance.models import query_argument_constructor
 
 
-class MethodSelectorConfigurator(object):
-    """Class containing logic to call N methods specified by user for N instruments + any additional
-     method arguments specified"""
+class MethodSelectorConfigurator:
+    """
+    Class containing logic to call N methods specified by user for N instruments +
+    any additional method arguments specified
+    """
 
     @staticmethod
     def create_method_mappings():
@@ -44,7 +46,7 @@ class MethodSelectorConfigurator(object):
                 # 'execution_time_average': self.execution_time_average, TODO create method
                 'run_frequency': QueryHandler().run_frequency,
                 # 'run_frequency_average': self.run_frequency_average _ TODO create method
-               }
+                }
 
     def method_call(self, method_name, method_args):
         """Calls user specified method and returns statistics for a given instrument
@@ -64,16 +66,14 @@ class MethodSelectorConfigurator(object):
         try:
             method_output = self.create_method_mappings()[method_name](**method_args)
         except KeyError:
-            logging.warn("Invalid Input - method '%s' does not exist try -help "
-                          "to look at existing methods and arguments", method_name)
+            logging.warning("Invalid Input - method '%s' does not exist try -help "
+                            "to look at existing methods and arguments", method_name)
             method_output = None
 
         except TypeError:
-            logging.warn("Invalid Input invalid addiitonal arguments entered "
-                         "for method: '%s'", method_name)
+            logging.warning("Invalid Input invalid addiitonal arguments entered "
+                            "for method: '%s'", method_name)
             method_output = None
-        print('method output')
-        print(method_output)
         return method_output
 
     @staticmethod
@@ -88,17 +88,13 @@ class MethodSelectorConfigurator(object):
 
         for instrument in self.get_instrument_models():
             try:
-                # if method_name in self.create_method_mappings():
                 method_arguments['instrument_id'] = int(instrument.id)
-                print(method_arguments['instrument_id'])
-                print(f"this should be placeholder value: {self.create_method_mappings()[method_name](**method_arguments)}")
                 logging.info("Querying for instrument: {}".format(method_arguments))
-                instrument_dict[instrument[1]] = self.create_method_mappings()[method_name](**method_arguments)  # pylint: line-too-long
+                instrument_dict[instrument[1]] = \
+                    self.create_method_mappings()[method_name](**method_arguments)
             except KeyError:
-                logging.warn("Invalid Input - method '%s' does not exist try -help "
-                                 "to look at existing methods and arguments", method_name)
-        print('every instrument')
-        print(instrument_dict)
+                logging.warning("Invalid Input - method '%s' does not exist try -help "
+                                "to look at existing methods and arguments", method_name)
         return instrument_dict
 
     def user_instrument_list_validate(self, instrument_input):
@@ -113,11 +109,10 @@ class MethodSelectorConfigurator(object):
             for instrument_from_user in instrument_input:
                 if instrument_from_db[1] == instrument_from_user:
                     valid_instruments_list.append(instrument_from_db)
-        print('user instrument list')
-        print(valid_instruments_list)
         return valid_instruments_list
 
-    def get_query_for_instruments(self, method_name, instrument_input=None, additional_method_arguments=None): # pylint: line-too-long
+    def get_query_for_instruments(self, method_name, instrument_input=None,
+                                  additional_method_arguments=None):
         """Checks that the instrument_from_db's in method input exist and then calls
         and returns methods specified as input for each instrument_from_db placing in
         a dictionary as a nested list for each instrument_from_db as:
@@ -145,23 +140,24 @@ class MethodSelectorConfigurator(object):
         for instrument in instrument_input:
             # Run all instruments if user input specified "all"
             if instrument == 'all':
-                print(f"instrument_dict: {instrument_dict} \n method_name: {method_name} \n additional_method_arguments: {additional_method_arguments}")
+                print(f"instrument_dict: {instrument_dict} \n"
+                      f" method_name: {method_name} \n"
+                      f" additional_method_arguments: {additional_method_arguments}")
                 return self.run_every_instrument(instrument_dict,
                                                  method_name,
                                                  additional_method_arguments)
-            else:
 
-                valid_instruments = self.user_instrument_list_validate(instrument_input)
-                for instruments in valid_instruments:
-                    additional_method_arguments['instrument_id'] = instruments[0]
-                    instrument_dict[instruments[1]] = self.method_call(
-                        method_name=method_name,
-                        method_args=additional_method_arguments)
+            valid_instruments = self.user_instrument_list_validate(instrument_input)
+            for instruments in valid_instruments:
+                additional_method_arguments['instrument_id'] = instruments[0]
+                instrument_dict[instruments[1]] = self.method_call(
+                    method_name=method_name,
+                    method_args=additional_method_arguments)
 
         return instrument_dict
 
 # ALL CODE BELOW IS FOR MANUAL TESTING ONLY AND SHOULD BE REMOVED ON FULL INTEGRATION
-# -------------------------------------------------------------------------------------------------------------------- #
+# ---------------------------------------------------------------------------------- #
 
 
 def cust_query_return(test_message, dictionary_out):

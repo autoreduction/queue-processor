@@ -87,10 +87,10 @@ class TestDatabaseMonitorChecks(unittest.TestCase):
     def test_time_scale_format_segment_replace_intervals(self):
         """Testing appropriate sub segment interval is returned to be inserted in query"""
         # pylint: disable=line-too-long
-        expected_intervals = ">= DATE_SUB('{}', INTERVAL {} {})".format(self.arguments_dict['end_date'],
-                                                                        self.arguments_dict['interval'],
-                                                                        self.arguments_dict['time_scale'])
-        actual_intervals = self.db_monitor_checks.time_scale_format_segment_replace(query_arguments=self.arguments_dict)
+        expected_intervals = f">= DATE_SUB({self.arguments_dict['end_date']}," \
+            f" INTERVAL {self.arguments_dict['interval']} {self.arguments_dict['time_scale']})"
+        actual_intervals = self.db_monitor_checks.\
+            time_scale_format_segment_replace(query_arguments=self.arguments_dict)
         # pylint: enable=line-too-long
         self.assertEqual(expected_intervals, actual_intervals)  # Tests intervals
 
@@ -100,7 +100,8 @@ class TestDatabaseMonitorChecks(unittest.TestCase):
         self.arguments_dict['start_date'], self.arguments_dict['end_date'] = '2019-12-13', '2019-12-12'
         expected_dates_range = "BETWEEN '{}' AND '{}'".format(self.arguments_dict['start_date'],
                                                               self.arguments_dict['end_date'])
-        actual_dates_range = self.db_monitor_checks.time_scale_format_segment_replace(query_arguments=self.arguments_dict)
+        actual_dates_range = self.db_monitor_checks.\
+            time_scale_format_segment_replace(query_arguments=self.arguments_dict)
         # pylint: enable=line-too-long
         self.assertEqual(expected_dates_range, actual_dates_range)        # Tests dates range
 

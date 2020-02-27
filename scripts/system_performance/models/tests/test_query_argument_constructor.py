@@ -1,11 +1,16 @@
+# ############################################################################### #
+# Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
+#
+# Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
+# SPDX - License - Identifier: GPL-3.0-or-later
+# ############################################################################### #
 import unittest
 
-# from datetime import datetime, date
-# import datetime
 from datetime import date
 from mock import patch, Mock, MagicMock
 
 from scripts.system_performance.models import query_argument_constructor
+# pylint:disable=line-too-long
 from scripts.system_performance.data_persistence.system_performance_queries import DatabaseMonitorChecks
 
 
@@ -60,7 +65,8 @@ class TestQueryArgumentsConstructor(unittest.TestCase):
         for expected_instrument in expected:
             self.assertIn(expected_instrument, actual_instruments)
 
-    @patch('scripts.system_performance.data_persistence.system_performance_queries.DatabaseMonitorChecks.query_log_and_execute')
+    @patch('scripts.system_performance.data_persistence.system_performance_queries.'
+           'DatabaseMonitorChecks.query_log_and_execute')
     def test_missing_run_numbers_constructor(self, mock_qle):
         """Assert number of lists is 4"""
 
@@ -74,7 +80,8 @@ class TestQueryArgumentsConstructor(unittest.TestCase):
 
         mock_qle.assert_called_once_with(expected)
 
-    @patch('scripts.system_performance.data_persistence.system_performance_queries.DatabaseMonitorChecks.query_log_and_execute')
+    @patch('scripts.system_performance.data_persistence.system_performance_queries.'
+           'DatabaseMonitorChecks.query_log_and_execute')
     def test_start_and_end_times_by_instrument(self, mock_qle):
 
         expected = "SELECT id, run_number, " \
@@ -88,7 +95,8 @@ class TestQueryArgumentsConstructor(unittest.TestCase):
 
         mock_qle.assert_called_once_with(expected)
 
-    @patch('scripts.system_performance.data_persistence.system_performance_queries.DatabaseMonitorChecks.query_log_and_execute')
+    @patch('scripts.system_performance.data_persistence.system_performance_queries.'
+           'DatabaseMonitorChecks.query_log_and_execute')
     def test_runs_per_day(self, mock_qle):
 
         expected = "SELECT run_number " \
@@ -103,9 +111,12 @@ class TestQueryArgumentsConstructor(unittest.TestCase):
 
         mock_qle.assert_called_once_with(expected)
 
-    @patch('scripts.system_performance.data_persistence.system_performance_queries.DatabaseMonitorChecks.query_log_and_execute')
+    @patch('scripts.system_performance.data_persistence.system_performance_queries.'
+           'DatabaseMonitorChecks.query_log_and_execute')
     def test_runs_today(self, mock_qle):
-
+        """
+        Test the runs today query is constructed as expected
+        """
         expected = "SELECT run_number " \
                    "FROM reduction_viewer_reductionrun " \
                    "WHERE (status_id , instrument_id) = (4 , 9)  " \
@@ -122,7 +133,9 @@ class TestQueryArgumentsConstructor(unittest.TestCase):
 
     @patch('scripts.system_performance.models.query_argument_constructor.get_day_of_week')
     def test_runs_per_week_not_friday(self, mock_gdw):
-        """"""
+        """
+        Test runs per week when the day of the week is NOT friday
+        """
         # mock datetime
         todays_date = '2020-02-13'
         mock_gdw.return_value = date(*map(int, todays_date.split('-')))
@@ -134,10 +147,13 @@ class TestQueryArgumentsConstructor(unittest.TestCase):
                                                           time_interval=1)
         self.assertEqual(None, actual)
 
-    @patch('scripts.system_performance.data_persistence.system_performance_queries.DatabaseMonitorChecks.get_data_by_status_over_time')
+    @patch('scripts.system_performance.data_persistence.system_performance_queries.'
+           'DatabaseMonitorChecks.get_data_by_status_over_time')
     @patch('scripts.system_performance.models.query_argument_constructor.get_day_of_week')
     def test_runs_per_week_friday(self, mock_gdw, mock_gdsot):
-        """"""
+        """
+        Test runs per week when the day of the week IS Friday
+        """
         # mock datetime
         todays_date = '2020-02-14'
         mock_gdw.return_value = date(*map(int, todays_date.split('-')))
@@ -157,7 +173,8 @@ class TestQueryArgumentsConstructor(unittest.TestCase):
                                            time_scale='WEEK')
         self.assertEqual('Friday!', actual)
 
-    @patch('scripts.system_performance.data_persistence.system_performance_queries.DatabaseMonitorChecks.get_data_by_status_over_time')
+    @patch('scripts.system_performance.data_persistence.system_performance_queries.'
+           'DatabaseMonitorChecks.get_data_by_status_over_time')
     @patch('scripts.system_performance.models.query_argument_constructor.get_day_of_week')
     def test_runs_per_month_end_of_month(self, mock_gdw, mock_gdsot):
         todays_date = '2020-02-29'
@@ -165,10 +182,10 @@ class TestQueryArgumentsConstructor(unittest.TestCase):
         mock_gdsot.return_value = 'End of month'
 
         actual = query_argument_constructor.runs_per_month(instrument_id=1,
-                                                          status=4,
-                                                          retry='',
-                                                          end_date='2020-02-29',
-                                                          time_interval=1)
+                                                           status=4,
+                                                           retry='',
+                                                           end_date='2020-02-29',
+                                                           time_interval=1)
 
         mock_gdsot.assert_called_once_with(instrument_id=1,
                                            status_id=4,
@@ -178,7 +195,8 @@ class TestQueryArgumentsConstructor(unittest.TestCase):
                                            time_scale='MONTH')
         self.assertEqual('End of month', actual)
 
-    @patch('scripts.system_performance.data_persistence.system_performance_queries.DatabaseMonitorChecks.get_data_by_status_over_time')
+    @patch('scripts.system_performance.data_persistence.system_performance_queries.'
+           'DatabaseMonitorChecks.get_data_by_status_over_time')
     @patch('scripts.system_performance.models.query_argument_constructor.get_day_of_week')
     def test_runs_per_month_not_end_of_month(self, mock_gdw, mock_gdsot):
         todays_date = '2020-02-14'
@@ -192,6 +210,7 @@ class TestQueryArgumentsConstructor(unittest.TestCase):
                                                            end_date='2020-02-14',
                                                            time_interval=1)
         self.assertEqual(None, actual)
+
 
 if __name__ == '__main__':
     unittest.main()
