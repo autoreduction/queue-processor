@@ -8,6 +8,7 @@
 Client class for retrieving files via SFTP from servers (e.g. CEPH)
 """
 from utils.clients.abstract_client import AbstractClient
+from utils.clients.connection_exception import ConnectionException
 from utils.test_settings import SFTP_SETTINGS
 import pysftp
 import os.path
@@ -34,21 +35,16 @@ class SFTPClient(AbstractClient):
         Create the connection to the SFTP server
         :return: connection object
         """
-
-        # TODO: do I need to check for existing connection? (like with queue & database clients)
         if self._connection is None:
             cnopts = pysftp.CnOpts()
-            cnopts.hostkeys = None  # TODO: ! This makes the connection vulnerable to man-in-the-middle attacks
-                                    #   source: https://stackoverflow.com/questions/38939454/verify-host-key-with-pysftp
+            cnopts.hostkeys = None
             self._connection = pysftp.Connection(host=self.credentials.host,
                                                  username=self.credentials.username,
                                                  password=self.credentials.password,
                                                  port=int(self.credentials.port),
                                                  cnopts=cnopts)
-        if self._test_connection():  # TODO: Currently just returns True
-            print("Connection Success")
-        else:
-            print("Connection Failure")
+        self._test_connection()
+
         return self._connection
 
     def disconnect(self):
@@ -64,26 +60,44 @@ class SFTPClient(AbstractClient):
         Test whether there is a connection to the SFTP server
         :return: True if there is a connection
         """
-        # TODO: figure out how to write test connection code | Perhaps pwd, i.e. print to current dir?
-        if self._connection is not None:
-            return True
 
-    def retrieve(self, server_path, local_path):
+        try:
+            self._connection.pwd
+        except AttributeError:
+            raise ConnectionException("SFTP")
+        print("Connection Valid")   # TODO: Remove before final commit
+        return True
+
+    def retrieve(self, server_path, local_path=None, override=True):
         """
         Retrieves file from the given server_path and downloads it to the given local_path
-        :param server_path:
-            The location of the file on the SFTP server.
+        :param server_path: The location of the file on the SFTP server.
         :param local_path:
-            The location to download the file to.
-            If a filename (with file extension) is provided at the end of the path,
-            the file will be stored under this name and extension.
+            The location to download the file to, including filename with extension.
+            If None, local_path is the local directory.
+        :param override: If True and local_path points to an existing file, will override this file.
         """
 
-        # TODO: Might consider adding the follow:
-        #   (1) _test_connection, connect is False? BUT allows people to retrieve without connecting
-        #   (2) check local_path exists
-        #   (2b) offering to create directory if doesn't exist
-        #   (3) warn user before overriding an existing file
-        #   (3b) offering to rename "<filename> (2)"
+        if local_path is None:
+            local_path = ""
 
-        self._connection.get(server_path, local_path)
+        if not os.path.isfile(server_path):
+            raise RuntimeError("The server_path does not point to a file. "
+                               "Please provide a server_path which points to a file.")
+
+        if not override and os.path.isfile(local_path):
+            raise RuntimeError("The local_path points to a file which already exists. "
+                               "Please provide a different filename in the local_path, "
+                               "or set the override flag to True.")
+
+        if self._connection is None:
+            self.connect()
+
+        try:
+            self._connection.get(server_path, local_path)
+        except FileNotFoundError:
+            raise RuntimeError("The local_path does not exist.")
+        except PermissionError:  # Raised when local_path points to directory
+            raise RuntimeError("The local_path does not exist. "
+                               "Please ensure the local_path includes a full filename.")
+
