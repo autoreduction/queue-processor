@@ -62,6 +62,7 @@ if os.name != 'nt':
             self.instrument = 'WISH'
             self.rb_number = 222
             self.run_number = 101
+            self.started_by = 0
 
             reduce_script = \
                 'def main(input_file, output_dir):\n' \
@@ -78,7 +79,8 @@ if os.name != 'nt':
             data_ready_message = self.queue_client.serialise_data(rb_number=self.rb_number,
                                                                   instrument=self.instrument,
                                                                   location=file_location,
-                                                                  run_number=self.run_number)
+                                                                  run_number=self.run_number,
+                                                                  started_by=self.started_by)
             self.queue_client.send('/queue/DataReady',
                                    json.dumps(data_ready_message))
 
