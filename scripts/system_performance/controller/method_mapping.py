@@ -90,7 +90,7 @@ class MethodSelectorConfigurator:
             try:
                 method_arguments['instrument_id'] = int(instrument.id)
                 logging.info("Querying for instrument: {}".format(method_arguments))
-                instrument_dict[instrument[1]] = \
+                instrument_dict[instrument.id] = \
                     self.create_method_mappings()[method_name](**method_arguments)
             except KeyError:
                 logging.warning("Invalid Input - method '%s' does not exist try -help "
@@ -168,12 +168,12 @@ def cust_query_return(test_message, dictionary_out):
     #     print(item, dictionary_out[item])
 
 #
-cust_query_return(test_message='Minimal Arguments - Select Instruments:',
-                  dictionary_out=MethodSelectorConfigurator().get_query_for_instruments(instrument_input=['all'],
-                                                                          method_name='missing_run_numbers_report',
-                                                                          additional_method_arguments={
-                                                                              'start_date':'2020-02-11',
-                                                                              'end_date': '2020-02-19'}))
+# cust_query_return(test_message='Minimal Arguments - Select Instruments:',
+#                   dictionary_out=MethodSelectorConfigurator().get_query_for_instruments(instrument_input=['all'],
+#                                                                           method_name='missing_run_numbers_report',
+#                                                                           additional_method_arguments={
+#                                                                               'start_date':'2020-02-11',
+#                                                                               'end_date': '2020-02-19'}))
 #
 # cust_query_return(test_message='Minimal Arguments - Select Instruments:',
 #                   dictionary_out=MethodSelectorConfigurator().get_query_for_instruments(instrument_input=['MARI', 'MAPS'],
