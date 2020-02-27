@@ -77,9 +77,9 @@ class TestQueryHandler(unittest.TestCase):
 
     def test_list_extraction_and_isolation(self):
         """Assert start and end times have been correctly isolated in seconds"""
-        start_end_times = [[66137L, 26846L, '01:37:17', '01:37:37'],
-                           [66153L, 26847L, '03:49:22', '03:49:45'],
-                           [66164L, 26848L, '05:30:25', '05:30:37']]
+        start_end_times = [[66137, 26846, '01:37:17', '01:37:37'],
+                           [66153, 26847, '03:49:22', '03:49:45'],
+                           [66164, 26848, '05:30:25', '05:30:37']]
         expected = [[5837, 5857], [13762, 13785], [19825, 19837]]
         actual = QueryHandler().list_extraction_and_isolation(start_end_times, 2, 3)
 
@@ -87,8 +87,8 @@ class TestQueryHandler(unittest.TestCase):
 
     def test_nested_lists_to_dict(self):
         """Assert dictionary correctly stores values from execution times sub-lists"""
-        list_of_lists = [[66137L, 26846L, '01:37:17', '01:37:37', '0:00:20'],
-                         [66153L, 26847L, '03:49:22', '03:49:45', '0:00:23']]
+        list_of_lists = [[66137, 26846, '01:37:17', '01:37:37', '0:00:20'],
+                         [66153, 26847, '03:49:22', '03:49:45', '0:00:23']]
 
         execution_times_dict = OrderedDict()
         execution_times_dict['id'] = []
@@ -99,14 +99,14 @@ class TestQueryHandler(unittest.TestCase):
 
         expected = {'execution_time': ['0:00:20', '0:00:23'],
                     'start_time': ['01:37:17', '03:49:22'],
-                    'run_number': [26846L, 26847L],
-                    'id': [66137L, 66153L],
+                    'run_number': [26846, 26847],
+                    'id': [66137, 66153],
                     'end_time': ['01:37:37', '03:49:45']}
         actual = QueryHandler().nested_lists_to_dict(list_of_lists, execution_times_dict)
 
         self.assertEqual(expected, actual)
 
-    @patch('scripts.system_performance.models.query_argument_constructor.missing_run_numbers_constructor', autospec=True)
+    @patch('scripts.system_performance.models.query_argument_constructor.missing_run_numbers_constructor', autospec=True)  # pylint: line-too-long
     def test_missing_run_numbers_report_is_dict(self, mock_qle):
         """Assert a dictionary is returned"""
 
@@ -126,7 +126,7 @@ class TestQueryHandler(unittest.TestCase):
 
         self.assertIsInstance(actual, dict)
 
-    @patch('scripts.system_performance.models.query_argument_constructor.missing_run_numbers_constructor', autospec=True)
+    @patch('scripts.system_performance.models.query_argument_constructor.missing_run_numbers_constructor', autospec=True)  # pylint: line-too-long
     def test_missing_run_numbers_report_dict_key_count(self, mock_qle):
         """Assert that the method return includes expected number of dictionary keys."""
 
@@ -142,7 +142,7 @@ class TestQueryHandler(unittest.TestCase):
 
         self.assertTrue(len(list(actual.keys())), 5)  # Assert number of dictionary keys is 5
 
-    @patch('scripts.system_performance.models.query_argument_constructor.missing_run_numbers_constructor', autospec=True)
+    @patch('scripts.system_performance.models.query_argument_constructor.missing_run_numbers_constructor', autospec=True)  # pylint: line-too-long
     def test_missing_run_numbers_report_assert_expected_return_val(self, mock_qle):
         """Assert a dictionary is returned containing expected missing run number"""
 
@@ -161,7 +161,7 @@ class TestQueryHandler(unittest.TestCase):
         expected = [125305]  # Expected missing run
         self.assertEqual(actual['Missing_runs'], expected)
 
-    @patch('scripts.system_performance.models.query_argument_constructor.start_and_end_times_by_instrument', autospec=True)
+    @patch('scripts.system_performance.models.query_argument_constructor.start_and_end_times_by_instrument', autospec=True)  # pylint: line-too-long
     def test_execution_times_is_dict(self, mock_seti):
         """Assert that a dictionary is returned"""
 
@@ -176,7 +176,7 @@ class TestQueryHandler(unittest.TestCase):
 
         self.assertIsInstance(actual, dict)
 
-    @patch('scripts.system_performance.models.query_argument_constructor.start_and_end_times_by_instrument', autospec=True)
+    @patch('scripts.system_performance.models.query_argument_constructor.start_and_end_times_by_instrument', autospec=True)  # pylint: line-too-long
     def test_execution_times_dict_key_count(self, mock_seti):
         """Assert that the length of each list is as expected"""
         mock_seti.return_value = [[68777, 47175, '13:46:59', '13:51:17'],
@@ -194,7 +194,7 @@ class TestQueryHandler(unittest.TestCase):
 
         self.assertTrue(len(list(actual.keys())), 4)
 
-    @patch('scripts.system_performance.models.query_argument_constructor.start_and_end_times_by_instrument', autospec=True)
+    @patch('scripts.system_performance.models.query_argument_constructor.start_and_end_times_by_instrument', autospec=True)  # pylint: line-too-long
     def test_execution_times_assert_expected_return_val(self, mock_seti):
         """Assert values returned from db are reformatted correctly"""
         mock_seti.return_value = [[68777, 47175, '13:46:59', '13:51:17'],

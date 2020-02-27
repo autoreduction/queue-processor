@@ -29,11 +29,12 @@ class QueryHandler:
 
         :parameter
         ----------
-        time_in_seconds (int): Time in seconds as integer
+        - time_in_seconds (int): Time in seconds as integer
 
         :returns:
         ----------
-        time_in_seconds (datetime.time): convert integer to time format"""
+        - time_in_seconds (datetime.time): convert integer to time format"""
+
         return str(datetime.timedelta(seconds=time_in_seconds))
 
     @staticmethod
@@ -47,7 +48,8 @@ class QueryHandler:
 
         :returns:
         ----------
-        time_format (int): convert time to integer format"""
+        - time_format (int): convert time to integer format"""
+
         reformat_time = time.strptime(time_format, '%H:%M:%S')
         return datetime.timedelta(hours=reformat_time.tm_hour,
                                   minutes=reformat_time.tm_min,
@@ -60,15 +62,15 @@ class QueryHandler:
 
         :parameter
         ----------
-        list_of_rb_numbers (list): List of rb numbers
+        - list_of_rb_numbers (list): List of rb numbers
 
         :returns:
         ----------
-        list_of_rb_numbers (list): List of missing rb numbers
+        - list_of_rb_numbers (list): List of missing rb numbers
 
         :raises
         ----------
-        IndexError: Index not found in list_of_rb_numbers"""
+        - IndexError: Index not found in list_of_rb_numbers"""
 
         try:
             return [rb_number for rb_number in range(list_of_rb_numbers[0],
@@ -86,12 +88,12 @@ class QueryHandler:
 
         :parameter
         ----------
-        execution_list (list): List of execution times
-        list_of_times (list) List of run start and end times
+        - execution_list (list): List of execution times
+        - list_of_times (list) List of run start and end times
 
         :returns:
         ----------
-        list_of_times (list): Zipped list of times and execution times"""
+        - list_of_times (list): Zipped list of times and execution times"""
 
         for execution_times in range(len(execution_list)):
             if execution_list[execution_times] is not None:
@@ -105,13 +107,13 @@ class QueryHandler:
 
         :parameter
         ----------
-        start_end_times (list): List od lists containing start, end and ex
-        start_time_index (int) Index of where start time is located inn sub-lists
-        end_time_index (int): Index of where end time is located in sub-lists
+        - start_end_times (list): List od lists containing start, end and ex
+        - start_time_index (int) Index of where start time is located inn sub-lists
+        - end_time_index (int): Index of where end time is located in sub-lists
 
         :returns
         ----------
-        grouped_start_end_times (list): nested list of start and end times in seconds"""
+        - grouped_start_end_times (list): nested list of start and end times in seconds"""
 
         grouped_start_end_times = []
 
@@ -136,13 +138,14 @@ class QueryHandler:
 
         :parameter
         ----------
-        list_of_list (list): list of start, end and execution times
-        execution_dict (Ordered dictionary): unpopulated Dictionary containing keys for: id, run_number,
-        start_time, end_time and execution time
+        - list_of_list (list): list of start, end and execution times
+        - execution_dict (Ordered dictionary): unpopulated Dictionary containing keys for: id,
+        run_number,
+        - start_time, end_time and execution time
 
         :returns
         ----------
-        execution_dict (dictionary): Populated dictionary"""
+        - execution_dict (dictionary): Populated dictionary"""
 
         execution_cols = list(execution_dict.keys())
         for execution_times_list in list_of_lists:
@@ -162,13 +165,13 @@ class QueryHandler:
 
         :parameter
         ----------
-        instrument_id (int): instrument ID as seen in Autoreduction Database
-        start_date (string): string containing date formatted as yyyy-mm-dd
-        end_date (string): string containing date formatted as yyyy-mm-dd
+        - instrument_id (int): instrument ID as seen in Autoreduction Database
+        - start_date (string): string containing date formatted as yyyy-mm-dd
+        - end_date (string): string containing date formatted as yyyy-mm-dd
 
         :returns
         ----------
-        dictionary: Dictionary of nested list to to be referenced later to an instrument
+        - dictionary: Dictionary of nested list to to be referenced later to an instrument
                 [count of run run number between two dates/time,
                  the count of missing run numbers,
                  [nested list of missing run numbers id's]]"""
@@ -200,13 +203,13 @@ class QueryHandler:
 
         :parameter
         ----------
-        instrument_id (int): instrument ID as seen in Autoreduction Database
-        start_date (string): string containing date formatted as yyyy-mm-dd
-        end_date (string): string containing date formatted as yyyy-mm-dd
+        = instrument_id (int): instrument ID as seen in Autoreduction Database
+        = start_date (string): string containing date formatted as yyyy-mm-dd
+        - end_date (string): string containing date formatted as yyyy-mm-dd
 
         :returns
         ----------
-        dictionary: dictionary of execution times for a given instrument"""
+        - dictionary: dictionary of execution times for a given instrument"""
 
         time_in_seconds_list = []
         execution_times_dict = OrderedDict()
@@ -222,12 +225,12 @@ class QueryHandler:
 
             :parameter
             ----------
-            start_date (string): string containing date formatted as yyyy-mm-dd
-            end_date (string): string containing date formatted as yyyy-mm-dd
+            - start_date (string): string containing date formatted as yyyy-mm-dd
+            - end_date (string): string containing date formatted as yyyy-mm-dd
 
             :returns
             ----------
-            list: nested list of queried data from database
+            - list: nested list of queried data from database
             """
 
             return query_argument_constructor.start_and_end_times_by_instrument(
@@ -257,21 +260,21 @@ class QueryHandler:
 
         :parameter
         ----------
-        instrument_id (int): Instrument by id 1=GEM; 2=Wish etc. - Check documentation for reference
-        or use help method
-        status (int): Completion status e.g Error = 1; Queued = 2' Processing = 3; Completed = 4;
+        - instrument_id (int): Instrument by id 1=GEM; 2=Wish etc. - Check documentation for
+        reference or use help method
+        - status (int): Completion status e.g Error = 1; Queued = 2' Processing = 3; Completed = 4;
         Skipped = 5
-        retry (bool): Takes input as True or left as None to apply a filter by whether or not a run
-        has been retried or not
-        end_date (string): Most recent date you wish to get the count of dates up to - by default
-        start_date (string): Date you wish to from to the end date/ - by default this is None
-        time_interval (int): Interval of time as int to specify number of a time scale (1 DAY, 2 DAY
-        etc) defaults to 1
+        - retry (bool): Takes input as True or left as None to apply a filter by whether or not a
+        run has been retried or not
+        - end_date (string): Most recent date you wish to get the count of dates up to - by default
+        - start_date (string): Date you wish to from to the end date/ - by default this is None
+        - time_interval (int): Interval of time as int to specify number of a time scale (1 DAY, 2
+        DAY etc) defaults to 1
 
 
         :returns
         ----------
-        run_frequency_list (list): list of sub method values [runs_per_day(), runs_today(),
+        - run_frequency_list (list): list of sub method values [runs_per_day(), runs_today(),
         runs_per_week(), runs_per_month()]"""
 
         # Setting default values if none
@@ -293,7 +296,7 @@ class QueryHandler:
 
             :returns
             ----------
-            list: list of runs in from the last 24 hrs """
+            - list: list of runs in from the last 24 hrs """
 
             # Defaults for time, only exception is changing end_date to look in the past
             return query_argument_constructor.runs_per_day(
@@ -308,9 +311,8 @@ class QueryHandler:
 
             :returns
             ----------
-            list: list of runs which took place today """
+            - list: list of runs which took place today """
 
-            print('today')
             return query_argument_constructor.runs_today(
                 instrument_id=instrument_id,
                 status=status,
@@ -325,7 +327,7 @@ class QueryHandler:
 
             :returns
             ----------
-            list or runs which took place over the last week """
+            - list or runs which took place over the last week """
 
             # If today is last day of week (Friday in this case) run, otherwise don't unless user
             # specified to
@@ -341,7 +343,7 @@ class QueryHandler:
             =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
             :returns
             ----------
-            list of runs which took place over the last month"""
+            - list of runs which took place over the last month"""
 
             # If today is last day of month, run, otherwise don't unless user specified to
             return query_argument_constructor.runs_per_month(
@@ -359,7 +361,7 @@ class QueryHandler:
 
             :returns
             ----------
-            list: Mapped list of runs per... and count of runs
+            - list: Mapped list of runs per... and count of runs
             """
 
             def list_lengths(nested_list_of_runs):
@@ -367,10 +369,10 @@ class QueryHandler:
                 =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
                 :parameter
                 ----------
-                nested_list_of_runs (list): nested list containing [[rpd], [rt], [rpw], [rpm]]
+                - nested_list_of_runs (list): nested list containing [[rpd], [rt], [rpw], [rpm]]
                 :returns
                 ----------
-                list contains list of counts of sublists
+                - list contains list of counts of sublists
                 """
                 run_frequency_list_counts = []
                 for frequency_interval in nested_list_of_runs:

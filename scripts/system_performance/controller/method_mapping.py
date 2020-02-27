@@ -25,7 +25,7 @@ class MethodSelectorConfigurator(object):
 
     @staticmethod
     def create_method_mappings():
-        """A dictionary to map input, user specified methods to return equivalent method to be called
+        """Dictionary to map input, user specified methods to return equivalent method to be called
          =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
 
         :parameter
@@ -34,6 +34,8 @@ class MethodSelectorConfigurator(object):
 
         :returns:
         ----------
+        - dictionary: contains dictionary of methods that can be used in package, acting as a form
+        of method validation
 
         TODO: Create execution_time_average and run_frequency_average methods"""
 
@@ -50,10 +52,12 @@ class MethodSelectorConfigurator(object):
 
         :parameter
         ----------
-        time_format (datetime.time): Time in seconds as integer
+        - time_format (datetime.time): Time in seconds as integer
 
         :returns:
         ----------
+
+
         """
         # Check input is in mapping and place method N output in instrument_dict to return
 
@@ -68,6 +72,8 @@ class MethodSelectorConfigurator(object):
             logging.warn("Invalid Input invalid addiitonal arguments entered "
                          "for method: '%s'", method_name)
             method_output = None
+        print('method output')
+        print(method_output)
         return method_output
 
     @staticmethod
@@ -84,11 +90,15 @@ class MethodSelectorConfigurator(object):
             try:
                 # if method_name in self.create_method_mappings():
                 method_arguments['instrument_id'] = int(instrument.id)
+                print(method_arguments['instrument_id'])
+                print(f"this should be placeholder value: {self.create_method_mappings()[method_name](**method_arguments)}")
                 logging.info("Querying for instrument: {}".format(method_arguments))
-                instrument_dict[instrument[1]] = self.create_method_mappings()[method_name](**method_arguments)
+                instrument_dict[instrument[1]] = self.create_method_mappings()[method_name](**method_arguments)  # pylint: line-too-long
             except KeyError:
                 logging.warn("Invalid Input - method '%s' does not exist try -help "
                                  "to look at existing methods and arguments", method_name)
+        print('every instrument')
+        print(instrument_dict)
         return instrument_dict
 
     def user_instrument_list_validate(self, instrument_input):
@@ -103,17 +113,19 @@ class MethodSelectorConfigurator(object):
             for instrument_from_user in instrument_input:
                 if instrument_from_db[1] == instrument_from_user:
                     valid_instruments_list.append(instrument_from_db)
-
+        print('user instrument list')
+        print(valid_instruments_list)
         return valid_instruments_list
 
-    def get_query_for_instruments(self, method_name, instrument_input=None, additional_method_arguments=None):
+    def get_query_for_instruments(self, method_name, instrument_input=None, additional_method_arguments=None): # pylint: line-too-long
         """Checks that the instrument_from_db's in method input exist and then calls
         and returns methods specified as input for each instrument_from_db placing in
         a dictionary as a nested list for each instrument_from_db as:
          {instrument_name : [[method output row 1]],[[method output row 2] etc.] ...}
 
         Run methods for each instrument_from_db name
-        :param instrument_input: [(str), (str), ...] - Represents the instruments to be used in queries
+        :param instrument_input: [(str), (str), ...] - Represents the instruments to be used in
+        queries
         :param method_name: (str) -  The name of the methods to run
         :param additional_method_arguments - method arguments specified by user
         :return: A dictionary of instrument_from_db names (key) and list of method output (value)
@@ -133,6 +145,7 @@ class MethodSelectorConfigurator(object):
         for instrument in instrument_input:
             # Run all instruments if user input specified "all"
             if instrument == 'all':
+                print(f"instrument_dict: {instrument_dict} \n method_name: {method_name} \n additional_method_arguments: {additional_method_arguments}")
                 return self.run_every_instrument(instrument_dict,
                                                  method_name,
                                                  additional_method_arguments)
@@ -160,11 +173,18 @@ def cust_query_return(test_message, dictionary_out):
 
 #
 cust_query_return(test_message='Minimal Arguments - Select Instruments:',
-                  dictionary_out=MethodSelectorConfigurator().get_query_for_instruments(instrument_input=['MARI', 'MAPS'],
+                  dictionary_out=MethodSelectorConfigurator().get_query_for_instruments(instrument_input=['all'],
                                                                           method_name='missing_run_numbers_report',
                                                                           additional_method_arguments={
                                                                               'start_date':'2020-02-11',
                                                                               'end_date': '2020-02-19'}))
+#
+# cust_query_return(test_message='Minimal Arguments - Select Instruments:',
+#                   dictionary_out=MethodSelectorConfigurator().get_query_for_instruments(instrument_input=['MARI', 'MAPS'],
+#                                                                           method_name='execution_times',
+#                                                                           additional_method_arguments={
+#                                                                               'start_date':'2020-02-11',
+#                                                                               'end_date': '2020-02-19'}))
 
 
 # # # Missing run numbers
@@ -227,6 +247,12 @@ cust_query_return(test_message='Minimal Arguments - Select Instruments:',
 #                                                                           additional_method_arguments=additional_args))
 
 # cust_query_return(test_message='run_frequency - Select Instruments',
-#                   dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['all'],
+#                   dictionary_out=MethodSelectorConfigurator().get_query_for_instruments(instrument_input=['all'],
 #                                                                           method_name='run_frequency',
 #                                                                           additional_method_arguments=additional_args))
+
+# cust_query_return(test_message='run_frequency - Select Instruments',
+#                   dictionary_out=MethodSelectorConfigurator().get_query_for_instruments(instrument_input=['MARI', 'MAPS'],
+#                                                                           method_name='run_frequency',
+#                                                                           additional_method_arguments=additional_args))
+
