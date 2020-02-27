@@ -17,6 +17,7 @@ class ClientSettingsFactory:
     """
 
     ignore_kwargs = ['username', 'password', 'host', 'port']
+    valid_types = ['database', 'icat', 'queue', 'sftp']
 
     # pylint:disable=too-many-arguments
     def create(self, settings_type, username, password, host, port, **kwargs):
@@ -34,9 +35,9 @@ class ClientSettingsFactory:
                                                 reduction_complete, reduction_error
         :return: A ClientSettings object
         """
-        if settings_type.lower() not in ['database', 'icat', 'queue', 'sftp']:
-            raise ValueError("Factories creation settings type must be one of:"
-                             "'database','icat', 'queue', 'sftp'")
+        if settings_type.lower() not in self.valid_types:
+            raise ValueError(f"Factories creation settings type must be one of:"
+                             f"{','.join(self.valid_types)}")
         kwargs['username'] = username
         kwargs['password'] = password
         kwargs['host'] = host
@@ -82,7 +83,7 @@ class ClientSettingsFactory:
         """
         :return: SFTP compatible settings object
         """
-        sftp_kwargs = []  # TODO: figure out what the sftp_kwargs should be
+        sftp_kwargs = []    # No additional kwargs needed for sftp
         self._test_kwargs(sftp_kwargs, kwargs)
         return SFTPSettings(**kwargs)
 
