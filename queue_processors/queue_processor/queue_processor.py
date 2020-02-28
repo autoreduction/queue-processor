@@ -177,7 +177,8 @@ class Listener:
                                      experiment_id=experiment.id,
                                      instrument_id=instrument.id,
                                      status_id=status.id,
-                                     script=script_text)
+                                     script=script_text,
+                                     started_by=self._data_dict['started_by'])
         session.add(reduction_run)
         session.commit()
 
@@ -382,7 +383,10 @@ class Listener:
             # If we have already tried more than 5 times, we want to give up and we don't want
             # to retry the run
             if max_version <= 4:
-                self.retry_run(reduction_run, self._data_dict["retry_in"])
+                self.retry_run(
+                    self._data_dict["started_by"],
+                    reduction_run,
+                    self._data_dict["retry_in"])
             else:
                 # Need to delete the retry_in entry from the dictionary so that the front end
                 # doesn't report a false retry instance.
@@ -412,7 +416,7 @@ class Listener:
         return reduction_run
 
     @staticmethod
-    def retry_run(reduction_run, retry_in):
+    def retry_run(user_id, reduction_run, retry_in):
         """ Retry a reduction run. """
         if reduction_run.cancel:
             logger.info("Cancelling run retry")
@@ -420,7 +424,10 @@ class Listener:
 
         logger.info("Retrying run in %i seconds", retry_in)
 
-        new_job = ReductionRunUtils().create_retry_run(reduction_run, delay=retry_in)
+        new_job = ReductionRunUtils().create_retry_run(
+            user_id=user_id,
+            reduction_run=reduction_run,
+            delay=retry_in)
         try:
             #  Seconds to Milliseconds
             MessagingUtils().send_pending(new_job, delay=retry_in * 1000)

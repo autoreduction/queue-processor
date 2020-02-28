@@ -147,8 +147,8 @@ class ReductionRunUtils(object):
 
     # pylint:disable=invalid-name,too-many-arguments,too-many-locals
     @staticmethod
-    def createRetryRun(reduction_run, overwrite=None, script=None,
-                       variables=None, delay=0, username=None, description=''):
+    def createRetryRun(user_id, reduction_run, overwrite=None, script=None,
+                       variables=None, delay=0, description=''):
         """
         Create a run ready for re-running based on the run provided.
         If variables (RunVariable) are provided, copy them and associate
@@ -158,9 +158,6 @@ class ReductionRunUtils(object):
         from reduction_variables.utils import InstrumentVariablesUtils
 
         run_last_updated = reduction_run.last_updated
-
-        if username == 'super':
-            username = 1
 
         # find the previous run version, so we don't create a duplicate
         last_version = -1
@@ -180,7 +177,7 @@ class ReductionRunUtils(object):
                                run_name=description,
                                run_version=last_version + 1,
                                experiment=reduction_run.experiment,
-                               started_by=username,
+                               started_by=user_id,
                                status=StatusUtils().get_queued(),
                                script=script_text,
                                overwrite=overwrite)

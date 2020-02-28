@@ -27,7 +27,8 @@ RUN_DICT = {'instrument': 'WISH',
             'run_number': '00044733',
             'data': '/my/data/dir/cycle_18_4/WISH00044733.nxs',
             'rb_number': '1820461',
-            'facility': 'ISIS'}
+            'facility': 'ISIS',
+            'started_by': 0}
 RUN_DICT_SUMMARY = {'instrument': 'WISH',
                     'run_number': '00044733',
                     'data': '/my/data/dir/cycle_18_4/WISH00044733.nxs',

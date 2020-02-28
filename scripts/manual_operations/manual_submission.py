@@ -31,7 +31,8 @@ def submit_run(active_mq_client, rb_number, instrument, data_file_location, run_
     data_dict = active_mq_client.serialise_data(rb_number=rb_number,
                                                 instrument=instrument,
                                                 location=data_file_location,
-                                                run_number=run_number)
+                                                run_number=run_number,
+                                                started_by=-1)
 
     active_mq_client.send('/queue/DataReady', json.dumps(data_dict), priority=1)
     print("Submitted run: \r\n" + json.dumps(data_dict, indent=1))

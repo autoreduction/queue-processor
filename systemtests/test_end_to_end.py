@@ -78,7 +78,8 @@ if os.name != 'nt':
             data_ready_message = self.queue_client.serialise_data(rb_number=self.rb_number,
                                                                   instrument=self.instrument,
                                                                   location=file_location,
-                                                                  run_number=self.run_number)
+                                                                  run_number=self.run_number,
+                                                                  started_by=0)
             self.queue_client.send('/queue/DataReady',
                                    json.dumps(data_ready_message))
 
@@ -108,7 +109,8 @@ if os.name != 'nt':
             data_ready_message = self.queue_client.serialise_data(instrument=self.instrument,
                                                                   rb_number=self.rb_number,
                                                                   run_number=self.run_number,
-                                                                  location=file_location)
+                                                                  location=file_location,
+                                                                  started_by=0)
             self.queue_client.send('/queue/DataReady',
                                    json.dumps(data_ready_message))
 

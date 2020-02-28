@@ -23,7 +23,7 @@ class DataFile:
         self.name = df_name
 
 
-def get_json_object(rb_number, instrument, data_file_location, run_number):
+def get_json_object(rb_number, instrument, data_file_location, run_number, started_by):
     """
     Return the JSON object that should be sent to DataReady
     """
@@ -31,7 +31,8 @@ def get_json_object(rb_number, instrument, data_file_location, run_number):
                  "instrument": instrument,
                  "data": data_file_location,
                  "run_number": run_number,
-                 "facility": "ISIS"}
+                 "facility": "ISIS",
+                 "started_by": started_by}
     return json.dumps(data_dict)
 
 
@@ -65,5 +66,5 @@ class TestManualSubmission(unittest.TestCase):
         """
         active_mq_client = QueueClient()
         ms.submit_run(active_mq_client, "1812345", "GEM", "5454", "nxs")
-        json_obj = get_json_object("1812345", "GEM", "5454", "nxs")
+        json_obj = get_json_object("1812345", "GEM", "5454", "nxs", -1)
         send.assert_called_with('/queue/DataReady', json_obj, priority=1)

@@ -72,12 +72,13 @@ class TestQueueClient(unittest.TestCase):
     def test_serialise_message(self):
         """ Test data is correctly serialised """
         client = QueueClient()
-        data = client.serialise_data('123', 'WISH', 'file/path', '001')
+        data = client.serialise_data('123', 'WISH', 'file/path', '001', 0)
         self.assertEqual(data['rb_number'], '123')
         self.assertEqual(data['instrument'], 'WISH')
         self.assertEqual(data['data'], 'file/path')
         self.assertEqual(data['run_number'], '001')
         self.assertEqual(data['facility'], 'ISIS')
+        self.assertEqual(data['started_by'], 0)
 
     # pylint:disable=no-self-use
     @patch('stomp.connect.StompConnection11.send')

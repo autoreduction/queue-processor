@@ -122,7 +122,8 @@ class InstrumentMonitor:
         return self.client.serialise_data(rb_number=rb_number,
                                           instrument=self.instrument_name,
                                           location=file_location,
-                                          run_number=run_number)
+                                          run_number=run_number,
+                                          started_by=0)
 
     def submit_run(self, summary_rb_number, run_number, file_name):
         """

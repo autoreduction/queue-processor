@@ -179,7 +179,8 @@ def fail_queue(request):
 
                     ReductionRunUtils().cancelRun(reduction_run)
                     reduction_run.cancel = False
-                    new_job = ReductionRunUtils().createRetryRun(reduction_run)
+                    new_job = ReductionRunUtils().createRetryRun(user_id=request.user.id,
+                                                                 reduction_run=reduction_run)
 
                     try:
                         MessagingUtils().send_pending(new_job)
