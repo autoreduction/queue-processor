@@ -8,11 +8,17 @@
 Test SFTP client
 """
 import unittest
+from unittest.mock import Mock, MagicMock
+
+from mock import patch
 
 from utils.clients.connection_exception import ConnectionException
 from utils.clients.settings.client_settings_factory import ClientSettingsFactory
 from utils.clients.sftp_client import SFTPClient
 
+class MockConnection(Mock):
+    """Mock object class"""
+    pass
 
 class TestSFTPClient(unittest.TestCase):
     """
@@ -41,11 +47,21 @@ class TestSFTPClient(unittest.TestCase):
         client.connect()
         self.assertTrue(client._test_connection())
 
+    # TODO: Add docstrings for tests
     def test_invalid_connection(self):
-        client = SFTPClient()
+        client = SFTPClient()   # client initialised but no connection made
         with self.assertRaises(ConnectionException):
             client._test_connection()
 
+    @patch('utils.clients.database_client.SFTPClient.connect', return_value=MockConnection())
+    def test_valid_retrieve(self, mock_connection):
+         magicmock_connecion = MagicMock(mock_connection)
+
+
+    # def test_local_path_is_none(self, path):
+    #     client = SFTPClient()
+    #     path.return_value = True
+    #     client.retrieve("mountisiscommand.txt", None)
 
     # TODO: Tests for following
     #   - local path None -> saves to local

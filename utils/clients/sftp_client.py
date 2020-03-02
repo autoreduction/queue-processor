@@ -7,14 +7,15 @@
 """
 Client class for retrieving files via SFTP from servers (e.g. CEPH)
 """
+import os.path
+import logging
+import pysftp
 from utils.clients.abstract_client import AbstractClient
 from utils.clients.connection_exception import ConnectionException
 from utils.test_settings import SFTP_SETTINGS
-import pysftp
-import os.path
 from utils.project.structure import get_log_file
 from utils.project.static_content import LOG_FORMAT
-import logging
+
 
 logging.basicConfig(filename=get_log_file('sftp_client.log'), level=logging.INFO,
                     format=LOG_FORMAT)
@@ -81,7 +82,7 @@ class SFTPClient(AbstractClient):
         if local_path is None:
             local_path = ""
 
-        if not os.path.isfile(server_path):
+        if not os.path.isfile(server_path): # TODO: Replace this - it won't work over sftp
             raise RuntimeError("The server_path does not point to a file. "
                                "Please provide a server_path which points to a file.")
 
@@ -100,4 +101,3 @@ class SFTPClient(AbstractClient):
         except PermissionError:  # Raised when local_path points to directory
             raise RuntimeError("The local_path does not exist. "
                                "Please ensure the local_path includes a full filename.")
-
