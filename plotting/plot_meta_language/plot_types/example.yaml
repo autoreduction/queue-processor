@@ -1,3 +1,5 @@
+# This file describes the meta data of a plot
+# including the type of plot and it's axis scaling, units, and titles.
 figure:
   type: line      # Type of graph [Line, scatter]
   x_axis:

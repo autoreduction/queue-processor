@@ -1,8 +1,8 @@
 ### Plot types
-Plots are defined in a custom `.yaml` files. These files should describe the meta data of the plot
-including the type of plot and it's axis scaling, units and titles. An `example.yaml` file is 
+Plots are defined in custom `.yaml` files. These files should describe the meta data of the plot
+including the type of plot and it's axis scaling, units, and titles. An `example.yaml` file is 
 supplied in this directory for reference.
-Below is a the valid inputs for these meta data fields:
+Below are valid inputs for the meta data fields:
 ```yaml
 figure.type: [line, scatter]
 
