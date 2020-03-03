@@ -381,6 +381,8 @@ def run_summary(request, instrument_name=None, run_number=None, run_version=0):
                     started_by = f"{user_record.first_name} {user_record.last_name}"
                 except ObjectDoesNotExist as exception:
                     LOGGER.error(exception)
+            elif run.started_by < -1:
+                started_by = None
 
         location_list = run.reduction_location.all()
         reduction_location = None
