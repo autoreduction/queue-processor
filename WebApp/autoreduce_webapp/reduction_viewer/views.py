@@ -376,21 +376,9 @@ def run_summary(request, instrument_name=None, run_number=None, run_version=0):
             elif run.started_by == 0:
                 started_by = "Autoreduction service"
             elif run.started_by > 0:
-                user_id = 5
                 try:
-                    user_record = User.objects.get(id=user_id)
-
-                    # started_by = f"{user_record.first_name} {user_record.last_name}"
-
-                    # NOTE: I've written the below to be robust to where first_name or surname do not exist,
-                    #       and extensible (more name_items can be added to the list easily).
-                    #       But it is lengthier and less intuitive that the alternative (commented above)
-                    started_by = ""
-                    name_items = [user_record.first_name, user_record.last_name]
-                    for i, item in enumerate(name_items):
-                        started_by += item
-                        if i < len(name_items) - 1:
-                            started_by += " "
+                    user_record = User.objects.get(id=run.started_by)
+                    started_by = f"{user_record.first_name} {user_record.last_name}"
                 except ObjectDoesNotExist as exception:
                     LOGGER.error(exception)
 
