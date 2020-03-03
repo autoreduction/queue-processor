@@ -17,7 +17,8 @@ import logging
 import operator
 
 from django.contrib.auth import logout as django_logout, authenticate, login
-from django.core.exceptions import PermissionDenied
+from django.contrib.auth.models import User
+from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponseNotFound
 from django.shortcuts import redirect
@@ -368,6 +369,31 @@ def run_summary(request, instrument_name=None, run_number=None, run_version=0):
                                        run_number=run_number,
                                        run_version=run_version)
         history = ReductionRun.objects.filter(run_number=run_number).order_by('-run_version')
+        started_by = None
+        if run.started_by is not None:
+            if run.started_by == -1:
+                started_by = "Development team"
+            elif run.started_by == 0:
+                started_by = "Autoreduction service"
+            elif run.started_by > 0:
+                user_id = 5
+                try:
+                    user_record = User.objects.get(id=user_id)
+
+                    # started_by = f"{user_record.first_name} {user_record.last_name}"
+
+                    # NOTE: I've written the below to be robust to where first_name or surname do not exist,
+                    #       and extensible (more name_items can be added to the list easily).
+                    #       But it is lengthier and less intuitive that the alternative (commented above)
+                    started_by = ""
+                    name_items = [user_record.first_name, user_record.last_name]
+                    for i, item in enumerate(name_items):
+                        started_by += item
+                        if i < len(name_items) - 1:
+                            started_by += " "
+                except ObjectDoesNotExist as exception:
+                    LOGGER.error(exception)
+
         location_list = run.reduction_location.all()
         reduction_location = None
         if location_list:
@@ -376,7 +402,8 @@ def run_summary(request, instrument_name=None, run_number=None, run_version=0):
             reduction_location = reduction_location.replace('\\', '/')
         context_dictionary = {'run': run,
                               'history': history,
-                              'reduction_location': reduction_location}
+                              'reduction_location': reduction_location,
+                              'started_by': started_by}
     except PermissionDenied:
         raise
     except Exception as exception:
