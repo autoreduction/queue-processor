@@ -1,12 +1,13 @@
 # This file describes the meta data of a plot
 # including the type of plot and it's axis scaling, units, and titles.
 figure:
-  type: line      # Type of graph [Line, scatter]
+  type: line+marker   # Type of graph [line, scatter, marker, line+mrker]
+  opactiy: 0.8        # The opacity of the data points/lines. Default to 0.8
   x_axis:
-    type: log       # [linear, log]
-    title: x_axis   # Title of X axis
-    unit: unit      # Unit of X Axis e.g. (&mu;s)<sup>-1</sup> for mu^-1
+    type: log         # [linear, log]
+    title: x_axis     # Title of X axis
+    unit: unit        # Unit of X Axis e.g. (&mu;s)<sup>-1</sup> for mu^-1
   y_axis:
-    type: log       # [linear, log]
-    title: y_axis   # Title of Y Axis
-    unit: unit      # Unit of Y Axis
+    type: log         # [linear, log]
+    title: y_axis     # Title of Y Axis
+    unit: unit        # Unit of Y Axis
