@@ -4,7 +4,8 @@ including the type of plot and it's axis scaling, units, and titles. An `example
 supplied in this directory for reference.
 Below are valid inputs for the meta data fields:
 ```yaml
-figure.type: [line, scatter]
+figure.type: [line, scatter, marker, line+marker]
+figure.opacity: "float"
 
 figure.x_axis.title: "string"
 figure.x_axis.unit: "string"
