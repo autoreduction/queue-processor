@@ -119,7 +119,6 @@ def run_queue(request):
     processing_status = StatusUtils().get_processing()
     pending_jobs = ReductionRun.objects.filter(Q(status=queued_status) |
                                                Q(status=processing_status)).order_by('created')
-
     # Filter those which the user shouldn't be able to see
     if USER_ACCESS_CHECKS and not request.user.is_superuser:
         with ICATCache(AUTH='uows', SESSION={'sessionid': request.session['sessionid']}) as icat:
@@ -130,8 +129,13 @@ def run_queue(request):
             pending_jobs = filter(lambda job: job.instrument.name in
                                   icat.get_owned_instruments(int(request.user.username)),
                                   pending_jobs)  # check instrument
-
-    context_dictionary = {'queue': pending_jobs}
+    # Initialise list to contain the names of user/team that started runs
+    started_by=[]
+    # cycle through all the filtered runs and retrieve the name of the user/team that started the run
+    for run in pending_jobs:
+        started_by.append(run_started_by(run.started_by))
+    # zip the run information with the user/team name to enable simultaneous iteration with django
+    context_dictionary = {'queue': zip(pending_jobs,started_by)}
     return context_dictionary
 
 
@@ -358,6 +362,7 @@ def load_runs(request, reference_number=None, instrument_name=None):
 @login_and_uows_valid
 @check_permissions
 @render_with('run_summary.html')
+#@render_with('run_queue.html')
 # pylint:disable=no-member,unused-argument
 def run_summary(request, instrument_name=None, run_number=None, run_version=0):
     """
@@ -392,7 +397,7 @@ def run_summary(request, instrument_name=None, run_number=None, run_version=0):
 
 def run_started_by(started_by=None):
     """
-    Returns name of the user or team that submitted an autoreduction run
+    Returns name of the user or team that submitted an autoreduction run given the user ID
     :param started_by:
     :return:
     """

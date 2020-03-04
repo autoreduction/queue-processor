@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load view %}
 {% load colour_table_rows %}
 {% load get_user_name %}
 {% load naturaltime from humanize %}
@@ -22,7 +23,8 @@
                 </tr>
             </thead>
             <tbody>
-                {% for job in queue %}
+                {% for job, started_by in queue %}
+                {% for job, started_by in queue %}
                     <tr class="{% colour_table_row job.status.value %}">
                         <td>
                             <a href="{% url 'run_summary' instrument_name=job.instrument.name run_number=job.run_number run_version=job.run_version %}">{{ job.title }}</a>
@@ -30,13 +32,7 @@
                         <td>{{ job.instrument.name }}</td>
                         <td><strong>{{ job.status.value }}</strong></td>
                         <td title="{{ job.created|date:'SHORT_DATETIME_FORMAT' }}">{{ job.created|naturaltime }}</td>
-                        <td>
-                            {% if job.started_by %}
-                                {% get_user_name job.started_by %}
-                            {% else %}
-                                Autoreduction Service
-                            {% endif %}
-                        </td>
+                        <td> {{ started_by }} </td>
                     </tr>
                 {% endfor %}
             </tbody>
