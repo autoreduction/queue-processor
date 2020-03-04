@@ -370,20 +370,7 @@ def run_summary(request, instrument_name=None, run_number=None, run_version=0):
                                        run_number=run_number,
                                        run_version=run_version)
         history = ReductionRun.objects.filter(run_number=run_number).order_by('-run_version')
-        started_by = None
-        if run.started_by is not None:
-            if run.started_by == -1:
-                started_by = "Development team"
-            elif run.started_by == 0:
-                started_by = "Autoreduction service"
-            elif run.started_by > 0:
-                try:
-                    user_record = User.objects.get(id=run.started_by)
-                    started_by = f"{user_record.first_name} {user_record.last_name}"
-                except ObjectDoesNotExist as exception:
-                    LOGGER.error(exception)
-            elif run.started_by < -1:
-                started_by = None
+        started_by = run_started_by(run.started_by)
 
         location_list = run.reduction_location.all()
         reduction_location = None
@@ -403,6 +390,26 @@ def run_summary(request, instrument_name=None, run_number=None, run_version=0):
 
     return context_dictionary
 
+def run_started_by(started_by=None):
+    """
+    Returns name of the user or team that submitted an autoreduction run
+    :param started_by:
+    :return:
+    """
+    if started_by is not None:
+        if started_by == -1:
+            started_by = "Development team"
+        elif started_by == 0:
+            started_by = "Autoreduction service"
+        elif started_by > 0:
+            try:
+                user_record = User.objects.get(id=started_by)
+                started_by = f"{user_record.first_name} {user_record.last_name}"
+            except ObjectDoesNotExist as exception:
+                LOGGER.error(exception)
+        elif started_by < -1:
+            started_by = None
+    return started_by
 
 @login_and_uows_valid
 @check_permissions
