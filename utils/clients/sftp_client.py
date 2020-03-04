@@ -79,25 +79,25 @@ class SFTPClient(AbstractClient):
         :param override: If True and local_path points to an existing file, will override this file.
         """
 
-        if local_path is None:
-            local_path = ""
+        if self._connection is None:
+            self.connect()
 
-        if not os.path.isfile(server_path): # TODO: Replace this - it won't work over sftp
+        if not self._connection.exists(server_path):
             raise RuntimeError("The server_path does not point to a file. "
                                "Please provide a server_path which points to a file.")
+
+        if local_path is None:
+            local_path = ""
 
         if not override and os.path.isfile(local_path):
             raise RuntimeError("The local_path points to a file which already exists. "
                                "Please provide a different filename in the local_path, "
                                "or set the override flag to True.")
 
-        if self._connection is None:
-            self.connect()
-
         try:
             self._connection.get(server_path, local_path)
         except FileNotFoundError:
             raise RuntimeError("The local_path does not exist.")
-        except PermissionError:  # Raised when local_path points to directory
-            raise RuntimeError("The local_path does not exist. "
+        except PermissionError:
+            raise RuntimeError("The local_path is a directory. "
                                "Please ensure the local_path includes a full filename.")
