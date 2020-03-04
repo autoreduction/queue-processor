@@ -208,12 +208,7 @@ class Listener:
         # Make sure the RB number is valid
         error_message = is_valid_rb(rb_number)
         if error_message:
-            logger.warning("Skipping non-integer RB number: %s", rb_number)
-            self._data_dict['message'] = 'Reduction Skipped: {}. Assuming run number to be ' \
-                                         'a calibration run.'.format(error_message)
-            skipped_queue = ACTIVEMQ_SETTINGS.reduction_skipped
-            self._client.send(skipped_queue, json.dumps(self._data_dict),
-                              priority=self._priority)
+            self._construct_and_send_skipped(rb_number, reason=error_message)
             return
 
         if instrument.is_paused:
@@ -222,6 +217,19 @@ class Listener:
             self._client.send('/queue/ReductionPending', json.dumps(self._data_dict),
                               priority=self._priority)
             logger.info("Run %s ready for reduction", self._data_dict['run_number'])
+
+    def _construct_and_send_skipped(self, rb_number, reason):
+        """
+        Construct a message and send to the skipped reduction queue
+        :param rb_number: The RB Number associated with the reduction job
+        :param reason: The error that caused the run to be skipped
+        """
+        logger.warning("Skipping non-integer RB number: %s", rb_number)
+        self._data_dict['message'] = 'Reduction Skipped: {}. Assuming run number to be ' \
+                                     'a calibration run.'.format(reason)
+        skipped_queue = ACTIVEMQ_SETTINGS.reduction_skipped
+        self._client.send(skipped_queue, json.dumps(self._data_dict),
+                          priority=self._priority)
 
     def reduction_started(self):
         """
