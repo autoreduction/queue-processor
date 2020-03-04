@@ -66,7 +66,6 @@ class SFTPClient(AbstractClient):
             self._connection.pwd
         except AttributeError:
             raise ConnectionException("SFTP")
-        print("Connection Valid")   # TODO: Remove before final commit
         return True
 
     def retrieve(self, server_path, local_path=None, override=True):

@@ -8,7 +8,7 @@
 Test SFTP client
 """
 import unittest
-from unittest.mock import Mock, MagicMock
+from unittest.mock import MagicMock
 
 from mock import patch
 
@@ -16,13 +16,9 @@ from utils.clients.connection_exception import ConnectionException
 from utils.clients.settings.client_settings_factory import ClientSettingsFactory
 from utils.clients.sftp_client import SFTPClient
 
-class MockConnection(Mock):
-    """Mock object class"""
-    pass
-
 class TestSFTPClient(unittest.TestCase):
     """
-    Exercises the database client
+    Exercises the SFTP client
     """
     def setUp(self):
         self.incorrect_credentials = ClientSettingsFactory().create('sftp',
@@ -33,11 +29,14 @@ class TestSFTPClient(unittest.TestCase):
         self.valid_argument = "valid"
 
     def is_argument_valid(self, value):
+        """ Checks whether the value is a valid argument """
         if value == self.valid_argument:
             return True
         return False
 
     def create_mocked_connection_client(self):
+        """ Creates a client with a mocked connection.
+        Sets the _connection.exists method to return True if  """
         client = SFTPClient()
         client._connection = MagicMock()
         client._connection.exists.side_effect = self.is_argument_valid
@@ -46,7 +45,7 @@ class TestSFTPClient(unittest.TestCase):
     def test_invalid_init(self):
         """ Test initialisation raises TypeError when given invalid credentials """
         with self.assertRaises(TypeError):
-            client = SFTPClient("invalid")
+            SFTPClient("invalid")
 
     def test_default_init(self):
         """ Test initialisation values are set """
@@ -93,7 +92,8 @@ class TestSFTPClient(unittest.TestCase):
         client._connection.get.assert_called_with(self.valid_argument, "")
 
     def test_server_path_and_local_path_are_valid(self):
-        """ Test file retrieval called successfully when a valid server_path and local_path are given """
+        """ Test file retrieval called successfully
+        when a valid server_path and local_path are given """
         client = self.create_mocked_connection_client()
         client.retrieve(server_path=self.valid_argument, local_path=self.valid_argument)
         client._connection.get.assert_called_with(self.valid_argument, self.valid_argument)
@@ -104,13 +104,15 @@ class TestSFTPClient(unittest.TestCase):
         client = self.create_mocked_connection_client()
         mocked_isfile.return_value = True
         with self.assertRaises(RuntimeError):
-            client.retrieve(server_path=self.valid_argument, local_path=self.valid_argument, override=False)
+            client.retrieve(server_path=self.valid_argument,
+                            local_path=self.valid_argument, override=False)
 
     @patch('os.path.isfile')
     def test_override_is_false_and_local_path_does_not_exists(self, mocked_isfile):
-        """ Test file retrieval called successfully when local_path file exists and override is True """
+        """ Test file retrieval called successfully
+        when local_path file exists and override is True """
         client = self.create_mocked_connection_client()
         mocked_isfile.return_value = False
-        client.retrieve(server_path=self.valid_argument, local_path=self.valid_argument, override=False)
+        client.retrieve(server_path=self.valid_argument,
+                        local_path=self.valid_argument, override=False)
         client._connection.get.assert_called_with(self.valid_argument, self.valid_argument)
-
