@@ -362,7 +362,6 @@ def load_runs(request, reference_number=None, instrument_name=None):
 @login_and_uows_valid
 @check_permissions
 @render_with('run_summary.html')
-#@render_with('run_queue.html')
 # pylint:disable=no-member,unused-argument
 def run_summary(request, instrument_name=None, run_number=None, run_version=0):
     """
