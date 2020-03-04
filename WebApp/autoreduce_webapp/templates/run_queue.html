@@ -24,7 +24,6 @@
             </thead>
             <tbody>
                 {% for job, started_by in queue %}
-                {% for job, started_by in queue %}
                     <tr class="{% colour_table_row job.status.value %}">
                         <td>
                             <a href="{% url 'run_summary' instrument_name=job.instrument.name run_number=job.run_number run_version=job.run_version %}">{{ job.title }}</a>
