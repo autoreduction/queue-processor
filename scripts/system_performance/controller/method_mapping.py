@@ -23,25 +23,16 @@ class MethodSelectorConfigurator:
     """ Logic to call method specified by user for N instruments +
         any additional method arguments specified for method."""
 
-    @staticmethod
-    def create_method_mappings():
-        """ Dictionary to map input, user specified methods to return equivalent method to be
-            called
-             =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
+    def __init__(self):
+        self.method_mapping = \
+            {'missing_run_numbers_report': QueryHandler().missing_run_numbers_report,
+             'execution_times': QueryHandler().execution_times,
+             # 'execution_time_average': self.execution_time_average, TODO create method
+             'run_frequency': QueryHandler().run_frequency,
+             # 'run_frequency_average': self.run_frequency_average _ TODO create method
+             }
 
-            :returns:
-            ----------
-            - dictionary: Contains dictionary of methods that can be used in package, acting as a
-            form of method validation"""
-
-        return {'missing_run_numbers_report': QueryHandler().missing_run_numbers_report,
-                'execution_times': QueryHandler().execution_times,
-                # 'execution_time_average': self.execution_time_average, TODO create method
-                'run_frequency': QueryHandler().run_frequency,
-                # 'run_frequency_average': self.run_frequency_average _ TODO create method
-                }
-
-    def method_call(self, method_name, method_args):
+    def call_method_with_args(self, method_name, method_args):
         """ Calls user specified method and returns statistics for a given instrument
             =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
 
@@ -57,7 +48,7 @@ class MethodSelectorConfigurator:
 
         # Check input is in mapping and place method N output in instrument_dict to return
         try:
-            method_output = self.create_method_mappings()[method_name](**method_args)
+            method_output = self.method_mapping[method_name](**method_args)
         except KeyError:
             logging.warning("Invalid Input - method '%s' does not exist try -help "
                             "to look at existing methods and arguments", method_name)
@@ -68,19 +59,6 @@ class MethodSelectorConfigurator:
                             "for method: '%s'", method_name)
             method_output = None
         return method_output
-
-    @staticmethod
-    def get_instrument_models():
-        """ Returns a list of all currently active instruments
-            =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
-
-            :returns:
-            ----------
-            - instrument_list (list): list of instrument row proxy objects from Autoreduction
-            database """
-
-        instrument_list = query_argument_constructor.get_list_of_instruments()
-        return instrument_list
 
     def run_every_instrument(self, instrument_dict, method_name, method_arguments=None):
         """ Returns all existing instruments in a dictionary for a given method as:
@@ -100,18 +78,18 @@ class MethodSelectorConfigurator:
             instrument_dict (dictionary): dictionary with instruments as keys and values as method
             output"""
 
-        for instrument in self.get_instrument_models():
+        for instrument in query_argument_constructor.get_instruments():
             try:
                 method_arguments['instrument_id'] = int(instrument.id)
                 logging.info("Querying for instrument: %s", method_arguments)
                 instrument_dict[instrument.id] = \
-                    self.create_method_mappings()[method_name](**method_arguments)
+                    self.method_mapping[method_name](**method_arguments)
             except KeyError:
                 logging.warning("Invalid Input - method '%s' does not exist try -help "
                                 "to look at existing methods and arguments", method_name)
         return instrument_dict
 
-    def user_instrument_list_validate(self, instrument_input):
+    def validate_instrument_list(self, instrument_input):
         """ Compares list of instruments from user input with instruments in db.
             :return tuple of valid instruments in user input
             =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
@@ -125,7 +103,7 @@ class MethodSelectorConfigurator:
             valid_instrument_list (list) list of valid instrument row proxy objects"""
 
         valid_instruments_list = []
-        list_of_instruments_from_db = self.get_instrument_models()
+        list_of_instruments_from_db = query_argument_constructor.get_instruments()
 
         for instrument_from_db in list_of_instruments_from_db:
 
@@ -178,10 +156,10 @@ class MethodSelectorConfigurator:
                                                  method_name,
                                                  additional_method_arguments)
 
-            valid_instruments = self.user_instrument_list_validate(instrument_input)
+            valid_instruments = self.validate_instrument_list(instrument_input)
             for instruments in valid_instruments:
                 additional_method_arguments['instrument_id'] = instruments.id
-                instrument_dict[instruments.name] = self.method_call(
+                instrument_dict[instruments.name] = self.call_method_with_args(
                     method_name=method_name,
                     method_args=additional_method_arguments)
 

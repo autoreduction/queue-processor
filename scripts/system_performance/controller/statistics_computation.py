@@ -176,7 +176,7 @@ class QueryHandler:
                      [nested list of missing run numbers id's]]"""
 
         # Sort returned query run numbers into ascending order
-        sorted_run_numbers = sorted(query_argument_constructor.missing_run_numbers_constructor(
+        sorted_run_numbers = sorted(query_argument_constructor.runs_in_date_range(
             instrument_id=instrument_id,
             start_date=start_date,
             end_date=end_date))

@@ -23,27 +23,12 @@ import unittest
 class TestCycleWebscraper(unittest.TestCase):
     """Test class for web scraper"""
 
-
     def setUp(self):
         """Set Up"""
         # print 'setUp'
         # host = 'https://www.isis.stfc.ac.uk/Pages/Beam-Status.aspx'
         # self.web_df = TableWebScraper(host).create_table()
         # self.local_df = TableWebScraper('invalid_url').create_table()
-
-    def tearDown(self):
-        """Tear Down"""
-        print 'tearDown\n'
-
-    @classmethod
-    def setUpClass(cls):
-        """Set Up"""
-        print 'setupClass'
-
-    @classmethod
-    def tearDownClass(cls):
-        """Tear Down"""
-        print 'teardownClass'
 
     def test_save_to_cvs(self):
         """Check file named cycles_dates.csv now exists in current or specified directory"""
