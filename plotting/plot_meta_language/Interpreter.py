@@ -16,14 +16,14 @@ import yaml
 class Interpreter:
     def __init__(self, plot_type_file_location):
         self.file_location = plot_type_file_location
+        self.file_data = None
 
     def read(self):
         with open(self.file_location) as file:
-            file_data = yaml.full_load(file)
-            print(file_data)
-            return file_data
+            self.file_data = yaml.full_load(file)
+            print(self.file_data)
 
 
 location = r"plot_types\example.yaml"
 inter = Interpreter(location)
-data = inter.read()
+inter.read()
