@@ -56,9 +56,9 @@ class TestQueryArgumentsConstructor(unittest.TestCase):
         actual = query_argument_constructor.get_day_of_week()
         self.assertEqual(expected, actual)
 
-    def test_get_list_of_instruments(self):
+    def test_get_instruments(self):
         """Assert that a list of instruments is returned """
-        actual = query_argument_constructor.get_list_of_instruments()
+        actual = query_argument_constructor.get_instruments()
         expected = ['GEM', 'WISH', 'MUSR']
         actual_instruments = []
         for index, instrument in actual:
@@ -70,7 +70,7 @@ class TestQueryArgumentsConstructor(unittest.TestCase):
 
     @patch('scripts.system_performance.data_persistence.system_performance_queries.'
            'DatabaseMonitorChecks.query_log_and_execute')
-    def test_missing_run_numbers_constructor(self, mock_qle):
+    def test_runs_in_date_range(self, mock_qle):
         """Assert number of lists is 4"""
 
         expected = "SELECT run_number " \
@@ -79,7 +79,7 @@ class TestQueryArgumentsConstructor(unittest.TestCase):
                    "AND created " \
                    "BETWEEN '2020-02-17' AND '2020-02-19'"
 
-        query_argument_constructor.missing_run_numbers_constructor(8, '2020-02-17', '2020-02-19')
+        query_argument_constructor.runs_in_date_range(8, '2020-02-17', '2020-02-19')
 
         mock_qle.assert_called_once_with(expected)
 

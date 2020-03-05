@@ -87,7 +87,7 @@ class TestDatabaseMonitorChecks(unittest.TestCase):
     def test_time_scale_format_segment_replace_intervals(self):
         """Testing appropriate sub segment interval is returned to be inserted in query"""
         # pylint: disable=line-too-long
-        expected_intervals = f">= DATE_SUB({self.arguments_dict['end_date']}," \
+        expected_intervals = f">= DATE_SUB('{self.arguments_dict['end_date']}'," \
             f" INTERVAL {self.arguments_dict['interval']} {self.arguments_dict['time_scale']})"
         actual_intervals = self.db_monitor_checks.\
             time_scale_format_segment_replace(query_arguments=self.arguments_dict)

@@ -106,7 +106,7 @@ class TestQueryHandler(unittest.TestCase):
         self.assertEqual(expected, actual)
 
     @patch('scripts.system_performance.models.query_argument_constructor.'
-           'missing_run_numbers_constructor', autospec=True)
+           'runs_in_date_range', autospec=True)
     def test_missing_run_numbers_report_is_dict(self, mock_qle):
         """Assert a dictionary is returned"""
 
@@ -115,7 +115,7 @@ class TestQueryHandler(unittest.TestCase):
             start_date=self.arguments_dict['start_date'],
             end_date=self.arguments_dict['end_date'])
 
-        assert query_argument_constructor.missing_run_numbers_constructor(
+        assert query_argument_constructor.runs_in_date_range(
             instrument_id=self.arguments_dict['instrument_id'],
             start_date=self.arguments_dict['start_date'],
             end_date=self.arguments_dict['end_date']) == mock_qle.return_value
@@ -127,7 +127,7 @@ class TestQueryHandler(unittest.TestCase):
         self.assertIsInstance(actual, dict)
 
     @patch('scripts.system_performance.models.query_argument_constructor.'
-           'missing_run_numbers_constructor', autospec=True)
+           'runs_in_date_range', autospec=True)
     def test_missing_run_numbers_report_dict_key_count(self, mock_qle):
         """Assert that the method return includes expected number of dictionary keys."""
 
@@ -136,7 +136,7 @@ class TestQueryHandler(unittest.TestCase):
             start_date=self.arguments_dict['start_date'],
             end_date=self.arguments_dict['end_date'])
 
-        assert query_argument_constructor.missing_run_numbers_constructor(
+        assert query_argument_constructor.runs_in_date_range(
             instrument_id=self.arguments_dict['instrument_id'],
             start_date=self.arguments_dict['start_date'],
             end_date=self.arguments_dict['end_date']) == mock_qle.return_value
@@ -144,7 +144,7 @@ class TestQueryHandler(unittest.TestCase):
         self.assertTrue(len(list(actual.keys())), 5)  # Assert number of dictionary keys is 5
 
     @patch('scripts.system_performance.models.query_argument_constructor.'
-           'missing_run_numbers_constructor', autospec=True)
+           'runs_in_date_range', autospec=True)
     def test_missing_run_numbers_report_assert_expected_return_val(self, mock_qle):
         """Assert a dictionary is returned containing expected missing run number"""
 
@@ -155,7 +155,7 @@ class TestQueryHandler(unittest.TestCase):
             start_date=self.arguments_dict['start_date'],
             end_date=self.arguments_dict['end_date'])
 
-        assert query_argument_constructor.missing_run_numbers_constructor(
+        assert query_argument_constructor.runs_in_date_range(
             instrument_id=self.arguments_dict['instrument_id'],
             start_date=self.arguments_dict['start_date'],
             end_date=self.arguments_dict['end_date']) == mock_qle.return_value

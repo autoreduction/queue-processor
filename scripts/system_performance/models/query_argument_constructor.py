@@ -26,7 +26,7 @@ def get_day_of_week():
     return date.today()
 
 
-def get_list_of_instruments():
+def get_instruments():
     """ Retrieve list of all existing instruments from Autoreduction Database
         =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
 
@@ -38,7 +38,7 @@ def get_list_of_instruments():
     return DatabaseMonitorChecks().get_instruments_from_database()
 
 
-def missing_run_numbers_constructor(instrument_id, start_date, end_date):
+def runs_in_date_range(instrument_id, start_date, end_date):
     """ Specifies query arguments to retrieve run numbers from Autoreduction database
         between two specified dates ready
         =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
@@ -109,7 +109,6 @@ def runs_per_day(instrument_id, status, retry, end_date):
         RowProxy Object: RowProxy object of run numbers from end_date to end_date - 24 hours"""
 
     # Defaults for time, only exception is changing end_date to look in the past
-    print('per day')
     return DatabaseMonitorChecks().get_data_by_status_over_time(
         instrument_id=instrument_id,
         status_id=status,
@@ -139,7 +138,6 @@ def runs_today(instrument_id, status, retry, start_date, end_date):
         current date/end_date"""
 
     # start_date = current date
-    print('today')
     return DatabaseMonitorChecks().get_data_by_status_over_time(
         instrument_id=instrument_id,
         status_id=status,
@@ -175,7 +173,6 @@ def runs_per_week(instrument_id, status, retry, end_date, time_interval):
 
     # If today is last day of week (Friday) run, otherwise don't unless user specified to
     if todays_date.weekday() == 4:
-        print('week')
         return DatabaseMonitorChecks().get_data_by_status_over_time(
             instrument_id=instrument_id,
             status_id=status,
@@ -207,7 +204,6 @@ def runs_per_month(instrument_id, status, retry, end_date, time_interval):
     todays_date = get_day_of_week()
     # temp = todays_date.month
     if todays_date.day == monthrange(date.today().year, todays_date.month)[1]:
-        print('month')
         return DatabaseMonitorChecks().get_data_by_status_over_time(
             instrument_id=instrument_id,
             status_id=status,
