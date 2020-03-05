@@ -20,26 +20,19 @@ from scripts.system_performance.models import query_argument_constructor
 
 
 class MethodSelectorConfigurator:
-    """
-    Class containing logic to call N methods specified by user for N instruments +
-    any additional method arguments specified
-    """
+    """ Logic to call method specified by user for N instruments +
+        any additional method arguments specified for method."""
 
     @staticmethod
     def create_method_mappings():
-        """Dictionary to map input, user specified methods to return equivalent method to be called
-         =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
+        """ Dictionary to map input, user specified methods to return equivalent method to be
+            called
+             =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
 
-        :parameter
-        ----------
-
-
-        :returns:
-        ----------
-        - dictionary: contains dictionary of methods that can be used in package, acting as a form
-        of method validation
-
-        TODO: Create execution_time_average and run_frequency_average methods"""
+            :returns:
+            ----------
+            - dictionary: Contains dictionary of methods that can be used in package, acting as a
+            form of method validation"""
 
         return {'missing_run_numbers_report': QueryHandler().missing_run_numbers_report,
                 'execution_times': QueryHandler().execution_times,
@@ -49,20 +42,20 @@ class MethodSelectorConfigurator:
                 }
 
     def method_call(self, method_name, method_args):
-        """Calls user specified method and returns statistics for a given instrument
-         =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
+        """ Calls user specified method and returns statistics for a given instrument
+            =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
 
-        :parameter
-        ----------
-        - time_format (datetime.time): Time in seconds as integer
+            :parameter
+            ----------
+            - method_name (string): The name of method to map to method object.
+            - method_args (dictionary): Dictionary containing method args to be passed to mapped
+            method
 
-        :returns:
-        ----------
+            :returns:
+            ----------
+            - method_output (OrderedDict) : Ordered dictionary containing method output"""
 
-
-        """
         # Check input is in mapping and place method N output in instrument_dict to return
-
         try:
             method_output = self.create_method_mappings()[method_name](**method_args)
         except KeyError:
@@ -78,18 +71,39 @@ class MethodSelectorConfigurator:
 
     @staticmethod
     def get_instrument_models():
-        """Returns a list of all currently active instruments"""
+        """ Returns a list of all currently active instruments
+            =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
+
+            :returns:
+            ----------
+            - instrument_list (list): list of instrument row proxy objects from Autoreduction
+            database """
+
         instrument_list = query_argument_constructor.get_list_of_instruments()
         return instrument_list
 
     def run_every_instrument(self, instrument_dict, method_name, method_arguments=None):
-        """Returns all existing instruments in a dictionary for a given method as:
-        {instrument_name : [[method output row 1]],[[method output row 2] etc] ...}"""
+        """ Returns all existing instruments in a dictionary for a given method as:
+            {instrument_name : [[method output row 1]],[[method output row 2] etc] ...}
+            =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
+
+            :parameter
+            ----------
+            - instrument_dict (dictionary):
+            - method_name (string): method name to be called
+            - method_arguments (NONE/dictionary): dictionary of argument keys and arguments or left
+            as None
+
+
+            :returns:
+            ----------
+            instrument_dict (dictionary): dictionary with instruments as keys and values as method
+            output"""
 
         for instrument in self.get_instrument_models():
             try:
                 method_arguments['instrument_id'] = int(instrument.id)
-                logging.info("Querying for instrument: {}".format(method_arguments))
+                logging.info("Querying for instrument: %s", method_arguments)
                 instrument_dict[instrument.id] = \
                     self.create_method_mappings()[method_name](**method_arguments)
             except KeyError:
@@ -98,8 +112,17 @@ class MethodSelectorConfigurator:
         return instrument_dict
 
     def user_instrument_list_validate(self, instrument_input):
-        """compares list of instruments from user input with instruments in db.
-        :return tuple of valid instruments in user input"""
+        """ Compares list of instruments from user input with instruments in db.
+            :return tuple of valid instruments in user input
+            =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
+
+            :parameter
+            ----------
+            - instrument_input (list) list of strings of valid instrument names
+
+            :returns:
+            ----------
+            valid_instrument_list (list) list of valid instrument row proxy objects"""
 
         valid_instruments_list = []
         list_of_instruments_from_db = self.get_instrument_models()
@@ -107,24 +130,35 @@ class MethodSelectorConfigurator:
         for instrument_from_db in list_of_instruments_from_db:
 
             for instrument_from_user in instrument_input:
-                if instrument_from_db[1] == instrument_from_user:
+                if instrument_from_db.name == instrument_from_user:
                     valid_instruments_list.append(instrument_from_db)
         return valid_instruments_list
 
     def get_query_for_instruments(self, method_name, instrument_input=None,
                                   additional_method_arguments=None):
-        """Checks that the instrument_from_db's in method input exist and then calls
-        and returns methods specified as input for each instrument_from_db placing in
-        a dictionary as a nested list for each instrument_from_db as:
-         {instrument_name : [[method output row 1]],[[method output row 2] etc.] ...}
+        """ Check method to gather specified statistics is valid
+            Check list of instruments are valid to gather statistics for (exception for "all")
+            Check validity of optional additional method arguments
+            return all or specified instruments in dictionary and gathered statistics for a given
+            method
+            =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
 
-        Run methods for each instrument_from_db name
-        :param instrument_input: [(str), (str), ...] - Represents the instruments to be used in
-        queries
-        :param method_name: (str) -  The name of the methods to run
-        :param additional_method_arguments - method arguments specified by user
-        :return: A dictionary of instrument_from_db names (key) and list of method output (value)
-         """
+            :parameter
+            ----------
+            - method_name (string): The name of the method to run <"execution_times">
+            - instrument_input (list): List of instruments formatted as strings <["MARI", "WISH"]>
+            - additional_method_arguments (dictionary): Dictionary of additional arguments to pass
+            specified method <{'status': 4,
+                               'start_date': '2019-12-12',
+                               'end_date': '2019-12-14'}>
+
+            :returns:
+            ----------
+            - instrument_dict (dictionary): Dictionary of statistics from specified method for each
+            specified instrument
+            <{instrument_N :[[method output row 1], [...]],
+                            [[method output row 2], [...]],
+            instrument_N+1 : [[...]. ...], [], ...}>"""
 
         instrument_dict = {}
 
@@ -140,115 +174,15 @@ class MethodSelectorConfigurator:
         for instrument in instrument_input:
             # Run all instruments if user input specified "all"
             if instrument == 'all':
-                print(f"instrument_dict: {instrument_dict} \n"
-                      f" method_name: {method_name} \n"
-                      f" additional_method_arguments: {additional_method_arguments}")
                 return self.run_every_instrument(instrument_dict,
                                                  method_name,
                                                  additional_method_arguments)
 
             valid_instruments = self.user_instrument_list_validate(instrument_input)
             for instruments in valid_instruments:
-                additional_method_arguments['instrument_id'] = instruments[0]
-                instrument_dict[instruments[1]] = self.method_call(
+                additional_method_arguments['instrument_id'] = instruments.id
+                instrument_dict[instruments.name] = self.method_call(
                     method_name=method_name,
                     method_args=additional_method_arguments)
 
         return instrument_dict
-
-# ALL CODE BELOW IS FOR MANUAL TESTING ONLY AND SHOULD BE REMOVED ON FULL INTEGRATION
-# ---------------------------------------------------------------------------------- #
-
-
-def cust_query_return(test_message, dictionary_out):
-    """For use with manual testing only - REMOVE AFTER"""
-    print("\n {}".format(test_message))
-    print(dictionary_out)
-    # for item in dictionary_out:
-    #     print(item, dictionary_out[item])
-
-#
-# cust_query_return(test_message='Minimal Arguments - Select Instruments:',
-#                   dictionary_out=MethodSelectorConfigurator().get_query_for_instruments(instrument_input=['all'],
-#                                                                           method_name='missing_run_numbers_report',
-#                                                                           additional_method_arguments={
-#                                                                               'start_date':'2020-02-11',
-#                                                                               'end_date': '2020-02-19'}))
-#
-# cust_query_return(test_message='Minimal Arguments - Select Instruments:',
-#                   dictionary_out=MethodSelectorConfigurator().get_query_for_instruments(instrument_input=['MARI', 'MAPS'],
-#                                                                           method_name='execution_times',
-#                                                                           additional_method_arguments={
-#                                                                               'start_date':'2020-02-11',
-#                                                                               'end_date': '2020-02-19'}))
-
-
-# # # Missing run numbers
-# cust_query_return(test_message='missing_run_numbers_report - Select Instruments:',
-#                   dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['MARI', 'MAPS', 'WISH'],
-#                                                                           method_name='missing_run_numbers_report',
-#                                                                           additional_method_arguments={
-#                                                                               'start_date':'2019-12-12',
-#                                                                               'end_date': '2019-12-14'}))
-# cust_query_return(test_message='missing_run_numbers_report - All Instruments:',
-#                   dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['all'],
-#                                                                           method_name='missing_run_numbers_report',
-#                                                                           additional_method_arguments={
-#                                                                               'start_date': '2019-12-12',
-#                                                                               'end_date': '2019-12-14'}))
-#
-# # Execution time
-# cust_query_return(test_message='Run frequency - All Instruments',
-#                   dictionary_out=MethodSelectorConfigurator().get_query_for_instruments(instrument_input=['all'],
-#                                                                           method_name='run_frequency',
-#                                                                           additional_method_arguments={
-#                                                                               'status': 4,
-#                                                                               'start_date': '2019-12-12',
-#                                                                               'end_date': '2019-12-14'}))
-
-# cust_query_return(test_message='Run frequency - All Instruments',
-#                   dictionary_out=MethodSelectorConfigurator().get_query_for_instruments(instrument_input=['all'],
-#                                                                           method_name='run_frequency',
-#                                                                           additional_method_arguments={
-#                                                                               'status': 1,
-#                                                                               'start_date': 'CURDATE()'}))
-#
-# cust_query_return(test_message='Misssing run numbers  report - All Instruments',
-#                   dictionary_out=MethodSelectorConfigurator().get_query_for_instruments(instrument_input=['GEM'],
-#                                                                           method_name='run_frequency',
-#                                                                           additional_method_arguments={
-#                                                                               'status': 4,
-#                                                                               'end_date': '2020-2-14'}))
-
-# cust_query_return(test_message='execution_times - All Instruments',
-#                   dictionary_out=MethodSelectorConfigurator().get_query_for_instruments(instrument_input=['all'],
-#                                                                           method_name='execution_times',
-#                                                                           additional_method_arguments={
-#                                                                               'start_date': '2019-12-12',
-#                                                                               'end_date': '2019-12-14'}))
-
-
-# cust_query_return(test_message='execution_times - All Instruments:',
-#                   dictionary_out=QueryHandler().get_query_for_instruments(instrument_input=['all'],
-#                                                                           method_name='execution_times',
-#                                                                           additional_method_arguments={
-#                                                                               'start_date': '2019-12-12',
-#                                                                               'end_date': '2019-12-14'}))
-#
-# # Run frequency
-# additional_args = {'status': 4, 'start_date': '2019-12-19', 'end_date': '2019-12-19'}
-# cust_query_return(test_message='run_frequency - Select Instruments',
-#                   dictionary_out=MethodSelectorConfigurator().get_query_for_instruments(instrument_input=['MARI', 'MAPS', 'WISH'],
-#                                                                           method_name='run_frequency',
-#                                                                           additional_method_arguments=additional_args))
-
-# cust_query_return(test_message='run_frequency - Select Instruments',
-#                   dictionary_out=MethodSelectorConfigurator().get_query_for_instruments(instrument_input=['all'],
-#                                                                           method_name='run_frequency',
-#                                                                           additional_method_arguments=additional_args))
-
-# cust_query_return(test_message='run_frequency - Select Instruments',
-#                   dictionary_out=MethodSelectorConfigurator().get_query_for_instruments(instrument_input=['MARI', 'MAPS'],
-#                                                                           method_name='run_frequency',
-#                                                                           additional_method_arguments=additional_args))
-

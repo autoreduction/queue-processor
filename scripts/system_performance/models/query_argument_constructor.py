@@ -13,18 +13,45 @@ from datetime import date
 from calendar import monthrange
 
 # pylint:disable=line-too-long
-from scripts.system_performance.data_persistence.system_performance_queries import DatabaseMonitorChecks
+from scripts.system_performance.data_persistence.system_performance_queries import DatabaseMonitorChecks   # pylint: disable=line-too-long
 
 
 def get_day_of_week():
+    """ Retrieves numerical day of week
+    =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
+
+    :returns:
+    ----------
+    - date.today() (integer): Day of week as integer"""
     return date.today()
 
 
 def get_list_of_instruments():
+    """ Retrieve list of all existing instruments from Autoreduction Database
+        =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
+
+        :returns:
+        ----------
+        - RowProxy Object: RowProxy object containing instrument id and instrument
+        names for all instruments"""
+
     return DatabaseMonitorChecks().get_instruments_from_database()
 
 
 def missing_run_numbers_constructor(instrument_id, start_date, end_date):
+    """ Specifies query arguments to retrieve run numbers from Autoreduction database
+        between two specified dates ready
+        =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
+
+        :parameter
+        ----------
+        - instrument_id (int): instrument ID
+        - start_date (string): start date formatted as string <"yyyy-mm-dd">
+        - end_date (string): end date formatted as string <"yyyy-mm-dd">
+
+        :returns:
+        ----------
+        RowProxy Object: RowProxy object of run_numbers between 2 dates for a given instrument id"""
 
     return DatabaseMonitorChecks().runs_by_instrument_over_date_range(
         instrument=instrument_id,
@@ -33,7 +60,21 @@ def missing_run_numbers_constructor(instrument_id, start_date, end_date):
 
 
 def start_and_end_times_by_instrument(instrument_id, start_date, end_date):
-    """Specifies arguments for query and returns data from Autoreduce database"""
+    """ Specifies query arguments to retrieves table ID, run_number, started and
+        finished columns (time only) from Autoreduction Database
+        =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
+
+        :parameter
+        ----------
+        - instrument_id (int): (int): instrument ID
+        - start_date (string): start date formatted as string <"yyyy-mm-dd">
+        - end_date (string): end date formatted as string <"yyyy-mm-dd">
+
+        :returns:
+        ----------
+        RowProxy Object: RowProxy object of ID, run_number, start and end times
+        between two specified dates"""
+
     selection = "id, " \
                 "run_number, " \
                 "DATE_FORMAT(started, '%H:%i:%s') TIMEONLY, " \
@@ -48,7 +89,25 @@ def start_and_end_times_by_instrument(instrument_id, start_date, end_date):
 
 
 def runs_per_day(instrument_id, status, retry, end_date):
-    """Returns count of runs in the last 24 hours for current date of specified date """
+    """ specifies query arguments and returns count of runs in the last 24 hours
+        for current date of specified date
+        =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
+
+        :parameter
+        ----------
+        - instrument_id (int): instrument ID
+        - status (int): run status ((1 : Error),
+                                    (2 : Queued),
+                                    (3 : Processing),
+                                    (4 : Completed),
+                                    (5 : Skipped))
+        - retry ():
+        - end_date (string): end date formatted as string <"yyyy-mm-dd">
+
+        :returns:
+        ----------
+        RowProxy Object: RowProxy object of run numbers from end_date to end_date - 24 hours"""
+
     # Defaults for time, only exception is changing end_date to look in the past
     print('per day')
     return DatabaseMonitorChecks().get_data_by_status_over_time(
@@ -59,7 +118,26 @@ def runs_per_day(instrument_id, status, retry, end_date):
 
 
 def runs_today(instrument_id, status, retry, start_date, end_date):
-    """Returns all runs equal to current date."""
+    """ Specifies query arguments and returns all runs equal to current date.
+        =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
+
+        :parameter
+        ----------
+        - instrument_id (int): Instrument ID
+        - status (int): run status ((1 : Error),
+                                    (2 : Queued),
+                                    (3 : Processing),
+                                    (4 : Completed),
+                                    (5 : Skipped))
+        - retry ():
+        - start_date (string): start date formatted as string <"yyyy-mm-dd">
+        - end_date (string): end date formatted as string <"yyyy-mm-dd">
+
+        :returns:
+        ----------
+        - RowProxy Object:  RowProxy object of run numbers where date is equal to
+        current date/end_date"""
+
     # start_date = current date
     print('today')
     return DatabaseMonitorChecks().get_data_by_status_over_time(
@@ -71,8 +149,25 @@ def runs_today(instrument_id, status, retry, start_date, end_date):
 
 
 def runs_per_week(instrument_id, status, retry, end_date, time_interval):
-    """Returns count of runs that have taken place over the course of the week if the day of
-    week is Friday."""
+    """ Specifies query arguments and returns count of runs that have taken place
+        over the course of the week by default (can return N weeks) if the day of week is Friday.
+        =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
+
+        :parameter
+        ----------
+        - instrument_id (int): Instrument ID
+        - status (int): ((1 : Error),
+                                    (2 : Queued),
+                                    (3 : Processing),
+                                    (4 : Completed),
+                                    (5 : Skipped))
+        - retry ():
+        - end_date (string): start date formatted as string <"yyyy-mm-dd">
+        - time_interval (int): number of days to retrieve
+
+        :returns:
+        ----------
+        - RowProxy Object: RowProxy object of run numbers from the last week or N weeks"""
 
     todays_date = get_day_of_week()
 
@@ -92,11 +187,26 @@ def runs_per_week(instrument_id, status, retry, end_date, time_interval):
 
 
 def runs_per_month(instrument_id, status, retry, end_date, time_interval):
-    """Returns count of runs that occurred over the last month if day is equal to end of month"""
+    """ Specifies query arguments and returns count of runs that occurred over the
+        last month by default (can retrieve N months) if day is equal to end of month
+        =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
+
+        :parameter
+        ----------
+        - instrument_id (int):
+        - status (int):
+        - retry ():
+        - end_date (string):
+        - time_interval (int):
+
+        :returns:
+        ----------
+        - RowProxy Object: RowProxy object of run numbers from the last month or N months"""
+
     # If today is last day of month, run, otherwise don't unless user specified to
     todays_date = get_day_of_week()
     # temp = todays_date.month
-    if todays_date.day == monthrange(date.today().year, date.today().month)[1]:
+    if todays_date.day == monthrange(date.today().year, todays_date.month)[1]:
         print('month')
         return DatabaseMonitorChecks().get_data_by_status_over_time(
             instrument_id=instrument_id,

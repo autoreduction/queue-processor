@@ -25,8 +25,10 @@ class MockConnection(Mock):
 
 
 class TestQueryHandler(unittest.TestCase):
+    """Test class encasing all test methods"""
 
     def setUp(self):
+        """ Initial set up of default arguments dictionary"""
         self.arguments_dict = {'selection': 'run_number',
                                'status_id': 4,
                                'retry_run': '',
@@ -36,9 +38,6 @@ class TestQueryHandler(unittest.TestCase):
                                'time_scale': 'DAY',
                                'start_date':  '2020-02-11',
                                'instrument_id': 2}
-
-    def tearDown(self):
-        pass
 
     def test_convert_seconds_to_time(self):
         """Assert seconds are converted to datetime"""
