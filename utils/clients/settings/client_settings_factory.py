@@ -166,7 +166,5 @@ class SFTPSettings(ClientSettings):
     """
     SFTP settings object
     """
-
-    # TODO: figure out what to populate this class with
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs):  # pylint:disable=useless-super-delegation
         super(SFTPSettings, self).__init__(**kwargs)

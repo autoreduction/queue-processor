@@ -1,7 +1,7 @@
 # ############################################################################### #
 # Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
 #
-# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 """
@@ -23,7 +23,7 @@ logging.basicConfig(filename=get_log_file('sftp_client.log'), level=logging.INFO
 
 class SFTPClient(AbstractClient):
     """
-    This class allows files to be retrieved via SFTP from servers (e.g. CEPH)
+    This class allows files to be retrieved from SFTP servers
     """
     def __init__(self, credentials=None):
         if not credentials:
@@ -34,7 +34,7 @@ class SFTPClient(AbstractClient):
     def connect(self):
         """
         Create the connection to the SFTP server
-        :return: connection object
+        :return: The connection object
         """
         if self._connection is None:
             cnopts = pysftp.CnOpts()
@@ -59,7 +59,8 @@ class SFTPClient(AbstractClient):
     def _test_connection(self):
         """
         Test whether there is a connection to the SFTP server
-        :return: True if there is a connection
+        :return: True if there is a connection.
+        :raises: ConnectionException: If there is no existing connection or it is not valid.
         """
 
         try:
@@ -76,6 +77,12 @@ class SFTPClient(AbstractClient):
             The location to download the file to, including filename with extension.
             If None, local_path is the local directory.
         :param override: If True and local_path points to an existing file, will override this file.
+        :raises: RuntimeError: If any of the following occur:
+            1) The server_path does not exist on the SFTP server
+            2) The local_path directory does not exist
+            3) The local_path points to a directory instead of a file
+            4) The local_path points to an existing file, and override is false
+            Note: an error message will describe which of the 4 cases above has occurred.
         """
 
         if self._connection is None:
