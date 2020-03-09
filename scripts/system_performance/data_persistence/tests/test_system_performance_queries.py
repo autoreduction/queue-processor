@@ -12,7 +12,7 @@ Test cases for system_performance_queries script
 import unittest
 from mock import patch, Mock, MagicMock
 
-from scripts.system_performance.data_persistence.system_performance_queries import DatabaseMonitorChecks
+from scripts.system_performance.data_persistence.system_performance_queries import DatabaseMonitorChecks # pylint: disable=line-too-long
 from utils.settings import MYSQL_SETTINGS
 from utils.clients.connection_exception import ConnectionException
 

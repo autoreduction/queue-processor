@@ -251,7 +251,7 @@ class QueryHandler:  # pylint disable=too-few-public-methods
                                          execution_times_dict)
 
     @staticmethod
-    def run_frequency(instrument_id, status, retry=None, end_date=None, start_date=None, time_interval=None):  # pylint: disable=too-many-arguments, line_too_long
+    def run_frequency(instrument_id, status, retry=None, end_date=None, start_date=None, time_interval=None):  # pylint: disable=too-many-arguments, line-too-long
 
         """ Return run frequencies for N instruments of type: successful run, failed run, or retry
             run.
@@ -386,7 +386,7 @@ class QueryHandler:  # pylint disable=too-few-public-methods
             run_frequency_list = [_runs_per_day(), _runs_today(), _runs_per_week(), _runs_per_month()]  # pylint: disable=line-too-long
 
             # Mapping both lists together to return in the form [[()), (), runs_per_day frequency],]
-            frequencies = list_lengths(run_frequency_list)
+            frequencies = list_lengths(run_frequency_list) # pylint: disable=consider-using-enumerate
             for frequency_count in range(len(frequencies)):
                 if frequencies[frequency_count] is not None:
                     run_frequency_list[frequency_count].append(frequencies[frequency_count])

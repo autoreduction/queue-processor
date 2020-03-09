@@ -17,7 +17,7 @@ from scripts.system_performance.controller.method_mapping import MethodSelectorC
 
 class MockConnection(Mock):
     """Mock object class"""
-    pass  # pylint: disable=invalid-name
+    pass  # pylint: disable=unnecessary-pass
 
 
 class MockInstrumentModels:  # pylint: disable=too-few-public-methods

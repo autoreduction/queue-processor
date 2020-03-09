@@ -265,7 +265,7 @@ class TestQueryHandler(unittest.TestCase):
     @patch('scripts.system_performance.models.query_argument_constructor.runs_today')
     @patch('scripts.system_performance.models.query_argument_constructor.runs_per_week')
     @patch('scripts.system_performance.models.query_argument_constructor.runs_per_month')
-    def test_run_frequency_is_dict(self, mock_rpm, mock_rpw, mock_rt, mock_rpd):  # pylint: diable=unused-argument
+    def test_run_frequency_is_dict(self, mock_rpm, mock_rpw, mock_rt, mock_rpd):  # pylint: disable=unused-argument
         """Assert return is of list data type"""
 
         actual = QueryHandler().run_frequency(
@@ -280,7 +280,7 @@ class TestQueryHandler(unittest.TestCase):
     @patch('scripts.system_performance.models.query_argument_constructor.runs_today')
     @patch('scripts.system_performance.models.query_argument_constructor.runs_per_week')
     @patch('scripts.system_performance.models.query_argument_constructor.runs_per_month')
-    def test_run_frequency_dict_key_count(self, mock_rpd, mock_rpt, mock_rpw, mock_rpm):  # pylint: diable=unused-argument
+    def test_run_frequency_dict_key_count(self, mock_rpd, mock_rpt, mock_rpw, mock_rpm):  # pylint: disable=unused-argument
         """Assert that the method return includes expected number of list items."""
 
         actual = QueryHandler().run_frequency(
