@@ -60,7 +60,7 @@ class SFTPClient(AbstractClient):
         """
         Test whether there is a connection to the SFTP server
         :return: True if there is a connection.
-        :raises: ConnectionException: If there is no existing connection or it is not valid.
+        :raises ConnectionException: If there is no existing connection or it is not valid.
         """
 
         try:
@@ -77,7 +77,7 @@ class SFTPClient(AbstractClient):
             The location to download the file to, including filename with extension.
             If None, local_path is the local directory.
         :param override: If True and local_path points to an existing file, will override this file.
-        :raises: RuntimeError: If any of the following occur:
+        :raises RuntimeError: If any of the following occur:
             1) The server_path does not exist on the SFTP server
             2) The local_path directory does not exist
             3) The local_path points to a directory instead of a file

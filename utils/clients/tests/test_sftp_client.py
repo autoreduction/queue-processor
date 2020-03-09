@@ -35,8 +35,9 @@ class TestSFTPClient(unittest.TestCase):
         return False
 
     def create_mocked_connection_client(self):
-        """ Creates a client with a mocked connection.
-        Sets the _connection.exists method to return True if  """
+        """ Creates a client with a mocked connection
+        which returns True when exists(arg) is called if 'arg' is recognised as valid
+        :return: The client with a mocked connection """
         client = SFTPClient()
         client._connection = MagicMock()  # pylint:disable=protected-access
         client._connection.exists.side_effect = self.is_argument_valid  # pylint:disable=protected-access
