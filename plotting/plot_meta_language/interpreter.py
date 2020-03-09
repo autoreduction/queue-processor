@@ -19,7 +19,8 @@ class Interpreter:
     and interprets them as a dictionary to be used as a 'plotly' graph layout
     """
 
-    def read(self, plot_type_file_location):
+    @staticmethod
+    def read(plot_type_file_location):
         """
         Reads a plot type file from a given location
         :param plot_type_file_location: The file path

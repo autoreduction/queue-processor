@@ -23,7 +23,8 @@ class TestInterpreter(unittest.TestCase):
         self.valid_minimal_dict = {"key": "value"}
         self.invalid_text = "invalid"
 
-    def create_interpreter_with_mocked_read(self, read_return):
+    @staticmethod
+    def create_interpreter_with_mocked_read(read_return):
         """ Creates an interpreter instance with a mocked read method.
         :param read_return: The return value to be assigned to the read method
         :return: The interpreter with a mocked read method.
