@@ -46,6 +46,7 @@ script:
   - pylint scripts
   - pylint systemtests
   - pylint utils
+  - pylint plotting
 
 after_success:
   - coveralls
