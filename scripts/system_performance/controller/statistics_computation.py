@@ -387,7 +387,7 @@ class QueryHandler:  # pylint disable=too-few-public-methods
 
             # Mapping both lists together to return in the form [[()), (), runs_per_day frequency],]
             frequencies = list_lengths(run_frequency_list) # pylint: disable=consider-using-enumerate
-            for frequency_count in range(len(frequencies)):
+            for frequency_count in range(len(frequencies)):  # pylint: disable=consider-using-enumerate
                 if frequencies[frequency_count] is not None:
                     run_frequency_list[frequency_count].append(frequencies[frequency_count])
 

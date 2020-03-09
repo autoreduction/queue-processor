@@ -14,10 +14,10 @@ class MockInstrumentModels:  # pylint: disable=too-few-public-methods
 
     def __init__(self, name, inst_Id):
         self.name = name
-        self.id = inst_Id  # pylint disable=invalid-name
+        self.id = inst_Id  # pylint: disable=invalid-name
 
 
-class Setup_Variables:
+class SetupVariables:  # pylint: disable=too-few-public-methods
     """Class containing setup variables for use in unit test mocks"""
 
     def __init__(self):

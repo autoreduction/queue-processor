@@ -13,6 +13,7 @@ from mock import patch, Mock, MagicMock
 from scripts.system_performance.models import query_argument_constructor
 # pylint:disable=line-too-long
 from scripts.system_performance.data_persistence.system_performance_queries import DatabaseMonitorChecks  # pylint: disable=line-too-long
+from scripts.system_performance.test_setup.test_setup_default_mock_variables import SetupVariables
 
 
 class MockConnection(Mock):
@@ -27,15 +28,7 @@ class TestQueryArgumentsConstructor(unittest.TestCase):
         """Initial setup of default query argument dictionary """
         self.db_monitor_checks = DatabaseMonitorChecks()
 
-        self.arguments_dict = {'selection': 'run_number',
-                               'status_id': 4,
-                               'retry_run': '',
-                               'run_state_column': 'finished',
-                               'end_date': 'CURDATE()',
-                               'interval': 1,
-                               'time_scale': 'DAY',
-                               'start_date': None,
-                               'instrument_id': None}
+        self.arguments_dict = SetupVariables().arguments_dict
 
     @patch('utils.clients.database_client.DatabaseClient.connect', return_value=MockConnection()) # pylint: disable=no-self-use
     # pylint: disable=no-value-for-parameter, no-self-use

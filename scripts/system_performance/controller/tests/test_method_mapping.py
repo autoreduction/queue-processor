@@ -13,7 +13,7 @@ import unittest
 from mock import Mock, patch, call
 
 from scripts.system_performance.controller.method_mapping import MethodSelectorConfigurator
-from scripts.system_performance.test_setup.test_setup_default_mock_variables import Setup_Variables
+from scripts.system_performance.test_setup.test_setup_default_mock_variables import SetupVariables
 
 
 class MockConnection(Mock):
@@ -40,13 +40,13 @@ class TestQueryHandler(unittest.TestCase):
         self.valid_method = 'missing_run_numbers_report'
 
         # List of instrument to evaluate against db returned row proxy objects
-        self.instruments = Setup_Variables().instruments
+        self.instruments = SetupVariables().instruments
 
         # Default arguments for test cases
-        self.arguments_dict = Setup_Variables().arguments_dict
+        self.arguments_dict = SetupVariables().arguments_dict
 
         # Missing_run_numbers_report expected method return
-        self.missing_run_numbers_report_mock_return = Setup_Variables().missing_run_numbers_report_mock_return
+        self.missing_run_numbers_report_mock_return = SetupVariables().missing_run_numbers_report_mock_return  # pylint: disable=line-too-long
 
     @patch('scripts.system_performance.controller.statistics_computation.QueryHandler.missing_run_numbers_report')  # pylint: disable=line-too-long
     def test_method_call_with_args_valid(self, mock_function):
@@ -137,7 +137,7 @@ class TestQueryHandler(unittest.TestCase):
     @patch('scripts.system_performance.data_persistence.system_performance_queries.DatabaseMonitorChecks.query_log_and_execute')
     @patch('scripts.system_performance.controller.method_mapping.MethodSelectorConfigurator.call_method_with_args')
     @patch('scripts.system_performance.controller.method_mapping.MethodSelectorConfigurator.validate_instrument_list')
-    def test_get_query_for_instruments_assert_methods(self, mock_uilv, mock_method_call, mock_qle): # pylint disable=unused-argument, line-too-long
+    def test_get_query_for_instruments_assert_methods(self, mock_uilv, mock_method_call, mock_qle):  # pylint: disable=unused-argument
         """Assert dictionary containing N instruments taken from valid instrument
          =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_="""
         # pyint: enable=line-too-long
