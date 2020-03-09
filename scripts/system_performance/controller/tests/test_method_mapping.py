@@ -23,13 +23,13 @@ class MockConnection(Mock):
 class MockInstrumentModels:
     """"""
 
-    def __init__(self, name, inst_id):
+    def __init__(self, name, inst_Id):
         self.name = name
-        self.id = inst_id
+        self.id = inst_Id  # pylint disable=invalid-name
 
 
 class TestQueryHandler(unittest.TestCase):
-    """"""
+    """Test query handler class methods"""
 
     def setUp(self):
         """The setup of variables used in many test cases.
@@ -97,7 +97,7 @@ class TestQueryHandler(unittest.TestCase):
                                             "to look at existing methods and arguments",
                                             self.invalid_method)
 
-    @patch('scripts.system_performance.data_persistence.system_performance_queries.DatabaseMonitorChecks.query_log_and_execute')  # pylint: line-too-long
+    @patch('scripts.system_performance.data_persistence.system_performance_queries.DatabaseMonitorChecks.query_log_and_execute')  # pylint: disable=line-too-long
     @patch('scripts.system_performance.models.query_argument_constructor.get_instruments')
     def test_run_every_instrument(self, mock_gim, mock_qle):
         """Assert that expected instruments are keys in dictionary returned
@@ -114,17 +114,16 @@ class TestQueryHandler(unittest.TestCase):
             method_arguments={'start_date': '2020-02-11', 'end_date': '2020-02-19'})
 
         mock_qle.assert_has_calls([call("SELECT run_number "
-                                    "FROM reduction_viewer_reductionrun "
-                                    "WHERE instrument_id = 1 "
-                                    "AND created "
-                                    "BETWEEN '2020-02-11' AND '2020-02-19'"),
+                                        "FROM reduction_viewer_reductionrun "
+                                        "WHERE instrument_id = 1 "
+                                        "AND created "
+                                        "BETWEEN '2020-02-11' AND '2020-02-19'"),
                                    call("SELECT run_number "
-                                    "FROM reduction_viewer_reductionrun "
-                                    "WHERE instrument_id = 2 "
-                                    "AND created "
-                                    "BETWEEN '2020-02-11' AND '2020-02-19'")], any_order=True)
+                                        "FROM reduction_viewer_reductionrun "
+                                        "WHERE instrument_id = 2 "
+                                        "AND created "
+                                        "BETWEEN '2020-02-11' AND '2020-02-19'")], any_order=True)
 
-    # @patch('scripts.system_performance.data_persistence.system_performance_queries.DatabaseMonitorChecks.query_log_and_execute')
     @patch('scripts.system_performance.models.query_argument_constructor.get_instruments')
     @patch('scripts.system_performance.controller.method_mapping.logging.warning')
     def test_run_every_instrument_log_invalid(self, mock_logger, mock_gim):
@@ -157,7 +156,7 @@ class TestQueryHandler(unittest.TestCase):
     @patch('scripts.system_performance.data_persistence.system_performance_queries.DatabaseMonitorChecks.query_log_and_execute')  # pylint: line-too-long
     @patch('scripts.system_performance.controller.method_mapping.MethodSelectorConfigurator.call_method_with_args')  # pylint: line-too-long
     @patch('scripts.system_performance.controller.method_mapping.MethodSelectorConfigurator.validate_instrument_list')  # pylint: line-too-long
-    def test_get_query_for_instruments_assert_methods(self, mock_uilv, mock_method_call, mock_qle):
+    def test_get_query_for_instruments_assert_methods(self, mock_uilv, mock_method_call, mock_qle):  # pylint disable=unused-argumen
         """Assert dictionary containing N instruments taken from valid instrument
          =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_="""
 

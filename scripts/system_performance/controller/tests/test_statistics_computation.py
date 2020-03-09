@@ -10,10 +10,9 @@ Unit tests for statistics_computation script
 
 # Dependencies
 import unittest
-import datetime
 
 from collections import OrderedDict
-from mock import Mock, MagicMock, patch
+from mock import Mock, patch
 
 from scripts.system_performance.controller.statistics_computation import QueryHandler
 from scripts.system_performance.models import query_argument_constructor

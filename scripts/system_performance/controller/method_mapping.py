@@ -89,7 +89,8 @@ class MethodSelectorConfigurator:
                                 "to look at existing methods and arguments", method_name)
         return instrument_dict
 
-    def validate_instrument_list(self, instrument_input):
+    @staticmethod
+    def validate_instrument_list(instrument_input):
         """ Compares list of instruments from user input with instruments in db.
             :return tuple of valid instruments in user input
             =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=

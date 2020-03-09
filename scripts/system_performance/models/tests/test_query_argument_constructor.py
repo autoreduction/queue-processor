@@ -4,6 +4,7 @@
 # Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
+"""Unit tests  for scripts/system_performance/models/query_argument_constructor.py"""
 import unittest
 
 from datetime import date
@@ -11,12 +12,12 @@ from mock import patch, Mock, MagicMock
 
 from scripts.system_performance.models import query_argument_constructor
 # pylint:disable=line-too-long
-from scripts.system_performance.data_persistence.system_performance_queries import DatabaseMonitorChecks
+from scripts.system_performance.data_persistence.system_performance_queries import DatabaseMonitorChecks  # pylint: disable=line-too-long
 
 
 class MockConnection(Mock):
     """Mock object class"""
-    pass
+    pass # pylint: disable=W0107
 
 
 class TestQueryArgumentsConstructor(unittest.TestCase):
@@ -36,7 +37,7 @@ class TestQueryArgumentsConstructor(unittest.TestCase):
                                'start_date': None,
                                'instrument_id': None}
 
-    @patch('utils.clients.database_client.DatabaseClient.connect', return_value=MockConnection())
+    @patch('utils.clients.database_client.DatabaseClient.connect', return_value=MockConnection()) # pylint: disable=no-self-use
     # pylint: disable=no-value-for-parameter, no-self-use
     def test_patch_applicator(self, _):
         """Applies patches to method called inside"""
@@ -69,7 +70,7 @@ class TestQueryArgumentsConstructor(unittest.TestCase):
             self.assertIn(expected_instrument, actual_instruments)
 
     @patch('scripts.system_performance.data_persistence.system_performance_queries.'
-           'DatabaseMonitorChecks.query_log_and_execute')
+           'DatabaseMonitorChecks.query_log_and_execute')  # pylint: disable=no-self-use
     def test_runs_in_date_range(self, mock_qle):
         """Assert number of lists is 4"""
 
@@ -84,7 +85,7 @@ class TestQueryArgumentsConstructor(unittest.TestCase):
         mock_qle.assert_called_once_with(expected)
 
     @patch('scripts.system_performance.data_persistence.system_performance_queries.'
-           'DatabaseMonitorChecks.query_log_and_execute')
+           'DatabaseMonitorChecks.query_log_and_execute')  # pylint: disable=no-self-use
     def test_start_and_end_times_by_instrument(self, mock_qle):
         """ Assert that query is called with correct arguments"""
         expected = "SELECT id, run_number, " \
@@ -99,7 +100,7 @@ class TestQueryArgumentsConstructor(unittest.TestCase):
         mock_qle.assert_called_once_with(expected)
 
     @patch('scripts.system_performance.data_persistence.system_performance_queries.'
-           'DatabaseMonitorChecks.query_log_and_execute')
+           'DatabaseMonitorChecks.query_log_and_execute')  # pylint: disable=no-self-use
     def test_runs_per_day(self, mock_qle):
         """ Assert runs per day query is called with correct arguments"""
         expected = "SELECT run_number " \
@@ -115,7 +116,7 @@ class TestQueryArgumentsConstructor(unittest.TestCase):
         mock_qle.assert_called_once_with(expected)
 
     @patch('scripts.system_performance.data_persistence.system_performance_queries.'
-           'DatabaseMonitorChecks.query_log_and_execute')
+           'DatabaseMonitorChecks.query_log_and_execute')  # pylint: disable=no-self-use
     def test_runs_today(self, mock_qle):
         """Test the runs today query is constructed as expected"""
         expected = "SELECT run_number " \
@@ -132,7 +133,7 @@ class TestQueryArgumentsConstructor(unittest.TestCase):
 
         mock_qle.assert_called_once_with(expected)
 
-    @patch('scripts.system_performance.models.query_argument_constructor.get_day_of_week')
+    @patch('scripts.system_performance.models.query_argument_constructor.get_day_of_week') # pylint: disable=no-self-use, line-too-long
     def test_runs_per_week_not_friday(self, mock_gdw):
         """ Test runs per week when the day of the week is NOT friday"""
         # mock datetime
@@ -146,9 +147,11 @@ class TestQueryArgumentsConstructor(unittest.TestCase):
                                                           time_interval=1)
         self.assertEqual(None, actual)
 
+    # pylint: disable=no-self-use
     @patch('scripts.system_performance.data_persistence.system_performance_queries.'
            'DatabaseMonitorChecks.get_data_by_status_over_time')
     @patch('scripts.system_performance.models.query_argument_constructor.get_day_of_week')
+    # pylint: enablee=no-self-use
     def test_runs_per_week_friday(self, mock_gdw, mock_gdsot):
         """ Test runs per week when the day of the week IS Friday"""
         # mock datetime
@@ -170,9 +173,11 @@ class TestQueryArgumentsConstructor(unittest.TestCase):
                                            time_scale='WEEK')
         self.assertEqual('Friday!', actual)
 
+    # pylint: disable=no-self-use
     @patch('scripts.system_performance.data_persistence.system_performance_queries.'
            'DatabaseMonitorChecks.get_data_by_status_over_time')
     @patch('scripts.system_performance.models.query_argument_constructor.get_day_of_week')
+    # pylint: enable=no-self-use
     def test_runs_per_month_end_of_month(self, mock_gdw, mock_gdsot):
         """ Assert expected return value is returned if day is last day of month"""
 
@@ -195,9 +200,11 @@ class TestQueryArgumentsConstructor(unittest.TestCase):
         print('test')
         self.assertEqual('End of month', actual)
 
+    # pylint: disable=no-self-use
     @patch('scripts.system_performance.data_persistence.system_performance_queries.'
            'DatabaseMonitorChecks.get_data_by_status_over_time')
     @patch('scripts.system_performance.models.query_argument_constructor.get_day_of_week')
+    # pylint: enable=no-self-use
     def test_runs_per_month_not_end_of_month(self, mock_gdw, mock_gdsot):
         """ Assert that method returns non if date is not equivalent to end of month"""
 

@@ -18,7 +18,7 @@ from collections import OrderedDict
 from scripts.system_performance.models import query_argument_constructor
 
 
-class QueryHandler:
+class QueryHandler:  # pylint disable=too-few-public-methods
     """The query handler class returns a dictionary containing nested lists for each instrument and
      each query called"""
 
@@ -78,7 +78,7 @@ class QueryHandler:
                     if rb_number not in list_of_rb_numbers]
         except IndexError:
             logging.warning("Index Error while trying to look for missing \
-            run number in list_of_rb_numbers %s",list_of_rb_numbers)
+            run number in list_of_rb_numbers %s", list_of_rb_numbers)
             return None
 
     @staticmethod
@@ -95,7 +95,7 @@ class QueryHandler:
             ----------
             - list_of_times (list): Zipped list of times and execution times"""
 
-        for execution_times in range(len(execution_list)):
+        for execution_times in enumerate(execution_list):
             if execution_list[execution_times] is not None:
                 list_of_times[execution_times].append(execution_list[execution_times])
         return list_of_times
