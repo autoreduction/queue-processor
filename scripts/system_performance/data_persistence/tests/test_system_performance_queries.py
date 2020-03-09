@@ -15,6 +15,7 @@ from mock import patch, Mock, MagicMock
 from scripts.system_performance.data_persistence.system_performance_queries import DatabaseMonitorChecks # pylint: disable=line-too-long
 from utils.settings import MYSQL_SETTINGS
 from utils.clients.connection_exception import ConnectionException
+from scripts.system_performance.test_setup.test_setup_default_mock_variables import Setup_Variables
 
 
 class MockConnection(Mock):
@@ -29,15 +30,7 @@ class TestDatabaseMonitorChecks(unittest.TestCase):
     def setUp(self):
         """Setup of DatabaseMonitor class call and default arguments dictionary"""
         self.db_monitor_checks = DatabaseMonitorChecks()
-        self.arguments_dict = {'selection': 'run_number',
-                               'status_id': 4,
-                               'retry_run': '',
-                               'run_state_column': 'finished',
-                               'end_date': 'CURDATE()',
-                               'interval': 1,
-                               'time_scale': 'DAY',
-                               'start_date': None,
-                               'instrument_id': None}
+        self.arguments_dict = Setup_Variables().arguments_dict
 
     @patch('utils.clients.database_client.DatabaseClient.connect', return_value=MockConnection())
     # pylint: disable=no-value-for-parameter, no-self-use

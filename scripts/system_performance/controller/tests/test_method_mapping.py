@@ -13,6 +13,7 @@ import unittest
 from mock import Mock, patch, call
 
 from scripts.system_performance.controller.method_mapping import MethodSelectorConfigurator
+from scripts.system_performance.test_setup.test_setup_default_mock_variables import Setup_Variables
 
 
 class MockConnection(Mock):
@@ -23,9 +24,9 @@ class MockConnection(Mock):
 class MockInstrumentModels:  # pylint: disable=too-few-public-methods
     """Mocking instrument models name and id properties"""
 
-    def __init__(self, name, inst_Id):
+    def __init__(self, name, inst_id):
         self.name = name
-        self.id = inst_Id  # pylint disable=invalid-name
+        self.id = inst_id  # pylint disable=invalid-name
 
 
 class TestQueryHandler(unittest.TestCase):
@@ -39,34 +40,13 @@ class TestQueryHandler(unittest.TestCase):
         self.valid_method = 'missing_run_numbers_report'
 
         # List of instrument to evaluate against db returned row proxy objects
-        self.instruments = [MockInstrumentModels('GEM', 1),
-                            MockInstrumentModels('WISH', 2),
-                            MockInstrumentModels('OSIRIS', 3),
-                            MockInstrumentModels('POLARIS', 4),
-                            MockInstrumentModels('MUSR', 5),
-                            MockInstrumentModels('POLREF', 6),
-                            MockInstrumentModels('ENGINX', 7),
-                            MockInstrumentModels('MARI', 8),
-                            MockInstrumentModels('MAPS', 9)]
+        self.instruments = Setup_Variables().instruments
 
         # Default arguments for test cases
-        self.arguments_dict = {'selection': 'run_number',
-                               'status_id': 4,
-                               'retry_run': '',
-                               'run_state_column': 'finished',
-                               'end_date': 'CURDATE()',
-                               'interval': 1,
-                               'time_scale': 'DAY',
-                               'start_date': None,
-                               'instrument_id': None}
+        self.arguments_dict = Setup_Variables().arguments_dict
 
         # Missing_run_numbers_report expected method return
-        self.missing_run_numbers_report_mock_return = {'GEM': {'Count_of_runs': 101,
-                                                               'Missing_runs_count': 0,
-                                                               'Missing_runs': []},
-                                                       'WISH': {'Count_of_runs': 295,
-                                                                'Missing_runs_count': 2,
-                                                                'Missing_runs': [47173, 47174]}}
+        self.missing_run_numbers_report_mock_return = Setup_Variables().missing_run_numbers_report_mock_return
 
     @patch('scripts.system_performance.controller.statistics_computation.QueryHandler.missing_run_numbers_report')  # pylint: disable=line-too-long
     def test_method_call_with_args_valid(self, mock_function):
