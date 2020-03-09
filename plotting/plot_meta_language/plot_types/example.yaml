@@ -2,8 +2,6 @@
 # including the type of plot and it's axis scaling, units, and titles.
 figure:
   type: line+marker   # Type of graph [line, scatter, marker, line+marker]
-#  TODO: Double check we are no longer transmitting opacity
-#  opactiy: 0.8        # The opacity of the data points/lines. Default to 0.8
   x_axis:
     type: log         # [linear, log]
     title: x_axis     # Title of X axis
