@@ -151,7 +151,7 @@ class TestQueryArgumentsConstructor(unittest.TestCase):
     @patch('scripts.system_performance.data_persistence.system_performance_queries.'
            'DatabaseMonitorChecks.get_data_by_status_over_time')
     @patch('scripts.system_performance.models.query_argument_constructor.get_day_of_week')
-    # pylint: enablee=no-self-use
+    # pylint: enable=no-self-use
     def test_runs_per_week_friday(self, mock_gdw, mock_gdsot):
         """ Test runs per week when the day of the week IS Friday"""
         # mock datetime

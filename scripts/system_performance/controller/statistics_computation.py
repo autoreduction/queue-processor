@@ -95,9 +95,11 @@ class QueryHandler:  # pylint disable=too-few-public-methods
             ----------
             - list_of_times (list): Zipped list of times and execution times"""
 
-        for execution_times in enumerate(execution_list):
+        for execution_times in range(len(execution_list)): #pylint: disable=consider-using-enumerate
             if execution_list[execution_times] is not None:
                 list_of_times[execution_times].append(execution_list[execution_times])
+        print("list zip")
+        print(list_of_times)
         return list_of_times
 
     def list_extraction_and_isolation(self, start_end_times, start_time_index, end_time_index):
@@ -249,7 +251,7 @@ class QueryHandler:  # pylint disable=too-few-public-methods
                                          execution_times_dict)
 
     @staticmethod
-    def run_frequency(instrument_id, status, retry=None, end_date=None, start_date=None, time_interval=None):  # pylint: disable=line-too-long
+    def run_frequency(instrument_id, status, retry=None, end_date=None, start_date=None, time_interval=None):  # pylint: disable=too-many-arguments, line_too_long
 
         """ Return run frequencies for N instruments of type: successful run, failed run, or retry
             run.

@@ -97,7 +97,8 @@ class TestDatabaseMonitorChecks(unittest.TestCase):
     def test_time_scale_format_segment_replace_date_range(self):
         """Testing appropriate sub segment interval is returned to be inserted in query"""
         # pylint: disable=line-too-long
-        self.arguments_dict['start_date'], self.arguments_dict['end_date'] = '2019-12-13', '2019-12-12'
+        self.arguments_dict['start_date'], self.arguments_dict['end_date'] = '2019-12-13', \
+                                                                             '2019-12-12'
         expected_dates_range = "BETWEEN '{}' AND '{}'".format(self.arguments_dict['start_date'],
                                                               self.arguments_dict['end_date'])
         actual_dates_range = self.db_monitor_checks.\

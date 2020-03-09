@@ -12,16 +12,16 @@ Unit tests for statistics_computation script
 import unittest
 from mock import Mock, patch, call
 
-from scripts.system_performance.controller.method_mapping import MethodSelectorConfigurator, logging
+from scripts.system_performance.controller.method_mapping import MethodSelectorConfigurator
 
 
 class MockConnection(Mock):
     """Mock object class"""
-    pass
+    pass  # pylint: disable=invalid-name
 
 
-class MockInstrumentModels:
-    """"""
+class MockInstrumentModels:  # pylint: disable=too-few-public-methods
+    """Mocking instrument models name and id properties"""
 
     def __init__(self, name, inst_Id):
         self.name = name
@@ -68,7 +68,7 @@ class TestQueryHandler(unittest.TestCase):
                                                                 'Missing_runs_count': 2,
                                                                 'Missing_runs': [47173, 47174]}}
 
-    @patch('scripts.system_performance.controller.statistics_computation.QueryHandler.missing_run_numbers_report')  # pylint: line-too-long
+    @patch('scripts.system_performance.controller.statistics_computation.QueryHandler.missing_run_numbers_report')  # pylint: disable=line-too-long
     def test_method_call_with_args_valid(self, mock_function):
         """Asserting that a valid method call is called for a given instrument
          =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_="""
@@ -82,7 +82,7 @@ class TestQueryHandler(unittest.TestCase):
         """Assert None is returned when trying to call call_method_with_args with invalid method
          =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_="""
 
-        actual = MethodSelectorConfigurator().call_method_with_args(self.invalid_method, {'instrument_id': 8})
+        actual = MethodSelectorConfigurator().call_method_with_args(self.invalid_method, {'instrument_id': 8})  # pylint: disable=line-too-long
         expected = None
         self.assertEqual(actual, expected)
 
@@ -91,7 +91,7 @@ class TestQueryHandler(unittest.TestCase):
         """Assert logger is invoked when invalid method is passed to call_method_with_args
          =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_="""
 
-        MethodSelectorConfigurator().call_method_with_args(self.invalid_method, {'instrument_id': 8})
+        MethodSelectorConfigurator().call_method_with_args(self.invalid_method, {'instrument_id': 8})  # pylint: disable=line-too-long
 
         mock_logger.assert_called_once_with("Invalid Input - method '%s' does not exist try -help "
                                             "to look at existing methods and arguments",
@@ -153,12 +153,14 @@ class TestQueryHandler(unittest.TestCase):
 
         self.assertEqual(expected, actual)
 
-    @patch('scripts.system_performance.data_persistence.system_performance_queries.DatabaseMonitorChecks.query_log_and_execute')  # pylint: line-too-long
-    @patch('scripts.system_performance.controller.method_mapping.MethodSelectorConfigurator.call_method_with_args')  # pylint: line-too-long
-    @patch('scripts.system_performance.controller.method_mapping.MethodSelectorConfigurator.validate_instrument_list')  # pylint: line-too-long
-    def test_get_query_for_instruments_assert_methods(self, mock_uilv, mock_method_call, mock_qle):  # pylint disable=unused-argumen
+    # pylint: disable=line-too-long
+    @patch('scripts.system_performance.data_persistence.system_performance_queries.DatabaseMonitorChecks.query_log_and_execute')
+    @patch('scripts.system_performance.controller.method_mapping.MethodSelectorConfigurator.call_method_with_args')
+    @patch('scripts.system_performance.controller.method_mapping.MethodSelectorConfigurator.validate_instrument_list')
+    def test_get_query_for_instruments_assert_methods(self, mock_uilv, mock_method_call, mock_qle): # pylint disable=unused-argument, line-too-long
         """Assert dictionary containing N instruments taken from valid instrument
          =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_="""
+        # pyint: enable=line-too-long
 
         mock_uilv.return_value = self.instruments[7:]
 
