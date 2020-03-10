@@ -26,7 +26,7 @@ class MockInstrumentModels:  # pylint: disable=too-few-public-methods
 
     def __init__(self, name, inst_id):
         self.name = name
-        self.id = inst_id  # pylint disable=invalid-name
+        self.id = inst_id  # pylint: disable=invalid-name
 
 
 class TestQueryHandler(unittest.TestCase):
