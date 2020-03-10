@@ -40,7 +40,8 @@ setup_requires = ['dash',
                   'SQLAlchemy',
                   'stomp.py',
                   'suds-py3',
-                  'Twisted']
+                  'Twisted',
+                  'yaml']
 
 
 if platform.system() == 'Windows':
