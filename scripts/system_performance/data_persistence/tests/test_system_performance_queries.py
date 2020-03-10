@@ -69,7 +69,10 @@ class TestDatabaseMonitorChecks(unittest.TestCase):
     def test_get_instruments_from_database(self):
         """Testing that a list of instruments is returned and that index can be cast to int"""
         actual = self.db_monitor_checks.get_instruments_from_database()
-        expected = ['GEM', 'WISH', 'MUSR']
+        # expected = ['GEM', 'WISH', 'MUSR']
+        expected = [SetupVariables().instruments[1].name,
+                    SetupVariables().instruments[2].name,
+                    SetupVariables().instruments[5].name]
         actual_instruments = []
         for index, instrument in actual:
             self.assertIsInstance(int(index), int)

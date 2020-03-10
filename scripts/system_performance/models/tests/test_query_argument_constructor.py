@@ -53,7 +53,10 @@ class TestQueryArgumentsConstructor(unittest.TestCase):
     def test_get_instruments(self):
         """Assert that a list of instruments is returned """
         actual = query_argument_constructor.get_instruments()
-        expected = ['GEM', 'WISH', 'MUSR']
+        # expected = ['GEM', 'WISH', 'MUSR']
+        expected = [SetupVariables().instruments[1].name,
+                    SetupVariables().instruments[2].name,
+                    SetupVariables().instruments[5].name]
         actual_instruments = []
         for index, instrument in actual:
             self.assertIsInstance(int(index), int)

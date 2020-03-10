@@ -22,6 +22,14 @@ class QueryHandler:  # pylint disable=too-few-public-methods
     """The query handler class returns a dictionary containing nested lists for each instrument and
      each query called"""
 
+    def __init__(self):
+        self.execution_times_dict = OrderedDict()
+        self.execution_times_dict['id'] = []
+        self.execution_times_dict['run_number'] = []
+        self.execution_times_dict['start_time'] = []
+        self.execution_times_dict['end_time'] = []
+        self.execution_times_dict['execution_time'] = []
+
     @staticmethod
     def convert_seconds_to_time(time_in_seconds):
         """Converts seconds back into time format for output
@@ -211,14 +219,6 @@ class QueryHandler:  # pylint disable=too-few-public-methods
             ----------
             - dictionary: dictionary of execution times for a given instrument"""
 
-        time_in_seconds_list = []
-        execution_times_dict = OrderedDict()
-        execution_times_dict['id'] = []
-        execution_times_dict['run_number'] = []
-        execution_times_dict['start_time'] = []
-        execution_times_dict['end_time'] = []
-        execution_times_dict['execution_time'] = []
-
         def _query_argument_specify(start_date, end_date):
             """Specifies arguments for query and returns formatted data from Autoreduce database
                 =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
@@ -236,6 +236,9 @@ class QueryHandler:  # pylint disable=too-few-public-methods
                 instrument_id=instrument_id,
                 start_date=start_date,
                 end_date=end_date)
+
+        time_in_seconds_list = []
+        execution_times_dict = self.execution_times_dict  # Creating ordered dictionary to append to
 
         # Calculate execution times and append to new list
         list_of_times = _query_argument_specify(start_date, end_date)

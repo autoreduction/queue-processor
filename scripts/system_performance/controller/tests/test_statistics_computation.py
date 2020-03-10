@@ -81,12 +81,7 @@ class TestQueryHandler(unittest.TestCase):
         list_of_lists = [[66137, 26846, '01:37:17', '01:37:37', '0:00:20'],
                          [66153, 26847, '03:49:22', '03:49:45', '0:00:23']]
 
-        execution_times_dict = OrderedDict()
-        execution_times_dict['id'] = []
-        execution_times_dict['run_number'] = []
-        execution_times_dict['start_time'] = []
-        execution_times_dict['end_time'] = []
-        execution_times_dict['execution_time'] = []
+        execution_times_dict = QueryHandler().execution_times_dict
 
         expected = {'execution_time': ['0:00:20', '0:00:23'],
                     'start_time': ['01:37:17', '03:49:22'],
