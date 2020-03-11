@@ -34,14 +34,6 @@ class TestDatabaseMonitorChecks(unittest.TestCase):
         self.arguments_dict = SetupVariables().arguments_dict
 
     @patch('utils.clients.database_client.DatabaseClient.connect', return_value=MockConnection())
-    # pylint: disable=no-value-for-parameter, no-self-use
-    def test_patch_applicator(self, _):
-        """Applies patches to method called inside"""
-        db_monitor_checks = DatabaseMonitorChecks()
-        db_monitor_checks.query_log_and_execute = MagicMock(name='query_log_and_execute')
-        return db_monitor_checks
-
-    @patch('utils.clients.database_client.DatabaseClient.connect', return_value=MockConnection())
     # pylint: disable=no-value-for-parameter
     def test_valid_init(self, _):
         """Testing that db_monitor_checks initialization return when valid"""
@@ -66,20 +58,13 @@ class TestDatabaseMonitorChecks(unittest.TestCase):
         db_monitor_checks.query_log_and_execute("test")
         db_monitor_checks.connection.execute.called_once_with("test")
 
-    def test_get_instruments_from_database(self):
-        """Testing that a list of instruments is returned and that index can be cast to int"""
-        actual = self.db_monitor_checks.get_instruments_from_database()
-        # expected = ['GEM', 'WISH', 'MUSR']
-        expected = [SetupVariables().instruments[1].name,
-                    SetupVariables().instruments[2].name,
-                    SetupVariables().instruments[5].name]
-        actual_instruments = []
-        for index, instrument in actual:
-            self.assertIsInstance(int(index), int)
-            actual_instruments.append(instrument)
 
-        for expected_instrument in expected:
-            self.assertIn(expected_instrument, actual_instruments)
+    @patch('scripts.system_performance.data_persistence.system_performance_queries.'
+           'DatabaseMonitorChecks.query_log_and_execute')
+    def test_get_instruments_from_database(self, mock_qle):
+        """Testing that a list of instruments is returned and that index can be cast to int"""
+        self.db_monitor_checks.get_instruments_from_database()
+        self.assertTrue(mock_qle.called)
 
     def test_time_scale_format_segment_replace_intervals(self):
         """Testing appropriate sub segment interval is returned to be inserted in query"""
@@ -137,7 +122,7 @@ class TestDatabaseMonitorChecks(unittest.TestCase):
     def test_get_data_by_status_over_time(self):
         """Tests that correct query is build - No args set"""
         # pylint: disable=no-value-for-parameter
-        db_monitor_checks = self.test_patch_applicator()
+        db_monitor_checks = SetupVariables().test_patch_applicator()
         expected = "SELECT run_number " \
                    "FROM reduction_viewer_reductionrun " \
                    "WHERE (status_id ) = (4 )  " \
@@ -148,7 +133,7 @@ class TestDatabaseMonitorChecks(unittest.TestCase):
     def test_get_data_by_status_over_time_with_instrument_id(self):
         """Tests that correct query is build -  ID set in args"""
         # pylint: disable=no-value-for-parameter
-        db_monitor_checks = self.test_patch_applicator()
+        db_monitor_checks = SetupVariables().test_patch_applicator()
         self.arguments_dict['instrument_id'] = 6
         expected = "SELECT run_number " \
                    "FROM reduction_viewer_reductionrun " \
@@ -160,7 +145,7 @@ class TestDatabaseMonitorChecks(unittest.TestCase):
     def test_get_data_by_status_over_time_with_date_range(self):
         """Tests that correct query is build - id, start_date and end_date set in args"""
         # pylint: disable=no-value-for-parameter
-        db_monitor_checks = self.test_patch_applicator()
+        db_monitor_checks = SetupVariables().test_patch_applicator()
         self.arguments_dict['instrument_id'] = 6
         self.arguments_dict['start_date'] = '2019:11:12'
         self.arguments_dict['end_date'] = '2019:11:13'
@@ -175,7 +160,7 @@ class TestDatabaseMonitorChecks(unittest.TestCase):
     def test_get_data_by_status_over_time_with_duplicate_dates(self):
         """Tests that correct query is build - id and duplicate start_date and end_date set"""
         # pylint: disable=no-value-for-parameter
-        db_monitor_checks = self.test_patch_applicator()
+        db_monitor_checks = SetupVariables().test_patch_applicator()
         self.arguments_dict['instrument_id'] = 6
         self.arguments_dict['start_date'] = '2019:11:12'
         self.arguments_dict['end_date'] = '2019:11:12'
@@ -189,7 +174,7 @@ class TestDatabaseMonitorChecks(unittest.TestCase):
     def test_get_data_by_status_over_time_by_retry(self):
         """Tests that correct query is build - set retry_run arg"""
         # pylint: disable=no-value-for-parameter
-        db_monitor_checks = self.test_patch_applicator()
+        db_monitor_checks = SetupVariables().test_patch_applicator()
         self.arguments_dict['retry_run'] = 'AND retry_run_id is not null'
         expected = "SELECT run_number " \
                    "FROM reduction_viewer_reductionrun " \

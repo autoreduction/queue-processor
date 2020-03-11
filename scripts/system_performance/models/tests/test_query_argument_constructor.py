@@ -30,14 +30,6 @@ class TestQueryArgumentsConstructor(unittest.TestCase):
 
         self.arguments_dict = SetupVariables().arguments_dict
 
-    @patch('utils.clients.database_client.DatabaseClient.connect', return_value=MockConnection()) # pylint: disable=no-self-use
-    # pylint: disable=no-value-for-parameter, no-self-use
-    def test_patch_applicator(self, _):
-        """Applies patches to method called inside"""
-        db_monitor_checks = DatabaseMonitorChecks()
-        db_monitor_checks.query_log_and_execute = MagicMock(name='query_log_and_execute')
-        return db_monitor_checks
-
     def test_get_day_of_week_invalid(self):
         """Testing invalid day of week"""
         invalid = 10
@@ -50,20 +42,13 @@ class TestQueryArgumentsConstructor(unittest.TestCase):
         actual = query_argument_constructor.get_day_of_week()
         self.assertEqual(expected, actual)
 
-    def test_get_instruments(self):
+    @patch('scripts.system_performance.data_persistence.system_performance_queries.'
+           'DatabaseMonitorChecks.get_instruments_from_database')
+    def test_get_instruments(self, mock_gid):
         """Assert that a list of instruments is returned """
-        actual = query_argument_constructor.get_instruments()
-        # expected = ['GEM', 'WISH', 'MUSR']
-        expected = [SetupVariables().instruments[1].name,
-                    SetupVariables().instruments[2].name,
-                    SetupVariables().instruments[5].name]
-        actual_instruments = []
-        for index, instrument in actual:
-            self.assertIsInstance(int(index), int)
-            actual_instruments.append(instrument)
+        query_argument_constructor.get_instruments()
 
-        for expected_instrument in expected:
-            self.assertIn(expected_instrument, actual_instruments)
+        self.assertTrue(mock_gid.called)
 
     @patch('scripts.system_performance.data_persistence.system_performance_queries.'
            'DatabaseMonitorChecks.query_log_and_execute')  # pylint: disable=no-self-use

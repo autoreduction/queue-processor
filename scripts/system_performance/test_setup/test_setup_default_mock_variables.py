@@ -8,6 +8,10 @@
 Unit test setup default variables for use in mocks accross system performance package
 """
 
+from mock import patch, Mock, MagicMock
+
+from scripts.system_performance.data_persistence.system_performance_queries import DatabaseMonitorChecks  # pylint: disable=line-too-long
+
 
 class MockInstrumentModels:  # pylint: disable=too-few-public-methods
     """Mocking instrument models name and id properties"""
@@ -15,6 +19,11 @@ class MockInstrumentModels:  # pylint: disable=too-few-public-methods
     def __init__(self, name, inst_Id):
         self.name = name
         self.id = inst_Id  # pylint: disable=invalid-name
+
+
+class MockConnection(Mock):
+    """Mock object class"""
+    pass  # pylint: disable=W0107
 
 
 class SetupVariables:  # pylint: disable=too-few-public-methods
@@ -53,3 +62,12 @@ class SetupVariables:  # pylint: disable=too-few-public-methods
                                                        'WISH': {'Count_of_runs': 295,
                                                                 'Missing_runs_count': 2,
                                                                 'Missing_runs': [47173, 47174]}}
+
+    @patch('utils.clients.database_client.DatabaseClient.connect',
+           return_value=MockConnection())  # pylint: disable=no-self-use
+    # pylint: disable=no-value-for-parameter, no-self-use
+    def test_patch_applicator(self, _):
+        """Applies patches to method called inside"""
+        db_monitor_checks = DatabaseMonitorChecks()
+        db_monitor_checks.query_log_and_execute = MagicMock(name='query_log_and_execute')
+        return db_monitor_checks
