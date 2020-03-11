@@ -8,7 +8,7 @@
 import unittest
 
 from datetime import date
-from mock import patch, Mock, MagicMock
+from mock import patch, Mock
 
 from scripts.system_performance.models import query_argument_constructor
 # pylint:disable=line-too-long

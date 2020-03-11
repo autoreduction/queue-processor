@@ -10,7 +10,7 @@ Test cases for system_performance_queries script
 """
 
 import unittest
-from mock import patch, Mock, MagicMock
+from mock import patch, Mock
 
 from scripts.system_performance.data_persistence.system_performance_queries import DatabaseMonitorChecks # pylint: disable=line-too-long
 from scripts.system_performance.test_setup.test_setup_default_mock_variables import SetupVariables
