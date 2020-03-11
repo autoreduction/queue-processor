@@ -34,27 +34,14 @@ from queue_processors.queue_processor.queueproc_utils.reduction_run_utils import
 # pylint: disable=import-error, no-name-in-module
 from queue_processors.queue_processor.settings import LOGGING
 
+from queue_processors.queue_processor import validate_job as validate
+
 from utils.clients.queue_client import QueueClient
 from utils.settings import ACTIVEMQ_SETTINGS
 
 # Set up logging and attach the logging to the right part of the config.
 logging.config.dictConfig(LOGGING)
 logger = logging.getLogger("queue_processor")  # pylint: disable=invalid-name
-
-
-def is_valid_rb(rb_number):
-    """
-    Detects if the RB number is valid e.g. (above 0 and not a string)
-    :param rb_number:
-    :return: An error message if one is generated or None if the RB is valid
-    """
-    try:
-        rb_number = int(rb_number)
-        if rb_number > 0:
-            return None
-        return "RB Number is less than or equal to 0"
-    except ValueError:
-        return "RB Number is a string"
 
 
 class Listener:
@@ -206,10 +193,13 @@ class Listener:
         self._data_dict['reduction_script'] = reduction_script
         self._data_dict['reduction_arguments'] = arguments
 
-        # Make sure the RB number is valid
-        error_message = is_valid_rb(rb_number)
+        # ==== Validate Reduction Job before submitting for processing ====
+        # Use mount location as this is checked on the linux machines
+        mount_location = self._data_dict['data'].replace('\\\\isis\\inst$\\', '/isis/')
+        mount_location = mount_location.replace('\\', '/')
+        error_message = validate.validate_job(rb_number, mount_location)
         if error_message:
-            self._construct_and_send_skipped(rb_number, reason=error_message)
+            self._construct_and_send_skipped(rb_number, run_number=run_no, reason=error_message)
             return
 
         if instrument.is_paused:
@@ -219,15 +209,16 @@ class Listener:
                               priority=self._priority)
             logger.info("Run %s ready for reduction", self._data_dict['run_number'])
 
-    def _construct_and_send_skipped(self, rb_number, reason):
+    def _construct_and_send_skipped(self, rb_number, run_number, reason):
         """
         Construct a message and send to the skipped reduction queue
         :param rb_number: The RB Number associated with the reduction job
         :param reason: The error that caused the run to be skipped
         """
-        logger.warning("Skipping non-integer RB number: %s", rb_number)
-        self._data_dict['message'] = 'Reduction Skipped: {}. Assuming run number to be ' \
-                                     'a calibration run.'.format(reason)
+        logger.warning(f"Reduction Skipped: {reason}\n"
+                       f"RB number: {rb_number}\n"
+                       f"Run number: {run_number}")
+        self._data_dict['message'] = f"Reduction Skipped: {reason}"
         skipped_queue = ACTIVEMQ_SETTINGS.reduction_skipped
         self._client.send(skipped_queue, json.dumps(self._data_dict),
                           priority=self._priority)
