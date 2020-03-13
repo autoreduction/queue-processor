@@ -1,4 +1,3 @@
-PyYAML
 ipython
 pandas
 lxml
