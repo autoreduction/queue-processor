@@ -215,9 +215,8 @@ class Listener:
         :param rb_number: The RB Number associated with the reduction job
         :param reason: The error that caused the run to be skipped
         """
-        logger.warning(f"Reduction Skipped: {reason}\n"
-                       f"RB number: {rb_number}\n"
-                       f"Run number: {run_number}")
+        warning = f"Reduction Skipped: {reason}\nRB number: {rb_number}\nRun number: {run_number}"
+        logger.warning(warning)
         self._data_dict['message'] = f"Reduction Skipped: {reason}"
         skipped_queue = ACTIVEMQ_SETTINGS.reduction_skipped
         self._client.send(skipped_queue, json.dumps(self._data_dict),

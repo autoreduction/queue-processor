@@ -1,3 +1,9 @@
+# ############################################################################### #
+# Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
+#
+# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# SPDX - License - Identifier: GPL-3.0-or-later
+# ############################################################################### #
 """
 Functions to ensure that the Reduction job is valid before attempting to process the data
 """
@@ -31,8 +37,7 @@ def check_beam_current(run_file_location):
         beam_current = nxs_file['raw_data_1/runlog/dae_beam_current/value'].nxdata[0]
         if beam_current >= 0.1:
             return None
-        else:
-            return f"Assuming data is invalid due to beam current value of {beam_current}"
+        return f"Assuming data is invalid due to beam current value of {beam_current}"
     except NeXusError:
         return f"Unable to read nxs file at location: {run_file_location}"
 
@@ -52,4 +57,3 @@ def validate_job(rb_number, file_location):
     if validation_error == '':
         return None
     return validation_error
-
