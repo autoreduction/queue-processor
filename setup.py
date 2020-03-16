@@ -34,7 +34,7 @@ setup_requires = ['dash',
                   'plotly',
                   'pytz',
                   'PyMySQL',
-                  'pysftp'
+                  'pysftp',
                   'requests',
                   'sentry_sdk',
                   'service_identity',
