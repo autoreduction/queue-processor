@@ -15,6 +15,7 @@ import json
 import time
 import shutil
 
+from mock import patch
 
 from scripts.manual_operations import manual_remove as remove
 
@@ -57,6 +58,8 @@ if os.name != 'nt':
         def test_end_to_end_wish(self):
             """
             Test that WISH data goes through the system without issue
+
+            Temporarily mock the validation call because files are in test locations
             """
             # Set meta data for test
             self.instrument = 'WISH'
@@ -95,6 +98,8 @@ if os.name != 'nt':
         def test_wish_user_script_failure(self):
             """
             Test that WISH data goes through the system without issue
+
+            Temporarily mock the validation call because files are in test locations
             """
             # Set meta data for test
             self.instrument = 'WISH'

@@ -49,6 +49,7 @@ def validate_job(rb_number, file_location):
     :param file_location: The location of the run file to validate
     :return: A single error message created from the validation functions OR None if all is ok
     """
+    print("***********************CALLING VALIDATE JOB********************")
     ret_vals = list()
     ret_vals.append(is_valid_rb(rb_number))
     ret_vals.append(check_beam_current(file_location))
