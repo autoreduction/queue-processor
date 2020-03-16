@@ -17,6 +17,7 @@ class ClientSettingsFactory:
     """
 
     ignore_kwargs = ['username', 'password', 'host', 'port']
+    valid_types = ['database', 'icat', 'queue', 'sftp']
 
     # pylint:disable=too-many-arguments
     def create(self, settings_type, username, password, host, port, **kwargs):
@@ -34,9 +35,9 @@ class ClientSettingsFactory:
                                                 reduction_complete, reduction_error
         :return: A ClientSettings object
         """
-        if settings_type.lower() not in ['database', 'icat', 'queue']:
-            raise ValueError("Factories creation settings type must be one of: 'database', "
-                             "'icat', 'queue'")
+        if settings_type.lower() not in self.valid_types:
+            raise ValueError(f"Factories creation settings type must be one of:"
+                             f"{','.join(self.valid_types)}")
         kwargs['username'] = username
         kwargs['password'] = password
         kwargs['host'] = host
@@ -49,6 +50,8 @@ class ClientSettingsFactory:
             settings = self._create_icat(**kwargs)
         elif settings_type.lower() == 'queue':
             settings = self._create_queue(**kwargs)
+        elif settings_type.lower() == 'sftp':
+            settings = self._create_sftp(**kwargs)
         return settings
 
     def _create_database(self, **kwargs):
@@ -75,6 +78,14 @@ class ClientSettingsFactory:
         icat_kwargs = ['authentication_type']
         self._test_kwargs(icat_kwargs, kwargs)
         return ICATSettings(**kwargs)
+
+    def _create_sftp(self, **kwargs):
+        """
+        :return: SFTP compatible settings object
+        """
+        sftp_kwargs = []    # No additional kwargs needed for sftp
+        self._test_kwargs(sftp_kwargs, kwargs)
+        return SFTPSettings(**kwargs)
 
     def _test_kwargs(self, expected, actual):
         """
@@ -149,3 +160,11 @@ class ActiveMQSettings(ClientSettings):
         self.reduction_skipped = reduction_skipped
         self.all_subscriptions = [data_ready, reduction_started,
                                   reduction_complete, reduction_error, reduction_skipped]
+
+
+class SFTPSettings(ClientSettings):
+    """
+    SFTP settings object
+    """
+    def __init__(self, **kwargs):  # pylint:disable=useless-super-delegation
+        super(SFTPSettings, self).__init__(**kwargs)
