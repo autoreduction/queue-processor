@@ -25,7 +25,7 @@ CONFIG.read(INI_FILE)
 
 
 def get_str(section, key):
-    return str(CONFIG.get(section, key))
+    return str(CONFIG.get(section, key))  # TODO: Note - I've put raw=True to allow strings with special characters to be passed
 
 
 SETTINGS_FACTORY = ClientSettingsFactory()
@@ -55,3 +55,11 @@ LOCAL_MYSQL_SETTINGS = SETTINGS_FACTORY.create('database',
                                                password='',
                                                host='localhost',
                                                port='3306')
+
+BUSAPPS_SETTINGS = SETTINGS_FACTORY.create('busapps',
+                                            username=get_str('BUSAPPS', 'user'),
+                                            password=get_str('BUSAPPS', 'password'),
+                                            host='',
+                                            port='',
+                                            uows_url=get_str('BUSAPPS', 'uows_url'),
+                                            scheduler_url=get_str('BUSAPPS', 'scheduler_url'))

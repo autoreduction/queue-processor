@@ -46,7 +46,7 @@ class SchedulerIngest:
         return scheduler_client.service.getCycles(sessionId=self.session_id)
 
 
-class SchedulerData:
+class SchedulerDataProcessor:
 
     def __init__(self, user, password, uows_url, scheduler_url):
         self.raw_cycle_data = None
@@ -81,12 +81,12 @@ class SchedulerData:
 
 
 
-user =
-password =
-uows_url =
-scheduler_url =
+user = None
+password = None
+uows_url = None
+scheduler_url = None
 
-scheduler_data = SchedulerData(user, password, uows_url, scheduler_url)
+scheduler_data = SchedulerDataProcessor(user, password, uows_url, scheduler_url)
 scheduler_data.get_data()
 print(scheduler_data.raw_cycle_data)
 print(scheduler_data.raw_maintenance_data)

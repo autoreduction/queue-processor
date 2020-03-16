@@ -34,9 +34,10 @@ class ClientSettingsFactory:
                                                 reduction_complete, reduction_error
         :return: A ClientSettings object
         """
-        if settings_type.lower() not in ['database', 'icat', 'queue']:
+        # TODO: add 'busapps' to 'valid_types' after #483 gets merged
+        if settings_type.lower() not in ['database', 'icat', 'queue', 'busapps']:
             raise ValueError("Factories creation settings type must be one of: 'database', "
-                             "'icat', 'queue'")
+                             "'icat', 'queue', 'busapps'")
         kwargs['username'] = username
         kwargs['password'] = password
         kwargs['host'] = host
@@ -49,6 +50,8 @@ class ClientSettingsFactory:
             settings = self._create_icat(**kwargs)
         elif settings_type.lower() == 'queue':
             settings = self._create_queue(**kwargs)
+        elif settings_type.lower() == 'busapps':
+            settings = self._create_busapps(**kwargs)
         return settings
 
     def _create_database(self, **kwargs):
@@ -75,6 +78,14 @@ class ClientSettingsFactory:
         icat_kwargs = ['authentication_type']
         self._test_kwargs(icat_kwargs, kwargs)
         return ICATSettings(**kwargs)
+
+    def _create_busapps(self, **kwargs):
+        """
+        :return: busapps-ingestion compatible settings object
+        """
+        busapps_kwargs = ['uows_url', 'scheduler_url']
+        self._test_kwargs(busapps_kwargs, kwargs)
+        return BusAppsIngestionSettings(**kwargs)
 
     def _test_kwargs(self, expected, actual):
         """
@@ -149,3 +160,17 @@ class ActiveMQSettings(ClientSettings):
         self.reduction_skipped = reduction_skipped
         self.all_subscriptions = [data_ready, reduction_started,
                                   reduction_complete, reduction_error, reduction_skipped]
+
+
+class BusAppsIngestionSettings(ClientSettings):
+    """
+        BusApps-ingestion settings object
+    """
+    uows = None
+    scheduler = None
+
+    # TODO: Should I use the real API urls as default parameters?
+    def __init__(self, uows_url, scheduler_url, **kwargs):
+        super(BusAppsIngestionSettings, self).__init__(**kwargs)
+        self.uows = uows_url
+        self.scheduler = scheduler_url
