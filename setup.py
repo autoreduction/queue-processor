@@ -41,7 +41,7 @@ setup_requires = ['dash',
                   'stomp.py',
                   'suds-py3',
                   'Twisted',
-                  'yaml']
+                  'PyYAML']
 
 
 if platform.system() == 'Windows':
