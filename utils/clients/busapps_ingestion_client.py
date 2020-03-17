@@ -61,22 +61,16 @@ class BusAppsIngestionClient(AbstractClient):
         Logout from the User Office Web Service (UOWS)
         """
         self._uows_client.service.logout(self._session_id)
+        self._session_id = None
 
-    # @staticmethod
-    # def test_client(client):
-    #     if type(client) is not Client:
-    #         raise AttributeError("The client instance is not of the expected type 'Client'")
-    #     else:
-    #         return True
-
-    def _test_connection(self):
+    def _test_connection(self):  # 'getAllFacilityNames' and 'getFacilityList' chosen as arbitrary test methods
         try:
-            print(self._uows_client.service.getAllFacilityNames())
+            self._uows_client.service.getAllFacilityNames()
         except AttributeError:
             raise TypeError("The UOWS Client does not exist or has not been initialised properly")
 
         try:
-            print(self._scheduler_client.service.getFacilityList(self._session_id))
+            self._scheduler_client.service.getFacilityList(self._session_id)
         except AttributeError:
             raise TypeError("The Scheduler Client does not exist or has not been initialised properly")
         except WebFault:    # Raised by suds if the session id is not valid
@@ -84,13 +78,25 @@ class BusAppsIngestionClient(AbstractClient):
 
         return True
 
+    def ingest_cycle_dates(self):
+        return self._scheduler_client.service.getCycles(sessionId=self._session_id)
 
-baic = BusAppsIngestionClient()
-baic.connect()
-# baic._session_id = None
-print(baic._scheduler_client)
+    def ingest_maintenance_days(self):
+        return self._scheduler_client.service.getOfflinePeriods(sessionId=self._session_id,
+                                                                reason='Maintenance')
 
-baic._test_connection()
+# baic = BusAppsIngestionClient()
+# baic.connect()
+# baic.disconnect()
+# # baic._session_id = None
+# baic.connect()
+# baic._test_connection()
+#
+# sdp = SchedulerDataProcessor()
+# cycles = baic.ingest_cycle_dates()
+# maintn = baic.ingest_maintenance_days()
+# print(f"cycles: {cycles}\nmaintn: {maintn}")
+
 
 # TODO: To Test
 #   - Client (uows) null

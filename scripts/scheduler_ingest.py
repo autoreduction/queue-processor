@@ -19,52 +19,52 @@ class Cycle:
     def add_maintenance_day(self, start, end):
         self.maintenance_days.append(MaintenanceDay(start, end))
 
-
-class SchedulerIngest:
-
-    def __init__(self, user, password, uows_url, scheduler_api):
-        self.user = user
-        self.password = password
-        self.uows_api_url = uows_url
-        self.scheduler_api_url = scheduler_api
-        self.session_id = self.get_session_id()
-
-    def get_session_id(self):
-        uows_client = Client(self.uows_api_url)
-        return uows_client.service.login(Account=self.user, Password=self.password)
-
-    def ingest_maintenance_days(self):
-        scheduler_client = Client(self.scheduler_api_url)
-        return scheduler_client.service.getOfflinePeriods(sessionId=self.session_id,
-                                                          reason='Maintenance')
-
-    def ingest_cycle_dates(self):
-        scheduler_client = Client(self.scheduler_api_url)
-        return scheduler_client.service.getCycles(sessionId=self.session_id)
+# TODO: To delete (functionality migrated to busapps_ingestion_client)
+# class SchedulerIngest:
+#
+#     def __init__(self, user, password, uows_url, scheduler_api):
+#         self.user = user
+#         self.password = password
+#         self.uows_api_url = uows_url
+#         self.scheduler_api_url = scheduler_api
+#         self.session_id = self.get_session_id()
+#
+#     def get_session_id(self):
+#         uows_client = Client(self.uows_api_url)
+#         return uows_client.service.login(Account=self.user, Password=self.password)
+#
+#     def ingest_maintenance_days(self):
+#         scheduler_client = Client(self.scheduler_api_url)
+#         return scheduler_client.service.getOfflinePeriods(sessionId=self.session_id,
+#                                                           reason='Maintenance')
+#
+#     def ingest_cycle_dates(self):
+#         scheduler_client = Client(self.scheduler_api_url)
+#         return scheduler_client.service.getCycles(sessionId=self.session_id)
 
 
 class SchedulerDataProcessor:
 
-    def __init__(self, user, password, uows_url, scheduler_url):
+    def __init__(self):
         self.raw_cycle_data = None
         self.raw_maintenance_data = None
         self.processed_cycle_data = None
-        self.ingest = SchedulerIngest(user, password, uows_url, scheduler_url)
-        self.get_data()
+        # self.ingest = SchedulerIngest(user, password, uows_url, scheduler_url)
+        # self.get_data()
 
-    def get_data(self):
-        self.raw_maintenance_data = self.ingest.ingest_maintenance_days()
-        self.raw_cycle_data = self.ingest.ingest_cycle_dates()
+    # def get_data(self):
+    #     self.raw_maintenance_data = self.ingest.ingest_maintenance_days()
+    #     self.raw_cycle_data = self.ingest.ingest_cycle_dates()
 
-    def clean_data(self):
-        all_cycle_data = self._combine_lists(self.raw_cycle_data, self.raw_maintenance_data)
+    def clean_data(self, raw_cycle_data, raw_maintenance_data):
+        all_cycle_data = self._combine_lists(raw_cycle_data, raw_maintenance_data)
         all_cycle_data = self._sort_by_date(all_cycle_data)
         all_cycle_data.pop(0)  # remove date from year 0001 ToDo: Refactor into function that removes all odd data (including: strange cycle names, impossible dates etc.
-        self.processed_cycle_data = self._process_raw_cycle_list(all_cycle_data)
+        return self._process_raw_cycle_list(all_cycle_data)
 
     @staticmethod
     def _combine_lists(first, second):
-        return first.extend(second)
+        return first.extend(second) # TODO: note - this doesn't work (returns None)
 
     @staticmethod
     def _sort_by_date(dates_list):
