@@ -25,7 +25,7 @@ CONFIG.read(INI_FILE)
 
 
 def get_str(section, key):
-    return str(CONFIG.get(section, key))  # TODO: Note - I've put raw=True to allow strings with special characters to be passed
+    return str(CONFIG.get(section, key, raw=True))  # TODO: Note - I've put raw=True to allow strings with special characters to be passed
 
 
 SETTINGS_FACTORY = ClientSettingsFactory()

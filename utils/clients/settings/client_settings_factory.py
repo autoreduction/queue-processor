@@ -172,5 +172,5 @@ class BusAppsIngestionSettings(ClientSettings):
     # TODO: Should I use the real API urls as default parameters?
     def __init__(self, uows_url, scheduler_url, **kwargs):
         super(BusAppsIngestionSettings, self).__init__(**kwargs)
-        self.uows = uows_url
-        self.scheduler = scheduler_url
+        self.uows_url = uows_url
+        self.scheduler_url = scheduler_url
