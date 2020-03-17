@@ -185,7 +185,8 @@ class DataArchiveCreator:
                                                                    cycle_iteration)
         for file_name in data_files:
             if os.path.isfile(file_name):
-                # If actual file supplied, copy the file to the directory rather than creating a fake empty file
+                # If actual file supplied, copy the file to the directory rather than
+                # creating a fake empty file
                 file_path = os.path.join(path_to_data_dir, os.path.split(file_name)[-1])
                 shutil.copy(file_name, file_path)
                 self.data_files.append(file_path)

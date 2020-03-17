@@ -15,8 +15,8 @@ import json
 import time
 import shutil
 
-from mock import patch
 
+from testing_data import VALID_NEXUS
 from scripts.manual_operations import manual_remove as remove
 
 from utils import service_handling as external
@@ -135,20 +135,20 @@ if os.name != 'nt':
             :param vars_script:  The content to use in the reduce_vars.py file
             :return: file_path to the reduced data
             """
-            raw_file = '{}{}.nxs'.format(self.instrument, self.run_number)
+
             # Create and add data to archive
             self.data_archive_creator.make_data_archive([self.instrument], 19, 19, 1)
             self.data_archive_creator.add_reduce_script(instrument=self.instrument,
                                                         file_content=reduce_script)
             self.data_archive_creator.add_reduce_vars_script(self.instrument, vars_script)
-            self.data_archive_creator.add_data_to_most_recent_cycle(self.instrument, raw_file)
+            self.data_archive_creator.add_data_to_most_recent_cycle(self.instrument, VALID_NEXUS)
 
             # Make temporary location to add reduced files to
             self._make_reduction_directory(self.instrument, self.rb_number, self.run_number)
 
             # Submit message to activemq
             cycle_path = self.archive_explorer.get_cycle_directory(self.instrument, 19, 1)
-            return os.path.join(cycle_path, raw_file)
+            return os.path.join(cycle_path, VALID_NEXUS)
 
         @staticmethod
         def _make_reduction_directory(instrument, rb_number, run_number):
