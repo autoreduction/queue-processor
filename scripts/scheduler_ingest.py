@@ -22,9 +22,6 @@ class Cycle:
 
 class SchedulerIngest:
 
-    #ToDo: Should make this a client
-    #ToDo: Needs to have default of getting info from credentials file
-
     def __init__(self, user, password, uows_url, scheduler_api):
         self.user = user
         self.password = password
@@ -81,15 +78,15 @@ class SchedulerDataProcessor:
 
 
 
-user = None
-password = None
-uows_url = None
-scheduler_url = None
-
-scheduler_data = SchedulerDataProcessor(user, password, uows_url, scheduler_url)
-scheduler_data.get_data()
-print(scheduler_data.raw_cycle_data)
-print(scheduler_data.raw_maintenance_data)
+# user = None
+# password = None
+# uows_url = None
+# scheduler_url = None
+#
+# scheduler_data = SchedulerDataProcessor(user, password, uows_url, scheduler_url)
+# scheduler_data.get_data()
+# print(scheduler_data.raw_cycle_data)
+# print(scheduler_data.raw_maintenance_data)
 
 
         # def partition_cycle_list(cycle_list):
