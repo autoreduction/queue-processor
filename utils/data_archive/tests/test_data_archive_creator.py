@@ -11,6 +11,7 @@ import os
 import unittest
 import tempfile
 
+from testing_data import VALID_NEXUS
 from utils.data_archive.data_archive_creator import DataArchiveCreator
 
 
@@ -118,7 +119,7 @@ class TestDataArchiveCreator(unittest.TestCase):
                                           'Instrument', 'data', 'cycle_01_2', 'test-file.nxs')
         self.assertTrue(os.path.isfile(expected_file_path))
 
-    def test_add_dat_files_invalid_type(self):
+    def test_add_data_files_invalid_type(self):
         self.dac.make_data_archive(['GEM'], 17, 18, 2)
         self.assertRaisesRegex(TypeError, "data_files is of: <class 'NoneType'>.",
                                self.dac.add_data_to_most_recent_cycle,
@@ -129,6 +130,13 @@ class TestDataArchiveCreator(unittest.TestCase):
         self.assertRaisesRegex(RuntimeError, "Unable to create file at ",
                                self.dac.add_data_to_most_recent_cycle, 'POLARIS',
                                'test-file.nxs')
+
+    def test_add_data_files_copy_real_file(self):
+        self.dac.make_data_archive(['GEM'], 17, 18, 2)
+        expected_file_path = os.path.join(self.test_output_directory, 'data-archive', 'NDXGEM',
+                                          'Instrument', 'data', 'cycle_18_2', 'VALID.nxs')
+        self.dac.add_data_to_most_recent_cycle('GEM', VALID_NEXUS)
+        self.assertTrue(os.path.isfile(expected_file_path))
 
     def test_add_journal_file_without_archive(self):
         self.assertRaisesRegex(RuntimeError, "Unable to create file at ",

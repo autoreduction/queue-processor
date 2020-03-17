@@ -184,8 +184,14 @@ class DataArchiveCreator:
                                                                    cycle_year,
                                                                    cycle_iteration)
         for file_name in data_files:
-            file_path = os.path.join(path_to_data_dir, file_name)
-            self.create_file_at_location(file_path)
+            if os.path.isfile(file_name):
+                # If actual file supplied, copy the file to the directory rather than creating a fake empty file
+                file_path = os.path.join(path_to_data_dir, os.path.split(file_name)[-1])
+                shutil.copy(file_name, file_path)
+                self.data_files.append(file_path)
+            else:
+                file_path = os.path.join(path_to_data_dir, file_name)
+                self.create_file_at_location(file_path)
 
     def add_journal_file(self, instrument, file_contents):
         """

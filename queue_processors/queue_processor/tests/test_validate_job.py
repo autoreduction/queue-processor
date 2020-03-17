@@ -7,11 +7,11 @@
 """
 Test cases for functions that valid an autoreduction job should run
 """
-import os
 import unittest
 from mock import patch
 
 from queue_processors.queue_processor import validate_job as validate
+from testing_data import VALID_NEXUS, ZERO_BEAM_NEXUS
 
 
 class TestValidateJob(unittest.TestCase):
@@ -21,12 +21,9 @@ class TestValidateJob(unittest.TestCase):
 
     def setUp(self):
         """ create locations for valid, invalid and zero beam nxs files """
-        self.valid_nxs_location = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                               'valid.nxs')
-        self.invalid_nxs_location = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                                 'invalid_location.nxs')
-        self.zero_beam_nxs_location = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                                   'zero_beam.nxs')
+        self.valid_nxs_location = VALID_NEXUS
+        self.invalid_nxs_location = 'invalid_location.nxs'
+        self.zero_beam_nxs_location = ZERO_BEAM_NEXUS
 
     def test_check_beam_current_valid(self):
         """ Validation should return None if all is okay """
