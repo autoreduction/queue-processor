@@ -134,7 +134,7 @@ class TestDataArchiveCreator(unittest.TestCase):
     def test_add_data_files_copy_real_file(self):
         self.dac.make_data_archive(['GEM'], 17, 18, 2)
         expected_file_path = os.path.join(self.test_output_directory, 'data-archive', 'NDXGEM',
-                                          'Instrument', 'data', 'cycle_18_2', 'VALID.nxs')
+                                          'Instrument', 'data', 'cycle_18_2', 'WISH101.nxs')
         self.dac.add_data_to_most_recent_cycle('GEM', VALID_NEXUS)
         self.assertTrue(os.path.isfile(expected_file_path))
 
