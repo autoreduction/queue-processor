@@ -43,32 +43,33 @@ class Cycle:
 #         return scheduler_client.service.getCycles(sessionId=self.session_id)
 
 
+# TODO: Might want to remove class, just make as a static library of methods
 class SchedulerDataProcessor:
 
-    def __init__(self):
-        self.raw_cycle_data = None
-        self.raw_maintenance_data = None
-        self.processed_cycle_data = None
-        # self.ingest = SchedulerIngest(user, password, uows_url, scheduler_url)
-        # self.get_data()
+    def process_data(self, data):
+        sorted_data = self._sort_by_date(data)
 
-    # def get_data(self):
-    #     self.raw_maintenance_data = self.ingest.ingest_maintenance_days()
-    #     self.raw_cycle_data = self.ingest.ingest_cycle_dates()
 
     def clean_data(self, raw_cycle_data, raw_maintenance_data):
         all_cycle_data = self._combine_lists(raw_cycle_data, raw_maintenance_data)
         all_cycle_data = self._sort_by_date(all_cycle_data)
-        all_cycle_data.pop(0)  # remove date from year 0001 ToDo: Refactor into function that removes all odd data (including: strange cycle names, impossible dates etc.
-        return self._process_raw_cycle_list(all_cycle_data)
+        for i, d in enumerate(all_cycle_data):
+            print(d.start)
+        return all_cycle_data
+        # all_cycle_data = self._sort_by_date(all_cycle_data)
+        # all_cycle_data.pop(0)  # remove date from year 0001 ToDo: Refactor into function that removes all odd data (including: strange cycle names, impossible dates etc.
+        # return self._process_raw_cycle_list(all_cycle_data)
 
     @staticmethod
     def _combine_lists(first, second):
-        return first.extend(second) # TODO: note - this doesn't work (returns None)
+        # print(f"first type: {len(first)} second type: {len(second)}")
+        combined = first + second  # Note - previously used "extend" method returns None (set first param as result)
+        # print(f"combined: {len(combined)}")
+        return combined
 
     @staticmethod
-    def _sort_by_date(dates_list):
-        return sorted(dates_list, key=lambda date: date.start)
+    def _sort_by_date(items):
+        return sorted(items, key=lambda date: date.start)
 
     @staticmethod
     def _process_raw_cycle_list(all_cycle_data):

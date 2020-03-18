@@ -85,17 +85,20 @@ class BusAppsIngestionClient(AbstractClient):
         return self._scheduler_client.service.getOfflinePeriods(sessionId=self._session_id,
                                                                 reason='Maintenance')
 
-# baic = BusAppsIngestionClient()
-# baic.connect()
-# baic.disconnect()
-# # baic._session_id = None
-# baic.connect()
-# baic._test_connection()
-#
-# sdp = SchedulerDataProcessor()
-# cycles = baic.ingest_cycle_dates()
-# maintn = baic.ingest_maintenance_days()
-# print(f"cycles: {cycles}\nmaintn: {maintn}")
+baic = BusAppsIngestionClient()
+baic.connect()
+
+sdp = SchedulerDataProcessor()
+cycles = baic.ingest_cycle_dates()
+maintn = baic.ingest_maintenance_days()
+
+# print(type(cycles[0]))
+# print(dict(cycles[0]))
+# print(type(maintn[0]))
+# print(maintn[0])
+
+print(sdp.clean_data(cycles, maintn))
+
 
 
 # TODO: To Test
