@@ -5,7 +5,7 @@
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 """
-Paths to be data used for testing the project that is not easy to mock / fake e.g. meta data complete nexus file
+Paths to data used for testing the project that is not easy to mock / fake e.g. meta data complete nexus file
 """
 import os
 

@@ -1,7 +1,7 @@
 # ############################################################################### #
 # Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
 #
-# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 """
@@ -14,7 +14,7 @@ from nexusformat.nexus.tree import NeXusError
 def is_valid_rb(rb_number):
     """
     Detects if the RB number is valid e.g. (above 0 and not a string)
-    :param rb_number:
+    :param rb_number: The RB number to be validated
     :return: An error message if one is generated or None if the RB is valid
     """
     try:
@@ -23,12 +23,13 @@ def is_valid_rb(rb_number):
             return None
         return "Calibration file detected (RB Number less than or equal to 0)"
     except ValueError:
-        return "Calibration file detected (RB Number is a string)"
+        return "Calibration file detected (RB Number is not an integer)"
 
 
 def check_beam_current(run_file_location):
     """
-    Ensure that that there is value for beam current in the file else we can assume the beam is off
+    Ensure that there is value greater than 0.1uAmps for beam current in the file,
+    else we can assume the beam is off
     :param run_file_location: The location of the run file to inspect
     :return: An error message if one is generated or None if run has beam current
     """
@@ -49,7 +50,6 @@ def validate_job(rb_number, file_location):
     :param file_location: The location of the run file to validate
     :return: A single error message created from the validation functions OR None if all is ok
     """
-    print("***********************CALLING VALIDATE JOB********************")
     ret_vals = list()
     ret_vals.append(is_valid_rb(rb_number))
     ret_vals.append(check_beam_current(file_location))

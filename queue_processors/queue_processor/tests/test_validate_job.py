@@ -16,7 +16,7 @@ from testing_data import VALID_NEXUS, ZERO_BEAM_NEXUS
 
 class TestValidateJob(unittest.TestCase):
     """
-    Test cases for functions that valid an autoreduction job should run
+    Test cases for functions that validate if an autoreduction job should run
     """
 
     def setUp(self):
@@ -47,7 +47,7 @@ class TestValidateJob(unittest.TestCase):
 
     def test_is_valid_rb_invalid_string(self):
         """ Ensure that the correct error message is returned if the RB is a string """
-        expected = "Calibration file detected (RB Number is a string)"
+        expected = "Calibration file detected (RB Number is not an integer)"
         actual = validate.is_valid_rb('test')
         self.assertEqual(expected, actual)
 
@@ -66,8 +66,10 @@ class TestValidateJob(unittest.TestCase):
     @patch('queue_processors.queue_processor.validate_job.check_beam_current')
     def test_validate_job_one_invalid(self, mock_check_beam, mock_is_valid_rb):
         """
-        Test that just a single expected error message if one of the validation functions fail
-        As the functionality of these functions is tested above, I have mocked them here.
+        Test that just a single expected error message is returned if one of the validation
+        functions fail.
+        As the functionality of the actual validation functions is tested above,
+        I have mocked them here so we only test the logic of the error construction.
         """
         expected = 'Invalid RB'
         mock_is_valid_rb.return_value = expected
