@@ -11,6 +11,19 @@ from nexusformat.nexus import nxload
 from nexusformat.nexus.tree import NeXusError
 
 
+def float_mean(list_of_floats):
+    """
+    Calculate the mean value of a list of floats -
+    This is not possible using standard libs in py < 3.8 (replaced by statistics.fmean())
+    :param list_of_floats: A list of floats to find the mean value
+    :return: The mean value of the list (as a float)
+    """
+    total = 0.0
+    for num in list_of_floats:
+        total += num
+    return total / len(list_of_floats)
+
+
 def is_valid_rb(rb_number):
     """
     Detects if the RB number is valid e.g. (above 0 and not a string)
@@ -28,17 +41,18 @@ def is_valid_rb(rb_number):
 
 def check_beam_current(run_file_location):
     """
-    Ensure that there is value greater than 0.1uAmps for beam current in the file,
+    Ensure that the mean value of beam current is larger than 0.1uAmps in the file,
     else we can assume the beam is off
     :param run_file_location: The location of the run file to inspect
     :return: An error message if one is generated or None if run has beam current
     """
     try:
         nxs_file = nxload(run_file_location, 'r')
-        beam_current = nxs_file['raw_data_1/runlog/dae_beam_current/value'].nxdata[0]
-        if beam_current >= 0.1:
+        beam_current_list = nxs_file['raw_data_1/runlog/dae_beam_current/value'].nxdata
+        beam_current_avg = float_mean(beam_current_list)
+        if beam_current_avg >= 0.1:
             return None
-        return f"Assuming data is invalid due to beam current value of {beam_current}"
+        return f"Assuming data is invalid due to beam current value of {beam_current_avg}"
     except NeXusError:
         return f"Unable to read nxs file at location: {run_file_location}"
 

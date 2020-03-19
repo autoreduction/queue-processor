@@ -90,3 +90,9 @@ class TestValidateJob(unittest.TestCase):
         mock_is_valid_rb.assert_called_once()
         mock_check_beam.assert_called_once()
         self.assertEqual(expected, actual)
+
+    def test_float_mean_valid(self):
+        """ Ensure that the mean for a list of floats is correctly calculated """
+        expected = 2.0
+        actual = validate.float_mean([1.0, 2.0, 3.0])
+        self.assertEqual(expected, actual)
