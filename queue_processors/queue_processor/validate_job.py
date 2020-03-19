@@ -34,9 +34,9 @@ def is_valid_rb(rb_number):
         rb_number = int(rb_number)
         if rb_number > 0:
             return None
-        return "Calibration file detected (RB Number less than or equal to 0)"
     except ValueError:
-        return "Calibration file detected (RB Number is not an integer)"
+        pass
+    return f"RB Number is: {rb_number}. Assuming this is a calibration file."
 
 
 def check_beam_current(run_file_location):

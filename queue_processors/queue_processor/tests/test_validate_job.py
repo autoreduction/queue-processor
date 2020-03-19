@@ -47,13 +47,13 @@ class TestValidateJob(unittest.TestCase):
 
     def test_is_valid_rb_invalid_string(self):
         """ Ensure that the correct error message is returned if the RB is a string """
-        expected = "Calibration file detected (RB Number is not an integer)"
+        expected = "RB Number is: test. Assuming this is a calibration file."
         actual = validate.is_valid_rb('test')
         self.assertEqual(expected, actual)
 
     def test_is_valid_rb_invalid_0(self):
         """ Ensure that the correct error message is returned if the RB is 0 or less"""
-        expected = "Calibration file detected (RB Number less than or equal to 0)"
+        expected = "RB Number is: 0. Assuming this is a calibration file."
         actual = validate.is_valid_rb(0)
         self.assertEqual(expected, actual)
 
