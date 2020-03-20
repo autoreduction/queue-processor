@@ -1,6 +1,9 @@
+import re
+from datetime import datetime
+
 from suds import Client
 
-
+# TODO: can make these classes serialisable (see online tutorial)
 class MaintenanceDay:
 
     def __init__(self, start, end):
@@ -46,74 +49,84 @@ class Cycle:
 # TODO: Might want to remove class, just make as a static library of methods
 class SchedulerDataProcessor:
 
-    def process_data(self, data):
-        sorted_data = self._sort_by_date(data)
+    def __init__(self):
 
+        self._earliest_possible_date = datetime(2000, 1, 1)
+        # TODO: confirm what is to be accepted (vs what is invalid)
+        #   Current regex =  4 digits | '/' | 1 or more digit/letter(s) | end
+        self._cycle_name_regex = "\d{4}/\w*$"
+        self._maintenance_specific_key = 'facility'
+        self._datetime_fields = ["start", "end"]
+        self._sort_by_field = "start"
 
-    def clean_data(self, raw_cycle_data, raw_maintenance_data):
-        all_cycle_data = self._combine_lists(raw_cycle_data, raw_maintenance_data)
-        all_cycle_data = self._sort_by_date(all_cycle_data)
-        for i, d in enumerate(all_cycle_data):
-            print(d.start)
-        return all_cycle_data
-        # all_cycle_data = self._sort_by_date(all_cycle_data)
-        # all_cycle_data.pop(0)  # remove date from year 0001 ToDo: Refactor into function that removes all odd data (including: strange cycle names, impossible dates etc.
-        # return self._process_raw_cycle_list(all_cycle_data)
+    def convert_raw_to_structured(self, raw_cycle_data, raw_maintenance_data):
+        pre_processed = self._pre_process(raw_cycle_data, raw_maintenance_data)
+        processed = self._process(pre_processed)
+        return processed
+
+    def _pre_process(self, raw_cycle_data, raw_maintenance_data):
+        combined_list = self._combine_lists(raw_cycle_data, raw_maintenance_data)
+        sorted_list = self._sort_by_date(combined_list)
+        stripped_list = self._strip_timezone(sorted_list)
+        cleaned_list = self._clean_data(stripped_list)
+        return cleaned_list
+
+    def print_start_dates(self, list):  #TODO: Note - this is just used for testing
+        for idx, item in enumerate(list):
+            print(f"{idx}: {item['start']}")
+
+    def _clean_data(self, list):
+        print("cleaning..")
+        print(f"Original length: {len(list)}")
+        clean_list = []
+        for item in list:
+            if 'name' in item and not re.search(self._cycle_name_regex, item['name']):
+                print(f"Item removed due to strange cycle name ({item['name']}).\nFull item: {item}")
+            elif item['start'] < self._earliest_possible_date:
+                print(f"Item removed due to impossible date ({item['start']}).\nFull item: {item}")
+            else:
+                clean_list.append(item)
+        print(f"New length: {len(clean_list)}")
+        return clean_list
 
     @staticmethod
     def _combine_lists(first, second):
-        # print(f"first type: {len(first)} second type: {len(second)}")
-        combined = first + second  # Note - previously used "extend" method returns None (set first param as result)
-        # print(f"combined: {len(combined)}")
+        print("combining..")
+        combined = first + second
         return combined
 
-    @staticmethod
-    def _sort_by_date(items):
-        return sorted(items, key=lambda date: date.start)
+    def _sort_by_date(self, items):
+        print("sorting..")
+        return sorted(items, key=lambda date: date[self._sort_by_field])
 
-    @staticmethod
-    def _process_raw_cycle_list(all_cycle_data):
-        #ToDo: Implement such that we create a list of cycles with child maintenance days
-        raise NotImplementedError()
-
-
-
-
-# user = None
-# password = None
-# uows_url = None
-# scheduler_url = None
-#
-# scheduler_data = SchedulerDataProcessor(user, password, uows_url, scheduler_url)
-# scheduler_data.get_data()
-# print(scheduler_data.raw_cycle_data)
-# print(scheduler_data.raw_maintenance_data)
+    def _strip_timezone(self, items):
+        stripped_items = items.copy()
+        for item in stripped_items:
+            for key in self._datetime_fields:
+                if key in item:
+                    item[key] = datetime.strptime(str(item[key]).split("+")[0], "%Y-%m-%d %H:%M:%S")    # TODO: Refactor!!
+        return stripped_items
 
 
-        # def partition_cycle_list(cycle_list):
-        #     partitioned_cycle_list = []
-        #     for item in cycle_list:
-        #         try:
-        #             print(f"Cycle {item.name}: {item.start}")
-        #
-        # def create_cycle_table(cycle_list):
-        #     cycle_data_frame = pd.DataFrame()
-        #     cycle_entry = {}
-        #     for item in cycle_list:
-        #         try:
-        #             # Is cycle object
-        #             print(f"Cycle {item.name}: {item.start}")
-        #             if cycle_entry:
-        #                 print(f"Transforming {cycle_entry} into data frame")
-        #                 print(f"Appending {pd.DataFrame(cycle_entry)} to {cycle_data_frame}")
-        #                 cycle_data_frame.append(pd.DataFrame(cycle_entry))
-        #                 cycle_data_frame = {}
-        #             cycle_entry['Cycle'] = [item.name]
-        #             cycle_entry['Start'] = [item.start]
-        #             cycle_entry['End'] = [item.end]
-        #             cycle_entry['Maintenance day(s)'] = [[]]
-        #         except AttributeError:
-        #             # is offline period object
-        #             print(f"Maintenance day: {item.start}")
-        #             cycle_entry['Maintenance day(s)'].append(item.start)
-        #     return cycle_data_frame
+    def _process(self, items):
+        cycle_list = []
+        idx = 0
+        while idx < len(items):
+            # TODO: I've avoided using try/except for expected behaviour, unlike the draft implementation
+            #   (i.e. an exception is only raised in exceptional circumstances) - in line with good code practice.
+            try:
+                # print(f"{idx} adding cycle: {list[idx]}")
+                cycle = Cycle(items[idx]['name'],
+                              items[idx]['start'],
+                              items[idx]['end'])
+                idx += 1
+                while idx < len(items) and self._maintenance_specific_key in items[idx]:
+                    # print(f"{idx} adding maintn: {list[idx]}")
+                    cycle.add_maintenance_day(items[idx]['start'],
+                                              items[idx]['end'])
+                    idx += 1
+                cycle_list.append(cycle)
+            except AttributeError:
+                raise RuntimeError("Unexpected list entry encountered. Ensure to sort the list before processing")
+
+        return cycle_list

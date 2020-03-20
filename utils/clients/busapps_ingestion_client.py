@@ -7,6 +7,9 @@
 """
 Client class for ingesting BusApps data via SOAP
 """
+import json
+from datetime import datetime
+
 from scripts.scheduler_ingest import SchedulerDataProcessor
 from utils.clients.abstract_client import AbstractClient
 from utils.clients.connection_exception import ConnectionException
@@ -85,19 +88,72 @@ class BusAppsIngestionClient(AbstractClient):
         return self._scheduler_client.service.getOfflinePeriods(sessionId=self._session_id,
                                                                 reason='Maintenance')
 
+
+#TODO: Please note - all of the code below is for testing purposes only.
+
+# TODO: Note - the commented-out code below dumps data locally
+#   Only need to run if want to update local version
+
 baic = BusAppsIngestionClient()
 baic.connect()
-
-sdp = SchedulerDataProcessor()
 cycles = baic.ingest_cycle_dates()
 maintn = baic.ingest_maintenance_days()
 
-# print(type(cycles[0]))
-# print(dict(cycles[0]))
-# print(type(maintn[0]))
-# print(maintn[0])
+# cycles_dict_items = [dict(item) for item in cycles]
+# maintn_dict_items = [dict(item) for item in maintn]
+#
+# print(repr(cycles[0].start))
+#
+# with open("ingested_cycle_dates", "w") as fh:
+#     json.dump(cycles_dict_items, fh, default=str)
+#
+# with open("ingested_maintn_dates", "w") as fh:
+#     json.dump(maintn_dict_items, fh, default=str)
+#
 
-print(sdp.clean_data(cycles, maintn))
+# def change_datetime_format(list):
+#     keys_to_convert = ["start", "end"]
+#     # print(list[0])
+#     for item in list:
+#         for key in keys_to_convert:
+#             if key in item:
+#                 without_timezone = item[key].split("+")[0]
+#                 item[key] = datetime.strptime(without_timezone, "%Y-%m-%d %H:%M:%S")
+#     # print(list[0])
+#     return list
+
+# with open("ingested_cycle_dates", "r") as fh:
+#     cycles = json.load(fh)
+#
+# with open("ingested_maintn_dates", "r") as fh:
+#     maintn = json.load(fh)
+#
+# # print(f"c: {cycles[0]}, m: {maintn[0]}")
+# cycles = to_datetime(cycles)
+# maintn = to_datetime(maintn)
+
+# print(f"c: {cycles[0]}, m: {maintn[0]}")
+# exit()
+
+sdp = SchedulerDataProcessor()
+
+# print(f"normal: type={type(cycles)}, itemtype={type(cycles[0])},some data=\n{cycles[:3]}")
+# sdp.print_start_dates(cycles[:3])
+#
+# cycles_dict = []
+# for item in cycles[:3]:
+#     cycles_dict.append(dict(item))
+#
+# print(f"dict items: type={type(cycles_dict)}, itemtype={type(cycles_dict[0])},some data=\n{cycles_dict[:3]}")
+
+
+# sdp.print_start_dates()
+cycle_list = sdp.convert_raw_to_structured(cycles, maintn)
+
+for c in cycle_list:
+    print(c)
+    for m in c.maintenance_days:
+        print(f"    {m}")
 
 
 
