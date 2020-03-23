@@ -34,13 +34,15 @@ setup_requires = ['dash',
                   'plotly',
                   'pytz',
                   'PyMySQL',
+                  'pysftp',
                   'requests',
                   'sentry_sdk',
                   'service_identity',
                   'SQLAlchemy',
                   'stomp.py',
                   'suds-py3',
-                  'Twisted']
+                  'Twisted',
+                  'PyYAML']
 
 
 if platform.system() == 'Windows':
