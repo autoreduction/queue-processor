@@ -41,7 +41,7 @@ setup_requires = ['dash',
                   'SQLAlchemy',
                   'stomp.py',
                   'suds-py3',
-                  'Twisted',
+                  'Twisted==19.10.0',
                   'PyYAML']
 
 
