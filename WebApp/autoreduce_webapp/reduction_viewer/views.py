@@ -411,6 +411,7 @@ def run_started_by(started_by=None):
                 started_by = f"{user_record.first_name} {user_record.last_name}"
             except ObjectDoesNotExist as exception:
                 LOGGER.error(exception)
+                started_by=None
         elif started_by < -1:
             started_by = None
     return started_by
