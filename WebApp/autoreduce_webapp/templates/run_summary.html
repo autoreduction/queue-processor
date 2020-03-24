@@ -36,6 +36,11 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div>
+                                    {% if started_by is not null %}
+                                    <strong>Started by:</strong> {{ started_by }}
+                                    {% endif %}
+                                </div>
+                                <div>
                                     <strong>Status:</strong> <strong class="text-{% colour_table_row run.status.value %}">{{ run.status.value }}</strong>
                                 </div>
                                 <div>

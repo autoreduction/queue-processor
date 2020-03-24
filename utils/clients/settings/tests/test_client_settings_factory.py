@@ -70,8 +70,8 @@ class TestClientSettingsFactory(unittest.TestCase):
         self.assertEqual(actual.auth, 'test-auth')
 
     def test_invalid_not_a_factory(self):
-        self.assertRaisesRegex(ValueError, "Factories creation settings type must be one of: "
-                                           "'database', 'icat', 'queue'",
+        self.assertRaisesRegex(ValueError, f"Factories creation settings type must be one of:"
+                                           f"{','.join(self.factory.valid_types)}",
                                self.factory.create, 'not-factory', 'user', 'pass', 'host', 'port')
 
     def test_invalid_database_args(self):
