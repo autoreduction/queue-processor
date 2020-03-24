@@ -67,6 +67,14 @@ class BusAppsIngestionClient(AbstractClient):
         self._session_id = None
 
     def _test_connection(self):  # 'getAllFacilityNames' and 'getFacilityList' chosen as arbitrary test methods
+        """
+        Test whether there is a connection to the User Office Web Service (UOWS)
+        :return: True if there is a connection.
+        :raises TypeError:
+            If the UOWS or Scheduler client does not exist or has not been initialised properly.
+            Note: an error message will describe which client is at fault.
+        :raises ConnectionException: If the session id is not valid.
+        """
         try:
             self._uows_client.service.getAllFacilityNames()
         except AttributeError:
@@ -82,9 +90,17 @@ class BusAppsIngestionClient(AbstractClient):
         return True
 
     def ingest_cycle_dates(self):
+        """
+        Ingests cycles dates from the Scheduler client.
+        :return: Cycle data as a list of 'sudsobject's
+        """
         return self._scheduler_client.service.getCycles(sessionId=self._session_id)
 
     def ingest_maintenance_days(self):
+        """
+        Ingests maintenance day dates from the Scheduler client.
+        :return: Maintenance day data as a list of 'sudsobject's
+        """
         return self._scheduler_client.service.getOfflinePeriods(sessionId=self._session_id,
                                                                 reason='Maintenance')
 
