@@ -134,6 +134,9 @@ class SchedulerDataProcessor:
         each containing a list of MaintenanceDay objects - all which fall within the given cycle period.
         :param data: A pre-processed list containing all valid cycle and maintenance day data items.
         :return: A list of Cycle objects containing a list of 0 or more MaintenanceDay objects.
+        :raises RuntimeError:
+            If a maintenance day is encountered in the data before a cycle.
+            This will only occur if the data has not been properly pre-processed.
         """
         cycle_list = []
         idx = 0
