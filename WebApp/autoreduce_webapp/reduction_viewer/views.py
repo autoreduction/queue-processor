@@ -130,12 +130,12 @@ def run_queue(request):
                                   icat.get_owned_instruments(int(request.user.username)),
                                   pending_jobs)  # check instrument
     # Initialise list to contain the names of user/team that started runs
-    started_by=[]
+    started_by = []
     # cycle through all the filtered runs and retrieve the name of the user/team that started the run
     for run in pending_jobs:
-        started_by.append(run_started_by(run.started_by))
+        started_by.append(started_by_id_to_name(run.started_by))
     # zip the run information with the user/team name to enable simultaneous iteration with django
-    context_dictionary = {'queue': zip(pending_jobs,started_by)}
+    context_dictionary = {'queue': zip(pending_jobs, started_by)}
     return context_dictionary
 
 
@@ -374,7 +374,7 @@ def run_summary(request, instrument_name=None, run_number=None, run_version=0):
                                        run_number=run_number,
                                        run_version=run_version)
         history = ReductionRun.objects.filter(run_number=run_number).order_by('-run_version')
-        started_by = run_started_by(run.started_by)
+        started_by = started_by_id_to_name(run.started_by)
 
         location_list = run.reduction_location.all()
         reduction_location = None
@@ -394,27 +394,34 @@ def run_summary(request, instrument_name=None, run_number=None, run_version=0):
 
     return context_dictionary
 
-def run_started_by(started_by=None):
+
+def started_by_id_to_name(started_by_id=None):
     """
-    Returns name of the user or team that submitted an autoreduction run given the user ID
-    :param started_by:
+    Returns name of the user or team that submitted an autoreduction run given an ID number
+    :param started_by_id: The ID of the user who started the run, or a control code if not started by a user
     :return:
+        If started by a valid user, returns the name either of the user in the format '[forename] [surname]'.
+        If started automatically, returns "Autoreduciton service".
+        If started manually, returns "Development team".
+        Otherwise, returns None.
     """
-    if started_by is not None:
-        if started_by == -1:
-            started_by = "Development team"
-        elif started_by == 0:
-            started_by = "Autoreduction service"
-        elif started_by > 0:
+    name = None
+    if started_by_id is not None:
+        if started_by_id == -1:
+            name = "Development team"
+        elif started_by_id == 0:
+            name = "Autoreduction service"
+        elif started_by_id > 0:
             try:
-                user_record = User.objects.get(id=started_by)
-                started_by = f"{user_record.first_name} {user_record.last_name}"
+                user_record = User.objects.get(id=started_by_id)
+                name = f"{user_record.first_name} {user_record.last_name}"
             except ObjectDoesNotExist as exception:
                 LOGGER.error(exception)
-                started_by=None
-        elif started_by < -1:
-            started_by = None
-    return started_by
+                name = None
+        elif started_by_id < -1:
+            name = None
+    return name
+
 
 @login_and_uows_valid
 @check_permissions
@@ -492,6 +499,7 @@ def experiment_summary(request, reference_number=None):
         runs = ReductionRun.objects.filter(experiment=experiment).order_by('-run_version')
         data = []
         reduced_data = []
+        started_by = []
         for run in runs:
             for location in run.data_location.all():
                 if location not in data:
@@ -499,6 +507,10 @@ def experiment_summary(request, reference_number=None):
             for location in run.reduction_location.all():
                 if location not in reduced_data:
                     reduced_data.append(location)
+            started_by.append(started_by_id_to_name(run.started_by))
+        sorted_runs = sorted(runs, key=operator.attrgetter('last_updated'), reverse=True)
+        runs_with_started_by = zip(sorted_runs, started_by)
+
         try:
             if DEVELOPMENT_MODE:
                 # If we are in development mode use user/password for ICAT from django settings
@@ -523,7 +535,7 @@ def experiment_summary(request, reference_number=None):
             }
         context_dictionary = {
             'experiment': experiment,
-            'runs': sorted(runs, key=operator.attrgetter('last_updated'), reverse=True),
+            'runs_with_started_by': runs_with_started_by,
             'experiment_details': experiment_details,
             'data': data,
             'reduced_data': reduced_data,
