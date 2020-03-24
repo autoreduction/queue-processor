@@ -492,6 +492,7 @@ def experiment_summary(request, reference_number=None):
         runs = ReductionRun.objects.filter(experiment=experiment).order_by('-run_version')
         data = []
         reduced_data = []
+        started_by = []
         for run in runs:
             for location in run.data_location.all():
                 if location not in data:
@@ -499,6 +500,10 @@ def experiment_summary(request, reference_number=None):
             for location in run.reduction_location.all():
                 if location not in reduced_data:
                     reduced_data.append(location)
+            started_by.append(run_started_by(run.started_by))
+        sorted_runs = sorted(runs, key=operator.attrgetter('last_updated'), reverse=True)
+        runs_with_started_by = zip(sorted_runs, started_by)
+
         try:
             if DEVELOPMENT_MODE:
                 # If we are in development mode use user/password for ICAT from django settings
@@ -523,7 +528,7 @@ def experiment_summary(request, reference_number=None):
             }
         context_dictionary = {
             'experiment': experiment,
-            'runs': sorted(runs, key=operator.attrgetter('last_updated'), reverse=True),
+            'runs_with_started_by': runs_with_started_by,
             'experiment_details': experiment_details,
             'data': data,
             'reduced_data': reduced_data,
