@@ -119,7 +119,6 @@ def run_queue(request):
     processing_status = StatusUtils().get_processing()
     pending_jobs = ReductionRun.objects.filter(Q(status=queued_status) |
                                                Q(status=processing_status)).order_by('created')
-
     # Filter those which the user shouldn't be able to see
     if USER_ACCESS_CHECKS and not request.user.is_superuser:
         with ICATCache(AUTH='uows', SESSION={'sessionid': request.session['sessionid']}) as icat:
@@ -130,8 +129,13 @@ def run_queue(request):
             pending_jobs = filter(lambda job: job.instrument.name in
                                   icat.get_owned_instruments(int(request.user.username)),
                                   pending_jobs)  # check instrument
-
-    context_dictionary = {'queue': pending_jobs}
+    # Initialise list to contain the names of user/team that started runs
+    started_by = []
+    # cycle through all the filtered runs and retrieve the name of the user/team that started the run
+    for run in pending_jobs:
+        started_by.append(started_by_id_to_name(run.started_by))
+    # zip the run information with the user/team name to enable simultaneous iteration with django
+    context_dictionary = {'queue': zip(pending_jobs, started_by)}
     return context_dictionary
 
 
@@ -370,20 +374,7 @@ def run_summary(request, instrument_name=None, run_number=None, run_version=0):
                                        run_number=run_number,
                                        run_version=run_version)
         history = ReductionRun.objects.filter(run_number=run_number).order_by('-run_version')
-        started_by = None
-        if run.started_by is not None:
-            if run.started_by == -1:
-                started_by = "Development team"
-            elif run.started_by == 0:
-                started_by = "Autoreduction service"
-            elif run.started_by > 0:
-                try:
-                    user_record = User.objects.get(id=run.started_by)
-                    started_by = f"{user_record.first_name} {user_record.last_name}"
-                except ObjectDoesNotExist as exception:
-                    LOGGER.error(exception)
-            elif run.started_by < -1:
-                started_by = None
+        started_by = started_by_id_to_name(run.started_by)
 
         location_list = run.reduction_location.all()
         reduction_location = None
@@ -402,6 +393,34 @@ def run_summary(request, instrument_name=None, run_number=None, run_version=0):
         context_dictionary = {}
 
     return context_dictionary
+
+
+def started_by_id_to_name(started_by_id=None):
+    """
+    Returns name of the user or team that submitted an autoreduction run given an ID number
+    :param started_by_id: The ID of the user who started the run, or a control code if not started by a user
+    :return:
+        If started by a valid user, returns the name either of the user in the format '[forename] [surname]'.
+        If started automatically, returns "Autoreduciton service".
+        If started manually, returns "Development team".
+        Otherwise, returns None.
+    """
+    name = None
+    if started_by_id is not None:
+        if started_by_id == -1:
+            name = "Development team"
+        elif started_by_id == 0:
+            name = "Autoreduction service"
+        elif started_by_id > 0:
+            try:
+                user_record = User.objects.get(id=started_by_id)
+                name = f"{user_record.first_name} {user_record.last_name}"
+            except ObjectDoesNotExist as exception:
+                LOGGER.error(exception)
+                name = None
+        elif started_by_id < -1:
+            name = None
+    return name
 
 
 @login_and_uows_valid
@@ -480,6 +499,7 @@ def experiment_summary(request, reference_number=None):
         runs = ReductionRun.objects.filter(experiment=experiment).order_by('-run_version')
         data = []
         reduced_data = []
+        started_by = []
         for run in runs:
             for location in run.data_location.all():
                 if location not in data:
@@ -487,6 +507,10 @@ def experiment_summary(request, reference_number=None):
             for location in run.reduction_location.all():
                 if location not in reduced_data:
                     reduced_data.append(location)
+            started_by.append(started_by_id_to_name(run.started_by))
+        sorted_runs = sorted(runs, key=operator.attrgetter('last_updated'), reverse=True)
+        runs_with_started_by = zip(sorted_runs, started_by)
+
         try:
             if DEVELOPMENT_MODE:
                 # If we are in development mode use user/password for ICAT from django settings
@@ -511,7 +535,7 @@ def experiment_summary(request, reference_number=None):
             }
         context_dictionary = {
             'experiment': experiment,
-            'runs': sorted(runs, key=operator.attrgetter('last_updated'), reverse=True),
+            'runs_with_started_by': runs_with_started_by,
             'experiment_details': experiment_details,
             'data': data,
             'reduced_data': reduced_data,

@@ -1,8 +1,7 @@
 # This file describes the meta data of a plot
 # including the type of plot and it's axis scaling, units, and titles.
 figure:
-  type: line+marker   # Type of graph [line, scatter, marker, line+mrker]
-  opactiy: 0.8        # The opacity of the data points/lines. Default to 0.8
+  type: line+marker   # Type of graph [line, scatter, marker, line+marker]
   x_axis:
     type: log         # [linear, log]
     title: x_axis     # Title of X axis

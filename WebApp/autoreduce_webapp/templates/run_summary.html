@@ -2,7 +2,6 @@
 {% load view %}
 {% load colour_table_rows %}
 {% load natural_time_difference %}
-{% load get_user_name %}
 {% load replace %}
 {% load naturaltime from humanize %}
 {% load static %}
@@ -180,7 +179,11 @@
                                         <td class="text-{% colour_table_row job.status.value %}"><strong>{{ job.status.value }}</strong></td>
                                         <td title="{{ job.last_updated|date:'SHORT_DATETIME_FORMAT' }}">{{ job.last_updated|naturaltime }}</td>
                                         <td>
-											Autoreduction Service
+                                            {% if started_by %}
+                                                {{ started_by }}
+                                            {% else %}
+                                                Unknown
+                                            {% endif %}
                                         </td>
                                     </tr>
                                 {% endfor %}
