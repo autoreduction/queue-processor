@@ -12,13 +12,13 @@ The spectrum column should act as the id to distinguish between different sectio
 plotted from one dataframe and can be used to apply pandas group-by functions for more in depth 
 analysis of a given spectrum. 
 
-|Spectrum | X      | Y   | E  |
-| :---    | :---: |:---:| ---:|
-| 1.0     |       |     |     |
-| 1.0     | 1     | 2   | 3   |
-| 1.0     | 4     | 5   | 6   |
-| 2.0     | 1     | 2   | 3   |
-| 2.0     | 4     | 5   | 6   |
+|Spectrum | X      | Y   | E   |
+| :---    | :---:  |:---:| ---:|
+| 1       |        |     |     |
+| 1       | 1      | 2   | 3   |
+| 1       | 4      | 5   | 6   |
+| 2       | 1      | 2   | 3   |
+| 2       | 4      | 5   | 6   |
 
 
 An example of plotting using this format can be seen in the following github repository inside 
