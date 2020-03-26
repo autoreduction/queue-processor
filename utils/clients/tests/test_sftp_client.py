@@ -21,11 +21,6 @@ class TestSFTPClient(unittest.TestCase):
     Exercises the SFTP client
     """
     def setUp(self):
-        self.incorrect_credentials = ClientSettingsFactory().create('sftp',
-                                                                    username='not-user',
-                                                                    password='not-pass',
-                                                                    host='not-host',
-                                                                    port='1234')
         self.valid_argument = "valid"
 
     def is_argument_valid(self, value):

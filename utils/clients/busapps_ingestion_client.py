@@ -50,7 +50,7 @@ class BusAppsIngestionClient(AbstractClient):
         if self._session_id is None:
             try:
                 self._session_id = self._uows_client.service.login(Account=self.credentials.username,
-                                                               Password=self.credentials.password)
+                                                                   Password=self.credentials.password)
             except WebFault:
                 raise ConnectionException("BusApps Ingestion")
 
