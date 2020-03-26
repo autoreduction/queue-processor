@@ -50,23 +50,23 @@ ACTIVEMQ_SETTINGS = SETTINGS_FACTORY.create('queue',
                                             host=get_str('QUEUE', 'host'),
                                             port=get_str('QUEUE', 'port'))
 
-SFTP_SETTINGS = SETTINGS_FACTORY.create('sftp',
-                                        username=get_str('SFTP', 'user'),
-                                        password=get_str('SFTP', 'password'),
-                                        host=get_str('SFTP', 'host'),
-                                        port=get_str('SFTP', 'port'))
-
 LOCAL_MYSQL_SETTINGS = SETTINGS_FACTORY.create('database',
                                                username='root',
                                                password='',
                                                host='localhost',
                                                port='3306')
 
+SFTP_SETTINGS = SETTINGS_FACTORY.create('sftp',
+                                        username=get_str('SFTP', 'user'),
+                                        password=get_str('SFTP', 'password'),
+                                        host=get_str('SFTP', 'host'),
+                                        port=get_str('SFTP', 'port'))
+
 BUSAPPS_SETTINGS = SETTINGS_FACTORY.create('busapps',
-                                            username=get_str('BUSAPPS', 'user'),
-                                            password=get_str('BUSAPPS', 'password'),
-                                            host='',
-                                            port='',
-                                            uows_url=get_str('BUSAPPS', 'uows_url'),
-                                            scheduler_url=get_str('BUSAPPS', 'scheduler_url'))
+                                           username=get_str('BUSAPPS', 'user'),
+                                           password=get_str('BUSAPPS', 'password'),
+                                           host='',
+                                           port='',
+                                           uows_url=get_str('BUSAPPS', 'uows_url'),
+                                           scheduler_url=get_str('BUSAPPS', 'scheduler_url'))
 
