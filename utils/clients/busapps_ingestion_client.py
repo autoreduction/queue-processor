@@ -113,10 +113,18 @@ cycles = baic.ingest_cycle_dates()
 maintn = baic.ingest_maintenance_days()
 
 sdp = SchedulerDataProcessor()
-cycle_list = sdp.convert_raw_to_structured(cycles, maintn)
+
+def print_all_dates(cycle_objs):
+    for c in cycle_list:
+        print(f"Cycle: {c.start} - {c.end}")
+        for m in c.maintenance_days:
+            print(f"\tM Day: {m.start} - {m.end}")
 
 
-for c in cycle_list:
-    print(c)
-    for m in c.maintenance_days:
-        print(f"\t{m}")
+# print("\n\t=====AS COMBINED=====\n")
+# cycle_list = sdp.convert_raw_to_structured(cycles, maintn)
+# print_all_dates(cycle_list)
+
+print("\n\t=====AS SEPARATE=====\n")
+cycle_list = sdp.convert_raw_to_structured_as_separate(cycles, maintn)
+# print_all_dates(cycle_list)

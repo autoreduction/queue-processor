@@ -42,9 +42,7 @@ class SchedulerDataProcessor:
     """
     def __init__(self):
         self._earliest_possible_date = datetime(2000, 1, 1, tzinfo=None)
-        # TODO: confirm what is to be accepted (vs what is invalid)
-        #   Current regex =  4 digits | '/' | 1 or more digit/letter(s) | end
-        self._cycle_name_regex = "\d{4}/\w*$"
+        self._cycle_name_regex = "\d{4}/\w*$"   # Current regex =  4 digits | '/' | 1 or more digit/letter(s) | end
         self._maintenance_specific_key = 'facility'
         self._datetime_fields = ["start", "end"]
         self._sort_by_field = "start"
@@ -59,6 +57,10 @@ class SchedulerDataProcessor:
         """
         pre_processed = self._pre_process(raw_cycle_data, raw_maintenance_data)
         return self._process(pre_processed)
+
+    def convert_raw_to_structured_as_separate(self, raw_cycle_data, raw_maintenance_data):
+        pre_processed_cycles, pre_processed_maintenance = self._pre_process_as_separate(raw_cycle_data, raw_maintenance_data)
+        return self._process_from_separate(pre_processed_cycles, pre_processed_maintenance)
 
     @staticmethod
     def print_start_dates(data):
@@ -83,13 +85,29 @@ class SchedulerDataProcessor:
         data = self._clean_data(data)
         return data
 
+    def _pre_process_as_separate(self, raw_cycle_data, raw_maintenance_data):
+        """
+        Makes adjustments to the data without converting the data type.
+        These adjustments are necessary for the data to be properly processed into Cycle and Maintenance Day objects.
+        :param raw_cycle_data: Cycle data received from the Scheduler API (as a list)
+        :param raw_maintenance_data: Maintenance day data received from the Scheduler API (as a list)
+        :return: A pre-processed cycle data list, and pre-processed maintenance data list
+        """
+        cycle_data = self._sort_by_date(raw_cycle_data)
+        cycle_data = self._clean_data(cycle_data)
+
+        maintenance_data = self._sort_by_date(raw_maintenance_data)
+        maintenance_data = self._clean_data(maintenance_data)
+
+        return cycle_data, maintenance_data
+
     def _clean_data(self, data):
         """
         Removes invalid items from the data.
         :param data: The list of items to be validated
         :return: The list of items that were passed in, but with all invalid items removed
         """
-        print("cleaning..")
+        print("\nBEGIN Data clean")
         print(f"Original length: {len(data)}")
         clean_list = []
         for item in data:
@@ -100,11 +118,9 @@ class SchedulerDataProcessor:
             else:
                 clean_list.append(item)
         print(f"New length: {len(clean_list)}")
+        print("END Data clean\n")
         return clean_list
 
-    # TODO: question - I've used the method of combining the lists as this was suggested,
-    #  but I'm not exactly sure why we do this instead of keeping them separate?
-    #  Is it a speed optimisation perhaps? I wonder if it makes us more prone to bugs/confusing code..
     @staticmethod
     def _combine_lists(first, second):
         """
@@ -113,7 +129,6 @@ class SchedulerDataProcessor:
         :param second: The second list to be combined
         :return: The single combined list
         """
-        print("combining..")
         combined = first + second
         return combined
 
@@ -123,11 +138,50 @@ class SchedulerDataProcessor:
         :param data: The list to be sorted
         :return: The list sorted by the specified field
         """
-        print("sorting..")
         return sorted(data, key=lambda date: date[self._sort_by_field])
 
-    # TODO: question - can a maintenance day ever occur outside of a cycle period?
-    #   Currently, _process assumes maintenance days will always be within the latest cycle
+    @staticmethod
+    def _process_from_separate(cycle_data, maintenance_data):
+        """
+        Converts pre-processed cycle data items and maintenance day data items into a single list of Cycle objects.
+        Each cycle object contains a list of MaintenanceDay objects - all of which fall within the given cycle period.
+        Maintenance Days which fall outside of cycle periods are highlighted and discarded.
+        :param cycle_data: A pre-processed list containing all valid cycle data items.
+        :param maintenance_data: A pre-processed list containing all valid maintenance day data items.
+        :return: A list of Cycle objects containing a list of 0 or more MaintenanceDay objects.
+        """
+        cycle_list = []
+        unused_maintenance_data = maintenance_data.copy()
+        for current_cycle_data in cycle_data:
+            cycle_obj = Cycle(current_cycle_data['name'],
+                              current_cycle_data['start'],
+                              current_cycle_data['end'])
+            while len(unused_maintenance_data) > 0:
+                m_day = unused_maintenance_data[0]
+                if m_day['start'] < cycle_obj.start:    # if the next m_day is EARLIER than the current cycle START
+                    # print(f"\t\tERR: cycle_obj.start: {cycle_obj.start}, m_day['start']: {m_day['start']}")
+
+                    if len(unused_maintenance_data) > 1:
+                        cycle_after_string = f"start: {unused_maintenance_data[1].start}, end: {unused_maintenance_data[1].end}"
+                    else:
+                        cycle_after_string = f"NONE (No later cycle dates)"
+                    print(f"WARNING - Encountered maintenance day outside of cycle dates"
+                          f"(assuming cycle_data and maintenance_data were ordered as earliest-to-latest).\n"
+                          f"Maintenance Day= start: {m_day['start']}, end: {m_day['end']}\n"
+                          f"Closest Cycle before= start: {cycle_obj.start}, end: {cycle_obj.end}\n"
+                          f"Closest Cycle after= {cycle_after_string}\n"
+                          f"This Maintenance Day has therefore been discarded.\n")
+                    unused_maintenance_data.pop(0)
+                elif m_day['end'] < cycle_obj.end:      # if the next m_day is EARLIER than the current cycle END
+                    cycle_obj.add_maintenance_day(m_day['start'], m_day['end'])
+                    # print(f"\tYES: cycle_obj.start: {cycle_obj.start}, m_day['start']: {m_day['start']}")
+                    unused_maintenance_data.pop(0)
+                else:                                   # if the next m_day is LATER than the current cycle END
+                    # print(f"NO: cycle_obj.start: {cycle_obj.start}, m_day['start']: {m_day['start']}")
+                    break
+            cycle_list.append(cycle_obj)
+        return cycle_list
+
     def _process(self, data):
         """
         Converts a pre-processed list of cycle and maintenance day data items into a list of Cycle objects,
@@ -139,19 +193,17 @@ class SchedulerDataProcessor:
             This will only occur if the data has not been properly pre-processed.
         """
         cycle_list = []
-        idx = 0
-        while idx < len(data):
-            # TODO: I've avoided using try/except for expected behaviour, unlike the draft implementation
-            #   (i.e. an exception is only raised in exceptional circumstances) - in line with good code practice.
+        index = 0
+        while index < len(data):
             try:
-                cycle = Cycle(data[idx]['name'],
-                              data[idx]['start'],
-                              data[idx]['end'])
-                idx += 1
-                while idx < len(data) and self._maintenance_specific_key in data[idx]:
-                    cycle.add_maintenance_day(data[idx]['start'],
-                                              data[idx]['end'])
-                    idx += 1
+                cycle = Cycle(data[index]['name'],
+                              data[index]['start'],
+                              data[index]['end'])
+                index += 1
+                while index < len(data) and self._maintenance_specific_key in data[index]:
+                    cycle.add_maintenance_day(data[index]['start'],
+                                              data[index]['end'])
+                    index += 1
                 cycle_list.append(cycle)
             except AttributeError:
                 raise RuntimeError("Unexpected list entry encountered. Ensure to sort the list before processing")
