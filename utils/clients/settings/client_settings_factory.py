@@ -180,10 +180,10 @@ class SFTPSettings(ClientSettings):
                              
 class BusAppsIngestionSettings(ClientSettings):
     """
-        BusApps-ingestion settings object
+    BusApps-ingestion settings object
     """
-    uows = None
-    scheduler = None
+    uows_url = None
+    scheduler_url = None
 
     # TODO: Should I use the real API urls as default parameters?
     def __init__(self, uows_url, scheduler_url, **kwargs):
