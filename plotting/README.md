@@ -1,8 +1,8 @@
 # Autoreduction Plotting
 
-This document provides documentation for the plotting package as part of the Autoreduction project.
+Documentation for the plotting package as part of the Autoreduction project.
 
-## Ideal Data Structure to Prepare Data into for Visualisation
+## Data structure to prepare data for visualisation
 
 - Create a dataframe that contains a minimum of Spectrum, X and Y axis columns as seen in the 
 example below 
