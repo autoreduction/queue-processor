@@ -7,14 +7,16 @@
 """
 Test BusApps ingestion client
 """
-import unittest
+
 from urllib.error import URLError
 
-from mock import patch, MagicMock, Mock
+import unittest
+
+from mock import patch, MagicMock
+
+from suds import WebFault
 
 from utils.clients.busapps_ingestion_client import BusAppsIngestionClient
-from suds import Client, WebFault
-
 from utils.clients.connection_exception import ConnectionException
 from utils.clients.settings.client_settings_factory import ClientSettingsFactory
 
@@ -25,15 +27,16 @@ class TestBusAppsIngestionClient(unittest.TestCase):
     """
     def setUp(self):
         self.valid_value = "valid"
-        self.test_credentials = ClientSettingsFactory().create('busapps',
-                                                               username='valid-user',
-                                                               password='valid-pass',
-                                                               host='',
-                                                               port='',
-                                                               uows_url='https://api.valid-uows.com/?wsdl',
-                                                               scheduler_url='https://api.valid-scheduler.com/?wsdl')
+        self.test_credentials =\
+            ClientSettingsFactory().create('busapps',
+                                           username='valid-user',
+                                           password='valid-pass',
+                                           host='',
+                                           port='',
+                                           uows_url='https://api.valid-uows.com/?wsdl',
+                                           scheduler_url='https://api.valid-scheduler.com/?wsdl')
 
-    def create_client(self, to_mock=[], credentials=None):
+    def create_client(self, to_mock=None, credentials=None):
         """ Returns a client with 0 or more mocked instance variables
         :param to_mock: A list of client instance variables to mock
         :param credentials: The credentials to initialise the client with
@@ -42,10 +45,10 @@ class TestBusAppsIngestionClient(unittest.TestCase):
         if not credentials:
             credentials = self.test_credentials
         client = BusAppsIngestionClient(credentials)
-        if "_uows_client" in to_mock:
-            client._uows_client = MagicMock()
-        if "_scheduler_client" in to_mock:
-            client._scheduler_client = MagicMock()
+        if "_uows_client" in to_mock:               # pylint: disable=protected-access
+            client._uows_client = MagicMock()       # pylint: disable=protected-access
+        if "_scheduler_client" in to_mock:          # pylint: disable=protected-access
+            client._scheduler_client = MagicMock()  # pylint: disable=protected-access
         return client
 
     def test_invalid_init(self):
@@ -56,13 +59,14 @@ class TestBusAppsIngestionClient(unittest.TestCase):
     def test_default_init(self):
         """ Test initialisation values are set """
         client = BusAppsIngestionClient()
-        self.assertIsNone(client._uows_client)
-        self.assertIsNone(client._scheduler_client)
-        self.assertIsNone(client._session_id)
+        self.assertIsNone(client._uows_client)          # pylint: disable=protected-access
+        self.assertIsNone(client._scheduler_client)     # pylint: disable=protected-access
+        self.assertIsNone(client._session_id)           # pylint: disable=protected-access
 
-    # TODO: Note - EO mentioned I shouldn't need to mock the Client as we assumed real credentials
-    #  weren't need to instantiate a suds client. However, I later discovered they were needed,
-    #  so I've mocked the __init__ so that I can give it fake credentials without causing an exception
+    # TODO: Note - EO mentioned I shouldn't need to mock the Client as we assumed   # pylint: disable=fixme
+    #  real credentials weren't need to instantiate a suds client. However, I later
+    #  discovered they were needed, so I've mocked the __init__ so that I can give
+    #  it fake credentials without causing an exception
     @patch('suds.client.Client.__init__')
     def test_create_uows_client_with_valid_credentials(self, mocked_suds_client):
         """ Test the User Office Web Service client is initialised with the uows_url """
@@ -98,79 +102,80 @@ class TestBusAppsIngestionClient(unittest.TestCase):
     def test_connect_with_valid_credentials(self):
         """ Test UOWS login with valid credentials populates _session_id  """
         client = self.create_client(["_uows_client", "_scheduler_client"])
-        client._uows_client.service.login.return_value = self.valid_value
+        client._uows_client.service.login.return_value = self.valid_value                               # pylint: disable=protected-access
         client.connect()
-        client._uows_client.service.login.assert_called_with(Account=self.test_credentials.username,
-                                                             Password=self.test_credentials.password)
-        self.assertEqual(self.valid_value, client._session_id)
+        client._uows_client.service.login.assert_called_with(Account=self.test_credentials.username,    # pylint: disable=protected-access,line-too-long
+                                                             Password=self.test_credentials.password)   # pylint: disable=protected-access,line-too-long
+        self.assertEqual(self.valid_value, client._session_id)                                          # pylint: disable=protected-access
 
     def test_connect_with_invalid_credentials(self):
         """ Test UOWS login with invalid credentials raises a ConnectionException """
         client = self.create_client(["_uows_client"])
-        client._uows_client.service.login.side_effect = WebFault(fault=None, document=None)
+        client._uows_client.service.login.side_effect = WebFault(fault=None, document=None) # pylint: disable=protected-access
 
         with self.assertRaises(ConnectionException):
             client.connect()
-        client._uows_client.service.login.assert_called_with(Account=self.test_credentials.username,
-                                                             Password=self.test_credentials.password)
+        client._uows_client.service.login.assert_called_with(Account=self.test_credentials.username,    # pylint: disable=protected-access,line-too-long
+                                                             Password=self.test_credentials.password)   # pylint: disable=protected-access,line-too-long
 
     def test_disconnect(self):
         """ Test disconnection from a session sets _session_id = None"""
         client = self.create_client(["_uows_client", "_scheduler_client"])
         client.connect()
         client.disconnect()
-        self.assertEqual(None, client._session_id)
+        self.assertEqual(None, client._session_id)  # pylint: disable=protected-access
 
     def test_test_connection_no_uows_client(self):
         """ Test the connection test throws the TypeError: "invalid_uows_client"
         When the _uows_client is invalid """
         client = self.create_client(["_uows_client", "_scheduler_client"])
         client.connect()
-        client._uows_client = None
-        # TODO: note - I've used a more granular way of testing (rather than just testing for a general error type)
+        client._uows_client = None  # pylint: disable=protected-access
+        # TODO: note - I've used a more granular way of testing     # pylint: disable=fixme
+        #  (rather than just testing for a general error type)
         with self.assertRaises(TypeError) as error:
-            client._test_connection()
-            self.assertEqual(error, client._errors["invalid_uows_client"])
+            client._test_connection()                                       # pylint: disable=protected-access
+            self.assertEqual(error, client._errors["invalid_uows_client"])  # pylint: disable=protected-access,line-too-long
 
     def test_test_connection_no_scheduler_client(self):
         """ Test the connection test throws the TypeError: "invalid_scheduler_client"
         When the _scheduler_client is invalid """
         client = self.create_client(["_uows_client", "_scheduler_client"])
         client.connect()
-        client._scheduler_client = None
+        client._scheduler_client = None                                             # pylint: disable=protected-access
         with self.assertRaises(TypeError) as error:
-            client._test_connection()
-            self.assertEqual(error, client._errors["invalid_scheduler_client"])
+            client._test_connection()                                               # pylint: disable=protected-access
+            self.assertEqual(error, client._errors["invalid_scheduler_client"])     # pylint: disable=protected-access,line-too-long
 
     def test_test_connection_no_invalid_session_id(self):
         """ Test the connection test throws the ConnectionException: "invalid_session_id"
         When the _session_id is invalid """
         client = self.create_client(["_uows_client", "_scheduler_client"])
-        client._scheduler_client.service.getFacilityList.side_effect = WebFault(fault=None, document=None)
+        client._scheduler_client.service.getFacilityList.side_effect = WebFault(fault=None, document=None)  # pylint: disable=protected-access,line-too-long
         client.connect()
-        client._session_id = None
+        client._session_id = None                                           # pylint: disable=protected-access
         with self.assertRaises(ConnectionException) as error:
-            client._test_connection()
-            self.assertEqual(error, client._errors["invalid_session_id"])
+            client._test_connection()                                       # pylint: disable=protected-access
+            self.assertEqual(error, client._errors["invalid_session_id"])   # pylint: disable=protected-access
 
     def test_ingest_cycle_dates(self):
         """ Test the cycle ingestion returns the output received from the Scheduler Client
         and uses the _session_id to do so"""
         client = self.create_client(["_uows_client", "_scheduler_client"])
         client.connect()
-        client._scheduler_client.service.getCycles.return_value = self.valid_value
+        client._scheduler_client.service.getCycles.return_value = self.valid_value  # pylint: disable=protected-access
         ret = client.ingest_cycle_dates()
         self.assertEqual(ret, self.valid_value)
-        client._scheduler_client.service.getCycles.assert_called_with(sessionId=client._session_id)
+        client._scheduler_client.service.getCycles.assert_called_with(sessionId=client._session_id)  # pylint: disable=protected-access,line-too-long
 
     def test_ingest_maintenance_days(self):
-        """ Test the maintenance-days ingestion returns the output received from the Scheduler Client
-        and uses the _session_id to do so"""
+        """ Test the maintenance-days ingestion returns the output received
+        from the Scheduler Client and uses the _session_id to do so"""
         client = self.create_client(["_uows_client", "_scheduler_client"])
         client.connect()
-        client._scheduler_client.service.getOfflinePeriods.return_value = self.valid_value
+        client._scheduler_client.service.getOfflinePeriods.return_value = self.valid_value  # pylint: disable=protected-access,line-too-long
 
         ret = client.ingest_maintenance_days()
         self.assertEqual(ret, self.valid_value)
-        client._scheduler_client.service.getOfflinePeriods.assert_called_with(sessionId=client._session_id,
-                                                                              reason='Maintenance')
+        client._scheduler_client.service.getOfflinePeriods.assert_called_with(sessionId=client._session_id,     # pylint: disable=protected-access,line-too-long
+                                                                              reason='Maintenance')             # pylint: disable=line-too-long

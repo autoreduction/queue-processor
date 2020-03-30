@@ -88,7 +88,7 @@ class ClientSettingsFactory:
         sftp_kwargs = []    # No additional kwargs needed for sftp
         self._test_kwargs(sftp_kwargs, kwargs)
         return SFTPSettings(**kwargs)
-                             
+
     def _create_busapps(self, **kwargs):
         """
         :return: busapps-ingestion compatible settings object
@@ -176,8 +176,8 @@ class SFTPSettings(ClientSettings):
     SFTP settings object
     """
     def __init__(self, **kwargs):  # pylint:disable=useless-super-delegation
-        super(SFTPSettings, self).__init__(**kwargs)                             
-                             
+        super(SFTPSettings, self).__init__(**kwargs)
+
 class BusAppsIngestionSettings(ClientSettings):
     """
     BusApps-ingestion settings object
@@ -185,7 +185,6 @@ class BusAppsIngestionSettings(ClientSettings):
     uows_url = None
     scheduler_url = None
 
-    # TODO: Should I use the real API urls as default parameters?
     def __init__(self, uows_url, scheduler_url, **kwargs):
         super(BusAppsIngestionSettings, self).__init__(**kwargs)
         self.uows_url = uows_url
