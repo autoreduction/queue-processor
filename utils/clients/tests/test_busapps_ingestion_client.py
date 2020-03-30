@@ -45,9 +45,9 @@ class TestBusAppsIngestionClient(unittest.TestCase):
         if not credentials:
             credentials = self.test_credentials
         client = BusAppsIngestionClient(credentials)
-        if "_uows_client" in to_mock:               # pylint: disable=protected-access
+        if to_mock and "_uows_client" in to_mock:               # pylint: disable=protected-access
             client._uows_client = MagicMock()       # pylint: disable=protected-access
-        if "_scheduler_client" in to_mock:          # pylint: disable=protected-access
+        if to_mock and "_scheduler_client" in to_mock:          # pylint: disable=protected-access
             client._scheduler_client = MagicMock()  # pylint: disable=protected-access
         return client
 
