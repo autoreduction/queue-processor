@@ -11,27 +11,10 @@ import unittest
 
 from mock import Mock, patch
 
+from queue_processors.queue_processor.queueproc_utils.tests.\
+    compare_db_object import compare_db_objects
 from queue_processors.queue_processor.queueproc_utils.variable_utils import VariableUtils as vu
 from queue_processors.queue_processor.orm_mapping import RunJoin, Variable, InstrumentJoin
-
-
-# pylint:disable=protected-access
-def compare_db_objects(first, second):
-    """
-    Compare to database objects defined by SQLAlchemy ORM mapping
-    :param first: first object to compare
-    :param second: second object to compare
-    :return: True if objects match, else False
-    """
-    # Assert classes match
-    classes_match = isinstance(first, second.__class__)
-    first_dict = first._sa_instance_state.dict
-    first_dict.pop('_sa_instance_state', None)
-    second_dict = second._sa_instance_state.dict
-    second_dict.pop('_sa_instance_state', None)
-    # Assert dict values match
-    attrs_match = first_dict == second_dict
-    return attrs_match and classes_match
 
 
 # pylint:disable=missing-class-docstring
@@ -79,8 +62,8 @@ class TestVariableUtils(unittest.TestCase):
         Ensure that the control method `save_run_variable` constructs run variables and
         Attempts to add these to the database
         :param mock_derive_run_var: Mock out the derive run as tested above
-        :param mock_session_commit: Mock out commit to ensure we do not commit to database
-        :param mock_session_add: Mock out ass to ensure we do not add to the database
+        :param mock_session_commit: Mock out session.commit to ensure we do not commit to database
+        :param mock_session_add: Mock out session.add to ensure we do not add to the database
         :return:
         """
         var_utils = vu()
@@ -115,7 +98,6 @@ class TestVariableUtils(unittest.TestCase):
         self.assertEqual(vu.get_type_string(True), 'boolean')
         self.assertEqual(vu.get_type_string([1, 2, 3]), 'list_number')
         self.assertEqual(vu.get_type_string(['s', 't', 'r']), 'list_text')
-        # If non of the above type, return text
 
     def test_get_type_string_unknown_type(self):
         """

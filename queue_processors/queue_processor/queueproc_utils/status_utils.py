@@ -24,16 +24,26 @@ class StatusUtils:
     @staticmethod
     def _get_status(status_value):
         """
-        Helper method that will try to get a status matching the given name or create one if it
+        Attempt to get a status matching the given name or create one if it
         doesn't yet exist
+        :param status_value: The value of the status record in the database
+
         """
         status = session.query(Status).filter_by(value=status_value)[0]
         if status is None:
-            new_status = Status(value=status_value)
-            session.add(new_status)
-            session.commit()
-            status = session.query(InstrumentVariable).filter_by(value=status_value)[0]
+            status = StatusUtils._create_new_status(status_value)
             logger.warning("%s status was not found, created it.", status_value)
+        return status
+
+    @staticmethod
+    def _create_new_status(status_value):
+        """
+        Create a new Status record in the database
+        """
+        new_status = Status(value=status_value)
+        session.add(new_status)
+        session.commit()
+        status = session.query(InstrumentVariable).filter_by(value=status_value)[0]
         return status
 
     def get_error(self):
