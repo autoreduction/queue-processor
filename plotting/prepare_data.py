@@ -16,24 +16,59 @@ class PrepareData:
 
     def __init__(self):
         self.expected_file_first_line = "# X , Y , E"
+        self.columns = ["Spectrum", "X", "Y", "E"]
 
-    # TODO: update draw.io
-    def prepare_data(self, in_path, out_path):
-        # TODO: consider pd.read_csv VS individual lines processed in turn
-        #   Due to the file size, reading line by line might be more efficient
-        with open(in_path, 'r') as in_file:
-            reader = csv.reader(in_file)
-            self._check_file_first_line(in_file.readline())
+    # TODO: consider pd.read_csv VS individual lines processed in turn
+    #   Due to the file size, reading line by line might be more efficient
+    def prepare_data(self, input_path, output_path):
+        with open(input_path, 'r', ) as input_file:
+            reader = csv.reader(input_file)
+            first_row = input_file.readline()
+            self._check_first_row(first_row)
 
-            with open(out_path, 'w') as out_file:
-                for i, row in enumerate(reader):
-                    writer = csv.writer(out_path)
-                    if i > 20: break
+            second_row = input_file.readline()
+            try:
+                spectrum = int(second_row)
+            except ValueError:
+                error_message = (f"Unexpected second row of file.\n"
+                                 f"Expected: Integer (first spectrum number)\n"
+                                 f"Actual:\t\t{second_row}\n")
+                raise RuntimeError(error_message)
 
-    def _check_file_first_line(self, line):
+            processed_data = []
+            for i, row in enumerate(input_file):
+                float_list = self.raw_row_to_float_list(row)
+                if len(float_list) is 1:
+                    spectrum = int(row)
+                else:
+                    processed_data.append([spectrum]+float_list)
+                    # print([spectrum]+float_list)
+                # if i > 10000:
+                #     break
+
+            return pd.DataFrame(processed_data, columns=self.columns)
+
+
+
+            # with open(output_path, 'w') as output_file:
+            #     writer = csv.writer(output_file, delimiter=",")
+            #     for i, row in enumerate(input_file):
+            #         writer.writerow(self.raw_row_to_float_list(row))
+            #         if i > 20:
+            #             break
+
+    @staticmethod
+    def raw_row_to_float_list(row):
+        row = row.rstrip()
+        split_row = row.split(",")
+        return [float(item) for item in split_row]
+
+
+
+    def _check_first_row(self, line):
         line = line.rstrip()
         if line != self.expected_file_first_line:
-            error_message = (f"Unexpected first line of file.\n"
+            error_message = (f"Unexpected first row of file.\n"
                              f"Expected:\t{self.expected_file_first_line}\n"
                              f"Actual:\t\t{line}\n")
 
@@ -41,5 +76,8 @@ class PrepareData:
         return True
 
 prep = PrepareData()
-path = r"C:\Git\autoreduction\plotting\multi_spectra_data_file.csv"
-prep.prepare_data(path)
+in_path = r"C:\Git\autoreduction\plotting\multi_spectra_data_file.csv"
+out_path = r"C:\Git\autoreduction\plotting\\"
+out_name = "output.csv"
+df = prep.prepare_data(in_path, out_path+out_name)
+print(df)
