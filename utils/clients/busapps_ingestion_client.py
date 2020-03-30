@@ -29,7 +29,7 @@ class BusAppsIngestionClient(AbstractClient):
         self._uows_client = None
         self._scheduler_client = None
         self._session_id = None
-        # TODO: Note - I've tried out using an error dictionary (for reuse and more granular testing)
+        # TODO: Note - I've used an error dictionary (for reuse and more granular testing)
         self._errors = {
             "invalid_uows_client": TypeError("The UOWS Client does not exist or has not been initialised properly"),
             "invalid_scheduler_client": TypeError("The Scheduler Client does not exist or has not been initialised properly"),
