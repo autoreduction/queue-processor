@@ -536,6 +536,7 @@ def experiment_summary(request, reference_number=None):
         context_dictionary = {
             'experiment': experiment,
             'runs_with_started_by': runs_with_started_by,
+            'run_count': len(runs),
             'experiment_details': experiment_details,
             'data': data,
             'reduced_data': reduced_data,
