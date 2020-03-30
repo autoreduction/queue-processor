@@ -26,14 +26,22 @@ class TestBusAppsIngestionClient(unittest.TestCase):
     def setUp(self):
         self.valid_value = "valid"
         self.test_credentials = ClientSettingsFactory().create('busapps',
-                                                                username='valid-user',
-                                                                password='valid-pass',
-                                                                host='',
-                                                                port='',
-                                                                uows_url='https://api.valid-uows.com/?wsdl',
-                                                                scheduler_url='https://api.valid-scheduler.com/?wsdl')
+                                                               username='valid-user',
+                                                               password='valid-pass',
+                                                               host='',
+                                                               port='',
+                                                               uows_url='https://api.valid-uows.com/?wsdl',
+                                                               scheduler_url='https://api.valid-scheduler.com/?wsdl')
 
-    # TODO: Edward - make method to create client + options to mock things
+    def create_client(self, to_mock, credentials=None):
+        if not credentials:
+            credentials = self.test_credentials
+        client = BusAppsIngestionClient(credentials)
+        if "_uows_client" in to_mock:
+            client._uows_client = MagicMock()
+        if "_scheduler_client" in to_mock:
+            client._scheduler_client = MagicMock()
+        return client
 
     def test_invalid_init(self):
         """ Test initialisation raises TypeError when given invalid credentials """
@@ -70,9 +78,7 @@ class TestBusAppsIngestionClient(unittest.TestCase):
             client.create_scheduler_client()
 
     def test_connect_with_valid_credentials(self):
-        client = BusAppsIngestionClient(self.test_credentials)
-        client._uows_client = MagicMock()
-        client._scheduler_client = MagicMock()
+        client = self.create_client(["_uows_client", "_scheduler_client"])
 
         client._uows_client.service.login.return_value = self.valid_value
         client.connect()
@@ -82,8 +88,7 @@ class TestBusAppsIngestionClient(unittest.TestCase):
         self.assertEqual(self.valid_value, client._session_id)
 
     def test_connect_with_invalid_credentials(self):
-        client = BusAppsIngestionClient(self.test_credentials)
-        client._uows_client = MagicMock()
+        client = self.create_client(["_uows_client"])
         client._uows_client.service.login.side_effect = WebFault(fault=None, document=None)
 
         with self.assertRaises(ConnectionException):
@@ -92,15 +97,12 @@ class TestBusAppsIngestionClient(unittest.TestCase):
                                                              Password=self.test_credentials.password)
 
     def test_disconnect(self):
-        client = BusAppsIngestionClient()
-        client._uows_client = MagicMock()
+        client = self.create_client(["_uows_client"])
         self.assertEqual(None, client._session_id)
 
     # @patch('suds.client.Client.__init__')
     def test_test_connection_no_uows_client(self):
-        client = BusAppsIngestionClient()
-        client._uows_client = MagicMock()
-        client._scheduler_client = MagicMock()
+        client = self.create_client(["_uows_client", "_scheduler_client"])
 
         client.connect()
         client._uows_client = None
@@ -110,9 +112,7 @@ class TestBusAppsIngestionClient(unittest.TestCase):
             self.assertEqual(error, client._errors["invalid_uows_client"])
 
     def test_test_connection_no_scheduler_client(self):
-        client = BusAppsIngestionClient()
-        client._uows_client = MagicMock()
-        client._scheduler_client = MagicMock()
+        client = self.create_client(["_uows_client", "_scheduler_client"])
 
         client.connect()
         client._scheduler_client = None
@@ -121,9 +121,7 @@ class TestBusAppsIngestionClient(unittest.TestCase):
             self.assertEqual(error, client._errors["invalid_scheduler_client"])
 
     def test_test_connection_no_invalid_session_id(self):
-        client = BusAppsIngestionClient()
-        client._uows_client = MagicMock()
-        client._scheduler_client = MagicMock()
+        client = self.create_client(["_uows_client", "_scheduler_client"])
         client._scheduler_client.service.getFacilityList.side_effect = WebFault(fault=None, document=None)
 
         client.connect()
@@ -133,9 +131,7 @@ class TestBusAppsIngestionClient(unittest.TestCase):
             self.assertEqual(error, client._errors["invalid_session_id"])
 
     def test_ingest_cycle_dates(self):
-        client = BusAppsIngestionClient()
-        client._uows_client = MagicMock()
-        client._scheduler_client = MagicMock()
+        client = self.create_client(["_uows_client", "_scheduler_client"])
         client.connect()
         client._scheduler_client.service.getCycles.return_value = self.valid_value
 
@@ -144,9 +140,7 @@ class TestBusAppsIngestionClient(unittest.TestCase):
         client._scheduler_client.service.getCycles.assert_called_with(sessionId=client._session_id)
 
     def test_ingest_maintenance_days(self):
-        client = BusAppsIngestionClient()
-        client._uows_client = MagicMock()
-        client._scheduler_client = MagicMock()
+        client = self.create_client(["_uows_client", "_scheduler_client"])
         client.connect()
         client._scheduler_client.service.getOfflinePeriods.return_value = self.valid_value
 
@@ -154,5 +148,3 @@ class TestBusAppsIngestionClient(unittest.TestCase):
         self.assertEqual(ret, self.valid_value)
         client._scheduler_client.service.getOfflinePeriods.assert_called_with(sessionId=client._session_id,
                                                                               reason='Maintenance')
-
-
