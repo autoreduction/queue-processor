@@ -128,7 +128,7 @@ class SchedulerDataProcessor:
                 m_day = maintenance_data_copy[0]
                 if m_day['start'] < cycle_obj.start:
                     # if the next m_day is EARLIER than the current cycle START
-                    if index == len(cycle_list)-1:  # TODO: Edward - Make test for this
+                    if index == len(cycle_list)-1:  # TODO: Edward - Make test for this     pylint:disable=fixme
                         next_cycle = None
                     else:
                         next_cycle = cycle_list[index+1]
