@@ -49,17 +49,7 @@ class SchedulerDataProcessor:
         self._datetime_fields = ["start", "end"]
         self._sort_by_field = "start"
 
-    def convert_raw_to_structured_as_single_list(self, raw_cycle_data, raw_maintenance_data):
-        """ Converts raw data received from the Scheduler API into a list of Cycle objects,
-        containing a list of MaintenanceDay objects - all which fall within the given cycle period.
-        :param raw_cycle_data: Cycle data received from the Scheduler API (as a list)
-        :param raw_maintenance_data: Maintenance day data received from the Scheduler API
-                                     (as a list)
-        :return: A list of Cycle objects containing a list of 0 or more MaintenanceDay objects. """
-        pre_processed = self._pre_process_as_single_list(raw_cycle_data, raw_maintenance_data)
-        return self._process_as_single_list(pre_processed)
-
-    def convert_raw_to_structured_as_separate(self, raw_cycle_data, raw_maintenance_data):
+    def convert_raw_to_structured(self, raw_cycle_data, raw_maintenance_data):
         """ Converts raw data received from the Scheduler API into a list of Cycle objects,
         containing a list of MaintenanceDay objects - all which fall within the given cycle period.
         :param raw_cycle_data: Cycle data received from the Scheduler API (as a list)
@@ -67,7 +57,7 @@ class SchedulerDataProcessor:
                                      (as a list)
         :return: A list of Cycle objects containing a list of 0 or more MaintenanceDay objects. """
         pre_processed_cycles, pre_processed_maintenance\
-            = self._pre_process_as_separate(raw_cycle_data, raw_maintenance_data)
+            = self._pre_process(raw_cycle_data, raw_maintenance_data)
         return self._process_from_separate(pre_processed_cycles, pre_processed_maintenance)
 
     @staticmethod
@@ -77,20 +67,7 @@ class SchedulerDataProcessor:
         for idx, item in enumerate(data):
             print(f"{idx}: {item['start']}")
 
-    def _pre_process_as_single_list(self, raw_cycle_data, raw_maintenance_data):
-        """ Makes adjustments to the data without converting it to a different data type.
-        These adjustments are necessary for the data to be properly processed
-        into Cycle and Maintenance Day objects.
-        :param raw_cycle_data: Cycle data received from the Scheduler API (as a list)
-        :param raw_maintenance_data: Maintenance day data received from the Scheduler API
-                                     (as a list)
-        :return: A single list containing all valid items from both lists """
-        data = self._combine_lists(raw_cycle_data, raw_maintenance_data)
-        data = self._sort_by_date(data)
-        data = self._clean_data(data)
-        return data
-
-    def _pre_process_as_separate(self, raw_cycle_data, raw_maintenance_data):
+    def _pre_process(self, raw_cycle_data, raw_maintenance_data):
         """ Makes adjustments to the data without converting the data type.
         These adjustments are necessary for the data to be properly processed
         into Cycle and Maintenance Day objects.
@@ -115,10 +92,10 @@ class SchedulerDataProcessor:
         clean_list = []
         for item in data:
             if 'name' in item and not re.search(self._cycle_name_regex, item['name']):
-                print(f"\nItem removed due to strange cycle name "
+                print(f"\nItem removed as cycle name did not match the expected regex "
                       f"({item['name']}).\nFull item: {item}")
             elif item['start'].replace(tzinfo=None) < self._earliest_possible_date:
-                print(f"\nItem removed due to impossible date "
+                print(f"\nItem removed as date lies outside range of interest "
                       f"({item['start']}).\nFull item: {item}")
             else:
                 clean_list.append(item)
@@ -126,23 +103,13 @@ class SchedulerDataProcessor:
         print("END Data clean\n")
         return clean_list
 
-    @staticmethod
-    def _combine_lists(first, second):
-        """ Combines two lists together.
-        :param first: The first list to be combined
-        :param second: The second list to be combined
-        :return: The single combined list """
-        combined = first + second
-        return combined
-
     def _sort_by_date(self, data):
         """ Sorts a list by a date field (specified by the _sort_by_field variable)
         :param data: The list to be sorted
         :return: The list sorted by the specified field """
         return sorted(data, key=lambda date: date[self._sort_by_field])
 
-    @staticmethod
-    def _process_from_separate(cycle_data, maintenance_data):
+    def _process_from_separate(self, cycle_data, maintenance_data):
         """ Converts pre-processed cycle data items and maintenance day data items
         into a single list of Cycle objects. Each cycle object contains a list
         of MaintenanceDay objects - all of which fall within the given cycle period.
@@ -151,63 +118,42 @@ class SchedulerDataProcessor:
         :param maintenance_data: A pre-processed list of all valid maintenance day data items.
         :return: A list of Cycle objects containing a list of 0 or more MaintenanceDay objects. """
         cycle_list = []
-        unused_maintenance_data = maintenance_data.copy()
-        for current_cycle_data in cycle_data:
+        maintenance_data_copy = maintenance_data.copy()
+        for index, current_cycle_data in enumerate(cycle_data):
 
             cycle_obj = Cycle(current_cycle_data['name'],
                               current_cycle_data['start'],
                               current_cycle_data['end'])
-            while len(unused_maintenance_data) > 0:
-                m_day = unused_maintenance_data[0]
+            while len(maintenance_data_copy) > 0:
+                m_day = maintenance_data_copy[0]
                 if m_day['start'] < cycle_obj.start:
                     # if the next m_day is EARLIER than the current cycle START
-                    if len(unused_maintenance_data) > 1:
-                        cycle_after_string = f"start: {unused_maintenance_data[1].start}, " \
-                                             f"end: {unused_maintenance_data[1].end}"
+                    if index == len(cycle_list)-1:  # TODO: Edward - Make test for this
+                        next_cycle = None
                     else:
-                        cycle_after_string = f"NONE (No later cycle dates)"
-                    print(f"WARNING - Encountered maintenance day outside of cycle dates "
-                          f"(assuming cycle_data and maintenance_data "
-                          f"were ordered as earliest-to-latest).\n"
-                          f"Maintenance Day= start: {m_day['start']}, end: {m_day['end']}\n"
-                          f"Closest Cycle before= start: {cycle_obj.start}, end: {cycle_obj.end}\n"
-                          f"Closest Cycle after= {cycle_after_string}\n"
-                          f"This Maintenance Day has therefore been discarded.\n")
-                    unused_maintenance_data.pop(0)
+                        next_cycle = cycle_list[index+1]
+                    self._maintenance_before_cycle_warning(m_day, cycle_obj, next_cycle)
+                    maintenance_data_copy.pop(0)
                 elif m_day['end'] < cycle_obj.end:
                     # if the next m_day is EARLIER than the current cycle END
                     cycle_obj.add_maintenance_day(m_day['start'], m_day['end'])
-                    unused_maintenance_data.pop(0)
+                    maintenance_data_copy.pop(0)
                 else:
                     # if the next m_day is LATER than the current cycle END
                     break
             cycle_list.append(cycle_obj)
         return cycle_list
 
-    def _process_as_single_list(self, data):
-        """ Converts a pre-processed list of cycle and maintenance day data items
-        into a list of Cycle objects, each containing a list of MaintenanceDay
-        objects - all which fall within the given cycle period.
-        :param data: A pre-processed list containing all valid cycle and maintenance day data items.
-        :return: A list of Cycle objects containing a list of 0 or more MaintenanceDay objects.
-        :raises RuntimeError:
-            If a maintenance day is encountered in the data before a cycle.
-            This will only occur if the data has not been properly pre-processed. """
-        cycle_list = []
-        index = 0
-        while index < len(data):
-            try:
-                cycle = Cycle(data[index]['name'],
-                              data[index]['start'],
-                              data[index]['end'])
-                index += 1
-                while index < len(data) and self._maintenance_specific_key in data[index]:
-                    cycle.add_maintenance_day(data[index]['start'],
-                                              data[index]['end'])
-                    index += 1
-                cycle_list.append(cycle)
-            except AttributeError:
-                raise RuntimeError("Unexpected list entry encountered."
-                                   "Ensure to sort the list before processing")
-
-        return cycle_list
+    @staticmethod
+    def _maintenance_before_cycle_warning(m_day, this_cycle, next_cycle=None):
+        if next_cycle:
+            cycle_after_string = f"start: {next_cycle.start}, end: {next_cycle.end}"
+        else:
+            cycle_after_string = f"NONE (No later cycle dates)"
+        print(f"WARNING - Encountered maintenance day outside of cycle dates "
+              f"(assuming cycle_data and maintenance_data "
+              f"were ordered as earliest-to-latest).\n"
+              f"Maintenance Day= start: {m_day['start']}, end: {m_day['end']}\n"
+              f"Closest Cycle before= start: {this_cycle.start}, end: {this_cycle.end}\n"
+              f"Closest Cycle after= {cycle_after_string}\n"
+              f"This Maintenance Day has therefore been discarded.\n")

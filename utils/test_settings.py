@@ -25,7 +25,7 @@ CONFIG.read(INI_FILE)
 
 
 def get_str(section, key):
-    return str(CONFIG.get(section, key, raw=True))  # TODO: Note - I've put raw=True to allow strings with special characters to be passed
+    return str(CONFIG.get(section, key, raw=True))  # raw=True to allow strings with special characters to be passed
 
 
 SETTINGS_FACTORY = ClientSettingsFactory()
@@ -62,11 +62,11 @@ SFTP_SETTINGS = SETTINGS_FACTORY.create('sftp',
                                         host=get_str('SFTP', 'host'),
                                         port=get_str('SFTP', 'port'))
 
-BUSAPPS_SETTINGS = SETTINGS_FACTORY.create('busapps',
-                                           username=get_str('BUSAPPS', 'user'),
-                                           password=get_str('BUSAPPS', 'password'),
+CYCLE_SETTINGS = SETTINGS_FACTORY.create('cycle',
+                                           username=get_str('CYCLE', 'user'),
+                                           password=get_str('CYCLE', 'password'),
                                            host='',
                                            port='',
-                                           uows_url=get_str('BUSAPPS', 'uows_url'),
-                                           scheduler_url=get_str('BUSAPPS', 'scheduler_url'))
+                                           uows_url=get_str('CYCLE', 'uows_url'),
+                                           scheduler_url=get_str('CYCLE', 'scheduler_url'))
 

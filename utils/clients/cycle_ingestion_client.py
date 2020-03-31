@@ -5,44 +5,42 @@
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 """
-Client class for ingesting BusApps data via SOAP
+Client class for ingesting cycle data from ISIS Business Applications (BusApps) via SOAP
 """
-from suds import Client, WebFault
+import suds
 from utils.clients.abstract_client import AbstractClient
 from utils.clients.connection_exception import ConnectionException
-from utils.test_settings import BUSAPPS_SETTINGS
+from utils.test_settings import CYCLE_SETTINGS
 
 
-class BusAppsIngestionClient(AbstractClient):
+class CycleIngestionClient(AbstractClient):
     """
-    Class for client to ingest BusApps data via SOAP
+    Class for client to ingest cycle data from ISIS Business Applications (BusApps) via SOAP
     """
     def __init__(self, credentials=None):
         if not credentials:
-            credentials = BUSAPPS_SETTINGS
-        super(BusAppsIngestionClient, self).__init__(credentials)
+            credentials = CYCLE_SETTINGS
+        super(CycleIngestionClient, self).__init__(credentials)
         self._uows_client = None
         self._scheduler_client = None
         self._session_id = None
-        # TODO: Note - I've used an error dictionary (for reuse and more granular testing)  # pylint:disable=fixme,line-too-long
         self._errors = {
             "invalid_uows_client": TypeError("The UOWS Client does not exist"
                                              "or has not been initialised properly"),
             "invalid_scheduler_client": TypeError("The Scheduler Client does not exist"
                                                   "or has not been initialised properly"),
-            "invalid_session_id": ConnectionException("BusApps Ingestion")
+            "invalid_session_id": ConnectionException("Cycle Ingestion")
         }
 
     def create_uows_client(self):
         """ Creates a User Office Web Service Client is one does not exist """
         if self._uows_client is None:
-            self._uows_client = Client(self.credentials.uows_url)
-            # print(type(self._uows_client))
+            self._uows_client = suds.Client(self.credentials.uows_url)
 
     def create_scheduler_client(self):
         """ Creates a Scheduler Client is one does not exist """
         if self._scheduler_client is None:
-            self._scheduler_client = Client(self.credentials.scheduler_url)
+            self._scheduler_client = suds.Client(self.credentials.scheduler_url)
 
     def connect(self):
         """ Login to User Office Web Service (UOWS)
@@ -54,7 +52,7 @@ class BusAppsIngestionClient(AbstractClient):
                 self._session_id = \
                     self._uows_client.service.login(Account=self.credentials.username,
                                                     Password=self.credentials.password)
-            except WebFault:
+            except suds.WebFault:
                 raise self._errors["invalid_session_id"]
 
         if self._scheduler_client is None:
@@ -84,7 +82,7 @@ class BusAppsIngestionClient(AbstractClient):
             self._scheduler_client.service.getFacilityList(self._session_id)
         except AttributeError:
             raise self._errors["invalid_scheduler_client"]
-        except WebFault:    # Raised by suds if the session id is not valid
+        except suds.WebFault:    # Raised by suds if the session id is not valid
             raise self._errors["invalid_session_id"]
 
         return True
@@ -99,27 +97,3 @@ class BusAppsIngestionClient(AbstractClient):
         :return: Maintenance day data as a list of 'sudsobject's """
         return self._scheduler_client.service.getOfflinePeriods(sessionId=self._session_id,
                                                                 reason='Maintenance')
-
-
-# TODO: Please note - all of the code below is for testing purposes only.    # pylint:disable=fixme
-
-# baic = BusAppsIngestionClient()
-# baic.connect()
-# cycles = baic.ingest_cycle_dates()
-# maintn = baic.ingest_maintenance_days()
-#
-# sdp = SchedulerDataProcessor()
-#
-# def print_all_dates(cycle_objs):
-#     for c in cycle_objs:
-#         print(f"Cycle: {c.start} - {c.end}")
-#         for m in c.maintenance_days:
-#             print(f"\tM Day: {m.start} - {m.end}")
-#
-# print("\n\t=====AS SEPARATE=====\n")
-# cycle_list = sdp.convert_raw_to_structured_as_separate(cycles, maintn)
-# print_all_dates(cycle_list)
-#
-# # print("\n\t=====AS COMBINED=====\n")
-# # cycle_list = sdp.convert_raw_to_structured(cycles, maintn)
-# # print_all_dates(cycle_list)

@@ -17,7 +17,7 @@ class ClientSettingsFactory:
     """
 
     ignore_kwargs = ['username', 'password', 'host', 'port']
-    valid_types = ['database', 'icat', 'queue', 'sftp', 'busapps']
+    valid_types = ['database', 'icat', 'queue', 'sftp', 'cycle']
 
     # pylint:disable=too-many-arguments
     def create(self, settings_type, username, password, host, port, **kwargs):
@@ -52,8 +52,8 @@ class ClientSettingsFactory:
             settings = self._create_queue(**kwargs)
         elif settings_type.lower() == 'sftp':
             settings = self._create_sftp(**kwargs)
-        elif settings_type.lower() == 'busapps':
-            settings = self._create_busapps(**kwargs)
+        elif settings_type.lower() == 'cycle':
+            settings = self._create_cycle(**kwargs)
         return settings
 
     def _create_database(self, **kwargs):
@@ -89,13 +89,13 @@ class ClientSettingsFactory:
         self._test_kwargs(sftp_kwargs, kwargs)
         return SFTPSettings(**kwargs)
 
-    def _create_busapps(self, **kwargs):
+    def _create_cycle(self, **kwargs):
         """
-        :return: busapps-ingestion compatible settings object
+        :return: cycle-ingestion compatible settings object
         """
-        busapps_kwargs = ['uows_url', 'scheduler_url']
-        self._test_kwargs(busapps_kwargs, kwargs)
-        return BusAppsIngestionSettings(**kwargs)
+        cycle_kwargs = ['uows_url', 'scheduler_url']
+        self._test_kwargs(cycle_kwargs, kwargs)
+        return CycleIngestionSettings(**kwargs)
 
     def _test_kwargs(self, expected, actual):
         """
@@ -178,14 +178,14 @@ class SFTPSettings(ClientSettings):
     def __init__(self, **kwargs):  # pylint:disable=useless-super-delegation
         super(SFTPSettings, self).__init__(**kwargs)
 
-class BusAppsIngestionSettings(ClientSettings):
+class CycleIngestionSettings(ClientSettings):
     """
-    BusApps-ingestion settings object
+    Cycle-ingestion settings object
     """
     uows_url = None
     scheduler_url = None
 
     def __init__(self, uows_url, scheduler_url, **kwargs):
-        super(BusAppsIngestionSettings, self).__init__(**kwargs)
+        super(CycleIngestionSettings, self).__init__(**kwargs)
         self.uows_url = uows_url
         self.scheduler_url = scheduler_url
