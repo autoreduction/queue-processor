@@ -85,6 +85,10 @@ class VariableUtils:
         Convert the given value a type matching that of var_type.
         Options for var_type: text, number, list_text, list_number, boolean
         If the var_type isn't recognised, the value is returned unchanged
+        :param value: A string of the value to convert
+        :param var_type: The desired type to convert the value to
+        :return: The value as the desired type,
+                 or if failed to convert the original value as string
         """
         # pylint: disable=too-many-return-statements,too-many-branches
         if var_type == "text":
