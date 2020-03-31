@@ -21,14 +21,19 @@ from queue_processors.queue_processor.orm_mapping import RunJoin, Variable, Inst
 class TestVariableUtils(unittest.TestCase):
 
     def setUp(self):
-        self.valid_variable = Variable(name='test',
-                                       value='value',
-                                       type='text',
-                                       is_advanced=False,
-                                       help_text='help text')
+        self.valid_variable = Variable(name='bool_variable',
+                                       value='True',
+                                       type='boolean',
+                                       is_advanced=0,
+                                       help_text='')
+        self.invalid_variable = Variable(name='None',
+                                         value='',
+                                         type='text',
+                                         is_advanced=0,
+                                         help_text='')
         self.valid_inst_var = InstrumentJoin(name='test',
                                              value='value',
-                                             is_advanced=False,
+                                             is_advanced=0,
                                              type='text',
                                              help_text='help test',
                                              instrument=4,
@@ -37,6 +42,31 @@ class TestVariableUtils(unittest.TestCase):
                                              tracks_script=1)
         self.reduction_run = Mock()
         self.reduction_run.run_number = 12345
+
+    def test_find_existing_variable_in_database_valid(self):
+        """
+        Ensure that we can locate an existing variable in the database and return its ID
+        """
+        expected = 1  # The expected value from the testing database
+        actual = vu.find_existing_variable_in_database(self.valid_variable)
+        self.assertEqual(actual, expected)
+
+    def test_find_existing_variable_in_database_invalid(self):
+        """
+        Ensure that None is returned if the variable we are looking for does not exist
+        """
+        actual = vu.find_existing_variable_in_database(self.invalid_variable)
+        self.assertIsNone(actual)
+
+    def test_find_existing_variable_in_database_partial(self):
+        """
+        Ensure that None is returned if the variable we look for does not match ALL
+        the fields in the database
+        """
+        partial_variable = self.valid_variable
+        partial_variable.name = 'bool_variab'  # partial of the name of the variable
+        actual = vu.find_existing_variable_in_database(partial_variable)
+        self.assertIsNone(actual)
 
     def test_derive_run_variable(self):
         """
@@ -64,7 +94,6 @@ class TestVariableUtils(unittest.TestCase):
         :param mock_derive_run_var: Mock out the derive run as tested above
         :param mock_session_commit: Mock out session.commit to ensure we do not commit to database
         :param mock_session_add: Mock out session.add to ensure we do not add to the database
-        :return:
         """
         var_utils = vu()
         var_utils.save_run_variables([self.valid_variable], self.reduction_run)

@@ -10,7 +10,7 @@ import re
 
 # pylint: disable=import-error,no-name-in-module
 from queue_processors.queue_processor.base import session
-from queue_processors.queue_processor.orm_mapping import RunJoin, InstrumentJoin
+from queue_processors.queue_processor.orm_mapping import RunJoin, InstrumentJoin, Variable
 # pylint:disable=no-name-in-module,import-error
 from queue_processors.queue_processor.settings import LOGGING
 
@@ -21,6 +21,23 @@ logger = logging.getLogger("queue_processor")  # pylint: disable=invalid-name
 
 class VariableUtils:
     """ Class to deal with reduction run variables. """
+
+    @staticmethod
+    def find_existing_variable_in_database(variable):
+        """
+        Find a Variable record in the database and return it's ID
+        :param variable: The variable to attempt to find in the database
+        :return: The ID if the record exists, else None.
+        """
+        database_variable = session.query(Variable).filter_by(name=variable.name,
+                                                              value=variable.value,
+                                                              type=variable.type,
+                                                              is_advanced=variable.is_advanced,
+                                                              help_text=variable.help_text).first()
+        if database_variable:
+            return database_variable.id
+        return None
+
     @staticmethod
     def derive_run_variable(instrument_var, reduction_run):
         """ Returns a RunJoin record for creation in the database. """
