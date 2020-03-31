@@ -9,11 +9,12 @@ Prepares raw 'XYE' data to be plotted by converting it into a data frame.
 """
 from difflib import ndiff
 
-import pandas as pd
 import csv
+import pandas as pd
 
 
 class PrepareData:
+    # pylint:disable=too-few-public-methods
     """
     This class prepares data to be plotted by first reading it from a given path,
     validating initial rows are as expected, and ultimately converting the data
@@ -34,13 +35,13 @@ class PrepareData:
         """
         processed_data = []
         with open(path, 'r') as input_file:
-            self._check_first_row(input_file.readline())    # Using input_file to treat row as 1 string item
+            self._check_first_row(input_file.readline())
             spectrum = self._check_second_row(input_file.readline())
 
             reader = csv.reader(input_file)
             for row in reader:
-                float_list = [float(item) for item in row]  # Ensures
-                if len(float_list) is 1:
+                float_list = [float(item) for item in row]
+                if len(float_list) is 1:     # pylint:disable=literal-comparison
                     spectrum = int(row[0])
                 else:
                     processed_data.append([spectrum]+float_list)
@@ -78,7 +79,7 @@ class PrepareData:
         (i.e. that it is the first spectrum number)
         :param row_as_string: The second row of the data in it's natural string format
         :return: The row converted to an integer
-        :raises RuntimeError: If the row cannot be cast to an interge.
+        :raises RuntimeError: If the row cannot be cast to an integer.
         """
         try:
             first_spectrum = int(row_as_string)

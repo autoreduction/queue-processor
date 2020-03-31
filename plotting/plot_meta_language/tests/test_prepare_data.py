@@ -16,16 +16,12 @@ from plotting.prepare_data import PrepareData
 
 
 class TestPrepareData(unittest.TestCase):
+    # pylint:disable=protected-access
     """
     Exercises the PrepareData class
     """
     def setUp(self):
         self.valid_first_row = "first"
-        self.valid_data = [
-            [self.valid_first_row + " "],
-            ["2"],
-            ["3.1", "3.2", "3.3"]
-        ]
         self.valid_data = (
             f"{self.valid_first_row}\n"
             f"2\n"
