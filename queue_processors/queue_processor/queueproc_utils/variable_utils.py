@@ -10,7 +10,8 @@ import re
 
 # pylint: disable=import-error,no-name-in-module
 from queue_processors.queue_processor.base import session
-from queue_processors.queue_processor.orm_mapping import RunJoin, InstrumentJoin, Variable
+from queue_processors.queue_processor.orm_mapping import (RunJoin, InstrumentJoin,
+                                                          Variable, RunVariable)
 # pylint:disable=no-name-in-module,import-error
 from queue_processors.queue_processor.settings import LOGGING
 
@@ -40,7 +41,12 @@ class VariableUtils:
 
     @staticmethod
     def derive_run_variable(instrument_var, reduction_run):
-        """ Returns a RunJoin record for creation in the database. """
+        """
+        Create and return a RunJoin record (BOTH variable and RunVariable record)
+        :param instrument_var: A variable object to create a database variable object from
+        :param reduction_run: The reduction run to join the variable to
+        :return: A database object representing the Variable and RunVariable records
+        """
         return RunJoin(name=instrument_var.name,
                        value=instrument_var.value,
                        is_advanced=instrument_var.is_advanced,
@@ -48,15 +54,46 @@ class VariableUtils:
                        help_text=instrument_var.help_text,
                        reduction_run=reduction_run)
 
+    @staticmethod
+    def construct_run_variable(variable_id, reduction_run_id):
+        """
+        Create and return ONLY the joining record between the run and the variable
+        :param variable_id: The ID of an existing variable within the database
+        :param reduction_run_id: The ID of an existing reduction run within the database
+        :return: A database object representing the joining record between run and variable
+        """
+        return RunVariable(variable_ptr_id=variable_id,
+                           reduction_run_id=reduction_run_id)
+
     def save_run_variables(self, instrument_vars, reduction_run):
-        """ Save reduction run variables in the database. """
+        """
+        For each variable supplied, try to find an existing variable in the database
+        If one does exists, add a RunVariable with reference to the existing variable
+        Else, create a new Variable and RunVariable linking the variable to the reduction run
+        Commit
+        """
         logger.info('Saving run variables for %s', str(reduction_run.run_number))
-        run_variables = map(lambda ins_var: self.derive_run_variable(ins_var, reduction_run),
-                            instrument_vars)
-        for run_variable in run_variables:
-            session.add(run_variable)
-        session.commit()
+        run_variables = []
+        for variable in instrument_vars:
+            variable_db_id = self.find_existing_variable_in_database(variable)
+            if variable_db_id:
+                db_variable = self.construct_run_variable(variable, reduction_run)
+            else:
+                db_variable = self.derive_run_variable(variable, reduction_run)
+            run_variables.append(db_variable)
+        self.add_and_commit(run_variables)
         return run_variables
+
+    @staticmethod
+    def add_and_commit(db_objects):
+        """
+        Add and commit the supplied database objects to the database
+        This has been refactored to remove the database access layer from the control code
+        :param db_objects: A list of database objects created using autoreduction orm_mapping
+        """
+        for record in db_objects:
+            session.add(record)
+        session.commit()
 
     @staticmethod
     def copy_variable(variable):
