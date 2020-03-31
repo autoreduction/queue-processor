@@ -41,8 +41,11 @@ class PrepareData:
             error_message = (f"Unexpected first row of file.\n"
                              f"Expected:\t{self.expected_first_row}\n"
                              f"Actual:\t\t{row}\n"
-                             f"\nDifference Breakdown:\n")
-            error_message += "".join(ndiff(self.expected_first_row, row))
+                             f"\nDifference breakdown:\n")
+
+            diff = ndiff(self.expected_first_row.splitlines(keepends=True),
+                         row.splitlines(keepends=True))
+            error_message += "\n".join(diff)
 
             raise RuntimeError(error_message)
         return True

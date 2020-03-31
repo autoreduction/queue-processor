@@ -30,11 +30,6 @@ class TestPrepareData(unittest.TestCase):
             f"2\n"
             f"3.1, 3.2, 3.3"
         )
-        self.real_data = (
-            "# X , Y , E\n"
-            "1\n"
-            "100.25,8210,90.6091"
-        )
 
     def test_default_init(self):
         """ Test initialisation values are set """
