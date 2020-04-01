@@ -45,7 +45,7 @@ class SchedulerDataProcessor:
         self._earliest_possible_date = datetime(2000, 1, 1, tzinfo=None)
         # Current regex =  4 digits | '/' | 1 or more digit/letter(s) | end
         self._cycle_name_regex = r"\d{4}/\w*$"
-        self._maintenance_specific_key = 'facility'
+        self._maintenance_specific_key = "facility"
         self._datetime_fields = ["start", "end"]
         self._sort_by_field = "start"
 
@@ -58,7 +58,7 @@ class SchedulerDataProcessor:
         :return: A list of Cycle objects containing a list of 0 or more MaintenanceDay objects. """
         pre_processed_cycles, pre_processed_maintenance\
             = self._pre_process(raw_cycle_data, raw_maintenance_data)
-        return self._process_from_separate(pre_processed_cycles, pre_processed_maintenance)
+        return self._process(pre_processed_cycles, pre_processed_maintenance)
 
     @staticmethod
     def print_start_dates(data):
@@ -109,7 +109,7 @@ class SchedulerDataProcessor:
         :return: The list sorted by the specified field """
         return sorted(data, key=lambda date: date[self._sort_by_field])
 
-    def _process_from_separate(self, cycle_data, maintenance_data):
+    def _process(self, cycle_data, maintenance_data):
         """ Converts pre-processed cycle data items and maintenance day data items
         into a single list of Cycle objects. Each cycle object contains a list
         of MaintenanceDay objects - all of which fall within the given cycle period.
@@ -120,32 +120,34 @@ class SchedulerDataProcessor:
         cycle_list = []
         maintenance_data_copy = maintenance_data.copy()
         for index, current_cycle_data in enumerate(cycle_data):
-
             cycle_obj = Cycle(current_cycle_data['name'],
                               current_cycle_data['start'],
                               current_cycle_data['end'])
             while len(maintenance_data_copy) > 0:
                 m_day = maintenance_data_copy[0]
                 if m_day['start'] < cycle_obj.start:
-                    # if the next m_day is EARLIER than the current cycle START
+                    # if this m_day is EARLIER than the current cycle START
                     if index == len(cycle_list)-1:  # TODO: Edward - Make test for this     pylint:disable=fixme
                         next_cycle = None
                     else:
                         next_cycle = cycle_list[index+1]
-                    self._maintenance_before_cycle_warning(m_day, cycle_obj, next_cycle)
+                    self._unexpected_maintenance_day_warning(m_day, cycle_obj, next_cycle)
                     maintenance_data_copy.pop(0)
                 elif m_day['end'] < cycle_obj.end:
-                    # if the next m_day is EARLIER than the current cycle END
+                    # if this m_day is EARLIER than the current cycle END
                     cycle_obj.add_maintenance_day(m_day['start'], m_day['end'])
                     maintenance_data_copy.pop(0)
+                elif index == len(cycle_list)-1:
+                    # if this m_day is LATER than the LAST cycle END
+                    self._unexpected_maintenance_day_warning(m_day, cycle_obj, None)
                 else:
-                    # if the next m_day is LATER than the current cycle END
+                    # if this m_day is LATER than the current (not last) cycle END
                     break
             cycle_list.append(cycle_obj)
         return cycle_list
 
     @staticmethod
-    def _maintenance_before_cycle_warning(m_day, this_cycle, next_cycle=None):
+    def _unexpected_maintenance_day_warning(m_day, this_cycle, next_cycle=None):
         if next_cycle:
             cycle_after_string = f"start: {next_cycle.start}, end: {next_cycle.end}"
         else:
