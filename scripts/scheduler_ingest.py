@@ -46,8 +46,6 @@ class SchedulerDataProcessor:
         # Current regex =  4 digits | '/' | 1 or more digit/letter(s) | end
         self._cycle_name_regex = r"\d{4}/\w*$"
         self._datetime_fields = ["start", "end"]
-        self._relevant_maintenance_keys = self._datetime_fields
-        self._relevant_cycle_data_keys = ["name"] + self._datetime_fields
         self._sort_by_field = "start"
 
     def convert_raw_to_structured(self, raw_cycle_data, raw_maintenance_data):
@@ -57,24 +55,9 @@ class SchedulerDataProcessor:
         :param raw_maintenance_data: Maintenance day data received from the Scheduler API
                                      (as a list)
         :return: A list of Cycle objects containing a list of 0 or more MaintenanceDay objects. """
-        # print(dict(raw_cycle_data[0]))
-
-        if not self.check_keys_in_objects(self._relevant_cycle_data_keys, raw_cycle_data):
-            print("WARNING")
-        if not self.check_keys_in_objects(self._relevant_maintenance_keys, raw_maintenance_data):
-            print("WARNING")
-
         pre_processed_cycles, pre_processed_maintenance\
             = self._pre_process(raw_cycle_data, raw_maintenance_data)
         return self._process(pre_processed_cycles, pre_processed_maintenance)
-
-    @staticmethod
-    def check_keys_in_objects(keys, objects):
-        for o in objects:
-            for k in keys:
-                if k not in o:
-                    return False
-        return True
 
     @staticmethod
     def print_start_dates(data):
