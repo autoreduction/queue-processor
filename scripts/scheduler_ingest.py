@@ -138,7 +138,8 @@ class SchedulerDataProcessor:
                     maintenance_data_copy.pop(0)
                 elif index == len(cycle_data)-1:
                     # if this m_day is LATER than the LAST cycle END
-                    self._unexpected_maintenance_day_warning(m_day, cycle_obj, None)
+                    self._unexpected_maintenance_day_warning(m_day, current_cycle_data, None)
+                    maintenance_data_copy.pop(0)
                 else:
                     # if this m_day is LATER than the current (not last) cycle END
                     break
