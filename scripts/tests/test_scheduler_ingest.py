@@ -76,6 +76,11 @@ class TestSchedulerDataProcessor(unittest.TestCase):
 
     @staticmethod
     def create_cycle_data(length, initial_start):
+        """ Creates fake cycle data where each cycle is exactly 1 month
+        and there are no gaps between cycles
+        :param length: The number of cycles to create test data for
+        :param initial_start: The date to start the initial cycle from
+        :return: The fake cycle data """
         cycles = []
         start_date = initial_start
         for index in range(length):
@@ -92,6 +97,9 @@ class TestSchedulerDataProcessor(unittest.TestCase):
 
     @staticmethod
     def create_maintenance_day_from_start_date(start_date):
+        """ Creates a fake maintenance day data entry (minus an id) from a start_date
+        :param start_date: The start date of the maintenance day
+        :return: The fake maintenance day data entry """
         return {
             "start": start_date,
             "end": start_date + relativedelta(days=1),
@@ -99,7 +107,22 @@ class TestSchedulerDataProcessor(unittest.TestCase):
             "facility": "Test"
         }
 
+    @staticmethod
+    def _dict_match(dict1, dict2):
+        if len(dict1) != len(dict2):
+            return False
+        for key in dict1:
+            if key not in dict2.keys() or dict2[key] != dict1[key]:
+                return False
+        return True
+        # if c1["name"] != c2["name"] or\
+        #    c1["start"] != c2["start"] or\
+        #    c1["end"] != c2["end"]:
+        #     return False
+        # return True
+
     def test_init(self):
+        """ Test initialisation values are set """
         sdp = SchedulerDataProcessor()
         self.assertIsInstance(sdp._earliest_possible_date, datetime)
         self.assertIsInstance(sdp._cycle_name_regex, str)
@@ -107,6 +130,8 @@ class TestSchedulerDataProcessor(unittest.TestCase):
         self.assertIsInstance(sdp._sort_by_field, str)
 
     def test_sort_order(self):
+        """ Test _sort_order by providing it an unordered list of cycles.
+         Assumes test_cycle_data is already ordered """
         local_cycle_data = [
             self.test_cycle_data[1],
             self.test_cycle_data[2],
@@ -117,6 +142,8 @@ class TestSchedulerDataProcessor(unittest.TestCase):
         self.assertEqual(self.test_cycle_data, result)
 
     def test_clean_with_invalid_name(self):
+        """ Test _clean_data by providing it data containing a cycle with an invalid name.
+         Assumes all other entries in test_cycle_data are valid """
         local_cycle_data = self.test_cycle_data.copy()
         local_cycle_data[0]["name"] = "invalid"
         sdp = SchedulerDataProcessor()
@@ -124,6 +151,9 @@ class TestSchedulerDataProcessor(unittest.TestCase):
         self.assertTrue(len(result) == len(local_cycle_data)-1)
 
     def test_clean_with_invalid_date(self):
+        """ Test _clean_data by providing it data containing a cycle with an date
+         1 day before the earliest possible (specified by the SchedulerDataProcessor).
+         Assumes all other entries in test_cycle_data are valid """
         sdp = SchedulerDataProcessor()
         local_cycle_data = self.test_cycle_data.copy()
         earlier_than_possible = sdp._earliest_possible_date + relativedelta(days=-1)
@@ -132,49 +162,49 @@ class TestSchedulerDataProcessor(unittest.TestCase):
         self.assertTrue(len(result) == len(local_cycle_data)-1)
 
     def test_pre_process_with_valid_data(self):
+        """ Test _pre_process calls the internal methods the expected number of times
+        and returns the expected number of lists """
         sdp = SchedulerDataProcessor()
         sdp._sort_by_date = MagicMock()
         sdp._clean_data = MagicMock()
         result = sdp._pre_process(self.test_cycle_data,
-                         self.test_maintenance_dict.values())
-        sdp._sort_by_date.assert_called()
-        sdp._clean_data.assert_called()
+                                  self.test_maintenance_dict.values())
+        self.assertTrue(sdp._sort_by_date.call_count == 2)
+        self.assertTrue(sdp._clean_data.call_count == 2)
         self.assertTrue(len(result) == 2)
 
-    def test_process_with_maintenance_before_cycle(self):
-        sdp = SchedulerDataProcessor()
-        sdp._unexpected_maintenance_day_warning = MagicMock()
-        sdp._process(self.test_cycle_data, [self.test_maintenance_dict["before_cycles"]])
-        sdp._unexpected_maintenance_day_warning.assert_called_with(
-            self.test_maintenance_dict["before_cycles"],
-            self.test_cycle_data[0],
-            self.test_cycle_data[1]
-        )
-
     def test_process_with_maintenance_before_cycles(self):
+        """ Test _process calls _unexpected_maintenance_day_warning when
+        it encounters a maintenance day start value *earlier* than any cycle start date,
+        and doesn't add this maintenance day to any cycle. """
         sdp = SchedulerDataProcessor()
         sdp._unexpected_maintenance_day_warning = MagicMock()
         cycles = sdp._process(self.test_cycle_data, [self.test_maintenance_dict["before_cycles"]])
-        sdp._unexpected_maintenance_day_warning.assert_called_with(
-            self.test_maintenance_dict["before_cycles"],
-            self.test_cycle_data[0],
-            self.test_cycle_data[1]
-        )
+        sdp._unexpected_maintenance_day_warning.assert_called_once()
         self.assertTrue(len(cycles) == len(self.test_cycle_data))
         for cycle in cycles:
             self.assertIsInstance(cycle, Cycle)
             self.assertTrue(len(cycle.maintenance_days) == 0)
 
     def test_process_with_maintenance_after_cycles(self):
+        """ Test _process calls _unexpected_maintenance_day_warning when
+        it encounters a maintenance day start value *later* than any cycle end date,
+        and doesn't add this maintenance day to any cycle. """
         sdp = SchedulerDataProcessor()
         sdp._unexpected_maintenance_day_warning = MagicMock()
         cycles = sdp._process(self.test_cycle_data, [self.test_maintenance_dict["after_cycles"]])
-        sdp._unexpected_maintenance_day_warning.assert_called_with(
-            self.test_maintenance_dict["after_cycles"],
-            self.test_cycle_data[2],
-            None
-        )
-        self.assertTrue(len(cycles) == len(self.test_cycle_data))
+        sdp._unexpected_maintenance_day_warning.assert_called_once()
+        for cycle in cycles:
+            self.assertIsInstance(cycle, Cycle)
+            self.assertTrue(len(cycle.maintenance_days) == 0)
+
+    def test_process_with_maintenance_between_cycles(self):
+        local_cycle_data = self.test_cycle_data.copy()
+        local_cycle_data[0]["end"] = local_cycle_data[0]["start"] + relativedelta(days=1)
+        sdp = SchedulerDataProcessor()
+        sdp._unexpected_maintenance_day_warning = MagicMock()
+        cycles = sdp._process(self.test_cycle_data, [self.test_maintenance_dict["within_first_cycle"]])
+        sdp._unexpected_maintenance_day_warning.assert_called_once()
         for cycle in cycles:
             self.assertIsInstance(cycle, Cycle)
             self.assertTrue(len(cycle.maintenance_days) == 0)
