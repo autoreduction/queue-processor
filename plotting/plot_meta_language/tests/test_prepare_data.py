@@ -40,9 +40,9 @@ class TestPrepareData(unittest.TestCase):
         prep = PrepareData()
         valid_string = "0"
         prep.expected_first_row = valid_string
-        first_row = self.valid_data.split("\n")[0]
+        invalid_first_row = self.valid_data.split("\n")[0]
         with self.assertRaises(RuntimeError):
-            prep._check_first_row(first_row)
+            prep._check_first_row(invalid_first_row)
 
     def test_valid_first_row(self):
         """ Test _check_first_row removes appended whitespace
@@ -89,8 +89,8 @@ class TestPrepareData(unittest.TestCase):
         prep._check_second_row = MagicMock(return_value=second_row_check_return)
         with patch("builtins.open", mock_open(read_data=self.valid_data)):
             data_frame = prep.prepare_data("")
+            self.assertIsInstance(data_frame, pd.DataFrame)
+            self.assertEqual(len(data_frame), (len(split_data) - 2))
 
         prep._check_first_row.assert_called_with(first_row_with_newline)
         prep._check_second_row.assert_called_with(second_row_with_newline)
-        self.assertIsInstance(data_frame, pd.DataFrame)
-        # self.assertEqual(len(data_frame), (len(split_data) - 2))
