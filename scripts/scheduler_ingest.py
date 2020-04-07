@@ -119,43 +119,49 @@ class SchedulerDataProcessor:
         cycle_obj_list = []
         maintenance_data_copy = maintenance_data.copy()
         for index, current_cycle_data in enumerate(cycle_data):
-            cycle_obj = Cycle(current_cycle_data['name'],
-                              current_cycle_data['start'],
-                              current_cycle_data['end'])
+            cycle = Cycle(current_cycle_data['name'],
+                          current_cycle_data['start'],
+                          current_cycle_data['end'])
             while len(maintenance_data_copy) > 0:
-                m_day = maintenance_data_copy[0]
-                if m_day['start'] < cycle_obj.start:
+                m_day_data = maintenance_data_copy[0]
+                if m_day_data['start'] < cycle.start:
                     # if this m_day is EARLIER than the current cycle START
-                    if index == len(cycle_data):
-                        next_cycle_data = None
+                    if index == 0:
+                        previous_cycle = None
                     else:
-                        next_cycle_data = cycle_data[index+1]
-                    self._unexpected_maintenance_day_warning(m_day, current_cycle_data, next_cycle_data)
+                        previous_cycle = cycle_obj_list[-1]
+                    self._unexpected_maintenance_day_warning(m_day_data, cycle_before=previous_cycle, cycle_after=cycle)
                     maintenance_data_copy.pop(0)
-                elif m_day['end'] < cycle_obj.end:
-                    # if this m_day is EARLIER than the current cycle END
-                    cycle_obj.add_maintenance_day(m_day['start'], m_day['end'])
+                elif m_day_data['end'] <= cycle.end:
+                    # if this m_day_data is EARLIER than the current cycle END
+                    cycle.add_maintenance_day(m_day_data['start'], m_day_data['end'])
                     maintenance_data_copy.pop(0)
                 elif index == len(cycle_data)-1:
                     # if this m_day is LATER than the LAST cycle END
-                    self._unexpected_maintenance_day_warning(m_day, current_cycle_data, None)
+                    self._unexpected_maintenance_day_warning(m_day_data, cycle_before=cycle)
                     maintenance_data_copy.pop(0)
                 else:
                     # if this m_day is LATER than the current (not last) cycle END
                     break
-            cycle_obj_list.append(cycle_obj)
+            cycle_obj_list.append(cycle)
         return cycle_obj_list
 
     @staticmethod
-    def _unexpected_maintenance_day_warning(m_day, this_cycle_data, next_cycle_data=None):
-        if next_cycle_data:
-            cycle_after_string = f"\n\tStart = {next_cycle_data['start']}\n\tEnd = {next_cycle_data['end']}\n"
+    def _unexpected_maintenance_day_warning(m_day_data, cycle_before=None, cycle_after=None):
+        if cycle_before:
+            cycle_before_string = f"\n\tStart = {cycle_before.start}\n\tEnd = {cycle_before.end}\n"
+        else:
+            cycle_before_string = f" NONE (No earlier cycle dates)\n"
+
+        if cycle_after:
+            cycle_after_string = f"\n\tStart = {cycle_after.start}\n\tEnd = {cycle_after.end}\n"
         else:
             cycle_after_string = f" NONE (No later cycle dates)\n"
+
         print(f"WARNING - Encountered maintenance day outside of cycle dates "
               f"(assuming cycle_data and maintenance_data "
               f"were ordered as earliest-to-latest).\n"
-              f"Maintenance Day:\n\tStart = {m_day['start']}\n\tEnd = {m_day['end']}\n"
-              f"Closest Cycle before:\n\tStart = {this_cycle_data['start']}\n\tEnd = {this_cycle_data['start']}\n"
-              f"Closest Cycle after: {cycle_after_string}"
+              f"Maintenance Day:\n\tStart = {m_day_data['start']}\n\tEnd = {m_day_data['end']}\n"
+              f"Closest Cycle before:{cycle_before_string}"
+              f"Closest Cycle after:{cycle_after_string}"
               f"This Maintenance Day has therefore been discarded.\n")
