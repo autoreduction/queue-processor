@@ -33,6 +33,7 @@ class TestCycle(unittest.TestCase):
         }
 
     def test_init(self):
+        """ Test initialisation values are set """
         cycle = Cycle(self.test_cycle_values["name"],
                       self.test_cycle_values["start"],
                       self.test_cycle_values["end"])
@@ -42,6 +43,8 @@ class TestCycle(unittest.TestCase):
         self.assertTrue(len(cycle.maintenance_days) == 0)
 
     def test_add_maintenance_day(self):
+        """ Test cycle stores a given maintenance day properly when
+        it received through the add_maintenance_day method. """
         cycle = Cycle(self.test_cycle_values["name"],
                       self.test_cycle_values["start"],
                       self.test_cycle_values["end"])
@@ -106,20 +109,6 @@ class TestSchedulerDataProcessor(unittest.TestCase):
             "reason": "Maintenance",
             "facility": "Test"
         }
-
-    @staticmethod
-    def _dict_match(dict1, dict2):
-        if len(dict1) != len(dict2):
-            return False
-        for key in dict1:
-            if key not in dict2.keys() or dict2[key] != dict1[key]:
-                return False
-        return True
-        # if c1["name"] != c2["name"] or\
-        #    c1["start"] != c2["start"] or\
-        #    c1["end"] != c2["end"]:
-        #     return False
-        # return True
 
     def test_init(self):
         """ Test initialisation values are set """
@@ -199,20 +188,27 @@ class TestSchedulerDataProcessor(unittest.TestCase):
             self.assertTrue(len(cycle.maintenance_days) == 0)
 
     def test_process_with_maintenance_between_cycles(self):
+        """ Test _process calls _unexpected_maintenance_day_warning when it encounters
+        a maintenance day start value *in-between* the previous and cycle end date and
+        current cycle start date, and ensures it doesn't add this maintenance day to any cycle. """
         local_cycle_data = self.test_cycle_data.copy()
         local_cycle_data[0]["end"] = local_cycle_data[0]["start"] + relativedelta(days=1)
         sdp = SchedulerDataProcessor()
         sdp._unexpected_maintenance_day_warning = MagicMock()
-        cycles = sdp._process(self.test_cycle_data, [self.test_maintenance_dict["within_first_cycle"]])
+        cycles = sdp._process(self.test_cycle_data,
+                              [self.test_maintenance_dict["within_first_cycle"]])
         sdp._unexpected_maintenance_day_warning.assert_called_once()
         for cycle in cycles:
             self.assertIsInstance(cycle, Cycle)
             self.assertTrue(len(cycle.maintenance_days) == 0)
 
     def test_process_with_maintenance_within_cycles(self):
+        """ Test _process adds a maintenance day to the appropriate cycle when said
+        maintenance day starts and ends within the given cycle's start and end dates. """
         sdp = SchedulerDataProcessor()
         sdp._unexpected_maintenance_day_warning = MagicMock()
-        cycles = sdp._process(self.test_cycle_data, [self.test_maintenance_dict["within_first_cycle"]])
+        cycles = sdp._process(self.test_cycle_data,
+                              [self.test_maintenance_dict["within_first_cycle"]])
         sdp._unexpected_maintenance_day_warning.assert_not_called()
         self.assertTrue(len(cycles) == len(self.test_cycle_data))
         for cycle in cycles:
@@ -225,10 +221,11 @@ class TestSchedulerDataProcessor(unittest.TestCase):
                         and m_day.end == self.test_maintenance_dict["within_first_cycle"]["end"])
 
     def test_conversion_with_invalid_args(self):
+        """ Test a KeyError is thrown if a cycle attribute is missing when
+         convert_raw_to_structured is called """
         local_cycle_data = self.test_cycle_data.copy()
         local_cycle_data[0].pop("start")
         sdp = SchedulerDataProcessor()
         with self.assertRaises(KeyError):
             sdp.convert_raw_to_structured(local_cycle_data,
-                                      self.test_maintenance_dict.values())
-
+                                          self.test_maintenance_dict.values())

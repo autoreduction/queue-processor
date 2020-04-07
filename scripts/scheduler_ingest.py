@@ -130,7 +130,9 @@ class SchedulerDataProcessor:
                         previous_cycle = None
                     else:
                         previous_cycle = cycle_obj_list[-1]
-                    self._unexpected_maintenance_day_warning(m_day_data, cycle_before=previous_cycle, cycle_after=cycle)
+                    self._unexpected_maintenance_day_warning(m_day_data,
+                                                             cycle_before=previous_cycle,
+                                                             cycle_after=cycle)
                     maintenance_data_copy.pop(0)
                 elif m_day_data['end'] <= cycle.end:
                     # if this m_day_data is EARLIER than the current cycle END
