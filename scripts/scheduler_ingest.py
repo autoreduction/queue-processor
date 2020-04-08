@@ -11,24 +11,64 @@ import re
 from datetime import datetime
 
 
-class MaintenanceDay:   # pylint:disable=too-few-public-methods
-    """
-    Class to represent a cycle maintenance day
-    """
+class TimePeriod:
     def __init__(self, start, end):
         self.start = start
         self.end = end
 
+    def as_dict(self):
+        # TODO: Note to EO - I had to make this method anyway as part of my __iter__ functionality
+        return {"start": self.start,
+                "end": self.end}
 
-class Cycle:    # pylint:disable=too-few-public-methods
+    def __iter__(self):
+        for k, v in self.as_dict().items():
+            yield (k, v)
+
+class MaintenanceDay(TimePeriod):   # pylint:disable=too-few-public-methods
+    """
+    Class to represent a cycle maintenance day
+    """
+    def __init__(self, start, end):
+        super().__init__(start, end)
+    # def __init__(self, start, end):
+    #     self.start = start
+    #     self.end = end
+    #
+    # def __eq__(self, other):
+    #     if type(self) != type(other) or\
+    #             self.start != other["start"] or\
+    #             self.end != other["end"]:
+    #         return False
+    #     return True
+
+
+class Cycle(TimePeriod):    # pylint:disable=too-few-public-methods
     """
     Class to represent a cycle period
     """
     def __init__(self, name, start, end):
+        super().__init__(start, end)
         self.name = name
-        self.start = start
-        self.end = end
         self.maintenance_days = []
+
+    # def __eq__(self, other):
+    #     print(f"other: {other}")
+    #     if self.name != other["name"] or\
+    #        self.start != other["start"] or\
+    #        self.end != other["end"] or\
+    #        len(self.maintenance_days) != len(other["maintenance_days"]):
+    #         return False
+    #     for index in range(len(self.maintenance_days)):
+    #         if self.maintenance_days[index] != other["maintenance_days"][index]:
+    #             return False
+    #     return True
+
+    def as_dict(self):
+        dict_ = super().as_dict()
+        dict_.update({"name": self.name,
+                      "maintenance_days": self.maintenance_days})
+        return dict_
 
     def add_maintenance_day(self, start, end):
         """ Adds a maintenance day object to this cycle
@@ -130,7 +170,7 @@ class SchedulerDataProcessor:
                         previous_cycle = None
                     else:
                         previous_cycle = cycle_obj_list[-1]
-                    self._unexpected_maintenance_day_warning(m_day_data,
+                    self._unexpected_maintenance_day_warning(m_day_data=m_day_data,
                                                              cycle_before=previous_cycle,
                                                              cycle_after=cycle)
                     maintenance_data_copy.pop(0)
@@ -140,7 +180,7 @@ class SchedulerDataProcessor:
                     maintenance_data_copy.pop(0)
                 elif index == len(cycle_data)-1:
                     # if this m_day is LATER than the LAST cycle END
-                    self._unexpected_maintenance_day_warning(m_day_data, cycle_before=cycle)
+                    self._unexpected_maintenance_day_warning(m_day_data=m_day_data, cycle_before=cycle)
                     maintenance_data_copy.pop(0)
                 else:
                     # if this m_day is LATER than the current (not last) cycle END
