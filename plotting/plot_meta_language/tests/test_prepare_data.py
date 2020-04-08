@@ -7,6 +7,7 @@
 """
 Test cases for the data preparation class
 """
+import os
 import unittest
 
 import pandas as pd
@@ -27,6 +28,12 @@ class TestPrepareData(unittest.TestCase):
             f"2\n"
             f"3.1, 3.2, 3.3"
         )
+        self.test_file_name = "test_data.csv"
+        with open(self.test_file_name, 'w') as file:
+            file.write(self.valid_data)
+
+    def tearDown(self):
+        os.remove(self.test_file_name)
 
     def test_default_init(self):
         """ Test initialisation values are set """
@@ -71,9 +78,8 @@ class TestPrepareData(unittest.TestCase):
     def test_invalid_path(self):
         """ Test a FileNotFoundError is raised if an invalid path is given """
         prep = PrepareData()
-        with patch("builtins.open", side_effect=FileNotFoundError):
-            with self.assertRaises(FileNotFoundError):
-                prep.prepare_data("")
+        with self.assertRaises(FileNotFoundError):
+            prep.prepare_data("invalid_path")
 
     def test_valid_path(self):
         """ Test that where a valid path is given, prepare_data validates the
@@ -87,8 +93,7 @@ class TestPrepareData(unittest.TestCase):
         prep._check_first_row = MagicMock(return_value=True)
         second_row_check_return = int(second_row_with_newline)
         prep._check_second_row = MagicMock(return_value=second_row_check_return)
-        with patch("builtins.open", mock_open(read_data=self.valid_data)):
-            data_frame = prep.prepare_data("")
+        data_frame = prep.prepare_data(self.test_file_name)
 
         prep._check_first_row.assert_called_with(first_row_with_newline)
         prep._check_second_row.assert_called_with(second_row_with_newline)
