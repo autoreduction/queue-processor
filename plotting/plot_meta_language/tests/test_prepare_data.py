@@ -11,7 +11,7 @@ import os
 import unittest
 
 import pandas as pd
-from mock import patch, mock_open, MagicMock
+from mock import MagicMock
 
 from plotting.prepare_data import PrepareData
 
