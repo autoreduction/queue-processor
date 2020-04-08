@@ -16,8 +16,13 @@ class TimePeriod:
         self.start = start
         self.end = end
 
+    def __eq__(self, other):
+        return self.as_dict() == other.as_dict()
+
+    # TODO: Note to EO [#2] - I ended up not actually using either of the below in my final
+    #   testing implementation. I've kept them though as they could be useful in future
     def as_dict(self):
-        # TODO: Note to EO - I had to make this method anyway as part of my __iter__ functionality
+        # TODO: Note to EO [#1] - I had to make this method anyway as part of my __iter__ functionality
         return {"start": self.start,
                 "end": self.end}
 
@@ -25,22 +30,13 @@ class TimePeriod:
         for k, v in self.as_dict().items():
             yield (k, v)
 
+
 class MaintenanceDay(TimePeriod):   # pylint:disable=too-few-public-methods
     """
     Class to represent a cycle maintenance day
     """
     def __init__(self, start, end):
         super().__init__(start, end)
-    # def __init__(self, start, end):
-    #     self.start = start
-    #     self.end = end
-    #
-    # def __eq__(self, other):
-    #     if type(self) != type(other) or\
-    #             self.start != other["start"] or\
-    #             self.end != other["end"]:
-    #         return False
-    #     return True
 
 
 class Cycle(TimePeriod):    # pylint:disable=too-few-public-methods
@@ -52,17 +48,6 @@ class Cycle(TimePeriod):    # pylint:disable=too-few-public-methods
         self.name = name
         self.maintenance_days = []
 
-    # def __eq__(self, other):
-    #     print(f"other: {other}")
-    #     if self.name != other["name"] or\
-    #        self.start != other["start"] or\
-    #        self.end != other["end"] or\
-    #        len(self.maintenance_days) != len(other["maintenance_days"]):
-    #         return False
-    #     for index in range(len(self.maintenance_days)):
-    #         if self.maintenance_days[index] != other["maintenance_days"][index]:
-    #             return False
-    #     return True
 
     def as_dict(self):
         dict_ = super().as_dict()
@@ -180,7 +165,9 @@ class SchedulerDataProcessor:
                     maintenance_data_copy.pop(0)
                 elif index == len(cycle_data)-1:
                     # if this m_day is LATER than the LAST cycle END
-                    self._unexpected_maintenance_day_warning(m_day_data=m_day_data, cycle_before=cycle)
+                    self._unexpected_maintenance_day_warning(m_day_data=m_day_data,
+                                                             cycle_before=cycle,
+                                                             cycle_after=None)
                     maintenance_data_copy.pop(0)
                 else:
                     # if this m_day is LATER than the current (not last) cycle END
@@ -207,3 +194,35 @@ class SchedulerDataProcessor:
               f"Closest Cycle before:{cycle_before_string}"
               f"Closest Cycle after:{cycle_after_string}"
               f"This Maintenance Day has therefore been discarded.\n")
+
+# test_cycle_values = {
+#     "name": "test_cycle_name",
+#     "start": datetime(2020, 1, 1, tzinfo=None),
+#     "end": datetime(2020, 2, 1, tzinfo=None)
+# }
+# test_cycle_values_2 = {
+#     "name": "test_cycle_name_2",
+#     "start": datetime(2020, 2, 2, tzinfo=None),
+#     "end": datetime(2020, 3, 1, tzinfo=None)
+# }
+# test_maintenance_day_values = {
+#     "start": datetime(2020, 1, 2, tzinfo=None),
+#     "end": datetime(2020, 1, 3, tzinfo=None)
+# }
+#
+# # tp = TimePeriod(test_maintenance_day_values["start"],
+# #                 test_maintenance_day_values["end"])
+# #
+# # print(tp.as_dict())
+#
+# cy1 = Cycle(test_cycle_values["name"],
+#            test_cycle_values["start"],
+#            test_cycle_values["end"])
+# cy2 = Cycle(test_cycle_values["name"],
+#            test_cycle_values["start"],
+#            test_cycle_values["end"])
+# cy2.add_maintenance_day(test_maintenance_day_values["start"],
+#                         test_maintenance_day_values["end"])
+# cy2.maintenance_days.pop(0)
+#
+# print(cy1 == cy2)

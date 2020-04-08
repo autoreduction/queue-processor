@@ -110,6 +110,12 @@ class TestSchedulerDataProcessor(unittest.TestCase):
             "facility": "Test"
         }
 
+    @staticmethod
+    def create_cycle_from_dict(dict):
+        return Cycle(dict["name"],
+                     dict["start"],
+                     dict["end"])
+
     def test_init(self):
         """ Test initialisation values are set """
         sdp = SchedulerDataProcessor()
@@ -162,6 +168,12 @@ class TestSchedulerDataProcessor(unittest.TestCase):
         self.assertTrue(sdp._clean_data.call_count == 2)
         self.assertTrue(len(result) == 2)
 
+    def check_process_output(self, _process_output, expected_length):
+        self.assertEqual(len(_process_output), expected_length)
+        for cycle in _process_output:
+            self.assertIsInstance(cycle, Cycle)
+            self.assertTrue(len(cycle.maintenance_days) == 0)
+
     def test_process_with_maintenance_before_cycles(self):
         """ Test _process calls _unexpected_maintenance_day_warning when
         it encounters a maintenance day start value *earlier* than any cycle start date,
@@ -169,11 +181,13 @@ class TestSchedulerDataProcessor(unittest.TestCase):
         sdp = SchedulerDataProcessor()
         sdp._unexpected_maintenance_day_warning = MagicMock()
         cycles = sdp._process(self.test_cycle_data, [self.test_maintenance_dict["before_cycles"]])
-        sdp._unexpected_maintenance_day_warning.assert_called_once()
-        self.assertTrue(len(cycles) == len(self.test_cycle_data))
-        for cycle in cycles:
-            self.assertIsInstance(cycle, Cycle)
-            self.assertTrue(len(cycle.maintenance_days) == 0)
+
+        (args, kwargs) = sdp._unexpected_maintenance_day_warning.call_args
+        self.assertEqual(kwargs["m_day_data"], self.test_maintenance_dict["before_cycles"])
+        self.assertEqual(kwargs["cycle_before"], None)
+        self.assertEqual(kwargs["cycle_after"], self.create_cycle_from_dict(self.test_cycle_data[0]))
+
+        self.check_process_output(cycles, len(self.test_cycle_data))
 
     def test_process_with_maintenance_after_cycles(self):
         """ Test _process calls _unexpected_maintenance_day_warning when
@@ -182,10 +196,13 @@ class TestSchedulerDataProcessor(unittest.TestCase):
         sdp = SchedulerDataProcessor()
         sdp._unexpected_maintenance_day_warning = MagicMock()
         cycles = sdp._process(self.test_cycle_data, [self.test_maintenance_dict["after_cycles"]])
-        sdp._unexpected_maintenance_day_warning.assert_called_once()
-        for cycle in cycles:
-            self.assertIsInstance(cycle, Cycle)
-            self.assertTrue(len(cycle.maintenance_days) == 0)
+
+        (args, kwargs) = sdp._unexpected_maintenance_day_warning.call_args
+        self.assertEqual(kwargs["m_day_data"], self.test_maintenance_dict["after_cycles"])
+        self.assertEqual(kwargs["cycle_before"], self.create_cycle_from_dict(self.test_cycle_data[2]))
+        self.assertEqual(kwargs["cycle_after"], None)
+
+        self.check_process_output(cycles, len(self.test_cycle_data))
 
     def test_process_with_maintenance_between_cycles(self):
         """ Test _process calls _unexpected_maintenance_day_warning when it encounters
@@ -197,10 +214,13 @@ class TestSchedulerDataProcessor(unittest.TestCase):
         sdp._unexpected_maintenance_day_warning = MagicMock()
         cycles = sdp._process(self.test_cycle_data,
                               [self.test_maintenance_dict["within_first_cycle"]])
-        sdp._unexpected_maintenance_day_warning.assert_called_once()
-        for cycle in cycles:
-            self.assertIsInstance(cycle, Cycle)
-            self.assertTrue(len(cycle.maintenance_days) == 0)
+
+        (args, kwargs) = sdp._unexpected_maintenance_day_warning.call_args
+        self.assertEqual(kwargs["m_day_data"], self.test_maintenance_dict["within_first_cycle"])
+        self.assertEqual(kwargs["cycle_before"], self.create_cycle_from_dict(self.test_cycle_data[0]))
+        self.assertEqual(kwargs["cycle_after"], self.create_cycle_from_dict(self.test_cycle_data[1]))
+
+        self.check_process_output(cycles, len(self.test_cycle_data))
 
     def test_process_with_maintenance_within_cycles(self):
         """ Test _process adds a maintenance day to the appropriate cycle when said
