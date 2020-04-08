@@ -12,6 +12,9 @@ from datetime import datetime
 
 
 class TimePeriod:
+    """
+    Class to represent a generic time period
+    """
     def __init__(self, start, end):
         self.start = start
         self.end = end
@@ -19,23 +22,29 @@ class TimePeriod:
     def __eq__(self, other):
         return self.as_dict() == other.as_dict()
 
-    # TODO: Note to EO [#2] - I ended up not actually using either of the below in my final
-    #   testing implementation. I've kept them though as they could be useful in future
+    # TODO: Note to EO [#2] - I ended up not actually using     # pylint:disable=fixme
+    #  either of the below in my final testing implementation.
+    #  I've kept them though as they could be useful in future
     def as_dict(self):
-        # TODO: Note to EO [#1] - I had to make this method anyway as part of my __iter__ functionality
+        """ Returns this time period's attributes as a dict
+         :return: This time period's attributes as a dict """
+        # TODO: Note to EO [#1] - I had to make this            # pylint:disable=fixme
+        #  method anyway as part of my __iter__ functionality
         return {"start": self.start,
                 "end": self.end}
 
     def __iter__(self):
-        for k, v in self.as_dict().items():
-            yield (k, v)
+        for key, value in self.as_dict().items():
+            yield (key, value)
 
 
 class MaintenanceDay(TimePeriod):   # pylint:disable=too-few-public-methods
     """
     Class to represent a cycle maintenance day
     """
-    def __init__(self, start, end):
+    # TODO: Note - I've kept the redundant code below         # pylint:disable=fixme
+    #  so that Maintenance day contains something
+    def __init__(self, start, end):    # pylint:disable=useless-super-delegation
         super().__init__(start, end)
 
 
@@ -47,7 +56,6 @@ class Cycle(TimePeriod):    # pylint:disable=too-few-public-methods
         super().__init__(start, end)
         self.name = name
         self.maintenance_days = []
-
 
     def as_dict(self):
         dict_ = super().as_dict()

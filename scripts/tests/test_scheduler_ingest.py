@@ -111,10 +111,13 @@ class TestSchedulerDataProcessor(unittest.TestCase):
         }
 
     @staticmethod
-    def create_cycle_from_dict(dict):
-        return Cycle(dict["name"],
-                     dict["start"],
-                     dict["end"])
+    def create_cycle_from_dict(cycle_dict):
+        """ Creates a Cycle object from a dict containing the keys: name, start, end
+        :param cycle_dict: a dict containing the keys: name, start, end
+        :return: A Cycle object """
+        return Cycle(cycle_dict["name"],
+                     cycle_dict["start"],
+                     cycle_dict["end"])
 
     def test_init(self):
         """ Test initialisation values are set """
@@ -169,6 +172,11 @@ class TestSchedulerDataProcessor(unittest.TestCase):
         self.assertTrue(len(result) == 2)
 
     def check_process_output(self, _process_output, expected_length):
+        """ Checks all items in _process_output are Cycle objects, that they do not
+        contain any maintenance days, and the number of cycles is as expected
+        :param _process_output: A list of cycles retrieved as output from _process()
+        :param expected_length: The expected number of cycles retrieved from _process()
+        """
         self.assertEqual(len(_process_output), expected_length)
         for cycle in _process_output:
             self.assertIsInstance(cycle, Cycle)
@@ -180,12 +188,15 @@ class TestSchedulerDataProcessor(unittest.TestCase):
         and doesn't add this maintenance day to any cycle. """
         sdp = SchedulerDataProcessor()
         sdp._unexpected_maintenance_day_warning = MagicMock()
-        cycles = sdp._process(self.test_cycle_data, [self.test_maintenance_dict["before_cycles"]])
+        cycles = sdp._process(self.test_cycle_data,
+                              [self.test_maintenance_dict["before_cycles"]])
 
-        (args, kwargs) = sdp._unexpected_maintenance_day_warning.call_args
-        self.assertEqual(kwargs["m_day_data"], self.test_maintenance_dict["before_cycles"])
+        (_, kwargs) = sdp._unexpected_maintenance_day_warning.call_args
+        self.assertEqual(kwargs["m_day_data"],
+                         self.test_maintenance_dict["before_cycles"])
         self.assertEqual(kwargs["cycle_before"], None)
-        self.assertEqual(kwargs["cycle_after"], self.create_cycle_from_dict(self.test_cycle_data[0]))
+        self.assertEqual(kwargs["cycle_after"],
+                         self.create_cycle_from_dict(self.test_cycle_data[0]))
 
         self.check_process_output(cycles, len(self.test_cycle_data))
 
@@ -195,11 +206,13 @@ class TestSchedulerDataProcessor(unittest.TestCase):
         and doesn't add this maintenance day to any cycle. """
         sdp = SchedulerDataProcessor()
         sdp._unexpected_maintenance_day_warning = MagicMock()
-        cycles = sdp._process(self.test_cycle_data, [self.test_maintenance_dict["after_cycles"]])
+        cycles = sdp._process(self.test_cycle_data,
+                              [self.test_maintenance_dict["after_cycles"]])
 
-        (args, kwargs) = sdp._unexpected_maintenance_day_warning.call_args
+        (_, kwargs) = sdp._unexpected_maintenance_day_warning.call_args
         self.assertEqual(kwargs["m_day_data"], self.test_maintenance_dict["after_cycles"])
-        self.assertEqual(kwargs["cycle_before"], self.create_cycle_from_dict(self.test_cycle_data[2]))
+        self.assertEqual(kwargs["cycle_before"],
+                         self.create_cycle_from_dict(self.test_cycle_data[2]))
         self.assertEqual(kwargs["cycle_after"], None)
 
         self.check_process_output(cycles, len(self.test_cycle_data))
@@ -215,10 +228,13 @@ class TestSchedulerDataProcessor(unittest.TestCase):
         cycles = sdp._process(self.test_cycle_data,
                               [self.test_maintenance_dict["within_first_cycle"]])
 
-        (args, kwargs) = sdp._unexpected_maintenance_day_warning.call_args
-        self.assertEqual(kwargs["m_day_data"], self.test_maintenance_dict["within_first_cycle"])
-        self.assertEqual(kwargs["cycle_before"], self.create_cycle_from_dict(self.test_cycle_data[0]))
-        self.assertEqual(kwargs["cycle_after"], self.create_cycle_from_dict(self.test_cycle_data[1]))
+        (_, kwargs) = sdp._unexpected_maintenance_day_warning.call_args
+        self.assertEqual(kwargs["m_day_data"],
+                         self.test_maintenance_dict["within_first_cycle"])
+        self.assertEqual(kwargs["cycle_before"],
+                         self.create_cycle_from_dict(self.test_cycle_data[0]))
+        self.assertEqual(kwargs["cycle_after"],
+                         self.create_cycle_from_dict(self.test_cycle_data[1]))
 
         self.check_process_output(cycles, len(self.test_cycle_data))
 
