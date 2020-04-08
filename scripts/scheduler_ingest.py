@@ -68,6 +68,30 @@ class Cycle(TimePeriod):    # pylint:disable=too-few-public-methods
          :param start: The start date of the maintenance day being added
          :param end: The end date of the maintenance day being added """
         self.maintenance_days.append(MaintenanceDay(start, end))
+        # if start < self.start:
+        #         #     print(f"WARNING - Encountered maintenance day outside of cycle dates "
+        #         #           f"Maintenance Day:\n\tStart = {start}\n\tEnd = {end}\n"
+        #         #           f"Attempted to add to:
+        #         #           f"Closest Cycle after:{cycle_after_string}"
+        #         #           f"This Maintenance Day has therefore been discarded.\n")
+        #         # elif end > self.end:
+        #         #     return 1
+        #         # else:
+        #         #     self.maintenance_days.append(MaintenanceDay(start, end))
+
+
+    # def _check_if_outside_cycle(self, start, end):
+    #     """ Checks whether a time period (based on a given start and end) is outside of this cycle period
+    #      :return:
+    #         If the start is before this cycle, returns -1
+    #         If the end is after this cycle, returns 1
+    #         Else, returns 0 (indicating the time_period starts and ends within the cycle) """
+    #     if start < self.start:
+    #         return -1
+    #     elif end > self.end:
+    #         return 1
+    #     else:
+    #         return 0
 
 
 class SchedulerDataProcessor:
@@ -150,41 +174,33 @@ class SchedulerDataProcessor:
         :param maintenance_data: A pre-processed list of all valid maintenance day data items.
         :return: A list of Cycle objects containing a list of 0 or more MaintenanceDay objects. """
         cycle_obj_list = []
-        maintenance_data_copy = maintenance_data.copy()
-        for index, current_cycle_data in enumerate(cycle_data):
+        maintenance_day_candidates = maintenance_data.copy()
+        previous_cycle = None
+        for current_cycle_data in cycle_data:
             cycle = Cycle(current_cycle_data['name'],
                           current_cycle_data['start'],
                           current_cycle_data['end'])
-            while len(maintenance_data_copy) > 0:
-                m_day_data = maintenance_data_copy[0]
-                if m_day_data['start'] < cycle.start:
-                    # if this m_day is EARLIER than the current cycle START
-                    if index == 0:
-                        previous_cycle = None
-                    else:
-                        previous_cycle = cycle_obj_list[-1]
-                    self._unexpected_maintenance_day_warning(m_day_data=m_day_data,
-                                                             cycle_before=previous_cycle,
-                                                             cycle_after=cycle)
-                    maintenance_data_copy.pop(0)
-                elif m_day_data['end'] <= cycle.end:
-                    # if this m_day_data is EARLIER than the current cycle END
-                    cycle.add_maintenance_day(m_day_data['start'], m_day_data['end'])
-                    maintenance_data_copy.pop(0)
-                elif index == len(cycle_data)-1:
-                    # if this m_day is LATER than the LAST cycle END
-                    self._unexpected_maintenance_day_warning(m_day_data=m_day_data,
-                                                             cycle_before=cycle,
-                                                             cycle_after=None)
-                    maintenance_data_copy.pop(0)
-                else:
-                    # if this m_day is LATER than the current (not last) cycle END
-                    break
+            while len(maintenance_day_candidates) > 0:
+                md_candidate = maintenance_day_candidates[0]
+                if md_candidate['start'] < cycle.start:         # candidate BEFORE cycle START
+                    self._md_warning(md_data=md_candidate, cycle_before=previous_cycle, cycle_after=cycle)
+                    maintenance_day_candidates.pop(0)
+                elif md_candidate['end'] > cycle.end:           # candidate AFTER cycle END..
+                    if current_cycle_data is cycle_data[-1]:       # ..of LAST cycle
+                        self._md_warning(md_data=md_candidate, cycle_before=cycle, cycle_after=None)
+                        maintenance_day_candidates.pop(0)
+                    else:                                          # ..of INTERMEDIARY cycle
+                        break
+                else:                                           # candidate WITHIN cycle
+                    maintenance_day_candidates.pop(0)
+                    cycle.add_maintenance_day(md_candidate["start"], md_candidate["end"])
+
             cycle_obj_list.append(cycle)
+            previous_cycle = cycle
         return cycle_obj_list
 
     @staticmethod
-    def _unexpected_maintenance_day_warning(m_day_data, cycle_before=None, cycle_after=None):
+    def _md_warning(md_data, cycle_before=None, cycle_after=None):
         if cycle_before:
             cycle_before_string = f"\n\tStart = {cycle_before.start}\n\tEnd = {cycle_before.end}\n"
         else:
@@ -198,7 +214,7 @@ class SchedulerDataProcessor:
         print(f"WARNING - Encountered maintenance day outside of cycle dates "
               f"(assuming cycle_data and maintenance_data "
               f"were ordered as earliest-to-latest).\n"
-              f"Maintenance Day:\n\tStart = {m_day_data['start']}\n\tEnd = {m_day_data['end']}\n"
+              f"Maintenance Day:\n\tStart = {md_data['start']}\n\tEnd = {md_data['end']}\n"
               f"Closest Cycle before:{cycle_before_string}"
               f"Closest Cycle after:{cycle_after_string}"
               f"This Maintenance Day has therefore been discarded.\n")
