@@ -192,8 +192,8 @@ class SchedulerDataProcessor:
                     else:                                          # ..of INTERMEDIARY cycle
                         break
                 else:                                           # candidate WITHIN cycle
-                    maintenance_day_candidates.pop(0)
                     cycle.add_maintenance_day(md_candidate["start"], md_candidate["end"])
+                    maintenance_day_candidates.pop(0)
 
             cycle_obj_list.append(cycle)
             previous_cycle = cycle
