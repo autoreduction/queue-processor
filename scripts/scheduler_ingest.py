@@ -22,33 +22,24 @@ class TimePeriod:
     def __eq__(self, other):
         return self.as_dict() == other.as_dict()
 
-    # TODO: Note to EO [#2] - I ended up not actually using     # pylint:disable=fixme
-    #  either of the below in my final testing implementation.
-    #  I've kept them though as they could be useful in future
     def as_dict(self):
-        """ Returns this time period's attributes as a dict
-         :return: This time period's attributes as a dict """
-        # TODO: Note to EO [#1] - I had to make this            # pylint:disable=fixme
-        #  method anyway as part of my __iter__ functionality
+        """ Returns this time period's attributes as a dict.
+        :return: This time period's attributes as a dict """
         return {"start": self.start,
                 "end": self.end}
 
-    def __iter__(self):
-        for key, value in self.as_dict().items():
-            yield (key, value)
 
-
-class MaintenanceDay(TimePeriod):   # pylint:disable=too-few-public-methods
+class MaintenanceDay(TimePeriod):
+    # pylint:disable=too-few-public-methods
     """
     Class to represent a cycle maintenance day
     """
-    # TODO: Note - I've kept the redundant code below         # pylint:disable=fixme
-    #  so that Maintenance day contains something
     def __init__(self, start, end):    # pylint:disable=useless-super-delegation
         super().__init__(start, end)
 
 
-class Cycle(TimePeriod):    # pylint:disable=too-few-public-methods
+class Cycle(TimePeriod):
+    # pylint:disable=too-few-public-methods
     """
     Class to represent a cycle period
     """
@@ -58,40 +49,19 @@ class Cycle(TimePeriod):    # pylint:disable=too-few-public-methods
         self.maintenance_days = []
 
     def as_dict(self):
+        """ Returns this cycle's attributes as a dict.
+        Used by the __eq__ method inherited from TimePeriod.
+        :return: This cycle's attributes as a dict """
         dict_ = super().as_dict()
         dict_.update({"name": self.name,
                       "maintenance_days": self.maintenance_days})
         return dict_
 
     def add_maintenance_day(self, start, end):
-        """ Adds a maintenance day object to this cycle
-         :param start: The start date of the maintenance day being added
-         :param end: The end date of the maintenance day being added """
+        """ Adds a maintenance day object to this cycle.
+        :param start: The start date of the maintenance day being added
+        :param end: The end date of the maintenance day being added """
         self.maintenance_days.append(MaintenanceDay(start, end))
-        # if start < self.start:
-        #         #     print(f"WARNING - Encountered maintenance day outside of cycle dates "
-        #         #           f"Maintenance Day:\n\tStart = {start}\n\tEnd = {end}\n"
-        #         #           f"Attempted to add to:
-        #         #           f"Closest Cycle after:{cycle_after_string}"
-        #         #           f"This Maintenance Day has therefore been discarded.\n")
-        #         # elif end > self.end:
-        #         #     return 1
-        #         # else:
-        #         #     self.maintenance_days.append(MaintenanceDay(start, end))
-
-
-    # def _check_if_outside_cycle(self, start, end):
-    #     """ Checks whether a time period (based on a given start and end) is outside of this cycle period
-    #      :return:
-    #         If the start is before this cycle, returns -1
-    #         If the end is after this cycle, returns 1
-    #         Else, returns 0 (indicating the time_period starts and ends within the cycle) """
-    #     if start < self.start:
-    #         return -1
-    #     elif end > self.end:
-    #         return 1
-    #     else:
-    #         return 0
 
 
 class SchedulerDataProcessor:
@@ -183,11 +153,13 @@ class SchedulerDataProcessor:
             while len(maintenance_day_candidates) > 0:
                 md_candidate = maintenance_day_candidates[0]
                 if md_candidate['start'] < cycle.start:         # candidate BEFORE cycle START
-                    self._md_warning(md_data=md_candidate, cycle_before=previous_cycle, cycle_after=cycle)
+                    self._md_warning(md_data=md_candidate,
+                                     cycle_before=previous_cycle, cycle_after=cycle)
                     maintenance_day_candidates.pop(0)
                 elif md_candidate['end'] > cycle.end:           # candidate AFTER cycle END..
                     if current_cycle_data is cycle_data[-1]:       # ..of LAST cycle
-                        self._md_warning(md_data=md_candidate, cycle_before=cycle, cycle_after=None)
+                        self._md_warning(md_data=md_candidate,
+                                         cycle_before=cycle, cycle_after=None)
                         maintenance_day_candidates.pop(0)
                     else:                                          # ..of INTERMEDIARY cycle
                         break
@@ -218,35 +190,3 @@ class SchedulerDataProcessor:
               f"Closest Cycle before:{cycle_before_string}"
               f"Closest Cycle after:{cycle_after_string}"
               f"This Maintenance Day has therefore been discarded.\n")
-
-# test_cycle_values = {
-#     "name": "test_cycle_name",
-#     "start": datetime(2020, 1, 1, tzinfo=None),
-#     "end": datetime(2020, 2, 1, tzinfo=None)
-# }
-# test_cycle_values_2 = {
-#     "name": "test_cycle_name_2",
-#     "start": datetime(2020, 2, 2, tzinfo=None),
-#     "end": datetime(2020, 3, 1, tzinfo=None)
-# }
-# test_maintenance_day_values = {
-#     "start": datetime(2020, 1, 2, tzinfo=None),
-#     "end": datetime(2020, 1, 3, tzinfo=None)
-# }
-#
-# # tp = TimePeriod(test_maintenance_day_values["start"],
-# #                 test_maintenance_day_values["end"])
-# #
-# # print(tp.as_dict())
-#
-# cy1 = Cycle(test_cycle_values["name"],
-#            test_cycle_values["start"],
-#            test_cycle_values["end"])
-# cy2 = Cycle(test_cycle_values["name"],
-#            test_cycle_values["start"],
-#            test_cycle_values["end"])
-# cy2.add_maintenance_day(test_maintenance_day_values["start"],
-#                         test_maintenance_day_values["end"])
-# cy2.maintenance_days.pop(0)
-#
-# print(cy1 == cy2)
