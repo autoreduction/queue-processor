@@ -13,7 +13,6 @@ from unittest.mock import MagicMock
 from mock import patch
 
 from utils.clients.connection_exception import ConnectionException
-from utils.clients.settings.client_settings_factory import ClientSettingsFactory
 from utils.clients.sftp_client import SFTPClient
 
 class TestSFTPClient(unittest.TestCase):
@@ -21,11 +20,6 @@ class TestSFTPClient(unittest.TestCase):
     Exercises the SFTP client
     """
     def setUp(self):
-        self.incorrect_credentials = ClientSettingsFactory().create('sftp',
-                                                                    username='not-user',
-                                                                    password='not-pass',
-                                                                    host='not-host',
-                                                                    port='1234')
         self.valid_argument = "valid"
 
     def is_argument_valid(self, value):

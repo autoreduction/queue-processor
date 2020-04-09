@@ -25,7 +25,7 @@ CONFIG.read(INI_FILE)
 
 
 def get_str(section, key):
-    return str(CONFIG.get(section, key))
+    return str(CONFIG.get(section, key, raw=True))  # raw=True to allow strings with special characters to be passed
 
 
 SETTINGS_FACTORY = ClientSettingsFactory()
@@ -50,15 +50,23 @@ ACTIVEMQ_SETTINGS = SETTINGS_FACTORY.create('queue',
                                             host=get_str('QUEUE', 'host'),
                                             port=get_str('QUEUE', 'port'))
 
+LOCAL_MYSQL_SETTINGS = SETTINGS_FACTORY.create('database',
+                                               username='root',
+                                               password='',
+                                               host='localhost',
+                                               port='3306')
+
 SFTP_SETTINGS = SETTINGS_FACTORY.create('sftp',
                                         username=get_str('SFTP', 'user'),
                                         password=get_str('SFTP', 'password'),
                                         host=get_str('SFTP', 'host'),
                                         port=get_str('SFTP', 'port'))
 
-LOCAL_MYSQL_SETTINGS = SETTINGS_FACTORY.create('database',
-                                               username='root',
-                                               password='',
-                                               host='localhost',
-                                               port='3306')
+CYCLE_SETTINGS = SETTINGS_FACTORY.create('cycle',
+                                           username=get_str('CYCLE', 'user'),
+                                           password=get_str('CYCLE', 'password'),
+                                           host='',
+                                           port='',
+                                           uows_url=get_str('CYCLE', 'uows_url'),
+                                           scheduler_url=get_str('CYCLE', 'scheduler_url'))
 
