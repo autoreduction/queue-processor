@@ -41,7 +41,7 @@ class PrepareData:
             reader = csv.reader(input_file)
             for row in reader:
                 float_list = [float(item) for item in row]
-                if len(float_list) is 1:     # pylint:disable=literal-comparison
+                if len(float_list) == 1:
                     spectrum = int(row[0])
                 else:
                     processed_data.append([spectrum]+float_list)
