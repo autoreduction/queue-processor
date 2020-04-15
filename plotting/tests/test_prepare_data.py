@@ -11,7 +11,7 @@ import os
 import unittest
 
 import pandas as pd
-from mock import MagicMock
+from mock import patch
 
 from plotting.prepare_data import PrepareData
 
@@ -81,7 +81,9 @@ class TestPrepareData(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             prep.prepare_data("invalid_path")
 
-    def test_valid_path(self):
+    @patch('plotting.prepare_data.PrepareData._check_second_row')
+    @patch('plotting.prepare_data.PrepareData._check_first_row', return_value=True)
+    def test_valid_path(self, mocked_check_first_row, mocked_check_second_row):
         """ Test that where a valid path is given, prepare_data validates the
         full first and second rows, and returns a panda.DataFrame of the same
         length as the input (minus the first two rows) """
@@ -90,12 +92,10 @@ class TestPrepareData(unittest.TestCase):
         second_row_with_newline = split_data[1] + "\n"
 
         prep = PrepareData()
-        prep._check_first_row = MagicMock(return_value=True)
-        second_row_check_return = int(second_row_with_newline)
-        prep._check_second_row = MagicMock(return_value=second_row_check_return)
+        mocked_check_second_row.return_value = int(second_row_with_newline)
         data_frame = prep.prepare_data(self.test_file_name)
 
-        prep._check_first_row.assert_called_with(first_row_with_newline)
-        prep._check_second_row.assert_called_with(second_row_with_newline)
+        mocked_check_first_row.assert_called_with(first_row_with_newline)
+        mocked_check_second_row.assert_called_with(second_row_with_newline)
         self.assertIsInstance(data_frame, pd.DataFrame)
         self.assertEqual(len(data_frame), (len(split_data) - 2))
