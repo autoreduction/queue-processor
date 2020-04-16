@@ -7,6 +7,7 @@ function setupTour(steps){
     tour.end();             // avoids bug where tour recognised as in progress on re-visit
 
     var tourButton = $("#tour-btn");
+    tourButton.click(function(){
         if (tour.ended() == false){
             if (confirm("A tour is currently on going\nDo you wish to restart the tour?")){
                 tour.restart();
