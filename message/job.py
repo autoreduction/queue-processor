@@ -8,7 +8,12 @@
 import json
 
 
+# pylint:disable=too-many-instance-attributes
 class Message:
+    """
+    A class that represents an AMQ Message, these can be both serialised and un-serialised
+    for sending messages to and from AMQ
+    """
 
     def __init__(self, serialised_object=None, overwrite=True):
         """

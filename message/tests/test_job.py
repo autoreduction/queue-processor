@@ -4,6 +4,9 @@
 # Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
+"""
+Test the Message class
+"""
 import unittest
 import json
 
@@ -13,6 +16,9 @@ from message.job import Message
 
 
 class TestMessage(unittest.TestCase):
+    """
+    Test cases for the Message class used with AMQ
+    """
 
     def setUp(self):
         self.msg = Message()
@@ -29,6 +35,10 @@ class TestMessage(unittest.TestCase):
 
     @patch('message.job.Message.un_serialise')
     def test_init(self, mock_un_serialise):
+        """
+        Test all the member variables are created and we do not call
+        un-serialise if no object is provided
+        """
         self.assertIsNone(self.msg.description)
         self.assertIsNone(self.msg.facility)
         self.assertIsNone(self.msg.run_number)
@@ -47,18 +57,28 @@ class TestMessage(unittest.TestCase):
         self.assertIsNone(self.msg.retry_in)
         self.assertFalse(mock_un_serialise.called)
 
+    # pylint:disable=no-self-use
     @patch('message.job.Message.un_serialise')
     def test_init_with_serialised_obj(self, mock_un_serialise):
+        """
+        Test that we call the unserialise function if a serialised object is provided on init
+        """
         _ = Message(serialised_object='test', overwrite=False)
         mock_un_serialise.assert_called_once()
 
     def test_to_dict(self):
+        """
+        Test the class can be correctly converted to a dictionary
+        """
         actual = self.msg.to_dict()
         for key, value in actual.items():
             self.assertIn(key, self.key_list)
             self.assertIsNone(value)
 
     def test_serialise(self):
+        """
+        Test the class can be serialised and retain the variables values
+        """
         serialised = self.msg.serialise()
         actual = json.loads(serialised)
         for key, value in actual.items():
@@ -66,6 +86,9 @@ class TestMessage(unittest.TestCase):
             self.assertIsNone(value)
 
     def test_un_serialise_overwrite_true(self):
+        """
+        Test the class can be populated with a serialised object
+        """
         serialised = self.populated_msg.serialise()
         actual = Message()
         actual.un_serialise(serialised)

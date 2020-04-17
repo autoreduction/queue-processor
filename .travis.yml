@@ -41,12 +41,14 @@ script:
   # ToDo: These should all be collapsed into one once autoreduction gets a single code package
   - pylint build
   - pylint docker_reduction
+  - pylint message
   - pylint monitors
   - pylint queue_processors
   - pylint scripts
   - pylint systemtests
   - pylint utils
   - pylint plotting
+
 
 after_success:
   - coveralls
