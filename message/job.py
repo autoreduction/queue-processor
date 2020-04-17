@@ -13,7 +13,7 @@ import attr
 @attr.s
 class Message:
     """
-    A class that represents an AMQ Message, these can be both serialised and un-serialised
+    A class that represents an AMQ Message, these can be both serialized and deserialized
     for sending messages to and from AMQ
     """
     description = attr.ib(default=None)
@@ -33,24 +33,39 @@ class Message:
     return_message = attr.ib(default=None)
     retry_in = attr.ib(default=None)
 
-    def serialise(self):
+    def serialize(self):
         """
-        serialised member variables as a json dump
+        serialized member variables as a json dump
         :return: json dump of a dictionary representing the member variables
         """
         return json.dumps(attr.asdict(self))
 
-    def un_serialise(self, serialised_object, overwrite=True):
+    @staticmethod
+    def deserialize(serialized_object):
         """
-        un serialise an object and use its values to populate member variables in this class
-        :param serialised_object: The object to un-serialise
-        :param overwrite: Should we overwrite any existing variables?
+        deserialize an object and return a dictionary of that object
+        :param serialized_object: The object to deserialize
+        :return: dictionary of deserialized object
         """
-        un_serialised_dict = json.loads(serialised_object)
+        return json.loads(serialized_object)
+
+    def populate(self, source, overwrite=True):
+        """
+        Populate the class from either a serialised object or a dictionary optionally retaining
+        or overwriting existing values of attributes
+        :param source: object to populate class from
+        :param overwrite: If True, overwrite existing values of attributes
+        """
+        if type(source) is str:
+            try:
+                source = self.deserialize(source)
+            except json.decoder.JSONDecodeError:
+                raise ValueError(f"Unable to recognise serialized object {source}")
+
         self_dict = attr.asdict(self)
-        for key, value in un_serialised_dict.items():
+        for key, value in source.items():
             if key in self_dict.keys():
-                current_value = self_dict[key]
-                if overwrite or current_value is None:
+                self_value = self_dict[key]
+                if overwrite or self_value is None:
                     # Set the value of the variable on this object accessing it by name
                     setattr(self, key, value)
