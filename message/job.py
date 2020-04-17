@@ -4,7 +4,9 @@
 # Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
-""" Represents the messages passed between AMQ queues"""
+"""
+Represents the messages passed between AMQ queues
+"""
 import json
 import attr
 
@@ -13,8 +15,8 @@ import attr
 @attr.s
 class Message:
     """
-    A class that represents an AMQ Message, these can be both serialized and deserialized
-    for sending messages to and from AMQ
+    A class that represents an AMQ Message.
+    Messages can be serialized and deserialized for sending messages to and from AMQ
     """
     description = attr.ib(default=None)
     facility = attr.ib(default=None)
@@ -35,17 +37,17 @@ class Message:
 
     def serialize(self):
         """
-        serialized member variables as a json dump
-        :return: json dump of a dictionary representing the member variables
+        Serialized member variables as a json dump
+        :return: JSON dump of a dictionary representing the member variables
         """
         return json.dumps(attr.asdict(self))
 
     @staticmethod
     def deserialize(serialized_object):
         """
-        deserialize an object and return a dictionary of that object
+        Deserialize an object and return a dictionary of that object
         :param serialized_object: The object to deserialize
-        :return: dictionary of deserialized object
+        :return: Dictionary of deserialized object
         """
         return json.loads(serialized_object)
 
@@ -53,10 +55,10 @@ class Message:
         """
         Populate the class from either a serialised object or a dictionary optionally retaining
         or overwriting existing values of attributes
-        :param source: object to populate class from
+        :param source: Object to populate class from
         :param overwrite: If True, overwrite existing values of attributes
         """
-        if type(source) is str:
+        if isinstance(source, str):
             try:
                 source = self.deserialize(source)
             except json.decoder.JSONDecodeError:

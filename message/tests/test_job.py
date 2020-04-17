@@ -9,8 +9,9 @@ Test the Message class
 """
 import unittest
 import json
-import attr
 import copy
+
+import attr
 
 from message.job import Message
 
