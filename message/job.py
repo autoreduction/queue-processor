@@ -6,54 +6,39 @@
 # ############################################################################### #
 """ Represents the messages passed between AMQ queues"""
 import json
+import attr
 
 
 # pylint:disable=too-many-instance-attributes
+@attr.s
 class Message:
     """
     A class that represents an AMQ Message, these can be both serialised and un-serialised
     for sending messages to and from AMQ
     """
-
-    def __init__(self, serialised_object=None, overwrite=True):
-        """
-        If a serialised object is supplied then the class will be populated
-        :param serialised_object: a serialised json object (json.dumps)
-        :param overwrite: Should we overwrite existing variables?
-        """
-        self.description = None
-        self.facility = None
-        self.run_number = None
-        self.instrument = None
-        self.rb_number = None
-        self.started_by = None
-        self.file_path = None
-        self.overwrite = None
-        self.run_version = None
-        self.job_id = None
-        self.reduction_script = None
-        self.reduction_arguments = None
-        self.reduction_log = None
-        self.admin_log = None
-        self.return_message = None
-        self.retry_in = None
-        if serialised_object:
-            self.un_serialise(serialised_object, overwrite)
-
-    def to_dict(self):
-        """
-        Create a dictionary of all the class member variables
-        :return: member variables dictionary
-        """
-        return {key: value for key, value in self.__dict__.items()
-                if not key.startswith('__') and not callable(key)}
+    description = attr.ib(default=None)
+    facility = attr.ib(default=None)
+    run_number = attr.ib(default=None)
+    instrument = attr.ib(default=None)
+    rb_number = attr.ib(default=None)
+    started_by = attr.ib(default=None)
+    file_path = attr.ib(default=None)
+    overwrite = attr.ib(default=None)
+    run_version = attr.ib(default=None)
+    job_id = attr.ib(default=None)
+    reduction_script = attr.ib(default=None)
+    reduction_arguments = attr.ib(default=None)
+    reduction_log = attr.ib(default=None)
+    admin_log = attr.ib(default=None)
+    return_message = attr.ib(default=None)
+    retry_in = attr.ib(default=None)
 
     def serialise(self):
         """
         serialised member variables as a json dump
         :return: json dump of a dictionary representing the member variables
         """
-        return json.dumps(self.to_dict())
+        return json.dumps(attr.asdict(self))
 
     def un_serialise(self, serialised_object, overwrite=True):
         """
@@ -62,7 +47,7 @@ class Message:
         :param overwrite: Should we overwrite any existing variables?
         """
         un_serialised_dict = json.loads(serialised_object)
-        self_dict = self.to_dict()
+        self_dict = attr.asdict(self)
         for key, value in un_serialised_dict.items():
             if key in self_dict.keys():
                 current_value = self_dict[key]
