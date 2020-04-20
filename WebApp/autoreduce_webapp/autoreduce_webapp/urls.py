@@ -78,10 +78,13 @@ urlpatterns = [
     url(r'^experiment/(?P<reference_number>-?[0-9]+)/$',
         reduction_viewer_views.experiment_summary, name='experiment_summary'),
 
-    # # ===========================SCRIPTS============================= #
+    # ===========================SCRIPTS============================= #
     url(r'^graph/$', reduction_viewer_views.graph_home, name="graph"),
     url(r'^graph/(?P<instrument_name>\w+)', reduction_viewer_views.graph_instrument, name="graph_instrument"),
     url(r'^stats', reduction_viewer_views.stats, name="stats")
+
+    # ===========================VISUALISATION============================= #
+
 ]
 
 if settings.DEBUG:
