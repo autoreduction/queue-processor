@@ -8,7 +8,7 @@
 Constructs a plot and DashApp object for insertion into directly into a web page
 """
 
-#  TODO - Add Error bars to trace; Unit tests, look into best way to get plot style.
+#  TODO - Add Error bars to trace; Unit tests, add plot to read yaml.
 
 # Internal dependencies
 from plotting.plot_meta_language.interpreter import Interpreter
@@ -28,9 +28,13 @@ class PlotFactory:
 
     def __init__(self, plot_meta_file_location, data, figure_name):
         """Initialises Plot Factory attributes"""
-        self.layout = Interpreter().interpret(plot_meta_file_location)
+        self.plot_style_data = Interpreter().interpret(plot_meta_file_location)
+        self.layout = Layout(self.plot_style_data).layout()
+        self.plot_type = self.plot_style_data['plot']
+        self.mode = self.plot_style_data['mode']
         self.data = data
         self.figure_name = figure_name
+        self.dashapp_object = self.construct_plot()
 
     def construct_figure_list(self):
         """Constructs figure to be placed in DashApp
@@ -44,7 +48,12 @@ class PlotFactory:
         # For a given data name and dataframe, create figure
         for data_object in self.data:
             # Send data object to FigureFactory and append figure to figures_list
-            figures_list.append(FigureFactory(self.figure_name, self.layout, data_object))
+            figures_list.append(FigureFactory(figure_title=self.figure_name,
+                                              layout=self.layout,
+                                              plot_type=self.plot_type,
+                                              mode=self.mode,
+                                              data_object=data_object))
+
         return figures_list
 
     def construct_plot(self):
@@ -54,8 +63,8 @@ class PlotFactory:
             ----------
             DashApp (object) - DashApp for direct insertion into web-page
         """
-
-        return DashApp(figure=self.construct_figure_list(), app_id=self.figure_name)
+        return CreateDashApp(figure=self.construct_figure_list()[0],
+                             app_id=self.figure_name).create_dashapp()
 
 
 class Layout:
@@ -81,7 +90,7 @@ class Layout:
          """
         keys_list = []
         for key in self.interpreted_meta_language.keys():
-            if key is not 'type':  # type key refers to figure styles, not layout
+            if key is not 'plot' and key is not 'mode':  # key refers to figure styles, not layout
                 keys_list.append(key)
         return keys_list
 
@@ -96,22 +105,78 @@ class Layout:
         return {x: self.interpreted_meta_language[x] for x in self.layout_keys()}
 
 
+class Trace:
+    """Creates a trace object
+       =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
+    """
+
+    def __init__(self, mode, data, plot_style=None):
+        """Initialises values to construct a trace object
+           =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
+        """
+        self.mode = mode
+        self.axis_list = list(self.data.columns)
+        self.name, self.data = data
+        # Default plot style if not provided is scatter. See README.md to view available plot styles
+        if plot_style is not None:
+            self.style = plot_style
+        else:
+            self.style = 'Scattergl'
+
+        self.trace = self.create_trace()
+
+    # Not a Static Method
+    def string_to_class(self, classname):
+        """convert a string to a class
+           =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
+           :returns
+           ----------
+           class (class) - string passed to class specifying plot type"""
+
+        return eval(classname)
+
+    def create_trace(self):
+        """Creates trace object
+           =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
+           :returns
+            ----------
+            trace (dictionary) - Plot trace for insertion into figure
+        """
+        # Add plot axis to trace
+        trace = {}
+        for axis in list(self.data.columns):
+            trace[axis] = self.data[axis]
+
+        trace['name'] = f"{self.name}_{self.mode}_{self.style}"  # Plot name (Instrument_RB_plot)
+        trace['mode'] = self.mode  # Type of plot
+
+        # Converts dictionary to string formatted as "key = value, ..."
+        trace_data = ', '.join([f"{key}= {value}" for key, value in trace.items()])
+
+        # Returns trace using specified plot type
+        return self.string_to_class(f"go.{self.string_to_class(self.style)}({trace_data})")
+
+
 class FigureFactory:
     """Converts a data object containing N traces into a figure
        =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
     """
 
-    def __init__(self, figure_title, layout, data_object):
+    def __init__(self, figure_title, layout, plot_type, mode, data_object):
         """initialises figure name, data name and data
            =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
            :parameter
             ----------
              figure_title (string) figure title (instrument_run_number
              layout (dictionary) layout dictionary
+             plot_type (string)
+             mode (string)
              data_object (list of tuples)  [(index_name and dataframe), ~N]
         """
         self.title = figure_title
         self.layout = layout
+        self.plot_type = plot_type
+        self.mode = mode
         self.data = data_object
 
     def construct_trace(self):
@@ -125,8 +190,8 @@ class FigureFactory:
 
         # For spectrum in data, create trace
         for spectrum in self.data:
-            trace_list.append(Trace(mode=self.layout['type'],
-                                    data=self.data,
+            trace_list.append(Trace(mode=self.mode,
+                                    data=self.data[spectrum],
                                     plot_style=self.layout['type']).trace)
         return trace_list
 
@@ -143,44 +208,7 @@ class FigureFactory:
         return figure
 
 
-class Trace:
-    """Creates a trace object
-       =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
-    """
-
-    def __init__(self, mode, data, plot_style=None, trace=None):
-        """Initialises values to construct a trace object
-           =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
-        """
-        self.mode = mode
-        self.axis_list = list(self.data.columns)
-        self.name, self.data = data
-        # Default plot style if not provided is scatter. See README.md to view available plot styles
-        if plot_style is not None:
-            self.style = plot_style
-        else:
-            self.style = 'scatter'
-
-        self.trace = self.create_trace()
-
-    def create_trace(self):
-        """Creates trace object
-           =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
-           :returns
-            ----------
-            trace (dictionary) - Plot trace for insertion into figure
-        """
-        # Add plot axis to trace
-        trace = {}
-        for axis in list(self.data.columns):
-            trace[axis] = self.data[axis]
-
-        trace['name'] = f"{self.name}_{self.mode}"  # plot name
-        trace['mode'] = self.mode  # type of plot
-        return trace
-
-
-class DashApp:
+class CreateDashApp:
     """Creates a DashApp for direct insertion into a web page
        =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
     """
