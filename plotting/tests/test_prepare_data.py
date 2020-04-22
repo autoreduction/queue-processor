@@ -36,14 +36,19 @@ class TestPrepareData(unittest.TestCase):
         os.remove(self.test_file_name)
 
     def test_default_init(self):
-        """ Test initialisation values are set """
+        """
+        Test: Class variables are created and set
+        When: PrepareData is initialised
+        """
         prep = PrepareData()
         self.assertIsNotNone(prep.expected_first_row)
         self.assertIsNotNone(prep.columns)
 
     def test_invalid_first_row(self):
-        """ Test _check_first_row raises a RuntimeError if the given data
-         does not match the expected_first_row """
+        """
+        Test: _check_first_row() raises a RuntimeError
+        When: The argument given does not match PrepareData.expected_first_row
+        """
         prep = PrepareData()
         valid_string = "0"
         prep.expected_first_row = valid_string
@@ -52,23 +57,29 @@ class TestPrepareData(unittest.TestCase):
             prep._check_first_row(invalid_first_row)
 
     def test_valid_first_row(self):
-        """ Test _check_first_row removes appended whitespace
-        and returns True if it matches expected_first_row """
+        """
+        Test: _check_first_row() returns True
+        When: The argument given matches PrepareData.expected_first_row,
+        despite the argument containing additional appended whitespace.
+        """
         prep = PrepareData()
         prep.expected_first_row = self.valid_first_row
         first_row = self.valid_data.split("\n")[0]
         self.assertTrue(prep._check_first_row(first_row))
 
     def test_invalid_second_row(self):
-        """ Test _check_second_row raises a RuntimeError if the given data
-        cannot be cast to an integer """
+        """
+        Test: _check_second_row() raises a RuntimeError
+        When : The argument given cannot be cast to an integer
+        """
         prep = PrepareData()
         with self.assertRaises(RuntimeError):
             prep._check_second_row("invalid")
 
     def test_valid_second_row(self):
-        """ Test _check_second_row returns a the given data as an integer
-        when the given data can be cast as such """
+        """
+        Test: _check_second_row() returns the argument given as an integer type
+        When: The argument given is a string representation of an integer """
         prep = PrepareData()
         second_row = self.valid_data.split("\n")[1]
         expected_return = int(second_row)
@@ -76,7 +87,10 @@ class TestPrepareData(unittest.TestCase):
                          expected_return)
 
     def test_invalid_path(self):
-        """ Test a FileNotFoundError is raised if an invalid path is given """
+        """
+        Test: prepare_data raises a FileNotFoundError
+        When: An invalid path is given
+        """
         prep = PrepareData()
         with self.assertRaises(FileNotFoundError):
             prep.prepare_data("invalid_path")
@@ -84,9 +98,11 @@ class TestPrepareData(unittest.TestCase):
     @patch('plotting.prepare_data.PrepareData._check_second_row')
     @patch('plotting.prepare_data.PrepareData._check_first_row', return_value=True)
     def test_valid_path(self, mocked_check_first_row, mocked_check_second_row):
-        """ Test that where a valid path is given, prepare_data validates the
-        full first and second rows, and returns a panda.DataFrame of the same
-        length as the input (minus the first two rows) """
+        """
+        Test: prepare_data() validates the first and second rows of the data pointed to,
+        and returns a panda.DataFrame 2 rows less than the data
+        When: A valid path to valid data is given
+        """
         split_data = self.valid_data.split("\n")
         first_row_with_newline = split_data[0] + "\n"
         second_row_with_newline = split_data[1] + "\n"
