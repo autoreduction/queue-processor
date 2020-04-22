@@ -22,6 +22,7 @@ class TestMessage(unittest.TestCase):
 
     @staticmethod
     def _empty():
+        """ Create and return an empty message object and corresponding dictionary"""
         empty_msg = Message()
         empty_dict = {'description': None,
                       'facility': None,
@@ -43,6 +44,7 @@ class TestMessage(unittest.TestCase):
 
     @staticmethod
     def _populated():
+        """ Create and return a populated message object and corresponding dictionary """
         run_number = 11111
         rb_number = 22222
         description = 'test message'
@@ -68,7 +70,10 @@ class TestMessage(unittest.TestCase):
         return populated_msg, populated_dict
 
     def test_init(self):
-        """ Test all the member variables are created """
+        """
+        Test: All the expected member variables are created
+        When: The class is initialised
+        """
         empty_msg, _ = self._empty()
         self.assertIsNone(empty_msg.description)
         self.assertIsNone(empty_msg.facility)
@@ -88,44 +93,62 @@ class TestMessage(unittest.TestCase):
         self.assertIsNone(empty_msg.retry_in)
 
     def test_to_dict_populated(self):
-        """ Converted to a dictionary when attribute values set """
+        """
+        Test: A dictionary with populated values in produced
+        When: attr.asdict() is called on a Message with populated values
+        """
         populated_msg, populated_dict = self._populated()
         actual = attr.asdict(populated_msg)
         self.assertEqual(actual, populated_dict)
 
     def test_serialize_populated(self):
-        """ Serialized and retain the attributes values """
+        """
+        Test: An expected JSON object is produced
+        When: The Message class is serialised
+        """
         populated_msg, populated_dict = self._populated()
         serialized = populated_msg.serialize()
         actual = json.loads(serialized)
         self.assertEqual(actual, populated_dict)
 
     def test_deserialize_populated(self):
-        """ Produce a deserialized object correctly for a populated serialized object """
+        """
+        Test: A Dictionary with all the expected value is produced
+        When: A populated serialized object is deserialized
+        """
         populated_msg, populated_dict = self._populated()
         serialized = populated_msg.serialize()
         actual = populated_msg.deserialize(serialized)
         self.assertEqual(actual, populated_dict)
 
     def test_populate_from_dict_overwrite_true(self):
-        """ Overwritten from a dictionary values """
+        """
+        Test: Values are added and overwritten in the member variables
+        When: Message.populate() is called with a non-empty dictionary and overwrite is True
+        """
         _, populated_dict = self._populated()
         actual, _ = self._empty()
-        actual.populate(populated_dict, overwrite=True)
+        actual.populate(source=populated_dict, overwrite=True)
         self.assertEqual(attr.asdict(actual), populated_dict)
 
     def test_populate_from_dict_overwrite_false(self):
-        """ Do not overwrite from dictionary """
+        """
+        Test: Values are added but NOT overwritten in the member variables
+        When: Message.populate() is called with a non-empty dictionary and overwrite is False
+        """
         populated_msg, populated_dict = self._populated()
         populated_dict['job_id'] = 123
         populated_dict['rb_number'] = 33333
         actual, _ = self._populated()
-        actual.populate(populated_dict, overwrite=False)
+        actual.populate(source=populated_dict, overwrite=False)
         self.assertEqual(actual.rb_number, populated_msg.rb_number)
         self.assertEqual(actual.job_id, 123)
 
     def test_populate_from_serialized_overwrite_true(self):
-        """ Overwrite with a serialized object """
+        """
+        Test: Values are added and overwritten in the member variables
+        When: Message.populate() called with a non-empty serialized object and overwrite is True
+        """
         populated_msg, populated_dict = self._populated()
         serialized = populated_msg.serialize()
         actual, _ = self._empty()
@@ -133,7 +156,10 @@ class TestMessage(unittest.TestCase):
         self.assertEqual(attr.asdict(actual), populated_dict)
 
     def test_populate_from_serialized_overwrite_false(self):
-        """ Do not overwrite from a serialized object """
+        """
+        Test: Values are added but NOT overwritten in the member variables
+        When: Message.populate() called with a non-empty serialized object and overwrite is False
+        """
         new_msg, _ = self._populated()
         new_msg.job_id = 123
         new_msg.rb_number = 33333
@@ -145,7 +171,10 @@ class TestMessage(unittest.TestCase):
         self.assertEqual(actual.job_id, 123)
 
     def test_invalid_serialized(self):
-        """ Test raise exception for invalid serialized object """
+        """
+        Test: A ValueError is raised
+        When: An invalid serialized object is supplied to Message.populate()
+        """
         serialized = 'test'
-        empty_msg, _ = self._populated()
+        empty_msg, _ = self._empty()
         self.assertRaises(ValueError, empty_msg.populate, serialized)
