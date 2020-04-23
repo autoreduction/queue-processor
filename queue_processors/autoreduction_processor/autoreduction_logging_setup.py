@@ -21,4 +21,4 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 # Quiet the Stomp logs as they are quite chatty
-logging.getLogger('stomp').setLevel(logging.INFO)
+logging.getLogger('stomp').setLevel(logging.INFO)    # <stomp>

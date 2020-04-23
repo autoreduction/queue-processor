@@ -14,7 +14,7 @@ import logging
 import logging.config
 
 import django
-import stomp
+import stomp    # <stomp>
 
 # The below is a template on the repository
 # pylint: disable=relative-import
@@ -53,7 +53,7 @@ class Client(object):
         """
         LOGGER.info("[%s] Connecting to %s", self._consumer_name, str(self._brokers))
 
-        connection = stomp.Connection(host_and_ports=self._brokers,     # <AMQ[S] 3 - NO TEST>
+        connection = stomp.Connection(host_and_ports=self._brokers,
                                       use_ssl=self._use_ssl, ssl_version=3)
         connection.connect(self._user, self._password, wait=False)
 

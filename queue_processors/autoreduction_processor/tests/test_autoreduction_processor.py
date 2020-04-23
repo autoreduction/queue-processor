@@ -163,7 +163,7 @@ class TestAutoreductionProcessorListener(unittest.TestCase):
 
 
 # pylint:disable=missing-docstring
-class TestAutoReductionProcessorConsumer(unittest.TestCase):
+class TestAutoReductionProcessorConsumer(unittest.TestCase):    # <stomp>
 
     def setUp(self):
         self.consumer = Consumer()

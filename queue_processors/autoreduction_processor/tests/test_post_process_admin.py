@@ -39,7 +39,7 @@ class TestPostProcessAdminHelpers(unittest.TestCase):
         self.assertEqual(actual, '/temp/data/some/more/path.nxs')
 
 
-class TestPostProcessAdmin(unittest.TestCase):    # <AMQ[QC] 5 - Several tests for (AMQ[QC] 4)>
+class TestPostProcessAdmin(unittest.TestCase):  # <stomp> <AMQ[QC] 5 - QC *mocked* rather than used for several (AMQ[QC] 4) tests >
 
     def setUp(self):
         self.data = {'data': '\\\\isis\\inst$\\data.nxs',

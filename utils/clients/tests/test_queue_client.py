@@ -17,7 +17,7 @@ from utils.clients.settings.client_settings_factory import ClientSettingsFactory
 
 
 # pylint:disable=protected-access,invalid-name,missing-docstring
-class TestQueueClient(unittest.TestCase):
+class TestQueueClient(unittest.TestCase):    # <stomp>
     """
     Exercises the queue client
     """

@@ -30,7 +30,7 @@ import importlib.util as imp
 
 from sentry_sdk import init
 
-import stomp
+import stomp    # <stomp>
 # pylint:disable=no-name-in-module,import-error
 from queue_processors.autoreduction_processor.settings import ACTIVEMQ, MISC
 from queue_processors.autoreduction_processor.autoreduction_logging_setup import logger
@@ -492,7 +492,7 @@ def main():
     """ Main method. """
     brokers = []
     brokers.append((ACTIVEMQ['brokers'].split(':')[0], int(ACTIVEMQ['brokers'].split(':')[1])))
-    stomp_connection = stomp.Connection(host_and_ports=brokers, use_ssl=False)  # <AMQ[S] 2 - TESTED>
+    stomp_connection = stomp.Connection(host_and_ports=brokers, use_ssl=False)
     json_data = None
     try:
         logger.info("PostProcessAdmin Connecting to ActiveMQ")

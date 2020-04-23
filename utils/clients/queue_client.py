@@ -10,7 +10,7 @@ Client class for accessing queuing service
 import logging
 import time
 
-import stomp
+import stomp    # <stomp>
 from stomp.exception import ConnectFailedException
 
 from utils.clients.abstract_client import AbstractClient

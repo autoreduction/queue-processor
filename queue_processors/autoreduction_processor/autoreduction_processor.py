@@ -14,7 +14,7 @@ import sys
 
 from twisted.internet import reactor
 
-import stomp
+import stomp    # <stomp>
 
 from queue_processors.autoreduction_processor.autoreduction_logging_setup import logger
 # pylint:disable=no-name-in-module,import-error
@@ -142,7 +142,7 @@ class Consumer:
         Connect to ActiveMQ and listen to the queue for messages.
         """
         brokers = [(ACTIVEMQ['brokers'].split(':')[0], int(ACTIVEMQ['brokers'].split(':')[1]))]
-        connection = stomp.Connection(host_and_ports=brokers, use_ssl=False)    # <AMQ[S] 1 - TESTED>
+        connection = stomp.Connection(host_and_ports=brokers, use_ssl=False)
         connection.set_listener(self.consumer_name, Listener(connection))
         logger.info("Starting ActiveMQ Connection to %s", ACTIVEMQ['brokers'])
         logger.info("Completed ActiveMQ Connection")
