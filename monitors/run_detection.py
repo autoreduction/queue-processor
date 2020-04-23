@@ -144,7 +144,7 @@ class InstrumentMonitor:
                 rb_number = summary_rb_number
             EORM_LOG.info("Submitting '%s' with RB number '%s'", file_name, rb_number)
             data_dict = self.build_dict(rb_number, run_number, file_path)
-            self.client.send('/queue/DataReady', json.dumps(data_dict), priority='9')  # <AMQ[QC] 2>
+            self.client.send('/queue/DataReady', json.dumps(data_dict), priority='9')  # <AMQ[QC] 2 - TESTED>
         else:
             raise FileNotFoundError("File does not exist '{}'".format(file_path))
 

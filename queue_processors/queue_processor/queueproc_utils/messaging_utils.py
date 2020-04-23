@@ -69,7 +69,7 @@ class MessagingUtils:
         # To prevent circular dependencies
         message_client = QueueClient()
         message_client.connect()
-        message_client.send('/queue/ReductionPending',  # <AMQ[QC] 7>
+        message_client.send('/queue/ReductionPending',  # <AMQ[QC] 7 - NO TEST>
                             json.dumps(data_dict),
                             priority='0',
                             delay=delay)

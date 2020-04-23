@@ -143,7 +143,7 @@ class QueueClient(AbstractClient):
         :param delay: time to wait before send
         """
         self.connect()
-        self._connection.send(destination, message,     # <AMQ[QC] 11>
+        self._connection.send(destination, message,     # <AMQ[QC] 11 - TESTED>
                               persistent=persistent,
                               priority=priority,
                               delay=delay)

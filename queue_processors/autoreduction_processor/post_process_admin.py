@@ -492,7 +492,7 @@ def main():
     """ Main method. """
     brokers = []
     brokers.append((ACTIVEMQ['brokers'].split(':')[0], int(ACTIVEMQ['brokers'].split(':')[1])))
-    stomp_connection = stomp.Connection(host_and_ports=brokers, use_ssl=False)  # <AMQ[S] 2>
+    stomp_connection = stomp.Connection(host_and_ports=brokers, use_ssl=False)  # <AMQ[S] 2 - TESTED>
     json_data = None
     try:
         logger.info("PostProcessAdmin Connecting to ActiveMQ")
@@ -532,7 +532,7 @@ def main():
     except Exception as exp:
         logger.info("Something went wrong: %s", str(exp))
         try:
-            stomp_connection.send(ACTIVEMQ['postprocess_error'], json.dumps(json_data))     # <AMQ[QC] 4>
+            stomp_connection.send(ACTIVEMQ['postprocess_error'], json.dumps(json_data))     # <AMQ[QC] 4 - TESTED>
             logger.info("Called %s ---- %s", ACTIVEMQ['postprocess_error'], prettify(json_data))
         finally:
             sys.exit()
