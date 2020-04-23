@@ -183,11 +183,13 @@ class TestAutoReductionProcessorConsumer(unittest.TestCase):
                      'use_ssl': False}
         mock_connection.assert_called_once_with(**init_args)
         mock_set_listener.assert_called_once()
-        connect_args = {'wait': False,
-                        'header': {'activemq.prefetchSize': '1'}}
-        mock_connect.assert_called_once_with(ACTIVEMQ['amq_user'],
-                                             ACTIVEMQ['amq_pwd'],
-                                             **connect_args)
+        connect_args = {
+            'username': ACTIVEMQ['amq_user'],
+            'passcode': ACTIVEMQ['amq_pwd'],
+            'wait': False,
+            'header': {'activemq.prefetchSize': '1'}
+        }
+        mock_connect.assert_called_once_with(**connect_args)
         subcription_calls = []
         for queue in ACTIVEMQ['amq_queues']:
             subscribe_args = {'destination': queue,
