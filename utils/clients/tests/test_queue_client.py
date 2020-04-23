@@ -85,7 +85,7 @@ class TestQueueClient(unittest.TestCase):
     def test_send_data(self, mock_send):
         """ Test data can be sent without error """
         client = QueueClient()
-        client.send('dataready', 'test-message')
+        client.send('dataready', 'test-message')    # <AMQ[QC] 10 - but AMQ interaction patched over>
         mock_send.assert_called_once()
 
     @patch('stomp.connect.StompConnection11.ack')

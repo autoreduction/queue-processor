@@ -81,7 +81,7 @@ if os.name != 'nt':
                                                                   run_number=self.run_number,
                                                                   started_by=0)
             self.queue_client.send('/queue/DataReady',
-                                   json.dumps(data_ready_message))
+                                   json.dumps(data_ready_message))  # <AMQ[QC] 9>
 
             # Get Result from database
             results = self._find_run_in_database()

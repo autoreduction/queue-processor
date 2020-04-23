@@ -680,5 +680,5 @@ class MessagingUtils(object):
                                         False, ACTIVEMQ['SSL'])
         message_client.connect()
         message_client.send('/queue/ReductionPending', json.dumps(data_dict),
-                            priority='0', delay=delay)
+                            priority='0', delay=delay)  # <AMQ[QC] 1>
         message_client.stop()
