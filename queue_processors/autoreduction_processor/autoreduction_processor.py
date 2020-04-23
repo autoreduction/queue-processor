@@ -19,6 +19,7 @@ import stomp
 from queue_processors.autoreduction_processor.autoreduction_logging_setup import logger
 # pylint:disable=no-name-in-module,import-error
 from queue_processors.autoreduction_processor.settings import MISC, ACTIVEMQ
+from utils.clients.queue_client import QueueClient
 
 
 class Listener:
@@ -141,29 +142,33 @@ class Consumer:
         """
         Connect to ActiveMQ and listen to the queue for messages.
         """
-        brokers = [(ACTIVEMQ['brokers'].split(':')[0], int(ACTIVEMQ['brokers'].split(':')[1]))]
-        connection = stomp.Connection(host_and_ports=brokers, use_ssl=False)
-        connection.set_listener(self.consumer_name, Listener(connection))
-        logger.info("Starting ActiveMQ Connection to %s", ACTIVEMQ['brokers'])
-        logger.info("Completed ActiveMQ Connection")
-        connection.connect(ACTIVEMQ['amq_user'],
-                           ACTIVEMQ['amq_pwd'],
-                           wait=False,
-                           header={'activemq.prefetchSize': '1'})
-        for queue in ACTIVEMQ['amq_queues']:
-            connection.subscribe(destination=queue,
-                                 id='1',
-                                 ack='client-individual',
-                                 header={'activemq.prefetchSize': '1'})
-            logger.info("[%s] Subscribing to %s", self.consumer_name, queue)
-        logger.info("Successfully subscribed to all of the queues")
+        # brokers = [(ACTIVEMQ['brokers'].split(':')[0], int(ACTIVEMQ['brokers'].split(':')[1]))]
+        # connection = stomp.Connection(host_and_ports=brokers, use_ssl=False)
+        # connection.set_listener(self.consumer_name, Listener(connection))
+        # logger.info("Starting ActiveMQ Connection to %s", ACTIVEMQ['brokers'])
+        # logger.info("Completed ActiveMQ Connection")
+        # connection.connect(ACTIVEMQ['amq_user'],
+        #                    ACTIVEMQ['amq_pwd'],
+        #                    wait=False,
+        #                    header={'activemq.prefetchSize': '1'})
+        # for queue in ACTIVEMQ['amq_queues']:
+        #     connection.subscribe(destination=queue,
+        #                          id='1',
+        #                          ack='client-individual',
+        #                          header={'activemq.prefetchSize': '1'})
+        #     logger.info("[%s] Subscribing to %s", self.consumer_name, queue)
+        # logger.info("Successfully subscribed to all of the queues")
 
-        # activemq_client = QueueClient()
-        # activemq_client.connect()
+        activemq_client = QueueClient()
+        connection = activemq_client.connect()
 
         # Create event listener
-        # listener = Listener(activemq_client)
-        # activemq_client.subscribe_amq(self.consumer_name, listener, ack='client-individual')
+        listener = Listener(connection)
+        connection.set_listener('Autoreduction', listener)
+        connection.subscribe(destination='/queue/ReductionPending',
+                             id='1',
+                             ack='client-individual',
+                             header={'activemq.prefetchSize': '1'})
 
 
 def main():  # pragma: no cover
