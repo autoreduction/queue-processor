@@ -79,7 +79,8 @@ class TestPrepareData(unittest.TestCase):
     def test_valid_second_row(self):
         """
         Test: _check_second_row() returns the argument given as an integer type
-        When: The argument given is a string representation of an integer """
+        When: The argument given is a string representation of an integer
+        """
         prep = PrepareData()
         second_row = self.valid_data.split("\n")[1]
         expected_return = int(second_row)
