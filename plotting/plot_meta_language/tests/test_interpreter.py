@@ -46,7 +46,8 @@ class TestInterpreter(unittest.TestCase):
     def test_valid_dict(self):
         """
         Test: interpret() outputs the same (valid) dictionary that is read
-        When: The method is given a dictionary which does NOT exclusively contain a key="figure" entry
+        When: The method is given a dictionary which does NOT
+        exclusively contain a key="figure" entry
         """
         inter = self.create_interpreter_with_mocked_read(self.valid_minimal_dict)
         output = inter.interpret("")
