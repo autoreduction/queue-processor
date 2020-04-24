@@ -22,6 +22,7 @@ class TestCycle(unittest.TestCase):
     Exercises the Cycle class
     """
     def setUp(self):
+        """ Create example cycle and maintenance day data for testing with """
         self.test_cycle_values = {
             "name": "test_cycle_name",
             "start": datetime(2020, 1, 1, tzinfo=None),
@@ -33,7 +34,10 @@ class TestCycle(unittest.TestCase):
         }
 
     def test_init(self):
-        """ Test initialisation values are set """
+        """
+        Test: Class variables are created and set
+        When: Cycle is initialised
+        """
         cycle = Cycle(self.test_cycle_values["name"],
                       self.test_cycle_values["start"],
                       self.test_cycle_values["end"])
@@ -43,8 +47,10 @@ class TestCycle(unittest.TestCase):
         self.assertTrue(len(cycle.maintenance_days) == 0)
 
     def test_add_maintenance_day(self):
-        """ Test cycle stores a given maintenance day properly when
-        it received through the add_maintenance_day method. """
+        """
+        Test: Cycle creates and stores a maintenance day based on the arguments given
+        When: add_maintenance_day is called with valid arguments
+        """
         cycle = Cycle(self.test_cycle_values["name"],
                       self.test_cycle_values["start"],
                       self.test_cycle_values["end"])
@@ -120,7 +126,10 @@ class TestSchedulerDataProcessor(unittest.TestCase):
                      cycle_dict["end"])
 
     def test_init(self):
-        """ Test initialisation values are set """
+        """
+        Test: Class variables are created and set
+        When: SchedulerDataProcessor is initialised
+        """
         sdp = SchedulerDataProcessor()
         self.assertIsInstance(sdp._earliest_possible_date, datetime)
         self.assertIsInstance(sdp._cycle_name_regex, str)
@@ -128,8 +137,11 @@ class TestSchedulerDataProcessor(unittest.TestCase):
         self.assertIsInstance(sdp._sort_by_field, str)
 
     def test_sort_order(self):
-        """ Test _sort_order by providing it an unordered list of cycles.
-         Assumes test_cycle_data is already ordered """
+        """
+        Test: _sort_order orders a list of cycles by start date
+        When: Called with a list of cycles
+        """
+        # Note: This test assumes self.test_cycle_data is ordered
         local_cycle_data = [
             self.test_cycle_data[1],
             self.test_cycle_data[2],
@@ -140,8 +152,11 @@ class TestSchedulerDataProcessor(unittest.TestCase):
         self.assertEqual(self.test_cycle_data, result)
 
     def test_clean_with_invalid_name(self):
-        """ Test _clean_data by providing it data containing a cycle with an invalid name.
-         Assumes all other entries in test_cycle_data are valid """
+        """
+        Test: _clean_data removes the cycle with an invalid name
+        When: Called with data containing a cycle with an invalid name
+        """
+        # Note: Assumes all other entries in test_cycle_data are valid
         local_cycle_data = self.test_cycle_data.copy()
         local_cycle_data[0]["name"] = "invalid"
         sdp = SchedulerDataProcessor()
@@ -149,9 +164,11 @@ class TestSchedulerDataProcessor(unittest.TestCase):
         self.assertTrue(len(result) == len(local_cycle_data)-1)
 
     def test_clean_with_invalid_date(self):
-        """ Test _clean_data by providing it data containing a cycle with an date
-         1 day before the earliest possible (specified by the SchedulerDataProcessor).
-         Assumes all other entries in test_cycle_data are valid """
+        """
+        Test: _clean_data removes the cycle with an invalid date
+        When: Called with data containing a cycle with a date 1 day
+        before the earliest possible (specified by the SchedulerDataProcessor).
+        """
         sdp = SchedulerDataProcessor()
         local_cycle_data = self.test_cycle_data.copy()
         earlier_than_possible = sdp._earliest_possible_date + relativedelta(days=-1)
@@ -162,8 +179,11 @@ class TestSchedulerDataProcessor(unittest.TestCase):
     @patch('scripts.scheduler_ingest.SchedulerDataProcessor._clean_data')
     @patch('scripts.scheduler_ingest.SchedulerDataProcessor._sort_by_date')
     def test_pre_process_with_valid_data(self, mocked_sort_by_date, mocked_clean_data):
-        """ Test _pre_process calls the internal methods the expected number of times
-        and returns the expected number of lists """
+        """
+        Test: _pre_process calls both _clean_data and _sort_by_date twice (once for each
+        data-set given) and returns 2 lists
+        When: Called with valid data-sets
+        """
         sdp = SchedulerDataProcessor()
         result = sdp._pre_process(self.test_cycle_data,
                                   self.test_maintenance_dict.values())
@@ -172,7 +192,8 @@ class TestSchedulerDataProcessor(unittest.TestCase):
         self.assertTrue(len(result) == 2)
 
     def check_process_output(self, _process_output, expected_length):
-        """ Checks all items in _process_output are Cycle objects, that they do not
+        """
+        Checks all items in _process_output are Cycle objects, that they do not
         contain any maintenance days, and the number of cycles is as expected
         :param _process_output: A list of cycles retrieved as output from _process()
         :param expected_length: The expected number of cycles retrieved from _process()
@@ -184,9 +205,10 @@ class TestSchedulerDataProcessor(unittest.TestCase):
 
     @patch('scripts.scheduler_ingest.SchedulerDataProcessor._md_warning')
     def test_process_with_maintenance_before_cycles(self, mocked_md_warning):
-        """ Test _process calls _md_warning when
-        it encounters a maintenance day start value *earlier* than any cycle start date,
-        and doesn't add this maintenance day to any cycle. """
+        """
+        Test: _process calls _md_warning, and doesn't add the current maintenance day to any cycle
+        When: _process encounters a maintenance day start value *earlier* than any cycle start date
+        """
         sdp = SchedulerDataProcessor()
         cycles = sdp._process(self.test_cycle_data,
                               [self.test_maintenance_dict["before_cycles"]])
@@ -202,9 +224,10 @@ class TestSchedulerDataProcessor(unittest.TestCase):
 
     @patch('scripts.scheduler_ingest.SchedulerDataProcessor._md_warning')
     def test_process_with_maintenance_after_cycles(self, mocked_md_warning):
-        """ Test _process calls _md_warning when
-        it encounters a maintenance day start value *later* than any cycle end date,
-        and doesn't add this maintenance day to any cycle. """
+        """
+        Test: _process calls _md_warning, and doesn't add the current maintenance day to any cycle
+        When: _process encounters a maintenance day start value *later* than any cycle end date
+        """
         sdp = SchedulerDataProcessor()
         cycles = sdp._process(self.test_cycle_data,
                               [self.test_maintenance_dict["after_cycles"]])
@@ -219,9 +242,11 @@ class TestSchedulerDataProcessor(unittest.TestCase):
 
     @patch('scripts.scheduler_ingest.SchedulerDataProcessor._md_warning')
     def test_process_with_maintenance_between_cycles(self, mocked_md_warning):
-        """ Test _process calls _md_warning when it encounters
-        a maintenance day start value *in-between* the previous and cycle end date and
-        current cycle start date, and ensures it doesn't add this maintenance day to any cycle. """
+        """
+        Test: _process calls _md_warning, and doesn't add the current maintenance day to any cycle
+        When: _process encounters a maintenance day start value *in-between* the previous and cycle end date
+        and current cycle start date, and ensures it doesn't add this maintenance day to any cycle.
+        """
         local_cycle_data = self.test_cycle_data.copy()
         local_cycle_data[0]["end"] = local_cycle_data[0]["start"] + relativedelta(days=1)
         sdp = SchedulerDataProcessor()
@@ -240,8 +265,11 @@ class TestSchedulerDataProcessor(unittest.TestCase):
 
     @patch('scripts.scheduler_ingest.SchedulerDataProcessor._md_warning')
     def test_process_with_maintenance_within_cycles(self, mocked_md_warning):
-        """ Test _process adds a maintenance day to the appropriate cycle when said
-        maintenance day starts and ends within the given cycle's start and end dates. """
+        """
+        Test: _process adds the current maintenance day to the appropriate cycle
+        When: _process encounters a maintenance day which starts and ends within
+        the given cycle's start and end dates
+        """
         sdp = SchedulerDataProcessor()
         cycles = sdp._process(self.test_cycle_data,
                               [self.test_maintenance_dict["within_first_cycle"]])
@@ -257,8 +285,10 @@ class TestSchedulerDataProcessor(unittest.TestCase):
                         and m_day.end == self.test_maintenance_dict["within_first_cycle"]["end"])
 
     def test_conversion_with_invalid_args(self):
-        """ Test a KeyError is thrown if a cycle attribute is missing when
-         convert_raw_to_structured is called """
+        """
+        Test: A KeyError is thrown
+        When: convert_raw_to_structured is called and a cycle attribute is missing
+        """
         local_cycle_data = self.test_cycle_data.copy()
         local_cycle_data[0].pop("start")
         sdp = SchedulerDataProcessor()
