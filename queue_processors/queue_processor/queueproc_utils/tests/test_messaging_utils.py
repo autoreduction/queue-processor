@@ -16,6 +16,7 @@ from queue_processors.queue_processor.queueproc_utils.messaging_utils import Mes
 
 
 class TestMessagingUtils(unittest.TestCase):
+    # pylint:disable=protected-access
     """
     Exercises the Messaging Utils functions
     """
