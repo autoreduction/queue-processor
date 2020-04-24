@@ -167,7 +167,7 @@ class TestSchedulerDataProcessor(unittest.TestCase):
         """
         Test: _clean_data removes the cycle with an invalid date
         When: Called with data containing a cycle with a date 1 day
-        before the earliest possible (specified by the SchedulerDataProcessor).
+        before the earliest possible (specified by the SchedulerDataProcessor)
         """
         sdp = SchedulerDataProcessor()
         local_cycle_data = self.test_cycle_data.copy()
@@ -245,7 +245,7 @@ class TestSchedulerDataProcessor(unittest.TestCase):
         """
         Test: _process calls _md_warning, and doesn't add the current maintenance day to any cycle
         When: _process encounters a maintenance day start value *in-between* the previous and cycle end date
-        and current cycle start date, and ensures it doesn't add this maintenance day to any cycle.
+        and current cycle start date, and ensures it doesn't add this maintenance day to any cycle
         """
         local_cycle_data = self.test_cycle_data.copy()
         local_cycle_data[0]["end"] = local_cycle_data[0]["start"] + relativedelta(days=1)
