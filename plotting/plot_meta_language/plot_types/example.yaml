@@ -1,8 +1,8 @@
 # This file describes the meta data of a plot
 # including the type of plot and it's axis scaling, units, and titles.
 figure:
-  plot: Scattergl    # Type of graph to plot (Please see README.md to view all available plots
-  mode: lines   # Graph mode - additional data relating to plot (please see README.md)
+  plot: Scattergl     # Type of graph to plot (Please see README.md to view all available plots
+  mode: lines         # Graph mode - Data relating to plot (please see README.md)
   xaxis:
     type: log         # [linear, log]
     title: x_axis     # Title of X axis
