@@ -18,7 +18,7 @@ from mock import patch, call, Mock
 
 from utils.settings import ACTIVEMQ_SETTINGS
 from utils.project.structure import get_project_root
-from queue_processors.autoreduction_processor.settings import MISC, ACTIVEMQ
+from queue_processors.autoreduction_processor.settings import MISC
 from queue_processors.autoreduction_processor.post_process_admin import (windows_to_linux_path,
                                                                          prettify,
                                                                          PostProcessAdmin,
@@ -212,33 +212,36 @@ class TestPostProcessAdmin(unittest.TestCase):
     @patch('queue_processors.autoreduction_processor.post_process_admin.windows_to_linux_path',
            return_value='path')
     @patch('queue_processors.autoreduction_processor.post_process_admin.PostProcessAdmin.reduce')
-    @patch('stomp.Connection.connect')
-    @patch('stomp.Connection.__init__', return_value=None)
+    @patch('utils.clients.queue_client.QueueClient.connect')
+    @patch('utils.clients.queue_client.QueueClient.__init__', return_value=None)
     def test_main(self, mock_init, mock_connect, mock_reduce, _):
+        """
+        Test: A QueueClient is initialised and connected and ppa.reduce is called
+        When: The main method is called
+        """
         sys.argv = ['', '/queue/ReductionPending', json.dumps(self.data)]
         main()
-        init_args = {'host_and_ports': [(ACTIVEMQ['brokers'].split(':')[0],
-                                         int(ACTIVEMQ['brokers'].split(':')[1]))],
-                     'use_ssl': False}
-        mock_init.assert_called_once_with(**init_args)
-        connect_args = {'wait': True,
-                        'header': {'activemq.prefetchSize': '1'}}
-        mock_connect.assert_called_once_with(ACTIVEMQ['amq_user'],
-                                             ACTIVEMQ['amq_pwd'],
-                                             **connect_args)
+        mock_init.assert_called_once()
+        mock_connect.assert_called_once()
         mock_reduce.assert_called_once()
 
     @patch('queue_processors.autoreduction_processor.post_process_admin.prettify',
            return_value='test')
-    @patch('stomp.Connection.send')
     @patch('sys.exit')
     @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.info')
     @patch('queue_processors.autoreduction_processor.post_process_admin.PostProcessAdmin.__init__',
            return_value=None)
-    @patch('stomp.Connection.connect')
-    @patch('stomp.Connection.__init__', return_value=None)
+    @patch('utils.clients.queue_client.QueueClient.connect')
+    @patch('utils.clients.queue_client.QueueClient.__init__', return_value=None)
     def test_main_inner_value_error(self, mock_conn_init, mock_connect, mock_ppa_init,
-                                    mock_logger, mock_exit, mock_send, _):
+                                    mock_logger, mock_exit, _):
+        """
+        Test: The correct message is sent from the exception handlers in main
+        When: A ValueError exception is raised from ppa.reduce
+        """
+        mock_connection = Mock()
+        mock_connect.return_value = mock_connection
+
         def raise_value_error(arg1, _):
             self.assertEqual(arg1, self.data)
             raise ValueError('error-message')
@@ -250,17 +253,24 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_logger.assert_has_calls([call('JSON data error: %s', 'test')])
         mock_exit.assert_called_once()
         self.data['error'] = 'error-message'
-        mock_send.assert_called_once_with(ACTIVEMQ['postprocess_error'], json.dumps(self.data))
+        mock_connection.send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_error,
+                                                     json.dumps(self.data))
 
-    @patch('stomp.Connection.send')
     @patch('sys.exit')
     @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.info')
     @patch('queue_processors.autoreduction_processor.post_process_admin.PostProcessAdmin.__init__',
            return_value=None)
-    @patch('stomp.Connection.connect')
-    @patch('stomp.Connection.__init__', return_value=None)
+    @patch('utils.clients.queue_client.QueueClient.connect')
+    @patch('utils.clients.queue_client.QueueClient.__init__', return_value=None)
     def test_main_inner_exception(self, mock_conn_init, mock_connect, mock_ppa_init,
-                                  mock_logger, mock_exit, mock_send):
+                                  mock_logger, mock_exit):
+        """
+        Test: The correct message is sent from the exception handlers in main
+        When: A bare Exception is raised from ppa.reduce
+        """
+        mock_connection = Mock()
+        mock_connect.return_value = mock_connection
+
         def raise_exception(arg1, _):
             self.assertEqual(arg1, self.data)
             raise Exception('error-message')
@@ -271,4 +281,5 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_conn_init.assert_called_once()
         mock_logger.assert_has_calls([call('PostProcessAdmin error: %s', 'error-message')])
         mock_exit.assert_called_once()
-        mock_send.assert_called_once_with(ACTIVEMQ['postprocess_error'], json.dumps(self.data))
+        mock_connection.send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_error,
+                                                     json.dumps(self.data))
