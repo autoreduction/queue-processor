@@ -13,12 +13,12 @@ import json
 import os
 import sys
 
-from mock import patch, Mock
+from mock import patch, Mock, call
 
 from queue_processors.autoreduction_processor.autoreduction_processor import (Listener,
                                                                               Consumer,
                                                                               main)
-from queue_processors.autoreduction_processor.settings import MISC
+from queue_processors.autoreduction_processor.settings import MISC, ACTIVEMQ
 
 
 # pylint:disable=missing-docstring,too-many-arguments,no-self-use,protected-access
@@ -171,23 +171,32 @@ class TestAutoReductionProcessorConsumer(unittest.TestCase):
     def test_init(self):
         self.assertEqual(self.consumer.consumer_name, 'queueProcessor')
 
-    @patch('utils.clients.queue_client.QueueClient.connect')
-    def test_run(self, mock_connect):
-        """
-        Test: That the QueueClient is connected and subscribed to the /ReductionPending queue
-        When: Consumer.run() is called
-        """
-        mock_connection = Mock()
-        mock_connect.return_value = mock_connection
+    @patch('stomp.Connection.subscribe')
+    @patch('stomp.Connection.connect')
+    @patch('stomp.Connection.set_listener')
+    @patch('stomp.Connection.__init__', return_value=None)
+    def test_run(self, mock_connection, mock_set_listener,
+                 mock_connect, mock_subscribe):
         self.consumer.run()
-        mock_connect.assert_called_once()
-        mock_connection.set_listener.assert_called_once()
-        subscribe_args = {'destination': '/queue/ReductionPending',
-                          'id': '1',
-                          'ack': 'client-individual',
-                          'header': {'activemq.prefetchSize': '1'}
-                         }
-        mock_connection.subscribe.assert_called_once_with(**subscribe_args)
+        init_args = {'host_and_ports': [(ACTIVEMQ['brokers'].split(':')[0],
+                                         int(ACTIVEMQ['brokers'].split(':')[1]))],
+                     'use_ssl': False}
+        mock_connection.assert_called_once_with(**init_args)
+        mock_set_listener.assert_called_once()
+        connect_args = {'wait': False,
+                        'header': {'activemq.prefetchSize': '1'}}
+        mock_connect.assert_called_once_with(ACTIVEMQ['amq_user'],
+                                             ACTIVEMQ['amq_pwd'],
+                                             **connect_args)
+        subcription_calls = []
+        for queue in ACTIVEMQ['amq_queues']:
+            subscribe_args = {'destination': queue,
+                              'id': '1',
+                              'ack': 'client-individual',
+                              'header': {'activemq.prefetchSize': '1'}
+                             }
+            subcription_calls.append(call(**subscribe_args))
+        mock_subscribe.assert_has_calls(subcription_calls)
 
 
 if os.name != 'nt':  # pragma: no cover
