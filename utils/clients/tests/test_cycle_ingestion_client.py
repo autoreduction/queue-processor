@@ -139,7 +139,6 @@ class TestCycleIngestionClient(unittest.TestCase):
                                                              Password=self.test_credentials.password)
 
     def test_disconnect(self):
-        """ Test disconnection from a session sets _session_id = None"""
         """
         Test: _session_id is set to None
         When: disconnect is called after a connection has been established

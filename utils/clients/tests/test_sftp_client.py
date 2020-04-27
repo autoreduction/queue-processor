@@ -114,7 +114,7 @@ class TestSFTPClient(unittest.TestCase):
 
     def test_server_path_and_local_path_are_valid(self):
         """
-        Test: retrieve finds a file from a given server_path and puts a copy in local_path 
+        Test: retrieve finds a file from a given server_path and puts a copy in local_path
         When: retrieve is called with a valid server_path (i.e. a path which point to a real file)
         and a valid local_path (i.e. a local path which exists)
         """

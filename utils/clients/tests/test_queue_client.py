@@ -111,7 +111,7 @@ class TestQueueClient(unittest.TestCase):
         client.send('dataready', 'test-message')
         (args, _) = mock_stomp_send.call_args
         self.assertEqual(args[0], 'dataready')
-        self.assertEqual(args[1], 'message')
+        self.assertEqual(args[1], 'test-message')
 
     @patch('stomp.connect.StompConnection11.ack')
     def test_ack(self, mock_stomp_ack):
@@ -178,4 +178,5 @@ class TestQueueClient(unittest.TestCase):
                                'id': '1',
                                'ack': 'auto',
                                'header': {'activemq.prefetchSize': '1'}}
-        mock_stomp_subscribe.assert_has_calls([call(**test_expected_args), call(**queue_expected_args)])
+        mock_stomp_subscribe.assert_has_calls([call(**test_expected_args),
+                                               call(**queue_expected_args)])
