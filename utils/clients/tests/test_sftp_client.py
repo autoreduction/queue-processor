@@ -25,7 +25,8 @@ class TestSFTPClient(unittest.TestCase):
         self.valid_argument = "valid"
 
     def is_argument_valid(self, value):
-        """ Checks whether the value is a valid argument """
+        """ Checks whether the value is a valid argument
+        :return: True if value is valid """
         if value == self.valid_argument:
             return True
         return False
@@ -40,75 +41,105 @@ class TestSFTPClient(unittest.TestCase):
         return client
 
     def test_invalid_init(self):
-        """ Test initialisation raises TypeError when given invalid credentials """
+        """
+        Test: A TypeError is raised
+        When: SFTPClient is initialised with invalid credentials
+        """
         with self.assertRaises(TypeError):
             SFTPClient("invalid")
 
     def test_default_init(self):
-        """ Test initialisation values are set """
+        """
+        Test: Class variables are created and set
+        When: SFTPClient is initialised with default credentials
+        """
         client = SFTPClient()
         self.assertIsNotNone(client.credentials)
         self.assertIsNone(client._connection)
 
     def test_invalid_connection(self):
-        """ Test ConnectionException raised when access attempted without valid connection """
+        """
+        Test: A ConnectionException raised
+        When: _test_connection is called without a valid connection
+        """
         client = SFTPClient()  # client initialised but no connection made
         with self.assertRaises(ConnectionException):
             client._test_connection()
 
     def test_valid_connection(self):
-        """ Test that a valid connection results in a connection-test returning True """
+        """
+        Test: _test_connection returns True
+        When: _test_connection is called on an SFTPClient with a valid connection
+        """
         client = self.create_mocked_connection_client()
         self.assertTrue(client._test_connection())
 
     def test_server_path_is_invalid(self):
-        """ Test RuntimeError raised when server_path invalid """
+        """
+        Test: A RuntimeError is raised
+        When: retrieve is called with an invalid server path
+        """
         client = self.create_mocked_connection_client()
         with self.assertRaises(RuntimeError):
             client.retrieve(server_path="invalid", local_path=self.valid_argument)
 
     def test_local_path_does_not_exist(self):
-        """ Test RuntimeError raised when local_path does not exist """
+        """
+        Test: A RuntimeError is raised
+        When: retrieve is called with an invalid file path
+        """
         client = self.create_mocked_connection_client()
         client._connection.get.side_effect = FileNotFoundError()
         with self.assertRaises(RuntimeError):
             client.retrieve(server_path=self.valid_argument, local_path="invalid")
 
     def test_local_path_is_directory(self):
-        """ Test RuntimeError raised when local_path is a directory """
+        """
+        Test: A RuntimeError is raised
+        When: retrieve is called with a local path that points to a directory
+        """
         client = self.create_mocked_connection_client()
         client._connection.get.side_effect = PermissionError()
         with self.assertRaises(RuntimeError):
             client.retrieve(server_path=self.valid_argument, local_path="directory")
 
     def test_local_path_is_none(self):
-        """ Test file retrieval called successfully when no local_path is given explicitly """
+        """
+        Test: retrieve uses the current directory as the local_path
+        When: retrieve is called with no local_path argument
+        """
         client = self.create_mocked_connection_client()
         client.retrieve(server_path=self.valid_argument)
         client._connection.get.assert_called_with(self.valid_argument, "")
 
     def test_server_path_and_local_path_are_valid(self):
-        """ Test file retrieval called successfully
-        when a valid server_path and local_path are given """
+        """
+        Test: retrieve finds a file from a given server_path and puts a copy in local_path 
+        When: retrieve is called with a valid server_path (i.e. a path which point to a real file)
+        and a valid local_path (i.e. a local path which exists)
+        """
         client = self.create_mocked_connection_client()
         client.retrieve(server_path=self.valid_argument, local_path=self.valid_argument)
         client._connection.get.assert_called_with(self.valid_argument, self.valid_argument)
 
-    @patch('os.path.isfile')
-    def test_override_is_false_and_local_path_exists(self, mocked_isfile):
-        """ Test RuntimeError raised when local_path file exists and override is False """
+    @patch('os.path.isfile', return_value=True)
+    def test_override_is_false_and_local_path_exists(self, _):
+        """
+        Test: A RuntimeError is raised
+        When: A file at local_path exists and override is False
+        """
         client = self.create_mocked_connection_client()
-        mocked_isfile.return_value = True
         with self.assertRaises(RuntimeError):
             client.retrieve(server_path=self.valid_argument,
                             local_path=self.valid_argument, override=False)
 
-    @patch('os.path.isfile')
-    def test_override_is_false_and_local_path_does_not_exists(self, mocked_isfile):
-        """ Test file retrieval called successfully
-        when local_path file exists and override is True """
+    @patch('os.path.isfile', return_value=False)
+    def test_override_is_false_and_local_path_does_not_exists(self, _):
+        """
+        Test: retrieve does not encounter an error
+        When: A file at local_path exists and override is True
+        """
         client = self.create_mocked_connection_client()
-        mocked_isfile.return_value = False
         client.retrieve(server_path=self.valid_argument,
                         local_path=self.valid_argument, override=False)
         client._connection.get.assert_called_with(self.valid_argument, self.valid_argument)
