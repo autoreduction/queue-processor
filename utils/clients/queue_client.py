@@ -35,14 +35,14 @@ class QueueClient(AbstractClient):
         self._consumer_name = consumer_name
         self._autoreduce_queues = self.credentials.all_subscriptions
 
-    def connect(self):
+    def connect(self, listener=None):
         """
         Create the connection if the connection has not been created
         :return: connection object
         """
         if self._connection is None or not self._connection.is_connected():
             self.disconnect()
-            return self._create_connection()
+            return self._create_connection(listener)
         return self._connection
 
     def _test_connection(self):
@@ -59,7 +59,7 @@ class QueueClient(AbstractClient):
             self._connection.disconnect()
         self._connection = None
 
-    def _create_connection(self):
+    def _create_connection(self, listener=None):
         """
         Get the connection to the queuing service
         :return: The connection to the queue
@@ -69,7 +69,8 @@ class QueueClient(AbstractClient):
                 host_port = [(self.credentials.host, int(self.credentials.port))]
                 connection = stomp.Connection(host_and_ports=host_port,
                                               use_ssl=False)
-
+                if listener:
+                    connection.set_listener('Autoreduction', listener)
                 logging.info("Starting connection to %s", host_port)
                 connection.connect(username=self.credentials.username,
                                    passcode=self.credentials.password,

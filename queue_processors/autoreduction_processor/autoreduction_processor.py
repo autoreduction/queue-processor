@@ -12,6 +12,8 @@ import os
 import subprocess
 import sys
 
+import stomp
+
 from twisted.internet import reactor
 
 from queue_processors.autoreduction_processor.autoreduction_logging_setup import logger
@@ -20,7 +22,7 @@ from queue_processors.autoreduction_processor.settings import MISC
 from utils.clients.queue_client import QueueClient
 
 
-class Listener:
+class Listener(stomp.ConnectionListener):
     """ Listener class that is used to consume messages from ActiveMQ. """
     def __init__(self, client):
         """ Initialise listener. """
@@ -143,11 +145,13 @@ class Consumer:
         /ReductionPending queue for messages.
         """
         activemq_client = QueueClient()
-        connection = activemq_client.connect()
+        listener = Listener(None)
+        connection = activemq_client.connect(listener=listener)
+        listener._client = connection
 
         # Create event listener
-        listener = Listener(connection)
-        connection.set_listener('Autoreduction', listener)
+
+        # connection.set_listener('Autoreduction', listener)
         connection.subscribe(destination='/queue/ReductionPending',
                              id='1',
                              ack='client-individual',
