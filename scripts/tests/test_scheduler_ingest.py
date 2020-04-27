@@ -244,8 +244,8 @@ class TestSchedulerDataProcessor(unittest.TestCase):
     def test_process_with_maintenance_between_cycles(self, mocked_md_warning):
         """
         Test: _process calls _md_warning, and doesn't add the current maintenance day to any cycle
-        When: _process encounters a maintenance day start value *in-between* the previous and cycle end date
-        and current cycle start date, and ensures it doesn't add this maintenance day to any cycle
+        When: _process encounters a maintenance day start value *in-between* the previous cycle end
+        date and current cycle start date
         """
         local_cycle_data = self.test_cycle_data.copy()
         local_cycle_data[0]["end"] = local_cycle_data[0]["start"] + relativedelta(days=1)
