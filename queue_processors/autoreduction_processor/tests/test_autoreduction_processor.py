@@ -25,7 +25,7 @@ from queue_processors.autoreduction_processor.settings import MISC
 class TestAutoreductionProcessorListener(unittest.TestCase):
 
     def setUp(self):
-        self.listener = Listener(None)
+        self.listener = Listener()
         self.headers = {'destination': '/queue/topic',
                         'priority': '1',
                         'message-id': 'test-id',
@@ -38,8 +38,7 @@ class TestAutoreductionProcessorListener(unittest.TestCase):
         self.json_data = json.dumps(self.data)
 
     def test_init(self):
-        listener = Listener(None)
-        self.assertIsNone(listener._client)
+        listener = Listener()
         self.assertEqual(listener.proc_list, [])
         self.assertEqual(listener.rb_list, [])
         self.assertEqual(listener.cancel_list, [])
@@ -93,16 +92,13 @@ class TestAutoreductionProcessorListener(unittest.TestCase):
     @patch('os.path.isfile', return_value=False)
     def test_hold_message_invalid_dir(self, mock_is_file, mock_should_cancel, mock_should_proceed,
                                       mock_log, mock_popen, mock_add_process):
-        mock_client = Mock()
-        listener = Listener(mock_client)
+        listener = Listener()
         listener.hold_message('/queue/topic', self.json_data, self.headers)
         mock_should_cancel.assert_called_once()
         mock_should_proceed.assert_called_once()
         mock_is_file.assert_called_once()
         mock_log.assert_called_once_with("Could not find autoreduction post processing file -"
                                          " please contact a system administrator")
-        mock_client.ack.assert_called_once_with(self.headers['message-id'],
-                                                self.headers['subscription'])
         mock_popen.assert_called_once_with([sys.executable,
                                             MISC['post_process_directory'],
                                             self.headers['destination'],
@@ -181,10 +177,9 @@ class TestAutoReductionProcessorConsumer(unittest.TestCase):
         mock_connect.return_value = mock_connection
         self.consumer.run()
         mock_connect.assert_called_once()
-        mock_connection.set_listener.assert_called_once()
         subscribe_args = {'destination': '/queue/ReductionPending',
                           'id': '1',
-                          'ack': 'client-individual',
+                          'ack': 'auto',
                           'header': {'activemq.prefetchSize': '1'}
                          }
         mock_connection.subscribe.assert_called_once_with(**subscribe_args)
