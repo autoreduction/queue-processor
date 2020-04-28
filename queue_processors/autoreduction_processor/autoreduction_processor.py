@@ -24,9 +24,9 @@ from utils.clients.queue_client import QueueClient
 
 class Listener(stomp.ConnectionListener):
     """ Listener class that is used to consume messages from ActiveMQ. """
-    def __init__(self, client):
+    def __init__(self):
         """ Initialise listener. """
-        self._client = client
+        # self._client = client
         self.proc_list = []
         self.rb_list = []  # list of RB numbers of active reduction runs
         self.cancel_list = []  # list of (run number, run version)s to drop (once) used
@@ -78,7 +78,7 @@ class Listener(stomp.ConnectionListener):
         python_path = sys.executable
         logger.info("Calling: %s %s %s %s",
                     python_path, MISC['post_process_directory'], destination, print_dict)
-        self._client.ack(headers['message-id'], headers['subscription'])  # Remove from queue
+        # self._client.ack(headers['message-id'], headers['subscription'])  # Remove from queue
         proc = subprocess.Popen([python_path,
                                  MISC['post_process_directory'],
                                  destination,
@@ -145,16 +145,14 @@ class Consumer:
         /ReductionPending queue for messages.
         """
         activemq_client = QueueClient()
-        listener = Listener(None)
-        connection = activemq_client.connect(listener=listener)
-        listener._client = connection
+        connection = activemq_client.connect(listener=Listener())
 
         # Create event listener
 
         # connection.set_listener('Autoreduction', listener)
         connection.subscribe(destination='/queue/ReductionPending',
                              id='1',
-                             ack='client-individual',
+                             ack='auto',
                              header={'activemq.prefetchSize': '1'})
 
 
