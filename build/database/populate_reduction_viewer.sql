@@ -28,26 +28,36 @@ VALUES
     (2, 456),
     (3, 789);
 
+
+# ======================================= #
+# reduction_viewer_software
+INSERT INTO reduction_viewer_software
+    (id, name, version)
+VALUES
+    (1, 'Mantid', '4.0'),
+    (2, 'Mantid', '4.1'),
+    (3, 'Mantid', '4.2');
+
+
 # ======================================= #
 # reduction_viewer_reductionrun
 INSERT INTO reduction_viewer_reductionrun
-    (id, run_number, run_version, run_name, script, created, last_updated, started, finished, started_by, graph, message, reduction_log, admin_log, retry_when, cancel, hidden_in_failviewer, overwrite, experiment_id, instrument_id, retry_run_id, status_id)
+    (id, run_number, run_version, run_name, script, created, last_updated, started, finished, started_by, graph, message, reduction_log, admin_log, retry_when, cancel, hidden_in_failviewer, overwrite, experiment_id, instrument_id, retry_run_id, status_id, software_id)
 VALUES
-    #id - run no - run ver - run name -           script           -        created       -      last updated    -       started        -       finished      - started by -graph - message - reduction log  -  admin log - retry when - cancel - hidden - overwrite - exp id - inst id - retry id - status id
-    (1,    001,       0,    'test-run', 'print("running test run")', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:01:00',   NULL    , NULL, 'message', 'reduction-log', 'admin-log',    NULL    ,    0   ,    0   ,     0     ,    1   ,    1    ,  NULL   ,     4),
-    (2,    001,       0,    'test-run', 'print("running test run")', '2018-10-04 09:02:00', '2018-10-04 09:02:00', '2018-10-04 09:02:00', '2018-10-04 09:03:00',   NULL    , NULL, 'message', 'reduction-log', 'admin-log',    NULL    ,    0   ,    0   ,     0     ,    2   ,    2    ,  NULL   ,     4),
-    (3,    001,       0,    'test-run', 'print("running test run")', '2018-10-04 09:04:00', '2018-10-04 09:04:00', '2018-10-04 09:04:00', '2018-10-04 09:05:00',   NULL    , NULL, 'message', 'reduction-log', 'admin-log',    NULL    ,    0   ,    0   ,     0     ,    3   ,    3    ,  NULL   ,     4),
-    (4,    001,       1,    'test-run', 'print("running test run")', '2018-10-04 09:04:00', '2018-10-04 09:04:00', '2018-10-04 09:04:00', '2018-10-04 09:05:00',   NULL    , NULL, 'message', 'reduction-log', 'admin-log',    NULL    ,    0   ,    0   ,     0     ,    3   ,    3    ,  NULL   ,     4),
-
-    (5,    002,       0,    'test-run', 'print("running test run #2")', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:01:00',   NULL    , NULL, 'message', 'reduction-log', 'admin-log',    NULL    ,    0   ,    0   ,     0     ,   1   ,   1   ,  NULL  ,     4),
-    (6,    003,       0,    'test-run', 'print("running test run #3")', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:01:00',   NULL    , NULL, 'message', 'reduction-log', 'admin-log',    NULL    ,    0   ,    0   ,     0     ,   1   ,   1   ,  NULL  ,     4),
-    (7,    004,       0,    'test-run', 'print("running test run #4")', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:01:00',   NULL    , NULL, 'message', 'reduction-log', 'admin-log',    NULL    ,    0   ,    0   ,     0     ,   1   ,   1   ,  NULL  ,     4),
-    (8,    005,       0,    'test-run', 'print("running test run #5")', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:01:00',   NULL    , NULL, 'message', 'reduction-log', 'admin-log',    NULL    ,    0   ,    0   ,     0     ,   1   ,   1   ,  NULL  ,     4),
-    (9,    006,       0,    'test-run', 'print("running test run #6")', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:01:00',   NULL    , NULL, 'message', 'reduction-log', 'admin-log',    NULL    ,    0   ,    0   ,     0     ,   1   ,   1   ,  NULL  ,     4),
-    (10,   007,       0,    'test-run', 'print("running test run #7")', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:01:00',   NULL    , NULL, 'message', 'reduction-log', 'admin-log',    NULL    ,    0   ,    0   ,     0     ,   1   ,   1   ,  NULL  ,     4),
-    (11,   008,       0,    'test-run', 'print("running test run #8")', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:01:00',   NULL    , NULL, 'message', 'reduction-log', 'admin-log',    NULL    ,    0   ,    0   ,     0     ,   1   ,   1   ,  NULL  ,     4),
-    (12,   009,       0,    'test-run', 'print("running test run #9")', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:01:00',   NULL    , NULL, 'message', 'reduction-log', 'admin-log',    NULL    ,    0   ,    0   ,     0     ,   1   ,   1   ,  NULL  ,     4),
-    (13,   010,       0,    'test-run', 'print("running test run #10")', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:01:00',  NULL    , NULL, 'message', 'reduction-log', 'admin-log',    NULL    ,    0   ,    0   ,     0     ,   1   ,   1   ,  NULL  ,     4);
+    #id - run no - run ver - run name -           script           -        created       -      last updated    -       started        -       finished      - started by -graph - message - reduction log  -  admin log - retry when - cancel - hidden - overwrite - exp id - inst id - retry id - status id - software_id
+    (1,    001,       0,    'test-run', 'print("running test run")', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:01:00',   NULL    , NULL, 'message', 'reduction-log', 'admin-log',    NULL    ,    0   ,    0   ,     0     ,    1   ,    1    ,  NULL   ,     4      ,     1      ),
+    (2,    001,       0,    'test-run', 'print("running test run")', '2018-10-04 09:02:00', '2018-10-04 09:02:00', '2018-10-04 09:02:00', '2018-10-04 09:03:00',   NULL    , NULL, 'message', 'reduction-log', 'admin-log',    NULL    ,    0   ,    0   ,     0     ,    2   ,    2    ,  NULL   ,     4      ,     1      ),
+    (3,    001,       0,    'test-run', 'print("running test run")', '2018-10-04 09:04:00', '2018-10-04 09:04:00', '2018-10-04 09:04:00', '2018-10-04 09:05:00',   NULL    , NULL, 'message', 'reduction-log', 'admin-log',    NULL    ,    0   ,    0   ,     0     ,    3   ,    3    ,  NULL   ,     4      ,     1      ),
+    (4,    001,       1,    'test-run', 'print("running test run")', '2018-10-04 09:04:00', '2018-10-04 09:04:00', '2018-10-04 09:04:00', '2018-10-04 09:05:00',   NULL    , NULL, 'message', 'reduction-log', 'admin-log',    NULL    ,    0   ,    0   ,     0     ,    3   ,    3    ,  NULL   ,     4      ,     1      ),
+    (5,    002,       0,    'test-run', 'print("running test run #2")', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:01:00',   NULL    , NULL, 'message', 'reduction-log', 'admin-log',    NULL    ,    0   ,    0   ,     0     ,   1   ,   1   ,  NULL  ,     4       ,     1      ),
+    (6,    003,       0,    'test-run', 'print("running test run #3")', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:01:00',   NULL    , NULL, 'message', 'reduction-log', 'admin-log',    NULL    ,    0   ,    0   ,     0     ,   1   ,   1   ,  NULL  ,     4       ,     1      ),
+    (7,    004,       0,    'test-run', 'print("running test run #4")', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:01:00',   NULL    , NULL, 'message', 'reduction-log', 'admin-log',    NULL    ,    0   ,    0   ,     0     ,   1   ,   1   ,  NULL  ,     4       ,     1      ),
+    (8,    005,       0,    'test-run', 'print("running test run #5")', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:01:00',   NULL    , NULL, 'message', 'reduction-log', 'admin-log',    NULL    ,    0   ,    0   ,     0     ,   1   ,   1   ,  NULL  ,     4       ,     1      ),
+    (9,    006,       0,    'test-run', 'print("running test run #6")', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:01:00',   NULL    , NULL, 'message', 'reduction-log', 'admin-log',    NULL    ,    0   ,    0   ,     0     ,   1   ,   1   ,  NULL  ,     4       ,     1      ),
+    (10,   007,       0,    'test-run', 'print("running test run #7")', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:01:00',   NULL    , NULL, 'message', 'reduction-log', 'admin-log',    NULL    ,    0   ,    0   ,     0     ,   1   ,   1   ,  NULL  ,     4       ,     1      ),
+    (11,   008,       0,    'test-run', 'print("running test run #8")', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:01:00',   NULL    , NULL, 'message', 'reduction-log', 'admin-log',    NULL    ,    0   ,    0   ,     0     ,   1   ,   1   ,  NULL  ,     4       ,     1      ),
+    (12,   009,       0,    'test-run', 'print("running test run #9")', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:01:00',   NULL    , NULL, 'message', 'reduction-log', 'admin-log',    NULL    ,    0   ,    0   ,     0     ,   1   ,   1   ,  NULL  ,     4       ,     1      ),
+    (13,   010,       0,    'test-run', 'print("running test run #10")', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:00:00', '2018-10-04 09:01:00',  NULL    , NULL, 'message', 'reduction-log', 'admin-log',    NULL    ,    0   ,    0   ,     0     ,   1   ,   1   ,  NULL  ,     4       ,     1      );
 
 
 # ======================================= #
@@ -59,7 +69,6 @@ VALUES
     (2, 'test/file/path/WISH001.raw', 2),
     (3, 'test/file/path/GEM001.raw', 3),
     (4, 'test/file/path/GEM001.raw', 4),
-
     (5,  'test/file/path/2.raw',  5),
     (6,  'test/file/path/3.raw',  6),
     (7,  'test/file/path/4.raw',  7),
@@ -79,7 +88,6 @@ VALUES
     (2, 'path/to/reduced/data/2', 2),
     (3, 'path/to/reduced/data/3', 3),
     (4, 'path/to/reduced/data/4', 4),
-
     (5,  'path/to/reduced/data/4',  5),
     (6,  'path/to/reduced/data/5',  6),
     (7,  'path/to/reduced/data/6',  7),
