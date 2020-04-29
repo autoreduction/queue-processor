@@ -12,6 +12,8 @@ import os
 import subprocess
 import sys
 
+import stomp
+
 from twisted.internet import reactor
 
 from queue_processors.autoreduction_processor.autoreduction_logging_setup import logger
@@ -20,20 +22,21 @@ from queue_processors.autoreduction_processor.settings import MISC
 from utils.clients.queue_client import QueueClient
 
 
-class Listener:
+class Listener(stomp.ConnectionListener):
     """ Listener class that is used to consume messages from ActiveMQ. """
-    def __init__(self, client):
+    def __init__(self):
         """ Initialise listener. """
-        self._client = client
         self.proc_list = []
         self.rb_list = []  # list of RB numbers of active reduction runs
         self.cancel_list = []  # list of (run number, run version)s to drop (once) used
 
     @staticmethod
+    # pylint:disable=arguments-differ
     def on_error(message):
         """ Handler for errored messages. """
         logger.error("Error message received - %s", str(message))
 
+    # pylint:disable=arguments-differ
     def on_message(self, headers, data):
         """ handles message consuming. It will consume a message. """
         destination = headers['destination']
@@ -76,7 +79,6 @@ class Listener:
         python_path = sys.executable
         logger.info("Calling: %s %s %s %s",
                     python_path, MISC['post_process_directory'], destination, print_dict)
-        self._client.ack(headers['message-id'], headers['subscription'])  # Remove from queue
         proc = subprocess.Popen([python_path,
                                  MISC['post_process_directory'],
                                  destination,
@@ -143,14 +145,14 @@ class Consumer:
         /ReductionPending queue for messages.
         """
         activemq_client = QueueClient()
-        connection = activemq_client.connect()
+        connection = activemq_client.connect(listener=Listener())
 
         # Create event listener
-        listener = Listener(connection)
-        connection.set_listener('Autoreduction', listener)
+
+        # connection.set_listener('Autoreduction', listener)
         connection.subscribe(destination='/queue/ReductionPending',
                              id='1',
-                             ack='client-individual',
+                             ack='auto',
                              header={'activemq.prefetchSize': '1'})
 
 

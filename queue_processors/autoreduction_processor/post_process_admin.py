@@ -30,11 +30,12 @@ import importlib.util as imp
 
 from sentry_sdk import init
 
-import stomp
 # pylint:disable=no-name-in-module,import-error
-from queue_processors.autoreduction_processor.settings import ACTIVEMQ, MISC
+from queue_processors.autoreduction_processor.settings import MISC
 from queue_processors.autoreduction_processor.autoreduction_logging_setup import logger
 from queue_processors.autoreduction_processor.timeout import TimeOut
+from utils.clients.queue_client import QueueClient
+from utils.settings import ACTIVEMQ_SETTINGS
 
 init('http://4b7c7658e2204228ad1cfd640f478857@172.16.114.151:9000/1')
 
@@ -191,8 +192,10 @@ class PostProcessAdmin:
         """ Start the reduction job.  """
         # pylint: disable=too-many-nested-blocks
         try:
-            logger.debug("Calling: %s\n%s", ACTIVEMQ['reduction_started'], prettify(self.data))
-            self.client.send(ACTIVEMQ['reduction_started'], json.dumps(self.data))
+            logger.debug("Calling: %s\n%s",
+                         ACTIVEMQ_SETTINGS.reduction_started,
+                         prettify(self.data))
+            self.client.send(ACTIVEMQ_SETTINGS.reduction_started, json.dumps(self.data))
 
             # Specify instrument directory
             instrument_output_dir = MISC["ceph_directory"] % (self.instrument,
@@ -374,9 +377,9 @@ class PostProcessAdmin:
             try:
                 if 'skip' in self.data['message'].lower():
                     self.data['message'].lstrip('skip: ')
-                    self._send_message_and_log(ACTIVEMQ['reduction_skipped'])
+                    self._send_message_and_log(ACTIVEMQ_SETTINGS.reduction_skipped)
                 else:
-                    self._send_message_and_log(ACTIVEMQ['reduction_error'])
+                    self._send_message_and_log(ACTIVEMQ_SETTINGS.reduction_error)
 
             except Exception as exp2:
                 logger.info("Failed to send to queue! - %s - %s", exp2, repr(exp2))
@@ -385,8 +388,10 @@ class PostProcessAdmin:
 
         else:
             # reduction has successfully completed
-            self.client.send(ACTIVEMQ['reduction_complete'], json.dumps(self.data))
-            logger.info("Calling: %s\n%s", ACTIVEMQ['reduction_complete'], prettify(self.data))
+            self.client.send(ACTIVEMQ_SETTINGS.reduction_complete, json.dumps(self.data))
+            logger.info("Calling: %s\n%s",
+                        ACTIVEMQ_SETTINGS.reduction_complete,
+                        prettify(self.data))
             logger.info("Reduction job successfully complete")
 
     def _send_message_and_log(self, destination):
@@ -490,16 +495,12 @@ class PostProcessAdmin:
 
 def main():
     """ Main method. """
-    brokers = []
-    brokers.append((ACTIVEMQ['brokers'].split(':')[0], int(ACTIVEMQ['brokers'].split(':')[1])))
-    stomp_connection = stomp.Connection(host_and_ports=brokers, use_ssl=False)
     json_data = None
+    connection = None
     try:
+        queue_client = QueueClient()
         logger.info("PostProcessAdmin Connecting to ActiveMQ")
-        stomp_connection.connect(ACTIVEMQ['amq_user'],
-                                 ACTIVEMQ['amq_pwd'],
-                                 wait=True,
-                                 header={'activemq.prefetchSize': '1', })
+        connection = queue_client.connect()
         logger.info("PostProcessAdmin Successfully Connected to ActiveMQ")
 
         destination, message = sys.argv[1:3]  # pylint: disable=unbalanced-tuple-unpacking
@@ -508,7 +509,7 @@ def main():
         json_data = json.loads(message)
 
         try:
-            post_proc = PostProcessAdmin(json_data, stomp_connection)
+            post_proc = PostProcessAdmin(json_data, connection)
             log_stream_handler = logging.StreamHandler(post_proc.admin_log_stream)
             logger.addHandler(log_stream_handler)
             if destination == '/queue/ReductionPending':
@@ -532,8 +533,8 @@ def main():
     except Exception as exp:
         logger.info("Something went wrong: %s", str(exp))
         try:
-            stomp_connection.send(ACTIVEMQ['postprocess_error'], json.dumps(json_data))
-            logger.info("Called %s ---- %s", ACTIVEMQ['postprocess_error'], prettify(json_data))
+            connection.send(ACTIVEMQ_SETTINGS.reduction_error, json.dumps(json_data))
+            logger.info("Called %s ---- %s", ACTIVEMQ_SETTINGS.reduction_error, prettify(json_data))
         finally:
             sys.exit()
 
