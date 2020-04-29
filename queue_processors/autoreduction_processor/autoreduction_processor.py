@@ -26,7 +26,6 @@ class Listener(stomp.ConnectionListener):
     """ Listener class that is used to consume messages from ActiveMQ. """
     def __init__(self):
         """ Initialise listener. """
-        # self._client = client
         self.proc_list = []
         self.rb_list = []  # list of RB numbers of active reduction runs
         self.cancel_list = []  # list of (run number, run version)s to drop (once) used
@@ -80,7 +79,6 @@ class Listener(stomp.ConnectionListener):
         python_path = sys.executable
         logger.info("Calling: %s %s %s %s",
                     python_path, MISC['post_process_directory'], destination, print_dict)
-        # self._client.ack(headers['message-id'], headers['subscription'])  # Remove from queue
         proc = subprocess.Popen([python_path,
                                  MISC['post_process_directory'],
                                  destination,
