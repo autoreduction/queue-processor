@@ -3,7 +3,7 @@ pandas
 lxml
 requests
 pytest-cov
-pylint
+pylint==2.4.4
 coverage==4.5.4
 coveralls==1.9.2
 python-coveralls
