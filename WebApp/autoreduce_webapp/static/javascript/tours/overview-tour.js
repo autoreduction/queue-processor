@@ -3,12 +3,14 @@ steps = [
     {
         element: "#instrument-btns-container",
         title: "Instruments",
-        content: "Here are ISIS instruments connected to autoreduction."
+        content: "Here are ISIS instruments connected to autoreduction.",
+        placement: "bottom"
     },
     {
         element: "#"+firstInstrumentBtn.id,
         title: "Instruments",
-        content: "You can click on an instrument to view its reduction jobs."
+        content: "You can click on an instrument to view its reduction jobs.",
+        placement: "right"
     },
 ]
 if (typeof tourSteps == 'undefined'){

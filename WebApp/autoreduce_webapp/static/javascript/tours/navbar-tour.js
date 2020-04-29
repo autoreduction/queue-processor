@@ -1,8 +1,9 @@
 steps = [
     {
-        element: "#navbar_container",
+        element: "#navbar_links",
         title: "Navigation Bar",
-        content: "Lastly, you can also use the navigation bar to go to different pages."
+        content: "Lastly, you can also use the navigation bar to go to different pages.",
+        placement: "left"
     }
 ]
 if (typeof tourSteps == 'undefined'){
