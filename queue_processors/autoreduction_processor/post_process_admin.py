@@ -192,7 +192,9 @@ class PostProcessAdmin:
         """ Start the reduction job.  """
         # pylint: disable=too-many-nested-blocks
         try:
-            logger.debug("Calling: %s\n%s", ACTIVEMQ_SETTINGS.reduction_started, prettify(self.data))
+            logger.debug("Calling: %s\n%s",
+                         ACTIVEMQ_SETTINGS.reduction_started,
+                         prettify(self.data))
             self.client.send(ACTIVEMQ_SETTINGS.reduction_started, json.dumps(self.data))
 
             # Specify instrument directory
@@ -387,7 +389,9 @@ class PostProcessAdmin:
         else:
             # reduction has successfully completed
             self.client.send(ACTIVEMQ_SETTINGS.reduction_complete, json.dumps(self.data))
-            logger.info("Calling: %s\n%s", ACTIVEMQ_SETTINGS.reduction_complete, prettify(self.data))
+            logger.info("Calling: %s\n%s",
+                        ACTIVEMQ_SETTINGS.reduction_complete,
+                        prettify(self.data))
             logger.info("Reduction job successfully complete")
 
     def _send_message_and_log(self, destination):

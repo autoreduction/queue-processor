@@ -35,6 +35,7 @@ class QueueClient(AbstractClient):
         self._consumer_name = consumer_name
         self._autoreduce_queues = self.credentials.all_subscriptions
 
+    # pylint:disable=arguments-differ
     def connect(self, listener=None):
         """
         Create the connection if the connection has not been created

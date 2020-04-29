@@ -32,10 +32,12 @@ class Listener(stomp.ConnectionListener):
         self.cancel_list = []  # list of (run number, run version)s to drop (once) used
 
     @staticmethod
+    # pylint:disable=arguments-differ
     def on_error(message):
         """ Handler for errored messages. """
         logger.error("Error message received - %s", str(message))
 
+    # pylint:disable=arguments-differ
     def on_message(self, headers, data):
         """ handles message consuming. It will consume a message. """
         destination = headers['destination']
