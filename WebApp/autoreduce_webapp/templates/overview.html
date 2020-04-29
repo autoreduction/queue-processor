@@ -34,27 +34,8 @@
     <script src="{% static "javascript/vendor/bootstrap-tour.min.js" %}"></script>
     <script src="{% static "javascript/vendor/bootstrap.min.js" %}"></script>
     <script src="{% static "javascript/vendor/jquery.min.js" %}"></script>
-    <script src="{% static "javascript/tour.js" %}"></script>
-    <script>
-        var firstInstrumentBtn = $("[id*='-instrument-btn']")[0];
-        tourSteps = [
-            {
-                element: "#instrument-btns-container",
-                title: "Instruments",
-                content: "Here is a list of ISIS intruments"
-            },
-            {
-                element: "#"+firstInstrumentBtn.id,
-                title: "An instrument",
-                content: "You can click on specific instruments to view related reductions"
-            },
-            {
-                element: "#MARI-instrument-btn",
-                title: "MARI",
-                content: "Information about MARI Button"
-            }
-        ]
-        setupTour(tourSteps);
-    </script>
+    <script src="{% static "javascript/tours/overview-tour.js" %}"></script>
+    <script src="{% static "javascript/tours/navbar-tour.js" %}"></script>
+    <script src="{% static "javascript/create_tour.js" %}"></script>
 
 {% endblock %}

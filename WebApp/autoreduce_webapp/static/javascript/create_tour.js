@@ -20,3 +20,4 @@ function setupTour(steps){
         tour.start(true);   // added 'true' arg forces start (alternative to localStorage.remove)
     });
 };
+setupTour(tourSteps);
