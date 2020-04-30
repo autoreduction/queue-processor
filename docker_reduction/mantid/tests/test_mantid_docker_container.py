@@ -45,7 +45,10 @@ class TestMantidDockerContainer(unittest.TestCase):
                                           output_mount=self.output_mount)
 
     def test_init(self):
-        """ Ensure initialisation is successful """
+        """
+        Test: All the expected member variables are created
+        When: The class is initialised
+        """
         self.assertEqual(self.mantid_docker.image_name, 'mantid-reduction-container')
         self.assertEqual(self.mantid_docker.reduction_script, self.script_location)
         self.assertEqual(self.mantid_docker.input_file, self.input_data_location)
@@ -54,10 +57,12 @@ class TestMantidDockerContainer(unittest.TestCase):
         self.assertEqual(self.mantid_docker.input_mount, self.input_mount)
         self.assertEqual(self.mantid_docker.output_mount, self.output_mount)
 
-    def test_build(self):
+    @patch("docker_reduction.mantid.operations.MantidDocker.build")
+    @patch("docker.from_env")
+    def test_build(self, mock_from_env, mock_build):
         """ Ensure that the image can be built from the Dockerfile"""
         self.mantid_docker.build()
-        client = docker.from_env()
+        client = docker.from_env()  # TODO: Question - if I mock these functions, what are we testing?
         for image in client.images.list():
             for tag in image.tags:
                 if self.mantid_docker.image_name in str(tag):
@@ -103,7 +108,7 @@ class TestMantidDockerContainer(unittest.TestCase):
         docker_reduction/mantid/tests/input/load_script.py
         """
         self.mantid_docker.run(self.mantid_docker.create_volumes(),
-                               self.mantid_docker.create_environment_variables())
+                               self.mantid_docker.create_environment_variables())   # TODO: <error>
         self.assertTrue(os.path.isfile(os.path.join(self.output_mount.host_location,
                                                     'load-successful.nxs')))
         self._clean_output_directory()
