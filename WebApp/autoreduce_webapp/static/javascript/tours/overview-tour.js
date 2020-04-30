@@ -9,7 +9,7 @@ steps = [
     {
         element: "#"+firstInstrumentBtn.id,
         title: "Instruments",
-        content: "You can click on an instrument to view its reduction jobs.",
+        content: "You can click on an instrument to view its reduction jobs, re-run jobs, pause reduction, and set variables for upcoming runs.",
         placement: "right"
     },
 ]
