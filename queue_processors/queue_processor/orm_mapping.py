@@ -26,6 +26,10 @@ class Status(Base):
     __table__ = Table('reduction_viewer_status', metadata, autoload=True, autoload_with=engine)
 
 
+class Software(Base):
+    __table__ = Table('reduction_viewer_software', metadata, autoload=True, autoload_with=engine)
+
+
 class DataLocation(Base):
     __table__ = Table('reduction_viewer_datalocation',
                       metadata,
@@ -42,8 +46,10 @@ class ReductionRun(Base):
     instrument = relationship('Instrument', foreign_keys='ReductionRun.instrument_id')
     experiment = relationship('Experiment', foreign_keys='ReductionRun.experiment_id')
     status = relationship('Status', foreign_keys='ReductionRun.status_id')
+    software = relationship('Software', foreign_keys='ReductionRun.software_id')
     data_location = relationship('DataLocation',
                                  primaryjoin='(DataLocation.reduction_run_id == ReductionRun.id)')
+
 
 variable_table = Table('reduction_variables_variable', metadata,
                        Column('id', Integer, primary_key=True),

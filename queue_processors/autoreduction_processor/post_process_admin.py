@@ -389,6 +389,19 @@ class PostProcessAdmin:
             logger.info("Calling: %s\n%s", ACTIVEMQ['reduction_complete'], prettify(self.data))
             logger.info("Reduction job successfully complete")
 
+    @staticmethod
+    def _get_mantid_version():
+        """ Attempt to get Mantid software version"""
+        if MISC["mantid_path"] in sys.path:
+            sys.path.append(MISC['mantid_path'])
+        try:
+            import mantid as mantid
+            return mantid.__version__
+        except ImportError as excep:
+            logger.error("Unable to discover Mantid version as: unable to import Mantid")
+            logger.error(excep)
+        return None
+
     def _send_message_and_log(self, destination):
         """ Send reduction run to error. """
         logger.info("\nCalling " + destination + " --- " + prettify(self.data))

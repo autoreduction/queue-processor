@@ -89,7 +89,7 @@ class Listener:
             elif destination == '/queue/ReductionSkipped':
                 self.reduction_skipped()
             else:
-                logger.warning("Recieved a message on an unknown topic '%s'", destination)
+                logger.warning("Received a message on an unknown topic '%s'", destination)
         except Exception as exp:  # pylint: disable=broad-except
             logger.error("UNCAUGHT ERROR: %s - %s", type(exp).__name__, str(exp))
             logger.error(traceback.format_exc())
@@ -180,6 +180,7 @@ class Listener:
                                      started_by=self._data_dict['started_by'])
         session.add(reduction_run)
         session.commit()
+
 
         # Set our run_version to be the one we have just calculated
         self._data_dict['run_version'] = reduction_run.run_version  # pylint: disable=no-member

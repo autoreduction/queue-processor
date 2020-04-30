@@ -272,3 +272,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_logger.assert_has_calls([call('PostProcessAdmin error: %s', 'error-message')])
         mock_exit.assert_called_once()
         mock_send.assert_called_once_with(ACTIVEMQ['postprocess_error'], json.dumps(self.data))
+
+    def test_get_mantid_version_without_mantid_install(self):
+        mantid_version = PostProcessAdmin._get_mantid_version()
+        self.assertIsNone(mantid_version)
