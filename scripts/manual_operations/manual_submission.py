@@ -38,22 +38,31 @@ def submit_run(active_mq_client, rb_number, instrument, data_file_location, run_
     active_mq_client.send('/queue/DataReady', json.dumps(data_dict), priority=1)
     print("Submitted run: \r\n" + json.dumps(data_dict, indent=1))
 
-def get_location_and_rb_from_database(database_client, run_number):
+
+def get_location_and_rb_from_database(database_client, run_number): # TODO: Add new docstrings
     db_connection = database_client.get_connection()
-    location_query = f"SELECT file_path " \
-                     f"FROM reduction_viewer_reductionlocation " \
-                     f"WHERE reduction_run_id = {run_number}"
+    location_query = f"""
+                    SELECT file_path
+                    FROM reduction_viewer_reductionlocation
+                    WHERE reduction_run_id = {run_number}
+                    """
     location_result = db_connection.execute(location_query).fetchall()
     if len(location_result) == 0:
         return None
 
-    # NOTE: where is RB number stored?
-    rb_query = f"SELECT r " \
-                     f"FROM reduction_viewer_reductionrun " \
-                     f"WHERE reduction_run_id = {run_number}"
+    rb_query = f"""
+                SELECT reduction_viewer_experiment.reference_number
+                FROM reduction_viewer_reductionrun
+                    JOIN reduction_viewer_experiment
+                    ON reduction_viewer_reductionrun.experiment_id = reduction_viewer_experiment.id
+                WHERE reduction_viewer_reductionrun.id = {run_number}
+                """
 
+    rb_result = db_connection.execute(rb_query).fetchall()
+    if len(rb_result) == 0:
+        return None
 
-
+    return location_result[0].file_path, rb_result[0].reference_number
 
 
 def get_location_and_rb_from_icat(icat_client, instrument, run_number, file_ext):
@@ -75,9 +84,10 @@ def get_location_and_rb_from_icat(icat_client, instrument, run_number, file_ext)
         sys.exit(1)
     return datafile[0].location, datafile[0].dataset.investigation.name
 
+
 def get_location_and_rb(database_client, icat_client, instrument, run_number, file_ext):
     """
-    TODO: update this properly
+    TODO: Update the docstring
     Attempts to retrieve the datafile from the auto-reduction database.
     If the datafile does not exist within the database, attempts to retrieve it's
     location and investigation from ICAT.
@@ -91,7 +101,7 @@ def get_location_and_rb(database_client, icat_client, instrument, run_number, fi
     result = get_location_and_rb_from_database(database_client, run_number)
     if result:
         return result
-    print(f"Cannot find datafile for run_number {run_number} in Auto-reduction database."
+    print(f"Cannot find datafile for run_number {run_number} in Auto-reduction database. "
           f"Will try ICAT...")
 
     result = get_location_and_rb_from_icat(icat_client, instrument, run_number, file_ext)

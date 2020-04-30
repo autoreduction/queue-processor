@@ -37,7 +37,7 @@ def get_json_object(rb_number, instrument, data_file_location, run_number, start
 
 
 # pylint:disable=no-self-use
-class TestManualSubmission(unittest.TestCase):
+class TestManualSubmission(unittest.TestCase):  # TODO: Update the tests
     """
     Test manual_submission.py
     """
