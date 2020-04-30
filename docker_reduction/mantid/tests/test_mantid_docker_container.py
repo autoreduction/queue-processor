@@ -11,7 +11,6 @@ import unittest
 import os
 
 from mock import patch, MagicMock
-import docker
 
 from docker_reduction.mount import Mount
 from docker_reduction.mantid.operations import MantidDocker
