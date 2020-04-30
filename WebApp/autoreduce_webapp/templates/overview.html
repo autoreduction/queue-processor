@@ -4,11 +4,6 @@
 {% block body %}
 <div class="container-fluid" id="instrument-btns-container">
     <div class="row form-group">
-        <div class="col-md-2 text-center pull-right">
-            <button class="btn btn-info btn-block" id="tour-btn">Take a tour</button>
-        </div>
-    </div>
-    <div class="row form-group">
     {% if instrument_list %}
         {% for instrument in instrument_list %}
                 <div class="col-md-4  text-center" id={{ instrument.name }}-instrument-btn>
