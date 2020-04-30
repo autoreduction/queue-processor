@@ -1,7 +1,8 @@
 function setupTour(steps){
     tour = new Tour({
         steps: tourSteps,
-        storage: false      // avoids storing process between visits
+        storage: false,      // avoids storing process between visits
+        backdrop: true
     })
     tour.init();
     tour.end();             // avoids bug where tour recognised as in progress on re-visit
