@@ -106,7 +106,11 @@ class TestDatabaseClient(unittest.TestCase):
 
     @patch('sqlalchemy.engine.result.ResultProxy.fetchall')
     def test_re_raise_unexpected_exception(self, mock_execute):
-        # NOTE: Question - what is being tested here?
+        """
+        Test: _test_connection re-raises an exception 'as is'
+        When: The connection raises an exception that is not a connection related error
+        (which is handled as a special case)
+        """
         client = DatabaseClient()
         client.connect()
 
