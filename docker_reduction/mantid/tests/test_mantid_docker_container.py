@@ -10,7 +10,7 @@ Tests that the mantid docker container can be built and can run a simple reducti
 import unittest
 import os
 
-from mock import patch
+from mock import patch, MagicMock
 import docker
 
 from docker_reduction.mount import Mount
@@ -57,22 +57,36 @@ class TestMantidDockerContainer(unittest.TestCase):
         self.assertEqual(self.mantid_docker.input_mount, self.input_mount)
         self.assertEqual(self.mantid_docker.output_mount, self.output_mount)
 
-    @patch("docker_reduction.mantid.operations.MantidDocker.build")
     @patch("docker.from_env")
-    def test_build(self, mock_from_env, mock_build):
-        """ Ensure that the image can be built from the Dockerfile"""
+    @patch("os.path.realpath")
+    @patch("os.path.dirname", return_value="valid_build_path")
+    @patch("os.path.join", return_value="valid_dockerfile")
+    def test_build(self, mock_join, mock_dirname, mock_realpath, mock_from_env):
+        """
+         Test: DockerClient.images.build is called with the correct kwargs
+         When: MantidDocker.build is called
+         """
+        mock_docker_client = MagicMock()
+        mock_from_env.return_value = mock_docker_client
         self.mantid_docker.build()
-        client = docker.from_env()  # TODO: Question - if I mock these functions, what are we testing?
-        for image in client.images.list():
-            for tag in image.tags:
-                if self.mantid_docker.image_name in str(tag):
-                    return
-        # pragma: no cover
-        self.fail('Image name: {} . Not found in image list: {}'
-                  .format(self.mantid_docker.image_name, client.images.list()))
+
+        mock_from_env.assert_called_once()
+        mock_realpath.assert_called_once()
+        mock_dirname.assert_called_once()
+        mock_join.assert_called_once()
+        mock_docker_client.images.build.assert_called_once()
+
+        (_, kwargs) = mock_docker_client.images.build.call_args
+        self.assertEqual(list(kwargs.keys()), ["path", "dockerfile", "tag"])
+        self.assertEqual(kwargs["path"], "valid_build_path")
+        self.assertEqual(kwargs["dockerfile"], "valid_dockerfile")
+        self.assertEqual(kwargs["tag"], self.mantid_docker.image_name)
 
     def test_create_volumes_default(self):
-        """ Ensure the volumes are created correctly when volumes are specified """
+        """
+        Test: The volumes are created correctly
+        When: MantidDocker.create_volumes is called and volumes are specified
+        """
         # Create a dummy MantidDocker object
         default_mantid_docker = MantidDocker(reduction_script='test',
                                              input_file='test',
@@ -85,7 +99,10 @@ class TestMantidDockerContainer(unittest.TestCase):
         self.assertEqual(actual, expected)
 
     def test_create_volumes_non_default(self):
-        """ Ensure the volumes are created correctly when volumes are NOT specified """
+        """
+        Test: The volumes are created correctly
+        When: MantidDocker.create_volumes is called and volumes are NOT specified
+        """
         self.assertEqual(self.mantid_docker.input_mount, self.input_mount)
         self.assertEqual(self.mantid_docker.output_mount, self.output_mount)
         actual = self.mantid_docker.create_volumes()
@@ -95,36 +112,51 @@ class TestMantidDockerContainer(unittest.TestCase):
         self.assertEqual(actual, expected)
 
     def test_create_environment_variables(self):
-        """ Ensure the environmental variables are created correctly """
+        """
+        Test: The environmental variables are created correctly
+        When: MantidDocker.create_environment_variables is called
+        """
         actual = self.mantid_docker.create_environment_variables()
         expected = {'SCRIPT': self.script_location,
                     'INPUT_FILE': self.input_data_location,
                     'OUTPUT_DIR': self.output_mount.container_destination}
         self.assertEqual(actual, expected)
 
-    def test_reduce_simple(self):
+    @patch("docker.from_env")
+    def test_reduce_simple(self, mock_from_env):
         """
-        Test if the container can successfully run the script in
-        docker_reduction/mantid/tests/input/load_script.py
+        Test: DockerClient.containers.run is called with the correct kwargs
+        When: MantidDocker.run is called with given arguments
         """
-        self.mantid_docker.run(self.mantid_docker.create_volumes(),
-                               self.mantid_docker.create_environment_variables())   # TODO: <error>
-        self.assertTrue(os.path.isfile(os.path.join(self.output_mount.host_location,
-                                                    'load-successful.nxs')))
-        self._clean_output_directory()
+        mock_docker_client = MagicMock()
+        mock_from_env.return_value = mock_docker_client
+        self.mantid_docker.run("volumes", "environment_variables")
+
+        mock_from_env.assert_called_once()
+        mock_docker_client.containers.run.assert_called_once()
+
+        (_, kwargs) = mock_docker_client.containers.run.call_args
+        self.assertEqual(list(kwargs.keys()), ["image", "volumes", "environment"])
+        self.assertEqual(kwargs["image"], self.mantid_docker.image_name)
+        self.assertEqual(kwargs["volumes"], "volumes")
+        self.assertEqual(kwargs["environment"], "environment_variables")
 
     @patch('docker_reduction.mantid.operations.MantidDocker.build')
     @patch('docker_reduction.mantid.operations.MantidDocker.create_volumes')
     @patch('docker_reduction.mantid.operations.MantidDocker.create_environment_variables')
     @patch('docker_reduction.mantid.operations.MantidDocker.run')
     def test_perform_reduction(self, mock_run, mock_env_var, mock_vol, mock_build):
-        """ Ensure all reduction steps are performed in workflow function """
+        """
+        Test: All reduction steps are performed in workflow function
+        When: MantidDocker.perform_reduction is called
+        """
         self.mantid_docker.perform_reduction()
         mock_build.assert_called_once()
         mock_vol.assert_called_once()
         mock_env_var.assert_called_once()
         mock_run.assert_called_once()
 
+    # Note: Below method no longer used now "test_reduce_simple" simplified
     def _clean_output_directory(self):
         """
         Remove the files in the output directory
