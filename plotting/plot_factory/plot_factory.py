@@ -11,72 +11,72 @@ Constructs a plot and DashApp object for insertion into directly into a web page
 # TODO: Allow for mode and plot to not exist in yaml file and plot to still be displayed.
 # Note pandas and plotly.graph_objs dependencies are used, but not recognised by pycharm interpreter
 
-# Internal Dependencies
-from plotting.plot_meta_language.interpreter import Interpreter
-
-# Data Dependencies
-import pandas as pd
-
 # Visualisation Dependencies
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
-import plotly.graph_objs as go
+
+# Internal Dependencies
+from plotting.plot_meta_language.interpreter import Interpreter
+
+
+# Data Dependencies
 
 
 class PlotFactory:
     """Creates figures from formatted data and layout
        producing a DashApp for direct insertion inside a given web page
        =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
-
-        """
-    def __init__(self, plot_meta_file_location, data, figure_name):
         """
 
-        Parameters
-        ----------
-        plot_meta_file_location (string)
-        data (pandas dataframe)
-        figure_name (string)
-        """
-        self.style = Interpreter().interpret(plot_meta_file_location)
-        self.data = data
-        self.data.set_index('Spectrum', inplace=True)
-        self.data_labels = self.data.index.unique()
-
-        self.figure_name = figure_name
-
-    def get_trace_list(self, layout):
+    @staticmethod
+    def get_trace_list(data, layout, figure_name):
         """Creates trace list containing traces for each spectrum to place in figure
 
         Parameters
         ----------
-        layout (object)
+        data
+        layout
+        figure_name
+
+        Returns
+        -------
+        object
+
+
         """
         trace_list = []
-        for spectrum in self.data_labels:
+        for spectrum in data.index.unique():
 
             trace_list.append(Trace(mode=layout.mode,
                                     plot_style=layout.plot_type,
-                                    plot_name=f"{self.figure_name}_{layout.plot_type}",
-                                    data=self.data.loc[spectrum],
+                                    plot_name=f"{figure_name}_{layout.plot_type}",
+                                    data=data.loc[spectrum],
                                     error_bars=True).trace)
 
         return trace_list
 
-    def construct_plot(self):
+    def construct_plot(self, plot_meta_file_location, data, figure_name):
         """Gets DashaApp after calling layout and trace to construct figure in figure factory
            =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
+
+           Parameters
+           ----------
+           plot_meta_file_location (string)
+           data (pandas dataframe)
+           figure_name (string)
 
            Returns
            ----------
            DashApp (object)
            """
-        layout = Layout(self.style)
-        trace_list = self.get_trace_list(layout=layout)
+
+        data.set_index('Spectrum', inplace=True)
+        layout = Layout(plot_meta_file_location)
+        trace_list = self.get_trace_list(data=data, layout=layout, figure_name=figure_name)
         figure = dict(data=trace_list, layout=layout.layout)
 
-        return DashApp(figure=figure, app_id=self.figure_name)
+        return DashApp(figure=figure, app_id=figure_name)
 
 
 class Layout:
@@ -100,6 +100,20 @@ class Layout:
         self.error_bars = None
         self.layout = self.extract_layout(self.meta_data)
 
+    def read_plot_meta_data(self):
+        """Use plot interpreter to interpret plot meta data
+
+        Returns
+        -------
+        interpreted_layout (dictionary)
+        """
+        try:
+            interpreted_layout = Interpreter().interpret(self.meta_data)
+            return interpreted_layout
+        except ImportError as error:
+            print(error)
+            print(f"Could not Interpret: {self.meta_data}")
+
     def extract_layout(self, plot_type):
         """Extracts plot layout data from plot style meta data
 
@@ -112,11 +126,13 @@ class Layout:
         self.meta_data (dictionary)
 
         """
-        if self.meta_data['mode']:
-            self.mode = self.meta_data.pop('mode')
-        if self.meta_data['plot']:
-            self.plot_type = self.meta_data.pop('plot')
-        return self.meta_data
+        interpreted_layout = self.read_plot_meta_data()
+
+        if 'mode' in interpreted_layout:
+            self.mode = interpreted_layout.pop('mode')
+        if 'plot' in interpreted_layout:
+            self.plot_type = interpreted_layout.pop('plot')
+        return interpreted_layout
 
 
 class Trace:
@@ -134,6 +150,7 @@ class Trace:
         mode (string)
         error_bars (bool)
         """
+
         self.trace = self.create_trace(mode=mode,
                                        data=data,
                                        plot_style=plot_style,
@@ -151,18 +168,33 @@ class Trace:
         """
         trace = {}
         for axis in list(data.columns):
-            if error_bars is True:
-                if axis is 'E':
+            if axis is 'E':
+                if error_bars is True:
                     trace['error_y'] = dict(type='data',
                                             array=data[axis].to_list(),
                                             visible=True)
-                else:
-                    trace[axis.lower()] = f"data['{axis}']"
+                # else:
+                #     trace[axis.lower()] = f"data['{axis}']"
             else:
                 trace[axis.lower()] = f"data['{axis}']"
         return trace
 
-    def create_trace(self, data, plot_style, name, error_bars, mode=None):
+    @staticmethod
+    def dict_to_string(trace_dictionary):
+        """Converts a dictionary ot a string
+
+        Parameters
+        ----------
+        trace_dictionary
+
+        Returns
+        -------
+        object
+        """
+
+        return ', '.join([f"{key}= {value}" for key, value in trace_dictionary.items()])
+
+    def create_trace(self, data, plot_style, name, error_bars, mode=None): #pylint: disable=too-many-arguments, line-too-long
         """creates a trace
 
         Parameters
@@ -181,10 +213,12 @@ class Trace:
             trace['mode'] = f"'{mode}'"
 
         # make dictionary string
-        trace_as_string = ', '.join([f"{key}= {value}" for key, value in trace.items()])
+        trace_as_string = self.dict_to_string(trace)
+
+        figure = eval(f"go.{plot_style}({trace_as_string})")
 
         # perform eval
-        return eval(f"go.{plot_style}({trace_as_string})")
+        return figure
 
 
 class DashApp:
@@ -201,9 +235,10 @@ class DashApp:
         """
         self.figure = figure
         self.app_id = app_id
-        self.app = self.create_dashapp()
+        self.app = self.create_dashapp(self.figure, self.app_id)
 
-    def create_dashapp(self):
+    @staticmethod
+    def create_dashapp(figure, app_id):
         """Creates DashApp
            =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
            Returns
@@ -214,8 +249,8 @@ class DashApp:
         app.layout = html.Div([
             html.Div(
                 dcc.Graph(
-                    id=self.app_id,  # Unique ID to track DashApp
-                    figure=self.figure
+                    id=app_id,  # Unique ID to track DashApp
+                    figure=figure
                 )
             )
         ])
