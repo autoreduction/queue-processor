@@ -3,6 +3,62 @@
 This directory contains the plot factory, responsible for constructing plot traces and figures to 
 return a DashApp for direct insertion into a web-page.
 
+### Trace
+A collection of data and the specifications of which we want that data plotted. 
+A trace will also be an object itself, and these will be named according 
+to how you want the data displayed on the plotting surface.
+
+For our use case, we can imagine a trace as a subset of a dataframe which stores many spectrum,
+containing all data for one unique spectrum only. 
+
+For a dataframe containing many spectrum, there will be N traces matching the number 
+of unique spectrum.
+
+### Figure
+A figure is a nested dictionary containing a list sub-dictionaries which store individual traces and 
+a sub dictionary containing information about that figures layout.
+
+A figure contains the information needed to construct one graph to be placed in a DashApp.
+
+A DashApp can contain many figures. 
+
+Below is an example of what a figure containing 2 traces would look like:
+
+```
+self.figure = 
+    {'data':
+        [Scattergl({
+        'error_y': {
+            'array': [90.6091, 82.6862],
+            'type': 'data',
+            'visible': True},
+        'mode': 'lines',
+        'name': 'Instrument_Run_Number',
+        'x': [100.25, 100.75],
+        'y': [8210, 6837]
+    }),
+[Scattergl({
+        'error_y': {
+            'array': [90.6091, 82.6862],
+            'type': 'data',
+            'visible': True},
+        'mode': 'lines',
+        'name': 'Instrument_Run_Number',
+        'x': [100.50, 100.90],
+        'y': [8210, 6837]
+    })],
+    'layout': {
+        'xaxis': {
+            'type': 'log',
+            'title': 'x_axis',
+            'unit': 'unit'},
+        'yaxis': {
+            'type': 'log',
+            'title': 'y_axis',
+            'unit': 'unit'}}}
+```
+
+## Usage
 The plot factory should be called using the construct_plot method from within the PlotFactory class 
 taking the following arguments:
 * plot_meta_file_location

@@ -135,7 +135,7 @@ class Trace:
         """
         trace = {}
         for axis in list(data.columns):
-            if axis is 'E':
+            if axis == 'E':
                 if error_bars is True:
                     trace['error_y'] = dict(type='data',
                                             array=data[axis].to_list(),
@@ -180,19 +180,18 @@ class Trace:
         return eval(f"go.{plot_style}({trace_as_string})")  # pylint: disable=eval-used
 
 
-class DashApp:
+class DashApp:  # pylint: disable=too-few-public-methods
     """Creates a DashApp for direct insertion into a web page """
-    def __init__(self, figure, app_id):  # pylint: disable=too-few-public-methods
+    def __init__(self, figure, app_id):
         """
         :param figure (dictionary)
         :param app_id (string)
         """
         self.figure = figure
         self.app_id = app_id
-        self.app = self.create_dashapp(self.figure, self.app_id)
+        self.app = self.create_dashapp()
 
-    @staticmethod
-    def create_dashapp(figure, app_id):  # pylint: disable=too-few-public-methods
+    def create_dashapp(self):  # pylint: disable=too-few-public-methods
         """Creates DashApp
 
            :return DashApp (object) DashApp object for direct insertion into webapp
@@ -201,8 +200,8 @@ class DashApp:
         app.layout = html.Div([
             html.Div(
                 dcc.Graph(
-                    id=app_id,  # Unique ID to track DashApp
-                    figure=figure
+                    id=self.app_id,  # Unique ID to track DashApp
+                    figure=self.figure
                 )
             )
         ])
