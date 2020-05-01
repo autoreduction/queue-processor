@@ -84,6 +84,24 @@ class MockPlotVariables:
                 'visible': True}
         }
 
+        self.trace_multi_single_error_y_not_visible = {
+            'x': "data['X']",
+            'y': "data['Y']",
+            'error_y': {
+                'type': 'data',
+                'array': self.indexed_multi_single_raw_data_dataframe['E'].to_list(),
+                'visible': False}
+        }
+        self.trace_multi_single_to_string = {
+            'x': "data['X']",
+            'y': "data['Y']",
+            'error_y': {
+                'type': 'data',
+                'array': self.indexed_multi_single_raw_data_dataframe['E'].to_list(),
+                'visible': True},
+            'name': self.plot_name
+        }
+
         self.trace_dict_error_y_true_no_name_key = None
         self.trace_dict_error_y_true_with_name_key = None
         self.trace_in_string_format = None

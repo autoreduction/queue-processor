@@ -123,21 +123,6 @@ class TestTrace(unittest.TestCase):
                                   'E': [90.6091, 82.6862]})
         self.dataframe = self.data.set_index('Spectrum')
 
-        self.trace_no_error_bars = {
-            'x': "data['X']",
-            'y': "data['Y']"}
-
-        self.trace_to_string = {'x': "data['X']",
-                                'y': "data['Y']",
-                                'error_y': {
-                                    'type': 'data',
-                                    'array': self.dataframe['E'].to_list(),
-                                    'visible': True},
-                                'name': self.plot_name
-                                }
-
-        self.trace_as_string = None
-
     def test_trace_dict__error_bars_set_true(self):
         """
         Test: trace_dict() returns a dict in expected trace format containing error_bars
@@ -149,6 +134,8 @@ class TestTrace(unittest.TestCase):
             error_bars=self.error_bars)
 
         self.assertIsInstance(actual, dict)
+        print("MockPlotVariables().trace_multi_single")
+        print(MockPlotVariables().trace_multi_single)
         self.assertEqual(actual, MockPlotVariables().trace_multi_single)
 
     def test_trace_dict__error_bars_set_false(self):
@@ -159,7 +146,7 @@ class TestTrace(unittest.TestCase):
         actual = MockPlotVariables().trace_object.trace_dict(self.dataframe, False)
 
         self.assertIsInstance(actual, dict)
-        self.assertEqual(actual, self.trace_no_error_bars)
+        self.assertEqual(actual, MockPlotVariables().trace_multi_single_error_y_not_visible)
 
     def test_dict_to_string(self):
         """
@@ -167,7 +154,8 @@ class TestTrace(unittest.TestCase):
         When: called with dictionary by create_trace()
         """
 
-        actual = MockPlotVariables().trace_object.dict_to_string(self.trace_to_string)
+        actual = MockPlotVariables().trace_object.dict_to_string(
+            MockPlotVariables().trace_multi_single_to_string)
         self.assertIsInstance(actual, str)
 
     def test_create_trace(self):
@@ -194,7 +182,7 @@ class TestDashApp(unittest.TestCase):
         When: called with figure and app_id by DashApp()
         """
         # Assert a DashApp is returned
-        actual = DashApp(self.figure, self.app_id).create_dashapp(self.figure, self.app_id)
+        actual = DashApp(self.figure, self.app_id).create_dashapp()
 
         self.assertIsInstance(actual, dash.dash.Dash)
         # ToDO: Assert with a hard coded figure

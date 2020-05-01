@@ -8,7 +8,6 @@
 Constructs a plot and DashApp object for insertion into directly into a web page
 """
 
-# TODO: Allow for mode and plot to not exist in yaml file and plot to still be displayed.
 # Note pandas and plotly.graph_objs dependencies are used, but not recognised by pycharm interpreter
 
 # Visualisation Dependencies
@@ -49,7 +48,7 @@ class PlotFactory:
                                     plot_style=layout.plot_type,
                                     plot_name=f"{figure_name}_{layout.plot_type}",
                                     data=data.loc[spectrum],
-                                    error_bars=True).trace)
+                                    error_bars=layout.error_bars).trace)
 
         return trace_list
 
@@ -106,6 +105,8 @@ class Layout:
             self.mode = interpreted_layout.pop('mode')
         if 'plot' in interpreted_layout:
             self.plot_type = interpreted_layout.pop('plot')
+        if 'error_bars' in interpreted_layout:
+            self.error_bars = interpreted_layout.pop('error_bars')
         return interpreted_layout
 
 
@@ -136,10 +137,9 @@ class Trace:
         trace = {}
         for axis in list(data.columns):
             if axis == 'E':
-                if error_bars is True:
-                    trace['error_y'] = dict(type='data',
-                                            array=data[axis].to_list(),
-                                            visible=True)
+                trace['error_y'] = dict(type='data',
+                                        array=data[axis].to_list(),
+                                        visible=error_bars)
                 # else:
                 #     trace[axis.lower()] = f"data['{axis}']"
             else:

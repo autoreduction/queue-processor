@@ -58,6 +58,16 @@ self.figure =
             'unit': 'unit'}}}
 ```
 
+### DashApp
+Dash apps are rendered in the web browser. You can deploy your apps to servers and then share 
+them through URLs. Since Dash apps are viewed in the web browser, Dash is inherently 
+cross-platform and mobile ready.
+
+Our Implementation of DashApps will use a framework called 
+[django-plotly-dash](https://pypi.org/project/django-plotly-dash/) which allows for 
+direct insertion of DashApps into a Django webapp instead of hosting DashApps separately and 
+pulling into Autoreductions webapp through an iframe.
+
 ## Usage
 The plot factory should be called using the construct_plot method from within the PlotFactory class 
 taking the following arguments:
