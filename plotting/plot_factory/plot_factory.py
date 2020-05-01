@@ -15,7 +15,7 @@ Constructs a plot and DashApp object for insertion into directly into a web page
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
-import plotly.graph_objects as go
+import plotly.graph_objects as go  # pylint: disable=unused-import
 
 # Internal Dependencies
 from plotting.plot_meta_language.interpreter import Interpreter
@@ -115,12 +115,8 @@ class Layout:
             print(error)
             print(f"Could not Interpret: {self.meta_data}")
 
-    def extract_layout(self, plot_type):
+    def extract_layout(self):
         """Extracts plot layout data from plot style meta data
-
-        Parameters
-        ----------
-        plot_type
 
         Returns
         ----------
@@ -140,7 +136,7 @@ class Trace:
     """Creates a trace object
        =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
     """
-    def __init__(self, data, plot_style, plot_name, mode=None, error_bars=None):
+    def __init__(self, data, plot_style, plot_name, mode=None, error_bars=None): #pylint: disable=too-many-arguments, line-too-long
         """
 
         Parameters
@@ -217,14 +213,14 @@ class Trace:
         trace_as_string = self.dict_to_string(trace)
 
         # perform eval
-        return eval(f"go.{plot_style}({trace_as_string})")
+        return eval(f"go.{plot_style}({trace_as_string})")  # pylint: disable=eval-used
 
 
 class DashApp:
     """Creates a DashApp for direct insertion into a web page
        =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
     """
-    def __init__(self, figure, app_id):
+    def __init__(self, figure, app_id):  # pylint: disable=too-few-public-methods
         """
 
         Parameters
@@ -254,5 +250,3 @@ class DashApp:
             )
         ])
         return app
-
-
