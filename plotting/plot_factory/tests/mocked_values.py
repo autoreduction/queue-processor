@@ -101,9 +101,3 @@ class MockPlotVariables:
                 'visible': True},
             'name': self.plot_name
         }
-
-        self.trace_dict_error_y_true_no_name_key = None
-        self.trace_dict_error_y_true_with_name_key = None
-        self.trace_in_string_format = None
-        self.figure = None
-        self.app_id = None

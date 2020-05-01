@@ -30,14 +30,6 @@ from plotting.plot_factory.tests.mocked_values import MockPlotVariables
 
 class TestPlotFactory(unittest.TestCase):
 
-    def setUp(self):
-        """
-        Contains mocked objects to pass into plot factory class methods.
-
-        Test: get_trace_list is called within TestPlotFactory().construct_plot()
-        When: trace_list = []
-        """
-
     @patch('plotting.plot_factory.plot_factory.Trace')
     @patch('plotting.plot_factory.plot_factory.Layout')
     def test_get_trace_list(self, mock_layout, _):
@@ -112,16 +104,7 @@ class TestTrace(unittest.TestCase):
     def setUp(self):
         """Contains setup variables to be used in unit tests for Trace class methods"""
 
-        self.plot_style = 'Scattergl'
-        self.plot_name = "Instrument_Run_number"
-        self.mode = 'lines'
         self.error_bars = True
-
-        self.data = pd.DataFrame({'Spectrum': [1, 1],
-                                  'X': [100.25, 100.75],
-                                  'Y': [8210, 6837],
-                                  'E': [90.6091, 82.6862]})
-        self.dataframe = self.data.set_index('Spectrum')
 
     def test_trace_dict__error_bars_set_true(self):
         """
@@ -134,8 +117,6 @@ class TestTrace(unittest.TestCase):
             error_bars=self.error_bars)
 
         self.assertIsInstance(actual, dict)
-        print("MockPlotVariables().trace_multi_single")
-        print(MockPlotVariables().trace_multi_single)
         self.assertEqual(actual, MockPlotVariables().trace_multi_single)
 
     def test_trace_dict__error_bars_set_false(self):
@@ -143,7 +124,8 @@ class TestTrace(unittest.TestCase):
         Test: trace_dict() returns a dict in expected trace format without error_bars
         When: called with dataframe and error_bars=False
         """
-        actual = MockPlotVariables().trace_object.trace_dict(self.dataframe, False)
+        actual = MockPlotVariables().trace_object.trace_dict(
+            MockPlotVariables().indexed_multi_single_raw_data_dataframe, False)
 
         self.assertIsInstance(actual, dict)
         self.assertEqual(actual, MockPlotVariables().trace_multi_single_error_y_not_visible)
@@ -156,6 +138,7 @@ class TestTrace(unittest.TestCase):
 
         actual = MockPlotVariables().trace_object.dict_to_string(
             MockPlotVariables().trace_multi_single_to_string)
+
         self.assertIsInstance(actual, str)
 
     def test_create_trace(self):
@@ -174,7 +157,6 @@ class TestDashApp(unittest.TestCase):
     def setUp(self):
         """Contains setup variables to be used in unit tests for Trace class methods"""
         self.figure = None
-        self.app_id = "Instrument_Run_number"
 
     def test_create_dashapp(self):
         """
@@ -182,8 +164,7 @@ class TestDashApp(unittest.TestCase):
         When: called with figure and app_id by DashApp()
         """
         # Assert a DashApp is returned
-        actual = DashApp(self.figure, self.app_id).create_dashapp()
+        actual = DashApp(self.figure, MockPlotVariables().plot_name).create_dashapp()
 
         self.assertIsInstance(actual, dash.dash.Dash)
-        # ToDO: Assert with a hard coded figure
 

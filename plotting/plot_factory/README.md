@@ -24,7 +24,7 @@ A DashApp can contain many figures.
 
 Below is an example of what a figure containing 2 traces would look like:
 
-```
+``` python
 self.figure = 
     {'data':
         [Scattergl({
@@ -76,7 +76,7 @@ taking the following arguments:
 * figure name - String containing the instrument name and run number (instrument_run-number)
 
 for example: 
-```
+``` python
 dashapp = plot_factory.PlotFactory(
             plot_meta_file_location=plot_meta_file_location,
             data=dataframe,
@@ -84,8 +84,20 @@ dashapp = plot_factory.PlotFactory(
 ``` 
 
 The dashapp will have the following properties:
-* app_id
-* app
+* app_id - Unique DashApp ID to be used to track creation and deletion of DashApp instances
+* app - DashApp object for insertion into webapp or to be hosted separately from webapp.
+
+To view a DashApp object locally, you can create a short script similar the the below example:
+```
+# Create DashApp
+dashapp = PlotFactory().construct_plot(plot_meta_file_location=plot_meta_file_location,
+                                       data=dataframe,
+                                       figure_name="Instrument_Run_Number")
+
+# Run DashApp
+if __name__ == '__main__':
+    dashapp.app.run_server(debug=True)
+```
 
 The plot factory can only insert one figure (one dataframe) into one DashApp.
 
@@ -99,7 +111,7 @@ Available plot styles which can be used:
 mode (additional data for a given plot):
 * lines
 * markers
-* markers*lines
+* markers+lines
 
 (Please note that not all mode settings work for all plot types. 
 You should refer to [plotly's documentation]: https://plotly.com/r/reference/#scatter-mode)
