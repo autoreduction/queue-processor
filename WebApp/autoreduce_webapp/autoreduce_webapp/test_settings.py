@@ -39,8 +39,15 @@ ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'reducedev2.isis.cclrc.ac.uk']
 INTERNAL_IPS = ['localhost', '127.0.0.1']
 
 # Application definition
+ORM_INSTALL = [  # Minimal apps required to setup JUST the ORM - (increases ORM setup speed)
+    'autoreduce_webapp',
+    'reduction_viewer',
+    'reduction_variables',
+]
+
 
 INSTALLED_APPS = [
+    ORM_INSTALL,
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -48,9 +55,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
-    'autoreduce_webapp',
-    'reduction_viewer',
-    'reduction_variables',
 ]
 
 MIDDLEWARE = [
