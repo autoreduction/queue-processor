@@ -667,18 +667,24 @@ class MessagingUtils(object):
         return data_dict
 
     @staticmethod
+    def _add_project_root_to_path():
+        """
+        Discovers and adds the project root directory to the system path
+        """
+        file_path = os.path.dirname(os.path.realpath(__file__))
+        path_parts = file_path.split('WebApp')
+        project_root = path_parts[0]  # This path should lead to git root dir
+        sys.path.append(project_root)
+
+    @staticmethod
     def _send_pending_msg(data_dict, delay=None):
         """ Sends data_dict to ReductionPending (with the specified delay) """
         # To prevent circular dependencies
-        from autoreduce_webapp.queue_processor import Client as ActiveMQClient
+        MessagingUtils._add_project_root_to_path()
+        from utils.clients.queue_client import QueueClient
 
-        message_client = ActiveMQClient(ACTIVEMQ['broker'],
-                                        ACTIVEMQ['username'],
-                                        ACTIVEMQ['password'],
-                                        ACTIVEMQ['topics'],
-                                        'Webapp_QueueProcessor',
-                                        False, ACTIVEMQ['SSL'])
+        message_client = QueueClient()
         message_client.connect()
         message_client.send('/queue/ReductionPending', json.dumps(data_dict),
                             priority='0', delay=delay)
-        message_client.stop()
+        message_client.disconnect()
