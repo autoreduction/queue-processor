@@ -15,6 +15,7 @@ Constructs a plot and DashApp object for insertion into directly into a web page
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
+import plotly.graph_objects as go
 
 # Internal Dependencies
 from plotting.plot_meta_language.interpreter import Interpreter
@@ -215,10 +216,8 @@ class Trace:
         # make dictionary string
         trace_as_string = self.dict_to_string(trace)
 
-        figure = eval(f"go.{plot_style}({trace_as_string})")
-
         # perform eval
-        return figure
+        return eval(f"go.{plot_style}({trace_as_string})")
 
 
 class DashApp:
