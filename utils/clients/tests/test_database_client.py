@@ -23,7 +23,6 @@ class TestDatabaseClient(unittest.TestCase):
     """
     Exercises the database client
     """
-
     def setUp(self):
         self.incorrect_credentials = ClientSettingsFactory().create('database',
                                                                     username='not-user-name',
@@ -33,7 +32,10 @@ class TestDatabaseClient(unittest.TestCase):
                                                                     database_name='not-db')
 
     def test_default_init(self):
-        """ Test default values for initialisation """
+        """
+        Test: Class variables are created and set
+        When: DatabaseClient is initialised with default credentials
+        """
         client = DatabaseClient()
         self.assertIsNotNone(client.credentials)
         self.assertIsNone(client._connection)
@@ -41,16 +43,27 @@ class TestDatabaseClient(unittest.TestCase):
         self.assertIsNone(client._engine)
 
     def test_invalid_init(self):
-        """ Test invalid values for initialisation """
+        """
+        Test: A TypeError is raised
+        When: DatabaseClient is initialised with invalid credentials
+        """
         self.assertRaises(TypeError, DatabaseClient, 'string')
 
     def test_valid_connection(self):
-        """ Test access is established with valid connection """
+        """
+        Test: Access is established with a valid connection
+        When: connect is called while valid credentials are held
+        """
         client = DatabaseClient()
         client.connect()
         self.assertTrue(client._test_connection())
 
     def test_get_connection(self):
+        """
+        Test: get_connection returns the a connect Session or None
+        (depending on whether connect has been called)
+        When: get_connection is called
+        """
         client = DatabaseClient()
         self.assertIsNone(client.get_connection())
         client.connect()
@@ -58,21 +71,30 @@ class TestDatabaseClient(unittest.TestCase):
 
     @patch('utils.clients.database_client.DatabaseClient._test_connection')
     def test_double_connect(self, mock_test_connection):
+        """
+        Test: The existing (rather than a new) connection is returned
+        When: connect is called while a valid connection is currently established
+        """
         client = DatabaseClient()
         connection_1 = client.connect()
         connection_2 = client.connect()
-        # Test that we do not attempt to reconnect if a valid connection is already established
         mock_test_connection.assert_called_once()
         self.assertEqual(connection_1, connection_2)
 
     def test_invalid_connection(self):
-        """ Test access is rejected with invalid credentials """
+        """
+        Test: A ConnectionException is raised
+        When: connect is called while invalid connection are held
+        """
         client = DatabaseClient(self.incorrect_credentials)
         with self.assertRaises(ConnectionException):
             client.connect()
 
     def test_stop_connection(self):
-        """ Test connection can be successfully stopped gracefully """
+        """
+        Test: Connection is stopped and connection variables are set to None
+        When: disconnect is called while a valid connection is currently established
+        """
         client = DatabaseClient()
         client.connect()
         self.assertTrue(client._test_connection())
@@ -80,9 +102,15 @@ class TestDatabaseClient(unittest.TestCase):
         self.assertIsNone(client._connection)
         self.assertIsNone(client._engine)
         self.assertIsNone(client._meta_data)
+        self.assertRaises(AttributeError, client._test_connection)
 
     @patch('sqlalchemy.engine.result.ResultProxy.fetchall')
     def test_re_raise_unexpected_exception(self, mock_execute):
+        """
+        Test: _test_connection re-raises an exception 'as is'
+        When: The connection raises an exception that is not a connection related error
+        (which is handled as a special case)
+        """
         client = DatabaseClient()
         client.connect()
 
@@ -92,6 +120,10 @@ class TestDatabaseClient(unittest.TestCase):
         self.assertRaises(RuntimeError, client._test_connection)
 
     def test_instrument_table(self):
+        """
+        Test: An Instrument object is created and returned with a Table object stored within
+        When: instrument is called
+        """
         client = DatabaseClient()
         client.connect()
         instrument_table = client.instrument()
@@ -99,6 +131,10 @@ class TestDatabaseClient(unittest.TestCase):
         self.assertIsNotNone(instrument_table.__table__)
 
     def test_reduction_run_table(self):
+        """
+        Test: A ReductionRun object is created and returned with a Table object stored within
+        When: reduction_run is called
+        """
         client = DatabaseClient()
         client.connect()
         reduction_run_table = client.reduction_run()

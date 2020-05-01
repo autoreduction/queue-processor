@@ -17,6 +17,10 @@ from utils.clients.settings.client_settings import ClientSettings
 class TestAbstractClient(unittest.TestCase):
 
     def test_client_settings_init(self):
+        """
+        Test: A client is created
+        When: A class which implements AbstractClient is initiated with a ClientSettings argument
+        """
         valid_settings = ClientSettings(username='user',
                                         password='pass',
                                         host='host',
@@ -25,6 +29,11 @@ class TestAbstractClient(unittest.TestCase):
         self.assertIsNotNone(interface)
 
     def test_derived_settings_init(self):
+        """
+        Test: A client is created
+        When: A class which implements AbstractClient is initiated with an argument that
+        extends ClientSettings
+        """
         # pylint:disable=too-few-public-methods
         class DerivedSettings(ClientSettings):
             pass
