@@ -87,12 +87,24 @@ The dashapp will have the following properties:
 * app_id - Unique DashApp ID to be used to track creation and deletion of DashApp instances
 * app - DashApp object for insertion into webapp or to be hosted separately from webapp.
 
-To view a DashApp object locally, you can create a short script similar the the below example:
-```
+To view a DashApp object locally, you can create a short script similar the example below:
+``` python
+from plotting.plot_factory.plot_factory import PlotFactory, Layout # Returns DashApp
+from plotting.prepare_data import PrepareData  # Read CSV to generate dataframe
+
+
+#  Get DataFrame
+dataframe = PrepareData().prepare_data('multi_spectra_data_file.csv')  # csv file path
+
+#  Get yaml file location as string
+plot_meta_file_location = "plot_meta_language/plot_types/example.yaml"
+
 # Create DashApp
 dashapp = PlotFactory().construct_plot(plot_meta_file_location=plot_meta_file_location,
                                        data=dataframe,
                                        figure_name="Instrument_Run_Number")
+
+print(f"DashApp ID: {dashapp.app_id}")
 
 # Run DashApp
 if __name__ == '__main__':
@@ -125,3 +137,4 @@ line plot will be used.
 
 Below is a UML class diagram segment to visually display the structure of the plot factory:
 
+![Plot Factory](Plot_factory.png)
