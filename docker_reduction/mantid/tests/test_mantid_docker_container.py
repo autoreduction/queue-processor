@@ -155,20 +155,6 @@ class TestMantidDockerContainer(unittest.TestCase):
         mock_env_var.assert_called_once()
         mock_run.assert_called_once()
 
-    # Note: Below method no longer used now "test_reduce_simple" simplified
-    def _clean_output_directory(self):
-        """
-        Remove the files in the output directory
-        """
-        folder = self.output_mount.host_location
-        for the_file in os.listdir(folder):
-            file_path = os.path.join(folder, the_file)
-            try:
-                if os.path.isfile(file_path):
-                    os.unlink(file_path)
-            except OSError:
-                pass  # this only happens when the function is called but nothing is there!
-
     @staticmethod
     def _create_test_input_mount(input_directory):
         """
