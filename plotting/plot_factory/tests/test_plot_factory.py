@@ -101,8 +101,7 @@ class TestLayout(unittest.TestCase):
         mock_rpmd.return_value = MockPlotVariables().raw_interpreted_layout
 
         actual = Layout(
-            MockPlotVariables().raw_interpreted_layout).extract_layout(
-            MockPlotVariables().raw_interpreted_layout)
+            MockPlotVariables().raw_interpreted_layout).extract_layout()
 
         self.assertIsInstance(actual, dict)
         self.assertEqual(actual, MockPlotVariables().processed_layout)
@@ -195,7 +194,7 @@ class TestDashApp(unittest.TestCase):
         When: called with figure and app_id by DashApp()
         """
         # Assert a DashApp is returned
-        actual = DashApp(self.figure, self.app_id).create_dashapp()
+        actual = DashApp(self.figure, self.app_id).create_dashapp(self.figure, self.app_id)
 
         self.assertIsInstance(actual, dash.dash.Dash)
         # ToDO: Assert with a hard coded figure

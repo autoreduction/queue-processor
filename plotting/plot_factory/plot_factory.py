@@ -34,15 +34,11 @@ class PlotFactory:
     def get_trace_list(data, layout, figure_name):
         """Creates trace list containing traces for each spectrum to place in figure
 
-        Parameters
-        ----------
-        data
-        layout
-        figure_name
+        :param data
+        :param layout
+        :param figure_name
 
-        Returns
-        -------
-        object
+        :return object
 
 
         """
@@ -59,17 +55,12 @@ class PlotFactory:
 
     def construct_plot(self, plot_meta_file_location, data, figure_name):
         """Gets DashaApp after calling layout and trace to construct figure in figure factory
-           =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
 
-           Parameters
-           ----------
-           plot_meta_file_location (string)
-           data (pandas dataframe)
-           figure_name (string)
+           :param plot_meta_file_location (string)
+           :param data (pandas dataframe)
+           :param figure_name (string)
 
-           Returns
-           ----------
-           DashApp (object)
+           :return DashApp (object)
            """
 
         data.set_index('Spectrum', inplace=True)
@@ -81,32 +72,21 @@ class PlotFactory:
 
 
 class Layout:
-    """ Extract Layout as dictionary from interpreted meta data
-        =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
-        :returns
-        ----------
-        lay
-    """
+    """ Extract Layout as dictionary from interpreted meta data """
     def __init__(self, plot_style):
         """
-
-        Parameters
-        ----------
-        plot_style (dictionary)
-
+        :param plot_style (dictionary)
         """
         self.meta_data = plot_style
         self.mode = None
         self.plot_type = None
         self.error_bars = None
-        self.layout = self.extract_layout(self.meta_data)
+        self.layout = self.extract_layout()
 
     def read_plot_meta_data(self):
         """Use plot interpreter to interpret plot meta data
 
-        Returns
-        -------
-        interpreted_layout (dictionary)
+        :return interpreted_layout (dictionary)
         """
         try:
             interpreted_layout = Interpreter().interpret(self.meta_data)
@@ -118,10 +98,7 @@ class Layout:
     def extract_layout(self):
         """Extracts plot layout data from plot style meta data
 
-        Returns
-        ----------
-        self.meta_data (dictionary)
-
+        :return self.meta_data (dictionary)
         """
         interpreted_layout = self.read_plot_meta_data()
 
@@ -133,19 +110,14 @@ class Layout:
 
 
 class Trace:
-    """Creates a trace object
-       =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
-    """
+    """Creates a trace object """
     def __init__(self, data, plot_style, plot_name, mode=None, error_bars=None): #pylint: disable=too-many-arguments, line-too-long
         """
-
-        Parameters
-        ----------
-        data (pandas dataframe)
-        plot_style (dictionary)
-        plot_name (string)
-        mode (string)
-        error_bars (bool)
+        :param data (pandas dataframe)
+        :param plot_style (dictionary)
+        :param plot_name (string)
+        :param mode (string)
+        :param error_bars (bool)
         """
 
         self.trace = self.create_trace(mode=mode,
@@ -156,12 +128,10 @@ class Trace:
 
     @staticmethod
     def trace_dict(data, error_bars):
-        """makes trace dictionary
+        """Creates trace dictionary
 
-        Parameters
-        ----------
-        data (dataframe)
-        error_bars (bool)
+        :param data (dataframe)
+        :param error_bars (bool)
         """
         trace = {}
         for axis in list(data.columns):
@@ -179,28 +149,22 @@ class Trace:
     @staticmethod
     def dict_to_string(trace_dictionary):
         """Converts a dictionary ot a string
+        :param trace_dictionary
 
-        Parameters
-        ----------
-        trace_dictionary
-
-        Returns
-        -------
-        object
+        :return object
         """
 
         return ', '.join([f"{key}= {value}" for key, value in trace_dictionary.items()])
 
     def create_trace(self, data, plot_style, name, error_bars, mode=None): #pylint: disable=too-many-arguments, line-too-long
-        """creates a trace
+        """Creates a trace
+        :param data (dataframe)
+        :param plot_style (dictionary)
+        :param name (string)
+        :param error_bars (bool)
+        :param mode (string)
 
-        Parameters
-        ----------
-        data (dataframe)
-        plot_style (dictionary)
-        name (string)
-        error_bars (bool)
-        mode (string)
+        :return figure (object)
         """
         # make dictionary with string values
         trace = self.trace_dict(data=data, error_bars=error_bars)
@@ -217,28 +181,21 @@ class Trace:
 
 
 class DashApp:
-    """Creates a DashApp for direct insertion into a web page
-       =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
-    """
+    """Creates a DashApp for direct insertion into a web page """
     def __init__(self, figure, app_id):  # pylint: disable=too-few-public-methods
         """
-
-        Parameters
-        ----------
-        figure (dictionary)
-        app_id (string)
+        :param figure (dictionary)
+        :param app_id (string)
         """
         self.figure = figure
         self.app_id = app_id
         self.app = self.create_dashapp(self.figure, self.app_id)
 
     @staticmethod
-    def create_dashapp(figure, app_id):
+    def create_dashapp(figure, app_id):  # pylint: disable=too-few-public-methods
         """Creates DashApp
-           =_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=
-           Returns
-           ----------
-           DashApp (object) DashApp object for direct insertion into webapp
+
+           :return DashApp (object) DashApp object for direct insertion into webapp
         """
         app = dash.Dash()
         app.layout = html.Div([
