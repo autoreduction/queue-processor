@@ -40,7 +40,7 @@ def submit_run(active_mq_client, rb_number, instrument, data_file_location, run_
 
 
 def get_location_and_rb_from_database(database_client, run_number): # TODO: Add new docstrings
-    db_connection = database_client.get_connection()
+    db_connection = database_client.connect()
     location_query = f"""
                     SELECT file_path
                     FROM reduction_viewer_reductionlocation
@@ -97,15 +97,18 @@ def get_location_and_rb(database_client, icat_client, instrument, run_number, fi
     :param file_ext: expected file extension
     :return The resulting data_file
     """
-
+    try:
+        run_number = int(run_number)
+    except ValueError:
+        print(f"Cannot cast run_number as an integer. Run number given: '{run_number}'")
+        return None
     result = get_location_and_rb_from_database(database_client, run_number)
     if result:
         return result
     print(f"Cannot find datafile for run_number {run_number} in Auto-reduction database. "
           f"Will try ICAT...")
 
-    result = get_location_and_rb_from_icat(icat_client, instrument, run_number, file_ext)
-    return result
+    return get_location_and_rb_from_icat(icat_client, instrument, run_number, file_ext)
 
 def main():
     """
