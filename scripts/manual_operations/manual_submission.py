@@ -15,6 +15,9 @@ import argparse
 
 # The below is only a template on the repo
 # pylint: disable=import-error, no-name-in-module
+from icat import ICATSessionError
+
+from utils.clients.connection_exception import ConnectionException
 from utils.clients.icat_client import ICATClient
 from utils.clients.queue_client import QueueClient
 from utils.clients.database_client import DatabaseClient
@@ -39,7 +42,18 @@ def submit_run(active_mq_client, rb_number, instrument, data_file_location, run_
     print("Submitted run: \r\n" + json.dumps(data_dict, indent=1))
 
 
-def get_location_and_rb_from_database(database_client, run_number): # TODO: Add new docstrings
+def get_location_and_rb_from_database(database_client, run_number):
+    """
+    Retrieves a run's data-file location and rb_number from the auto-reduction database
+    :param database_client: Client to access auto-reduction database
+    :param run_number: The run number of the data to be retrieved
+    :return: The data file location and rb_number, or None if this information is not
+    in the database
+    """
+    if database_client is None:
+        print("Database not connected")
+        return None
+
     db_connection = database_client.connect()
     location_query = f"""
                     SELECT file_path
@@ -66,6 +80,20 @@ def get_location_and_rb_from_database(database_client, run_number): # TODO: Add 
 
 
 def get_location_and_rb_from_icat(icat_client, instrument, run_number, file_ext):
+    """
+    Retrieves a run's data-file location and rb_number from ICAT.
+    Attempts first with the default file name, then with prepended zeroes.
+    :param icat_client: Client to access the ICAT service
+    :param instrument: The name of instrument
+    :param run_number: The run number to be processed
+    :param file_ext: The expected file extension
+    :return: The data file location and rb_number
+    :raises SystemExit: If the given run information cannot return a location and rb_number
+    """
+    if icat_client is None:
+        print("ICAT not connected")
+        sys.exit(1)
+
     file_name = instrument + str(run_number).zfill(5) + "." + file_ext
     datafile = icat_client.execute_query("SELECT df FROM Datafile df WHERE df.name = '"
                                          + file_name +
@@ -87,21 +115,22 @@ def get_location_and_rb_from_icat(icat_client, instrument, run_number, file_ext)
 
 def get_location_and_rb(database_client, icat_client, instrument, run_number, file_ext):
     """
-    TODO: Update the docstring
-    Attempts to retrieve the datafile from the auto-reduction database.
-    If the datafile does not exist within the database, attempts to retrieve it's
-    location and investigation from ICAT.
-    :param icat_client: client to access ICAT service
-    :param instrument: name of instrument
-    :param run_number: run number to be processed
-    :param file_ext: expected file extension
-    :return The resulting data_file
+    Retrieves a run's data-file location and rb_number from the auto-reduction database,
+    or ICAT (if it is not in the database)
+    :param database_client: Client to access auto-reduction database
+    :param icat_client: Client to access the ICAT service
+    :param instrument: The name of instrument
+    :param run_number: The run number to be processed
+    :param file_ext: The expected file extension
+    :return: The data file location and rb_number
+    :raises SystemExit: If the given run information cannot return a location and rb_number
     """
     try:
         run_number = int(run_number)
     except ValueError:
-        print(f"Cannot cast run_number as an integer. Run number given: '{run_number}'")
-        return None
+        print(f"Cannot cast run_number as an integer. Run number given: '{run_number}'. Exiting...")
+        sys.exit(1)
+
     result = get_location_and_rb_from_database(database_client, run_number)
     if result:
         return result
@@ -110,11 +139,9 @@ def get_location_and_rb(database_client, icat_client, instrument, run_number, fi
 
     return get_location_and_rb_from_icat(icat_client, instrument, run_number, file_ext)
 
+
 def main():
-    """
-    File usage description, validation and running mechanism
-    :return:
-    """
+    """ File usage description, validation and running mechanism """
     parser = argparse.ArgumentParser(description='Submit a run to the autoreduction service.',
                                      epilog='./manual_submission.py GEM 83880 [-e 83882]')
     parser.add_argument('instrument', metavar='instrument', type=str,
@@ -137,15 +164,23 @@ def main():
 
     print("Logging into ICAT")
     icat_client = ICATClient()
-    icat_client.connect()
+    try:
+        icat_client.connect()
+    except ICATSessionError:
+        print("Couldn't connect to ICAT. Continuing without ICAT connection.")
+        icat_client = None
+
+    print("Logging into Database")
+    database_client = DatabaseClient()
+    try:
+        database_client.connect()
+    except ConnectionException:
+        print("Couldn't connect to Database. Continuing without Database connection.")
+        database_client = None
 
     print("Logging into ActiveMQ")
     activemq_client = QueueClient()
     activemq_client.connect()
-
-    print("Logging into Database")
-    database_client = DatabaseClient()
-    database_client.connect()
 
     instrument = args.instrument.upper()
 

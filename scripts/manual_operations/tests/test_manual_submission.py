@@ -123,13 +123,13 @@ class TestManualSubmission(unittest.TestCase):  # TODO: Update the tests
     @patch('scripts.manual_operations.manual_submission.get_location_and_rb_from_icat')
     def test_get_when_run_number_not_int(self, mock_from_icat, mock_from_database):
         """
-        Test: None is return and neither the database nor ICAT is checked for data
+        Test: A SystemExit is raised and neither the database nor ICAT are checked for data
         When: get_location_and_rb is called with a run_number which cannot be cast as an int
         """
         args = self.location_and_rb_args
         args[3] = "string_rb_number"
-        result = ms.get_location_and_rb(*args)
-        self.assertIsNone(result)
+        with self.assertRaises(SystemExit):
+            ms.get_location_and_rb(*args)
         mock_from_icat.assert_not_called()
         mock_from_database.assert_not_called()
 
