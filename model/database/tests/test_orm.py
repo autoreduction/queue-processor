@@ -1,13 +1,23 @@
+# ############################################################################### #
+# Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
+#
+# Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
+# SPDX - License - Identifier: GPL-3.0-or-later
+# ############################################################################### #
+"""
+Unit tests to exercise the code responsible for django ORM access
+"""
 import sys
 import unittest
 import os
 
 from mock import patch
 
-from model.database.orm import DjangoORM
+from model.database import DjangoORM
 from utils.project.structure import get_project_root
 
 
+# pylint:disable=missing-class-docstring
 class TestDjangoORM(unittest.TestCase):
 
     def test_add_webapp_path(self):
@@ -38,6 +48,7 @@ class TestDjangoORM(unittest.TestCase):
         """
         orm = DjangoORM()
         orm.connect()
+        # pylint:disable=protected-access
         model = orm._get_data_model()
         actual = model.Instrument.objects.filter(name='GEM').first()
         self.assertIsNotNone(actual)
@@ -50,6 +61,7 @@ class TestDjangoORM(unittest.TestCase):
         """
         orm = DjangoORM()
         orm.connect()
+        # pylint:disable=protected-access
         model = orm._get_variable_model()
         actual = model.Variable.objects.filter(name='bool_variable').first()
         self.assertIsNotNone(actual)

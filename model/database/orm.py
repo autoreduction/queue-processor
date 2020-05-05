@@ -1,3 +1,13 @@
+# ############################################################################### #
+# Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
+#
+# Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
+# SPDX - License - Identifier: GPL-3.0-or-later
+# ############################################################################### #
+"""
+A class responsible for creating a light weight django instance to
+access the Django ORM that defines the autoreduction database
+"""
 import os
 import sys
 import logging
@@ -9,6 +19,13 @@ from utils.project.structure import get_project_root
 
 
 class DjangoORM:
+    """
+    Encapsulate Django setup and ORM access in a class
+    This should normally be used like the following:
+    orm = DjangoORM
+    orm.connect()
+    records = orm.data_model.<TableName>.objects.<Filter/OrderBy/..>
+    """
 
     data_model = None
     variable_model = None
@@ -29,6 +46,8 @@ class DjangoORM:
         Use the WebApp settings to initialise a django instance that can be used for model access
         """
         try:
+            # import here to avoid failure without calling add_webapp_path first
+            # pylint:disable=import-outside-toplevel
             from WebApp.autoreduce_webapp.autoreduce_webapp.settings import DATABASES, ORM_INSTALL
             settings.configure(
                 DATABASES=DATABASES,
@@ -40,20 +59,20 @@ class DjangoORM:
 
     def _get_data_model(self):
         """
-        Encapsulate the importing of the ORM objects that relate to the
-        data passing through the system from django models
+        Importing the ORM objects for reduction data
         """
         if not self.data_model:
+            # pylint:disable=import-outside-toplevel,import-error
             import reduction_viewer.models as data_model
             self.data_model = data_model
         return self.data_model
 
     def _get_variable_model(self):
         """
-        Encapsulate the importing of the ORM objects that relate to the
-        data passing through the system from django models
+        Import the ORM objects for reduction variables
         """
         if not self.variable_model:
+            # pylint:disable=import-outside-toplevel,import-error
             import reduction_variables.models as variable_model
             self.variable_model = variable_model
         return self.variable_model
@@ -72,6 +91,7 @@ class DjangoORM:
             if not self.variable_model:
                 self._get_variable_model()
             self.variable_model.Variable.objects.first()
+        # pylint:disable=bare-except
         except:
             return False
         return True
