@@ -69,7 +69,7 @@ direct insertion of DashApps into a Django webapp instead of hosting DashApps se
 pulling into Autoreductions webapp through an iframe.
 
 ## Usage
-The plot factory should be called using the construct_plot method from within the PlotFactory class 
+The plot factory should be called using the create_plot method from within the PlotFactory class 
 taking the following arguments:
 * plot_meta_file_location
 * dataframe to containing N spectrum
@@ -100,7 +100,7 @@ dataframe = PrepareData().prepare_data('multi_spectra_data_file.csv')  # csv fil
 plot_meta_file_location = "plot_meta_language/plot_types/example.yaml"
 
 # Create DashApp
-dashapp = PlotFactory().construct_plot(plot_meta_file_location=plot_meta_file_location,
+dashapp = PlotFactory().create_plot(plot_meta_file_location=plot_meta_file_location,
                                        data=dataframe,
                                        figure_name="Instrument_Run_Number")
 
