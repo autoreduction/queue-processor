@@ -32,9 +32,20 @@ class TestManualSubmission(unittest.TestCase):
                                 "data_file_location", -1]
         self.valid_return = ("location", "rb")
 
-    def make_mock_return_object(self, return_from):
+    def mock_database_query_result(self, side_effects):
+        """ Sets the return value(s) of database queries to those provided
+        :param side_effects: A list of values to return from the database query (in sequence)"""
+        # Note: SQLAlchemy query call complicated to mock (the code below).
+        #  This code will need to change when Django ORM implemented anyway.
+        mock_query_result = MagicMock(name="mock_query_result")
+        mock_query_result.fetchall.side_effect = side_effects
+        mock_connection = MagicMock(name="mock_connection")
+        mock_connection.execute.return_value = mock_query_result
+        self.location_and_rb_args[0].connect.return_value = mock_connection
+
+    def make_valid_query_return_object(self, return_from):
         """ Creates a MagicMock object in a format which mimics the format of
-        an object returned from ICAT or the auto-reduction database
+        an object returned from a query to ICAT or the auto-reduction database
         :param return_from: A string representing what type of return object
         to be mocked
         :return: The formatted MagicMock object """
@@ -76,18 +87,12 @@ class TestManualSubmission(unittest.TestCase):
         When: get_location_and_rb_from_database is called and the data is present
         in the database
         """
-        args = self.location_and_rb_args
-        # Note: SQLAlchemy query call complicated to mock (the code below).
-        #  This code will need to change when Django ORM implemented anyway.
-        mock_query_result = MagicMock(name="mock_query_result")
-        mock_query_result.fetchall.side_effect=[self.make_mock_return_object("db_location"),
-                                                self.make_mock_return_object("db_rb")]
+        side_effects = [self.make_valid_query_return_object("db_location"),
+                        self.make_valid_query_return_object("db_rb")]
+        self.mock_database_query_result(side_effects)
 
-        mock_connection = MagicMock(name="mock_connection")
-        mock_connection.execute.return_value=mock_query_result
-
-        args[0].connect.return_value = mock_connection
-        location_and_rb = ms.get_location_and_rb_from_database(args[0], args[3])
+        location_and_rb = ms.get_location_and_rb_from_database(self.location_and_rb_args[0],
+                                                               self.location_and_rb_args[3])
         self.assertEqual(location_and_rb, self.valid_return)
 
     def test_get_from_icat_when_file_exists_without_zeroes(self):
@@ -95,10 +100,9 @@ class TestManualSubmission(unittest.TestCase):
         Test: Data for a given run can be retrieved from ICAT in the expected format
         When: get_location_and_rb_from_icat is called and the data is present in ICAT
         """
-        args = self.location_and_rb_args
-        args[1].execute_query.return_value = self.make_mock_return_object("icat")
-        location_and_rb = ms.get_location_and_rb_from_icat(*args[1:])
-        args[1].execute_query.assert_called_once()
+        self.location_and_rb_args[1].execute_query.return_value = self.make_valid_query_return_object("icat")
+        location_and_rb = ms.get_location_and_rb_from_icat(*self.location_and_rb_args[1:])
+        self.location_and_rb_args[1].execute_query.assert_called_once()
         self.assertEqual(location_and_rb, self.valid_return)
 
     def test_get_from_icat_when_file_exists_with_zeroes(self):
@@ -107,29 +111,24 @@ class TestManualSubmission(unittest.TestCase):
         When: get_location_and_rb_from_icat is called and the data is present in ICAT
         but named with prepended zeroes
         """
-        # The below sets a sequence of return values (1st call -> ret=None ; 2nd call -> ret=Mock)
-        args = self.location_and_rb_args
-        args[1].execute_query.side_effect = [None, self.make_mock_return_object("icat")]
-        location_and_rb = ms.get_location_and_rb_from_icat(*args[1:])
-        self.assertEqual(args[1].execute_query.call_count, 2)
+        self.location_and_rb_args[1].execute_query.side_effect = [None, self.make_valid_query_return_object("icat")]
+        location_and_rb = ms.get_location_and_rb_from_icat(*self.location_and_rb_args[1:])
+        self.assertEqual(self.location_and_rb_args[1].execute_query.call_count, 2)
         self.assertEqual(location_and_rb, self.valid_return)
 
-    # @patch('utils.clients.icat_client.ICATClient.execute_query', return_value=None)
-    # @patch('sqlalchemy.engine.result.ResultProxy.fetchall', return_value=[])
     def test_get_when_does_not_exist(self):
         """
         Test: A SystemExit is raised
         When: get_location_and_rb is called but the data requested doesn't exist
         """
-        args = self.location_and_rb_args
         mock_db_connection = MagicMock(name="mock_connection")
-        args[0].connect.return_value = mock_db_connection
-        args[1].execute_query.return_value = None
+        self.location_and_rb_args[0].connect.return_value = mock_db_connection
+        self.location_and_rb_args[1].execute_query.return_value = None
 
         with self.assertRaises(SystemExit):
             ms.get_location_and_rb(*self.location_and_rb_args)
         self.assertTrue(mock_db_connection.execute.call_count == 1)
-        self.assertTrue(args[1].execute_query.call_count == 2)
+        self.assertTrue(self.location_and_rb_args[1].execute_query.call_count == 2)
 
     @patch('scripts.manual_operations.manual_submission.get_location_and_rb_from_database')
     @patch('scripts.manual_operations.manual_submission.get_location_and_rb_from_icat')
@@ -138,10 +137,9 @@ class TestManualSubmission(unittest.TestCase):
         Test: A SystemExit is raised and neither the database nor ICAT are checked for data
         When: get_location_and_rb is called with a run_number which cannot be cast as an int
         """
-        args = self.location_and_rb_args
-        args[3] = "string_rb_number"
+        self.location_and_rb_args[3] = "string_rb_number"
         with self.assertRaises(SystemExit):
-            ms.get_location_and_rb(*args)
+            ms.get_location_and_rb(*self.location_and_rb_args)
         mock_from_icat.assert_not_called()
         mock_from_database.assert_not_called()
 
