@@ -32,6 +32,10 @@ def submit_run(active_mq_client, rb_number, instrument, data_file_location, run_
     :param data_file_location: location of the data file
     :param run_number: run number fo the experiment
     """
+    if active_mq_client is None:
+        print("ActiveMQ not connected, cannot submit runs")
+        return
+
     data_dict = active_mq_client.serialise_data(rb_number=rb_number,
                                                 instrument=instrument,
                                                 location=data_file_location,
@@ -180,7 +184,11 @@ def main():
 
     print("Logging into ActiveMQ")
     activemq_client = QueueClient()
-    activemq_client.connect()
+    try:
+        activemq_client.connect()
+    except (ConnectionException, ValueError):
+        print("Couldn't connect to ActiveMQ. Continuing without ActiveMQ connection.")
+        activemq_client = None
 
     instrument = args.instrument.upper()
 

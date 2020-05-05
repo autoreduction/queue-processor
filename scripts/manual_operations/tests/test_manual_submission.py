@@ -19,15 +19,16 @@ from utils.clients.queue_client import QueueClient
 
 
 # pylint:disable=no-self-use
-class TestManualSubmission(unittest.TestCase):  # TODO: Update the tests
+class TestManualSubmission(unittest.TestCase):
     """
     Test manual_submission.py
     """
     def setUp(self):
         """ Creates test variables used throughout the test suite """
-        self.location_and_rb_args = [DatabaseClient(), ICATClient(),
+        self.location_and_rb_args = [MagicMock(name="DatabaseClient"),
+                                     MagicMock(name="ICATClient"),
                                      "instrument", -1, "file_ext"]
-        self.submit_run_args = [QueueClient(), -1, "instrument",
+        self.submit_run_args = [MagicMock(name="QueueClient"), -1, "instrument",
                                 "data_file_location", -1]
         self.valid_return = ("location", "rb")
 
@@ -37,7 +38,7 @@ class TestManualSubmission(unittest.TestCase):  # TODO: Update the tests
         :param return_from: A string representing what type of return object
         to be mocked
         :return: The formatted MagicMock object """
-        ret_obj = [MagicMock()]
+        ret_obj = [MagicMock(name="Return object")]
         if return_from == "icat":
             ret_obj[0].location = self.valid_return[0]
             ret_obj[0].dataset.investigation.name = self.valid_return[1]
@@ -69,55 +70,66 @@ class TestManualSubmission(unittest.TestCase):  # TODO: Update the tests
         mock_from_database.assert_called_once()
         mock_from_icat.assert_called_once()
 
-    @patch('sqlalchemy.engine.result.ResultProxy.fetchall')
-    def test_get_from_database(self, mock_fetchall):
+    def test_get_from_database(self):
         """
         Test: Data for a given run can be retrieved from the database in the expected format
         When: get_location_and_rb_from_database is called and the data is present
         in the database
         """
-        mock_fetchall.side_effect = ["_test_connection_return",
-                                     self.make_mock_return_object("db_location"),
-                                     self.make_mock_return_object("db_rb")]
-        location_and_rb = ms.get_location_and_rb_from_database(self.location_and_rb_args[0], self.location_and_rb_args[3])
+        args = self.location_and_rb_args
+        # Note: SQLAlchemy query call complicated to mock (the code below).
+        #  This code will need to change when Django ORM implemented anyway.
+        mock_query_result = MagicMock(name="mock_query_result")
+        mock_query_result.fetchall.side_effect=[self.make_mock_return_object("db_location"),
+                                                self.make_mock_return_object("db_rb")]
+
+        mock_connection = MagicMock(name="mock_connection")
+        mock_connection.execute.return_value=mock_query_result
+
+        args[0].connect.return_value = mock_connection
+        location_and_rb = ms.get_location_and_rb_from_database(args[0], args[3])
         self.assertEqual(location_and_rb, self.valid_return)
 
-    @patch('utils.clients.icat_client.ICATClient.execute_query')
-    def test_get_from_icat_when_file_exists_without_zeroes(self, mock_query):
+    def test_get_from_icat_when_file_exists_without_zeroes(self):
         """
         Test: Data for a given run can be retrieved from ICAT in the expected format
         When: get_location_and_rb_from_icat is called and the data is present in ICAT
         """
-        mock_query.return_value = self.make_mock_return_object("icat")
-        location_and_rb = ms.get_location_and_rb_from_icat(*self.location_and_rb_args[1:])
-        mock_query.assert_called_once()
+        args = self.location_and_rb_args
+        args[1].execute_query.return_value = self.make_mock_return_object("icat")
+        location_and_rb = ms.get_location_and_rb_from_icat(*args[1:])
+        args[1].execute_query.assert_called_once()
         self.assertEqual(location_and_rb, self.valid_return)
 
-    @patch('utils.clients.icat_client.ICATClient.execute_query')
-    def test_get_from_icat_when_file_exists_with_zeroes(self, mock_query):
+    def test_get_from_icat_when_file_exists_with_zeroes(self):
         """
         Test: Data for a given run can be retrieved from ICAT in the expected format
         When: get_location_and_rb_from_icat is called and the data is present in ICAT
         but named with prepended zeroes
         """
         # The below sets a sequence of return values (1st call -> ret=None ; 2nd call -> ret=Mock)
-        mock_query.side_effect = [None, self.make_mock_return_object("icat")]
-        location_and_rb = ms.get_location_and_rb_from_icat(*self.location_and_rb_args[1:])
-        self.assertEqual(mock_query.call_count, 2)
+        args = self.location_and_rb_args
+        args[1].execute_query.side_effect = [None, self.make_mock_return_object("icat")]
+        location_and_rb = ms.get_location_and_rb_from_icat(*args[1:])
+        self.assertEqual(args[1].execute_query.call_count, 2)
         self.assertEqual(location_and_rb, self.valid_return)
 
-    @patch('utils.clients.icat_client.ICATClient.execute_query', return_value=None)
-    @patch('sqlalchemy.engine.result.ResultProxy.fetchall', return_value=[])
-    def test_get_when_does_not_exist(self, mock_db_fetchall, mock_icat_query):
+    # @patch('utils.clients.icat_client.ICATClient.execute_query', return_value=None)
+    # @patch('sqlalchemy.engine.result.ResultProxy.fetchall', return_value=[])
+    def test_get_when_does_not_exist(self):
         """
         Test: A SystemExit is raised
         When: get_location_and_rb is called but the data requested doesn't exist
         """
+        args = self.location_and_rb_args
+        mock_db_connection = MagicMock(name="mock_connection")
+        args[0].connect.return_value = mock_db_connection
+        args[1].execute_query.return_value = None
+
         with self.assertRaises(SystemExit):
             ms.get_location_and_rb(*self.location_and_rb_args)
-        # Below: '>=2' factors in DatabaseClient._test_connection but doesn't require it
-        self.assertTrue(mock_db_fetchall.call_count >= 2)
-        self.assertTrue(mock_icat_query.call_count == 2)
+        self.assertTrue(mock_db_connection.execute.call_count == 1)
+        self.assertTrue(args[1].execute_query.call_count == 2)
 
     @patch('scripts.manual_operations.manual_submission.get_location_and_rb_from_database')
     @patch('scripts.manual_operations.manual_submission.get_location_and_rb_from_icat')
@@ -133,12 +145,11 @@ class TestManualSubmission(unittest.TestCase):  # TODO: Update the tests
         mock_from_icat.assert_not_called()
         mock_from_database.assert_not_called()
 
-    @patch('utils.clients.queue_client.QueueClient.send', return_value=None)
-    def test_submit_run(self, mock_send):
+    @patch('json.dumps', return_value="json_dump")
+    def test_submit_run(self, mock_json_dump):
         """
         Test: A given run is submitted to the DataReady queue
         When: submit_run is called with valid arguments
         """
         ms.submit_run(*self.submit_run_args)
-        json_obj = self.get_json_object(*self.submit_run_args[1:], -1)
-        mock_send.assert_called_with('/queue/DataReady', json_obj, priority=1)
+        self.submit_run_args[0].send.assert_called_with('/queue/DataReady', mock_json_dump.return_value, priority=1)
