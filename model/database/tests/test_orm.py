@@ -51,10 +51,10 @@ class TestDjangoORM(unittest.TestCase):
         orm = DjangoORM()
         orm.connect()
         model = orm._get_variable_model()
-        actual = model.Variable.objects.filter(name='Minimum Extents').first()
+        actual = model.Variable.objects.filter(name='bool_variable').first()
         self.assertIsNotNone(actual)
-        self.assertEqual(actual.name, 'Minimum Extents')
-        self.assertEqual(actual.type, 'text')
+        self.assertEqual(actual.name, 'bool_variable')
+        self.assertEqual(actual.type, 'boolean')
 
     def test_connect(self):
         """
