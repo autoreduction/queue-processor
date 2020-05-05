@@ -58,6 +58,7 @@ class TestDjangoORM(unittest.TestCase):
         """
         Test: That the variable model can be accessed
         When: After it is imported
+        Note: This will fail if not pointing to the testing database
         """
         orm = DjangoORM()
         orm.connect()
