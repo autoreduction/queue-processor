@@ -11,7 +11,7 @@ Location of mocked hard coded values for plot_factory unit tests
 import pandas as pd
 
 # Internal Dependencies
-from plotting.plot_factory.plot_factory import Trace
+from plotting.plot_factory.trace import Trace
 
 
 class MockPlotVariables:

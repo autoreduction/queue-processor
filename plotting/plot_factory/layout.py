@@ -12,6 +12,7 @@ import logging
 # Internal Dependencies
 from plotting.plot_meta_language.interpreter import Interpreter
 
+
 class Layout:
     """ Extract Layout as dictionary from interpreted meta data """
     def __init__(self, plot_style):
@@ -24,7 +25,7 @@ class Layout:
         self.mode = None
         self.plot_type = None
         self.error_bars = None
-        self.layout = self.extract_layout()
+        self.layout = self._extract_layout()
 
     def _read_plot_meta_data(self):
         """
