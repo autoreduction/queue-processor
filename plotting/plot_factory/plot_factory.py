@@ -8,18 +8,7 @@
 Constructs a plot and DashApp object for insertion into directly into a web page
 """
 
-# Note pandas and plotly.graph_objs dependencies are used, but not recognised by pycharm interpreter
-
-# Visualisation Dependencies
-import dash
-import dash_core_components as dcc
-import dash_html_components as html
-import plotly.graph_objects as go  # pylint: disable=unused-import
-
-import logging
-
 # Internal Dependencies
-from plotting.plot_meta_language.interpreter import Interpreter
 
 from plotting.plot_factory.layout import Layout
 from plotting.plot_factory.trace import Trace
@@ -69,9 +58,3 @@ class PlotFactory:
         figure = dict(data=trace_list, layout=layout.layout)
 
         return DashApp(figure=figure, app_id=figure_name)
-
-
-
-
-
-

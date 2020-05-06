@@ -86,4 +86,3 @@ class Trace:
 
         # Perform eval
         return eval(f"go.{plot_style}({trace_as_string})")  # pylint: disable=eval-used
-

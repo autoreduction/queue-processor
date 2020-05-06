@@ -13,7 +13,7 @@ import logging
 from plotting.plot_meta_language.interpreter import Interpreter
 
 
-class Layout:
+class Layout:  # pylint: disable: too-few-public-methods
     """ Extract Layout as dictionary from interpreted meta data """
     def __init__(self, plot_style):
         """
@@ -37,7 +37,7 @@ class Layout:
             interpreted_layout = Interpreter().interpret(self.meta_data)
             return interpreted_layout
         except ImportError:
-            logging.error(f"Could not Interpret: {self.meta_data}")
+            logging.error("Could not Interpret: %s", self.meta_data)
 
     def _extract_layout(self):
         """
