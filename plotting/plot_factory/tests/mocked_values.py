@@ -76,8 +76,8 @@ class MockPlotVariables:
 
         # trace dictionary structure for multi-single trace
         self.trace_multi_single = {
-            'x': "data['X']",
-            'y': "data['Y']",
+            'x': self.indexed_multi_single_raw_data_dataframe['X'],
+            'y': self.indexed_multi_single_raw_data_dataframe['Y'],
             'error_y': {
                 'type': 'data',
                 'array': self.indexed_multi_single_raw_data_dataframe['E'].to_list(),
@@ -85,16 +85,17 @@ class MockPlotVariables:
         }
 
         self.trace_multi_single_error_y_not_visible = {
-            'x': "data['X']",
-            'y': "data['Y']",
+            'x':  self.indexed_multi_single_raw_data_dataframe['X'],
+            'y':  self.indexed_multi_single_raw_data_dataframe['Y'],
             'error_y': {
                 'type': 'data',
                 'array': self.indexed_multi_single_raw_data_dataframe['E'].to_list(),
                 'visible': False}
         }
+
         self.trace_multi_single_to_string = {
-            'x': "data['X']",
-            'y': "data['Y']",
+            'x':  self.indexed_multi_single_raw_data_dataframe['X'],
+            'y':  self.indexed_multi_single_raw_data_dataframe['Y'],
             'error_y': {
                 'type': 'data',
                 'array': self.indexed_multi_single_raw_data_dataframe['E'].to_list(),

@@ -9,6 +9,7 @@ Constructs a plot and DashApp object for insertion into directly into a web page
 """
 
 # Core Dependencies
+import sys
 import plotly.graph_objects as go  # pylint: disable=unused-import
 
 
@@ -47,20 +48,15 @@ class Trace:  # pylint: disable=too-many-arguments, line-too-long
                                         array=data[axis].to_list(),
                                         visible=error_bars)
             else:
-                trace[axis.lower()] = f"data['{axis}']"
+                trace[axis.lower()] = data[axis]
         return trace
-
+    
     @staticmethod
-    def dict_to_string(trace_dictionary):
+    def _str_to_class(classname):
+        """converts string to class object
+        :returns: class method object (object) class object converted from string
         """
-        Converts a dictionary ot a string
-
-        :param trace_dictionary
-
-        :return: trace object (object)
-        """
-
-        return ', '.join([f"{key}= {value}" for key, value in trace_dictionary.items()])
+        return getattr(sys.modules[go.__name__], classname)
 
     def create_trace(self, data, plot_style, name, error_bars, mode=None): #pylint: disable=too-many-arguments, line-too-long
         """
@@ -79,10 +75,15 @@ class Trace:  # pylint: disable=too-many-arguments, line-too-long
         trace['name'] = f"'{name}'"
 
         if mode:
-            trace['mode'] = f"'{mode}'"
+            trace['mode'] = f"{mode}"
+
+        # print(trace)
 
         # Convert dictionary to string
-        trace_as_string = self.dict_to_string(trace)
+        # trace_as_string = self.dict_to_string(trace)
 
         # Perform eval
-        return eval(f"go.{plot_style}({trace_as_string})")  # pylint: disable=eval-used
+        plot_type_class_object = self._str_to_class(plot_style)
+        plot = plot_type_class_object(trace)
+        return plot
+        # return eval(f"go.{plot_style}({trace_as_string})")  # pylint: disable=eval-used

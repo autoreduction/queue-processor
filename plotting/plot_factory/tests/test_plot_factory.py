@@ -8,12 +8,6 @@
 Unit tests for plot factory
 """
 
-# TODO Tests to cover: unable to find plot meta data;
-#  unable to interpret dataframe;
-#  unable to find spectrum
-#  - Add hard coded string equivalent of dictionary to test_dict_to_string
-#  - Add Error bars to yaml file options
-
 # Core Dependencies
 import unittest
 from mock import patch, PropertyMock
@@ -47,7 +41,6 @@ class TestPlotFactory(unittest.TestCase):
         self.assertIsInstance(actual, list)  # is list
         self.assertEqual(len(actual), 2)
 
-    # @patch('plotting.plot_factory.plot_factory.DashApp')
     @patch('plotting.plot_factory.plot_factory.PlotFactory.create_trace_list')
     @patch('plotting.plot_factory.plot_factory.Layout')
     def test_construct_plot(self, mock_layout, mock_get_trace):
