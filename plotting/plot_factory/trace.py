@@ -12,9 +12,9 @@ Constructs a plot and DashApp object for insertion into directly into a web page
 import plotly.graph_objects as go  # pylint: disable=unused-import
 
 
-class Trace:
+class Trace:  # pylint: disable=too-many-arguments, line-too-long
     """Creates a trace object """
-    def __init__(self, data, plot_style, plot_name, mode=None, error_bars=None): #pylint: disable=too-many-arguments, line-too-long
+    def __init__(self, data, plot_style, plot_name, mode=None, error_bars=None):  # pylint: disable=too-many-arguments, line-too-long
         """
         Trace Object
         :param data (pandas dataframe)
