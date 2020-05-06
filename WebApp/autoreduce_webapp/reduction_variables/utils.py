@@ -18,6 +18,8 @@ import sys
 import chardet
 import importlib.util as imp
 
+from message.job import Message
+
 sys.path.append(os.path.join("../", os.path.dirname(os.path.dirname(__file__))))
 os.environ["DJANGO_SETTINGS_MODULE"] = "autoreduce_webapp.settings"
 
@@ -685,6 +687,6 @@ class MessagingUtils(object):
 
         message_client = QueueClient()
         message_client.connect()
-        message_client.send('/queue/ReductionPending', json.dumps(data_dict),
+        message_client.send('/queue/ReductionPending', Message(data_dict),
                             priority='0', delay=delay)
         message_client.disconnect()

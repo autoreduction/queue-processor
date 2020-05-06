@@ -32,6 +32,8 @@ from sentry_sdk import init
 
 # pylint:disable=no-name-in-module,import-error
 from queue_processors.autoreduction_processor.settings import MISC
+
+from message.job import Message
 from queue_processors.autoreduction_processor.autoreduction_logging_setup import logger
 from queue_processors.autoreduction_processor.timeout import TimeOut
 from utils.clients.queue_client import QueueClient
@@ -109,11 +111,11 @@ class PostProcessAdmin:
     """ Main class for the PostProcessAdmin """
 
     # pylint: disable=too-many-instance-attributes
-    def __init__(self, data, connection):
+    def __init__(self, data, client):
         logger.debug("json data: %s", prettify(data))
         data["information"] = socket.gethostname()
         self.data = data
-        self.client = connection
+        self.client = client
 
         self.reduction_log_stream = io.StringIO()
         self.admin_log_stream = io.StringIO()
@@ -195,7 +197,7 @@ class PostProcessAdmin:
             logger.debug("Calling: %s\n%s",
                          ACTIVEMQ_SETTINGS.reduction_started,
                          prettify(self.data))
-            self.client.send(ACTIVEMQ_SETTINGS.reduction_started, json.dumps(self.data))
+            self.client.send(ACTIVEMQ_SETTINGS.reduction_started, Message(self.data))
 
             # Specify instrument directory
             instrument_output_dir = MISC["ceph_directory"] % (self.instrument,
@@ -388,7 +390,7 @@ class PostProcessAdmin:
 
         else:
             # reduction has successfully completed
-            self.client.send(ACTIVEMQ_SETTINGS.reduction_complete, json.dumps(self.data))
+            self.client.send(ACTIVEMQ_SETTINGS.reduction_complete, Message(self.data))
             logger.info("Calling: %s\n%s",
                         ACTIVEMQ_SETTINGS.reduction_complete,
                         prettify(self.data))
@@ -397,7 +399,7 @@ class PostProcessAdmin:
     def _send_message_and_log(self, destination):
         """ Send reduction run to error. """
         logger.info("\nCalling " + destination + " --- " + prettify(self.data))
-        self.client.send(destination, json.dumps(self.data))
+        self.client.send(destination, Message(self.data))
 
     def copy_temp_directory(self, temp_result_dir, copy_destination):
         """
@@ -496,11 +498,10 @@ class PostProcessAdmin:
 def main():
     """ Main method. """
     json_data = None
-    connection = None
+    queue_client = QueueClient()
     try:
-        queue_client = QueueClient()
         logger.info("PostProcessAdmin Connecting to ActiveMQ")
-        connection = queue_client.connect()
+        queue_client.connect()
         logger.info("PostProcessAdmin Successfully Connected to ActiveMQ")
 
         destination, message = sys.argv[1:3]  # pylint: disable=unbalanced-tuple-unpacking
@@ -509,7 +510,9 @@ def main():
         json_data = json.loads(message)
 
         try:
-            post_proc = PostProcessAdmin(json_data, connection)
+            # Note: the stomp connection was being passed as the client previously
+            #   so I've corrected this and adjusted the tests.
+            post_proc = PostProcessAdmin(json_data, queue_client)
             log_stream_handler = logging.StreamHandler(post_proc.admin_log_stream)
             logger.addHandler(log_stream_handler)
             if destination == '/queue/ReductionPending':
@@ -533,7 +536,7 @@ def main():
     except Exception as exp:
         logger.info("Something went wrong: %s", str(exp))
         try:
-            connection.send(ACTIVEMQ_SETTINGS.reduction_error, json.dumps(json_data))
+            queue_client.send(ACTIVEMQ_SETTINGS.reduction_error, Message(json_data))
             logger.info("Called %s ---- %s", ACTIVEMQ_SETTINGS.reduction_error, prettify(json_data))
         finally:
             sys.exit()

@@ -8,6 +8,7 @@ import csv
 from filelock import FileLock
 from mock import (Mock, patch, call)
 
+from message.job import Message
 from utils.clients.queue_client import QueueClient
 from monitors.settings import (CYCLE_FOLDER, LAST_RUNS_CSV)
 import monitors.run_detection as eorm
@@ -146,14 +147,16 @@ class TestRunDetection(unittest.TestCase):
         data_loc = os.path.join(inst_mon.data_dir, CYCLE_FOLDER, 'WISH00044733.nxs')
 
         inst_mon.submit_run('1820333', '00044733', 'WISH00044733.nxs')
-        client.send.assert_called_with('/queue/DataReady', json.dumps(RUN_DICT), priority='9')
+        client.send.assert_called_with('/queue/DataReady', Message(RUN_DICT), priority='9')
+        message = client.send.call_args[0][1]
+        self.assertEqual(message.description, RUN_DICT)
+
         isfile_mock.assert_called_with(data_loc)
         read_rb_mock.assert_called_once_with(data_loc)
 
     @patch('os.path.isfile', return_value=False)
     def test_submit_run_file_not_found(self, isfile_mock):
         client = Mock()
-        client.send = Mock(return_value=None)
         client.serialise_data = Mock(return_value=RUN_DICT)
 
         inst_mon = InstrumentMonitor(client, 'WISH')
@@ -177,8 +180,11 @@ class TestRunDetection(unittest.TestCase):
 
         inst_mon.submit_run('1820333', '00044733', 'WISH00044733.nxs')
         client.send.assert_called_with('/queue/DataReady',
-                                       json.dumps(RUN_DICT_SUMMARY),
+                                       Message(RUN_DICT_SUMMARY),
                                        priority='9')
+        message = client.send.call_args[0][1]
+        self.assertEqual(message.description, RUN_DICT_SUMMARY)
+
         isfile_mock.assert_called_with(data_loc)
         read_rb_mock.assert_called_once_with(data_loc)
 

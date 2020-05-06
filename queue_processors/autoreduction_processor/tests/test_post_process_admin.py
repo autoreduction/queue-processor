@@ -16,6 +16,7 @@ import json
 from tempfile import mkdtemp, NamedTemporaryFile
 from mock import patch, call, Mock
 
+from message.job import Message
 from utils.settings import ACTIVEMQ_SETTINGS
 from utils.project.structure import get_project_root
 from queue_processors.autoreduction_processor.settings import MISC
@@ -135,7 +136,9 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_logger.assert_called_once_with("\nCalling " + ACTIVEMQ_SETTINGS.reduction_error
                                             + " --- " + prettify(self.data))
         activemq_client_mock.send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_error,
-                                                          json.dumps(ppa.data))
+                                                          Message(ppa.data))
+        message = activemq_client_mock.send.call_args[0][1]
+        self.assertEqual(message.description, ppa.data)
 
     @patch('shutil.rmtree')
     @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.info')
@@ -231,38 +234,39 @@ class TestPostProcessAdmin(unittest.TestCase):
     @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.info')
     @patch('queue_processors.autoreduction_processor.post_process_admin.PostProcessAdmin.__init__',
            return_value=None)
-    @patch('utils.clients.queue_client.QueueClient.connect')
     @patch('utils.clients.queue_client.QueueClient.__init__', return_value=None)
-    def test_main_inner_value_error(self, mock_conn_init, mock_connect, mock_ppa_init,
-                                    mock_logger, mock_exit, _):
+    @patch('utils.clients.queue_client.QueueClient.connect')
+    @patch('utils.clients.queue_client.QueueClient.send')
+    def test_main_inner_value_error(self, mock_client_send, mock_client_connect, mock_client_init,
+                                    mock_ppa_init, mock_logger, mock_exit, _):
         """
         Test: The correct message is sent from the exception handlers in main
         When: A ValueError exception is raised from ppa.reduce
         """
-        mock_connection = Mock()
-        mock_connect.return_value = mock_connection
-
+        # mock_connection = Mock()
+        # mock_connect.return_value = mock_connection
         def raise_value_error(arg1, _):
             self.assertEqual(arg1, self.data)
             raise ValueError('error-message')
         mock_ppa_init.side_effect = raise_value_error
         sys.argv = ['', '/queue/ReductionPending', json.dumps(self.data)]
         main()
-        mock_connect.assert_called_once()
-        mock_conn_init.assert_called_once()
+        mock_client_init.assert_called_once()
+        mock_client_connect.assert_called_once()
         mock_logger.assert_has_calls([call('JSON data error: %s', 'test')])
         mock_exit.assert_called_once()
         self.data['error'] = 'error-message'
-        mock_connection.send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_error,
-                                                     json.dumps(self.data))
+        mock_client_send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_error,
+                                                 Message(self.data))
 
     @patch('sys.exit')
     @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.info')
     @patch('queue_processors.autoreduction_processor.post_process_admin.PostProcessAdmin.__init__',
            return_value=None)
-    @patch('utils.clients.queue_client.QueueClient.connect')
     @patch('utils.clients.queue_client.QueueClient.__init__', return_value=None)
-    def test_main_inner_exception(self, mock_conn_init, mock_connect, mock_ppa_init,
+    @patch('utils.clients.queue_client.QueueClient.connect')
+    @patch('utils.clients.queue_client.QueueClient.send')
+    def test_main_inner_exception(self, mock_client_send, mock_connect, mock_conn_init, mock_ppa_init,
                                   mock_logger, mock_exit):
         """
         Test: The correct message is sent from the exception handlers in main
@@ -281,5 +285,5 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_conn_init.assert_called_once()
         mock_logger.assert_has_calls([call('PostProcessAdmin error: %s', 'error-message')])
         mock_exit.assert_called_once()
-        mock_connection.send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_error,
-                                                     json.dumps(self.data))
+        mock_client_send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_error,
+                                                 Message(self.data))

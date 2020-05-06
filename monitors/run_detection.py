@@ -12,6 +12,7 @@ from filelock import (FileLock, Timeout)
 
 from monitors.settings import (LAST_RUNS_CSV, CYCLE_FOLDER)
 
+from message.job import Message
 from utils.clients.queue_client import QueueClient
 from utils.project.structure import get_log_file
 from utils.project.static_content import LOG_FORMAT
@@ -144,7 +145,7 @@ class InstrumentMonitor:
                 rb_number = summary_rb_number
             EORM_LOG.info("Submitting '%s' with RB number '%s'", file_name, rb_number)
             data_dict = self.build_dict(rb_number, run_number, file_path)
-            self.client.send('/queue/DataReady', json.dumps(data_dict), priority='9')
+            self.client.send('/queue/DataReady', Message(data_dict), priority='9')
         else:
             raise FileNotFoundError("File does not exist '{}'".format(file_path))
 

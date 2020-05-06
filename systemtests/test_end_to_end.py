@@ -15,7 +15,7 @@ import json
 import time
 import shutil
 
-
+from message.job import Message
 from scripts.manual_operations import manual_remove as remove
 
 from utils import service_handling as external
@@ -81,7 +81,7 @@ if os.name != 'nt':
                                                                   run_number=self.run_number,
                                                                   started_by=0)
             self.queue_client.send('/queue/DataReady',
-                                   json.dumps(data_ready_message))
+                                   Message(data_ready_message))
 
             # Get Result from database
             results = self._find_run_in_database()
@@ -112,7 +112,7 @@ if os.name != 'nt':
                                                                   location=file_location,
                                                                   started_by=0)
             self.queue_client.send('/queue/DataReady',
-                                   json.dumps(data_ready_message))
+                                   Message(data_ready_message))
 
             # Get Result from database
             results = self._find_run_in_database()

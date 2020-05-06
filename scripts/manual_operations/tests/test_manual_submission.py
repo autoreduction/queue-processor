@@ -11,6 +11,7 @@ import unittest
 import json
 from mock import Mock, patch
 import scripts.manual_operations.manual_submission as ms
+from message.job import Message
 from utils.clients.queue_client import QueueClient
 
 
@@ -23,9 +24,9 @@ class DataFile:
         self.name = df_name
 
 
-def get_json_object(rb_number, instrument, data_file_location, run_number, started_by):
+def get_message_object(rb_number, instrument, data_file_location, run_number, started_by):
     """
-    Return the JSON object that should be sent to DataReady
+    Return the Message object that should be sent to DataReady
     """
     data_dict = {"rb_number": rb_number,
                  "instrument": instrument,
@@ -33,7 +34,7 @@ def get_json_object(rb_number, instrument, data_file_location, run_number, start
                  "run_number": run_number,
                  "facility": "ISIS",
                  "started_by": started_by}
-    return json.dumps(data_dict)
+    return Message(data_dict)
 
 
 # pylint:disable=no-self-use
@@ -66,5 +67,5 @@ class TestManualSubmission(unittest.TestCase):
         """
         active_mq_client = QueueClient()
         ms.submit_run(active_mq_client, "1812345", "GEM", "5454", "nxs")
-        json_obj = get_json_object("1812345", "GEM", "5454", "nxs", -1)
-        send.assert_called_with('/queue/DataReady', json_obj, priority=1)
+        message = get_message_object("1812345", "GEM", "5454", "nxs", -1)
+        send.assert_called_with('/queue/DataReady', message, priority=1)

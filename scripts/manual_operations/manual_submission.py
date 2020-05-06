@@ -15,6 +15,7 @@ import argparse
 
 # The below is only a template on the repo
 # pylint: disable=import-error, no-name-in-module
+from message.job import Message
 from utils.clients.icat_client import ICATClient
 from utils.clients.queue_client import QueueClient
 
@@ -34,7 +35,7 @@ def submit_run(active_mq_client, rb_number, instrument, data_file_location, run_
                                                 run_number=run_number,
                                                 started_by=-1)
 
-    active_mq_client.send('/queue/DataReady', json.dumps(data_dict), priority=1)
+    active_mq_client.send('/queue/DataReady', Message(data_dict), priority=1)
     print("Submitted run: \r\n" + json.dumps(data_dict, indent=1))
 
 

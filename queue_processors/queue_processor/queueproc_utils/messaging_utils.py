@@ -9,6 +9,7 @@ import json
 import logging.config
 
 # pylint: disable=cyclic-import
+from message.job import Message
 from queue_processors.queue_processor.base import session
 from queue_processors.queue_processor.orm_mapping import DataLocation
 # pylint:disable=no-name-in-module,import-error
@@ -70,7 +71,7 @@ class MessagingUtils:
         message_client = QueueClient()
         message_client.connect()
         message_client.send('/queue/ReductionPending',
-                            json.dumps(data_dict),
+                            Message(data_dict),
                             priority='0',
                             delay=delay)
         message_client.disconnect()

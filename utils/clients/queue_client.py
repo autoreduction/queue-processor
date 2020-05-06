@@ -139,13 +139,14 @@ class QueueClient(AbstractClient):
         """
         Send a message via the open connection to a queue
         :param destination: Queue to send to
-        :param message: contents of the message
+        :param message: Message instance holding the contents of the message
         :param persistent: should to message be persistent
         :param priority: priority rating of the message
         :param delay: time to wait before send
         """
         self.connect()
-        self._connection.send(destination, message,
+        message_content = message.serialize()
+        self._connection.send(destination, message_content,
                               persistent=persistent,
                               priority=priority,
                               delay=delay)

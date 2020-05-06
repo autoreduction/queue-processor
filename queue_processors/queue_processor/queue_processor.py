@@ -21,6 +21,7 @@ import traceback
 
 from sqlalchemy import sql
 
+from message.job import Message
 from queue_processors.queue_processor.base import session
 from queue_processors.queue_processor.orm_mapping import (ReductionRun, Instrument,
                                                           Status, Experiment,
@@ -215,7 +216,7 @@ class Listener:
         if instrument.is_paused:
             logger.info("Run %s has been skipped", self._data_dict['run_number'])
         else:
-            self._client.send('/queue/ReductionPending', json.dumps(self._data_dict),
+            self._client.send('/queue/ReductionPending', Message(self._data_dict),
                               priority=self._priority)
             logger.info("Run %s ready for reduction", self._data_dict['run_number'])
 
@@ -229,7 +230,7 @@ class Listener:
         self._data_dict['message'] = 'Reduction Skipped: {}. Assuming run number to be ' \
                                      'a calibration run.'.format(reason)
         skipped_queue = ACTIVEMQ_SETTINGS.reduction_skipped
-        self._client.send(skipped_queue, json.dumps(self._data_dict),
+        self._client.send(skipped_queue, Message(self._data_dict),
                           priority=self._priority)
 
     def reduction_started(self):
