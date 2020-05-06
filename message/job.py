@@ -35,6 +35,13 @@ class Message:
     return_message = attr.ib(default=None)
     retry_in = attr.ib(default=None)
 
+    # Note: since most uses of a message will immediately require populate() after initialisation,
+    #   adding population_source as an init arg cuts down a step
+    #   i.e. Message().populate(DICT) --> Message(DICT)     [but the former method will still work]
+    def init(self, population_source=None):
+        if population_source:
+            self.populate(population_source)
+
     def serialize(self):
         """
         Serialized member variables as a json dump
