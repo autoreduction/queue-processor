@@ -13,9 +13,10 @@ import logging
 from plotting.plot_meta_language.interpreter import Interpreter
 
 
-class Layout:  # pylint: disable: too-few-public-methods
+class Layout:
     """ Extract Layout as dictionary from interpreted meta data """
-    def __init__(self, plot_style):  # pylint: disable: too-few-public-methods
+    # pylint: disable=too-few-public-methods
+    def __init__(self, plot_style):
         """
         # Layout Properties
 
