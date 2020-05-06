@@ -50,7 +50,7 @@ class Trace:  # pylint: disable=too-many-arguments, line-too-long
             else:
                 trace[axis.lower()] = data[axis]
         return trace
-    
+    # pylint disable=trailing-whitespace
     @staticmethod
     def _str_to_class(classname):
         """converts string to class object
