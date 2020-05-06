@@ -77,13 +77,5 @@ class Trace:  # pylint: disable=too-many-arguments, line-too-long
         if mode:
             trace['mode'] = f"{mode}"
 
-        # print(trace)
-
-        # Convert dictionary to string
-        # trace_as_string = self.dict_to_string(trace)
-
-        # Perform eval
-        plot_type_class_object = self._str_to_class(plot_style)
-        plot = plot_type_class_object(trace)
-        return plot
-        # return eval(f"go.{plot_style}({trace_as_string})")  # pylint: disable=eval-used
+        # Convert string to class retuning plotly plot object
+        return self._str_to_class(plot_style)(trace)
