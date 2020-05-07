@@ -7,6 +7,8 @@
 """
 Test functionality for the activemq client
 """
+import ast
+import json
 import unittest
 
 from mock import patch, call
@@ -29,6 +31,12 @@ class TestQueueClient(unittest.TestCase):
                                                                     password='not-pass',
                                                                     host='not-host',
                                                                     port='1234')
+        self.test_data_dict = {"rb_number": -1,
+                               "instrument": "instrument",
+                               "file_path": "file_path",
+                               "run_number": -1,
+                               "facility": "ISIS",
+                               "started_by": -1}
 
     def test_default_init(self):
         """
@@ -102,20 +110,42 @@ class TestQueueClient(unittest.TestCase):
         self.assertEqual(data['started_by'], 0)
 
     # pylint:disable=no-self-use
-    # @patch('message.job.Message.serialize')
     @patch('stomp.connect.StompConnection11.send')
     def test_send_data(self, mock_stomp_send):
         """
         Test: send establishes a connection and sends given data using stomp.send
         When: send is called while a valid connection is not held
         """
-        message = Message({"key": "value"})
+        message = Message()
+        message.populate(self.test_data_dict)
         client = QueueClient()
         client.send('dataready', message)
 
         (args, kwargs) = mock_stomp_send.call_args
         self.assertEqual(args[0], 'dataready')
-        self.assertEqual(args[1], message.serialize())
+        self.assertEqual(args[1], message.as_dict())
+        self.assertEqual(list(kwargs.keys()), ['persistent', 'priority', 'delay'])
+
+    @patch('stomp.connect.StompConnection11.send')
+    def test_message_data(self, mock_stomp_send):
+        """
+        Test: send establishes a connection and sends given data using stomp.send
+        When: send is called while a valid connection is not held
+        """
+        message = Message()
+        message.populate(self.test_data_dict)
+        client = QueueClient()
+        client.send('dataready', message)
+
+        (args, kwargs) = mock_stomp_send.call_args
+        self.assertEqual(args[0], 'dataready')
+
+        for key, value in args[1].items():
+            if key in self.test_data_dict.keys():
+                self.assertEqual(value, self.test_data_dict[key])
+            else:
+                self.assertIsNone(value)
+
         self.assertEqual(list(kwargs.keys()), ['persistent', 'priority', 'delay'])
 
     @patch('stomp.connect.StompConnection11.ack')

@@ -34,20 +34,24 @@ class Message:
     admin_log = attr.ib(default=None)
     return_message = attr.ib(default=None)
     retry_in = attr.ib(default=None)
+    # Note: reduction location not currently stored
 
-    # Note: since most uses of a message will immediately require populate() after initialisation,
-    #   adding population_source as an init arg cuts down a step
-    #   i.e. Message().populate(DICT) --> Message(DICT)     [but the former method will still work]
-    def init(self, population_source=None):
-        if population_source:
-            self.populate(population_source)
+    # # Note: since most uses of a message will immediately require populate() after initialisation,
+    # #   adding population_source as an init arg cuts down a step
+    # #   i.e. Message().populate(DICT) --> Message(DICT)     [but the former method will still work]
+    # def init(self, population_source=None):
+    #     if population_source:
+    #         self.populate(population_source)
+
+    def as_dict(self):
+        return attr.asdict(self)
 
     def serialize(self):
         """
         Serialized member variables as a json dump
         :return: JSON dump of a dictionary representing the member variables
         """
-        return json.dumps(attr.asdict(self))
+        return json.dumps(self.as_dict())
 
     @staticmethod
     def deserialize(serialized_object):
@@ -78,3 +82,8 @@ class Message:
                 if overwrite or self_value is None:
                     # Set the value of the variable on this object accessing it by name
                     setattr(self, key, value)
+            else:
+                # NOTE: added this for debugging purposes,but may be useful to flag
+                #  unexpected, skipped keys somehow
+                print(f"Unexpected key encountered: '{key}'."   # TODO: Change this to a log at Worning
+                      f"Skipping..")

@@ -40,7 +40,7 @@ class TestManualSubmission(unittest.TestCase):
         self.loc_and_rb_args[0].connect.return_value = mock_connection
 
     @staticmethod
-    def get_message_object(rb_number, instrument, data_file_location, run_number, started_by):
+    def make_message(rb_number, instrument, data_file_location, run_number, started_by):
         """
         :return: the Message object that should be sent to DataReady
         """
@@ -67,18 +67,6 @@ class TestManualSubmission(unittest.TestCase):
         elif return_from == "db_rb":
             ret_obj[0].reference_number = self.valid_return[1]
         return ret_obj
-
-
-    @staticmethod
-    def get_json_object(rb_number, instrument, data_file_location, run_number, started_by):
-        """ :return: The JSON object which should be sent to DataReady """
-        data_dict = {"rb_number": rb_number,
-                     "instrument": instrument,
-                     "data": data_file_location,
-                     "run_number": run_number,
-                     "facility": "ISIS",
-                     "started_by": started_by}
-        return json.dumps(data_dict)
 
     @patch('scripts.manual_operations.manual_submission.get_location_and_rb_from_database',
            return_value=None)
@@ -155,12 +143,12 @@ class TestManualSubmission(unittest.TestCase):
         mock_from_icat.assert_not_called()
         mock_from_database.assert_not_called()
 
-    @patch('utils.clients.queue_client.QueueClient.send', return_value=None)
-    def test_submit_run(self, mock_send):
+    def test_submit_run(self):
         """
         Test: A given run is submitted to the DataReady queue
         When: submit_run is called with valid arguments
         """
+        message = self.make_message(-1, "instrument", "data_file_location", -1, -1)
+        self.sub_run_args[0].serialise_data.return_value = message.description
         ms.submit_run(*self.sub_run_args)
-        message = get_message_object("1812345", "GEM", "5454", "nxs", -1)
-        mock_send.assert_called_with('/queue/DataReady', message, priority=1)
+        self.sub_run_args[0].send.assert_called_with('/queue/DataReady', message, priority=1)

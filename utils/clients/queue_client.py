@@ -145,8 +145,9 @@ class QueueClient(AbstractClient):
         :param delay: time to wait before send
         """
         self.connect()
-        message_content = message.serialize()
-        self._connection.send(destination, message_content,
+
+        message_as_dict = message.as_dict()
+        self._connection.send(destination, message_as_dict,
                               persistent=persistent,
                               priority=priority,
                               delay=delay)
