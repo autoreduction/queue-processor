@@ -7,13 +7,13 @@
 """
 Unit tests for plot factory Trace
 
-Note - Tests on lines 41 and 52 seem to fail so left commented out temporarily
+TODO: - Tests on lines 44 and 60 seem to fail - Currently don't understand why
 """
 
 # Core Dependencies
 import unittest
-
 import plotly
+import logging
 
 # Mocked values
 from plotting.plot_factory.tests.mocked_values import MockPlotVariables
@@ -36,8 +36,13 @@ class TestTrace(unittest.TestCase):
             data=MockPlotVariables().indexed_multi_single_raw_data_dataframe,
             error_bars=self.error_bars)
 
+        expected = MockPlotVariables().trace_multi_single
+
+        self.assertEqual(len(actual), len(expected))  # Length of dictionaries
+        self.assertEqual(actual['error_y'], expected['error_y'])  # Compare nested dictionary
+        self.assertEqual(actual.keys(), expected.keys())  # Compare dictionary keys
+        self.assertEqual(actual, expected)  # fails - Don't understand why :(
         self.assertIsInstance(actual, dict)
-        self.assertEqual(actual, MockPlotVariables().trace_multi_single)
 
     def test_trace_dict_error_bars_set_false(self):
         """
@@ -47,8 +52,13 @@ class TestTrace(unittest.TestCase):
         actual = MockPlotVariables().trace_object.trace_dict(
             MockPlotVariables().indexed_multi_single_raw_data_dataframe, False)
 
+        expected = MockPlotVariables().trace_multi_single_error_y_not_visible
+
+        self.assertEqual(len(actual), len(expected))  # Length of dictionaries
+        self.assertEqual(actual['error_y'], expected['error_y'])  # Compare nested dictionary
+        self.assertEqual(actual.keys(), expected.keys())  # Compare dictionary keys
+        self.assertEqual(actual, expected)  # fails - Don't understand why :(
         self.assertIsInstance(actual, dict)
-        self.assertEqual(actual, MockPlotVariables().trace_multi_single_error_y_not_visible)
 
     def test_str_to_class(self):
         """
