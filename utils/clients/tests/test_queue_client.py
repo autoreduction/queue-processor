@@ -11,6 +11,7 @@ import unittest
 
 from mock import patch, call
 
+from message.job import Message
 from utils.clients.connection_exception import ConnectionException
 from utils.clients.queue_client import QueueClient
 from utils.clients.settings.client_settings_factory import ClientSettingsFactory
@@ -102,16 +103,29 @@ class TestQueueClient(unittest.TestCase):
 
     # pylint:disable=no-self-use
     @patch('stomp.connect.StompConnection11.send')
-    def test_send_data(self, mock_stomp_send):
+    def test_send_with_raw_string(self, mock_stomp_send):
         """
-        Test: send establishes a connection and sends given data using stomp.send
-        When: send is called while a valid connection is not held
+        Test: send sends the given data using stomp.send
+        When: send is called with a string argument for message
         """
         client = QueueClient()
-        client.send('dataready', 'test-message')
+        client.send('dataready', 'raw_json_dump')
         (args, _) = mock_stomp_send.call_args
         self.assertEqual(args[0], 'dataready')
-        self.assertEqual(args[1], 'test-message')
+        self.assertEqual(args[1], 'raw_json_dump')
+
+    @patch('stomp.connect.StompConnection11.send')
+    def test_send_with_message_instance(self, mock_stomp_send):
+        """
+        Test: send sends the given data using stomp.send
+        When: send is called with a Message instance argument for message
+        """
+        client = QueueClient()
+        message = Message(description="test-message")
+        client.send('dataready', message)
+        (args, _) = mock_stomp_send.call_args
+        self.assertEqual(args[0], 'dataready')
+        self.assertEqual(args[1], message.serialize())
 
     @patch('stomp.connect.StompConnection11.ack')
     def test_ack(self, mock_stomp_ack):

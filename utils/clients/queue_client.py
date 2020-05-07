@@ -13,6 +13,7 @@ import time
 import stomp
 from stomp.exception import ConnectFailedException
 
+from message.job import Message
 from utils.clients.abstract_client import AbstractClient
 from utils.clients.connection_exception import ConnectionException
 from utils.settings import ACTIVEMQ_SETTINGS
@@ -139,13 +140,19 @@ class QueueClient(AbstractClient):
         """
         Send a message via the open connection to a queue
         :param destination: Queue to send to
-        :param message: contents of the message
+        :param message: Message instance OR json dump of dict containing message payload
         :param persistent: should to message be persistent
         :param priority: priority rating of the message
         :param delay: time to wait before send
         """
         self.connect()
-        self._connection.send(destination, message,
+
+        if isinstance(message, Message):
+            message_json_dump = message.serialize()
+        else:
+            message_json_dump = message
+
+        self._connection.send(destination, message_json_dump,
                               persistent=persistent,
                               priority=priority,
                               delay=delay)
