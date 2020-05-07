@@ -5,7 +5,7 @@
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 """
-Constructs a plot and DashApp object for insertion into directly into a web page
+Constructs a plot and DashApp object for insertion directly into a web page
 """
 
 # Core Dependencies
@@ -13,20 +13,20 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 
-
-class DashApp:  # pylint: disable=too-few-public-methods
+# pylint: disable=too-few-public-methods
+class DashApp:
     """Creates a DashApp for direct insertion into a web page"""
     def __init__(self, figure, app_id):
         """
         Dashapp object properties
-        :param figure (dictionary)
-        :param app_id (string)
+        :param figure (dictionary) plotly figure formatted as dictionary
+        :param app_id (string) unique id to track dashapp persistence
         """
         self.figure = figure
         self.app_id = app_id
         self.app = self.create_dashapp()
 
-    def create_dashapp(self):  # pylint: disable=too-few-public-methods
+    def create_dashapp(self):  #
         """
         Creates DashApp
         :return: DashApp (object) DashApp object for direct insertion into webapp

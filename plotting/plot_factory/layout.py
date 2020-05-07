@@ -5,7 +5,7 @@
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 """
-Constructs a plot and DashApp object for insertion into directly into a web page
+Constructs a dashapp layout and additional layout meta parameters
 """
 import logging
 
@@ -20,7 +20,7 @@ class Layout:
         """
         # Layout Properties
 
-        :param plot_style (dictionary)
+        :param plot_style (dictionary) plotly layouts formatted as dictionary
         """
         self.meta_data = plot_style
         self.mode = None

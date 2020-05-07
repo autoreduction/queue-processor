@@ -25,8 +25,8 @@ class PlotFactory:
     def create_trace_list(data, layout, figure_name):
         """
         Creates trace list containing traces for each spectrum to place in figure
-        :param data (pandas dataframe)
-        :param layout (object) returned by plot_factory.Layout()
+        :param data (pandas dataframe) instrument data placed in pandas dataframe
+        :param layout (plotting.plot_factory.Layout) object containing plot layout attributes
         :param figure_name (string) name of figure following format; Instrument_run_number
 
         :return: trace_list (list of trace objects)
@@ -45,11 +45,11 @@ class PlotFactory:
     def create_plot(self, plot_meta_file_location, data, figure_name):
         """
         Gets DashaApp after calling layout and trace to construct figure in figure factory
-        :param plot_meta_file_location (string)
-        :param data (pandas dataframe)
-        :param figure_name (string)
+        :param plot_meta_file_location (string) styling meta data file location in string format
+        :param data (pandas dataframe) instrument data in a pandas dataframe
+        :param figure_name (string) plot figure for reference in traces
 
-        :return: DashApp (object)
+        :return: DashApp (plotting.plot_factory.DashApp) DashApp object and attributes
         """
 
         data.set_index('Spectrum', inplace=True)

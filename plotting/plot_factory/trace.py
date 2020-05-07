@@ -36,8 +36,8 @@ class Trace:  # pylint: disable=too-many-arguments, line-too-long
         """
         Creates trace dictionary
 
-        :param data (dataframe)
-        :param error_bars (bool)
+        :param data (dataframe) instrument data in dataframe
+        :param error_bars (bool) boolean value to determine if error bars are displayed on not
 
         :return: trace (dictionary)
         """
@@ -50,7 +50,7 @@ class Trace:  # pylint: disable=too-many-arguments, line-too-long
             else:
                 trace[axis.lower()] = data[axis]
         return trace
-    # pylint disable=trailing-whitespace
+
     @staticmethod
     def _str_to_class(classname):
         """converts string to class object
@@ -58,17 +58,18 @@ class Trace:  # pylint: disable=too-many-arguments, line-too-long
         """
         return getattr(sys.modules[go.__name__], classname)
 
-    def create_trace(self, data, plot_style, name, error_bars, mode=None): #pylint: disable=too-many-arguments, line-too-long
+    # pylint: disable=too-many-arguments
+    def create_trace(self, data, plot_style, name, error_bars, mode=None):
         """
         Creates a trace
 
-        :param data (dataframe)
-        :param plot_style (dictionary)
-        :param name (string)
-        :param error_bars (bool)
-        :param mode (string)
+        :param data (dataframe) instrument data in dataframe
+        :param plot_style (dictionary) plot styles/types available by plotly
+        :param name (string) trace name needs to be unique
+        :param error_bars (bool) bool value to determine whether error bars are displayed or not
+        :param mode (string) the mode of for a figure - lines, markers, line+markers
 
-        :return: figure (object)
+        :return: figure (plotly.graph_objs.<plot_style>) trace object using plot_style
         """
         # Make dictionary with string values
         trace = self.trace_dict(data=data, error_bars=error_bars)
