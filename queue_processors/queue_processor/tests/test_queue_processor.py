@@ -7,19 +7,21 @@
 """
 Test cases for the queue processor
 """
+import json
 import unittest
 
-from mock import patch
+from mock import patch, MagicMock
 
 from queue_processors.queue_processor import queue_processor
 from queue_processors.queue_processor.queue_processor import Listener
 from utils.clients.queue_client import QueueClient
+from utils.settings import ACTIVEMQ_SETTINGS
 
 
 class TestQueueProcessor(unittest.TestCase):
     # pylint:disable=protected-access
     """
-    Exercises the Queue Processor
+    Exercises the functions within queue_processor.py
     """
     def setUp(self):
         self.test_consumer_name = "Test_Autoreduction_QueueProcessor"
@@ -42,3 +44,26 @@ class TestQueueProcessor(unittest.TestCase):
         self.assertEqual(args[0], self.test_consumer_name)
         self.assertIsInstance(args[1], Listener)
         self.assertIsInstance(args[1]._client, QueueClient)
+
+
+class TestListener(unittest.TestCase):
+    """
+    Exercises the Listener
+    """
+    def setUp(self):
+        self.rb_number = -1
+        self.reason = "test"
+
+    def test_construct_and_send_skipped(self):
+        """
+        Test: _data_dict['message'] is given a value,and the _data_dict is sent via the QueueClient
+        When: _construct_and_send_skipped is called
+        """
+        mock_client = MagicMock(name="QueueClient")
+        listener = Listener(mock_client)
+        listener._construct_and_send_skipped(self.rb_number, self.reason)
+
+        self.assertIsNotNone(listener._data_dict['message'])
+        mock_client.send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_skipped,
+                                                 json.dumps(listener._data_dict),
+                                                 priority=listener._priority)
