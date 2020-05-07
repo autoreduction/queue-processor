@@ -18,9 +18,6 @@ import plotly
 # Mocked values
 from plotting.plot_factory.tests.mocked_values import MockPlotVariables
 
-# Internal Dependencies
-from plotting.plot_factory.trace import Trace
-
 
 class TestTrace(unittest.TestCase):
 
@@ -40,7 +37,7 @@ class TestTrace(unittest.TestCase):
             error_bars=self.error_bars)
 
         self.assertIsInstance(actual, dict)
-        # self.assertEqual(actual, MockPlotVariables().trace_multi_single)
+        self.assertEqual(actual, MockPlotVariables().trace_multi_single)
 
     def test_trace_dict_error_bars_set_false(self):
         """
@@ -51,7 +48,7 @@ class TestTrace(unittest.TestCase):
             MockPlotVariables().indexed_multi_single_raw_data_dataframe, False)
 
         self.assertIsInstance(actual, dict)
-        # self.assertEqual(actual, MockPlotVariables().trace_multi_single_error_y_not_visible)
+        self.assertEqual(actual, MockPlotVariables().trace_multi_single_error_y_not_visible)
 
     def test_str_to_class(self):
         """
