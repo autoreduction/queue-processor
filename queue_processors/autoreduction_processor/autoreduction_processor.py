@@ -147,12 +147,17 @@ class Consumer:
         /ReductionPending queue for messages.
         """
         # Note: To reviewer - I'm not very similar with subscriptions, consumers, etc.
-        #   I'm not confident I've changed the code below (from connection to client) correctly
+        #   I'm not 100% confident I've changed the code below
+        #   (from connection to client) correctly
         activemq_client = QueueClient()
         activemq_client.connect()
 
-        activemq_client.subscribe_amq(consumer_name=self.consumer_name,
-                                      listener=Listener())
+        # activemq_client.subscribe_amq(consumer_name=self.consumer_name,
+        #                               listener=Listener())
+        activemq_client._connection.subscribe(destination='/queue/ReductionPending',
+                                              id='1',
+                                              ack='auto',
+                                              header={'activemq.prefetchSize': '1'})
 
 
 def main():  # pragma: no cover
