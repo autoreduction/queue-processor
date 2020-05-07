@@ -9,7 +9,6 @@ A module for creating and submitting manual submissions to autoreduction
 """
 from __future__ import print_function
 
-import json
 import sys
 import argparse
 

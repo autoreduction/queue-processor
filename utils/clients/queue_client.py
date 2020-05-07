@@ -128,6 +128,7 @@ class QueueClient(AbstractClient):
         """
         Packs the specified data into a dictionary ready to send to a processor queue
         """
+        # pylint:disable=fixme
         # TODO: This probably ought to be removed once we've fully integrated the Message class.
         #   The danger with this is that we will need to make sure the keys match the
         #   attribute names in the Message class.
