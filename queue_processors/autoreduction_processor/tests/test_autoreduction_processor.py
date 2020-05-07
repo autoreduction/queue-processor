@@ -167,8 +167,9 @@ class TestAutoReductionProcessorConsumer(unittest.TestCase):
     def test_init(self):
         self.assertEqual(self.consumer.consumer_name, 'queueProcessor')
 
+    @patch('utils.clients.queue_client.QueueClient.subscribe_amq')
     @patch('utils.clients.queue_client.QueueClient.connect')
-    def test_run(self, mock_connect):
+    def test_run(self, mock_connect, mock_sub_amq):
         """
         Test: That the QueueClient is connected and subscribed to the /ReductionPending queue
         When: Consumer.run() is called
@@ -177,12 +178,10 @@ class TestAutoReductionProcessorConsumer(unittest.TestCase):
         mock_connect.return_value = mock_connection
         self.consumer.run()
         mock_connect.assert_called_once()
-        subscribe_args = {'destination': '/queue/ReductionPending',
-                          'id': '1',
-                          'ack': 'auto',
-                          'header': {'activemq.prefetchSize': '1'}
-                         }
-        mock_connection.subscribe.assert_called_once_with(**subscribe_args)
+        mock_sub_amq.assert_called_once()
+        (_, kwargs) = mock_sub_amq.call_args
+        self.assertEqual(kwargs['consumer_name'], self.consumer.consumer_name)
+        self.assertTrue(isinstance(kwargs['listener'], Listener))
 
 
 if os.name != 'nt':  # pragma: no cover

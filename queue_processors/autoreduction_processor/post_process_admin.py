@@ -109,11 +109,11 @@ class PostProcessAdmin:
     """ Main class for the PostProcessAdmin """
 
     # pylint: disable=too-many-instance-attributes
-    def __init__(self, data, connection):
+    def __init__(self, data, client):
         logger.debug("json data: %s", prettify(data))
         data["information"] = socket.gethostname()
         self.data = data
-        self.client = connection
+        self.client = client
 
         self.reduction_log_stream = io.StringIO()
         self.admin_log_stream = io.StringIO()
@@ -496,11 +496,10 @@ class PostProcessAdmin:
 def main():
     """ Main method. """
     json_data = None
-    connection = None
+    queue_client = QueueClient()
     try:
-        queue_client = QueueClient()
         logger.info("PostProcessAdmin Connecting to ActiveMQ")
-        connection = queue_client.connect()
+        queue_client.connect()
         logger.info("PostProcessAdmin Successfully Connected to ActiveMQ")
 
         destination, message = sys.argv[1:3]  # pylint: disable=unbalanced-tuple-unpacking
@@ -509,7 +508,7 @@ def main():
         json_data = json.loads(message)
 
         try:
-            post_proc = PostProcessAdmin(json_data, connection)
+            post_proc = PostProcessAdmin(json_data, queue_client)
             log_stream_handler = logging.StreamHandler(post_proc.admin_log_stream)
             logger.addHandler(log_stream_handler)
             if destination == '/queue/ReductionPending':
@@ -533,7 +532,7 @@ def main():
     except Exception as exp:
         logger.info("Something went wrong: %s", str(exp))
         try:
-            connection.send(ACTIVEMQ_SETTINGS.reduction_error, json.dumps(json_data))
+            queue_client.send(ACTIVEMQ_SETTINGS.reduction_error, json.dumps(json_data))
             logger.info("Called %s ---- %s", ACTIVEMQ_SETTINGS.reduction_error, prettify(json_data))
         finally:
             sys.exit()
