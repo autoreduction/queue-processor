@@ -13,6 +13,7 @@ TODO: - Tests on lines 44 and 60 seem to fail - Currently don't understand why
 # Core Dependencies
 import unittest
 import plotly
+import pandas
 import logging
 
 # Mocked values
@@ -41,7 +42,11 @@ class TestTrace(unittest.TestCase):
         self.assertEqual(len(actual), len(expected))  # Length of dictionaries
         self.assertEqual(actual['error_y'], expected['error_y'])  # Compare nested dictionary
         self.assertEqual(actual.keys(), expected.keys())  # Compare dictionary keys
-        self.assertEqual(actual, expected)  # fails - Don't understand why :(
+        for key, value in actual.items():
+            if isinstance(value, pandas.Series):
+                self.assertTrue(value.equals(expected[key]))
+            else:
+                self.assertEqual(value, expected[key])
         self.assertIsInstance(actual, dict)
 
     def test_trace_dict_error_bars_set_false(self):
@@ -57,7 +62,11 @@ class TestTrace(unittest.TestCase):
         self.assertEqual(len(actual), len(expected))  # Length of dictionaries
         self.assertEqual(actual['error_y'], expected['error_y'])  # Compare nested dictionary
         self.assertEqual(actual.keys(), expected.keys())  # Compare dictionary keys
-        self.assertEqual(actual, expected)  # fails - Don't understand why :(
+        for key, value in actual.items():
+            if isinstance(value, pandas.Series):
+                self.assertTrue(value.equals(expected[key]))
+            else:
+                self.assertEqual(value, expected[key])
         self.assertIsInstance(actual, dict)
 
     def test_str_to_class(self):
