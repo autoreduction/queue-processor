@@ -47,6 +47,7 @@ class Message:
     def serialize(self, indent=None):
         """
         Serialized member variables as a json dump
+        :param indent: The indent level passed to json.dumps
         :return: JSON dump of a dictionary representing the member variables
         """
         return json.dumps(attr.asdict(self), indent=indent)

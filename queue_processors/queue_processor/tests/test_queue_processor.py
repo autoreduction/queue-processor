@@ -57,7 +57,7 @@ class TestListener(unittest.TestCase):
     def test_construct_and_send_skipped(self):
         # pylint:disable=protected-access
         """
-        Test: _data_dict['message'] is given a value,and the _data_dict is sent via the QueueClient
+        Test: _data_dict['message'] is given a value, and the _data_dict is sent via the QueueClient
         When: _construct_and_send_skipped is called
         """
         mock_client = MagicMock(name="QueueClient")
