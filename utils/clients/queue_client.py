@@ -44,8 +44,9 @@ class QueueClient(AbstractClient):
         if self._connection is None or not self._connection.is_connected():
             self.disconnect()
             return self._create_connection(listener)
-        # TODO: To avoid stomp being used directly in future, I think we should no longer return _connection
-        #   i.e. connection and _create_connection to return void
+        # pylint:disable=fixme
+        # TODO: To avoid stomp being used directly in future, I think we should no longer
+        #  return _connection; i.e. connection and _create_connection should return nothing
         return self._connection
 
     def _test_connection(self):
@@ -90,7 +91,7 @@ class QueueClient(AbstractClient):
         """
         Subscribe a listener to the provided queues
         """
-        if not isinstance(queue_list, list):     # TODO: test this
+        if not isinstance(queue_list, list):
             queue_list = [queue_list]
         self._connection.set_listener(consumer_name, listener)
         for queue in queue_list:
