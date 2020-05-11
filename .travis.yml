@@ -38,7 +38,7 @@ script:
   - py.test systemtests --cov-append
   - cat logs/queue_processor.log
   - cat logs/queue_client.log
-  - cat logs/autoreduction_processor.log
+  - cat logs/autoreductionProcessor.log
 
   # ================ Static Analysis ================= #
   # ToDo: These should all be collapsed into one once autoreduction gets a single code package
