@@ -47,6 +47,7 @@ class DjangoORM:
     def setup_django():
         """
         Use the WebApp settings to initialise a django instance that can be used for model access
+        This should always be called before any other function
         """
         try:
             # import here to avoid failure without calling add_webapp_path first
@@ -94,6 +95,8 @@ class DjangoORM:
             if not self.variable_model:
                 self._get_variable_model()
             self.variable_model.Variable.objects.first()
+        # Bare accept here as we want to catch any form of exception
+        # (and there could be multiple different ones from the above code)
         # pylint:disable=bare-except
         except:
             return False

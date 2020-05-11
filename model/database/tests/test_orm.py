@@ -43,7 +43,7 @@ class TestDjangoORM(unittest.TestCase):
 
     def test_get_data_model(self):
         """
-        Test: That the data model can be accessed
+        Test: The data model can be accessed
         When: After it is imported
         """
         orm = DjangoORM()
@@ -56,7 +56,7 @@ class TestDjangoORM(unittest.TestCase):
 
     def test_get_variable_model(self):
         """
-        Test: That the variable model can be accessed
+        Test: The variable model can be accessed
         When: After it is imported
         Note: This will fail if not pointing to the testing database
         """
@@ -71,7 +71,7 @@ class TestDjangoORM(unittest.TestCase):
 
     def test_connect(self):
         """
-        Test: The orm is exposed and populated as member variables
+        Test: The DjangoORM instance is exposed and populated as member variables
         When: calling the connect function
         """
         orm = DjangoORM()
@@ -83,7 +83,7 @@ class TestDjangoORM(unittest.TestCase):
     def test_failed_connect(self, mock_data):
         """
         Test: False is returned
-        When: Connect fails to retrieve data (raises an exception)
+        When: connect fails to retrieve data (raises an exception)
         """
         mock_data.Instrument.objects.first.side_effect = RuntimeError
         orm = DjangoORM()
