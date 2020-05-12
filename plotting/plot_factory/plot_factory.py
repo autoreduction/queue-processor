@@ -36,7 +36,7 @@ class PlotFactory:
 
             trace_list.append(Trace(mode=layout.mode,
                                     plot_style=layout.plot_type,
-                                    plot_name=f"{figure_name}_{layout.plot_type}",
+                                    plot_name=f"{spectrum}_{layout.plot_type}",
                                     data=data.loc[spectrum],
                                     error_bars=layout.error_bars).trace)
 
@@ -53,7 +53,7 @@ class PlotFactory:
         """
 
         data.set_index('Spectrum', inplace=True)
-        layout = Layout(plot_meta_file_location)
+        layout = Layout(plot_meta_file_location, title=figure_name)
         trace_list = self.create_trace_list(data=data, layout=layout, figure_name=figure_name)
         figure = dict(data=trace_list, layout=layout.layout)
 

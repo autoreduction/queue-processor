@@ -16,12 +16,13 @@ from plotting.plot_meta_language.interpreter import Interpreter
 class Layout:
     """ Extract Layout as dictionary from interpreted meta data """
     # pylint: disable=too-few-public-methods
-    def __init__(self, plot_style):
+    def __init__(self, plot_style, title):
         """
         # Layout Properties
 
         :param plot_style (dictionary) plotly layouts formatted as dictionary
         """
+        self.title=title
         self.meta_data = plot_style
         self.mode = None
         self.plot_type = None
@@ -54,4 +55,5 @@ class Layout:
             self.plot_type = interpreted_layout.pop('plot')
         if 'error_bars' in interpreted_layout:
             self.error_bars = interpreted_layout.pop('error_bars')
+        interpreted_layout['title'] = f"{self.title}"  # px
         return interpreted_layout
