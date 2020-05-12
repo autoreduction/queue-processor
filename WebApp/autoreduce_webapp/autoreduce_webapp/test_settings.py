@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
+    'django_plotly_dash.apps.DjangoPlotlyDashConfig',
 ]
 
 INSTALLED_APPS = INSTALLED_APPS + ORM_INSTALL
@@ -66,6 +67,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django_user_agents.middleware.UserAgentMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_plotly_dash.middleware.BaseMiddleware',
 ]
 
 # Add debug toolbar only if in DEBUG mode
@@ -248,3 +250,4 @@ USER_ACCESS_CHECKS = False  # Should the webapp prevent users from accessing run
 DEVELOPMENT_MODE = True  # If the installation is in a development environment, set this variable to True so that
                          # we are not constrained by having to log in through the user office. This will authenticate
                          # anyone visiting the site as a super user
+X_FRAME_OPTIONS = 'SAMEORIGIN'  # Enables the use of frames within HTML
