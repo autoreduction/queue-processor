@@ -14,7 +14,7 @@ from plotting.plot_factory.plot_factory import PlotFactory, Layout  # Returns Da
 from plotting.prepare_data import PrepareData  # Read CSV to generate dataframe
 
 
-class Dashapp:
+class DjangoDashapp:
     """Returns a Dash"""
     def __init__(self, data_location, meta_location, dashapp_name):
         self.data_location = data_location  # From repository root
@@ -35,6 +35,6 @@ class Dashapp:
 
 
 # .dashapp isn't required for this to serve a dashapp, but included for specificity
-dashapp = Dashapp('plotting/multi_spectra_data_file.csv',
+dashapp = DjangoDashapp('plotting/multi_spectra_data_file.csv',
                   'plotting/plot_meta_language/plot_types/example.yaml',
                   "Instrument_Run_Number").dashapp
