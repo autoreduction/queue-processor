@@ -9,9 +9,10 @@ Constructs a plot and DashApp object for insertion directly into a web page
 """
 
 # Core Dependencies
-import dash
 import dash_core_components as dcc
 import dash_html_components as html
+
+from django_plotly_dash import DjangoDash
 
 # pylint: disable=too-few-public-methods
 class DashApp:
@@ -28,16 +29,18 @@ class DashApp:
 
     def create_dashapp(self):  #
         """
-        Creates DashApp
-        :return: DashApp (object) DashApp object for direct insertion into webapp
+        Creates DjangoDash DashApp
+        :return: DjangoDash DashApp (object) DashApp object for direct insertion into webapp
         """
-        app = dash.Dash()
-        app.layout = html.Div([
-            html.Div(
-                dcc.Graph(
-                    id=self.app_id,  # Unique ID to track DashApp
-                    figure=self.figure
-                )
-            )
-        ])
+        app = DjangoDash(self.app_id)
+        app.layout = \
+            html.Div([
+                html.Div(
+                    dcc.Graph(
+                        id=self.app_id,  # Unique ID to track DashApp
+                        figure=self.figure,
+                    ),
+                ),
+            ])
+        app.title = self.app_id
         return app

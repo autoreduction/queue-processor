@@ -21,6 +21,9 @@ sys.path.append(os.path.join(get_project_root(), 'WebApp', 'autoreduce_webapp'))
 from reduction_viewer import views as reduction_viewer_views
 from reduction_variables import views as reduction_variables_views
 
+# Visualisation Plot Handler Import
+from plotting.plot_factory.plot_handler import plot_handler
+
 # pylint: disable=invalid-name
 handler400 = 'autoreduce_webapp.views.handler400'
 handler403 = 'autoreduce_webapp.views.handler403'
@@ -81,7 +84,10 @@ urlpatterns = [
     # ===========================SCRIPTS============================= #
     url(r'^graph/$', reduction_viewer_views.graph_home, name="graph"),
     url(r'^graph/(?P<instrument_name>\w+)', reduction_viewer_views.graph_instrument, name="graph_instrument"),
-    url(r'^stats', reduction_viewer_views.stats, name="stats")
+    url(r'^stats', reduction_viewer_views.stats, name="stats"),
+
+    # ===========================VISUALISATION============================= #
+    url('django_plotly_dash/', include('django_plotly_dash.urls'))
 ]
 
 if settings.DEBUG:
