@@ -30,20 +30,27 @@ class TestQueueClient(unittest.TestCase):
                                                                     port='1234')
 
     def test_default_init(self):
-        """ Test default values for initialisation """
+        """
+        Test: Class variables are created and set
+        When: QueueClient is initialised with default credentials
+        """
         client = QueueClient()
         self.assertIsNotNone(client.credentials)
         self.assertIsNone(client._connection)
         self.assertEqual('QueueProcessor', client._consumer_name)
 
     def test_invalid_init(self):
-        """ Test invalid values for initialisation """
+        """
+        Test: A TypeError is raised
+        When: QueueClient is initialised with invalid credentials
+        """
         self.assertRaises(TypeError, QueueClient, 'string')
 
     def test_valid_connection(self):
         """
-        Test connection with valid credentials
-        This by proxy will also test the get_connection function
+        Test: Access is established with a valid connection
+        (This by proxy will also test the get_connection function)
+        When: connect is called while valid credentials are held
         """
         client = QueueClient()
         client.connect()
@@ -51,18 +58,28 @@ class TestQueueClient(unittest.TestCase):
 
     @patch('stomp.connect.StompConnection11.is_connected', return_value=False)
     def test_invalid_connection_raises_on_test(self, _):
+        """
+        Test: A ConnectionException is raised
+        When: _test_connection is called while a valid connection is not held
+        """
         client = QueueClient()
         client.connect()
         self.assertRaises(ConnectionException, client._test_connection)
 
     def test_invalid_credentials(self):
-        """ Test connection with invalid credentials """
+        """
+        Test: A ConnectionException is raised
+        When: _test_connection is called while invalid credentials are held
+        """
         client = QueueClient(self.incorrect_credentials)
         with self.assertRaises(ConnectionException):
             client.connect()
 
     def test_stop_connection(self):
-        """ Test connection can be stopped gracefully """
+        """
+        Test: Connection is stopped and connection variables are set to None
+        When: disconnect is called while a valid connection is currently established
+        """
         client = QueueClient()
         client.connect()
         self.assertTrue(client._connection.is_connected())
@@ -70,7 +87,10 @@ class TestQueueClient(unittest.TestCase):
         self.assertIsNone(client._connection)
 
     def test_serialise_message(self):
-        """ Test data is correctly serialised """
+        """
+        Test: Data is correctly serialised
+        When: serialise_data is called with valid arguments
+        """
         client = QueueClient()
         data = client.serialise_data('123', 'WISH', 'file/path', '001', 0)
         self.assertEqual(data['rb_number'], '123')
@@ -82,21 +102,35 @@ class TestQueueClient(unittest.TestCase):
 
     # pylint:disable=no-self-use
     @patch('stomp.connect.StompConnection11.send')
-    def test_send_data(self, mock_send):
-        """ Test data can be sent without error """
+    def test_send_data(self, mock_stomp_send):
+        """
+        Test: send establishes a connection and sends given data using stomp.send
+        When: send is called while a valid connection is not held
+        """
         client = QueueClient()
         client.send('dataready', 'test-message')
-        mock_send.assert_called_once()
+        (args, _) = mock_stomp_send.call_args
+        self.assertEqual(args[0], 'dataready')
+        self.assertEqual(args[1], 'test-message')
 
     @patch('stomp.connect.StompConnection11.ack')
-    def test_ack(self, mock_ack):
+    def test_ack(self, mock_stomp_ack):
+        """
+        Test: ack sends an ack frame using stomp.ack
+        When: ack is called while a valid connection is held
+        """
         client = QueueClient()
         client.connect()
         client.ack('test')
-        mock_ack.assert_called_once_with('test')
+        mock_stomp_ack.assert_called_once_with('test')
 
     @patch('utils.clients.queue_client.QueueClient.subscribe_queues')
     def test_subscribe_to_pending(self, mock_subscribe):
+        """
+        Test: subscribe_amq calls subscribe_queues with given arguments,
+        including a single queue (ReductionPending)
+        When: subscribe_amq is called once with the arguments given
+        """
         client = QueueClient()
         client.subscribe_amq('consumer', None, 'auto')
         # due to default params these have to be supplied to the mock in a dictionary
@@ -108,6 +142,11 @@ class TestQueueClient(unittest.TestCase):
 
     @patch('utils.clients.queue_client.QueueClient.subscribe_queues')
     def test_subscribe_to_all_queues(self, mock_subscribe):
+        """
+        Test: subscribe_autoreduce calls subscribe_queues with given arguments,
+        including a list of multiple queues (all)
+        When: subscribe_autoreduce is called once with the arguments given
+        """
         client = QueueClient()
         client.subscribe_autoreduce('consumer', None, 'auto')
         expected_args = {'queue_list': ['/queue/DataReady',
@@ -122,11 +161,15 @@ class TestQueueClient(unittest.TestCase):
 
     @patch('stomp.connect.StompConnection11.set_listener')
     @patch('stomp.connect.StompConnection11.subscribe')
-    def test_subscribe_to_queue(self, mock_subscribe, mock_set_listener):
+    def test_subscribe_to_queue(self, mock_stomp_subscribe, mock_stomp_set_listener):
+        """
+        Test: subscribe_queues calls stomp.subscribe_queues twice, once for each queue given
+        When: subscribe_queues is called with a queue_list length of 2
+        """
         client = QueueClient()
         client.connect()
         client.subscribe_queues(['test', 'queues'], 'consumer', None, 'auto')
-        mock_set_listener.assert_called_once_with('consumer', None)
+        mock_stomp_set_listener.assert_called_once_with('consumer', None)
         test_expected_args = {'destination': 'test',
                               'id': '1',
                               'ack': 'auto',
@@ -135,4 +178,5 @@ class TestQueueClient(unittest.TestCase):
                                'id': '1',
                                'ack': 'auto',
                                'header': {'activemq.prefetchSize': '1'}}
-        mock_subscribe.assert_has_calls([call(**test_expected_args), call(**queue_expected_args)])
+        mock_stomp_subscribe.assert_has_calls([call(**test_expected_args),
+                                               call(**queue_expected_args)])

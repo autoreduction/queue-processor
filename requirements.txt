@@ -1,3 +1,5 @@
+plotly
+dash
 ipython
 pandas
 lxml
