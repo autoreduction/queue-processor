@@ -6,6 +6,7 @@
             backdrop: true,
             backdropPadding: 2
         })
+        console.log("TOUR:" + tour)
         tour.init();
         tour.end();             // avoids bug where tour recognised as in progress on re-visit
 
