@@ -1,9 +1,10 @@
 (function(){
     function setupTour(steps){
         tour = new Tour({
-            steps: tourSteps,
+            steps: steps,
             storage: false,      // avoids storing process between visits
-            backdrop: true
+            backdrop: true,
+            backdropPadding: 2
         })
         tour.init();
         tour.end();             // avoids bug where tour recognised as in progress on re-visit
@@ -24,10 +25,7 @@
     };
 
     var init = function init(){
-//        console.log($("#right_of_title"))
-//        $("#right_of_title").html = '<button class="btn btn-info btn-block text-center pull-right" id="tour-btn">Take a tour</button>';
         document.getElementById('right_of_title').innerHTML = '<button class="btn btn-info btn-block" id="tour-btn">Take a tour</button>';
-//        console.log($("#right_of_title"))
         setupTour(tourSteps);
     };
 
