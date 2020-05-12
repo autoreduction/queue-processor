@@ -44,9 +44,6 @@ class QueueClient(AbstractClient):
         if self._connection is None or not self._connection.is_connected():
             self.disconnect()
             return self._create_connection(listener)
-        # pylint:disable=fixme
-        # TODO: To avoid stomp being used directly in future, I think we should no longer
-        #  return _connection; i.e. connection and _create_connection should return nothing
         return self._connection
 
     def _test_connection(self):

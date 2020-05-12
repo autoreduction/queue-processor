@@ -470,7 +470,7 @@ def setup_connection(consumer_name):
 
 def main():
     """ Main method. """
-    setup_connection('Autoreduction_QueueProcessor')
+    setup_connection('queue_processor')
 
 
 if __name__ == '__main__':

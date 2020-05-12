@@ -136,28 +136,17 @@ class Consumer:
     """ Class used to setup the queue listener. """
     def __init__(self):
         """ Initialise consumer. """
-        # Note: The consumer name of autoreduction_processor.py is "queueProcessor"
-        #   while the consumer name of queue_processor.py is "Autoreduction_QueueProcessor".
-        #   This seems like it needs changing...
-        self.consumer_name = "queueProcessor"
+        self.consumer_name = "autoreduction_processor"
 
     def run(self):
         """
         Connect to ActiveMQ via the QueueClient and listen to the
         /ReductionPending queue for messages.
         """
-        # Note: To reviewer - I'm not very similar with subscriptions, consumers, etc.
-        #   I'm not 100% confident I've changed the code below
-        #   (from connection to client) correctly
         activemq_client = QueueClient()
         activemq_client.connect()
-
         activemq_client.subscribe_amq(consumer_name=self.consumer_name,
                                       listener=Listener())
-        # activemq_client._connection.subscribe(destination='/queue/ReductionPending',
-        #                                       id='1',
-        #                                       ack='auto',
-        #                                       header={'activemq.prefetchSize': '1'})
 
 
 def main():  # pragma: no cover
