@@ -7,7 +7,6 @@
 """
 Unit tests for plot factory Trace
 
-TODO: - Tests on lines 44 and 60 seem to fail - Currently don't understand why
 """
 
 # Core Dependencies
