@@ -165,7 +165,7 @@ class TestAutoReductionProcessorConsumer(unittest.TestCase):
         self.consumer = Consumer()
 
     def test_init(self):
-        self.assertEqual(self.consumer.consumer_name, 'queueProcessor')
+        self.assertEqual(self.consumer.consumer_name, 'autoreduction_processor')
 
     @patch('utils.clients.queue_client.QueueClient.subscribe_amq')
     @patch('utils.clients.queue_client.QueueClient.connect')
