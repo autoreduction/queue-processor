@@ -13,13 +13,28 @@ Template Script to display how Plot Handler can create DashApps
 from plotting.plot_factory.plot_factory import PlotFactory, Layout  # Returns DashApp
 from plotting.prepare_data import PrepareData  # Read CSV to generate dataframe
 
-# Convert raw data to Pandas Dataframe
-dataframe = PrepareData().prepare_data('../../.csv_location')
 
-# Get .yaml file location
-plot_meta_file_location = "../../<.yaml_location>"
+class Dashapp:
+    """Returns a Dash"""
+    def __init__(self, data_location, meta_location, dashapp_name):
+        self.data_location = data_location  # From repository root
+        self.meta_location = meta_location  # From repository root
+        self.dashapp_name = dashapp_name
+        self.dashapp = self.get_dashapp()
 
-# DjangoDash Dashapp Object
-dashapp = PlotFactory().create_plot(plot_meta_file_location=plot_meta_file_location,
-                                    data=dataframe,
-                                    figure_name="Instrument_Run_Number")
+    @staticmethod
+    def get_dataframe(data_location):
+        """Convert raw data to Pandas Dataframe"""
+        return PrepareData().prepare_data(f"../../{data_location}")
+
+    def get_dashapp(self):
+        """Get DashApp from Plot Factory"""
+        return PlotFactory().create_plot(plot_meta_file_location=f"../../{self.meta_location}",
+                                         data=self.get_dataframe(self.data_location),
+                                         figure_name=self.dashapp_name)
+
+
+# .dashapp isn't required for this to serve a dashapp, but included for specificity
+dashapp = Dashapp('plotting/multi_spectra_data_file.csv',
+                  'plotting/plot_meta_language/plot_types/example.yaml',
+                  "Instrument_Run_Number").dashapp

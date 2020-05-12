@@ -6,12 +6,14 @@
 # ############################################################################### #
 """
 Unit tests for plot factory DashApp
+
+TODO: line 37 currently fails due to not knowing how to correctly mock this
 """
 
 # Core Dependencies
 import unittest
 
-import dash
+import django_plotly_dash
 
 # Internal Dependencies
 from plotting.plot_factory.dashapp import DashApp
@@ -34,5 +36,5 @@ class TestDashApp(unittest.TestCase):
         # Assert a DashApp is returned
         actual = DashApp(self.figure, MockPlotVariables().plot_name).create_dashapp()
 
-        self.assertIsInstance(actual, dash.dash.Dash)
+        self.assertIsInstance(actual, django_plotly_dash.dash_wrapper.DjangoDash)  # Currently fails
 

@@ -6,13 +6,15 @@
 # ############################################################################### #
 """
 Unit tests for plot factory
+
+TODO: line 54 currently fails due to not knowing how to correctly mock this
 """
 
 # Core Dependencies
 import unittest
 from mock import patch, PropertyMock
 
-import dash
+import django_plotly_dash
 
 # Internal Dependencies
 from plotting.plot_factory.plot_factory import PlotFactory
@@ -41,9 +43,10 @@ class TestPlotFactory(unittest.TestCase):
         self.assertIsInstance(actual, list)  # is list
         self.assertEqual(len(actual), 2)
 
+    @patch('plotting.plot_factory.dashapp.DashApp')
     @patch('plotting.plot_factory.plot_factory.PlotFactory.create_trace_list')
     @patch('plotting.plot_factory.plot_factory.Layout')
-    def test_construct_plot(self, mock_layout, mock_get_trace):
+    def test_construct_plot(self, mock_layout, mock_get_trace, mock_djangodash):
         """
         Test: dashapp object is returned
         When: called with self.create_trace_list() and Layout().layout
@@ -53,4 +56,4 @@ class TestPlotFactory(unittest.TestCase):
             data=MockPlotVariables().raw_multi_single_data_dataframe,
             figure_name=MockPlotVariables().plot_name)
 
-        self.assertIsInstance(actual.app, dash.dash.Dash)
+        self.assertIsInstance(actual.app, django_plotly_dash.dash_wrapper.DjangoDash)
