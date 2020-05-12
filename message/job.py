@@ -42,8 +42,6 @@ class Message:
     return_message = attr.ib(default=None)
     retry_in = attr.ib(default=None)
 
-    # Note: added indent to allow pretty-printing
-    #   Although I can work around needing this if not appropriate to have as argument
     def serialize(self, indent=None):
         """
         Serialized member variables as a json dump
