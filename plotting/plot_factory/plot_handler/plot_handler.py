@@ -9,19 +9,17 @@ Template Script to display how Plot Handler can create DashApps
 
 - Note file paths are relative to WebApp/autoreduce_webapp/autoreduce_webapp/urls.py (hence ../../)
 """
-import dash_core_components as dcc
-import dash_html_components as html
 
 from plotting.plot_factory.plot_factory import PlotFactory, Layout  # Returns DashApp
 from plotting.prepare_data import PrepareData  # Read CSV to generate dataframe
 
-#  Get DataFrame -
-dataframe = PrepareData().prepare_data('../../plotting/multi_spectra_data_file.csv')  # csv path
+# Convert raw data to Pandas Dataframe
+dataframe = PrepareData().prepare_data('../../.csv_location')
 
-#  Get .yaml file location as string
-plot_meta_file_location = "../../plotting/plot_meta_language/plot_types/example.yaml"
+# Get .yaml file location
+plot_meta_file_location = "../../<.yaml_location>"
 
-# Dashapp
+# DjangoDash Dashapp Object
 dashapp = PlotFactory().create_plot(plot_meta_file_location=plot_meta_file_location,
-                                       data=dataframe,
-                                       figure_name="Instrument_Run_Number")
+                                    data=dataframe,
+                                    figure_name="Instrument_Run_Number")
