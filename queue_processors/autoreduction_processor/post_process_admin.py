@@ -32,6 +32,7 @@ from sentry_sdk import init
 
 # pylint:disable=no-name-in-module,import-error
 from paths.path_manipulation import append_path
+from message.job import Message
 from queue_processors.autoreduction_processor.settings import MISC
 from queue_processors.autoreduction_processor.autoreduction_logging_setup import logger
 from queue_processors.autoreduction_processor.timeout import TimeOut
@@ -197,7 +198,9 @@ class PostProcessAdmin:
             logger.debug("Calling: %s\n%s",
                          ACTIVEMQ_SETTINGS.reduction_started,
                          prettify(self.data))
-            self.client.send(ACTIVEMQ_SETTINGS.reduction_started, json.dumps(self.data))
+            message = Message()
+            message.populate(self.data)
+            self.client.send(ACTIVEMQ_SETTINGS.reduction_started, message)
 
             # Specify instrument directory
             instrument_output_dir = MISC["ceph_directory"] % (self.instrument,
@@ -372,8 +375,10 @@ class PostProcessAdmin:
 
         else:
             # reduction has successfully completed
-            self.data["message"] = ""   # Note: this assignment is redundant but precautionary
-            self.client.send(ACTIVEMQ_SETTINGS.reduction_complete, json.dumps(self.data))
+            self.data["message"] = ""
+            message = Message()
+            message.populate(self.data)
+            self.client.send(ACTIVEMQ_SETTINGS.reduction_complete, message)
             logger.info("Calling: %s\n%s",
                         ACTIVEMQ_SETTINGS.reduction_complete,
                         prettify(self.data))
@@ -406,7 +411,9 @@ class PostProcessAdmin:
     def _send_message_and_log(self, destination):
         """ Send reduction run to error. """
         logger.info("\nCalling " + destination + " --- " + prettify(self.data))
-        self.client.send(destination, json.dumps(self.data))
+        message = Message()
+        message.populate(self.data)
+        self.client.send(destination, message)
 
     def copy_temp_directory(self, temp_result_dir, copy_destination):
         """
@@ -541,7 +548,9 @@ def main():
     except Exception as exp:
         logger.info("Something went wrong: %s", str(exp))
         try:
-            queue_client.send(ACTIVEMQ_SETTINGS.reduction_error, json.dumps(json_data))
+            message = Message()
+            message.populate(json_data)
+            queue_client.send(ACTIVEMQ_SETTINGS.reduction_error, message)
             logger.info("Called %s ---- %s", ACTIVEMQ_SETTINGS.reduction_error, prettify(json_data))
         finally:
             sys.exit()

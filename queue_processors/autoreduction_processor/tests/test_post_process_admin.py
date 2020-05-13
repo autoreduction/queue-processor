@@ -17,6 +17,7 @@ from tempfile import mkdtemp, NamedTemporaryFile
 from mock import patch, call, Mock
 
 from paths.path_manipulation import append_path
+from message.job import Message
 from utils.settings import ACTIVEMQ_SETTINGS
 from utils.project.structure import get_project_root
 from queue_processors.autoreduction_processor.settings import MISC
@@ -42,6 +43,7 @@ class TestPostProcessAdminHelpers(unittest.TestCase):
 
 class TestPostProcessAdmin(unittest.TestCase):  # pylint:disable=too-many-public-methods
     DIR = "queue_processors.autoreduction_processor"
+
     def setUp(self):
         self.data = {'data': '\\\\isis\\inst$\\data.nxs',
                      'facility': 'ISIS',
@@ -162,8 +164,10 @@ class TestPostProcessAdmin(unittest.TestCase):  # pylint:disable=too-many-public
         ppa._send_message_and_log(ACTIVEMQ_SETTINGS.reduction_error)
         mock_logger.assert_called_with("\nCalling " + ACTIVEMQ_SETTINGS.reduction_error +
                                        " --- " + prettify(self.data))
+        message = Message()
+        message.populate(ppa.data)
         activemq_client_mock.send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_error,
-                                                          json.dumps(ppa.data))
+                                                          message)
 
     @patch('shutil.rmtree')
     @patch(DIR + '.autoreduction_logging_setup.logger.info')
@@ -276,8 +280,10 @@ class TestPostProcessAdmin(unittest.TestCase):  # pylint:disable=too-many-public
         mock_logger.assert_has_calls([call('JSON data error: %s', 'test')])
         mock_exit.assert_called_once()
         self.data['error'] = 'error-message'
+        message = Message()
+        message.populate(self.data)
         mock_send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_error,
-                                          json.dumps(self.data))
+                                          message)
 
     @patch('sys.exit')
     @patch(DIR + '.autoreduction_logging_setup.logger.info')
@@ -301,8 +307,10 @@ class TestPostProcessAdmin(unittest.TestCase):  # pylint:disable=too-many-public
         mock_client_init.assert_called_once()
         mock_logger.assert_has_calls([call('PostProcessAdmin error: %s', 'error-message')])
         mock_exit.assert_called_once()
+        message = Message()
+        message.populate(self.data)
         mock_send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_error,
-                                          json.dumps(self.data))
+                                          message)
 
     def test_new_reduction_data_path_no_overwrite_paths_exist(self):
         """
