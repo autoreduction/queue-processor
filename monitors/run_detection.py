@@ -6,7 +6,6 @@ sends them off to the autoreduction service.
 import csv
 import logging
 import os
-import json
 import h5py
 from filelock import (FileLock, Timeout)
 

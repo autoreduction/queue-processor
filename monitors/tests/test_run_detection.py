@@ -3,13 +3,11 @@ Unit tests for the end of run monitor
 """
 import unittest
 import os
-import json
 import csv
 from filelock import FileLock
 from mock import (Mock, patch, call)
 
 from message.job import Message
-from utils.clients.queue_client import QueueClient
 from monitors.settings import (CYCLE_FOLDER, LAST_RUNS_CSV)
 import monitors.run_detection as eorm
 from monitors.run_detection import (InstrumentMonitor,
@@ -32,7 +30,7 @@ RUN_DATA = {'instrument': 'WISH',
             'summary_rb_number': '1820333',
             'facility': 'ISIS',
             'started_by': 0
-}
+            }
 CSV_FILE = "WISH,44733,lastrun_wish.txt,summary_wish.txt,data_dir,.nxs"
 
 
@@ -129,7 +127,7 @@ class TestRunDetection(unittest.TestCase):
     def test_submit_run(self, read_rb_mock, isfile_mock):
         client = Mock()
         client.send = Mock(return_value=None)
-        # client.serialise_data = Mock(return_value=RUN_DICT)
+        # client.serialise_data = Mock(return_value=)
 
         inst_mon = InstrumentMonitor(client, 'WISH')
         inst_mon.data_dir = '/my/data/dir'
@@ -211,8 +209,10 @@ class TestRunDetection(unittest.TestCase):
         # Perform test
         run_number = inst_mon.submit_run_difference(44731)
         self.assertEqual(run_number, '44733')
-        inst_mon.submit_run.assert_has_calls([call(RUN_DATA['rb_number'], '00044732', 'WISH00044732.nxs'),
-                                              call(RUN_DATA['rb_number'], RUN_DATA['run_number'], FILE_NAME)])
+        inst_mon.submit_run.assert_has_calls([
+            call(RUN_DATA['rb_number'], '00044732', 'WISH00044732.nxs'),
+            call(RUN_DATA['rb_number'], RUN_DATA['run_number'], FILE_NAME)
+        ])
 
     def test_submit_run_difference_no_file(self):
         # Setup test
