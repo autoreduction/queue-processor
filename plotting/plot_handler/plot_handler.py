@@ -36,5 +36,5 @@ class DjangoDashapp:
 
 # .dashapp isn't required for this to serve a dashapp, but included for specificity
 dashapp = DjangoDashapp('plotting/multi_spectra_data_file.csv',
-                  'plotting/plot_meta_language/plot_types/example.yaml',
-                  "Instrument_Run_Number").dashapp
+                        'plotting/plot_meta_language/plot_types/example.yaml',
+                        "Instrument_Run_Number").dashapp
