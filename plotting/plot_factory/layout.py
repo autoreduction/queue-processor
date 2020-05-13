@@ -22,7 +22,7 @@ class Layout:
 
         :param plot_style (dictionary) plotly layouts formatted as dictionary
         """
-        self.title=title
+        self.title = title
         self.meta_data = plot_style
         self.mode = None
         self.plot_type = None
