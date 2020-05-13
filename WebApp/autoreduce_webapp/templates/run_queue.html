@@ -44,6 +44,10 @@
         </div>
     {% endif %} 
 {% endblock %}
+{% block stylesheets %}
+    <link rel="stylesheet" href="{% static "css/vendor/bootstrap.min.css" %}">
+    <link rel="stylesheet" href="{% static "css/vendor/bootstrap-tour.min.css" %}">
+{% endblock %}
 {% block scripts %}
     <script src="{% static "javascript/vendor/jquery.min.js" %}"></script>
     <script src="{% static "javascript/vendor/bootstrap-tour.min.js" %}"></script>
