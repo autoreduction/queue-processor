@@ -38,7 +38,7 @@ class TestQueueClient(unittest.TestCase):
         client = QueueClient()
         self.assertIsNotNone(client.credentials)
         self.assertIsNone(client._connection)
-        self.assertEqual('QueueProcessor', client._consumer_name)
+        self.assertEqual('queue_client', client._consumer_name)
 
     def test_invalid_init(self):
         """
