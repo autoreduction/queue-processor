@@ -25,17 +25,14 @@ SUMMARY_FILE = ("WIS44731Smith,Smith,"
 LAST_RUN_FILE = "WISH 00044733 0 \n"
 INVALID_LAST_RUN_FILE = "INVALID LAST RUN FILE"
 FILE_NAME = "WISH00044733.nxs"
-RUN_DICT = {'instrument': 'WISH',
+RUN_DATA = {'instrument': 'WISH',
             'run_number': '00044733',
             'file_path': '/my/data/dir/cycle_18_4/' + FILE_NAME,
             'rb_number': '1820461',
+            'summary_rb_number': '1820333',
             'facility': 'ISIS',
-            'started_by': 0}
-RUN_DICT_SUMMARY = {'instrument': 'WISH',
-                    'run_number': '00044733',
-                    'file_path': '/my/data/dir/cycle_18_4/WISH00044733.nxs',
-                    'rb_number': '1820333',
-                    'facility': 'ISIS'}
+            'started_by': 0
+}
 CSV_FILE = "WISH,44733,lastrun_wish.txt,summary_wish.txt,data_dir,.nxs"
 
 
@@ -96,7 +93,7 @@ class TestRunDetection(unittest.TestCase):
         last_run_data = inst_mon.read_instrument_last_run()
 
         self.assertEqual('WISH', last_run_data[0])
-        self.assertEqual('00044733', last_run_data[1])
+        self.assertEqual(RUN_DATA['run_number'], last_run_data[1])
         self.assertEqual('0', last_run_data[2])
 
     # pylint:disable=invalid-name
@@ -117,7 +114,7 @@ class TestRunDetection(unittest.TestCase):
         inst_mon = InstrumentMonitor(None, 'WISH')
         inst_mon.summary_file = 'test_summary.txt'
         rb_number = inst_mon.read_rb_number_from_summary()
-        self.assertEqual('1820461', rb_number)
+        self.assertEqual(RUN_DATA['rb_number'], rb_number)
 
     def test_read_rb_number_from_summary_invalid(self):
         with open('test_summary.txt', 'w') as summary:
@@ -126,18 +123,9 @@ class TestRunDetection(unittest.TestCase):
         inst_mon.summary_file = 'test_summary.txt'
         self.assertRaises(InstrumentMonitorError, inst_mon.read_rb_number_from_summary)
 
-    # def test_build_dict(self):
-    #     client = QueueClient()
-    #     inst_mon = InstrumentMonitor(client, 'WISH')
-    #     data_loc = '/my/data/dir/cycle_18_4/WISH00044733.nxs'
-    #     rb_number = '1820461'
-    #     run_number = '00044733'
-    #     data_dict = inst_mon.build_dict(rb_number, run_number, data_loc)
-    #     self.assertEqual(RUN_DICT, data_dict)
-
     @patch('os.path.isfile', return_value=True)
     @patch('monitors.run_detection.read_rb_number_from_nexus_file',
-           return_value=RUN_DICT['rb_number'])
+           return_value=RUN_DATA['rb_number'])
     def test_submit_run(self, read_rb_mock, isfile_mock):
         client = Mock()
         client.send = Mock(return_value=None)
@@ -147,9 +135,9 @@ class TestRunDetection(unittest.TestCase):
         inst_mon.data_dir = '/my/data/dir'
         data_loc = os.path.join(inst_mon.data_dir, CYCLE_FOLDER, FILE_NAME)
 
-        inst_mon.submit_run(RUN_DICT_SUMMARY['rb_number'], RUN_DICT['run_number'], FILE_NAME)
-        message = Message(rb_number=RUN_DICT['rb_number'],
-                          run_number=RUN_DICT['run_number'],
+        inst_mon.submit_run(RUN_DATA['summary_rb_number'], RUN_DATA['run_number'], FILE_NAME)
+        message = Message(rb_number=RUN_DATA['rb_number'],
+                          run_number=RUN_DATA['run_number'],
                           file_path=data_loc)
         client.send.assert_called_with('/queue/DataReady', message, priority='9')
         isfile_mock.assert_called_with(data_loc)
@@ -159,13 +147,12 @@ class TestRunDetection(unittest.TestCase):
     def test_submit_run_file_not_found(self, isfile_mock):
         client = Mock()
         client.send = Mock(return_value=None)
-        client.serialise_data = Mock(return_value=RUN_DICT)
 
         inst_mon = InstrumentMonitor(client, 'WISH')
         inst_mon.data_dir = '/my/data/dir'
-        data_loc = os.path.join(inst_mon.data_dir, CYCLE_FOLDER, 'WISH00044733.nxs')
+        data_loc = os.path.join(inst_mon.data_dir, CYCLE_FOLDER, FILE_NAME)
         with self.assertRaises(FileNotFoundError):
-            inst_mon.submit_run('1820333', '00044733', 'WISH00044733.nxs')
+            inst_mon.submit_run(RUN_DATA['summary_rb_number'], RUN_DATA['run_number'], FILE_NAME)
         isfile_mock.assert_called_with(data_loc)
 
     @patch('os.path.isfile', return_vaule=True)
@@ -174,15 +161,15 @@ class TestRunDetection(unittest.TestCase):
     def test_submit_run_invalid_nexus(self, read_rb_mock, isfile_mock):
         client = Mock()
         client.send = Mock(return_value=None)
-        client.serialise_data = Mock(return_value=RUN_DICT_SUMMARY)
+        client.serialise_data = Mock(return_value=RUN_DATA['summary_rb_number'])
 
         inst_mon = InstrumentMonitor(client, 'WISH')
         inst_mon.data_dir = '/my/data/dir'
-        data_loc = os.path.join(inst_mon.data_dir, CYCLE_FOLDER, 'WISH00044733.nxs')
+        data_loc = os.path.join(inst_mon.data_dir, CYCLE_FOLDER, FILE_NAME)
 
-        inst_mon.submit_run(RUN_DICT_SUMMARY['rb_number'], RUN_DICT['run_number'], FILE_NAME)
-        message = Message(rb_number=RUN_DICT_SUMMARY['rb_number'],
-                          run_number=RUN_DICT_SUMMARY['run_number'],
+        inst_mon.submit_run(RUN_DATA['summary_rb_number'], RUN_DATA['run_number'], FILE_NAME)
+        message = Message(rb_number=RUN_DATA['summary_rb_number'],
+                          run_number=RUN_DATA['run_number'],
                           file_path=data_loc)
         client.send.assert_called_with('/queue/DataReady',
                                        message,
@@ -217,15 +204,15 @@ class TestRunDetection(unittest.TestCase):
         inst_mon.submit_run = Mock(return_value=None)
         inst_mon.file_ext = '.nxs'
         inst_mon.read_instrument_last_run = Mock(return_value=['WISH',
-                                                               '00044733',
+                                                               RUN_DATA['run_number'],
                                                                '0'])
-        inst_mon.read_rb_number_from_summary = Mock(return_value='1820461')
+        inst_mon.read_rb_number_from_summary = Mock(return_value=RUN_DATA['rb_number'])
 
         # Perform test
         run_number = inst_mon.submit_run_difference(44731)
         self.assertEqual(run_number, '44733')
-        inst_mon.submit_run.assert_has_calls([call('1820461', '00044732', 'WISH00044732.nxs'),
-                                              call('1820461', '00044733', 'WISH00044733.nxs')])
+        inst_mon.submit_run.assert_has_calls([call(RUN_DATA['rb_number'], '00044732', 'WISH00044732.nxs'),
+                                              call(RUN_DATA['rb_number'], RUN_DATA['run_number'], FILE_NAME)])
 
     def test_submit_run_difference_no_file(self):
         # Setup test
@@ -233,9 +220,9 @@ class TestRunDetection(unittest.TestCase):
         inst_mon.submit_run = Mock(side_effect=FileNotFoundError('File not found'))
         inst_mon.file_ext = '.nxs'
         inst_mon.read_instrument_last_run = Mock(return_value=['WISH',
-                                                               '00044733',
+                                                               RUN_DATA['run_number'],
                                                                '0'])
-        inst_mon.read_rb_number_from_summary = Mock(return_value='1820461')
+        inst_mon.read_rb_number_from_summary = Mock(return_value=RUN_DATA['rb_number'])
 
         # Perform test
         run_number = inst_mon.submit_run_difference(44731)
