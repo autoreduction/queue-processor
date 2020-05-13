@@ -136,24 +136,17 @@ class Consumer:
     """ Class used to setup the queue listener. """
     def __init__(self):
         """ Initialise consumer. """
-        self.consumer_name = "queueProcessor"
+        self.consumer_name = "autoreduction_processor"
 
-    @staticmethod
-    def run():
+    def run(self):
         """
         Connect to ActiveMQ via the QueueClient and listen to the
         /ReductionPending queue for messages.
         """
         activemq_client = QueueClient()
-        connection = activemq_client.connect(listener=Listener())
-
-        # Create event listener
-
-        # connection.set_listener('Autoreduction', listener)
-        connection.subscribe(destination='/queue/ReductionPending',
-                             id='1',
-                             ack='auto',
-                             header={'activemq.prefetchSize': '1'})
+        activemq_client.connect()
+        activemq_client.subscribe_amq(consumer_name=self.consumer_name,
+                                      listener=Listener())
 
 
 def main():  # pragma: no cover

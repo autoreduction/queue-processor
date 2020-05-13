@@ -161,7 +161,7 @@ class TestQueueClient(unittest.TestCase):
 
     @patch('stomp.connect.StompConnection11.set_listener')
     @patch('stomp.connect.StompConnection11.subscribe')
-    def test_subscribe_to_queue(self, mock_stomp_subscribe, mock_stomp_set_listener):
+    def test_subscribe_to_queue_list(self, mock_stomp_subscribe, mock_stomp_set_listener):
         """
         Test: subscribe_queues calls stomp.subscribe_queues twice, once for each queue given
         When: subscribe_queues is called with a queue_list length of 2
@@ -180,3 +180,21 @@ class TestQueueClient(unittest.TestCase):
                                'header': {'activemq.prefetchSize': '1'}}
         mock_stomp_subscribe.assert_has_calls([call(**test_expected_args),
                                                call(**queue_expected_args)])
+
+    @patch('stomp.connect.StompConnection11.set_listener')
+    @patch('stomp.connect.StompConnection11.subscribe')
+    def test_subscribe_to_single_queue(self, mock_stomp_subscribe, mock_stomp_set_listener):
+        """
+        Test: subscribe_queues handles a single queue (non-list)
+        and calls stomp.subscribe_queues for it
+        When: subscribe_queues is called a single queue passed as queue_list
+        """
+        client = QueueClient()
+        client.connect()
+        client.subscribe_queues('single-queue', 'consumer', None, 'auto')
+        mock_stomp_set_listener.assert_called_once_with('consumer', None)
+        test_expected_args = {'destination': 'single-queue',
+                              'id': '1',
+                              'ack': 'auto',
+                              'header': {'activemq.prefetchSize': '1'}}
+        mock_stomp_subscribe.assert_called_once_with(**test_expected_args)

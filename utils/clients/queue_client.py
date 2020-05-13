@@ -88,6 +88,8 @@ class QueueClient(AbstractClient):
         """
         Subscribe a listener to the provided queues
         """
+        if not isinstance(queue_list, list):
+            queue_list = [queue_list]
         self._connection.set_listener(consumer_name, listener)
         for queue in queue_list:
             self._connection.subscribe(destination=queue,
