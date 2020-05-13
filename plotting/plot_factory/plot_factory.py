@@ -22,12 +22,11 @@ class PlotFactory:
     """
 
     @staticmethod
-    def create_trace_list(data, layout, figure_name):
+    def create_trace_list(data, layout):
         """
         Creates trace list containing traces for each spectrum to place in figure
         :param data (pandas dataframe) instrument data placed in pandas dataframe
         :param layout (plotting.plot_factory.Layout) object containing plot layout attributes
-        :param figure_name (string) name of figure following format; Instrument_run_number
 
         :return: trace_list (list of trace objects)
         """
@@ -54,7 +53,7 @@ class PlotFactory:
 
         data.set_index('Spectrum', inplace=True)
         layout = Layout(plot_meta_file_location, title=figure_name)
-        trace_list = self.create_trace_list(data=data, layout=layout, figure_name=figure_name)
+        trace_list = self.create_trace_list(data=data, layout=layout)
         figure = dict(data=trace_list, layout=layout.layout)
 
         return DashApp(figure=figure, app_id=figure_name)
