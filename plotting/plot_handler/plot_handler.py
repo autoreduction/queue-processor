@@ -10,10 +10,10 @@ Template Script to display how Plot Handler can create DashApps
 - Note file paths are relative to WebApp/autoreduce_webapp/autoreduce_webapp/urls.py (hence ../../)
 """
 
-from plotting.plot_factory.plot_factory import PlotFactory, Layout  # Returns DashApp
+from plotting.plot_factory.plot_factory import PlotFactory  # Returns DashApp
 from plotting.prepare_data import PrepareData  # Read CSV to generate dataframe
 
-
+# pylint: disable=too-few-public-methods
 class DjangoDashApp:
     """Returns a Dash"""
     def __init__(self, data_location, meta_location, dashapp_name):
@@ -21,11 +21,6 @@ class DjangoDashApp:
         self.meta_location = meta_location  # From repository root
         self.dashapp_name = dashapp_name
         self.dashapp = self.get_dashapp()
-
-    # @staticmethod
-    # def get_dataframe(data_location):
-    #     """Convert raw data to Pandas Dataframe"""
-    #     return PrepareData().prepare_data(f"../../{data_location}")
 
     def get_dashapp(self):
         """Get DashApp from Plot Factory"""

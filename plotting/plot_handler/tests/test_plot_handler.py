@@ -19,6 +19,7 @@ from plotting.plot_handler.plot_handler import DjangoDashApp
 
 class TestDjangoDashApp(unittest.TestCase):
     """Unit tests for DjangoDashApp class in plot handler"""
+
     @patch("plotting.prepare_data.PrepareData.prepare_data")
     @patch("plotting.plot_meta_language.interpreter.Interpreter.interpret")
     @patch("plotting.plot_factory.plot_factory.PlotFactory")
@@ -31,8 +32,8 @@ class TestDjangoDashApp(unittest.TestCase):
         mock_dash_obj = Mock()
         mock_dashapp.return_value = mock_dash_obj
 
-        DjangoDashApp('plotting/multi_spectra_data_file.csv',
-                      'plotting/plot_meta_language/plot_types/example.yaml',
-                      "Instrument_Run_Number")
+        DjangoDashApp(data_location='plotting/multi_spectra_data_file.csv',
+                      meta_location='plotting/plot_meta_language/plot_types/example.yaml',
+                      dashapp_name="Instrument_Run_Number")
 
         mock_dashapp.assert_called_once()
