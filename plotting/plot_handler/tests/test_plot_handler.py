@@ -19,12 +19,11 @@ from plotting.plot_handler.plot_handler import DjangoDashApp
 
 class TestDjangoDashApp(unittest.TestCase):
     """Unit tests for DjangoDashApp class in plot handler"""
-    # pylint disable=unused-argument no-self-use
     @patch("plotting.prepare_data.PrepareData.prepare_data")
     @patch("plotting.plot_meta_language.interpreter.Interpreter.interpret")
     @patch("plotting.plot_factory.plot_factory.PlotFactory")
     @patch("plotting.plot_factory.dashapp.DjangoDash")
-    # pylint disable= unused-argument no-self-use
+    # pylint disable= unused-argument, no-self-use
     def test_get_dashapp(self, mock_dashapp, mock_plot_factory, mock_interpreter, mock_prepare):
         """
         Test:get_dashapp() is called returning an instance of DjangoDash DashApp object
