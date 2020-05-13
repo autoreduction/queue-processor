@@ -37,7 +37,7 @@ class TestPlotFactory(unittest.TestCase):
         # Assert that a list of trace object is returned
         actual = PlotFactory().create_trace_list(
             MockPlotVariables().indexed_single_multi_raw_data_dataframe,
-            layout, MockPlotVariables().plot_name)
+            layout)
         self.assertIsInstance(actual, list)  # is list
         self.assertEqual(len(actual), 2)
 
