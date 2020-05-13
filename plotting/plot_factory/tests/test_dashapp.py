@@ -14,8 +14,6 @@ TODO: line 37 currently fails due to not knowing how to correctly mock this
 import unittest
 from mock import patch, Mock
 
-import django_plotly_dash
-
 # Internal Dependencies
 from plotting.plot_factory.dashapp import DashApp
 
@@ -40,6 +38,10 @@ class TestDashApp(unittest.TestCase):
         # Assert a DashApp is returned
         DashApp(self.figure, MockPlotVariables().plot_name)
         mock_dashapp.assert_called_once()
-        mock_dash_obj.layout.assert_called_once()
-        #self.assertIsInstance(actual, django_plotly_dash.dash_wrapper.DjangoDash)  # Currently fails
+
+        # self.assertEqual(mock_dash_obj, "Div([Div(Graph(id='Instrument_Run_number'))])")
+        self.assertEqual('Div', type(mock_dash_obj.layout).__name__)
+        self.assertEqual("[Div(Graph(id='Instrument_Run_number'))]",
+                         str(mock_dash_obj.layout.__dict__['children']))
+
 

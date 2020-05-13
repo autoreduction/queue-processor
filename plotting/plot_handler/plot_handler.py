@@ -14,7 +14,7 @@ from plotting.plot_factory.plot_factory import PlotFactory, Layout  # Returns Da
 from plotting.prepare_data import PrepareData  # Read CSV to generate dataframe
 
 
-class DjangoDashapp:
+class DjangoDashApp:
     """Returns a Dash"""
     def __init__(self, data_location, meta_location, dashapp_name):
         self.data_location = data_location  # From repository root
@@ -22,19 +22,19 @@ class DjangoDashapp:
         self.dashapp_name = dashapp_name
         self.dashapp = self.get_dashapp()
 
-    @staticmethod
-    def get_dataframe(data_location):
-        """Convert raw data to Pandas Dataframe"""
-        return PrepareData().prepare_data(f"../../{data_location}")
+    # @staticmethod
+    # def get_dataframe(data_location):
+    #     """Convert raw data to Pandas Dataframe"""
+    #     return PrepareData().prepare_data(f"../../{data_location}")
 
     def get_dashapp(self):
         """Get DashApp from Plot Factory"""
-        return PlotFactory().create_plot(plot_meta_file_location=f"../../{self.meta_location}",
-                                         data=self.get_dataframe(self.data_location),
-                                         figure_name=self.dashapp_name)
-
+        return PlotFactory().create_plot(
+            plot_meta_file_location=f"../../{self.meta_location}",
+            data=PrepareData().prepare_data(f"../../{self.data_location}"),
+            figure_name=self.dashapp_name)
 
 # .dashapp isn't required for this to serve a dashapp, but included for specificity
-dashapp = DjangoDashapp('plotting/multi_spectra_data_file.csv',
-                        'plotting/plot_meta_language/plot_types/example.yaml',
-                        "Instrument_Run_Number").dashapp
+# dashapp = DjangoDashApp('plotting/multi_spectra_data_file.csv',
+#                         'plotting/plot_meta_language/plot_types/example.yaml',
+#                         "Instrument_Run_Number").dashapp
