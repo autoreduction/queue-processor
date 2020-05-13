@@ -8,6 +8,7 @@ import csv
 from filelock import FileLock
 from mock import (Mock, patch, call)
 
+from message.job import Message
 from utils.clients.queue_client import QueueClient
 from monitors.settings import (CYCLE_FOLDER, LAST_RUNS_CSV)
 import monitors.run_detection as eorm
@@ -23,15 +24,16 @@ SUMMARY_FILE = ("WIS44731Smith,Smith,"
                 "SmithCeAuSb2 MRSX ROT=15.05 s28-MAR-2019 11:34:25     9.0 1820461\n")
 LAST_RUN_FILE = "WISH 00044733 0 \n"
 INVALID_LAST_RUN_FILE = "INVALID LAST RUN FILE"
+FILE_NAME = "WISH00044733.nxs"
 RUN_DICT = {'instrument': 'WISH',
             'run_number': '00044733',
-            'data': '/my/data/dir/cycle_18_4/WISH00044733.nxs',
+            'file_path': '/my/data/dir/cycle_18_4/' + FILE_NAME,
             'rb_number': '1820461',
             'facility': 'ISIS',
             'started_by': 0}
 RUN_DICT_SUMMARY = {'instrument': 'WISH',
                     'run_number': '00044733',
-                    'data': '/my/data/dir/cycle_18_4/WISH00044733.nxs',
+                    'file_path': '/my/data/dir/cycle_18_4/WISH00044733.nxs',
                     'rb_number': '1820333',
                     'facility': 'ISIS'}
 CSV_FILE = "WISH,44733,lastrun_wish.txt,summary_wish.txt,data_dir,.nxs"
@@ -124,29 +126,32 @@ class TestRunDetection(unittest.TestCase):
         inst_mon.summary_file = 'test_summary.txt'
         self.assertRaises(InstrumentMonitorError, inst_mon.read_rb_number_from_summary)
 
-    def test_build_dict(self):
-        client = QueueClient()
-        inst_mon = InstrumentMonitor(client, 'WISH')
-        data_loc = '/my/data/dir/cycle_18_4/WISH00044733.nxs'
-        rb_number = '1820461'
-        run_number = '00044733'
-        data_dict = inst_mon.build_dict(rb_number, run_number, data_loc)
-        self.assertEqual(RUN_DICT, data_dict)
+    # def test_build_dict(self):
+    #     client = QueueClient()
+    #     inst_mon = InstrumentMonitor(client, 'WISH')
+    #     data_loc = '/my/data/dir/cycle_18_4/WISH00044733.nxs'
+    #     rb_number = '1820461'
+    #     run_number = '00044733'
+    #     data_dict = inst_mon.build_dict(rb_number, run_number, data_loc)
+    #     self.assertEqual(RUN_DICT, data_dict)
 
     @patch('os.path.isfile', return_value=True)
     @patch('monitors.run_detection.read_rb_number_from_nexus_file',
-           return_value='1820461')
+           return_value=RUN_DICT['rb_number'])
     def test_submit_run(self, read_rb_mock, isfile_mock):
         client = Mock()
         client.send = Mock(return_value=None)
-        client.serialise_data = Mock(return_value=RUN_DICT)
+        # client.serialise_data = Mock(return_value=RUN_DICT)
 
         inst_mon = InstrumentMonitor(client, 'WISH')
         inst_mon.data_dir = '/my/data/dir'
-        data_loc = os.path.join(inst_mon.data_dir, CYCLE_FOLDER, 'WISH00044733.nxs')
+        data_loc = os.path.join(inst_mon.data_dir, CYCLE_FOLDER, FILE_NAME)
 
-        inst_mon.submit_run('1820333', '00044733', 'WISH00044733.nxs')
-        client.send.assert_called_with('/queue/DataReady', json.dumps(RUN_DICT), priority='9')
+        inst_mon.submit_run(RUN_DICT_SUMMARY['rb_number'], RUN_DICT['run_number'], FILE_NAME)
+        message = Message(rb_number=RUN_DICT['rb_number'],
+                          run_number=RUN_DICT['run_number'],
+                          file_path=data_loc)
+        client.send.assert_called_with('/queue/DataReady', message, priority='9')
         isfile_mock.assert_called_with(data_loc)
         read_rb_mock.assert_called_once_with(data_loc)
 
@@ -175,9 +180,12 @@ class TestRunDetection(unittest.TestCase):
         inst_mon.data_dir = '/my/data/dir'
         data_loc = os.path.join(inst_mon.data_dir, CYCLE_FOLDER, 'WISH00044733.nxs')
 
-        inst_mon.submit_run('1820333', '00044733', 'WISH00044733.nxs')
+        inst_mon.submit_run(RUN_DICT_SUMMARY['rb_number'], RUN_DICT['run_number'], FILE_NAME)
+        message = Message(rb_number=RUN_DICT_SUMMARY['rb_number'],
+                          run_number=RUN_DICT_SUMMARY['run_number'],
+                          file_path=data_loc)
         client.send.assert_called_with('/queue/DataReady',
-                                       json.dumps(RUN_DICT_SUMMARY),
+                                       message,
                                        priority='9')
         isfile_mock.assert_called_with(data_loc)
         read_rb_mock.assert_called_once_with(data_loc)
