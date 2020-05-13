@@ -14,6 +14,9 @@ import scripts.manual_operations.manual_submission as ms
 
 
 # pylint:disable=no-self-use
+from message.job import Message
+
+
 class TestManualSubmission(unittest.TestCase):
     """
     Test manual_submission.py
@@ -139,13 +142,17 @@ class TestManualSubmission(unittest.TestCase):
         mock_from_icat.assert_not_called()
         mock_from_database.assert_not_called()
 
-    @patch('json.dumps', return_value="json_dump")
-    def test_submit_run(self, mock_json_dump):
+    def test_submit_run(self):
         """
         Test: A given run is submitted to the DataReady queue
         When: submit_run is called with valid arguments
         """
         ms.submit_run(*self.sub_run_args)
+        message = Message(rb_number=self.sub_run_args[1],
+                          instrument=self.sub_run_args[2],
+                          file_path=self.sub_run_args[3],
+                          run_number=self.sub_run_args[4],
+                          started_by=-1)
         self.sub_run_args[0].send.assert_called_with('/queue/DataReady',
-                                                     mock_json_dump.return_value,
+                                                     message,
                                                      priority=1)

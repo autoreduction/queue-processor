@@ -8,8 +8,15 @@
 Represents the messages passed between AMQ queues
 """
 import json
+import logging
+
 import attr
 
+from utils.project.static_content import LOG_FORMAT
+from utils.project.structure import get_log_file
+
+logging.basicConfig(filename=get_log_file('job.log'), level=logging.INFO,
+                    format=LOG_FORMAT)
 
 # pylint:disable=too-many-instance-attributes
 @attr.s
@@ -35,12 +42,13 @@ class Message:
     return_message = attr.ib(default=None)
     retry_in = attr.ib(default=None)
 
-    def serialize(self):
+    def serialize(self, indent=None):
         """
         Serialized member variables as a json dump
+        :param indent: The indent level passed to json.dumps
         :return: JSON dump of a dictionary representing the member variables
         """
-        return json.dumps(attr.asdict(self))
+        return json.dumps(attr.asdict(self), indent=indent)
 
     @staticmethod
     def deserialize(serialized_object):
@@ -71,3 +79,8 @@ class Message:
                 if overwrite or self_value is None:
                     # Set the value of the variable on this object accessing it by name
                     setattr(self, key, value)
+            else:
+                warning_message = (f"Unexpected key encountered during Message population: '{key}'."
+                                   f"Skipping this key...")
+                logging.warning(warning_message)
+                print(warning_message)  # Note: for debug purposes

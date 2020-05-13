@@ -9,7 +9,6 @@ A module for creating and submitting manual submissions to autoreduction
 """
 from __future__ import print_function
 
-import json
 import sys
 import argparse
 
@@ -17,6 +16,7 @@ import argparse
 # pylint: disable=import-error, no-name-in-module
 from icat import ICATSessionError
 
+from message.job import Message
 from utils.clients.connection_exception import ConnectionException
 from utils.clients.icat_client import ICATClient
 from utils.clients.queue_client import QueueClient
@@ -36,14 +36,13 @@ def submit_run(active_mq_client, rb_number, instrument, data_file_location, run_
         print("ActiveMQ not connected, cannot submit runs")
         return
 
-    data_dict = active_mq_client.serialise_data(rb_number=rb_number,
-                                                instrument=instrument,
-                                                location=data_file_location,
-                                                run_number=run_number,
-                                                started_by=-1)
-
-    active_mq_client.send('/queue/DataReady', json.dumps(data_dict), priority=1)
-    print("Submitted run: \r\n" + json.dumps(data_dict, indent=1))
+    message = Message(rb_number=rb_number,
+                      instrument=instrument,
+                      file_path=data_file_location,
+                      run_number=run_number,
+                      started_by=-1)
+    active_mq_client.send('/queue/DataReady', message, priority=1)
+    print("Submitted run: \r\n" + message.serialize(indent=1))
 
 
 def get_location_and_rb_from_database(database_client, run_number):
