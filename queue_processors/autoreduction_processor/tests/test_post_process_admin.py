@@ -16,6 +16,7 @@ import json
 from tempfile import mkdtemp, NamedTemporaryFile
 from mock import patch, call, Mock
 
+from message.job import Message
 from utils.settings import ACTIVEMQ_SETTINGS
 from utils.project.structure import get_project_root
 from queue_processors.autoreduction_processor.settings import MISC
@@ -42,7 +43,9 @@ class TestPostProcessAdminHelpers(unittest.TestCase):
 class TestPostProcessAdmin(unittest.TestCase):
 
     def setUp(self):
-        self.data = {'data': '\\\\isis\\inst$\\data.nxs',
+        # Note: I've seen 'data' being used as a key for the data file path in
+        #  several places. Do we interact with any external code that expects this key?
+        self.data = {'file_path': '\\\\isis\\inst$\\data.nxs',
                      'facility': 'ISIS',
                      'instrument': 'GEM',
                      'rb_number': '1234',
@@ -134,8 +137,10 @@ class TestPostProcessAdmin(unittest.TestCase):
         ppa._send_message_and_log(ACTIVEMQ_SETTINGS.reduction_error)
         mock_logger.assert_called_once_with("\nCalling " + ACTIVEMQ_SETTINGS.reduction_error
                                             + " --- " + prettify(self.data))
+        message = Message()
+        message.populate(ppa.data)
         activemq_client_mock.send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_error,
-                                                          json.dumps(ppa.data))
+                                                          message)
 
     @patch('shutil.rmtree')
     @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.info')
@@ -251,8 +256,10 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_logger.assert_has_calls([call('JSON data error: %s', 'test')])
         mock_exit.assert_called_once()
         self.data['error'] = 'error-message'
+        message = Message()
+        message.populate(self.data)
         mock_send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_error,
-                                          json.dumps(self.data))
+                                          message)
 
     @patch('sys.exit')
     @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.info')
@@ -277,5 +284,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_client_init.assert_called_once()
         mock_logger.assert_has_calls([call('PostProcessAdmin error: %s', 'error-message')])
         mock_exit.assert_called_once()
+        message = Message()
+        message.populate(self.data)
         mock_send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_error,
-                                          json.dumps(self.data))
+                                          message)

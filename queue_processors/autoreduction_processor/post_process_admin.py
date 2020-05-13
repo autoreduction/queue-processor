@@ -31,6 +31,7 @@ import importlib.util as imp
 from sentry_sdk import init
 
 # pylint:disable=no-name-in-module,import-error
+from message.job import Message
 from queue_processors.autoreduction_processor.settings import MISC
 from queue_processors.autoreduction_processor.autoreduction_logging_setup import logger
 from queue_processors.autoreduction_processor.timeout import TimeOut
@@ -119,7 +120,7 @@ class PostProcessAdmin:
         self.admin_log_stream = io.StringIO()
 
         try:
-            self.data_file = windows_to_linux_path(self.validate_input('data'),
+            self.data_file = windows_to_linux_path(self.validate_input('file_path'),
                                                    MISC["temp_root_directory"])
             self.facility = self.validate_input('facility')
             self.instrument = self.validate_input('instrument').upper()
@@ -195,7 +196,11 @@ class PostProcessAdmin:
             logger.debug("Calling: %s\n%s",
                          ACTIVEMQ_SETTINGS.reduction_started,
                          prettify(self.data))
-            self.client.send(ACTIVEMQ_SETTINGS.reduction_started, json.dumps(self.data))
+            message = Message()
+            message.populate(self.data)
+            # Note: I don't believe tests cover this, but making tests for such a large method
+            #   would be a sizable, separate issue
+            self.client.send(ACTIVEMQ_SETTINGS.reduction_started, message)
 
             # Specify instrument directory
             instrument_output_dir = MISC["ceph_directory"] % (self.instrument,
@@ -388,7 +393,9 @@ class PostProcessAdmin:
 
         else:
             # reduction has successfully completed
-            self.client.send(ACTIVEMQ_SETTINGS.reduction_complete, json.dumps(self.data))
+            message = Message()
+            message.populate(self.data)
+            self.client.send(ACTIVEMQ_SETTINGS.reduction_complete, message)
             logger.info("Calling: %s\n%s",
                         ACTIVEMQ_SETTINGS.reduction_complete,
                         prettify(self.data))
@@ -397,7 +404,9 @@ class PostProcessAdmin:
     def _send_message_and_log(self, destination):
         """ Send reduction run to error. """
         logger.info("\nCalling " + destination + " --- " + prettify(self.data))
-        self.client.send(destination, json.dumps(self.data))
+        message = Message()
+        message.populate(self.data)
+        self.client.send(destination, message)
 
     def copy_temp_directory(self, temp_result_dir, copy_destination):
         """
@@ -515,6 +524,7 @@ def main():
                 post_proc.reduce()
 
         except ValueError as exp:
+            # Note: "error" key added here won't be ingested by Message class
             json_data["error"] = str(exp)
             logger.info("JSON data error: %s", prettify(json_data))
             raise
@@ -532,7 +542,9 @@ def main():
     except Exception as exp:
         logger.info("Something went wrong: %s", str(exp))
         try:
-            queue_client.send(ACTIVEMQ_SETTINGS.reduction_error, json.dumps(json_data))
+            message = Message()
+            message.populate(json_data)
+            queue_client.send(ACTIVEMQ_SETTINGS.reduction_error, message)
             logger.info("Called %s ---- %s", ACTIVEMQ_SETTINGS.reduction_error, prettify(json_data))
         finally:
             sys.exit()
