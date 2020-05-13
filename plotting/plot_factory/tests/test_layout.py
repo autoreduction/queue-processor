@@ -30,7 +30,8 @@ class TestLayout(unittest.TestCase):
         """
         mock_interpreter.return_value = MockPlotVariables().raw_interpreted_layout
 
-        actual = Layout(MockPlotVariables().plot_meta_file_location)._read_plot_meta_data()
+        actual = Layout(MockPlotVariables().plot_meta_file_location,
+                        'Instrument_Run_Number')._read_plot_meta_data()
 
         # assert that interpreter has been called with correct argument
         mock_interpreter.assert_called_with(MockPlotVariables().plot_meta_file_location)
@@ -49,7 +50,8 @@ class TestLayout(unittest.TestCase):
         mock_rpmd.return_value = MockPlotVariables().raw_interpreted_layout
 
         actual = Layout(
-            MockPlotVariables().raw_interpreted_layout)._extract_layout()
+            MockPlotVariables().raw_interpreted_layout,
+            'Instrument_Run_Number')._extract_layout()
 
         self.assertIsInstance(actual, dict)
         self.assertEqual(actual, MockPlotVariables().processed_layout)
