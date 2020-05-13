@@ -12,8 +12,7 @@ Unit tests for plot_handler
 import unittest
 
 # Internal Dependencies
-from plotting.plot_factory.plot_handler import plot_handler
-
+from plotting.plot_handler.plot_handler import DjangoDashapp
 
 class TestDjangoDashapp(unittest.TestCase):
     """Unit tests for DjangoDash DashApp"""
