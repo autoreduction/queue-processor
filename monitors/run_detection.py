@@ -10,6 +10,7 @@ import json
 import h5py
 from filelock import (FileLock, Timeout)
 
+from message.job import Message
 from monitors.settings import (LAST_RUNS_CSV, CYCLE_FOLDER)
 
 from utils.clients.queue_client import QueueClient
@@ -111,20 +112,6 @@ class InstrumentMonitor:
 
         raise InstrumentMonitorError("Unable to read RB number from summary.txt")
 
-    def build_dict(self, rb_number, run_number, file_location):
-        """
-        Build the data dictionary for a reduction job submission.
-        :param rb_number: Experiment RB number
-        :param run_number: Run number as it appears in lastrun.txt
-        :param file_location: Absolute path to the data file
-        :return: Data dictionary for submission
-        """
-        return self.client.serialise_data(rb_number=rb_number,
-                                          instrument=self.instrument_name,
-                                          location=file_location,
-                                          run_number=run_number,
-                                          started_by=0)
-
     def submit_run(self, summary_rb_number, run_number, file_name):
         """
         Submit a run to ActiveMQ
@@ -143,8 +130,10 @@ class InstrumentMonitor:
             if rb_number is None:
                 rb_number = summary_rb_number
             EORM_LOG.info("Submitting '%s' with RB number '%s'", file_name, rb_number)
-            data_dict = self.build_dict(rb_number, run_number, file_path)
-            self.client.send('/queue/DataReady', json.dumps(data_dict), priority='9')
+            message = Message(rb_number=rb_number,
+                              run_number=run_number,
+                              file_path=file_path)
+            self.client.send('/queue/DataReady', message, priority='9')
         else:
             raise FileNotFoundError("File does not exist '{}'".format(file_path))
 
