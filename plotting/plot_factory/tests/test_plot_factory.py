@@ -4,15 +4,11 @@
 # Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
-"""
-Unit tests for plot factory
-"""
+""" Unit tests for plot factory """
 
 # Core Dependencies
 import unittest
 from mock import patch, PropertyMock
-
-import dash
 
 # Internal Dependencies
 from plotting.plot_factory.plot_factory import PlotFactory
@@ -37,13 +33,14 @@ class TestPlotFactory(unittest.TestCase):
         # Assert that a list of trace object is returned
         actual = PlotFactory().create_trace_list(
             MockPlotVariables().indexed_single_multi_raw_data_dataframe,
-            layout, MockPlotVariables().plot_name)
+            layout)
         self.assertIsInstance(actual, list)  # is list
         self.assertEqual(len(actual), 2)
 
+    @patch("plotting.plot_factory.dashapp.DjangoDash")
     @patch('plotting.plot_factory.plot_factory.PlotFactory.create_trace_list')
     @patch('plotting.plot_factory.plot_factory.Layout')
-    def test_construct_plot(self, mock_layout, mock_get_trace):
+    def test_construct_plot(self, mock_layout, mock_get_trace,  mock_dashapp):
         """
         Test: dashapp object is returned
         When: called with self.create_trace_list() and Layout().layout
@@ -53,4 +50,6 @@ class TestPlotFactory(unittest.TestCase):
             data=MockPlotVariables().raw_multi_single_data_dataframe,
             figure_name=MockPlotVariables().plot_name)
 
-        self.assertIsInstance(actual.app, dash.dash.Dash)
+        mock_dashapp.assert_called_once()
+
+        self.assertEqual('Instrument_Run_number', actual.app_id)

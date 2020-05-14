@@ -53,6 +53,7 @@ class MockPlotVariables:
             'type': 'log',
             'title': 'x_axis',
             'unit': 'unit'},
+            'title': 'Instrument_Run_Number',
             'yaxis': {
                 'type': 'log',
                 'title': 'y_axis',
@@ -62,6 +63,7 @@ class MockPlotVariables:
             'type': 'log',
             'title': 'x_axis',
             'unit': 'unit'},
+            'title': 'Instrument_Run_Number',
             'yaxis': {
                 'type': 'log',
                 'title': 'y_axis',
