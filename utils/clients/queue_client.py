@@ -141,7 +141,7 @@ class QueueClient(AbstractClient):
         """
         return {'rb_number': rb_number,
                 'instrument': instrument,
-                'data': location,
+                'file_path': location,
                 'run_number': run_number,
                 'facility': 'ISIS',
                 'started_by': started_by}
