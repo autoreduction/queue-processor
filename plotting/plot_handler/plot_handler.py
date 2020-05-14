@@ -28,9 +28,3 @@ class DjangoDashApp:
             plot_meta_file_location=f"../../{self.meta_location}",
             data=PrepareData().prepare_data(f"../../{self.data_location}"),
             figure_name=self.dashapp_name)
-
-# .dashapp isn't required for this to serve a dashapp, but included for specificity
-# dashapp = DjangoDashApp(
-# <'path/from/repository/to/file.csv'>,  #csv
-# <'path/from/repository/to/file.yaml'>, #yaml
-# "Instrument_Run_Number").dashapp       #DashApp ID (used to call app in run_summary.html)
