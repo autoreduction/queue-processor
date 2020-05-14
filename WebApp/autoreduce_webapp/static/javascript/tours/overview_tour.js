@@ -17,5 +17,5 @@ if (typeof tourSteps == 'undefined'){
     tourSteps = steps
 }
 else{
-    tourSteps.concat(steps)
+    tourSteps = tourSteps.concat(steps)
 }
