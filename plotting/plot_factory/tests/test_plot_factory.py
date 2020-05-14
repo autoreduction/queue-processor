@@ -4,11 +4,7 @@
 # Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
-"""
-Unit tests for plot factory
-
-TODO: line 54 currently fails due to not knowing how to correctly mock this
-"""
+""" Unit tests for plot factory """
 
 # Core Dependencies
 import unittest

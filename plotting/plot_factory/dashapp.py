@@ -4,19 +4,16 @@
 # Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
-"""
-Constructs a plot and DashApp object for insertion directly into a web page
-"""
+""" Constructs a plot and DashApp object for insertion directly into a web page """
 
 # Core Dependencies
 import dash_core_components as dcc
 import dash_html_components as html
-
 from django_plotly_dash import DjangoDash
 
 # pylint: disable=too-few-public-methods
 class DashApp:
-    """Creates a DashApp for direct insertion into a web page"""
+    """ Creates a DashApp for direct insertion into a web page """
     def __init__(self, figure, app_id):
         """
         Dashapp object properties
