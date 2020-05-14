@@ -87,28 +87,41 @@ The dashapp will have the following properties:
 * app_id - Unique DashApp ID to be used to track creation and deletion of DashApp instances
 * app - DashApp object for insertion into webapp or to be hosted separately from webapp.
 
-To view a DashApp object locally, you can create a short script similar the example below:
+To view a DashApp object locally, you can create a short script similar the example below :
 ``` python
-from plotting.plot_factory.plot_factory import PlotFactory, Layout # Returns DashApp
+from plotting.plot_factory.plot_factory import PlotFactory  # Returns DashApp
 from plotting.prepare_data import PrepareData  # Read CSV to generate dataframe
 
+# pylint: disable=too-few-public-methods
+class DjangoDashApp:
+    """Returns a Dash"""
+    def __init__(self, data_location, meta_location, dashapp_name):
+        self.data_location = data_location  # From repository root
+        self.meta_location = meta_location  # From repository root
+        self.dashapp_name = dashapp_name
+        self.dashapp = self.get_dashapp()
 
-#  Get DataFrame
-dataframe = PrepareData().prepare_data('multi_spectra_data_file.csv')  # csv file path
+    def get_dashapp(self):
+        """Get DashApp from Plot Factory"""
+        return PlotFactory().create_plot(
+            plot_meta_file_location=f"../../{self.meta_location}",
+            data=PrepareData().prepare_data(f"../../{self.data_location}"),
+            figure_name=self.dashapp_name)
 
-#  Get yaml file location as string
-plot_meta_file_location = "plot_meta_language/plot_types/example.yaml"
+# .dashapp isn't required for this to serve a dashapp, but included for specificity
+dashapp = DjangoDashApp(
+'path/from/repository/to/file.csv',  # csv
+'path/from/repository/to/file.yaml', # yaml
+"Instrument_Run_Number").dashapp     # DashApp ID (used to call app in run_summary.html)
+```
+-Note that to view this, two templates will need to be added to django template such as 
+run_summary.html the template tags whihc need to be added are:
 
-# Create DashApp
-dashapp = PlotFactory().create_plot(plot_meta_file_location=plot_meta_file_location,
-                                       data=dataframe,
-                                       figure_name="Instrument_Run_Number")
+```djangotemplate
+{%load plotly_dash%} 
 
-print(f"DashApp ID: {dashapp.app_id}")
+{%plotly_app name="<DashApp_ID>" ratio=0.42 %}
 
-# Run DashApp
-if __name__ == '__main__':
-    dashapp.app.run_server(debug=True)
 ```
 
 The plot factory can only insert one figure (one dataframe) into one DashApp.
