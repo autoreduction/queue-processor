@@ -112,6 +112,7 @@ class PostProcessAdmin:
     # pylint: disable=too-many-instance-attributes
     def __init__(self, data, client):
         logger.debug("json data: %s", prettify(data))
+        # Note: "information" isn't a Message attribute so is not accepted by Message
         data["information"] = socket.gethostname()
         self.data = data
         self.client = client
@@ -198,8 +199,6 @@ class PostProcessAdmin:
                          prettify(self.data))
             message = Message()
             message.populate(self.data)
-            # Note: I don't believe tests cover this, but making tests for such a large method
-            #   would be a sizable, separate issue
             self.client.send(ACTIVEMQ_SETTINGS.reduction_started, message)
 
             # Specify instrument directory
@@ -288,6 +287,7 @@ class PostProcessAdmin:
                 logger.error(traceback.format_exc())
                 raise exp
 
+            # Note: "reduction_data" isn't a Message attribute so is not accepted by Message
             self.data['reduction_data'] = []
             if "message" not in self.data:
                 self.data["message"] = ""
@@ -420,6 +420,7 @@ class PostProcessAdmin:
                 and self.instrument not in MISC["excitation_instruments"]:
             self._remove_directory(copy_destination)
 
+        # Note: "reduction_data" isn't a Message attribute so is not accepted by Message
         self.data['reduction_data'].append(copy_destination)
         logger.info("Moving %s to %s", temp_result_dir, copy_destination)
         try:
@@ -439,6 +440,9 @@ class PostProcessAdmin:
     def log_and_message(self, msg):
         """ Helper function to add text to the outgoing activemq message and to the info logs """
         logger.info(msg)
+        # Note: "message" isn't a Message attribute so is not accepted by Message
+        #   This key is used extensively through this code to store error data and ultimately
+        #   check whether an error has occurred
         if self.data["message"] == "":
             # Only send back first message as there is a char limit
             self.data["message"] = msg
@@ -524,7 +528,7 @@ def main():
                 post_proc.reduce()
 
         except ValueError as exp:
-            # Note: "error" key added here won't be ingested by Message class
+            # Note: "error" isn't a Message attribute so is not accepted by Message
             json_data["error"] = str(exp)
             logger.info("JSON data error: %s", prettify(json_data))
             raise
