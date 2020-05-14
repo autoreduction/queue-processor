@@ -6,8 +6,6 @@
 # ############################################################################### #
 """
 Unit tests for plot factory DashApp
-
-TODO: line 37 currently fails due to not knowing how to correctly mock this
 """
 
 # Core Dependencies
