@@ -520,6 +520,11 @@ def main():
         logger.info("message: %s", prettify(message))
         json_data = json.loads(message)
 
+        # Note: temp fix to account for data key being given
+        if 'data' in json_data:
+            json_data['file_path'] = json_data['data']
+            json_data.pop('data')
+
         try:
             post_proc = PostProcessAdmin(json_data, queue_client)
             log_stream_handler = logging.StreamHandler(post_proc.admin_log_stream)
