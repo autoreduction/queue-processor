@@ -29,7 +29,7 @@ class TestDjangoDashApp(unittest.TestCase):
         Test:get_dashapp() is called returning an instance of DjangoDash DashApp object
         When: called with within DjangoDashApp() during class initialisation
         """
-        # pylint: disable=unused-argument
+        # pylint: disable=unused-argument no-self-use
         mock_dash_obj = Mock()
         mock_dashapp.return_value = mock_dash_obj
 
