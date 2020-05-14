@@ -81,17 +81,7 @@
         </div>
     {% endif %} 
 {% endblock %}
-{% block stylesheets %}
-    <link rel="stylesheet" href="{% static "css/vendor/bootstrap.min.css" %}">
-    <link rel="stylesheet" href="{% static "css/vendor/bootstrap-tour.min.css" %}">
-{% endblock %}
-{% block scripts %}
-    <script src="{% static "javascript/vendor/jquery.min.js" %}"></script>
-    <script src='{% static "javascript/fail_queue.js" %}'> </script>
-    <script src="{% static "javascript/vendor/bootstrap-tour.min.js" %}"></script>
-    <script src="{% static "javascript/vendor/bootstrap.min.js" %}"></script>
 
-    <script src="{% static "javascript/tours/fail_queue_tour.js" %}"></script>
-    <script src="{% static "javascript/tours/navbar_tour.js" %}"></script>
-    <script src="{% static "javascript/create_tour.js" %}"></script>
+{% block scripts %}
+    <script src='{% static "javascript/fail_queue.js" %}'> </script>
 {% endblock %}

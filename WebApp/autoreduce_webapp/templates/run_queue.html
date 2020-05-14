@@ -2,7 +2,6 @@
 {% load view %}
 {% load colour_table_rows %}
 {% load naturaltime from humanize %}
-{% load static %}
 
 {% block body %}
     <title>Run Queue</title>
@@ -15,11 +14,11 @@
         <table class="table table-striped table-bordered">
             <thead>
                 <tr>
-                    <th id="run-number-title">Run Number</th>
-                    <th id="instrument-title">Instrument</th>
-                    <th id="status-title">Status</th>
-                    <th id="submitted-title">Submitted</th>
-                    <th id="submitted-by-title">Submitted By</th>
+                    <th>Run Number</th>
+                    <th>Instrument</th>
+                    <th>Status</th>
+                    <th>Submitted</th>
+                    <th>Submitted By</th>
                 </tr>
             </thead>
             <tbody>
@@ -43,17 +42,4 @@
             </div>
         </div>
     {% endif %} 
-{% endblock %}
-{% block stylesheets %}
-    <link rel="stylesheet" href="{% static "css/vendor/bootstrap.min.css" %}">
-    <link rel="stylesheet" href="{% static "css/vendor/bootstrap-tour.min.css" %}">
-{% endblock %}
-{% block scripts %}
-    <script src="{% static "javascript/vendor/jquery.min.js" %}"></script>
-    <script src="{% static "javascript/vendor/bootstrap-tour.min.js" %}"></script>
-    <script src="{% static "javascript/vendor/bootstrap.min.js" %}"></script>
-
-    <script src="{% static "javascript/tours/run_queue_tour.js" %}"></script>
-    <script src="{% static "javascript/tours/navbar_tour.js" %}"></script>
-    <script src="{% static "javascript/create_tour.js" %}"></script>
 {% endblock %}
