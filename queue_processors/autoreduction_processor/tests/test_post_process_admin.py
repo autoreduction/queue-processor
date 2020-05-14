@@ -256,6 +256,57 @@ class TestPostProcessAdmin(unittest.TestCase):  # pylint:disable=too-many-public
         mock_connect.assert_called_once()
         mock_reduce.assert_called_once()
 
+    @patch('queue_processors.autoreduction_processor.post_process_admin.windows_to_linux_path',
+           return_value='path')
+    @patch('utils.clients.queue_client.QueueClient.connect')
+    @patch('utils.clients.queue_client.QueueClient.__init__', return_value=None)
+    @patch('utils.clients.queue_client.QueueClient.send')
+    def test_reduce_sends_reduction_started_message(self, mock_send, *_):
+        """
+        Test: A message is sent to the reduction started queue
+        When: The reduce method is called
+        """
+        sys.argv = ['', '/queue/ReductionPending', json.dumps(self.data)]
+        main()
+
+        message = Message()
+        message.populate(self.data)
+        print(f"call args list: {mock_send.call_args_list}")
+        mock_send.assert_any_call(ACTIVEMQ_SETTINGS.reduction_started, message)
+
+    @patch('os.makedirs')
+    @patch('os.access', return_value=True)
+    @patch('queue_processors.autoreduction_processor.post_process_admin.channels_redirected')
+    @patch('importlib.util.spec_from_file_location')
+    @patch('queue_processors.autoreduction_processor.timeout.TimeOut.__enter__', return_value=None)
+    @patch('queue_processors.autoreduction_processor.timeout.TimeOut.__exit__', return_value=None)
+    @patch('queue_processors.autoreduction_processor.post_process_admin.PostProcessAdmin.copy_temp_directory')
+    @patch('queue_processors.autoreduction_processor.post_process_admin.PostProcessAdmin.log_and_message')
+    @patch('queue_processors.autoreduction_processor.post_process_admin.windows_to_linux_path',
+           return_value='path')
+    @patch('utils.clients.queue_client.QueueClient.connect')
+    @patch('utils.clients.queue_client.QueueClient.__init__', return_value=None)
+    @patch('utils.clients.queue_client.QueueClient.send')
+    def test_reduce_sends_reduction_complete_message(self, mock_send, *_):
+        """
+        Test: A message is sent to the reduction complete queue
+        When: No errors occur during the reduce method
+        Note: This test does not cover the contents of the admin_log or reduction_logs
+        """
+        sys.argv = ['', '/queue/ReductionPending', json.dumps(self.data)]
+        main()
+
+        (args, _) = mock_send.call_args
+        actual_message_without_logs = args[1]
+        actual_message_without_logs.admin_log = None
+        actual_message_without_logs.reduction_log = None
+
+        message = Message()
+        message.populate(self.data)
+
+        self.assertEqual(ACTIVEMQ_SETTINGS.reduction_complete, args[0])
+        self.assertEqual(message, actual_message_without_logs)
+
     @patch(DIR + '.post_process_admin.prettify', return_value='test')
     @patch('sys.exit')
     @patch(DIR + '.autoreduction_logging_setup.logger.info')
