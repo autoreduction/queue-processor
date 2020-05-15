@@ -42,7 +42,7 @@ class TestPostProcessAdminHelpers(unittest.TestCase):
 class TestPostProcessAdmin(unittest.TestCase):
 
     def setUp(self):
-        self.data = {'data': '\\\\isis\\inst$\\data.nxs',
+        self.data = {'file_path': '\\\\isis\\inst$\\data.nxs',
                      'facility': 'ISIS',
                      'instrument': 'GEM',
                      'rb_number': '1234',
