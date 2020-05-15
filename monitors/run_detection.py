@@ -131,7 +131,7 @@ class InstrumentMonitor:
             EORM_LOG.info("Submitting '%s' with RB number '%s'", file_name, rb_number)
             message = Message(rb_number=rb_number,
                               run_number=run_number,
-                              file_path=file_path)
+                              data=file_path)
             self.client.send('/queue/DataReady', message, priority='9')
         else:
             raise FileNotFoundError("File does not exist '{}'".format(file_path))
