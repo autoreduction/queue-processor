@@ -372,7 +372,8 @@ class PostProcessAdmin:
         self.data['reduction_log'] = self.reduction_log_stream.getvalue()
         self.data["admin_log"] = self.admin_log_stream.getvalue()
 
-        if self.data["message"] != "":
+        logger.warning("self.data['message'] = %s", self.data['message'])
+        if self.data["message"] != "" and not self.data['message'] is None:
             # This means an error has been produced somewhere
             try:
                 if 'skip' in self.data['message'].lower():
@@ -388,6 +389,7 @@ class PostProcessAdmin:
 
         else:
             # reduction has successfully completed
+            self.data['message'] = ""  #ToDo: Improve this!
             self.client.send(ACTIVEMQ_SETTINGS.reduction_complete, json.dumps(self.data))
             logger.info("Calling: %s\n%s",
                         ACTIVEMQ_SETTINGS.reduction_complete,

@@ -80,6 +80,8 @@ if os.name != 'nt':
                                                                   location=file_location,
                                                                   run_number=self.run_number,
                                                                   started_by=0)
+            data_ready_message['overwrite'] = True
+
             self.queue_client.send('/queue/DataReady',
                                    json.dumps(data_ready_message))
 
@@ -111,6 +113,9 @@ if os.name != 'nt':
                                                                   run_number=self.run_number,
                                                                   location=file_location,
                                                                   started_by=0)
+            # ToDo: Should not need to do this - overwriting issue in ppa
+            data_ready_message['overwrite'] = True
+
             self.queue_client.send('/queue/DataReady',
                                    json.dumps(data_ready_message))
 
