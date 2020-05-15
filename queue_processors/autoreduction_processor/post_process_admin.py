@@ -119,7 +119,7 @@ class PostProcessAdmin:
         self.admin_log_stream = io.StringIO()
 
         try:
-            self.data_file = windows_to_linux_path(self.validate_input('data'),
+            self.data_file = windows_to_linux_path(self.validate_input('file_path'),
                                                    MISC["temp_root_directory"])
             self.facility = self.validate_input('facility')
             self.instrument = self.validate_input('instrument').upper()
