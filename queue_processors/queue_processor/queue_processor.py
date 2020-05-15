@@ -219,7 +219,7 @@ class Listener:
         if instrument.is_paused:
             logger.info("Run %s has been skipped", message.run_number)
         else:
-            self._client.send('/queue/ReductionPending', message,
+            self._client.send('/queue/ReductionPending', message.serialize(),
                               priority=self._priority)
             logger.info("Run %s ready for reduction", message.run_number)
 
