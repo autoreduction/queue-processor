@@ -32,7 +32,6 @@ class Message:
     rb_number = attr.ib(default=None)
     started_by = attr.ib(default=None)
     file_path = attr.ib(default=None)
-    data = attr.ib(default=None)
     overwrite = attr.ib(default=None)
     run_version = attr.ib(default=None)
     job_id = attr.ib(default=None)
