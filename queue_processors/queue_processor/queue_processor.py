@@ -64,6 +64,7 @@ class Listener:
         """ Initialise listener. """
         self._client = client
         self._data_dict = {}
+        self.message = None
         self._priority = ''
 
     def on_message(self, headers, message):
@@ -73,7 +74,12 @@ class Listener:
         logger.info("Destination: %s Priority: %s", destination, self._priority)
         # Load the JSON message and header into dictionaries
         try:
-            self._data_dict = json.loads(message)
+            if isinstance(message, Message):
+                self.message = message
+            else:
+                self._data_dict = json.loads(message)
+                self.message = Message()
+                self.message.populate(message)
         except ValueError:
             logger.error("Could not decode message from %s", destination)
             logger.error(sys.exc_info()[1])
@@ -106,12 +112,10 @@ class Listener:
         session.rollback()
 
         # Strip information from the JSON file (_data_dict)
-        message = Message()
-        message.populate(self._data_dict)
 
-        run_no = str(message.run_number)
-        instrument_name = str(message.instrument)
-        rb_number = message.rb_number
+        run_no = str(self.message.run_number)
+        instrument_name = str(self.message.instrument)
+        rb_number = self.message.rb_number
 
         logger.info("Data ready for processing run %s on %s", run_no, instrument_name)
 
@@ -167,7 +171,7 @@ class Listener:
 
         # Make the new reduction run with the information collected so far and add it into the
         # database
-        reduction_run = ReductionRun(run_number=message.run_number,
+        reduction_run = ReductionRun(run_number=self.message.run_number,
                                      run_version=run_version,
                                      run_name='',
                                      message='',
@@ -181,17 +185,18 @@ class Listener:
                                      instrument_id=instrument.id,
                                      status_id=status.id,
                                      script=script_text,
-                                     started_by=message.started_by)
+                                     started_by=self.message.started_by)
         session.add(reduction_run)
         session.commit()
 
         # Set our run_version to be the one we have just calculated
-        message.run_version = reduction_run.run_version  # pylint: disable=no-member
+        self.message.run_version = reduction_run.run_version  # pylint: disable=no-member
 
         # Create a new data location entry which has a foreign key linking it to the current
         # reduction run. The file path itself will point to a datafile
         # (e.g. "\isis\inst$\NDXWISH\Instrument\data\cycle_17_1\WISH00038774.nxs")
-        data_location = DataLocation(file_path=message.data,
+        logger.info(f'DataLocation initialisation: filepath={self.message.data}')
+        data_location = DataLocation(file_path=self.message.data,
                                      reduction_run_id=reduction_run.id) # pylint: disable=no-member
         session.add(data_location)
         session.commit()
@@ -203,12 +208,12 @@ class Listener:
         if not variables:
             logger.warning("No instrument variables found on %s for run %s",
                            instrument.name,
-                           message.run_number)
+                           self.message.run_number)
 
         logger.info('Getting script and arguments')
         reduction_script, arguments = ReductionRunUtils().get_script_and_arguments(reduction_run)
-        message.reduction_script = reduction_script
-        message.reduction_arguments = arguments
+        self.message.reduction_script = reduction_script
+        self.message.reduction_arguments = arguments
 
         # Make sure the RB number is valid
         error_message = is_valid_rb(rb_number)
@@ -217,11 +222,11 @@ class Listener:
             return
 
         if instrument.is_paused:
-            logger.info("Run %s has been skipped", message.run_number)
+            logger.info("Run %s has been skipped", self.message.run_number)
         else:
-            self._client.send('/queue/ReductionPending', message.serialize(),
+            self._client.send('/queue/ReductionPending', self.message.serialize(),
                               priority=self._priority)
-            logger.info("Run %s ready for reduction", message.run_number)
+            logger.info("Run %s ready for reduction", self.message.run_number)
 
     def _construct_and_send_skipped(self, rb_number, reason):
         """
