@@ -150,7 +150,7 @@ class TestManualSubmission(unittest.TestCase):
         ms.submit_run(*self.sub_run_args)
         message = Message(rb_number=self.sub_run_args[1],
                           instrument=self.sub_run_args[2],
-                          file_path=self.sub_run_args[3],
+                          data=self.sub_run_args[3],
                           run_number=self.sub_run_args[4],
                           started_by=-1)
         self.sub_run_args[0].send.assert_called_with('/queue/DataReady',

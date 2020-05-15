@@ -38,7 +38,7 @@ def submit_run(active_mq_client, rb_number, instrument, data_file_location, run_
 
     message = Message(rb_number=rb_number,
                       instrument=instrument,
-                      file_path=data_file_location,
+                      data=data_file_location,
                       run_number=run_number,
                       started_by=-1)
     active_mq_client.send('/queue/DataReady', message, priority=1)
