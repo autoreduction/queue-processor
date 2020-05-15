@@ -25,7 +25,7 @@ INVALID_LAST_RUN_FILE = "INVALID LAST RUN FILE"
 FILE_NAME = "WISH00044733.nxs"
 RUN_DATA = {'instrument': 'WISH',
             'run_number': '00044733',
-            'file_path': '/my/data/dir/cycle_18_4/' + FILE_NAME,
+            'data': '/my/data/dir/cycle_18_4/' + FILE_NAME,
             'rb_number': '1820461',
             'summary_rb_number': '1820333',
             'facility': 'ISIS',
@@ -136,7 +136,7 @@ class TestRunDetection(unittest.TestCase):
         inst_mon.submit_run(RUN_DATA['summary_rb_number'], RUN_DATA['run_number'], FILE_NAME)
         message = Message(rb_number=RUN_DATA['rb_number'],
                           run_number=RUN_DATA['run_number'],
-                          file_path=data_loc)
+                          data=data_loc)
         client.send.assert_called_with('/queue/DataReady', message, priority='9')
         isfile_mock.assert_called_with(data_loc)
         read_rb_mock.assert_called_once_with(data_loc)
@@ -168,7 +168,7 @@ class TestRunDetection(unittest.TestCase):
         inst_mon.submit_run(RUN_DATA['summary_rb_number'], RUN_DATA['run_number'], FILE_NAME)
         message = Message(rb_number=RUN_DATA['summary_rb_number'],
                           run_number=RUN_DATA['run_number'],
-                          file_path=data_loc)
+                          data=data_loc)
         client.send.assert_called_with('/queue/DataReady',
                                        message,
                                        priority='9')
