@@ -28,13 +28,13 @@
                 {% block footer %}{% endblock %}
                 {% include "footer.html" %}
             </div>
-
+            {% block scripts %}
             <script src="{% static "javascript/vendor/jquery.min.js" %}"></script>
             <script src="{% static "javascript/vendor/bootstrap.min.js" %}"></script>
             <script src="{% static "javascript/cookies.js" %}"></script>
             <script src="{% static "javascript/polyfills.js" %}"></script>
             <script src="{% static "javascript/base.js" %}"></script>
-            {% block scripts %}{% endblock %}
+            {% endblock %}
             <title>ISIS Auto-reduction</title>
         {% endif %}
     </body>
