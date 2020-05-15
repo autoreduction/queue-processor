@@ -46,7 +46,6 @@ class Message:
     run_description = attr.ib(default=None)
     error = attr.ib(default=None)
 
-
     def serialize(self, indent=None):
         """
         Serialized member variables as a json dump
