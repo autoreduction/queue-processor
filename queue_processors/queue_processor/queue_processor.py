@@ -21,6 +21,7 @@ import traceback
 
 from sqlalchemy import sql
 
+from message.job import Message
 from queue_processors.queue_processor.base import session
 from queue_processors.queue_processor.orm_mapping import (ReductionRun, Instrument,
                                                           Status, Experiment,
@@ -105,9 +106,12 @@ class Listener:
         session.rollback()
 
         # Strip information from the JSON file (_data_dict)
-        run_no = str(self._data_dict['run_number'])
-        instrument_name = str(self._data_dict['instrument'])
-        rb_number = self._data_dict['rb_number']
+        message = Message()
+        message.populate(self._data_dict)
+
+        run_no = str(message.run_number)
+        instrument_name = str(message.instrument)
+        rb_number = message.rb_number
 
         logger.info("Data ready for processing run %s on %s", run_no, instrument_name)
 
@@ -163,7 +167,7 @@ class Listener:
 
         # Make the new reduction run with the information collected so far and add it into the
         # database
-        reduction_run = ReductionRun(run_number=self._data_dict['run_number'],
+        reduction_run = ReductionRun(run_number=message.run_number,
                                      run_version=run_version,
                                      run_name='',
                                      message='',
@@ -177,18 +181,17 @@ class Listener:
                                      instrument_id=instrument.id,
                                      status_id=status.id,
                                      script=script_text,
-                                     started_by=self._data_dict['started_by'])
+                                     started_by=message.started_by)
         session.add(reduction_run)
         session.commit()
 
         # Set our run_version to be the one we have just calculated
-        self._data_dict['run_version'] = reduction_run.run_version  # pylint: disable=no-member
+        message.run_version = reduction_run.run_version  # pylint: disable=no-member
 
         # Create a new data location entry which has a foreign key linking it to the current
         # reduction run. The file path itself will point to a datafile
         # (e.g. "\isis\inst$\NDXWISH\Instrument\data\cycle_17_1\WISH00038774.nxs")
-        logger.info("data dict: %s", self._data_dict)
-        data_location = DataLocation(file_path=self._data_dict['data'],
+        data_location = DataLocation(file_path=message.data,
                                      reduction_run_id=reduction_run.id) # pylint: disable=no-member
         session.add(data_location)
         session.commit()
@@ -200,12 +203,12 @@ class Listener:
         if not variables:
             logger.warning("No instrument variables found on %s for run %s",
                            instrument.name,
-                           self._data_dict['run_number'])
+                           message.run_number)
 
         logger.info('Getting script and arguments')
         reduction_script, arguments = ReductionRunUtils().get_script_and_arguments(reduction_run)
-        self._data_dict['reduction_script'] = reduction_script
-        self._data_dict['reduction_arguments'] = arguments
+        message.reduction_script = reduction_script
+        message.reduction_arguments = arguments
 
         # Make sure the RB number is valid
         error_message = is_valid_rb(rb_number)
@@ -214,11 +217,11 @@ class Listener:
             return
 
         if instrument.is_paused:
-            logger.info("Run %s has been skipped", self._data_dict['run_number'])
+            logger.info("Run %s has been skipped", message.run_number)
         else:
-            self._client.send('/queue/ReductionPending', json.dumps(self._data_dict),
+            self._client.send('/queue/ReductionPending', message,
                               priority=self._priority)
-            logger.info("Run %s ready for reduction", self._data_dict['run_number'])
+            logger.info("Run %s ready for reduction", message.run_number)
 
     def _construct_and_send_skipped(self, rb_number, reason):
         """
