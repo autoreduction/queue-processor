@@ -223,6 +223,7 @@ class PostProcessAdmin:
             final_log_dir = log_dir[len(MISC["temp_root_directory"]):]
 
             if 'overwrite' in self.data:
+                logger.info("if 'overwrite' in self.data: IS TRUE")
                 if not self.data["overwrite"]:
                     logger.info('Don\'t want to overwrite previous data')
                     path_parts = final_result_dir.split('/')
