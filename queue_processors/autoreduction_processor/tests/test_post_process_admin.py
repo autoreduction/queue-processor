@@ -83,10 +83,8 @@ class TestPostProcessAdmin(unittest.TestCase):
         location = PostProcessAdmin._reduction_script_location('WISH')
         self.assertEqual(location, MISC['scripts_directory'] % 'WISH')
 
-    @patch(DIR+'.post_process_admin.'
-           'PostProcessAdmin._remove_directory')
-    @patch(DIR+'.post_process_admin.'
-           'PostProcessAdmin._copy_tree')
+    @patch(DIR+'.post_process_admin.PostProcessAdmin._remove_directory')
+    @patch(DIR+'.post_process_admin.PostProcessAdmin._copy_tree')
     @patch(DIR+'.autoreduction_logging_setup.logger.info')
     def test_copy_temp_dir(self, mock_logger, mock_copy, mock_remove):
         result_dir = mkdtemp()
@@ -101,8 +99,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         shutil.rmtree(result_dir)
         shutil.rmtree(copy_dir)
 
-    @patch(DIR+'.post_process_admin.'
-           'PostProcessAdmin._copy_tree')
+    @patch(DIR+'.post_process_admin.PostProcessAdmin._copy_tree')
     @patch(DIR+'.autoreduction_logging_setup.logger.info')
     def test_copy_temp_dir_with_excitation(self, _, mock_copy):
         result_dir = mkdtemp()
@@ -113,10 +110,8 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_copy.assert_called_once_with(result_dir, 'copy-dir')
         shutil.rmtree(result_dir)
 
-    @patch(DIR+'.post_process_admin.'
-           'PostProcessAdmin._copy_tree')
-    @patch(DIR+'.post_process_admin.PostProcessAdmin.'
-           'log_and_message')
+    @patch(DIR+'.post_process_admin.PostProcessAdmin._copy_tree')
+    @patch(DIR+'.post_process_admin.PostProcessAdmin.log_and_message')
     @patch(DIR+'.autoreduction_logging_setup.logger.info')
     def test_copy_temp_dir_with_error(self, _, mock_log_and_msg, mock_copy):
         # pylint:disable=unused-argument
@@ -216,8 +211,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         ppa._remove_directory(directory_to_remove)
         self.assertFalse(os.path.exists(directory_to_remove))
 
-    @patch(DIR+'.post_process_admin.windows_to_linux_path',
-           return_value='path')
+    @patch(DIR+'.post_process_admin.windows_to_linux_path', return_value='path')
     @patch(DIR+'.post_process_admin.PostProcessAdmin.reduce')
     @patch('utils.clients.queue_client.QueueClient.connect')
     @patch('utils.clients.queue_client.QueueClient.__init__', return_value=None)
@@ -232,8 +226,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_connect.assert_called_once()
         mock_reduce.assert_called_once()
 
-    @patch(DIR+'.post_process_admin.windows_to_linux_path',
-           return_value='path')
+    @patch(DIR+'.post_process_admin.windows_to_linux_path', return_value='path')
     @patch('utils.clients.queue_client.QueueClient.connect')
     @patch('utils.clients.queue_client.QueueClient.__init__', return_value=None)
     @patch('utils.clients.queue_client.QueueClient.send')
@@ -258,8 +251,7 @@ class TestPostProcessAdmin(unittest.TestCase):
     @patch(DIR+'.timeout.TimeOut.__exit__', return_value=None)
     @patch(DIR+'.post_process_admin.PostProcessAdmin.copy_temp_directory')
     @patch(DIR+'.post_process_admin.PostProcessAdmin.log_and_message')
-    @patch(DIR+'.post_process_admin.windows_to_linux_path',
-           return_value='path')
+    @patch(DIR+'.post_process_admin.windows_to_linux_path', return_value='path')
     @patch('utils.clients.queue_client.QueueClient.connect')
     @patch('utils.clients.queue_client.QueueClient.__init__', return_value=None)
     @patch('utils.clients.queue_client.QueueClient.send')
@@ -283,12 +275,10 @@ class TestPostProcessAdmin(unittest.TestCase):
         self.assertEqual(ACTIVEMQ_SETTINGS.reduction_complete, args[0])
         self.assertEqual(message, actual_message_without_logs)
 
-    @patch(DIR+'.post_process_admin.prettify',
-           return_value='test')
+    @patch(DIR+'.post_process_admin.prettify', return_value='test')
     @patch('sys.exit')
     @patch(DIR+'.autoreduction_logging_setup.logger.info')
-    @patch(DIR+'.post_process_admin.PostProcessAdmin.__init__',
-           return_value=None)
+    @patch(DIR+'.post_process_admin.PostProcessAdmin.__init__', return_value=None)
     @patch('utils.clients.queue_client.QueueClient.send')
     @patch('utils.clients.queue_client.QueueClient.connect')
     @patch('utils.clients.queue_client.QueueClient.__init__', return_value=None)
@@ -316,8 +306,7 @@ class TestPostProcessAdmin(unittest.TestCase):
 
     @patch('sys.exit')
     @patch(DIR+'.autoreduction_logging_setup.logger.info')
-    @patch(DIR+'.post_process_admin.PostProcessAdmin.__init__',
-           return_value=None)
+    @patch(DIR+'.post_process_admin.PostProcessAdmin.__init__', return_value=None)
     @patch('utils.clients.queue_client.QueueClient.send')
     @patch('utils.clients.queue_client.QueueClient.connect')
     @patch('utils.clients.queue_client.QueueClient.__init__', return_value=None)
