@@ -60,7 +60,7 @@ def get_location_and_rb_from_database(database_client, run_number):
     db_connection = database_client.connect()
     location_query = f"""
                     SELECT file_path
-                    FROM reduction_viewer_reductionlocation
+                    FROM reduction_viewer_datalocation
                     WHERE reduction_run_id = {run_number}
                     """
     location_result = db_connection.execute(location_query).fetchall()
