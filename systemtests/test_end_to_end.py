@@ -157,13 +157,13 @@ if os.name != 'nt':
             """
             reduced_dir = os.path.join(get_project_root(), 'reduced-data')
             reduced_inst = os.path.join(reduced_dir, str(instrument))
-            reduced_rb = os.path.join(reduced_inst, 'RB{}'.format(str(rb_number)))
-            reduced_auto = os.path.join(reduced_rb, 'autoreduced')
-            reduced_run = os.path.join(reduced_auto, str(run_number))
+            reduced_auto = os.path.join(reduced_inst, 'autoreduced')
+            reduced_rb = os.path.join(reduced_auto, 'RB{}'.format(str(rb_number)))
+            reduced_run = os.path.join(reduced_rb, str(run_number))
             os.mkdir(reduced_dir)
             os.mkdir(reduced_inst)
-            os.mkdir(reduced_rb)
             os.mkdir(reduced_auto)
+            os.mkdir(reduced_rb)
             os.mkdir(reduced_run)
 
         def _find_run_in_database(self):
