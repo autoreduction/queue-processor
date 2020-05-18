@@ -372,7 +372,6 @@ class PostProcessAdmin:
         self.data['reduction_log'] = self.reduction_log_stream.getvalue()
         self.data["admin_log"] = self.admin_log_stream.getvalue()
 
-        logger.warning("self.data['message'] = %s", self.data['message'])
         if self.data["message"] != "" and not self.data['message'] is None:
             # This means an error has been produced somewhere
             try:

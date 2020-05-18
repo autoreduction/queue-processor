@@ -139,7 +139,6 @@ class ReductionRunUtils:
                     session.commit()
             else:
                 # provide variables if they aren't already
-                logging.info("CALLING create_variables_for_run FROM create_retry_run")
                 InstrumentVariablesUtils().create_variables_for_run(new_job)
 
             return new_job
