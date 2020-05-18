@@ -54,45 +54,7 @@ if os.name != 'nt':
             self.rb_number = None
             self.run_number = None
 
-        def test_end_to_end_wish(self):
-            """
-            Test that WISH data goes through the system without issue
-            """
-            # Set meta data for test
-            self.instrument = 'WISH'
-            self.rb_number = 222
-            self.run_number = 101
-
-            reduce_script = \
-                'def main(input_file, output_dir):\n' \
-                '\tprint("WISH system test")\n' \
-                '\n' \
-                'if __name__ == "__main__":\n' \
-                '\tmain()\n'
-
-            # Create supporting data structures e.g. Data Archive, Reduce directory
-            file_location = self._setup_data_structures(reduce_script=reduce_script,
-                                                        vars_script='')
-
-            # Create and send json message to ActiveMQ
-            data_ready_message = self.queue_client.serialise_data(rb_number=self.rb_number,
-                                                                  instrument=self.instrument,
-                                                                  location=file_location,
-                                                                  run_number=self.run_number,
-                                                                  started_by=0)
-            self.queue_client.send('/queue/DataReady',
-                                   json.dumps(data_ready_message))
-
-            # Get Result from database
-            results = self._find_run_in_database()
-
-            # Validate
-            self.assertEqual(self.instrument, results[0].instrument.name)
-            self.assertEqual(self.rb_number, results[0].experiment.reference_number)
-            self.assertEqual(self.run_number, results[0].run_number)
-            self.assertEqual('Completed', results[0].status.value)
-
-        # def test_wish_user_script_failure(self):
+        # def test_end_to_end_wish(self):
         #     """
         #     Test that WISH data goes through the system without issue
         #     """
@@ -101,15 +63,22 @@ if os.name != 'nt':
         #     self.rb_number = 222
         #     self.run_number = 101
         #
+        #     reduce_script = \
+        #         'def main(input_file, output_dir):\n' \
+        #         '\tprint("WISH system test")\n' \
+        #         '\n' \
+        #         'if __name__ == "__main__":\n' \
+        #         '\tmain()\n'
+        #
         #     # Create supporting data structures e.g. Data Archive, Reduce directory
-        #     file_location = self._setup_data_structures(reduce_script='fail',
+        #     file_location = self._setup_data_structures(reduce_script=reduce_script,
         #                                                 vars_script='')
         #
         #     # Create and send json message to ActiveMQ
-        #     data_ready_message = self.queue_client.serialise_data(instrument=self.instrument,
-        #                                                           rb_number=self.rb_number,
-        #                                                           run_number=self.run_number,
+        #     data_ready_message = self.queue_client.serialise_data(rb_number=self.rb_number,
+        #                                                           instrument=self.instrument,
         #                                                           location=file_location,
+        #                                                           run_number=self.run_number,
         #                                                           started_by=0)
         #     self.queue_client.send('/queue/DataReady',
         #                            json.dumps(data_ready_message))
@@ -121,7 +90,38 @@ if os.name != 'nt':
         #     self.assertEqual(self.instrument, results[0].instrument.name)
         #     self.assertEqual(self.rb_number, results[0].experiment.reference_number)
         #     self.assertEqual(self.run_number, results[0].run_number)
-        #     self.assertEqual('Error', results[0].status.value)
+        #     self.assertEqual('Completed', results[0].status.value)
+
+        def test_wish_user_script_failure(self):
+            """
+            Test that WISH data goes through the system without issue
+            """
+            # Set meta data for test
+            self.instrument = 'WISH'
+            self.rb_number = 222
+            self.run_number = 101
+
+            # Create supporting data structures e.g. Data Archive, Reduce directory
+            file_location = self._setup_data_structures(reduce_script='fail',
+                                                        vars_script='')
+
+            # Create and send json message to ActiveMQ
+            data_ready_message = self.queue_client.serialise_data(instrument=self.instrument,
+                                                                  rb_number=self.rb_number,
+                                                                  run_number=self.run_number,
+                                                                  location=file_location,
+                                                                  started_by=0)
+            self.queue_client.send('/queue/DataReady',
+                                   json.dumps(data_ready_message))
+
+            # Get Result from database
+            results = self._find_run_in_database()
+
+            # Validate
+            self.assertEqual(self.instrument, results[0].instrument.name)
+            self.assertEqual(self.rb_number, results[0].experiment.reference_number)
+            self.assertEqual(self.run_number, results[0].run_number)
+            self.assertEqual('Error', results[0].status.value)
 
         def _setup_data_structures(self, reduce_script, vars_script):
             """
