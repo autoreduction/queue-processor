@@ -396,6 +396,8 @@ class Listener:
         session.commit()
 
         if 'retry_in' in self._data_dict and 'retry_in' is not None:
+            logging.warning(f"if 'retry_in' in self._data_dict and 'retry_in' is not None: IS TRUE\n"
+                            f"data_dict: {self._data_dict}")
             experiment = session.query(Experiment).filter_by(
                 reference_number=self._data_dict['rb_number']).first()
             previous_runs = session.query(ReductionRun).filter_by(
