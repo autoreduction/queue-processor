@@ -113,7 +113,7 @@ if os.name != 'nt':
                                                                   run_number=self.run_number,
                                                                   location=file_location,
                                                                   started_by=0)
-            # ToDo: Should not need to do this - overwriting issue in ppa
+            # ToDo: Should not need to do this - overwriting issue in ppa   #pylint:disable=fixme
             data_ready_message['overwrite'] = True
 
             self.queue_client.send('/queue/DataReady',

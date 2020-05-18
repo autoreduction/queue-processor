@@ -376,7 +376,8 @@ class PostProcessAdmin:
             # This means an error has been produced somewhere
             try:
                 if 'skip' in self.data['message'].lower():
-                    self.data['message'].lstrip('skip: ')   # note: this does nothing as the result isn't stored
+                    # note: the below does nothing as the result isn't stored
+                    self.data['message'].lstrip('skip: ')
                     self._send_message_and_log(ACTIVEMQ_SETTINGS.reduction_skipped)
                 else:
                     self._send_message_and_log(ACTIVEMQ_SETTINGS.reduction_error)
@@ -388,7 +389,7 @@ class PostProcessAdmin:
 
         else:
             # reduction has successfully completed
-            self.data['message'] = ""  #ToDo: Improve this!
+            self.data['message'] = ""  # ToDo: Improve this!   #pylint:disable=fixme
             self.client.send(ACTIVEMQ_SETTINGS.reduction_complete, json.dumps(self.data))
             logger.info("Calling: %s\n%s",
                         ACTIVEMQ_SETTINGS.reduction_complete,
