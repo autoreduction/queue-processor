@@ -213,6 +213,7 @@ class InstrumentVariablesUtils:
         Takes a python script as a text string, and returns it loaded as a module.
         Failure will return None, and notify.
         """
+        logging.warning(f"script_text: {script_text}\nscript_path: {script_path}")
         if not script_text or not script_path:
             return None
 
