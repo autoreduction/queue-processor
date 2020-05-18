@@ -395,10 +395,10 @@ class Listener:
         session.add(reduction_run)
         session.commit()
 
-        logging.warning(f"NEXT: 'if 'retry_in' in self._data_dict and 'retry_in' is not None'\n"
+        logger.warning(f"NEXT: 'if 'retry_in' in self._data_dict and 'retry_in' is not None'\n"
                         f"data_dict: {self._data_dict}")
         if 'retry_in' in self._data_dict and 'retry_in' is not None:    # note: this isn't entered
-            logging.warning(f"if 'retry_in' in self._data_dict and 'retry_in' is not None: IS TRUE\n"
+            logger.warning(f"if 'retry_in' in self._data_dict and 'retry_in' is not None: IS TRUE\n"
                             f"data_dict: {self._data_dict}")
             experiment = session.query(Experiment).filter_by(
                 reference_number=self._data_dict['rb_number']).first()
@@ -459,6 +459,7 @@ class Listener:
             user_id=user_id,
             reduction_run=reduction_run,
             delay=retry_in)
+        # Note somehow the below is being called but not the logger above..
         try:
             #  Seconds to Milliseconds
             MessagingUtils().send_pending(new_job, delay=retry_in * 1000)
