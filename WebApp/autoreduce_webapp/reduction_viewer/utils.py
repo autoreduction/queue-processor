@@ -223,7 +223,6 @@ class ReductionRunUtils(object):
                 var.save()
         else:
             # provide variables if they aren't already
-            logging.info("CALLING create_variables_for_run FROM createRetryRun")
             InstrumentVariablesUtils().create_variables_for_run(new_job)
 
         return new_job

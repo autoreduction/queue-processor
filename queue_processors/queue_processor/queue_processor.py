@@ -397,7 +397,7 @@ class Listener:
 
         logger.warning(f"NEXT: 'if 'retry_in' in self._data_dict and 'retry_in' is not None'\n"
                         f"data_dict: {self._data_dict}")
-        if 'retry_in' in self._data_dict and 'retry_in' is not None:    # note: this isn't entered
+        if 'retry_in' in self._data_dict and self._data_dict['retry_in'] is not None:    # note: this isn't entered
             logger.warning(f"if 'retry_in' in self._data_dict and 'retry_in' is not None: IS TRUE\n"
                             f"data_dict: {self._data_dict}")
             experiment = session.query(Experiment).filter_by(
