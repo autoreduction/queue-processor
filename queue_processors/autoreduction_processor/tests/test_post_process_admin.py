@@ -51,36 +51,43 @@ class TestPostProcessAdmin(unittest.TestCase):
                      'reduction_arguments': 'None'}
         # self.test_rel_path = "\\instrument\\GEM\\RBNumber\\RB2010163\\autoreduced\\90369\\"
         self.test_fname = "111.txt"
-        self.test_root = "\\test_run\\"
-        self.test_paths = [self.test_root + self.test_fname,
-                           self.test_root + "1\\" + self.test_fname,
-                           self.test_root + "2\\" + self.test_fname]
-        # self.remove_test_dir_structure(self.test_dir)
+        self.test_root = "test_run"
+        self.test_paths = [os.path.join(self.test_root, self.test_fname),
+                           os.path.join(self.test_root, "1", self.test_fname),
+                           os.path.join(self.test_root, "2", self.test_fname)]
+
+        print(f"self.test_paths: {self.test_paths}")
+        self.remove_test_dir_structure(self.test_root)
+
         self.setup_test_dir_structure(self.test_paths)
+
 
     def tearDown(self):
         self.remove_test_dir_structure(self.test_root)
 
     @staticmethod
-    def remove_test_dir_structure(test_dir):
-        split = test_dir.split("\\")
-        path_parts = [part for part in split if part]   # Removes empty items
-        test_root = path_parts[0]
+    def remove_test_dir_structure(test_root):
+        # split = test_dir.split("\\")
+        # path_parts = [part for part in split if part]   # Removes empty items
+        # test_root = path_parts[0]
 
-        cwd = os.getcwd()
-        abs_test_root = cwd + "\\" + test_root
+        abs_test_root = os.path.join(os.getcwd(), test_root)
+        print(f"abs_test_root: {abs_test_root}")
         if os.path.isdir(abs_test_root):
             shutil.rmtree(test_root)
 
     @staticmethod
     def setup_test_dir_structure(test_paths):
-        cwd = os.getcwd()
         for file_path in test_paths:
-            (path, file) = file_path.rsplit("\\", 1)
-            abs_path = cwd + path
-            os.makedirs(abs_path)
+            (path, file) = os.path.split(file_path)
+            print(f"path: {path}\nfile: {file}")
+            abs_path = os.path.join(os.getcwd(), path)
+            print(f"abs_path: {abs_path}")
+            if not os.path.isdir(abs_path):
+                os.makedirs(abs_path)
 
-            abs_file_path = cwd + file_path
+            abs_file_path = os.path.join(abs_path, file)
+            print(f"abs_file_path: {abs_file_path}")
             with open(abs_file_path, 'w') as file:
                 file.write("test file")
 
