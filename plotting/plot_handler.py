@@ -4,6 +4,7 @@
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 import logging
+
 LOGGER = logging.getLogger('app')
 
 
@@ -15,7 +16,7 @@ class PlotHandler(object):
     :param rb_number: The ISIS RB number.
     :param run_number: The run number on the given instrument for the given RB number.
     :param plot_type:
-        The type of plot file / file extension to be searched for (e.g. "png").
+        The type of plot file / file extension to be searched for (e.g. "png"). Can be a list of extensions.
         If None, a list of common graphics file extensions is searched for.
     """
 
@@ -38,60 +39,67 @@ class PlotHandler(object):
         # path to directory with files for given instrument and RB number
         self._RBfolder = "/instrument/" + self.instrument_name + "/RBNumber/RB" + str(self.rb_number) + "/autoreduced/"
         # parameter to store the file path for the copied plot file
-        self.plot_file_path = None
+        self.plot_file_names = []
 
-    def _get_single_plot_file(self, CEPH_path):
-        """Calls the SFTP client to get a single plot file from CEPH. Returns a PATH object to the local file
-        downloaded from CEPH."""
-        client = SFTPClient()
-        try:
-            client.retrieve(server_path=CEPH_path, local_path=None)
-        except RuntimeError:
-            logging.Error("file does not exist")
-
-    def get_plot_file(self):
-        """Searches for and retrieves a plot file from CEPH. Can search for multiple plot types. If no existing plot
-        file is found a default picture is retrieved instead. Returns a PATH object to the local file downloaded from CEPH."""
-        for plot_type_i in self.plot_type:
-            # combine directory and regular expression for file name into the file path to be looked up
-            CEPH_path = self._RBfolder + self._regexp_for_file_name(run_number=self.run_number, plot_type=plot_type_i)
-            local_path = "/local/directory/for/storing/the/file"
-            try:
-                # try to retrieve the file, if it is found, set the flag_file_exists and break out of the loop
-                self.plot_file_path = self._get_single_plot_file(CEPH_path=CEPH_path, local_path=None)
-                break
-            except RuntimeError:
-                # if the file does not exist, continue looping/looking
-                pass
-        if self.plot_file_path is None:
-            # if no existing plot file has been found do nothing
-            pass
-        return self.plot_file_path
-
-    def _regexp_for_file_name(self, run_number, plot_type):
+    def _regexp_for_file_name(self, plot_type):
         """
         Regular expression used for looking for plot files. It assumes that the file names follow the convention
         <instrument_abbreviation><run_number>*<.png or other extension>
         """
         try:
-            _regexp = self._instrument_dict[self.instrument_name] + run_number + "*." + plot_type
+            _regexp = self._instrument_dict[self.instrument_name] + str(self.run_number) + "*." + plot_type
             return _regexp
         except KeyError:  # if the instrument name does not appear in the dictionary of known instruments
             LOGGER.info("The instrument name is not recognised")
 
+    def _check_for_plot_files(self):
+        """
+        Searches the CEPH directory for existing plot files using the directory specified by instrument_name, rb_number
+        and run_number, and a regular expression for the file name based on the instrument_name, run_number and plot_type.
+        """
+        for plot_type_i in self.plot_type:
+            # directory where existing plot file(s) would be located
+            CEPH_dir = self._RBfolder
+            # regular expression for plot file name(s)
+            file_regex = self._regexp_for_file_name(plot_type=plot_type_i)
+            # use sftpclient to check if suitable file name(s) exist and add them to the plot_file_names
+            client = SFTPClient()
+        return client.get_filenames(server_dir_path=CEPH_dir, regex=file_regex)
+
+    def _get_single_plot_file(self, CEPH_path, local_path=None):
+        """
+        Calls the SFTP client to copy a single plot file from CEPH.
+        :param CEPH_path: the complete path to the file to be retrieved
+        :param local_path: (from sftp client documentation:)
+            The location to download the file to, including filename with extension.
+            If None, local_path is the local directory.
+        """
+        client = SFTPClient()
+        try:
+            client.retrieve(server_path=CEPH_path, local_path=local_path, override=True)
+        except RuntimeError:
+            logging.Error("file does not exist")
+
+    def get_plot_file(self):
+        """
+        Searches for and retrieves a plot file from CEPH. Might find multiple files (e.g. if more than one plot_type is
+        specified), but will only copy over one. If no existing plot file is found it does nothing at the moment.
+        """
+        self.plot_file_names = self._check_for_plot_files()
+        if len(self.plot_file_names)=0:  # no existing file was found
+            return False
+        else:  # if one or more existing files were found, use the first one (order of items in plot_type affects this)
+            _ceph_path = self._RBfolder + self.plot_file_names[0]
+            # in case the local path to which the file gets copied to needs to be specified
+            _local_path=None
+            # create sftpclient object and try to retrieve the file
+            client = SFTPClient()
+            try:
+                client.retrieve(server_path=_ceph_path, local_path=_local_path, override=True)
+            except RuntimeError:
+                logging.Error("file does not exist")
+            return True
+
     def construct_plot(self):
         """Calls the plot factory to construct an iframe from a NumpyArray and plot_type"""
         pass
-
-
-import os
-
-
-def _futurefunctionality_find_all_run_numbers(self):
-    """Searches for all subdirectories in the RB folder (self._RBfolder). This functionality will be needed to automate
-    the plot_handler to work for all run numbers with a particular RB folder."""
-    # see possible solutions at
-    # https://stackoverflow.com/questions/800197/how-to-get-all-of-the-immediate-subdirectories-in-python
-    # Could use f.name instead of f.path to extract all run numbers from the subdirectory names instead.
-    _subdirectories = [f.path for f in os.scandir(self._RBfolder) if f.is_dir()]
-    return _subdirectories
