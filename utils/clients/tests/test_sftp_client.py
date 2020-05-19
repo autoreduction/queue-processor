@@ -24,6 +24,7 @@ class TestSFTPClient(unittest.TestCase):
     def setUp(self):
         self.valid_argument = "valid"
         self.filenames = ["textfile.txt", "nexusfile.nxs", "image.png"]
+        self.textfile_regex = ".*\.txt"
 
     def is_argument_valid(self, value):
         """ Checks whether the value is a valid argument
@@ -74,6 +75,16 @@ class TestSFTPClient(unittest.TestCase):
         """
         client = self.create_mocked_connection_client()
         self.assertTrue(client._test_connection())
+
+    def test_server_path_check_with_invalid_path(self):
+        client = self.create_mocked_connection_client()
+        with self.assertRaises(RuntimeError):
+            client._server_path_check(server_path="invalid")
+
+    def test_server_path_check_with_valid_path(self):
+        client = self.create_mocked_connection_client()
+        client._server_path_check(server_path=self.valid_argument)
+        client._connection.exists.assert_called_with(self.valid_argument)
 
     def test_server_file_path_is_invalid(self):
         """
@@ -134,7 +145,6 @@ class TestSFTPClient(unittest.TestCase):
             client.retrieve(server_file_path=self.valid_argument,
                             local_file_path=self.valid_argument, override=False)
 
-    # TODO: refactor tests to isolate _server_path_check method
     @patch('os.path.isfile', return_value=False)
     def test_override_is_false_and_local_file_path_does_not_exists(self, _):
         """
@@ -165,8 +175,13 @@ class TestSFTPClient(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             client.get_filenames(server_dir_path="invalid")
 
-    def test_actual_listdir(self):
-        client = SFTPClient()
-        client.connect()
-        # print(client._connection.listdir())
-        print(client.get_filenames("."))
+    def test_get_filenames_regex(self):
+        """
+        Test: The output from pysftp.Connection.listdir is returned
+        When: get_filenames is called with a valid server directory path
+        """
+        client = self.create_mocked_connection_client()
+        client._connection.listdir.return_value = self.filenames
+        filenames_returned = client.get_filenames(server_dir_path=self.valid_argument,
+                                                  regex=self.textfile_regex)
+        self.assertEqual(filenames_returned, [self.filenames[0]])

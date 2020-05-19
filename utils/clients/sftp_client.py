@@ -9,6 +9,8 @@ Client class for retrieving files via SFTP from servers (e.g. CEPH)
 """
 import os.path
 import logging
+import re
+
 import pysftp
 from utils.clients.abstract_client import AbstractClient
 from utils.clients.connection_exception import ConnectionException
@@ -19,8 +21,6 @@ from utils.project.static_content import LOG_FORMAT
 
 logging.basicConfig(filename=get_log_file('sftp_client.log'), level=logging.INFO,
                     format=LOG_FORMAT)
-
-# TODO: extend tests
 
 class SFTPClient(AbstractClient):
     """
@@ -104,16 +104,23 @@ class SFTPClient(AbstractClient):
             raise RuntimeError("The local_file_path is a directory. "
                                "Please ensure the local_path includes a full filename.")
 
-    def get_filenames(self, server_dir_path):
+    def get_filenames(self, server_dir_path, regex=".*"):
         """
+        Gets filenames from a given server directory which meet a regular expression
         :param server_dir_path: The server directory to get filenames from.
-        :return: A list of files within the given server directory.
+        :param regex: A regular expression for the files to meet (default allows for all files).
+        :return: A list of filenames which match the regex within the server directory.
         """
         self._server_path_check(server_dir_path)
 
-        return self._connection.listdir()
+        filenames = self._connection.listdir()
+        matches = []
 
+        for name in filenames:
+            if re.match(regex, name) is not None:
+                matches.append(name)
 
+        return matches
 
     def _server_path_check(self, server_path):
         """
