@@ -49,6 +49,11 @@ class TestPostProcessAdmin(unittest.TestCase):
                      'run_number': '4321',
                      'reduction_script': 'print(\'hello\')',
                      'reduction_arguments': 'None'}
+        self.test_directory = "/instrument/GEM/RBNumber/RB2010163/autoreduced/90369"
+        os.makedirs(self.test_directory)
+
+    def tearDown(self):
+        os.rmdir(self.test_directory)
 
     def test_init(self):
         ppa = PostProcessAdmin(self.data, None)
@@ -279,3 +284,11 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_exit.assert_called_once()
         mock_send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_error,
                                           json.dumps(self.data))
+
+    # def test_new_reduction_data_path(self):
+    #     print(os.path.isdir(self.test_directory))
+    #     # directory = "/instrument/GEM/RBNumber/RB2010163/autoreduced/90369"
+    #     mock_self = Mock()
+    #     mock_self.data = {'overwrite': None}
+    #     result = PostProcessAdmin._new_reduction_data_path(mock_self, self.test_directory)
+    #     # print(result)

@@ -222,30 +222,8 @@ class PostProcessAdmin:
             final_result_dir = reduce_result_dir[len(MISC["temp_root_directory"]):]
             final_log_dir = log_dir[len(MISC["temp_root_directory"]):]
 
-            if 'overwrite' in self.data:
-                if not self.data["overwrite"]:
-                    logger.info('Don\'t want to overwrite previous data')
-                    path_parts = final_result_dir.split('/')
-                    new_path = '/'
-                    for part in path_parts:
-                        if part not in ('autoreduced', ''):
-                            new_path = new_path + part + '/'
-                    maximum = 0
-                    for folder in os.listdir(new_path):
-                        if folder.startswith('autoreduced'):
-                            number = folder.replace('autoreduced', '')
-                            if number != '':
-                                number = int(number) + 1
-                                if number > maximum:
-                                    maximum = number
-                            else:
-                                maximum = 1
-                    if maximum == 0:
-                        new_path = new_path + 'autoreduced'
-                    else:
-                        new_path = new_path + 'autoreduced' + str(maximum) + '/'
-                    final_result_dir = new_path
-                    final_log_dir = new_path + 'reduction_log/'
+            final_result_dir = self._new_reduction_data_path(final_result_dir)
+            final_log_dir = final_result_dir + 'reduction_log/'
 
             logger.info('Final Result Directory = %s', final_result_dir)
             logger.info('Final Log Directory = %s', final_log_dir)
@@ -393,6 +371,34 @@ class PostProcessAdmin:
                         ACTIVEMQ_SETTINGS.reduction_complete,
                         prettify(self.data))
             logger.info("Reduction job successfully complete")
+
+    def _new_reduction_data_path(self, directory):
+        logger.info("directory argument: %s", directory)
+        new_path = directory
+        if 'overwrite' in self.data:
+            if not self.data["overwrite"]:
+                logger.info('Don\'t want to overwrite previous data')
+                path_parts = directory.split('/')
+                new_path = '/'
+                for part in path_parts:
+                    if part not in ('autoreduced', ''):
+                        new_path = new_path + part + '/'
+                maximum = 0
+                for folder in os.listdir(new_path):
+                    if folder.startswith('autoreduced'):
+                        number = folder.replace('autoreduced', '')
+                        if number != '':
+                            number = int(number) + 1
+                            if number > maximum:
+                                maximum = number
+                        else:
+                            maximum = 1
+                if maximum == 0:
+                    new_path = new_path + 'autoreduced'
+                else:
+                    new_path = new_path + 'autoreduced' + str(maximum) + '/'
+        logger.info("new path: %s", new_path)
+        return new_path
 
     def _send_message_and_log(self, destination):
         """ Send reduction run to error. """
