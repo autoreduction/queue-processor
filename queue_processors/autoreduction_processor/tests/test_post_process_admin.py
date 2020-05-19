@@ -49,17 +49,51 @@ class TestPostProcessAdmin(unittest.TestCase):
                      'run_number': '4321',
                      'reduction_script': 'print(\'hello\')',
                      'reduction_arguments': 'None'}
-        self.test_directory = "/instrument/GEM/RBNumber/RB2010163/autoreduced/90369/"
-        # os.makedirs(self.test_directory)
-        # print(os.path.abspath(self.test_directory))
-        #
-        # self.filename = "rundata.nxs"
-        # path = self.test_directory + "/" + self.filename
-        # with open(path, 'w') as file:
-        #     file.write("test file")
+        # self.test_rel_path = "\\instrument\\GEM\\RBNumber\\RB2010163\\autoreduced\\90369\\"
+        self.test_dir = "\\test\\"
+        self.test_fname = "run_data_file.txt"
+        # self.remove_test_dir_structure(self.test_dir)
+        self.setup_test_dir_structure(self.test_dir, self.test_fname)
 
-    # def tearDown(self):
-    #     os.rmdir(self.test_directory)
+    def tearDown(self):
+        self.remove_test_dir_structure(self.test_dir)
+
+    @staticmethod
+    def remove_test_dir_structure(test_dir):
+        split = test_dir.split("\\")
+        path_parts = [part for part in split if part]   # Removes empty items
+        test_root = path_parts[0]
+
+        cwd = os.getcwd()
+        abs_test_root = cwd + "\\" + test_root
+        if os.path.isdir(abs_test_root):
+            shutil.rmtree(test_root)
+
+    @staticmethod
+    def setup_test_dir_structure(test_dir, fname):
+        cwd = os.getcwd()
+        abs_path = cwd + test_dir + fname
+        os.makedirs(abs_path)
+
+        abs_file_path = abs_path + fname
+        with open(abs_file_path, 'w') as file:
+            file.write("test file")
+
+
+        # exit()
+        # shutil.rmtree(path_parts[0])
+        # if os.path.isdir(os.getcwd() + "\\instrument"):
+        #     print("REMOVE")
+        #     os.rmdir(os.getcwd() + "\\instrument")
+        #
+        # abs_path = os.getcwd() + dir
+        #
+        # os.makedirs(abs_path)
+        # # print(os.path.abspath(self.test_directory))
+        #
+        # abs_file_path = abs_path + "/" + fname
+        # with open(abs_file_path, 'w') as file:
+        #     file.write("test file")
 
     def test_init(self):
         ppa = PostProcessAdmin(self.data, None)
@@ -291,8 +325,8 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_error,
                                           json.dumps(self.data))
 
-    # def test_new_reduction_data_path(self):
-    #     pass
+    def test_new_reduction_data_path(self):
+        pass
         # print(os.path.isdir(self.test_directory))
     #     # directory = "/instrument/GEM/RBNumber/RB2010163/autoreduced/90369"
     #     mock_self = Mock()
