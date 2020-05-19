@@ -66,27 +66,13 @@ class PlotHandler(object):
             client = SFTPClient()
         return client.get_filenames(server_dir_path=CEPH_dir, regex=file_regex)
 
-    def _get_single_plot_file(self, CEPH_path, local_path=None):
-        """
-        Calls the SFTP client to copy a single plot file from CEPH.
-        :param CEPH_path: the complete path to the file to be retrieved
-        :param local_path: (from sftp client documentation:)
-            The location to download the file to, including filename with extension.
-            If None, local_path is the local directory.
-        """
-        client = SFTPClient()
-        try:
-            client.retrieve(server_path=CEPH_path, local_path=local_path, override=True)
-        except RuntimeError:
-            logging.Error("file does not exist")
-
     def get_plot_file(self):
         """
         Searches for and retrieves a plot file from CEPH. Might find multiple files (e.g. if more than one plot_type is
         specified), but will only copy over one. If no existing plot file is found it does nothing at the moment.
         """
         self.plot_file_names = self._check_for_plot_files()
-        if len(self.plot_file_names)=0:  # no existing file was found
+        if len(self.plot_file_names)==0:  # no existing file was found
             return False
         else:  # if one or more existing files were found, use the first one (order of items in plot_type affects this)
             _ceph_path = self._RBfolder + self.plot_file_names[0]
