@@ -16,6 +16,7 @@ import json
 from tempfile import mkdtemp, NamedTemporaryFile
 from mock import patch, call, Mock
 
+from paths.path_manipulation import append_path
 from utils.settings import ACTIVEMQ_SETTINGS
 from utils.project.structure import get_project_root
 from queue_processors.autoreduction_processor.settings import MISC
@@ -56,10 +57,8 @@ class TestPostProcessAdmin(unittest.TestCase):
                            os.path.join(self.test_root, "1", self.test_fname),
                            os.path.join(self.test_root, "2", self.test_fname)]
 
-        print(f"self.test_paths: {self.test_paths}")
-        self.remove_test_dir_structure(self.test_root)
 
-        self.setup_test_dir_structure(self.test_paths)
+
 
 
     def tearDown(self):
@@ -72,7 +71,6 @@ class TestPostProcessAdmin(unittest.TestCase):
         # test_root = path_parts[0]
 
         abs_test_root = os.path.join(os.getcwd(), test_root)
-        print(f"abs_test_root: {abs_test_root}")
         if os.path.isdir(abs_test_root):
             shutil.rmtree(test_root)
 
@@ -80,14 +78,11 @@ class TestPostProcessAdmin(unittest.TestCase):
     def setup_test_dir_structure(test_paths):
         for file_path in test_paths:
             (path, file) = os.path.split(file_path)
-            print(f"path: {path}\nfile: {file}")
             abs_path = os.path.join(os.getcwd(), path)
-            print(f"abs_path: {abs_path}")
             if not os.path.isdir(abs_path):
                 os.makedirs(abs_path)
 
             abs_file_path = os.path.join(abs_path, file)
-            print(f"abs_file_path: {abs_file_path}")
             with open(abs_file_path, 'w') as file:
                 file.write("test file")
 
@@ -323,10 +318,13 @@ class TestPostProcessAdmin(unittest.TestCase):
                                           json.dumps(self.data))
 
     def test_new_reduction_data_path(self):
-        pass
-        # print(os.path.isdir(self.test_directory))
-    #     # directory = "/instrument/GEM/RBNumber/RB2010163/autoreduced/90369"
-    #     mock_self = Mock()
-    #     mock_self.data = {'overwrite': None}
-    #     result = PostProcessAdmin._new_reduction_data_path(mock_self, self.test_directory)
-    #     # print(result)
+        # self.remove_test_dir_structure(self.test_root)
+        self.setup_test_dir_structure(self.test_paths)
+        mock_self = Mock()
+        mock_self.data = {'overwrite': None}
+
+        expected = append_path(self.test_root, "3")
+        actual = PostProcessAdmin._new_reduction_data_path(mock_self, self.test_root)
+        self.assertEqual(expected, actual)
+
+        self.remove_test_dir_structure(self.test_root)
