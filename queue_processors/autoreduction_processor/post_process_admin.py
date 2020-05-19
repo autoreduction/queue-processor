@@ -374,6 +374,7 @@ class PostProcessAdmin:
 
     def _new_reduction_data_path(self, directory):
         logger.info("directory argument: %s", directory)
+
         new_path = directory
         if 'overwrite' in self.data:
             if not self.data["overwrite"]:
