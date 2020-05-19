@@ -49,11 +49,17 @@ class TestPostProcessAdmin(unittest.TestCase):
                      'run_number': '4321',
                      'reduction_script': 'print(\'hello\')',
                      'reduction_arguments': 'None'}
-        self.test_directory = "/instrument/GEM/RBNumber/RB2010163/autoreduced/90369"
-        os.makedirs(self.test_directory)
+        self.test_directory = "/instrument/GEM/RBNumber/RB2010163/autoreduced/90369/"
+        # os.makedirs(self.test_directory)
+        # print(os.path.abspath(self.test_directory))
+        #
+        # self.filename = "rundata.nxs"
+        # path = self.test_directory + "/" + self.filename
+        # with open(path, 'w') as file:
+        #     file.write("test file")
 
-    def tearDown(self):
-        os.rmdir(self.test_directory)
+    # def tearDown(self):
+    #     os.rmdir(self.test_directory)
 
     def test_init(self):
         ppa = PostProcessAdmin(self.data, None)
@@ -286,7 +292,8 @@ class TestPostProcessAdmin(unittest.TestCase):
                                           json.dumps(self.data))
 
     # def test_new_reduction_data_path(self):
-    #     print(os.path.isdir(self.test_directory))
+    #     pass
+        # print(os.path.isdir(self.test_directory))
     #     # directory = "/instrument/GEM/RBNumber/RB2010163/autoreduced/90369"
     #     mock_self = Mock()
     #     mock_self.data = {'overwrite': None}
