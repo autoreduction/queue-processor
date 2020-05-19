@@ -373,21 +373,23 @@ class PostProcessAdmin:
                         prettify(self.data))
             logger.info("Reduction job successfully complete")
 
-    def _new_reduction_data_path(self, path):   # note: should be given directory, ending in separator
+    def _new_reduction_data_path(self, path):
         logger.info("_new_reduction_data_path argument: %s", path)
+        # if there is an 'overwrite' key/member with a None/False value
         if 'overwrite' in self.data and not self.data["overwrite"]:
-            if os.path.isdir(path):
+            if os.path.isdir(path):           # if the given path already exists..
                 contents = os.listdir(path)
                 highest_vers = 0
-                for item in contents:
+                for item in contents:         # ..for every item, if it's a dir and a int..
                     if os.path.isdir(os.path.join(path, item)):
-                        try:
+                        try:                  # ..store the highest int
                             vers = int(item)
                             highest_vers = max(highest_vers, vers)
                         except ValueError:
                             pass
                 this_vers = highest_vers + 1
                 return append_path(path, [str(this_vers)])
+        # (else) if overwrite doesn't exist, is true, or the path doesn't exist, return unedited
         return path
 
     def _send_message_and_log(self, destination):
