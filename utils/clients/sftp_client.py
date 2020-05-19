@@ -20,6 +20,7 @@ from utils.project.static_content import LOG_FORMAT
 logging.basicConfig(filename=get_log_file('sftp_client.log'), level=logging.INFO,
                     format=LOG_FORMAT)
 
+# TODO: extend tests
 
 class SFTPClient(AbstractClient):
     """
@@ -69,41 +70,61 @@ class SFTPClient(AbstractClient):
             raise ConnectionException("SFTP")
         return True
 
-    def retrieve(self, server_path, local_path=None, override=True):
+    def retrieve(self, server_file_path, local_file_path=None, override=True):
         """
         Retrieves file from the given server_path and downloads it to the given local_path
-        :param server_path: The location of the file on the SFTP server.
-        :param local_path:
+        :param server_file_path: The location of the file on the SFTP server.
+        :param local_file_path:
             The location to download the file to, including filename with extension.
             If None, local_path is the local directory.
         :param override: If True and local_path points to an existing file, will override this file.
         :raises RuntimeError: If any of the following occur:
-            1) The server_path does not exist on the SFTP server
-            2) The local_path directory does not exist
-            3) The local_path points to a directory instead of a file
-            4) The local_path points to an existing file, and override is false
+            1) The server_file_path does not exist on the SFTP server
+            2) The local_file_path directory does not exist
+            3) The local_file_path points to a directory instead of a file
+            4) The local_file_path points to an existing file, and override is false
             Note: an error message will describe which of the 4 cases above has occurred.
         """
 
-        if self._connection is None:
-            self.connect()
+        self._server_path_check(server_file_path)
 
-        if not self._connection.exists(server_path):
-            raise RuntimeError("The server_path does not point to a file. "
-                               "Please provide a server_path which points to a file.")
+        if local_file_path is None:
+            local_file_path = ""
 
-        if local_path is None:
-            local_path = ""
-
-        if not override and os.path.isfile(local_path):
-            raise RuntimeError("The local_path points to a file which already exists. "
+        if not override and os.path.isfile(local_file_path):
+            raise RuntimeError("The local_file_path points to a file which already exists. "
                                "Please provide a different filename in the local_path, "
                                "or set the override flag to True.")
 
         try:
-            self._connection.get(server_path, local_path)
+            self._connection.get(server_file_path, local_file_path)
         except FileNotFoundError:
-            raise RuntimeError("The local_path does not exist.")
+            raise RuntimeError("The local_file_path does not exist.")
         except PermissionError:
-            raise RuntimeError("The local_path is a directory. "
+            raise RuntimeError("The local_file_path is a directory. "
                                "Please ensure the local_path includes a full filename.")
+
+    def get_filenames(self, server_dir_path):
+        """
+        :param server_dir_path: The server directory to get filenames from.
+        :return: A list of files within the given server directory.
+        """
+        self._server_path_check(server_dir_path)
+
+        return self._connection.listdir()
+
+
+
+    def _server_path_check(self, server_path):
+        """
+        Checks the connection to the server (or establishes one if there isn't one yet)
+        and that the given path exists.
+        :param server_path: A location on the SFTP server.
+            Note: Use server_path="." to reference the current working directory
+        :raises RuntimeError: If the server_path does not exist on the SFTP server
+        """
+        if self._connection is None:
+            self.connect()
+
+        if not self._connection.exists(server_path):
+            raise RuntimeError(f"The given server_path does not exist: '{server_path}'")

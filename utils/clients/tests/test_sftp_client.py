@@ -23,6 +23,7 @@ class TestSFTPClient(unittest.TestCase):
     """
     def setUp(self):
         self.valid_argument = "valid"
+        self.filenames = ["textfile.txt", "nexusfile.nxs", "image.png"]
 
     def is_argument_valid(self, value):
         """ Checks whether the value is a valid argument
@@ -74,16 +75,16 @@ class TestSFTPClient(unittest.TestCase):
         client = self.create_mocked_connection_client()
         self.assertTrue(client._test_connection())
 
-    def test_server_path_is_invalid(self):
+    def test_server_file_path_is_invalid(self):
         """
         Test: A RuntimeError is raised
         When: retrieve is called with an invalid server path
         """
         client = self.create_mocked_connection_client()
         with self.assertRaises(RuntimeError):
-            client.retrieve(server_path="invalid", local_path=self.valid_argument)
+            client.retrieve(server_file_path="invalid", local_file_path=self.valid_argument)
 
-    def test_local_path_does_not_exist(self):
+    def test_local_file_path_does_not_exist(self):
         """
         Test: A RuntimeError is raised
         When: retrieve is called with an invalid file path
@@ -91,9 +92,9 @@ class TestSFTPClient(unittest.TestCase):
         client = self.create_mocked_connection_client()
         client._connection.get.side_effect = FileNotFoundError()
         with self.assertRaises(RuntimeError):
-            client.retrieve(server_path=self.valid_argument, local_path="invalid")
+            client.retrieve(server_file_path=self.valid_argument, local_file_path="invalid")
 
-    def test_local_path_is_directory(self):
+    def test_local_file_path_is_directory(self):
         """
         Test: A RuntimeError is raised
         When: retrieve is called with a local path that points to a directory
@@ -101,45 +102,71 @@ class TestSFTPClient(unittest.TestCase):
         client = self.create_mocked_connection_client()
         client._connection.get.side_effect = PermissionError()
         with self.assertRaises(RuntimeError):
-            client.retrieve(server_path=self.valid_argument, local_path="directory")
+            client.retrieve(server_file_path=self.valid_argument, local_file_path="directory")
 
-    def test_local_path_is_none(self):
+    def test_local_file_path_is_none(self):
         """
-        Test: retrieve uses the current directory as the local_path
-        When: retrieve is called with no local_path argument
+        Test: retrieve uses the current directory as the local_file_path
+        When: retrieve is called with no local_file_path argument
         """
         client = self.create_mocked_connection_client()
-        client.retrieve(server_path=self.valid_argument)
+        client.retrieve(server_file_path=self.valid_argument)
         client._connection.get.assert_called_with(self.valid_argument, "")
 
-    def test_server_path_and_local_path_are_valid(self):
+    def test_server_file_path_and_local_file_path_are_valid(self):
         """
-        Test: retrieve finds a file from a given server_path and puts a copy in local_path
-        When: retrieve is called with a valid server_path (i.e. a path which point to a real file)
-        and a valid local_path (i.e. a local path which exists)
+        Test: retrieve finds a file from a given server_file_path and puts a copy in local_file_path
+        When: retrieve is called with a valid server_file_path (i.e. a path which point to a real file)
+        and a valid local_file_path (i.e. a local path which exists)
         """
         client = self.create_mocked_connection_client()
-        client.retrieve(server_path=self.valid_argument, local_path=self.valid_argument)
+        client.retrieve(server_file_path=self.valid_argument, local_file_path=self.valid_argument)
         client._connection.get.assert_called_with(self.valid_argument, self.valid_argument)
 
     @patch('os.path.isfile', return_value=True)
-    def test_override_is_false_and_local_path_exists(self, _):
+    def test_override_is_false_and_local_file_path_exists(self, _):
         """
         Test: A RuntimeError is raised
-        When: A file at local_path exists and override is False
+        When: A file at local_file_path exists and override is False
         """
         client = self.create_mocked_connection_client()
         with self.assertRaises(RuntimeError):
-            client.retrieve(server_path=self.valid_argument,
-                            local_path=self.valid_argument, override=False)
+            client.retrieve(server_file_path=self.valid_argument,
+                            local_file_path=self.valid_argument, override=False)
 
+    # TODO: refactor tests to isolate _server_path_check method
     @patch('os.path.isfile', return_value=False)
-    def test_override_is_false_and_local_path_does_not_exists(self, _):
+    def test_override_is_false_and_local_file_path_does_not_exists(self, _):
         """
         Test: retrieve does not encounter an error
-        When: A file at local_path exists and override is True
+        When: A file at local_file_path exists and override is True
         """
         client = self.create_mocked_connection_client()
-        client.retrieve(server_path=self.valid_argument,
-                        local_path=self.valid_argument, override=False)
+        client.retrieve(server_file_path=self.valid_argument,
+                        local_file_path=self.valid_argument, override=False)
         client._connection.get.assert_called_with(self.valid_argument, self.valid_argument)
+
+    def test_get_filenames_valid_path(self):
+        """
+        Test: The output from pysftp.Connection.listdir is returned
+        When: get_filenames is called with a valid server directory path
+        """
+        client = self.create_mocked_connection_client()
+        client._connection.listdir.return_value = self.filenames
+        filenames_returned = client.get_filenames(server_dir_path=self.valid_argument)
+        self.assertEqual(filenames_returned, self.filenames)
+
+    def test_get_filenames_invalid_path(self):
+        """
+        Test: A RuntimeError is raised
+        When: get_filenames is called with an invalid server directory path
+        """
+        client = self.create_mocked_connection_client()
+        with self.assertRaises(RuntimeError):
+            client.get_filenames(server_dir_path="invalid")
+
+    def test_actual_listdir(self):
+        client = SFTPClient()
+        client.connect()
+        # print(client._connection.listdir())
+        print(client.get_filenames("."))
