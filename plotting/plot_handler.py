@@ -4,7 +4,7 @@
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 import logging
-
+from utils.clients.sftp_client import SFTPClient
 LOGGER = logging.getLogger('app')
 
 
