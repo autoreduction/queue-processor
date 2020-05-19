@@ -52,14 +52,16 @@ class TestDatabaseClient(unittest.TestCase):
         self.assertIsNotNone(client.variable_model.Variable.objects.first())
 
     @patch('utils.clients.database_client.DatabaseClient.data_model')
-    def test_invalid_connection(self, mock_query):
+    @patch('utils.clients.database_client.DatabaseClient.variable_model')
+    def test_invalid_connection(self, mock_var_query, mock_data_query):
         """
         Test: A ConnectionException is raised
         When: connect is called while invalid connection are held
         """
-        mock_query.Instrument.objects.first.side_effect = RuntimeError
+        mock_data_query.Instrument.objects.first.side_effect = RuntimeError
+        mock_var_query.Instrument.objects.first.side_effect = RuntimeError
         client = DatabaseClient()
-        self.assertRaises(ConnectionException, client._test_connection())
+        self.assertRaises(ConnectionException, client._test_connection)
 
     def test_stop_connection(self):
         """
