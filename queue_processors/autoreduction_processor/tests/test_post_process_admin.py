@@ -50,13 +50,16 @@ class TestPostProcessAdmin(unittest.TestCase):
                      'reduction_script': 'print(\'hello\')',
                      'reduction_arguments': 'None'}
         # self.test_rel_path = "\\instrument\\GEM\\RBNumber\\RB2010163\\autoreduced\\90369\\"
-        self.test_dir = "\\test\\"
-        self.test_fname = "run_data_file.txt"
+        self.test_fname = "111.txt"
+        self.test_root = "\\test_run\\"
+        self.test_paths = [self.test_root + self.test_fname,
+                           self.test_root + "1\\" + self.test_fname,
+                           self.test_root + "2\\" + self.test_fname]
         # self.remove_test_dir_structure(self.test_dir)
-        self.setup_test_dir_structure(self.test_dir, self.test_fname)
+        self.setup_test_dir_structure(self.test_paths)
 
     def tearDown(self):
-        self.remove_test_dir_structure(self.test_dir)
+        self.remove_test_dir_structure(self.test_root)
 
     @staticmethod
     def remove_test_dir_structure(test_dir):
@@ -70,30 +73,17 @@ class TestPostProcessAdmin(unittest.TestCase):
             shutil.rmtree(test_root)
 
     @staticmethod
-    def setup_test_dir_structure(test_dir, fname):
+    def setup_test_dir_structure(test_paths):
         cwd = os.getcwd()
-        abs_path = cwd + test_dir + fname
-        os.makedirs(abs_path)
+        for file_path in test_paths:
+            (path, file) = file_path.rsplit("\\", 1)
+            abs_path = cwd + path
+            os.makedirs(abs_path)
 
-        abs_file_path = abs_path + fname
-        with open(abs_file_path, 'w') as file:
-            file.write("test file")
+            abs_file_path = cwd + file_path
+            with open(abs_file_path, 'w') as file:
+                file.write("test file")
 
-
-        # exit()
-        # shutil.rmtree(path_parts[0])
-        # if os.path.isdir(os.getcwd() + "\\instrument"):
-        #     print("REMOVE")
-        #     os.rmdir(os.getcwd() + "\\instrument")
-        #
-        # abs_path = os.getcwd() + dir
-        #
-        # os.makedirs(abs_path)
-        # # print(os.path.abspath(self.test_directory))
-        #
-        # abs_file_path = abs_path + "/" + fname
-        # with open(abs_file_path, 'w') as file:
-        #     file.write("test file")
 
     def test_init(self):
         ppa = PostProcessAdmin(self.data, None)
