@@ -24,7 +24,7 @@ class TestSFTPClient(unittest.TestCase):
     def setUp(self):
         self.valid_argument = "valid"
         self.filenames = ["textfile.txt", "nexusfile.nxs", "image.png"]
-        self.textfile_regex = ".*\.txt"
+        self.textfile_regex = r".*\.txt"
 
     def is_argument_valid(self, value):
         """ Checks whether the value is a valid argument
@@ -77,11 +77,19 @@ class TestSFTPClient(unittest.TestCase):
         self.assertTrue(client._test_connection())
 
     def test_server_path_check_with_invalid_path(self):
+        """
+        Test: A RuntimeError is raised
+        When: _server_path_check is called with an invalid server path
+        """
         client = self.create_mocked_connection_client()
         with self.assertRaises(RuntimeError):
             client._server_path_check(server_path="invalid")
 
     def test_server_path_check_with_valid_path(self):
+        """
+        Test: pysftp.Connection.exists is called, but no errors are raised
+        When: _server_path_check is called with a valid server path
+        """
         client = self.create_mocked_connection_client()
         client._server_path_check(server_path=self.valid_argument)
         client._connection.exists.assert_called_with(self.valid_argument)
@@ -127,7 +135,8 @@ class TestSFTPClient(unittest.TestCase):
     def test_server_file_path_and_local_file_path_are_valid(self):
         """
         Test: retrieve finds a file from a given server_file_path and puts a copy in local_file_path
-        When: retrieve is called with a valid server_file_path (i.e. a path which point to a real file)
+        When: retrieve is called with a valid server_file_path
+        (i.e. a path which point to a real file)
         and a valid local_file_path (i.e. a local path which exists)
         """
         client = self.create_mocked_connection_client()
