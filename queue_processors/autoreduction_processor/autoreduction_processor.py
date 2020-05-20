@@ -95,6 +95,7 @@ class Listener(stomp.ConnectionListener):
 
     def add_process(self, proc, data_dict):
         """ Add child process to list. """
+        logger.info("Entered add_process. proc=%s data_dict=%s", proc, data_dict)
         self.proc_list.append(proc)
         self.rb_list.append(data_dict["rb_number"])
 
