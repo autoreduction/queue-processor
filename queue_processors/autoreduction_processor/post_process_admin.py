@@ -374,12 +374,17 @@ class PostProcessAdmin:
             logger.info("Reduction job successfully complete")
 
     def _new_reduction_data_path(self, path):
+        """
+        Creates a pathname for the reduction data, factoring in existing run data.
+        :param path: Base path for the run data (should follow convention, without version number)
+        :return: A pathname for the new reduction data
+        """
         logger.info("_new_reduction_data_path argument: %s", path)
         # if there is an 'overwrite' key/member with a None/False value
         if 'overwrite' in self.data and not self.data["overwrite"]:
             if os.path.isdir(path):           # if the given path already exists..
                 contents = os.listdir(path)
-                highest_vers = 0
+                highest_vers = -1
                 for item in contents:         # ..for every item, if it's a dir and a int..
                     if os.path.isdir(os.path.join(path, item)):
                         try:                  # ..store the highest int
@@ -389,8 +394,8 @@ class PostProcessAdmin:
                             pass
                 this_vers = highest_vers + 1
                 return append_path(path, [str(this_vers)])
-        # (else) if overwrite doesn't exist, is true, or the path doesn't exist, return unedited
-        return path
+        # (else) if no overwrite, overwrite true, or the path doesn't exist: return version 0 path
+        return append_path(path, "0")
 
     def _send_message_and_log(self, destination):
         """ Send reduction run to error. """

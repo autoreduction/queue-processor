@@ -40,8 +40,7 @@ class TestPostProcessAdminHelpers(unittest.TestCase):
         self.assertEqual(actual, '/temp/data/some/more/path.nxs')
 
 
-class TestPostProcessAdmin(unittest.TestCase):
-
+class TestPostProcessAdmin(unittest.TestCase):  # pylint:disable=too-many-public-methods
     def setUp(self):
         self.data = {'data': '\\\\isis\\inst$\\data.nxs',
                      'facility': 'ISIS',
@@ -50,42 +49,37 @@ class TestPostProcessAdmin(unittest.TestCase):
                      'run_number': '4321',
                      'reduction_script': 'print(\'hello\')',
                      'reduction_arguments': 'None'}
-        # self.test_rel_path = "\\instrument\\GEM\\RBNumber\\RB2010163\\autoreduced\\90369\\"
         self.test_fname = "111.txt"
         self.test_root = "test_run"
-        self.test_paths = [os.path.join(self.test_root, self.test_fname),
-                           os.path.join(self.test_root, "1", self.test_fname),
-                           os.path.join(self.test_root, "2", self.test_fname)]
-
-
-
-
+        self.test_paths = [os.path.join(self.test_root, "0"),
+                           os.path.join(self.test_root, "1"),
+                           os.path.join(self.test_root, "2")]
 
     def tearDown(self):
-        self.remove_test_dir_structure(self.test_root)
+        self.teardown_test_dir_structure()
 
-    @staticmethod
-    def remove_test_dir_structure(test_root):
-        # split = test_dir.split("\\")
-        # path_parts = [part for part in split if part]   # Removes empty items
-        # test_root = path_parts[0]
-
-        abs_test_root = os.path.join(os.getcwd(), test_root)
+    def teardown_test_dir_structure(self):
+        """
+        Removes test directory structure (if one exists) from the root
+        """
+        abs_test_root = os.path.join(os.getcwd(), self.test_root)
         if os.path.isdir(abs_test_root):
-            shutil.rmtree(test_root)
+            shutil.rmtree(self.test_root)
 
-    @staticmethod
-    def setup_test_dir_structure(test_paths):
-        for file_path in test_paths:
-            (path, file) = os.path.split(file_path)
-            abs_path = os.path.join(os.getcwd(), path)
-            if not os.path.isdir(abs_path):
-                os.makedirs(abs_path)
+    def setup_test_dir_structure(self, test_dirs):
+        """
+        Sets up a directory structure within the test environment.
+        Writes a file within each each directory given
+        :param test_dirs: The directories to create
+        """
+        for d in test_dirs:
+            abs_dir = os.path.join(os.getcwd(), d)
+            if not os.path.isdir(abs_dir):
+                os.makedirs(abs_dir)
 
-            abs_file_path = os.path.join(abs_path, file)
-            with open(abs_file_path, 'w') as file:
+            abs_path = os.path.join(abs_dir, self.test_fname)
+            with open(abs_path, 'w') as file:
                 file.write("test file")
-
 
     def test_init(self):
         ppa = PostProcessAdmin(self.data, None)
@@ -317,8 +311,11 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_error,
                                           json.dumps(self.data))
 
-    def test_new_reduction_data_path(self):
-        # self.remove_test_dir_structure(self.test_root)
+    def test_new_reduction_data_path_no_overwrite_paths_exist(self):
+        """
+        Test: A path is returned with a final directory one higher than the current highest
+        When: _new_reduction_data_path is called on an existing path with overwrite: None
+        """
         self.setup_test_dir_structure(self.test_paths)
         mock_self = Mock()
         mock_self.data = {'overwrite': None}
@@ -327,4 +324,28 @@ class TestPostProcessAdmin(unittest.TestCase):
         actual = PostProcessAdmin._new_reduction_data_path(mock_self, self.test_root)
         self.assertEqual(expected, actual)
 
-        self.remove_test_dir_structure(self.test_root)
+    def test_new_reduction_data_path_overwrite_paths_exist(self):
+        """
+        Test: The given path is returned with a 0 directory appended
+        When: _new_reduction_data_path is called on an existing path with overwrite: True
+        """
+        self.setup_test_dir_structure(self.test_paths)
+        mock_self = Mock()
+        mock_self.data = {'overwrite': True}
+
+        expected = append_path(self.test_root, "0")
+        actual = PostProcessAdmin._new_reduction_data_path(mock_self, self.test_root)
+        self.assertEqual(expected, actual)
+
+    def test_new_reduction_data_only_root_path_exists(self):
+        """
+        Test: The given path is returned with a 0 directory appended
+        When: _new_reduction_data_path is called on a path without version sub-directories
+        """
+        self.setup_test_dir_structure([self.test_root])
+        mock_self = Mock()
+        mock_self.data = {'overwrite': None}
+
+        expected = append_path(self.test_root, "0")
+        actual = PostProcessAdmin._new_reduction_data_path(mock_self, self.test_root)
+        self.assertEqual(expected, actual)
