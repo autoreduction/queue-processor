@@ -11,8 +11,7 @@ LOGGER = logging.getLogger('app')
 
 class PlotHandler(object):
     """
-    Utility that takes parameters for a run and (for now) checks if an associated image exists, retrieves it and
-    displays the image on the webpage.
+    Utility that takes parameters for a run and (for now) checks if an associated image exists and retrieves it.
     :param instrument_name: The name of the beamline/spectrometer/instrument.
     :param rb_number: The ISIS RB number.
     :param run_number: The run number on the given instrument for the given RB number.
