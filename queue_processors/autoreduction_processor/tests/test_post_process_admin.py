@@ -50,7 +50,8 @@ class TestPostProcessAdmin(unittest.TestCase):  # pylint:disable=too-many-public
                      'reduction_script': 'print(\'hello\')',
                      'reduction_arguments': 'None'}
         self.test_fname = "111.txt"
-        self.test_root = "test_run"
+        self.test_root = os.path.join("instrument", "GEM", "RBNumber",
+                                      "RB2010163", "autoreduced", "111")
         self.test_paths = [os.path.join(self.test_root, "0"),
                            os.path.join(self.test_root, "1"),
                            os.path.join(self.test_root, "2")]

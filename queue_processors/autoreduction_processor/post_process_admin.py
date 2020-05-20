@@ -192,6 +192,7 @@ class PostProcessAdmin:
     def reduce(self):
         """ Start the reduction job.  """
         # pylint: disable=too-many-nested-blocks
+        logger.info("reduce started")
         try:
             logger.debug("Calling: %s\n%s",
                          ACTIVEMQ_SETTINGS.reduction_started,
@@ -498,6 +499,7 @@ class PostProcessAdmin:
 
 def main():
     """ Main method. """
+    logger.info("ppa started")
     json_data = None
     queue_client = QueueClient()
     try:

@@ -187,6 +187,7 @@ class Listener:
         # Create a new data location entry which has a foreign key linking it to the current
         # reduction run. The file path itself will point to a datafile
         # (e.g. "\isis\inst$\NDXWISH\Instrument\data\cycle_17_1\WISH00038774.nxs")
+        logger.info("data dict: %s", self._data_dict)
         data_location = DataLocation(file_path=self._data_dict['data'],
                                      reduction_run_id=reduction_run.id) # pylint: disable=no-member
         session.add(data_location)
