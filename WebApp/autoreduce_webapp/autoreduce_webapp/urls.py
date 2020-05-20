@@ -22,7 +22,7 @@ from reduction_viewer import views as reduction_viewer_views
 from reduction_variables import views as reduction_variables_views
 
 # Visualisation Plot Handler Import
-from plotting.plot_handler import plot_handler
+from plotting._plot_handler import plot_handler
 
 # pylint: disable=invalid-name
 handler400 = 'autoreduce_webapp.views.handler400'
