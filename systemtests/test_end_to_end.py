@@ -19,8 +19,8 @@ import shutil
 from scripts.manual_operations import manual_remove as remove
 
 from utils import service_handling as external
-from utils.test_settings import ACTIVEMQ_SETTINGS
-from utils.clients.django_database_client import DatabaseClient
+from utils.test_settings import MYSQL_SETTINGS, ACTIVEMQ_SETTINGS
+from utils.clients.database_client import DatabaseClient
 from utils.clients.queue_client import QueueClient
 from utils.data_archive.data_archive_creator import DataArchiveCreator
 from utils.data_archive.archive_explorer import ArchiveExplorer
@@ -39,7 +39,7 @@ if os.name != 'nt':
         def setUp(self):
             """ Start all external services """
             # Get all clients
-            self.database_client = DatabaseClient()
+            self.database_client = DatabaseClient(MYSQL_SETTINGS)
             self.database_client.connect()
             self.queue_client = QueueClient(ACTIVEMQ_SETTINGS)
             self.queue_client.connect()
@@ -175,12 +175,15 @@ if os.name != 'nt':
                 print('Waiting for: {}'.format(timeout))
                 time.sleep(timeout)
                 # Check database has expected values
-                instrument_record = self.database_client.get_instrument(self.instrument)
-                results = self.database_client.data_model.ReductionRun.objects \
-                    .filter(instrument=instrument_record.id) \
-                    .filter(run_number=self.run_number) \
-                    .select_related() \
+                connection = self.database_client.get_connection()
+                results = connection.query(self.database_client.reduction_run()) \
+                    .join(self.database_client.reduction_run().instrument) \
+                    .join(self.database_client.reduction_run().status) \
+                    .join(self.database_client.reduction_run().experiment) \
+                    .filter(self.database_client.instrument().name == self.instrument) \
+                    .filter(self.database_client.reduction_run().run_number == self.run_number) \
                     .all()
+                connection.commit()
                 try:
                     actual = results[0]
                 except IndexError:
