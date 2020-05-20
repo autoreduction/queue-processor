@@ -81,6 +81,12 @@ class Listener(stomp.ConnectionListener):
         python_path = sys.executable
         logger.info("Calling: %s %s %s %s",
                     python_path, MISC['post_process_directory'], destination, print_dict)
+
+        logger.info("subprocess.Popen parameters:\n"
+                    "python_path= %s\n"
+                    "MISC['post_process_directory']= %s\n"
+                    "destination= %s\n"
+                    "data= %s\n")
         proc = subprocess.Popen([python_path,
                                  MISC['post_process_directory'],
                                  destination,
