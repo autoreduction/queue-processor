@@ -123,7 +123,7 @@ class TestPostProcessAdmin(unittest.TestCase):  # pylint:disable=too-many-public
         ppa.data['reduction_data'] = ['']
         ppa.copy_temp_directory(result_dir, copy_dir)
         mock_remove.assert_called_once_with(copy_dir)
-        mock_logger.assert_called_once_with("Moving %s to %s", result_dir, copy_dir)
+        mock_logger.assert_called_with("Moving %s to %s", result_dir, copy_dir)
         mock_copy.assert_called_once_with(result_dir, copy_dir)
         shutil.rmtree(result_dir)
         shutil.rmtree(copy_dir)
@@ -164,8 +164,8 @@ class TestPostProcessAdmin(unittest.TestCase):  # pylint:disable=too-many-public
         activemq_client_mock = Mock()
         ppa = PostProcessAdmin(self.data, activemq_client_mock)
         ppa._send_message_and_log(ACTIVEMQ_SETTINGS.reduction_error)
-        mock_logger.assert_called_once_with("\nCalling " + ACTIVEMQ_SETTINGS.reduction_error
-                                            + " --- " + prettify(self.data))
+        mock_logger.assert_called_with("\nCalling " + ACTIVEMQ_SETTINGS.reduction_error
+                                                    + " --- " + prettify(self.data))
         activemq_client_mock.send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_error,
                                                           json.dumps(ppa.data))
 
@@ -196,7 +196,7 @@ class TestPostProcessAdmin(unittest.TestCase):  # pylint:disable=too-many-public
         ppa.data['message'] = ''
         ppa.log_and_message('test')
         self.assertEqual(ppa.data['message'], 'test')
-        mock_logger.assert_called_once_with('test')
+        mock_logger.assert_called_with('test')
 
     @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.info')
     def test_load_and_message_with_preexisting_message(self, mock_logger):
@@ -204,7 +204,7 @@ class TestPostProcessAdmin(unittest.TestCase):  # pylint:disable=too-many-public
         ppa.data['message'] = 'Old message'
         ppa.log_and_message('New message')
         self.assertEqual(ppa.data['message'], 'Old message')
-        mock_logger.assert_called_once_with('New message')
+        mock_logger.assert_called_with('New message')
 
     def test_remove_with_wait_folder(self):
         directory_to_remove = mkdtemp()
