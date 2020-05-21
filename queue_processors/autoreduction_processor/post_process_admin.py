@@ -111,7 +111,6 @@ class PostProcessAdmin:
 
     # pylint: disable=too-many-instance-attributes
     def __init__(self, data, client):
-        logger.debug("Entered PostProcessAdmin init.\n")
         logger.debug("json data: %s", prettify(data))
         data["information"] = socket.gethostname()
         self.data = data
@@ -157,7 +156,7 @@ class PostProcessAdmin:
             Merge self.reduction_arguments[dictName] into reduce_script.web_var[dictName],
             overwriting any key that exists in both with the value from sourceDict.
             """
-            logger.debug("Entered merge_dicts.\n")
+
             def merge_dict_to_name(dictionary_name, source_dict):
                 """ Merge the two dictionaries. """
                 old_dict = {}
@@ -184,18 +183,16 @@ class PostProcessAdmin:
     @staticmethod
     def _reduction_script_location(instrument_name):
         """ Returns the reduction script location. """
-        logger.debug("Entered _reduction_script_location.\n")
         return MISC["scripts_directory"] % instrument_name
 
     def _load_reduction_script(self, instrument_name):
         """ Returns the path of the reduction script for an instrument. """
-        logger.debug("Entered _load_reduction_script.\n")
         return os.path.join(self._reduction_script_location(instrument_name), 'reduce.py')
 
     def reduce(self):
         """ Start the reduction job.  """
         # pylint: disable=too-many-nested-blocks
-        logger.debug("Entered merge_dicts.\n")
+        logger.info("reduce started")
         try:
             logger.debug("Calling: %s\n%s",
                          ACTIVEMQ_SETTINGS.reduction_started,
@@ -388,7 +385,7 @@ class PostProcessAdmin:
         :param path: Base path for the run data (should follow convention, without version number)
         :return: A pathname for the new reduction data
         """
-        logger.info("Entered _new_reduction_data_path. argument: %s\n", path)
+        logger.info("_new_reduction_data_path argument: %s", path)
         # if there is an 'overwrite' key/member with a None/False value
         if 'overwrite' in self.data and not self.data["overwrite"]:
             if os.path.isdir(path):           # if the given path already exists..
@@ -408,7 +405,6 @@ class PostProcessAdmin:
 
     def _send_message_and_log(self, destination):
         """ Send reduction run to error. """
-        logger.debug("Entered _send_message_and_log.\n")
         logger.info("\nCalling " + destination + " --- " + prettify(self.data))
         self.client.send(destination, json.dumps(self.data))
 
@@ -420,7 +416,6 @@ class PostProcessAdmin:
         EXCITATION instrument are treated as a special case because they're done with run number
         sub-folders.
         """
-        logger.debug("Entered copy_temp_directory.\n")
         if os.path.isdir(copy_destination) \
                 and self.instrument not in MISC["excitation_instruments"]:
             self._remove_directory(copy_destination)
@@ -443,7 +438,6 @@ class PostProcessAdmin:
 
     def log_and_message(self, msg):
         """ Helper function to add text to the outgoing activemq message and to the info logs """
-        logger.debug("Entered log_and_message.\n")
         logger.info(msg)
         if self.data["message"] == "" or self.data["message"] is None:
             # Only send back first message as there is a char limit
@@ -451,7 +445,6 @@ class PostProcessAdmin:
 
     def _remove_with_wait(self, remove_folder, full_path):
         """ Removes a folder or file and waits for it to be removed. """
-        logger.debug("Entered _remove_with_wait.\n")
         file_deleted = False
         for sleep in [0, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20]:
             try:
@@ -478,7 +471,6 @@ class PostProcessAdmin:
 
     def _copy_tree(self, source, dest):
         """ Copy directory tree. """
-        logger.debug("Entered _copy_tree.\n")
         if not os.path.exists(dest):
             os.makedirs(dest)
         for item in os.listdir(source):
@@ -495,7 +487,6 @@ class PostProcessAdmin:
         Helper function to remove a directory. shutil.rmtree cannot be used as it is not robust
         enough when folders are open over the network.
         """
-        logger.debug("Entered _remove_directory.\n")
         try:
             for target_file in os.listdir(directory):
                 full_path = os.path.join(directory, target_file)
@@ -513,7 +504,7 @@ class PostProcessAdmin:
 
 def main():
     """ Main method. """
-    logger.debug("Entered PPA main.\n")
+    logger.info("ppa started")
     json_data = None
     queue_client = QueueClient()
     try:
