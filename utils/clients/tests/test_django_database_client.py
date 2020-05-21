@@ -96,6 +96,7 @@ class TestDatabaseClient(unittest.TestCase):
         actual = client.get_instrument('Fake instrument')
         self.assertIsNone(actual)
 
+    # pylint:disable=no-self-use
     def test_get_reduction_run_valid(self):
         """
         Test: A ReductionRun record is returned
