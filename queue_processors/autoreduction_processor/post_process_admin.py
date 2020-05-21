@@ -371,6 +371,9 @@ class PostProcessAdmin:
 
         else:
             # reduction has successfully completed
+            # Note: Below to avoid SQL-cant-be-null error. Could default to "" in Message class instead?
+            #   If we do that instead, need to think about is None check above
+            self.data["message"] = ""
             self.client.send(ACTIVEMQ_SETTINGS.reduction_complete, json.dumps(self.data))
             logger.info("Calling: %s\n%s",
                         ACTIVEMQ_SETTINGS.reduction_complete,
