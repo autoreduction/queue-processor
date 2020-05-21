@@ -267,7 +267,9 @@ class PostProcessAdmin:
                 raise exp
 
             self.data['reduction_data'] = []
-            if "message" not in self.data:
+            # if "message" not in self.data:  # Note: this will never be true using Message class
+            # Note: this change avoids the need for 'None' checking past this
+            if "message" not in self.data or self.data["message"] is None:
                 self.data["message"] = ""
 
             logger.info("----------------")
@@ -443,7 +445,7 @@ class PostProcessAdmin:
         """ Helper function to add text to the outgoing activemq message and to the info logs """
         logger.info("Entered log_and_message.\n")
         logger.info(msg)
-        if self.data["message"] == "":
+        if self.data["message"] == "" or self.data["message"] is None:
             # Only send back first message as there is a char limit
             self.data["message"] = msg
 
