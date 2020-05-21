@@ -387,7 +387,7 @@ class Listener:
         session.add(reduction_run)
         session.commit()
 
-        if 'retry_in' in self._data_dict:
+        if 'retry_in' in self._data_dict and 'retry_in' is not None:
             experiment = session.query(Experiment).filter_by(
                 reference_number=self._data_dict['rb_number']).first()
             previous_runs = session.query(ReductionRun).filter_by(

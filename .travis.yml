@@ -35,7 +35,7 @@ script:
   - py.test --ignore=systemtests --cov=build --cov=monitors --cov=queue_processors --cov=scripts --cov=utils --cov=WebApp/autoreduce_webapp --cov=docker_reduction --cov=paths --cov=plotting --cov=message --cov=model
   - cat logs/queue_processor.log
   - cat logs/queue_client.log
-  - cat logs/autoreductionProcessor.log
+  - cat logs/autoreduction_processor.log
 
   - echo "Running System Tests"
   - py.test systemtests --cov-append

@@ -355,7 +355,7 @@ class PostProcessAdmin:
         self.data['reduction_log'] = self.reduction_log_stream.getvalue()
         self.data["admin_log"] = self.admin_log_stream.getvalue()
 
-        if self.data["message"] != "":
+        if self.data["message"] != "" and not self.data['message'] is None:
             # This means an error has been produced somewhere
             try:
                 if 'skip' in self.data['message'].lower():
