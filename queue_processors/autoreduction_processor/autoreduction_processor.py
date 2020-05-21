@@ -87,28 +87,20 @@ class Listener(stomp.ConnectionListener):
 
     def update_child_process_list(self):
         """ Updates the list of processes by checking they still exist. """
-        logger.info("\nEntered update_child_process_list."
-                    "\nself.proc_list=%s", self.proc_list)
         for process in self.proc_list:
             if process.poll() is not None:
                 index = self.proc_list.index(process)
                 self.proc_list.pop(index)
                 self.rb_list.pop(index)
-                logger.info("\nprocess: %s (%s) is NOT NONE",
-                            process, index)
 
     def add_process(self, proc, data_dict):
         """ Add child process to list. """
-        logger.info("\nEntered add_process."
-                    "\nproc=%s"
-                    "\ndata_dict=%s", proc, data_dict)
+        logger.info("Entered add_process. proc=%s data_dict=%s", proc, data_dict)
         self.proc_list.append(proc)
         self.rb_list.append(data_dict["rb_number"])
 
     def should_proceed(self, data_dict):
         """ Check whether there's a job already running with the same RB. """
-        logger.info("\nshould_proceed add_process."
-                    "\ndata_dict=%s", data_dict)
         if data_dict["rb_number"] in self.rb_list:
             logger.info("Duplicate RB run #%s, waiting for the first to finish.",
                         data_dict["rb_number"])
