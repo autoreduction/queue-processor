@@ -9,7 +9,7 @@ Test cases for the django database client
 """
 import unittest
 
-from mock import patch
+from mock import patch, Mock
 
 from utils.clients.connection_exception import ConnectionException
 from utils.clients.django_database_client import DatabaseClient
@@ -95,3 +95,25 @@ class TestDatabaseClient(unittest.TestCase):
         client.connect()
         actual = client.get_instrument('Fake instrument')
         self.assertIsNone(actual)
+
+    def test_get_reduction_run_valid(self):
+        """
+        Test: A ReductionRun record is returned
+        When: get_reduction_run is called with values that match a database record
+        """
+        mock_data_model = Mock()
+        client = DatabaseClient()
+        client.connect()
+        client.data_model = mock_data_model
+        client.get_reduction_run('GEM', 1)
+        mock_data_model.ReductionRun.objects.filter.assert_called_once()
+
+    def test_get_reduction_run_invalid(self):
+        """
+        Test: None is returned
+        When: get_reduction_run is called values not in the database
+        """
+        client = DatabaseClient()
+        client.connect()
+        actual = client.get_reduction_run('GEM', 0)
+        self.assertIsNone(actual.first())

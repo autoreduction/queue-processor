@@ -20,7 +20,7 @@ from message.job import Message
 from utils.clients.connection_exception import ConnectionException
 from utils.clients.icat_client import ICATClient
 from utils.clients.queue_client import QueueClient
-from utils.clients.database_client import DatabaseClient
+from utils.clients.django_database_client import DatabaseClient
 
 
 def submit_run(active_mq_client, rb_number, instrument, data_file_location, run_number):
@@ -45,10 +45,11 @@ def submit_run(active_mq_client, rb_number, instrument, data_file_location, run_
     print("Submitted run: \r\n" + message.serialize(indent=1))
 
 
-def get_location_and_rb_from_database(database_client, run_number):
+def get_location_and_rb_from_database(database_client, instrument, run_number):
     """
     Retrieves a run's data-file location and rb_number from the auto-reduction database
     :param database_client: Client to access auto-reduction database
+    :param instrument: (str) the name of the instrument associated with the run
     :param run_number: The run number of the data to be retrieved
     :return: The data file location and rb_number, or None if this information is not
     in the database
@@ -57,29 +58,16 @@ def get_location_and_rb_from_database(database_client, run_number):
         print("Database not connected")
         return None
 
-    db_connection = database_client.connect()
-    location_query = f"""
-                    SELECT file_path
-                    FROM reduction_viewer_reductionlocation
-                    WHERE reduction_run_id = {run_number}
-                    """
-    location_result = db_connection.execute(location_query).fetchall()
-    if len(location_result) == 0:
+    reduction_run_records = database_client.get_reduction_run(instrument, run_number)
+
+    if not reduction_run_records:
         return None
 
-    rb_query = f"""
-                SELECT reduction_viewer_experiment.reference_number
-                FROM reduction_viewer_reductionrun
-                    JOIN reduction_viewer_experiment
-                    ON reduction_viewer_reductionrun.experiment_id = reduction_viewer_experiment.id
-                WHERE reduction_viewer_reductionrun.id = {run_number}
-                """
+    reduction_run_record = reduction_run_records.order_by('run_version').first()
+    data_location = reduction_run_record.data_location.first().file_path
+    experiment_number = reduction_run_record.experiment.reference_number
 
-    rb_result = db_connection.execute(rb_query).fetchall()
-    if len(rb_result) == 0:
-        return None
-
-    return location_result[0].file_path, rb_result[0].reference_number
+    return data_location, experiment_number
 
 
 def get_location_and_rb_from_icat(icat_client, instrument, run_number, file_ext):
@@ -134,7 +122,7 @@ def get_location_and_rb(database_client, icat_client, instrument, run_number, fi
         print(f"Cannot cast run_number as an integer. Run number given: '{run_number}'. Exiting...")
         sys.exit(1)
 
-    result = get_location_and_rb_from_database(database_client, run_number)
+    result = get_location_and_rb_from_database(database_client, instrument, run_number)
     if result:
         return result
     print(f"Cannot find datafile for run_number {run_number} in Auto-reduction database. "
@@ -193,7 +181,8 @@ def main():
 
     for run in run_numbers:
         location, rb_num = get_location_and_rb(database_client, icat_client, instrument, run, "nxs")
-        submit_run(activemq_client, rb_num, instrument, location, run)
+        if location and rb_num:
+            submit_run(activemq_client, rb_num, instrument, location, run)
 
 
 if __name__ == "__main__":

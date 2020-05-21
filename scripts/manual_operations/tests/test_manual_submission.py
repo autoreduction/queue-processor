@@ -9,8 +9,10 @@ Test cases for the manual job submission script
 """
 import unittest
 import json
-from mock import patch, MagicMock
+from mock import patch, Mock, MagicMock
 import scripts.manual_operations.manual_submission as ms
+
+from utils.clients.django_database_client import DatabaseClient
 
 
 # pylint:disable=no-self-use
@@ -79,19 +81,35 @@ class TestManualSubmission(unittest.TestCase):
         mock_from_database.assert_called_once()
         mock_from_icat.assert_called_once()
 
+    def test_get_from_data_base_no_client(self):
+        """
+        Test: None is returned
+        When: get_location_and_rb_from_database called with no database_client
+        """
+        self.assertIsNone(ms.get_location_and_rb_from_database(None, 'GEM', 123))
+
+    def test_get_from_database_no_run(self):
+        """
+        Test: None is returned
+        When: get_location_and_rb_from_database can't find a ReductionRun record
+        """
+        mock_database_client = Mock()
+        mock_database_client.get_reduction_run.return_value = None
+        self.assertIsNone(ms.get_location_and_rb_from_database(mock_database_client, 'GEM', 123))
+        mock_database_client.get_reduction_run.assert_called_once()
+
     def test_get_from_database(self):
         """
         Test: Data for a given run can be retrieved from the database in the expected format
         When: get_location_and_rb_from_database is called and the data is present
         in the database
         """
-        side_effects = [self.make_query_return_object("db_location"),
-                        self.make_query_return_object("db_rb")]
-        self.mock_database_query_result(side_effects)
-
-        location_and_rb = ms.get_location_and_rb_from_database(self.loc_and_rb_args[0],
-                                                               self.loc_and_rb_args[3])
-        self.assertEqual(location_and_rb, self.valid_return)
+        db_client = DatabaseClient()
+        db_client.connect()
+        actual = ms.get_location_and_rb_from_database(db_client, 'MUSR', 2)
+        # Values from testing database
+        expected = ('test/file/path/2.raw', 123)
+        self.assertEqual(expected, actual)
 
     def test_get_from_icat_when_file_exists_without_zeroes(self):
         """
@@ -114,20 +132,6 @@ class TestManualSubmission(unittest.TestCase):
         location_and_rb = ms.get_location_and_rb_from_icat(*self.loc_and_rb_args[1:])
         self.assertEqual(self.loc_and_rb_args[1].execute_query.call_count, 2)
         self.assertEqual(location_and_rb, self.valid_return)
-
-    def test_get_when_does_not_exist(self):
-        """
-        Test: A SystemExit is raised
-        When: get_location_and_rb is called but the data requested doesn't exist
-        """
-        mock_db_connection = MagicMock(name="mock_connection")
-        self.loc_and_rb_args[0].connect.return_value = mock_db_connection
-        self.loc_and_rb_args[1].execute_query.return_value = None
-
-        with self.assertRaises(SystemExit):
-            ms.get_location_and_rb(*self.loc_and_rb_args)
-        self.assertTrue(mock_db_connection.execute.call_count == 1)
-        self.assertTrue(self.loc_and_rb_args[1].execute_query.call_count == 2)
 
     @patch('scripts.manual_operations.manual_submission.get_location_and_rb_from_database')
     @patch('scripts.manual_operations.manual_submission.get_location_and_rb_from_icat')
