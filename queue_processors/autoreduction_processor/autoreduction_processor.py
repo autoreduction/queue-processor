@@ -29,7 +29,7 @@ class Listener(stomp.ConnectionListener):
         self.proc_list = []
         self.rb_list = []  # list of RB numbers of active reduction runs
         self.cancel_list = []  # list of (run number, run version)s to drop (once) used
-        logger.info("Entered Listener __init__.\n")
+        logger.info("Entered run_tuple.\n")
 
     @staticmethod
     # pylint:disable=arguments-differ
@@ -55,8 +55,7 @@ class Listener(stomp.ConnectionListener):
 
     def hold_message(self, destination, data, headers):
         """ Calls the reduction script. """
-        logger.debug("Enter hold_message")
-        logger.info("holding thread")
+        logger.debug("holding thread")
         data_dict = json.loads(data)
 
         self.update_child_process_list()
@@ -89,7 +88,7 @@ class Listener(stomp.ConnectionListener):
 
     def update_child_process_list(self):
         """ Updates the list of processes by checking they still exist. """
-        logger.info("Entered update_child_process_list.\n")
+        logger.debug("Entered update_child_process_list.\n")
         for process in self.proc_list:
             if process.poll() is not None:
                 index = self.proc_list.index(process)
@@ -100,13 +99,13 @@ class Listener(stomp.ConnectionListener):
 
     def add_process(self, proc, data_dict):
         """ Add child process to list. """
-        logger.info("Entered add_process.\n")
+        logger.debug("Entered add_process.\n")
         self.proc_list.append(proc)
         self.rb_list.append(data_dict["rb_number"])
 
     def should_proceed(self, data_dict):
         """ Check whether there's a job already running with the same RB. """
-        logger.info("Entered should_proceed.\n")
+        logger.debug("Entered should_proceed.\n")
         if data_dict["rb_number"] in self.rb_list:
             logger.info("Duplicate RB run #%s, waiting for the first to finish.",
                         data_dict["rb_number"])
@@ -117,27 +116,27 @@ class Listener(stomp.ConnectionListener):
     @staticmethod
     def run_tuple(data_dict):
         """ return the tuple of (run_number, run version) from a dictionary. """
-        logger.info("Entered run_tuple.\n")
+        logger.debug("Entered run_tuple.\n")
         run_number = data_dict["run_number"]
         run_version = data_dict["run_version"] if data_dict["run_version"] is not None else 0
         return run_number, run_version
 
     def add_cancel(self, data_dict):
         """ Add this run to the cancel list, to cancel it next time it comes up. """
-        logger.info("Entered add_cancel.\n")
+        logger.debug("Entered run_tuple.\n")
         tup = self.run_tuple(data_dict)
         if tup not in self.cancel_list:
             self.cancel_list.append(tup)
 
     def should_cancel(self, data_dict):
         """ Return whether a run is in the list of runs to be canceled. """
-        logger.info("Entered should_cancel.\n")
+        logger.debug("Entered should_cancel.\n")
         tup = self.run_tuple(data_dict)
         return tup in self.cancel_list
 
     def cancel_run(self, data_dict):
         """ Cancel the reduction run. """
-        logger.info("Entered cancel_run.\n")
+        logger.debug("Entered cancel_run.\n")
         tup = self.run_tuple(data_dict)
         self.cancel_list.remove(tup)
 
@@ -148,14 +147,14 @@ class Consumer:
     def __init__(self):
         """ Initialise consumer. """
         self.consumer_name = "autoreduction_processor"
-        logger.info("Entered Consumer init.\n")
+        logger.debug("Entered Consumer init.\n")
 
     def run(self):
         """
         Connect to ActiveMQ via the QueueClient and listen to the
         /ReductionPending queue for messages.
         """
-        logger.info("Entered run.\n")
+        logger.debug("Entered run.\n")
         activemq_client = QueueClient()
         activemq_client.connect()
         activemq_client.subscribe_amq(consumer_name=self.consumer_name,
