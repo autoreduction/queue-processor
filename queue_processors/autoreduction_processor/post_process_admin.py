@@ -264,10 +264,6 @@ class PostProcessAdmin:
                 raise exp
 
             self.data['reduction_data'] = []
-            # Note: Open question: where to set Message=""
-            #  (here? QueueClient.send? Message class? allow null in DB?)
-            if "message" not in self.data or self.data["message"] is None:
-                self.data["message"] = ""
 
             logger.info("----------------")
             logger.info("Reduction script: %s ...", self.reduction_script[:50])
@@ -354,9 +350,7 @@ class PostProcessAdmin:
         self.data['reduction_log'] = self.reduction_log_stream.getvalue()
         self.data["admin_log"] = self.admin_log_stream.getvalue()
 
-        # Note: at this point, 'message' should never been None
-        #  (unless assignment (message="") has moved)
-        if self.data["message"] != "" and self.data['message'] is not None:
+        if 'message' in self.data and self.data['message'] is not None:
             # This means an error has been produced somewhere
             try:
                 if 'skip' in self.data['message'].lower():
@@ -372,7 +366,6 @@ class PostProcessAdmin:
 
         else:
             # reduction has successfully completed
-            self.data["message"] = ""   # Note: this assignment is redundant but precautionary
             self.client.send(ACTIVEMQ_SETTINGS.reduction_complete, json.dumps(self.data))
             logger.info("Calling: %s\n%s",
                         ACTIVEMQ_SETTINGS.reduction_complete,
