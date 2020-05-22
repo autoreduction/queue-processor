@@ -41,6 +41,7 @@ class TestPostProcessAdminHelpers(unittest.TestCase):
 
 
 class TestPostProcessAdmin(unittest.TestCase):  # pylint:disable=too-many-public-methods
+    DIR = "queue_processors.autoreduction_processor"
     def setUp(self):
         self.data = {'data': '\\\\isis\\inst$\\data.nxs',
                      'facility': 'ISIS',
@@ -110,11 +111,9 @@ class TestPostProcessAdmin(unittest.TestCase):  # pylint:disable=too-many-public
         location = PostProcessAdmin._reduction_script_location('WISH')
         self.assertEqual(location, MISC['scripts_directory'] % 'WISH')
 
-    @patch('queue_processors.autoreduction_processor.post_process_admin.'
-           'PostProcessAdmin._remove_directory')
-    @patch('queue_processors.autoreduction_processor.post_process_admin.'
-           'PostProcessAdmin._copy_tree')
-    @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.info')
+    @patch(DIR + '.post_process_admin.PostProcessAdmin._remove_directory')
+    @patch(DIR + '.post_process_admin.PostProcessAdmin._copy_tree')
+    @patch(DIR + '.autoreduction_logging_setup.logger.info')
     def test_copy_temp_dir(self, mock_logger, mock_copy, mock_remove):
         result_dir = mkdtemp()
         copy_dir = mkdtemp()
@@ -128,9 +127,8 @@ class TestPostProcessAdmin(unittest.TestCase):  # pylint:disable=too-many-public
         shutil.rmtree(result_dir)
         shutil.rmtree(copy_dir)
 
-    @patch('queue_processors.autoreduction_processor.post_process_admin.'
-           'PostProcessAdmin._copy_tree')
-    @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.info')
+    @patch(DIR + '.post_process_admin.PostProcessAdmin._copy_tree')
+    @patch(DIR + '.autoreduction_logging_setup.logger.info')
     def test_copy_temp_dir_with_excitation(self, _, mock_copy):
         result_dir = mkdtemp()
         ppa = PostProcessAdmin(self.data, None)
@@ -140,11 +138,9 @@ class TestPostProcessAdmin(unittest.TestCase):  # pylint:disable=too-many-public
         mock_copy.assert_called_once_with(result_dir, 'copy-dir')
         shutil.rmtree(result_dir)
 
-    @patch('queue_processors.autoreduction_processor.post_process_admin.'
-           'PostProcessAdmin._copy_tree')
-    @patch('queue_processors.autoreduction_processor.post_process_admin.PostProcessAdmin.'
-           'log_and_message')
-    @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.info')
+    @patch(DIR + '.post_process_admin.PostProcessAdmin._copy_tree')
+    @patch(DIR + '.post_process_admin.PostProcessAdmin.log_and_message')
+    @patch(DIR + '.autoreduction_logging_setup.logger.info')
     def test_copy_temp_dir_with_error(self, _, mock_log_and_msg, mock_copy):
         # pylint:disable=unused-argument
         def raise_runtime(arg1, arg2):  # pragma : no cover
@@ -159,7 +155,7 @@ class TestPostProcessAdmin(unittest.TestCase):  # pylint:disable=too-many-public
                                                                                 'test'))
         shutil.rmtree(result_dir)
 
-    @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.info')
+    @patch(DIR + '.autoreduction_logging_setup.logger.info')
     def test_send_error_and_log(self, mock_logger):
         activemq_client_mock = Mock()
         ppa = PostProcessAdmin(self.data, activemq_client_mock)
@@ -170,7 +166,7 @@ class TestPostProcessAdmin(unittest.TestCase):  # pylint:disable=too-many-public
                                                           json.dumps(ppa.data))
 
     @patch('shutil.rmtree')
-    @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.info')
+    @patch(DIR + '.autoreduction_logging_setup.logger.info')
     def test_delete_temp_dir_valid(self, mock_logger, mock_remove_dir):
         temp_dir = mkdtemp()
         PostProcessAdmin.delete_temp_directory(temp_dir)
@@ -180,7 +176,7 @@ class TestPostProcessAdmin(unittest.TestCase):  # pylint:disable=too-many-public
         shutil.rmtree(temp_dir)
 
     @patch('shutil.rmtree')
-    @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.info')
+    @patch(DIR + '.autoreduction_logging_setup.logger.info')
     def test_delete_temp_dir_invalid(self, mock_logger, mock_remove_dir):
         def raise_runtime():  # pragma: no cover
             raise RuntimeError('test')
@@ -190,7 +186,7 @@ class TestPostProcessAdmin(unittest.TestCase):  # pylint:disable=too-many-public
                                       call('Unable to remove temporary directory - %s',
                                            'not-a-file-path.test')])
 
-    @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.info')
+    @patch(DIR + '.autoreduction_logging_setup.logger.info')
     def test_empty_log_and_message(self, mock_logger):
         ppa = PostProcessAdmin(self.data, None)
         ppa.data['message'] = ''
@@ -198,7 +194,7 @@ class TestPostProcessAdmin(unittest.TestCase):  # pylint:disable=too-many-public
         self.assertEqual(ppa.data['message'], 'test')
         mock_logger.assert_called_with('test')
 
-    @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.info')
+    @patch(DIR + '.autoreduction_logging_setup.logger.info')
     def test_load_and_message_with_preexisting_message(self, mock_logger):
         ppa = PostProcessAdmin(self.data, None)
         ppa.data['message'] = 'Old message'
@@ -241,9 +237,8 @@ class TestPostProcessAdmin(unittest.TestCase):  # pylint:disable=too-many-public
         ppa._remove_directory(directory_to_remove)
         self.assertFalse(os.path.exists(directory_to_remove))
 
-    @patch('queue_processors.autoreduction_processor.post_process_admin.windows_to_linux_path',
-           return_value='path')
-    @patch('queue_processors.autoreduction_processor.post_process_admin.PostProcessAdmin.reduce')
+    @patch(DIR + '.post_process_admin.windows_to_linux_path', return_value='path')
+    @patch(DIR + '.post_process_admin.PostProcessAdmin.reduce')
     @patch('utils.clients.queue_client.QueueClient.connect')
     @patch('utils.clients.queue_client.QueueClient.__init__', return_value=None)
     def test_main(self, mock_init, mock_connect, mock_reduce, _):
@@ -257,12 +252,10 @@ class TestPostProcessAdmin(unittest.TestCase):  # pylint:disable=too-many-public
         mock_connect.assert_called_once()
         mock_reduce.assert_called_once()
 
-    @patch('queue_processors.autoreduction_processor.post_process_admin.prettify',
-           return_value='test')
+    @patch(DIR + '.post_process_admin.prettify', return_value='test')
     @patch('sys.exit')
-    @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.info')
-    @patch('queue_processors.autoreduction_processor.post_process_admin.PostProcessAdmin.__init__',
-           return_value=None)
+    @patch(DIR + '.autoreduction_logging_setup.logger.info')
+    @patch(DIR + '.post_process_admin.PostProcessAdmin.__init__', return_value=None)
     @patch('utils.clients.queue_client.QueueClient.send')
     @patch('utils.clients.queue_client.QueueClient.connect')
     @patch('utils.clients.queue_client.QueueClient.__init__', return_value=None)
@@ -287,9 +280,8 @@ class TestPostProcessAdmin(unittest.TestCase):  # pylint:disable=too-many-public
                                           json.dumps(self.data))
 
     @patch('sys.exit')
-    @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.info')
-    @patch('queue_processors.autoreduction_processor.post_process_admin.PostProcessAdmin.__init__',
-           return_value=None)
+    @patch(DIR + '.autoreduction_logging_setup.logger.info')
+    @patch(DIR + '.post_process_admin.PostProcessAdmin.__init__', return_value=None)
     @patch('utils.clients.queue_client.QueueClient.send')
     @patch('utils.clients.queue_client.QueueClient.connect')
     @patch('utils.clients.queue_client.QueueClient.__init__', return_value=None)
