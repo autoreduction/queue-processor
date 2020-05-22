@@ -131,6 +131,39 @@ def get_location_and_rb(database_client, icat_client, instrument, run_number, fi
     return get_location_and_rb_from_icat(icat_client, instrument, run_number, file_ext)
 
 
+def login_icat():
+    print("Logging into ICAT")
+    icat_client = ICATClient()
+    try:
+        icat_client.connect()
+    except ConnectionException:
+        print("Couldn't connect to ICAT. Continuing without ICAT connection.")
+        icat_client = None
+    return icat_client
+
+
+def login_database():
+    print("Logging into Database")
+    database_client = DatabaseClient()
+    try:
+        database_client.connect()
+    except ConnectionException:
+        print("Couldn't connect to Database. Continuing without Database connection.")
+        database_client = None
+    return database_client
+
+
+def login_queue():
+    print("Logging into ActiveMQ")
+    activemq_client = QueueClient()
+    try:
+        activemq_client.connect()
+    except (ConnectionException, ValueError):
+        raise RuntimeError("Unable to proceed. Unable to log in to ActiveMQ."
+                           "This is required to perform a manual submission")
+    return activemq_client
+
+
 def main():
     """ File usage description, validation and running mechanism """
     parser = argparse.ArgumentParser(description='Submit a run to the autoreduction service.',
@@ -153,29 +186,13 @@ def main():
             sys.exit(1)
         run_numbers = range(args.start_run_number, args.e + 1)
 
-    print("Logging into ICAT")
-    icat_client = ICATClient()
-    try:
-        icat_client.connect()
-    except ICATSessionError:
-        print("Couldn't connect to ICAT. Continuing without ICAT connection.")
-        icat_client = None
+    icat_client = login_icat()
+    database_client = login_database()
+    if not icat_client and not database_client:
+        raise RuntimeError("Unable to proceed. Unable to connect to ICAT or Database. "
+                           "At least one connection is required to perform manual submission.")
 
-    print("Logging into Database")
-    database_client = DatabaseClient()
-    try:
-        database_client.connect()
-    except ConnectionException:
-        print("Couldn't connect to Database. Continuing without Database connection.")
-        database_client = None
-
-    print("Logging into ActiveMQ")
-    activemq_client = QueueClient()
-    try:
-        activemq_client.connect()
-    except (ConnectionException, ValueError):
-        print("Couldn't connect to ActiveMQ. Continuing without ActiveMQ connection.")
-        activemq_client = None
+    activemq_client = login_queue()
 
     instrument = args.instrument.upper()
 

@@ -12,12 +12,12 @@ import json
 from mock import patch, Mock, MagicMock
 import scripts.manual_operations.manual_submission as ms
 
-from utils.clients.django_database_client import DatabaseClient
+from utils.clients import DatabaseClient, QueueClient, ICATClient
+from utils.clients.connection_exception import ConnectionException
 
 
 # pylint:disable=no-self-use
 from message.job import Message
-
 
 class TestManualSubmission(unittest.TestCase):
     """
@@ -57,17 +57,6 @@ class TestManualSubmission(unittest.TestCase):
         elif return_from == "db_rb":
             ret_obj[0].reference_number = self.valid_return[1]
         return ret_obj
-
-    @staticmethod
-    def get_json_object(rb_number, instrument, data_file_location, run_number, started_by):
-        """ :return: The JSON object which should be sent to DataReady """
-        data_dict = {"rb_number": rb_number,
-                     "instrument": instrument,
-                     "data": data_file_location,
-                     "run_number": run_number,
-                     "facility": "ISIS",
-                     "started_by": started_by}
-        return json.dumps(data_dict)
 
     @patch('scripts.manual_operations.manual_submission.get_location_and_rb_from_database',
            return_value=None)
@@ -160,3 +149,69 @@ class TestManualSubmission(unittest.TestCase):
         self.sub_run_args[0].send.assert_called_with('/queue/DataReady',
                                                      message,
                                                      priority=1)
+
+    @patch('icat.Client')
+    @patch('utils.clients.icat_client.ICATClient.connect')
+    def test_icat_login_valid(self, mock_connect, _):
+        """
+        Test: A valid ICAT client is returned
+        When: We can log in via the client
+
+        Note: We mock the connect so it does not actual perform the connect (default pass)
+        """
+        actual = ms.login_icat()
+        self.assertIsInstance(actual, ICATClient)
+        mock_connect.assert_called_once()
+
+    @patch('icat.Client')
+    @patch('utils.clients.ICATClient.connect')
+    def test_icat_login_invalid(self, mock_connect, _):
+        """
+        Test: None is returned
+        When: We are unable to log in via the client
+        """
+        con_exp = ConnectionException('icat')
+        mock_connect.side_effect = con_exp
+        self.assertIsNone(ms.login_icat())
+
+    @patch('utils.clients.DatabaseClient.connect')
+    def test_database_login_valid(self, _):
+        """
+        Test: A valid Database client is returned
+        When: We can log in via the client
+
+        Note: We mock the connect so it does not actual perform the connect (default pass)
+        """
+        actual = ms.login_database()
+        self.assertIsInstance(actual, DatabaseClient)
+
+    @patch('utils.clients.DatabaseClient.connect')
+    def test_database_login_invalid(self, mock_connect):
+        """
+        Test: None is returned
+        When: We are unable to log in via the client
+        """
+        con_exp = ConnectionException('MySQL')
+        mock_connect.side_effect = con_exp
+        self.assertIsNone(ms.login_database())
+
+    @patch('utils.clients.QueueClient.connect')
+    def test_queue_login_valid(self, _):
+        """
+        Test: A valid Queue client is returned
+        When: We can log in via the client
+
+        Note: We mock the connect so it does not actual perform the connect (default pass)
+        """
+        actual = ms.login_queue()
+        self.assertIsInstance(actual, QueueClient)
+
+    @patch('utils.clients.QueueClient.connect')
+    def test_queue_login_invalid(self, mock_connect):
+        """
+        Test: An exception is raised
+        When: We are unable to log in via the client
+        """
+        con_exp = ConnectionException('Queue')
+        mock_connect.side_effect = con_exp
+        self.assertRaises(RuntimeError, ms.login_queue)
