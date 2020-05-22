@@ -354,7 +354,8 @@ class PostProcessAdmin:
         self.data['reduction_log'] = self.reduction_log_stream.getvalue()
         self.data["admin_log"] = self.admin_log_stream.getvalue()
 
-        # Note: at this point, 'message' should never been None (unless assignment (message="") has moved)
+        # Note: at this point, 'message' should never been None
+        #  (unless assignment (message="") has moved)
         if self.data["message"] != "" and self.data['message'] is not None:
             # This means an error has been produced somewhere
             try:
