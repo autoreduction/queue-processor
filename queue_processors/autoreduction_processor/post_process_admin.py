@@ -211,7 +211,7 @@ class PostProcessAdmin:
             # Specify directories where autoreduction output will go
             reduce_result_dir = MISC["temp_root_directory"] + instrument_output_dir
 
-            if 'run_description' in self.data:
+            if 'run_description' in self.data and self.data['run_description'] is not None:
                 logger.info("DESCRIPTION: %s", self.data["run_description"])
 
             log_dir = reduce_result_dir + "/reduction_log/"
@@ -264,8 +264,8 @@ class PostProcessAdmin:
                 raise exp
 
             self.data['reduction_data'] = []
-            # if "message" not in self.data:  # Note: this will never be true using Message class
-            # Note: this change avoids the need for 'None' checking past this
+            # Note: Open question: where to set Message=""
+            #  (here? QueueClient.send? Message class? allow null in DB?)
             if "message" not in self.data or self.data["message"] is None:
                 self.data["message"] = ""
 
@@ -354,7 +354,8 @@ class PostProcessAdmin:
         self.data['reduction_log'] = self.reduction_log_stream.getvalue()
         self.data["admin_log"] = self.admin_log_stream.getvalue()
 
-        if self.data["message"] != "" and not self.data['message'] is None:
+        # Note: at this point, 'message' should never been None (unless assignment (message="") has moved)
+        if self.data["message"] != "" and self.data['message'] is not None:
             # This means an error has been produced somewhere
             try:
                 if 'skip' in self.data['message'].lower():
@@ -370,9 +371,7 @@ class PostProcessAdmin:
 
         else:
             # reduction has successfully completed
-            # Note: Below to avoid SQL-cant-be-null error. Could default to "" in Message class instead?
-            #   If we do that instead, need to think about is None check above
-            self.data["message"] = ""
+            self.data["message"] = ""   # Note: this assignment is redundant but precautionary
             self.client.send(ACTIVEMQ_SETTINGS.reduction_complete, json.dumps(self.data))
             logger.info("Calling: %s\n%s",
                         ACTIVEMQ_SETTINGS.reduction_complete,
@@ -504,7 +503,6 @@ class PostProcessAdmin:
 
 def main():
     """ Main method. """
-    logger.info("ppa started")
     json_data = None
     queue_client = QueueClient()
     try:

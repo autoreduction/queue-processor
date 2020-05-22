@@ -387,6 +387,8 @@ class Listener:
         session.add(reduction_run)
         session.commit()
 
+        # Note: once the Message class fully integrated, won't need to check data_dict has
+        #  attributes like the first part of this condition
         if 'retry_in' in self._data_dict and 'retry_in' is not None:
             experiment = session.query(Experiment).filter_by(
                 reference_number=self._data_dict['rb_number']).first()

@@ -164,8 +164,8 @@ class TestPostProcessAdmin(unittest.TestCase):  # pylint:disable=too-many-public
         activemq_client_mock = Mock()
         ppa = PostProcessAdmin(self.data, activemq_client_mock)
         ppa._send_message_and_log(ACTIVEMQ_SETTINGS.reduction_error)
-        mock_logger.assert_called_with("\nCalling " + ACTIVEMQ_SETTINGS.reduction_error
-                                                    + " --- " + prettify(self.data))
+        mock_logger.assert_called_with("\nCalling " + ACTIVEMQ_SETTINGS.reduction_error +
+                                       " --- " + prettify(self.data))
         activemq_client_mock.send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_error,
                                                           json.dumps(ppa.data))
 
