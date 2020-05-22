@@ -36,18 +36,18 @@ class PlotHandler:
         if plot_type is None:
             # list of plot types the handler looks for if none is provided; it searches for the types in the order of
             # the list and selects the first one that exists. In future: could add vector graphics (.pdf, .eps)
-            self.plot_type = ["png", "jpg", "bmp", "gif", "tiff"]
+            self.file_extensions = ["png", "jpg", "bmp", "gif", "tiff"]
         elif isinstance(plot_type, str):
             # if only a single str is passed for a plot type then pass it into a list (so that a single for-loop can be
             # used to loop over plot types).
-            self.plot_type = [plot_type]
+            self.file_extensions = [plot_type]
         else:
-            self.plot_type = plot_type
+            self.file_extensions = plot_type
         # dictionary of regular expressions for each instrument to describe the possible prefixes in the file name(s)
         self._instrument_dict = {"MARI": "MAR[I]", "WISH": "WISH"}
         # path to directory with files for given instrument and RB number
-        self._rbfolder = "/instrument/" + self.instrument_name + "/RBNumber/RB" + str(
-            self.rb_number) + "/" + str(self.run_number) + "/autoreduced/"
+        self._rb_folder = "/instrument/" + self.instrument_name + "/RBNumber/RB" + \
+                          str(self.rb_number) + "/" + str(self.run_number) + "/autoreduced/"
         # parameter to store the file names of any existing plot files found
         self._existing_plot_files = []
 
@@ -55,6 +55,7 @@ class PlotHandler:
         """
         Regular expression used for looking for plot files. It assumes that the file names follow the convention
         <instrument_abbreviation><run_number>*<.png or other extension>
+        :param plot_type: the type of file to be searched for, e.g. "png". No preceeding dot needed.
         """
         try:
             _regexp = self._instrument_dict[self.instrument_name] + str(
@@ -72,13 +73,11 @@ class PlotHandler:
         client = SFTPClient()
         # initialise list to store names of existing files matching the search
         _found_files = []
-        for plot_type_i in self.plot_type:
-            # directory where existing plot file(s) would be located
-            ceph_dir = self._rbfolder
+        for plot_type_i in self.file_extensions:
             # regular expression for plot file name(s)
             file_regex = self._regexp_for_file_name(plot_type=plot_type_i)
             # use sftpclient to check if files matching the regular expression exist and add any matches to the list
-            _found_files.extend(client.get_filenames(server_dir_path=ceph_dir, regex=file_regex))
+            _found_files.extend(client.get_filenames(server_dir_path=self._rb_folder, regex=file_regex))
         return _found_files
 
     def get_plot_file(self):
@@ -90,15 +89,17 @@ class PlotHandler:
         if len(self._existing_plot_files) == 0:  # no existing file was found
             return []  # return an empty list for now
         else:  # if one or more existing files were found, use the first one (order of items in plot_type affects this)
-            _ceph_path = self._rbfolder + self._existing_plot_files[0]
+            _ceph_path = self._rb_folder + self._existing_plot_files[0]
             # in case the local path to which the file gets copied to needs to be specified
             _local_path = None
             # create sftpclient object and try to retrieve the file
             client = SFTPClient()
             try:
                 client.retrieve(server_file_path=_ceph_path, local_file_path=_local_path, override=True)
+                LOGGER.info(f'File {_ceph_path} found and saved to {_local_path}')
             except RuntimeError:
-                logging.error("file does not exist")
+                LOGGER.error("file does not exist")
+                return False
             return self._existing_plot_files  # this is currently not set
 
     # pylint:disable=unnecessary-pass

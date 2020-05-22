@@ -27,21 +27,34 @@ class TestPlotHandler(unittest.TestCase):
         """
         Create a few test PlotHandler objects
         """
-        self.test_mari_png_plottype = PlotHandler(instrument_name="MARI", rb_number=12345678, run_number=1234,
-                                                  plot_type="png")
-        self.test_wish_none_plottype = PlotHandler(instrument_name="WISH", rb_number=87654321, run_number=4321)
+        self.expected_mari_instrument_name = "MARI"
+        self.expected_mari_rb_number = 12345678
+        self.expected_mari_run_number = 1234
+        self.expected_mari_rb_folder = "/instrument/MARI/RBNumber/RB12345678/1234/autoreduced/"
+        self.expected_mari_plottype = "png"
+        self.test_mari_png_plottype = PlotHandler(instrument_name=self.expected_mari_instrument_name,
+                                                  rb_number=self.expected_mari_rb_number,
+                                                  run_number=self.expected_mari_run_number,
+                                                  plot_type=self.expected_mari_plottype)
+        self.expected_wish_instrument_name = "WISH"
+        self.expected_wish_rb_nummber = 87654321
+        self.expected_wish_run_number = 4321
+        self.expected_wish_rb_folder = "/instrument/WISH/RBNumber/RB87654321/4321/autoreduced/"
+        self.expected_wish_plottype = None
+        self.test_wish_none_plottype = PlotHandler(instrument_name="WISH", rb_number=self.expected_wish_rb_nummber,
+                                                   run_number=self.expected_wish_run_number)
+
 
     def test_init_mari_png_plottype(self):
         """
         Test: Class variables are initiated correctly when instrument name is MARI and "png" is passed as plot type
         When: PlotHandler is initialised
         """
-        self.assertEqual(self.test_mari_png_plottype.instrument_name, "MARI")
-        self.assertEqual(self.test_mari_png_plottype.rb_number, 12345678)
-        self.assertEqual(self.test_mari_png_plottype.run_number, 1234)
-        self.assertEqual(self.test_mari_png_plottype.plot_type, ["png"])
-        self.assertEqual(self.test_mari_png_plottype._rbfolder,
-                         "/instrument/MARI/RBNumber/RB12345678/1234/autoreduced/")
+        self.assertEqual(self.test_mari_png_plottype.instrument_name, self.expected_mari_instrument_name)
+        self.assertEqual(self.test_mari_png_plottype.rb_number, self.expected_mari_rb_number)
+        self.assertEqual(self.test_mari_png_plottype.run_number, self.expected_mari_run_number)
+        self.assertEqual(self.test_mari_png_plottype.file_extensions, [self.expected_mari_plottype])
+        self.assertEqual(self.test_mari_png_plottype._rb_folder,self.expected_mari_rb_folder)
         self.assertEqual(self.test_mari_png_plottype._existing_plot_files, [])
 
     def test_init_wish_none_plottype(self):
@@ -49,12 +62,11 @@ class TestPlotHandler(unittest.TestCase):
         Test: Class variables are initialised correctly when instrument name is WISH and no plot type is passed
         When: PlotHandler is initialised
         """
-        self.assertEqual(self.test_wish_none_plottype.instrument_name, "WISH")
-        self.assertEqual(self.test_wish_none_plottype.rb_number, 87654321)
-        self.assertEqual(self.test_wish_none_plottype.run_number, 4321)
-        self.assertEqual(self.test_wish_none_plottype.plot_type, ["png", "jpg", "bmp", "gif", "tiff"])
-        self.assertEqual(self.test_wish_none_plottype._rbfolder,
-                         "/instrument/WISH/RBNumber/RB87654321/4321/autoreduced/")
+        self.assertEqual(self.test_wish_none_plottype.instrument_name, self.expected_wish_instrument_name)
+        self.assertEqual(self.test_wish_none_plottype.rb_number, self.expected_wish_rb_nummber)
+        self.assertEqual(self.test_wish_none_plottype.run_number, self.expected_wish_run_number)
+        self.assertEqual(self.test_wish_none_plottype.file_extensions, ["png", "jpg", "bmp", "gif", "tiff"])
+        self.assertEqual(self.test_wish_none_plottype._rb_folder, self.expected_wish_rb_folder)
         self.assertEqual(self.test_wish_none_plottype._existing_plot_files, [])
 
     def test_regexp_for_file_name_mari_png_plottype(self):
@@ -63,7 +75,7 @@ class TestPlotHandler(unittest.TestCase):
         When: Instrument name is MARI and a single plot type is passed to the class
         """
         expected = "MAR[I]1234*.png"
-        actual = self.test_mari_png_plottype._regexp_for_file_name(self.test_mari_png_plottype.plot_type[0])
+        actual = self.test_mari_png_plottype._regexp_for_file_name(self.test_mari_png_plottype.file_extensions[0])
         self.assertEqual(expected, actual)
 
     def test_regexp_for_file_name_wish_none_plottype(self):
@@ -72,10 +84,10 @@ class TestPlotHandler(unittest.TestCase):
         When: Instrument name is WISH and no plot type is passed to the class
         """
         expected = "WISH4321*.jpg"
-        actual = self.test_wish_none_plottype._regexp_for_file_name(self.test_wish_none_plottype.plot_type[1])
+        actual = self.test_wish_none_plottype._regexp_for_file_name(self.test_wish_none_plottype.file_extensions[1])
         self.assertEqual(expected, actual)
         expected = "WISH4321*.tiff"
-        actual = self.test_wish_none_plottype._regexp_for_file_name(self.test_wish_none_plottype.plot_type[-1])
+        actual = self.test_wish_none_plottype._regexp_for_file_name(self.test_wish_none_plottype.file_extensions[-1])
         self.assertEqual(expected, actual)
 
     @patch('utils.clients.sftp_client.SFTPClient.__init__', return_value=None)
@@ -90,7 +102,7 @@ class TestPlotHandler(unittest.TestCase):
         # client = SFTPClient()
         mock_client_init.assert_called_once()
         mock_get_filenames.assert_called_once_with(
-            server_dir_path="/instrument/MARI/RBNumber/RB12345678/1234/autoreduced/", regex="MAR[I]1234*.png")
+            server_dir_path=self.expected_mari_rb_folder, regex="MAR[I]1234*.png")
 
     @patch('utils.clients.sftp_client.SFTPClient.__init__', return_value=None)
     @patch('utils.clients.sftp_client.SFTPClient.get_filenames')
@@ -107,16 +119,11 @@ class TestPlotHandler(unittest.TestCase):
         actual = mock_get_filenames.call_count
         self.assertEqual(expected, actual)
         # check that the sftpclient.get_filenames method was called with the right parameters
-        mock_get_filenames.assert_any_call(server_dir_path="/instrument/WISH/RBNumber/RB87654321/4321/autoreduced/",
-                                           regex="WISH4321*.png")
-        mock_get_filenames.assert_any_call(server_dir_path="/instrument/WISH/RBNumber/RB87654321/4321/autoreduced/",
-                                           regex="WISH4321*.jpg")
-        mock_get_filenames.assert_any_call(server_dir_path="/instrument/WISH/RBNumber/RB87654321/4321/autoreduced/",
-                                           regex="WISH4321*.bmp")
-        mock_get_filenames.assert_any_call(server_dir_path="/instrument/WISH/RBNumber/RB87654321/4321/autoreduced/",
-                                           regex="WISH4321*.gif")
-        mock_get_filenames.assert_any_call(server_dir_path="/instrument/WISH/RBNumber/RB87654321/4321/autoreduced/",
-                                           regex="WISH4321*.tiff")
+        mock_get_filenames.assert_any_call(server_dir_path=self.expected_wish_rb_folder, regex="WISH4321*.png")
+        mock_get_filenames.assert_any_call(server_dir_path=self.expected_wish_rb_folder, regex="WISH4321*.jpg")
+        mock_get_filenames.assert_any_call(server_dir_path=self.expected_wish_rb_folder, regex="WISH4321*.bmp")
+        mock_get_filenames.assert_any_call(server_dir_path=self.expected_wish_rb_folder, regex="WISH4321*.gif")
+        mock_get_filenames.assert_any_call(server_dir_path=self.expected_wish_rb_folder, regex="WISH4321*.tiff")
 
     @patch('utils.clients.sftp_client.SFTPClient.__init__', return_value=None)
     @patch('utils.clients.sftp_client.SFTPClient.get_filenames', return_value=["existing_file.png"])
@@ -138,10 +145,8 @@ class TestPlotHandler(unittest.TestCase):
         mock_get_filenames.assert_called_once()
         mock_retrieve.assert_called_once()
         # check that the sftpclient.retrieve method was called with the correct parameters
-        mock_retrieve.assert_called_once_with(
-            server_file_path="/instrument/MARI/RBNumber/RB12345678/1234/autoreduced/existing_file.png",
-            local_file_path=None,
-            override=True)
+        mock_retrieve.assert_called_once_with(server_file_path=f"{self.expected_mari_rb_folder}existing_file.png",
+            local_file_path=None, override=True)
 
     @patch('utils.clients.sftp_client.SFTPClient.__init__', return_value=None)
     @patch('utils.clients.sftp_client.SFTPClient.retrieve')
@@ -165,10 +170,8 @@ class TestPlotHandler(unittest.TestCase):
         mock_check_for_plot_files.assert_called_once()
         mock_retrieve.assert_called_once()
         # check that the sftpclient.retrieve method was called with the correct parameters
-        mock_retrieve.assert_called_once_with(
-            server_file_path="/instrument/WISH/RBNumber/RB87654321/4321/autoreduced/existing_file.png",
-            local_file_path=None,
-            override=True)
+        mock_retrieve.assert_called_once_with(server_file_path=f"{self.expected_wish_rb_folder}existing_file.png",
+            local_file_path=None, override=True)
 
     @patch('utils.clients.sftp_client.SFTPClient.__init__', return_value=None)
     @patch('utils.clients.sftp_client.SFTPClient.get_filenames', return_value=[])
