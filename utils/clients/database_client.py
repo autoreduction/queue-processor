@@ -119,54 +119,6 @@ class DatabaseClient(AbstractClient):
                                       foreign_keys='ReductionRun.experiment_id')
         return ReductionRun
 
-    def reduction_data_location(self):
-        """
-        :return: ReductionDataLocation Table to replicate what we expect in the database
-        """
-        # pylint: disable=too-few-public-methods
-        class ReductionDataLocation(declarative_base()):
-            """
-            Table for reduction_viewer_datalocation entity
-            """
-            __table__ = Table('reduction_viewer_datalocation',
-                              self._meta_data, autoload=True,
-                              autoload_with=self._engine)
-            reduction_run = relationship(self.reduction_run(),
-                                         foreign_keys='ReductionDataLocation.reduction_run_id')
-        return ReductionDataLocation
-
-    def reduction_location(self):
-        """
-        :return: ReductionLocation Table to replicate what we expect in the database
-        """
-        # pylint: disable=too-few-public-methods
-        class ReductionLocation(declarative_base()):
-            """
-            Table for reduction_viewer_reductionlocation entity
-            """
-            __table__ = Table('reduction_viewer_reductionlocation',
-                              self._meta_data, autoload=True,
-                              autoload_with=self._engine)
-            reduction_run = relationship(self.reduction_run(),
-                                         foreign_keys='ReductionLocation.reduction_run_id')
-        return ReductionLocation
-
-    def run_variables(self):
-        """
-        :return: RunVariables Table to replicate what we expect in the database
-        """
-        # pylint: disable=too-few-public-methods
-        class RunVariable(declarative_base()):
-            """
-            Table for reduction_variables_runvariable entity
-            """
-            __table__ = Table('reduction_variables_runvariable',
-                              self._meta_data, autoload=True,
-                              autoload_with=self._engine)
-            reduction_run = relationship(self.reduction_run(),
-                                         foreign_keys='RunVariable.reduction_run_id')
-        return RunVariable
-
     def experiment(self):
         """
         :return: Experiment Table to replicate what we expect in the database
