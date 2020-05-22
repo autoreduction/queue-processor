@@ -335,13 +335,13 @@ class Listener:
         Updates the run to Skipped status in database
         Will NOT attempt re-run
         """
-        if 'message' in self._data_dict:
+        if self.message.message is not None:
             logger.info("Run %s has been skipped - %s",
-                        self._data_dict['run_number'],
-                        self._data_dict['message'])
+                        self.message.run_number,
+                        self.message.message)
         else:
             logger.info("Run %s has been skipped - No error message was found",
-                        self._data_dict['run_number'])
+                        self.message.run_number)
 
         reduction_run = self.find_run()
         if not reduction_run:
@@ -349,15 +349,17 @@ class Listener:
                          "Experiment: %s, "
                          "Run Number: %s, "
                          "Run Version %s",
-                         self._data_dict['rb_number'],
-                         self._data_dict['run_number'],
-                         self._data_dict['run_version'])
+                         self.message.rb_number,
+                         self.message.run_number,
+                         self.message.run_version)
             return
 
         reduction_run.status = StatusUtils().get_skipped()
         reduction_run.finished = datetime.datetime.utcnow()
-        for name in ['message', 'reduction_log', 'admin_log']:
-            setattr(reduction_run, name, self._data_dict.get(name, ""))
+        reduction_run.message = self.message.message
+        reduction_run.reduction_log = self.message.reduction_log
+        reduction_run.admin_log = self.message.admin_log
+
         session.add(reduction_run)
         session.commit()
 
