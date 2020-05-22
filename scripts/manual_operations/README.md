@@ -37,13 +37,5 @@ Example:
 ```
 $ python manual_remove.py WISH 40421
 ```
-When you want to submit multiple contiguous datafiles/runs for reduction.
-```
-$ python manual_remove.py [Instrument Name] [Start Run Number] -e [End Run Number]
-```
-Example:
-```
-$ python manual_remove.py WISH 40421 -e 40425
-```
 
 *Note: Whilst runs are removed from the database, the reduce data will still remain on CEPH*
