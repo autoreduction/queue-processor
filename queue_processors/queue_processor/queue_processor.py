@@ -242,7 +242,7 @@ class Listener:
         Called when destination queue was reduction_started.
         Updates the run as started in the database.
         """
-        logger.info("Run %s has started reduction", self._data_dict['run_number'])
+        logger.info("Run %s has started reduction", self.message.run_number)
 
         reduction_run = self.find_run()
 
@@ -258,17 +258,17 @@ class Listener:
                              "Experiment: %s, "
                              "Run Number: %s, "
                              "Run Version %s",
-                             self._data_dict['rb_number'],
-                             self._data_dict['run_number'],
-                             self._data_dict['run_version'])
+                             self.message.rb_number,
+                             self.message.run_number,
+                             self.message.run_version)
         else:
             logger.error("A reduction run started that wasn't found in the database. "
                          "Experiment: %s, "
                          "Run Number: %s, "
                          "Run Version %s",
-                         self._data_dict['rb_number'],
-                         self._data_dict['run_number'],
-                         self._data_dict['run_version'])
+                         self.message.rb_number,
+                         self.message.run_number,
+                         self.message.run_version)
 
     def reduction_complete(self):
         """
@@ -277,17 +277,19 @@ class Listener:
         """
         # pylint: disable=too-many-nested-blocks
         try:
-            logger.info("Run %s has completed reduction", self._data_dict['run_number'])
+            logger.info("Run %s has completed reduction", self.message.run_number)
             reduction_run = self.find_run()
 
             if reduction_run:
                 if reduction_run.status.value == "Processing":
                     reduction_run.status = StatusUtils().get_completed()
                     reduction_run.finished = datetime.datetime.utcnow()
-                    for name in ['message', 'reduction_log', 'admin_log']:
-                        setattr(reduction_run, name, self._data_dict.get(name, ""))
-                    if 'reduction_data' in self._data_dict:
-                        for location in self._data_dict['reduction_data']:
+                    reduction_run.message = self.message.message
+                    reduction_run.reduction_log = self.message.reduction_log
+                    reduction_run.admin_log = self.message.admin_log
+
+                    if self.message.reduction_data is not None:
+                        for location in self.message.reduction_data:
                             reduction_location = ReductionLocation(file_path=location,
                                                                    reduction_run=reduction_run)
                             session.add(reduction_location)
@@ -313,16 +315,16 @@ class Listener:
                                  "Experiment: %s, "
                                  "Run Number: %s, "
                                  "Run Version %s",
-                                 self._data_dict['rb_number'],
-                                 self._data_dict['run_number'],
-                                 self._data_dict['run_version'])
+                                 self.message.rb_number,
+                                 self.message.run_number,
+                                 self.message.run_version)
             else:
                 logger.error("A reduction run completed that wasn't found in the database. "
                              "Experiment: %s, Run Number:%s,"
                              " Run Version %s",
-                             self._data_dict['rb_number'],
-                             self._data_dict['run_number'],
-                             self._data_dict['run_version'])
+                             self.message.rb_number,
+                             self.message.run_number,
+                             self.message.run_version)
 
         except BaseException as exp:
             logger.error("Error: %s", exp)
