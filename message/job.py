@@ -25,8 +25,6 @@ class Message:
     A class that represents an AMQ Message.
     Messages can be serialized and deserialized for sending messages to and from AMQ
     """
-    # Note: Attributes default to None, but when sent to the DB, they cannot be null.
-    #   Perhaps could add check in QueueClient before sending, or change the defaults here.
     description = attr.ib(default=None)
     facility = attr.ib(default=None)
     run_number = attr.ib(default=None)
