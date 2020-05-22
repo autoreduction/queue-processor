@@ -63,7 +63,6 @@ class Listener:
     def __init__(self, client):
         """ Initialise listener. """
         self._client = client
-        self._data_dict = {}   # note: to remove
         self.message = Message()
         self._priority = ''
 
@@ -74,7 +73,6 @@ class Listener:
         logger.info("Destination: %s Priority: %s", destination, self._priority)
         # Load the JSON message and header into dictionaries
         try:
-            self._data_dict = json.loads(message)   # note: to remove
             self.message.populate(json.loads(message))
         except ValueError:
             logger.error("Could not decode message from %s", destination)
@@ -231,7 +229,6 @@ class Listener:
         logger.warning("Skipping non-integer RB number: %s", rb_number)
         msg = 'Reduction Skipped: {}. Assuming run number to be ' \
               'a calibration run.'.format(reason)
-        self._data_dict['message'] = msg
         self.message.message = msg
         skipped_queue = ACTIVEMQ_SETTINGS.reduction_skipped
         self._client.send(skipped_queue, self.message,
@@ -368,13 +365,13 @@ class Listener:
         Called when the destination was reduction_error.
         Updates the run as complete in the database.
         """
-        if 'message' in self._data_dict:
+        if self.message.message is not None:
             logger.info("Run %s has encountered an error - %s",
-                        self._data_dict['run_number'],
-                        self._data_dict['message'])
+                        self.message.run_number,
+                        self.message.message)
         else:
             logger.info("Run %s has encountered an error - No error message was found",
-                        self._data_dict['run_number'])
+                        self.message.run_number)
 
         reduction_run = self.find_run()
 
@@ -383,25 +380,27 @@ class Listener:
                          "Experiment: %s, "
                          "Run Number: %s, "
                          "Run Version %s",
-                         self._data_dict['rb_number'],
-                         self._data_dict['run_number'],
-                         self._data_dict['run_version'])
+                         self.message.rb_number,
+                         self.message.run_number,
+                         self.message.run_version)
             return
 
         reduction_run.status = StatusUtils().get_error()
         reduction_run.finished = datetime.datetime.utcnow()
-        for name in ['message', 'reduction_log', 'admin_log']:
-            setattr(reduction_run, name, self._data_dict.get(name, ""))
+        reduction_run.message = self.message.message
+        reduction_run.reduction_log = self.message.reduction_log
+        reduction_run.admin_log = self.message.admin_log
+
         session.add(reduction_run)
         session.commit()
 
         # Note: once the Message class fully integrated, won't need to check data_dict has
         #  attributes like the first part of this condition
-        if 'retry_in' in self._data_dict and self._data_dict['retry_in'] is not None:
+        if self.message.retry_in is not None:
             experiment = session.query(Experiment).filter_by(
-                reference_number=self._data_dict['rb_number']).first()
+                reference_number=self.message.rb_number).first()
             previous_runs = session.query(ReductionRun).filter_by(
-                run_number=self._data_dict['run_number'],
+                run_number=self.message.run_number,
                 experiment=experiment).all()
             max_version = -1
             for previous_run in previous_runs:
@@ -413,13 +412,13 @@ class Listener:
             # to retry the run
             if max_version <= 4:
                 self.retry_run(
-                    self._data_dict["started_by"],
+                    self.message.started_by,
                     reduction_run,
-                    self._data_dict["retry_in"])
+                    self.message.retry_in)
             else:
                 # Need to delete the retry_in entry from the dictionary so that the front end
                 # doesn't report a false retry instance.
-                del self._data_dict['retry_in']
+                self.message.retry_in = None
 
     def find_run(self):
         """ Find a reduction run in the database. """
@@ -427,20 +426,20 @@ class Listener:
         #  been added to the database from the front end (normally retrying runs).
         session.commit()
         experiment = session.query(Experiment).filter_by(
-            reference_number=self._data_dict['rb_number']).first()
+            reference_number=self.message.rb_number).first()
         if not experiment:
-            logger.error("Unable to find experiment %s", self._data_dict['rb_number'])
+            logger.error("Unable to find experiment %s", self.message.rb_number)
             return None
 
         logger.info('Finding a run with an experiment ID %s, run number %s and run version %s',
                     experiment.id,
-                    int(self._data_dict['run_number']),
-                    int(self._data_dict['run_version']))
+                    int(self.message.run_number),
+                    int(self.message.run_version))
         reduction_run = session.query(ReductionRun).filter_by(experiment=experiment,
                                                               run_number=int(
-                                                                  self._data_dict['run_number']),
+                                                                  self.message.run_number),
                                                               run_version=int(
-                                                                  self._data_dict['run_version']))\
+                                                                  self.message.run_version))\
             .first()
         return reduction_run
 
