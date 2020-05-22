@@ -5,7 +5,7 @@
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 """
-Unit tests for plot_handler
+Unit tests for _plot_handler
 """
 
 # Core Dependencies
@@ -14,7 +14,7 @@ import unittest
 from mock import patch, Mock
 
 # Internal Dependencies
-from plotting.plot_handler.plot_handler import DjangoDashApp
+from plotting._plot_handler.plot_handler import DjangoDashApp
 
 
 class TestDjangoDashApp(unittest.TestCase):
