@@ -386,13 +386,13 @@ def run_summary(request, instrument_name=None, run_number=None, run_version=0):
             reduction_location = reduction_location.replace('\\', '/')
 
         rb_number=Experiment.objects.get(id=run.experiment_id).reference_number
-        plot_location=PlotHandler.get_plot_file(instrument_name=run.instrument,rb_number=rb_number, run_number=run.run_number)
+        #plot_location=PlotHandler.get_plot_file(instrument_name=run.instrument,rb_number=rb_number, run_number=run.run_number)
 
         context_dictionary = {'run': run,
                               'history': history,
                               'reduction_location': reduction_location,
-                              'started_by': started_by,
-                              'plot_location':plot_location}
+                              'started_by': started_by}
+                              #'plot_location':plot_location}
     except PermissionDenied:
         raise
     except Exception as exception:
