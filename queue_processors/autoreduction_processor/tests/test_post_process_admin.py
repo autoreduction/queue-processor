@@ -40,8 +40,10 @@ class TestPostProcessAdminHelpers(unittest.TestCase):
         self.assertEqual(actual, '/temp/data/some/more/path.nxs')
 
 
-class TestPostProcessAdmin(unittest.TestCase):  # pylint:disable=too-many-public-methods
+# pylint:disable=too-many-public-methods
+class TestPostProcessAdmin(unittest.TestCase):
     DIR = "queue_processors.autoreduction_processor"
+
     def setUp(self):
         self.data = {'data': '\\\\isis\\inst$\\data.nxs',
                      'facility': 'ISIS',
