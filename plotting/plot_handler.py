@@ -96,7 +96,7 @@ class PlotHandler:
             client = SFTPClient()
             try:
                 client.retrieve(server_file_path=_ceph_path, local_file_path=_local_path, override=True)
-                LOGGER.info(f'File {_ceph_path} found and saved to {_local_path}')
+                LOGGER.info('File %s found and saved to %s', _ceph_path, _local_path)
             except RuntimeError:
                 LOGGER.error("file does not exist")
                 return False
