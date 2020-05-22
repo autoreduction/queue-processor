@@ -19,6 +19,9 @@ class ManualRemove:
     """
 
     def __init__(self, instrument):
+        """
+        :param instrument: (str) The name of the instrument associated with runs
+        """
         self.database = DatabaseClient()
         self.database.connect()
         self.to_delete = {}
@@ -27,7 +30,7 @@ class ManualRemove:
     def find_runs_in_database(self, run_number):
         """
         Find all run versions in the database that relate to a given instrument and run number
-        :param run_number: the run to search for in the database
+        :param run_number: (int) The run to search for in the database
         :return: The result of the query
         """
         instrument_record = self.database.get_instrument(self.instrument)
@@ -54,7 +57,7 @@ class ManualRemove:
     def run_not_found(self, run_number):
         """
         Inform user and remove key from dictionary
-        :param run_number: The run to remove from the dictionary
+        :param run_number: (int) The run to remove from the dictionary
         """
         print('No runs found associated with {} for instrument {}'.format(run_number,
                                                                           self.instrument))
@@ -64,7 +67,7 @@ class ManualRemove:
         """
         Ask the user which versions they want to remove
         Update the self.to_delete dictionary by removing unwanted versions
-        :param run_number: The run number with multiple versions
+        :param run_number: (int) The run number with multiple versions
         """
         # Display run_number - title - version for all matching runs
         print("Discovered multiple reduction versions for {}{}:".format(self. instrument,
@@ -106,7 +109,7 @@ class ManualRemove:
     def delete_reduction_location(self, reduction_run_id):
         """
         Delete a ReductionLocation record from the database
-        :param reduction_run_id: The id of the associated reduction job
+        :param reduction_run_id: (int) The id of the associated reduction job
         """
         self.database.data_model.ReductionLocation.objects \
             .filter(reduction_run_id=reduction_run_id) \
@@ -115,7 +118,7 @@ class ManualRemove:
     def delete_data_location(self, reduction_run_id):
         """
         Delete a DataLocation record from the database
-        :param reduction_run_id: The id of the associated reduction job
+        :param reduction_run_id: (int) The id of the associated reduction job
         """
         self.database.data_model.DataLocation.objects \
             .filter(reduction_run_id=reduction_run_id) \
@@ -124,7 +127,7 @@ class ManualRemove:
     def delete_variables(self, reduction_run_id):
         """
         Removes all the RunVariable records associated with a given ReductionRun from the database
-        :param reduction_run_id: The id of the associated reduction job
+        :param reduction_run_id: (int) The id of the associated reduction job
         """
         run_variables = self.find_variables_of_reduction(reduction_run_id)
         for record in run_variables:
@@ -135,8 +138,8 @@ class ManualRemove:
     def find_variables_of_reduction(self, reduction_run_id):
         """
         Find all the RunVariable records in the database associated with a reduction job
-        :param reduction_run_id: The id of the reduction job to filter by
-        :return: A QuerySet of the associated RunVariables
+        :param reduction_run_id: (int) The id of the reduction job to filter by
+        :return: (QuerySet) of the associated RunVariables
         """
         return self.database.variable_model.RunVariable.objects \
             .filter(reduction_run_id=reduction_run_id)
@@ -144,7 +147,7 @@ class ManualRemove:
     def delete_reduction_run(self, reduction_run_id):
         """
         Delete a ReductionRun record from the database
-        :param reduction_run_id: The id of the associated reduction job
+        :param reduction_run_id: (int) The id of the associated reduction job
         """
         self.database.data_model.ReductionRun.objects \
             .filter(id=reduction_run_id) \
