@@ -22,7 +22,7 @@ class TestPlotHandler(unittest.TestCase):
     """
     Test all the functionality of the PlotHandler
     """
-
+    # pylint:disable=too-many-instance-attributes
     def setUp(self):
         """
         Create a few test PlotHandler objects
@@ -44,7 +44,6 @@ class TestPlotHandler(unittest.TestCase):
         self.test_wish_none_plottype = PlotHandler(instrument_name="WISH", rb_number=self.expected_wish_rb_nummber,
                                                    run_number=self.expected_wish_run_number)
 
-
     def test_init_mari_png_plottype(self):
         """
         Test: Class variables are initiated correctly when instrument name is MARI and "png" is passed as plot type
@@ -54,7 +53,7 @@ class TestPlotHandler(unittest.TestCase):
         self.assertEqual(self.test_mari_png_plottype.rb_number, self.expected_mari_rb_number)
         self.assertEqual(self.test_mari_png_plottype.run_number, self.expected_mari_run_number)
         self.assertEqual(self.test_mari_png_plottype.file_extensions, [self.expected_mari_plottype])
-        self.assertEqual(self.test_mari_png_plottype._rb_folder,self.expected_mari_rb_folder)
+        self.assertEqual(self.test_mari_png_plottype._rb_folder, self.expected_mari_rb_folder)
         self.assertEqual(self.test_mari_png_plottype._existing_plot_files, [])
 
     def test_init_wish_none_plottype(self):
@@ -146,7 +145,7 @@ class TestPlotHandler(unittest.TestCase):
         mock_retrieve.assert_called_once()
         # check that the sftpclient.retrieve method was called with the correct parameters
         mock_retrieve.assert_called_once_with(server_file_path=f"{self.expected_mari_rb_folder}existing_file.png",
-            local_file_path=None, override=True)
+                                              local_file_path=None, override=True)
 
     @patch('utils.clients.sftp_client.SFTPClient.__init__', return_value=None)
     @patch('utils.clients.sftp_client.SFTPClient.retrieve')
@@ -171,7 +170,7 @@ class TestPlotHandler(unittest.TestCase):
         mock_retrieve.assert_called_once()
         # check that the sftpclient.retrieve method was called with the correct parameters
         mock_retrieve.assert_called_once_with(server_file_path=f"{self.expected_wish_rb_folder}existing_file.png",
-            local_file_path=None, override=True)
+                                              local_file_path=None, override=True)
 
     @patch('utils.clients.sftp_client.SFTPClient.__init__', return_value=None)
     @patch('utils.clients.sftp_client.SFTPClient.get_filenames', return_value=[])
