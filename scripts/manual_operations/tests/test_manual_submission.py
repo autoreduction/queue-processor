@@ -8,17 +8,16 @@
 Test cases for the manual job submission script
 """
 import unittest
-import json
 from mock import patch, Mock, MagicMock
 import scripts.manual_operations.manual_submission as ms
 
 from utils.clients import DatabaseClient, QueueClient, ICATClient
 from utils.clients.connection_exception import ConnectionException
 
-
-# pylint:disable=no-self-use
 from message.job import Message
 
+
+# pylint:disable=no-self-use
 class TestManualSubmission(unittest.TestCase):
     """
     Test manual_submission.py

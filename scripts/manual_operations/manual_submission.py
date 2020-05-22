@@ -12,10 +12,6 @@ from __future__ import print_function
 import sys
 import argparse
 
-# The below is only a template on the repo
-# pylint: disable=import-error, no-name-in-module
-from icat import ICATSessionError
-
 from message.job import Message
 from utils.clients.connection_exception import ConnectionException
 from utils.clients.icat_client import ICATClient
@@ -132,6 +128,10 @@ def get_location_and_rb(database_client, icat_client, instrument, run_number, fi
 
 
 def login_icat():
+    """
+    Log into the ICATClient
+    :return: The client connected, or None if failed
+    """
     print("Logging into ICAT")
     icat_client = ICATClient()
     try:
@@ -143,6 +143,10 @@ def login_icat():
 
 
 def login_database():
+    """
+    Log into the DatabaseClient
+    :return: The client connected, or None if failed
+    """
     print("Logging into Database")
     database_client = DatabaseClient()
     try:
@@ -154,6 +158,10 @@ def login_database():
 
 
 def login_queue():
+    """
+    Log into the QueueClient
+    :return: The client connected, or raise exception
+    """
     print("Logging into ActiveMQ")
     activemq_client = QueueClient()
     try:
