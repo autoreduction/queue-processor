@@ -12,6 +12,7 @@ import unittest
 
 from mock import patch, MagicMock
 
+from message.job import Message
 from queue_processors.queue_processor import queue_processor
 from queue_processors.queue_processor.queue_processor import Listener
 from utils.clients.queue_client import QueueClient
@@ -64,7 +65,7 @@ class TestListener(unittest.TestCase):
         listener = Listener(mock_client)
         listener._construct_and_send_skipped(self.rb_number, self.reason)
 
-        self.assertIsNotNone(listener._data_dict['message'])
+        self.assertIsNotNone(listener.message)
         mock_client.send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_skipped,
-                                                 json.dumps(listener._data_dict),
+                                                 listener.message,
                                                  priority=listener._priority)
