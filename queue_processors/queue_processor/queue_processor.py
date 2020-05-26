@@ -72,10 +72,15 @@ class Listener:
         self._priority = headers["priority"]
         logger.info("Destination: %s Priority: %s", destination, self._priority)
         # Load the JSON message and header into dictionaries
-        if not isinstance(message, Message):
-            raise ValueError("message received is not of type Message")
-        self.message = message
-
+        try:
+            if isinstance(message, Message):
+                self.message = message
+            else:
+                self.message.populate(json.loads(message))
+        except ValueError:
+            logger.error("Could not decode message from %s", destination)
+            logger.error(sys.exc_info()[1])
+            return
         try:
             if destination == '/queue/DataReady':
                 self.data_ready()
