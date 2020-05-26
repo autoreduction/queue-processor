@@ -53,11 +53,11 @@ class Message:
         :param limit_reduction_script: if True, limits reduction_script to 50 chars in returned JSON dump
         :return: JSON dump of a dictionary representing the member variables
         """
-        data_dict = json.dumps(attr.asdict(self), indent=indent)
+        data_dict = attr.asdict(self)
         if limit_reduction_script:
             data_dict["reduction_script"] = data_dict["reduction_script"][:50]
 
-        return data_dict
+        return json.dumps(data_dict, indent=indent)
 
     @staticmethod
     def deserialize(serialized_object):

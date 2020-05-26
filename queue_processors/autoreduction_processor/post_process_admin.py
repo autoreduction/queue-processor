@@ -30,6 +30,7 @@ import importlib.util as imp
 from sentry_sdk import init
 
 # pylint:disable=no-name-in-module,import-error
+from message.job import Message
 from paths.path_manipulation import append_path
 from queue_processors.autoreduction_processor.settings import MISC
 from queue_processors.autoreduction_processor.autoreduction_logging_setup import logger
@@ -111,7 +112,7 @@ class PostProcessAdmin:
 
     # pylint: disable=too-many-instance-attributes
     def __init__(self, message, client):
-        logger.debug("Message data: %s", message.serialize(full_reduction_script=False))
+        logger.debug("Message data: %s", message.serialize(limit_reduction_script=True))
         # Note: "information" isn't a Message attribute so is not accepted by Message.
         #   Do we want to store this?
         # data["information"] = socket.gethostname()
@@ -526,7 +527,9 @@ def main():
         queue_client.connect()
         logger.info("PostProcessAdmin Successfully Connected to ActiveMQ")
 
-        destination, message = sys.argv[1:3]  # pylint: disable=unbalanced-tuple-unpacking
+        destination, data = sys.argv[1:3]  # pylint: disable=unbalanced-tuple-unpacking
+        message = Message()
+        message.populate(data)
         logger.info("destination: %s", destination)
         logger.info("message: %s", message.serialize(limit_reduction_script=True))
 
@@ -539,7 +542,7 @@ def main():
 
         except ValueError as exp:
             message.error = str(exp)  # Note: I believe this should be .message
-            logger.info("Data error: %s", message.serialize(limit_reduction_script=True))
+            logger.info("Message data error: %s", message.serialize(limit_reduction_script=True))
             raise
 
         except Exception as exp:
