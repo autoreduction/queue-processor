@@ -43,17 +43,21 @@ class Message:
     retry_in = attr.ib(default=None)
 
     reduction_data = attr.ib(default=None)
-    run_description = attr.ib(default=None)
+    run_description = attr.ib(default=None)  # to merge with 'description' above
     error = attr.ib(default=None)
 
-
-    def serialize(self, indent=None):
+    def serialize(self, indent=None, limit_reduction_script=False):
         """
         Serialized member variables as a json dump
         :param indent: The indent level passed to json.dumps
+        :param limit_reduction_script: if True, limits reduction_script to 50 chars in returned JSON dump
         :return: JSON dump of a dictionary representing the member variables
         """
-        return json.dumps(attr.asdict(self), indent=indent)
+        data_dict = json.dumps(attr.asdict(self), indent=indent)
+        if limit_reduction_script:
+            data_dict["reduction_script"] = data_dict["reduction_script"][:50]
+
+        return data_dict
 
     @staticmethod
     def deserialize(serialized_object):

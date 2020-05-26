@@ -96,6 +96,7 @@ def windows_to_linux_path(path, temp_root_directory):
 
 def prettify(data):
     """ Make dictionary pretty for printing. """
+    # Note: Only used for debug statements. Functionality added to Message.serialize
     if type(data).__name__ == "str":
         data_dict = json.loads(data)
     else:
@@ -110,27 +111,35 @@ class PostProcessAdmin:
     """ Main class for the PostProcessAdmin """
 
     # pylint: disable=too-many-instance-attributes
-    def __init__(self, data, client):
-        logger.debug("json data: %s", prettify(data))
-        data["information"] = socket.gethostname()
-        self.data = data
+    def __init__(self, message, client):
+        logger.debug("json data: %s", message.serialize(full_reduction_script=False))
+        # Note: "information" isn't a Message attribute so is not accepted by Message.
+        #   Do we want to store this?
+        # data["information"] = socket.gethostname()
+
+        self.message = message
+        attributes_to_check = ['data', 'facility', 'instrument', 'rb_number',
+                               'run_number', 'reduction_script', 'reduction_arguments']
+        self.check_message_attributes_populated(attributes_to_check)
+
+        self.data = message.serialize()     # Note: message integrated up until here
         self.client = client
 
         self.reduction_log_stream = io.StringIO()
         self.admin_log_stream = io.StringIO()
 
-        try:
-            self.data_file = windows_to_linux_path(self.validate_input('data'),
-                                                   MISC["temp_root_directory"])
-            self.facility = self.validate_input('facility')
-            self.instrument = self.validate_input('instrument').upper()
-            self.proposal = str(int(self.validate_input('rb_number')))
-            self.run_number = str(int(self.validate_input('run_number')))
-            self.reduction_script = self.validate_input('reduction_script')
-            self.reduction_arguments = self.validate_input('reduction_arguments')
-        except ValueError:
-            logger.info('JSON data error', exc_info=True)
-            raise
+        # try:
+        #     self.data_file = windows_to_linux_path(self.validate_input('data'),
+        #                                            MISC["temp_root_directory"])
+        #     self.facility = self.validate_input('facility')
+        #     self.instrument = self.validate_input('instrument').upper()
+        #     self.proposal = str(int(self.validate_input('rb_number')))
+        #     self.run_number = str(int(self.validate_input('run_number')))
+        #     self.reduction_script = self.validate_input('reduction_script')
+        #     self.reduction_arguments = self.validate_input('reduction_arguments')
+        # except ValueError:
+        #     logger.info('JSON data error', exc_info=True)
+        #     raise
 
     def validate_input(self, key):
         """
@@ -143,6 +152,13 @@ class PostProcessAdmin:
             logger.debug("%s: %s", key, str(value)[:50])
             return value
         raise ValueError('%s is missing' % key)
+
+    def check_message_attributes_populated(self, attributes):
+        attribute_dict = self.message.__dict__
+        for attrib in attributes:
+            if attribute_dict[attrib] is None:
+                return False
+        return True
 
     def replace_variables(self, reduce_script):
         """
@@ -354,7 +370,7 @@ class PostProcessAdmin:
             # This means an error has been produced somewhere
             try:
                 if 'skip' in self.data['message'].lower():
-                    self.data['message'].lstrip('skip: ')
+                    self.data['message'].lstrip('skip: ')   # Note: to remove
                     self._send_message_and_log(ACTIVEMQ_SETTINGS.reduction_skipped)
                 else:
                     self._send_message_and_log(ACTIVEMQ_SETTINGS.reduction_error)
