@@ -164,8 +164,8 @@ class TestPostProcessAdmin(unittest.TestCase):
         activemq_client_mock = Mock()
         ppa = PostProcessAdmin(self.message, activemq_client_mock)
         ppa._send_message_and_log(ACTIVEMQ_SETTINGS.reduction_error)
-        mock_logger.assert_called_with("\nCalling " + ACTIVEMQ_SETTINGS.reduction_error +
-                                       " --- " + self.message.serialize(limit_reduction_script=True))
+        mock_logger.assert_called_with("\nCalling " + ACTIVEMQ_SETTINGS.reduction_error + " --- " +
+                                       self.message.serialize(limit_reduction_script=True))
         activemq_client_mock.send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_error,
                                                           ppa.message)
 
@@ -348,19 +348,26 @@ class TestPostProcessAdmin(unittest.TestCase):
         self.assertEqual(expected, actual)
 
     @patch(DIR + '.post_process_admin.PostProcessAdmin.__init__', return_value=None)
-    def test_check_message_attributes_populated_success(self, mock_ppa_init):
+    def test_validate_input_success(self, _):
+        """
+        Test: The attribute value is returned
+        When: validate_input is called with an attribute which is not None
+        """
         mock_self = Mock()
         mock_self.message = self.message
-        attributes = self.data.keys()
-        actual = PostProcessAdmin.check_message_attributes_populated(mock_self, attributes)
-        self.assertTrue(actual)
+
+        actual = PostProcessAdmin.validate_input(mock_self, 'facility')
+        self.assertEqual(actual, self.message.facility)
 
     @patch(DIR + '.post_process_admin.PostProcessAdmin.__init__', return_value=None)
-    def test_check_message_attributes_populated_failure(self, mock_ppa_init):
+    def test_validate_input_failure(self, _):
+        """
+        Test: A ValueError is raised
+        When: validate_input is called with an attribute who's value is None
+        """
         mock_self = Mock()
         mock_self.message = self.message
-        attributes = self.data.keys()
         mock_self.message.facility = None
 
-        actual = PostProcessAdmin.check_message_attributes_populated(mock_self, attributes)
-        self.assertFalse(actual)
+        with self.assertRaises(ValueError):
+            PostProcessAdmin.validate_input(mock_self, 'facility')
