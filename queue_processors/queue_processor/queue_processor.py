@@ -73,7 +73,10 @@ class Listener:
         logger.info("Destination: %s Priority: %s", destination, self._priority)
         # Load the JSON message and header into dictionaries
         try:
-            self.message.populate(json.loads(message))
+            if isinstance(message, Message):
+                self.message = message
+            else:
+                self.message.populate(json.loads(message))
         except ValueError:
             logger.error("Could not decode message from %s", destination)
             logger.error(sys.exc_info()[1])
