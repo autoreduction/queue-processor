@@ -14,7 +14,6 @@ It consumes messages from the queues and then updates the reduction run status i
 import base64
 import datetime
 import glob
-import json
 import logging.config
 import sys
 import traceback
@@ -72,10 +71,15 @@ class Listener:
         self._priority = headers["priority"]
         logger.info("Destination: %s Priority: %s", destination, self._priority)
         # Load the JSON message and header into dictionaries
-        if not isinstance(message, Message):
-            raise ValueError("message received is not of type Message")
-        self.message = message
-
+        try:
+            if isinstance(message, Message):
+                self.message = message
+            else:
+                self.message.populate(message)
+        except ValueError:
+            logger.error("Could not decode message from %s", destination)
+            logger.error(sys.exc_info()[1])
+            return
         try:
             if destination == '/queue/DataReady':
                 self.data_ready()
