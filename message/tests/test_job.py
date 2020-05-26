@@ -57,7 +57,7 @@ class TestMessage(unittest.TestCase):
                           'instrument': None,
                           'rb_number': rb_number,
                           'started_by': None,
-                          'file_path': None,
+                          'data': None,
                           'overwrite': None,
                           'run_version': None,
                           'job_id': None,
@@ -65,8 +65,12 @@ class TestMessage(unittest.TestCase):
                           'reduction_arguments': None,
                           'reduction_log': None,
                           'admin_log': None,
-                          'return_message': None,
-                          'retry_in': None}
+                          'message': None,
+                          'retry_in': None,
+                          'reduction_data': None,
+                          'run_description': None,
+                          'error': None
+                          }
         return populated_msg, populated_dict
 
     def test_init(self):
@@ -81,7 +85,7 @@ class TestMessage(unittest.TestCase):
         self.assertIsNone(empty_msg.instrument)
         self.assertIsNone(empty_msg.rb_number)
         self.assertIsNone(empty_msg.started_by)
-        self.assertIsNone(empty_msg.file_path)
+        self.assertIsNone(empty_msg.data)
         self.assertIsNone(empty_msg.overwrite)
         self.assertIsNone(empty_msg.run_version)
         self.assertIsNone(empty_msg.job_id)
@@ -89,8 +93,11 @@ class TestMessage(unittest.TestCase):
         self.assertIsNone(empty_msg.reduction_arguments)
         self.assertIsNone(empty_msg.reduction_log)
         self.assertIsNone(empty_msg.admin_log)
-        self.assertIsNone(empty_msg.return_message)
+        self.assertIsNone(empty_msg.message)
         self.assertIsNone(empty_msg.retry_in)
+        self.assertIsNone(empty_msg.reduction_data)
+        self.assertIsNone(empty_msg.run_description)
+        self.assertIsNone(empty_msg.error)
 
     def test_to_dict_populated(self):
         """

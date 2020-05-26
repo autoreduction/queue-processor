@@ -187,6 +187,7 @@ class Listener:
         # Create a new data location entry which has a foreign key linking it to the current
         # reduction run. The file path itself will point to a datafile
         # (e.g. "\isis\inst$\NDXWISH\Instrument\data\cycle_17_1\WISH00038774.nxs")
+        logger.info("data dict: %s", self._data_dict)
         data_location = DataLocation(file_path=self._data_dict['data'],
                                      reduction_run_id=reduction_run.id) # pylint: disable=no-member
         session.add(data_location)
@@ -386,7 +387,9 @@ class Listener:
         session.add(reduction_run)
         session.commit()
 
-        if 'retry_in' in self._data_dict:
+        # Note: once the Message class fully integrated, won't need to check data_dict has
+        #  attributes like the first part of this condition
+        if 'retry_in' in self._data_dict and self._data_dict['retry_in'] is not None:
             experiment = session.query(Experiment).filter_by(
                 reference_number=self._data_dict['rb_number']).first()
             previous_runs = session.query(ReductionRun).filter_by(

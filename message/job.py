@@ -31,7 +31,7 @@ class Message:
     instrument = attr.ib(default=None)
     rb_number = attr.ib(default=None)
     started_by = attr.ib(default=None)
-    file_path = attr.ib(default=None)
+    data = attr.ib(default=None)
     overwrite = attr.ib(default=None)
     run_version = attr.ib(default=None)
     job_id = attr.ib(default=None)
@@ -39,8 +39,13 @@ class Message:
     reduction_arguments = attr.ib(default=None)
     reduction_log = attr.ib(default=None)
     admin_log = attr.ib(default=None)
-    return_message = attr.ib(default=None)
+    message = attr.ib(default=None)
     retry_in = attr.ib(default=None)
+
+    reduction_data = attr.ib(default=None)
+    run_description = attr.ib(default=None)
+    error = attr.ib(default=None)
+
 
     def serialize(self, indent=None):
         """

@@ -31,6 +31,7 @@ import importlib.util as imp
 from sentry_sdk import init
 
 # pylint:disable=no-name-in-module,import-error
+from paths.path_manipulation import append_path
 from queue_processors.autoreduction_processor.settings import MISC
 from queue_processors.autoreduction_processor.autoreduction_logging_setup import logger
 from queue_processors.autoreduction_processor.timeout import TimeOut
@@ -191,6 +192,7 @@ class PostProcessAdmin:
     def reduce(self):
         """ Start the reduction job.  """
         # pylint: disable=too-many-nested-blocks
+        logger.info("reduce started")
         try:
             logger.debug("Calling: %s\n%s",
                          ACTIVEMQ_SETTINGS.reduction_started,
@@ -209,7 +211,7 @@ class PostProcessAdmin:
             # Specify directories where autoreduction output will go
             reduce_result_dir = MISC["temp_root_directory"] + instrument_output_dir
 
-            if 'run_description' in self.data:
+            if 'run_description' in self.data and self.data['run_description'] is not None:
                 logger.info("DESCRIPTION: %s", self.data["run_description"])
 
             log_dir = reduce_result_dir + "/reduction_log/"
@@ -222,30 +224,8 @@ class PostProcessAdmin:
             final_result_dir = reduce_result_dir[len(MISC["temp_root_directory"]):]
             final_log_dir = log_dir[len(MISC["temp_root_directory"]):]
 
-            if 'overwrite' in self.data:
-                if not self.data["overwrite"]:
-                    logger.info('Don\'t want to overwrite previous data')
-                    path_parts = final_result_dir.split('/')
-                    new_path = '/'
-                    for part in path_parts:
-                        if part not in ('autoreduced', ''):
-                            new_path = new_path + part + '/'
-                    maximum = 0
-                    for folder in os.listdir(new_path):
-                        if folder.startswith('autoreduced'):
-                            number = folder.replace('autoreduced', '')
-                            if number != '':
-                                number = int(number) + 1
-                                if number > maximum:
-                                    maximum = number
-                            else:
-                                maximum = 1
-                    if maximum == 0:
-                        new_path = new_path + 'autoreduced'
-                    else:
-                        new_path = new_path + 'autoreduced' + str(maximum) + '/'
-                    final_result_dir = new_path
-                    final_log_dir = new_path + 'reduction_log/'
+            final_result_dir = self._new_reduction_data_path(final_result_dir)
+            final_log_dir = append_path(final_result_dir, ['reduction_log'])
 
             logger.info('Final Result Directory = %s', final_result_dir)
             logger.info('Final Log Directory = %s', final_log_dir)
@@ -284,8 +264,6 @@ class PostProcessAdmin:
                 raise exp
 
             self.data['reduction_data'] = []
-            if "message" not in self.data:
-                self.data["message"] = ""
 
             logger.info("----------------")
             logger.info("Reduction script: %s ...", self.reduction_script[:50])
@@ -372,7 +350,7 @@ class PostProcessAdmin:
         self.data['reduction_log'] = self.reduction_log_stream.getvalue()
         self.data["admin_log"] = self.admin_log_stream.getvalue()
 
-        if self.data["message"] != "":
+        if 'message' in self.data and self.data['message'] is not None:
             # This means an error has been produced somewhere
             try:
                 if 'skip' in self.data['message'].lower():
@@ -393,6 +371,30 @@ class PostProcessAdmin:
                         ACTIVEMQ_SETTINGS.reduction_complete,
                         prettify(self.data))
             logger.info("Reduction job successfully complete")
+
+    def _new_reduction_data_path(self, path):
+        """
+        Creates a pathname for the reduction data, factoring in existing run data.
+        :param path: Base path for the run data (should follow convention, without version number)
+        :return: A pathname for the new reduction data
+        """
+        logger.info("_new_reduction_data_path argument: %s", path)
+        # if there is an 'overwrite' key/member with a None/False value
+        if 'overwrite' in self.data and not self.data["overwrite"]:
+            if os.path.isdir(path):           # if the given path already exists..
+                contents = os.listdir(path)
+                highest_vers = -1
+                for item in contents:         # ..for every item, if it's a dir and a int..
+                    if os.path.isdir(os.path.join(path, item)):
+                        try:                  # ..store the highest int
+                            vers = int(item)
+                            highest_vers = max(highest_vers, vers)
+                        except ValueError:
+                            pass
+                this_vers = highest_vers + 1
+                return append_path(path, [str(this_vers)])
+        # (else) if no overwrite, overwrite true, or the path doesn't exist: return version 0 path
+        return append_path(path, "0")
 
     def _send_message_and_log(self, destination):
         """ Send reduction run to error. """
@@ -430,7 +432,7 @@ class PostProcessAdmin:
     def log_and_message(self, msg):
         """ Helper function to add text to the outgoing activemq message and to the info logs """
         logger.info(msg)
-        if self.data["message"] == "":
+        if self.data["message"] == "" or self.data["message"] is None:
             # Only send back first message as there is a char limit
             self.data["message"] = msg
 

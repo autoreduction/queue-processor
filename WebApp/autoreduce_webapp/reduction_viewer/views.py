@@ -34,6 +34,8 @@ from reduction_viewer.models import Experiment, ReductionRun, Instrument, Status
 from reduction_viewer.utils import StatusUtils, ReductionRunUtils
 from reduction_viewer.view_utils import deactivate_invalid_instruments
 
+from plotting.plot_handler import PlotHandler
+
 from utilities.pagination import CustomPaginator
 
 LOGGER = logging.getLogger('app')
@@ -382,10 +384,15 @@ def run_summary(request, instrument_name=None, run_number=None, run_version=0):
             reduction_location = location_list[0].file_path
         if reduction_location and '\\' in reduction_location:
             reduction_location = reduction_location.replace('\\', '/')
+
+        rb_number=Experiment.objects.get(id=run.experiment_id).reference_number
+        plot_location=PlotHandler.get_plot_file(instrument_name=run.instrument,rb_number=rb_number, run_number=run.run_number)
+
         context_dictionary = {'run': run,
                               'history': history,
                               'reduction_location': reduction_location,
-                              'started_by': started_by}
+                              'started_by': started_by,
+                              'plot_location':plot_location}
     except PermissionDenied:
         raise
     except Exception as exception:

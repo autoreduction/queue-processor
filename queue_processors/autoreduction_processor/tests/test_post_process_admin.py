@@ -16,6 +16,7 @@ import json
 from tempfile import mkdtemp, NamedTemporaryFile
 from mock import patch, call, Mock
 
+from paths.path_manipulation import append_path
 from utils.settings import ACTIVEMQ_SETTINGS
 from utils.project.structure import get_project_root
 from queue_processors.autoreduction_processor.settings import MISC
@@ -39,7 +40,9 @@ class TestPostProcessAdminHelpers(unittest.TestCase):
         self.assertEqual(actual, '/temp/data/some/more/path.nxs')
 
 
+# pylint:disable=too-many-public-methods
 class TestPostProcessAdmin(unittest.TestCase):
+    DIR = "queue_processors.autoreduction_processor"
 
     def setUp(self):
         self.data = {'data': '\\\\isis\\inst$\\data.nxs',
@@ -49,6 +52,38 @@ class TestPostProcessAdmin(unittest.TestCase):
                      'run_number': '4321',
                      'reduction_script': 'print(\'hello\')',
                      'reduction_arguments': 'None'}
+        self.test_fname = "111.txt"
+        self.test_root = os.path.join("instrument", "GEM", "RBNumber",
+                                      "RB2010163", "autoreduced", "111")
+        self.test_paths = [os.path.join(self.test_root, "0"),
+                           os.path.join(self.test_root, "1"),
+                           os.path.join(self.test_root, "2")]
+
+    def tearDown(self):
+        self.teardown_test_dir_structure()
+
+    def teardown_test_dir_structure(self):
+        """
+        Removes test directory structure (if one exists) from the root
+        """
+        abs_test_root = os.path.join(os.getcwd(), self.test_root)
+        if os.path.isdir(abs_test_root):
+            shutil.rmtree(self.test_root)
+
+    def setup_test_dir_structure(self, test_dirs):
+        """
+        Sets up a directory structure within the test environment.
+        Writes a file within each each directory given
+        :param test_dirs: The directories to create
+        """
+        for d in test_dirs:
+            abs_dir = os.path.join(os.getcwd(), d)
+            if not os.path.isdir(abs_dir):
+                os.makedirs(abs_dir)
+
+            abs_path = os.path.join(abs_dir, self.test_fname)
+            with open(abs_path, 'w') as file:
+                file.write("test file")
 
     def test_init(self):
         ppa = PostProcessAdmin(self.data, None)
@@ -78,11 +113,9 @@ class TestPostProcessAdmin(unittest.TestCase):
         location = PostProcessAdmin._reduction_script_location('WISH')
         self.assertEqual(location, MISC['scripts_directory'] % 'WISH')
 
-    @patch('queue_processors.autoreduction_processor.post_process_admin.'
-           'PostProcessAdmin._remove_directory')
-    @patch('queue_processors.autoreduction_processor.post_process_admin.'
-           'PostProcessAdmin._copy_tree')
-    @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.info')
+    @patch(DIR + '.post_process_admin.PostProcessAdmin._remove_directory')
+    @patch(DIR + '.post_process_admin.PostProcessAdmin._copy_tree')
+    @patch(DIR + '.autoreduction_logging_setup.logger.info')
     def test_copy_temp_dir(self, mock_logger, mock_copy, mock_remove):
         result_dir = mkdtemp()
         copy_dir = mkdtemp()
@@ -91,14 +124,13 @@ class TestPostProcessAdmin(unittest.TestCase):
         ppa.data['reduction_data'] = ['']
         ppa.copy_temp_directory(result_dir, copy_dir)
         mock_remove.assert_called_once_with(copy_dir)
-        mock_logger.assert_called_once_with("Moving %s to %s", result_dir, copy_dir)
+        mock_logger.assert_called_with("Moving %s to %s", result_dir, copy_dir)
         mock_copy.assert_called_once_with(result_dir, copy_dir)
         shutil.rmtree(result_dir)
         shutil.rmtree(copy_dir)
 
-    @patch('queue_processors.autoreduction_processor.post_process_admin.'
-           'PostProcessAdmin._copy_tree')
-    @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.info')
+    @patch(DIR + '.post_process_admin.PostProcessAdmin._copy_tree')
+    @patch(DIR + '.autoreduction_logging_setup.logger.info')
     def test_copy_temp_dir_with_excitation(self, _, mock_copy):
         result_dir = mkdtemp()
         ppa = PostProcessAdmin(self.data, None)
@@ -108,11 +140,9 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_copy.assert_called_once_with(result_dir, 'copy-dir')
         shutil.rmtree(result_dir)
 
-    @patch('queue_processors.autoreduction_processor.post_process_admin.'
-           'PostProcessAdmin._copy_tree')
-    @patch('queue_processors.autoreduction_processor.post_process_admin.PostProcessAdmin.'
-           'log_and_message')
-    @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.info')
+    @patch(DIR + '.post_process_admin.PostProcessAdmin._copy_tree')
+    @patch(DIR + '.post_process_admin.PostProcessAdmin.log_and_message')
+    @patch(DIR + '.autoreduction_logging_setup.logger.info')
     def test_copy_temp_dir_with_error(self, _, mock_log_and_msg, mock_copy):
         # pylint:disable=unused-argument
         def raise_runtime(arg1, arg2):  # pragma : no cover
@@ -127,18 +157,18 @@ class TestPostProcessAdmin(unittest.TestCase):
                                                                                 'test'))
         shutil.rmtree(result_dir)
 
-    @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.info')
+    @patch(DIR + '.autoreduction_logging_setup.logger.info')
     def test_send_error_and_log(self, mock_logger):
         activemq_client_mock = Mock()
         ppa = PostProcessAdmin(self.data, activemq_client_mock)
         ppa._send_message_and_log(ACTIVEMQ_SETTINGS.reduction_error)
-        mock_logger.assert_called_once_with("\nCalling " + ACTIVEMQ_SETTINGS.reduction_error
-                                            + " --- " + prettify(self.data))
+        mock_logger.assert_called_with("\nCalling " + ACTIVEMQ_SETTINGS.reduction_error +
+                                       " --- " + prettify(self.data))
         activemq_client_mock.send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_error,
                                                           json.dumps(ppa.data))
 
     @patch('shutil.rmtree')
-    @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.info')
+    @patch(DIR + '.autoreduction_logging_setup.logger.info')
     def test_delete_temp_dir_valid(self, mock_logger, mock_remove_dir):
         temp_dir = mkdtemp()
         PostProcessAdmin.delete_temp_directory(temp_dir)
@@ -148,7 +178,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         shutil.rmtree(temp_dir)
 
     @patch('shutil.rmtree')
-    @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.info')
+    @patch(DIR + '.autoreduction_logging_setup.logger.info')
     def test_delete_temp_dir_invalid(self, mock_logger, mock_remove_dir):
         def raise_runtime():  # pragma: no cover
             raise RuntimeError('test')
@@ -158,21 +188,21 @@ class TestPostProcessAdmin(unittest.TestCase):
                                       call('Unable to remove temporary directory - %s',
                                            'not-a-file-path.test')])
 
-    @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.info')
+    @patch(DIR + '.autoreduction_logging_setup.logger.info')
     def test_empty_log_and_message(self, mock_logger):
         ppa = PostProcessAdmin(self.data, None)
         ppa.data['message'] = ''
         ppa.log_and_message('test')
         self.assertEqual(ppa.data['message'], 'test')
-        mock_logger.assert_called_once_with('test')
+        mock_logger.assert_called_with('test')
 
-    @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.info')
+    @patch(DIR + '.autoreduction_logging_setup.logger.info')
     def test_load_and_message_with_preexisting_message(self, mock_logger):
         ppa = PostProcessAdmin(self.data, None)
         ppa.data['message'] = 'Old message'
         ppa.log_and_message('New message')
         self.assertEqual(ppa.data['message'], 'Old message')
-        mock_logger.assert_called_once_with('New message')
+        mock_logger.assert_called_with('New message')
 
     def test_remove_with_wait_folder(self):
         directory_to_remove = mkdtemp()
@@ -209,9 +239,8 @@ class TestPostProcessAdmin(unittest.TestCase):
         ppa._remove_directory(directory_to_remove)
         self.assertFalse(os.path.exists(directory_to_remove))
 
-    @patch('queue_processors.autoreduction_processor.post_process_admin.windows_to_linux_path',
-           return_value='path')
-    @patch('queue_processors.autoreduction_processor.post_process_admin.PostProcessAdmin.reduce')
+    @patch(DIR + '.post_process_admin.windows_to_linux_path', return_value='path')
+    @patch(DIR + '.post_process_admin.PostProcessAdmin.reduce')
     @patch('utils.clients.queue_client.QueueClient.connect')
     @patch('utils.clients.queue_client.QueueClient.__init__', return_value=None)
     def test_main(self, mock_init, mock_connect, mock_reduce, _):
@@ -225,12 +254,10 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_connect.assert_called_once()
         mock_reduce.assert_called_once()
 
-    @patch('queue_processors.autoreduction_processor.post_process_admin.prettify',
-           return_value='test')
+    @patch(DIR + '.post_process_admin.prettify', return_value='test')
     @patch('sys.exit')
-    @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.info')
-    @patch('queue_processors.autoreduction_processor.post_process_admin.PostProcessAdmin.__init__',
-           return_value=None)
+    @patch(DIR + '.autoreduction_logging_setup.logger.info')
+    @patch(DIR + '.post_process_admin.PostProcessAdmin.__init__', return_value=None)
     @patch('utils.clients.queue_client.QueueClient.send')
     @patch('utils.clients.queue_client.QueueClient.connect')
     @patch('utils.clients.queue_client.QueueClient.__init__', return_value=None)
@@ -255,9 +282,8 @@ class TestPostProcessAdmin(unittest.TestCase):
                                           json.dumps(self.data))
 
     @patch('sys.exit')
-    @patch('queue_processors.autoreduction_processor.autoreduction_logging_setup.logger.info')
-    @patch('queue_processors.autoreduction_processor.post_process_admin.PostProcessAdmin.__init__',
-           return_value=None)
+    @patch(DIR + '.autoreduction_logging_setup.logger.info')
+    @patch(DIR + '.post_process_admin.PostProcessAdmin.__init__', return_value=None)
     @patch('utils.clients.queue_client.QueueClient.send')
     @patch('utils.clients.queue_client.QueueClient.connect')
     @patch('utils.clients.queue_client.QueueClient.__init__', return_value=None)
@@ -279,3 +305,42 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_exit.assert_called_once()
         mock_send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_error,
                                           json.dumps(self.data))
+
+    def test_new_reduction_data_path_no_overwrite_paths_exist(self):
+        """
+        Test: A path is returned with a final directory one higher than the current highest
+        When: _new_reduction_data_path is called on an existing path with overwrite: None
+        """
+        self.setup_test_dir_structure(self.test_paths)
+        mock_self = Mock()
+        mock_self.data = {'overwrite': None}
+
+        expected = append_path(self.test_root, "3")
+        actual = PostProcessAdmin._new_reduction_data_path(mock_self, self.test_root)
+        self.assertEqual(expected, actual)
+
+    def test_new_reduction_data_path_overwrite_paths_exist(self):
+        """
+        Test: The given path is returned with a 0 directory appended
+        When: _new_reduction_data_path is called on an existing path with overwrite: True
+        """
+        self.setup_test_dir_structure(self.test_paths)
+        mock_self = Mock()
+        mock_self.data = {'overwrite': True}
+
+        expected = append_path(self.test_root, "0")
+        actual = PostProcessAdmin._new_reduction_data_path(mock_self, self.test_root)
+        self.assertEqual(expected, actual)
+
+    def test_new_reduction_data_only_root_path_exists(self):
+        """
+        Test: The given path is returned with a 0 directory appended
+        When: _new_reduction_data_path is called on a path without version sub-directories
+        """
+        self.setup_test_dir_structure([self.test_root])
+        mock_self = Mock()
+        mock_self.data = {'overwrite': None}
+
+        expected = append_path(self.test_root, "0")
+        actual = PostProcessAdmin._new_reduction_data_path(mock_self, self.test_root)
+        self.assertEqual(expected, actual)
