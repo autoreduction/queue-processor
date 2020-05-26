@@ -219,7 +219,7 @@ class Listener:
                               priority=self._priority)
             logger.info("Run %s ready for reduction", self.message.run_number)
 
-    # note: question: Why does this take arguments and not just take from _data_dict/message
+    # note: Why does this take arguments and not just take from the message attribs
     def _construct_and_send_skipped(self, rb_number, reason):
         """
         Construct a message and send to the skipped reduction queue
@@ -433,12 +433,9 @@ class Listener:
                     experiment.id,
                     int(self.message.run_number),
                     int(self.message.run_version))
-        reduction_run = session.query(ReductionRun).filter_by(experiment=experiment,
-                                                              run_number=int(
-                                                                  self.message.run_number),
-                                                              run_version=int(
-                                                                  self.message.run_version))\
-            .first()
+        reduction_run = session.query(ReductionRun)\
+            .filter_by(experiment=experiment, run_number=int(self.message.run_number),
+                       run_version=int(self.message.run_version)).first()
         return reduction_run
 
     @staticmethod

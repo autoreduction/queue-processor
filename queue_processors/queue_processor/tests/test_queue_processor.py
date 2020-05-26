@@ -11,6 +11,7 @@ import unittest
 
 from mock import patch, MagicMock
 
+from message.job import Message
 from queue_processors.queue_processor import queue_processor
 from queue_processors.queue_processor.queue_processor import Listener
 from utils.clients.queue_client import QueueClient
@@ -24,6 +25,8 @@ class TestQueueProcessor(unittest.TestCase):
     """
     def setUp(self):
         self.test_consumer_name = "Test_Autoreduction_QueueProcessor"
+        self.test_rb_number = -1
+        self.test_reason = "test"
 
     @patch('utils.clients.queue_client.QueueClient.__init__', return_value=None)
     @patch('utils.clients.queue_client.QueueClient.connect')
@@ -43,6 +46,22 @@ class TestQueueProcessor(unittest.TestCase):
         self.assertEqual(args[0], self.test_consumer_name)
         self.assertIsInstance(args[1], Listener)
         self.assertIsInstance(args[1]._client, QueueClient)
+
+    def test_construct_and_send_skipped(self):
+        """
+        Test: The message is sent via the QueueClient with a populated message attribute
+        When: _construct_and_send_skipped is called
+        """
+        mock_client = MagicMock(name="QueueClient")
+        listener = Listener(mock_client)
+        listener._construct_and_send_skipped(self.test_rb_number, self.test_reason)
+
+        self.assertIsNotNone(listener.message.message)
+        mock_client.send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_skipped,
+                                                 listener.message,
+                                                 priority=listener._priority)
+        sent_message = mock_client.send.call_args[0][1]
+        self.assertEqual(sent_message, listener.message)
 
 
 class TestListener(unittest.TestCase):
