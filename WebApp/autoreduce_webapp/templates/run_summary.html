@@ -5,7 +5,6 @@
 {% load replace %}
 {% load naturaltime from humanize %}
 {% load static %}
-{% load plotly_dash %} <!-- Visualisation -->
 
 {% block body %}
     {% if run %}
@@ -29,9 +28,6 @@
                 </div>
             {% endif %}
         {% endif %}
-        <div class="h-100 d-inline-block simpleexample">
-            {% plotly_app name="Instrument_Run_Number" ratio=0.42 %}
-        </div>
         <div class="row">
             <div class="col-md-8 col-md-offset-2">
                 <div class="panel panel-primary panel-small panel-2-column">

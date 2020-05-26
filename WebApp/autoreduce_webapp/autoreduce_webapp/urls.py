@@ -21,9 +21,6 @@ sys.path.append(os.path.join(get_project_root(), 'WebApp', 'autoreduce_webapp'))
 from reduction_viewer import views as reduction_viewer_views
 from reduction_variables import views as reduction_variables_views
 
-# Visualisation Plot Handler Import
-from plotting.plot_handler import plot_handler
-
 # pylint: disable=invalid-name
 handler400 = 'autoreduce_webapp.views.handler400'
 handler403 = 'autoreduce_webapp.views.handler403'
