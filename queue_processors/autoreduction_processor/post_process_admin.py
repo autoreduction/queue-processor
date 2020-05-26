@@ -19,7 +19,6 @@ import errno
 import logging
 import os
 import shutil
-import socket
 import sys
 import time
 import types
@@ -118,56 +117,36 @@ class PostProcessAdmin:
         # data["information"] = socket.gethostname()
 
         self.message = message
-        attributes_to_check = ['data', 'facility', 'instrument', 'rb_number',
-                               'run_number', 'reduction_script', 'reduction_arguments']
-        self.check_message_attributes_populated(attributes_to_check)
-
-        # Note: might want to remove all of the below, use the message throughout code instead
-        self.data_file = windows_to_linux_path(self.message.data,
-                                               MISC["temp_root_directory"])
-        self.facility = self.message.facility
-        self.instrument = self.message.instrument.upper()
-        self.proposal = str(int(self.message.rb_number))    # Note: This casting seems redundant?
-        self.run_number = str(int(self.message.run_number))
-        self.reduction_script = self.message.reduction_script
-        self.reduction_arguments = self.message.reduction_arguments
-
         self.client = client
 
         self.reduction_log_stream = io.StringIO()
         self.admin_log_stream = io.StringIO()
 
-        # try:
-        #     self.data_file = windows_to_linux_path(self.validate_input('data'),
-        #                                            MISC["temp_root_directory"])
-        #     self.facility = self.validate_input('facility')
-        #     self.instrument = self.validate_input('instrument').upper()
-        #     self.proposal = str(int(self.validate_input('rb_number')))
-        #     self.run_number = str(int(self.validate_input('run_number')))
-        #     self.reduction_script = self.validate_input('reduction_script')
-        #     self.reduction_arguments = self.validate_input('reduction_arguments')
-        # except ValueError:
-        #     logger.info('JSON data error', exc_info=True)
-        #     raise
+        try:
+            self.data_file = windows_to_linux_path(self.validate_input('data'),
+                                                   MISC["temp_root_directory"])
+            self.facility = self.validate_input('facility')
+            self.instrument = self.validate_input('instrument').upper()
+            self.proposal = str(int(self.validate_input('rb_number')))  # Integer-string validation
+            self.run_number = str(int(self.validate_input('run_number')))
+            self.reduction_script = self.validate_input('reduction_script')
+            self.reduction_arguments = self.validate_input('reduction_arguments')
+        except ValueError:
+            logger.info('JSON data error', exc_info=True)
+            raise
 
-    # def validate_input(self, key):
-    #     """
-    #     Validates the input dictionary
-    #     :param key: key to search for
-    #     :return: The value of the key or raise an exception if none
-    #     """
-    #     if key in self.data:
-    #         value = self.data[key]
-    #         logger.debug("%s: %s", key, str(value)[:50])
-    #         return value
-    #     raise ValueError('%s is missing' % key)
-
-    def check_message_attributes_populated(self, attributes):
+    def validate_input(self, attribute):
+        """
+        Validates the input message
+        :param attribute: attribute to validate
+        :return: The value of the key or raise an exception if none
+        """
         attribute_dict = self.message.__dict__
-        for attrib in attributes:
-            if attribute_dict[attrib] is None:
-                return False
-        return True
+        if attribute in attribute_dict and attribute_dict[attribute] is not None:
+            value = attribute_dict[attribute]
+            logger.debug("%s: %s", attribute, str(value)[:50])
+            return value
+        raise ValueError('%s is missing' % attribute)
 
     def replace_variables(self, reduce_script):
         """
@@ -422,7 +401,8 @@ class PostProcessAdmin:
 
     def _send_message_and_log(self, destination):
         """ Send reduction run to error. """
-        logger.info("\nCalling " + destination + " --- " + self.message.serialize(limit_reduction_script=True))
+        logger.info("\nCalling " + destination + " --- " +
+                    self.message.serialize(limit_reduction_script=True))
         self.client.send(destination, self.message)
 
     def copy_temp_directory(self, temp_result_dir, copy_destination):
@@ -559,7 +539,8 @@ def main():
         logger.info("Something went wrong: %s", str(exp))
         try:
             queue_client.send(ACTIVEMQ_SETTINGS.reduction_error, message)
-            logger.info("Called %s ---- %s", ACTIVEMQ_SETTINGS.reduction_error, message.serialize(limit_reduction_script=True))
+            logger.info("Called %s ---- %s", ACTIVEMQ_SETTINGS.reduction_error,
+                        message.serialize(limit_reduction_script=True))
         finally:
             sys.exit()
 

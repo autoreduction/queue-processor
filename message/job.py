@@ -50,7 +50,7 @@ class Message:
         """
         Serialized member variables as a json dump
         :param indent: The indent level passed to json.dumps
-        :param limit_reduction_script: if True, limits reduction_script to 50 chars in returned JSON dump
+        :param limit_reduction_script: if True, limits reduction_script to 50 chars in return
         :return: JSON dump of a dictionary representing the member variables
         """
         data_dict = attr.asdict(self)
