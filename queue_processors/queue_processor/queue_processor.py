@@ -166,7 +166,6 @@ class Listener:
         reduction_run = ReductionRun(run_number=self.message.run_number,
                                      run_version=run_version,
                                      run_name='',
-                                     message='',    # Note: can make None after DB allows
                                      cancel=0,
                                      hidden_in_failviewer=0,
                                      admin_log='',
