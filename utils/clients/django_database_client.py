@@ -66,3 +66,16 @@ class DatabaseClient:
         :return: The instrument object from the database
         """
         return self.data_model.Instrument.objects.filter(name=instrument_name).first()
+
+    def get_reduction_run(self, instrument, run_number):
+        """
+        Returns a QuerySet of all ReductionRun versions that have the given instrument/run_number
+        :param instrument: The name of the instrument to search for
+        :param run_number: The run number to search for
+        :return: A QuerySet of the ReductionRun records that match the criteria
+
+        Note: The query set could contain multiple records or None
+        """
+        return self.data_model.ReductionRun.objects \
+            .filter(instrument=self.get_instrument(instrument).id) \
+            .filter(run_number=run_number)
