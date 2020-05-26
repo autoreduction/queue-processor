@@ -16,6 +16,7 @@ import json
 from tempfile import mkdtemp, NamedTemporaryFile
 from mock import patch, call, Mock
 
+from message.job import Message
 from paths.path_manipulation import append_path
 from utils.settings import ACTIVEMQ_SETTINGS
 from utils.project.structure import get_project_root
@@ -58,6 +59,8 @@ class TestPostProcessAdmin(unittest.TestCase):
         self.test_paths = [os.path.join(self.test_root, "0"),
                            os.path.join(self.test_root, "1"),
                            os.path.join(self.test_root, "2")]
+        self.message = Message()
+        self.message.populate(self.data)
 
     def tearDown(self):
         self.teardown_test_dir_structure()
@@ -344,3 +347,21 @@ class TestPostProcessAdmin(unittest.TestCase):
         expected = append_path(self.test_root, "0")
         actual = PostProcessAdmin._new_reduction_data_path(mock_self, self.test_root)
         self.assertEqual(expected, actual)
+
+    @patch(DIR + '.post_process_admin.PostProcessAdmin.__init__', return_value=None)
+    def test_check_message_attributes_populated_success(self, mock_ppa_init):
+        mock_self = Mock()
+        mock_self.message = self.message
+        attributes = self.data.keys()
+        actual = PostProcessAdmin.check_message_attributes_populated(mock_self, attributes)
+        self.assertTrue(actual)
+
+    @patch(DIR + '.post_process_admin.PostProcessAdmin.__init__', return_value=None)
+    def test_check_message_attributes_populated_failure(self, mock_ppa_init):
+        mock_self = Mock()
+        mock_self.message = self.message
+        attributes = self.data.keys()
+        mock_self.message.facility = None
+
+        actual = PostProcessAdmin.check_message_attributes_populated(mock_self, attributes)
+        self.assertFalse(actual)
