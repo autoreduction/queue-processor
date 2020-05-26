@@ -22,7 +22,6 @@ from utils.settings import ACTIVEMQ_SETTINGS
 from utils.project.structure import get_project_root
 from queue_processors.autoreduction_processor.settings import MISC
 from queue_processors.autoreduction_processor.post_process_admin import (windows_to_linux_path,
-                                                                         prettify,
                                                                          PostProcessAdmin,
                                                                          main)
 
@@ -89,8 +88,8 @@ class TestPostProcessAdmin(unittest.TestCase):
                 file.write("test file")
 
     def test_init(self):
-        ppa = PostProcessAdmin(self.data, None)
-        self.assertEqual(ppa.data, self.data)
+        ppa = PostProcessAdmin(self.message, None)
+        self.assertEqual(ppa.message, self.message)
         self.assertEqual(ppa.client, None)
         self.assertIsNotNone(ppa.reduction_log_stream)
         self.assertIsNotNone(ppa.admin_log_stream)
@@ -107,7 +106,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         pass
 
     def test_load_reduction_script(self):
-        ppa = PostProcessAdmin(self.data, None)
+        ppa = PostProcessAdmin(self.message, None)
         file_path = ppa._load_reduction_script('WISH')
         self.assertEqual(file_path, os.path.join(MISC['scripts_directory'] % 'WISH',
                                                  'reduce.py'))
@@ -122,9 +121,9 @@ class TestPostProcessAdmin(unittest.TestCase):
     def test_copy_temp_dir(self, mock_logger, mock_copy, mock_remove):
         result_dir = mkdtemp()
         copy_dir = mkdtemp()
-        ppa = PostProcessAdmin(self.data, None)
+        ppa = PostProcessAdmin(self.message, None)
         ppa.instrument = 'POLARIS'
-        ppa.data['reduction_data'] = ['']
+        ppa.message.reduction_data = ['']
         ppa.copy_temp_directory(result_dir, copy_dir)
         mock_remove.assert_called_once_with(copy_dir)
         mock_logger.assert_called_with("Moving %s to %s", result_dir, copy_dir)
@@ -136,9 +135,9 @@ class TestPostProcessAdmin(unittest.TestCase):
     @patch(DIR + '.autoreduction_logging_setup.logger.info')
     def test_copy_temp_dir_with_excitation(self, _, mock_copy):
         result_dir = mkdtemp()
-        ppa = PostProcessAdmin(self.data, None)
+        ppa = PostProcessAdmin(self.message, None)
         ppa.instrument = 'WISH'
-        ppa.data['reduction_data'] = ['']
+        ppa.message.reduction_data = ['']
         ppa.copy_temp_directory(result_dir, 'copy-dir')
         mock_copy.assert_called_once_with(result_dir, 'copy-dir')
         shutil.rmtree(result_dir)
@@ -152,9 +151,9 @@ class TestPostProcessAdmin(unittest.TestCase):
             raise RuntimeError('test')
         mock_copy.side_effect = raise_runtime
         result_dir = mkdtemp()
-        ppa = PostProcessAdmin(self.data, None)
+        ppa = PostProcessAdmin(self.message, None)
         ppa.instrument = 'WISH'
-        ppa.data['reduction_data'] = ['']
+        ppa.message.reduction_data = ['']
         ppa.copy_temp_directory(result_dir, 'copy-dir')
         mock_log_and_msg.assert_called_once_with("Unable to copy to %s - %s" % ('copy-dir',
                                                                                 'test'))
@@ -163,12 +162,12 @@ class TestPostProcessAdmin(unittest.TestCase):
     @patch(DIR + '.autoreduction_logging_setup.logger.info')
     def test_send_error_and_log(self, mock_logger):
         activemq_client_mock = Mock()
-        ppa = PostProcessAdmin(self.data, activemq_client_mock)
+        ppa = PostProcessAdmin(self.message, activemq_client_mock)
         ppa._send_message_and_log(ACTIVEMQ_SETTINGS.reduction_error)
         mock_logger.assert_called_with("\nCalling " + ACTIVEMQ_SETTINGS.reduction_error +
-                                       " --- " + prettify(self.data))
+                                       " --- " + self.message.serialize(limit_reduction_script=True))
         activemq_client_mock.send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_error,
-                                                          json.dumps(ppa.data))
+                                                          ppa.message)
 
     @patch('shutil.rmtree')
     @patch(DIR + '.autoreduction_logging_setup.logger.info')
@@ -193,31 +192,31 @@ class TestPostProcessAdmin(unittest.TestCase):
 
     @patch(DIR + '.autoreduction_logging_setup.logger.info')
     def test_empty_log_and_message(self, mock_logger):
-        ppa = PostProcessAdmin(self.data, None)
-        ppa.data['message'] = ''
+        ppa = PostProcessAdmin(self.message, None)
+        ppa.message.message = ''
         ppa.log_and_message('test')
-        self.assertEqual(ppa.data['message'], 'test')
+        self.assertEqual(ppa.message.message, 'test')
         mock_logger.assert_called_with('test')
 
     @patch(DIR + '.autoreduction_logging_setup.logger.info')
     def test_load_and_message_with_preexisting_message(self, mock_logger):
-        ppa = PostProcessAdmin(self.data, None)
-        ppa.data['message'] = 'Old message'
+        ppa = PostProcessAdmin(self.message, None)
+        ppa.message.message = 'Old message'
         ppa.log_and_message('New message')
-        self.assertEqual(ppa.data['message'], 'Old message')
+        self.assertEqual(ppa.message.message, 'Old message')
         mock_logger.assert_called_with('New message')
 
     def test_remove_with_wait_folder(self):
         directory_to_remove = mkdtemp()
         self.assertTrue(os.path.exists(directory_to_remove))
-        ppa = PostProcessAdmin(self.data, None)
+        ppa = PostProcessAdmin(self.message, None)
         ppa._remove_with_wait(True, directory_to_remove)
         self.assertFalse(os.path.exists(directory_to_remove))
 
     def test_remove_with_wait_file(self):
         file_to_remove = NamedTemporaryFile(delete=False).name
         self.assertTrue(os.path.exists(str(file_to_remove)))
-        ppa = PostProcessAdmin(self.data, None)
+        ppa = PostProcessAdmin(self.message, None)
         ppa._remove_with_wait(False, file_to_remove)
         self.assertFalse(os.path.exists(file_to_remove))
 
@@ -225,7 +224,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         directory_to_copy = mkdtemp(prefix='test-dir')
         with open(os.path.join(directory_to_copy, 'test-file.txt'), 'w+') as test_file:
             test_file.write('test content')
-        ppa = PostProcessAdmin(self.data, None)
+        ppa = PostProcessAdmin(self.message, None)
         ppa._copy_tree(directory_to_copy, os.path.join(get_project_root(), 'test-dir'))
         self.assertTrue(os.path.exists(os.path.join(get_project_root(), 'test-dir')))
         self.assertTrue(os.path.isdir(os.path.join(get_project_root(), 'test-dir')))
@@ -238,7 +237,7 @@ class TestPostProcessAdmin(unittest.TestCase):
     def test_remove_directory(self):
         directory_to_remove = mkdtemp()
         self.assertTrue(os.path.exists(directory_to_remove))
-        ppa = PostProcessAdmin(self.data, None)
+        ppa = PostProcessAdmin(self.message, None)
         ppa._remove_directory(directory_to_remove)
         self.assertFalse(os.path.exists(directory_to_remove))
 
@@ -257,7 +256,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_connect.assert_called_once()
         mock_reduce.assert_called_once()
 
-    @patch(DIR + '.post_process_admin.prettify', return_value='test')
+    @patch('message.job.Message.serialize', return_value='test')
     @patch('sys.exit')
     @patch(DIR + '.autoreduction_logging_setup.logger.info')
     @patch(DIR + '.post_process_admin.PostProcessAdmin.__init__', return_value=None)
@@ -271,18 +270,18 @@ class TestPostProcessAdmin(unittest.TestCase):
         When: A ValueError exception is raised from ppa.reduce
         """
         def raise_value_error(arg1, _):
-            self.assertEqual(arg1, self.data)
+            self.assertEqual(arg1, self.message)
             raise ValueError('error-message')
         mock_ppa_init.side_effect = raise_value_error
         sys.argv = ['', '/queue/ReductionPending', json.dumps(self.data)]
         main()
         mock_connect.assert_called_once()
         mock_client_init.assert_called_once()
-        mock_logger.assert_has_calls([call('JSON data error: %s', 'test')])
+        mock_logger.assert_has_calls([call('Message data error: %s', 'test')])
         mock_exit.assert_called_once()
-        self.data['error'] = 'error-message'
+        self.message.error = 'error-message'
         mock_send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_error,
-                                          json.dumps(self.data))
+                                          self.message)
 
     @patch('sys.exit')
     @patch(DIR + '.autoreduction_logging_setup.logger.info')
@@ -297,7 +296,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         When: A bare Exception is raised from ppa.reduce
         """
         def raise_exception(arg1, _):
-            self.assertEqual(arg1, self.data)
+            self.assertEqual(arg1, self.message)
             raise Exception('error-message')
         mock_ppa_init.side_effect = raise_exception
         sys.argv = ['', '/queue/ReductionPending', json.dumps(self.data)]
@@ -307,7 +306,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_logger.assert_has_calls([call('PostProcessAdmin error: %s', 'error-message')])
         mock_exit.assert_called_once()
         mock_send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_error,
-                                          json.dumps(self.data))
+                                          self.message)
 
     def test_new_reduction_data_path_no_overwrite_paths_exist(self):
         """
@@ -316,7 +315,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         """
         self.setup_test_dir_structure(self.test_paths)
         mock_self = Mock()
-        mock_self.data = {'overwrite': None}
+        mock_self.message = Message(overwrite=None)
 
         expected = append_path(self.test_root, "3")
         actual = PostProcessAdmin._new_reduction_data_path(mock_self, self.test_root)
@@ -329,7 +328,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         """
         self.setup_test_dir_structure(self.test_paths)
         mock_self = Mock()
-        mock_self.data = {'overwrite': True}
+        mock_self.message = Message(overwrite=True)
 
         expected = append_path(self.test_root, "0")
         actual = PostProcessAdmin._new_reduction_data_path(mock_self, self.test_root)
@@ -342,7 +341,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         """
         self.setup_test_dir_structure([self.test_root])
         mock_self = Mock()
-        mock_self.data = {'overwrite': None}
+        mock_self.message = Message(overwrite=None)
 
         expected = append_path(self.test_root, "0")
         actual = PostProcessAdmin._new_reduction_data_path(mock_self, self.test_root)
