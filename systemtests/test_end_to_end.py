@@ -77,7 +77,7 @@ if os.name != 'nt':
             # Create and send json message to ActiveMQ
             data_ready_message = Message(rb_number=self.rb_number,
                                          instrument=self.instrument,
-                                         file_path=file_location,
+                                         data=file_location,
                                          run_number=self.run_number,
                                          started_by=0)
             self.queue_client.send('/queue/DataReady',
@@ -108,7 +108,7 @@ if os.name != 'nt':
             # Create and send json message to ActiveMQ
             data_ready_message = Message(rb_number=self.rb_number,
                                          instrument=self.instrument,
-                                         file_path=file_location,
+                                         data=file_location,
                                          run_number=self.run_number,
                                          started_by=0)
             self.queue_client.send('/queue/DataReady',
