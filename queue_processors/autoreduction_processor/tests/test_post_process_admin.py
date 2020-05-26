@@ -95,12 +95,12 @@ class TestPostProcessAdmin(unittest.TestCase):
         self.assertIsNotNone(ppa.admin_log_stream)
 
         self.assertEqual(ppa.data_file, '/isis/data.nxs')
-        self.assertEqual(ppa.facility, 'ISIS')
-        self.assertEqual(ppa.instrument, 'GEM')
-        self.assertEqual(ppa.proposal, '1234')
-        self.assertEqual(ppa.run_number, '4321')
-        self.assertEqual(ppa.reduction_script, 'print(\'hello\')')
-        self.assertEqual(ppa.reduction_arguments, 'None')
+        self.assertEqual(ppa.message.facility, 'ISIS')
+        self.assertEqual(ppa.message.instrument, 'GEM')
+        self.assertEqual(ppa.message.rb_number, '1234')
+        self.assertEqual(ppa.message.run_number, '4321')
+        self.assertEqual(ppa.message.reduction_script, 'print(\'hello\')')
+        self.assertEqual(ppa.message.reduction_arguments, 'None')
 
     def test_replace_variables(self):
         pass
@@ -122,7 +122,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         result_dir = mkdtemp()
         copy_dir = mkdtemp()
         ppa = PostProcessAdmin(self.message, None)
-        ppa.instrument = 'POLARIS'
+        ppa.message.instrument = 'POLARIS'
         ppa.message.reduction_data = ['']
         ppa.copy_temp_directory(result_dir, copy_dir)
         mock_remove.assert_called_once_with(copy_dir)
@@ -279,7 +279,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_client_init.assert_called_once()
         mock_logger.assert_has_calls([call('Message data error: %s', 'test')])
         mock_exit.assert_called_once()
-        self.message.error = 'error-message'
+        self.message.message = 'error-message'
         mock_send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_error,
                                           self.message)
 
@@ -350,14 +350,13 @@ class TestPostProcessAdmin(unittest.TestCase):
     @patch(DIR + '.post_process_admin.PostProcessAdmin.__init__', return_value=None)
     def test_validate_input_success(self, _):
         """
-        Test: The attribute value is returned
-        When: validate_input is called with an attribute which is not None
+        Test: No errors are raised
+        When: validate_input is called when all checked attributes are valid
         """
         mock_self = Mock()
         mock_self.message = self.message
 
-        actual = PostProcessAdmin.validate_input(mock_self, 'facility')
-        self.assertEqual(actual, self.message.facility)
+        PostProcessAdmin.validate_input(mock_self)
 
     @patch(DIR + '.post_process_admin.PostProcessAdmin.__init__', return_value=None)
     def test_validate_input_failure(self, _):
@@ -370,4 +369,4 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_self.message.facility = None
 
         with self.assertRaises(ValueError):
-            PostProcessAdmin.validate_input(mock_self, 'facility')
+            PostProcessAdmin.validate_input(mock_self)
