@@ -54,12 +54,12 @@ def get_location_and_rb_from_database(database_client, instrument, run_number):
         print("Database not connected")
         return None
 
-    reduction_run_records = database_client.get_reduction_run(instrument, run_number)
+    all_reduction_run_records = database_client.get_reduction_run(instrument, run_number)
 
-    if not reduction_run_records:
+    if not all_reduction_run_records:
         return None
 
-    reduction_run_record = reduction_run_records.order_by('run_version').first()
+    reduction_run_record = all_reduction_run_records.order_by('run_version').first()
     data_location = reduction_run_record.data_location.first().file_path
     experiment_number = reduction_run_record.experiment.reference_number
 
@@ -219,6 +219,8 @@ def main():
         location, rb_num = get_location_and_rb(database_client, icat_client, instrument, run, "nxs")
         if location and rb_num:
             submit_run(activemq_client, rb_num, instrument, location, run)
+        else:
+            print("Unable to find rb number and location for {}{}".format(instrument, run))
 
 
 if __name__ == "__main__":

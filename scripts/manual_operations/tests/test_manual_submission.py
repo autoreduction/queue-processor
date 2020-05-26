@@ -167,7 +167,7 @@ class TestManualSubmission(unittest.TestCase):
     def test_icat_login_invalid(self, mock_connect, _):
         """
         Test: None is returned
-        When: We are unable to log in via the client
+        When: We are unable to log in via the icat client
         """
         con_exp = ConnectionException('icat')
         mock_connect.side_effect = con_exp
@@ -188,7 +188,7 @@ class TestManualSubmission(unittest.TestCase):
     def test_database_login_invalid(self, mock_connect):
         """
         Test: None is returned
-        When: We are unable to log in via the client
+        When: We are unable to log in via the database client
         """
         con_exp = ConnectionException('MySQL')
         mock_connect.side_effect = con_exp
@@ -198,7 +198,7 @@ class TestManualSubmission(unittest.TestCase):
     def test_queue_login_valid(self, _):
         """
         Test: A valid Queue client is returned
-        When: We can log in via the client
+        When: We can log in via the queue client
 
         Note: We mock the connect so it does not actual perform the connect (default pass)
         """
@@ -218,7 +218,7 @@ class TestManualSubmission(unittest.TestCase):
     def test_submit_run_no_amq(self):
         """
         Test: That there is an early return
-        When: calling submit_run with active_mq as None
+        When: Calling submit_run with active_mq as None
         """
         self.assertIsNone(ms.submit_run(active_mq_client=None,
                                         rb_number=None,
@@ -267,7 +267,7 @@ class TestManualSubmission(unittest.TestCase):
     def test_main_bad_client(self, mock_db, mock_icat, mock_input):
         """
         Test: A RuntimeError is raised
-        When:  neither ICAT or Database connections can be established
+        When: Neither ICAT or Database connections can be established
         """
         mock_input.return_value = ([1111], 'TEST')
         mock_db.return_value = None
