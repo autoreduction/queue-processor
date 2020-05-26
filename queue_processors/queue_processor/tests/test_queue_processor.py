@@ -11,7 +11,6 @@ import unittest
 
 from mock import patch, MagicMock
 
-from message.job import Message
 from queue_processors.queue_processor import queue_processor
 from queue_processors.queue_processor.queue_processor import Listener
 from utils.clients.queue_client import QueueClient
