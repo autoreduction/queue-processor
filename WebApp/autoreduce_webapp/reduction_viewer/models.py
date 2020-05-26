@@ -62,7 +62,7 @@ class ReductionRun(models.Model):
     # Text fields
     admin_log = models.TextField(blank=True)
     graph = models.TextField(null=True, blank=True)
-    message = models.TextField(blank=True)
+    message = models.TextField(null=True, blank=True)
     reduction_log = models.TextField(blank=True)
     # Scripts should be 100,000 chars or less. The DB supports up to 4GB strings here
     script = models.TextField(blank=False, validators=[MaxLengthValidator(100000)])
