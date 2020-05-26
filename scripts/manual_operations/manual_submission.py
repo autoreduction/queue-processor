@@ -78,8 +78,8 @@ def get_location_and_rb_from_icat(icat_client, instrument, run_number, file_ext)
     :raises SystemExit: If the given run information cannot return a location and rb_number
     """
     if icat_client is None:
-        print("ICAT not connected")
-        sys.exit(1)
+        print("ICAT not connected")  # pragma: no cover
+        sys.exit(1)  # pragma: no cover
 
     file_name = instrument + str(run_number).zfill(5) + "." + file_ext
     datafile = icat_client.execute_query("SELECT df FROM Datafile df WHERE df.name = '"
@@ -95,8 +95,8 @@ def get_location_and_rb_from_icat(icat_client, instrument, run_number, file_ext)
                                              "' INCLUDE df.dataset AS ds, ds.investigation")
 
     if not datafile:
-        print("Cannot find datafile '" + file_name + "' in ICAT. Exiting...")
-        sys.exit(1)
+        print("Cannot find datafile '" + file_name + "' in ICAT. Exiting...")  # pragma: no cover
+        sys.exit(1)  # pragma: no cover
     return datafile[0].location, datafile[0].dataset.investigation.name
 
 
@@ -172,8 +172,11 @@ def login_queue():
     return activemq_client
 
 
-def main():
-    """ File usage description, validation and running mechanism """
+def handle_input():
+    """
+    Handle the input from users via the command line
+    :return: (list) run numbers to submit, (str) name of the instrument associated with the runs
+    """
     parser = argparse.ArgumentParser(description='Submit a run to the autoreduction service.',
                                      epilog='./manual_submission.py GEM 83880 [-e 83882]')
     parser.add_argument('instrument', metavar='instrument', type=str,
@@ -194,6 +197,16 @@ def main():
             sys.exit(1)
         run_numbers = range(args.start_run_number, args.e + 1)
 
+    instrument = args.instrument.upper()
+
+    return run_numbers, instrument
+
+
+def main():
+    """
+    Collate user input and initialise clients before attempting to submit new runs
+    """
+    run_numbers, instrument = handle_input()
     icat_client = login_icat()
     database_client = login_database()
     if not icat_client and not database_client:
@@ -202,8 +215,6 @@ def main():
 
     activemq_client = login_queue()
 
-    instrument = args.instrument.upper()
-
     for run in run_numbers:
         location, rb_num = get_location_and_rb(database_client, icat_client, instrument, run, "nxs")
         if location and rb_num:
@@ -211,4 +222,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main()  # pragma: no cover
