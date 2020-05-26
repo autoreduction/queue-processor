@@ -15,7 +15,6 @@ import json
 import time
 import shutil
 
-
 from scripts.manual_operations import manual_remove as remove
 
 from utils import service_handling as external
