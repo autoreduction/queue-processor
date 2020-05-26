@@ -25,8 +25,6 @@ class TestQueueProcessor(unittest.TestCase):
     """
     def setUp(self):
         self.test_consumer_name = "Test_Autoreduction_QueueProcessor"
-        self.test_rb_number = -1
-        self.test_reason = "test"
 
     @patch('utils.clients.queue_client.QueueClient.__init__', return_value=None)
     @patch('utils.clients.queue_client.QueueClient.connect')
@@ -47,7 +45,17 @@ class TestQueueProcessor(unittest.TestCase):
         self.assertIsInstance(args[1], Listener)
         self.assertIsInstance(args[1]._client, QueueClient)
 
+
+class TestListener(unittest.TestCase):
+    """
+    Exercises the Listener
+    """
+    def setUp(self):
+        self.test_rb_number = -1
+        self.test_reason = "test"
+
     def test_construct_and_send_skipped(self):
+        # pylint:disable=protected-access
         """
         Test: The message is sent via the QueueClient with a populated message attribute
         When: _construct_and_send_skipped is called
@@ -56,33 +64,9 @@ class TestQueueProcessor(unittest.TestCase):
         listener = Listener(mock_client)
         listener._construct_and_send_skipped(self.test_rb_number, self.test_reason)
 
-        self.assertIsNotNone(listener.message.message)
+        self.assertIsNotNone(listener.message)
         mock_client.send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_skipped,
                                                  listener.message,
                                                  priority=listener._priority)
         sent_message = mock_client.send.call_args[0][1]
         self.assertEqual(sent_message, listener.message)
-
-
-class TestListener(unittest.TestCase):
-    """
-    Exercises the Listener
-    """
-    def setUp(self):
-        self.rb_number = -1
-        self.reason = "test"
-
-    def test_construct_and_send_skipped(self):
-        # pylint:disable=protected-access
-        """
-        Test: _data_dict['message'] is given a value, and the _data_dict is sent via the QueueClient
-        When: _construct_and_send_skipped is called
-        """
-        mock_client = MagicMock(name="QueueClient")
-        listener = Listener(mock_client)
-        listener._construct_and_send_skipped(self.rb_number, self.reason)
-
-        self.assertIsNotNone(listener.message)
-        mock_client.send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_skipped,
-                                                 listener.message,
-                                                 priority=listener._priority)
