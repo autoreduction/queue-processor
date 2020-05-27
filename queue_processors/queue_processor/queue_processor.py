@@ -22,9 +22,7 @@ from sqlalchemy import sql
 
 from message.job import Message
 from queue_processors.queue_processor.base import session
-from queue_processors.queue_processor.orm_mapping import (ReductionRun, Instrument,
-                                                          Status, Experiment,
-                                                          DataLocation, ReductionLocation)
+from queue_processors.queue_processor.orm_mapping import (ReductionRun)
 # pylint: disable=cyclic-import
 from queue_processors.queue_processor.queueproc_utils.messaging_utils import MessagingUtils
 from queue_processors.queue_processor.queueproc_utils.instrument_variable_utils \
@@ -36,6 +34,8 @@ from queue_processors.queue_processor.settings import LOGGING
 
 from utils.clients.queue_client import QueueClient
 from utils.settings import ACTIVEMQ_SETTINGS
+
+from model.database import access as db
 
 # Set up logging and attach the logging to the right part of the config.
 logging.config.dictConfig(LOGGING)
@@ -114,14 +114,7 @@ class Listener:
         logger.info("Data ready for processing run %s on %s", run_no, instrument_name)
 
         # Check if the instrument is active or not in the MySQL database
-        instrument = session.query(Instrument).filter_by(name=instrument_name).first()
-
-        # Add the instrument if it doesn't exist
-        if not instrument:
-            instrument = Instrument(name=instrument_name, is_active=1, is_paused=0)
-            session.add(instrument)
-            session.commit()
-            instrument = session.query(Instrument).filter_by(name=instrument_name).first()
+        instrument = db.get_instrument(instrument_name, create=True)
 
         # Activate the instrument if it is currently set to inactive
         if not instrument.is_active:
@@ -131,11 +124,11 @@ class Listener:
 
         # If the instrument is paused, we need to find the 'Skipped' status
         if instrument.is_paused:
-            status = session.query(Status).filter_by(value='Skipped').first()
+            status = StatusUtils().get_skipped()
 
         # Else we need to find the 'Queued' status number
         else:
-            status = session.query(Status).filter_by(value='Queued').first()
+            status = StatusUtils().get_queued()
 
         # If there has already been an autoreduction job for this run, we need to know it so we can
         # increase the version by 1 for this job. However, if not then we will set it to -1 which
@@ -149,12 +142,7 @@ class Listener:
         run_version = highest_version + 1
 
         # Search for the experiment, if it doesn't exist then add it
-        experiment = session.query(Experiment).filter_by(reference_number=rb_number).first()
-        if experiment is None:
-            new_exp = Experiment(reference_number=rb_number)
-            session.add(new_exp)
-            session.commit()
-            experiment = session.query(Experiment).filter_by(reference_number=rb_number).first()
+        experiment = db.get_experiment(rb_number, create=True)
 
         # Get the script text for the current instrument. If the script text is null then send to
         # error queue
@@ -188,10 +176,10 @@ class Listener:
         # Create a new data location entry which has a foreign key linking it to the current
         # reduction run. The file path itself will point to a datafile
         # (e.g. "\isis\inst$\NDXWISH\Instrument\data\cycle_17_1\WISH00038774.nxs")
-        data_location = DataLocation(file_path=self.message.data,
-                                     reduction_run_id=reduction_run.id) # pylint: disable=no-member
-        session.add(data_location)
-        session.commit()
+        model = db.start_database().data_model
+        data_location = model.DataLocation(file_path=self.message.data,
+                                           reduction_run_id=reduction_run.id)
+        db.save_record(data_location)
 
         # We now need to create all of the variables for the run such that the script can run
         # through in the desired way
@@ -288,10 +276,11 @@ class Listener:
 
                     if self.message.reduction_data is not None:
                         for location in self.message.reduction_data:
-                            reduction_location = ReductionLocation(file_path=location,
-                                                                   reduction_run=reduction_run)
-                            session.add(reduction_location)
-                            session.commit()
+                            model = db.start_database().data_model
+                            reduction_location = model.ReductionLocation(file_path=location,
+                                                                         reduction_run=reduction_run)
+
+                            db.save_record(reduction_location)
 
                             # Get any .png files and store them as base64 strings
                             # Currently doesn't check sub-directories
@@ -396,8 +385,7 @@ class Listener:
         session.commit()
 
         if self.message.retry_in is not None:
-            experiment = session.query(Experiment).filter_by(
-                reference_number=self.message.rb_number).first()
+            experiment = db.get_experiment(self.message.rb_number)
             previous_runs = session.query(ReductionRun).filter_by(
                 run_number=self.message.run_number,
                 experiment=experiment).all()
@@ -424,8 +412,7 @@ class Listener:
         # Commit before we attempt to find the run. Committing will sync any values that have
         #  been added to the database from the front end (normally retrying runs).
         session.commit()
-        experiment = session.query(Experiment).filter_by(
-            reference_number=self.message.rb_number).first()
+        experiment = db.get_experiment(self.message.rb_number)
         if not experiment:
             logger.error("Unable to find experiment %s", self.message.rb_number)
             return None
