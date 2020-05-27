@@ -48,20 +48,22 @@ class Listener(stomp.ConnectionListener):
         message = Message()
         message.populate(data)
 
-        if message.cancel is not None:
+        if message.cancel:
             self.add_cancel(message)
             return
 
-        self.hold_message(destination, message, headers)
+        self.hold_message(destination, data, headers)
 
-    def hold_message(self, destination, message, headers):
+    def hold_message(self, destination, data, headers):
         """ Calls the reduction script. """
         logger.debug("holding thread")
+        message = Message()
+        message.populate(data)
 
         self.update_child_process_list()
         if not self.should_proceed(message):  # wait while the run shouldn't proceed
             # pylint: disable=maybe-no-member
-            reactor.callLater(10, self.hold_message,  # pragma: no cover
+            reactor.callLater(10, data,  # pragma: no cover
                               destination, message,
                               headers)
 
