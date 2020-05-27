@@ -50,18 +50,6 @@ class MessagingUtils:
         else:
             raise Exception("No data path found for reduction run")
 
-        # data_dict = {
-        #     'run_number': reduction_run.run_number,
-        #     'instrument': reduction_run.instrument.name,
-        #     'rb_number': str(reduction_run.experiment.reference_number),
-        #     'data': data_path,
-        #     'reduction_script': script,
-        #     'reduction_arguments': arguments,
-        #     'run_version': reduction_run.run_version,
-        #     'facility': FACILITY,
-        #     'message': '',
-        # }
-
         message = Message(
             run_number=reduction_run.run_number,
             instrument=reduction_run.instrument.name,
@@ -70,10 +58,8 @@ class MessagingUtils:
             reduction_script=script,
             reduction_arguments=arguments,
             run_version=reduction_run.run_version,
-            facility=FACILITY,
-            message=''  # Note: Can rid of this
+            facility=FACILITY
         )
-
         return message
 
     @staticmethod
