@@ -59,13 +59,29 @@ class DatabaseClient:
         self.data_model = None
         self.variable_model = None
 
-    def get_instrument(self, instrument_name):
+    def get_instrument(self, instrument_name, create=False):
         """
         Find the instrument record associated with the name provided in the database
         :param instrument_name: The name of the instrument to search for
+        :param create: If True, then create the record if it can not be found in the database
         :return: The instrument object from the database
         """
-        return self.data_model.Instrument.objects.filter(name=instrument_name).first()
+        instrument_record = self.data_model.Instrument.objects.filter(name=instrument_name).first()
+        if not instrument_record and create:
+            instrument_record = self.data_model.Instrument(name=instrument_record,
+                                                           is_active=True,
+                                                           is_paused=False)
+            self.save_record(instrument_record)
+        return instrument_record
+
+    @staticmethod
+    def save_record(record):
+        """
+        Save a record to the database
+        :param record: The record to save
+        Note: This is mostly a wrapper to aid unit testing
+        """
+        record.save()
 
     def get_reduction_run(self, instrument, run_number):
         """

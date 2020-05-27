@@ -86,6 +86,22 @@ class TestDatabaseClient(unittest.TestCase):
         self.assertIsNotNone(actual)
         self.assertEqual('GEM', actual.name)
 
+    @patch('utils.clients.django_database_client.DatabaseClient.save_record')
+    def test_get_instrument_does_not_exist(self, mock_save):
+        """
+        Test: A new instrument record is created
+        When: create is true and no matching instrument can be found in the database
+
+        Note: As we do not actually save the object, we cannot assert values of it
+        These are only stored when it enters the database
+        """
+        client = DatabaseClient()
+        client.connect()
+        actual = client.get_instrument('Not an instrument', create=True)
+        self.assertIsNotNone(actual)
+        self.assertIsInstance(actual, client.data_model.Instrument)
+        mock_save.assert_called_once()
+
     def test_get_instrument_invalid(self):
         """
         Test: None is returned
@@ -95,6 +111,15 @@ class TestDatabaseClient(unittest.TestCase):
         client.connect()
         actual = client.get_instrument('Fake instrument')
         self.assertIsNone(actual)
+
+    def test_save_record(self):
+        """
+        Test: .save() is called on the provided object
+        When: Calling save_record()
+        """
+        mock_record = Mock()
+        DatabaseClient.save_record(mock_record)
+        mock_record.save.assert_called_once()
 
     # pylint:disable=no-self-use
     def test_get_reduction_run_valid(self):
