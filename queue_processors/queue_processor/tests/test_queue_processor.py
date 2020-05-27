@@ -7,7 +7,6 @@
 """
 Test cases for the queue processor
 """
-import json
 import unittest
 
 from mock import patch, MagicMock
@@ -51,20 +50,22 @@ class TestListener(unittest.TestCase):
     Exercises the Listener
     """
     def setUp(self):
-        self.rb_number = -1
-        self.reason = "test"
+        self.test_rb_number = -1
+        self.test_reason = "test"
 
     def test_construct_and_send_skipped(self):
         # pylint:disable=protected-access
         """
-        Test: _data_dict['message'] is given a value, and the _data_dict is sent via the QueueClient
+        Test: The message is sent via the QueueClient with a populated message attribute
         When: _construct_and_send_skipped is called
         """
         mock_client = MagicMock(name="QueueClient")
         listener = Listener(mock_client)
-        listener._construct_and_send_skipped(self.rb_number, self.reason)
+        listener._construct_and_send_skipped(self.test_rb_number, self.test_reason)
 
-        self.assertIsNotNone(listener._data_dict['message'])
+        self.assertIsNotNone(listener.message)
         mock_client.send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_skipped,
-                                                 json.dumps(listener._data_dict),
+                                                 listener.message,
                                                  priority=listener._priority)
+        sent_message = mock_client.send.call_args[0][1]
+        self.assertEqual(sent_message, listener.message)

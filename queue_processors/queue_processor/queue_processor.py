@@ -14,13 +14,13 @@ It consumes messages from the queues and then updates the reduction run status i
 import base64
 import datetime
 import glob
-import json
 import logging.config
 import sys
 import traceback
 
 from sqlalchemy import sql
 
+from message.job import Message
 from queue_processors.queue_processor.base import session
 from queue_processors.queue_processor.orm_mapping import (ReductionRun, Instrument,
                                                           Status, Experiment,
@@ -62,7 +62,7 @@ class Listener:
     def __init__(self, client):
         """ Initialise listener. """
         self._client = client
-        self._data_dict = {}
+        self.message = Message()
         self._priority = ''
 
     def on_message(self, headers, message):
@@ -72,7 +72,10 @@ class Listener:
         logger.info("Destination: %s Priority: %s", destination, self._priority)
         # Load the JSON message and header into dictionaries
         try:
-            self._data_dict = json.loads(message)
+            if isinstance(message, Message):
+                self.message = message
+            else:
+                self.message.populate(message)
         except ValueError:
             logger.error("Could not decode message from %s", destination)
             logger.error(sys.exc_info()[1])
@@ -104,10 +107,9 @@ class Listener:
         # changes causing problems
         session.rollback()
 
-        # Strip information from the JSON file (_data_dict)
-        run_no = str(self._data_dict['run_number'])
-        instrument_name = str(self._data_dict['instrument'])
-        rb_number = self._data_dict['rb_number']
+        run_no = str(self.message.run_number)
+        instrument_name = str(self.message.instrument)
+        rb_number = self.message.rb_number
 
         logger.info("Data ready for processing run %s on %s", run_no, instrument_name)
 
@@ -163,10 +165,9 @@ class Listener:
 
         # Make the new reduction run with the information collected so far and add it into the
         # database
-        reduction_run = ReductionRun(run_number=self._data_dict['run_number'],
+        reduction_run = ReductionRun(run_number=self.message.run_number,
                                      run_version=run_version,
                                      run_name='',
-                                     message='',
                                      cancel=0,
                                      hidden_in_failviewer=0,
                                      admin_log='',
@@ -177,18 +178,17 @@ class Listener:
                                      instrument_id=instrument.id,
                                      status_id=status.id,
                                      script=script_text,
-                                     started_by=self._data_dict['started_by'])
+                                     started_by=self.message.started_by)
         session.add(reduction_run)
         session.commit()
 
         # Set our run_version to be the one we have just calculated
-        self._data_dict['run_version'] = reduction_run.run_version  # pylint: disable=no-member
+        self.message.run_version = reduction_run.run_version  # pylint: disable=no-member
 
         # Create a new data location entry which has a foreign key linking it to the current
         # reduction run. The file path itself will point to a datafile
         # (e.g. "\isis\inst$\NDXWISH\Instrument\data\cycle_17_1\WISH00038774.nxs")
-        logger.info("data dict: %s", self._data_dict)
-        data_location = DataLocation(file_path=self._data_dict['data'],
+        data_location = DataLocation(file_path=self.message.data,
                                      reduction_run_id=reduction_run.id) # pylint: disable=no-member
         session.add(data_location)
         session.commit()
@@ -200,12 +200,12 @@ class Listener:
         if not variables:
             logger.warning("No instrument variables found on %s for run %s",
                            instrument.name,
-                           self._data_dict['run_number'])
+                           self.message.run_number)
 
         logger.info('Getting script and arguments')
         reduction_script, arguments = ReductionRunUtils().get_script_and_arguments(reduction_run)
-        self._data_dict['reduction_script'] = reduction_script
-        self._data_dict['reduction_arguments'] = arguments
+        self.message.reduction_script = reduction_script
+        self.message.reduction_arguments = arguments
 
         # Make sure the RB number is valid
         error_message = is_valid_rb(rb_number)
@@ -214,12 +214,13 @@ class Listener:
             return
 
         if instrument.is_paused:
-            logger.info("Run %s has been skipped", self._data_dict['run_number'])
+            logger.info("Run %s has been skipped", self.message.run_number)
         else:
-            self._client.send('/queue/ReductionPending', json.dumps(self._data_dict),
+            self._client.send('/queue/ReductionPending', self.message,
                               priority=self._priority)
-            logger.info("Run %s ready for reduction", self._data_dict['run_number'])
+            logger.info("Run %s ready for reduction", self.message.run_number)
 
+    # note: Why does this take arguments and not just take from the message attribs
     def _construct_and_send_skipped(self, rb_number, reason):
         """
         Construct a message and send to the skipped reduction queue
@@ -227,10 +228,11 @@ class Listener:
         :param reason: The error that caused the run to be skipped
         """
         logger.warning("Skipping non-integer RB number: %s", rb_number)
-        self._data_dict['message'] = 'Reduction Skipped: {}. Assuming run number to be ' \
-                                     'a calibration run.'.format(reason)
+        msg = 'Reduction Skipped: {}. Assuming run number to be ' \
+              'a calibration run.'.format(reason)
+        self.message.message = msg
         skipped_queue = ACTIVEMQ_SETTINGS.reduction_skipped
-        self._client.send(skipped_queue, json.dumps(self._data_dict),
+        self._client.send(skipped_queue, self.message,
                           priority=self._priority)
 
     def reduction_started(self):
@@ -238,7 +240,7 @@ class Listener:
         Called when destination queue was reduction_started.
         Updates the run as started in the database.
         """
-        logger.info("Run %s has started reduction", self._data_dict['run_number'])
+        logger.info("Run %s has started reduction", self.message.run_number)
 
         reduction_run = self.find_run()
 
@@ -254,17 +256,17 @@ class Listener:
                              "Experiment: %s, "
                              "Run Number: %s, "
                              "Run Version %s",
-                             self._data_dict['rb_number'],
-                             self._data_dict['run_number'],
-                             self._data_dict['run_version'])
+                             self.message.rb_number,
+                             self.message.run_number,
+                             self.message.run_version)
         else:
             logger.error("A reduction run started that wasn't found in the database. "
                          "Experiment: %s, "
                          "Run Number: %s, "
                          "Run Version %s",
-                         self._data_dict['rb_number'],
-                         self._data_dict['run_number'],
-                         self._data_dict['run_version'])
+                         self.message.rb_number,
+                         self.message.run_number,
+                         self.message.run_version)
 
     def reduction_complete(self):
         """
@@ -273,17 +275,19 @@ class Listener:
         """
         # pylint: disable=too-many-nested-blocks
         try:
-            logger.info("Run %s has completed reduction", self._data_dict['run_number'])
+            logger.info("Run %s has completed reduction", self.message.run_number)
             reduction_run = self.find_run()
 
             if reduction_run:
                 if reduction_run.status.value == "Processing":
                     reduction_run.status = StatusUtils().get_completed()
                     reduction_run.finished = datetime.datetime.utcnow()
-                    for name in ['message', 'reduction_log', 'admin_log']:
-                        setattr(reduction_run, name, self._data_dict.get(name, ""))
-                    if 'reduction_data' in self._data_dict:
-                        for location in self._data_dict['reduction_data']:
+                    reduction_run.message = self.message.message
+                    reduction_run.reduction_log = self.message.reduction_log
+                    reduction_run.admin_log = self.message.admin_log
+
+                    if self.message.reduction_data is not None:
+                        for location in self.message.reduction_data:
                             reduction_location = ReductionLocation(file_path=location,
                                                                    reduction_run=reduction_run)
                             session.add(reduction_location)
@@ -309,16 +313,16 @@ class Listener:
                                  "Experiment: %s, "
                                  "Run Number: %s, "
                                  "Run Version %s",
-                                 self._data_dict['rb_number'],
-                                 self._data_dict['run_number'],
-                                 self._data_dict['run_version'])
+                                 self.message.rb_number,
+                                 self.message.run_number,
+                                 self.message.run_version)
             else:
                 logger.error("A reduction run completed that wasn't found in the database. "
                              "Experiment: %s, Run Number:%s,"
                              " Run Version %s",
-                             self._data_dict['rb_number'],
-                             self._data_dict['run_number'],
-                             self._data_dict['run_version'])
+                             self.message.rb_number,
+                             self.message.run_number,
+                             self.message.run_version)
 
         except BaseException as exp:
             logger.error("Error: %s", exp)
@@ -329,13 +333,13 @@ class Listener:
         Updates the run to Skipped status in database
         Will NOT attempt re-run
         """
-        if 'message' in self._data_dict:
+        if self.message.message is not None:
             logger.info("Run %s has been skipped - %s",
-                        self._data_dict['run_number'],
-                        self._data_dict['message'])
+                        self.message.run_number,
+                        self.message.message)
         else:
             logger.info("Run %s has been skipped - No error message was found",
-                        self._data_dict['run_number'])
+                        self.message.run_number)
 
         reduction_run = self.find_run()
         if not reduction_run:
@@ -343,15 +347,17 @@ class Listener:
                          "Experiment: %s, "
                          "Run Number: %s, "
                          "Run Version %s",
-                         self._data_dict['rb_number'],
-                         self._data_dict['run_number'],
-                         self._data_dict['run_version'])
+                         self.message.rb_number,
+                         self.message.run_number,
+                         self.message.run_version)
             return
 
         reduction_run.status = StatusUtils().get_skipped()
         reduction_run.finished = datetime.datetime.utcnow()
-        for name in ['message', 'reduction_log', 'admin_log']:
-            setattr(reduction_run, name, self._data_dict.get(name, ""))
+        reduction_run.message = self.message.message
+        reduction_run.reduction_log = self.message.reduction_log
+        reduction_run.admin_log = self.message.admin_log
+
         session.add(reduction_run)
         session.commit()
 
@@ -360,13 +366,13 @@ class Listener:
         Called when the destination was reduction_error.
         Updates the run as complete in the database.
         """
-        if 'message' in self._data_dict:
+        if self.message.message is not None:
             logger.info("Run %s has encountered an error - %s",
-                        self._data_dict['run_number'],
-                        self._data_dict['message'])
+                        self.message.run_number,
+                        self.message.message)
         else:
             logger.info("Run %s has encountered an error - No error message was found",
-                        self._data_dict['run_number'])
+                        self.message.run_number)
 
         reduction_run = self.find_run()
 
@@ -375,25 +381,25 @@ class Listener:
                          "Experiment: %s, "
                          "Run Number: %s, "
                          "Run Version %s",
-                         self._data_dict['rb_number'],
-                         self._data_dict['run_number'],
-                         self._data_dict['run_version'])
+                         self.message.rb_number,
+                         self.message.run_number,
+                         self.message.run_version)
             return
 
         reduction_run.status = StatusUtils().get_error()
         reduction_run.finished = datetime.datetime.utcnow()
-        for name in ['message', 'reduction_log', 'admin_log']:
-            setattr(reduction_run, name, self._data_dict.get(name, ""))
+        reduction_run.message = self.message.message
+        reduction_run.reduction_log = self.message.reduction_log
+        reduction_run.admin_log = self.message.admin_log
+
         session.add(reduction_run)
         session.commit()
 
-        # Note: once the Message class fully integrated, won't need to check data_dict has
-        #  attributes like the first part of this condition
-        if 'retry_in' in self._data_dict and self._data_dict['retry_in'] is not None:
+        if self.message.retry_in is not None:
             experiment = session.query(Experiment).filter_by(
-                reference_number=self._data_dict['rb_number']).first()
+                reference_number=self.message.rb_number).first()
             previous_runs = session.query(ReductionRun).filter_by(
-                run_number=self._data_dict['run_number'],
+                run_number=self.message.run_number,
                 experiment=experiment).all()
             max_version = -1
             for previous_run in previous_runs:
@@ -405,13 +411,13 @@ class Listener:
             # to retry the run
             if max_version <= 4:
                 self.retry_run(
-                    self._data_dict["started_by"],
+                    self.message.started_by,
                     reduction_run,
-                    self._data_dict["retry_in"])
+                    self.message.retry_in)
             else:
                 # Need to delete the retry_in entry from the dictionary so that the front end
                 # doesn't report a false retry instance.
-                del self._data_dict['retry_in']
+                self.message.retry_in = None
 
     def find_run(self):
         """ Find a reduction run in the database. """
@@ -419,21 +425,18 @@ class Listener:
         #  been added to the database from the front end (normally retrying runs).
         session.commit()
         experiment = session.query(Experiment).filter_by(
-            reference_number=self._data_dict['rb_number']).first()
+            reference_number=self.message.rb_number).first()
         if not experiment:
-            logger.error("Unable to find experiment %s", self._data_dict['rb_number'])
+            logger.error("Unable to find experiment %s", self.message.rb_number)
             return None
 
         logger.info('Finding a run with an experiment ID %s, run number %s and run version %s',
                     experiment.id,
-                    int(self._data_dict['run_number']),
-                    int(self._data_dict['run_version']))
-        reduction_run = session.query(ReductionRun).filter_by(experiment=experiment,
-                                                              run_number=int(
-                                                                  self._data_dict['run_number']),
-                                                              run_version=int(
-                                                                  self._data_dict['run_version']))\
-            .first()
+                    int(self.message.run_number),
+                    int(self.message.run_version))
+        reduction_run = session.query(ReductionRun)\
+            .filter_by(experiment=experiment, run_number=int(self.message.run_number),
+                       run_version=int(self.message.run_version)).first()
         return reduction_run
 
     @staticmethod
