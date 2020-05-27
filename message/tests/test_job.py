@@ -67,9 +67,7 @@ class TestMessage(unittest.TestCase):
                           'admin_log': None,
                           'message': None,
                           'retry_in': None,
-                          'reduction_data': None,
-                          'run_description': None,
-                          'error': None
+                          'reduction_data': None
                           }
         return populated_msg, populated_dict
 
