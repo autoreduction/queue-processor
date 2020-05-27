@@ -63,8 +63,8 @@ class Listener(stomp.ConnectionListener):
         self.update_child_process_list()
         if not self.should_proceed(message):  # wait while the run shouldn't proceed
             # pylint: disable=maybe-no-member
-            reactor.callLater(10, data,  # pragma: no cover
-                              destination, message,
+            reactor.callLater(10, self.hold_message,  # pragma: no cover
+                              destination, data,
                               headers)
 
             return
