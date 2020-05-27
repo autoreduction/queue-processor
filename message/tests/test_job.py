@@ -94,6 +94,8 @@ class TestMessage(unittest.TestCase):
         self.assertIsNone(empty_msg.message)
         self.assertIsNone(empty_msg.retry_in)
         self.assertIsNone(empty_msg.reduction_data)
+        self.assertIsNone(empty_msg.run_description)
+        self.assertIsNone(empty_msg.error)
 
     def test_to_dict_populated(self):
         """

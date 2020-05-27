@@ -93,6 +93,19 @@ def windows_to_linux_path(path, temp_root_directory):
     return path
 
 
+# def prettify(data):
+#     """ Make dictionary pretty for printing. """
+#     # Note: Only used for debug statements. Functionality added to Message.serialize
+#     if type(data).__name__ == "str":
+#         data_dict = json.loads(data)
+#     else:
+#         data_dict = data.copy()
+#
+#     if "reduction_script" in data_dict:
+#         data_dict["reduction_script"] = data_dict["reduction_script"][:50]
+#     return json.dumps(data_dict)
+
+
 class PostProcessAdmin:
     """ Main class for the PostProcessAdmin """
 
@@ -109,34 +122,31 @@ class PostProcessAdmin:
         self.reduction_log_stream = io.StringIO()
         self.admin_log_stream = io.StringIO()
 
-        self.validate_input()
+        try:
+            self.data_file = windows_to_linux_path(self.validate_input('data'),
+                                                   MISC["temp_root_directory"])
+            self.facility = self.validate_input('facility')
+            self.instrument = self.validate_input('instrument').upper()
+            self.proposal = str(int(self.validate_input('rb_number')))  # Integer-string validation
+            self.run_number = str(int(self.validate_input('run_number')))
+            self.reduction_script = self.validate_input('reduction_script')
+            self.reduction_arguments = self.validate_input('reduction_arguments')
+        except ValueError:
+            logger.info('JSON data error', exc_info=True)
+            raise
 
-        self.data_file = windows_to_linux_path(self.message.data,
-                                               MISC["temp_root_directory"])
-        message.instrument = message.instrument.upper()
-
-    def validate_input(self):
+    def validate_input(self, attribute):
         """
-        Validates the attributes of the input message
-        :raises ValueError: If one or more of the attributes are invalid
+        Validates the input message
+        :param attribute: attribute to validate
+        :return: The value of the key or raise an exception if none
         """
         attribute_dict = self.message.__dict__
-        check_not_none = ['data', 'facility', 'instrument', 'rb_number',
-                          'run_number', 'reduction_script', 'reduction_arguments']
-        check_integer = ['rb_number', 'run_number']
-        error_message = ""
-
-        for attrib in check_not_none:
-            if attribute_dict[attrib] is None:
-                error_message += f"{attrib} is None. "
-        for attrib in check_integer:
-            try:
-                int(attribute_dict[attrib])
-            except ValueError:
-                error_message += f"{attrib} '{attribute_dict[attrib]}' cannot be an integer. "
-
-        if error_message:
-            raise ValueError("Invalid input message attribute(s): " + error_message)
+        if attribute in attribute_dict and attribute_dict[attribute] is not None:
+            value = attribute_dict[attribute]
+            logger.debug("%s: %s", attribute, str(value)[:50])
+            return value
+        raise ValueError('%s is missing' % attribute)
 
     def replace_variables(self, reduce_script):
         """
@@ -147,7 +157,7 @@ class PostProcessAdmin:
 
         def merge_dicts(dict_name):
             """
-            Merge self.message.reduction_arguments[dictName] into reduce_script.web_var[dictName],
+            Merge self.reduction_arguments[dictName] into reduce_script.web_var[dictName],
             overwriting any key that exists in both with the value from sourceDict.
             """
 
@@ -166,7 +176,7 @@ class PostProcessAdmin:
                 return var.encode('ascii', 'ignore') if type(var).__name__ == "unicode" else var
 
             encoded_dict = {k: ascii_encode(v) for k, v in
-                            self.message.reduction_arguments[dict_name].items()}
+                            self.reduction_arguments[dict_name].items()}
             merge_dict_to_name(dict_name, encoded_dict)
 
         if not hasattr(reduce_script, "web_var"):
@@ -194,11 +204,11 @@ class PostProcessAdmin:
             self.client.send(ACTIVEMQ_SETTINGS.reduction_started, self.message)
 
             # Specify instrument directory
-            instrument_output_dir = MISC["ceph_directory"] % (self.message.instrument,
-                                                              self.message.rb_number,
-                                                              self.message.run_number)
+            instrument_output_dir = MISC["ceph_directory"] % (self.instrument,
+                                                              self.proposal,
+                                                              self.run_number)
 
-            if self.message.instrument in MISC["excitation_instruments"]:
+            if self.instrument in MISC["excitation_instruments"]:
                 # Excitations would like to remove the run number folder at the end
                 instrument_output_dir = instrument_output_dir[:instrument_output_dir.rfind('/') + 1]
 
@@ -209,7 +219,7 @@ class PostProcessAdmin:
                 logger.info("DESCRIPTION: %s", self.message.description)
 
             log_dir = reduce_result_dir + "/reduction_log/"
-            log_and_err_name = "RB" + self.message.rb_number + "Run" + self.message.run_number
+            log_and_err_name = "RB" + self.proposal + "Run" + self.run_number
             script_out = os.path.join(log_dir, log_and_err_name + "Script.out")
             mantid_log = os.path.join(log_dir, log_and_err_name + "Mantid.log")
 
@@ -260,7 +270,7 @@ class PostProcessAdmin:
             self.message.reduction_data = []
 
             logger.info("----------------")
-            logger.info("Reduction script: %s ...", self.message.reduction_script[:50])
+            logger.info("Reduction script: %s ...", self.reduction_script[:50])
             logger.info("Result dir: %s", reduce_result_dir)
             logger.info("Log dir: %s", log_dir)
             logger.info("Out log: %s", script_out)
@@ -279,7 +289,7 @@ class PostProcessAdmin:
 
                     # Add Mantid path to system path so we can use Mantid to run the user's script
                     sys.path.append(MISC["mantid_path"])
-                    reduce_script_location = self._load_reduction_script(self.message.instrument)
+                    reduce_script_location = self._load_reduction_script(self.instrument)
                     spec = imp.spec_from_file_location('reducescript', reduce_script_location)
                     reduce_script = imp.module_from_spec(spec)
                     spec.loader.exec_module(reduce_script)
@@ -404,7 +414,7 @@ class PostProcessAdmin:
         sub-folders.
         """
         if os.path.isdir(copy_destination) \
-                and self.message.instrument not in MISC["excitation_instruments"]:
+                and self.instrument not in MISC["excitation_instruments"]:
             self._remove_directory(copy_destination)
 
         self.message.reduction_data.append(copy_destination)
@@ -511,7 +521,7 @@ def main():
                 post_proc.reduce()
 
         except ValueError as exp:
-            message.message = str(exp)
+            message.error = str(exp)  # Note: I believe this should be .message
             logger.info("Message data error: %s", message.serialize(limit_reduction_script=True))
             raise
 
