@@ -93,19 +93,6 @@ def windows_to_linux_path(path, temp_root_directory):
     return path
 
 
-# def prettify(data):
-#     """ Make dictionary pretty for printing. """
-#     # Note: Only used for debug statements. Functionality added to Message.serialize
-#     if type(data).__name__ == "str":
-#         data_dict = json.loads(data)
-#     else:
-#         data_dict = data.copy()
-#
-#     if "reduction_script" in data_dict:
-#         data_dict["reduction_script"] = data_dict["reduction_script"][:50]
-#     return json.dumps(data_dict)
-
-
 class PostProcessAdmin:
     """ Main class for the PostProcessAdmin """
 

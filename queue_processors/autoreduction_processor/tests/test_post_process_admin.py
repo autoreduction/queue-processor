@@ -279,7 +279,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_client_init.assert_called_once()
         mock_logger.assert_has_calls([call('Message data error: %s', 'test')])
         mock_exit.assert_called_once()
-        self.message.error = 'error-message'
+        self.message.message = 'error-message'
         mock_send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_error,
                                           self.message)
 
