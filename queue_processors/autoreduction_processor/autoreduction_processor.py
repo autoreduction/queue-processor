@@ -16,6 +16,7 @@ import stomp
 
 from twisted.internet import reactor
 
+from message.job import Message
 from queue_processors.autoreduction_processor.autoreduction_logging_setup import logger
 # pylint:disable=no-name-in-module,import-error
 from queue_processors.autoreduction_processor.settings import MISC
@@ -44,46 +45,48 @@ class Listener(stomp.ConnectionListener):
         logger.debug("Received frame priority: %s", headers["priority"])
 
         self.update_child_process_list()
-        data_dict = json.loads(data)
+        message = Message()
+        message.populate(data)
 
-        if "cancel" in data_dict and data_dict["cancel"]:
-            self.add_cancel(data_dict)
+        if message.cancel is not None:
+            self.add_cancel(message)
             return
 
-        self.hold_message(destination, data, headers)
+        self.hold_message(destination, message, headers)
 
-    def hold_message(self, destination, data, headers):
+    def hold_message(self, destination, message, headers):
         """ Calls the reduction script. """
         logger.debug("holding thread")
-        data_dict = json.loads(data)
+        message = Message()
+        message.populate(message)
 
         self.update_child_process_list()
-        if not self.should_proceed(data_dict):  # wait while the run shouldn't proceed
+        if not self.should_proceed(message):  # wait while the run shouldn't proceed
             # pylint: disable=maybe-no-member
             reactor.callLater(10, self.hold_message,  # pragma: no cover
-                              destination, data,
+                              destination, message,
                               headers)
 
             return
 
-        if self.should_cancel(data_dict):
-            self.cancel_run(data_dict)  # pylint: disable=maybe-no-member
+        if self.should_cancel(message):
+            self.cancel_run(message)  # pylint: disable=maybe-no-member
 
             return
 
-        print_dict = data_dict.copy()
-        print_dict.pop("reduction_script")
+
         if not os.path.isfile(MISC['post_process_directory']):
             logger.warning("Could not find autoreduction post processing file "
                            "- please contact a system administrator")
         python_path = sys.executable
         logger.info("Calling: %s %s %s %s",
-                    python_path, MISC['post_process_directory'], destination, print_dict)
+                    python_path, MISC['post_process_directory'], destination,
+                    message.serialize())    # ToDo: limit reduction script
         proc = subprocess.Popen([python_path,
                                  MISC['post_process_directory'],
                                  destination,
-                                 data])
-        self.add_process(proc, data_dict)
+                                 message])
+        self.add_process(proc, message)
 
     def update_child_process_list(self):
         """ Updates the list of processes by checking they still exist. """
@@ -93,42 +96,44 @@ class Listener(stomp.ConnectionListener):
                 self.proc_list.pop(index)
                 self.rb_list.pop(index)
 
-    def add_process(self, proc, data_dict):
+    def add_process(self, proc, message):
         """ Add child process to list. """
-        logger.info("Entered add_process. proc=%s data_dict=%s", proc, data_dict)
+        logger.info("Entered add_process. proc=%s message=%s", proc, message)
         self.proc_list.append(proc)
-        self.rb_list.append(data_dict["rb_number"])
+        self.rb_list.append(message.rb_number)
 
-    def should_proceed(self, data_dict):
+    def should_proceed(self, message):
         """ Check whether there's a job already running with the same RB. """
-        if data_dict["rb_number"] in self.rb_list:
+        if message.rb_number in self.rb_list:
             logger.info("Duplicate RB run #%s, waiting for the first to finish.",
-                        data_dict["rb_number"])
+                        message.rb_number)
             return False
         # else return True
         return True
 
     @staticmethod
-    def run_tuple(data_dict):
+    def run_tuple(message):
         """ return the tuple of (run_number, run version) from a dictionary. """
-        run_number = data_dict["run_number"]
-        run_version = data_dict["run_version"] if data_dict["run_version"] is not None else 0
+        run_number = message.run_number
+        run_version = message.run_version
+        if run_version is None:
+            run_version = 0
         return run_number, run_version
 
-    def add_cancel(self, data_dict):
+    def add_cancel(self, message):
         """ Add this run to the cancel list, to cancel it next time it comes up. """
-        tup = self.run_tuple(data_dict)
+        tup = self.run_tuple(message)
         if tup not in self.cancel_list:
             self.cancel_list.append(tup)
 
-    def should_cancel(self, data_dict):
+    def should_cancel(self, message):
         """ Return whether a run is in the list of runs to be canceled. """
-        tup = self.run_tuple(data_dict)
+        tup = self.run_tuple(message)
         return tup in self.cancel_list
 
-    def cancel_run(self, data_dict):
+    def cancel_run(self, message):
         """ Cancel the reduction run. """
-        tup = self.run_tuple(data_dict)
+        tup = self.run_tuple(message)
         self.cancel_list.remove(tup)
 
 
