@@ -21,8 +21,9 @@ from queue_processors.queue_processor.orm_mapping import (InstrumentJoin, Notifi
                                                           Variable)
 # pylint:disable=no-name-in-module,import-error
 from queue_processors.queue_processor.settings import REDUCTION_DIRECTORY, LOGGING
-from queue_processors.queue_processor.queueproc_utils.instrument_utils import InstrumentUtils
 from queue_processors.queue_processor.queueproc_utils.variable_utils import VariableUtils
+
+from model.database import access as db
 
 
 # Set up logging and attach the logging to the right part of the config.
@@ -54,7 +55,7 @@ class InstrumentVariablesUtils:
         Look for the applicable variables for the given run number. If none are set, return an empty
         list (or QuerySet) anyway.
         """
-        instrument = InstrumentUtils().get_instrument(instrument_name)
+        instrument = db.get_instrument(instrument_name)
         variable_run_number = 0
 
         # If we haven't been given a run number, we should try to find it.
@@ -99,7 +100,7 @@ class InstrumentVariablesUtils:
         if not reduce_vars_module:
             return []
 
-        instrument = InstrumentUtils().get_instrument(instrument_name)
+        instrument = db.get_instrument(instrument_name)
         variables = []
         # pylint:disable=no-member
         if 'standard_vars' in dir(reduce_vars_module):
@@ -331,7 +332,7 @@ class InstrumentVariablesUtils:
         If start_run is not supplied, these variables will be set for all run numbers going
         backwards.
         """
-        instrument = InstrumentUtils().get_instrument(instrument_name)
+        instrument = db.get_instrument(instrument_name)
 
         # In this case we need to make sure that the variables we set will be the only ones used for
         # the range given. If there are variables which apply after the given range ends, we want to
@@ -398,7 +399,7 @@ class InstrumentVariablesUtils:
         Look for currently set variables for the experiment.
         If none are set, return an empty list (or QuerySet) anyway.
         """
-        instrument = InstrumentUtils().get_instrument(instrument_name)
+        instrument = db.get_instrument(instrument_name)
         ins_vars = session.query(InstrumentVariable).\
             filter_by(instrument=instrument,
                       experiment_reference=experiment_reference).all()
