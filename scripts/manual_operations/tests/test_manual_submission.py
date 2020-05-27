@@ -8,15 +8,16 @@
 Test cases for the manual job submission script
 """
 import unittest
-import json
-from mock import patch, MagicMock
+from mock import patch, Mock, MagicMock
 import scripts.manual_operations.manual_submission as ms
 
+from utils.clients import DatabaseClient, QueueClient, ICATClient
+from utils.clients.connection_exception import ConnectionException
 
-# pylint:disable=no-self-use
 from message.job import Message
 
 
+# pylint:disable=no-self-use
 class TestManualSubmission(unittest.TestCase):
     """
     Test manual_submission.py
@@ -56,17 +57,6 @@ class TestManualSubmission(unittest.TestCase):
             ret_obj[0].reference_number = self.valid_return[1]
         return ret_obj
 
-    @staticmethod
-    def get_json_object(rb_number, instrument, data_file_location, run_number, started_by):
-        """ :return: The JSON object which should be sent to DataReady """
-        data_dict = {"rb_number": rb_number,
-                     "instrument": instrument,
-                     "data": data_file_location,
-                     "run_number": run_number,
-                     "facility": "ISIS",
-                     "started_by": started_by}
-        return json.dumps(data_dict)
-
     @patch('scripts.manual_operations.manual_submission.get_location_and_rb_from_database',
            return_value=None)
     @patch('scripts.manual_operations.manual_submission.get_location_and_rb_from_icat')
@@ -79,19 +69,35 @@ class TestManualSubmission(unittest.TestCase):
         mock_from_database.assert_called_once()
         mock_from_icat.assert_called_once()
 
+    def test_get_from_data_base_no_client(self):
+        """
+        Test: None is returned
+        When: get_location_and_rb_from_database called with no database_client
+        """
+        self.assertIsNone(ms.get_location_and_rb_from_database(None, 'GEM', 123))
+
+    def test_get_from_database_no_run(self):
+        """
+        Test: None is returned
+        When: get_location_and_rb_from_database can't find a ReductionRun record
+        """
+        mock_database_client = Mock()
+        mock_database_client.get_reduction_run.return_value = None
+        self.assertIsNone(ms.get_location_and_rb_from_database(mock_database_client, 'GEM', 123))
+        mock_database_client.get_reduction_run.assert_called_once()
+
     def test_get_from_database(self):
         """
         Test: Data for a given run can be retrieved from the database in the expected format
         When: get_location_and_rb_from_database is called and the data is present
         in the database
         """
-        side_effects = [self.make_query_return_object("db_location"),
-                        self.make_query_return_object("db_rb")]
-        self.mock_database_query_result(side_effects)
-
-        location_and_rb = ms.get_location_and_rb_from_database(self.loc_and_rb_args[0],
-                                                               self.loc_and_rb_args[3])
-        self.assertEqual(location_and_rb, self.valid_return)
+        db_client = DatabaseClient()
+        db_client.connect()
+        actual = ms.get_location_and_rb_from_database(db_client, 'MUSR', 2)
+        # Values from testing database
+        expected = ('test/file/path/2.raw', 123)
+        self.assertEqual(expected, actual)
 
     def test_get_from_icat_when_file_exists_without_zeroes(self):
         """
@@ -114,20 +120,6 @@ class TestManualSubmission(unittest.TestCase):
         location_and_rb = ms.get_location_and_rb_from_icat(*self.loc_and_rb_args[1:])
         self.assertEqual(self.loc_and_rb_args[1].execute_query.call_count, 2)
         self.assertEqual(location_and_rb, self.valid_return)
-
-    def test_get_when_does_not_exist(self):
-        """
-        Test: A SystemExit is raised
-        When: get_location_and_rb is called but the data requested doesn't exist
-        """
-        mock_db_connection = MagicMock(name="mock_connection")
-        self.loc_and_rb_args[0].connect.return_value = mock_db_connection
-        self.loc_and_rb_args[1].execute_query.return_value = None
-
-        with self.assertRaises(SystemExit):
-            ms.get_location_and_rb(*self.loc_and_rb_args)
-        self.assertTrue(mock_db_connection.execute.call_count == 1)
-        self.assertTrue(self.loc_and_rb_args[1].execute_query.call_count == 2)
 
     @patch('scripts.manual_operations.manual_submission.get_location_and_rb_from_database')
     @patch('scripts.manual_operations.manual_submission.get_location_and_rb_from_icat')
@@ -156,3 +148,130 @@ class TestManualSubmission(unittest.TestCase):
         self.sub_run_args[0].send.assert_called_with('/queue/DataReady',
                                                      message,
                                                      priority=1)
+
+    @patch('icat.Client')
+    @patch('utils.clients.icat_client.ICATClient.connect')
+    def test_icat_login_valid(self, mock_connect, _):
+        """
+        Test: A valid ICAT client is returned
+        When: We can log in via the client
+
+        Note: We mock the connect so it does not actual perform the connect (default pass)
+        """
+        actual = ms.login_icat()
+        self.assertIsInstance(actual, ICATClient)
+        mock_connect.assert_called_once()
+
+    @patch('icat.Client')
+    @patch('utils.clients.ICATClient.connect')
+    def test_icat_login_invalid(self, mock_connect, _):
+        """
+        Test: None is returned
+        When: We are unable to log in via the icat client
+        """
+        con_exp = ConnectionException('icat')
+        mock_connect.side_effect = con_exp
+        self.assertIsNone(ms.login_icat())
+
+    @patch('utils.clients.DatabaseClient.connect')
+    def test_database_login_valid(self, _):
+        """
+        Test: A valid Database client is returned
+        When: We can log in via the client
+
+        Note: We mock the connect so it does not actual perform the connect (default pass)
+        """
+        actual = ms.login_database()
+        self.assertIsInstance(actual, DatabaseClient)
+
+    @patch('utils.clients.DatabaseClient.connect')
+    def test_database_login_invalid(self, mock_connect):
+        """
+        Test: None is returned
+        When: We are unable to log in via the database client
+        """
+        con_exp = ConnectionException('MySQL')
+        mock_connect.side_effect = con_exp
+        self.assertIsNone(ms.login_database())
+
+    @patch('utils.clients.QueueClient.connect')
+    def test_queue_login_valid(self, _):
+        """
+        Test: A valid Queue client is returned
+        When: We can log in via the queue client
+
+        Note: We mock the connect so it does not actual perform the connect (default pass)
+        """
+        actual = ms.login_queue()
+        self.assertIsInstance(actual, QueueClient)
+
+    @patch('utils.clients.QueueClient.connect')
+    def test_queue_login_invalid(self, mock_connect):
+        """
+        Test: An exception is raised
+        When: We are unable to log in via the client
+        """
+        con_exp = ConnectionException('Queue')
+        mock_connect.side_effect = con_exp
+        self.assertRaises(RuntimeError, ms.login_queue)
+
+    def test_submit_run_no_amq(self):
+        """
+        Test: That there is an early return
+        When: Calling submit_run with active_mq as None
+        """
+        self.assertIsNone(ms.submit_run(active_mq_client=None,
+                                        rb_number=None,
+                                        instrument=None,
+                                        data_file_location=None,
+                                        run_number=None))
+
+    # pylint:disable=too-many-arguments
+    @patch('scripts.manual_operations.manual_submission.login_icat')
+    @patch('scripts.manual_operations.manual_submission.login_database')
+    @patch('scripts.manual_operations.manual_submission.login_queue')
+    @patch('scripts.manual_operations.manual_submission.handle_input')
+    @patch('scripts.manual_operations.manual_submission.get_location_and_rb')
+    @patch('scripts.manual_operations.manual_submission.submit_run')
+    def test_main_valid(self, mock_submit, mock_get_loc, mock_input,
+                        mock_queue, mock_database, mock_icat):
+        """
+        Test: The control methods are called in the correct order
+        When: main is called and the environment (client settings, input, etc.) is valid
+        """
+        # Setup Mock clients
+        mock_db_client = Mock()
+        mock_icat_client = Mock()
+        mock_queue_client = Mock()
+
+        # Assign Mock return values
+        mock_queue.return_value = mock_queue_client
+        mock_database.return_value = mock_db_client
+        mock_icat.return_value = mock_icat_client
+        mock_input.return_value = ([1111], 'TEST')
+        mock_get_loc.return_value = ('test/file/path', 2222)
+
+        # Call functionality
+        ms.main()
+
+        # Assert
+        mock_icat.assert_called_once()
+        mock_database.assert_called_once()
+        mock_queue.assert_called_once()
+        mock_get_loc.assert_called_once_with(mock_db_client, mock_icat_client, 'TEST', 1111, "nxs")
+        mock_submit.assert_called_once_with(mock_queue_client, 2222, 'TEST', 'test/file/path', 1111)
+
+    @patch('scripts.manual_operations.manual_submission.handle_input')
+    @patch('scripts.manual_operations.manual_submission.login_icat')
+    @patch('scripts.manual_operations.manual_submission.login_database')
+    def test_main_bad_client(self, mock_db, mock_icat, mock_input):
+        """
+        Test: A RuntimeError is raised
+        When: Neither ICAT or Database connections can be established
+        """
+        mock_input.return_value = ([1111], 'TEST')
+        mock_db.return_value = None
+        mock_icat.return_value = None
+        self.assertRaises(RuntimeError, ms.main)
+        mock_db.asert_called_once()
+        mock_icat.assert_called_once()
