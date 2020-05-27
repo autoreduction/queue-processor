@@ -508,7 +508,7 @@ def main():
                 post_proc.reduce()
 
         except ValueError as exp:
-            message.error = str(exp)  # Note: I believe this should be .message
+            message.message = str(exp)  # Note: I believe this should be .message
             logger.info("Message data error: %s", message.serialize(limit_reduction_script=True))
             raise
 
