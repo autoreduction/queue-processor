@@ -78,15 +78,16 @@ class TestManualSubmission(unittest.TestCase):
         """
         self.assertIsNone(ms.get_location_and_rb_from_database(None, 'GEM', 123))
 
-    def test_get_from_database_no_run(self):
+    @patch('model.database.access.get_reduction_run')
+    def test_get_from_database_no_run(self, mock_get_run):
         """
         Test: None is returned
         When: get_location_and_rb_from_database can't find a ReductionRun record
         """
         mock_database_client = Mock()
-        mock_database_client.get_reduction_run.return_value = None
+        mock_get_run.return_value = None
         self.assertIsNone(ms.get_location_and_rb_from_database(mock_database_client, 'GEM', 123))
-        mock_database_client.get_reduction_run.assert_called_once()
+        mock_get_run.assert_called_once()
 
     def test_get_from_database(self):
         """

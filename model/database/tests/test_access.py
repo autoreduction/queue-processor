@@ -16,7 +16,7 @@ from model.database import access
 
 class TestAccess(unittest.TestCase):
 
-    @patch('utils.clients.DatabaseClient.connect')
+    @patch('utils.clients.django_database_client.DatabaseClient.connect')
     def test_start_database(self, mock_connect):
         """
         Test: The database is initialised
