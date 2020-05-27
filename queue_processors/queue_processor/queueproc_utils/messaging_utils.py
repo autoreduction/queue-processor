@@ -6,18 +6,13 @@
 # ############################################################################### #
 """ Utils moudle for sending messages to queues. """
 import json
-import logging.config
 
-# pylint: disable=cyclic-import
-from queue_processors.queue_processor.base import session
-from queue_processors.queue_processor.orm_mapping import DataLocation
 # pylint:disable=no-name-in-module,import-error
-from queue_processors.queue_processor.settings import LOGGING, FACILITY
+from queue_processors.queue_processor.settings import FACILITY
 from utils.clients.queue_client import QueueClient
 
-# Set up logging and attach the logging to the right part of the config.
-logging.config.dictConfig(LOGGING)
-logger = logging.getLogger("queue_processor") # pylint: disable=invalid-name
+
+from model.database import access
 
 
 class MessagingUtils:
@@ -43,7 +38,8 @@ class MessagingUtils:
         script, arguments = ReductionRunUtils().get_script_and_arguments(reduction_run)
 
         # Currently only support single location
-        data_location = session.query(DataLocation).filter_by(reduction_run_id=reduction_run.id)[0]
+        db = access.start_database()
+        data_location = db.data_model.DataLocation.filter_by(reduction_run_id=reduction_run.id).first()
         if data_location:
             data_path = data_location.file_path
         else:
