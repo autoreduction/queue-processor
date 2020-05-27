@@ -71,7 +71,7 @@ class MessagingUtils:
             reduction_arguments=arguments,
             run_version=reduction_run.run_version,
             facility=FACILITY,
-            message=''
+            message=''  # Note: Can rid of this
         )
 
         return message

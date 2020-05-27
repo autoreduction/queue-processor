@@ -72,7 +72,7 @@ class TestAutoreductionProcessorListener(unittest.TestCase):
             self.listener.hold_message('/queue/topic', self.json_data, self.headers)
             mock_should_proceed.assert_called_once()
             mock_call_later.assert_called_once_with(10, self.listener.hold_message,
-                                                    '/queue/topic', self.message,
+                                                    '/queue/topic', self.json_data,
                                                     self.headers)
 
     @patch(DIR + '.autoreduction_processor.Listener.should_proceed', return_value=True)
