@@ -7,7 +7,6 @@
 """
 Module that reads from the reduction pending queue and calls the python script on that data.
 """
-import json
 import os
 import subprocess
 import sys
@@ -83,7 +82,7 @@ class Listener(stomp.ConnectionListener):
         python_path = sys.executable
         logger.info("Calling: %s %s %s %s",
                     python_path, MISC['post_process_directory'], destination,
-                    message.serialize())    # TODO: limit reduction script
+                    message.serialize())    # TODO: limit reduction script  #pylint:disable=fixme
         proc = subprocess.Popen([python_path,
                                  MISC['post_process_directory'],
                                  destination,

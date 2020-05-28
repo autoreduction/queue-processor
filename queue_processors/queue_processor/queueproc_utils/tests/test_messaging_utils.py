@@ -7,7 +7,6 @@
 """
 Test cases for the messaging utils
 """
-import json
 import unittest
 
 from mock import patch
