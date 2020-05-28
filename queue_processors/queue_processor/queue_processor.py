@@ -16,8 +16,7 @@ import sys
 import traceback
 
 from message.job import Message
-from queue_processors.queue_processor.base import session
-from queue_processors.queue_processor.orm_mapping import ReductionRun
+
 # pylint: disable=cyclic-import
 from queue_processors.queue_processor.queueproc_utils.messaging_utils import MessagingUtils
 from queue_processors.queue_processor.queueproc_utils.instrument_variable_utils \
@@ -30,7 +29,7 @@ from queue_processors.queue_processor.settings import LOGGING
 from utils.clients.queue_client import QueueClient
 from utils.settings import ACTIVEMQ_SETTINGS
 
-from model.database import access as db_acess
+from model.database import access as db_access
 
 # Set up logging and attach the logging to the right part of the config.
 logging.config.dictConfig(LOGGING)
@@ -97,11 +96,6 @@ class Listener:
         Called when destination queue was data_ready.
         Updates the reduction run in the database.
         """
-        # pylint: disable=too-many-statements
-        # Rollback the session to avoid getting caught in a loop where we have uncommitted
-        # changes causing problems
-        session.rollback()
-
         run_no = str(self.message.run_number)
         instrument_name = str(self.message.instrument)
         rb_number = self.message.rb_number
@@ -109,13 +103,13 @@ class Listener:
         logger.info("Data ready for processing run %s on %s", run_no, instrument_name)
 
         # Check if the instrument is active or not in the MySQL database
-        instrument = db_acess.get_instrument(instrument_name, create=True)
+        instrument = db_access.get_instrument(instrument_name, create=True)
 
         # Activate the instrument if it is currently set to inactive
         if not instrument.is_active:
             logger.info("Activating %s", instrument_name)
             instrument.is_active = 1
-            session.commit()
+            db_access.save_record(instrument)
 
         if instrument.is_paused:
             status = StatusUtils().get_skipped()
@@ -125,7 +119,7 @@ class Listener:
         # If there has already been an autoreduction job for this run, we need to know it so we can
         # increase the version by 1 for this job. However, if not then we will set it to -1 which
         # will be incremented to 0
-        model = db_acess.start_database().data_model
+        model = db_access.start_database().data_model
         last_run = model.ReductionRun.objects \
             .filter(run_number=run_no) \
             .order_by('-run_version') \
@@ -137,7 +131,7 @@ class Listener:
         run_version = highest_version + 1
 
         # Search for the experiment, if it doesn't exist then add it
-        experiment = db_acess.get_experiment(rb_number, create=True)
+        experiment = db_access.get_experiment(rb_number, create=True)
 
         # Get the script text for the current instrument. If the script text is null then send to
         # error queue
@@ -162,7 +156,7 @@ class Listener:
                                            status_id=status.id,
                                            script=script_text,
                                            started_by=self.message.started_by)
-        db_acess.save_record(reduction_run)
+        db_access.save_record(reduction_run)
 
         # Set our run_version to be the one we have just calculated
         self.message.run_version = reduction_run.run_version  # pylint: disable=no-member
@@ -170,10 +164,10 @@ class Listener:
         # Create a new data location entry which has a foreign key linking it to the current
         # reduction run. The file path itself will point to a datafile
         # (e.g. "\isis\inst$\NDXWISH\Instrument\data\cycle_17_1\WISH00038774.nxs")
-        model = db_acess.start_database().data_model
+        model = db_access.start_database().data_model
         data_location = model.DataLocation(file_path=self.message.data,
                                            reduction_run_id=reduction_run.id)
-        db_acess.save_record(data_location)
+        db_access.save_record(data_location)
 
         # We now need to create all of the variables for the run such that the script can run
         # through in the desired way
@@ -231,7 +225,7 @@ class Listener:
                     reduction_run.status.value) == "Queued":
                 reduction_run.status = StatusUtils().get_processing()
                 reduction_run.started = datetime.datetime.utcnow()
-                db_acess.save_record(reduction_run)
+                db_access.save_record(reduction_run)
             else:
                 logger.error("An invalid attempt to re-start a reduction run was captured. "
                              "Experiment: %s, "
@@ -269,12 +263,12 @@ class Listener:
 
                     if self.message.reduction_data is not None:
                         for location in self.message.reduction_data:
-                            model = db_acess.start_database().data_model
+                            model = db_access.start_database().data_model
                             reduction_location = model \
                                 .ReductionLocation(file_path=location,
                                                    reduction_run=reduction_run)
-                            db_acess.save_record(reduction_location)
-                    db_acess.save_record(reduction_run)
+                            db_access.save_record(reduction_location)
+                    db_access.save_record(reduction_run)
 
                 else:
                     logger.error("An invalid attempt to complete a reduction run that wasn't "
@@ -327,7 +321,7 @@ class Listener:
         reduction_run.reduction_log = self.message.reduction_log
         reduction_run.admin_log = self.message.admin_log
 
-        db_acess.save_record(reduction_run)
+        db_access.save_record(reduction_run)
 
     def reduction_error(self):
         """
@@ -359,13 +353,14 @@ class Listener:
         reduction_run.message = self.message.message
         reduction_run.reduction_log = self.message.reduction_log
         reduction_run.admin_log = self.message.admin_log
-        db_acess.save_record(reduction_run)
+        db_access.save_record(reduction_run)
 
         if self.message.retry_in is not None:
-            experiment = db_acess.get_experiment(self.message.rb_number)
-            previous_runs = session.query(ReductionRun).filter_by(
-                run_number=self.message.run_number,
-                experiment=experiment).all()
+            experiment = db_access.get_experiment(self.message.rb_number)
+            model = db_access.start_database().data_model
+            previous_runs = model.ReductionRun \
+                .filter(run_number=self.message.run_number) \
+                .filter(experiment=experiment)
             max_version = -1
             for previous_run in previous_runs:
                 current_version = previous_run.run_version
@@ -386,10 +381,7 @@ class Listener:
 
     def find_run(self):
         """ Find a reduction run in the database. """
-        # Commit before we attempt to find the run. Committing will sync any values that have
-        #  been added to the database from the front end (normally retrying runs).
-        session.commit()
-        experiment = db_acess.get_experiment(self.message.rb_number)
+        experiment = db_access.get_experiment(self.message.rb_number)
         if not experiment:
             logger.error("Unable to find experiment %s", self.message.rb_number)
             return None
@@ -398,7 +390,7 @@ class Listener:
                     experiment.id,
                     int(self.message.run_number),
                     int(self.message.run_version))
-        model = db_acess.start_database().data_model
+        model = db_access.start_database().data_model
         reduction_run = model.ReductionRun.objects \
             .filter(experiment_id=experiment.id) \
             .filter(run_number=int(self.message.run_number)) \
