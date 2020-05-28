@@ -26,7 +26,6 @@ class Listener(stomp.ConnectionListener):
     """ Listener class that is used to consume messages from ActiveMQ. """
     def __init__(self):
         """ Initialise listener. """
-        logger.info("ARP Entered Listener.__init__")
         self.proc_list = []
         self.rb_list = []  # list of RB numbers of active reduction runs
         self.cancel_list = []  # list of (run number, run version)s to drop (once) used
@@ -35,13 +34,11 @@ class Listener(stomp.ConnectionListener):
     # pylint:disable=arguments-differ
     def on_error(message):
         """ Handler for errored messages. """
-        logger.info("ARP Entered on_error")
         logger.error("Error message received - %s", str(message))
 
     # pylint:disable=arguments-differ
     def on_message(self, headers, data):
         """ handles message consuming. It will consume a message. """
-        logger.info("ARP Entered on_message")
         destination = headers['destination']
         logger.debug("Received frame destination: %s", destination)
         logger.debug("Received frame priority: %s", headers["priority"])
@@ -58,7 +55,7 @@ class Listener(stomp.ConnectionListener):
 
     def hold_message(self, destination, data, headers):
         """ Calls the reduction script. """
-        logger.info("ARP Entered hold_message")
+        logger.debug("holding thread")
         message = Message()
         message.populate(data)
 
@@ -91,7 +88,6 @@ class Listener(stomp.ConnectionListener):
 
     def update_child_process_list(self):
         """ Updates the list of processes by checking they still exist. """
-        logger.info("ARP Entered update_child_process_list")
         for process in self.proc_list:
             if process.poll() is not None:
                 index = self.proc_list.index(process)
@@ -100,13 +96,12 @@ class Listener(stomp.ConnectionListener):
 
     def add_process(self, proc, message):
         """ Add child process to list. """
-        logger.info("ARP Entered add_process. proc=%s message=%s", proc, message)
+        logger.info("Entered add_process. proc=%s message=%s", proc, message)
         self.proc_list.append(proc)
         self.rb_list.append(message.rb_number)
 
     def should_proceed(self, message):
         """ Check whether there's a job already running with the same RB. """
-        logger.info("ARP Entered should_proceed")
         if message.rb_number in self.rb_list:
             logger.info("Duplicate RB run #%s, waiting for the first to finish.",
                         message.rb_number)
@@ -117,7 +112,6 @@ class Listener(stomp.ConnectionListener):
     @staticmethod
     def run_tuple(message):
         """ return the tuple of (run_number, run version) from a dictionary. """
-        logger.info("ARP Entered run_tuple")
         run_number = message.run_number
         run_version = message.run_version
         if run_version is None:
@@ -126,20 +120,17 @@ class Listener(stomp.ConnectionListener):
 
     def add_cancel(self, message):
         """ Add this run to the cancel list, to cancel it next time it comes up. """
-        logger.info("ARP Entered add_cancel")
         tup = self.run_tuple(message)
         if tup not in self.cancel_list:
             self.cancel_list.append(tup)
 
     def should_cancel(self, message):
         """ Return whether a run is in the list of runs to be canceled. """
-        logger.info("ARP Entered should_cancel")
         tup = self.run_tuple(message)
         return tup in self.cancel_list
 
     def cancel_run(self, message):
         """ Cancel the reduction run. """
-        logger.info("ARP Entered cancel_run")
         tup = self.run_tuple(message)
         self.cancel_list.remove(tup)
 
@@ -149,7 +140,6 @@ class Consumer:
     """ Class used to setup the queue listener. """
     def __init__(self):
         """ Initialise consumer. """
-        logger.info("ARP Entered Consumer.__init__")
         self.consumer_name = "autoreduction_processor"
 
     def run(self):
@@ -157,7 +147,6 @@ class Consumer:
         Connect to ActiveMQ via the QueueClient and listen to the
         /ReductionPending queue for messages.
         """
-        logger.info("ARP Entered run")
         activemq_client = QueueClient()
         activemq_client.connect()
         activemq_client.subscribe_amq(consumer_name=self.consumer_name,
@@ -166,7 +155,6 @@ class Consumer:
 
 def main():  # pragma: no cover
     """ Main method, starts consumer. """
-    logger.info("ARP Entered main")
     logger.info("Start post process asynchronous listener!")
     # pylint: disable=maybe-no-member
     reactor.callWhenRunning(Consumer().run)
