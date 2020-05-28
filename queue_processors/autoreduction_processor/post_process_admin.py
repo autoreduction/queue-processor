@@ -99,9 +99,6 @@ class PostProcessAdmin:
     # pylint: disable=too-many-instance-attributes
     def __init__(self, message, client):
         logger.debug("Message data: %s", message.serialize(limit_reduction_script=True))
-        # Note: "information" isn't a Message attribute so is not accepted by Message.
-        #   Do we want to store this?
-        # data["information"] = socket.gethostname()
 
         self.message = message
         self.client = client
