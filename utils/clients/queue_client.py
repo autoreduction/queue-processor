@@ -140,7 +140,7 @@ class QueueClient(AbstractClient):
         Packs the specified data into a dictionary ready to send to a processor queue
         """
         # TODO: When this method is removed, need to ensure caller adds facility themselves
-        #   OR add within send class
+        #   OR set facility default to "ISIS"?
         return {'rb_number': rb_number,
                 'instrument': instrument,
                 'data': location,
