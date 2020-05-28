@@ -102,7 +102,7 @@ class TestAutoreductionProcessorListener(unittest.TestCase):
         mock_popen.assert_called_once_with([sys.executable,
                                             MISC['post_process_directory'],
                                             self.headers['destination'],
-                                            self.message])
+                                            self.message.deserialize(self.message.serialize())])
         mock_add_process.assert_called_once()
 
     def test_update_child_process_list(self):
