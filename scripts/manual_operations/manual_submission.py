@@ -36,6 +36,7 @@ def submit_run(active_mq_client, rb_number, instrument, data_file_location, run_
                       instrument=instrument,
                       data=data_file_location,
                       run_number=run_number,
+                      facility="ISIS",
                       started_by=-1)
     active_mq_client.send('/queue/DataReady', message, priority=1)
     print("Submitted run: \r\n" + message.serialize(indent=1))
