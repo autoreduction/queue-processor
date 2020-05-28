@@ -5,7 +5,6 @@
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 """ Utils moudle for sending messages to queues. """
-import json
 import logging.config
 
 # pylint: disable=cyclic-import
