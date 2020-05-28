@@ -15,8 +15,6 @@ import logging.config
 import sys
 import traceback
 
-from sqlalchemy import sql
-
 from message.job import Message
 from queue_processors.queue_processor.base import session
 from queue_processors.queue_processor.orm_mapping import ReductionRun
@@ -32,7 +30,7 @@ from queue_processors.queue_processor.settings import LOGGING
 from utils.clients.queue_client import QueueClient
 from utils.settings import ACTIVEMQ_SETTINGS
 
-from model.database import access as db
+from model.database import access as db_acess
 
 # Set up logging and attach the logging to the right part of the config.
 logging.config.dictConfig(LOGGING)
@@ -111,7 +109,7 @@ class Listener:
         logger.info("Data ready for processing run %s on %s", run_no, instrument_name)
 
         # Check if the instrument is active or not in the MySQL database
-        instrument = db.get_instrument(instrument_name, create=True)
+        instrument = db_acess.get_instrument(instrument_name, create=True)
 
         # Activate the instrument if it is currently set to inactive
         if not instrument.is_active:
@@ -127,7 +125,7 @@ class Listener:
         # If there has already been an autoreduction job for this run, we need to know it so we can
         # increase the version by 1 for this job. However, if not then we will set it to -1 which
         # will be incremented to 0
-        model = db.start_database().data_model
+        model = db_acess.start_database().data_model
         last_run = model.ReductionRun.objects \
             .filter(run_number=run_no) \
             .order_by('-run_version') \
@@ -139,7 +137,7 @@ class Listener:
         run_version = highest_version + 1
 
         # Search for the experiment, if it doesn't exist then add it
-        experiment = db.get_experiment(rb_number, create=True)
+        experiment = db_acess.get_experiment(rb_number, create=True)
 
         # Get the script text for the current instrument. If the script text is null then send to
         # error queue
@@ -164,7 +162,7 @@ class Listener:
                                            status_id=status.id,
                                            script=script_text,
                                            started_by=self.message.started_by)
-        db.save_record(reduction_run)
+        db_acess.save_record(reduction_run)
 
         # Set our run_version to be the one we have just calculated
         self.message.run_version = reduction_run.run_version  # pylint: disable=no-member
@@ -172,10 +170,10 @@ class Listener:
         # Create a new data location entry which has a foreign key linking it to the current
         # reduction run. The file path itself will point to a datafile
         # (e.g. "\isis\inst$\NDXWISH\Instrument\data\cycle_17_1\WISH00038774.nxs")
-        model = db.start_database().data_model
+        model = db_acess.start_database().data_model
         data_location = model.DataLocation(file_path=self.message.data,
                                            reduction_run_id=reduction_run.id)
-        db.save_record(data_location)
+        db_acess.save_record(data_location)
 
         # We now need to create all of the variables for the run such that the script can run
         # through in the desired way
@@ -233,7 +231,7 @@ class Listener:
                     reduction_run.status.value) == "Queued":
                 reduction_run.status = StatusUtils().get_processing()
                 reduction_run.started = datetime.datetime.utcnow()
-                db.save_record(reduction_run)
+                db_acess.save_record(reduction_run)
             else:
                 logger.error("An invalid attempt to re-start a reduction run was captured. "
                              "Experiment: %s, "
@@ -271,11 +269,12 @@ class Listener:
 
                     if self.message.reduction_data is not None:
                         for location in self.message.reduction_data:
-                            model = db.start_database().data_model
-                            reduction_location = model.ReductionLocation(file_path=location,
-                                                                         reduction_run=reduction_run)
-                            db.save_record(reduction_location)
-                    db.save_record(reduction_run)
+                            model = db_acess.start_database().data_model
+                            reduction_location = model \
+                                .ReductionLocation(file_path=location,
+                                                   reduction_run=reduction_run)
+                            db_acess.save_record(reduction_location)
+                    db_acess.save_record(reduction_run)
 
                 else:
                     logger.error("An invalid attempt to complete a reduction run that wasn't "
@@ -328,7 +327,7 @@ class Listener:
         reduction_run.reduction_log = self.message.reduction_log
         reduction_run.admin_log = self.message.admin_log
 
-        db.save_record(reduction_run)
+        db_acess.save_record(reduction_run)
 
     def reduction_error(self):
         """
@@ -360,10 +359,10 @@ class Listener:
         reduction_run.message = self.message.message
         reduction_run.reduction_log = self.message.reduction_log
         reduction_run.admin_log = self.message.admin_log
-        db.save_record(reduction_run)
+        db_acess.save_record(reduction_run)
 
         if self.message.retry_in is not None:
-            experiment = db.get_experiment(self.message.rb_number)
+            experiment = db_acess.get_experiment(self.message.rb_number)
             previous_runs = session.query(ReductionRun).filter_by(
                 run_number=self.message.run_number,
                 experiment=experiment).all()
@@ -390,7 +389,7 @@ class Listener:
         # Commit before we attempt to find the run. Committing will sync any values that have
         #  been added to the database from the front end (normally retrying runs).
         session.commit()
-        experiment = db.get_experiment(self.message.rb_number)
+        experiment = db_acess.get_experiment(self.message.rb_number)
         if not experiment:
             logger.error("Unable to find experiment %s", self.message.rb_number)
             return None
@@ -399,7 +398,7 @@ class Listener:
                     experiment.id,
                     int(self.message.run_number),
                     int(self.message.run_version))
-        model = db.start_database().data_model
+        model = db_acess.start_database().data_model
         reduction_run = model.ReductionRun.objects \
             .filter(experiment_id=experiment.id) \
             .filter(run_number=int(self.message.run_number)) \

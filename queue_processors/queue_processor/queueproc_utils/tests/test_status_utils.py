@@ -21,10 +21,10 @@ class TestStatusUtils(unittest.TestCase):
 
     def setUp(self):
         self.status_utils = StatusUtils()
-        db = DjangoORM()
-        db.connect()
-        self.completed_status = db.data_model.Status(value='Completed')
-        self.status_type = db.data_model.Status
+        database = DjangoORM()
+        database.connect()
+        self.completed_status = database.data_model.Status(value='Completed')
+        self.status_type = database.data_model.Status
 
     @patch('queue_processors.queue_processor.queueproc_utils.status_utils.StatusUtils._get_status')
     def test_get_error(self, mock_get_status):

@@ -13,7 +13,7 @@ import logging.config
 from queue_processors.queue_processor.base import session
 # pylint:disable=no-name-in-module,import-error
 from queue_processors.queue_processor.settings import LOGGING
-from queue_processors.queue_processor.orm_mapping import DataLocation, ReductionRun, RunJoin
+from queue_processors.queue_processor.orm_mapping import DataLocation, ReductionRun
 
 from queue_processors.queue_processor.queueproc_utils.instrument_variable_utils \
     import InstrumentVariablesUtils
@@ -157,8 +157,8 @@ class ReductionRunUtils:
         dictionary of arguments.
         """
         script = reduction_run.script
-        db = access.start_database()
-        run_variable_records = db.variable_model.RunVariable.objects \
+        model = access.start_database().variable_model
+        run_variable_records = model.RunVariable.objects \
             .filter(reduction_run_id=reduction_run.id)
 
         standard_vars, advanced_vars = {}, {}

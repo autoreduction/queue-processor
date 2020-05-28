@@ -15,7 +15,11 @@ from model.database import access
 
 
 class TestAccess(unittest.TestCase):
+    """
+    Test the access functionality for the database
+    """
 
+    # pylint:disable=no-self-use
     @patch('utils.clients.django_database_client.DatabaseClient.connect')
     def test_start_database(self, mock_connect):
         """
@@ -43,10 +47,10 @@ class TestAccess(unittest.TestCase):
         Note: As we do not actually save the object, we cannot assert values of it
         These are only stored when it enters the database
         """
-        db = access.start_database()
+        database = access.start_database()
         actual = access.get_instrument('Not an instrument', create=True)
         self.assertIsNotNone(actual)
-        self.assertIsInstance(actual, db.data_model.Instrument)
+        self.assertIsInstance(actual, database.data_model.Instrument)
         mock_save.assert_called_once()
 
     def test_get_instrument_invalid(self):
@@ -95,6 +99,7 @@ class TestAccess(unittest.TestCase):
         actual = access.get_reduction_run('GEM', 0)
         self.assertIsNone(actual.first())
 
+    # pylint:disable=no-self-use
     def test_save_record(self):
         """
         Test: .save() is called on the provided object

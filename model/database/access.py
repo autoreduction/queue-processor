@@ -28,7 +28,8 @@ def get_instrument(instrument_name, create=False):
     :return: The instrument object from the database
     """
     database = start_database()
-    instrument_record = database.data_model.Instrument.objects.filter(name=instrument_name).first()
+    instrument_record = database.data_model.Instrument.objects \
+        .filter(name=instrument_name).first()
     if not instrument_record and create:
         instrument_record = database.data_model.Instrument(name=instrument_record,
                                                            is_active=True,
@@ -60,7 +61,8 @@ def get_experiment(rb_number, create=False):
     :return: The Experiment object from the database
     """
     database = start_database()
-    experiment_record = database.data_model.Experiment.objects.filter(reference_number=rb_number).first()
+    experiment_record = database.data_model.Experiment.objects \
+        .filter(reference_number=rb_number).first()
     if not experiment_record and create:
         experiment_record = database.data_model.Experiment(reference_number=rb_number)
         save_record(experiment_record)

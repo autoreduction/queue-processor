@@ -7,10 +7,9 @@
 """ Utils moudle for sending messages to queues. """
 import json
 
-# pylint:disable=no-name-in-module,import-error
+# pylint:disable=cyclic-import
 from queue_processors.queue_processor.settings import FACILITY
 from utils.clients.queue_client import QueueClient
-
 
 from model.database import access
 
@@ -38,8 +37,8 @@ class MessagingUtils:
         script, arguments = ReductionRunUtils().get_script_and_arguments(reduction_run)
 
         # Currently only support single location
-        db = access.start_database()
-        data_location = db.data_model.DataLocation.filter_by(reduction_run_id=reduction_run.id).first()
+        model = access.start_database().data_model
+        data_location = model.DataLocation.filter_by(reduction_run_id=reduction_run.id).first()
         if data_location:
             data_path = data_location.file_path
         else:
