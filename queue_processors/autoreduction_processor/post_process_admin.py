@@ -16,11 +16,9 @@ Post Process Administrator. It kicks off cataloging and reduction jobs.
 """
 import io
 import errno
-import json
 import logging
 import os
 import shutil
-import socket
 import sys
 import time
 import types
@@ -31,6 +29,7 @@ import importlib.util as imp
 from sentry_sdk import init
 
 # pylint:disable=no-name-in-module,import-error
+from message.job import Message
 from paths.path_manipulation import append_path
 from queue_processors.autoreduction_processor.settings import MISC
 from queue_processors.autoreduction_processor.autoreduction_logging_setup import logger
@@ -94,26 +93,14 @@ def windows_to_linux_path(path, temp_root_directory):
     return path
 
 
-def prettify(data):
-    """ Make dictionary pretty for printing. """
-    if type(data).__name__ == "str":
-        data_dict = json.loads(data)
-    else:
-        data_dict = data.copy()
-
-    if "reduction_script" in data_dict:
-        data_dict["reduction_script"] = data_dict["reduction_script"][:50]
-    return json.dumps(data_dict)
-
-
 class PostProcessAdmin:
     """ Main class for the PostProcessAdmin """
 
     # pylint: disable=too-many-instance-attributes
-    def __init__(self, data, client):
-        logger.debug("json data: %s", prettify(data))
-        data["information"] = socket.gethostname()
-        self.data = data
+    def __init__(self, message, client):
+        logger.debug("Message data: %s", message.serialize(limit_reduction_script=True))
+
+        self.message = message
         self.client = client
 
         self.reduction_log_stream = io.StringIO()
@@ -124,7 +111,7 @@ class PostProcessAdmin:
                                                    MISC["temp_root_directory"])
             self.facility = self.validate_input('facility')
             self.instrument = self.validate_input('instrument').upper()
-            self.proposal = str(int(self.validate_input('rb_number')))
+            self.proposal = str(int(self.validate_input('rb_number')))  # Integer-string validation
             self.run_number = str(int(self.validate_input('run_number')))
             self.reduction_script = self.validate_input('reduction_script')
             self.reduction_arguments = self.validate_input('reduction_arguments')
@@ -132,17 +119,18 @@ class PostProcessAdmin:
             logger.info('JSON data error', exc_info=True)
             raise
 
-    def validate_input(self, key):
+    def validate_input(self, attribute):
         """
-        Validates the input dictionary
-        :param key: key to search for
+        Validates the input message
+        :param attribute: attribute to validate
         :return: The value of the key or raise an exception if none
         """
-        if key in self.data:
-            value = self.data[key]
-            logger.debug("%s: %s", key, str(value)[:50])
+        attribute_dict = self.message.__dict__
+        if attribute in attribute_dict and attribute_dict[attribute] is not None:
+            value = attribute_dict[attribute]
+            logger.debug("%s: %s", attribute, str(value)[:50])
             return value
-        raise ValueError('%s is missing' % key)
+        raise ValueError('%s is missing' % attribute)
 
     def replace_variables(self, reduce_script):
         """
@@ -196,8 +184,8 @@ class PostProcessAdmin:
         try:
             logger.debug("Calling: %s\n%s",
                          ACTIVEMQ_SETTINGS.reduction_started,
-                         prettify(self.data))
-            self.client.send(ACTIVEMQ_SETTINGS.reduction_started, json.dumps(self.data))
+                         self.message.serialize(limit_reduction_script=True))
+            self.client.send(ACTIVEMQ_SETTINGS.reduction_started, self.message)
 
             # Specify instrument directory
             instrument_output_dir = MISC["ceph_directory"] % (self.instrument,
@@ -211,8 +199,8 @@ class PostProcessAdmin:
             # Specify directories where autoreduction output will go
             reduce_result_dir = MISC["temp_root_directory"] + instrument_output_dir
 
-            if 'run_description' in self.data and self.data['run_description'] is not None:
-                logger.info("DESCRIPTION: %s", self.data["run_description"])
+            if self.message.description is not None:
+                logger.info("DESCRIPTION: %s", self.message.description)
 
             log_dir = reduce_result_dir + "/reduction_log/"
             log_and_err_name = "RB" + self.proposal + "Run" + self.run_number
@@ -258,12 +246,12 @@ class PostProcessAdmin:
             except Exception as exp:
                 # if we can't access now, we should abort the run, and tell the server that it
                 # should be re-run at a later time.
-                self.data["message"] = "Permission error: %s" % exp
-                self.data["retry_in"] = 6 * 60 * 60 # 6 hours
+                self.message.message = "Permission error: %s" % exp
+                self.message.retry_in = 6 * 60 * 60  # 6 hours
                 logger.error(traceback.format_exc())
                 raise exp
 
-            self.data['reduction_data'] = []
+            self.message.reduction_data = []
 
             logger.info("----------------")
             logger.info("Reduction script: %s ...", self.reduction_script[:50])
@@ -294,13 +282,13 @@ class PostProcessAdmin:
                         skip_numbers = reduce_script.SKIP_RUNS
                     except:
                         skip_numbers = []
-                    if self.data['run_number'] not in skip_numbers:
+                    if self.message.run_number not in skip_numbers:
                         reduce_script = self.replace_variables(reduce_script)
                         with TimeOut(MISC["script_timeout"]):
                             out_directories = reduce_script.main(input_file=str(self.data_file),
                                                                  output_dir=str(reduce_result_dir))
                     else:
-                        self.data['message'] = "Run has been skipped in script"
+                        self.message.message = "Run has been skipped in script"
             except Exception as exp:
                 with open(script_out, "a") as fle:
                     fle.writelines(str(exp) + "\n")
@@ -341,20 +329,19 @@ class PostProcessAdmin:
 
         except SkippedRunException as skip_exception:
             logger.info("Run %s has been skipped on %s",
-                        self.data['run_number'], self.data['instrument'])
-            self.data["message"] = "Reduction Skipped: %s" % str(skip_exception)
+                        self.message.run_number, self.message.instrument)
+            self.message.message = "Reduction Skipped: %s" % str(skip_exception)
         except Exception as exp:
             logger.error(traceback.format_exc())
-            self.data["message"] = "REDUCTION Error: %s " % exp
+            self.message.message = "REDUCTION Error: %s " % exp
 
-        self.data['reduction_log'] = self.reduction_log_stream.getvalue()
-        self.data["admin_log"] = self.admin_log_stream.getvalue()
+        self.message.reduction_log = self.reduction_log_stream.getvalue()
+        self.message.admin_log = self.admin_log_stream.getvalue()
 
-        if 'message' in self.data and self.data['message'] is not None:
+        if self.message.message is not None:
             # This means an error has been produced somewhere
             try:
-                if 'skip' in self.data['message'].lower():
-                    self.data['message'].lstrip('skip: ')
+                if 'skip' in self.message.message.lower():
                     self._send_message_and_log(ACTIVEMQ_SETTINGS.reduction_skipped)
                 else:
                     self._send_message_and_log(ACTIVEMQ_SETTINGS.reduction_error)
@@ -366,10 +353,10 @@ class PostProcessAdmin:
 
         else:
             # reduction has successfully completed
-            self.client.send(ACTIVEMQ_SETTINGS.reduction_complete, json.dumps(self.data))
+            self.client.send(ACTIVEMQ_SETTINGS.reduction_complete, self.message)
             logger.info("Calling: %s\n%s",
                         ACTIVEMQ_SETTINGS.reduction_complete,
-                        prettify(self.data))
+                        self.message.serialize(limit_reduction_script=True))
             logger.info("Reduction job successfully complete")
 
     def _new_reduction_data_path(self, path):
@@ -380,7 +367,7 @@ class PostProcessAdmin:
         """
         logger.info("_new_reduction_data_path argument: %s", path)
         # if there is an 'overwrite' key/member with a None/False value
-        if 'overwrite' in self.data and not self.data["overwrite"]:
+        if not self.message.overwrite:
             if os.path.isdir(path):           # if the given path already exists..
                 contents = os.listdir(path)
                 highest_vers = -1
@@ -398,8 +385,9 @@ class PostProcessAdmin:
 
     def _send_message_and_log(self, destination):
         """ Send reduction run to error. """
-        logger.info("\nCalling " + destination + " --- " + prettify(self.data))
-        self.client.send(destination, json.dumps(self.data))
+        logger.info("\nCalling " + destination + " --- " +
+                    self.message.serialize(limit_reduction_script=True))
+        self.client.send(destination, self.message)
 
     def copy_temp_directory(self, temp_result_dir, copy_destination):
         """
@@ -413,7 +401,7 @@ class PostProcessAdmin:
                 and self.instrument not in MISC["excitation_instruments"]:
             self._remove_directory(copy_destination)
 
-        self.data['reduction_data'].append(copy_destination)
+        self.message.reduction_data.append(copy_destination)
         logger.info("Moving %s to %s", temp_result_dir, copy_destination)
         try:
             self._copy_tree(temp_result_dir, copy_destination)
@@ -432,9 +420,9 @@ class PostProcessAdmin:
     def log_and_message(self, msg):
         """ Helper function to add text to the outgoing activemq message and to the info logs """
         logger.info(msg)
-        if self.data["message"] == "" or self.data["message"] is None:
+        if self.message.message == "" or self.message.message is None:
             # Only send back first message as there is a char limit
-            self.data["message"] = msg
+            self.message.message = msg
 
     def _remove_with_wait(self, remove_folder, full_path):
         """ Removes a folder or file and waits for it to be removed. """
@@ -497,28 +485,28 @@ class PostProcessAdmin:
 
 def main():
     """ Main method. """
-    json_data = None
     queue_client = QueueClient()
     try:
         logger.info("PostProcessAdmin Connecting to ActiveMQ")
         queue_client.connect()
         logger.info("PostProcessAdmin Successfully Connected to ActiveMQ")
 
-        destination, message = sys.argv[1:3]  # pylint: disable=unbalanced-tuple-unpacking
+        destination, data = sys.argv[1:3]  # pylint: disable=unbalanced-tuple-unpacking
+        message = Message()
+        message.populate(data)
         logger.info("destination: %s", destination)
-        logger.info("message: %s", prettify(message))
-        json_data = json.loads(message)
+        logger.info("message: %s", message.serialize(limit_reduction_script=True))
 
         try:
-            post_proc = PostProcessAdmin(json_data, queue_client)
+            post_proc = PostProcessAdmin(message, queue_client)
             log_stream_handler = logging.StreamHandler(post_proc.admin_log_stream)
             logger.addHandler(log_stream_handler)
             if destination == '/queue/ReductionPending':
                 post_proc.reduce()
 
         except ValueError as exp:
-            json_data["error"] = str(exp)
-            logger.info("JSON data error: %s", prettify(json_data))
+            message.message = str(exp)  # Note: I believe this should be .message
+            logger.info("Message data error: %s", message.serialize(limit_reduction_script=True))
             raise
 
         except Exception as exp:
@@ -534,8 +522,9 @@ def main():
     except Exception as exp:
         logger.info("Something went wrong: %s", str(exp))
         try:
-            queue_client.send(ACTIVEMQ_SETTINGS.reduction_error, json.dumps(json_data))
-            logger.info("Called %s ---- %s", ACTIVEMQ_SETTINGS.reduction_error, prettify(json_data))
+            queue_client.send(ACTIVEMQ_SETTINGS.reduction_error, message)
+            logger.info("Called %s ---- %s", ACTIVEMQ_SETTINGS.reduction_error,
+                        message.serialize(limit_reduction_script=True))
         finally:
             sys.exit()
 
