@@ -15,9 +15,9 @@ def start_database():
     Create and connect a database client
     :return: The connected database client
     """
-    db = DatabaseClient()
-    db.connect()
-    return db
+    database = DatabaseClient()
+    database.connect()
+    return database
 
 
 def get_instrument(instrument_name, create=False):
@@ -27,12 +27,12 @@ def get_instrument(instrument_name, create=False):
     :param create: If True, then create the record if it does not exist
     :return: The instrument object from the database
     """
-    db = start_database()
-    instrument_record = db.data_model.Instrument.objects.filter(name=instrument_name).first()
+    database = start_database()
+    instrument_record = database.data_model.Instrument.objects.filter(name=instrument_name).first()
     if not instrument_record and create:
-        instrument_record = db.data_model.Instrument(name=instrument_record,
-                                                     is_active=True,
-                                                     is_paused=False)
+        instrument_record = database.data_model.Instrument(name=instrument_record,
+                                                           is_active=True,
+                                                           is_paused=False)
         save_record(instrument_record)
     return instrument_record
 
@@ -44,10 +44,10 @@ def get_status(status_value, create=False):
     :param create: If True, then create the record if it does not exist
     :return: The Status object from the database
     """
-    db = start_database()
-    status_record = db.data_model.Status.objects.filter(value=status_value).first()
+    database = start_database()
+    status_record = database.data_model.Status.objects.filter(value=status_value).first()
     if not status_record and create:
-        status_record = db.data_model.Status(value=status_value)
+        status_record = database.data_model.Status(value=status_value)
         save_record(status_record)
     return status_record
 
@@ -59,10 +59,10 @@ def get_experiment(rb_number, create=False):
     :param create: If True, then create the record if it does not exist
     :return: The Experiment object from the database
     """
-    db = start_database()
-    experiment_record = db.data_model.Experiment.objects.filter(reference_number=rb_number).first()
+    database = start_database()
+    experiment_record = database.data_model.Experiment.objects.filter(reference_number=rb_number).first()
     if not experiment_record and create:
-        experiment_record = db.data_model.Experiment(reference_number=rb_number)
+        experiment_record = database.data_model.Experiment(reference_number=rb_number)
         save_record(experiment_record)
     return experiment_record
 
@@ -76,8 +76,8 @@ def get_reduction_run(instrument, run_number):
 
     Note: The query set could contain multiple records or None
     """
-    db = start_database()
-    return db.data_model.ReductionRun.objects \
+    database = start_database()
+    return database.data_model.ReductionRun.objects \
         .filter(instrument=get_instrument(instrument).id) \
         .filter(run_number=run_number)
 

@@ -61,7 +61,7 @@ class InstrumentVariablesUtils:
         # If we haven't been given a run number, we should try to find it.
         if not run_number:
             applicable_variables = session.query(InstrumentVariable).\
-                filter_by(instrument=instrument).order_by(text('-start_run')).all()
+                filter_by(instrument_id=instrument.id).order_by(text('-start_run')).all()
             if applicable_variables:
                 variable_run_number = applicable_variables[0].start_run
         else:
@@ -70,7 +70,7 @@ class InstrumentVariablesUtils:
         # Now use the InstrumentJoin class (which is a join of the InstrumentVariable and Variable
         # tables) to make sure we can make a copy of all the relevant variables with all of the
         # right information.
-        variables = (session.query(InstrumentJoin).filter_by(instrument=instrument,
+        variables = (session.query(InstrumentJoin).filter_by(instrument_id=instrument.id,
                                                              start_run=variable_run_number)).all()
 
         # If we have found some variables then we want to use them by first making copies of them
@@ -120,14 +120,15 @@ class InstrumentVariablesUtils:
         for var in variables:
             var.tracks_script = True
 
-        applicable_variables = session.query(InstrumentVariable).filter_by(instrument=instrument) \
+        applicable_variables = session.query(InstrumentVariable) \
+            .filter_by(instrument_id=instrument.id) \
             .order_by(text('-start_run')).all()
         variable_run_number = applicable_variables[0].start_run
 
         # Now use the InstrumentJoin class (which is a join of the InstrumentVariable and Variable
         # tables) to make sure we can make a copy of all the relevant variables with all of the
         # right information.
-        variables = (session.query(InstrumentJoin).filter_by(instrument=instrument,
+        variables = (session.query(InstrumentJoin).filter_by(instrument_id=instrument.id,
                                                              start_run=variable_run_number)).all()
 
         return variables
@@ -251,7 +252,7 @@ class InstrumentVariablesUtils:
                                                               script))
 
             instrument_variable = InstrumentVariable(start_run=0,
-                                                     instrument=instrument,
+                                                     instrument_id=instrument.id,
                                                      variable=variable,
                                                      tracks_script=1)
 
@@ -340,18 +341,18 @@ class InstrumentVariablesUtils:
         # find all variables that are in the range.
 
         applicable_variables = session.query(InstrumentVariable).\
-            filter_by(instrument=instrument, start_run=start_run).all()
+            filter_by(instrument_id=instrument.id, start_run=start_run).all()
 
         final_variables = []
         if end_run:
             applicable_variables = applicable_variables.filter(start_run__lte=end_run)
             # pylint: disable=no-member
-            after_variables = InstrumentVariable.objects.filter(instrument=instrument,
+            after_variables = InstrumentVariable.objects.filter(instrument_id=instrument.id,
                                                                 start_run=end_run + 1)\
                 .order_by(text('start_run'))
 
             # pylint: disable=no-member
-            previous_variables = InstrumentVariable.objects.filter(instrument=instrument,
+            previous_variables = InstrumentVariable.objects.filter(instrument_id=instrument.id,
                                                                    start_run__lt=start_run)
 
             if applicable_variables and not after_variables:
@@ -401,7 +402,7 @@ class InstrumentVariablesUtils:
         """
         instrument = db.get_instrument(instrument_name)
         ins_vars = session.query(InstrumentVariable).\
-            filter_by(instrument=instrument,
+            filter_by(instrument_id=instrument.id,
                       experiment_reference=experiment_reference).all()
         self._update_variables(ins_vars)
         return [VariableUtils().copy_variable(ins_var) for ins_var in ins_vars]

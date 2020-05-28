@@ -422,7 +422,7 @@ class Listener:
                     int(self.message.run_number),
                     int(self.message.run_version))
         reduction_run = session.query(ReductionRun)\
-            .filter_by(experiment=experiment, run_number=int(self.message.run_number),
+            .filter_by(experiment_id=experiment.id, run_number=int(self.message.run_number),
                        run_version=int(self.message.run_version)).first()
         return reduction_run
 

@@ -57,14 +57,23 @@ class TestAccess(unittest.TestCase):
         actual = access.get_instrument('Fake instrument')
         self.assertIsNone(actual)
 
-    def test_save_record(self):
+    def test_get_status(self):
         """
-        Test: .save() is called on the provided object
-        When: Calling save_record()
+        Test: The correct Status record is returned
+        When: get_status is called on a database containing the expected Status value
         """
-        mock_record = Mock()
-        access.save_record(mock_record)
-        mock_record.save.assert_called_once()
+        actual = access.get_status('Completed')
+        self.assertIsNotNone(actual)
+        self.assertEqual('Completed', actual.value)
+
+    def test_get_experiment(self):
+        """
+        Test: The correct Experiment record is returned
+        When: get_status is called on a database containing expected Experiment reference number
+        """
+        actual = access.get_experiment('123')
+        self.assertIsNotNone(actual)
+        self.assertEqual(123, actual.reference_number)
 
     # pylint:disable=no-self-use
     @patch('model.database.access.start_database')
@@ -85,3 +94,12 @@ class TestAccess(unittest.TestCase):
         """
         actual = access.get_reduction_run('GEM', 0)
         self.assertIsNone(actual.first())
+
+    def test_save_record(self):
+        """
+        Test: .save() is called on the provided object
+        When: Calling save_record()
+        """
+        mock_record = Mock()
+        access.save_record(mock_record)
+        mock_record.save.assert_called_once()
