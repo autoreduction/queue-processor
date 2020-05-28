@@ -21,6 +21,8 @@ from queue_processors.queue_processor.queueproc_utils.messaging_utils import Mes
 from queue_processors.queue_processor.queueproc_utils.status_utils import StatusUtils
 from queue_processors.queue_processor.queueproc_utils.variable_utils import VariableUtils
 
+from model.database import access
+
 # Set up logging and attach the logging to the right part of the config.
 logging.config.dictConfig(LOGGING)
 logger = logging.getLogger("queue_processor")  # pylint: disable=invalid-name
@@ -155,15 +157,18 @@ class ReductionRunUtils:
         dictionary of arguments.
         """
         script = reduction_run.script
-        run_variables = (session.query(RunJoin).filter_by(reduction_run=reduction_run)).all()
+        db = access.start_database()
+        run_variable_records = db.variable_model.RunVariable.objects \
+            .filter(reduction_run_id=reduction_run.id)
 
         standard_vars, advanced_vars = {}, {}
-        for variables in run_variables:
-            value = VariableUtils().convert_variable_to_type(variables.value, variables.type)
-            if variables.is_advanced:
-                advanced_vars[variables.name] = value
+        for run_variable in run_variable_records:
+            variable = run_variable.variable
+            value = VariableUtils().convert_variable_to_type(variable.value, variable.type)
+            if variable.is_advanced:
+                advanced_vars[variable.name] = value
             else:
-                standard_vars[variables.name] = value
+                standard_vars[variable.name] = value
 
         arguments = {'standard_vars': standard_vars, 'advanced_vars': advanced_vars}
 

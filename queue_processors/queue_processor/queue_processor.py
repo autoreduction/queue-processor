@@ -10,10 +10,7 @@ It consumes messages from the queues and then updates the reduction run status i
 """
 # pylint: disable=too-many-arguments
 # pylint: disable=too-many-locals
-
-import base64
 import datetime
-import glob
 import logging.config
 import sys
 import traceback
@@ -22,7 +19,7 @@ from sqlalchemy import sql
 
 from message.job import Message
 from queue_processors.queue_processor.base import session
-from queue_processors.queue_processor.orm_mapping import (ReductionRun)
+from queue_processors.queue_processor.orm_mapping import ReductionRun
 # pylint: disable=cyclic-import
 from queue_processors.queue_processor.queueproc_utils.messaging_utils import MessagingUtils
 from queue_processors.queue_processor.queueproc_utils.instrument_variable_utils \
@@ -122,19 +119,19 @@ class Listener:
             instrument.is_active = 1
             session.commit()
 
-        # If the instrument is paused, we need to find the 'Skipped' status
         if instrument.is_paused:
             status = StatusUtils().get_skipped()
-
-        # Else we need to find the 'Queued' status number
         else:
             status = StatusUtils().get_queued()
 
         # If there has already been an autoreduction job for this run, we need to know it so we can
         # increase the version by 1 for this job. However, if not then we will set it to -1 which
         # will be incremented to 0
-        last_run = session.query(ReductionRun).filter_by(run_number=run_no).order_by(
-            sql.text('-run_version')).first()
+        model = db.start_database().data_model
+        last_run = model.ReductionRun.objects \
+            .filter(run_number=run_no) \
+            .order_by('-run_version') \
+            .first()
         if last_run is not None:
             highest_version = last_run.run_version
         else:
@@ -153,22 +150,21 @@ class Listener:
 
         # Make the new reduction run with the information collected so far and add it into the
         # database
-        reduction_run = ReductionRun(run_number=self.message.run_number,
-                                     run_version=run_version,
-                                     run_name='',
-                                     cancel=0,
-                                     hidden_in_failviewer=0,
-                                     admin_log='',
-                                     reduction_log='',
-                                     created=datetime.datetime.utcnow(),
-                                     last_updated=datetime.datetime.utcnow(),
-                                     experiment_id=experiment.id,
-                                     instrument_id=instrument.id,
-                                     status_id=status.id,
-                                     script=script_text,
-                                     started_by=self.message.started_by)
-        session.add(reduction_run)
-        session.commit()
+        reduction_run = model.ReductionRun(run_number=self.message.run_number,
+                                           run_version=run_version,
+                                           run_name='',
+                                           cancel=0,
+                                           hidden_in_failviewer=0,
+                                           admin_log='',
+                                           reduction_log='',
+                                           created=datetime.datetime.utcnow(),
+                                           last_updated=datetime.datetime.utcnow(),
+                                           experiment_id=experiment.id,
+                                           instrument_id=instrument.id,
+                                           status_id=status.id,
+                                           script=script_text,
+                                           started_by=self.message.started_by)
+        db.save_record(reduction_run)
 
         # Set our run_version to be the one we have just calculated
         self.message.run_version = reduction_run.run_version  # pylint: disable=no-member
@@ -237,8 +233,7 @@ class Listener:
                     reduction_run.status.value) == "Queued":
                 reduction_run.status = StatusUtils().get_processing()
                 reduction_run.started = datetime.datetime.utcnow()
-                session.add(reduction_run)
-                session.commit()
+                db.save_record(reduction_run)
             else:
                 logger.error("An invalid attempt to re-start a reduction run was captured. "
                              "Experiment: %s, "
@@ -279,22 +274,8 @@ class Listener:
                             model = db.start_database().data_model
                             reduction_location = model.ReductionLocation(file_path=location,
                                                                          reduction_run=reduction_run)
-
                             db.save_record(reduction_location)
-
-                            # Get any .png files and store them as base64 strings
-                            # Currently doesn't check sub-directories
-                            graphs = glob.glob(location + '*.[pP][nN][gG]')
-                            for graph in graphs:
-                                with open(graph, "rb") as image_file:
-                                    encoded_string = 'data:image/png;base64,' + base64.b64encode(
-                                        image_file.read())
-                                    if reduction_run.graph is None:
-                                        reduction_run.graph = [encoded_string]
-                                    else:
-                                        reduction_run.graph.append(encoded_string)
-                    session.add(reduction_run)
-                    session.commit()
+                    db.save_record(reduction_run)
 
                 else:
                     logger.error("An invalid attempt to complete a reduction run that wasn't "
@@ -347,8 +328,7 @@ class Listener:
         reduction_run.reduction_log = self.message.reduction_log
         reduction_run.admin_log = self.message.admin_log
 
-        session.add(reduction_run)
-        session.commit()
+        db.save_record(reduction_run)
 
     def reduction_error(self):
         """
@@ -380,9 +360,7 @@ class Listener:
         reduction_run.message = self.message.message
         reduction_run.reduction_log = self.message.reduction_log
         reduction_run.admin_log = self.message.admin_log
-
-        session.add(reduction_run)
-        session.commit()
+        db.save_record(reduction_run)
 
         if self.message.retry_in is not None:
             experiment = db.get_experiment(self.message.rb_number)
@@ -421,9 +399,12 @@ class Listener:
                     experiment.id,
                     int(self.message.run_number),
                     int(self.message.run_version))
-        reduction_run = session.query(ReductionRun)\
-            .filter_by(experiment_id=experiment.id, run_number=int(self.message.run_number),
-                       run_version=int(self.message.run_version)).first()
+        model = db.start_database().data_model
+        reduction_run = model.ReductionRun.objects \
+            .filter(experiment_id=experiment.id) \
+            .filter(run_number=int(self.message.run_number)) \
+            .filter(run_version=int(self.message.run_version)) \
+            .first()
         return reduction_run
 
     @staticmethod
