@@ -11,7 +11,6 @@ Tests that data can traverse through the autoreduction system successfully
 from __future__ import print_function
 import os
 import unittest
-import json
 import time
 import shutil
 
