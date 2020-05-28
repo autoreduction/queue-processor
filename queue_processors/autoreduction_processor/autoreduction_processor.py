@@ -87,7 +87,7 @@ class Listener(stomp.ConnectionListener):
         proc = subprocess.Popen([python_path,
                                  MISC['post_process_directory'],
                                  destination,
-                                 message.serialize()])  # PPA expects json data
+                                 message.deserialize(message.serialize())])  # PPA expects json data/dict
         self.add_process(proc, message)
 
     def update_child_process_list(self):
