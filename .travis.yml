@@ -37,6 +37,7 @@ script:
   - echo "Running System Tests"
   - py.test systemtests --cov-append
 
+
   - cat logs/queue_processor.log
   - cat logs/queue_client.log
   - cat logs/autoreduction_processor.log
