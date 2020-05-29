@@ -56,7 +56,7 @@ def get_location_and_rb_from_database(database_client, instrument, run_number):
         print("Database not connected")
         return None
 
-    all_reduction_run_records = db.get_reduction_run(run_number, instrument=instrument)
+    all_reduction_run_records = db.get_reduction_run(instrument, run_number)
 
     if not all_reduction_run_records:
         return None

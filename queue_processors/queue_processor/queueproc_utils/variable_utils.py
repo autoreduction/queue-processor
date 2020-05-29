@@ -8,9 +8,11 @@
 import logging.config
 import re
 
+# pylint: disable=import-error,no-name-in-module
+from queue_processors.queue_processor.base import session
+from queue_processors.queue_processor.orm_mapping import RunJoin, InstrumentJoin
+# pylint:disable=no-name-in-module,import-error
 from queue_processors.queue_processor.settings import LOGGING
-
-from model.database import access
 
 # Set up logging and attach the logging to the right part of the config.
 logging.config.dictConfig(LOGGING)
@@ -18,34 +20,25 @@ logger = logging.getLogger("queue_processor")  # pylint: disable=invalid-name
 
 
 class VariableUtils:
-    """
-    Class to deal with reduction run variables
-    """
+    """ Class to deal with reduction run variables. """
     @staticmethod
     def derive_run_variable(instrument_var, reduction_run):
-        """
-        Returns a RunJoin record for creation in the database
-        """
-        model = access.start_database().variable_model
-        variable = model.Variable(name=instrument_var.name,
-                                  value=instrument_var.value,
-                                  is_advanced=instrument_var.is_advanced,
-                                  type=instrument_var.type,
-                                  help_text=instrument_var.help_text)
-        access.save_record(variable)
-        run_var = model.RunVariable(variable_ptr_id=variable.id,
-                                    reduction_run_id=reduction_run.id)
-        return run_var
+        """ Returns a RunJoin record for creation in the database. """
+        return RunJoin(name=instrument_var.name,
+                       value=instrument_var.value,
+                       is_advanced=instrument_var.is_advanced,
+                       type=instrument_var.type,
+                       help_text=instrument_var.help_text,
+                       reduction_run=reduction_run)
 
     def save_run_variables(self, instrument_vars, reduction_run):
-        """
-        Save reduction run variables in the database
-        """
+        """ Save reduction run variables in the database. """
         logger.info('Saving run variables for %s', str(reduction_run.run_number))
         run_variables = map(lambda ins_var: self.derive_run_variable(ins_var, reduction_run),
                             instrument_vars)
         for run_variable in run_variables:
-            access.save_record(run_variable)
+            session.add(run_variable)
+        session.commit()
         return run_variables
 
     @staticmethod
@@ -54,19 +47,15 @@ class VariableUtils:
         Return a temporary copy (unsaved) of the variable,
         which can be modified and then saved without modifying the original.
         """
-        model = access.start_database().variable_model
-        new_variable = model.Variable(name=variable.name,
-                                      value=variable.value,
-                                      is_advanced=variable.is_advanced,
-                                      type=variable.type,
-                                      help_text=variable.help_text)
-        access.save_record(new_variable)
-        inst_var = model.InstrumentVariable(instrument=variable.instrument,
-                                            experiment_reference=variable.experiment_reference,
-                                            start_run=variable.start_run,
-                                            tracks_script=variable.tracks_script,
-                                            variable_ptr_id=variable.id)
-        return inst_var
+        return InstrumentJoin(name=variable.name,
+                              value=variable.value,
+                              is_advanced=variable.is_advanced,
+                              type=variable.type,
+                              help_text=variable.help_text,
+                              instrument=variable.instrument,
+                              experiment_reference=variable.experiment_reference,
+                              start_run=variable.start_run,
+                              tracks_script=variable.tracks_script)
 
     @staticmethod
     def get_type_string(value):

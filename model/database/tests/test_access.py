@@ -88,7 +88,7 @@ class TestAccess(unittest.TestCase):
         """
         mock_db = Mock()
         mock_start_db.return_value = mock_db
-        access.get_reduction_run(run_number=1, instrument='GEM')
+        access.get_reduction_run('GEM', 1)
         mock_db.data_model.ReductionRun.objects.filter.assert_called_once()
 
     def test_get_reduction_run_invalid(self):
@@ -96,7 +96,7 @@ class TestAccess(unittest.TestCase):
         Test: None is returned
         When: get_reduction_run is called values not in the database
         """
-        actual = access.get_reduction_run(run_number=0, instrument='GEM')
+        actual = access.get_reduction_run('GEM', 0)
         self.assertIsNone(actual.first())
 
     # pylint:disable=no-self-use
