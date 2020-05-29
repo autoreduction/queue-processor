@@ -158,7 +158,7 @@ class ReductionRunUtils:
 
         standard_vars, advanced_vars = {}, {}
         for run_variable in run_variable_records:
-            variable = run_variable.variable
+            variable = model.Variable.objects.filter(id=run_variable.variable_ptr_id).first()
             value = VariableUtils().convert_variable_to_type(variable.value, variable.type)
             if variable.is_advanced:
                 advanced_vars[variable.name] = value
