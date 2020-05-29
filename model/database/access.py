@@ -92,7 +92,7 @@ def get_reduction_run(run_number, instrument=None, rb_number=None):
 
     database = start_database()
     return database.data_model.ReductionRun.objects \
-        .filter(filter_args)
+        .filter(**filter_args)
 
 
 def save_record(record):

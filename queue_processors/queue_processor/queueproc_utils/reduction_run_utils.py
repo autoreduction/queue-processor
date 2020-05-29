@@ -78,6 +78,20 @@ class ReductionRunUtils:
             access.save_record(reduction_run.retry_run)
 
     @staticmethod
+    def get_next_version_number(reduction_run):
+        """
+        Find the next run version to use associated with a reduction run
+        :param reduction_run: (ReductionRun) The reduction run to find the next version for
+        :return: (int) next run_version number
+        """
+        last_version = -1
+        reduction_records = access.get_reduction_run(rb_number=reduction_run.experiment.id,
+                                                     run_number=reduction_run.run_number)
+        for run in reduction_records:
+            last_version = max(last_version, run.run_version)
+        return last_version + 1
+
+    @staticmethod
     def create_retry_run(user_id, reduction_run, script=None, variables=None, delay=0):
         """
         Create a run ready for re-running based on the run provided. If variables (RunVariable) are
@@ -85,20 +99,15 @@ class ReductionRunUtils:
         If a script (as a string) is supplied then use it, otherwise use the previous run's.
         """
         # find the previous run version, so we don't create a duplicate
-        last_version = -1
-        model = access.start_database().data_model
-        reduction_records = model.ReductionRun.objects \
-            .filter(experiment=reduction_run.experiment) \
-            .filter(run_number=reduction_run.run_number)
-        for run in reduction_records:
-            last_version = max(last_version, run.run_version)
+        next_version_number = ReductionRunUtils.get_next_version_number(reduction_run)
 
         # get the script to use:
         script_text = script if script is not None else reduction_run.script
 
         # create the run object and save it
+        model = access.start_database().data_model
         new_job = model.ReductionRun(run_number=reduction_run.run_number,
-                                     run_version=last_version + 1,
+                                     run_version=next_version_number,
                                      run_name="",
                                      experiment=reduction_run.experiment,
                                      instrument=reduction_run.instrument,
@@ -140,7 +149,6 @@ class ReductionRunUtils:
                 InstrumentVariablesUtils().create_variables_for_run(new_job)
 
             return new_job
-
         except:
             new_job.delete()
             raise
