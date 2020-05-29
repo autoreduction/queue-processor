@@ -642,7 +642,7 @@ class MessagingUtils(object):
 
     @staticmethod
     def _make_pending_msg(reduction_run):
-        """ Creates a dict message from the given run, ready to be sent to ReductionPending. """
+        """ Creates a Message from the given run, ready to be sent to ReductionPending. """
         script, arguments = ReductionRunUtils().get_script_and_arguments(reduction_run)
 
         # Currently only support single location
