@@ -380,7 +380,9 @@ class Listener:
                 self.message.retry_in = None
 
     def find_run(self):
-        """ Find a reduction run in the database. """
+        """
+        Find a reduction run in the database
+        """
         experiment = db_access.get_experiment(self.message.rb_number)
         if not experiment:
             logger.error("Unable to find experiment %s", self.message.rb_number)
@@ -390,13 +392,9 @@ class Listener:
                     experiment.id,
                     int(self.message.run_number),
                     int(self.message.run_version))
-        model = db_access.start_database().data_model
-        reduction_run = model.ReductionRun.objects \
-            .filter(experiment_id=experiment.id) \
-            .filter(run_number=int(self.message.run_number)) \
-            .filter(run_version=int(self.message.run_version)) \
-            .first()
-        return reduction_run
+        reduction_runs = db_access.get_reduction_run(run_number=int(self.message.run_number),
+                                                     rb_number=experiment.reference_number)
+        return reduction_runs.filter(run_version=int(self.message.run_version)).first()
 
     @staticmethod
     def retry_run(user_id, reduction_run, retry_in):
