@@ -26,7 +26,7 @@ class Message:
     Messages can be serialized and deserialized for sending messages to and from AMQ
     """
     description = attr.ib(default=None)
-    facility = attr.ib(default=None)
+    facility = attr.ib(default="ISIS")
     run_number = attr.ib(default=None)
     instrument = attr.ib(default=None)
     rb_number = attr.ib(default=None)
