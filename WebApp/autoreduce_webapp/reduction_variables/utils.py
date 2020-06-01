@@ -9,7 +9,6 @@ Utility functions for reduction variables
 """
 import cgi
 import io
-import json
 import logging
 import os
 import re
@@ -17,6 +16,8 @@ import sys
 
 import chardet
 import importlib.util as imp
+
+from message.job import Message
 
 sys.path.append(os.path.join("../", os.path.dirname(os.path.dirname(__file__))))
 os.environ["DJANGO_SETTINGS_MODULE"] = "autoreduce_webapp.settings"
@@ -630,18 +631,18 @@ class MessagingUtils(object):
 
     def send_pending(self, reduction_run, delay=None):
         """ Sends a message to the queue with the details of the job to run. """
-        data_dict = self._make_pending_msg(reduction_run)
-        self._send_pending_msg(data_dict, delay)
+        message = self._make_pending_msg(reduction_run)
+        self._send_pending_msg(message, delay)
 
     def send_cancel(self, reduction_run):
         """ Sends a message to the queue telling it to cancel any reruns of the job. """
-        data_dict = self._make_pending_msg(reduction_run)
-        data_dict["cancel"] = True
-        self._send_pending_msg(data_dict)
+        message = self._make_pending_msg(reduction_run)
+        message.cancel = True
+        self._send_pending_msg(message)
 
     @staticmethod
     def _make_pending_msg(reduction_run):
-        """ Creates a dict message from the given run, ready to be sent to ReductionPending. """
+        """ Creates a Message from the given run, ready to be sent to ReductionPending. """
         script, arguments = ReductionRunUtils().get_script_and_arguments(reduction_run)
 
         # Currently only support single location
@@ -651,20 +652,18 @@ class MessagingUtils(object):
         else:
             raise Exception("No data path found for reduction run")
 
-        data_dict = {
-            'run_number': reduction_run.run_number,
-            'instrument': reduction_run.instrument.name,
-            'rb_number': str(reduction_run.experiment.reference_number),
-            'data': data_path,
-            'reduction_script': script,
-            'reduction_arguments': arguments,
-            'run_version': reduction_run.run_version,
-            'facility': FACILITY,
-            'message': '',
-            'overwrite': reduction_run.overwrite,
-        }
-
-        return data_dict
+        message = Message(
+            run_number=reduction_run.run_number,
+            instrument=reduction_run.instrument.name,
+            rb_number=str(reduction_run.experiment.reference_number),
+            data=data_path,
+            reduction_script=script,
+            reduction_arguments=arguments,
+            run_version=reduction_run.run_version,
+            facility=FACILITY,
+            overwrite=reduction_run.overwrite
+        )
+        return message
 
     @staticmethod
     def _add_project_root_to_path():
@@ -677,14 +676,15 @@ class MessagingUtils(object):
         sys.path.append(project_root)
 
     @staticmethod
-    def _send_pending_msg(data_dict, delay=None):
-        """ Sends data_dict to ReductionPending (with the specified delay) """
+    def _send_pending_msg(message, delay=None):
+        """ Sends message to ReductionPending (with the specified delay) """
         # To prevent circular dependencies
         MessagingUtils._add_project_root_to_path()
         from utils.clients.queue_client import QueueClient
 
         message_client = QueueClient()
         message_client.connect()
-        message_client.send('/queue/ReductionPending', json.dumps(data_dict),
+
+        message_client.send('/queue/ReductionPending', message,
                             priority='0', delay=delay)
         message_client.disconnect()
