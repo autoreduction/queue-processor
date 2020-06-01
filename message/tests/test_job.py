@@ -67,7 +67,8 @@ class TestMessage(unittest.TestCase):
                           'admin_log': None,
                           'message': None,
                           'retry_in': None,
-                          'reduction_data': None
+                          'reduction_data': None,
+                          'cancel': None
                           }
         return populated_msg, populated_dict
 
@@ -94,6 +95,7 @@ class TestMessage(unittest.TestCase):
         self.assertIsNone(empty_msg.message)
         self.assertIsNone(empty_msg.retry_in)
         self.assertIsNone(empty_msg.reduction_data)
+        self.assertIsNone(empty_msg.cancel)
 
     def test_to_dict_populated(self):
         """

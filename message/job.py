@@ -41,7 +41,8 @@ class Message:
     admin_log = attr.ib(default=None)
     message = attr.ib(default=None)
     retry_in = attr.ib(default=None)
-    reduction_data = attr.ib(default=None)
+    reduction_data = attr.ib(default=None)  # Required by PPA
+    cancel = attr.ib(default=None)  # Required by messaging_utils/autoreduction_processor
 
     def serialize(self, indent=None, limit_reduction_script=False):
         """

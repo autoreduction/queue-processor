@@ -7,7 +7,6 @@
 """
 Test cases for the messaging utils
 """
-import json
 import unittest
 
 from mock import patch
@@ -43,6 +42,6 @@ class TestMessagingUtils(unittest.TestCase):
 
         (args, kwargs) = mock_send.call_args
         self.assertEqual(args[0], self.pending_queue_name)
-        self.assertEqual(args[1], json.dumps(self.test_data))
+        self.assertEqual(args[1], self.test_data)
         self.assertEqual(kwargs["priority"], '0')
         self.assertEqual(kwargs["delay"], None)
