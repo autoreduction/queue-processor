@@ -25,7 +25,7 @@ class TestMessage(unittest.TestCase):
         """ Create and return an empty message object and corresponding dictionary"""
         empty_msg = Message()
         empty_dict = {'description': None,
-                      'facility': None,
+                      'facility': "ISIS",
                       'run_number': None,
                       'instrument': None,
                       'rb_number': None,
@@ -52,7 +52,7 @@ class TestMessage(unittest.TestCase):
                                 rb_number=rb_number,
                                 description=description)
         populated_dict = {'description': description,
-                          'facility': None,
+                          'facility': "ISIS",
                           'run_number': run_number,
                           'instrument': None,
                           'rb_number': rb_number,
@@ -79,7 +79,7 @@ class TestMessage(unittest.TestCase):
         """
         empty_msg, _ = self._empty()
         self.assertIsNone(empty_msg.description)
-        self.assertIsNone(empty_msg.facility)
+        self.assertEqual(empty_msg.facility, "ISIS")
         self.assertIsNone(empty_msg.run_number)
         self.assertIsNone(empty_msg.instrument)
         self.assertIsNone(empty_msg.rb_number)
