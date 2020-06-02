@@ -207,12 +207,17 @@ class TestMessage(unittest.TestCase):
                           run_number=111,
                           rb_number=222,
                           data='file/path',
-                          facility="ISIS")
+                          facility="ISIS",
+                          started_by=0)
         try:
-            message.validate('/queue/DataReady')
+            self.assertIsNone(message.validate('/queue/DataReady'))
         except RuntimeError:
             self.fail()
 
     def test_validate_data_ready_invalid(self):
+        """
+        Test: An exception is raised
+        When: An invalid Message is validated
+        """
         message = Message(instrument='Not an inst')
         self.assertRaises(RuntimeError, message.validate, '/queue/DataReady')

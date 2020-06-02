@@ -105,5 +105,5 @@ class Message:
             is_valid = stages.validate_data_ready(self)
 
         if not is_valid:
-            raise RuntimeError(f"Message was not valid for queue {destination}."
+            raise RuntimeError(f"Message was not valid for queue {destination}. "
                                f"Please check logs for more detail.")
