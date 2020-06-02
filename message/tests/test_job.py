@@ -197,3 +197,22 @@ class TestMessage(unittest.TestCase):
         msg = Message()
         msg.populate(args)
         mock_log.assert_called_once()
+
+    def test_validate_data_ready_valid(self):
+        """
+        Test: No exception is raised
+        When: Calling validate for data_ready with a valid message
+        """
+        message = Message(instrument='GEM',
+                          run_number=111,
+                          rb_number=222,
+                          data='file/path',
+                          facility="ISIS")
+        try:
+            message.validate('/queue/DataReady')
+        except RuntimeError:
+            self.fail()
+
+    def test_validate_data_ready_invalid(self):
+        message = Message(instrument='Not an inst')
+        self.assertRaises(RuntimeError, message.validate, '/queue/DataReady')
