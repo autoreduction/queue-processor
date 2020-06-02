@@ -10,6 +10,8 @@ Test the Message class
 import unittest
 import json
 
+from mock import patch
+
 import attr
 
 from message.job import Message
@@ -183,3 +185,15 @@ class TestMessage(unittest.TestCase):
         serialized = 'test'
         empty_msg, _ = self._empty()
         self.assertRaises(ValueError, empty_msg.populate, serialized)
+
+    # pylint:disable=no-self-use
+    @patch('logging.warning')
+    def test_populate_with_invalid_key(self, mock_log):
+        """
+        Test: A warning is logged
+        When: An unknown key is used to populate the Message
+        """
+        args = {'unknown': True}
+        msg = Message()
+        msg.populate(args)
+        mock_log.assert_called_once()
