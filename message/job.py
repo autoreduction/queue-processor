@@ -18,6 +18,7 @@ from utils.project.structure import get_log_file
 logging.basicConfig(filename=get_log_file('job.log'), level=logging.INFO,
                     format=LOG_FORMAT)
 
+
 # pylint:disable=too-many-instance-attributes
 @attr.s
 class Message:
