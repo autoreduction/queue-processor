@@ -23,6 +23,6 @@ def validate_data_ready(message):
         'rb_number_valid': isinstance(message.rb_number, int),
         'started_by_valid': isinstance(message.started_by, int),
         'file_path_valid': isinstance(message.data, str),
-        'facility': isinstance(message.facility, str)
+        'facility_valid': isinstance(message.facility, str)
     }
     return check_validity_dict(validity_dict)

@@ -13,14 +13,14 @@ from utils.settings import VALID_INSTRUMENTS
 def validate_run_number(run_number):
     """
     Assert a run number is valid
-    :param run_number: The run numebr to validate
+    :param run_number: The run number to validate
     """
     return isinstance(run_number, int) and run_number > 0
 
 
 def validate_instrument(instrument):
     """
-    Assert an instrument exists in the valid set of instruemnts
+    Assert an instrument exists in the valid set of instruments
     :param instrument: The instrument to validate
     """
     return isinstance(instrument, str) and instrument in VALID_INSTRUMENTS
