@@ -20,7 +20,7 @@ def validate_data_ready(message):
     validity_dict = {
         'run_number': validate_run_number(message.run_number),
         'instrument': validate_instrument(message.instrument),
-        'rb_number': isinstance(message.rb_number, str) or isinstance(message.rb_number, int),
+        'rb_number': isinstance(message.rb_number, (int, str)),
         'started_by': isinstance(message.started_by, int),
         'file_path': isinstance(message.data, str),
         'facility': isinstance(message.facility, str)

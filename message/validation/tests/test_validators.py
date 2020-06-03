@@ -24,6 +24,7 @@ class TestValidators(unittest.TestCase):
         When: In valid and invalid cases
         """
         self.assertTrue(validators.validate_run_number(1))
+        self.assertTrue(validators.validate_run_number('001'))
 
         self.assertFalse(validators.validate_run_number(0))
         self.assertFalse(validators.validate_run_number(-1))

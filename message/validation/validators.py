@@ -15,7 +15,13 @@ def validate_run_number(run_number):
     Assert a run number is valid
     :param run_number: The run number to validate
     """
-    return isinstance(run_number, int) and run_number > 0
+    if isinstance(run_number, (int, str)):
+        try:
+            if int(run_number) > 0:
+                return True
+        except ValueError:
+            pass
+    return False
 
 
 def validate_instrument(instrument):
