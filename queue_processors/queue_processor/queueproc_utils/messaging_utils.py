@@ -5,12 +5,16 @@
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 """ Utils moudle for sending messages to queues. """
-import json
+import logging.config
 
-# pylint:disable=cyclic-import
+# pylint: disable=cyclic-import
+from message.job import Message
+from queue_processors.queue_processor.base import session
+from queue_processors.queue_processor.orm_mapping import DataLocation
+# pylint:disable=no-name-in-module,import-error
 from queue_processors.queue_processor.settings import FACILITY
-from utils.clients.queue_client import QueueClient
 
+from utils.clients.queue_client import QueueClient
 from model.database import access
 
 
@@ -18,14 +22,14 @@ class MessagingUtils:
     """ Utils class for sending messages to queues. """
     def send_pending(self, reduction_run, delay=None):
         """ Sends a message to the queue with the details of the job to run. """
-        data_dict = self._make_pending_msg(reduction_run)
-        self._send_pending_msg(data_dict, delay)
+        message = self._make_pending_msg(reduction_run)
+        self._send_pending_msg(message, delay)
 
     def send_cancel(self, reduction_run):
         """ Sends a message to the queue telling it to cancel any reruns of the job. """
-        data_dict = self._make_pending_msg(reduction_run)
-        data_dict["cancel"] = True
-        self._send_pending_msg(data_dict)
+        message = self._make_pending_msg(reduction_run)
+        message.cancel = True
+        self._send_pending_msg(message)
 
     @staticmethod
     def _make_pending_msg(reduction_run):
@@ -44,28 +48,26 @@ class MessagingUtils:
         else:
             raise Exception("No data path found for reduction run")
 
-        data_dict = {
-            'run_number': reduction_run.run_number,
-            'instrument': reduction_run.instrument.name,
-            'rb_number': str(reduction_run.experiment.reference_number),
-            'data': data_path,
-            'reduction_script': script,
-            'reduction_arguments': arguments,
-            'run_version': reduction_run.run_version,
-            'facility': FACILITY,
-            'message': '',
-        }
-
-        return data_dict
+        message = Message(
+            run_number=reduction_run.run_number,
+            instrument=reduction_run.instrument.name,
+            rb_number=str(reduction_run.experiment.reference_number),
+            data=data_path,
+            reduction_script=script,
+            reduction_arguments=arguments,
+            run_version=reduction_run.run_version,
+            facility=FACILITY
+        )
+        return message
 
     @staticmethod
-    def _send_pending_msg(data_dict, delay=None):
+    def _send_pending_msg(message, delay=None):
         """ Sends data_dict to ReductionPending (with the specified delay) """
         # To prevent circular dependencies
         message_client = QueueClient()
         message_client.connect()
         message_client.send('/queue/ReductionPending',
-                            json.dumps(data_dict),
+                            message,
                             priority='0',
                             delay=delay)
         message_client.disconnect()

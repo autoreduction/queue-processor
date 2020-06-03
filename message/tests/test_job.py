@@ -10,6 +10,8 @@ Test the Message class
 import unittest
 import json
 
+from mock import patch
+
 import attr
 
 from message.job import Message
@@ -25,7 +27,7 @@ class TestMessage(unittest.TestCase):
         """ Create and return an empty message object and corresponding dictionary"""
         empty_msg = Message()
         empty_dict = {'description': None,
-                      'facility': None,
+                      'facility': "ISIS",
                       'run_number': None,
                       'instrument': None,
                       'rb_number': None,
@@ -52,7 +54,7 @@ class TestMessage(unittest.TestCase):
                                 rb_number=rb_number,
                                 description=description)
         populated_dict = {'description': description,
-                          'facility': None,
+                          'facility': "ISIS",
                           'run_number': run_number,
                           'instrument': None,
                           'rb_number': rb_number,
@@ -68,8 +70,7 @@ class TestMessage(unittest.TestCase):
                           'message': None,
                           'retry_in': None,
                           'reduction_data': None,
-                          'run_description': None,
-                          'error': None
+                          'cancel': None
                           }
         return populated_msg, populated_dict
 
@@ -80,7 +81,7 @@ class TestMessage(unittest.TestCase):
         """
         empty_msg, _ = self._empty()
         self.assertIsNone(empty_msg.description)
-        self.assertIsNone(empty_msg.facility)
+        self.assertEqual(empty_msg.facility, "ISIS")
         self.assertIsNone(empty_msg.run_number)
         self.assertIsNone(empty_msg.instrument)
         self.assertIsNone(empty_msg.rb_number)
@@ -96,8 +97,7 @@ class TestMessage(unittest.TestCase):
         self.assertIsNone(empty_msg.message)
         self.assertIsNone(empty_msg.retry_in)
         self.assertIsNone(empty_msg.reduction_data)
-        self.assertIsNone(empty_msg.run_description)
-        self.assertIsNone(empty_msg.error)
+        self.assertIsNone(empty_msg.cancel)
 
     def test_to_dict_populated(self):
         """
@@ -185,3 +185,15 @@ class TestMessage(unittest.TestCase):
         serialized = 'test'
         empty_msg, _ = self._empty()
         self.assertRaises(ValueError, empty_msg.populate, serialized)
+
+    # pylint:disable=no-self-use
+    @patch('logging.warning')
+    def test_populate_with_invalid_key(self, mock_log):
+        """
+        Test: A warning is logged
+        When: An unknown key is used to populate the Message
+        """
+        args = {'unknown': True}
+        msg = Message()
+        msg.populate(args)
+        mock_log.assert_called_once()

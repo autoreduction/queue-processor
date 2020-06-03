@@ -18,6 +18,7 @@ from utils.project.structure import get_log_file
 logging.basicConfig(filename=get_log_file('job.log'), level=logging.INFO,
                     format=LOG_FORMAT)
 
+
 # pylint:disable=too-many-instance-attributes
 @attr.s
 class Message:
@@ -26,7 +27,7 @@ class Message:
     Messages can be serialized and deserialized for sending messages to and from AMQ
     """
     description = attr.ib(default=None)
-    facility = attr.ib(default=None)
+    facility = attr.ib(default="ISIS")
     run_number = attr.ib(default=None)
     instrument = attr.ib(default=None)
     rb_number = attr.ib(default=None)
@@ -41,19 +42,21 @@ class Message:
     admin_log = attr.ib(default=None)
     message = attr.ib(default=None)
     retry_in = attr.ib(default=None)
+    reduction_data = attr.ib(default=None)  # Required by PPA
+    cancel = attr.ib(default=None)  # Required by messaging_utils/autoreduction_processor
 
-    reduction_data = attr.ib(default=None)
-    run_description = attr.ib(default=None)
-    error = attr.ib(default=None)
-
-
-    def serialize(self, indent=None):
+    def serialize(self, indent=None, limit_reduction_script=False):
         """
         Serialized member variables as a json dump
         :param indent: The indent level passed to json.dumps
+        :param limit_reduction_script: if True, limits reduction_script to 50 chars in return
         :return: JSON dump of a dictionary representing the member variables
         """
-        return json.dumps(attr.asdict(self), indent=indent)
+        data_dict = attr.asdict(self)
+        if limit_reduction_script:
+            data_dict["reduction_script"] = data_dict["reduction_script"][:50]
+
+        return json.dumps(data_dict, indent=indent)
 
     @staticmethod
     def deserialize(serialized_object):

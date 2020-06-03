@@ -147,6 +147,7 @@ class TestManualSubmission(unittest.TestCase):
                           instrument=self.sub_run_args[2],
                           data=self.sub_run_args[3],
                           run_number=self.sub_run_args[4],
+                          facility="ISIS",
                           started_by=-1)
         self.sub_run_args[0].send.assert_called_with('/queue/DataReady',
                                                      message,

@@ -87,20 +87,6 @@ class TestQueueClient(unittest.TestCase):
         client.disconnect()
         self.assertIsNone(client._connection)
 
-    def test_serialise_message(self):
-        """
-        Test: Data is correctly serialised
-        When: serialise_data is called with valid arguments
-        """
-        client = QueueClient()
-        data = client.serialise_data('123', 'WISH', 'file/path', '001', 0)
-        self.assertEqual(data['rb_number'], '123')
-        self.assertEqual(data['instrument'], 'WISH')
-        self.assertEqual(data['data'], 'file/path')
-        self.assertEqual(data['run_number'], '001')
-        self.assertEqual(data['facility'], 'ISIS')
-        self.assertEqual(data['started_by'], 0)
-
     # pylint:disable=no-self-use
     @patch('stomp.connect.StompConnection11.send')
     def test_send_with_raw_string(self, mock_stomp_send):

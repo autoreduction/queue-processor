@@ -159,7 +159,6 @@ class TestRunDetection(unittest.TestCase):
     def test_submit_run_invalid_nexus(self, read_rb_mock, isfile_mock):
         client = Mock()
         client.send = Mock(return_value=None)
-        client.serialise_data = Mock(return_value=RUN_DATA['summary_rb_number'])
 
         inst_mon = InstrumentMonitor(client, 'WISH')
         inst_mon.data_dir = '/my/data/dir'
