@@ -134,7 +134,8 @@ class TestRunDetection(unittest.TestCase):
         data_loc = os.path.join(inst_mon.data_dir, CYCLE_FOLDER, FILE_NAME)
 
         inst_mon.submit_run(RUN_DATA['summary_rb_number'], RUN_DATA['run_number'], FILE_NAME)
-        message = Message(rb_number=RUN_DATA['rb_number'],
+        message = Message(instrument='WISH',
+                          rb_number=RUN_DATA['rb_number'],
                           run_number=RUN_DATA['run_number'],
                           data=data_loc)
         client.send.assert_called_with('/queue/DataReady', message, priority='9')
@@ -165,7 +166,8 @@ class TestRunDetection(unittest.TestCase):
         data_loc = os.path.join(inst_mon.data_dir, CYCLE_FOLDER, FILE_NAME)
 
         inst_mon.submit_run(RUN_DATA['summary_rb_number'], RUN_DATA['run_number'], FILE_NAME)
-        message = Message(rb_number=RUN_DATA['summary_rb_number'],
+        message = Message(instrument='WISH',
+                          rb_number=RUN_DATA['summary_rb_number'],
                           run_number=RUN_DATA['run_number'],
                           data=data_loc)
         client.send.assert_called_with('/queue/DataReady',
