@@ -129,7 +129,8 @@ class InstrumentMonitor:
             if rb_number is None:
                 rb_number = summary_rb_number
             EORM_LOG.info("Submitting '%s' with RB number '%s'", file_name, rb_number)
-            message = Message(rb_number=rb_number,
+            message = Message(instrument=self.instrument_name,
+                              rb_number=rb_number,
                               run_number=run_number,
                               data=file_path)
             self.client.send('/queue/DataReady', message, priority='9')
