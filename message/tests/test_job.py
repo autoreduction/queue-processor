@@ -38,8 +38,8 @@ class TestMessage(unittest.TestCase):
                       'job_id': None,
                       'reduction_script': None,
                       'reduction_arguments': None,
-                      'reduction_log': None,
-                      'admin_log': None,
+                      'reduction_log': "",
+                      'admin_log': "",
                       'return_message': None,
                       'retry_in': None}
         return empty_msg, empty_dict
@@ -65,8 +65,8 @@ class TestMessage(unittest.TestCase):
                           'job_id': None,
                           'reduction_script': None,
                           'reduction_arguments': None,
-                          'reduction_log': None,
-                          'admin_log': None,
+                          'reduction_log': "",
+                          'admin_log': "",
                           'message': None,
                           'retry_in': None,
                           'reduction_data': None,
@@ -92,8 +92,8 @@ class TestMessage(unittest.TestCase):
         self.assertIsNone(empty_msg.job_id)
         self.assertIsNone(empty_msg.reduction_script)
         self.assertIsNone(empty_msg.reduction_arguments)
-        self.assertIsNone(empty_msg.reduction_log)
-        self.assertIsNone(empty_msg.admin_log)
+        self.assertEqual(empty_msg.reduction_log, "")
+        self.assertEqual(empty_msg.admin_log, "")
         self.assertIsNone(empty_msg.message)
         self.assertIsNone(empty_msg.retry_in)
         self.assertIsNone(empty_msg.reduction_data)

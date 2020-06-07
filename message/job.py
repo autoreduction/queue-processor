@@ -40,8 +40,8 @@ class Message:
     job_id = attr.ib(default=None)
     reduction_script = attr.ib(default=None)
     reduction_arguments = attr.ib(default=None)
-    reduction_log = attr.ib(default=None)
-    admin_log = attr.ib(default=None)
+    reduction_log = attr.ib(default="")  # Cannot be null in database
+    admin_log = attr.ib(default="")  # Cannot be null in database
     message = attr.ib(default=None)
     retry_in = attr.ib(default=None)
     reduction_data = attr.ib(default=None)  # Required by PPA
