@@ -5,13 +5,9 @@
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 """ Utils moudle for sending messages to queues. """
-import logging.config
 
 # pylint: disable=cyclic-import
 from message.job import Message
-from queue_processors.queue_processor.base import session
-from queue_processors.queue_processor.orm_mapping import DataLocation
-# pylint:disable=no-name-in-module,import-error
 from queue_processors.queue_processor.settings import FACILITY
 
 from utils.clients.queue_client import QueueClient
