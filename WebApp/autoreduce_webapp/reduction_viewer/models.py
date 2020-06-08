@@ -168,3 +168,22 @@ class Notification(models.Model):
         :return: the severity as its textual value
         """
         return dict(Notification.SEVERITY_CHOICES)[self.severity]
+
+
+class OutputType(models.Model):
+    """
+    Represents the output types of file that can be output from a job
+    This is an enum table
+    """
+    type = models.CharField(max_length=50, blank=False)
+
+
+class Output(models.Model):
+    """
+    Represents the output of a reduction job (file path and type)
+    """
+    job_id = models.ForeignKey(ReductionRun, blank=False, related_name='reduction_output',
+                               on_delete=models.CASCADE)
+    file_path = models.CharField(max_length=255, blank=False)
+    type_id = models.ForeignKey(OutputType, blank=False, related_name='output',
+                                on_delete=models.CASCADE)

@@ -152,3 +152,23 @@ VALUES
     (10, 5),
     (11, 6),
     (12, 7);
+
+
+# ======================================= #
+# reduction_viewer_outputtype
+INSERT INTO reduction_viewer_outputtype
+    (id, type)
+VALUES
+    (1, 'reduced'),
+    (2, 'image'),
+    (3, 'ascii');
+
+
+# ======================================= #
+# reduction_viewer_output
+INSERT INTO reduction_viewer_output
+    (id, job_id, file_path, type_id)
+VALUES
+    (1, 1, '/output/reduce.nxs', 1),
+    (2, 1, '/output/image.png', 2),
+    (3, 1, '/output/ascii.txt', 3);
