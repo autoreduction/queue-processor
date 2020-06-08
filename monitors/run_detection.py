@@ -129,10 +129,13 @@ class InstrumentMonitor:
             if rb_number is None:
                 rb_number = summary_rb_number
             EORM_LOG.info("Submitting '%s' with RB number '%s'", file_name, rb_number)
-            message = Message(instrument=self.instrument_name,
-                              rb_number=rb_number,
-                              run_number=run_number,
-                              data=file_path)
+            message = Message(
+                instrument=self.instrument_name,
+                rb_number=rb_number,
+                run_number=run_number,
+                data=file_path,
+                started_by=0)  # Autoreduction service code
+            message.validate('/queue/DataReady')
             self.client.send('/queue/DataReady', message, priority='9')
         else:
             raise FileNotFoundError("File does not exist '{}'".format(file_path))
