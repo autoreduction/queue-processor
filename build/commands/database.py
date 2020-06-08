@@ -57,9 +57,9 @@ class InitialiseTestDatabase(Command):
         BUILD_LOGGER.print_and_log("Migrating databases from django model")
         if generate_schema(ROOT_DIR, BUILD_LOGGER.logger) is False:
             return
-        BUILD_LOGGER.print_and_log("Populating database with test data")
-        if run_sql(connection=local_db_connection,
-                   sql=get_sql_from_file(self.populate_sql_path),
-                   logger=BUILD_LOGGER.logger) is False:
-            return
+        # BUILD_LOGGER.print_and_log("Populating database with test data")
+        # if run_sql(connection=local_db_connection,
+        #            sql=get_sql_from_file(self.populate_sql_path),
+        #            logger=BUILD_LOGGER.logger) is False:
+        #     return
         BUILD_LOGGER.print_and_log("Test database successfully initialised\n")

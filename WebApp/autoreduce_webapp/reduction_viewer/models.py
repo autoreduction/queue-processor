@@ -182,8 +182,8 @@ class Output(models.Model):
     """
     Represents the output of a reduction job (file path and type)
     """
-    job_id = models.ForeignKey(ReductionRun, blank=False, related_name='reduction_output',
-                               on_delete=models.CASCADE)
+    job = models.ForeignKey(ReductionRun, blank=False, related_name='output',
+                            on_delete=models.CASCADE)
     file_path = models.CharField(max_length=255, blank=False)
-    type_id = models.ForeignKey(OutputType, blank=False, related_name='output',
-                                on_delete=models.CASCADE)
+    type = models.ForeignKey(OutputType, blank=False, related_name='output',
+                             on_delete=models.CASCADE)
