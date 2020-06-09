@@ -29,10 +29,11 @@ class PlotHandler:
         If None, a list of common graphics file extensions is searched for.
     """
 
-    def __init__(self, instrument_name, rb_number, run_number, plot_type=None):
+    def __init__(self, instrument_name, rb_number, run_number, expected_dir=None, plot_type=None):
         self.instrument_name = instrument_name
         self.rb_number = rb_number
         self.run_number = run_number
+        self.expected_dir = expected_dir
         if plot_type is None:
             # list of plot types the handler looks for if none is provided; it searches for the types in the order of
             # the list and selects the first one that exists. In future: could add vector graphics (.pdf, .eps)
@@ -77,7 +78,8 @@ class PlotHandler:
             # regular expression for plot file name(s)
             file_regex = self._regexp_for_file_name(plot_type=plot_type_i)
             # use sftpclient to check if files matching the regular expression exist and add any matches to the list
-            _found_files.extend(client.get_filenames(server_dir_path=self._rb_folder, regex=file_regex))
+            _ceph_path = self.expected_dir if self.expected_dir else self._rb_folder
+            _found_files.extend(client.get_filenames(server_dir_path=_ceph_path, regex=file_regex))
         return _found_files
 
     def get_plot_file(self):
