@@ -42,7 +42,7 @@ class Help(Command):
                     ('     externals', 'Install all external programs'),
                     ('              ', 'Use the -s argument to specify a comma'
                                        'separated list of services:'),
-                    ('              ', '    python setup.py externals -s activemq,icat,mantid'),
+                    ('              ', '    python setup.py externals -s activemq,mantid'),
                     ('     start', 'starts required services: activemq'),
                     ('     help', 'Show the help documentation')
                    )

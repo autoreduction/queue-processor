@@ -6,7 +6,6 @@
 # ############################################################################### #
 """
 A collection of tests to validate external requirements:
-icat
 mantid
 activemq
 """
@@ -25,8 +24,6 @@ def validate_installs(list_of_services):
         service = service.lower()
         if service == 'activemq':
             service_validity['activemq'] = _validate_activemq()
-        elif service == 'icat':
-            service_validity['icat'] = _validate_icat()
         elif service == 'mantid':
             service_validity['mantid'] = _validate_mantid()
         elif service == '7zip':
@@ -43,15 +40,6 @@ def _validate_7zip():
 def _validate_activemq():
     """ Validate the existence of the activemq executable"""
     return os.path.isfile(ACTIVEMQ_EXECUTABLE)
-
-
-def _validate_icat():
-    try:
-        # pylint:disable=import-outside-toplevel,unused-import
-        import icat
-    except ImportError:
-        return False
-    return True
 
 
 def _validate_mantid():
