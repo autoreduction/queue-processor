@@ -15,11 +15,17 @@ if not exist %folder% (
 
 if not exist %destination% (
     echo Information: Downloading activemq - this could take several minutes
-    powershell -Command "(new-object System.Net.WebClient).DownloadFile('http://www.apache.org/dyn/closer.cgi?filename=/activemq/5.15.9/apache-activemq-5.15.9-bin.zip&action=download', '"%destination%"')"
-    echo Information: Download complete
-    echo Information: Extracting ActiveMQ
-    %path_to_7z%\7z x %destination% -o%folder%
-    del %destination%
+    powershell -Command "(new-object System.Net.WebClient).DownloadFile('https://archive.apache.org/dist/activemq/5.15.9/apache-activemq-5.15.9-bin.zip', '"%destination%"')"
+    REM if download failed then file still does not exist
+    if not exist %destination% (
+        echo Error: Download failed
+        exit /b 1
+    ) else (
+        echo Information: Download complete
+        echo Information: Extracting ActiveMQ
+        %path_to_7z%\7z x %destination% -o%folder%
+        del %destination%
+    )
 ) else (
     echo Information: ActiveMQ files already detected in this location
     echo Information: If validation fails - delete %destination% and re-run this script
