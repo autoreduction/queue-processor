@@ -51,13 +51,11 @@ class TestStatusUtils(unittest.TestCase):
         self.status_utils.get_skipped()
         mock_get_status.assert_called_with("Skipped")
 
-    @patch('queue_processors.queue_processor.base.session.query')
-    def test_get_status_valid(self, mock_query):
+    def test_get_status_valid(self):
         """
         Test that the expected Status object is returned if it exists
         Note: we are mocking the database return to ensure it does exist
         """
-        mock_query.return_value.filter_by.return_value = [self.completed_status]
         # pylint:disable=protected-access
         actual = self.status_utils._get_status('valid')
         self.assertIsNotNone(actual)
