@@ -264,12 +264,13 @@ class InstrumentVariablesUtils:
                                                                     instrument.name,
                                                                     script))
 
+            db.save_record(variable)
+
             instrument_variable = model.InstrumentVariable(start_run=0,
                                                            instrument_id=instrument.id,
-                                                           variable=variable,
+                                                           variable_ptr_id=variable.id,
                                                            tracks_script=1)
 
-            db.save_record(variable)
             db.save_record(instrument_variable)
 
             variables.append(instrument_variable)
