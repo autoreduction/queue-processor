@@ -8,7 +8,6 @@
 Module to install external programs not required by the project
 7zip
 ActiveMQ
-ICAT
 Mantid
 """
 import sys
@@ -47,7 +46,6 @@ class InstallExternals(Command):
             self.services = service_dict
         else:
             self.services = {'activemq': False,
-                             'icat': False,
                              'mantid': False}
         if os.name == 'nt' and '7zip' not in self.services:
             self.services['7zip'] = False
@@ -135,7 +133,7 @@ class InstallExternals(Command):
     def _validate_services(list_of_services, quiet=True):
         """
         Check if services are installed and usable. Current checks:
-            7Zip, ActiveMQ, icat, Mantid
+            7Zip, ActiveMQ, Mantid
         :param quiet: boolean to decide if anything is printed on validation failure
         :return: dictionary of {"service_name": validity(True/False)}
         """
