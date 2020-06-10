@@ -119,7 +119,7 @@ class InstrumentVariablesUtils:
         model = db.start_database().variable_model
         applicable_variables = model.InstrumentVariable.objects \
             .filter(instrument_id=instrument.id) \
-            .order('-start_run')
+            .order_by('-start_run')
         variable_run_number = applicable_variables[0].start_run
 
         # Now use the InstrumentJoin class (which is a join of the InstrumentVariable and Variable
