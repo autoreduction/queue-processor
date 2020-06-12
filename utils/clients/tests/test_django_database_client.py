@@ -9,7 +9,7 @@ Test cases for the django database client
 """
 import unittest
 
-from mock import patch, Mock
+from mock import patch
 
 from utils.clients.connection_exception import ConnectionException
 from utils.clients.django_database_client import DatabaseClient
@@ -74,47 +74,3 @@ class TestDatabaseClient(unittest.TestCase):
         django_client.disconnect()
         self.assertIsNone(django_client.data_model)
         self.assertIsNone(django_client.variable_model)
-
-    def test_get_instrument_valid(self):
-        """
-        Test: The correct instrument object is returned
-        When: get_instrument is called on a valid database connection
-        """
-        client = DatabaseClient()
-        client.connect()
-        actual = client.get_instrument('GEM')
-        self.assertIsNotNone(actual)
-        self.assertEqual('GEM', actual.name)
-
-    def test_get_instrument_invalid(self):
-        """
-        Test: None is returned
-        When: get_instrument is called with an instrument that does not exist
-        """
-        client = DatabaseClient()
-        client.connect()
-        actual = client.get_instrument('Fake instrument')
-        self.assertIsNone(actual)
-
-    # pylint:disable=no-self-use
-    def test_get_reduction_run_valid(self):
-        """
-        Test: A ReductionRun record is returned
-        When: get_reduction_run is called with values that match a database record
-        """
-        mock_data_model = Mock()
-        client = DatabaseClient()
-        client.connect()
-        client.data_model = mock_data_model
-        client.get_reduction_run('GEM', 1)
-        mock_data_model.ReductionRun.objects.filter.assert_called_once()
-
-    def test_get_reduction_run_invalid(self):
-        """
-        Test: None is returned
-        When: get_reduction_run is called values not in the database
-        """
-        client = DatabaseClient()
-        client.connect()
-        actual = client.get_reduction_run('GEM', 0)
-        self.assertIsNone(actual.first())

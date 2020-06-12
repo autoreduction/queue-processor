@@ -11,6 +11,7 @@ from __future__ import print_function
 import argparse
 
 from utils.clients.django_database_client import DatabaseClient
+from model.database import access as db
 
 
 class ManualRemove:
@@ -33,7 +34,7 @@ class ManualRemove:
         :param run_number: (int) The run to search for in the database
         :return: The result of the query
         """
-        instrument_record = self.database.get_instrument(self.instrument)
+        instrument_record = db.get_instrument(self.instrument)
         result = self.database.data_model.ReductionRun.objects \
             .filter(instrument=instrument_record.id) \
             .filter(run_number=run_number) \

@@ -26,6 +26,8 @@ from utils.data_archive.archive_explorer import ArchiveExplorer
 from utils.project.structure import get_project_root
 
 
+from model.database import access as db
+
 if os.name != 'nt':
     class TestEndToEnd(unittest.TestCase):
         """ Class to test pipelines in autoreduction"""
@@ -178,7 +180,7 @@ if os.name != 'nt':
                 print('Waiting for: {}'.format(timeout))
                 time.sleep(timeout)
                 # Check database has expected values
-                instrument_record = self.database_client.get_instrument(self.instrument)
+                instrument_record = db.get_instrument(self.instrument)
                 results = self.database_client.data_model.ReductionRun.objects \
                     .filter(instrument=instrument_record.id) \
                     .filter(run_number=self.run_number) \

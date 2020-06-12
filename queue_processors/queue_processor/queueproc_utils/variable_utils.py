@@ -4,15 +4,15 @@
 # Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
-""" Class to deal with reduction run variables. """
+"""
+Class to deal with reduction run variables
+"""
 import logging.config
 import re
 
-# pylint: disable=import-error,no-name-in-module
-from queue_processors.queue_processor.base import session
-from queue_processors.queue_processor.orm_mapping import RunJoin, InstrumentJoin
-# pylint:disable=no-name-in-module,import-error
 from queue_processors.queue_processor.settings import LOGGING
+
+from model.database import access
 
 # Set up logging and attach the logging to the right part of the config.
 logging.config.dictConfig(LOGGING)
@@ -24,12 +24,13 @@ class VariableUtils:
     @staticmethod
     def derive_run_variable(instrument_var, reduction_run):
         """ Returns a RunJoin record for creation in the database. """
-        return RunJoin(name=instrument_var.name,
-                       value=instrument_var.value,
-                       is_advanced=instrument_var.is_advanced,
-                       type=instrument_var.type,
-                       help_text=instrument_var.help_text,
-                       reduction_run=reduction_run)
+        model = access.start_database().variable_model
+        return model.RunVariable(name=instrument_var.name,
+                                 value=instrument_var.value,
+                                 is_advanced=instrument_var.is_advanced,
+                                 type=instrument_var.type,
+                                 help_text=instrument_var.help_text,
+                                 reduction_run=reduction_run)
 
     def save_run_variables(self, instrument_vars, reduction_run):
         """ Save reduction run variables in the database. """
@@ -37,8 +38,7 @@ class VariableUtils:
         run_variables = map(lambda ins_var: self.derive_run_variable(ins_var, reduction_run),
                             instrument_vars)
         for run_variable in run_variables:
-            session.add(run_variable)
-        session.commit()
+            access.save_record(run_variable)
         return run_variables
 
     @staticmethod
@@ -47,15 +47,8 @@ class VariableUtils:
         Return a temporary copy (unsaved) of the variable,
         which can be modified and then saved without modifying the original.
         """
-        return InstrumentJoin(name=variable.name,
-                              value=variable.value,
-                              is_advanced=variable.is_advanced,
-                              type=variable.type,
-                              help_text=variable.help_text,
-                              instrument=variable.instrument,
-                              experiment_reference=variable.experiment_reference,
-                              start_run=variable.start_run,
-                              tracks_script=variable.tracks_script)
+        variable.pk = None  # Creates a copy by changing primary key to None
+        return variable
 
     @staticmethod
     def get_type_string(value):

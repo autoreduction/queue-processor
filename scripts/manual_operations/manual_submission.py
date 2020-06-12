@@ -18,6 +18,8 @@ from utils.clients.icat_client import ICATClient
 from utils.clients.queue_client import QueueClient
 from utils.clients.django_database_client import DatabaseClient
 
+from model.database import access as db
+
 
 def submit_run(active_mq_client, rb_number, instrument, data_file_location, run_number):
     """
@@ -55,7 +57,7 @@ def get_location_and_rb_from_database(database_client, instrument, run_number):
         print("Database not connected")
         return None
 
-    all_reduction_run_records = database_client.get_reduction_run(instrument, run_number)
+    all_reduction_run_records = db.get_reduction_run(instrument, run_number)
 
     if not all_reduction_run_records:
         return None
