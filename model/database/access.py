@@ -23,9 +23,9 @@ def start_database():
 def get_instrument(instrument_name, create=False):
     """
     Find the instrument record associated with the name provided in the database
-    :param instrument_name: The name of the instrument to search for
-    :param create: If True, then create the record if it does not exist
-    :return: The instrument object from the database
+    :param instrument_name: (str) The name of the instrument to search for
+    :param create: (bool) If True, then create the record if it does not exist
+    :return: (Instrument) The instrument object from the database
     """
     database = start_database()
     instrument_record = database.data_model.Instrument.objects \
@@ -41,9 +41,9 @@ def get_instrument(instrument_name, create=False):
 def get_status(status_value, create=False):
     """
     Find the status record associated with the value provided in the database
-    :param status_value: The value of the status record e.g. 'Completed'
-    :param create: If True, then create the record if it does not exist
-    :return: The Status object from the database
+    :param status_value: (str) The value of the status record e.g. 'Completed'
+    :param create: (bool) If True, then create the record if it does not exist
+    :return: (Status) The Status object from the database
     """
     database = start_database()
     status_record = database.data_model.Status.objects.filter(value=status_value).first()
@@ -56,9 +56,9 @@ def get_status(status_value, create=False):
 def get_experiment(rb_number, create=False):
     """
     Find the Experiment record associated with the rb_number provided in the database
-    :param rb_number: The rb_number of the Experiment record e.g. 12345
-    :param create: If True, then create the record if it does not exist
-    :return: The Experiment object from the database
+    :param rb_number: (str) The rb_number of the Experiment record e.g. 12345
+    :param create: (bool) If True, then create the record if it does not exist
+    :return: (Experiment) The Experiment object from the database
     """
     database = start_database()
     experiment_record = database.data_model.Experiment.objects \
@@ -72,9 +72,9 @@ def get_experiment(rb_number, create=False):
 def get_reduction_run(instrument, run_number):
     """
     Returns a QuerySet of all ReductionRun versions that have the given instrument/run_number
-    :param instrument: The name of the instrument to search for
-    :param run_number: The run number to search for
-    :return: A QuerySet of the ReductionRun records that match the criteria
+    :param instrument: (str) The name of the instrument to search for
+    :param run_number: (str/int) The run number to search for
+    :return: (QuerySet[ReductionRun,]) ReductionRun records that match the criteria
 
     Note: The query set could contain multiple records or None
     """
@@ -87,7 +87,8 @@ def get_reduction_run(instrument, run_number):
 def save_record(record):
     """
     Save a record to the database
-    :param record: The record to save
+    :param record: (DbObject)The record to save
+
     Note: This is mostly a wrapper to aid unit testing
     """
     record.save()

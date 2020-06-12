@@ -40,8 +40,8 @@ class TestMessagingUtils(unittest.TestCase):
         self.mock_run = mock_run
 
     # pylint:disable=no-self-use
-    @patch(MESSAGE_CLASS_PATH + '._make_pending_msg')
-    @patch(MESSAGE_CLASS_PATH + '._send_pending_msg')
+    @patch(f'{MESSAGE_CLASS_PATH}._make_pending_msg')
+    @patch(f'{MESSAGE_CLASS_PATH}._send_pending_msg')
     def test_send_pending(self, mock_send_pending, mock_make_pending):
         """
         Test: The correct control functions are called and the variables feed through as expected
@@ -52,8 +52,8 @@ class TestMessagingUtils(unittest.TestCase):
         mock_make_pending.assert_called_once_with('123')
         mock_send_pending.assert_called_once_with('test', None)
 
-    @patch(MESSAGE_CLASS_PATH + '._make_pending_msg')
-    @patch(MESSAGE_CLASS_PATH + '._send_pending_msg')
+    @patch(f'{MESSAGE_CLASS_PATH}._make_pending_msg')
+    @patch(f'{MESSAGE_CLASS_PATH}._send_pending_msg')
     def test_send_cancel(self, mock_send_pending, mock_make_pending):
         """
         Test: The correct control functions are called and the variables feed through as expected
@@ -67,7 +67,7 @@ class TestMessagingUtils(unittest.TestCase):
         self.assertEqual(mock_msg.cancel, True)
 
     @patch('model.database.access.start_database')
-    @patch(UTILS_PATH + '.reduction_run_utils.ReductionRunUtils.get_script_and_arguments')
+    @patch(f'{UTILS_PATH}.reduction_run_utils.ReductionRunUtils.get_script_and_arguments')
     def test_make_pending_msg(self, mock_get_scr_and_args, mock_start_db):
         """
         Test: A Message with expected value is generated
@@ -98,7 +98,7 @@ class TestMessagingUtils(unittest.TestCase):
         self.assertEqual(actual.run_version, self.version)
         self.assertEqual(actual.facility, FACILITY)
 
-    @patch(UTILS_PATH + '.reduction_run_utils.ReductionRunUtils.get_script_and_arguments')
+    @patch(f'{UTILS_PATH}.reduction_run_utils.ReductionRunUtils.get_script_and_arguments')
     @patch('model.database.access.start_database')
     def test_make_pending_msg_exception(self, mock_start_db, mock_get_script):
         """

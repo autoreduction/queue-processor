@@ -82,7 +82,7 @@ class TestVariableUtils(unittest.TestCase):
 
     def test_copy_variable(self):
         """
-        Test: An Variable object can is copied
+        Test: A Variable object can is copied
         When: copy_variable function is called
         """
         expected = self.valid_variable

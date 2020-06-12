@@ -64,9 +64,7 @@ class InstrumentVariablesUtils:
         else:
             variable_run_number = run_number
 
-        # Now use the InstrumentJoin class (which is a join of the InstrumentVariable and Variable
-        # tables) to make sure we can make a copy of all the relevant variables with all of the
-        # right information.
+        # Find variable records associated with instrument variables
         variables = self.find_var_records_for_inst_vars(instrument.id, variable_run_number)
 
         # If we have found some variables then we want to use them by first making copies of them
@@ -122,9 +120,6 @@ class InstrumentVariablesUtils:
             .order_by('-start_run')
         variable_run_number = applicable_variables[0].start_run
 
-        # Now use the InstrumentJoin class (which is a join of the InstrumentVariable and Variable
-        # tables) to make sure we can make a copy of all the relevant variables with all of the
-        # right information.
         variables = self.find_var_records_for_inst_vars(instrument.id, variable_run_number)
 
         return variables
@@ -348,10 +343,7 @@ class InstrumentVariablesUtils:
         """
         instrument = db.get_instrument(instrument_name)
 
-        # In this case we need to make sure that the variables we set will be the only ones used for
-        # the range given. If there are variables which apply after the given range ends, we want to
-        # create/modify a set to have a start_run after this end_run, with the right values. First,
-        # find all variables that are in the range.
+        # Ensure that the variables we set will be the only ones used for the range given.
         model = db.start_database().variable_model
         applicable_variables = model.InstrumentVariable.objects \
             .filter(instrument_id=instrument.id) \

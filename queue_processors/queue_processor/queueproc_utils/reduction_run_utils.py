@@ -151,7 +151,6 @@ class ReductionRunUtils:
         Fetch the reduction script from the given run and return it as a string, along with a
         dictionary of arguments.
         """
-        script = reduction_run.script
         model = access.start_database().variable_model
         run_variable_records = model.RunVariable.objects \
             .filter(reduction_run_id=reduction_run.id)
@@ -167,4 +166,4 @@ class ReductionRunUtils:
 
         arguments = {'standard_vars': standard_vars, 'advanced_vars': advanced_vars}
 
-        return script, arguments
+        return reduction_run.script, arguments
