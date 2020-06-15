@@ -9,7 +9,7 @@ Utils module for sending messages to queues.
 """
 
 # pylint: disable=cyclic-import
-from message.job import Message
+from model.message.job import Message
 from queue_processors.queue_processor.settings import FACILITY
 
 from utils.clients.queue_client import QueueClient

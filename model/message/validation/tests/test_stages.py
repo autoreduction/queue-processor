@@ -9,8 +9,8 @@ Exercise the functions that handle validating a message at each pipeline stage
 """
 import unittest
 
-from message.validation import stages
-from message.job import Message
+from model.message.validation import stages
+from model.message.job import Message
 
 
 class TestStages(unittest.TestCase):

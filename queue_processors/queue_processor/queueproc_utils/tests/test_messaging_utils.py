@@ -11,7 +11,7 @@ import unittest
 
 from mock import patch, Mock
 
-from message.job import Message
+from model.message.job import Message
 from queue_processors.queue_processor.queueproc_utils.messaging_utils import MessagingUtils
 from queue_processors.queue_processor.settings import FACILITY
 

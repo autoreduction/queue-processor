@@ -14,7 +14,7 @@ import unittest
 import time
 import shutil
 
-from message.job import Message
+from model.message.job import Message
 from scripts.manual_operations import manual_remove as remove
 
 from utils import service_handling as external

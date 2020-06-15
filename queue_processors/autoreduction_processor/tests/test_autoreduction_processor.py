@@ -15,7 +15,7 @@ import sys
 
 from mock import patch, Mock
 
-from message.job import Message
+from model.message.job import Message
 from queue_processors.autoreduction_processor.autoreduction_processor import (Listener,
                                                                               Consumer,
                                                                               main)

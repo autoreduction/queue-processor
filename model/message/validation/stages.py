@@ -7,8 +7,8 @@
 """
 Combination of validation checks to be performed on the Message at each stage of the pipeline
 """
-from message.validation.validators import validate_run_number, validate_instrument
-from message.validation.process import check_validity_dict
+from model.message.validation import validate_run_number, validate_instrument
+from model.message.validation.process import check_validity_dict
 
 
 def validate_data_ready(message):

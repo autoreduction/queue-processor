@@ -12,7 +12,7 @@ import logging
 
 import attr
 
-from message.validation import stages
+from model.message.validation import stages
 
 from utils.project.static_content import LOG_FORMAT
 from utils.project.structure import get_log_file

@@ -15,7 +15,7 @@ import logging.config
 import sys
 import traceback
 
-from message.job import Message
+from model.message.job import Message
 
 # pylint: disable=cyclic-import
 from queue_processors.queue_processor.queueproc_utils.messaging_utils import MessagingUtils

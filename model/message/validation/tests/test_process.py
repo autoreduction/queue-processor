@@ -10,7 +10,7 @@ Exercise the helper functions that process the validation results
 import unittest
 
 from mock import patch
-from message.validation import process
+from model.message.validation import process
 
 
 # pylint:disable=missing-class-docstring

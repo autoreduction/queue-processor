@@ -12,7 +12,7 @@ from __future__ import print_function
 import sys
 import argparse
 
-from message.job import Message
+from model.message.job import Message
 from utils.clients.connection_exception import ConnectionException
 from utils.clients.icat_client import ICATClient
 from utils.clients.queue_client import QueueClient

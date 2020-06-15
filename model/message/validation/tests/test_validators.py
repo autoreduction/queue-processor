@@ -9,7 +9,7 @@ Exercise the validation functions
 """
 import unittest
 
-from message.validation import validators
+from model.message.validation import validators
 
 
 class TestValidators(unittest.TestCase):
