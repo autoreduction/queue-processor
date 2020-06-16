@@ -12,13 +12,13 @@ from __future__ import print_function
 import sys
 import argparse
 
-from message.job import Message
+from model.database import access as db
+from model.message.job import Message
+
 from utils.clients.connection_exception import ConnectionException
 from utils.clients.icat_client import ICATClient
 from utils.clients.queue_client import QueueClient
 from utils.clients.django_database_client import DatabaseClient
-
-from model.database import access as db
 
 
 def submit_run(active_mq_client, rb_number, instrument, data_file_location, run_number):

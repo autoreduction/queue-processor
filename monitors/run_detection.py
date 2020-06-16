@@ -9,7 +9,7 @@ import os
 import h5py
 from filelock import (FileLock, Timeout)
 
-from message.job import Message
+from model.message.job import Message
 from monitors.settings import (LAST_RUNS_CSV, CYCLE_FOLDER)
 
 from utils.clients.queue_client import QueueClient

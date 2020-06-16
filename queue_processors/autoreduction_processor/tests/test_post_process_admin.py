@@ -16,7 +16,7 @@ import json
 from tempfile import mkdtemp, NamedTemporaryFile
 from mock import patch, call, Mock
 
-from message.job import Message
+from model.message.job import Message
 from paths.path_manipulation import append_path
 from utils.settings import ACTIVEMQ_SETTINGS
 from utils.project.structure import get_project_root
@@ -256,7 +256,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_connect.assert_called_once()
         mock_reduce.assert_called_once()
 
-    @patch('message.job.Message.serialize', return_value='test')
+    @patch('model.message.job.Message.serialize', return_value='test')
     @patch('sys.exit')
     @patch(DIR + '.autoreduction_logging_setup.logger.info')
     @patch(DIR + '.post_process_admin.PostProcessAdmin.__init__', return_value=None)

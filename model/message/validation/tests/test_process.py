@@ -10,7 +10,7 @@ Exercise the helper functions that process the validation results
 import unittest
 
 from mock import patch
-from message.validation import process
+from model.message.validation import process
 
 
 # pylint:disable=missing-class-docstring
@@ -39,7 +39,7 @@ class TestProcess(unittest.TestCase):
         self.assertFalse(process.check_validity_dict(self.mixed_validity_dict))
         self.assertFalse(process.check_validity_dict(self.false_validity_dict))
 
-    @patch('message.validation.process.dict_to_string')
+    @patch('model.message.validation.process.dict_to_string')
     @patch('logging.error')
     def test_validity_dict_log_when_false(self, mock_err_log, mock_dict_to_str):
         """

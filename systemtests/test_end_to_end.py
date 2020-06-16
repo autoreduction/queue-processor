@@ -14,7 +14,9 @@ import unittest
 import time
 import shutil
 
-from message.job import Message
+from model.database import access as db
+from model.message.job import Message
+
 from scripts.manual_operations import manual_remove as remove
 
 from utils import service_handling as external
@@ -25,8 +27,6 @@ from utils.data_archive.data_archive_creator import DataArchiveCreator
 from utils.data_archive.archive_explorer import ArchiveExplorer
 from utils.project.structure import get_project_root
 
-
-from model.database import access as db
 
 if os.name != 'nt':
     class TestEndToEnd(unittest.TestCase):
