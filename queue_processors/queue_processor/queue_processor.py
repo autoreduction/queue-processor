@@ -269,7 +269,9 @@ class Listener:
                             db_access.save_record(reduction_location)
 
                     if self.message.software is not None:
-                        software_record = db_access.get_software('Mantid', self.message.software)
+                        software_record = db_access.get_software('Mantid',
+                                                                 self.message.software,
+                                                                 create=True)
                         reduction_run.software_id = software_record.id
 
                     db_access.save_record(reduction_run)
@@ -358,7 +360,9 @@ class Listener:
         reduction_run.reduction_log = self.message.reduction_log
         reduction_run.admin_log = self.message.admin_log
         if self.message.software is not None:
-            software_record = db_access.get_software('Mantid', self.message.software)
+            software_record = db_access.get_software('Mantid',
+                                                     self.message.software,
+                                                     create=True)
             reduction_run.software_id = software_record.id
 
         db_access.save_record(reduction_run)

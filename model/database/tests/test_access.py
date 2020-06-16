@@ -79,6 +79,18 @@ class TestAccess(unittest.TestCase):
         self.assertIsNotNone(actual)
         self.assertEqual(123, actual.reference_number)
 
+    @patch('model.database.access.save_record')
+    def test_get_experiment_create(self, mock_save):
+        """
+        Test: An Experiment record is created
+        When: get_experiment is called with create option True
+        """
+        database = access.start_database()
+        actual = access.get_experiment(rb_number=9999999, create=True)
+        self.assertIsNotNone(actual)
+        self.assertIsInstance(actual, database.data_model.Experiment)
+        mock_save.assert_called_once()
+
     def test_get_software(self):
         """
         Test: The correct Software record is returned
@@ -92,8 +104,8 @@ class TestAccess(unittest.TestCase):
     @patch('model.database.access.save_record')
     def test_get_software_create(self, mock_save):
         """
-        Test: A software record is created
-        When: get_software is called with create option
+        Test: A Software record is created
+        When: get_software is called with create option True
         """
         database = access.start_database()
         actual = access.get_software(name='Fake', version='test', create=True)

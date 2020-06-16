@@ -363,12 +363,12 @@ class PostProcessAdmin:
     @staticmethod
     def _get_mantid_version():
         """ Attempt to get Mantid software version"""
-        if MISC["mantid_path"] in sys.path:
+        if MISC["mantid_path"] not in sys.path:
             sys.path.append(MISC['mantid_path'])
         try:
             # pylint:disable=import-outside-toplevel
-            import mantid as mtd
-            return mtd.__version__
+            import mantid
+            return mantid.__version__
         except ImportError as excep:
             logger.error("Unable to discover Mantid version as: unable to import Mantid")
             logger.error(excep)
