@@ -79,6 +79,28 @@ class TestAccess(unittest.TestCase):
         self.assertIsNotNone(actual)
         self.assertEqual(123, actual.reference_number)
 
+    def test_get_software(self):
+        """
+        Test: The correct Software record is returned
+        When: get_software is called with values that match a database record
+        """
+        actual = access.get_software('Mantid', '4.0')
+        self.assertIsNotNone(actual)
+        self.assertEqual('Mantid', actual.name)
+        self.assertEqual('4.0', actual.version)
+
+    @patch('model.database.access.save_record')
+    def test_get_software_create(self, mock_save):
+        """
+        Test: A software record is created
+        When: get_software is called with create option
+        """
+        database = access.start_database()
+        actual = access.get_software(name='Fake', version='test', create=True)
+        self.assertIsNotNone(actual)
+        self.assertIsInstance(actual, database.data_model.Software)
+        mock_save.assert_called_once()
+
     # pylint:disable=no-self-use
     @patch('model.database.access.start_database')
     def test_get_reduction_run_valid(self, mock_start_db):
