@@ -13,7 +13,7 @@ import time
 import stomp
 from stomp.exception import ConnectFailedException
 
-from message.job import Message
+from model.message.job import Message
 from utils.clients.abstract_client import AbstractClient
 from utils.clients.connection_exception import ConnectionException
 from utils.settings import ACTIVEMQ_SETTINGS
