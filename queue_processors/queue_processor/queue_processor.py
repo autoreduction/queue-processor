@@ -268,6 +268,11 @@ class Listener:
                                 .ReductionLocation(file_path=location,
                                                    reduction_run=reduction_run)
                             db_access.save_record(reduction_location)
+
+                    if self.message.software is not None:
+                        software_record = db_access.get_software('Mantid', self.message.software)
+                        reduction_run.software_id = software_record.id
+
                     db_access.save_record(reduction_run)
 
                 else:
@@ -353,6 +358,10 @@ class Listener:
         reduction_run.message = self.message.message
         reduction_run.reduction_log = self.message.reduction_log
         reduction_run.admin_log = self.message.admin_log
+        if self.message.software is not None:
+            software_record = db_access.get_software('Mantid', self.message.software)
+            reduction_run.software_id = software_record.id
+
         db_access.save_record(reduction_run)
 
         if self.message.retry_in is not None:

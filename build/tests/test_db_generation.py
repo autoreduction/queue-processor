@@ -36,6 +36,7 @@ ALL_TABLES = {"auth_group",
               "reduction_viewer_status",
               "reduction_viewer_output",
               "reduction_viewer_outputtype",
+              "reduction_viewer_software",
              }
 
 

@@ -181,6 +181,7 @@ class PostProcessAdmin:
         """ Start the reduction job.  """
         # pylint: disable=too-many-nested-blocks
         logger.info("reduce started")
+        self.message.software = self._get_mantid_version()
         try:
             logger.debug("Calling: %s\n%s",
                          ACTIVEMQ_SETTINGS.reduction_started,
@@ -358,6 +359,20 @@ class PostProcessAdmin:
                         ACTIVEMQ_SETTINGS.reduction_complete,
                         self.message.serialize(limit_reduction_script=True))
             logger.info("Reduction job successfully complete")
+
+    @staticmethod
+    def _get_mantid_version():
+        """ Attempt to get Mantid software version"""
+        if MISC["mantid_path"] in sys.path:
+            sys.path.append(MISC['mantid_path'])
+        try:
+            # pylint:disable=import-outside-toplevel
+            import mantid as mtd
+            return mtd.__version__
+        except ImportError as excep:
+            logger.error("Unable to discover Mantid version as: unable to import Mantid")
+            logger.error(excep)
+        return None
 
     def _new_reduction_data_path(self, path):
         """
