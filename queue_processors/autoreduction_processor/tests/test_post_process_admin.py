@@ -256,7 +256,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_connect.assert_called_once()
         mock_reduce.assert_called_once()
 
-    @patch('message.job.Message.serialize', return_value='test')
+    @patch('model.message.job.Message.serialize', return_value='test')
     @patch('sys.exit')
     @patch(DIR + '.autoreduction_logging_setup.logger.info')
     @patch(DIR + '.post_process_admin.PostProcessAdmin.__init__', return_value=None)

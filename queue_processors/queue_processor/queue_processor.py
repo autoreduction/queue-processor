@@ -15,6 +15,7 @@ import logging.config
 import sys
 import traceback
 
+from model.database import access as db_access
 from model.message.job import Message
 
 # pylint: disable=cyclic-import
@@ -23,13 +24,11 @@ from queue_processors.queue_processor.queueproc_utils.instrument_variable_utils 
     import InstrumentVariablesUtils
 from queue_processors.queue_processor.queueproc_utils.status_utils import StatusUtils
 from queue_processors.queue_processor.queueproc_utils.reduction_run_utils import ReductionRunUtils
-# pylint: disable=import-error, no-name-in-module
 from queue_processors.queue_processor.settings import LOGGING
 
 from utils.clients.queue_client import QueueClient
 from utils.settings import ACTIVEMQ_SETTINGS
 
-from model.database import access as db_access
 
 # Set up logging and attach the logging to the right part of the config.
 logging.config.dictConfig(LOGGING)
