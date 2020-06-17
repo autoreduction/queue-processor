@@ -29,8 +29,16 @@ class ClientSettings:
     @staticmethod
     def _attempt_param_cast(param):
         """
-        Raise exception if param is not a string else return param
+        Raise exception if param is not string castable
         """
-        if not isinstance(param, str):
-            raise ValueError("{0} of {1} is not a string".format(param, type(param)))
-        return param
+        try:
+            # Bool and float values are clearly easy mistakes
+            if isinstance(param, (bool, float)):
+                raise TypeError()
+
+            # Python: Easier to ask for forgiveness than permission
+            # So just attempt a cast to str, don't check if we have a string
+            # so we can use mock objects in-lieu
+            return str(param)
+        except TypeError:
+            raise ValueError(f"{param} of type {type(param)} is not a string")
