@@ -84,14 +84,10 @@ class ReductionRunUtils:
         provided, copy them and associate them with the new one, otherwise use the previous run's.
         If a script (as a string) is supplied then use it, otherwise use the previous run's.
         """
-        # find the previous run version, so we don't create a duplicate
-        last_version = -1
         model = access.start_database().data_model
-        reduction_records = model.ReductionRun.objects \
-            .filter(experiment=reduction_run.experiment) \
-            .filter(run_number=reduction_run.run_number)
-        for run in reduction_records:
-            last_version = max(last_version, run.run_version)
+        # find the previous run version, so we don't create a duplicate
+        last_version = access.find_highest_run_version(reduction_run.instrument.name,
+                                                       reduction_run.run_number)
 
         # get the script to use:
         script_text = script if script is not None else reduction_run.script
