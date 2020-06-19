@@ -208,7 +208,6 @@ class TestManualRemove(unittest.TestCase):
     @patch('scripts.manual_operations.manual_remove.ManualRemove.find_runs_in_database')
     @patch('scripts.manual_operations.manual_remove.ManualRemove.process_results')
     @patch('scripts.manual_operations.manual_remove.ManualRemove.delete_records')
-    @patch('scripts.manual_operations.manual_remove.user_input_check')
     @patch('scripts.manual_operations.manual_remove.handle_input')
     def test_main_range(self, mock_handle_input, mock_delete, mock_process, mock_find):
         """
