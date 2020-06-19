@@ -210,20 +210,18 @@ class TestManualRemove(unittest.TestCase):
     @patch('scripts.manual_operations.manual_remove.ManualRemove.delete_records')
     @patch('scripts.manual_operations.manual_remove.user_input_check')
     @patch('scripts.manual_operations.manual_remove.handle_input')
-    def test_main_range(self, mock_handle_input, mock_uic, mock_delete, mock_process, mock_find):
+    def test_main_range(self, mock_handle_input, mock_delete, mock_process, mock_find):
         """
-        Test: The correct control functions are called
+        Test: The correct control functions are called including handle_input for many runs
         When: The main() function is called
         """
         mock_handle_input.return_value = 'GEM', range(1, 12)
         sys.argv = ['', 'GEM', '1', '-e', '11']
         main()
         mock_handle_input.assert_called_once()
-        # mock_uic.assert_called_once()
         mock_find.assert_called()
         mock_process.assert_called()
         mock_delete.assert_called()
-
 
     # pylint:disable=no-self-use
     @patch('scripts.manual_operations.manual_remove.ManualRemove.find_runs_in_database')
@@ -351,5 +349,3 @@ class TestManualRemove(unittest.TestCase):
 
         with patch.object(builtins, 'input', lambda _: 'N'):
             self.assertEqual(user_input_check(range(1, 11), 'GEM'), False)
-
-
