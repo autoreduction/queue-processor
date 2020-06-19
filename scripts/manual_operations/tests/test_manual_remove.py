@@ -314,19 +314,14 @@ class TestManualRemove(unittest.TestCase):
             .assert_has_calls(([call(variable_ptr_id=3), call().delete(),
                                 call(variable_ptr_id=5), call().delete()]))
 
-    @patch('scripts.manual_operations.manual_remove.ManualRemove.find_runs_in_database')
-    @patch('scripts.manual_operations.manual_remove.ManualRemove.process_results')
-    @patch('scripts.manual_operations.manual_remove.ManualRemove.delete_records')
     @patch('scripts.manual_operations.manual_remove.user_input_check')
-    @patch('scripts.manual_operations.manual_remove.remove')
-    def test_handle_input(self, mock_remove, mock_uic, mock_delete, mock_process, mock_find):
+    def test_handle_input(self, mock_uic):
         """
         Test: User input is handled correctly
         When: handle_input function is called.
         """
         mock_uic.return_value = True
         sys.argv = ['', 'GEM', '1', '-e', '10']
-        main()
 
         run_numbers, instrument = handle_input()
         expected_run_numbers = range(1, 11)
@@ -337,8 +332,7 @@ class TestManualRemove(unittest.TestCase):
         self.assertIsInstance(run_numbers, range)
         self.assertIsInstance(instrument, str)
 
-    @patch('scripts.manual_operations.manual_remove.user_input_check')
-    def test_user_input_check(self, mock_uic):
+    def test_user_input_check(self):
         """
            Test: user_input_check() returns True of false
            When based on user input if range of runs to remove is larger than 10
