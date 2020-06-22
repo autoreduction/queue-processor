@@ -7,6 +7,7 @@
 """
 Factory for creating settings objects that can be used in the client classes
 """
+# pylint: disable=fixme
 from utils.clients.settings.client_settings import ClientSettings
 
 
@@ -160,6 +161,7 @@ class ActiveMQSettings(ClientSettings):
                  reduction_error='/queue/ReductionError',
                  reduction_skipped='/queue/ReductionSkipped',
                  **kwargs):
+        # TODO explicitly state args
         super(ActiveMQSettings, self).__init__(**kwargs)
 
         self.reduction_pending = reduction_pending
