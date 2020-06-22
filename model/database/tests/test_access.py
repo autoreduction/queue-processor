@@ -99,6 +99,20 @@ class TestAccess(unittest.TestCase):
         actual = access.get_reduction_run('GEM', 0)
         self.assertIsNone(actual.first())
 
+    @patch('model.database.access.get_reduction_run')
+    def test_find_highest_run_version(self, mock_get_run):
+        """
+        Test: The expected highest version number is returned
+        When: Calling find_highest_run_version
+        """
+        mock_run = Mock()
+        mock_run.run_version = 0
+        mock_run_1 = Mock()
+        mock_run_1.run_version = 1
+        mock_get_run.return_value = [mock_run, mock_run_1]
+        actual = access.find_highest_run_version('test', '123')
+        self.assertEqual(actual, 1)
+
     # pylint:disable=no-self-use
     def test_save_record(self):
         """
