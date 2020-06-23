@@ -11,10 +11,12 @@ initialisation of class parameters
 construction of regular expression for looking up existing files
 calling the SFTPClient with correct parameters
 """
+import os
 import unittest
 from mock import patch
 
 from plotting.plot_handler import PlotHandler
+from utils.project.structure import get_project_root
 
 
 # pylint:disable=line-too-long, protected-access
@@ -44,6 +46,8 @@ class TestPlotHandler(unittest.TestCase):
         self.test_wish_none_plottype = PlotHandler(instrument_name="WISH", rb_number=self.expected_wish_rb_nummber,
                                                    run_number=self.expected_wish_run_number)
 
+        self.static_graph_dir = os.path.join(get_project_root(), 'WebApp', 'autoreduce_webapp', 'static', 'graphs')
+
     def test_init_mari_png_plottype(self):
         """
         Test: Class variables are initiated correctly when instrument name is MARI and "png" is passed as plot type
@@ -71,7 +75,7 @@ class TestPlotHandler(unittest.TestCase):
         Test: Check that the correct regular expression for file look-up is created
         When: Instrument name is MARI and a single plot type is passed to the class
         """
-        expected = "MAR[I]1234*.png"
+        expected = "MAR(I)?1234.*.png"
         actual = self.test_mari_png_plottype._regexp_for_file_name(self.test_mari_png_plottype.file_extensions[0])
         self.assertEqual(expected, actual)
 
@@ -80,10 +84,10 @@ class TestPlotHandler(unittest.TestCase):
         Test: Check that the correct regular expression for file look-up is created
         When: Instrument name is WISH and no plot type is passed to the class
         """
-        expected = "WISH4321*.*jpg"
+        expected = "WISH4321.*.jpg"
         actual = self.test_wish_none_plottype._regexp_for_file_name(self.test_wish_none_plottype.file_extensions[1])
         self.assertEqual(expected, actual)
-        expected = "WISH4321*.*tiff"
+        expected = "WISH4321.*.tiff"
         actual = self.test_wish_none_plottype._regexp_for_file_name(self.test_wish_none_plottype.file_extensions[-1])
         self.assertEqual(expected, actual)
 
@@ -99,7 +103,7 @@ class TestPlotHandler(unittest.TestCase):
         # client = SFTPClient()
         mock_client_init.assert_called_once()
         mock_get_filenames.assert_called_once_with(
-            server_dir_path=self.expected_mari_rb_folder, regex="MAR(I)?1234*.*png")
+            server_dir_path=self.expected_mari_rb_folder, regex="MAR(I)?1234.*.png")
 
     @patch('utils.clients.sftp_client.SFTPClient.__init__', return_value=None)
     @patch('utils.clients.sftp_client.SFTPClient.get_filenames')
@@ -116,11 +120,11 @@ class TestPlotHandler(unittest.TestCase):
         actual = mock_get_filenames.call_count
         self.assertEqual(expected, actual)
         # check that the sftpclient.get_filenames method was called with the right parameters
-        mock_get_filenames.assert_any_call(server_dir_path=self.expected_wish_rb_folder, regex="WISH4321*.*png")
-        mock_get_filenames.assert_any_call(server_dir_path=self.expected_wish_rb_folder, regex="WISH4321*.*jpg")
-        mock_get_filenames.assert_any_call(server_dir_path=self.expected_wish_rb_folder, regex="WISH4321*.*bmp")
-        mock_get_filenames.assert_any_call(server_dir_path=self.expected_wish_rb_folder, regex="WISH4321*.*gif")
-        mock_get_filenames.assert_any_call(server_dir_path=self.expected_wish_rb_folder, regex="WISH4321*.*tiff")
+        mock_get_filenames.assert_any_call(server_dir_path=self.expected_wish_rb_folder, regex="WISH4321.*.png")
+        mock_get_filenames.assert_any_call(server_dir_path=self.expected_wish_rb_folder, regex="WISH4321.*.jpg")
+        mock_get_filenames.assert_any_call(server_dir_path=self.expected_wish_rb_folder, regex="WISH4321.*.bmp")
+        mock_get_filenames.assert_any_call(server_dir_path=self.expected_wish_rb_folder, regex="WISH4321.*.gif")
+        mock_get_filenames.assert_any_call(server_dir_path=self.expected_wish_rb_folder, regex="WISH4321.*.tiff")
 
     @patch('utils.clients.sftp_client.SFTPClient.__init__', return_value=None)
     @patch('utils.clients.sftp_client.SFTPClient.get_filenames', return_value=["existing_file.png"])
@@ -143,7 +147,8 @@ class TestPlotHandler(unittest.TestCase):
         mock_retrieve.assert_called_once()
         # check that the sftpclient.retrieve method was called with the correct parameters
         mock_retrieve.assert_called_once_with(server_file_path=f"{self.expected_mari_rb_folder}existing_file.png",
-                                              local_file_path=None, override=True)
+                                              local_file_path=os.path.join(self.static_graph_dir, 'existing_file.png'),
+                                              override=True)
 
     @patch('utils.clients.sftp_client.SFTPClient.__init__', return_value=None)
     @patch('utils.clients.sftp_client.SFTPClient.retrieve')
@@ -168,7 +173,8 @@ class TestPlotHandler(unittest.TestCase):
         mock_retrieve.assert_called_once()
         # check that the sftpclient.retrieve method was called with the correct parameters
         mock_retrieve.assert_called_once_with(server_file_path=f"{self.expected_wish_rb_folder}existing_file.png",
-                                              local_file_path=None, override=True)
+                                              local_file_path=os.path.join(self.static_graph_dir, 'existing_file.png'),
+                                              override=True)
 
     @patch('utils.clients.sftp_client.SFTPClient.__init__', return_value=None)
     @patch('utils.clients.sftp_client.SFTPClient.get_filenames', return_value=[])
