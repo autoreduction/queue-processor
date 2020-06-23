@@ -22,6 +22,7 @@ from utils.project.static_content import LOG_FORMAT
 logging.basicConfig(filename=get_log_file('sftp_client.log'), level=logging.INFO,
                     format=LOG_FORMAT)
 
+
 class SFTPClient(AbstractClient):
     """
     This class allows files to be retrieved from SFTP servers
@@ -112,8 +113,8 @@ class SFTPClient(AbstractClient):
         :return: A list of filenames which match the regex within the server directory.
         """
         self._server_path_check(server_dir_path)
-
-        filenames = self._connection.listdir()
+        with self._connection.cd(server_dir_path):
+            filenames = self._connection.listdir()
         matches = []
 
         for name in filenames:

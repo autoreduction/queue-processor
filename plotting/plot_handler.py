@@ -11,8 +11,10 @@ Searching for and retrieving an existing plotting file via the SFTP client
 Getting the associated plotting meta data file
 Instructing the Plotting factory to build an IFrame based on the above
 """
+import os
 import logging
 from utils.clients.sftp_client import SFTPClient
+from utils.project.structure import get_project_root
 
 LOGGER = logging.getLogger('app')
 
@@ -29,6 +31,7 @@ class PlotHandler:
         If None, a list of common graphics file extensions is searched for.
     """
 
+    # pylint:disable=too-many-arguments
     def __init__(self, instrument_name, rb_number, run_number, expected_dir=None, plot_type=None):
         self.instrument_name = instrument_name
         self.rb_number = rb_number
@@ -47,7 +50,7 @@ class PlotHandler:
         else:
             self.file_extensions = plot_type
         # dictionary of regular expressions for each instrument to describe the possible prefixes in the file name(s)
-        self._instrument_dict = {"MARI": "MAR[I]", "WISH": "WISH"}
+        self._instrument_dict = {"MARI": "MAR(I)?", "WISH": "WISH"}
         # parameter to store the file names of any existing plot files found
         self._existing_plot_files = []
 
@@ -59,7 +62,7 @@ class PlotHandler:
         """
         try:
             _regexp = self._instrument_dict[self.instrument_name] + str(
-                self.run_number) + "*." + plot_type
+                self.run_number) + ".*." + plot_type
             return _regexp
         except KeyError:  # if the instrument name does not appear in the dictionary of known instruments
             LOGGER.info("The instrument name is not recognised")
@@ -91,7 +94,8 @@ class PlotHandler:
         else:  # if one or more existing files were found, use the first one (order of items in plot_type affects this)
             _ceph_path = self._ceph_dir + self._existing_plot_files[0]
             # in case the local path to which the file gets copied to needs to be specified
-            _local_path = r'C:\\images\\' + self._existing_plot_files[0]
+            static_graph_dir = os.path.join(get_project_root(), 'WebApp', 'autoreduce_webapp', 'static', 'graphs')
+            _local_path = os.path.join(static_graph_dir, self._existing_plot_files[0])
             # create sftpclient object and try to retrieve the file
             client = SFTPClient()
             try:
@@ -100,7 +104,7 @@ class PlotHandler:
             except RuntimeError:
                 LOGGER.error("file does not exist")
                 return False
-            return self._existing_plot_files  # this is currently not set
+            return f'/static/graphs/{self._existing_plot_files[0]}'  # static shortcut
 
     # pylint:disable=unnecessary-pass
     def construct_plot(self):

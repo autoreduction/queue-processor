@@ -53,7 +53,6 @@ class TestPlotHandler(unittest.TestCase):
         self.assertEqual(self.test_mari_png_plottype.rb_number, self.expected_mari_rb_number)
         self.assertEqual(self.test_mari_png_plottype.run_number, self.expected_mari_run_number)
         self.assertEqual(self.test_mari_png_plottype.file_extensions, [self.expected_mari_plottype])
-        self.assertEqual(self.test_mari_png_plottype._rb_folder, self.expected_mari_rb_folder)
         self.assertEqual(self.test_mari_png_plottype._existing_plot_files, [])
 
     def test_init_wish_none_plottype(self):
@@ -65,7 +64,6 @@ class TestPlotHandler(unittest.TestCase):
         self.assertEqual(self.test_wish_none_plottype.rb_number, self.expected_wish_rb_nummber)
         self.assertEqual(self.test_wish_none_plottype.run_number, self.expected_wish_run_number)
         self.assertEqual(self.test_wish_none_plottype.file_extensions, ["png", "jpg", "bmp", "gif", "tiff"])
-        self.assertEqual(self.test_wish_none_plottype._rb_folder, self.expected_wish_rb_folder)
         self.assertEqual(self.test_wish_none_plottype._existing_plot_files, [])
 
     def test_regexp_for_file_name_mari_png_plottype(self):
@@ -82,10 +80,10 @@ class TestPlotHandler(unittest.TestCase):
         Test: Check that the correct regular expression for file look-up is created
         When: Instrument name is WISH and no plot type is passed to the class
         """
-        expected = "WISH4321*.jpg"
+        expected = "WISH4321*.*jpg"
         actual = self.test_wish_none_plottype._regexp_for_file_name(self.test_wish_none_plottype.file_extensions[1])
         self.assertEqual(expected, actual)
-        expected = "WISH4321*.tiff"
+        expected = "WISH4321*.*tiff"
         actual = self.test_wish_none_plottype._regexp_for_file_name(self.test_wish_none_plottype.file_extensions[-1])
         self.assertEqual(expected, actual)
 
@@ -101,7 +99,7 @@ class TestPlotHandler(unittest.TestCase):
         # client = SFTPClient()
         mock_client_init.assert_called_once()
         mock_get_filenames.assert_called_once_with(
-            server_dir_path=self.expected_mari_rb_folder, regex="MAR[I]1234*.png")
+            server_dir_path=self.expected_mari_rb_folder, regex="MAR(I)?1234*.*png")
 
     @patch('utils.clients.sftp_client.SFTPClient.__init__', return_value=None)
     @patch('utils.clients.sftp_client.SFTPClient.get_filenames')
@@ -118,11 +116,11 @@ class TestPlotHandler(unittest.TestCase):
         actual = mock_get_filenames.call_count
         self.assertEqual(expected, actual)
         # check that the sftpclient.get_filenames method was called with the right parameters
-        mock_get_filenames.assert_any_call(server_dir_path=self.expected_wish_rb_folder, regex="WISH4321*.png")
-        mock_get_filenames.assert_any_call(server_dir_path=self.expected_wish_rb_folder, regex="WISH4321*.jpg")
-        mock_get_filenames.assert_any_call(server_dir_path=self.expected_wish_rb_folder, regex="WISH4321*.bmp")
-        mock_get_filenames.assert_any_call(server_dir_path=self.expected_wish_rb_folder, regex="WISH4321*.gif")
-        mock_get_filenames.assert_any_call(server_dir_path=self.expected_wish_rb_folder, regex="WISH4321*.tiff")
+        mock_get_filenames.assert_any_call(server_dir_path=self.expected_wish_rb_folder, regex="WISH4321*.*png")
+        mock_get_filenames.assert_any_call(server_dir_path=self.expected_wish_rb_folder, regex="WISH4321*.*jpg")
+        mock_get_filenames.assert_any_call(server_dir_path=self.expected_wish_rb_folder, regex="WISH4321*.*bmp")
+        mock_get_filenames.assert_any_call(server_dir_path=self.expected_wish_rb_folder, regex="WISH4321*.*gif")
+        mock_get_filenames.assert_any_call(server_dir_path=self.expected_wish_rb_folder, regex="WISH4321*.*tiff")
 
     @patch('utils.clients.sftp_client.SFTPClient.__init__', return_value=None)
     @patch('utils.clients.sftp_client.SFTPClient.get_filenames', return_value=["existing_file.png"])
