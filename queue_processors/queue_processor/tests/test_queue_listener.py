@@ -19,8 +19,8 @@ from unittest import mock
 from mock import patch, MagicMock, Mock
 
 from model.message.job import Message
-from queue_processors.queue_processor import queue_processor
-from queue_processors.queue_processor.queue_processor import Listener, \
+from queue_processors.queue_processor import listener
+from queue_processors.queue_processor.listener import Listener, \
     _UtilsClasses
 from utils.clients.queue_client import QueueClient
 from utils.clients.settings.client_settings_factory import ActiveMQSettings
@@ -28,7 +28,7 @@ from utils.clients.settings.client_settings_factory import ActiveMQSettings
 
 class TestQueueProcessor(unittest.TestCase):
     """
-    Exercises the functions within queue_processor.py
+    Exercises the functions within listener.py
     """
 
     def setUp(self):
@@ -43,7 +43,7 @@ class TestQueueProcessor(unittest.TestCase):
         Test: Connection to ActiveMQ setup, along with subscription to queues
         When: setup_connection is called with a consumer name
         """
-        queue_processor.setup_connection(self.test_consumer_name)
+        listener.setup_connection(self.test_consumer_name)
 
         mock_client.assert_called_once()
         mock_connect.assert_called_once()
@@ -63,7 +63,7 @@ class TestUtilsClasses(unittest.TestCase):
         self.assertIsNotNone(_UtilsClasses())
 
 
-@patch("queue_processors.queue_processor.queue_processor.db_access")
+@patch("queue_processors.queue_processor.listener.db_access")
 class TestListener(unittest.TestCase):
     # We have too many public methods as our Class Under Test does too much...
     # pylint: disable=too-many-public-methods
@@ -292,7 +292,7 @@ class TestListener(unittest.TestCase):
         self.listener.data_ready()
         self.listener.reduction_error.assert_called_once()
 
-    @patch("queue_processors.queue_processor.queue_processor.is_valid_rb")
+    @patch("queue_processors.queue_processor.listener.is_valid_rb")
     def test_data_ready_with_new_data(self, valid_rb, patched_db):
         # This is the "ideal" flow hence it's the largest and
         # should be split down
@@ -546,8 +546,8 @@ class TestQueueProcessorFreeFuncs(unittest.TestCase):
     def test_is_valid_rb(self):
         valid_values = [1, 20, "10000"]
         for i in valid_values:
-            self.assertIsNone(queue_processor.is_valid_rb(i))
+            self.assertIsNone(listener.is_valid_rb(i))
 
         invalid_values = [0, 0.1, -1, -100, None, "foo"]
         for i in invalid_values:
-            self.assertIsInstance(queue_processor.is_valid_rb(i), str)
+            self.assertIsInstance(listener.is_valid_rb(i), str)
