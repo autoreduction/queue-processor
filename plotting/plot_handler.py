@@ -33,7 +33,9 @@ class PlotHandler:
         self.instrument_name = instrument_name
         self.rb_number = rb_number
         self.run_number = run_number
-        self.expected_dir = expected_dir
+        rb_folder = "/instrument/" + self.instrument_name + "/RBNumber/RB" + \
+                    str(self.rb_number) + "/" + str(self.run_number) + "/autoreduced/"
+        self._ceph_dir = expected_dir if expected_dir else rb_folder
         if plot_type is None:
             # list of plot types the handler looks for if none is provided; it searches for the types in the order of
             # the list and selects the first one that exists. In future: could add vector graphics (.pdf, .eps)
@@ -46,9 +48,6 @@ class PlotHandler:
             self.file_extensions = plot_type
         # dictionary of regular expressions for each instrument to describe the possible prefixes in the file name(s)
         self._instrument_dict = {"MARI": "MAR[I]", "WISH": "WISH"}
-        # path to directory with files for given instrument and RB number
-        self._rb_folder = "/instrument/" + self.instrument_name + "/RBNumber/RB" + \
-                          str(self.rb_number) + "/" + str(self.run_number) + "/autoreduced/"
         # parameter to store the file names of any existing plot files found
         self._existing_plot_files = []
 
@@ -78,8 +77,7 @@ class PlotHandler:
             # regular expression for plot file name(s)
             file_regex = self._regexp_for_file_name(plot_type=plot_type_i)
             # use sftpclient to check if files matching the regular expression exist and add any matches to the list
-            _ceph_path = self.expected_dir if self.expected_dir else self._rb_folder
-            _found_files.extend(client.get_filenames(server_dir_path=_ceph_path, regex=file_regex))
+            _found_files.extend(client.get_filenames(server_dir_path=self._ceph_dir, regex=file_regex))
         return _found_files
 
     def get_plot_file(self):
@@ -91,9 +89,9 @@ class PlotHandler:
         if len(self._existing_plot_files) == 0:  # no existing file was found
             return []  # return an empty list for now
         else:  # if one or more existing files were found, use the first one (order of items in plot_type affects this)
-            _ceph_path = self._rb_folder + self._existing_plot_files[0]
+            _ceph_path = self._ceph_dir + self._existing_plot_files[0]
             # in case the local path to which the file gets copied to needs to be specified
-            _local_path = None
+            _local_path = r'C:\\images\\' + self._existing_plot_files[0]
             # create sftpclient object and try to retrieve the file
             client = SFTPClient()
             try:
