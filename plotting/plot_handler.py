@@ -18,93 +18,85 @@ from utils.project.structure import get_project_root
 
 LOGGER = logging.getLogger('app')
 
+INSTRUMENT_REGEX_MAP = {"MARI": "MAR(I)?", "WISH": "WISH"}
 
-# pylint:disable=line-too-long, no-else-return
+
 class PlotHandler:
     """
-    Utility that takes parameters for a run and (for now) checks if an associated image exists and retrieves it.
-    :param instrument_name: The name of the beamline/spectrometer/instrument.
-    :param rb_number: The ISIS RB number.
-    :param run_number: The run number on the given instrument for the given RB number.
-    :param plot_type:
-        The type of plot file / file extension to be searched for (e.g. "png"). Can be a list of extensions.
-        If None, a list of common graphics file extensions is searched for.
+    Takes parameters for a run and (for now) checks if an associated image exists and retrieves it.
+    :param instrument_name: (str) The name of the beamline/spectrometer/instrument.
+    :param rb_number: (str)The ISIS RB number.
+    :param run_number: (str/int) The run number on the given instrument for the given RB number.
+    :param server_dir: (str) The path for the directory to search for the data/image files
     """
 
-    # pylint:disable=too-many-arguments
-    def __init__(self, instrument_name, rb_number, run_number, expected_dir=None, plot_type=None):
+    def __init__(self, instrument_name, run_number, server_dir, rb_number=None):
         self.instrument_name = instrument_name
-        self.rb_number = rb_number
+        self.rb_number = rb_number  # Used when searching for full Experiment graph
         self.run_number = run_number
-        rb_folder = "/instrument/" + self.instrument_name + "/RBNumber/RB" + \
-                    str(self.rb_number) + "/" + str(self.run_number) + "/autoreduced/"
-        self._ceph_dir = expected_dir if expected_dir else rb_folder
-        if plot_type is None:
-            # list of plot types the handler looks for if none is provided; it searches for the types in the order of
-            # the list and selects the first one that exists. In future: could add vector graphics (.pdf, .eps)
-            self.file_extensions = ["png", "jpg", "bmp", "gif", "tiff"]
-        elif isinstance(plot_type, str):
-            # if only a single str is passed for a plot type then pass it into a list (so that a single for-loop can be
-            # used to loop over plot types).
-            self.file_extensions = [plot_type]
-        else:
-            self.file_extensions = plot_type
-        # dictionary of regular expressions for each instrument to describe the possible prefixes in the file name(s)
-        self._instrument_dict = {"MARI": "MAR(I)?", "WISH": "WISH"}
-        # parameter to store the file names of any existing plot files found
-        self._existing_plot_files = []
+        self.server_dir = server_dir
+        self.file_extensions = ["png", "jpg", "bmp", "gif", "tiff"]
+        # Directory to place fetched data files / images
+        self.static_graph_dir = os.path.join(get_project_root(), 'WebApp',
+                                             'autoreduce_webapp', 'static',
+                                             'graphs')
 
-    def _regexp_for_file_name(self, plot_type):
+    def _generate_file_name_regex(self, plot_type):
         """
-        Regular expression used for looking for plot files. It assumes that the file names follow the convention
+        Regular expression used for looking for plot files.
+        This assumes that the file names follow the convention:
         <instrument_abbreviation><run_number>*<.png or other extension>
-        :param plot_type: the type of file to be searched for, e.g. "png". No preceeding dot needed.
+        :param plot_type: (str) the type of file to be searched for, e.g. "png"
         """
         try:
-            _regexp = self._instrument_dict[self.instrument_name] + str(
-                self.run_number) + ".*." + plot_type
-            return _regexp
-        except KeyError:  # if the instrument name does not appear in the dictionary of known instruments
+            _inst_regex = INSTRUMENT_REGEX_MAP[self.instrument_name]
+            return f'{_inst_regex}{self.run_number}.*.{plot_type}'
+        except KeyError:  # Instrument name does not appear in dictionary of known instruments
             LOGGER.info("The instrument name is not recognised")
+            return None
 
     def _check_for_plot_files(self):
         """
-        Searches the CEPH directory for existing plot files using the directory specified by instrument_name, rb_number,
-        run_number, and a regular expression for the file name based on the instrument_name, run_number and plot_type.
+        Searches the server directory for existing plot files using the directory specified.
+        :return: (list) files on the server path that match regex
         """
         # start sftpclient
         client = SFTPClient()
         # initialise list to store names of existing files matching the search
         _found_files = []
-        for plot_type_i in self.file_extensions:
+        for plot_type in self.file_extensions:
             # regular expression for plot file name(s)
-            file_regex = self._regexp_for_file_name(plot_type=plot_type_i)
-            # use sftpclient to check if files matching the regular expression exist and add any matches to the list
-            _found_files.extend(client.get_filenames(server_dir_path=self._ceph_dir, regex=file_regex))
+            file_regex = self._generate_file_name_regex(plot_type=plot_type)
+            # Add files that match regex to the list of files found
+            _found_files.extend(client.get_filenames(server_dir_path=self.server_dir,
+                                                     regex=file_regex))
         return _found_files
 
     def get_plot_file(self):
         """
-        Searches for and retrieves a plot file from CEPH. Might find multiple files (e.g. if more than one plot_type is
-        specified), but will only copy over one. If no existing plot file is found it does nothing at the moment.
+        Searches for and retrieves a plot file from CEPH.
+        Might find multiple files (e.g. if more than one plot_type is specified),
+        but will only copy over one.
+        :return: (str) local path to downloaded files OR None if no files found
         """
-        self._existing_plot_files = self._check_for_plot_files()
-        if len(self._existing_plot_files) == 0:  # no existing file was found
-            return []  # return an empty list for now
-        else:  # if one or more existing files were found, use the first one (order of items in plot_type affects this)
-            _ceph_path = self._ceph_dir + self._existing_plot_files[0]
-            # in case the local path to which the file gets copied to needs to be specified
-            static_graph_dir = os.path.join(get_project_root(), 'WebApp', 'autoreduce_webapp', 'static', 'graphs')
-            _local_path = os.path.join(static_graph_dir, self._existing_plot_files[0])
-            # create sftpclient object and try to retrieve the file
+        _existing_plot_files = self._check_for_plot_files()
+        if _existing_plot_files:
+            # Generate paths to data on server and destination on local machine
+            _server_path = self.server_dir + _existing_plot_files[0]
+            _local_path = os.path.join(self.static_graph_dir, _existing_plot_files[0])
+
             client = SFTPClient()
             try:
-                client.retrieve(server_file_path=_ceph_path, local_file_path=_local_path, override=True)
-                LOGGER.info('File %s found and saved to %s', _ceph_path, _local_path)
+                client.retrieve(server_file_path=_server_path,
+                                local_file_path=_local_path,
+                                override=True)
+                LOGGER.info('File %s found and saved to %s', _server_path, _local_path)
             except RuntimeError:
                 LOGGER.error("file does not exist")
-                return False
-            return f'/static/graphs/{self._existing_plot_files[0]}'  # static shortcut
+                return None
+            return f'/static/graphs/{_existing_plot_files[0]}'  # shortcut to static dir
+        # No files found
+        return None
 
     # pylint:disable=unnecessary-pass
     def construct_plot(self):
