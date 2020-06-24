@@ -389,14 +389,16 @@ def run_summary(request, instrument_name=None, run_number=None, run_version=0):
         plot_handler = PlotHandler(instrument_name=run.instrument.name,
                                    rb_number=rb_number,
                                    run_number=run.run_number,
-                                   expected_dir=reduction_location)
+                                   server_dir=reduction_location)
         plot_location = plot_handler.get_plot_file()
 
         context_dictionary = {'run': run,
                               'history': history,
                               'reduction_location': reduction_location,
-                              'started_by': started_by,
-                              'plot_location': plot_location}
+                              'started_by': started_by}
+        if plot_location:
+            context_dictionary['plot_location'] = plot_location
+
     except PermissionDenied:
         raise
     except Exception as exception:
