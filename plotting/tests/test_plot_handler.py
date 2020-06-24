@@ -54,7 +54,7 @@ class TestPlotHandler(unittest.TestCase):
         self.assertEqual(self.test_plot_handler.rb_number, self.expected_mari_rb_number)
         self.assertEqual(self.test_plot_handler.static_graph_dir, self.expected_static_graph_dir)
 
-    def test_regexp_for_file(self):
+    def test_generate_file_name_regex(self):
         """
         Test: Check that the correct regular expression for file look-up is created
         When: Valid instrument names are supplied to _generate_file_name_regex
@@ -66,6 +66,14 @@ class TestPlotHandler(unittest.TestCase):
         self.test_plot_handler.instrument_name = "WISH"
         actual = self.test_plot_handler._generate_file_name_regex('tiff')
         self.assertEqual(expected_wish, actual)
+
+    def test_generate_file_name_regex_invalid(self):
+        """
+        Test: Assert None is returned
+        When: calling _generate_file_name_regex with invalid instrument
+        """
+        self.test_plot_handler.instrument_name = "Not instrument"
+        self.assertIsNone(self.test_plot_handler._generate_file_name_regex('png'))
 
     @patch('utils.clients.sftp_client.SFTPClient.__init__', return_value=None)
     @patch('utils.clients.sftp_client.SFTPClient.get_filenames')
@@ -85,6 +93,16 @@ class TestPlotHandler(unittest.TestCase):
         ]
         mock_get_filenames.assert_has_calls(expected_calls, any_order=True)
 
+    @patch('utils.clients.sftp_client.SFTPClient.__init__', return_value=None)
+    def test_check_for_files_with_invalid(self, mock_client_init):
+        """
+        Test: None is returned
+        When: calling _check_for_files with an invalid instrument
+        """
+        self.test_plot_handler.instrument_name = "Not instrument"
+        self.assertIsNone(self.test_plot_handler._check_for_plot_files())
+        mock_client_init.assert_called_once()
+
     @patch('plotting.plot_handler.PlotHandler._check_for_plot_files')
     @patch('utils.clients.sftp_client.SFTPClient.__init__', return_value=None)
     @patch('utils.clients.sftp_client.SFTPClient.retrieve')
@@ -103,6 +121,28 @@ class TestPlotHandler(unittest.TestCase):
         mock_retrieve.assert_called_once_with(
             server_file_path=expected_server, local_file_path=expected_local, override=True)
         self.assertEqual(f'/static/graphs/{expected_files[0]}', actual_path)
+
+    @patch('plotting.plot_handler.PlotHandler._check_for_plot_files', return_value=[])
+    def test_get_plot_file_none_found(self, _):
+        """
+        Test: None is returned
+        When: No files can be found on the server
+        """
+        self.assertIsNone(self.test_plot_handler.get_plot_file())
+
+    @patch('plotting.plot_handler.PlotHandler._check_for_plot_files')
+    @patch('utils.clients.sftp_client.SFTPClient.__init__', return_value=None)
+    @patch('utils.clients.sftp_client.SFTPClient.retrieve')
+    def test_get_plot_files_cant_download(self, mock_retrieve, mock_client_init, mock_find_files):
+        """
+        Test: get_plot_files returns the expected plot files
+        When: called with valid arguments and files exist
+        """
+        expected_files = ['expected.png']
+        mock_find_files.return_value = expected_files
+        mock_retrieve.side_effect = RuntimeError
+        self.assertIsNone(self.test_plot_handler.get_plot_file())
+        mock_client_init.assert_called_once()
 
     # pylint:disable=unnecessary-pass
     def test_construct_plot(self):

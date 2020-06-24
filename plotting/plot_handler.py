@@ -67,9 +67,12 @@ class PlotHandler:
         for plot_type in self.file_extensions:
             # regular expression for plot file name(s)
             file_regex = self._generate_file_name_regex(plot_type=plot_type)
-            # Add files that match regex to the list of files found
-            _found_files.extend(client.get_filenames(server_dir_path=self.server_dir,
-                                                     regex=file_regex))
+            if file_regex:
+                # Add files that match regex to the list of files found
+                _found_files.extend(client.get_filenames(server_dir_path=self.server_dir,
+                                                         regex=file_regex))
+            else:
+                return None
         return _found_files
 
     def get_plot_file(self):
