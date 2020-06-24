@@ -45,3 +45,6 @@ site.retry
 vault.yml
 
 .DS_Store
+
+# Ignore downloaded graphs
+Webapp/autoreduce_webapp/static/graphs/
