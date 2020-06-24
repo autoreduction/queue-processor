@@ -21,6 +21,7 @@ LOGGER = logging.getLogger('app')
 INSTRUMENT_REGEX_MAP = {"MARI": "MAR(I)?", "WISH": "WISH"}
 
 
+# pylint:disable=too-few-public-methods
 class PlotHandler:
     """
     Takes parameters for a run and (for now) checks if an associated image exists and retrieves it.
@@ -100,8 +101,3 @@ class PlotHandler:
             return f'/static/graphs/{_existing_plot_files[0]}'  # shortcut to static dir
         # No files found
         return None
-
-    # pylint:disable=unnecessary-pass
-    def construct_plot(self):
-        """Calls the plot factory to construct an iframe from a NumpyArray and plot_type"""
-        pass

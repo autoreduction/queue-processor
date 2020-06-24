@@ -143,11 +143,3 @@ class TestPlotHandler(unittest.TestCase):
         mock_retrieve.side_effect = RuntimeError
         self.assertIsNone(self.test_plot_handler.get_plot_file())
         mock_client_init.assert_called_once()
-
-    # pylint:disable=unnecessary-pass
-    def test_construct_plot(self):
-        """
-        Test:
-        When:
-        """
-        pass
