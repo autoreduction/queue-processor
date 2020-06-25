@@ -397,9 +397,9 @@ def run_summary(request, instrument_name=None, run_number=None, run_version=0):
                                        rb_number=rb_number,
                                        run_number=run.run_number,
                                        server_dir=reduction_location)
-            plot_location = plot_handler.get_plot_file()
-            if plot_location:
-                context_dictionary['plot_location'] = plot_location
+            plot_locations = plot_handler.get_plot_file()
+            if plot_locations:
+                context_dictionary['plot_locations'] = plot_locations
 
     except PermissionDenied:
         raise
