@@ -50,8 +50,8 @@ class Software(models.Model):
     """
     Represents the software used to perform the reduction
     """
-    name = models.CharField(max_length=100, blank=False)
-    version = models.CharField(max_length=20, blank=False)
+    name = models.CharField(max_length=100, blank=False, null=False)
+    version = models.CharField(max_length=20, blank=False, null=False)
 
     def __unicode__(self):
         return f'{self.name}-{self.version}'

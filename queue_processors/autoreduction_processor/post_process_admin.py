@@ -362,7 +362,10 @@ class PostProcessAdmin:
 
     @staticmethod
     def _get_mantid_version():
-        """ Attempt to get Mantid software version"""
+        """
+        Attempt to get Mantid software version
+        :return: (str) Mantid version or None if not found
+        """
         if MISC["mantid_path"] not in sys.path:
             sys.path.append(MISC['mantid_path'])
         try:

@@ -87,7 +87,6 @@ class TestAccess(unittest.TestCase):
         """
         database = access.start_database()
         actual = access.get_experiment(rb_number=9999999, create=True)
-        self.assertIsNotNone(actual)
         self.assertIsInstance(actual, database.data_model.Experiment)
         mock_save.assert_called_once()
 
