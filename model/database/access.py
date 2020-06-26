@@ -69,6 +69,25 @@ def get_experiment(rb_number, create=False):
     return experiment_record
 
 
+def get_software(name, version, create=False):
+    """
+    Find the Software record associated with the name and version provided
+    :param name: (str) The name of the software
+    :param version: (str) The version number of the software
+    :param create: (bool) If True, then create the record if it does not exist
+    :return: (Software) The Software object from the database
+    """
+    database = start_database()
+    software_record = database.data_model.Software.objects \
+        .filter(name=name) \
+        .filter(version=version) \
+        .first()
+    if not software_record and create:
+        software_record = database.data_model.Software(name=name, version=version)
+        save_record(software_record)
+    return software_record
+
+
 def get_reduction_run(instrument, run_number):
     """
     Returns a QuerySet of all ReductionRun versions that have the given instrument/run_number

@@ -41,7 +41,8 @@ class TestMessage(unittest.TestCase):
                       'reduction_log': "",
                       'admin_log': "",
                       'return_message': None,
-                      'retry_in': None}
+                      'retry_in': None,
+                      'software': None}
         return empty_msg, empty_dict
 
     @staticmethod
@@ -70,7 +71,8 @@ class TestMessage(unittest.TestCase):
                           'message': None,
                           'retry_in': None,
                           'reduction_data': None,
-                          'cancel': None
+                          'cancel': None,
+                          'software': None,
                           }
         return populated_msg, populated_dict
 
@@ -98,6 +100,7 @@ class TestMessage(unittest.TestCase):
         self.assertIsNone(empty_msg.retry_in)
         self.assertIsNone(empty_msg.reduction_data)
         self.assertIsNone(empty_msg.cancel)
+        self.assertIsNone(empty_msg.software)
 
     def test_to_dict_populated(self):
         """

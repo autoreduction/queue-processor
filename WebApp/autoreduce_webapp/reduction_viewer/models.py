@@ -46,6 +46,17 @@ class Status(models.Model):
         return u'%s' % self.value
 
 
+class Software(models.Model):
+    """
+    Represents the software used to perform the reduction
+    """
+    name = models.CharField(max_length=100, blank=False, null=False)
+    version = models.CharField(max_length=20, blank=False, null=False)
+
+    def __unicode__(self):
+        return f'{self.name}-{self.version}'
+
+
 class ReductionRun(models.Model):
     """
     Table designed to link all table together. This represents a single reduction run that
@@ -86,6 +97,8 @@ class ReductionRun(models.Model):
                                    on_delete=models.CASCADE)
     retry_run = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
     status = models.ForeignKey(Status, blank=False, related_name='+', on_delete=models.CASCADE)
+    software = models.ForeignKey(Software, blank=False, related_name='reduction_runs', null=True,
+                                 on_delete=models.CASCADE)
 
     def __unicode__(self):
         """ :return: run_number and run_name if given """
