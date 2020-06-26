@@ -120,22 +120,25 @@ class TestPlotHandler(unittest.TestCase):
         mock_client_init.assert_called_once()
         mock_retrieve.assert_called_once_with(
             server_file_path=expected_server, local_file_path=expected_local, override=True)
-        self.assertEqual(f'/static/graphs/{expected_files[0]}', actual_path)
+        self.assertEqual([f'/static/graphs/{expected_files[0]}'], actual_path)
 
     @patch('utils.clients.sftp_client.SFTPClient.retrieve')
     @patch('plotting.plot_handler.PlotHandler._check_for_plot_files')
     @patch('utils.clients.sftp_client.SFTPClient.__init__', return_value=None)
-    def test_get_plot_files_multiple(self,  mock_client_init, mock_find_files, _):
+    def test_get_plot_files_multiple(self, mock_client_init, mock_find_files, _):
+        """
+        Test: Multiple file paths are returned as a list
+        When: Multiple image files exist on the server relating to the same run
+        """
         expected_files = ['expected_1.png', 'expected_2.png']
         mock_find_files.return_value = expected_files
 
         expected_paths = [f'/static/graphs/{expected_files[0]}',
-                          f'/static/graphs/{expected_files[0]}']
+                          f'/static/graphs/{expected_files[1]}']
 
         actual_paths = self.test_plot_handler.get_plot_file()
         mock_client_init.assert_called_once()  # Ensure this is not initialised more than once
         self.assertEqual(expected_paths, actual_paths)
-
 
     @patch('plotting.plot_handler.PlotHandler._check_for_plot_files', return_value=[])
     def test_get_plot_file_none_found(self, _):
