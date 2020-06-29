@@ -19,6 +19,8 @@ import traceback
 from model.database import access as db_access
 from model.message.job import Message
 from queue_processors.queue_processor._utils_classes import _UtilsClasses
+from queue_processors.queue_processor.handling_exceptions import \
+    MissingReductionRunRecord, InvalidStateException, MissingExperimentRecord
 from queue_processors.queue_processor.settings import LOGGING
 from utils.settings import ACTIVEMQ_SETTINGS
 
@@ -88,7 +90,8 @@ class HandleMessage:
             instrument_variable.get_current_script_text(instrument.name)[0]
         if script_text is None:
             self.reduction_error(message)
-            return
+            raise InvalidStateException(
+                "Script text for current instrument is null")
 
         # Make the new reduction run with the information collected so far
         # and add it into the database
@@ -128,7 +131,8 @@ class HandleMessage:
         if error_message:
             self._construct_and_send_skipped(
                 message=message, rb_number=message.rb_number, reason=error_message)
-            return
+            raise InvalidStateException("An invalid RB Number was used:"
+                                        f" {message.rb_number}")
 
         if instrument.is_paused:
             self._logger.info("Run %s has been skipped",
@@ -208,83 +212,57 @@ class HandleMessage:
 
         reduction_run = self.find_run(message=message)
 
-        if reduction_run:
-            if str(reduction_run.status.value) == "Error" or \
-                    str(reduction_run.status.value) == "Queued":
-                reduction_run.status = self._utils.status.get_processing()
-                reduction_run.started = datetime.datetime.utcnow()
-                db_access.save_record(reduction_run)
-            else:
-                self._logger.error(
-                    "An invalid attempt to re-start a reduction run was "
-                    "captured. "
-                    "Experiment: %s, "
-                    "Run Number: %s, "
-                    "Run Version %s",
-                    message.rb_number,
-                    message.run_number,
-                    message.run_version)
-        else:
-            self._logger.error(
-                "A reduction run started that wasn't found in the database. "
-                "Experiment: %s, "
-                "Run Number: %s, "
-                "Run Version %s",
-                message.rb_number,
-                message.run_number,
-                message.run_version)
+        if not reduction_run:
+            raise MissingReductionRunRecord(
+                rb_number=message.rb_number, run_number=message.run_number,
+                run_version=message.run_version)
+
+        if reduction_run.status.value not in ("Error", "Queued"):
+            raise InvalidStateException(
+                "An invalid attempt to re-start a reduction run was captured."
+                f" Experiment: {message.rb_number},"
+                f" Run Number: {message.run_number},"
+                f" Run Version {message.run_version}")
+
+        reduction_run.status = self._utils.status.get_processing()
+        reduction_run.started = datetime.datetime.utcnow()
+        db_access.save_record(reduction_run)
 
     def reduction_complete(self, message: Message):
         """
         Called when the destination queue was reduction_complete
         Updates the run as complete in the database.
         """
-        # pylint: disable=too-many-nested-blocks
-        try:
-            self._logger.info("Run %s has completed reduction",
-                              message.run_number)
-            reduction_run = self.find_run(message)
+        self._logger.info("Run %s has completed reduction", message.run_number)
+        reduction_run = self.find_run(message)
 
-            if reduction_run:
-                if reduction_run.status.value == "Processing":
-                    reduction_run.status = self._utils.status.get_completed()
-                    reduction_run.finished = datetime.datetime.utcnow()
-                    reduction_run.message = message.message
-                    reduction_run.reduction_log = message.reduction_log
-                    reduction_run.admin_log = message.admin_log
+        if not reduction_run:
+            raise MissingReductionRunRecord(
+                rb_number=message.rb_number, run_number=message.run_number,
+                run_version=message.run_version)
 
-                    if message.reduction_data is not None:
-                        for location in message.reduction_data:
-                            model = db_access.start_database().data_model
-                            reduction_location = model \
-                                .ReductionLocation(file_path=location,
-                                                   reduction_run=reduction_run)
-                            db_access.save_record(reduction_location)
-                    db_access.save_record(reduction_run)
+        if not reduction_run.status.value == "Processing":
+            raise InvalidStateException(
+                "An invalid attempt to complete a reduction run that wasn't"
+                " processing has been captured. "
+                f" Experiment: {message.rb_number},"
+                f" Run Number: {message.run_number},"
+                f" Run Version {message.run_version}")
 
-                else:
-                    self._logger.error(
-                        "An invalid attempt to complete a reduction run that "
-                        "wasn't "
-                        "processing has been captured. "
-                        "Experiment: %s, "
-                        "Run Number: %s, "
-                        "Run Version %s",
-                        message.rb_number,
-                        message.run_number,
-                        message.run_version)
-            else:
-                self._logger.error(
-                    "A reduction run completed that wasn't found in the "
-                    "database. "
-                    "Experiment: %s, Run Number:%s,"
-                    " Run Version %s",
-                    message.rb_number,
-                    message.run_number,
-                    message.run_version)
+        reduction_run.status = self._utils.status.get_completed()
+        reduction_run.finished = datetime.datetime.utcnow()
+        reduction_run.message = message.message
+        reduction_run.reduction_log = message.reduction_log
+        reduction_run.admin_log = message.admin_log
 
-        except BaseException as exp:
-            self._logger.error("Error: %s", exp)
+        if message.reduction_data is not None:
+            for location in message.reduction_data:
+                model = db_access.start_database().data_model
+                reduction_location = model \
+                    .ReductionLocation(file_path=location,
+                                       reduction_run=reduction_run)
+                db_access.save_record(reduction_location)
+        db_access.save_record(reduction_run)
 
     def reduction_skipped(self, message: Message):
         """
@@ -303,16 +281,9 @@ class HandleMessage:
 
         reduction_run = self.find_run(message)
         if not reduction_run:
-            self._logger.error(
-                "A reduction run that was skipped, could not be found in the "
-                "database. "
-                "Experiment: %s, "
-                "Run Number: %s, "
-                "Run Version %s",
-                message.rb_number,
-                message.run_number,
-                message.run_version)
-            return
+            raise MissingReductionRunRecord(rb_number=message.rb_number,
+                                            run_number=message.run_number,
+                                            run_version=message.run_version)
 
         reduction_run.status = self._utils.status.get_skipped()
         reduction_run.finished = datetime.datetime.utcnow()
@@ -327,10 +298,9 @@ class HandleMessage:
         Called when the destination was reduction_error.
         Updates the run as complete in the database.
         """
-        if message.message is not None:
+        if message.message:
             self._logger.info("Run %s has encountered an error - %s",
-                              message.run_number,
-                              message.message)
+                              message.run_number, message.message)
         else:
             self._logger.info(
                 "Run %s has encountered an error - No error message was found",
@@ -339,16 +309,9 @@ class HandleMessage:
         reduction_run = self.find_run(message)
 
         if not reduction_run:
-            self._logger.error(
-                "A reduction run that caused an error wasn't found in the "
-                "database. "
-                "Experiment: %s, "
-                "Run Number: %s, "
-                "Run Version %s",
-                message.rb_number,
-                message.run_number,
-                message.run_version)
-            return
+            raise MissingReductionRunRecord(rb_number=message.rb_number,
+                                            run_number=message.run_number,
+                                            run_version=message.run_version)
 
         reduction_run.status = self._utils.status.get_error()
         reduction_run.finished = datetime.datetime.utcnow()
@@ -380,10 +343,9 @@ class HandleMessage:
         """ Find a reduction run in the database. """
         experiment = db_access.get_experiment(message.rb_number)
         if not experiment:
-            self._logger.error("Unable to find experiment %s",
-                               message.rb_number)
-            return None
-
+            raise MissingExperimentRecord(rb_number=message.rb_number,
+                                          run_number=message.run_number,
+                                          run_version=message.run_version)
         self._logger.info(
             'Finding a run with an experiment ID %s, run number %s and run '
             'version %s',

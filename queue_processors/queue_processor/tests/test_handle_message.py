@@ -13,7 +13,10 @@ from model.message.job import Message
 from queue_processors.queue_processor import handle_message
 from queue_processors.queue_processor._utils_classes import _UtilsClasses
 from queue_processors.queue_processor.handle_message import HandleMessage
+from queue_processors.queue_processor.handling_exceptions import \
+    InvalidStateException, MissingReductionRunRecord, MissingExperimentRecord
 from queue_processors.queue_processor.stomp_client import StompClient
+from utils.settings import ACTIVEMQ_SETTINGS
 
 
 class TestHandleMessageFreeFuncs(unittest.TestCase):
@@ -65,7 +68,9 @@ class TestHandleMessage(unittest.TestCase):
 
     @staticmethod
     def _get_mock_message():
-        return mock.Mock(spec=Message())
+        mocked_message = mock.Mock(spec=Message())
+        mocked_message.rb_number = 1
+        return mocked_message
 
     def test_data_model_only_inits_once(self, patched_db):
         model_mock = patched_db.start_database.return_value.data_model
@@ -173,7 +178,8 @@ class TestHandleMessage(unittest.TestCase):
         self.mocked_utils.instrument_variable\
             .get_current_script_text.return_value = [None]
 
-        self.handler.data_ready(self._get_mock_message())
+        with self.assertRaises(InvalidStateException):
+            self.handler.data_ready(self._get_mock_message())
         self.handler.reduction_error.assert_called_once()
 
     @patch("queue_processors.queue_processor.handle_message.is_valid_rb")
@@ -251,13 +257,21 @@ class TestHandleMessage(unittest.TestCase):
             self.mocked_utils.status.get_processing.reset_mock()
             patched_db.save_record.reset_mock()
 
-        # Failure case should do very little
-        mock_reduction_record.status.value = "Unknown"
-        self.handler.reduction_started(message=self._get_mock_message())
+    def test_reduction_started_missing_record(self, patched_db):
+        self.handler.find_run = mock.Mock(return_value=None)
+        with self.assertRaises(MissingReductionRunRecord):
+            self.handler.reduction_started(message=self._get_mock_message())
 
-        self.mocked_logger.error.assert_called()
         self.mocked_utils.status.get_processing.assert_not_called()
         patched_db.save_record.assert_not_called()
+
+    def test_reduction_started_invalid_state(self, patched_db):
+        reduction_run_record = mock.NonCallableMock()
+        reduction_run_record.state.value = "Unknown"
+        self.handler.find_run = mock.Mock(return_value=reduction_run_record)
+
+        with self.assertRaises(InvalidStateException):
+            self.handler.reduction_started(self._get_mock_message())
 
     def test_reduction_complete(self, patched_db):
         mocked_msg = self._get_mock_message()
@@ -303,9 +317,15 @@ class TestHandleMessage(unittest.TestCase):
         mock_reduction_record.status.value = "Unknown"
         self.handler.find_run = mock.Mock(return_value=mock_reduction_record)
 
-        mocked_msg = self._get_mock_message()
-        self.handler.reduction_complete(message=mocked_msg)
-        self.mocked_logger.error.assert_called()
+        with self.assertRaises(InvalidStateException):
+            self.handler.reduction_complete(message=self._get_mock_message())
+        patched_db.save_record.assert_not_called()
+
+    def test_reduction_complete_with_missing_record(self, patched_db):
+        self.handler.find_run = mock.Mock(return_value=None)
+
+        with self.assertRaises(MissingReductionRunRecord):
+            self.handler.reduction_complete(message=self._get_mock_message())
         patched_db.save_record.assert_not_called()
 
     def test_reduction_skipped(self, patched_db):
@@ -329,8 +349,8 @@ class TestHandleMessage(unittest.TestCase):
 
     def test_reduction_skipped_no_record(self, patched_db):
         self.handler.find_run = mock.Mock(return_value=None)
-        self.handler.reduction_skipped(message=self._get_mock_message())
-        self.mocked_logger.error.assert_called()
+        with self.assertRaises(MissingReductionRunRecord):
+            self.handler.reduction_skipped(message=self._get_mock_message())
         patched_db.save_record.assert_not_called()
 
     def test_reduction_error_no_retry(self, patched_db):
@@ -350,6 +370,11 @@ class TestHandleMessage(unittest.TestCase):
                          mock_reduction_record.admin_log)
 
         patched_db.save_record.assert_called_once_with(mock_reduction_record)
+
+    def test_reduction_error_missing_record(self, _):
+        self.handler.find_run = mock.Mock(return_value=None)
+        with self.assertRaises(MissingReductionRunRecord):
+            self.handler.reduction_error(message=self._get_mock_message())
 
     def test_reduction_error_retry_mechanism(self, patched_db):
         mock_reduction_record = mock.NonCallableMock()
@@ -402,6 +427,11 @@ class TestHandleMessage(unittest.TestCase):
         top_level_query.filter.return_value.filter.return_value.filter \
             .assert_called_once_with(run_version=200)
 
+    def test_find_run_missing_experiment_record(self, patched_db):
+        patched_db.get_experiment.return_value = None
+        with self.assertRaises(MissingExperimentRecord):
+            self.handler.find_run(self._get_mock_message())
+
     def test_retry_run(self, _):
         reduction_run = mock.Mock()
         reduction_run.cancel = False
@@ -425,6 +455,14 @@ class TestHandleMessage(unittest.TestCase):
             user_id=None, reduction_run=reduction_run, retry_in=None))
         self.mocked_utils.reduction_run.create_retry_run.assert_not_called()
 
+    def test_construct_and_send_skipped(self, _):
+        expected_msg = self._get_mock_message()
+        self.handler._construct_and_send_skipped(
+            rb_number=mock.NonCallableMock(),
+            reason=mock.NonCallableMock(), message=expected_msg)
+
+        self.mocked_client.send_message.assert_called_once_with(
+            ACTIVEMQ_SETTINGS.reduction_skipped, expected_msg)
 
 
 if __name__ == '__main__':

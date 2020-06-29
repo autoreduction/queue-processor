@@ -18,6 +18,8 @@ import sys
 import traceback
 from model.message.job import Message
 from queue_processors.queue_processor.handle_message import HandleMessage
+from queue_processors.queue_processor.handling_exceptions import \
+    InvalidStateException
 from queue_processors.queue_processor.settings import LOGGING
 from utils.clients.queue_client import QueueClient
 
@@ -65,10 +67,10 @@ class StompClient:
                 self._message_handler.reduction_skipped(message)
             else:
                 self._logger.warning(
-                    "Recieved a message on an unknown topic '%s'", destination)
-        except Exception as exp:  # pylint: disable=broad-except
-            self._logger.error("UNCAUGHT ERROR: %s - %s", type(exp).__name__,
-                               str(exp))
+                    "Received a message on an unknown topic '%s'", destination)
+        except InvalidStateException as exp:
+            self._logger.error("Stomp Client message handling exception:"
+                               f" {type(exp).__name__} {str(exp)}")
             self._logger.error(traceback.format_exc())
 
     def send_message(self, target: str, message: Message,
