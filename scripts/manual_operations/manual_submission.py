@@ -21,6 +21,10 @@ from utils.clients.queue_client import QueueClient
 from utils.clients.django_database_client import DatabaseClient
 
 
+ICAT_PREFIX_MAP = {'MARI': 'MAR',
+                   'MAPS': 'MAP'}
+
+
 def submit_run(active_mq_client, rb_number, instrument, data_file_location, run_number):
     """
     Submit a new run for autoreduction
@@ -83,7 +87,8 @@ def get_location_and_rb_from_icat(icat_client, instrument, run_number, file_ext)
     if icat_client is None:
         print("ICAT not connected")  # pragma: no cover
         sys.exit(1)  # pragma: no cover
-
+    if instrument in ICAT_PREFIX_MAP.keys():
+        instrument = ICAT_PREFIX_MAP[instrument]
     file_name = instrument + str(run_number).zfill(5) + "." + file_ext
     datafile = icat_client.execute_query("SELECT df FROM Datafile df WHERE df.name = '"
                                          + file_name +

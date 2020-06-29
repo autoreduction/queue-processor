@@ -19,7 +19,7 @@ from utils.clients.connection_exception import ConnectionException
 from model.message.job import Message
 
 
-# pylint:disable=no-self-use
+# pylint:disable=no-self-use,too-many-public-methods
 class TestManualSubmission(unittest.TestCase):
     """
     Test manual_submission.py
@@ -111,6 +111,28 @@ class TestManualSubmission(unittest.TestCase):
         location_and_rb = ms.get_location_and_rb_from_icat(*self.loc_and_rb_args[1:])
         self.loc_and_rb_args[1].execute_query.assert_called_once()
         self.assertEqual(location_and_rb, self.valid_return)
+
+    def test_icat_uses_prefix_mapper(self):
+        """
+        Test: The instrument shorthand name is used
+        When: querying ICAT with function get_location_and_rb_from_icat
+        """
+        icat_client = Mock()
+        data_file = Mock()
+        data_file.location = 'location'
+        data_file.dataset.investigation.name = 'inv_name'
+        # Add return here to ensure we do NOT try fall through cases
+        # and do NOT have to deal with multiple calls to mock
+        icat_client.execute_query.return_value = [data_file]
+        actual_loc, actual_inv_name = ms.get_location_and_rb_from_icat(icat_client,
+                                                                       'MARI',
+                                                                       '123',
+                                                                       'nxs')
+        self.assertEqual('location', actual_loc)
+        self.assertEqual('inv_name', actual_inv_name)
+        icat_client.execute_query.assert_called_once_with("SELECT df FROM Datafile df WHERE"
+                                                          " df.name = 'MAR00123.nxs' INCLUDE"
+                                                          " df.dataset AS ds, ds.investigation")
 
     def test_get_from_icat_when_file_exists_with_zeroes(self):
         """
