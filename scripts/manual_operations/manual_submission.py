@@ -10,7 +10,6 @@ A module for creating and submitting manual submissions to autoreduction
 from __future__ import print_function
 
 import sys
-import argparse
 
 import fire
 
