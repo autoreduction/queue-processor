@@ -39,7 +39,7 @@ def has_valid_login(request):
     if DEVELOPMENT_MODE:
         LOGGER.debug("DEVELOPMENT_MODE True so allowing access")
         return True
-    if request.user.is_authenticated() and 'sessionid' in request.session:
+    if request.user.is_authenticated and 'sessionid' in request.session:
         LOGGER.debug("User is authenticated and has a sessionid from the UOWS")
         return True
     return False
