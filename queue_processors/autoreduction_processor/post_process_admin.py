@@ -182,11 +182,17 @@ class PostProcessAdmin:
         # pylint: disable=too-many-nested-blocks
         logger.info("reduce started")
         self.message.software = self._get_mantid_version()
-        try:
+
+        def reduction_started():
+            """Log and update AMQ message to reduction started"""
             logger.debug("Calling: %s\n%s",
                          ACTIVEMQ_SETTINGS.reduction_started,
                          self.message.serialize(limit_reduction_script=True))
             self.client.send(ACTIVEMQ_SETTINGS.reduction_started, self.message)
+
+        try:
+            # log and update AMQ message to reduction started
+            reduction_started()
 
             # Specify instrument directory
             instrument_output_dir = MISC["ceph_directory"] % (self.instrument,
@@ -202,7 +208,6 @@ class PostProcessAdmin:
 
             if self.message.description is not None:
                 logger.info("DESCRIPTION: %s", self.message.description)
-
             log_dir = reduce_result_dir + "/reduction_log/"
             log_and_err_name = "RB" + self.proposal + "Run" + self.run_number
             script_out = os.path.join(log_dir, log_and_err_name + "Script.out")
