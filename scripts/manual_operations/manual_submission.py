@@ -10,7 +10,8 @@ A module for creating and submitting manual submissions to autoreduction
 from __future__ import print_function
 
 import sys
-import argparse
+
+import fire
 
 from model.database import access as db
 from model.message.job import Message
@@ -180,41 +181,22 @@ def login_queue():
     return activemq_client
 
 
-def handle_input():
+def main(instrument, first_run, last_run=None):
     """
-    Handle the input from users via the command line
-    :return: (list) run numbers to submit, (str) name of the instrument associated with the runs
+    Manually submit an instrument run from reduction.
+    All run number between `first_run` and `last_run` are submitted
+    :param instrument: (string) The name of the instrument to submit a run for
+    :param first_run: (int) The first run to be submitted
+    :param last_run: (int) The last run to be submitted
     """
-    parser = argparse.ArgumentParser(description='Submit a run to the autoreduction service.',
-                                     epilog='./manual_submission.py GEM 83880 [-e 83882]')
-    parser.add_argument('instrument', metavar='instrument', type=str,
-                        help='a string of the instrument name e.g "GEM"')
-    parser.add_argument('-e', metavar='end_run_number', nargs='?', type=int,
-                        help='if submitting a range, the end run number e.g. "83882"')
-    parser.add_argument('start_run_number', metavar='start_run_number', type=int,
-                        help='the start run number e.g. "83880"')
-    args = parser.parse_args()
-
-    run_numbers = [args.start_run_number]
-
-    if args.e:
-        # Range submission
-        if not args.e > args.start_run_number:
-            print("'end_run_number' must be greater than 'start_run_number'.")
-            print("e.g './manual_submission.py GEM 83880 -e 83882'")
-            sys.exit(1)
-        run_numbers = range(args.start_run_number, args.e + 1)
-
-    instrument = args.instrument.upper()
-
-    return run_numbers, instrument
-
-
-def main():
-    """
-    Collate user input and initialise clients before attempting to submit new runs
-    """
-    run_numbers, instrument = handle_input()
+    if last_run:
+        if int(last_run) > int(first_run):
+            run_numbers = list(range(first_run, last_run))
+        else:
+            raise ValueError(f"last run ({last_run}) must be more than first run ({first_run})")
+    else:
+        run_numbers = [first_run]
+    instrument = instrument.upper()
     icat_client = login_icat()
     database_client = login_database()
     if not icat_client and not database_client:
@@ -232,4 +214,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()  # pragma: no cover
+    fire.Fire(main)  # pragma: no cover

@@ -256,10 +256,9 @@ class TestManualSubmission(unittest.TestCase):
     @patch('scripts.manual_operations.manual_submission.login_icat')
     @patch('scripts.manual_operations.manual_submission.login_database')
     @patch('scripts.manual_operations.manual_submission.login_queue')
-    @patch('scripts.manual_operations.manual_submission.handle_input')
     @patch('scripts.manual_operations.manual_submission.get_location_and_rb')
     @patch('scripts.manual_operations.manual_submission.submit_run')
-    def test_main_valid(self, mock_submit, mock_get_loc, mock_input,
+    def test_main_valid(self, mock_submit, mock_get_loc,
                         mock_queue, mock_database, mock_icat):
         """
         Test: The control methods are called in the correct order
@@ -274,11 +273,10 @@ class TestManualSubmission(unittest.TestCase):
         mock_queue.return_value = mock_queue_client
         mock_database.return_value = mock_db_client
         mock_icat.return_value = mock_icat_client
-        mock_input.return_value = ([1111], 'TEST')
         mock_get_loc.return_value = ('test/file/path', 2222)
 
         # Call functionality
-        ms.main()
+        ms.main(instrument='TEST', first_run=1111)
 
         # Assert
         mock_icat.assert_called_once()
@@ -287,17 +285,15 @@ class TestManualSubmission(unittest.TestCase):
         mock_get_loc.assert_called_once_with(mock_db_client, mock_icat_client, 'TEST', 1111, "nxs")
         mock_submit.assert_called_once_with(mock_queue_client, 2222, 'TEST', 'test/file/path', 1111)
 
-    @patch('scripts.manual_operations.manual_submission.handle_input')
     @patch('scripts.manual_operations.manual_submission.login_icat')
     @patch('scripts.manual_operations.manual_submission.login_database')
-    def test_main_bad_client(self, mock_db, mock_icat, mock_input):
+    def test_main_bad_client(self, mock_db, mock_icat):
         """
         Test: A RuntimeError is raised
         When: Neither ICAT or Database connections can be established
         """
-        mock_input.return_value = ([1111], 'TEST')
         mock_db.return_value = None
         mock_icat.return_value = None
-        self.assertRaises(RuntimeError, ms.main)
+        self.assertRaises(RuntimeError, ms.main, 'TEST', 1111)
         mock_db.asert_called_once()
         mock_icat.assert_called_once()
