@@ -208,16 +208,29 @@ class PostProcessAdmin:
             script_out = os.path.join(log_dir, log_and_err_name + "Script.out")
             mantid_log = os.path.join(log_dir, log_and_err_name + "Mantid.log")
 
-            # strip the temp path off the front of the temp directory to get the final archives
-            # directory.
-            final_result_dir = reduce_result_dir[len(MISC["temp_root_directory"]):]
-            final_log_dir = log_dir[len(MISC["temp_root_directory"]):]
+            def result_directory():
+                """
+                create and return final result directory, stripping temporary path off the front
+                of temporary directories
+                :return (str) final result directory path
+                """
+                final_result_directory = reduce_result_dir[len(MISC["temp_root_directory"]):]
+                final_result_directory = self._new_reduction_data_path(final_result_directory)
+                logger.info(f"Final Result Directory = {final_result_dir}")
+                return final_result_directory
 
-            final_result_dir = self._new_reduction_data_path(final_result_dir)
-            final_log_dir = append_path(final_result_dir, ['reduction_log'])
+            def log_directory(final_result_directory):
+                """Create and return final log directory
+                :param (str) Final result directory pathname
+                :return (str) Final log directory path"""
+                final_log_directory = log_dir[len(MISC["temp_root_directory"]):]
+                final_log_directory = append_path(final_result_directory, ['reduction_log'])
+                logger.info(f"Final Log Directory = {final_log_directory}")
+                return final_log_directory
 
-            logger.info('Final Result Directory = %s', final_result_dir)
-            logger.info('Final Log Directory = %s', final_log_dir)
+            # strip temp path off front of the temp directory to get the final archives directory
+            final_result_dir = result_directory()
+            final_log_dir = log_directory(final_result_dir)
 
             # test for access to result paths
             try:
