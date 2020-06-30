@@ -219,38 +219,42 @@ class PostProcessAdmin:
             logger.info('Final Result Directory = %s', final_result_dir)
             logger.info('Final Log Directory = %s', final_log_dir)
 
-            # test for access to result paths
-            try:
-                should_be_writable = [reduce_result_dir, log_dir, final_result_dir, final_log_dir]
-                should_be_readable = [self.data_file]
+            def path_access_validate():
+                """test for access to result paths"""
+                try:
+                    should_be_writable = [reduce_result_dir, log_dir, final_result_dir, final_log_dir]
+                    should_be_readable = [self.data_file]
 
-                # try to make directories which should exist
-                for path in filter(lambda p: not os.path.isdir(p), should_be_writable):
-                    os.makedirs(path)
+                    # try to make directories which should exist
+                    for path in filter(lambda p: not os.path.isdir(p), should_be_writable):
+                        os.makedirs(path)
 
-                for location in should_be_writable:
-                    if not os.access(location, os.W_OK):
-                        if not os.access(location, os.F_OK):
-                            problem = "does not exist"
-                        else:
-                            problem = "no write access"
-                        raise Exception("Couldn't write to %s  -  %s" % (location, problem))
+                    for location in should_be_writable:
+                        if not os.access(location, os.W_OK):
+                            if not os.access(location, os.F_OK):
+                                problem = "does not exist"
+                            else:
+                                problem = "no write access"
+                            raise Exception("Couldn't write to %s  -  %s" % (location, problem))
 
-                for location in should_be_readable:
-                    if not os.access(location, os.R_OK):
-                        if not os.access(location, os.F_OK):
-                            problem = "does not exist"
-                        else:
-                            problem = "no read access"
-                        raise Exception("Couldn't read %s  -  %s" % (location, problem))
+                    for location in should_be_readable:
+                        if not os.access(location, os.R_OK):
+                            if not os.access(location, os.F_OK):
+                                problem = "does not exist"
+                            else:
+                                problem = "no read access"
+                            raise Exception("Couldn't read %s  -  %s" % (location, problem))
 
-            except Exception as exp:
-                # if we can't access now, we should abort the run, and tell the server that it
-                # should be re-run at a later time.
-                self.message.message = "Permission error: %s" % exp
-                self.message.retry_in = 6 * 60 * 60  # 6 hours
-                logger.error(traceback.format_exc())
-                raise exp
+                except Exception as exp:
+                    # if we can't access now, we should abort the run, and tell the server that it
+                    # should be re-run at a later time.
+                    self.message.message = "Permission error: %s" % exp
+                    self.message.retry_in = 6 * 60 * 60  # 6 hours
+                    logger.error(traceback.format_exc())
+                    raise exp
+
+            # Test path access
+            path_access_validate()
 
             self.message.reduction_data = []
 
