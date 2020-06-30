@@ -188,17 +188,24 @@ class PostProcessAdmin:
                          self.message.serialize(limit_reduction_script=True))
             self.client.send(ACTIVEMQ_SETTINGS.reduction_started, self.message)
 
-            # Specify instrument directory
-            instrument_output_dir = MISC["ceph_directory"] % (self.instrument,
-                                                              self.proposal,
-                                                              self.run_number)
+            def specify_instrument_directories():
+                """Specifies instrument directories, including removal of run_number folder
+                if excitations instrument
+                :return (list) Directories where Autoreduction should output"""
+                # Specify instrument directory
+                instrument_output_dir = MISC["ceph_directory"] % (self.instrument,
+                                                                  self.proposal,
+                                                                  self.run_number)
 
-            if self.instrument in MISC["excitation_instruments"]:
-                # Excitations would like to remove the run number folder at the end
-                instrument_output_dir = instrument_output_dir[:instrument_output_dir.rfind('/') + 1]
+                if self.instrument in MISC["excitation_instruments"]:
+                    # Excitations would like to remove the run number folder at the end
+                    instrument_output_dir = instrument_output_dir[
+                                            :instrument_output_dir.rfind('/') + 1]
 
-            # Specify directories where autoreduction output will go
-            reduce_result_dir = MISC["temp_root_directory"] + instrument_output_dir
+                # Specify directories where autoreduction output will go
+                return MISC["temp_root_directory"] + instrument_output_dir
+
+            reduce_result_dir = specify_instrument_directories()
 
             if self.message.description is not None:
                 logger.info("DESCRIPTION: %s", self.message.description)
