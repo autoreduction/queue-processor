@@ -195,7 +195,7 @@ def remove(instrument, run_number):
 
 def handle_input():
     """Handles input from users via the command line
-    :return (list) run numbers to remove, (str) name of instrument associated to runs
+    :return (list) run numbers to remove, (str) name of instruments associated to runs
     """
     parser = argparse.ArgumentParser(description='Remove a run from the autoreduction service.',
                                      epilog='./manual_remove.py GEM 83880')
