@@ -26,11 +26,12 @@ class TestHandleMessageFreeFuncs(unittest.TestCase):
     def test_is_valid_rb(self):
         valid_values = [1, 20, "10000"]
         for i in valid_values:
-            self.assertIsNone(handle_message.is_valid_rb(i))
+            self.assertIsNone(handle_message.validate_rb_num(i))
 
         invalid_values = [0, 0.1, -1, -100, None, "foo"]
         for i in invalid_values:
-            self.assertIsInstance(handle_message.is_valid_rb(i), str)
+            with self.assertRaises(InvalidStateException):
+                handle_message.validate_rb_num(i)
 
 
 @patch("queue_processors.queue_processor.handle_message.db_access")
@@ -182,7 +183,7 @@ class TestHandleMessage(unittest.TestCase):
             self.handler.data_ready(self._get_mock_message())
         self.handler.reduction_error.assert_called_once()
 
-    @patch("queue_processors.queue_processor.handle_message.is_valid_rb")
+    @patch("queue_processors.queue_processor.handle_message.validate_rb_num")
     def test_data_ready_with_new_data(self, valid_rb, patched_db):
         # This is the "ideal" flow hence it's the largest and
         # should be split down

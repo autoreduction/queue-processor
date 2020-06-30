@@ -10,9 +10,6 @@ This module deals with the updating of the database backend.
 It consumes messages from the queues and then updates the reduction run
 status in the database.
 """
-# pylint: disable=too-many-arguments
-# pylint: disable=too-many-locals
-# pylint: disable=fixme
 import logging.config
 import sys
 import traceback

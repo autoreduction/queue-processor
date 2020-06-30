@@ -25,19 +25,21 @@ from queue_processors.queue_processor.settings import LOGGING
 from utils.settings import ACTIVEMQ_SETTINGS
 
 
-def is_valid_rb(rb_number):
+def validate_rb_num(rb_number):
     """
     Detects if the RB number is valid e.g. (above 0 and not a string)
     :param rb_number:
-    :return: An error message if one is generated or None if the RB is valid
+    :raises: InvalidStateException If the RB is not valid
     """
     try:
         rb_number = int(rb_number)
-        if rb_number > 0:
-            return None
-        return "RB Number is less than or equal to 0"
     except (ValueError, TypeError):
-        return "RB Number is a string"
+        raise InvalidStateException(
+            f"RB Number: {rb_number} is not a valid int")
+
+    if rb_number <= 0:
+        raise InvalidStateException(
+            f"RB Number: {rb_number} is less than or equal to 0")
 
 
 class HandleMessage:
@@ -127,12 +129,12 @@ class HandleMessage:
         message.reduction_arguments = arguments
 
         # Make sure the RB number is valid
-        error_message = is_valid_rb(message.rb_number)
-        if error_message:
+        try:
+            validate_rb_num(message.rb_number)
+        except InvalidStateException as e:
             self._construct_and_send_skipped(
-                message=message, rb_number=message.rb_number, reason=error_message)
-            raise InvalidStateException("An invalid RB Number was used:"
-                                        f" {message.rb_number}")
+                message=message, rb_number=message.rb_number, reason=str(e))
+            raise e
 
         if instrument.is_paused:
             self._logger.info("Run %s has been skipped",
