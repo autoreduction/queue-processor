@@ -178,7 +178,7 @@ def login_queue():
 
 def main(instrument, first_run, last_run=None):
     """
-    Manually submit an instrument run fro reduction.
+    Manually submit an instrument run from reduction.
     All run number between `first_run` and `last_run` are submitted
     :param instrument: (string) The name of the instrument to submit a run for
     :param first_run: (int) The first run to be submitted
