@@ -20,13 +20,10 @@ class InvalidStateException(Exception):
     Using a custom exception means the caller can distinguish between
     implementation errors (e.g. ValueError) and logically invalid states
     """
+    pass
 
 
 class MissingReductionRunRecord(InvalidStateException):
-    """
-    Thrown when a reduction record is expected in the database, but it
-    cannot be found.
-    """
     def __init__(self, rb_number, run_number, run_version):
         super().__init__(
             "A reduction run could not be found in the database."
@@ -35,10 +32,6 @@ class MissingReductionRunRecord(InvalidStateException):
 
 
 class MissingExperimentRecord(InvalidStateException):
-    """
-    Thrown when an experiment record is expected in the database,
-    but it cannot be found
-    """
     def __init__(self, rb_number, run_number, run_version):
         super().__init__(
             "A Experiment Record could not be found in the database."

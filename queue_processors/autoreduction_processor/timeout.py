@@ -7,7 +7,7 @@
 """ Class used for handling script timeouts"""
 import signal
 # pylint:disable=no-name-in-module,import-error
-from pipeline.autoreduction.settings import MISC
+from queue_processors.autoreduction_processor.settings import MISC
 
 
 class TimeOut:

@@ -16,15 +16,15 @@ import sys
 from mock import patch, Mock
 
 from model.message.job import Message
-from pipeline.autoreduction.autoreduction_processor import (Listener,
-                                                            Consumer,
-                                                            main)
-from pipeline.autoreduction.settings import MISC
+from queue_processors.autoreduction_processor.autoreduction_processor import (Listener,
+                                                                              Consumer,
+                                                                              main)
+from queue_processors.autoreduction_processor.settings import MISC
 
 
 # pylint:disable=missing-docstring,too-many-arguments,no-self-use,protected-access
 class TestAutoreductionProcessorListener(unittest.TestCase):
-    DIR = 'pipeline.autoreduction'
+    DIR = 'queue_processors.autoreduction_processor'
 
     def setUp(self):
         self.listener = Listener()
@@ -52,12 +52,12 @@ class TestAutoreductionProcessorListener(unittest.TestCase):
         self.listener.on_error('test error')
         mock_err_log.assert_called_once_with("Error message received - %s", 'test error')
 
-    @patch(DIR + '.autoreduction.Listener.hold_message')
+    @patch(DIR + '.autoreduction_processor.Listener.hold_message')
     def test_on_message(self, mock_hold_message):
         self.listener.on_message(self.headers, self.json_data)
         mock_hold_message.assert_called_once_with('/queue/topic', self.json_data, self.headers)
 
-    @patch(DIR + '.autoreduction.Listener.add_cancel')
+    @patch(DIR + '.autoreduction_processor.Listener.add_cancel')
     def test_on_message_cancel(self, mock_add_cancel):
         self.data['cancel'] = True
         self.listener.on_message(self.headers, json.dumps(self.data))
@@ -66,7 +66,7 @@ class TestAutoreductionProcessorListener(unittest.TestCase):
         mock_add_cancel.assert_called_once_with(message)
 
     if os.name != 'nt':  # pragma: no cover
-        @patch(DIR + '.autoreduction.Listener.should_proceed', return_value=False)
+        @patch(DIR + '.autoreduction_processor.Listener.should_proceed', return_value=False)
         @patch('twisted.internet.reactor.callLater')
         def test_hold_message_no_proceed(self, mock_call_later, mock_should_proceed):
             self.listener.hold_message('/queue/topic', self.json_data, self.headers)
@@ -75,20 +75,20 @@ class TestAutoreductionProcessorListener(unittest.TestCase):
                                                     '/queue/topic', self.json_data,
                                                     self.headers)
 
-    @patch(DIR + '.autoreduction.Listener.should_proceed', return_value=True)
-    @patch(DIR + '.autoreduction.Listener.should_cancel', return_value=True)
-    @patch(DIR + '.autoreduction.Listener.cancel_run')
+    @patch(DIR + '.autoreduction_processor.Listener.should_proceed', return_value=True)
+    @patch(DIR + '.autoreduction_processor.Listener.should_cancel', return_value=True)
+    @patch(DIR + '.autoreduction_processor.Listener.cancel_run')
     def test_hold_message_cancel(self, mock_cancel_run, mock_should_cancel, mock_should_proceed):
         self.listener.hold_message('/queue/topic', self.json_data, self.headers)
         mock_should_proceed.assert_called_once()
         mock_should_cancel.assert_called_once()
         mock_cancel_run.assert_called_once_with(self.message)
 
-    @patch(DIR + '.autoreduction.Listener.add_process')
+    @patch(DIR + '.autoreduction_processor.Listener.add_process')
     @patch('subprocess.Popen')
     @patch(DIR + '.autoreduction_logging_setup.logger.warning')
-    @patch(DIR + '.autoreduction.Listener.should_proceed', return_value=True)
-    @patch(DIR + '.autoreduction.Listener.should_cancel', return_value=False)
+    @patch(DIR + '.autoreduction_processor.Listener.should_proceed', return_value=True)
+    @patch(DIR + '.autoreduction_processor.Listener.should_cancel', return_value=False)
     @patch('os.path.isfile', return_value=False)
     def test_hold_message_invalid_dir(self, mock_is_file, mock_should_cancel, mock_should_proceed,
                                       mock_log, mock_popen, mock_add_process):
@@ -165,7 +165,7 @@ class TestAutoReductionProcessorConsumer(unittest.TestCase):
         self.consumer = Consumer()
 
     def test_init(self):
-        self.assertEqual(self.consumer.consumer_name, 'autoreduction')
+        self.assertEqual(self.consumer.consumer_name, 'autoreduction_processor')
 
     @patch('utils.clients.queue_client.QueueClient.subscribe_amq')
     @patch('utils.clients.queue_client.QueueClient.connect')

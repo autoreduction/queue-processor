@@ -14,10 +14,10 @@ import logging.config
 import sys
 import traceback
 from model.message.job import Message
-from pipeline.queue.handle_message import HandleMessage
-from pipeline.queue.handling_exceptions import \
+from queue_processors.queue_processor.handle_message import HandleMessage
+from queue_processors.queue_processor.handling_exceptions import \
     InvalidStateException
-from pipeline.queue.settings import LOGGING
+from queue_processors.queue_processor.settings import LOGGING
 from utils.clients.queue_client import QueueClient
 
 

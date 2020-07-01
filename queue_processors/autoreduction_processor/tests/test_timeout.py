@@ -13,7 +13,7 @@ import signal
 
 from mock import patch
 
-from pipeline.autoreduction.timeout import TimeOut
+from queue_processors.autoreduction_processor.timeout import TimeOut
 
 
 # pylint:disable=missing-docstring

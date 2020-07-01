@@ -18,10 +18,10 @@ import traceback
 
 from model.database import access as db_access
 from model.message.job import Message
-from pipeline.queue._utils_classes import _UtilsClasses
-from pipeline.queue.handling_exceptions import \
+from queue_processors.queue_processor._utils_classes import _UtilsClasses
+from queue_processors.queue_processor.handling_exceptions import \
     MissingReductionRunRecord, InvalidStateException, MissingExperimentRecord
-from pipeline.queue.settings import LOGGING
+from queue_processors.queue_processor.settings import LOGGING
 from utils.settings import ACTIVEMQ_SETTINGS
 
 
@@ -43,10 +43,6 @@ def validate_rb_num(rb_number):
 
 
 class HandleMessage:
-    """
-    Handles messages from the queue client and forwards through various
-    stages depending on the message contents.
-    """
     # We cannot type hint stomp client without introducing a circular dep.
     def __init__(self, stomp_client):
         self._client = stomp_client
@@ -75,16 +71,15 @@ class HandleMessage:
         Called when destination queue was data_ready.
         Updates the reduction run in the database.
         """
-        self._logger.info("Data ready for processing run %s on %s",
-                          message.run_number, message.instrument)
         run_no = str(message.run_number)
+        self._logger.info(f"Data ready for processing run {str(run_no)}"
+                          f" on {str(message.instrument)}")
         instrument = self._get_db_inst(message.instrument)
 
         status = self._utils.status.get_skipped() if instrument.is_paused \
             else self._utils.status.get_queued()
 
-        # This must be done before looking up the run version to make sure
-        # the record exists
+        # Search for the experiment, if it doesn't exist then add it
         experiment = db_access.get_experiment(message.rb_number, create=True)
         run_version = self._get_last_run_version(run_no, experiment=experiment)
         run_version += 1
@@ -136,10 +131,10 @@ class HandleMessage:
         # Make sure the RB number is valid
         try:
             validate_rb_num(message.rb_number)
-        except InvalidStateException as ex:
+        except InvalidStateException as e:
             self._construct_and_send_skipped(
-                message=message, rb_number=message.rb_number, reason=str(ex))
-            raise ex
+                message=message, rb_number=message.rb_number, reason=str(e))
+            raise e
 
         if instrument.is_paused:
             self._logger.info("Run %s has been skipped",
@@ -149,7 +144,6 @@ class HandleMessage:
             self._logger.info("Run %s ready for reduction",
                               message.run_number)
 
-    # pylint: disable=too-many-arguments
     def _create_reduction_run_record(self, experiment, instrument, message,
                                      run_version, script_text, status):
         reduction_run = self._data_model.ReductionRun(

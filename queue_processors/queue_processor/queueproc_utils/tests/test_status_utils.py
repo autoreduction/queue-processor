@@ -11,7 +11,7 @@ import unittest
 
 from mock import patch
 
-from pipeline.queue.queueproc_utils.status_utils import StatusUtils
+from queue_processors.queue_processor.queueproc_utils.status_utils import StatusUtils
 
 from utils.clients.django_database_client import DjangoORM
 
@@ -26,27 +26,27 @@ class TestStatusUtils(unittest.TestCase):
         self.completed_status = database.data_model.Status(value='Completed')
         self.status_type = database.data_model.Status
 
-    @patch('pipeline.queue.queueproc_utils.status_utils.StatusUtils._get_status')
+    @patch('queue_processors.queue_processor.queueproc_utils.status_utils.StatusUtils._get_status')
     def test_get_error(self, mock_get_status):
         self.status_utils.get_error()
         mock_get_status.assert_called_with("Error")
 
-    @patch('pipeline.queue.queueproc_utils.status_utils.StatusUtils._get_status')
+    @patch('queue_processors.queue_processor.queueproc_utils.status_utils.StatusUtils._get_status')
     def test_get_completed(self, mock_get_status):
         self.status_utils.get_completed()
         mock_get_status.assert_called_with("Completed")
 
-    @patch('pipeline.queue.queueproc_utils.status_utils.StatusUtils._get_status')
+    @patch('queue_processors.queue_processor.queueproc_utils.status_utils.StatusUtils._get_status')
     def test_get_processing(self, mock_get_status):
         self.status_utils.get_processing()
         mock_get_status.assert_called_with("Processing")
 
-    @patch('pipeline.queue.queueproc_utils.status_utils.StatusUtils._get_status')
+    @patch('queue_processors.queue_processor.queueproc_utils.status_utils.StatusUtils._get_status')
     def test_get_queued(self, mock_get_status):
         self.status_utils.get_queued()
         mock_get_status.assert_called_with("Queued")
 
-    @patch('pipeline.queue.queueproc_utils.status_utils.StatusUtils._get_status')
+    @patch('queue_processors.queue_processor.queueproc_utils.status_utils.StatusUtils._get_status')
     def test_get_skipped(self, mock_get_status):
         self.status_utils.get_skipped()
         mock_get_status.assert_called_with("Skipped")

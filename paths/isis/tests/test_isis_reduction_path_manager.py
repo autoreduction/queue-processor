@@ -14,7 +14,7 @@ from mock import patch
 
 from paths.isis.isis_reduction_path_manager import ISISReductionPathManager
 from paths.path_manipulation import append_path, split
-from pipeline.autoreduction.settings import MISC
+from queue_processors.autoreduction_processor.settings import MISC
 
 
 # pylint:disable=missing-docstring

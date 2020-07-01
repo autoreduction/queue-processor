@@ -10,7 +10,7 @@
   become: true
   roles:
   - role: common
-  - role: pipeline
+  - role: queue_processors
   - role: archive
   - role: cephfs
   - role: docker

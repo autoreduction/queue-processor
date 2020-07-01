@@ -10,13 +10,13 @@ Class to deal with reduction run variables
 import logging.config
 import re
 
-from pipeline.queue.settings import LOGGING
+from queue_processors.queue_processor.settings import LOGGING
 
 from model.database import access
 
 # Set up logging and attach the logging to the right part of the config.
 logging.config.dictConfig(LOGGING)
-logger = logging.getLogger("queue")  # pylint: disable=invalid-name
+logger = logging.getLogger("queue_processor")  # pylint: disable=invalid-name
 
 
 class VariableUtils:
