@@ -24,7 +24,6 @@ from queue_processors.autoreduction_processor.settings import MISC
 from queue_processors.autoreduction_processor.post_process_admin import (windows_to_linux_path,
                                                                          PostProcessAdmin,
                                                                          main)
-# from queue_processors.autoreduction_processor.post_process_admin
 
 
 # pylint:disable=missing-docstring,invalid-name,protected-access,no-self-use,too-many-arguments
@@ -125,7 +124,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_log.assert_called_with("Calling: %s\n%s",
                                     ACTIVEMQ_SETTINGS.reduction_started,
                                     self.message.serialize(limit_reduction_script=True))
-        amq_client_mock.send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_started,
+        amq_client_mock.send.assert_called_with(ACTIVEMQ_SETTINGS.reduction_started,
                                                      ppa.message)
 
     def test_reduction_script_location(self):
