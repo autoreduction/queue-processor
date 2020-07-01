@@ -21,7 +21,7 @@ from pipeline.queue.settings import LOGGING
 from utils.clients.queue_client import QueueClient
 
 
-class StompClient:
+class QueueListener:
     """ Listener class that is used to consume messages from ActiveMQ. """
     def __init__(self, client):
         """ Initialise listener. """
@@ -88,7 +88,7 @@ def setup_connection(consumer_name):
     activemq_client.connect()
 
     # Register the event listener
-    listener = StompClient(activemq_client)
+    listener = QueueListener(activemq_client)
 
     # Subscribe to queues
     activemq_client.subscribe_autoreduce(consumer_name, listener)

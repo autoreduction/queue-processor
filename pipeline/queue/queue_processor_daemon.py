@@ -9,14 +9,14 @@
 Module for daemonising the queue processor.
 """
 from pipeline.daemon import Daemon, control_daemon_from_cli
-from pipeline.queue import stomp_client
+from pipeline.queue import queue_listener
 
 
 class QueueProcessorDaemon(Daemon):
     """ Queue processor daemoniser """
     def run(self):
         """ Run queue processor. """
-        stomp_client.main()
+        queue_listener.main()
         while True:
             pass
 

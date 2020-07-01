@@ -18,7 +18,7 @@ from pipeline.queue._utils_classes import _UtilsClasses
 from pipeline.queue.handle_message import HandleMessage
 from pipeline.queue.handling_exceptions import \
     InvalidStateException, MissingReductionRunRecord, MissingExperimentRecord
-from pipeline.queue.stomp_client import StompClient
+from pipeline.queue.queue_listener import QueueListener
 from utils.settings import ACTIVEMQ_SETTINGS
 
 
@@ -56,7 +56,7 @@ class TestHandleMessage(unittest.TestCase):
     @patch("pipeline.queue.handle_message._UtilsClasses")
     @patch("logging.getLogger")
     def setUp(self, log_const, util_const):
-        self.mocked_client = mock.Mock(spec=StompClient)
+        self.mocked_client = mock.Mock(spec=QueueListener)
         self.mocked_utils = mock.MagicMock(spec=_UtilsClasses)
         util_const.return_value = self.mocked_utils
 

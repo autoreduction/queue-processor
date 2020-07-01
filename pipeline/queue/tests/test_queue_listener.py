@@ -14,11 +14,11 @@ from unittest import mock
 from mock import patch, MagicMock, Mock
 
 from model.message.job import Message
-from pipeline.queue import stomp_client
+from pipeline.queue import queue_listener
 from pipeline.queue._utils_classes import _UtilsClasses
 from pipeline.queue.handle_message import HandleMessage
 from pipeline.queue.handling_exceptions import InvalidStateException
-from pipeline.queue.stomp_client import StompClient
+from pipeline.queue.queue_listener import QueueListener
 from utils.clients.queue_client import QueueClient
 from utils.settings import ACTIVEMQ_SETTINGS
 
@@ -45,7 +45,7 @@ class TestQueueProcessor(unittest.TestCase):
         Test: Connection to ActiveMQ setup, along with subscription to queues
         When: setup_connection is called with a consumer name
         """
-        stomp_client.setup_connection(self.test_consumer_name)
+        queue_listener.setup_connection(self.test_consumer_name)
 
         mock_client.assert_called_once()
         mock_connect.assert_called_once()
@@ -53,7 +53,7 @@ class TestQueueProcessor(unittest.TestCase):
 
         (args, _) = mock_sub_ar.call_args
         self.assertEqual(args[0], self.test_consumer_name)
-        self.assertIsInstance(args[1], StompClient)
+        self.assertIsInstance(args[1], QueueListener)
         self.assertIsInstance(args[1]._client, QueueClient)
 
 
@@ -74,13 +74,13 @@ class TestListener(unittest.TestCase):
     Exercises the Listener
     """
     def setUp(self):
-        self.mocked_client = mock.Mock(spec=QueueClient())
+        self.mocked_client = mock.Mock(spec=QueueClient)
         self.mocked_handler = mock.Mock(spec=HandleMessage)
 
-        with patch("pipeline.queue.stomp_client"
+        with patch("pipeline.queue.queue_listener"
                    ".HandleMessage", return_value=self.mocked_handler), \
              patch("logging.getLogger") as patched_logger:
-            self.listener = StompClient(self.mocked_client)
+            self.listener = QueueListener(self.mocked_client)
             self.mocked_logger = patched_logger.return_value
 
     @staticmethod
