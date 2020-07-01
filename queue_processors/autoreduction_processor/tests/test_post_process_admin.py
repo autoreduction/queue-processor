@@ -122,8 +122,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         ppa.reduction_started()
 
         mock_log.assert_called()
-        amq_client_mock.send.assert_called_with(ACTIVEMQ_SETTINGS.reduction_started,
-                                                     ppa.message)
+        amq_client_mock.send.assert_called_with(ACTIVEMQ_SETTINGS.reduction_started, ppa.message)
 
     def test_reduction_script_location(self):
         location = PostProcessAdmin._reduction_script_location('WISH')
