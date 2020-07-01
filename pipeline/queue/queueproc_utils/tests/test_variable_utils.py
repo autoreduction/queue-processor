@@ -12,7 +12,7 @@ import datetime
 
 from mock import patch
 
-from queue_processors.queue_processor.queueproc_utils.variable_utils import VariableUtils as vu
+from pipeline.queue.queueproc_utils.variable_utils import VariableUtils as vu
 
 from model.database import access
 
@@ -67,7 +67,7 @@ class TestVariableUtils(unittest.TestCase):
         self.assertIsInstance(actual, self.var_model.RunVariable)
         self.assertEqual(actual.name, expected.name)
 
-    @patch('queue_processors.queue_processor.queueproc_utils.variable_utils.'
+    @patch('pipeline.queue.queueproc_utils.variable_utils.'
            'VariableUtils.derive_run_variable')
     @patch('model.database.access.save_record')
     def test_save_run_variable(self, mock_derive_run_var, mock_save):

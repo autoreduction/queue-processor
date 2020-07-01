@@ -12,10 +12,10 @@ import unittest
 from mock import patch, Mock
 
 from model.message.job import Message
-from queue_processors.queue_processor.queueproc_utils.messaging_utils import MessagingUtils
-from queue_processors.queue_processor.settings import FACILITY
+from pipeline.queue.queueproc_utils.messaging_utils import MessagingUtils
+from pipeline.queue.settings import FACILITY
 
-UTILS_PATH = 'queue_processors.queue_processor.queueproc_utils'
+UTILS_PATH = 'pipeline.queue.queueproc_utils'
 MESSAGE_CLASS_PATH = UTILS_PATH + '.messaging_utils.MessagingUtils'
 
 

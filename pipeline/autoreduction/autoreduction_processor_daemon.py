@@ -9,14 +9,14 @@
 Module to demonise the autoreduction processor.
 """
 
-from queue_processors.daemon import Daemon, control_daemon_from_cli
-from queue_processors.autoreduction_processor import autoreduction_processor
+from pipeline.daemon import Daemon, control_daemon_from_cli
+from pipeline.autoreduction import autoreduction_processor
 
 
 class AutoreduceQueueProcessorDaemon(Daemon):  # pragma: no cover
     """ Class responsible for running the autoreduction processor. """
     def run(self):
-        """ Run autoreduction_processor. """
+        """ Run autoreduction. """
         autoreduction_processor.main()
         while True:
             pass

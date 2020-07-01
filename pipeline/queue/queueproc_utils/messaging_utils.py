@@ -11,7 +11,7 @@ Utils module for sending messages to queues.
 # pylint: disable=cyclic-import
 from model.database import access
 from model.message.job import Message
-from queue_processors.queue_processor.settings import FACILITY
+from pipeline.queue.settings import FACILITY
 
 from utils.clients.queue_client import QueueClient
 
@@ -48,7 +48,7 @@ class MessagingUtils:
         """
         # Deferred import to avoid circular dependencies
         # pylint:disable=import-outside-toplevel
-        from queue_processors.queue_processor.queueproc_utils \
+        from pipeline.queue.queueproc_utils \
             .reduction_run_utils import ReductionRunUtils
         script, arguments = ReductionRunUtils().get_script_and_arguments(reduction_run)
 

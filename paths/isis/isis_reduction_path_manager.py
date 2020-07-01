@@ -9,7 +9,7 @@ ISIS implementation of reduction path manager
 """
 import paths.path_manipulation as paths
 from paths.reduction_path_manager import ReductionPathManager
-from queue_processors.autoreduction_processor.settings import MISC
+from pipeline.autoreduction.settings import MISC
 
 
 # pylint:disable=too-few-public-methods

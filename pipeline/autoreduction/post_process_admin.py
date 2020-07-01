@@ -31,9 +31,9 @@ from sentry_sdk import init
 # pylint:disable=no-name-in-module,import-error
 from model.message.job import Message
 from paths.path_manipulation import append_path
-from queue_processors.autoreduction_processor.settings import MISC
-from queue_processors.autoreduction_processor.autoreduction_logging_setup import logger
-from queue_processors.autoreduction_processor.timeout import TimeOut
+from pipeline.autoreduction.settings import MISC
+from pipeline.autoreduction.autoreduction_logging_setup import logger
+from pipeline.autoreduction.timeout import TimeOut
 from utils.clients.queue_client import QueueClient
 from utils.settings import ACTIVEMQ_SETTINGS
 

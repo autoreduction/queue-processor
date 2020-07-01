@@ -10,19 +10,19 @@ Module to deal with creating and caneling of reduction runs in the database.
 import datetime
 import logging.config
 
-from queue_processors.queue_processor.settings import LOGGING
+from pipeline.queue.settings import LOGGING
 
-from queue_processors.queue_processor.queueproc_utils.instrument_variable_utils \
+from pipeline.queue.queueproc_utils.instrument_variable_utils \
     import InstrumentVariablesUtils
-from queue_processors.queue_processor.queueproc_utils.messaging_utils import MessagingUtils
-from queue_processors.queue_processor.queueproc_utils.status_utils import StatusUtils
-from queue_processors.queue_processor.queueproc_utils.variable_utils import VariableUtils
+from pipeline.queue.queueproc_utils.messaging_utils import MessagingUtils
+from pipeline.queue.queueproc_utils.status_utils import StatusUtils
+from pipeline.queue.queueproc_utils.variable_utils import VariableUtils
 
 from model.database import access
 
 # Set up logging and attach the logging to the right part of the config.
 logging.config.dictConfig(LOGGING)
-logger = logging.getLogger("queue_processor")  # pylint: disable=invalid-name
+logger = logging.getLogger("queue")  # pylint: disable=invalid-name
 
 
 class ReductionRunUtils:

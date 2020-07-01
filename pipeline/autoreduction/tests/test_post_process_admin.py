@@ -20,10 +20,10 @@ from model.message.job import Message
 from paths.path_manipulation import append_path
 from utils.settings import ACTIVEMQ_SETTINGS
 from utils.project.structure import get_project_root
-from queue_processors.autoreduction_processor.settings import MISC
-from queue_processors.autoreduction_processor.post_process_admin import (windows_to_linux_path,
-                                                                         PostProcessAdmin,
-                                                                         main)
+from pipeline.autoreduction.settings import MISC
+from pipeline.autoreduction.post_process_admin import (windows_to_linux_path,
+                                                       PostProcessAdmin,
+                                                       main)
 
 
 # pylint:disable=missing-docstring,invalid-name,protected-access,no-self-use,too-many-arguments
@@ -42,7 +42,7 @@ class TestPostProcessAdminHelpers(unittest.TestCase):
 
 # pylint:disable=too-many-public-methods
 class TestPostProcessAdmin(unittest.TestCase):
-    DIR = "queue_processors.autoreduction_processor"
+    DIR = "pipeline.autoreduction"
 
     def setUp(self):
         self.data = {'data': '\\\\isis\\inst$\\data.nxs',

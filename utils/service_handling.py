@@ -31,7 +31,7 @@ def _check_root():
 def start_queue_processors():
     """ Start the Queue Processors"""
     _check_root()
-    queue_processor_dir = os.path.join(get_project_root(), 'queue_processors')
+    queue_processor_dir = os.path.join(get_project_root(), 'pipeline')
     Popen(['sudo', '{}/./restart.sh'.format(queue_processor_dir), sys.executable])
     time.sleep(3)
 
@@ -39,6 +39,6 @@ def start_queue_processors():
 def stop_queue_processors():
     """ Stop the Queue Processors"""
     _check_root()
-    queue_processor_dir = os.path.join(get_project_root(), 'queue_processors')
+    queue_processor_dir = os.path.join(get_project_root(), 'pipeline')
     Popen(['sudo', '{}/./stop.sh'.format(queue_processor_dir), sys.executable])
     time.sleep(3)

@@ -8,22 +8,24 @@
 """
 Test cases for the queue processor
 """
-# pylint: disable=missing-function-docstring
-# pylint: disable=fixme
-
 import unittest
 from unittest import mock
 
 from mock import patch, MagicMock, Mock
 
 from model.message.job import Message
-from queue_processors.queue_processor import stomp_client
-from queue_processors.queue_processor._utils_classes import _UtilsClasses
-from queue_processors.queue_processor.handle_message import HandleMessage
-from queue_processors.queue_processor.stomp_client import StompClient
+from pipeline.queue import stomp_client
+from pipeline.queue._utils_classes import _UtilsClasses
+from pipeline.queue.handle_message import HandleMessage
+from pipeline.queue.handling_exceptions import InvalidStateException
+from pipeline.queue.stomp_client import StompClient
 from utils.clients.queue_client import QueueClient
-from utils.clients.settings.client_settings_factory import ActiveMQSettings
 from utils.settings import ACTIVEMQ_SETTINGS
+
+# Disable warnings which don't really apply to test classes
+# pylint: disable=protected-access
+# Pylint does not directly support mocks, so func. assert_called ...etc. warns
+# pylint: disable=no-member
 
 
 class TestQueueProcessor(unittest.TestCase):
@@ -61,21 +63,21 @@ class TestUtilsClasses(unittest.TestCase):
     """
 
     def test_default_constructable(self):
+        """
+        Tests the Utils is default constructable, and doesn't throw
+        """
         self.assertIsNotNone(_UtilsClasses())
 
 
 class TestListener(unittest.TestCase):
-    # We have too many public methods as our Class Under Test does too much...
-    # pylint: disable=too-many-public-methods
     """
     Exercises the Listener
     """
-
     def setUp(self):
         self.mocked_client = mock.Mock(spec=QueueClient())
         self.mocked_handler = mock.Mock(spec=HandleMessage)
 
-        with patch("queue_processors.queue_processor.stomp_client"
+        with patch("pipeline.queue.stomp_client"
                    ".HandleMessage", return_value=self.mocked_handler), \
              patch("logging.getLogger") as patched_logger:
             self.listener = StompClient(self.mocked_client)
@@ -109,11 +111,17 @@ class TestListener(unittest.TestCase):
             ACTIVEMQ_SETTINGS.reduction_skipped, mock_message)
 
     def test_on_message_stores_priority(self):
+        """
+        Tests that the client stores the priority from the msg header
+        """
         headers = self._get_header()
         self.listener.on_message(headers=headers, message=Message())
         self.assertEqual(headers["priority"], self.listener._priority)
 
     def test_on_message_with_non_message_type(self):
+        """
+        Tests that on message will serialise non Message types into a Message
+        """
         # Patch out the populate method as we assume is tested elsewhere
         non_msg = {"message": "Test"}
         self.listener.on_message(headers=self._get_header('/queue/DataReady'),
@@ -124,6 +132,10 @@ class TestListener(unittest.TestCase):
         self.assertIsInstance(sent_msg, Message)
 
     def test_on_message_handles_throw(self):
+        """
+        Tests that on message can handle an exception being thrown from
+        the serialization step into a Message
+        """
         self.listener.message = Mock()
         self.listener.message.populate.side_effect = ValueError()
 
@@ -131,6 +143,9 @@ class TestListener(unittest.TestCase):
         self.mocked_logger.error.assert_called()
 
     def test_on_message_sends_to_correct_queue(self):
+        """
+        Tests that dispatch correctly routes messages for each queue
+        """
         client = self.mocked_handler
 
         # queue_name -> method
@@ -148,12 +163,15 @@ class TestListener(unittest.TestCase):
                                      message=Message())
             method.assert_called_once()
 
-    def test_on_message_exception(self):
+    def test_exception_caught_from_queue(self):
+        """
+        Tests that any custom handling exception is caught and logged
+        """
         # Pretend reduction_error throws if something dire is wrong
-        self.listener.reduction_error = Mock()
-        self.listener.reduction_error.side_effect = RuntimeError()
-
-        self.listener.on_message(
-            headers=self._get_header("/queue/ReductionError"), message="")
+        self.mocked_handler.reduction_error = Mock(side_effect=
+                                                   InvalidStateException())
+        self.listener.on_message(message=Message(),
+                                 headers=self._get_header(
+                                     "/queue/ReductionError"))
 
         self.mocked_logger.error.assert_called()

@@ -8,8 +8,8 @@
 """
 Module for daemonising the queue processor.
 """
-from queue_processors.daemon import Daemon, control_daemon_from_cli
-from queue_processors.queue_processor import stomp_client
+from pipeline.daemon import Daemon, control_daemon_from_cli
+from pipeline.queue import stomp_client
 
 
 class QueueProcessorDaemon(Daemon):

@@ -18,7 +18,7 @@ MYSQL = {
 }
 
 # Logging
-LOG_FILE = os.path.join(get_project_root(), 'logs', 'queue_processor.log')
+LOG_FILE = os.path.join(get_project_root(), 'logs', 'queue.log')
 DEBUG = False
 
 if DEBUG:
@@ -47,7 +47,7 @@ LOGGING = {
         },
     },
     'loggers': {
-        'queue_processor': {
+        'queue': {
             'handlers': ['file'],
             'propagate': True,
             'level': LOG_LEVEL,

@@ -87,7 +87,7 @@
 
 - name: 'Copy ActiveMQ service file'
   copy:
-    src: roles/queue_processors/files/activemq.service
+    src: roles/pipeline/files/activemq.service
     dest: /etc/systemd/system/activemq.service
 
 - name: 'Start ActiveMQ service'

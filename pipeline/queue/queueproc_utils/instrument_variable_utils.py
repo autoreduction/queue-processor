@@ -16,14 +16,14 @@ import html
 import chardet
 
 # pylint:disable=no-name-in-module,import-error
-from queue_processors.queue_processor.settings import REDUCTION_DIRECTORY, LOGGING
-from queue_processors.queue_processor.queueproc_utils.variable_utils import VariableUtils
+from pipeline.queue.settings import REDUCTION_DIRECTORY, LOGGING
+from pipeline.queue.queueproc_utils.variable_utils import VariableUtils
 
 from model.database import access as db
 
 # Set up logging and attach the logging to the right part of the config.
 logging.config.dictConfig(LOGGING)
-logger = logging.getLogger("queue_processor")  # pylint: disable=invalid-name
+logger = logging.getLogger("queue")  # pylint: disable=invalid-name
 
 
 class DataTooLong(ValueError):

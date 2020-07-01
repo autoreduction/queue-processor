@@ -9,18 +9,19 @@
 Contains various Utility classes for accessing the DB / message queue
 which is used by the message handler
 """
-from queue_processors.queue_processor.queueproc_utils.messaging_utils import \
+from typing import NamedTuple
+
+from pipeline.queue.queueproc_utils.messaging_utils import \
     MessagingUtils
-from queue_processors.queue_processor.queueproc_utils \
+from pipeline.queue.queueproc_utils \
     .instrument_variable_utils \
     import InstrumentVariablesUtils
-from queue_processors.queue_processor.queueproc_utils.reduction_run_utils \
+from pipeline.queue.queueproc_utils.reduction_run_utils \
     import \
     ReductionRunUtils
-from queue_processors.queue_processor.queueproc_utils.status_utils import \
+from pipeline.queue.queueproc_utils.status_utils import \
     StatusUtils
 
-from typing import NamedTuple
 
 
 class _UtilsClasses(NamedTuple):

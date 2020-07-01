@@ -14,10 +14,10 @@ import logging.config
 import sys
 import traceback
 from model.message.job import Message
-from queue_processors.queue_processor.handle_message import HandleMessage
-from queue_processors.queue_processor.handling_exceptions import \
+from pipeline.queue.handle_message import HandleMessage
+from pipeline.queue.handling_exceptions import \
     InvalidStateException
-from queue_processors.queue_processor.settings import LOGGING
+from pipeline.queue.settings import LOGGING
 from utils.clients.queue_client import QueueClient
 
 
@@ -67,11 +67,16 @@ class StompClient:
                     "Received a message on an unknown topic '%s'", destination)
         except InvalidStateException as exp:
             self._logger.error("Stomp Client message handling exception:"
-                               f" {type(exp).__name__} {str(exp)}")
+                               "%s %s", type(exp).__name__, exp)
             self._logger.error(traceback.format_exc())
 
     def send_message(self, target: str, message: Message,
                      priority: int = None):
+        """
+        Sends the given message to the given queue. Priority is optionally
+        provided by the caller if required, else it will use the client
+        default priority.
+        """
         priority = self._priority if priority is None else priority
         self._client.send(target, message, priority)
 
@@ -91,7 +96,7 @@ def setup_connection(consumer_name):
 
 def main():
     """ Main method. """
-    setup_connection('queue_processor')
+    setup_connection('queue')
 
 
 if __name__ == '__main__':

@@ -16,9 +16,9 @@ import stomp
 from twisted.internet import reactor
 
 from model.message.job import Message
-from queue_processors.autoreduction_processor.autoreduction_logging_setup import logger
+from pipeline.autoreduction.autoreduction_logging_setup import logger
 # pylint:disable=no-name-in-module,import-error
-from queue_processors.autoreduction_processor.settings import MISC
+from pipeline.autoreduction.settings import MISC
 from utils.clients.queue_client import QueueClient
 
 
@@ -140,7 +140,7 @@ class Consumer:
     """ Class used to setup the queue listener. """
     def __init__(self):
         """ Initialise consumer. """
-        self.consumer_name = "autoreduction_processor"
+        self.consumer_name = "autoreduction"
 
     def run(self):
         """
