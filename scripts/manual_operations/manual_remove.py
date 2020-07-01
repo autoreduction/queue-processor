@@ -11,7 +11,6 @@ from __future__ import print_function
 
 import sys
 import argparse
-import logging
 
 from utils.clients.django_database_client import DatabaseClient
 from model.database import access as db
@@ -239,7 +238,7 @@ def user_input_check(instrument, run_numbers):
     try:
         return valid[user_input]
     except KeyError:
-        logging.error("Invalid input, please enter either 'Y' or 'N' to continue to exit script")
+        print("Invalid input, please enter either 'Y' or 'N' to continue to exit script")
     return user_input
 
 
