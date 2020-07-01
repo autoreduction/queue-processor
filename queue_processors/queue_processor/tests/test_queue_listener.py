@@ -5,11 +5,10 @@
 # Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
+
 """
 Test cases for the queue processor
 """
-# pylint: disable=missing-function-docstring
-# pylint: disable=fixme
 
 import unittest
 from unittest import mock
@@ -17,12 +16,19 @@ from unittest import mock
 from mock import patch, MagicMock, Mock
 
 from model.message.job import Message
+from queue_processors.queue_processor.handling_exceptions import \
+    InvalidStateException
 from queue_processors.queue_processor.queue_listener import QueueListener
 from queue_processors.queue_processor import queue_listener
 from queue_processors.queue_processor._utils_classes import _UtilsClasses
 from queue_processors.queue_processor.handle_message import HandleMessage
 from utils.clients.queue_client import QueueClient
 from utils.settings import ACTIVEMQ_SETTINGS
+
+# Disable warnings which don't really apply to test classes
+# pylint: disable=protected-access
+# Pylint does not directly support mocks, so func. assert_called ...etc. warns
+# pylint: disable=no-member
 
 
 class TestQueueProcessor(unittest.TestCase):
@@ -60,6 +66,9 @@ class TestUtilsClasses(unittest.TestCase):
     """
 
     def test_default_constructable(self):
+        """
+        Tests the Utils is default constructable, and doesn't throw
+        """
         self.assertIsNotNone(_UtilsClasses())
 
 
@@ -108,11 +117,17 @@ class TestListener(unittest.TestCase):
             ACTIVEMQ_SETTINGS.reduction_skipped, mock_message)
 
     def test_on_message_stores_priority(self):
+        """
+        Tests that the client stores the priority from the msg header
+        """
         headers = self._get_header()
         self.listener.on_message(headers=headers, message=Message())
         self.assertEqual(headers["priority"], self.listener._priority)
 
     def test_on_message_with_non_message_type(self):
+        """
+        Tests that on message will serialise non Message types into a Message
+        """
         # Patch out the populate method as we assume is tested elsewhere
         non_msg = {"message": "Test"}
         self.listener.on_message(headers=self._get_header('/queue/DataReady'),
@@ -123,6 +138,10 @@ class TestListener(unittest.TestCase):
         self.assertIsInstance(sent_msg, Message)
 
     def test_on_message_handles_throw(self):
+        """
+        Tests that on message can handle an exception being thrown from
+        the serialization step into a Message
+        """
         self.listener.message = Mock()
         self.listener.message.populate.side_effect = ValueError()
 
@@ -130,6 +149,9 @@ class TestListener(unittest.TestCase):
         self.mocked_logger.error.assert_called()
 
     def test_on_message_sends_to_correct_queue(self):
+        """
+        Tests that dispatch correctly routes messages for each queue
+        """
         client = self.mocked_handler
 
         # queue_name -> method
@@ -148,11 +170,15 @@ class TestListener(unittest.TestCase):
             method.assert_called_once()
 
     def test_on_message_exception(self):
+        """
+        Tests that any custom handling exception is caught and logged
+        """
         # Pretend reduction_error throws if something dire is wrong
-        self.listener.reduction_error = Mock()
-        self.listener.reduction_error.side_effect = RuntimeError()
+        self.mocked_handler.reduction_error = Mock(
+            side_effect=InvalidStateException())
 
         self.listener.on_message(
-            headers=self._get_header("/queue/ReductionError"), message="")
+            headers=self._get_header("/queue/ReductionError"),
+            message=Message())
 
         self.mocked_logger.error.assert_called()
