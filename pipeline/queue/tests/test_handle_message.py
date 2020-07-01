@@ -21,6 +21,7 @@ from pipeline.queue.handling_exceptions import \
 from pipeline.queue.stomp_client import StompClient
 from utils.settings import ACTIVEMQ_SETTINGS
 
+
 # Disable warnings which don't really apply to test classes
 # pylint: disable=protected-access
 # pylint: disable=too-many-public-methods
@@ -30,6 +31,7 @@ class TestHandleMessageFreeFuncs(unittest.TestCase):
     """
     Tests the free functions in Queue Processor
     """
+
     def test_is_valid_rb(self):
         """
         Tests the valid and invalid cases for RB numbers
@@ -63,23 +65,13 @@ class TestHandleMessage(unittest.TestCase):
 
     @staticmethod
     def _get_mocked_db_return_vals(mock_instrument, mock_data_location,
-                                   mock_new_reduction_run,
-                                   mock_existing_reduction_run):
+                                   mock_new_reduction_run):
         return {"get_instrument.return_value": mock_instrument,
 
                 "start_database.return_value.data_model"
                 ".DataLocation.return_value": mock_data_location,
                 "start_database.return_value.data_model"
-                ".ReductionRun.return_value": mock_new_reduction_run,
-
-                # Chained calls makes this painful
-                # TODO replace with method we can just patch
-                "start_database.return_value.data_model"
-                ".ReductionRun.objects"
-                ".filter.return_value"
-                ".filter.return_value"
-                ".order_by.return_value"
-                ".first.return_value": mock_existing_reduction_run}
+                ".ReductionRun.return_value": mock_new_reduction_run}
 
     @staticmethod
     def _get_mock_message():
@@ -118,7 +110,6 @@ class TestHandleMessage(unittest.TestCase):
             # We only care about the inst record being modified / saved
             mock_instrument=mock_inst_record,
             mock_new_reduction_run=mock.Mock(),
-            mock_existing_reduction_run=None,
             mock_data_location=None
         ))
 
@@ -135,46 +126,33 @@ class TestHandleMessage(unittest.TestCase):
             get_script_and_arguments.return_value = (mock.NonCallableMock(),
                                                      mock.NonCallableMock())
 
+        self.handler._create_reduction_run_record = mock.Mock()
+        mock_inst = mock.Mock()
+        mock_inst.is_paused = False
+
+        patched_db.configure_mock(**self._get_mocked_db_return_vals(
+            mock_instrument=mock_inst,
+            mock_new_reduction_run=mock.NonCallableMock(),
+            mock_data_location=mock.NonCallableMock()
+        ))
+
         # This method should not cap our highest version
-        highest_version = 100
-        mock_existing_run = mock.Mock()
-        mock_existing_run.run_version = highest_version
+        test_inputs = [-1, 100]
 
-        mock_experiment = mock.NonCallableMock()
-        mock_instrument = mock.NonCallableMock()
-        patched_db.get_experiment.return_value = mock_experiment
-
-        input_expected = [(None, 0),
-                          (mock_existing_run, highest_version + 1)]
-
-        for mock_in, expected_vers in input_expected:
-            patched_db.configure_mock(**self._get_mocked_db_return_vals(
-                mock_instrument=mock_instrument,
-                mock_new_reduction_run=mock.NonCallableMock(),
-                mock_existing_reduction_run=mock_in,
-                mock_data_location=mock.NonCallableMock()
-            ))
-            mock_reduction_constructor = \
-                patched_db.start_database.return_value.data_model.ReductionRun
-            mock_reduction_constructor.reset_mock()
-
+        for i in test_inputs:
+            self.handler._get_last_run_version = mock.Mock(return_value=i)
             mock_message = self._get_mock_message()
             self.handler.data_ready(message=mock_message)
 
-            # TODO we are def passing too much in here
-            mock_reduction_constructor.assert_called_once_with(
-                run_name='', cancel=0, hidden_in_failviewer=0,
-                admin_log='', reduction_log='',
-                created=mock.ANY, last_updated=mock.ANY,
-                run_version=expected_vers,
-                # Mocked inputs below
-                run_number=mock_message.run_number,
-                experiment_id=mock_experiment.id,
-                instrument_id=mock_instrument.id,
-                status_id=self.mocked_utils.status.get_skipped().id,
-                script=self.mocked_utils.instrument_variable
-                .get_current_script_text()[0],
-                started_by=mock_message.started_by)
+            self.handler._create_reduction_run_record.assert_called_once_with(
+                experiment=patched_db.get_experiment.return_value,
+                instrument=mock_inst, message=mock_message,
+                run_version=i + 1,
+                script_text=self.mocked_utils.
+                instrument_variable.get_current_script_text()[0],
+                status=self.mocked_utils.status.get_queued()
+            )
+            self.handler._create_reduction_run_record.reset_mock()
 
     def test_data_ready_skips_paused_inst(self, patched_db):
         """
@@ -193,7 +171,6 @@ class TestHandleMessage(unittest.TestCase):
             mock_instrument=mock_instrument,
             mock_data_location=mock.Mock(),
             mock_new_reduction_run=mock_reduction_run,
-            mock_existing_reduction_run=None
         ))
 
         self.mocked_client.send_message.assert_not_called()
@@ -206,11 +183,10 @@ class TestHandleMessage(unittest.TestCase):
         patched_db.configure_mock(**self._get_mocked_db_return_vals(
             mock_data_location=mock.Mock(),
             mock_new_reduction_run=mock.Mock(),
-            mock_existing_reduction_run=None,
             mock_instrument=mock.Mock()))
 
         self.handler.reduction_error = mock.Mock()
-        self.mocked_utils.instrument_variable\
+        self.mocked_utils.instrument_variable \
             .get_current_script_text.return_value = [None]
 
         with self.assertRaises(InvalidStateException):
@@ -231,14 +207,15 @@ class TestHandleMessage(unittest.TestCase):
         mock_reduction_run = mock.NonCallableMock()
         mock_script_and_args = (mock.NonCallableMock(), mock.NonCallableMock())
 
+        self.handler._get_last_run_version = mock.Mock(return_value=-1)
+
         self.mocked_utils.reduction_run. \
             get_script_and_arguments.return_value = mock_script_and_args
 
         db_return_values = \
             self._get_mocked_db_return_vals(mock_instrument,
                                             mock_data_location,
-                                            mock_reduction_run,
-                                            mock_existing_reduction_run=None)
+                                            mock_reduction_run)
         patched_db.configure_mock(**db_return_values)
 
         # Run
@@ -275,6 +252,23 @@ class TestHandleMessage(unittest.TestCase):
         # Finally check if the data is sent
         self.mocked_client.send_message.assert_called_once_with(
             "/queue/ReductionPending", mocked_msg)
+
+    def test_data_ready_invalid_rb(self, _):
+        mock_msg = self._get_mock_message()
+        self.mocked_utils.reduction_run.get_script_and_arguments.\
+            return_value = (mock.NonCallableMock(), mock.NonCallableMock)
+        self.handler._construct_and_send_skipped = mock.Mock()
+        with patch("pipeline.queue.handle_message.validate_rb_num") as patched:
+            patched.side_effect = InvalidStateException()
+            expected_ex = patched.side_effect
+
+            with self.assertRaises(InvalidStateException) as ex:
+                self.handler.data_ready(message=mock_msg)
+                self.assertEqual(expected_ex, ex)
+
+        self.handler._construct_and_send_skipped.assert_called_once_with(
+            message=mock_msg, rb_number=mock_msg.rb_number,
+            reason=str(expected_ex))
 
     def test_reduction_started(self, patched_db):
         """
@@ -355,7 +349,7 @@ class TestHandleMessage(unittest.TestCase):
         mocked_msg.reduction_data = location_records
 
         mocked_reduction_location = mock.NonCallableMock()
-        patched_db.start_database.return_value.data_model.\
+        patched_db.start_database.return_value.data_model. \
             ReductionLocation.return_value = mocked_reduction_location
 
         self.handler.reduction_complete(message=mocked_msg)
@@ -526,10 +520,11 @@ class TestHandleMessage(unittest.TestCase):
 
         self.handler.retry_run(user_id=mock_uid, retry_in=expected_time,
                                reduction_run=reduction_run)
-        self.mocked_utils.reduction_run.create_retry_run\
+        self.mocked_utils.reduction_run.create_retry_run \
             .assert_called_once_with(user_id=mock_uid, delay=expected_time,
                                      reduction_run=reduction_run)
-        create_retry_run_ret = self.mocked_utils.reduction_run.create_retry_run()
+        create_retry_run_ret = \
+            self.mocked_utils.reduction_run.create_retry_run()
         self.mocked_utils.messaging.send_pending.assert_called_once_with(
             create_retry_run_ret, delay=(expected_time * 1000))
 
