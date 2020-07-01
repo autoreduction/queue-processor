@@ -121,9 +121,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         ppa = PostProcessAdmin(self.message, amq_client_mock)
         ppa.reduction_started()
 
-        mock_log.assert_called_with("Calling: %s\n%s",
-                                    ACTIVEMQ_SETTINGS.reduction_started,
-                                    self.message.serialize(limit_reduction_script=True))
+        mock_log.assert_called()
         amq_client_mock.send.assert_called_with(ACTIVEMQ_SETTINGS.reduction_started,
                                                      ppa.message)
 
