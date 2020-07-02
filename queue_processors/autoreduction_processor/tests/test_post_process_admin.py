@@ -111,6 +111,19 @@ class TestPostProcessAdmin(unittest.TestCase):
         self.assertEqual(file_path, os.path.join(MISC['scripts_directory'] % 'WISH',
                                                  'reduce.py'))
 
+    @patch(DIR + '.autoreduction_logging_setup.logger.debug')
+    def test_reduction_started(self, mock_log):
+        """
+        Test: reduction started message has been sent and logged
+        When: called within reduce method
+        """
+        amq_client_mock = Mock()
+        ppa = PostProcessAdmin(self.message, amq_client_mock)
+        ppa.reduction_started()
+
+        mock_log.assert_called()
+        amq_client_mock.send.assert_called_with(ACTIVEMQ_SETTINGS.reduction_started, ppa.message)
+
     def test_reduction_script_location(self):
         location = PostProcessAdmin._reduction_script_location('WISH')
         self.assertEqual(location, MISC['scripts_directory'] % 'WISH')

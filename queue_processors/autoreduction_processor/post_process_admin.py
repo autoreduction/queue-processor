@@ -177,16 +177,22 @@ class PostProcessAdmin:
         """ Returns the path of the reduction script for an instrument. """
         return os.path.join(self._reduction_script_location(instrument_name), 'reduce.py')
 
+    def reduction_started(self):
+        """Log and update AMQ message to reduction started"""
+        logger.debug("Calling: %s\n%s",
+                     ACTIVEMQ_SETTINGS.reduction_started,
+                     self.message.serialize(limit_reduction_script=True))
+        self.client.send(ACTIVEMQ_SETTINGS.reduction_started, self.message)
+
     def reduce(self):
         """ Start the reduction job.  """
         # pylint: disable=too-many-nested-blocks
         logger.info("reduce started")
         self.message.software = self._get_mantid_version()
+
         try:
-            logger.debug("Calling: %s\n%s",
-                         ACTIVEMQ_SETTINGS.reduction_started,
-                         self.message.serialize(limit_reduction_script=True))
-            self.client.send(ACTIVEMQ_SETTINGS.reduction_started, self.message)
+            # log and update AMQ message to reduction started
+            self.reduction_started()
 
             # Specify instrument directory
             instrument_output_dir = MISC["ceph_directory"] % (self.instrument,
@@ -202,7 +208,6 @@ class PostProcessAdmin:
 
             if self.message.description is not None:
                 logger.info("DESCRIPTION: %s", self.message.description)
-
             log_dir = reduce_result_dir + "/reduction_log/"
             log_and_err_name = "RB" + self.proposal + "Run" + self.run_number
             script_out = os.path.join(log_dir, log_and_err_name + "Script.out")
