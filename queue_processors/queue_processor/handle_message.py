@@ -47,9 +47,9 @@ class HandleMessage:
     Handles messages from the queue client and forwards through various
     stages depending on the message contents.
     """
-    # We cannot type hint stomp client without introducing a circular dep.
-    def __init__(self, stomp_client):
-        self._client = stomp_client
+    # We cannot type hint queue listener without introducing a circular dep.
+    def __init__(self, queue_listener):
+        self._client = queue_listener
         self._utils = _UtilsClasses()
 
         logging.config.dictConfig(LOGGING)
@@ -60,12 +60,18 @@ class HandleMessage:
 
     @property
     def _database(self):
+        """
+        Gets a handle to the database, starting it if required
+        """
         if not self._cached_db:
             self._cached_db = db_access.start_database()
         return self._cached_db
 
     @property
     def _data_model(self):
+        """
+        Gets a handle to the data model from the database
+        """
         if not self._cached_data_model:
             self._cached_data_model = self._database.data_model
         return self._cached_data_model
@@ -78,7 +84,7 @@ class HandleMessage:
         self._logger.info("Data ready for processing run %s on %s",
                           message.run_number, message.instrument)
         run_no = str(message.run_number)
-        instrument = self._get_db_inst(message.instrument)
+        instrument = self._get_and_activate_db_inst(message.instrument)
 
         status = self._utils.status.get_skipped() if instrument.is_paused \
             else self._utils.status.get_queued()
@@ -152,6 +158,10 @@ class HandleMessage:
     # pylint: disable=too-many-arguments
     def _create_reduction_run_record(self, experiment, instrument, message,
                                      run_version, script_text, status):
+        """
+        Creates an ORM record for the given reduction run and returns
+        this record without saving it to the DB
+        """
         reduction_run = self._data_model.ReductionRun(
             run_number=message.run_number,
             run_version=run_version,
@@ -184,7 +194,12 @@ class HandleMessage:
         # By returning -1 callers can blindly increment the version
         return last_run.run_version if last_run else -1
 
-    def _get_db_inst(self, instrument_name):
+    def _get_and_activate_db_inst(self, instrument_name):
+        """
+        Gets the DB instrument record from the database, if one is not
+        found it instead creates and saves the record to the DB, then
+        returns it.
+        """
         # Check if the instrument is active or not in the MySQL database
         instrument = db_access.get_instrument(str(instrument_name),
                                               create=True)

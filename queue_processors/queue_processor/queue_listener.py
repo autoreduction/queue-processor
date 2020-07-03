@@ -26,7 +26,7 @@ class QueueListener:
     def __init__(self, client):
         """ Initialise listener. """
         self._client = client
-        self._message_handler = HandleMessage(stomp_client=self)
+        self._message_handler = HandleMessage(queue_listener=self)
         self._priority = ''
 
         # Set up logging and attach the logging to the right part of the
