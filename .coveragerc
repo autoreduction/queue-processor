@@ -7,3 +7,5 @@ omit =
 [report]
 exclude_lines =
     pragma: no cover
+    # We should test main() but prod. entry point is untestable
+    if __name__ == .__main__.:
