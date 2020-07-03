@@ -92,11 +92,12 @@ def setup_connection(consumer_name):
 
     # Subscribe to queues
     activemq_client.subscribe_autoreduce(consumer_name, listener)
+    return activemq_client
 
 
 def main():
     """ Main method. """
-    setup_connection('queue')
+    return setup_connection('queue_processor')
 
 
 if __name__ == '__main__':

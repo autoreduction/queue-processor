@@ -12,10 +12,10 @@ EXECUTABLE_PATH=$1
 ## Autoreduction Processor
 pkill -9 -f "python3 .*autoreduction_processor/autoreduction_processor_daemon.py start" &&
 echo "Stopped autoreduction_processor_daemon.py";
-if [ -e /tmp/AutoreduceQueueProcessorDaemon.pid ]
+if [ -e /tmp/AutoreduceQueueListenerDaemon.pid ]
 then
-    rm /tmp/AutoreduceQueueProcessorDaemon.pid && # Removes the tmp pid file
-    echo "Removed /tmp/AutoreduceQueueProcessorDaemon.pid"
+    rm /tmp/AutoreduceQueueListenerDaemon.pid && # Removes the tmp pid file
+    echo "Removed /tmp/AutoreduceQueueListenerDaemon.pid"
 else
     echo ".pid file not found - starting process"
 fi
@@ -33,21 +33,21 @@ echo ""; # New line
 
 
 ## QueueProcessor
-pkill -9 -f "python3 .*queue_processor/queue_processor_daemon.py start" &&
-echo "Stopped queue_processor_daemon";
-if [ -e /tmp/QueueProcessorDaemon.pid ]
+pkill -9 -f "python3 .*queue_processor/queue_listener_daemon.py start" &&
+echo "Stopped queue_listener_daemon";
+if [ -e /tmp/QueueListenerDaemon.pid ]
 then
-    rm /tmp/QueueProcessorDaemon.pid && # Removes the tmp pid file
-    echo "Removed /tmp/QueueProcessorDaemon.pid"
+    rm /tmp/QueueListenerDaemon.pid && # Removes the tmp pid file
+    echo "Removed /tmp/QueueListenerDaemon.pid"
 else
     echo ".pid file not found - starting process"
 fi
 if [ $EXECUTABLE_PATH ];
 then
-    $EXECUTABLE_PATH $ROOT_DIR/queue_processor/queue_processor_daemon.py start &&
-    echo "Started queue_processor_daemon";
+    $EXECUTABLE_PATH $ROOT_DIR/queue_processor/queue_listener_daemon.py start &&
+    echo "Started queue_listener_daemon";
 else
     echo "Using default python";
-    python3 $ROOT_DIR/queue_processor/queue_processor_daemon.py start &&
-    echo "Started queue_processor_daemon";
+    python3 $ROOT_DIR/queue_processor/queue_listener_daemon.py start &&
+    echo "Started queue_listener_daemon";
 fi
