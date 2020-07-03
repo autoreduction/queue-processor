@@ -8,6 +8,7 @@
 Test functionality for the activemq client
 """
 import unittest
+from unittest import mock
 
 from mock import patch, call
 
@@ -82,9 +83,14 @@ class TestQueueClient(unittest.TestCase):
         When: disconnect is called while a valid connection is currently established
         """
         client = QueueClient()
-        client.connect()
-        self.assertTrue(client._connection.is_connected())
-        client.disconnect()
+        mocked_connection = mock.Mock()
+        client._connection = mocked_connection
+
+        with mock.patch("uuid.uuid4") as patched_uuid:
+            patched_uuid.return_value = 1
+            client.disconnect()
+
+        mocked_connection.disconnect.assert_called_with(receipt=str(1))
         self.assertIsNone(client._connection)
 
     # pylint:disable=no-self-use

@@ -9,6 +9,7 @@ Client class for accessing queuing service
 """
 import logging
 import time
+import uuid
 
 import stomp
 from stomp.exception import ConnectFailedException
@@ -57,7 +58,12 @@ class QueueClient(AbstractClient):
         """
         logging.info("Disconnecting from activemq")
         if self._connection is not None and self._connection.is_connected():
-            self._connection.disconnect()
+            # By passing a receipt Stomp will call stop on the transport layer
+            # which causes it to wait on the listener thread (if it's still
+            # running). Without this step we just drop out, so the behaviour
+            # is not guaranteed. UUID is used by Stomp if we don't pass in
+            # a receipt so this matches the behaviour under the hood
+            self._connection.disconnect(receipt=str(uuid.uuid4()))
         self._connection = None
 
     def _create_connection(self, listener=None):
