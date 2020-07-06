@@ -58,8 +58,8 @@ def handler403(request, exception):
 
 def handler500(request):
     """Error 500 handler"""
-    response = render('500.html',
-                      {'admin_email': get_admin_email()},
-                      RequestContext(request))
+    response = render(RequestContext(request),
+                      '500.html',
+                      {'admin_email': get_admin_email()})
     response.status_code = 500
     return response
