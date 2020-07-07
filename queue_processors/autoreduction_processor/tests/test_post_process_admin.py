@@ -1,7 +1,7 @@
 # ############################################################################### #
 # Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
 #
-# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 """
@@ -134,6 +134,19 @@ class TestPostProcessAdmin(unittest.TestCase):
         self.assertEqual(directory_list[-5:], expected_end)
         self.assertEqual(directory_list[0], expected_start)
         self.assertIsInstance(actual, str)
+
+    @patch(DIR + '.autoreduction_logging_setup.logger.debug')
+    def test_reduction_started(self, mock_log):
+        """
+        Test: reduction started message has been sent and logged
+        When: called within reduce method
+        """
+        amq_client_mock = Mock()
+        ppa = PostProcessAdmin(self.message, amq_client_mock)
+        ppa.reduction_started()
+
+        mock_log.assert_called()
+        amq_client_mock.send.assert_called_with(ACTIVEMQ_SETTINGS.reduction_started, ppa.message)
 
     def test_reduction_script_location(self):
         location = PostProcessAdmin._reduction_script_location('WISH')
