@@ -111,6 +111,31 @@ class TestPostProcessAdmin(unittest.TestCase):
         self.assertEqual(file_path, os.path.join(MISC['scripts_directory'] % 'WISH',
                                                  'reduce.py'))
 
+    def test_specify_instrument_directories(self):
+        """
+        Test: Expected instrument, stripped of run number if excitation returned
+        When: called
+        """
+        ppa = PostProcessAdmin(self.message, None)
+        ppa.instrument = 'WISH'
+        ppa.run_number = 27282
+        actual = ppa.specify_instrument_directories(
+            instrument_output_directory=MISC["ceph_directory"] % (ppa.instrument,
+                                                                  ppa.proposal,
+                                                                  ppa.run_number),
+            excitations=MISC["excitation_instruments"],
+            temporary_directory=MISC["temp_root_directory"])
+
+        directory_list = [i for i in actual.split('/') if i]
+        print(actual)
+        print(directory_list)
+        expected_end = ['reduced-data', 'WISH', 'RB1234', 'autoreduced', '27282']
+        expected_start = 'autoreducetmp'
+
+        self.assertEqual(directory_list[-5:], expected_end)
+        self.assertEqual(directory_list[0], expected_start)
+        self.assertIsInstance(actual, str)
+
     def test_reduction_script_location(self):
         location = PostProcessAdmin._reduction_script_location('WISH')
         self.assertEqual(location, MISC['scripts_directory'] % 'WISH')

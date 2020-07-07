@@ -177,6 +177,22 @@ class PostProcessAdmin:
         """ Returns the path of the reduction script for an instrument. """
         return os.path.join(self._reduction_script_location(instrument_name), 'reduce.py')
 
+    def specify_instrument_directories(self,
+                                       instrument_output_directory,
+                                       excitations,
+                                       temporary_directory):
+        """Specifies instrument directories, including removal of run_number folder
+        if excitations instrument
+        :return (str) Directories where Autoreduction should output"""
+
+        if self.instrument in excitations:
+            # Excitations would like to remove the run number folder at the end
+            instrument_output_directory = instrument_output_directory[
+                                          :instrument_output_directory.rfind('/') + 1]
+
+        # Specify directories where autoreduction output will go
+        return temporary_directory + instrument_output_directory
+
     def reduce(self):
         """ Start the reduction job.  """
         # pylint: disable=too-many-nested-blocks
@@ -188,24 +204,13 @@ class PostProcessAdmin:
                          self.message.serialize(limit_reduction_script=True))
             self.client.send(ACTIVEMQ_SETTINGS.reduction_started, self.message)
 
-            def specify_instrument_directories():
-                """Specifies instrument directories, including removal of run_number folder
-                if excitations instrument
-                :return (list) Directories where Autoreduction should output"""
-                # Specify instrument directory
-                instrument_output_dir = MISC["ceph_directory"] % (self.instrument,
-                                                                  self.proposal,
-                                                                  self.run_number)
-
-                if self.instrument in MISC["excitation_instruments"]:
-                    # Excitations would like to remove the run number folder at the end
-                    instrument_output_dir = instrument_output_dir[
-                                            :instrument_output_dir.rfind('/') + 1]
-
-                # Specify directories where autoreduction output will go
-                return MISC["temp_root_directory"] + instrument_output_dir
-
-            reduce_result_dir = specify_instrument_directories()
+            # Specify instrument directories
+            reduce_result_dir = self.specify_instrument_directories(
+                instrument_output_directory=MISC["ceph_directory"] % (self.instrument,
+                                                                      self.proposal,
+                                                                      self.run_number),
+                excitations=MISC["excitation_instruments"],
+                temporary_directory=MISC["temp_root_directory"])
 
             if self.message.description is not None:
                 logger.info("DESCRIPTION: %s", self.message.description)
