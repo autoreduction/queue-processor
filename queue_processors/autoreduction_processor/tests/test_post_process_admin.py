@@ -115,6 +115,10 @@ class TestPostProcessAdmin(unittest.TestCase):
         location = PostProcessAdmin._reduction_script_location('WISH')
         self.assertEqual(location, MISC['scripts_directory'] % 'WISH')
 
+    # def test_create_log_path(self):
+    #     file_name = "test.log"
+    #     log_directory = MISC["temp_root_directory"] + instrument_output_dir + "/reduction_log/"
+
     @patch(DIR + '.post_process_admin.PostProcessAdmin._remove_directory')
     @patch(DIR + '.post_process_admin.PostProcessAdmin._copy_tree')
     @patch(DIR + '.autoreduction_logging_setup.logger.info')

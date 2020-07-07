@@ -177,6 +177,16 @@ class PostProcessAdmin:
         """ Returns the path of the reduction script for an instrument. """
         return os.path.join(self._reduction_script_location(instrument_name), 'reduce.py')
 
+    def create_log_path(self, file_name, log_directory):
+        """Create log file and place in reduction_log_directory
+        :param file_name: (string) file name and extension type
+        :param log_directory: (str) log directory path
+        :return: (str) log file path
+        """
+
+        log_and_err_name = "RB" + self.proposal + "Run" + self.run_number
+        return os.path.join(log_directory, log_and_err_name + file_name)
+
     def reduce(self):
         """ Start the reduction job.  """
         # pylint: disable=too-many-nested-blocks
@@ -202,13 +212,6 @@ class PostProcessAdmin:
 
             if self.message.description is not None:
                 logger.info("DESCRIPTION: %s", self.message.description)
-
-            def create_log_path(file_name, log_directory):
-                """Create log file and place in reduction_log_directory
-                :param (string) file name and extension type"""
-
-                log_and_err_name = "RB" + self.proposal + "Run" + self.run_number
-                return os.path.join(log_directory, log_and_err_name + file_name)
 
             log_dir = reduce_result_dir + "/reduction_log/"
 
@@ -263,7 +266,7 @@ class PostProcessAdmin:
             logger.info("Result dir: %s", reduce_result_dir)
             logger.info("Log dir: %s", log_dir)
             logger.info("Out log: %s",
-                        create_log_path(file_name="Script.out", log_directory=log_dir))
+                        self.create_log_path(file_name="Script.out", log_directory=log_dir))
             logger.info("Datafile: %s", self.data_file)
             logger.info("----------------")
 
@@ -272,10 +275,10 @@ class PostProcessAdmin:
             out_directories = None
 
             try:
-                with channels_redirected(create_log_path(file_name="Script.out",
-                                                         log_directory=log_dir),
-                                         create_log_path(file_name="Mantid.log",
-                                                         log_directory=log_dir),
+                with channels_redirected(self.create_log_path(file_name="Script.out",
+                                                              log_directory=log_dir),
+                                         self.create_log_path(file_name="Mantid.log",
+                                                              log_directory=log_dir),
                                          self.reduction_log_stream):
                     # Load reduction script as a module. This works as long as reduce.py makes no
                     # assumption that it is in the same directory as reduce_vars, i.e., either it
@@ -300,8 +303,8 @@ class PostProcessAdmin:
                     else:
                         self.message.message = "Run has been skipped in script"
             except Exception as exp:
-                with open(create_log_path(file_name="Script.out",
-                                          log_directory=log_dir),
+                with open(self.create_log_path(file_name="Script.out",
+                                               log_directory=log_dir),
                           "a") as fle:
                     fle.writelines(str(exp) + "\n")
                     fle.write(traceback.format_exc())
