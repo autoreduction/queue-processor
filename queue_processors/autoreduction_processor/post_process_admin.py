@@ -182,14 +182,19 @@ class PostProcessAdmin:
                                        instrument_output_directory,
                                        excitations,
                                        temporary_directory):
-        """Specifies instrument directories, including removal of run_number folder
+        """
+        Specifies instrument directories, including removal of run_number folder
         if excitations instrument
-        :return (str) Directories where Autoreduction should output"""
+        :param instrument_output_directory: (str) Ceph directory using instrument, proposal, run no
+        :param excitations: (list) List of excitations instruments
+        :param temporary_directory: (str) Temp directory location (root)
+        :return (str) Directories where Autoreduction should output
+        """
 
         if self.instrument in excitations:
             # Excitations would like to remove the run number folder at the end
-            instrument_output_directory = instrument_output_directory[
-                                          :instrument_output_directory.rfind('/') + 1]
+            no_run_number_directory = instrument_output_directory.rfind('/') + 1
+            instrument_output_directory = instrument_output_directory[:no_run_number_directory]
 
         # Specify directories where autoreduction output will go
         return temporary_directory + instrument_output_directory
