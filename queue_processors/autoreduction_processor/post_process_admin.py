@@ -206,7 +206,6 @@ class PostProcessAdmin:
                      self.message.serialize(limit_reduction_script=True))
         self.client.send(ACTIVEMQ_SETTINGS.reduction_started, self.message)
 
-
     def reduce(self):
         """ Start the reduction job.  """
         # pylint: disable=too-many-nested-blocks
