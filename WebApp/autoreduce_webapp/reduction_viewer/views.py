@@ -60,8 +60,9 @@ def index(request):
         login(request, user)
         authenticated = True
     else:
-        authenticated = request.user.is_authenticated() and 'sessionid' in request.session \
-                        and UOWSClient().check_session(request.session['sessionid'])
+        if 'sessionid' in request.session.keys():
+            authenticated = request.user.is_authenticated \
+                            and UOWSClient().check_session(request.session['sessionId'])
 
     if authenticated:
         if request.GET.get('next'):
