@@ -127,8 +127,7 @@ class TestPostProcessAdmin(unittest.TestCase):
             temporary_directory=MISC["temp_root_directory"])
 
         directory_list = [i for i in actual.split('/') if i]
-        print(actual)
-        print(directory_list)
+
         expected_end = ['reduced-data', 'WISH', 'RB1234', 'autoreduced', '27282']
         expected_start = 'autoreducetmp'
 
