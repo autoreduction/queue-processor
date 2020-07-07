@@ -1,7 +1,7 @@
 # ############################################################################### #
 # Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
 #
-# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 
@@ -11,6 +11,8 @@ Module for daemonising the queue processor.
 """
 import threading
 import logging
+from datetime import datetime
+
 from queue_processors.daemon import Daemon, control_daemon_from_cli
 from queue_processors.queue_processor import queue_listener
 
@@ -19,13 +21,17 @@ class QueueListenerDaemon(Daemon):
     """ Queue Listener daemoniser """
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # This time was selected so that the cron job will restart roughly
-        # at the same time each day whilst accounting for thread timing drift.
+        """
+        Sets the time to shutdown and a handler for the Daemon
+        This time was selected so that the cron job will restart roughly
+        at the same time each day whilst accounting for thread timing drift.
 
-        # If it was set to dead 24 hours we might end up stopping after
-        # cron tries to start us. So we take a 15 minute time buffer where
-        # the QP is offline to give us a window where we can shutdown.
+        If it was set to dead 24 hours we might stop after
+        cron tries to start us. So we take a 15 minute time buffer where
+        the QP is offline to give us a window where we can shutdown.
+        """
+        super().__init__(*args, **kwargs)
+
         stop_hours = 23
         stop_minutes = 45
         # ((hours -> Mins) + Mins) -> seconds)  => Stored in seconds
@@ -58,9 +64,9 @@ def _wait_for_client(daemon):
 
     if not was_safe_shutdown:
         logging.error(
-            "Queue Client did not shutdown before timeout, so it was killed"
-            " ungracefully. This should be investigated as it could cause"
-            " messages to get lost.")
+            "%s: Queue Client did not shutdown before timeout, so it was "
+            " killed ungracefully. This should be investigated as it could"
+            " cause messages to get lost.", datetime.now().isoformat())
 
 
 def main():

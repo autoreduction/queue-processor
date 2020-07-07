@@ -1,7 +1,7 @@
 # ############################################################################### #
 # Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
 #
-# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 """
@@ -31,7 +31,8 @@ class TestQueueListenerDaemon(unittest.TestCase):
     @mock.patch("logging.error")
     def test_main(patched_logging, patched_cli, patched_daemon):
         """
-        Tests the main method correctly starts and handles the nominal case
+        Test: The main method correctly starts and handles the nominal case
+        When: Called by the module main method
         """
         daemon_instance = patched_daemon.return_value
         daemon_instance.safe_shutdown.wait.return_value = True
@@ -48,7 +49,8 @@ class TestQueueListenerDaemon(unittest.TestCase):
     @mock.patch("logging.error")
     def test_main_timeout_logs(patched_logging, patched_daemon):
         """
-        Tests main will correctly log a timeout as an error
+        Test: Main will correctly log a timeout as an error
+        When: Trying to shutdown the client after timer fires
         """
         daemon_event = patched_daemon.return_value.safe_shutdown
         daemon_event.wait.return_value = False  # i.e. unsafe shutdown
@@ -66,7 +68,8 @@ class TestQueueListenerDaemon(unittest.TestCase):
     @mock.patch("threading.Timer")
     def test_run(self, patched_timer, patched_processor):
         """
-        Tests that run method sets up the stop timer and the main worker thread
+        Test: Run method sets up the stop timer and the main worker thread
+        When: When someone calls run() on the daemon class
         """
         self.instance.run()
 
@@ -78,8 +81,9 @@ class TestQueueListenerDaemon(unittest.TestCase):
     @mock.patch("queue_processors.daemon.Daemon.stop")
     def test_stop(self, super_class_stop):
         """
-        Tests the stop method correctly shuts down the listener and then
-        marks the thread as safely stopped
+        Test: The stop method correctly shuts down the listener and then
+              marks the thread as safely stopped
+        When: The daemon is shutting down, typically after the timer fires
         """
         mocked_client = mock.Mock(spec=QueueClient)
         mocked_event = mock.Mock()
@@ -94,8 +98,9 @@ class TestQueueListenerDaemon(unittest.TestCase):
 
     def test_timer_fires_stop(self):
         """
-        Tests the timer correctly calls stop (without testing stop)
-        when a given time elapses
+        Test: The timer correctly calls stop (without testing stop)
+              when a given time elapses
+        When: The pre-set timer fires indicating the daemon should restart
         """
         self.instance.stop = mock.Mock()
 
