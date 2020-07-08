@@ -12,10 +12,10 @@ EXECUTABLE_PATH=$1
 ## Autoreduction Processor
 pkill -9 -f "python3 .*autoreduction_processor/autoreduction_processor_daemon.py start" &&
 echo "Stopped autoreduction_processor_daemon.py";
-if [ -e /tmp/AutoreduceQueueListenerDaemon.pid ]
+if [ -e /tmp/AutoreduceQueueProcessorDaemon.pid ]
 then
-    rm /tmp/AutoreduceQueueListenerDaemon.pid && # Removes the tmp pid file
-    echo "Removed /tmp/AutoreduceQueueListenerDaemon.pid"
+    rm /tmp/AutoreduceQueueProcessorDaemon.pid && # Removes the tmp pid file
+    echo "Removed /tmp/AutoreduceQueueProcessorDaemon.pid"
 else
     echo ".pid file not found - starting process"
 fi
