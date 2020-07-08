@@ -17,6 +17,7 @@ import logging.config
 import traceback
 
 from model.database import access as db_access
+import model.database.records as db_records
 from model.message.message import Message
 from queue_processors.queue_processor._utils_classes import _UtilsClasses
 from queue_processors.queue_processor.handling_exceptions import \
@@ -91,7 +92,7 @@ class HandleMessage:
 
         # Make the new reduction run with the information collected so far
         # and add it into the database
-        reduction_run = self._create_reduction_run_record(
+        reduction_run = db_records.create_reduction_run_record(
             experiment=experiment, instrument=instrument, message=message,
             run_version=run_version, script_text=script_text, status=status)
         db_access.save_record(reduction_run)
@@ -101,8 +102,8 @@ class HandleMessage:
         # reduction run. The file path itself will point to a datafile
         # (e.g. "\isis\inst$\NDXWISH\Instrument\data\cycle_17_1\WISH00038774
         # .nxs")
-        data_location = self._data_model.DataLocation(file_path=message.data,
-                                                      reduction_run_id=reduction_run.id)
+        data_location = self._data_model.DataLocation(
+            file_path=message.data, reduction_run_id=reduction_run.id)
         db_access.save_record(data_location)
 
         # We now need to create all of the variables for the run such that
@@ -132,30 +133,6 @@ class HandleMessage:
             self._client.send_message('/queue/ReductionPending', message)
             self._logger.info("Run %s ready for reduction",
                               message.run_number)
-
-    # pylint: disable=too-many-arguments
-    def _create_reduction_run_record(self, experiment, instrument, message,
-                                     run_version, script_text, status):
-        """
-        Creates an ORM record for the given reduction run and returns
-        this record without saving it to the DB
-        """
-        reduction_run = self._data_model.ReductionRun(
-            run_number=message.run_number,
-            run_version=run_version,
-            run_name='',
-            cancel=0,
-            hidden_in_failviewer=0,
-            admin_log='',
-            reduction_log='',
-            created=datetime.datetime.utcnow(),
-            last_updated=datetime.datetime.utcnow(),
-            experiment_id=experiment.id,
-            instrument_id=instrument.id,
-            status_id=status.id,
-            script=script_text,
-            started_by=message.started_by)
-        return reduction_run
 
     def _get_last_run_version(self, run_no, experiment):
         """
