@@ -185,7 +185,7 @@ class PostProcessAdmin:
         Specifies instrument directories, including removal of run_number folder
         if excitations instrument
         :param instrument_output_directory: (str) Ceph directory using instrument, proposal, run no
-        :param no_run_number_directory: (bool) Determines whether or not to remove run_number from dir
+        :param no_run_number_directory: (bool) Determine whether or not to remove run no from dir
         :param temporary_directory: (str) Temp directory location (root)
         :return (str) Directories where Autoreduction should output
         """
