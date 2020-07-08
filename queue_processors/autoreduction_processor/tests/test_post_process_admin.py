@@ -111,29 +111,46 @@ class TestPostProcessAdmin(unittest.TestCase):
         self.assertEqual(file_path, os.path.join(MISC['scripts_directory'] % 'WISH',
                                                  'reduce.py'))
 
+    def test_specify_instrument_directories_invalid(self):
+        """
+        Test: Error is returned
+        When: called with invalid directory format
+        """
+        ppa = PostProcessAdmin(self.message, None)
+
+        ceph_directory = MISC["ceph_directory"] % (ppa.instrument,
+                                                   ppa.proposal,
+                                                   'invalid')
+
+        actual = ppa.specify_instrument_directories(
+            instrument_output_directory=ceph_directory,
+            no_run_number_directory=True,
+            temporary_directory=MISC["temp_root_directory"])
+
+        self.assertIsInstance(actual, ValueError)
+
     def test_specify_instrument_directories(self):
         """
         Test: Expected instrument, stripped of run number if excitation returned
         When: called
         """
         ppa = PostProcessAdmin(self.message, None)
-        ppa.instrument = 'WISH'
-        ppa.run_number = 27282
+
+        ceph_directory = MISC['ceph_directory'] % (ppa.instrument,
+                                                   ppa.proposal,
+                                                   ppa.run_number)
+        temporary_directory = MISC['temp_root_directory']
+
         actual = ppa.specify_instrument_directories(
-            instrument_output_directory=MISC["ceph_directory"] % (ppa.instrument,
-                                                                  ppa.proposal,
-                                                                  ppa.run_number),
-            excitations=MISC["excitation_instruments"],
-            temporary_directory=MISC["temp_root_directory"])
+            instrument_output_directory=ceph_directory,
+            no_run_number_directory=True,
+            temporary_directory=temporary_directory)
 
-        directory_list = [i for i in actual.split('/') if i]
+        actual_directory_list = [i for i in actual.split('/') if i]
+        expected_directory_list = [i for i in ceph_directory.split('/') if i]
 
-        expected_end = ['reduced-data', 'WISH', 'RB1234', 'autoreduced', '27282']
-        expected_start = 'autoreducetmp'
-
-        self.assertEqual(directory_list[-5:], expected_end)
-        self.assertEqual(directory_list[0], expected_start)
-        self.assertIsInstance(actual, str)
+        self.assertEqual(expected_directory_list[-5:], actual_directory_list[-5:])
+        self.assertEqual(temporary_directory, f"/{actual_directory_list[0]}")
 
     @patch(DIR + '.autoreduction_logging_setup.logger.debug')
     def test_reduction_started(self, mock_log):
