@@ -25,23 +25,6 @@ from queue_processors.queue_processor.settings import LOGGING
 from utils.settings import ACTIVEMQ_SETTINGS
 
 
-def validate_rb_num(rb_number):
-    """
-    Detects if the RB number is valid e.g. (above 0 and not a string)
-    :param rb_number:
-    :raises: InvalidStateException If the RB is not valid
-    """
-    try:
-        rb_number = int(rb_number)
-    except (ValueError, TypeError):
-        raise InvalidStateException(
-            f"RB Number: {rb_number} is not a valid int")
-
-    if rb_number <= 0:
-        raise InvalidStateException(
-            f"RB Number: {rb_number} is less than or equal to 0")
-
-
 class HandleMessage:
     """
     Handles messages from the queue client and forwards through various
@@ -140,12 +123,7 @@ class HandleMessage:
         message.reduction_arguments = arguments
 
         # Make sure the RB number is valid
-        try:
-            validate_rb_num(message.rb_number)
-        except InvalidStateException as ex:
-            self._construct_and_send_skipped(
-                message=message, rb_number=message.rb_number, reason=str(ex))
-            raise ex
+        message.validate("/queue/DataReady")
 
         if instrument.is_paused:
             self._logger.info("Run %s has been skipped",

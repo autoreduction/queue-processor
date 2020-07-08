@@ -8,8 +8,9 @@
 Exercise the functions that handle validating a message at each pipeline stage
 """
 import unittest
+from unittest import mock
 
-from model.message.validation import stages
+from model.message.validation import stages, validators
 from model.message.job import Message
 
 
@@ -21,13 +22,13 @@ class TestStages(unittest.TestCase):
     def setUp(self):
         self.valid_message = Message(run_number=1234,
                                      instrument='GEM',
-                                     rb_number=0,
+                                     rb_number=1,
                                      started_by=-1,
                                      data='test/file/path',
                                      )
         self.invalid_message = Message(run_number='12345',
                                        instrument='not inst',
-                                       rb_number='0',
+                                       rb_number=-1,
                                        started_by='test',
                                        data=123)
 
@@ -44,3 +45,11 @@ class TestStages(unittest.TestCase):
         When: supplied with an invalid message
         """
         self.assertFalse(stages.validate_data_ready(self.invalid_message))
+
+    @mock.patch("model.message.validation.stages.validators", spec=validators)
+    def test_validate_data_ready_calls_validators(self, patched_validators):
+        stages.validate_data_ready(self.valid_message)
+
+        patched_validators.validate_run_number.assert_called_once()
+        patched_validators.validate_instrument.assert_called_once()
+        patched_validators.validate_rb_number.assert_called_once()

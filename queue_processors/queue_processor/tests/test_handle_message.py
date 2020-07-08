@@ -29,24 +29,6 @@ from queue_processors.queue_processor.queue_listener import QueueListener
 from utils.settings import ACTIVEMQ_SETTINGS
 
 
-class TestHandleMessageFreeFuncs(unittest.TestCase):
-    """
-    Tests the free functions in Queue Processor
-    """
-    def test_is_valid_rb(self):
-        """
-        Tests the valid and invalid cases for RB numbers
-        """
-        valid_values = [1, 20, "10000"]
-        for i in valid_values:
-            self.assertIsNone(handle_message.validate_rb_num(i))
-
-        invalid_values = [0, 0.1, -1, -100, None, "foo"]
-        for i in invalid_values:
-            with self.assertRaises(InvalidStateException):
-                handle_message.validate_rb_num(i)
-
-
 @patch("queue_processors.queue_processor.handle_message.db_access")
 class TestHandleMessage(unittest.TestCase):
     """
@@ -194,8 +176,7 @@ class TestHandleMessage(unittest.TestCase):
             self.handler.data_ready(self._get_mock_message())
         self.handler.reduction_error.assert_called_once()
 
-    @patch("queue_processors.queue_processor.handle_message.validate_rb_num")
-    def test_data_ready_with_new_data(self, valid_rb, patched_db):
+    def test_data_ready_with_new_data(self, patched_db):
         """
         Tests the ideal flow for data ready, where we will queue up
         actual data for processing
@@ -212,7 +193,6 @@ class TestHandleMessage(unittest.TestCase):
 
         self.mocked_utils.reduction_run. \
             get_script_and_arguments.return_value = mock_script_and_args
-        valid_rb.return_value = None  # None means valid (?)
 
         db_return_values = \
             self._get_mocked_db_return_vals(mock_instrument,
@@ -223,6 +203,8 @@ class TestHandleMessage(unittest.TestCase):
         # Run
         mocked_msg = self._get_mock_message()
         self.handler.data_ready(message=mocked_msg)
+
+        mocked_msg.validate.assert_called()
 
         # Assert Database accesses
         patched_db.get_instrument.assert_called_with(
@@ -254,28 +236,6 @@ class TestHandleMessage(unittest.TestCase):
         # Finally check if the data is sent
         self.mocked_client.send_message.assert_called_once_with(
             "/queue/ReductionPending", mocked_msg)
-
-    def test_data_ready_invalid_rb(self, _):
-        """
-        Tests data ready with an invalid RB number skips reduction
-        and rethrows the exception
-        """
-        mock_msg = self._get_mock_message()
-        self.mocked_utils.reduction_run.get_script_and_arguments.\
-            return_value = (mock.NonCallableMock(), mock.NonCallableMock)
-        self.handler._construct_and_send_skipped = mock.Mock()
-        with patch("queue_processors.queue_processor"
-                   ".handle_message.validate_rb_num") as patched:
-            patched.side_effect = InvalidStateException()
-            expected_ex = patched.side_effect
-
-            with self.assertRaises(InvalidStateException) as ex:
-                self.handler.data_ready(message=mock_msg)
-                self.assertEqual(expected_ex, ex)
-
-        self.handler._construct_and_send_skipped.assert_called_once_with(
-            message=mock_msg, rb_number=mock_msg.rb_number,
-            reason=str(expected_ex))
 
     def test_reduction_started(self, patched_db):
         """

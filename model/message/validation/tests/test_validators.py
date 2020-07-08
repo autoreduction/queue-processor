@@ -39,3 +39,15 @@ class TestValidators(unittest.TestCase):
 
         self.assertFalse(validators.validate_instrument('NOT INST'))
         self.assertFalse(validators.validate_instrument(1))
+
+    def test_validate_rb_number(self):
+        """
+        Tests the valid and invalid cases for RB numbers
+        """
+        valid_values = [1, 20, "10000"]
+        for i in valid_values:
+            self.assertTrue(validators.validate_rb_number(i))
+
+        invalid_values = [0, 0.1, -1, -100, None, "foo"]
+        for i in invalid_values:
+            self.assertFalse(validators.validate_rb_number(i))
