@@ -14,6 +14,7 @@ import unittest
 from unittest import mock
 from unittest.mock import patch
 
+from model.database import access
 from model.message.message import Message
 from queue_processors.queue_processor._utils_classes import _UtilsClasses
 from queue_processors.queue_processor.handle_message import HandleMessage
@@ -28,7 +29,8 @@ from queue_processors.queue_processor.queue_listener import QueueListener
 from utils.settings import ACTIVEMQ_SETTINGS
 
 
-@patch("queue_processors.queue_processor.handle_message.db_access")
+@patch("queue_processors.queue_processor.handle_message.db_access",
+       spec=access)
 class TestHandleMessage(unittest.TestCase):
     """
     Directly tests the message handling classes
@@ -120,7 +122,7 @@ class TestHandleMessage(unittest.TestCase):
         test_inputs = [-1, 100]
 
         for i in test_inputs:
-            self.handler._get_last_run_version = mock.Mock(return_value=i)
+            patched_db.find_highest_run_version = mock.Mock(return_value=i)
             mock_message = self._get_mock_message()
             self.handler.data_ready(message=mock_message)
 
@@ -192,7 +194,7 @@ class TestHandleMessage(unittest.TestCase):
             self._get_mocked_db_return_vals(mock_instrument,
                                             mock_data_location)
         # Setup other mock returns
-        self.handler._get_last_run_version = mock.Mock(return_value=-1)
+        patched_db.find_highest_run_version = mock.Mock(return_value=-1)
         patched_db.configure_mock(**db_return_values)
 
         mock_reduction_run = mock.NonCallableMock()
@@ -417,7 +419,7 @@ class TestHandleMessage(unittest.TestCase):
         # Valid value *not* including 5
         for i in range(0, 5):
             mocked_msg = self._get_mock_message()
-            self.handler._get_last_run_version = mock.Mock(return_value=i)
+            patched_db.find_highest_run_version = mock.Mock(return_value=i)
             self.handler.retry_run = mock.Mock()
 
             self.handler.reduction_error(message=mocked_msg)
@@ -430,7 +432,7 @@ class TestHandleMessage(unittest.TestCase):
         for i in range(5, 7):
             mocked_msg = self._get_mock_message()
             self.handler.retry_run = mock.Mock()
-            self.handler._get_last_run_version = mock.Mock(return_value=i)
+            patched_db.find_highest_run_version = mock.Mock(return_value=i)
 
             self.handler.reduction_error(mocked_msg)
             # As we are > limit the retry should be set to None

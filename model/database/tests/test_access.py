@@ -9,7 +9,7 @@ Unit tests to exercise the code responsible for common database access methods
 """
 import unittest
 
-from mock import patch, Mock
+from mock import patch, Mock, NonCallableMock
 
 from model.database import access
 
@@ -132,19 +132,33 @@ class TestAccess(unittest.TestCase):
         actual = access.get_reduction_run('GEM', 0)
         self.assertIsNone(actual.first())
 
-    @patch('model.database.access.get_reduction_run')
-    def test_find_highest_run_version(self, mock_get_run):
+    @patch('model.database.access.start_database')
+    def test_find_highest_run_version(self, db_layer):
         """
         Test: The expected highest version number is returned
         When: Calling find_highest_run_version
         """
-        mock_run = Mock()
-        mock_run.run_version = 0
-        mock_run_1 = Mock()
-        mock_run_1.run_version = 1
-        mock_get_run.return_value = [mock_run, mock_run_1]
-        actual = access.find_highest_run_version('test', '123')
-        self.assertEqual(actual, 1)
+        mock_run = NonCallableMock()
+
+        run_objects = db_layer.return_value.data_model.ReductionRun.objects
+        db_call = run_objects.filter.return_value\
+            .filter.return_value\
+            .order_by.return_value\
+            .first
+
+        for test_in, output in [(None, -1), (0, 0), (1, 1), (5, 5)]:
+            if test_in is None:
+                db_call.return_value = None
+            else:
+                db_call.return_value = NonCallableMock()
+                db_call.return_value.run_version = test_in
+
+            actual = access.find_highest_run_version('rb_num', 'run_no')
+            run_objects.filter.assert_called_with(run_number='run_no')
+            run_objects.filter.return_value.filter\
+                .assert_called_with(experiment='rb_num')
+
+            self.assertEqual(output, actual)
 
     # pylint:disable=no-self-use
     def test_save_record(self):

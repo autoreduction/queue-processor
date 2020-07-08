@@ -76,7 +76,8 @@ class HandleMessage:
         # This must be done before looking up the run version to make sure
         # the record exists
         experiment = db_access.get_experiment(message.rb_number, create=True)
-        run_version = self._get_last_run_version(run_no, experiment=experiment)
+        run_version = db_access.find_highest_run_version(
+            run_number=run_no, experiment=experiment)
         run_version += 1
         message.run_version = run_version
 
@@ -133,21 +134,6 @@ class HandleMessage:
             self._client.send_message('/queue/ReductionPending', message)
             self._logger.info("Run %s ready for reduction",
                               message.run_number)
-
-    def _get_last_run_version(self, run_no, experiment):
-        """
-        Returns the latest run version for the given run number
-        and experiment combo. If none is found (i.e. a new reduction)
-        -1 is returned to indicate this is a new version
-        """
-        last_run = self._data_model.ReductionRun.objects \
-            .filter(run_number=run_no) \
-            .filter(experiment=experiment) \
-            .order_by('-run_version') \
-            .first()
-
-        # By returning -1 callers can blindly increment the version
-        return last_run.run_version if last_run else -1
 
     def _get_and_activate_db_inst(self, instrument_name):
         """
@@ -300,8 +286,8 @@ class HandleMessage:
 
         if message.retry_in is not None:
             experiment = db_access.get_experiment(message.rb_number)
-            max_version = self._get_last_run_version(run_no=message.run_number,
-                                                     experiment=experiment)
+            max_version = db_access.find_highest_run_version(
+                run_number=message.run_number, experiment=experiment)
 
             # If we have already tried more than 5 times, we want to give up
             # and we don't want
