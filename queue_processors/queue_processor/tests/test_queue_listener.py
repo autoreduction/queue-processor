@@ -15,7 +15,7 @@ from unittest import mock
 
 from mock import patch, MagicMock, Mock
 
-from model.message.job import Message
+from model.message.message import Message
 from queue_processors.queue_processor.handling_exceptions import \
     InvalidStateException
 from queue_processors.queue_processor.queue_listener import QueueListener

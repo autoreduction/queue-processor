@@ -13,7 +13,7 @@ status in the database.
 import logging.config
 import sys
 import traceback
-from model.message.job import Message
+from model.message.message import Message
 from queue_processors.queue_processor.handle_message import HandleMessage
 from queue_processors.queue_processor.handling_exceptions import \
     InvalidStateException

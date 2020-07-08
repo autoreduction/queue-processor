@@ -11,7 +11,7 @@ import unittest
 from unittest import mock
 
 from model.message.validation import stages, validators
-from model.message.job import Message
+from model.message.message import Message
 
 
 class TestStages(unittest.TestCase):

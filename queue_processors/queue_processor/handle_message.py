@@ -17,7 +17,7 @@ import logging.config
 import traceback
 
 from model.database import access as db_access
-from model.message.job import Message
+from model.message.message import Message
 from queue_processors.queue_processor._utils_classes import _UtilsClasses
 from queue_processors.queue_processor.handling_exceptions import \
     MissingReductionRunRecord, InvalidStateException, MissingExperimentRecord

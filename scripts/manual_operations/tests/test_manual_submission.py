@@ -16,7 +16,7 @@ from utils.clients.queue_client import QueueClient
 from utils.clients.icat_client import ICATClient
 from utils.clients.connection_exception import ConnectionException
 
-from model.message.job import Message
+from model.message.message import Message
 
 
 # pylint:disable=no-self-use,too-many-public-methods

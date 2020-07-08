@@ -14,7 +14,7 @@ import unittest
 from unittest import mock
 from unittest.mock import patch
 
-from model.message.job import Message
+from model.message.message import Message
 from queue_processors.queue_processor import handle_message
 from queue_processors.queue_processor._utils_classes import _UtilsClasses
 from queue_processors.queue_processor.handle_message import HandleMessage
