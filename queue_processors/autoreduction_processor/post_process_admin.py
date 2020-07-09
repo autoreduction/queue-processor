@@ -177,6 +177,35 @@ class PostProcessAdmin:
         """ Returns the path of the reduction script for an instrument. """
         return os.path.join(self._reduction_script_location(instrument_name), 'reduce.py')
 
+    def specify_instrument_directories(self,
+                                       instrument_output_directory,
+                                       no_run_number_directory,
+                                       temporary_directory):
+        """
+        Specifies instrument directories, including removal of run_number folder
+        if excitations instrument
+        :param instrument_output_directory: (str) Ceph directory using instrument, proposal, run no
+        :param no_run_number_directory: (bool) Determine whether or not to remove run no from dir
+        :param temporary_directory: (str) Temp directory location (root)
+        :return (str) Directories where Autoreduction should output
+        """
+
+        directory_list = [i for i in instrument_output_directory.split('/') if i]
+
+        if directory_list[-1] != f"{self.run_number}":
+            return ValueError("directory does not follow expected format "
+                              "(instrument/RB_no/run_number) \n"
+                              "format: \n"
+                              "%s", instrument_output_directory)
+
+        if no_run_number_directory is True:
+            # Remove the run number folder at the end
+            remove_run_number_directory = instrument_output_directory.rfind('/') + 1
+            instrument_output_directory = instrument_output_directory[:remove_run_number_directory]
+
+        # Specify directories where autoreduction output will go
+        return temporary_directory + instrument_output_directory
+
     def reduction_started(self):
         """Log and update AMQ message to reduction started"""
         logger.debug("Calling: %s\n%s",
@@ -194,17 +223,19 @@ class PostProcessAdmin:
             # log and update AMQ message to reduction started
             self.reduction_started()
 
-            # Specify instrument directory
-            instrument_output_dir = MISC["ceph_directory"] % (self.instrument,
-                                                              self.proposal,
-                                                              self.run_number)
-
+            # Specify instrument directories - if excitation instrument remove run_number from dir
+            no_run_number_directory = False
             if self.instrument in MISC["excitation_instruments"]:
-                # Excitations would like to remove the run number folder at the end
-                instrument_output_dir = instrument_output_dir[:instrument_output_dir.rfind('/') + 1]
+                no_run_number_directory = True
 
-            # Specify directories where autoreduction output will go
-            reduce_result_dir = MISC["temp_root_directory"] + instrument_output_dir
+            instrument_output_directory = MISC["ceph_directory"] % (self.instrument,
+                                                                    self.proposal,
+                                                                    self.run_number)
+
+            reduce_result_dir = self.specify_instrument_directories(
+                instrument_output_directory=instrument_output_directory,
+                no_run_number_directory=no_run_number_directory,
+                temporary_directory=MISC["temp_root_directory"])
 
             if self.message.description is not None:
                 logger.info("DESCRIPTION: %s", self.message.description)
