@@ -17,10 +17,12 @@
                 {% endif %}
             </div>
         </div>
-        {% if plot_location %}
-        <div>
-            <img src="{{ plot_location }}">
-        </div>
+        {% if plot_locations %}
+            {% for plot_file in plot_locations %}
+            <div>
+                <img src="{{ plot_file }}">
+            </div>
+            {% endfor %}
         {% endif %}
         {% if run.message %}
             {% if 'Skipped' in run.message %}
