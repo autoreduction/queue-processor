@@ -138,8 +138,6 @@ class TestAccess(unittest.TestCase):
         Test: The expected highest version number is returned
         When: Calling find_highest_run_version
         """
-        mock_run = NonCallableMock()
-
         run_objects = db_layer.return_value.data_model.ReductionRun.objects
         db_call = run_objects.filter.return_value\
             .filter.return_value\

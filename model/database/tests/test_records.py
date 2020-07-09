@@ -5,6 +5,9 @@
 # Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################
+"""
+Unit tests for the record helper module
+"""
 
 import unittest
 from unittest import mock
@@ -12,15 +15,19 @@ import model.database.records as records
 
 
 class TestDatabaseRecords(unittest.TestCase):
+    """
+    Tests the Record helpers for the ORM layer
+    """
+    @staticmethod
     @mock.patch("model.database.access")
-    def test_create_reduction_record_starts_db(self, db_layer):
+    def test_create_reduction_record_starts_db(db_layer):
         """
         Test: The correct DB accesses are made
         When: Creating the reduction record
         """
         # We do not actually care about what was passed in for this test
-        m = mock.NonCallableMock()
-        records.create_reduction_run_record(m, m, m, m, m, m)
+        arg = mock.NonCallableMock()
+        records.create_reduction_run_record(arg, arg, arg, arg, arg, arg)
 
         db_layer.start_database.assert_called_once()
         db_layer.start_database.return_value.data_model\

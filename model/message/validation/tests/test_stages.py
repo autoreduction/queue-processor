@@ -48,6 +48,10 @@ class TestStages(unittest.TestCase):
 
     @mock.patch("model.message.validation.stages.validators", spec=validators)
     def test_validate_data_ready_calls_validators(self, patched_validators):
+        """
+        Test: validate data calls the correct validators whilst running
+        When: supplied with any message
+        """
         stages.validate_data_ready(self.valid_message)
 
         patched_validators.validate_run_number.assert_called_once()

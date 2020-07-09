@@ -134,7 +134,7 @@ class TestHandleMessage(unittest.TestCase):
                     script_text=self.mocked_utils.
                     instrument_variable.get_current_script_text()[0],
                     status=self.mocked_utils.status.get_queued()
-            )
+                )
             patched_record.reset_mock()
 
     def test_data_ready_skips_paused_inst(self, patched_db):
@@ -145,8 +145,6 @@ class TestHandleMessage(unittest.TestCase):
         self.mocked_utils.reduction_run. \
             get_script_and_arguments.return_value = (mock.NonCallableMock(),
                                                      mock.NonCallableMock())
-
-        mock_reduction_run = mock.Mock()
         mock_instrument = mock.Mock()
         mock_instrument.is_paused = True
 

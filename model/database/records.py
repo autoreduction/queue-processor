@@ -5,12 +5,15 @@
 # Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################
-
+"""
+Contains various helper methods for managing or creating ORM records
+"""
 
 import datetime
 import model.database.access
 
 
+# pylint: disable=too-many-arguments
 def create_reduction_run_record(experiment, instrument, message,
                                 run_version, script_text, status):
     """
