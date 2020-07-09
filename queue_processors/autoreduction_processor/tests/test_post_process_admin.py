@@ -115,6 +115,24 @@ class TestPostProcessAdmin(unittest.TestCase):
         location = PostProcessAdmin._reduction_script_location('WISH')
         self.assertEqual(location, MISC['scripts_directory'] % 'WISH')
 
+    def test_result_and_log_directory(self):
+        """
+        Test: final result and log directories are returned
+        When: called with temp root directory, result and log locations
+        """
+        ppa = PostProcessAdmin(self.message, None)
+
+        # waiting on 622 to merge into develop to mock method in unit test
+        # actual = ppa.result_and_log_directory(
+        #     root_directory_dict=MISC["temp_root_directory"],
+        #     reduce_dir=MISC["temp_root_directory"] +
+        # )
+        # assert return equality
+
+        # assert logs have been taken
+
+        pass
+
     @patch(DIR + '.post_process_admin.PostProcessAdmin._remove_directory')
     @patch(DIR + '.post_process_admin.PostProcessAdmin._copy_tree')
     @patch(DIR + '.autoreduction_logging_setup.logger.info')

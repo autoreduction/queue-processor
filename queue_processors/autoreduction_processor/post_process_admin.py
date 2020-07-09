@@ -177,6 +177,30 @@ class PostProcessAdmin:
         """ Returns the path of the reduction script for an instrument. """
         return os.path.join(self._reduction_script_location(instrument_name), 'reduce.py')
 
+    def result_and_log_directory(self, root_directory_dict, reduce_dir, log_dir):
+        """
+        Create final result and final log directories, stripping temporary path off of the
+        front of temporary directories
+        :param root_directory_dict: (str) temporary root directory
+        :param reduce_dir: (str) final reduce directory
+        :param log_dir: (str) final log directory
+        :return (str, str) final result and final log directory paths
+        """
+
+        # validate dir before slicing
+        if reduce_dir.startswith(root_directory_dict):
+            result_directory = reduce_dir[len(root_directory_dict):]
+            log_directory = log_dir[len(root_directory_dict):]
+
+
+        final_result_directory = self._new_reduction_data_path(result_directory)
+        final_log_directory = append_path(final_result_directory, ['reduction_log'])
+
+        logger.info("Final Result Directory = %s", final_result_directory)
+        logger.info("Final log directory: %s", log_directory)
+
+        return final_result_directory, final_log_directory
+
     def reduce(self):
         """ Start the reduction job.  """
         # pylint: disable=too-many-nested-blocks
@@ -208,29 +232,11 @@ class PostProcessAdmin:
             script_out = os.path.join(log_dir, log_and_err_name + "Script.out")
             mantid_log = os.path.join(log_dir, log_and_err_name + "Mantid.log")
 
-            def result_directory():
-                """
-                create and return final result directory, stripping temporary path off the front
-                of temporary directories
-                :return (str) final result directory path
-                """
-                final_result_directory = reduce_result_dir[len(MISC["temp_root_directory"]):]
-                final_result_directory = self._new_reduction_data_path(final_result_directory)
-                logger.info(f"Final Result Directory = {final_result_dir}")
-                return final_result_directory
-
-            def log_directory(final_result_directory):
-                """Create and return final log directory
-                :param (str) Final result directory pathname
-                :return (str) Final log directory path"""
-                final_log_directory = log_dir[len(MISC["temp_root_directory"]):]
-                final_log_directory = append_path(final_result_directory, ['reduction_log'])
-                logger.info(f"Final Log Directory = {final_log_directory}")
-                return final_log_directory
-
             # strip temp path off front of the temp directory to get the final archives directory
-            final_result_dir = result_directory()
-            final_log_dir = log_directory(final_result_dir)
+            final_result_dir, final_log_dir = self.result_and_log_directory(
+                root_directory_dict=MISC["temp_root_directory"],
+                reduce_dir=reduce_result_dir,
+                log_dir=log_dir)
 
             # test for access to result paths
             try:
