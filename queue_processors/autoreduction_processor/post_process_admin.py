@@ -4,7 +4,7 @@
 # Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
-#!/usr/bin/env python
+# !/usr/bin/env python
 # pylint: disable=too-many-branches
 # pylint: disable=broad-except
 # pylint: disable=bare-except
@@ -20,6 +20,7 @@ import logging
 import os
 import shutil
 import sys
+from pathlib import Path
 import time
 import types
 import traceback
@@ -59,6 +60,7 @@ def channels_redirected(out_file, err_file, out_stream):
     class MultipleChannels:
         # pylint: disable=expression-not-assigned
         """ Behaves like a stream object, but outputs to multiple streams."""
+
         def __init__(self, *streams):
             self.streams = streams
 
@@ -178,11 +180,11 @@ class PostProcessAdmin:
         return os.path.join(self._reduction_script_location(instrument_name), 'reduce.py')
 
     def reduction_started(self):
-      """Log and update AMQ message to reduction started"""
-      logger.debug("Calling: %s\n%s",
-                   ACTIVEMQ_SETTINGS.reduction_started,
-                   self.message.serialize(limit_reduction_script=True))
-      self.client.send(ACTIVEMQ_SETTINGS.reduction_started, self.message)
+        """Log and update AMQ message to reduction started"""
+        logger.debug("Calling: %s\n%s",
+                     ACTIVEMQ_SETTINGS.reduction_started,
+                     self.message.serialize(limit_reduction_script=True))
+        self.client.send(ACTIVEMQ_SETTINGS.reduction_started, self.message)
 
     def specify_instrument_directories(self,
                                        instrument_output_directory,
@@ -214,14 +216,15 @@ class PostProcessAdmin:
         return temporary_directory + instrument_output_directory
 
     def create_log_path(self, file_name, log_directory):
-      """Create log file and place in reduction_log_directory
+        """Create log file and place in reduction_log_directory
       :param file_name: (string) file name and extension type
       :param log_directory: (str) log directory path
       :return: (str) log file path
       """
 
-      log_and_err_name = "RB" + self.proposal + "Run" + self.run_number
-      return os.path.join(log_directory, log_and_err_name + file_name)
+        log_and_err_name = f"RB{self.proposal}Run{self.run_number}"
+
+        return Path(log_directory, log_and_err_name + file_name)
 
     def reduce(self):
         """ Start the reduction job.  """
@@ -436,12 +439,12 @@ class PostProcessAdmin:
         logger.info("_new_reduction_data_path argument: %s", path)
         # if there is an 'overwrite' key/member with a None/False value
         if not self.message.overwrite:
-            if os.path.isdir(path):           # if the given path already exists..
+            if os.path.isdir(path):  # if the given path already exists..
                 contents = os.listdir(path)
                 highest_vers = -1
-                for item in contents:         # ..for every item, if it's a dir and a int..
+                for item in contents:  # ..for every item, if it's a dir and a int..
                     if os.path.isdir(os.path.join(path, item)):
-                        try:                  # ..store the highest int
+                        try:  # ..store the highest int
                             vers = int(item)
                             highest_vers = max(highest_vers, vers)
                         except ValueError:
@@ -528,7 +531,7 @@ class PostProcessAdmin:
             if os.path.isdir(src_path):
                 self._copy_tree(src_path, dst_path)
             elif not os.path.exists(dst_path) or \
-                                    os.stat(src_path).st_mtime - os.stat(dst_path).st_mtime > 1:
+                    os.stat(src_path).st_mtime - os.stat(dst_path).st_mtime > 1:
                 shutil.copyfile(src_path, dst_path)
 
     def _remove_directory(self, directory):
