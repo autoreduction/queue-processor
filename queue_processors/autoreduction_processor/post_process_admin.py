@@ -191,14 +191,13 @@ class PostProcessAdmin:
         :param root_directory_dict: (str) temporary root directory
         :param reduce_dir: (str) final reduce directory
         :param log_dir: (str) final log directory
-        :return (str, str) final result and final log directory paths
+        :return (tuple) - (str, str) final result and final log directory paths
         """
 
         # validate dir before slicing
         if reduce_dir.startswith(root_directory_dict):
             result_directory = reduce_dir[len(root_directory_dict):]
             log_directory = log_dir[len(root_directory_dict):]
-
 
         final_result_directory = self._new_reduction_data_path(result_directory)
         final_log_directory = append_path(final_result_directory, ['reduction_log'])

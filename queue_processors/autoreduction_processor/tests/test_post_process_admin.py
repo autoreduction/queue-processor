@@ -11,6 +11,7 @@ import unittest
 import os
 import shutil
 import sys
+import logging
 
 import json
 from tempfile import mkdtemp, NamedTemporaryFile
@@ -128,23 +129,39 @@ class TestPostProcessAdmin(unittest.TestCase):
         location = PostProcessAdmin._reduction_script_location('WISH')
         self.assertEqual(location, MISC['scripts_directory'] % 'WISH')
 
-    def test_result_and_log_directory(self):
+    @patch('logging.Logger.info')
+    @patch(f"{DIR}.post_process_admin.PostProcessAdmin._new_reduction_data_path")
+    def test_result_and_log_directory(self, mock_nrdp, mock_logging):
         """
         Test: final result and log directories are returned
         When: called with temp root directory, result and log locations
         """
         ppa = PostProcessAdmin(self.message, None)
+        instrument_output_dir = MISC["ceph_directory"] % (ppa.instrument,
+                                                          ppa.proposal,
+                                                          ppa.run_number)
+        mock_nrdp.return_value = append_path(instrument_output_dir, "0")
 
-        # waiting on 622 to merge into develop to mock method in unit test
-        # actual = ppa.result_and_log_directory(
-        #     root_directory_dict=MISC["temp_root_directory"],
-        #     reduce_dir=MISC["temp_root_directory"] +
-        # )
-        # assert return equality
+        instrument_output_directory = instrument_output_dir[:instrument_output_dir.rfind('/') + 1]
+        reduce_directory = MISC["temp_root_directory"] + instrument_output_directory
+        reduction_log = "/reduction_log/"
+
+        actual_final_result, actual_log = ppa.result_and_log_directory(
+            root_directory_dict=MISC["temp_root_directory"],
+            reduce_dir=reduce_directory,
+            log_dir=reduce_directory + reduction_log
+        )
+
+        expected_log = f"{instrument_output_directory}0{reduction_log}"
+
+        print(actual_log)
+        print(expected_log)
+
+        mock_nrdp.assert_called_once_with(instrument_output_dir)
+        # mock_logging.assert_called_with("Final log directory: %s", actual_log)
+        self.assertEqual(expected_log, actual_log)
 
         # assert logs have been taken
-
-        pass
 
     @patch(DIR + '.post_process_admin.PostProcessAdmin._remove_directory')
     @patch(DIR + '.post_process_admin.PostProcessAdmin._copy_tree')
