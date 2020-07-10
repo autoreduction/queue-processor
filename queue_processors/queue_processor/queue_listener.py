@@ -82,7 +82,11 @@ class QueueListener:
 
 
 def setup_connection(consumer_name):
-    """ Starts the ActiveMQ connection and registers the event listener """
+    """
+    Starts the ActiveMQ connection and registers the event listener
+    :return: (Listener) A listener instance which has subscribed to an
+             ActiveMQ queue
+    """
     # Connect to ActiveMQ
     activemq_client = QueueClient()
     activemq_client.connect()
@@ -92,11 +96,15 @@ def setup_connection(consumer_name):
 
     # Subscribe to queues
     activemq_client.subscribe_autoreduce(consumer_name, listener)
+    return activemq_client
 
 
 def main():
-    """ Main method. """
-    setup_connection('queue')
+    """
+    Main method.
+    :return: (Listener) returns a handle to a connected Active MQ listener
+    """
+    return setup_connection('queue_processor')
 
 
 if __name__ == '__main__':
