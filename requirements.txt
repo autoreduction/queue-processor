@@ -1,4 +1,6 @@
-coverage==4.5.4
+# Test Env. Requirements
+
+coverage
 coveralls==1.9.2
 dash
 django-debug-toolbar
