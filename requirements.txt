@@ -11,7 +11,7 @@ lxml
 mock
 pandas
 plotly
-pylint==2.4.4
+pylint
 pytest-cov
 python-coveralls
 requests
