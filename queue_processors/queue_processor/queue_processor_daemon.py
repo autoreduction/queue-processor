@@ -9,14 +9,14 @@
 Module for daemonising the queue processor.
 """
 from queue_processors.daemon import Daemon, control_daemon_from_cli
-from queue_processors.queue_processor import queue_processor
+from queue_processors.queue_processor import queue_listener
 
 
 class QueueProcessorDaemon(Daemon):
     """ Queue processor daemoniser """
     def run(self):
         """ Run queue processor. """
-        queue_processor.main()
+        queue_listener.main()
         while True:
             pass
 
