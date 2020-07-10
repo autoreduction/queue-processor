@@ -211,7 +211,7 @@ class PostProcessAdmin:
         return final_result_directory, final_log_directory
 
     def reduce(self):
-        """ Start the reduction job.  """
+        """ Start the reduction job. """
         # pylint: disable=too-many-nested-blocks
         logger.info("reduce started")
         self.message.software = self._get_mantid_version()
