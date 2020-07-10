@@ -1,7 +1,7 @@
 # Test Env. Requirements
 
 coverage
-coveralls==1.9.2
+coveralls
 dash
 django-debug-toolbar
 django_plotly_dash
