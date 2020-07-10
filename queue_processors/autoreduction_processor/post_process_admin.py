@@ -199,8 +199,8 @@ class PostProcessAdmin:
             result_directory = reduce_dir[len(temporary_root_directory):]
             log_directory = log_dir[len(temporary_root_directory):]
         else:
-            raise ValueError("The reduce directory does not start by following the expected "
-                             "format: %s \n", temporary_root_directory)
+            return ValueError("The reduce directory does not start by following the expected "
+                              "format: %s \n", temporary_root_directory)
 
         final_result_directory = self._new_reduction_data_path(result_directory)
         final_log_directory = append_path(final_result_directory, ['reduction_log'])

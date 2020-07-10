@@ -11,7 +11,6 @@ import unittest
 import os
 import shutil
 import sys
-import logging
 
 import json
 from tempfile import mkdtemp, NamedTemporaryFile
@@ -157,6 +156,22 @@ class TestPostProcessAdmin(unittest.TestCase):
         self.assertEqual(mock_logging.call_count, 2)
         self.assertEqual(mock_logging.call_args_list, expected_logs_called_with)
         self.assertEqual(expected_log, actual_log)
+
+    def test_result_and_log_directory_incorrect(self):
+        ppa = PostProcessAdmin(self.message, None)
+        instrument_output_dir = MISC["ceph_directory"] % (ppa.instrument,
+                                                          ppa.proposal,
+                                                          ppa.run_number)
+        incorrect_temporary_directory = "incorrect_directory_format"
+        instrument_output_directory = instrument_output_dir[:instrument_output_dir.rfind('/') + 1]
+        reduce_directory = MISC["temp_root_directory"] + instrument_output_directory
+        reduction_log = "/reduction_log/"
+        actual_final_result = ppa.result_and_log_directory(
+            temporary_root_directory=incorrect_temporary_directory,
+            reduce_dir=reduce_directory,
+            log_dir=reduce_directory + reduction_log)
+
+        self.assertIsInstance(actual_final_result, ValueError)
 
     @patch(DIR + '.post_process_admin.PostProcessAdmin._remove_directory')
     @patch(DIR + '.post_process_admin.PostProcessAdmin._copy_tree')
