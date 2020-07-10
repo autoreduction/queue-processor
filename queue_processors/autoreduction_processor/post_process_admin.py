@@ -215,16 +215,16 @@ class PostProcessAdmin:
         # Specify directories where autoreduction output will go
         return temporary_directory + instrument_output_directory
 
-    def create_log_path(self, file_name, log_directory):
+    def create_log_path(self, file_name_with_extension, log_directory):
         """Create log file and place in reduction_log_directory
-      :param file_name: (string) file name and extension type
+      :param file_name_with_extension: (string) file name and extension type
       :param log_directory: (str) log directory path
       :return: (str) log file path
       """
 
         log_and_err_name = f"RB{self.proposal}Run{self.run_number}"
 
-        return Path(log_directory, log_and_err_name + file_name)
+        return Path(log_directory, log_and_err_name + file_name_with_extension)
 
     def reduce(self):
         """ Start the reduction job.  """
@@ -305,7 +305,7 @@ class PostProcessAdmin:
             logger.info("Result dir: %s", reduce_result_dir)
             logger.info("Log dir: %s", log_dir)
             logger.info("Out log: %s",
-                        self.create_log_path(file_name="Script.out", log_directory=log_dir))
+                        self.create_log_path(file_name_with_extension="Script.out", log_directory=log_dir))
             logger.info("Datafile: %s", self.data_file)
             logger.info("----------------")
 
@@ -314,9 +314,9 @@ class PostProcessAdmin:
             out_directories = None
 
             try:
-                with channels_redirected(self.create_log_path(file_name="Script.out",
+                with channels_redirected(self.create_log_path(file_name_with_extension="Script.out",
                                                               log_directory=log_dir),
-                                         self.create_log_path(file_name="Mantid.log",
+                                         self.create_log_path(file_name_with_extension="Mantid.log",
                                                               log_directory=log_dir),
                                          self.reduction_log_stream):
                     # Load reduction script as a module. This works as long as reduce.py makes no
@@ -342,7 +342,7 @@ class PostProcessAdmin:
                     else:
                         self.message.message = "Run has been skipped in script"
             except Exception as exp:
-                with open(self.create_log_path(file_name="Script.out",
+                with open(self.create_log_path(file_name_with_extension="Script.out",
                                                log_directory=log_dir),
                           "a") as fle:
                     fle.writelines(str(exp) + "\n")

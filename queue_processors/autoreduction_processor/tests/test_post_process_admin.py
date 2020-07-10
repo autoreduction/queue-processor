@@ -182,7 +182,8 @@ class TestPostProcessAdmin(unittest.TestCase):
         log_directory = f"{mock_instrument_output_dir}/reduction_log/"
         log_and_error_name = f"RB{ppa.proposal}Run{ppa.run_number}"
 
-        actual = ppa.create_log_path(file_name=file_name, log_directory=log_directory)
+        actual = ppa.create_log_path(file_name_with_extension=file_name,
+                                     log_directory=log_directory)
         expected = PosixPath(f"{log_directory}{log_and_error_name}{file_name}")
 
         self.assertEqual(expected, actual)
