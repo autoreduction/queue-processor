@@ -305,7 +305,8 @@ class PostProcessAdmin:
             logger.info("Result dir: %s", reduce_result_dir)
             logger.info("Log dir: %s", log_dir)
             logger.info("Out log: %s",
-                        self.create_log_path(file_name_with_extension="Script.out", log_directory=log_dir))
+                        self.create_log_path(file_name_with_extension="Script.out",
+                                             log_directory=log_dir))
             logger.info("Datafile: %s", self.data_file)
             logger.info("----------------")
 
