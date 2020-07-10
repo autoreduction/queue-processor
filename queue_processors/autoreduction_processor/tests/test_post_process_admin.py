@@ -141,27 +141,22 @@ class TestPostProcessAdmin(unittest.TestCase):
                                                           ppa.proposal,
                                                           ppa.run_number)
         mock_nrdp.return_value = append_path(instrument_output_dir, "0")
-
         instrument_output_directory = instrument_output_dir[:instrument_output_dir.rfind('/') + 1]
         reduce_directory = MISC["temp_root_directory"] + instrument_output_directory
         reduction_log = "/reduction_log/"
-
         actual_final_result, actual_log = ppa.result_and_log_directory(
-            root_directory_dict=MISC["temp_root_directory"],
+            temporary_root_directory=MISC["temp_root_directory"],
             reduce_dir=reduce_directory,
-            log_dir=reduce_directory + reduction_log
-        )
+            log_dir=reduce_directory + reduction_log)
 
         expected_log = f"{instrument_output_directory}0{reduction_log}"
-
-        print(actual_log)
-        print(expected_log)
+        expected_logs_called_with = [call("Final Result Directory = %s", actual_final_result),
+                                     call("Final log directory: %s", actual_log)]
 
         mock_nrdp.assert_called_once_with(instrument_output_dir)
-        # mock_logging.assert_called_with("Final log directory: %s", actual_log)
+        self.assertEqual(mock_logging.call_count, 2)
+        self.assertEqual(mock_logging.call_args_list, expected_logs_called_with)
         self.assertEqual(expected_log, actual_log)
-
-        # assert logs have been taken
 
     @patch(DIR + '.post_process_admin.PostProcessAdmin._remove_directory')
     @patch(DIR + '.post_process_admin.PostProcessAdmin._copy_tree')

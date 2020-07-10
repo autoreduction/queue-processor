@@ -184,26 +184,29 @@ class PostProcessAdmin:
                      self.message.serialize(limit_reduction_script=True))
         self.client.send(ACTIVEMQ_SETTINGS.reduction_started, self.message)
         
-    def result_and_log_directory(self, root_directory_dict, reduce_dir, log_dir):
+    def result_and_log_directory(self, temporary_root_directory, reduce_dir, log_dir):
         """
         Create final result and final log directories, stripping temporary path off of the
         front of temporary directories
-        :param root_directory_dict: (str) temporary root directory
+        :param temporary_root_directory: (str) temporary root directory
         :param reduce_dir: (str) final reduce directory
         :param log_dir: (str) final log directory
         :return (tuple) - (str, str) final result and final log directory paths
         """
 
         # validate dir before slicing
-        if reduce_dir.startswith(root_directory_dict):
-            result_directory = reduce_dir[len(root_directory_dict):]
-            log_directory = log_dir[len(root_directory_dict):]
+        if reduce_dir.startswith(temporary_root_directory):
+            result_directory = reduce_dir[len(temporary_root_directory):]
+            log_directory = log_dir[len(temporary_root_directory):]
+        else:
+            raise ValueError("The reduce directory does not start by following the expected "
+                             "format: %s \n", temporary_root_directory)
 
         final_result_directory = self._new_reduction_data_path(result_directory)
         final_log_directory = append_path(final_result_directory, ['reduction_log'])
 
         logger.info("Final Result Directory = %s", final_result_directory)
-        logger.info("Final log directory: %s", log_directory)
+        logger.info("Final log directory: %s", final_log_directory)
 
         return final_result_directory, final_log_directory
 
@@ -238,7 +241,7 @@ class PostProcessAdmin:
 
             # strip temp path off front of the temp directory to get the final archives directory
             final_result_dir, final_log_dir = self.result_and_log_directory(
-                root_directory_dict=MISC["temp_root_directory"],
+                temporary_root_directory=MISC["temp_root_directory"],
                 reduce_dir=reduce_result_dir,
                 log_dir=log_dir)
 
