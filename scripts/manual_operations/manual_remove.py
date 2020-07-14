@@ -225,8 +225,7 @@ def main(instrument, first_run, last_run=None):
     if last_run:
         if last_run < first_run:
             print(f"last run {last_run} must be greater than first run {first_run}")
-            print("e.g ./manual_remove.py GEM 83880 83882")
-            sys.exit(1)
+            raise ValueError(f"last run: {last_run} was smaller than first run: {first_run}")
         run_numbers = range(first_run, last_run + 1)
 
     instrument = instrument.upper()
