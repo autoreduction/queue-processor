@@ -45,7 +45,7 @@ setup_requires = ['attrs',
                   'SQLAlchemy',
                   'stomp.py',
                   'suds-py3',
-                  'Twisted==19.10.0',
+                  'Twisted',
                   'PyYAML']
 
 
