@@ -206,7 +206,7 @@ class TestManualRemove(unittest.TestCase):
     @patch('scripts.manual_operations.manual_remove.ManualRemove.process_results')
     @patch('scripts.manual_operations.manual_remove.ManualRemove.delete_records')
     @patch('scripts.manual_operations.manual_remove.user_input_check')
-    def test_main_range(self, mock_delete, mock_process, mock_find, mock_uic):
+    def test_main_range_greater_than_ten(self, mock_uic, mock_delete, mock_process, mock_find):
         """
         Test: The correct control functions are called including handle_input for many runs
         When: The main() function is called
@@ -216,6 +216,34 @@ class TestManualRemove(unittest.TestCase):
         mock_find.assert_called()
         mock_process.assert_called()
         mock_delete.assert_called()
+
+    # pylint:disable=no-self-use
+    @patch('scripts.manual_operations.manual_remove.ManualRemove.find_runs_in_database')
+    @patch('scripts.manual_operations.manual_remove.ManualRemove.process_results')
+    @patch('scripts.manual_operations.manual_remove.ManualRemove.delete_records')
+    def test_main_range_less_than_ten(self, mock_delete, mock_process, mock_find):
+        """
+        Test: The correct control functions are called including handle_input for many runs
+        When: The main() function is called
+        """
+        main(instrument='GEM', first_run=1, last_run=9)
+        mock_find.assert_called()
+        mock_process.assert_called()
+        mock_delete.assert_called()
+
+    # pylint:disable=no-self-use
+    @patch('scripts.manual_operations.manual_remove.ManualRemove.find_runs_in_database')
+    @patch('scripts.manual_operations.manual_remove.ManualRemove.process_results')
+    @patch('scripts.manual_operations.manual_remove.ManualRemove.delete_records')
+    def test_main_single_run(self, mock_delete, mock_process, mock_find):
+        main(instrument='GEM', first_run=1)
+        mock_find.assert_called()
+        mock_process.assert_called()
+        mock_delete.assert_called()
+
+    def test_main_last_run_smaller_than_first_run_raises_value_error(self):
+        with self.assertRaises(ValueError):
+            main(instrument='GEM', first_run=10, last_run=1)
 
     # pylint:disable=no-self-use
     @patch('scripts.manual_operations.manual_remove.ManualRemove.find_runs_in_database')
