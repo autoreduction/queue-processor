@@ -236,12 +236,20 @@ class TestManualRemove(unittest.TestCase):
     @patch('scripts.manual_operations.manual_remove.ManualRemove.process_results')
     @patch('scripts.manual_operations.manual_remove.ManualRemove.delete_records')
     def test_main_single_run(self, mock_delete, mock_process, mock_find):
+        """
+        Test: The correct control functions are called for a single run
+        When: The main() function is called
+        """
         main(instrument='GEM', first_run=1)
         mock_find.assert_called()
         mock_process.assert_called()
         mock_delete.assert_called()
 
     def test_main_last_run_smaller_than_first_run_raises_value_error(self):
+        """
+        Test: ValueError is raised when first run is larger then last run
+        When: The main() function is called
+        """
         with self.assertRaises(ValueError):
             main(instrument='GEM', first_run=10, last_run=1)
 
