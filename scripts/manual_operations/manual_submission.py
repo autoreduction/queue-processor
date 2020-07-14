@@ -14,7 +14,7 @@ import sys
 import fire
 
 from model.database import access as db
-from model.message.job import Message
+from model.message.message import Message
 
 from utils.clients.connection_exception import ConnectionException
 from utils.clients.icat_client import ICATClient

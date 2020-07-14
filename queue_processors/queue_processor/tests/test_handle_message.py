@@ -14,8 +14,8 @@ import unittest
 from unittest import mock
 from unittest.mock import patch
 
-from model.message.job import Message
-from queue_processors.queue_processor import handle_message
+from model.database import access
+from model.message.message import Message
 from queue_processors.queue_processor._utils_classes import _UtilsClasses
 from queue_processors.queue_processor.handle_message import HandleMessage
 from queue_processors.queue_processor.handling_exceptions import \
@@ -29,25 +29,8 @@ from queue_processors.queue_processor.queue_listener import QueueListener
 from utils.settings import ACTIVEMQ_SETTINGS
 
 
-class TestHandleMessageFreeFuncs(unittest.TestCase):
-    """
-    Tests the free functions in Queue Processor
-    """
-    def test_is_valid_rb(self):
-        """
-        Tests the valid and invalid cases for RB numbers
-        """
-        valid_values = [1, 20, "10000"]
-        for i in valid_values:
-            self.assertIsNone(handle_message.validate_rb_num(i))
-
-        invalid_values = [0, 0.1, -1, -100, None, "foo"]
-        for i in invalid_values:
-            with self.assertRaises(InvalidStateException):
-                handle_message.validate_rb_num(i)
-
-
-@patch("queue_processors.queue_processor.handle_message.db_access")
+@patch("queue_processors.queue_processor.handle_message.db_access",
+       spec=access)
 class TestHandleMessage(unittest.TestCase):
     """
     Directly tests the message handling classes
@@ -55,8 +38,10 @@ class TestHandleMessage(unittest.TestCase):
 
     # pylint: disable=arguments-differ
     @patch("queue_processors.queue_processor.handle_message._UtilsClasses")
+    @patch("queue_processors.queue_processor.handle_message.db_records")
     @patch("logging.getLogger")
-    def setUp(self, log_const, util_const):
+    def setUp(self, log_const, db_records, util_const):
+        self.db_records = db_records
         self.mocked_client = mock.Mock(spec=QueueListener)
         self.mocked_utils = mock.MagicMock(spec=_UtilsClasses)
         util_const.return_value = self.mocked_utils
@@ -65,14 +50,11 @@ class TestHandleMessage(unittest.TestCase):
         self.mocked_logger = log_const.return_value
 
     @staticmethod
-    def _get_mocked_db_return_vals(mock_instrument, mock_data_location,
-                                   mock_new_reduction_run):
+    def _get_mocked_db_return_vals(mock_instrument, mock_data_location):
         return {"get_instrument.return_value": mock_instrument,
 
                 "start_database.return_value.data_model"
-                ".DataLocation.return_value": mock_data_location,
-                "start_database.return_value.data_model"
-                ".ReductionRun.return_value": mock_new_reduction_run}
+                ".DataLocation.return_value": mock_data_location}
 
     @staticmethod
     def _get_mock_message():
@@ -95,7 +77,8 @@ class TestHandleMessage(unittest.TestCase):
         patched_db.start_database.assert_not_called()
         self.assertEqual(first_call, second_call)
 
-    def test_data_ready_marks_inst_active(self, patched_db):
+    @patch("queue_processors.queue_processor.handle_message.db_records")
+    def test_data_ready_marks_inst_active(self, _, patched_db):
         """
         Tests that calling data ready on an inactive instrument record
         updates the record to become active
@@ -110,7 +93,6 @@ class TestHandleMessage(unittest.TestCase):
         patched_db.configure_mock(**self._get_mocked_db_return_vals(
             # We only care about the inst record being modified / saved
             mock_instrument=mock_inst_record,
-            mock_new_reduction_run=mock.Mock(),
             mock_data_location=None
         ))
 
@@ -118,7 +100,9 @@ class TestHandleMessage(unittest.TestCase):
         self.assertEqual(1, mock_inst_record.is_active)
         patched_db.save_record.assert_any_call(mock_inst_record)
 
-    def test_data_ready_constructs_reduction_record(self, patched_db):
+    @patch("queue_processors.queue_processor.handle_message.db_records")
+    def test_data_ready_constructs_reduction_record(self, patched_record,
+                                                    patched_db):
         """
         Tests the calling data ready with an instrument that does not
         exist in the DB creates the record
@@ -126,14 +110,11 @@ class TestHandleMessage(unittest.TestCase):
         self.mocked_utils.reduction_run. \
             get_script_and_arguments.return_value = (mock.NonCallableMock(),
                                                      mock.NonCallableMock())
-
-        self.handler._create_reduction_run_record = mock.Mock()
         mock_inst = mock.Mock()
         mock_inst.is_paused = False
 
         patched_db.configure_mock(**self._get_mocked_db_return_vals(
             mock_instrument=mock_inst,
-            mock_new_reduction_run=mock.NonCallableMock(),
             mock_data_location=mock.NonCallableMock()
         ))
 
@@ -141,19 +122,20 @@ class TestHandleMessage(unittest.TestCase):
         test_inputs = [-1, 100]
 
         for i in test_inputs:
-            self.handler._get_last_run_version = mock.Mock(return_value=i)
+            patched_db.find_highest_run_version = mock.Mock(return_value=i)
             mock_message = self._get_mock_message()
             self.handler.data_ready(message=mock_message)
 
-            self.handler._create_reduction_run_record.assert_called_once_with(
-                experiment=patched_db.get_experiment.return_value,
-                instrument=mock_inst, message=mock_message,
-                run_version=i + 1,
-                script_text=self.mocked_utils.
-                instrument_variable.get_current_script_text()[0],
-                status=self.mocked_utils.status.get_queued()
-            )
-            self.handler._create_reduction_run_record.reset_mock()
+            patched_record.create_reduction_run_record\
+                .assert_called_once_with(
+                    experiment=patched_db.get_experiment.return_value,
+                    instrument=mock_inst, message=mock_message,
+                    run_version=i + 1,
+                    script_text=self.mocked_utils.
+                    instrument_variable.get_current_script_text()[0],
+                    status=self.mocked_utils.status.get_queued()
+                )
+            patched_record.reset_mock()
 
     def test_data_ready_skips_paused_inst(self, patched_db):
         """
@@ -163,15 +145,12 @@ class TestHandleMessage(unittest.TestCase):
         self.mocked_utils.reduction_run. \
             get_script_and_arguments.return_value = (mock.NonCallableMock(),
                                                      mock.NonCallableMock())
-
-        mock_reduction_run = mock.Mock()
         mock_instrument = mock.Mock()
         mock_instrument.is_paused = True
 
         patched_db.configure_mock(**self._get_mocked_db_return_vals(
             mock_instrument=mock_instrument,
             mock_data_location=mock.Mock(),
-            mock_new_reduction_run=mock_reduction_run,
         ))
 
         self.mocked_client.send_message.assert_not_called()
@@ -183,7 +162,6 @@ class TestHandleMessage(unittest.TestCase):
         """
         patched_db.configure_mock(**self._get_mocked_db_return_vals(
             mock_data_location=mock.Mock(),
-            mock_new_reduction_run=mock.Mock(),
             mock_instrument=mock.Mock()))
 
         self.handler.reduction_error = mock.Mock()
@@ -194,35 +172,38 @@ class TestHandleMessage(unittest.TestCase):
             self.handler.data_ready(self._get_mock_message())
         self.handler.reduction_error.assert_called_once()
 
-    @patch("queue_processors.queue_processor.handle_message.validate_rb_num")
-    def test_data_ready_with_new_data(self, valid_rb, patched_db):
+    @patch("queue_processors.queue_processor.handle_message.db_records")
+    def test_data_ready_with_new_data(self, patched_records, patched_db):
         """
         Tests the ideal flow for data ready, where we will queue up
         actual data for processing
         """
+        # Setup DB return values
         mock_instrument = mock.NonCallableMock()
         mock_instrument.is_active = True
         mock_instrument.is_paused = False
 
         mock_data_location = mock.NonCallableMock()
-        mock_reduction_run = mock.NonCallableMock()
         mock_script_and_args = (mock.NonCallableMock(), mock.NonCallableMock())
-
-        self.handler._get_last_run_version = mock.Mock(return_value=-1)
-
         self.mocked_utils.reduction_run. \
             get_script_and_arguments.return_value = mock_script_and_args
-        valid_rb.return_value = None  # None means valid (?)
 
         db_return_values = \
             self._get_mocked_db_return_vals(mock_instrument,
-                                            mock_data_location,
-                                            mock_reduction_run)
+                                            mock_data_location)
+        # Setup other mock returns
+        patched_db.find_highest_run_version = mock.Mock(return_value=-1)
         patched_db.configure_mock(**db_return_values)
+
+        mock_reduction_run = mock.NonCallableMock()
+        patched_records.create_reduction_run_record\
+            .return_value = mock_reduction_run
 
         # Run
         mocked_msg = self._get_mock_message()
         self.handler.data_ready(message=mocked_msg)
+
+        mocked_msg.validate.assert_called()
 
         # Assert Database accesses
         patched_db.get_instrument.assert_called_with(
@@ -254,28 +235,6 @@ class TestHandleMessage(unittest.TestCase):
         # Finally check if the data is sent
         self.mocked_client.send_message.assert_called_once_with(
             "/queue/ReductionPending", mocked_msg)
-
-    def test_data_ready_invalid_rb(self, _):
-        """
-        Tests data ready with an invalid RB number skips reduction
-        and rethrows the exception
-        """
-        mock_msg = self._get_mock_message()
-        self.mocked_utils.reduction_run.get_script_and_arguments.\
-            return_value = (mock.NonCallableMock(), mock.NonCallableMock)
-        self.handler._construct_and_send_skipped = mock.Mock()
-        with patch("queue_processors.queue_processor"
-                   ".handle_message.validate_rb_num") as patched:
-            patched.side_effect = InvalidStateException()
-            expected_ex = patched.side_effect
-
-            with self.assertRaises(InvalidStateException) as ex:
-                self.handler.data_ready(message=mock_msg)
-                self.assertEqual(expected_ex, ex)
-
-        self.handler._construct_and_send_skipped.assert_called_once_with(
-            message=mock_msg, rb_number=mock_msg.rb_number,
-            reason=str(expected_ex))
 
     def test_reduction_started(self, patched_db):
         """
@@ -458,7 +417,7 @@ class TestHandleMessage(unittest.TestCase):
         # Valid value *not* including 5
         for i in range(0, 5):
             mocked_msg = self._get_mock_message()
-            self.handler._get_last_run_version = mock.Mock(return_value=i)
+            patched_db.find_highest_run_version = mock.Mock(return_value=i)
             self.handler.retry_run = mock.Mock()
 
             self.handler.reduction_error(message=mocked_msg)
@@ -471,7 +430,7 @@ class TestHandleMessage(unittest.TestCase):
         for i in range(5, 7):
             mocked_msg = self._get_mock_message()
             self.handler.retry_run = mock.Mock()
-            self.handler._get_last_run_version = mock.Mock(return_value=i)
+            patched_db.find_highest_run_version = mock.Mock(return_value=i)
 
             self.handler.reduction_error(mocked_msg)
             # As we are > limit the retry should be set to None

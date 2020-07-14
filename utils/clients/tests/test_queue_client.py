@@ -12,7 +12,7 @@ from unittest import mock
 
 from mock import patch, call
 
-from model.message.job import Message
+from model.message.message import Message
 from utils.clients.connection_exception import ConnectionException
 from utils.clients.queue_client import QueueClient
 from utils.clients.settings.client_settings_factory import ClientSettingsFactory

@@ -17,29 +17,13 @@ import logging.config
 import traceback
 
 from model.database import access as db_access
-from model.message.job import Message
+import model.database.records as db_records
+from model.message.message import Message
 from queue_processors.queue_processor._utils_classes import _UtilsClasses
 from queue_processors.queue_processor.handling_exceptions import \
     MissingReductionRunRecord, InvalidStateException, MissingExperimentRecord
 from queue_processors.queue_processor.settings import LOGGING
 from utils.settings import ACTIVEMQ_SETTINGS
-
-
-def validate_rb_num(rb_number):
-    """
-    Detects if the RB number is valid e.g. (above 0 and not a string)
-    :param rb_number:
-    :raises: InvalidStateException If the RB is not valid
-    """
-    try:
-        rb_number = int(rb_number)
-    except (ValueError, TypeError):
-        raise InvalidStateException(
-            f"RB Number: {rb_number} is not a valid int")
-
-    if rb_number <= 0:
-        raise InvalidStateException(
-            f"RB Number: {rb_number} is less than or equal to 0")
 
 
 class HandleMessage:
@@ -92,7 +76,8 @@ class HandleMessage:
         # This must be done before looking up the run version to make sure
         # the record exists
         experiment = db_access.get_experiment(message.rb_number, create=True)
-        run_version = self._get_last_run_version(run_no, experiment=experiment)
+        run_version = db_access.find_highest_run_version(
+            run_number=run_no, experiment=experiment)
         run_version += 1
         message.run_version = run_version
 
@@ -108,7 +93,7 @@ class HandleMessage:
 
         # Make the new reduction run with the information collected so far
         # and add it into the database
-        reduction_run = self._create_reduction_run_record(
+        reduction_run = db_records.create_reduction_run_record(
             experiment=experiment, instrument=instrument, message=message,
             run_version=run_version, script_text=script_text, status=status)
         db_access.save_record(reduction_run)
@@ -118,8 +103,8 @@ class HandleMessage:
         # reduction run. The file path itself will point to a datafile
         # (e.g. "\isis\inst$\NDXWISH\Instrument\data\cycle_17_1\WISH00038774
         # .nxs")
-        data_location = self._data_model.DataLocation(file_path=message.data,
-                                                      reduction_run_id=reduction_run.id)
+        data_location = self._data_model.DataLocation(
+            file_path=message.data, reduction_run_id=reduction_run.id)
         db_access.save_record(data_location)
 
         # We now need to create all of the variables for the run such that
@@ -140,12 +125,7 @@ class HandleMessage:
         message.reduction_arguments = arguments
 
         # Make sure the RB number is valid
-        try:
-            validate_rb_num(message.rb_number)
-        except InvalidStateException as ex:
-            self._construct_and_send_skipped(
-                message=message, rb_number=message.rb_number, reason=str(ex))
-            raise ex
+        message.validate("/queue/DataReady")
 
         if instrument.is_paused:
             self._logger.info("Run %s has been skipped",
@@ -154,45 +134,6 @@ class HandleMessage:
             self._client.send_message('/queue/ReductionPending', message)
             self._logger.info("Run %s ready for reduction",
                               message.run_number)
-
-    # pylint: disable=too-many-arguments
-    def _create_reduction_run_record(self, experiment, instrument, message,
-                                     run_version, script_text, status):
-        """
-        Creates an ORM record for the given reduction run and returns
-        this record without saving it to the DB
-        """
-        reduction_run = self._data_model.ReductionRun(
-            run_number=message.run_number,
-            run_version=run_version,
-            run_name='',
-            cancel=0,
-            hidden_in_failviewer=0,
-            admin_log='',
-            reduction_log='',
-            created=datetime.datetime.utcnow(),
-            last_updated=datetime.datetime.utcnow(),
-            experiment_id=experiment.id,
-            instrument_id=instrument.id,
-            status_id=status.id,
-            script=script_text,
-            started_by=message.started_by)
-        return reduction_run
-
-    def _get_last_run_version(self, run_no, experiment):
-        """
-        Returns the latest run version for the given run number
-        and experiment combo. If none is found (i.e. a new reduction)
-        -1 is returned to indicate this is a new version
-        """
-        last_run = self._data_model.ReductionRun.objects \
-            .filter(run_number=run_no) \
-            .filter(experiment=experiment) \
-            .order_by('-run_version') \
-            .first()
-
-        # By returning -1 callers can blindly increment the version
-        return last_run.run_version if last_run else -1
 
     def _get_and_activate_db_inst(self, instrument_name):
         """
@@ -345,8 +286,8 @@ class HandleMessage:
 
         if message.retry_in is not None:
             experiment = db_access.get_experiment(message.rb_number)
-            max_version = self._get_last_run_version(run_no=message.run_number,
-                                                     experiment=experiment)
+            max_version = db_access.find_highest_run_version(
+                run_number=message.run_number, experiment=experiment)
 
             # If we have already tried more than 5 times, we want to give up
             # and we don't want

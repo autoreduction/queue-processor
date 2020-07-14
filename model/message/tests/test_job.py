@@ -14,7 +14,7 @@ from mock import patch
 
 import attr
 
-from model.message.job import Message
+from model.message.message import Message
 
 
 class TestMessage(unittest.TestCase):

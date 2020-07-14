@@ -103,18 +103,22 @@ def get_reduction_run(instrument, run_number):
         .filter(run_number=run_number)
 
 
-def find_highest_run_version(instrument_name, run_number):
+def find_highest_run_version(experiment, run_number):
     """
     Search for the highest run version in the database
-    :param instrument_name: (str) The name of the instrument associated with the desired runs
+    :param experiment: (str) The experiment number associated
     :param run_number: (int) The run number to search for
     :return: (int) The highest known version number for a given reduction job
     """
-    last_version = -1
-    reduction_records = get_reduction_run(instrument_name, run_number)
-    for run in reduction_records:
-        last_version = max(last_version, run.run_version)
-    return last_version
+    database = start_database()
+    last_run = database.data_model.ReductionRun.objects \
+        .filter(run_number=run_number) \
+        .filter(experiment=experiment) \
+        .order_by('-run_version') \
+        .first()
+
+    # By returning -1 callers can blindly increment the version
+    return last_run.run_version if last_run else -1
 
 
 def save_record(record):
