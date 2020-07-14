@@ -1,7 +1,7 @@
 # ############################################################################### #
 # Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
 #
-# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 """
@@ -16,24 +16,24 @@ from scripts.database_management.reset_database_post_cycle import DatabaseReset
 class TestMySQLDump(unittest.TestCase):
 
     def test_invalid_cycle(self):
-        self.assertRaisesRegexp(RuntimeError, 'not_cycle did not match the expected regex',
-                                DatabaseReset, 'not_cycle', 'user', 'host', '1234')
-        self.assertRaisesRegexp(RuntimeError, 'cycle_100_10 did not match the expected regex',
-                                DatabaseReset, 'cycle_100_10', 'user', 'host', '1234')
+        self.assertRaisesRegex(RuntimeError, 'not_cycle did not match the expected regex',
+                               DatabaseReset, 'not_cycle', 'user', 'host', '1234')
+        self.assertRaisesRegex(RuntimeError, 'cycle_100_10 did not match the expected regex',
+                               DatabaseReset, 'cycle_100_10', 'user', 'host', '1234')
 
     def test_invalid_user(self):
-        self.assertRaisesRegexp(RuntimeError, '\'User\' for database required',
-                                DatabaseReset, 'cycle_18_2', '', 'host', '1234')
+        self.assertRaisesRegex(RuntimeError, '\'User\' for database required',
+                               DatabaseReset, 'cycle_18_2', '', 'host', '1234')
 
     def test_invalid_host(self):
-        self.assertRaisesRegexp(RuntimeError, '\'Host\' for database required',
-                                DatabaseReset, 'cycle_18_2', 'user', '', '1234')
+        self.assertRaisesRegex(RuntimeError, '\'Host\' for database required',
+                               DatabaseReset, 'cycle_18_2', 'user', '', '1234')
 
     def test_invalid_port(self):
-        self.assertRaisesRegexp(RuntimeError, '\'Port\' for database required',
-                                DatabaseReset, 'cycle_18_2', 'user', 'host', '')
-        self.assertRaisesRegexp(RuntimeError, '\'Port\' must be an integer',
-                                DatabaseReset, 'cycle_18_2', 'user', 'host', 'string')
+        self.assertRaisesRegex(RuntimeError, '\'Port\' for database required',
+                               DatabaseReset, 'cycle_18_2', 'user', 'host', '')
+        self.assertRaisesRegex(RuntimeError, '\'Port\' must be an integer',
+                               DatabaseReset, 'cycle_18_2', 'user', 'host', 'string')
 
     def test_generate_arguments_all(self):
         database_reset = DatabaseReset(latest_cycle='cycle_18_2',

@@ -11,10 +11,10 @@ import logging
 from django.contrib.auth.models import User
 
 # pylint: disable=relative-import
-from uows_client import UOWSClient
-from icat_cache import ICATCache
+from .uows_client import UOWSClient
+from .icat_cache import ICATCache
 
-LOGGER = logging.getLogger(__name__)
+LOGGER = logging.getLogger('app')
 
 
 class UOWSAuthenticationBackend(object):
@@ -22,7 +22,7 @@ class UOWSAuthenticationBackend(object):
     Custom authentication for use with the User Office Web Service
     """
     @staticmethod
-    def authenticate(token=None):
+    def authenticate(request, token=None):
         """
         Checks that the given session ID (token) is still valid and
         returns an appropriate user object.
@@ -51,7 +51,6 @@ class UOWSAuthenticationBackend(object):
                         int(person['usernumber'])) or user.is_superuser)
                 user.save()
                 return user
-
         return None
 
     @staticmethod

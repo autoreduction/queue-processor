@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load view %}
-{% load static from staticfiles %}
+{% load static %}
 {% block body %}
     {% if instrument %}
         {% if instrument.is_active %}
@@ -19,7 +19,7 @@
             <div class="row">
                 <div class="col-md-12 text-center">
                     <p>
-                        <a href="{% url 'instrument_summary' instrument=instrument %}">View upcoming saved configurations</a>
+                        <a href="{% url 'instrument_summary' instrument=instrument.name %}">View upcoming saved configurations</a>
                     </p>
                 </div>
             </div>

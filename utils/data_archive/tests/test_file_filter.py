@@ -1,7 +1,7 @@
 # ############################################################################### #
 # Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
 #
-# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 """
@@ -135,8 +135,8 @@ class TestTimeFilterFiles(unittest.TestCase):
         Test that string is not a valid time input
         """
         error_msg = "cut_off_time must be a numerical timestamp or datetime object. Type found: {}"
-        self.assertRaisesRegexp(RuntimeError, error_msg.format("<type 'str'>"),
-                                filter_files_by_time, self.test_output_directory, "string")
+        self.assertRaisesRegex(RuntimeError, error_msg.format("<class 'str'>"),
+                               filter_files_by_time, self.test_output_directory, "string")
 
     def tearDown(self):
         """

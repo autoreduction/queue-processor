@@ -1,13 +1,13 @@
 {% extends "base.html" %}
-{% load static from staticfiles %}
+{% load static %}
 
 {% block body %}
-<div class="container-fluid">
+<div class="container-fluid" id="instrument-btns-container">
     <div class="row form-group">
     {% if instrument_list %}
         {% for instrument in instrument_list %}
-                <div class="col-md-4  text-center">
-                    <a href="/instrument/{{ instrument }}" class="btn btn-primary btn-lg btn-block">{{ instrument }}</a>
+                <div class="col-md-4  text-center" id={{ instrument.name }}-instrument-btn>
+                    <a href="/instrument/{{ instrument.name }}" class="btn btn-primary btn-lg btn-block">{{ instrument.name }}</a>
                 </div>
         {% if forloop.counter|divisibleby:3 %}
         </div>
@@ -15,8 +15,22 @@
         {% endif %}
         {% endfor %}
     {% else %}
-            <div class="panel-body">No instruments registered with autoreduction were found. Please contact a member of the development team if the problem persists.</div>
+            <div class="panel-body text-center">No instruments registered with auto-reduction were found. Please contact a member of the development team if the problem persists.</div>
     {% endif %}
     </div>
 </div>
+{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{% static "css/vendor/bootstrap.min.css" %}">
+    <link rel="stylesheet" href="{% static "css/vendor/bootstrap-tour.min.css" %}">
+{% endblock %}
+{% block scripts %}
+    <script src="{% static "javascript/vendor/jquery.min.js" %}"></script>
+    <script src="{% static "javascript/vendor/bootstrap-tour.min.js" %}"></script>
+    <script src="{% static "javascript/vendor/bootstrap.min.js" %}"></script>
+
+    <script src="{% static "javascript/tours/overview_tour.js" %}"></script>
+    <script src="{% static "javascript/tours/navbar_tour.js" %}"></script>
+    <script src="{% static "javascript/create_tour.js" %}"></script>
 {% endblock %}

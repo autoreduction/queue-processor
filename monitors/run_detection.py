@@ -6,10 +6,10 @@ sends them off to the autoreduction service.
 import csv
 import logging
 import os
-import json
-from nexusformat.nexus import nxload
+import h5py
 from filelock import (FileLock, Timeout)
 
+from model.message.job import Message
 from monitors.settings import (LAST_RUNS_CSV, CYCLE_FOLDER)
 
 from utils.clients.queue_client import QueueClient
@@ -35,15 +35,6 @@ class InstrumentMonitorError(Exception):
     Any fatal exception that occurs during execution of the
     instrument monitor
     """
-    pass
-
-
-class FileNotFoundError(Exception):
-    """
-    The run file couldn't be found. This may be because
-    of an inconsistency among DFS nodes.
-    """
-    pass
 
 
 def get_prefix_zeros(run_number_str):
@@ -69,21 +60,20 @@ def read_rb_number_from_nexus_file(nxs_file_path):
     :return: The RB number or None
     """
     try:
-        nxs_file = nxload(nxs_file_path)
+        nxs_file = h5py.File(nxs_file_path, mode="r")
     except IOError:
         # The most likely cause of this is the Nexus file being encoded
         # in HDF4 format.
         return None
 
-    for (_, entry) in nxs_file.iteritems():
-        if hasattr(entry, 'experiment_identifier'):
-            field_data = entry.experiment_identifier.nxdata
-            if field_data:
-                return field_data[0]
+    for (_, entry) in nxs_file.items():
+        rb_number = entry.get('experiment_identifier').value[0]
+        if rb_number:
+            return str(rb_number, "utf-8")
     return None
 
 
-class InstrumentMonitor(object):
+class InstrumentMonitor:
     """
     Checks the ISIS archive for new runs on an instrument and submits them to ActiveMQ
     """
@@ -117,22 +107,9 @@ class InstrumentMonitor(object):
             last_line = summary_lines[-1]
             line_parts = last_line.split()
             if line_parts:
-                return line_parts[-1]
+                return str(line_parts[-1], "utf-8")
 
         raise InstrumentMonitorError("Unable to read RB number from summary.txt")
-
-    def build_dict(self, rb_number, run_number, file_location):
-        """
-        Build the data dictionary for a reduction job submission.
-        :param rb_number: Experiment RB number
-        :param run_number: Run number as it appears in lastrun.txt
-        :param file_location: Absolute path to the data file
-        :return: Data dictionary for submission
-        """
-        return self.client.serialise_data(rb_number=rb_number,
-                                          instrument=self.instrument_name,
-                                          location=file_location,
-                                          run_number=run_number)
 
     def submit_run(self, summary_rb_number, run_number, file_name):
         """
@@ -152,8 +129,14 @@ class InstrumentMonitor(object):
             if rb_number is None:
                 rb_number = summary_rb_number
             EORM_LOG.info("Submitting '%s' with RB number '%s'", file_name, rb_number)
-            data_dict = self.build_dict(rb_number, run_number, file_path)
-            self.client.send('/queue/DataReady', json.dumps(data_dict), priority='9')
+            message = Message(
+                instrument=self.instrument_name,
+                rb_number=rb_number,
+                run_number=run_number,
+                data=file_path,
+                started_by=0)  # Autoreduction service code
+            message.validate('/queue/DataReady')
+            self.client.send('/queue/DataReady', message, priority='9')
         else:
             raise FileNotFoundError("File does not exist '{}'".format(file_path))
 
@@ -201,7 +184,7 @@ def update_last_runs(csv_name):
 
     # Loop over instruments
     output = []
-    with open(csv_name, 'rb') as csv_file:
+    with open(csv_name, 'r') as csv_file:
         csv_reader = csv.reader(csv_file)
         for row in csv_reader:
             inst_mon = InstrumentMonitor(connection, row[0])
@@ -218,7 +201,7 @@ def update_last_runs(csv_name):
             output.append(row)
 
     # Write any changes to the CSV
-    with open(csv_name, 'wb') as csv_file:
+    with open(csv_name, 'w', newline='') as csv_file:
         csv_writer = csv.writer(csv_file)
         for row in output:
             csv_writer.writerow(row)

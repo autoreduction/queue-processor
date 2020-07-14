@@ -1,7 +1,7 @@
 # ############################################################################### #
 # Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
 #
-# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 # pylint: skip-file
@@ -15,7 +15,8 @@ from utils.project.structure import get_project_root
 from utils.clients.settings.client_settings_factory import ClientSettingsFactory
 
 
-VALID_INSTRUMENTS = ['GEM', 'POLARIS', 'WISH', 'OSIRIS', 'MUSR', 'POLREF']
+VALID_INSTRUMENTS = ['ENGINX', 'GEM', 'HRPD', 'MAPS', 'MARI', 'MUSR',
+                     'OSIRIS', 'POLARIS', 'POLREF', 'WISH']
 
 
 CONFIG = configparser.ConfigParser()
@@ -24,7 +25,7 @@ CONFIG.read(INI_FILE)
 
 
 def get_str(section, key):
-    return str(CONFIG.get(section, key))
+    return str(CONFIG.get(section, key, raw=True))  # raw=True to allow strings with special characters to be passed
 
 
 SETTINGS_FACTORY = ClientSettingsFactory()
@@ -54,3 +55,18 @@ LOCAL_MYSQL_SETTINGS = SETTINGS_FACTORY.create('database',
                                                password='',
                                                host='localhost',
                                                port='3306')
+
+SFTP_SETTINGS = SETTINGS_FACTORY.create('sftp',
+                                        username=get_str('SFTP', 'user'),
+                                        password=get_str('SFTP', 'password'),
+                                        host=get_str('SFTP', 'host'),
+                                        port=get_str('SFTP', 'port'))
+
+CYCLE_SETTINGS = SETTINGS_FACTORY.create('cycle',
+                                           username=get_str('CYCLE', 'user'),
+                                           password=get_str('CYCLE', 'password'),
+                                           host='',
+                                           port='',
+                                           uows_url=get_str('CYCLE', 'uows_url'),
+                                           scheduler_url=get_str('CYCLE', 'scheduler_url'))
+

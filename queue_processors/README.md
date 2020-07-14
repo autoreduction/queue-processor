@@ -1,4 +1,4 @@
-## QueueProcessors *(linux only)*
+# QueueProcessors *(Linux only)*
 
 Scripts that perform the main flow control in the system by ingesting and sending messages from the messenging server, ActiveMQ.
 This handles the ActiveMQ queues and is the section of the code that deals with reduction.
@@ -9,3 +9,11 @@ To start the QueueProcessors run:
 ```
 $ ./restart.sh
 ```
+
+
+## Local Setup
+
+- Ensure `utils/settings.py` is setup (see readme in Utils)
+- Copy `build/ansible-compute/roles/queue_processors/templates/qp_settings.py.j2`
+  to `QueueProcessors/QueueProcessor/settings.py`
+    

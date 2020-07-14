@@ -1,7 +1,7 @@
 # ############################################################################### #
 # Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
 #
-# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 #!/usr/bin/env python
@@ -14,35 +14,38 @@
 """
 Post Process Administrator. It kicks off cataloging and reduction jobs.
 """
-import cStringIO
+import io
 import errno
-import imp
-import json
 import logging
 import os
 import shutil
-import socket
 import sys
 import time
+import types
 import traceback
 from contextlib import contextmanager
+import importlib.util as imp
 
 from sentry_sdk import init
 
-import stomp
 # pylint:disable=no-name-in-module,import-error
-from queue_processors.autoreduction_processor.settings import ACTIVEMQ, MISC
+from model.message.job import Message
+from paths.path_manipulation import append_path
+from queue_processors.autoreduction_processor.settings import MISC
 from queue_processors.autoreduction_processor.autoreduction_logging_setup import logger
 from queue_processors.autoreduction_processor.timeout import TimeOut
+from utils.clients.queue_client import QueueClient
+from utils.settings import ACTIVEMQ_SETTINGS
 
 init('http://4b7c7658e2204228ad1cfd640f478857@172.16.114.151:9000/1')
+
 
 class SkippedRunException(Exception):
     """
     Exception for runs that have been skipped
     Note: this is currently only the case for EnginX Event mode runs at ISIS
     """
-    pass
+
 
 @contextmanager
 def channels_redirected(out_file, err_file, out_stream):
@@ -53,7 +56,7 @@ def channels_redirected(out_file, err_file, out_stream):
     """
     old_stdout, old_stderr = sys.stdout, sys.stderr
 
-    class MultipleChannels(object):
+    class MultipleChannels:
         # pylint: disable=expression-not-assigned
         """ Behaves like a stream object, but outputs to multiple streams."""
         def __init__(self, *streams):
@@ -90,37 +93,25 @@ def windows_to_linux_path(path, temp_root_directory):
     return path
 
 
-def prettify(data):
-    """ Make dictionary pretty for printing. """
-    if type(data).__name__ == "str":
-        data_dict = json.loads(data)
-    else:
-        data_dict = data.copy()
-
-    if "reduction_script" in data_dict:
-        data_dict["reduction_script"] = data_dict["reduction_script"][:50]
-    return json.dumps(data_dict)
-
-
-class PostProcessAdmin(object):
+class PostProcessAdmin:
     """ Main class for the PostProcessAdmin """
 
     # pylint: disable=too-many-instance-attributes
-    def __init__(self, data, connection):
-        logger.debug("json data: %s", prettify(data))
-        data["information"] = socket.gethostname()
-        self.data = data
-        self.client = connection
+    def __init__(self, message, client):
+        logger.debug("Message data: %s", message.serialize(limit_reduction_script=True))
 
-        self.reduction_log_stream = cStringIO.StringIO()
-        self.admin_log_stream = cStringIO.StringIO()
+        self.message = message
+        self.client = client
+
+        self.reduction_log_stream = io.StringIO()
+        self.admin_log_stream = io.StringIO()
 
         try:
             self.data_file = windows_to_linux_path(self.validate_input('data'),
                                                    MISC["temp_root_directory"])
             self.facility = self.validate_input('facility')
             self.instrument = self.validate_input('instrument').upper()
-            self.proposal = str(int(self.validate_input('rb_number')))
+            self.proposal = str(int(self.validate_input('rb_number')))  # Integer-string validation
             self.run_number = str(int(self.validate_input('run_number')))
             self.reduction_script = self.validate_input('reduction_script')
             self.reduction_arguments = self.validate_input('reduction_arguments')
@@ -128,18 +119,18 @@ class PostProcessAdmin(object):
             logger.info('JSON data error', exc_info=True)
             raise
 
-    def validate_input(self, key):
+    def validate_input(self, attribute):
         """
-        Validates the input dictionary
-        :param key: key to search for
+        Validates the input message
+        :param attribute: attribute to validate
         :return: The value of the key or raise an exception if none
         """
-        if key in self.data:
-            value = self.data[key]
-            logger.debug("%s: %s", key, str(value)[:50])
+        attribute_dict = self.message.__dict__
+        if attribute in attribute_dict and attribute_dict[attribute] is not None:
+            value = attribute_dict[attribute]
+            logger.debug("%s: %s", attribute, str(value)[:50])
             return value
-        else:
-            raise ValueError('%s is missing' % key)
+        raise ValueError('%s is missing' % attribute)
 
     def replace_variables(self, reduce_script):
         """
@@ -173,7 +164,7 @@ class PostProcessAdmin(object):
             merge_dict_to_name(dict_name, encoded_dict)
 
         if not hasattr(reduce_script, "web_var"):
-            reduce_script.web_var = imp.new_module("reduce_vars")
+            reduce_script.web_var = types.ModuleType("reduce_vars")
         map(merge_dicts, ["standard_vars", "advanced_vars"])
         return reduce_script
 
@@ -186,28 +177,68 @@ class PostProcessAdmin(object):
         """ Returns the path of the reduction script for an instrument. """
         return os.path.join(self._reduction_script_location(instrument_name), 'reduce.py')
 
+    def specify_instrument_directories(self,
+                                       instrument_output_directory,
+                                       no_run_number_directory,
+                                       temporary_directory):
+        """
+        Specifies instrument directories, including removal of run_number folder
+        if excitations instrument
+        :param instrument_output_directory: (str) Ceph directory using instrument, proposal, run no
+        :param no_run_number_directory: (bool) Determine whether or not to remove run no from dir
+        :param temporary_directory: (str) Temp directory location (root)
+        :return (str) Directories where Autoreduction should output
+        """
+
+        directory_list = [i for i in instrument_output_directory.split('/') if i]
+
+        if directory_list[-1] != f"{self.run_number}":
+            return ValueError("directory does not follow expected format "
+                              "(instrument/RB_no/run_number) \n"
+                              "format: \n"
+                              "%s", instrument_output_directory)
+
+        if no_run_number_directory is True:
+            # Remove the run number folder at the end
+            remove_run_number_directory = instrument_output_directory.rfind('/') + 1
+            instrument_output_directory = instrument_output_directory[:remove_run_number_directory]
+
+        # Specify directories where autoreduction output will go
+        return temporary_directory + instrument_output_directory
+
+    def reduction_started(self):
+        """Log and update AMQ message to reduction started"""
+        logger.debug("Calling: %s\n%s",
+                     ACTIVEMQ_SETTINGS.reduction_started,
+                     self.message.serialize(limit_reduction_script=True))
+        self.client.send(ACTIVEMQ_SETTINGS.reduction_started, self.message)
+
     def reduce(self):
         """ Start the reduction job.  """
         # pylint: disable=too-many-nested-blocks
+        logger.info("reduce started")
+        self.message.software = self._get_mantid_version()
+
         try:
-            logger.debug("Calling: " + ACTIVEMQ['reduction_started'] + "\n" + prettify(self.data))
-            self.client.send(ACTIVEMQ['reduction_started'], json.dumps(self.data))
+            # log and update AMQ message to reduction started
+            self.reduction_started()
 
-            # Specify instrument directory
-            instrument_output_dir = MISC["ceph_directory"] % (self.instrument,
-                                                              self.proposal,
-                                                              self.run_number)
-
+            # Specify instrument directories - if excitation instrument remove run_number from dir
+            no_run_number_directory = False
             if self.instrument in MISC["excitation_instruments"]:
-                # Excitations would like to remove the run number folder at the end
-                instrument_output_dir = instrument_output_dir[:instrument_output_dir.rfind('/') + 1]
+                no_run_number_directory = True
 
-            # Specify directories where autoreduction output will go
-            reduce_result_dir = MISC["temp_root_directory"] + instrument_output_dir
+            instrument_output_directory = MISC["ceph_directory"] % (self.instrument,
+                                                                    self.proposal,
+                                                                    self.run_number)
 
-            if 'run_description' in self.data:
-                logger.info("DESCRIPTION: %s", self.data["run_description"])
+            reduce_result_dir = self.specify_instrument_directories(
+                instrument_output_directory=instrument_output_directory,
+                no_run_number_directory=no_run_number_directory,
+                temporary_directory=MISC["temp_root_directory"])
 
+            if self.message.description is not None:
+                logger.info("DESCRIPTION: %s", self.message.description)
             log_dir = reduce_result_dir + "/reduction_log/"
             log_and_err_name = "RB" + self.proposal + "Run" + self.run_number
             script_out = os.path.join(log_dir, log_and_err_name + "Script.out")
@@ -218,30 +249,8 @@ class PostProcessAdmin(object):
             final_result_dir = reduce_result_dir[len(MISC["temp_root_directory"]):]
             final_log_dir = log_dir[len(MISC["temp_root_directory"]):]
 
-            if 'overwrite' in self.data:
-                if not self.data["overwrite"]:
-                    logger.info('Don\'t want to overwrite previous data')
-                    path_parts = final_result_dir.split('/')
-                    new_path = '/'
-                    for part in path_parts:
-                        if part != 'autoreduced' and part != '':
-                            new_path = new_path + part + '/'
-                    maximum = 0
-                    for folder in os.listdir(new_path):
-                        if folder.startswith('autoreduced'):
-                            number = folder.replace('autoreduced', '')
-                            if number != '':
-                                number = int(number) + 1
-                                if number > maximum:
-                                    maximum = number
-                            else:
-                                maximum = 1
-                    if maximum == 0:
-                        new_path = new_path + 'autoreduced'
-                    else:
-                        new_path = new_path + 'autoreduced' + str(maximum) + '/'
-                    final_result_dir = new_path
-                    final_log_dir = new_path + 'reduction_log/'
+            final_result_dir = self._new_reduction_data_path(final_result_dir)
+            final_log_dir = append_path(final_result_dir, ['reduction_log'])
 
             logger.info('Final Result Directory = %s', final_result_dir)
             logger.info('Final Log Directory = %s', final_log_dir)
@@ -252,35 +261,34 @@ class PostProcessAdmin(object):
                 should_be_readable = [self.data_file]
 
                 # try to make directories which should exist
-                for path in filter(lambda p: not os.path.isdir(p), should_be_writable): # pylint: disable=deprecated-lambda
+                for path in filter(lambda p: not os.path.isdir(p), should_be_writable):
                     os.makedirs(path)
 
-                does_not_exist = lambda path: not os.access(path, os.F_OK)
-                not_readable = lambda path: not os.access(path, os.R_OK)
-                not_writable = lambda path: not os.access(path, os.W_OK)
+                for location in should_be_writable:
+                    if not os.access(location, os.W_OK):
+                        if not os.access(location, os.F_OK):
+                            problem = "does not exist"
+                        else:
+                            problem = "no write access"
+                        raise Exception("Couldn't write to %s  -  %s" % (location, problem))
 
-                # we want write access to these directories, plus the final output paths
-                if filter(not_writable, should_be_writable):
-                    fail_path = filter(not_writable, should_be_writable)[0]
-                    problem = "does not exist" if does_not_exist(fail_path) else "no write access"
-                    raise Exception("Couldn't write to %s  -  %s" % (fail_path, problem))
-
-                if filter(not_readable, should_be_readable):
-                    fail_path = filter(not_readable, should_be_readable)[0]
-                    problem = "does not exist" if does_not_exist(fail_path) else "no read access"
-                    raise Exception("Couldn't read %s  -  %s" % (fail_path, problem))
+                for location in should_be_readable:
+                    if not os.access(location, os.R_OK):
+                        if not os.access(location, os.F_OK):
+                            problem = "does not exist"
+                        else:
+                            problem = "no read access"
+                        raise Exception("Couldn't read %s  -  %s" % (location, problem))
 
             except Exception as exp:
                 # if we can't access now, we should abort the run, and tell the server that it
                 # should be re-run at a later time.
-                self.data["message"] = "Permission error: %s" % exp
-                self.data["retry_in"] = 6 * 60 * 60 # 6 hours
+                self.message.message = "Permission error: %s" % exp
+                self.message.retry_in = 6 * 60 * 60  # 6 hours
                 logger.error(traceback.format_exc())
                 raise exp
 
-            self.data['reduction_data'] = []
-            if "message" not in self.data:
-                self.data["message"] = ""
+            self.message.reduction_data = []
 
             logger.info("----------------")
             logger.info("Reduction script: %s ...", self.reduction_script[:50])
@@ -303,19 +311,21 @@ class PostProcessAdmin(object):
                     # Add Mantid path to system path so we can use Mantid to run the user's script
                     sys.path.append(MISC["mantid_path"])
                     reduce_script_location = self._load_reduction_script(self.instrument)
-                    reduce_script = imp.load_source('reducescript', reduce_script_location)
+                    spec = imp.spec_from_file_location('reducescript', reduce_script_location)
+                    reduce_script = imp.module_from_spec(spec)
+                    spec.loader.exec_module(reduce_script)
 
                     try:
                         skip_numbers = reduce_script.SKIP_RUNS
                     except:
                         skip_numbers = []
-                    if self.data['run_number'] not in skip_numbers:
+                    if self.message.run_number not in skip_numbers:
                         reduce_script = self.replace_variables(reduce_script)
                         with TimeOut(MISC["script_timeout"]):
                             out_directories = reduce_script.main(input_file=str(self.data_file),
                                                                  output_dir=str(reduce_result_dir))
                     else:
-                        self.data['message'] = "Run has been skipped in script"
+                        self.message.message = "Run has been skipped in script"
             except Exception as exp:
                 with open(script_out, "a") as fle:
                     fle.writelines(str(exp) + "\n")
@@ -326,9 +336,7 @@ class PostProcessAdmin(object):
                 # Parent except block will discard exception type, so format the type as a string
                 if 'skip' in str(exp).lower():
                     raise SkippedRunException(exp)
-                else:
-                    error_str = "Error in user reduction script: %s - %s" % (type(exp).__name__,
-                                                                             exp)
+                error_str = "Error in user reduction script: %s - %s" % (type(exp).__name__, exp)
                 logger.error(traceback.format_exc())
                 raise Exception(error_str)
 
@@ -358,23 +366,22 @@ class PostProcessAdmin(object):
 
         except SkippedRunException as skip_exception:
             logger.info("Run %s has been skipped on %s",
-                        self.data['run_number'], self.data['instrument'])
-            self.data["message"] = "Reduction Skipped: %s" % str(skip_exception)
+                        self.message.run_number, self.message.instrument)
+            self.message.message = "Reduction Skipped: %s" % str(skip_exception)
         except Exception as exp:
             logger.error(traceback.format_exc())
-            self.data["message"] = "REDUCTION Error: %s " % exp
+            self.message.message = "REDUCTION Error: %s " % exp
 
-        self.data['reduction_log'] = self.reduction_log_stream.getvalue()
-        self.data["admin_log"] = self.admin_log_stream.getvalue()
+        self.message.reduction_log = self.reduction_log_stream.getvalue()
+        self.message.admin_log = self.admin_log_stream.getvalue()
 
-        if self.data["message"] != "":
+        if self.message.message is not None:
             # This means an error has been produced somewhere
             try:
-                if 'skip' in self.data['message'].lower():
-                    self.data['message'].lstrip('skip: ')
-                    self._send_message_and_log(ACTIVEMQ['reduction_skipped'])
+                if 'skip' in self.message.message.lower():
+                    self._send_message_and_log(ACTIVEMQ_SETTINGS.reduction_skipped)
                 else:
-                    self._send_message_and_log(ACTIVEMQ['reduction_error'])
+                    self._send_message_and_log(ACTIVEMQ_SETTINGS.reduction_error)
 
             except Exception as exp2:
                 logger.info("Failed to send to queue! - %s - %s", exp2, repr(exp2))
@@ -383,14 +390,58 @@ class PostProcessAdmin(object):
 
         else:
             # reduction has successfully completed
-            self.client.send(ACTIVEMQ['reduction_complete'], json.dumps(self.data))
-            logger.info("Calling: " + ACTIVEMQ['reduction_complete'] + "\n" + prettify(self.data))
+            self.client.send(ACTIVEMQ_SETTINGS.reduction_complete, self.message)
+            logger.info("Calling: %s\n%s",
+                        ACTIVEMQ_SETTINGS.reduction_complete,
+                        self.message.serialize(limit_reduction_script=True))
             logger.info("Reduction job successfully complete")
+
+    @staticmethod
+    def _get_mantid_version():
+        """
+        Attempt to get Mantid software version
+        :return: (str) Mantid version or None if not found
+        """
+        if MISC["mantid_path"] not in sys.path:
+            sys.path.append(MISC['mantid_path'])
+        try:
+            # pylint:disable=import-outside-toplevel
+            import mantid
+            return mantid.__version__
+        except ImportError as excep:
+            logger.error("Unable to discover Mantid version as: unable to import Mantid")
+            logger.error(excep)
+        return None
+
+    def _new_reduction_data_path(self, path):
+        """
+        Creates a pathname for the reduction data, factoring in existing run data.
+        :param path: Base path for the run data (should follow convention, without version number)
+        :return: A pathname for the new reduction data
+        """
+        logger.info("_new_reduction_data_path argument: %s", path)
+        # if there is an 'overwrite' key/member with a None/False value
+        if not self.message.overwrite:
+            if os.path.isdir(path):           # if the given path already exists..
+                contents = os.listdir(path)
+                highest_vers = -1
+                for item in contents:         # ..for every item, if it's a dir and a int..
+                    if os.path.isdir(os.path.join(path, item)):
+                        try:                  # ..store the highest int
+                            vers = int(item)
+                            highest_vers = max(highest_vers, vers)
+                        except ValueError:
+                            pass
+                this_vers = highest_vers + 1
+                return append_path(path, [str(this_vers)])
+        # (else) if no overwrite, overwrite true, or the path doesn't exist: return version 0 path
+        return append_path(path, "0")
 
     def _send_message_and_log(self, destination):
         """ Send reduction run to error. """
-        logger.info("\nCalling " + destination + " --- " + prettify(self.data))
-        self.client.send(destination, json.dumps(self.data))
+        logger.info("\nCalling " + destination + " --- " +
+                    self.message.serialize(limit_reduction_script=True))
+        self.client.send(destination, self.message)
 
     def copy_temp_directory(self, temp_result_dir, copy_destination):
         """
@@ -404,7 +455,7 @@ class PostProcessAdmin(object):
                 and self.instrument not in MISC["excitation_instruments"]:
             self._remove_directory(copy_destination)
 
-        self.data['reduction_data'].append(copy_destination)
+        self.message.reduction_data.append(copy_destination)
         logger.info("Moving %s to %s", temp_result_dir, copy_destination)
         try:
             self._copy_tree(temp_result_dir, copy_destination)
@@ -423,9 +474,9 @@ class PostProcessAdmin(object):
     def log_and_message(self, msg):
         """ Helper function to add text to the outgoing activemq message and to the info logs """
         logger.info(msg)
-        if self.data["message"] == "":
+        if self.message.message == "" or self.message.message is None:
             # Only send back first message as there is a char limit
-            self.data["message"] = msg
+            self.message.message = msg
 
     def _remove_with_wait(self, remove_folder, full_path):
         """ Removes a folder or file and waits for it to be removed. """
@@ -488,34 +539,28 @@ class PostProcessAdmin(object):
 
 def main():
     """ Main method. """
-    brokers = []
-    brokers.append((ACTIVEMQ['brokers'].split(':')[0], int(ACTIVEMQ['brokers'].split(':')[1])))
-    stomp_connection = stomp.Connection(host_and_ports=brokers, use_ssl=False)
-    json_data = None
+    queue_client = QueueClient()
     try:
         logger.info("PostProcessAdmin Connecting to ActiveMQ")
-        stomp_connection.start()
-        stomp_connection.connect(ACTIVEMQ['amq_user'],
-                                 ACTIVEMQ['amq_pwd'],
-                                 wait=True,
-                                 header={'activemq.prefetchSize': '1', })
+        queue_client.connect()
         logger.info("PostProcessAdmin Successfully Connected to ActiveMQ")
 
-        destination, message = sys.argv[1:3]  # pylint: disable=unbalanced-tuple-unpacking
+        destination, data = sys.argv[1:3]  # pylint: disable=unbalanced-tuple-unpacking
+        message = Message()
+        message.populate(data)
         logger.info("destination: %s", destination)
-        logger.info("message: %s", prettify(message))
-        json_data = json.loads(message)
+        logger.info("message: %s", message.serialize(limit_reduction_script=True))
 
         try:
-            post_proc = PostProcessAdmin(json_data, stomp_connection)
+            post_proc = PostProcessAdmin(message, queue_client)
             log_stream_handler = logging.StreamHandler(post_proc.admin_log_stream)
             logger.addHandler(log_stream_handler)
             if destination == '/queue/ReductionPending':
                 post_proc.reduce()
 
         except ValueError as exp:
-            json_data["error"] = str(exp)
-            logger.info("JSON data error: %s", prettify(json_data))
+            message.message = str(exp)  # Note: I believe this should be .message
+            logger.info("Message data error: %s", message.serialize(limit_reduction_script=True))
             raise
 
         except Exception as exp:
@@ -531,8 +576,9 @@ def main():
     except Exception as exp:
         logger.info("Something went wrong: %s", str(exp))
         try:
-            stomp_connection.send(ACTIVEMQ['postprocess_error'], json.dumps(json_data))
-            logger.info("Called " + ACTIVEMQ['postprocess_error'] + "----" + prettify(json_data))
+            queue_client.send(ACTIVEMQ_SETTINGS.reduction_error, message)
+            logger.info("Called %s ---- %s", ACTIVEMQ_SETTINGS.reduction_error,
+                        message.serialize(limit_reduction_script=True))
         finally:
             sys.exit()
 

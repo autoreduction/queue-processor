@@ -1,7 +1,7 @@
 # ############################################################################### #
 # Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
 #
-# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 # pylint: skip-file
@@ -39,6 +39,12 @@ ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'reducedev2.isis.cclrc.ac.uk']
 INTERNAL_IPS = ['localhost', '127.0.0.1']
 
 # Application definition
+ORM_INSTALL = [  # Minimal apps required to setup JUST the ORM - (increases ORM setup speed)
+    'autoreduce_webapp',
+    'reduction_viewer',
+    'reduction_variables',
+]
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -48,27 +54,26 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
-    'autoreduce_webapp',
-    'reduction_viewer',
-    'reduction_variables',
+    'django_plotly_dash.apps.DjangoPlotlyDashConfig',
 ]
 
-MIDDLEWARE_CLASSES = [
+INSTALLED_APPS = INSTALLED_APPS + ORM_INSTALL
 
+MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django_user_agents.middleware.UserAgentMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_plotly_dash.middleware.BaseMiddleware',
 ]
 
 # Add debug toolbar only if in DEBUG mode
 if DEBUG:
     INSTALLED_APPS.append('debug_toolbar')
-    MIDDLEWARE_CLASSES.insert(3, 'debug_toolbar.middleware.DebugToolbarMiddleware')
+    MIDDLEWARE.insert(3, 'debug_toolbar.middleware.DebugToolbarMiddleware')
 
 AUTHENTICATION_BACKENDS = [
     'autoreduce_webapp.backends.UOWSAuthenticationBackend',
@@ -197,7 +202,7 @@ if os.name == 'nt':
     ARCHIVE_DIRECTORY = r'\\isis\inst$\NDX%s\Instrument\data\cycle_%s\autoreduced\%s\%s'  # %(instrument, cycle, experiment_number, run_number)
 
     TEST_REDUCTION_DIRECTORY = r'\\reducedev\isis\output\NDX%s\user\scripts\autoreduction'
-    TEST_ARCHIVE_DIRECTORY = '\\isis\inst$\NDX%s\Instrument\data\cycle_%s\autoreduced\%s\%s'
+    TEST_ARCHIVE_DIRECTORY = r'\\isis\inst$\NDX%s\Instrument\data\cycle_%s\autoreduced\%s\%s'
 
 else:
     REDUCTION_DIRECTORY = '/isis/NDX%s/user/scripts/autoreduction'  # %(instrument)
@@ -245,3 +250,4 @@ USER_ACCESS_CHECKS = False  # Should the webapp prevent users from accessing run
 DEVELOPMENT_MODE = True  # If the installation is in a development environment, set this variable to True so that
                          # we are not constrained by having to log in through the user office. This will authenticate
                          # anyone visiting the site as a super user
+X_FRAME_OPTIONS = 'SAMEORIGIN'  # Enables the use of frames within HTML

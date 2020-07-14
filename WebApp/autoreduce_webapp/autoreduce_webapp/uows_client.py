@@ -8,7 +8,7 @@
 Client for accessing the user office logon
 """
 import ssl
-from urllib2 import HTTPSHandler
+from urllib.request import HTTPSHandler
 import logging
 
 import suds
@@ -17,7 +17,7 @@ from suds.client import Client
 
 # The below is a template on the repository
 # pylint: disable=relative-import
-from settings import CERTIFICATE_LOCATION, UOWS_URL
+from .settings import CERTIFICATE_LOCATION, UOWS_URL
 
 
 LOGGER = logging.getLogger(__name__)

@@ -1,8 +1,7 @@
 {% extends "base.html" %}
 {% load colour_table_rows %}
-{% load get_user_name %}
 {% load naturaltime from humanize %}
-{% load static from staticfiles %}
+{% load static %}
 
 {% block body %}
     <title>Failed Jobs</title>
@@ -64,7 +63,7 @@
                                         <span> (Last attempt)</span>
                                     {% endif %}
                                     {% if job.retry_run %}
-                                        <a href="{% url 'run_summary' instrument_name=job.instrument.name run_number=job.retry_run.run_number run_version=job.retry_run.run_version %}"> ({{ job.retry_run.status }})</a>
+                                        <a href="{% url 'run_summary' instrument_name=job.instrument.name run_number=job.retry_run.run_number run_version=job.retry_run.run_version %}"> ({{ job.retry_run.status.value }})</a>
                                     {% endif %}
                                 {% else %}
                                     Never

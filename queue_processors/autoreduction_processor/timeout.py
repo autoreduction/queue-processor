@@ -10,7 +10,7 @@ import signal
 from queue_processors.autoreduction_processor.settings import MISC
 
 
-class TimeOut(object):
+class TimeOut:
     """ Class used for handling script timeouts"""
     # pylint: disable=too-few-public-methods
     def __init__(self,

@@ -1,7 +1,7 @@
 # ############################################################################### #
 # Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
 #
-# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 """
@@ -17,7 +17,8 @@ import logging
 import operator
 
 from django.contrib.auth import logout as django_logout, authenticate, login
-from django.core.exceptions import PermissionDenied
+from django.contrib.auth.models import User
+from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponseNotFound
 from django.shortcuts import redirect
@@ -32,6 +33,8 @@ from reduction_variables.utils import MessagingUtils
 from reduction_viewer.models import Experiment, ReductionRun, Instrument, Status
 from reduction_viewer.utils import StatusUtils, ReductionRunUtils
 from reduction_viewer.view_utils import deactivate_invalid_instruments
+
+from plotting.plot_handler import PlotHandler
 
 from utilities.pagination import CustomPaginator
 
@@ -57,8 +60,9 @@ def index(request):
         login(request, user)
         authenticated = True
     else:
-        authenticated = request.user.is_authenticated() and 'sessionid' in request.session \
-                        and UOWSClient().check_session(request.session['sessionid'])
+        if 'sessionid' in request.session.keys():
+            authenticated = request.user.is_authenticated \
+                            and UOWSClient().check_session(request.session['sessionId'])
 
     if authenticated:
         if request.GET.get('next'):
@@ -118,7 +122,6 @@ def run_queue(request):
     processing_status = StatusUtils().get_processing()
     pending_jobs = ReductionRun.objects.filter(Q(status=queued_status) |
                                                Q(status=processing_status)).order_by('created')
-
     # Filter those which the user shouldn't be able to see
     if USER_ACCESS_CHECKS and not request.user.is_superuser:
         with ICATCache(AUTH='uows', SESSION={'sessionid': request.session['sessionid']}) as icat:
@@ -129,8 +132,13 @@ def run_queue(request):
             pending_jobs = filter(lambda job: job.instrument.name in
                                   icat.get_owned_instruments(int(request.user.username)),
                                   pending_jobs)  # check instrument
-
-    context_dictionary = {'queue': pending_jobs}
+    # Initialise list to contain the names of user/team that started runs
+    started_by = []
+    # cycle through all the filtered runs and retrieve the name of the user/team that started the run
+    for run in pending_jobs:
+        started_by.append(started_by_id_to_name(run.started_by))
+    # zip the run information with the user/team name to enable simultaneous iteration with django
+    context_dictionary = {'queue': zip(pending_jobs, started_by)}
     return context_dictionary
 
 
@@ -179,7 +187,8 @@ def fail_queue(request):
 
                     ReductionRunUtils().cancelRun(reduction_run)
                     reduction_run.cancel = False
-                    new_job = ReductionRunUtils().createRetryRun(reduction_run)
+                    new_job = ReductionRunUtils().createRetryRun(user_id=request.user.id,
+                                                                 reduction_run=reduction_run)
 
                     try:
                         MessagingUtils().send_pending(new_job)
@@ -363,27 +372,71 @@ def run_summary(request, instrument_name=None, run_number=None, run_version=0):
     """
     # pylint:disable=broad-except
     try:
-        instrument = Instrument.objects.filter(name=instrument_name)
+        instrument = Instrument.objects.get(name=instrument_name)
         run = ReductionRun.objects.get(instrument=instrument,
                                        run_number=run_number,
                                        run_version=run_version)
         history = ReductionRun.objects.filter(run_number=run_number).order_by('-run_version')
+        started_by = started_by_id_to_name(run.started_by)
+
         location_list = run.reduction_location.all()
         reduction_location = None
         if location_list:
-            reduction_location = str(location_list[0])
+            reduction_location = location_list[0].file_path
         if reduction_location and '\\' in reduction_location:
             reduction_location = reduction_location.replace('\\', '/')
+
+        rb_number = Experiment.objects.get(id=run.experiment_id).reference_number
+
         context_dictionary = {'run': run,
                               'history': history,
-                              'reduction_location': reduction_location}
+                              'reduction_location': reduction_location,
+                              'started_by': started_by}
+
+        if reduction_location:
+            plot_handler = PlotHandler(instrument_name=run.instrument.name,
+                                       rb_number=rb_number,
+                                       run_number=run.run_number,
+                                       server_dir=reduction_location)
+            plot_locations = plot_handler.get_plot_file()
+            if plot_locations:
+                context_dictionary['plot_locations'] = plot_locations
+
     except PermissionDenied:
         raise
     except Exception as exception:
-        LOGGER.error(exception.message)
+        LOGGER.error(exception)
         context_dictionary = {}
 
     return context_dictionary
+
+
+def started_by_id_to_name(started_by_id=None):
+    """
+    Returns name of the user or team that submitted an autoreduction run given an ID number
+    :param started_by_id: The ID of the user who started the run, or a control code if not started by a user
+    :return:
+        If started by a valid user, returns the name either of the user in the format '[forename] [surname]'.
+        If started automatically, returns "Autoreduciton service".
+        If started manually, returns "Development team".
+        Otherwise, returns None.
+    """
+    name = None
+    if started_by_id is not None:
+        if started_by_id == -1:
+            name = "Development team"
+        elif started_by_id == 0:
+            name = "Autoreduction service"
+        elif started_by_id > 0:
+            try:
+                user_record = User.objects.get(id=started_by_id)
+                name = f"{user_record.first_name} {user_record.last_name}"
+            except ObjectDoesNotExist as exception:
+                LOGGER.error(exception)
+                name = None
+        elif started_by_id < -1:
+            name = None
+    return name
 
 
 @login_and_uows_valid
@@ -443,7 +496,7 @@ def instrument_summary(request, instrument=None):
 
     # pylint:disable=broad-except
     except Exception as exception:
-        LOGGER.error(exception.message)
+        LOGGER.error(exception)
         context_dictionary = {}
 
     return context_dictionary
@@ -462,6 +515,7 @@ def experiment_summary(request, reference_number=None):
         runs = ReductionRun.objects.filter(experiment=experiment).order_by('-run_version')
         data = []
         reduced_data = []
+        started_by = []
         for run in runs:
             for location in run.data_location.all():
                 if location not in data:
@@ -469,6 +523,10 @@ def experiment_summary(request, reference_number=None):
             for location in run.reduction_location.all():
                 if location not in reduced_data:
                     reduced_data.append(location)
+            started_by.append(started_by_id_to_name(run.started_by))
+        sorted_runs = sorted(runs, key=operator.attrgetter('last_updated'), reverse=True)
+        runs_with_started_by = zip(sorted_runs, started_by)
+
         try:
             if DEVELOPMENT_MODE:
                 # If we are in development mode use user/password for ICAT from django settings
@@ -481,7 +539,7 @@ def experiment_summary(request, reference_number=None):
                     experiment_details = icat.get_experiment_details(int(reference_number))
         # pylint:disable=broad-except
         except Exception as icat_e:
-            LOGGER.error(icat_e.message)
+            LOGGER.error(icat_e)
             experiment_details = {
                 'reference_number': '',
                 'start_date': '',
@@ -493,14 +551,15 @@ def experiment_summary(request, reference_number=None):
             }
         context_dictionary = {
             'experiment': experiment,
-            'runs': sorted(runs, key=operator.attrgetter('last_updated'), reverse=True),
+            'runs_with_started_by': runs_with_started_by,
+            'run_count': len(runs),
             'experiment_details': experiment_details,
             'data': data,
             'reduced_data': reduced_data,
         }
     # pylint:disable=broad-except
     except Exception as exception:
-        LOGGER.error(exception.message)
+        LOGGER.error(exception)
         context_dictionary = {}
 
     return context_dictionary
@@ -567,7 +626,7 @@ def graph_instrument(request, instrument_name):
 
     try:
         if 'last' in request.GET:
-            runs = runs[:request.GET.get('last')]
+            runs = runs[:int(request.GET.get('last'))]
     except ValueError:
         # Non integer value entered as 'last' parameter.
         # Just show all runs.

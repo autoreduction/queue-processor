@@ -1,29 +1,30 @@
 # ############################################################################### #
 # Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
 #
-# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 """
 Utility functions for reduction variables
 """
 import cgi
-import imp
 import io
-import json
 import logging
 import os
 import re
 import sys
 
 import chardet
+import importlib.util as imp
+
+from model.message.job import Message
 
 sys.path.append(os.path.join("../", os.path.dirname(os.path.dirname(__file__))))
 os.environ["DJANGO_SETTINGS_MODULE"] = "autoreduce_webapp.settings"
 
 # pylint:disable=wrong-import-position
 from autoreduce_webapp.icat_communication import ICATCommunication
-from autoreduce_webapp.settings import ACTIVEMQ, REDUCTION_DIRECTORY, FACILITY
+from autoreduce_webapp.settings import REDUCTION_DIRECTORY, FACILITY
 from reduction_variables.models import InstrumentVariable, RunVariable
 from reduction_viewer.models import ReductionRun, Notification
 from reduction_viewer.utils import InstrumentUtils, StatusUtils, ReductionRunUtils
@@ -470,7 +471,7 @@ class InstrumentVariablesUtils(object):
         if not any([hasattr(var, "tracks_script") and var.tracks_script for var in variables]):
             return
 
-            # New variable set from the script
+        # New variable set from the script
         defaults = self.get_default_variables(variables[0].instrument.name) if variables else []
 
         # Update the existing variables
@@ -479,10 +480,9 @@ class InstrumentVariablesUtils(object):
             Update internal values of a variable
             """
             old_var.keep = True
-            # Find the new variable from the script.
-            # pylint:disable=deprecated-lambda
-            matching_vars = filter(lambda var: var.name == old_var.name,
-                                   defaults)
+            # Find the new variable from the script
+            matching_vars = [variable for variable in defaults if old_var.name == variable.name]
+
             # Check whether we should and can update the old one.
             if matching_vars and old_var.tracks_script:
                 new_var = matching_vars[0]
@@ -498,8 +498,9 @@ class InstrumentVariablesUtils(object):
                 if save:
                     old_var.delete()
                 old_var.keep = False
+            return old_var
 
-        map(update_variable, variables)
+        variables = list(map(update_variable, variables))
         variables[:] = [var for var in variables if var.keep]
 
         # Add any new ones
@@ -537,15 +538,15 @@ class InstrumentVariablesUtils(object):
 
         # file name without extension
         module_name = os.path.basename(script_path).split(".")[0]
-        script_module = imp.new_module(module_name)
         try:
-            # pylint:disable=exec-used
-            exec script_text in script_module.__dict__
-            return script_module
+            spec = imp.spec_from_file_location(module_name, script_path)
+            module = imp.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module
         except ImportError as exception:
             log_error_and_notify(
                 "Unable to load reduction script %s "
-                "due to missing import. (%s)" % (script_path, exception.message))
+                "due to missing import. (%s)" % (script_path, exception))
             return None
         except SyntaxError:
             log_error_and_notify("Syntax error in reduction script %s" % script_path)
@@ -586,7 +587,7 @@ class InstrumentVariablesUtils(object):
 
     def _create_variables(self, instrument, script, variable_dict, is_advanced):
         variables = []
-        for key, value in variable_dict.iteritems():
+        for key, value in list(variable_dict.items()):
             str_value = str(value).replace('[', '').replace(']', '')
             # pylint:disable=protected-access,no-member
             if len(str_value) > InstrumentVariable._meta.get_field('value').max_length:
@@ -630,18 +631,18 @@ class MessagingUtils(object):
 
     def send_pending(self, reduction_run, delay=None):
         """ Sends a message to the queue with the details of the job to run. """
-        data_dict = self._make_pending_msg(reduction_run)
-        self._send_pending_msg(data_dict, delay)
+        message = self._make_pending_msg(reduction_run)
+        self._send_pending_msg(message, delay)
 
     def send_cancel(self, reduction_run):
         """ Sends a message to the queue telling it to cancel any reruns of the job. """
-        data_dict = self._make_pending_msg(reduction_run)
-        data_dict["cancel"] = True
-        self._send_pending_msg(data_dict)
+        message = self._make_pending_msg(reduction_run)
+        message.cancel = True
+        self._send_pending_msg(message)
 
     @staticmethod
     def _make_pending_msg(reduction_run):
-        """ Creates a dict message from the given run, ready to be sent to ReductionPending. """
+        """ Creates a Message from the given run, ready to be sent to ReductionPending. """
         script, arguments = ReductionRunUtils().get_script_and_arguments(reduction_run)
 
         # Currently only support single location
@@ -651,34 +652,39 @@ class MessagingUtils(object):
         else:
             raise Exception("No data path found for reduction run")
 
-        data_dict = {
-            'run_number': reduction_run.run_number,
-            'instrument': reduction_run.instrument.name,
-            'rb_number': str(reduction_run.experiment.reference_number),
-            'data': data_path,
-            'reduction_script': script,
-            'reduction_arguments': arguments,
-            'run_version': reduction_run.run_version,
-            'facility': FACILITY,
-            'message': '',
-            'overwrite': reduction_run.overwrite,
-        }
-
-        return data_dict
+        message = Message(
+            run_number=reduction_run.run_number,
+            instrument=reduction_run.instrument.name,
+            rb_number=str(reduction_run.experiment.reference_number),
+            data=data_path,
+            reduction_script=script,
+            reduction_arguments=arguments,
+            run_version=reduction_run.run_version,
+            facility=FACILITY,
+            overwrite=reduction_run.overwrite
+        )
+        return message
 
     @staticmethod
-    def _send_pending_msg(data_dict, delay=None):
-        """ Sends data_dict to ReductionPending (with the specified delay) """
-        # To prevent circular dependencies
-        from autoreduce_webapp.queue_processor import Client as ActiveMQClient
+    def _add_project_root_to_path():
+        """
+        Discovers and adds the project root directory to the system path
+        """
+        file_path = os.path.dirname(os.path.realpath(__file__))
+        path_parts = file_path.split('WebApp')
+        project_root = path_parts[0]  # This path should lead to git root dir
+        sys.path.append(project_root)
 
-        message_client = ActiveMQClient(ACTIVEMQ['broker'],
-                                        ACTIVEMQ['username'],
-                                        ACTIVEMQ['password'],
-                                        ACTIVEMQ['topics'],
-                                        'Webapp_QueueProcessor',
-                                        False, ACTIVEMQ['SSL'])
+    @staticmethod
+    def _send_pending_msg(message, delay=None):
+        """ Sends message to ReductionPending (with the specified delay) """
+        # To prevent circular dependencies
+        MessagingUtils._add_project_root_to_path()
+        from utils.clients.queue_client import QueueClient
+
+        message_client = QueueClient()
         message_client.connect()
-        message_client.send('/queue/ReductionPending', json.dumps(data_dict),
+
+        message_client.send('/queue/ReductionPending', message,
                             priority='0', delay=delay)
-        message_client.stop()
+        message_client.disconnect()

@@ -1,7 +1,7 @@
 # ############################################################################### #
 # Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
 #
-# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 """
@@ -11,16 +11,17 @@ Tests that data can traverse through the autoreduction system successfully
 from __future__ import print_function
 import os
 import unittest
-import json
 import time
 import shutil
 
+from model.database import access as db
+from model.message.job import Message
 
 from scripts.manual_operations import manual_remove as remove
 
 from utils import service_handling as external
-from utils.test_settings import MYSQL_SETTINGS, ACTIVEMQ_SETTINGS
-from utils.clients.database_client import DatabaseClient
+from utils.test_settings import ACTIVEMQ_SETTINGS
+from utils.clients.django_database_client import DatabaseClient
 from utils.clients.queue_client import QueueClient
 from utils.data_archive.data_archive_creator import DataArchiveCreator
 from utils.data_archive.archive_explorer import ArchiveExplorer
@@ -39,7 +40,7 @@ if os.name != 'nt':
         def setUp(self):
             """ Start all external services """
             # Get all clients
-            self.database_client = DatabaseClient(MYSQL_SETTINGS)
+            self.database_client = DatabaseClient()
             self.database_client.connect()
             self.queue_client = QueueClient(ACTIVEMQ_SETTINGS)
             self.queue_client.connect()
@@ -75,12 +76,15 @@ if os.name != 'nt':
                                                         vars_script='')
 
             # Create and send json message to ActiveMQ
-            data_ready_message = self.queue_client.serialise_data(rb_number=self.rb_number,
-                                                                  instrument=self.instrument,
-                                                                  location=file_location,
-                                                                  run_number=self.run_number)
+            data_ready_message = Message(rb_number=self.rb_number,
+                                         instrument=self.instrument,
+                                         data=file_location,
+                                         run_number=self.run_number,
+                                         facility="ISIS",
+                                         started_by=0)
+
             self.queue_client.send('/queue/DataReady',
-                                   json.dumps(data_ready_message))
+                                   data_ready_message)
 
             # Get Result from database
             results = self._find_run_in_database()
@@ -105,12 +109,15 @@ if os.name != 'nt':
                                                         vars_script='')
 
             # Create and send json message to ActiveMQ
-            data_ready_message = self.queue_client.serialise_data(instrument=self.instrument,
-                                                                  rb_number=self.rb_number,
-                                                                  run_number=self.run_number,
-                                                                  location=file_location)
+            data_ready_message = Message(rb_number=self.rb_number,
+                                         instrument=self.instrument,
+                                         data=file_location,
+                                         run_number=self.run_number,
+                                         facility="ISIS",
+                                         started_by=0)
+
             self.queue_client.send('/queue/DataReady',
-                                   json.dumps(data_ready_message))
+                                   data_ready_message)
 
             # Get Result from database
             results = self._find_run_in_database()
@@ -166,22 +173,19 @@ if os.name != 'nt':
             the record in question
             :return: The resulting record
             """
-            wait_times = [0, 2, 5, 10, 20]
+            wait_times = [0, 1, 2, 3, 5]
             results = []
             for timeout in wait_times:
                 # Wait before attempting database access
                 print('Waiting for: {}'.format(timeout))
                 time.sleep(timeout)
                 # Check database has expected values
-                connection = self.database_client.get_connection()
-                results = connection.query(self.database_client.reduction_run()) \
-                    .join(self.database_client.reduction_run().instrument) \
-                    .join(self.database_client.reduction_run().status) \
-                    .join(self.database_client.reduction_run().experiment) \
-                    .filter(self.database_client.instrument().name == self.instrument) \
-                    .filter(self.database_client.reduction_run().run_number == self.run_number) \
+                instrument_record = db.get_instrument(self.instrument)
+                results = self.database_client.data_model.ReductionRun.objects \
+                    .filter(instrument=instrument_record.id) \
+                    .filter(run_number=self.run_number) \
+                    .select_related() \
                     .all()
-                connection.commit()
                 try:
                     actual = results[0]
                 except IndexError:
@@ -232,4 +236,3 @@ else:
             Just Skip on windows
             function is here to make it more obvious that tests are not for windows
             """
-            pass

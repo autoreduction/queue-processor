@@ -68,7 +68,7 @@ if os.name == 'nt':
     ARCHIVE_DIRECTORY = r'\\isis\inst$\NDX%s\Instrument\data\cycle_%s\autoreduced\%s\%s'
 
     TEST_REDUCTION_DIRECTORY = r'\\reducedev\isis\output\NDX%s\user\scripts\autoreduction'
-    TEST_ARCHIVE_DIRECTORY = '\\isis\inst$\NDX%s\Instrument\data\cycle_%s\autoreduced\%s\%s'
+    TEST_ARCHIVE_DIRECTORY = r'\\isis\inst$\NDX%s\Instrument\data\cycle_%s\autoreduced\%s\%s'
 
 else:
     # %(instrument)
@@ -83,11 +83,3 @@ else:
 
     TEST_REDUCTION_DIRECTORY = '/reducedev/isis/output/NDX%s/user/scripts/autoreduction'
     TEST_ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s'
-
-# Email for notifications
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'exchsmtp.stfc.ac.uk'
-EMAIL_PORT = 25
-EMAIL_ERROR_RECIPIENTS = ['YOUR-EMAIL']
-EMAIL_ERROR_SENDER = 'autoreduce@reduce.isis.cclrc.ac.uk'
-BASE_URL = 'http://reduce.isis.cclrc.ac.uk/'

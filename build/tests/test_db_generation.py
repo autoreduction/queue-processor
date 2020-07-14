@@ -33,7 +33,10 @@ ALL_TABLES = {"auth_group",
               "reduction_viewer_reductionlocation",
               "reduction_viewer_reductionrun",
               "reduction_viewer_setting",
-              "reduction_viewer_status"
+              "reduction_viewer_status",
+              "reduction_viewer_output",
+              "reduction_viewer_outputtype",
+              "reduction_viewer_software",
              }
 
 
@@ -73,13 +76,12 @@ class TestDatabaseGeneration(unittest.TestCase):
         cur = database.cursor()
         for table in list(ALL_TABLES):
             if "reduction_viewer" in table:
-                cur.execute("SELECT * FROM {};".format(table))
+                cur.execute(f"SELECT * FROM {table};")
+                result = cur.fetchall()
                 if table == "reduction_viewer_status":
-                    self.assertTrue(len(cur.fetchall()) == 5,
-                                    "{} does not contain 5 rows.{} : {}".
-                                    format(table, table, cur.fetchall()))
+                    self.assertTrue(len(result) == 5,
+                                    f"{table} does not contain 5 rows. {table} :{result}")
                 else:
-                    self.assertTrue(len(cur.fetchall()) >= 3,
-                                    "{} does not contain at least 3 rows.{} : {}".
-                                    format(table, table, cur.fetchall()))
+                    self.assertTrue(len(result) >= 3,
+                                    f"{table} does not contain at least 3 rows. {table} :{result}")
         database.close()

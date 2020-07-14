@@ -14,19 +14,6 @@ from paths.path_manipulation import append_path
 
 from utils.project.structure import get_project_root
 
-# ActiveMQ
-ACTIVEMQ = {
-    "brokers": "127.0.1.1:61613",
-    "amq_queues": ["/queue/ReductionPending"],
-    "amq_user": "admin",
-    "amq_pwd": "admin",
-    "postprocess_error": "/queue/ReductionError",
-    "reduction_started": "/queue/ReductionStarted",
-    "reduction_complete": "/queue/ReductionComplete",
-    "reduction_error": "/queue/ReductionError",
-    "reduction_skipped": "/queue/ReductionSkipped"
-}
-
 # MISC
 # "scripts_directory": "/isis/NDX%s/user/scripts/autoreduction",
 # "ceph_directory": "/instrument/%s/RBNumber/RB%s/autoreduced/%s",

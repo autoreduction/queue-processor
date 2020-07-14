@@ -21,6 +21,9 @@ dist/
 
 # Ignore virtual environment
 venv/
+venv3/
+venv36/
+venv37/
 
 # Ignore migrations files
 migrations/
@@ -42,3 +45,6 @@ site.retry
 vault.yml
 
 .DS_Store
+
+# Ignore downloaded graphs
+Webapp/autoreduce_webapp/static/graphs/

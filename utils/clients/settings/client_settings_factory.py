@@ -7,16 +7,18 @@
 """
 Factory for creating settings objects that can be used in the client classes
 """
+# pylint: disable=fixme
 from utils.clients.settings.client_settings import ClientSettings
 
 
 # pylint:disable=too-few-public-methods
-class ClientSettingsFactory(object):
+class ClientSettingsFactory:
     """
     Class for the settings factory
     """
 
     ignore_kwargs = ['username', 'password', 'host', 'port']
+    valid_types = ['database', 'icat', 'queue', 'sftp', 'cycle']
 
     # pylint:disable=too-many-arguments
     def create(self, settings_type, username, password, host, port, **kwargs):
@@ -34,9 +36,9 @@ class ClientSettingsFactory(object):
                                                 reduction_complete, reduction_error
         :return: A ClientSettings object
         """
-        if settings_type.lower() not in ['database', 'icat', 'queue']:
-            raise ValueError("Factories creation settings type must be one of: 'database', "
-                             "'icat', 'queue'")
+        if settings_type.lower() not in self.valid_types:
+            raise ValueError(f"Factories creation settings type must be one of:"
+                             f"{','.join(self.valid_types)}")
         kwargs['username'] = username
         kwargs['password'] = password
         kwargs['host'] = host
@@ -49,6 +51,10 @@ class ClientSettingsFactory(object):
             settings = self._create_icat(**kwargs)
         elif settings_type.lower() == 'queue':
             settings = self._create_queue(**kwargs)
+        elif settings_type.lower() == 'sftp':
+            settings = self._create_sftp(**kwargs)
+        elif settings_type.lower() == 'cycle':
+            settings = self._create_cycle(**kwargs)
         return settings
 
     def _create_database(self, **kwargs):
@@ -75,6 +81,22 @@ class ClientSettingsFactory(object):
         icat_kwargs = ['authentication_type']
         self._test_kwargs(icat_kwargs, kwargs)
         return ICATSettings(**kwargs)
+
+    def _create_sftp(self, **kwargs):
+        """
+        :return: SFTP compatible settings object
+        """
+        sftp_kwargs = []    # No additional kwargs needed for sftp
+        self._test_kwargs(sftp_kwargs, kwargs)
+        return SFTPSettings(**kwargs)
+
+    def _create_cycle(self, **kwargs):
+        """
+        :return: cycle-ingestion compatible settings object
+        """
+        cycle_kwargs = ['uows_url', 'scheduler_url']
+        self._test_kwargs(cycle_kwargs, kwargs)
+        return CycleIngestionSettings(**kwargs)
 
     def _test_kwargs(self, expected, actual):
         """
@@ -139,6 +161,7 @@ class ActiveMQSettings(ClientSettings):
                  reduction_error='/queue/ReductionError',
                  reduction_skipped='/queue/ReductionSkipped',
                  **kwargs):
+        # TODO explicitly state args
         super(ActiveMQSettings, self).__init__(**kwargs)
 
         self.reduction_pending = reduction_pending
@@ -149,3 +172,22 @@ class ActiveMQSettings(ClientSettings):
         self.reduction_skipped = reduction_skipped
         self.all_subscriptions = [data_ready, reduction_started,
                                   reduction_complete, reduction_error, reduction_skipped]
+
+class SFTPSettings(ClientSettings):
+    """
+    SFTP settings object
+    """
+    def __init__(self, **kwargs):  # pylint:disable=useless-super-delegation
+        super(SFTPSettings, self).__init__(**kwargs)
+
+class CycleIngestionSettings(ClientSettings):
+    """
+    Cycle-ingestion settings object
+    """
+    uows_url = None
+    scheduler_url = None
+
+    def __init__(self, uows_url, scheduler_url, **kwargs):
+        super(CycleIngestionSettings, self).__init__(**kwargs)
+        self.uows_url = uows_url
+        self.scheduler_url = scheduler_url

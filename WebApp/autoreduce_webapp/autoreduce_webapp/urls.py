@@ -1,15 +1,22 @@
 # ############################################################################### #
 # Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
 #
-# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 """
 Routing for URI to page contents
 """
+import sys
+import os
+
 from django.conf import settings
 from django.conf.urls import include, url
 from django.contrib import admin
+
+from utils.project.structure import get_project_root
+sys.path.append(os.path.join(get_project_root(), 'WebApp', 'autoreduce_webapp'))
+
 
 from reduction_viewer import views as reduction_viewer_views
 from reduction_variables import views as reduction_variables_views
@@ -22,7 +29,7 @@ handler500 = 'autoreduce_webapp.views.handler500'
 
 urlpatterns = [
     # ===========================MISC================================= #
-    url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin/', admin.site.urls),
     url(r'^$', reduction_viewer_views.index, name='index'),
     url(r'^logout/$', reduction_viewer_views.logout, name='logout'),
     url(r'^help/$', reduction_viewer_views.help, name='help'),
@@ -71,10 +78,13 @@ urlpatterns = [
     url(r'^experiment/(?P<reference_number>-?[0-9]+)/$',
         reduction_viewer_views.experiment_summary, name='experiment_summary'),
 
-    # # ===========================SCRIPTS============================= #
+    # ===========================SCRIPTS============================= #
     url(r'^graph/$', reduction_viewer_views.graph_home, name="graph"),
     url(r'^graph/(?P<instrument_name>\w+)', reduction_viewer_views.graph_instrument, name="graph_instrument"),
-    url(r'^stats', reduction_viewer_views.stats, name="stats")
+    url(r'^stats', reduction_viewer_views.stats, name="stats"),
+
+    # ===========================VISUALISATION============================= #
+    url('django_plotly_dash/', include('django_plotly_dash.urls'))
 ]
 
 if settings.DEBUG:

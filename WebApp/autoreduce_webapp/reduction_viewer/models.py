@@ -46,6 +46,17 @@ class Status(models.Model):
         return u'%s' % self.value
 
 
+class Software(models.Model):
+    """
+    Represents the software used to perform the reduction
+    """
+    name = models.CharField(max_length=100, blank=False, null=False)
+    version = models.CharField(max_length=20, blank=False, null=False)
+
+    def __unicode__(self):
+        return f'{self.name}-{self.version}'
+
+
 class ReductionRun(models.Model):
     """
     Table designed to link all table together. This represents a single reduction run that
@@ -62,7 +73,7 @@ class ReductionRun(models.Model):
     # Text fields
     admin_log = models.TextField(blank=True)
     graph = models.TextField(null=True, blank=True)
-    message = models.TextField(blank=True)
+    message = models.TextField(null=True, blank=True)
     reduction_log = models.TextField(blank=True)
     # Scripts should be 100,000 chars or less. The DB supports up to 4GB strings here
     script = models.TextField(blank=False, validators=[MaxLengthValidator(100000)])
@@ -80,10 +91,14 @@ class ReductionRun(models.Model):
     overwrite = models.NullBooleanField(default=True)
 
     # Foreign Keys
-    experiment = models.ForeignKey(Experiment, blank=False, related_name='reduction_runs')
-    instrument = models.ForeignKey(Instrument, related_name='reduction_runs', null=True)
+    experiment = models.ForeignKey(Experiment, blank=False, related_name='reduction_runs',
+                                   on_delete=models.CASCADE)
+    instrument = models.ForeignKey(Instrument, related_name='reduction_runs', null=True,
+                                   on_delete=models.CASCADE)
     retry_run = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
-    status = models.ForeignKey(Status, blank=False, related_name='+')
+    status = models.ForeignKey(Status, blank=False, related_name='+', on_delete=models.CASCADE)
+    software = models.ForeignKey(Software, blank=False, related_name='reduction_runs', null=True,
+                                 on_delete=models.CASCADE)
 
     def __unicode__(self):
         """ :return: run_number and run_name if given """
@@ -111,7 +126,8 @@ class DataLocation(models.Model):
     Represents the location at which the unreduced data is stored on disk
     """
     file_path = models.CharField(max_length=255)
-    reduction_run = models.ForeignKey(ReductionRun, blank=False, related_name='data_location')
+    reduction_run = models.ForeignKey(ReductionRun, blank=False, related_name='data_location',
+                                      on_delete=models.CASCADE)
 
     def __unicode__(self):
         """ :return: the file path to the data"""
@@ -123,7 +139,8 @@ class ReductionLocation(models.Model):
     Represents the location at which the reduced data is stored on disk
     """
     file_path = models.CharField(max_length=255)
-    reduction_run = models.ForeignKey(ReductionRun, blank=False, related_name='reduction_location')
+    reduction_run = models.ForeignKey(ReductionRun, blank=False, related_name='reduction_location',
+                                      on_delete=models.CASCADE)
 
     def __unicode__(self):
         """ :return: the file path to the data"""
@@ -164,3 +181,22 @@ class Notification(models.Model):
         :return: the severity as its textual value
         """
         return dict(Notification.SEVERITY_CHOICES)[self.severity]
+
+
+class OutputType(models.Model):
+    """
+    Represents the output types of file that can be output from a job
+    This is an enum table
+    """
+    type = models.CharField(max_length=50, blank=False)
+
+
+class Output(models.Model):
+    """
+    Represents the output of a reduction job (file path and type)
+    """
+    job = models.ForeignKey(ReductionRun, blank=False, related_name='output',
+                            on_delete=models.CASCADE)
+    file_path = models.CharField(max_length=255, blank=False)
+    type = models.ForeignKey(OutputType, blank=False, related_name='output',
+                             on_delete=models.CASCADE)

@@ -1,40 +1,42 @@
 # ############################################################################### #
 # Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
 #
-# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 """
 Module that reads from the reduction pending queue and calls the python script on that data.
 """
-import json
 import os
 import subprocess
 import sys
 
-from twisted.internet import reactor
-
 import stomp
 
+from twisted.internet import reactor
+
+from model.message.job import Message
 from queue_processors.autoreduction_processor.autoreduction_logging_setup import logger
 # pylint:disable=no-name-in-module,import-error
-from queue_processors.autoreduction_processor.settings import MISC, ACTIVEMQ
+from queue_processors.autoreduction_processor.settings import MISC
+from utils.clients.queue_client import QueueClient
 
 
-class Listener(object):
+class Listener(stomp.ConnectionListener):
     """ Listener class that is used to consume messages from ActiveMQ. """
-    def __init__(self, client):
+    def __init__(self):
         """ Initialise listener. """
-        self._client = client
         self.proc_list = []
         self.rb_list = []  # list of RB numbers of active reduction runs
         self.cancel_list = []  # list of (run number, run version)s to drop (once) used
 
     @staticmethod
+    # pylint:disable=arguments-differ
     def on_error(message):
         """ Handler for errored messages. """
         logger.error("Error message received - %s", str(message))
 
+    # pylint:disable=arguments-differ
     def on_message(self, headers, data):
         """ handles message consuming. It will consume a message. """
         destination = headers['destination']
@@ -42,10 +44,11 @@ class Listener(object):
         logger.debug("Received frame priority: %s", headers["priority"])
 
         self.update_child_process_list()
-        data_dict = json.loads(data)
+        message = Message()
+        message.populate(data)
 
-        if "cancel" in data_dict and data_dict["cancel"]:
-            self.add_cancel(data_dict)
+        if message.cancel:
+            self.add_cancel(message)
             return
 
         self.hold_message(destination, data, headers)
@@ -53,10 +56,11 @@ class Listener(object):
     def hold_message(self, destination, data, headers):
         """ Calls the reduction script. """
         logger.debug("holding thread")
-        data_dict = json.loads(data)
+        message = Message()
+        message.populate(data)
 
         self.update_child_process_list()
-        if not self.should_proceed(data_dict):  # wait while the run shouldn't proceed
+        if not self.should_proceed(message):  # wait while the run shouldn't proceed
             # pylint: disable=maybe-no-member
             reactor.callLater(10, self.hold_message,  # pragma: no cover
                               destination, data,
@@ -64,25 +68,23 @@ class Listener(object):
 
             return
 
-        if self.should_cancel(data_dict):
-            self.cancel_run(data_dict)  # pylint: disable=maybe-no-member
-
+        if self.should_cancel(message):
+            self.cancel_run(message)  # pylint: disable=maybe-no-member
             return
 
-        print_dict = data_dict.copy()
-        print_dict.pop("reduction_script")
+
         if not os.path.isfile(MISC['post_process_directory']):
             logger.warning("Could not find autoreduction post processing file "
                            "- please contact a system administrator")
         python_path = sys.executable
         logger.info("Calling: %s %s %s %s",
-                    python_path, MISC['post_process_directory'], destination, print_dict)
-        self._client.ack(headers['message-id'], headers['subscription'])  # Remove from queue
+                    python_path, MISC['post_process_directory'], destination,
+                    message.serialize())    # TODO: limit reduction script  #pylint:disable=fixme
         proc = subprocess.Popen([python_path,
                                  MISC['post_process_directory'],
                                  destination,
-                                 data])
-        self.add_process(proc, data_dict)
+                                 message.serialize()])  # PPA expects json data
+        self.add_process(proc, message)
 
     def update_child_process_list(self):
         """ Updates the list of processes by checking they still exist. """
@@ -92,79 +94,63 @@ class Listener(object):
                 self.proc_list.pop(index)
                 self.rb_list.pop(index)
 
-    def add_process(self, proc, data_dict):
+    def add_process(self, proc, message):
         """ Add child process to list. """
+        logger.info("Entered add_process. proc=%s message=%s", proc, message)
         self.proc_list.append(proc)
-        self.rb_list.append(data_dict["rb_number"])
+        self.rb_list.append(message.rb_number)
 
-    def should_proceed(self, data_dict):
+    def should_proceed(self, message):
         """ Check whether there's a job already running with the same RB. """
-        if data_dict["rb_number"] in self.rb_list:
+        if message.rb_number in self.rb_list:
             logger.info("Duplicate RB run #%s, waiting for the first to finish.",
-                        data_dict["rb_number"])
+                        message.rb_number)
             return False
         # else return True
         return True
 
     @staticmethod
-    def run_tuple(data_dict):
+    def run_tuple(message):
         """ return the tuple of (run_number, run version) from a dictionary. """
-        run_number = data_dict["run_number"]
-        run_version = data_dict["run_version"] if data_dict["run_version"] is not None else 0
+        run_number = message.run_number
+        run_version = message.run_version
+        if run_version is None:
+            run_version = 0
         return run_number, run_version
 
-    def add_cancel(self, data_dict):
+    def add_cancel(self, message):
         """ Add this run to the cancel list, to cancel it next time it comes up. """
-        tup = self.run_tuple(data_dict)
+        tup = self.run_tuple(message)
         if tup not in self.cancel_list:
             self.cancel_list.append(tup)
 
-    def should_cancel(self, data_dict):
+    def should_cancel(self, message):
         """ Return whether a run is in the list of runs to be canceled. """
-        tup = self.run_tuple(data_dict)
+        tup = self.run_tuple(message)
         return tup in self.cancel_list
 
-    def cancel_run(self, data_dict):
+    def cancel_run(self, message):
         """ Cancel the reduction run. """
-        tup = self.run_tuple(data_dict)
+        tup = self.run_tuple(message)
         self.cancel_list.remove(tup)
 
 
-class Consumer(object):
+class Consumer:
     # pylint: disable=too-few-public-methods
     """ Class used to setup the queue listener. """
     def __init__(self):
         """ Initialise consumer. """
-        self.consumer_name = "queueProcessor"
+        self.consumer_name = "autoreduction_processor"
 
     def run(self):
         """
-        Connect to ActiveMQ and listen to the queue for messages.
+        Connect to ActiveMQ via the QueueClient and listen to the
+        /ReductionPending queue for messages.
         """
-        brokers = [(ACTIVEMQ['brokers'].split(':')[0], int(ACTIVEMQ['brokers'].split(':')[1]))]
-        connection = stomp.Connection(host_and_ports=brokers, use_ssl=False)
-        connection.set_listener(self.consumer_name, Listener(connection))
-        logger.info("Starting ActiveMQ Connection to %s", ACTIVEMQ['brokers'])
-        connection.start()
-        logger.info("Completed ActiveMQ Connection")
-        connection.connect(ACTIVEMQ['amq_user'],
-                           ACTIVEMQ['amq_pwd'],
-                           wait=False,
-                           header={'activemq.prefetchSize': '1'})
-        for queue in ACTIVEMQ['amq_queues']:
-            connection.subscribe(destination=queue,
-                                 id='1',
-                                 ack='client-individual',
-                                 header={'activemq.prefetchSize': '1'})
-            logger.info("[%s] Subscribing to %s", self.consumer_name, queue)
-        logger.info("Successfully subscribed to all of the queues")
-
-        # activemq_client = QueueClient()
-        # activemq_client.connect()
-
-        # Create event listener
-        # listener = Listener(activemq_client)
-        # activemq_client.subscribe_amq(self.consumer_name, listener, ack='client-individual')
+        activemq_client = QueueClient()
+        activemq_client.connect()
+        activemq_client.subscribe_amq(consumer_name=self.consumer_name,
+                                      listener=Listener())
 
 
 def main():  # pragma: no cover

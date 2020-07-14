@@ -8,10 +8,9 @@
 Module to install external programs not required by the project
 7zip
 ActiveMQ
-ICAT
 Mantid
 """
-from __future__ import print_function
+import sys
 import logging
 import os
 
@@ -47,7 +46,6 @@ class InstallExternals(Command):
             self.services = service_dict
         else:
             self.services = {'activemq': False,
-                             'icat': False,
                              'mantid': False}
         if os.name == 'nt' and '7zip' not in self.services:
             self.services['7zip'] = False
@@ -61,6 +59,7 @@ class InstallExternals(Command):
         #  Validate
         if not self._check_imports():
             return
+        # pylint:disable=import-outside-toplevel
         from build.install.install_services import install_service
         if not self._check_input():
             return
@@ -88,7 +87,7 @@ class InstallExternals(Command):
             if install_service(service, BUILD_LOGGER) is False:
                 print("Unable to install %s. See build log below:" % service)
                 BUILD_LOGGER.print_full_log()
-                exit(1)
+                sys.exit(1)
 
         valid = self._validate_services(services_to_install, quiet=False)
         if False in valid.values():
@@ -106,7 +105,7 @@ class InstallExternals(Command):
         :return: False if imports fail
         """
         try:
-            # pylint:disable=unused-variable
+            # pylint:disable=unused-import,import-outside-toplevel
             from build.install.install_services import (install_service, validate_input,
                                                         valid_services)
         except ImportError:
@@ -121,6 +120,7 @@ class InstallExternals(Command):
         Check the user input is valid
         :return: False if user input is invalid
         """
+        # pylint:disable=import-outside-toplevel
         from build.install.install_services import valid_services, validate_input
         if not validate_input(self.services, BUILD_LOGGER):
             BUILD_LOGGER.print_and_log("Some services supplied were not valid.\n"
@@ -133,10 +133,11 @@ class InstallExternals(Command):
     def _validate_services(list_of_services, quiet=True):
         """
         Check if services are installed and usable. Current checks:
-            7Zip, ActiveMQ, icat, Mantid
+            7Zip, ActiveMQ, Mantid
         :param quiet: boolean to decide if anything is printed on validation failure
         :return: dictionary of {"service_name": validity(True/False)}
         """
+        # pylint:disable=import-outside-toplevel
         from build.tests.validate_installs import validate_installs
         print("=======================")
         service_validity = validate_installs(list_of_services)

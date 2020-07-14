@@ -1,7 +1,7 @@
 # ############################################################################### #
 # Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
 #
-# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 # pylint: skip-file
@@ -11,7 +11,7 @@ import os
 from utils.project.structure import get_project_root
 
 LOGGING_LEVEL = logging.INFO
-LOGGING_LOC = os.path.join(get_project_root(), 'logs', 'autoreductionProcessor.log')
+LOGGING_LOC = os.path.join(get_project_root(), 'logs', 'autoreduction_processor.log')
 
 logger = logging.getLogger('AutoreductionProcessor')
 logger.setLevel(LOGGING_LEVEL)

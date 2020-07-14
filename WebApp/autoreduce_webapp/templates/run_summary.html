@@ -2,10 +2,9 @@
 {% load view %}
 {% load colour_table_rows %}
 {% load natural_time_difference %}
-{% load get_user_name %}
 {% load replace %}
 {% load naturaltime from humanize %}
-{% load static from staticfiles %}
+{% load static %}
 
 {% block body %}
     {% if run %}
@@ -18,6 +17,13 @@
                 {% endif %}
             </div>
         </div>
+        {% if plot_locations %}
+            {% for plot_file in plot_locations %}
+            <div>
+                <img src="{{ plot_file }}">
+            </div>
+            {% endfor %}
+        {% endif %}
         {% if run.message %}
             {% if 'Skipped' in run.message %}
                 <div class="alert alert-{% replace run.status.value 'Skipped' 'info' %} word-wrap" role="alert">
@@ -36,13 +42,18 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div>
-                                    <strong>Status:</strong> <strong class="text-{% colour_table_row run.status.value %}">{{ run.status }}</strong>
+                                    {% if started_by is not null %}
+                                    <strong>Started by:</strong> {{ started_by }}
+                                    {% endif %}
                                 </div>
                                 <div>
-                                    <strong>Instrument:</strong> <a href="{% url 'instrument_summary' instrument=run.instrument %}">{{ run.instrument }}</a>
+                                    <strong>Status:</strong> <strong class="text-{% colour_table_row run.status.value %}">{{ run.status.value }}</strong>
                                 </div>
                                 <div>
-                                    <strong>RB Number:</strong> <a href="{% url 'experiment_summary' reference_number=run.experiment %}">{{ run.experiment }}</a>
+                                    <strong>Instrument:</strong> <a href="{% url 'instrument_summary' instrument=run.instrument.name %}">{{ run.instrument.name }}</a>
+                                </div>
+                                <div>
+                                    <strong>RB Number:</strong> <a href="{% url 'experiment_summary' reference_number=run.experiment.reference_number %}">{{ run.experiment.reference_number }}</a>
                                 </div>
                                 <div>
                                     <strong>Last Updated:</strong> {{ run.last_updated }}
@@ -82,7 +93,7 @@
                                                 <span> (Last attempt)</span>
                                             {% endif %}
                                             {% if run.retry_run %}
-                                                <a href="{% url 'run_summary' instrument_name=run.instrument.name run_number=run.retry_run.run_number run_version=run.retry_run.run_version %}"> ({{ run.retry_run.status }})</a>
+                                                <a href="{% url 'run_summary' instrument_name=run.instrument.name run_number=run.retry_run.run_number run_version=run.retry_run.run_version %}"> ({{ run.retry_run.status.value }})</a>
                                             {% endif %}
                                         {% else %}
                                             Never
@@ -99,7 +110,7 @@
                                     <strong>Data:</strong>
                                     {% if run.data_location.all %}
                                         {% for location in run.data_location.all %}
-                                            {{ location }}<br/>
+                                            {{ location.file_path }}<br/>
                                         {% endfor %}
                                     {% else %}
                                         <em>No data found</em>
@@ -113,7 +124,7 @@
                                         {{ reduction_location }}<br/>
                                     {% elif run.reduction_location.all %}
                                         {% for location in run.reduction_location.all %}
-                                            {{ location }}<br/>
+                                            {{ location.file_path }}<br/>
                                         {% endfor %}
                                     {% else %}
                                         <em>No reduced data found</em>
@@ -139,8 +150,10 @@
                 </div>
             </div>
         {% endif %}        
-        {% if reduction_variables_on %}  
-            {% view "reduction_variables.views.run_summary" run.instrument.name run.run_number run.run_version %}
+        {% if reduction_variables_on %}
+            {% autoescape on %}
+                {% view "reduction_variables.views.run_summary" run.instrument.name run.run_number run.run_version %}
+            {% endautoescape %}
         {% endif %}
 
         <div class="run-history modal fade" tabindex="-1" role="dialog" aria-hidden="true">
@@ -173,7 +186,11 @@
                                         <td class="text-{% colour_table_row job.status.value %}"><strong>{{ job.status.value }}</strong></td>
                                         <td title="{{ job.last_updated|date:'SHORT_DATETIME_FORMAT' }}">{{ job.last_updated|naturaltime }}</td>
                                         <td>
-											Autoreduction Service
+                                            {% if started_by %}
+                                                {{ started_by }}
+                                            {% else %}
+                                                Unknown
+                                            {% endif %}
                                         </td>
                                     </tr>
                                 {% endfor %}

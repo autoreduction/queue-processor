@@ -16,31 +16,38 @@ from build.commands.migrate_settings import MigrateTestSettings
 from build.commands.start import Start
 
 
-setup_requires = ['dash',
+setup_requires = ['attrs',
+                  'dash',
                   'dash_html_components',
                   'dash_core_components',
                   'docker',
                   'Django',
                   'django_extensions',
+                  'django_plotly_dash',
                   'django-user-agents',
                   'filelock',
+                  'fire',
                   'gitpython',
+                  'IPython',
+                  'mysqlclient',
                   'mysql-connector',
-                  'MySQL-python',
                   'nexusformat',
                   'numpy',
-                  'plotly',
                   'pandas',
+                  'plotly',
                   'pytz',
-                  'pymysql',
+                  'PyMySQL',
+                  'pysftp',
+                  'python-icat',
                   'requests',
                   'sentry_sdk',
                   'service_identity',
                   'SQLAlchemy',
-                  'stomp.py==4.1.22',  # ToDo: can remove version requirement when we move to py3
-                  'suds',
-                  'Twisted',
-                  'watchdog']
+                  'stomp.py',
+                  'suds-py3',
+                  'Twisted==19.10.0',
+                  'PyYAML']
+
 
 if platform.system() == 'Windows':
     setup_requires.append('pypiwin32')

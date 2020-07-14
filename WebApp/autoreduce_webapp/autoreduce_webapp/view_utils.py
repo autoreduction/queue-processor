@@ -1,23 +1,28 @@
 # ############################################################################### #
 # Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
 #
-# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 """
 Utility functions for the Django views
 """
 import logging
+import os
+import sys
 from django.shortcuts import redirect
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import render
 
 # The below is a template on the repository
 # pylint: disable=relative-import
-from settings import (DEVELOPMENT_MODE, INSTALLED_APPS, LOGIN_URL,
+from .settings import (DEVELOPMENT_MODE, INSTALLED_APPS, LOGIN_URL,
                       OUTDATED_BROWSERS, UOWS_LOGIN_URL, USER_ACCESS_CHECKS)
 # pylint: disable=relative-import
-from icat_cache import ICATCache
+from .icat_cache import ICATCache
+
+from utils.project.structure import get_project_root
+sys.path.append(os.path.join(get_project_root(), 'WebApp', 'autoreduce_webapp'))
 
 from reduction_viewer.models import ReductionRun, Experiment
 from reduction_viewer.models import Notification, Setting
@@ -34,7 +39,7 @@ def has_valid_login(request):
     if DEVELOPMENT_MODE:
         LOGGER.debug("DEVELOPMENT_MODE True so allowing access")
         return True
-    if request.user.is_authenticated() and 'sessionid' in request.session:
+    if request.user.is_authenticated and 'sessionid' in request.session:
         LOGGER.debug("User is authenticated and has a sessionid from the UOWS")
         return True
     return False
@@ -108,7 +113,7 @@ def render_with(template):
             # pylint: disable=no-member
             notifications = Notification.objects.filter(is_active=True,
                                                         is_staff_only=
-                                                        (request.user.is_authenticated()
+                                                        (request.user.is_authenticated
                                                          and request.user.is_staff))
             if 'notifications' not in output:
                 output['notifications'] = notifications

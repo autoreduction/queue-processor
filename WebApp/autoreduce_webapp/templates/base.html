@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-{% load static from staticfiles %}
+{% load static %}
 <html>
 <head>
     <meta charset="utf-8">
@@ -28,7 +28,6 @@
                 {% block footer %}{% endblock %}
                 {% include "footer.html" %}
             </div>
-
             <script src="{% static "javascript/vendor/jquery.min.js" %}"></script>
             <script src="{% static "javascript/vendor/bootstrap.min.js" %}"></script>
             <script src="{% static "javascript/cookies.js" %}"></script>

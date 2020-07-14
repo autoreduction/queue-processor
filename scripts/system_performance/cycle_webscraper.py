@@ -13,6 +13,7 @@ use in MySQL queries.
 
 # Dependencies
 # Web-scraping dependencies
+from __future__ import print_function
 import os
 import logging
 import re
@@ -22,7 +23,7 @@ import lxml.html as lh
 import pandas as pd
 
 
-class TableWebScraper(object):
+class TableWebScraper:
     """
     Web-scrapes beam cycle data from https://www.isis.stfc.ac.uk/Pages/Beam-Status.aspx
     for MySQL system checks. This URl can be changed at the bottom of the script
@@ -88,6 +89,7 @@ class TableWebScraper(object):
 
         def _datatable_constructor(col):
             """Construct data frame from list of columns"""
+            # pylint:disable=unnecessary-comprehension
             dictionary = {title: column for (title, column) in col}
             data_table = pd.DataFrame(dictionary)
             self.save_to_csv(data_table)
@@ -105,7 +107,7 @@ class TableWebScraper(object):
                 data_table = _datatable_constructor(col)
                 return data_table
             except ValueError:
-                print "The URL you are trying to access is invalid: {}".format(url)
+                print("The URL you are trying to access is invalid: {}".format(url))
 
         def _check_connection(url):
             """Web scrape if URL can be pinged else retrieve local copy made"""
@@ -120,14 +122,15 @@ class TableWebScraper(object):
 
             except requests.exceptions.ConnectionError:
                 data_table = TableWebScraper.read_csv(self.local_data)
-                print "THE URL YOU ARE TRYING TO ACCESS IS INVALID {}".format(url)
+                print("THE URL YOU ARE TRYING TO ACCESS IS INVALID {}".format(url))
             return data_table
 
         data = _check_connection(WEBSITE)
         return data
 
+
 # #-/////////////////////////////////// Data cleaning /////////////////////////////////////-#
-class DataClean(object):
+class DataClean:
     """Cleans and normalises data frame"""
 
     def __init__(self, raw_data):
@@ -170,7 +173,7 @@ class DataClean(object):
             return month_compare[string]
         except ValueError:
             # Month is not recognised as key in month_compare
-            print "{} is not a month".format(string)
+            print("{} is not a month".format(string))
 
     # Re-format date in Start and End columns to separate days, months and year by a , and space
     @staticmethod
@@ -198,7 +201,6 @@ class DataClean(object):
 
 
 # Set url to scrape from, put inside pandas table and clean data frame ready for queries
-# WEBSITE = 'https://www.isis.stfc.ac.uk/Pages/Beam-Status.aspx'
-WEBSITE = 'https://www.isi.stc.ac.uk/Pages/'
+WEBSITE = 'https://www.isis.stfc.ac.uk/Pages/Beam-Status.aspx'
 # Normalise is kept separate in case table no longer needs to be normalised.
 DATA_FRAME = DataClean(TableWebScraper(WEBSITE).create_table()).normalise()
