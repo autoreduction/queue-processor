@@ -7,11 +7,11 @@
 """
 Initialise admin pages
 """
-from django.contrib import admin
+import django.contrib.admin
 
 # pylint: disable=relative-import
 from .models import UserCache, InstrumentCache, ExperimentCache
 
-admin.site.register(UserCache)
-admin.site.register(InstrumentCache)
-admin.site.register(ExperimentCache)
+django.contrib.admin.site.register(UserCache)
+django.contrib.admin.site.register(InstrumentCache)
+django.contrib.admin.site.register(ExperimentCache)

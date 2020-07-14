@@ -13,6 +13,8 @@ pandas
 plotly
 pylint
 pytest-cov
+pytest-django
+pytest-pythonpath
 python-coveralls
 requests
 sentry-sdk
