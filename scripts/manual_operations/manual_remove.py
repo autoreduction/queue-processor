@@ -216,9 +216,9 @@ def user_input_check(instrument, run_numbers):
 def main(instrument: str, first_run: int, last_run: int = None):
     """
     Parse user input and run the script to remove runs for a given instrument
-    :param instrument: Instrument to run on
-    :param first_run: First run to be removed
-    :param last_run: Optional last run to be removed
+    :param instrument: (str) Instrument to run on
+    :param first_run: (int) First run to be removed
+    :param last_run: (int) Optional last run to be removed
     """
     run_numbers = [first_run]
 
