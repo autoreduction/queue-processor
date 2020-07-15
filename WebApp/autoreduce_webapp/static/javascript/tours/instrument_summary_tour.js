@@ -1,5 +1,11 @@
 steps = [
     {
+        element: "#not-active",
+        title: "Instrument Active",
+        content: "Here, we display whether or not the Instrument is active.",
+        placement: "bottom"
+    },
+    {
         element: "#runs-table",
         title: "Runs Table",
         content: "This table displays all runs and their status in the reduction process.",
