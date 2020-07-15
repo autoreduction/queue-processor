@@ -19,9 +19,9 @@ steps = [
         placement: "bottom"
     },
     {
-        element: "#re-run_job",
+        element: "#re-run_and_graphs",
         title: "Re-run",
-        content: "You can select here to be begin manually submitting a re-run a job, entering a " +
+        content: "If available, you can select here to be begin manually submitting a re-run a job, entering a " +
             "description detailing the purpose of the re-run, changing any parameters if available",
         placement: "top"
     },
