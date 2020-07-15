@@ -180,7 +180,7 @@ class TestPostProcessAdmin(unittest.TestCase):
 
         file_name = "test.log"
         log_directory = f"{mock_instrument_output_dir}/reduction_log/"
-        log_and_error_name = f"RB{ppa.proposal}Run{ppa.run_number}"
+        log_and_error_name = f"RB_{ppa.proposal}_Run_{ppa.run_number}_"
 
         actual = ppa.create_log_path(file_name_with_extension=file_name,
                                      log_directory=log_directory)

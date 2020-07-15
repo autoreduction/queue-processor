@@ -4,7 +4,7 @@
 # Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
-# !/usr/bin/env python
+#!/usr/bin/env python
 # pylint: disable=too-many-branches
 # pylint: disable=broad-except
 # pylint: disable=bare-except
@@ -222,7 +222,7 @@ class PostProcessAdmin:
       :return: (str) log file path
       """
 
-        log_and_err_name = f"RB{self.proposal}Run{self.run_number}"
+        log_and_err_name = f"RB_{self.proposal}_Run_{self.run_number}_"
 
         return Path(log_directory, log_and_err_name + file_name_with_extension)
 
