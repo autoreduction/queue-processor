@@ -224,7 +224,6 @@ def main(instrument: str, first_run: int, last_run: int = None):
 
     if last_run:
         if last_run < first_run:
-            print(f"last run {last_run} must be greater than first run {first_run}")
             raise ValueError(f"last run: {last_run} was smaller than first run: {first_run}")
         run_numbers = range(first_run, last_run + 1)
 
