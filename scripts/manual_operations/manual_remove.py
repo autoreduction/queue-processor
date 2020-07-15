@@ -13,6 +13,7 @@ import sys
 
 import fire
 
+from scripts.manual_operations.util import get_run_range
 from utils.clients.django_database_client import DatabaseClient
 from model.database import access as db
 
@@ -220,12 +221,7 @@ def main(instrument: str, first_run: int, last_run: int = None):
     :param first_run: (int) First run to be removed
     :param last_run: (int) Optional last run to be removed
     """
-    run_numbers = [first_run]
-
-    if last_run:
-        if last_run < first_run:
-            raise ValueError(f"last run: {last_run} was smaller than first run: {first_run}")
-        run_numbers = range(first_run, last_run + 1)
+    run_numbers = get_run_range(first_run, last_run=last_run)
 
     instrument = instrument.upper()
 
