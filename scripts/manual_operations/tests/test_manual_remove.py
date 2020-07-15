@@ -231,20 +231,6 @@ class TestManualRemove(unittest.TestCase):
         mock_process.assert_called()
         mock_delete.assert_called()
 
-    # pylint:disable=no-self-use
-    @patch('scripts.manual_operations.manual_remove.ManualRemove.find_runs_in_database')
-    @patch('scripts.manual_operations.manual_remove.ManualRemove.process_results')
-    @patch('scripts.manual_operations.manual_remove.ManualRemove.delete_records')
-    def test_main_single_run(self, mock_delete, mock_process, mock_find):
-        """
-        Test: The correct control functions are called for a single run
-        When: The main() function is called
-        """
-        main(instrument='GEM', first_run=1)
-        mock_find.assert_called()
-        mock_process.assert_called()
-        mock_delete.assert_called()
-
     def test_main_last_run_smaller_than_first_run_raises_value_error(self):
         """
         Test: ValueError is raised when first run is larger then last run
