@@ -212,7 +212,7 @@ class TestManualRemove(unittest.TestCase):
         When: The main() function is called
         """
         main(instrument='GEM', first_run=1, last_run=11)
-        mock_uic.assert_called()
+        mock_uic.assert_called_with("GEM", range(1, 12))
         mock_find.assert_called()
         mock_process.assert_called()
         mock_delete.assert_called()
