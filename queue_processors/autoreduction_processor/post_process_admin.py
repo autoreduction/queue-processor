@@ -212,7 +212,6 @@ class PostProcessAdmin:
     def reduce(self):
         """ Start the reduction job. """
         # pylint: disable=too-many-nested-blocks, trailing-whitespace
-
         logger.info("reduce started")
         self.message.software = self._get_mantid_version()
 
