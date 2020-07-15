@@ -184,7 +184,7 @@ class PostProcessAdmin:
                      self.message.serialize(limit_reduction_script=True))
         self.client.send(ACTIVEMQ_SETTINGS.reduction_started, self.message)
         
-    def result_and_log_directory(self, temporary_root_directory, reduce_dir, log_dir):
+    def result_and_log_directory(self, temporary_root_directory, reduce_dir):
         """
         Create final result and final log directories, stripping temporary path off of the
         front of temporary directories
@@ -197,7 +197,6 @@ class PostProcessAdmin:
         # validate dir before slicing
         if reduce_dir.startswith(temporary_root_directory):
             result_directory = reduce_dir[len(temporary_root_directory):]
-            log_directory = log_dir[len(temporary_root_directory):]
         else:
             return ValueError("The reduce directory does not start by following the expected "
                               "format: %s \n", temporary_root_directory)
@@ -242,8 +241,7 @@ class PostProcessAdmin:
             # strip temp path off front of the temp directory to get the final archives directory
             final_result_dir, final_log_dir = self.result_and_log_directory(
                 temporary_root_directory=MISC["temp_root_directory"],
-                reduce_dir=reduce_result_dir,
-                log_dir=log_dir)
+                reduce_dir=reduce_result_dir)
 
             # test for access to result paths
             try:

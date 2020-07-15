@@ -145,8 +145,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         reduction_log = "/reduction_log/"
         actual_final_result, actual_log = ppa.result_and_log_directory(
             temporary_root_directory=MISC["temp_root_directory"],
-            reduce_dir=reduce_directory,
-            log_dir=reduce_directory + reduction_log)
+            reduce_dir=reduce_directory)
 
         expected_log = f"{instrument_output_directory}0{reduction_log}"
         expected_logs_called_with = [call("Final Result Directory = %s", actual_final_result),
@@ -165,11 +164,9 @@ class TestPostProcessAdmin(unittest.TestCase):
         incorrect_temporary_directory = "incorrect_directory_format"
         instrument_output_directory = instrument_output_dir[:instrument_output_dir.rfind('/') + 1]
         reduce_directory = MISC["temp_root_directory"] + instrument_output_directory
-        reduction_log = "/reduction_log/"
         actual_final_result = ppa.result_and_log_directory(
             temporary_root_directory=incorrect_temporary_directory,
-            reduce_dir=reduce_directory,
-            log_dir=reduce_directory + reduction_log)
+            reduce_dir=reduce_directory)
 
         self.assertIsInstance(actual_final_result, ValueError)
 
