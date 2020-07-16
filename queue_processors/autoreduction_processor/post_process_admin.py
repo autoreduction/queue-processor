@@ -183,14 +183,13 @@ class PostProcessAdmin:
                      ACTIVEMQ_SETTINGS.reduction_started,
                      self.message.serialize(limit_reduction_script=True))
         self.client.send(ACTIVEMQ_SETTINGS.reduction_started, self.message)
-        
+
     def result_and_log_directory(self, temporary_root_directory, reduce_dir):
         """
         Create final result and final log directories, stripping temporary path off of the
         front of temporary directories
         :param temporary_root_directory: (str) temporary root directory
         :param reduce_dir: (str) final reduce directory
-        :param log_dir: (str) final log directory
         :return (tuple) - (str, str) final result and final log directory paths
         """
 
