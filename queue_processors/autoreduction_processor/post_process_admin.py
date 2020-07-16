@@ -177,6 +177,53 @@ class PostProcessAdmin:
         """ Returns the path of the reduction script for an instrument. """
         return os.path.join(self._reduction_script_location(instrument_name), 'reduce.py')
 
+    @staticmethod
+    def write_and_readability_checks(directory_list, read_write):
+        """
+        Check a list of N directories for write/readability
+        :param directory_list: (list) directory list
+        :param read_write: (str) Read=R, Write=W
+        """
+        read_write = read_write.upper()
+        read_write_map = {"R": "read", "W": "write"}
+        try:
+            for location in directory_list:
+                if not os.access(location, getattr(sys.modules[os.__name__], read_write)):
+                    if not os.access(location, os.F_OK):
+                        problem = "does not exist"
+                    else:
+                        problem = "no %s access", read_write_map[read_write]
+                    raise Exception("Couldn't %s %s  -  %s" % (read_write_map[read_write],
+                                                               location,
+                                                               problem))
+
+        except ValueError:
+            raise ValueError("Invalid read or write input: %s \n"
+                             "read_write argument must be either 'R' or 'W'", f"{read_write}_")
+
+    def path_access_validate(self, should_be_writable, should_be_readable):
+        """
+        Test for access to result paths
+        :param should_be_writable: (list)
+        :param should_be_readable: (list)
+        """
+        try:
+            # Try to make directories which should exist
+            for path in filter(lambda p: not os.path.isdir(p), should_be_writable):
+                os.makedirs(path)
+
+            # Test if directories can be read from and written too
+            self.write_and_readability_checks(directory_list=should_be_writable, read_write='R')
+            self.write_and_readability_checks(directory_list=should_be_writable, read_write='W')
+
+        except Exception as exp:
+            # If we can't access now, we should abort the run, and tell the server that it
+            # should be re-run at a later time.
+            self.message.message = "Permission error: %s" % exp
+            self.message.retry_in = 6 * 60 * 60  # 6 hours
+            logger.error(traceback.format_exc())
+            raise exp
+
     def reduce(self):
         """ Start the reduction job.  """
         # pylint: disable=too-many-nested-blocks
@@ -219,42 +266,13 @@ class PostProcessAdmin:
             logger.info('Final Result Directory = %s', final_result_dir)
             logger.info('Final Log Directory = %s', final_log_dir)
 
-            def path_access_validate():
-                """test for access to result paths"""
-                try:
-                    should_be_writable = [reduce_result_dir, log_dir, final_result_dir, final_log_dir]
-                    should_be_readable = [self.data_file]
-
-                    # try to make directories which should exist
-                    for path in filter(lambda p: not os.path.isdir(p), should_be_writable):
-                        os.makedirs(path)
-
-                    for location in should_be_writable:
-                        if not os.access(location, os.W_OK):
-                            if not os.access(location, os.F_OK):
-                                problem = "does not exist"
-                            else:
-                                problem = "no write access"
-                            raise Exception("Couldn't write to %s  -  %s" % (location, problem))
-
-                    for location in should_be_readable:
-                        if not os.access(location, os.R_OK):
-                            if not os.access(location, os.F_OK):
-                                problem = "does not exist"
-                            else:
-                                problem = "no read access"
-                            raise Exception("Couldn't read %s  -  %s" % (location, problem))
-
-                except Exception as exp:
-                    # if we can't access now, we should abort the run, and tell the server that it
-                    # should be re-run at a later time.
-                    self.message.message = "Permission error: %s" % exp
-                    self.message.retry_in = 6 * 60 * 60  # 6 hours
-                    logger.error(traceback.format_exc())
-                    raise exp
-
             # Test path access
-            path_access_validate()
+            self.path_access_validate(
+                                      should_be_writable=[reduce_result_dir,
+                                                          log_dir,
+                                                          final_result_dir,
+                                                          final_log_dir],
+                                      should_be_readable=[self.data_file])
 
             self.message.reduction_data = []
 

@@ -115,6 +115,38 @@ class TestPostProcessAdmin(unittest.TestCase):
         location = PostProcessAdmin._reduction_script_location('WISH')
         self.assertEqual(location, MISC['scripts_directory'] % 'WISH')
 
+    def test_write_and_readability_checks(self):
+        """
+        Test: expected output when working
+        When:
+        """
+
+        ppa = PostProcessAdmin(self.message, None)
+        actual = ppa.write_and_readability_checks()
+        pass
+
+    def test_write_and_readability_checks_invalid(self):
+        """
+        Test: expected output when not working
+        When:
+        """
+        pass
+
+    def test_path_access_validate(self):
+        """
+        Test: expected output when working
+        When:
+        """
+        pass
+
+    def test_path_access_validate_invalid(self):
+        """
+        Test: expected output when not working
+        When:
+        """
+        pass
+
+
     @patch(DIR + '.post_process_admin.PostProcessAdmin._remove_directory')
     @patch(DIR + '.post_process_admin.PostProcessAdmin._copy_tree')
     @patch(DIR + '.autoreduction_logging_setup.logger.info')
