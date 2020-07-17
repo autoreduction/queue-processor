@@ -278,8 +278,7 @@ class PostProcessAdmin:
             logger.info('Final Log Directory = %s', final_log_dir)
 
             # Test path access
-            self.path_access_validate(
-                                      should_be_writable=[reduce_result_dir,
+            self.path_access_validate(should_be_writable=[reduce_result_dir,
                                                           log_dir,
                                                           final_result_dir,
                                                           final_log_dir],
