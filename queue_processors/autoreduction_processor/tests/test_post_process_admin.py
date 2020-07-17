@@ -143,7 +143,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         instrument_output_directory = instrument_output_dir[:instrument_output_dir.rfind('/') + 1]
         reduce_directory = MISC["temp_root_directory"] + instrument_output_directory
         reduction_log = "/reduction_log/"
-        actual_final_result, actual_log = ppa.result_and_log_directory(
+        actual_final_result, actual_log = ppa.create_final_result_and_log_directory(
             temporary_root_directory=MISC["temp_root_directory"],
             reduce_dir=reduce_directory)
 
@@ -164,7 +164,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         incorrect_temporary_directory = "incorrect_directory_format"
         instrument_output_directory = instrument_output_dir[:instrument_output_dir.rfind('/') + 1]
         reduce_directory = MISC["temp_root_directory"] + instrument_output_directory
-        actual_final_result = ppa.result_and_log_directory(
+        actual_final_result = ppa.create_final_result_and_log_directory(
             temporary_root_directory=incorrect_temporary_directory,
             reduce_dir=reduce_directory)
 

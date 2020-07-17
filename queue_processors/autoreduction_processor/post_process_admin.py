@@ -184,7 +184,7 @@ class PostProcessAdmin:
                      self.message.serialize(limit_reduction_script=True))
         self.client.send(ACTIVEMQ_SETTINGS.reduction_started, self.message)
 
-    def result_and_log_directory(self, temporary_root_directory, reduce_dir):
+    def create_final_result_and_log_directory(self, temporary_root_directory, reduce_dir):
         """
         Create final result and final log directories, stripping temporary path off of the
         front of temporary directories
@@ -212,7 +212,7 @@ class PostProcessAdmin:
     def reduce(self):
         """Start the reduction job."""
         # pylint: disable=too-many-nested-blocks
-        logger.info("reduce started")  # pylint: disable=trailing-whitespace
+        logger.info("reduce started")
         self.message.software = self._get_mantid_version()
 
         try:
@@ -239,7 +239,7 @@ class PostProcessAdmin:
             mantid_log = os.path.join(log_dir, log_and_err_name + "Mantid.log")
 
             # strip temp path off front of the temp directory to get the final archives directory
-            final_result_dir, final_log_dir = self.result_and_log_directory(
+            final_result_dir, final_log_dir = self.create_final_result_and_log_directory(
                 temporary_root_directory=MISC["temp_root_directory"],
                 reduce_dir=reduce_result_dir)
 
