@@ -86,7 +86,7 @@ class ReductionRunUtils:
         """
         model = access.start_database().data_model
         # find the previous run version, so we don't create a duplicate
-        last_version = access.find_highest_run_version(reduction_run.instrument.name,
+        last_version = access.find_highest_run_version(reduction_run.experiment,
                                                        reduction_run.run_number)
 
         # get the script to use:

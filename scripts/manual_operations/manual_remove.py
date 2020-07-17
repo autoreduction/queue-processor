@@ -10,7 +10,8 @@ Functionality to remove a reduction run from the database
 from __future__ import print_function
 
 import sys
-import argparse
+
+import fire
 
 from utils.clients.django_database_client import DatabaseClient
 from model.database import access as db
@@ -192,36 +193,6 @@ def remove(instrument, run_number):
     manual_remove.delete_records()
 
 
-def handle_input():
-    """Handles input from users via the command line
-    :return (list) run numbers to remove, (str) name of instruments associated to runs
-    """
-    parser = argparse.ArgumentParser(description='Remove a run from the autoreduction service.',
-                                     epilog='./manual_remove.py GEM 83880')
-    parser.add_argument('instrument', metavar='instrument', type=str,
-                        help='a string of the instrument name e.g "GEM"')
-    parser.add_argument('-e', metavar='end_run_number', nargs='?', type=int,
-                        help='if submitting a range, the end run number e.g. "83882"')
-    parser.add_argument('start_run_number', metavar='start_run_number', type=int,
-                        help='the start run number e.g. "83880"')
-
-    args = parser.parse_args()
-
-    run_numbers = [args.start_run_number]
-
-    if args.e:
-        # Range submission
-        if not args.e > args.start_run_number:
-            print("'end_run_number' must be greater than 'start_run_number'.")
-            print("e.g './manual_remove.py GEM 83880 -e 83882'")
-            sys.exit(1)
-        run_numbers = range(args.start_run_number, args.e + 1)
-
-    instrument = args.instrument.upper()
-
-    return run_numbers, instrument
-
-
 def user_input_check(instrument, run_numbers):
     """
     User prompt for boolean value to to assert if user really wants to remove N runs
@@ -242,11 +213,22 @@ def user_input_check(instrument, run_numbers):
     return user_input
 
 
-def main():
+def main(instrument: str, first_run: int, last_run: int = None):
     """
     Parse user input and run the script to remove runs for a given instrument
+    :param instrument: (str) Instrument to run on
+    :param first_run: (int) First run to be removed
+    :param last_run: (int) Optional last run to be removed
     """
-    run_numbers, instrument = handle_input()
+    run_numbers = [first_run]
+
+    if last_run:
+        if last_run < first_run:
+            raise ValueError(f"last run: {last_run} was smaller than first run: {first_run}")
+        run_numbers = range(first_run, last_run + 1)
+
+    instrument = instrument.upper()
+
     if len(run_numbers) >= 10:
         user_input = user_input_check(instrument, run_numbers)
         if not user_input:
@@ -257,4 +239,4 @@ def main():
 
 
 if __name__ == "__main__":  # pragma: no cover
-    main()
+    fire.Fire(main)

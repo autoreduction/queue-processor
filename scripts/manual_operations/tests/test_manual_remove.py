@@ -7,14 +7,12 @@
 """
 Test cases for the manual job submission script
 """
-import unittest
 import builtins
-import sys
+import unittest
 
 from mock import patch, call, Mock
 
-from scripts.manual_operations.manual_remove import ManualRemove, main, remove, handle_input, \
-    user_input_check
+from scripts.manual_operations.manual_remove import ManualRemove, main, remove, user_input_check
 from utils.clients.django_database_client import DatabaseClient
 
 
@@ -198,8 +196,7 @@ class TestManualRemove(unittest.TestCase):
         Test: The correct control functions are called
         When: The main() function is called
         """
-        sys.argv = ['', 'GEM', '1']
-        main()
+        main(instrument='GEM', first_run=1)
         mock_find.assert_called_once_with(1)
         mock_process.assert_called_once()
         mock_delete.assert_called_once()
@@ -208,19 +205,39 @@ class TestManualRemove(unittest.TestCase):
     @patch('scripts.manual_operations.manual_remove.ManualRemove.find_runs_in_database')
     @patch('scripts.manual_operations.manual_remove.ManualRemove.process_results')
     @patch('scripts.manual_operations.manual_remove.ManualRemove.delete_records')
-    @patch('scripts.manual_operations.manual_remove.handle_input')
-    def test_main_range(self, mock_handle_input, mock_delete, mock_process, mock_find):
+    @patch('scripts.manual_operations.manual_remove.user_input_check')
+    def test_main_range_greater_than_ten(self, mock_uic, mock_delete, mock_process, mock_find):
         """
         Test: The correct control functions are called including handle_input for many runs
         When: The main() function is called
         """
-        mock_handle_input.return_value = 'GEM', range(1, 12)
-        sys.argv = ['', 'GEM', '1', '-e', '11']
-        main()
-        mock_handle_input.assert_called_once()
+        main(instrument='GEM', first_run=1, last_run=11)
+        mock_uic.assert_called_with("GEM", range(1, 12))
         mock_find.assert_called()
         mock_process.assert_called()
         mock_delete.assert_called()
+
+    # pylint:disable=no-self-use
+    @patch('scripts.manual_operations.manual_remove.ManualRemove.find_runs_in_database')
+    @patch('scripts.manual_operations.manual_remove.ManualRemove.process_results')
+    @patch('scripts.manual_operations.manual_remove.ManualRemove.delete_records')
+    def test_main_range_less_than_ten(self, mock_delete, mock_process, mock_find):
+        """
+        Test: The correct control functions are called including handle_input for many runs
+        When: The main() function is called
+        """
+        main(instrument='GEM', first_run=1, last_run=9)
+        mock_find.assert_called()
+        mock_process.assert_called()
+        mock_delete.assert_called()
+
+    def test_main_last_run_smaller_than_first_run_raises_value_error(self):
+        """
+        Test: ValueError is raised when first run is larger then last run
+        When: The main() function is called
+        """
+        with self.assertRaises(ValueError):
+            main(instrument='GEM', first_run=10, last_run=1)
 
     # pylint:disable=no-self-use
     @patch('scripts.manual_operations.manual_remove.ManualRemove.find_runs_in_database')
@@ -313,24 +330,6 @@ class TestManualRemove(unittest.TestCase):
         mock_variable_model.RunVariable.objects.filter \
             .assert_has_calls(([call(variable_ptr_id=3), call().delete(),
                                 call(variable_ptr_id=5), call().delete()]))
-
-    @patch('scripts.manual_operations.manual_remove.user_input_check')
-    def test_handle_input(self, mock_uic):
-        """
-        Test: User input is handled correctly
-        When: handle_input function is called.
-        """
-        mock_uic.return_value = True
-        sys.argv = ['', 'GEM', '1', '-e', '10']
-
-        run_numbers, instrument = handle_input()
-        expected_run_numbers = range(1, 11)
-        expected_instrument = 'GEM'
-
-        self.assertEqual(run_numbers, expected_run_numbers)
-        self.assertEqual(instrument, expected_instrument)
-        self.assertIsInstance(run_numbers, range)
-        self.assertIsInstance(instrument, str)
 
     def test_user_input_check(self):
         """

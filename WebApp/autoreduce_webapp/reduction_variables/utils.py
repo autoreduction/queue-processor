@@ -17,7 +17,7 @@ import sys
 import chardet
 import importlib.util as imp
 
-from model.message.job import Message
+from model.message.message import Message
 
 sys.path.append(os.path.join("../", os.path.dirname(os.path.dirname(__file__))))
 os.environ["DJANGO_SETTINGS_MODULE"] = "autoreduce_webapp.settings"
