@@ -4,7 +4,7 @@
 # Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
-#!/usr/bin/env python
+# !/usr/bin/env python
 # pylint: disable=too-many-branches
 # pylint: disable=broad-except
 # pylint: disable=bare-except
@@ -59,6 +59,7 @@ def channels_redirected(out_file, err_file, out_stream):
     class MultipleChannels:
         # pylint: disable=expression-not-assigned
         """ Behaves like a stream object, but outputs to multiple streams."""
+
         def __init__(self, *streams):
             self.streams = streams
 
@@ -212,7 +213,7 @@ class PostProcessAdmin:
 
         # Specify directories where autoreduction output will go
         return temporary_directory + instrument_output_directory
-    
+
     @staticmethod
     def write_and_readability_checks(directory_list, read_write):
         """
@@ -473,12 +474,12 @@ class PostProcessAdmin:
         logger.info("_new_reduction_data_path argument: %s", path)
         # if there is an 'overwrite' key/member with a None/False value
         if not self.message.overwrite:
-            if os.path.isdir(path):           # if the given path already exists..
+            if os.path.isdir(path):  # if the given path already exists..
                 contents = os.listdir(path)
                 highest_vers = -1
-                for item in contents:         # ..for every item, if it's a dir and a int..
+                for item in contents:  # ..for every item, if it's a dir and a int..
                     if os.path.isdir(os.path.join(path, item)):
-                        try:                  # ..store the highest int
+                        try:  # ..store the highest int
                             vers = int(item)
                             highest_vers = max(highest_vers, vers)
                         except ValueError:
@@ -565,7 +566,7 @@ class PostProcessAdmin:
             if os.path.isdir(src_path):
                 self._copy_tree(src_path, dst_path)
             elif not os.path.exists(dst_path) or \
-                                    os.stat(src_path).st_mtime - os.stat(dst_path).st_mtime > 1:
+                    os.stat(src_path).st_mtime - os.stat(dst_path).st_mtime > 1:
                 shutil.copyfile(src_path, dst_path)
 
     def _remove_directory(self, directory):
