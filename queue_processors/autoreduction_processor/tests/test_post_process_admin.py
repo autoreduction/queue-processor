@@ -169,6 +169,48 @@ class TestPostProcessAdmin(unittest.TestCase):
         location = PostProcessAdmin._reduction_script_location('WISH')
         self.assertEqual(location, MISC['scripts_directory'] % 'WISH')
 
+    @patch('logging.Logger.info')
+    @patch(f"{DIR}.post_process_admin.PostProcessAdmin._new_reduction_data_path")
+    def test_result_and_log_directory(self, mock_nrdp, mock_logging):
+        """
+        Test: final result and log directories are returned
+        When: called with temp root directory, result and log locations
+        """
+        ppa = PostProcessAdmin(self.message, None)
+        instrument_output_dir = MISC["ceph_directory"] % (ppa.instrument,
+                                                          ppa.proposal,
+                                                          ppa.run_number)
+        mock_nrdp.return_value = append_path(instrument_output_dir, "0")
+        instrument_output_directory = instrument_output_dir[:instrument_output_dir.rfind('/') + 1]
+        reduce_directory = MISC["temp_root_directory"] + instrument_output_directory
+        reduction_log = "/reduction_log/"
+        actual_final_result, actual_log = ppa.create_final_result_and_log_directory(
+            temporary_root_directory=MISC["temp_root_directory"],
+            reduce_dir=reduce_directory)
+
+        expected_log = f"{instrument_output_directory}0{reduction_log}"
+        expected_logs_called_with = [call("Final Result Directory = %s", actual_final_result),
+                                     call("Final log directory: %s", actual_log)]
+
+        mock_nrdp.assert_called_once_with(instrument_output_dir)
+        self.assertEqual(mock_logging.call_count, 2)
+        self.assertEqual(mock_logging.call_args_list, expected_logs_called_with)
+        self.assertEqual(expected_log, actual_log)
+
+    def test_result_and_log_directory_incorrect(self):
+        ppa = PostProcessAdmin(self.message, None)
+        instrument_output_dir = MISC["ceph_directory"] % (ppa.instrument,
+                                                          ppa.proposal,
+                                                          ppa.run_number)
+        incorrect_temporary_directory = "incorrect_directory_format"
+        instrument_output_directory = instrument_output_dir[:instrument_output_dir.rfind('/') + 1]
+        reduce_directory = MISC["temp_root_directory"] + instrument_output_directory
+        actual_final_result = ppa.create_final_result_and_log_directory(
+            temporary_root_directory=incorrect_temporary_directory,
+            reduce_dir=reduce_directory)
+
+        self.assertIsInstance(actual_final_result, ValueError)
+
     @patch(DIR + '.post_process_admin.PostProcessAdmin._remove_directory')
     @patch(DIR + '.post_process_admin.PostProcessAdmin._copy_tree')
     @patch(DIR + '.autoreduction_logging_setup.logger.info')
