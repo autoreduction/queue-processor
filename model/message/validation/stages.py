@@ -7,7 +7,7 @@
 """
 Combination of validation checks to be performed on the Message at each stage of the pipeline
 """
-from model.message.validation.validators import validate_run_number, validate_instrument
+import model.message.validation.validators as validators
 from model.message.validation.process import check_validity_dict
 
 
@@ -18,9 +18,9 @@ def validate_data_ready(message):
     :return: True if valid
     """
     validity_dict = {
-        'run_number': validate_run_number(message.run_number),
-        'instrument': validate_instrument(message.instrument),
-        'rb_number': isinstance(message.rb_number, (int, str)),
+        'run_number': validators.validate_run_number(message.run_number),
+        'instrument': validators.validate_instrument(message.instrument),
+        'rb_number': validators.validate_rb_number(message.rb_number),
         'started_by': isinstance(message.started_by, int),
         'file_path': isinstance(message.data, str),
         'facility': isinstance(message.facility, str)

@@ -15,7 +15,7 @@ import time
 import shutil
 
 from model.database import access as db
-from model.message.job import Message
+from model.message.message import Message
 
 from scripts.manual_operations import manual_remove as remove
 

@@ -1,7 +1,7 @@
 # ############################################################################### #
 # Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
 #
-# Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
+# Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 """
@@ -16,7 +16,7 @@ import json
 from tempfile import mkdtemp, NamedTemporaryFile
 from mock import patch, call, Mock
 
-from model.message.job import Message
+from model.message.message import Message
 from paths.path_manipulation import append_path
 from utils.settings import ACTIVEMQ_SETTINGS
 from utils.project.structure import get_project_root
@@ -111,6 +111,60 @@ class TestPostProcessAdmin(unittest.TestCase):
         self.assertEqual(file_path, os.path.join(MISC['scripts_directory'] % 'WISH',
                                                  'reduce.py'))
 
+    def test_specify_instrument_directories_invalid(self):
+        """
+        Test: Error is returned
+        When: called with invalid directory format
+        """
+        ppa = PostProcessAdmin(self.message, None)
+
+        ceph_directory = MISC["ceph_directory"] % (ppa.instrument,
+                                                   ppa.proposal,
+                                                   'invalid')
+
+        actual = ppa.specify_instrument_directories(
+            instrument_output_directory=ceph_directory,
+            no_run_number_directory=True,
+            temporary_directory=MISC["temp_root_directory"])
+
+        self.assertIsInstance(actual, ValueError)
+
+    def test_specify_instrument_directories(self):
+        """
+        Test: Expected instrument, stripped of run number if excitation returned
+        When: called
+        """
+        ppa = PostProcessAdmin(self.message, None)
+
+        ceph_directory = MISC['ceph_directory'] % (ppa.instrument,
+                                                   ppa.proposal,
+                                                   ppa.run_number)
+        temporary_directory = MISC['temp_root_directory']
+
+        actual = ppa.specify_instrument_directories(
+            instrument_output_directory=ceph_directory,
+            no_run_number_directory=True,
+            temporary_directory=temporary_directory)
+
+        actual_directory_list = [i for i in actual.split('/') if i]
+        expected_directory_list = [i for i in ceph_directory.split('/') if i]
+
+        self.assertEqual(expected_directory_list[-5:], actual_directory_list[-5:])
+        self.assertEqual(temporary_directory, f"/{actual_directory_list[0]}")
+
+    @patch(DIR + '.autoreduction_logging_setup.logger.debug')
+    def test_reduction_started(self, mock_log):
+        """
+        Test: reduction started message has been sent and logged
+        When: called within reduce method
+        """
+        amq_client_mock = Mock()
+        ppa = PostProcessAdmin(self.message, amq_client_mock)
+        ppa.reduction_started()
+
+        mock_log.assert_called()
+        amq_client_mock.send.assert_called_with(ACTIVEMQ_SETTINGS.reduction_started, ppa.message)
+
     def test_reduction_script_location(self):
         location = PostProcessAdmin._reduction_script_location('WISH')
         self.assertEqual(location, MISC['scripts_directory'] % 'WISH')
@@ -189,6 +243,48 @@ class TestPostProcessAdmin(unittest.TestCase):
         with self.assertRaises(Exception):
             ppa.path_access_validate(should_be_writable=['fake/directory'],
                                      should_be_readable=['fake/directory'])
+
+    @patch('logging.Logger.info')
+    @patch(f"{DIR}.post_process_admin.PostProcessAdmin._new_reduction_data_path")
+    def test_result_and_log_directory(self, mock_nrdp, mock_logging):
+        """
+        Test: final result and log directories are returned
+        When: called with temp root directory, result and log locations
+        """
+        ppa = PostProcessAdmin(self.message, None)
+        instrument_output_dir = MISC["ceph_directory"] % (ppa.instrument,
+                                                          ppa.proposal,
+                                                          ppa.run_number)
+        mock_nrdp.return_value = append_path(instrument_output_dir, "0")
+        instrument_output_directory = instrument_output_dir[:instrument_output_dir.rfind('/') + 1]
+        reduce_directory = MISC["temp_root_directory"] + instrument_output_directory
+        reduction_log = "/reduction_log/"
+        actual_final_result, actual_log = ppa.create_final_result_and_log_directory(
+            temporary_root_directory=MISC["temp_root_directory"],
+            reduce_dir=reduce_directory)
+
+        expected_log = f"{instrument_output_directory}0{reduction_log}"
+        expected_logs_called_with = [call("Final Result Directory = %s", actual_final_result),
+                                     call("Final log directory: %s", actual_log)]
+
+        mock_nrdp.assert_called_once_with(instrument_output_dir)
+        self.assertEqual(mock_logging.call_count, 2)
+        self.assertEqual(mock_logging.call_args_list, expected_logs_called_with)
+        self.assertEqual(expected_log, actual_log)
+
+    def test_result_and_log_directory_incorrect(self):
+        ppa = PostProcessAdmin(self.message, None)
+        instrument_output_dir = MISC["ceph_directory"] % (ppa.instrument,
+                                                          ppa.proposal,
+                                                          ppa.run_number)
+        incorrect_temporary_directory = "incorrect_directory_format"
+        instrument_output_directory = instrument_output_dir[:instrument_output_dir.rfind('/') + 1]
+        reduce_directory = MISC["temp_root_directory"] + instrument_output_directory
+        actual_final_result = ppa.create_final_result_and_log_directory(
+            temporary_root_directory=incorrect_temporary_directory,
+            reduce_dir=reduce_directory)
+
+        self.assertIsInstance(actual_final_result, ValueError)
 
     @patch(DIR + '.post_process_admin.PostProcessAdmin._remove_directory')
     @patch(DIR + '.post_process_admin.PostProcessAdmin._copy_tree')
@@ -331,7 +427,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_connect.assert_called_once()
         mock_reduce.assert_called_once()
 
-    @patch('model.message.job.Message.serialize', return_value='test')
+    @patch('model.message.message.Message.serialize', return_value='test')
     @patch('sys.exit')
     @patch(DIR + '.autoreduction_logging_setup.logger.info')
     @patch(DIR + '.post_process_admin.PostProcessAdmin.__init__', return_value=None)

@@ -29,7 +29,7 @@ import importlib.util as imp
 from sentry_sdk import init
 
 # pylint:disable=no-name-in-module,import-error
-from model.message.job import Message
+from model.message.message import Message
 from paths.path_manipulation import append_path
 from queue_processors.autoreduction_processor.settings import MISC
 from queue_processors.autoreduction_processor.autoreduction_logging_setup import logger
@@ -177,6 +177,42 @@ class PostProcessAdmin:
         """ Returns the path of the reduction script for an instrument. """
         return os.path.join(self._reduction_script_location(instrument_name), 'reduce.py')
 
+    def reduction_started(self):
+        """Log and update AMQ message to reduction started"""
+        logger.debug("Calling: %s\n%s",
+                     ACTIVEMQ_SETTINGS.reduction_started,
+                     self.message.serialize(limit_reduction_script=True))
+        self.client.send(ACTIVEMQ_SETTINGS.reduction_started, self.message)
+    
+    def specify_instrument_directories(self,
+                                       instrument_output_directory,
+                                       no_run_number_directory,
+                                       temporary_directory):
+        """
+        Specifies instrument directories, including removal of run_number folder
+        if excitations instrument
+        :param instrument_output_directory: (str) Ceph directory using instrument, proposal, run no
+        :param no_run_number_directory: (bool) Determine whether or not to remove run no from dir
+        :param temporary_directory: (str) Temp directory location (root)
+        :return (str) Directories where Autoreduction should output
+        """
+
+        directory_list = [i for i in instrument_output_directory.split('/') if i]
+
+        if directory_list[-1] != f"{self.run_number}":
+            return ValueError("directory does not follow expected format "
+                              "(instrument/RB_no/run_number) \n"
+                              "format: \n"
+                              "%s", instrument_output_directory)
+
+        if no_run_number_directory is True:
+            # Remove the run number folder at the end
+            remove_run_number_directory = instrument_output_directory.rfind('/') + 1
+            instrument_output_directory = instrument_output_directory[:remove_run_number_directory]
+
+        # Specify directories where autoreduction output will go
+        return temporary_directory + instrument_output_directory
+    
     @staticmethod
     def write_and_readability_checks(directory_list, read_write):
         """
@@ -235,47 +271,67 @@ class PostProcessAdmin:
             logger.error(traceback.format_exc())
             raise exp
 
+    def create_final_result_and_log_directory(self, temporary_root_directory, reduce_dir):
+        """
+        Create final result and final log directories, stripping temporary path off of the
+        front of temporary directories
+        :param temporary_root_directory: (str) temporary root directory
+        :param reduce_dir: (str) final reduce directory
+        :return (tuple) - (str, str) final result and final log directory paths
+        """
+
+        # validate dir before slicing
+        if reduce_dir.startswith(temporary_root_directory):
+            result_directory = reduce_dir[len(temporary_root_directory):]
+        else:
+            return ValueError("The reduce directory does not start by following the expected "
+                              "format: %s \n", temporary_root_directory)
+
+        final_result_directory = self._new_reduction_data_path(result_directory)
+        final_log_directory = append_path(final_result_directory, ['reduction_log'])
+
+        logger.info("Final Result Directory = %s", final_result_directory)
+        logger.info("Final log directory: %s", final_log_directory)
+
+        return final_result_directory, final_log_directory
+
+    # pylint:disable=too-many-nested-blocks
+
     def reduce(self):
-        """ Start the reduction job.  """
+        """Start the reduction job."""
         # pylint: disable=too-many-nested-blocks
         logger.info("reduce started")
         self.message.software = self._get_mantid_version()
+
         try:
-            logger.debug("Calling: %s\n%s",
-                         ACTIVEMQ_SETTINGS.reduction_started,
-                         self.message.serialize(limit_reduction_script=True))
-            self.client.send(ACTIVEMQ_SETTINGS.reduction_started, self.message)
+            # log and update AMQ message to reduction started
+            self.reduction_started()
 
-            # Specify instrument directory
-            instrument_output_dir = MISC["ceph_directory"] % (self.instrument,
-                                                              self.proposal,
-                                                              self.run_number)
-
+            # Specify instrument directories - if excitation instrument remove run_number from dir
+            no_run_number_directory = False
             if self.instrument in MISC["excitation_instruments"]:
-                # Excitations would like to remove the run number folder at the end
-                instrument_output_dir = instrument_output_dir[:instrument_output_dir.rfind('/') + 1]
+                no_run_number_directory = True
 
-            # Specify directories where autoreduction output will go
-            reduce_result_dir = MISC["temp_root_directory"] + instrument_output_dir
+            instrument_output_directory = MISC["ceph_directory"] % (self.instrument,
+                                                                    self.proposal,
+                                                                    self.run_number)
+
+            reduce_result_dir = self.specify_instrument_directories(
+                instrument_output_directory=instrument_output_directory,
+                no_run_number_directory=no_run_number_directory,
+                temporary_directory=MISC["temp_root_directory"])
 
             if self.message.description is not None:
                 logger.info("DESCRIPTION: %s", self.message.description)
-
             log_dir = reduce_result_dir + "/reduction_log/"
             log_and_err_name = "RB" + self.proposal + "Run" + self.run_number
             script_out = os.path.join(log_dir, log_and_err_name + "Script.out")
             mantid_log = os.path.join(log_dir, log_and_err_name + "Mantid.log")
 
-            # strip the temp path off the front of the temp directory to get the final archives
-            # directory.
-            final_result_dir = reduce_result_dir[len(MISC["temp_root_directory"]):]
-            final_log_dir = log_dir[len(MISC["temp_root_directory"]):]
-
-            final_result_dir = self._new_reduction_data_path(final_result_dir)
-            final_log_dir = append_path(final_result_dir, ['reduction_log'])
-
-            logger.info('Final Result Directory = %s', final_result_dir)
-            logger.info('Final Log Directory = %s', final_log_dir)
+            # strip temp path off front of the temp directory to get the final archives directory
+            final_result_dir, final_log_dir = self.create_final_result_and_log_directory(
+                temporary_root_directory=MISC["temp_root_directory"],
+                reduce_dir=reduce_result_dir)
 
             # Test path access
             self.path_access_validate(should_be_writable=[reduce_result_dir,

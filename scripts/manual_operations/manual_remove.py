@@ -8,7 +8,10 @@
 Functionality to remove a reduction run from the database
 """
 from __future__ import print_function
-import argparse
+
+import sys
+
+import fire
 
 from utils.clients.django_database_client import DatabaseClient
 from model.database import access as db
@@ -190,21 +193,50 @@ def remove(instrument, run_number):
     manual_remove.delete_records()
 
 
-def main():
+def user_input_check(instrument, run_numbers):
     """
-    Parse user input and run the script
+    User prompt for boolean value to to assert if user really wants to remove N runs
+    :param instrument (str) Instrument name related to runs user intends to remove
+    :param run_numbers (range object) range of instruments submitted by user
+    :return (bool) True or False to confirm removal of N runs or exit script
     """
-    parser = argparse.ArgumentParser(description='Remove a run from the autoreduction service.',
-                                     epilog='./manual_remove.py GEM 83880')
-    parser.add_argument('instrument', metavar='instrument', type=str,
-                        help='a string of the instrument name e.g "GEM"')
-    parser.add_argument('start_run_number', metavar='start_run_number', type=int,
-                        help='the start run number e.g. "83880"')
-    args = parser.parse_args()
-    instrument = args.instrument
-    run_number = args.start_run_number
-    remove(instrument, run_number)
+    valid = {"Y": True, "N": False}
+
+    print(f"You are about to remove more than 10 runs from {instrument} \n"
+          f"Are you sure you want to remove run numbers: {run_numbers[0]}-{run_numbers[-1]}?")
+    user_input = input("Please enter Y or N: ").upper()
+
+    try:
+        return valid[user_input]
+    except KeyError:
+        print("Invalid input, please enter either 'Y' or 'N' to continue to exit script")
+    return user_input
+
+
+def main(instrument: str, first_run: int, last_run: int = None):
+    """
+    Parse user input and run the script to remove runs for a given instrument
+    :param instrument: (str) Instrument to run on
+    :param first_run: (int) First run to be removed
+    :param last_run: (int) Optional last run to be removed
+    """
+    run_numbers = [first_run]
+
+    if last_run:
+        if last_run < first_run:
+            raise ValueError(f"last run: {last_run} was smaller than first run: {first_run}")
+        run_numbers = range(first_run, last_run + 1)
+
+    instrument = instrument.upper()
+
+    if len(run_numbers) >= 10:
+        user_input = user_input_check(instrument, run_numbers)
+        if not user_input:
+            sys.exit()
+
+    for run in run_numbers:
+        remove(instrument, run)
 
 
 if __name__ == "__main__":  # pragma: no cover
-    main()
+    fire.Fire(main)

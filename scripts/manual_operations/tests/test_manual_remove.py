@@ -7,13 +7,12 @@
 """
 Test cases for the manual job submission script
 """
-import unittest
 import builtins
-import sys
+import unittest
 
 from mock import patch, call, Mock
 
-from scripts.manual_operations.manual_remove import ManualRemove, main, remove
+from scripts.manual_operations.manual_remove import ManualRemove, main, remove, user_input_check
 from utils.clients.django_database_client import DatabaseClient
 
 
@@ -197,12 +196,48 @@ class TestManualRemove(unittest.TestCase):
         Test: The correct control functions are called
         When: The main() function is called
         """
-        sys.argv = ['', 'GEM', '1']
-        main()
+        main(instrument='GEM', first_run=1)
         mock_find.assert_called_once_with(1)
         mock_process.assert_called_once()
         mock_delete.assert_called_once()
 
+    # pylint:disable=no-self-use
+    @patch('scripts.manual_operations.manual_remove.ManualRemove.find_runs_in_database')
+    @patch('scripts.manual_operations.manual_remove.ManualRemove.process_results')
+    @patch('scripts.manual_operations.manual_remove.ManualRemove.delete_records')
+    @patch('scripts.manual_operations.manual_remove.user_input_check')
+    def test_main_range_greater_than_ten(self, mock_uic, mock_delete, mock_process, mock_find):
+        """
+        Test: The correct control functions are called including handle_input for many runs
+        When: The main() function is called
+        """
+        main(instrument='GEM', first_run=1, last_run=11)
+        mock_uic.assert_called_with("GEM", range(1, 12))
+        mock_find.assert_called()
+        mock_process.assert_called()
+        mock_delete.assert_called()
+
+    # pylint:disable=no-self-use
+    @patch('scripts.manual_operations.manual_remove.ManualRemove.find_runs_in_database')
+    @patch('scripts.manual_operations.manual_remove.ManualRemove.process_results')
+    @patch('scripts.manual_operations.manual_remove.ManualRemove.delete_records')
+    def test_main_range_less_than_ten(self, mock_delete, mock_process, mock_find):
+        """
+        Test: The correct control functions are called including handle_input for many runs
+        When: The main() function is called
+        """
+        main(instrument='GEM', first_run=1, last_run=9)
+        mock_find.assert_called()
+        mock_process.assert_called()
+        mock_delete.assert_called()
+
+    def test_main_last_run_smaller_than_first_run_raises_value_error(self):
+        """
+        Test: ValueError is raised when first run is larger then last run
+        When: The main() function is called
+        """
+        with self.assertRaises(ValueError):
+            main(instrument='GEM', first_run=10, last_run=1)
 
     # pylint:disable=no-self-use
     @patch('scripts.manual_operations.manual_remove.ManualRemove.find_runs_in_database')
@@ -295,3 +330,14 @@ class TestManualRemove(unittest.TestCase):
         mock_variable_model.RunVariable.objects.filter \
             .assert_has_calls(([call(variable_ptr_id=3), call().delete(),
                                 call(variable_ptr_id=5), call().delete()]))
+
+    def test_user_input_check(self):
+        """
+           Test: user_input_check() returns True of false
+           When based on user input if range of runs to remove is larger than 10
+        """
+        with patch.object(builtins, 'input', lambda _: 'Y'):
+            self.assertEqual(user_input_check(range(1, 11), 'GEM'), True)
+
+        with patch.object(builtins, 'input', lambda _: 'N'):
+            self.assertEqual(user_input_check(range(1, 11), 'GEM'), False)

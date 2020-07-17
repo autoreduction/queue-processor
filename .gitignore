@@ -9,6 +9,7 @@
 
 # Ignore log data
 *.log
+logs/
 
 # *.out
 
