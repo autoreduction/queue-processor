@@ -119,7 +119,7 @@ class TestPostProcessAdmin(unittest.TestCase):
     def test_write_and_readability_checks(self, mock_os_access):
         """
        Test: None is returned if there is no problem with directory path
-       When: called with valid path
+       When: Called with valid path
        """
         ppa = PostProcessAdmin(self.message, None)
 
@@ -128,32 +128,34 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_os_access.return_value = True
         actual_write = ppa.write_and_readability_checks(write_list, 'W')
 
-        self.assertFalse(actual_write)
+        self.assertTrue(actual_write)
 
     @patch('os.access')
     def test_write_and_readability_checks_invalid_path(self, mock_os_access):
         """
         Test: Exception is raised
-        When: called with invalid path
+        When: Called with invalid path
         """
         ppa = PostProcessAdmin(self.message, None)
         write_list = ["directory/path/"]
 
         mock_os_access.return_value = False
-        actual_write = ppa.write_and_readability_checks(write_list, 'W')
 
-        self.assertIsInstance(actual_write, Exception)
+        with self.assertRaises(OSError):
+            ppa.write_and_readability_checks(write_list, 'W')
+
+        # self.assertIsInstance(actual_write, Exception)
 
     def test_write_and_readability_checks_invalid_input(self):
         """
         Test: ValueError returned
-        When: called with invalid read_write argument
+        When: Called with invalid read_write argument
         """
         ppa = PostProcessAdmin(self.message, None)
         write_list = ["directory/path/"]
-        actual_write = ppa.write_and_readability_checks(write_list, 'Write')
 
-        self.assertIsInstance(actual_write, ValueError)
+        with self.assertRaises(KeyError):
+            ppa.write_and_readability_checks(write_list, 'INVALID_KEY')
 
     @patch('os.access')
     @patch('os.path.isdir')
@@ -161,12 +163,13 @@ class TestPostProcessAdmin(unittest.TestCase):
     def test_path_access_validate(self, mock_wrc, mock_dir, mock_os_access):
         """
         Test: None returned
-        When: Checks pass
+        When: Path checks pass
         """
-        mock_wrc.return_value = None
+        mock_wrc.return_value = True
         mock_dir.return_value = True
         mock_os_access.return_value = False
         ppa = PostProcessAdmin(self.message, None)
+
         actual = ppa.path_access_validate(should_be_writable=['should/be/writeable'],
                                           should_be_readable=['should/be/readable'])
         self.assertFalse(actual)
@@ -180,7 +183,8 @@ class TestPostProcessAdmin(unittest.TestCase):
         """
         ppa = PostProcessAdmin(self.message, None)
         mock_isdir.return_value = True
-        mock_wrc.return_value = OSError("Couldn't write fake/directory/ - no write access")
+
+        mock_wrc.return_value = None
 
         with self.assertRaises(Exception):
             ppa.path_access_validate(should_be_writable=['fake/directory'],

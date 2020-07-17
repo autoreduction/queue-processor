@@ -183,26 +183,31 @@ class PostProcessAdmin:
         Check a list of N directories for write/readability
         :param directory_list: (list) directory list
         :param read_write: (str) Read=R, Write=W
+        :return Error (Exception or ValueError) when something goes wrong
         """
         read_write = read_write.upper()
         read_write_map = {"R": "read", "W": "write"}
-        if read_write in read_write_map:
-            for location in directory_list:
-                if not os.access(location, getattr(sys.modules[os.__name__], f"{read_write}_OK")):
-                    if not os.access(location, os.F_OK):
-                        problem = "does not exist"
-                    else:
-                        problem = "no %s access", read_write_map[read_write]
-                    return OSError("Couldn't %s %s  -  %s" % (read_write_map[read_write],
-                                                              location,
-                                                              problem))
-        else:
-            return ValueError("Invalid read or write input: %s "
-                              "read_write argument must be either 'R' or 'W'", f"{read_write}")
+        try:
+            read_write_map[read_write]
+        except KeyError:
+            raise KeyError("Invalid read or write input: %s "
+                           "read_write argument must be either 'R' or 'W'", f"{read_write}")
+
+        for location in directory_list:
+            if not os.access(location, getattr(sys.modules[os.__name__], f"{read_write}_OK")):
+                if not os.access(location, os.F_OK):
+                    problem = "does not exist"
+                else:
+                    problem = "no %s access", read_write_map[read_write]
+                raise OSError("Couldn't %s %s  -  %s" % (read_write_map[read_write],
+                                                          location,
+                                                          problem))
+            else:
+                return True
 
     def path_access_validate(self, should_be_writable, should_be_readable):
         """
-        Test for access to result paths
+        Test for access to result paths and raise exception and attempt re-run later if problem
         :param should_be_writable: (list)
         :param should_be_readable: (list)
         """
@@ -211,16 +216,16 @@ class PostProcessAdmin:
             for path in filter(lambda p: not os.path.isdir(p), should_be_writable):
                 os.makedirs(path)
 
-            # Test if directories can be read from and written too
+            # Test if directories can be read from and written too, raising exception if failed
             if self.write_and_readability_checks(directory_list=should_be_writable, read_write='W'):
-                raise Exception
-            else:
                 logger.info("Successful test write to %s", should_be_writable)
+            else:
+                raise Exception
 
             if self.write_and_readability_checks(directory_list=should_be_readable, read_write='R'):
-                raise Exception
-            else:
                 logger.info("Successful test read to %s", should_be_readable)
+            else:
+                raise Exception
 
         except Exception as exp:
             # If we can't access now, we should abort the run, and tell the server that it
