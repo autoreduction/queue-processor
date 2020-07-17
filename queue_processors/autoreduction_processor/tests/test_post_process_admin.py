@@ -115,37 +115,76 @@ class TestPostProcessAdmin(unittest.TestCase):
         location = PostProcessAdmin._reduction_script_location('WISH')
         self.assertEqual(location, MISC['scripts_directory'] % 'WISH')
 
-    def test_write_and_readability_checks(self):
+    @patch('os.access')
+    def test_write_and_readability_checks(self, mock_os_access):
         """
-        Test: expected output when working
-        When:
-        """
-
+       Test: None is returned if there is no problem with directory path
+       When: called with valid path
+       """
         ppa = PostProcessAdmin(self.message, None)
-        actual = ppa.write_and_readability_checks()
-        pass
 
-    def test_write_and_readability_checks_invalid(self):
-        """
-        Test: expected output when not working
-        When:
-        """
-        pass
+        write_list = ["directory/path/"]
 
-    def test_path_access_validate(self):
-        """
-        Test: expected output when working
-        When:
-        """
-        pass
+        mock_os_access.return_value = True
+        actual_write = ppa.write_and_readability_checks(write_list, 'W')
 
-    def test_path_access_validate_invalid(self):
-        """
-        Test: expected output when not working
-        When:
-        """
-        pass
+        self.assertFalse(actual_write)
 
+    @patch('os.access')
+    def test_write_and_readability_checks_invalid_path(self, mock_os_access):
+        """
+        Test: Exception is raised
+        When: called with invalid path
+        """
+        ppa = PostProcessAdmin(self.message, None)
+        write_list = ["directory/path/"]
+
+        mock_os_access.return_value = False
+        actual_write = ppa.write_and_readability_checks(write_list, 'W')
+
+        self.assertIsInstance(actual_write, Exception)
+
+    def test_write_and_readability_checks_invalid_input(self):
+        """
+        Test: ValueError returned
+        When: called with invalid read_write argument
+        """
+        ppa = PostProcessAdmin(self.message, None)
+        write_list = ["directory/path/"]
+        actual_write = ppa.write_and_readability_checks(write_list, 'Write')
+
+        self.assertIsInstance(actual_write, ValueError)
+
+    @patch('os.access')
+    @patch('os.path.isdir')
+    @patch(DIR + '.post_process_admin.PostProcessAdmin.write_and_readability_checks')
+    def test_path_access_validate(self, mock_wrc, mock_dir, mock_os_access):
+        """
+        Test: None returned
+        When: Checks pass
+        """
+        mock_wrc.return_value = None
+        mock_dir.return_value = True
+        mock_os_access.return_value = False
+        ppa = PostProcessAdmin(self.message, None)
+        actual = ppa.path_access_validate(should_be_writable=['should/be/writeable'],
+                                          should_be_readable=['should/be/readable'])
+        self.assertFalse(actual)
+
+    @patch('os.makedirs')
+    @patch(DIR + '.post_process_admin.PostProcessAdmin.write_and_readability_checks')
+    def test_path_access_validate_invalid(self, mock_wrc, mock_isdir):
+        """
+        Test: Exception raised
+        When: Anything other than None returned by write_and_readability_checks
+        """
+        ppa = PostProcessAdmin(self.message, None)
+        mock_isdir.return_value = True
+        mock_wrc.return_value = OSError("Couldn't write fake/directory/ - no write access")
+
+        with self.assertRaises(Exception):
+            ppa.path_access_validate(should_be_writable=['fake/directory'],
+                                     should_be_readable=['fake/directory'])
 
     @patch(DIR + '.post_process_admin.PostProcessAdmin._remove_directory')
     @patch(DIR + '.post_process_admin.PostProcessAdmin._copy_tree')

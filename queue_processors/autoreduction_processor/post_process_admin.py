@@ -186,20 +186,19 @@ class PostProcessAdmin:
         """
         read_write = read_write.upper()
         read_write_map = {"R": "read", "W": "write"}
-        try:
+        if read_write in read_write_map:
             for location in directory_list:
-                if not os.access(location, getattr(sys.modules[os.__name__], read_write)):
+                if not os.access(location, getattr(sys.modules[os.__name__], f"{read_write}_OK")):
                     if not os.access(location, os.F_OK):
                         problem = "does not exist"
                     else:
                         problem = "no %s access", read_write_map[read_write]
-                    raise Exception("Couldn't %s %s  -  %s" % (read_write_map[read_write],
-                                                               location,
-                                                               problem))
-
-        except ValueError:
-            raise ValueError("Invalid read or write input: %s \n"
-                             "read_write argument must be either 'R' or 'W'", f"{read_write}_")
+                    return OSError("Couldn't %s %s  -  %s" % (read_write_map[read_write],
+                                                              location,
+                                                              problem))
+        else:
+            return ValueError("Invalid read or write input: %s "
+                              "read_write argument must be either 'R' or 'W'", f"{read_write}")
 
     def path_access_validate(self, should_be_writable, should_be_readable):
         """
@@ -213,8 +212,15 @@ class PostProcessAdmin:
                 os.makedirs(path)
 
             # Test if directories can be read from and written too
-            self.write_and_readability_checks(directory_list=should_be_writable, read_write='R')
-            self.write_and_readability_checks(directory_list=should_be_writable, read_write='W')
+            if self.write_and_readability_checks(directory_list=should_be_writable, read_write='W'):
+                raise Exception
+            else:
+                logger.info("Successful test write to %s", should_be_writable)
+
+            if self.write_and_readability_checks(directory_list=should_be_readable, read_write='R'):
+                raise Exception
+            else:
+                logger.info("Successful test read to %s", should_be_readable)
 
         except Exception as exp:
             # If we can't access now, we should abort the run, and tell the server that it
