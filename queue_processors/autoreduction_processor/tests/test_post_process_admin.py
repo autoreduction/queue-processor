@@ -224,12 +224,12 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_os_access.return_value = False
         ppa = PostProcessAdmin(self.message, None)
 
-        actual = ppa.path_access_validate(should_be_writable=['should/be/writeable'],
-                                          should_be_readable=['should/be/readable'])
-        self.assertFalse(actual)
+        self.assertFalse(ppa.path_access_validate(
+            should_be_writable=['should/be/writeable'],
+            should_be_readable=['should/be/readable']))
 
     @patch('os.makedirs')
-    @patch(DIR + '.post_process_admin.PostProcessAdmin.write_and_readability_checks')
+    @patch(f"{DIR}.post_process_admin.PostProcessAdmin.write_and_readability_checks")
     def test_path_access_validate_invalid(self, mock_wrc, mock_isdir):
         """
         Test: Exception raised

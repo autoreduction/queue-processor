@@ -183,7 +183,7 @@ class PostProcessAdmin:
                      ACTIVEMQ_SETTINGS.reduction_started,
                      self.message.serialize(limit_reduction_script=True))
         self.client.send(ACTIVEMQ_SETTINGS.reduction_started, self.message)
-    
+
     def specify_instrument_directories(self,
                                        instrument_output_directory,
                                        no_run_number_directory,
@@ -226,8 +226,8 @@ class PostProcessAdmin:
         try:
             read_write_map[read_write]
         except KeyError:
-            raise KeyError("Invalid read or write input: %s "
-                           "read_write argument must be either 'R' or 'W'", f"{read_write}")
+            raise KeyError("Invalid read or write input: %s read_write argument must be either"
+                           " 'R' or 'W'" % read_write)
 
         for location in directory_list:
             if not os.access(location, getattr(sys.modules[os.__name__], f"{read_write}_OK")):
@@ -236,10 +236,9 @@ class PostProcessAdmin:
                 else:
                     problem = "no %s access", read_write_map[read_write]
                 raise OSError("Couldn't %s %s  -  %s" % (read_write_map[read_write],
-                                                          location,
-                                                          problem))
-            else:
-                return True
+                                                         location,
+                                                         problem))
+            return True
 
     def path_access_validate(self, should_be_writable, should_be_readable):
         """
