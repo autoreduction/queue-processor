@@ -6,7 +6,7 @@
 # ############################################################################### #
 
 """
-Test cases for util functions
+Unit tests for manual submission utility functions
 """
 
 from unittest import TestCase
@@ -31,7 +31,7 @@ class TestUtil(TestCase):
         Test: Correct range is returned
         When: second_run is provided
         """
-        self.assertEqual(range(1, 5), get_run_range(1, last_run=4))
+        self.assertEqual(range(1, 5), get_run_range(first_run=1, last_run=4))
 
     def test_get_run_numbers_invalid_input_raises_value_error(self):
         """
@@ -39,4 +39,4 @@ class TestUtil(TestCase):
         When: first_run is greater than last_run
         """
         with self.assertRaises(ValueError):
-            get_run_range(5, last_run=2)
+            get_run_range(first_run=5, last_run=2)
