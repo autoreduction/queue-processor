@@ -100,6 +100,7 @@ class PostProcessAdmin:
     # pylint: disable=too-many-instance-attributes
     def __init__(self, message, client):
         logger.debug("Message data: %s", message.serialize(limit_reduction_script=True))
+        self.read_write_map = {"R": "read", "W": "write"}
 
         self.message = message
         self.client = client
@@ -178,7 +179,7 @@ class PostProcessAdmin:
         """ Returns the path of the reduction script for an instrument. """
         return os.path.join(self._reduction_script_location(instrument_name), 'reduce.py')
 
-    def reduction_started(self):
+    def send_reduction_started(self):
         """Log and update AMQ message to reduction started"""
         logger.debug("Calling: %s\n%s",
                      ACTIVEMQ_SETTINGS.reduction_started,
@@ -215,59 +216,69 @@ class PostProcessAdmin:
         return temporary_directory + instrument_output_directory
 
     @staticmethod
-    def write_and_readability_checks(directory_list, read_write):
+    def verify_directory_access(location, access_type):
         """
-        Check a list of N directories for write/readability
+        Tests directory access for a given location and type of access
+        :param location: (str) directory location
+        :param access_type: (str) type of access to location e.g "W", "R"
+        """
+        if not os.access(location, getattr(sys.modules[os.__name__], f"{access_type}_OK")):
+            if not os.access(location, os.F_OK):
+                problem = "does not exist"
+            else:
+                problem = "no %s access", access_type
+            raise OSError("Couldn't %s %s  -  %s" % (access_type, location, problem))
+        return True
+
+    def write_and_readability_checks(self, directory_list, read_write):
+        """
+        Check a list of N directories for user specified type of access (read/write)
         :param directory_list: (list) directory list
         :param read_write: (str) Read=R, Write=W
         :return Error (Exception or ValueError) when something goes wrong
         """
         read_write = read_write.upper()
-        read_write_map = {"R": "read", "W": "write"}
+
         try:
-            read_write_map[read_write]
+            assert self.read_write_map[read_write]  # raises key error if file input not expected
+
+            # Verify directory access
+            for location in directory_list:
+                if not self.verify_directory_access(location=location, access_type=read_write):
+                    raise Exception
+                else:
+                    logger.info("Successful test %s to %s", (read_write, location))
+            return True
+
+        except Exception as exp:
+            # If we can't access now, abort the run, and tell the server to re-run at a later time.
+            self.message.message = "Permission error: %s" % exp
+            self.message.retry_in = 6 * 60 * 60  # 6 hours
+            logger.error(traceback.format_exc())
+            raise exp
+
         except KeyError:
             raise KeyError("Invalid read or write input: %s read_write argument must be either"
                            " 'R' or 'W'" % read_write)
 
-        for location in directory_list:
-            if not os.access(location, getattr(sys.modules[os.__name__], f"{read_write}_OK")):
-                if not os.access(location, os.F_OK):
-                    problem = "does not exist"
-                else:
-                    problem = "no %s access", read_write_map[read_write]
-                raise OSError("Couldn't %s %s  -  %s" % (read_write_map[read_write],
-                                                         location,
-                                                         problem))
-            return True
-
-    def path_access_validate(self, should_be_writable, should_be_readable):
+    @staticmethod
+    def create_directory(list_of_paths):
         """
-        Test for access to result paths and raise exception and attempt re-run later if problem
-        :param should_be_writable: (list)
-        :param should_be_readable: (list)
+        Creates directory that should exist if it does not already.
+        :param list_of_paths: (list) directories that should be writeable
         """
         try:
-            # Try to make directories which should exist
-            for path in filter(lambda p: not os.path.isdir(p), should_be_writable):
-                os.makedirs(path)
 
-            # Test if directories can be read from and written too, raising exception if failed
-            if self.write_and_readability_checks(directory_list=should_be_writable, read_write='W'):
-                logger.info("Successful test write to %s", should_be_writable)
-            else:
-                raise Exception
-
-            if self.write_and_readability_checks(directory_list=should_be_readable, read_write='R'):
-                logger.info("Successful test read to %s", should_be_readable)
-            else:
-                raise Exception
-
+            for path in list_of_paths:
+                if not os.path.isdir(path):
+                    logger.info("path %s does not exist. \n "
+                                "Attempting to make path" % path)
+                    os.makedirs(path)
+                elif os.path.isdir(path):
+                    logger.info("Path %s exists" % path)
+                else:
+                    break
         except Exception as exp:
-            # If we can't access now, we should abort the run, and tell the server that it
-            # should be re-run at a later time.
-            self.message.message = "Permission error: %s" % exp
-            self.message.retry_in = 6 * 60 * 60  # 6 hours
             logger.error(traceback.format_exc())
             raise exp
 
@@ -305,7 +316,7 @@ class PostProcessAdmin:
 
         try:
             # log and update AMQ message to reduction started
-            self.reduction_started()
+            self.send_reduction_started()
 
             # Specify instrument directories - if excitation instrument remove run_number from dir
             no_run_number_directory = False
@@ -334,11 +345,19 @@ class PostProcessAdmin:
                 reduce_dir=reduce_result_dir)
 
             # Test path access
-            self.path_access_validate(should_be_writable=[reduce_result_dir,
-                                                          log_dir,
-                                                          final_result_dir,
-                                                          final_log_dir],
-                                      should_be_readable=[self.data_file])
+            should_be_writeable = [reduce_result_dir,
+                                   log_dir,
+                                   final_result_dir,
+                                   final_log_dir]
+            should_be_readable = [self.data_file]
+
+            # Try to create directory if does not exist
+            for location in should_be_writeable:
+                self.create_directory(location)
+
+            # Check permissions of paths which should be writeable and readable
+            self.write_and_readability_checks(directory_list=should_be_writeable, read_write="W")
+            self.write_and_readability_checks(directory_list=should_be_readable, read_write="R")
 
             self.message.reduction_data = []
 

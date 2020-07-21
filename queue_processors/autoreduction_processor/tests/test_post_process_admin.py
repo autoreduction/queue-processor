@@ -153,14 +153,14 @@ class TestPostProcessAdmin(unittest.TestCase):
         self.assertEqual(temporary_directory, f"/{actual_directory_list[0]}")
 
     @patch(DIR + '.autoreduction_logging_setup.logger.debug')
-    def test_reduction_started(self, mock_log):
+    def test_send_reduction_started(self, mock_log):
         """
         Test: reduction started message has been sent and logged
         When: called within reduce method
         """
         amq_client_mock = Mock()
         ppa = PostProcessAdmin(self.message, amq_client_mock)
-        ppa.reduction_started()
+        ppa.send_reduction_started()
 
         mock_log.assert_called()
         amq_client_mock.send.assert_called_with(ACTIVEMQ_SETTINGS.reduction_started, ppa.message)
@@ -170,35 +170,64 @@ class TestPostProcessAdmin(unittest.TestCase):
         self.assertEqual(location, MISC['scripts_directory'] % 'WISH')
 
     @patch('os.access')
-    def test_write_and_readability_checks(self, mock_os_access):
+    def test_verify_directory_access(self, mock_os_access):
         """
-       Test: None is returned if there is no problem with directory path
-       When: Called with valid path
-       """
+        Test: True is returned if there is no problem with directory path
+        When: Called with valid path with write access
+        """
         ppa = PostProcessAdmin(self.message, None)
 
-        write_list = ["directory/path/"]
-
+        location = "directory/path/"
         mock_os_access.return_value = True
-        actual_write = ppa.write_and_readability_checks(write_list, 'W')
 
-        self.assertTrue(actual_write)
+        actual = ppa.verify_directory_access(location, "W")
+        self.assertTrue(actual)
 
     @patch('os.access')
-    def test_write_and_readability_checks_invalid_path(self, mock_os_access):
+    def test_verify_directory_access_invalid(self, mock_os_access):
         """
-        Test: Exception is raised
-        When: Called with invalid path
+        Test: OSError is raised if there is a problem with directory path access
+        When: Called with valid path
         """
         ppa = PostProcessAdmin(self.message, None)
-        write_list = ["directory/path/"]
 
+        location = "directory/path/"
         mock_os_access.return_value = False
 
         with self.assertRaises(OSError):
-            ppa.write_and_readability_checks(write_list, 'W')
+            ppa.verify_directory_access(location, 'W')
 
-        # self.assertIsInstance(actual_write, Exception)
+    @patch(f"{DIR}.post_process_admin.PostProcessAdmin.verify_directory_access")
+    @patch('logging.Logger.info')
+    def test_write_and_readability_checks(self, mock_logging, mock_vda):
+        """
+        Test: True is returned if there is no problem with directory path and logged as successful
+        When: Called with valid path and access type
+        """
+        ppa = PostProcessAdmin(self.message, None)
+        write_list = ["directory/path/"]
+        mock_vda.return_type = True
+
+        actual_write = ppa.write_and_readability_checks(write_list, 'W')
+
+        expected_logs_called_with = [call("Successful test %s to %s", ("W", write_list[0]))]
+
+        self.assertTrue(actual_write)
+        self.assertEqual(expected_logs_called_with, mock_logging.call_args_list)
+
+    @patch(f"{DIR}.post_process_admin.PostProcessAdmin.verify_directory_access")
+    def test_write_and_readability_checks_invalid_path(self, mock_vda):
+        """
+        Test: Exception is raised
+        When: Called with invalid path/incorrect path access
+        """
+        ppa = PostProcessAdmin(self.message, None)
+        write_list = ["directory/path/"]
+
+        mock_vda.return_value = False
+
+        with self.assertRaises(Exception):
+            ppa.write_and_readability_checks(write_list, 'W')
 
     def test_write_and_readability_checks_invalid_input(self):
         """
@@ -214,7 +243,7 @@ class TestPostProcessAdmin(unittest.TestCase):
     @patch('os.access')
     @patch('os.path.isdir')
     @patch(DIR + '.post_process_admin.PostProcessAdmin.write_and_readability_checks')
-    def test_path_access_validate(self, mock_wrc, mock_dir, mock_os_access):
+    def test_create_directory(self, mock_wrc, mock_dir, mock_os_access):
         """
         Test: None returned
         When: Path checks pass
@@ -224,25 +253,19 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_os_access.return_value = False
         ppa = PostProcessAdmin(self.message, None)
 
-        self.assertFalse(ppa.path_access_validate(
-            should_be_writable=['should/be/writeable'],
-            should_be_readable=['should/be/readable']))
+        self.assertFalse(ppa.create_directory(
+            list_of_paths=['should/be/writeable']))
 
-    @patch('os.makedirs')
-    @patch(f"{DIR}.post_process_admin.PostProcessAdmin.write_and_readability_checks")
-    def test_path_access_validate_invalid(self, mock_wrc, mock_isdir):
+    def test_create_directory_invalid(self):
         """
         Test: Exception raised
-        When: Anything other than None returned by write_and_readability_checks
+        When: Anything other than None returned by write_and_readability_checks when invalid
+        argument passed as path.
         """
         ppa = PostProcessAdmin(self.message, None)
-        mock_isdir.return_value = True
-
-        mock_wrc.return_value = None
 
         with self.assertRaises(Exception):
-            ppa.path_access_validate(should_be_writable=['fake/directory'],
-                                     should_be_readable=['fake/directory'])
+            ppa.create_directory(list_of_paths=None)
 
     @patch('logging.Logger.info')
     @patch(f"{DIR}.post_process_admin.PostProcessAdmin._new_reduction_data_path")
@@ -479,6 +502,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_error,
                                           self.message)
 
+    patch("os.access")
     def test_new_reduction_data_path_no_overwrite_paths_exist(self):
         """
         Test: A path is returned with a final directory one higher than the current highest
