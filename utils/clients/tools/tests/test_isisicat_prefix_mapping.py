@@ -27,32 +27,15 @@ class TestICATPrefixMappings(unittest.TestCase):
 
     def test_icat_prefix_mappings(self):
         """
-        Test: ICAT_PREFIX_MAP maps all Autoreduction instruments to ICAT instrument prefixes
+        Test: If a selection of instrument names map to ICAT instrument prefixes using ICAT_PREFIX_MAP
         When: Called when testing correct mappings
         """
-        ICAT_INSTRUMENTS_MOCK_QUERY_RESULTS = {
-            "ENG": MockInstrumentQueryResult("ENGINX"),
-            "GEM": MockInstrumentQueryResult("GEM"),
-            "HRP": MockInstrumentQueryResult("HRPD"),
-            "MAP": MockInstrumentQueryResult("MAPS"),
-            "MAR": MockInstrumentQueryResult("MARI"),
-            "MUSR": MockInstrumentQueryResult("MUSR"),
-            "OSI": MockInstrumentQueryResult("OSIRIS"),
-            "POL": MockInstrumentQueryResult("POLARIS"),
-            "POLREF": MockInstrumentQueryResult("POLREF"),
-            "WISH": MockInstrumentQueryResult("WISH"),
-        }
+        ICAT_INSTRUMENTS_MOCK_SELECTION = [
+            ("ENGINX", "ENG"),
+            ("GEM", "GEM"),
+            ("HRPD", "HRP"),
+            ("MAPS", "MAP")
+        ]
 
-        for autoreduction_instrument_name in AUTOREDUCTION_INSTRUMENT_NAMES:
-            instrument_short_name = ICAT_PREFIX_MAP[autoreduction_instrument_name]
-            self.assertEqual(
-                ICAT_INSTRUMENTS_MOCK_QUERY_RESULTS[instrument_short_name].fullName, autoreduction_instrument_name)
-
-
-class MockInstrumentQueryResult():
-    """
-    Mocks result of client.execute_query("SELECT i FROM Instrument i WHERE name = '....'))[0]
-    """
-
-    def __init__(self, fullName):
-        self.fullName = fullName
+        for instrument in ICAT_INSTRUMENTS_MOCK_SELECTION:
+            self.assertEqual(ICAT_PREFIX_MAP[instrument[0]], instrument[1])
