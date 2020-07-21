@@ -15,6 +15,7 @@ import fire
 
 from model.database import access as db
 from model.message.message import Message
+from scripts.manual_operations.util import get_run_range
 
 from utils.clients.connection_exception import ConnectionException
 from utils.clients.icat_client import ICATClient
@@ -189,13 +190,8 @@ def main(instrument, first_run, last_run=None):
     :param first_run: (int) The first run to be submitted
     :param last_run: (int) The last run to be submitted
     """
-    if last_run:
-        if int(last_run) > int(first_run):
-            run_numbers = list(range(first_run, last_run))
-        else:
-            raise ValueError(f"last run ({last_run}) must be more than first run ({first_run})")
-    else:
-        run_numbers = [first_run]
+    run_numbers = get_run_range(first_run, last_run=last_run)
+
     instrument = instrument.upper()
     icat_client = login_icat()
     database_client = login_database()

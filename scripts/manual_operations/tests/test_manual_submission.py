@@ -258,12 +258,15 @@ class TestManualSubmission(unittest.TestCase):
     @patch('scripts.manual_operations.manual_submission.login_queue')
     @patch('scripts.manual_operations.manual_submission.get_location_and_rb')
     @patch('scripts.manual_operations.manual_submission.submit_run')
-    def test_main_valid(self, mock_submit, mock_get_loc,
+    @patch('scripts.manual_operations.manual_submission.get_run_range')
+    def test_main_valid(self, mock_run_range, mock_submit, mock_get_loc,
                         mock_queue, mock_database, mock_icat):
         """
         Test: The control methods are called in the correct order
         When: main is called and the environment (client settings, input, etc.) is valid
         """
+        mock_run_range.return_value = range(1111, 1112)
+
         # Setup Mock clients
         mock_db_client = Mock()
         mock_icat_client = Mock()
@@ -279,6 +282,7 @@ class TestManualSubmission(unittest.TestCase):
         ms.main(instrument='TEST', first_run=1111)
 
         # Assert
+        mock_run_range.assert_called_with(1111, last_run=None)
         mock_icat.assert_called_once()
         mock_database.assert_called_once()
         mock_queue.assert_called_once()
@@ -287,13 +291,16 @@ class TestManualSubmission(unittest.TestCase):
 
     @patch('scripts.manual_operations.manual_submission.login_icat')
     @patch('scripts.manual_operations.manual_submission.login_database')
-    def test_main_bad_client(self, mock_db, mock_icat):
+    @patch('scripts.manual_operations.manual_submission.get_run_range')
+    def test_main_bad_client(self, mock_get_run_range, mock_db, mock_icat):
         """
         Test: A RuntimeError is raised
         When: Neither ICAT or Database connections can be established
         """
+        mock_get_run_range.return_value = range(1111, 1112)
         mock_db.return_value = None
         mock_icat.return_value = None
         self.assertRaises(RuntimeError, ms.main, 'TEST', 1111)
+        mock_get_run_range.assert_called_with(1111, last_run=None)
         mock_db.asert_called_once()
         mock_icat.assert_called_once()
