@@ -4,7 +4,7 @@
 # Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
-# !/usr/bin/env python
+#!/usr/bin/env python
 # pylint: disable=too-many-branches
 # pylint: disable=broad-except
 # pylint: disable=bare-except
