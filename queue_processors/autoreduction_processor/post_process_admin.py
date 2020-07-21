@@ -246,9 +246,13 @@ class PostProcessAdmin:
             for location in directory_list:
                 if not self.verify_directory_access(location=location, access_type=read_write):
                     raise Exception
-                else:
-                    logger.info("Successful test %s to %s", (read_write, location))
+                # Pylint: logging-too-few-args
+                logger.info("Successful test access to %s", location)
             return True
+
+        except KeyError:
+            raise KeyError("Invalid read or write input: %s read_write argument must be either"
+                           " 'R' or 'W'" % read_write)
 
         except Exception as exp:
             # If we can't access now, abort the run, and tell the server to re-run at a later time.
@@ -257,9 +261,7 @@ class PostProcessAdmin:
             logger.error(traceback.format_exc())
             raise exp
 
-        except KeyError:
-            raise KeyError("Invalid read or write input: %s read_write argument must be either"
-                           " 'R' or 'W'" % read_write)
+
 
     @staticmethod
     def create_directory(list_of_paths):
@@ -272,10 +274,10 @@ class PostProcessAdmin:
             for path in list_of_paths:
                 if not os.path.isdir(path):
                     logger.info("path %s does not exist. \n "
-                                "Attempting to make path" % path)
+                                "Attempting to make path", path)
                     os.makedirs(path)
                 elif os.path.isdir(path):
-                    logger.info("Path %s exists" % path)
+                    logger.info("Path %s exists", path)
                 else:
                     break
         except Exception as exp:
