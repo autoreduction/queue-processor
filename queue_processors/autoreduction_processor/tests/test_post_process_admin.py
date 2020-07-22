@@ -169,8 +169,9 @@ class TestPostProcessAdmin(unittest.TestCase):
         location = PostProcessAdmin._reduction_script_location('WISH')
         self.assertEqual(location, MISC['scripts_directory'] % 'WISH')
 
+    @patch('logging.Logger.info')
     @patch('os.access')
-    def test_verify_directory_access(self, mock_os_access):
+    def test_verify_directory_access(self, mock_os_access, mock_logging):
         """
         Test: True is returned if there is no problem with directory path
         When: Called with valid path with write access
@@ -181,7 +182,10 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_os_access.return_value = True
 
         actual = ppa.verify_directory_access(location, "W")
+        expected_logs_called_with = [call("Successful %s access to %s" % ("write", location))]
+
         self.assertTrue(actual)
+        self.assertEqual(expected_logs_called_with, mock_logging.call_args_list)
 
     @patch('os.access')
     def test_verify_directory_access_invalid(self, mock_os_access):
@@ -198,8 +202,7 @@ class TestPostProcessAdmin(unittest.TestCase):
             ppa.verify_directory_access(location, 'W')
 
     @patch(f"{DIR}.post_process_admin.PostProcessAdmin.verify_directory_access")
-    @patch('logging.Logger.info')
-    def test_write_and_readability_checks(self, mock_logging, mock_vda):
+    def test_write_and_readability_checks(self, mock_vda):
         """
         Test: True is returned if there is no problem with directory path and logged as successful
         When: Called with valid path and access type
@@ -210,10 +213,7 @@ class TestPostProcessAdmin(unittest.TestCase):
 
         actual_write = ppa.write_and_readability_checks(write_list, 'W')
 
-        expected_logs_called_with = [call("Successful test access to %s", write_list[0])]
-
-        self.assertTrue(actual_write)
-        self.assertEqual(expected_logs_called_with, mock_logging.call_args_list)
+        self.assertFalse(actual_write)
 
     @patch(f"{DIR}.post_process_admin.PostProcessAdmin.verify_directory_access")
     def test_write_and_readability_checks_invalid_path(self, mock_vda):
@@ -255,17 +255,6 @@ class TestPostProcessAdmin(unittest.TestCase):
 
         self.assertFalse(ppa.create_directory(
             list_of_paths=['should/be/writeable']))
-
-    def test_create_directory_invalid(self):
-        """
-        Test: Exception raised
-        When: Anything other than None returned by write_and_readability_checks when invalid
-        argument passed as path.
-        """
-        ppa = PostProcessAdmin(self.message, None)
-
-        with self.assertRaises(Exception):
-            ppa.create_directory(list_of_paths=None)
 
     @patch('logging.Logger.info')
     @patch(f"{DIR}.post_process_admin.PostProcessAdmin._new_reduction_data_path")

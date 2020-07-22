@@ -215,8 +215,7 @@ class PostProcessAdmin:
         # Specify directories where autoreduction output will go
         return temporary_directory + instrument_output_directory
 
-    @staticmethod
-    def verify_directory_access(location, access_type):
+    def verify_directory_access(self, location, access_type):
         """
         Tests directory access for a given location and type of access
         :param location: (str) directory location
@@ -227,7 +226,10 @@ class PostProcessAdmin:
                 problem = "does not exist"
             else:
                 problem = "no %s access", access_type
-            raise OSError("Couldn't %s %s  -  %s" % (access_type, location, problem))
+            raise OSError("Couldn't %s %s  -  %s" % (self.read_write_map[access_type],
+                                                     location,
+                                                     problem))
+        logger.info("Successful %s access to %s" % (self.read_write_map[access_type], location))
         return True
 
     def write_and_readability_checks(self, directory_list, read_write):
@@ -246,9 +248,6 @@ class PostProcessAdmin:
             for location in directory_list:
                 if not self.verify_directory_access(location=location, access_type=read_write):
                     raise Exception
-                # Pylint: logging-too-few-args
-                logger.info("Successful test access to %s", location)
-            return True
 
         except KeyError:
             raise KeyError("Invalid read or write input: %s read_write argument must be either"
@@ -261,28 +260,18 @@ class PostProcessAdmin:
             logger.error(traceback.format_exc())
             raise exp
 
-
-
     @staticmethod
     def create_directory(list_of_paths):
         """
         Creates directory that should exist if it does not already.
         :param list_of_paths: (list) directories that should be writeable
         """
-        try:
 
-            for path in list_of_paths:
-                if not os.path.isdir(path):
-                    logger.info("path %s does not exist. \n "
-                                "Attempting to make path", path)
-                    os.makedirs(path)
-                elif os.path.isdir(path):
-                    logger.info("Path %s exists", path)
-                else:
-                    break
-        except Exception as exp:
-            logger.error(traceback.format_exc())
-            raise exp
+        # try to make directories which should exist
+        for path in filter(lambda p: not os.path.isdir(p), list_of_paths):
+            logger.info("path %s does not exist. \n "
+                        "Attempting to make path", path)
+            os.makedirs(path)
 
     def create_final_result_and_log_directory(self, temporary_root_directory, reduce_dir):
         """
