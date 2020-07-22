@@ -26,9 +26,6 @@ install:
   - python3 setup.py externals -s activemq
   - python3 setup.py database
   - cat build.log
-  - cat logs/queue_processor.log
-  - cat logs/queue_client.log
-  - cat logs/autoreduction_processor.log
   - _LOCAL_PYTHON_PATH=$(which python3)
   - sudo $_LOCAL_PYTHON_PATH setup.py start
 
@@ -53,6 +50,7 @@ script:
   - pylint utils
   - pylint plotting
 
+after_deploy: echo $(cat logs/queue_processor.log)
 
 after_success:
   - coveralls
