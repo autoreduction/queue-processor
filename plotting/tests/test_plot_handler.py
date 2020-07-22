@@ -13,7 +13,7 @@ calling the SFTPClient with correct parameters
 """
 import os
 import unittest
-from mock import patch, call
+from mock import patch
 
 from plotting.plot_handler import PlotHandler
 from utils.project.structure import get_project_root
@@ -129,7 +129,7 @@ class TestPlotHandler(unittest.TestCase):
         Test: Empty list is returned
         When: No matching file exists
         """
-        mock_gfn_regex.return_value=self.expected_mari_file_regex
+        mock_gfn_regex.return_value = self.expected_mari_file_regex
 
         expected_files = []
         actual = self.test_plot_handler._get_plot_files_locally()
@@ -163,10 +163,11 @@ class TestPlotHandler(unittest.TestCase):
     @patch('plotting.plot_handler.PlotHandler._check_for_plot_files')
     @patch('utils.clients.sftp_client.SFTPClient.__init__', return_value=None)
     @patch('utils.clients.sftp_client.SFTPClient.retrieve')
-    def test_get_plot_files(self, mock_retrieve, mock_client_init, mock_find_files):
+    @patch("plotting.plot_handler.PlotHandler._get_plot_files_locally", return_value=[])
+    def test_get_plot_files_no_local_files(self, mock_gpfl, mock_retrieve, mock_client_init, mock_find_files):
         """
         Test: get_plot_files returns the expected plot files
-        When: called with valid arguments and files exist
+        When: called with valid arguments and files exist on server and none exist locally
         """
         expected_files = ['expected.png']
         mock_find_files.return_value = expected_files
@@ -179,13 +180,17 @@ class TestPlotHandler(unittest.TestCase):
             server_file_path=expected_server, local_file_path=expected_local, override=True)
         self.assertEqual([f'/static/graphs/{expected_files[0]}'], actual_path)
 
+        mock_gpfl.assert_called()
+
     @patch('utils.clients.sftp_client.SFTPClient.retrieve')
     @patch('plotting.plot_handler.PlotHandler._check_for_plot_files')
     @patch('utils.clients.sftp_client.SFTPClient.__init__', return_value=None)
-    def test_get_plot_files_multiple(self, mock_client_init, mock_find_files, _):
+    @patch("plotting.plot_handler.PlotHandler._get_plot_files_locally", return_value=[])
+    def test_get_plot_files_multiple_none_local(self, mock_gpfl, mock_client_init, mock_find_files, _):
         """
         Test: Multiple file paths are returned as a list
-        When: Multiple image files exist on the server relating to the same run
+        When: Multiple image files exist on the server relating to the same run and none exist
+        locally
         """
         expected_files = ['expected_1.png', 'expected_2.png']
         mock_find_files.return_value = expected_files
@@ -197,24 +202,46 @@ class TestPlotHandler(unittest.TestCase):
         mock_client_init.assert_called_once()  # Ensure this is not initialised more than once
         self.assertEqual(expected_paths, actual_paths)
 
+        mock_gpfl.assert_called()
+
     @patch('plotting.plot_handler.PlotHandler._check_for_plot_files', return_value=[])
-    def test_get_plot_file_none_found(self, _):
+    @patch("plotting.plot_handler.PlotHandler._get_plot_files_locally", return_value=[])
+    def test_get_plot_file_none_found(self, mock_gpfl, _):
         """
         Test: None is returned
-        When: No files can be found on the server
+        When: No files can be found on the server or locally
         """
         self.assertIsNone(self.test_plot_handler.get_plot_file())
+        mock_gpfl.assert_called()
 
     @patch('plotting.plot_handler.PlotHandler._check_for_plot_files')
     @patch('utils.clients.sftp_client.SFTPClient.__init__', return_value=None)
     @patch('utils.clients.sftp_client.SFTPClient.retrieve')
-    def test_get_plot_files_cant_download(self, mock_retrieve, mock_client_init, mock_find_files):
+    @patch("plotting.plot_handler.PlotHandler._get_plot_files_locally", return_value=[])
+    def test_get_plot_files_cant_download_none_local(self, mock_gpfl, mock_retrieve, mock_client_init, mock_find_files):
         """
         Test: get_plot_files returns the expected plot files
-        When: called with valid arguments and files exist
+        When: called with valid arguments and files exist on server and not locally
         """
         expected_files = ['expected.png']
         mock_find_files.return_value = expected_files
         mock_retrieve.side_effect = RuntimeError
         self.assertIsNone(self.test_plot_handler.get_plot_file())
+        mock_gpfl.assert_called()
         mock_client_init.assert_called_once()
+
+    @patch("plotting.plot_handler.PlotHandler._check_for_plot_files")
+    @patch("plotting.plot_handler.PlotHandler._get_plot_files_locally")
+    def test_get_plot_file_from_local_storage(self, mock_gpfl, mock_cfpf):
+        """
+        Test: Correct files returned from local storage
+        When: When files exist already exist locally
+        """
+        mock_gpfl.return_value = ["/static/graphs/expected.png"]
+
+        expected = ["/static/graphs/expected.png"]
+        actual = self.test_plot_handler.get_plot_file()
+        self.assertEqual(expected, actual)
+
+        mock_gpfl.assert_called()
+        mock_cfpf.assert_not_called()
