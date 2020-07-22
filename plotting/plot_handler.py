@@ -11,8 +11,10 @@ Searching for and retrieving an existing plotting file via the SFTP client
 Getting the associated plotting meta data file
 Instructing the Plotting factory to build an IFrame based on the above
 """
-import os
 import logging
+import os
+import re
+
 from utils.clients.sftp_client import SFTPClient
 from utils.project.structure import get_project_root
 
@@ -66,6 +68,15 @@ class PlotHandler:
         for extension in self.file_extensions:
             _extension_regex += f'{extension}|'
         return _extension_regex[:-1] + ')'
+
+    def _get_plot_files_locally(self):
+        """
+        Searches the local graph folder for files matching the generated file name regex and returns
+        a list of matching paths
+        :return: (list) - The list of matching file paths.
+        """
+        return [f'/static/graphs/{file}' for file in os.listdir(self.static_graph_dir)
+                if re.match(self._generate_file_name_regex(), file)]
 
     def _check_for_plot_files(self):
         """
