@@ -240,14 +240,11 @@ class PostProcessAdmin:
         :return Error (Exception or ValueError) when something goes wrong
         """
         read_write = read_write.upper()
+        print(directory_list)
 
         try:
-            self.read_write_map[read_write]  # raises key error if file input not expected
-        except KeyError:
-            raise KeyError("Invalid read or write input: %s read_write argument must be either"
-                       " 'R' or 'W'", read_write)
+            assert self.read_write_map[read_write]  # raises key error if file input not expected
 
-        try:
             # Verify directory access
             for location in directory_list:
                 if not self.verify_directory_access(location=location, access_type=read_write):
@@ -255,6 +252,9 @@ class PostProcessAdmin:
                 else:
                     break
 
+        except KeyError:
+            raise KeyError("Invalid read or write input: %s read_write argument must be either"
+                       " 'R' or 'W'", read_write)
         except Exception as exp:
             # If we can't access now, abort the run, and tell the server to re-run at a later time.
             self.message.message = "Permission error: %s" % exp
@@ -345,8 +345,7 @@ class PostProcessAdmin:
             should_be_readable = [self.data_file]
 
             # Try to create directory if does not exist
-            for location in should_be_writeable:
-                self.create_directory(location)
+            self.create_directory(should_be_writeable)
 
             # Check permissions of paths which should be writeable and readable
             self.write_and_readability_checks(directory_list=should_be_writeable, read_write="W")
