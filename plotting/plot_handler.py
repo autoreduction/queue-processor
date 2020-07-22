@@ -42,16 +42,16 @@ class PlotHandler:
                                              'autoreduce_webapp', 'static',
                                              'graphs')
 
-    def _generate_file_name_regex(self, plot_type):
+    def _generate_file_name_regex(self):
         """
         Regular expression used for looking for plot files.
         This assumes that the file names follow the convention:
         <instrument_abbreviation><run_number>*<.png or other extension>
-        :param plot_type: (str) the type of file to be searched for, e.g. "png"
         """
         try:
             _inst_regex = INSTRUMENT_REGEX_MAP[self.instrument_name]
-            return f'{_inst_regex}{self.run_number}.*.{plot_type}'
+            _file_extension_regex = self._generate_file_extension_regex()
+            return f'{_inst_regex}{self.run_number}.*.{_file_extension_regex}'
         except KeyError:  # Instrument name does not appear in dictionary of known instruments
             LOGGER.info("The instrument name is not recognised")
             return None
@@ -76,15 +76,14 @@ class PlotHandler:
         client = SFTPClient()
         # initialise list to store names of existing files matching the search
         _found_files = []
-        for plot_type in self.file_extensions:
-            # regular expression for plot file name(s)
-            file_regex = self._generate_file_name_regex(plot_type=plot_type)
-            if file_regex:
-                # Add files that match regex to the list of files found
-                _found_files.extend(client.get_filenames(server_dir_path=self.server_dir,
-                                                         regex=file_regex))
-            else:
-                return None
+        # regular expression for plot file name(s)
+        file_regex = self._generate_file_name_regex()
+        if file_regex:
+            # Add files that match regex to the list of files found
+            _found_files.extend(client.get_filenames(server_dir_path=self.server_dir,
+                                                     regex=file_regex))
+        else:
+            return None
         return _found_files
 
     def get_plot_file(self):

@@ -29,6 +29,8 @@ class TestPlotHandler(unittest.TestCase):
         """
         Create a few test PlotHandler objects
         """
+        self.expected_file_extension_regex = '(png|jpg|bmp|gif|tiff)'
+        self.expected_mari_file_regex = f'MAR(I)?1234.*.{self.expected_file_extension_regex}'
         self.expected_mari_instrument_name = "MARI"
         self.expected_mari_rb_number = 12345678
         self.expected_mari_run_number = 1234
@@ -59,12 +61,11 @@ class TestPlotHandler(unittest.TestCase):
         Test: Check that the correct regular expression for file look-up is created
         When: Valid instrument names are supplied to _generate_file_name_regex
         """
-        expected_mari = "MAR(I)?1234.*.png"
-        actual = self.test_plot_handler._generate_file_name_regex('png')
-        self.assertEqual(expected_mari, actual)
-        expected_wish = "WISH1234.*.tiff"
+        actual = self.test_plot_handler._generate_file_name_regex()
+        self.assertEqual(self.expected_mari_file_regex, actual)
+        expected_wish = f"WISH1234.*.{self.expected_file_extension_regex}"
         self.test_plot_handler.instrument_name = "WISH"
-        actual = self.test_plot_handler._generate_file_name_regex('tiff')
+        actual = self.test_plot_handler._generate_file_name_regex()
         self.assertEqual(expected_wish, actual)
 
     def test_generate_file_extension_regex(self):
@@ -87,7 +88,7 @@ class TestPlotHandler(unittest.TestCase):
         When: calling _generate_file_name_regex with invalid instrument
         """
         self.test_plot_handler.instrument_name = "Not instrument"
-        self.assertIsNone(self.test_plot_handler._generate_file_name_regex('png'))
+        self.assertIsNone(self.test_plot_handler._generate_file_name_regex())
 
     @patch('utils.clients.sftp_client.SFTPClient.__init__', return_value=None)
     @patch('utils.clients.sftp_client.SFTPClient.get_filenames')
@@ -98,14 +99,8 @@ class TestPlotHandler(unittest.TestCase):
         """
         self.test_plot_handler._check_for_plot_files()
         mock_client_init.assert_called_once()
-        expected_calls = [
-            call(server_dir_path=self.expected_mari_rb_folder, regex="MAR(I)?1234.*.png"),
-            call(server_dir_path=self.expected_mari_rb_folder, regex="MAR(I)?1234.*.jpg"),
-            call(server_dir_path=self.expected_mari_rb_folder, regex="MAR(I)?1234.*.bmp"),
-            call(server_dir_path=self.expected_mari_rb_folder, regex="MAR(I)?1234.*.gif"),
-            call(server_dir_path=self.expected_mari_rb_folder, regex="MAR(I)?1234.*.tiff")
-        ]
-        mock_get_filenames.assert_has_calls(expected_calls, any_order=True)
+        mock_get_filenames.assert_called_once_with(server_dir_path=self.expected_mari_rb_folder,
+                                                   regex=self.expected_mari_file_regex)
 
     @patch('utils.clients.sftp_client.SFTPClient.__init__', return_value=None)
     def test_check_for_files_with_invalid(self, mock_client_init):
