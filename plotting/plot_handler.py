@@ -56,6 +56,17 @@ class PlotHandler:
             LOGGER.info("The instrument name is not recognised")
             return None
 
+    def _generate_file_extension_regex(self):
+        """
+        Generates the file extension part of the file regex. For example if the file extensions were
+        .png, .gif and .jpg: The returned value would be (png|gif|jpg)
+        :return: (str) expression pattern matching the file extensions of the plot handler
+        """
+        _extension_regex = '('
+        for extension in self.file_extensions:
+            _extension_regex += f'{extension}|'
+        return _extension_regex[:-1] + ')'
+
     def _check_for_plot_files(self):
         """
         Searches the server directory for existing plot files using the directory specified.

@@ -67,6 +67,20 @@ class TestPlotHandler(unittest.TestCase):
         actual = self.test_plot_handler._generate_file_name_regex('tiff')
         self.assertEqual(expected_wish, actual)
 
+    def test_generate_file_extension_regex(self):
+        """
+        Test: Correct file extension pattern is generated
+        When: _generate_file_extension_pattern() is called
+        """
+        expected_pattern = '(png|jpg|bmp|gif|tiff)'
+        actual_pattern = self.test_plot_handler._generate_file_extension_regex()
+        self.assertEqual(expected_pattern, actual_pattern)
+
+        self.test_plot_handler.file_extensions.append('txt')
+        expected_pattern = '(png|jpg|bmp|gif|tiff|txt)'
+        actual_pattern = self.test_plot_handler._generate_file_extension_regex()
+        self.assertEqual(expected_pattern, actual_pattern)
+
     def test_generate_file_name_regex_invalid(self):
         """
         Test: Assert None is returned
