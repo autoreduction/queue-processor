@@ -198,7 +198,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         location = "directory/path/"
         mock_os_access.return_value = False
 
-        with self.assertRaises(OSError):
+        with self.assertRaises(Exception):
             ppa.verify_directory_access(location, 'W')
 
     @patch(f"{DIR}.post_process_admin.PostProcessAdmin.verify_directory_access")

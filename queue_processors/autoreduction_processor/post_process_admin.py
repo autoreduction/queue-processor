@@ -226,9 +226,9 @@ class PostProcessAdmin:
                 problem = "does not exist"
             else:
                 problem = "no %s access", access_type
-            raise OSError("Couldn't %s %s  -  %s" % (self.read_write_map[access_type],
-                                                     location,
-                                                     problem))
+            raise Exception("Couldn't %s %s  -  %s" % (self.read_write_map[access_type],
+                                                       location,
+                                                       problem))
         logger.info("Successful %s access to %s" % (self.read_write_map[access_type], location))
         return True
 
@@ -242,16 +242,18 @@ class PostProcessAdmin:
         read_write = read_write.upper()
 
         try:
-            assert self.read_write_map[read_write]  # raises key error if file input not expected
+            self.read_write_map[read_write]  # raises key error if file input not expected
+        except KeyError:
+            raise KeyError("Invalid read or write input: %s read_write argument must be either"
+                       " 'R' or 'W'", read_write)
 
+        try:
             # Verify directory access
             for location in directory_list:
                 if not self.verify_directory_access(location=location, access_type=read_write):
                     raise Exception
-
-        except KeyError:
-            raise KeyError("Invalid read or write input: %s read_write argument must be either"
-                           " 'R' or 'W'" % read_write)
+                else:
+                    break
 
         except Exception as exp:
             # If we can't access now, abort the run, and tell the server to re-run at a later time.
