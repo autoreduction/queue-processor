@@ -15,7 +15,7 @@
             </div>
 
             <!-- Instrument status and control buttons -->
-            <div class="row">
+            <div class="row" id="instrument-active">
                 <!-- Status panel -->
                 <div class="col-md-6">
                     {% include "snippets/instrument_status.html" with processing=processing queued=queued last_instrument_run=last_instrument_run only %}

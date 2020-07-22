@@ -1,8 +1,20 @@
 steps = [
     {
         element: "#not-active",
-        title: "Instrument Active",
+        title: "Instrument is not Active",
         content: "Here, we display whether or not the Instrument is active.",
+        placement: "bottom"
+    },
+    {
+        element: "#pause",
+        title: "Pause Reduction",
+        content: "Here, you are able to pause and unpause reduction for the instrument.",
+        placement: "bottom"
+    },
+    {
+        element: "#instrument-active",
+        title: "Instrument Active",
+        content: "You can view details about the instrument when active here.",
         placement: "bottom"
     },
     {
