@@ -247,13 +247,13 @@ class PostProcessAdmin:
             # Verify directory access
             for location in directory_list:
                 if not self.verify_directory_access(location=location, access_type=read_write):
-                    raise Exception
+                    raise OSError
             return True
 
         except KeyError:
             raise KeyError("Invalid read or write input: %s read_write argument must be either"
                            " 'R' or 'W'" % read_write)
-        except Exception as exp:
+        except OSError as exp:
             # If we can't access now, abort the run, and tell the server to re-run at a later time.
             self.message.message = "Permission error: %s" % exp
             self.message.retry_in = 6 * 60 * 60  # 6 hours
@@ -298,7 +298,6 @@ class PostProcessAdmin:
         return final_result_directory, final_log_directory
 
     # pylint:disable=too-many-nested-blocks
-
     def reduce(self):
         """Start the reduction job."""
         # pylint: disable=too-many-nested-blocks
@@ -335,11 +334,8 @@ class PostProcessAdmin:
                 temporary_root_directory=MISC["temp_root_directory"],
                 reduce_dir=reduce_result_dir)
 
-            # Test path access
-            should_be_writeable = [reduce_result_dir,
-                                   log_dir,
-                                   final_result_dir,
-                                   final_log_dir]
+            # Test path exists and access
+            should_be_writeable = [reduce_result_dir, log_dir, final_result_dir, final_log_dir]
             should_be_readable = [self.data_file]
 
             # Try to create directory if does not exist

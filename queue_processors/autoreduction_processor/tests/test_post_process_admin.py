@@ -173,7 +173,7 @@ class TestPostProcessAdmin(unittest.TestCase):
     @patch('os.access')
     def test_verify_directory_access(self, mock_os_access, mock_logging):
         """
-        Test: True is returned if there is no problem with directory path
+        Test: True is returned if there is no problem with directory path and logged as successful
         When: Called with valid path with write access
         """
         ppa = PostProcessAdmin(self.message, None)
@@ -226,7 +226,7 @@ class TestPostProcessAdmin(unittest.TestCase):
 
         mock_vda.return_value = False
 
-        with self.assertRaises(Exception):
+        with self.assertRaises(OSError):
             ppa.write_and_readability_checks(write_list, 'W')
 
     def test_write_and_readability_checks_invalid_input(self):
