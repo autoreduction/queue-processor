@@ -250,11 +250,14 @@ class PostProcessAdmin:
                 if not self.verify_directory_access(location=location, access_type=read_write):
                     raise Exception
                 else:
+                    logger.info("Successful test %s to: %s" % (self.read_write_map[read_write],
+                                                             location))
                     break
+            return True
 
         except KeyError:
             raise KeyError("Invalid read or write input: %s read_write argument must be either"
-                       " 'R' or 'W'", read_write)
+                           " 'R' or 'W'", read_write)
         except Exception as exp:
             # If we can't access now, abort the run, and tell the server to re-run at a later time.
             self.message.message = "Permission error: %s" % exp
