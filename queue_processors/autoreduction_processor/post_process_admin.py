@@ -59,6 +59,7 @@ def channels_redirected(out_file, err_file, out_stream):
     class MultipleChannels:
         # pylint: disable=expression-not-assigned
         """ Behaves like a stream object, but outputs to multiple streams."""
+
         def __init__(self, *streams):
             self.streams = streams
 
@@ -99,6 +100,7 @@ class PostProcessAdmin:
     # pylint: disable=too-many-instance-attributes
     def __init__(self, message, client):
         logger.debug("Message data: %s", message.serialize(limit_reduction_script=True))
+        self.read_write_map = {"R": "read", "W": "write"}
 
         self.message = message
         self.client = client
@@ -177,6 +179,13 @@ class PostProcessAdmin:
         """ Returns the path of the reduction script for an instrument. """
         return os.path.join(self._reduction_script_location(instrument_name), 'reduce.py')
 
+    def send_reduction_started(self):
+        """Log and update AMQ message to reduction started"""
+        logger.debug("Calling: %s\n%s",
+                     ACTIVEMQ_SETTINGS.reduction_started,
+                     self.message.serialize(limit_reduction_script=True))
+        self.client.send(ACTIVEMQ_SETTINGS.reduction_started, self.message)
+
     def specify_instrument_directories(self,
                                        instrument_output_directory,
                                        no_run_number_directory,
@@ -206,12 +215,63 @@ class PostProcessAdmin:
         # Specify directories where autoreduction output will go
         return temporary_directory + instrument_output_directory
 
-    def reduction_started(self):
-        """Log and update AMQ message to reduction started"""
-        logger.debug("Calling: %s\n%s",
-                     ACTIVEMQ_SETTINGS.reduction_started,
-                     self.message.serialize(limit_reduction_script=True))
-        self.client.send(ACTIVEMQ_SETTINGS.reduction_started, self.message)
+    def verify_directory_access(self, location, access_type):
+        """
+        Tests directory access for a given location and type of access
+        :param location: (str) directory location
+        :param access_type: (str) type of access to location e.g "W", "R"
+        """
+        if not os.access(location, getattr(sys.modules[os.__name__], f"{access_type}_OK")):
+            if not os.access(location, os.F_OK):
+                problem = "does not exist"
+            else:
+                problem = "no %s access", access_type
+            raise Exception("Couldn't %s %s  -  %s" % (self.read_write_map[access_type],
+                                                       location,
+                                                       problem))
+        logger.info("Successful %s access to %s", self.read_write_map[access_type], location)
+        return True
+
+    def write_and_readability_checks(self, directory_list, read_write):
+        """
+        Check a list of N directories for user specified type of access (read/write)
+        :param directory_list: (list) directory list
+        :param read_write: (str) Read=R, Write=W
+        :return Error (Exception or ValueError) when something goes wrong
+        """
+        read_write = read_write.upper()
+
+        try:
+            assert self.read_write_map[read_write]  # raises key error if file input not expected
+
+            # Verify directory access
+            for location in directory_list:
+                if not self.verify_directory_access(location=location, access_type=read_write):
+                    raise OSError
+            return True
+
+        except KeyError:
+            raise KeyError("Invalid read or write input: %s read_write argument must be either"
+                           " 'R' or 'W'" % read_write)
+        except OSError as exp:
+            # If we can't access now, abort the run, and tell the server to re-run at a later time.
+            self.message.message = "Permission error: %s" % exp
+            self.message.retry_in = 6 * 60 * 60  # 6 hours
+            logger.error(traceback.format_exc())
+            raise exp
+
+    @staticmethod
+    def create_directory(list_of_paths):
+        """
+        Creates directory that should exist if it does not already.
+        :param list_of_paths: (list) directories that should be writeable
+        """
+
+        # try to make directories which should exist
+        for path in filter(lambda p: not os.path.isdir(p), list_of_paths):
+            logger.info("path %s does not exist. \n "
+                        "Attempting to make path.", path)
+            os.makedirs(path)
 
     def create_final_result_and_log_directory(self, temporary_root_directory, reduce_dir):
         """
@@ -246,7 +306,7 @@ class PostProcessAdmin:
 
         try:
             # log and update AMQ message to reduction started
-            self.reduction_started()
+            self.send_reduction_started()
 
             # Specify instrument directories - if excitation instrument remove run_number from dir
             no_run_number_directory = False
@@ -274,38 +334,16 @@ class PostProcessAdmin:
                 temporary_root_directory=MISC["temp_root_directory"],
                 reduce_dir=reduce_result_dir)
 
-            # test for access to result paths
-            try:
-                should_be_writable = [reduce_result_dir, log_dir, final_result_dir, final_log_dir]
-                should_be_readable = [self.data_file]
+            # Test path exists and access
+            should_be_writeable = [reduce_result_dir, log_dir, final_result_dir, final_log_dir]
+            should_be_readable = [self.data_file]
 
-                # try to make directories which should exist
-                for path in filter(lambda p: not os.path.isdir(p), should_be_writable):
-                    os.makedirs(path)
+            # Try to create directory if does not exist
+            self.create_directory(should_be_writeable)
 
-                for location in should_be_writable:
-                    if not os.access(location, os.W_OK):
-                        if not os.access(location, os.F_OK):
-                            problem = "does not exist"
-                        else:
-                            problem = "no write access"
-                        raise Exception("Couldn't write to %s  -  %s" % (location, problem))
-
-                for location in should_be_readable:
-                    if not os.access(location, os.R_OK):
-                        if not os.access(location, os.F_OK):
-                            problem = "does not exist"
-                        else:
-                            problem = "no read access"
-                        raise Exception("Couldn't read %s  -  %s" % (location, problem))
-
-            except Exception as exp:
-                # if we can't access now, we should abort the run, and tell the server that it
-                # should be re-run at a later time.
-                self.message.message = "Permission error: %s" % exp
-                self.message.retry_in = 6 * 60 * 60  # 6 hours
-                logger.error(traceback.format_exc())
-                raise exp
+            # Check permissions of paths which should be writeable and readable
+            self.write_and_readability_checks(directory_list=should_be_writeable, read_write="W")
+            self.write_and_readability_checks(directory_list=should_be_readable, read_write="R")
 
             self.message.reduction_data = []
 
@@ -441,12 +479,12 @@ class PostProcessAdmin:
         logger.info("_new_reduction_data_path argument: %s", path)
         # if there is an 'overwrite' key/member with a None/False value
         if not self.message.overwrite:
-            if os.path.isdir(path):           # if the given path already exists..
+            if os.path.isdir(path):  # if the given path already exists..
                 contents = os.listdir(path)
                 highest_vers = -1
-                for item in contents:         # ..for every item, if it's a dir and a int..
+                for item in contents:  # ..for every item, if it's a dir and a int..
                     if os.path.isdir(os.path.join(path, item)):
-                        try:                  # ..store the highest int
+                        try:  # ..store the highest int
                             vers = int(item)
                             highest_vers = max(highest_vers, vers)
                         except ValueError:
@@ -533,7 +571,7 @@ class PostProcessAdmin:
             if os.path.isdir(src_path):
                 self._copy_tree(src_path, dst_path)
             elif not os.path.exists(dst_path) or \
-                                    os.stat(src_path).st_mtime - os.stat(dst_path).st_mtime > 1:
+                    os.stat(src_path).st_mtime - os.stat(dst_path).st_mtime > 1:
                 shutil.copyfile(src_path, dst_path)
 
     def _remove_directory(self, directory):

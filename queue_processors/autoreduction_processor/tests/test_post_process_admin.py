@@ -153,14 +153,14 @@ class TestPostProcessAdmin(unittest.TestCase):
         self.assertEqual(temporary_directory, f"/{actual_directory_list[0]}")
 
     @patch(DIR + '.autoreduction_logging_setup.logger.debug')
-    def test_reduction_started(self, mock_log):
+    def test_send_reduction_started(self, mock_log):
         """
         Test: reduction started message has been sent and logged
         When: called within reduce method
         """
         amq_client_mock = Mock()
         ppa = PostProcessAdmin(self.message, amq_client_mock)
-        ppa.reduction_started()
+        ppa.send_reduction_started()
 
         mock_log.assert_called()
         amq_client_mock.send.assert_called_with(ACTIVEMQ_SETTINGS.reduction_started, ppa.message)
@@ -168,6 +168,93 @@ class TestPostProcessAdmin(unittest.TestCase):
     def test_reduction_script_location(self):
         location = PostProcessAdmin._reduction_script_location('WISH')
         self.assertEqual(location, MISC['scripts_directory'] % 'WISH')
+
+    @patch('logging.Logger.info')
+    @patch('os.access')
+    def test_verify_directory_access(self, mock_os_access, mock_logging):
+        """
+        Test: True is returned if there is no problem with directory path and logged as successful
+        When: Called with valid path with write access
+        """
+        ppa = PostProcessAdmin(self.message, None)
+
+        location = "directory/path/"
+        mock_os_access.return_value = True
+
+        actual = ppa.verify_directory_access(location, "W")
+        expected_logs_called_with = [call("Successful %s access to %s", "write", location)]
+
+        self.assertTrue(actual)
+        self.assertEqual(expected_logs_called_with, mock_logging.call_args_list)
+
+    @patch('os.access')
+    def test_verify_directory_access_invalid(self, mock_os_access):
+        """
+        Test: OSError is raised if there is a problem with directory path access
+        When: Called with valid path
+        """
+        ppa = PostProcessAdmin(self.message, None)
+
+        location = "directory/path/"
+        mock_os_access.return_value = False
+
+        with self.assertRaises(Exception):
+            ppa.verify_directory_access(location, 'W')
+
+    @patch(f"{DIR}.post_process_admin.PostProcessAdmin.verify_directory_access")
+    def test_write_and_readability_checks(self, mock_vda):
+        """
+        Test: True is returned if there is no problem with directory path and logged as successful
+        When: Called with valid path and access type
+        """
+        ppa = PostProcessAdmin(self.message, None)
+        write_list = ["directory/path/"]
+        mock_vda.return_type = True
+
+        actual_write = ppa.write_and_readability_checks(write_list, 'W')
+
+        self.assertTrue(actual_write)
+
+    @patch(f"{DIR}.post_process_admin.PostProcessAdmin.verify_directory_access")
+    def test_write_and_readability_checks_invalid_path(self, mock_vda):
+        """
+        Test: Exception is raised
+        When: Called with invalid path/incorrect path access
+        """
+        ppa = PostProcessAdmin(self.message, None)
+        write_list = ["directory/path/"]
+
+        mock_vda.return_value = False
+
+        with self.assertRaises(OSError):
+            ppa.write_and_readability_checks(write_list, 'W')
+
+    def test_write_and_readability_checks_invalid_input(self):
+        """
+        Test: ValueError returned
+        When: Called with invalid read_write argument
+        """
+        ppa = PostProcessAdmin(self.message, None)
+        write_list = ["directory/path/"]
+
+        with self.assertRaises(KeyError):
+            ppa.write_and_readability_checks(write_list, 'INVALID_KEY')
+
+    @patch('os.access')
+    @patch('os.path.isdir')
+    @patch(DIR + '.post_process_admin.PostProcessAdmin.write_and_readability_checks')
+    def test_create_directory(self, mock_wrc, mock_dir, mock_os_access):
+        """
+        Test: None returned
+        When: Path checks pass
+        """
+        mock_wrc.return_value = True
+        mock_dir.return_value = True
+        mock_os_access.return_value = False
+        ppa = PostProcessAdmin(self.message, None)
+
+        self.assertFalse(ppa.create_directory(
+            list_of_paths=['should/be/writeable']))
 
     @patch('logging.Logger.info')
     @patch(f"{DIR}.post_process_admin.PostProcessAdmin._new_reduction_data_path")
@@ -404,6 +491,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_error,
                                           self.message)
 
+    patch("os.access")
     def test_new_reduction_data_path_no_overwrite_paths_exist(self):
         """
         Test: A path is returned with a final directory one higher than the current highest

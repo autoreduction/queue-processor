@@ -50,6 +50,5 @@ script:
   - pylint utils
   - pylint plotting
 
-
 after_success:
   - coveralls
