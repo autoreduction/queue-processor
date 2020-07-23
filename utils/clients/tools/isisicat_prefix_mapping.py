@@ -5,15 +5,15 @@
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 """
-ICAT_PREFIX_MAP is exposed to map Autoreduction to ICAT instrument prefixes
+fetch_instrument_fullname_mappings() can be used to map Autoreduction to ICAT instrument prefixes
 """
 from utils.clients.icat_client import ICATClient
 from utils.settings import VALID_INSTRUMENTS as AUTOREDUCTION_INSTRUMENT_NAMES
-
+from utils.clients.tools.isisicat_prefix_mapping_logging_setup import logger
 
 def fetch_instrument_fullname_mappings():
     """
-    Queries ICAT for shorter names for all autoreduction instruments
+    Queries ICAT for shorter names for all Autoreduction instruments
     :return: A map of full instrument names to shortened instrument names
     """
     client = ICATClient()
@@ -26,12 +26,9 @@ def fetch_instrument_fullname_mappings():
         except:
             # Missing an instrument should be picked up in the tests
             print("Warning: No instrument in ICAT with fullName", instrument_fullname)
+            logger.warning("No instrument in ICAT with fullName {}".format(instrument_fullname))
             continue
 
         instrument_fullname_to_short_name_map[instrument_fullname] = icat_instrument.name
 
     return instrument_fullname_to_short_name_map
-
-
-# A map from Autoreduction to ICAT instrument prefix names
-ICAT_PREFIX_MAP = fetch_instrument_fullname_mappings()

@@ -20,7 +20,7 @@ from utils.clients.connection_exception import ConnectionException
 from utils.clients.icat_client import ICATClient
 from utils.clients.queue_client import QueueClient
 from utils.clients.django_database_client import DatabaseClient
-from utils.clients.tools.isisicat_prefix_mapping import ICAT_PREFIX_MAP
+from utils.clients.tools.isisicat_prefix_mapping import fetch_instrument_fullname_mappings
 
 
 def submit_run(active_mq_client, rb_number, instrument, data_file_location, run_number):
@@ -86,7 +86,8 @@ def get_location_and_rb_from_icat(icat_client, instrument, run_number, file_ext)
         print("ICAT not connected")  # pragma: no cover
         sys.exit(1)  # pragma: no cover
 
-    instrument_short_name = ICAT_PREFIX_MAP[instrument]
+    print(instrument)
+    instrument_short_name = fetch_instrument_fullname_mappings()[instrument]
     file_name = instrument_short_name + str(run_number).zfill(5) + "." + file_ext
     datafile = icat_client.execute_query("SELECT df FROM Datafile df WHERE df.name = '"
                                          + file_name +
