@@ -182,7 +182,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_os_access.return_value = True
 
         actual = ppa.verify_directory_access(location, "W")
-        expected_logs_called_with = [call("Successful %s access to %s" % ("write", location))]
+        expected_logs_called_with = [call("Successful %s access to %s", "write", location)]
 
         self.assertTrue(actual)
         self.assertEqual(expected_logs_called_with, mock_logging.call_args_list)

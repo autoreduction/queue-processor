@@ -229,7 +229,7 @@ class PostProcessAdmin:
             raise Exception("Couldn't %s %s  -  %s" % (self.read_write_map[access_type],
                                                        location,
                                                        problem))
-        logger.info("Successful %s access to %s" % (self.read_write_map[access_type], location))
+        logger.info("Successful %s access to %s", self.read_write_map[access_type], location)
         return True
 
     def write_and_readability_checks(self, directory_list, read_write):
@@ -252,7 +252,7 @@ class PostProcessAdmin:
 
         except KeyError:
             raise KeyError("Invalid read or write input: %s read_write argument must be either"
-                           " 'R' or 'W'", read_write)
+                           " 'R' or 'W'" % read_write)
         except Exception as exp:
             # If we can't access now, abort the run, and tell the server to re-run at a later time.
             self.message.message = "Permission error: %s" % exp
