@@ -240,7 +240,6 @@ class PostProcessAdmin:
         :return Error (Exception or ValueError) when something goes wrong
         """
         read_write = read_write.upper()
-        print(directory_list)
 
         try:
             assert self.read_write_map[read_write]  # raises key error if file input not expected
@@ -249,10 +248,6 @@ class PostProcessAdmin:
             for location in directory_list:
                 if not self.verify_directory_access(location=location, access_type=read_write):
                     raise Exception
-                else:
-                    logger.info("Successful test %s to: %s" % (self.read_write_map[read_write],
-                                                             location))
-                    break
             return True
 
         except KeyError:
@@ -275,7 +270,7 @@ class PostProcessAdmin:
         # try to make directories which should exist
         for path in filter(lambda p: not os.path.isdir(p), list_of_paths):
             logger.info("path %s does not exist. \n "
-                        "Attempting to make path", path)
+                        "Attempting to make path.", path)
             os.makedirs(path)
 
     def create_final_result_and_log_directory(self, temporary_root_directory, reduce_dir):

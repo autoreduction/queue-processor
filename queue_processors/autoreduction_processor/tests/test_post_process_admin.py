@@ -213,10 +213,7 @@ class TestPostProcessAdmin(unittest.TestCase):
 
         actual_write = ppa.write_and_readability_checks(write_list, 'W')
 
-        expected_logs_called_with = [call("Successful test %s to %s", "write", write_list[0])]
-
         self.assertTrue(actual_write)
-        self.assertEqual(expected_logs_called_with, mock_logging.call_args_list)
 
     @patch(f"{DIR}.post_process_admin.PostProcessAdmin.verify_directory_access")
     def test_write_and_readability_checks_invalid_path(self, mock_vda):
