@@ -19,7 +19,6 @@ def fetch_instrument_fullname_mappings():
     """
     client = ICATClient()
     instrument_fullname_to_short_name_map = {}
-    my_list = AUTOREDUCTION_INSTRUMENT_NAMES
     for instrument_fullname in AUTOREDUCTION_INSTRUMENT_NAMES:
         try:
             icat_instrument = client.execute_query(

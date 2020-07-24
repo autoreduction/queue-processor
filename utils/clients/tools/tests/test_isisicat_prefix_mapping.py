@@ -12,7 +12,7 @@ from unittest.mock import patch
 
 from utils.clients.tools.isisicat_prefix_mapping import fetch_instrument_fullname_mappings
 
-
+# pylint:disable=no-self-use,too-few-public-methods,too-many-public-methods
 class MockInstrumentQueryResult:
     """
     Mocks result of isisicat_prefix_mapping.client.execute_query for an instrument
@@ -20,7 +20,7 @@ class MockInstrumentQueryResult:
 
     def __init__(self, name, full_name):
         self.name = name
-        self.fullName = full_name
+        self.fullName = full_name # pylint:disable=invalid-name
 
 
 class TestICATPrefixMappings(unittest.TestCase):

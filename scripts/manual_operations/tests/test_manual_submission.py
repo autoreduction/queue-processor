@@ -102,6 +102,7 @@ class TestManualSubmission(unittest.TestCase):
         expected = ('test/file/path/2.raw', 123)
         self.assertEqual(expected, actual)
 
+    @patch('icat.Client.__init__', return_value=None)
     def test_get_from_icat_when_file_exists_without_zeroes(self):
         """
         Test: Data for a given run can be retrieved from ICAT in the expected format
@@ -112,6 +113,7 @@ class TestManualSubmission(unittest.TestCase):
         self.loc_and_rb_args[1].execute_query.assert_called_once()
         self.assertEqual(location_and_rb, self.valid_return)
 
+    @patch('icat.Client.__init__', return_value=None)
     def test_icat_uses_prefix_mapper(self):
         """
         Test: The instrument shorthand name is used
@@ -181,7 +183,6 @@ class TestManualSubmission(unittest.TestCase):
         """
         Test: A valid ICAT client is returned
         When: We can log in via the client
-
         Note: We mock the connect so it does not actual perform the connect (default pass)
         """
         actual = ms.login_icat()
@@ -204,7 +205,6 @@ class TestManualSubmission(unittest.TestCase):
         """
         Test: A valid Database client is returned
         When: We can log in via the client
-
         Note: We mock the connect so it does not actual perform the connect (default pass)
         """
         actual = ms.login_database()
@@ -225,7 +225,6 @@ class TestManualSubmission(unittest.TestCase):
         """
         Test: A valid Queue client is returned
         When: We can log in via the queue client
-
         Note: We mock the connect so it does not actual perform the connect (default pass)
         """
         actual = ms.login_queue()

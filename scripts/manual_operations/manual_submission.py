@@ -86,7 +86,6 @@ def get_location_and_rb_from_icat(icat_client, instrument, run_number, file_ext)
         print("ICAT not connected")  # pragma: no cover
         sys.exit(1)  # pragma: no cover
 
-    print(instrument)
     instrument_short_name = fetch_instrument_fullname_mappings()[instrument]
     file_name = instrument_short_name + str(run_number).zfill(5) + "." + file_ext
     datafile = icat_client.execute_query("SELECT df FROM Datafile df WHERE df.name = '"
