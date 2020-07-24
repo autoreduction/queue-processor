@@ -23,7 +23,7 @@ def fetch_instrument_fullname_mappings():
         try:
             icat_instrument = client.execute_query(
                 f"SELECT i FROM Instrument i WHERE i.fullName = '{instrument_fullname}'")[0]
-        except Exception:
+        except Exception: # pylint:disable=broad-except
             print("Warning: No instrument in ICAT with fullName", instrument_fullname)
             logger.warning("No instrument in ICAT with fullName %s", instrument_fullname)
             # Missing an instrument should also be picked up in the tests

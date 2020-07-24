@@ -103,7 +103,10 @@ class TestManualSubmission(unittest.TestCase):
         self.assertEqual(expected, actual)
 
     @patch('icat.Client.__init__', return_value=None)
-    def test_get_from_icat_when_file_exists_without_zeroes(self):
+    @patch('scripts.manual_operations.manual_submission.fetch_instrument_fullname_mappings',
+           return_value={'instrument': ''})
+    def test_get_from_icat_when_file_exists_without_zeroes(self, _client,
+                                                           _fetch_instrument_fullname_mappings):
         """
         Test: Data for a given run can be retrieved from ICAT in the expected format
         When: get_location_and_rb_from_icat is called and the data is present in ICAT
@@ -114,7 +117,9 @@ class TestManualSubmission(unittest.TestCase):
         self.assertEqual(location_and_rb, self.valid_return)
 
     @patch('icat.Client.__init__', return_value=None)
-    def test_icat_uses_prefix_mapper(self):
+    @patch('scripts.manual_operations.manual_submission.fetch_instrument_fullname_mappings',
+           return_value={'MARI': 'MAR'})
+    def test_icat_uses_prefix_mapper(self, _client, _fetch_instrument_fullname_mappings):
         """
         Test: The instrument shorthand name is used
         When: querying ICAT with function get_location_and_rb_from_icat
@@ -136,7 +141,11 @@ class TestManualSubmission(unittest.TestCase):
                                                           " df.name = 'MAR00123.nxs' INCLUDE"
                                                           " df.dataset AS ds, ds.investigation")
 
-    def test_get_from_icat_when_file_exists_with_zeroes(self):
+    @patch('icat.Client.__init__', return_value=None)
+    @patch('scripts.manual_operations.manual_submission.fetch_instrument_fullname_mappings',
+           return_value={'instrument': ''})
+    def test_get_from_icat_when_file_exists_with_zeroes(self, _client,
+                                                        _fetch_instrument_fullname_mappings):
         """
         Test: Data for a given run can be retrieved from ICAT in the expected format
         When: get_location_and_rb_from_icat is called and the data is present in ICAT

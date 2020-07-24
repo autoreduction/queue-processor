@@ -12,6 +12,7 @@ from unittest.mock import patch
 
 from utils.clients.tools.isisicat_prefix_mapping import fetch_instrument_fullname_mappings
 
+
 # pylint:disable=no-self-use,too-few-public-methods,too-many-public-methods
 class MockInstrumentQueryResult:
     """
