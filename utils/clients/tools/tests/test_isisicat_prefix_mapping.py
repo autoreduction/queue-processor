@@ -8,15 +8,19 @@
 Test ICAT prefix mapping
 """
 import unittest
-from mock import patch
+import icat
+from unittest.mock import patch
 
 from utils.settings import VALID_INSTRUMENTS
+from utils.clients.icat_client import ICATClient
 from utils.clients.tools.isisicat_prefix_mapping import fetch_instrument_fullname_mappings
+
 
 
 class MockInstrumentQueryResult:
     """
     Mocks result of isisicat_prefix_mapping.client.execute_query for an instrument
+    TODO: Test case for Logging being called
     """
 
     def __init__(self, name, full_name):
@@ -28,19 +32,26 @@ class TestICATPrefixMappings(unittest.TestCase):
     """
     Test ICAT prefix mapping
     """
+    DIR = "utils.clients.tools.isisicat_prefix_mapping"
 
-    #@patch('logging.Logger.warning')
-    @patch("utils.clients.tools.isisicat_prefix_mapping")
-    @patch("utils.clients.tools.isisicat_prefix_mapping.AUTOREDUCTION_INSTRUMENT_NAMES", ["ABCDE"])
-    def test_prefix_mappings_num_instruments_not_found(self, mock_isisicat_prefix_mapping):
+    @patch('icat.Client.__init__', return_value=None)
+    @patch('utils.clients.icat_client.ICATClient.execute_query')
+    @patch('utils.settings.VALID_INSTRUMENTS')
+    def test_prefix_mappings_num_instruments_not_found(self, mock_instruments, mock_exe, _):
         """
         Test:
         When:
         """
-
+        mock_instruments.return_value = ['ENGINGX']
         fetch_instrument_fullname_mappings()
-        # mock_logger.assert_called_once()
-        mock_isisicat_prefix_mapping.client.execute_query.assert_called_once()
+        mock_exe.assert_called()
+
+    def test_fetch_instrument_fullname_mappings_invalid_instrument(self):
+        """
+        Test:
+        When:
+        """
+        pass
 
     @patch("utils.clients.tools.isisicat_prefix_mapping.AUTOREDUCTION_INSTRUMENT_NAMES", ["ENGINX", "GEM"])
     def test_icat_prefix_mappings_length(self):
