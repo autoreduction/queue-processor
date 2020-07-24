@@ -25,10 +25,10 @@ def fetch_instrument_fullname_mappings():
             icat_instrument = client.execute_query(
                 f"SELECT i FROM Instrument i WHERE i.fullName = '{instrument_fullname}'")[0]
         except Exception:
-            # Missing an instrument should be picked up in the tests
             print("Warning: No instrument in ICAT with fullName", instrument_fullname)
             logger.warning("No instrument in ICAT with fullName %s", instrument_fullname)
-            raise Exception
+            # Missing an instrument should also be picked up in the tests
+            continue
 
         instrument_fullname_to_short_name_map[instrument_fullname] = icat_instrument.name
 

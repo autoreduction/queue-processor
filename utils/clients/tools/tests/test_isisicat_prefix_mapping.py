@@ -8,19 +8,14 @@
 Test ICAT prefix mapping
 """
 import unittest
-import icat
 from unittest.mock import patch
 
-from utils.settings import VALID_INSTRUMENTS
-from utils.clients.icat_client import ICATClient
 from utils.clients.tools.isisicat_prefix_mapping import fetch_instrument_fullname_mappings
-
 
 
 class MockInstrumentQueryResult:
     """
     Mocks result of isisicat_prefix_mapping.client.execute_query for an instrument
-    TODO: Test case for Logging being called
     """
 
     def __init__(self, name, full_name):
@@ -32,46 +27,61 @@ class TestICATPrefixMappings(unittest.TestCase):
     """
     Test ICAT prefix mapping
     """
-    DIR = "utils.clients.tools.isisicat_prefix_mapping"
 
     @patch('icat.Client.__init__', return_value=None)
+    @patch('utils.clients.tools.isisicat_prefix_mapping.AUTOREDUCTION_INSTRUMENT_NAMES',
+           ['ENGINGX'])
     @patch('utils.clients.icat_client.ICATClient.execute_query')
-    @patch('utils.settings.VALID_INSTRUMENTS')
-    def test_prefix_mappings_num_instruments_not_found(self, mock_instruments, mock_exe, _):
+    def test_fetch_instrument_fullname_mappings_executes_icat_query(self, mock_exe, _):
         """
-        Test:
-        When:
+        Test: If fetch_instrument_fullname_mappings executes a query from an instrument in
+              utils.settings.VALID_INSTRUMENTS
+        When: Testing if fetch_instrument_fullname_mappings executes a ICAT query
         """
-        mock_instruments.return_value = ['ENGINGX']
         fetch_instrument_fullname_mappings()
-        mock_exe.assert_called()
+        mock_exe.assert_called_once()
 
-    def test_fetch_instrument_fullname_mappings_invalid_instrument(self):
+    @patch('icat.Client.__init__', return_value=None)
+    @patch('utils.clients.tools.isisicat_prefix_mapping.AUTOREDUCTION_INSTRUMENT_NAMES',
+           ['UNVALIDINSTUMENT'])
+    @patch('logging.Logger.warning')
+    @patch('utils.clients.icat_client.ICATClient.execute_query')
+    def test_fetch_instrument_fullname_mappings_log_invalid_instrument(self, mock_exe,
+                                                                       mock_logger_warning, _):
         """
-        Test:
-        When:
+        Test: If invalid instrument name in utils.settings.VALID_INSTRUMENTS is logged as not found
+        When: Testing if fetch_instrument_fullname_mappings picks up invalid instruments
         """
-        pass
+        mock_exe.side_effect = Exception()
 
-    @patch("utils.clients.tools.isisicat_prefix_mapping.AUTOREDUCTION_INSTRUMENT_NAMES", ["ENGINX", "GEM"])
-    def test_icat_prefix_mappings_length(self):
+        fetch_instrument_fullname_mappings()
+        mock_logger_warning.assert_called_once()
+
+    @patch('icat.Client.__init__', return_value=None)
+    @patch("utils.clients.tools.isisicat_prefix_mapping.AUTOREDUCTION_INSTRUMENT_NAMES",
+           ["ENGINX", "GEM"])
+    @patch('utils.clients.icat_client.ICATClient.execute_query',
+           return_value=[MockInstrumentQueryResult("N", "FN")])
+    def test_icat_prefix_mappings_length(self, _mock_instruments, _mock_exe):
         """
-        Test: ICAT_PREFIX_MAP produces the same number of results as stored in isisicat_prefix_mapping.AUTOREDUCTION_INSTRUMENT_NAMES
-        When: Called when testing to see if the correct number of instruments is in ICAT_PREFIX_MAP
+        Test: fetch_instrument_fullname_mappings produces the same number of results as stored in
+              utils.settings.VALID_INSTRUMENTS
+        When: Called when testing to see if the correct number of instruments in prefix mapping
         """
         prefix_map = fetch_instrument_fullname_mappings()
         self.assertEqual(2, len(prefix_map.keys()))
 
-    @patch("utils.clients.tools.isisicat_prefix_mapping")
+    @patch('icat.Client.__init__', return_value=None)
+    @patch('utils.clients.icat_client.ICATClient.execute_query')
     @patch("utils.clients.tools.isisicat_prefix_mapping.AUTOREDUCTION_INSTRUMENT_NAMES", ["ENGINX"])
-    def test_icat_prefix_mappings(self, mock_isisicat_prefix_mapping):
+    def test_icat_prefix_mappings(self, mock_exe, _):
         """
-        Test: If a selection of instrument names map to ICAT instrument prefixes using ICAT_PREFIX_MAP
+        Test: If fetch_instrument_fullname_mappings properly maps instrument names map to ICAT
+              instrument prefixes using utils.settings.VALID_INSTRUMENTS
         When: Called when testing correct mappings
         """
-        icat_test_instrument = ("ENGINX", "ENG")
-        mock_isisicat_prefix_mapping.client.execute_query.return_value = MockInstrumentQueryResult(
-            *icat_test_instrument)
+        icat_test_instrument = ("ENG", "ENGINX")
+        mock_exe.return_value = [MockInstrumentQueryResult(*icat_test_instrument)]
 
         prefix_map = fetch_instrument_fullname_mappings()
-        self.assertEqual(icat_test_instrument[1], prefix_map[icat_test_instrument[0]])
+        self.assertEqual(icat_test_instrument[0], prefix_map[icat_test_instrument[1]])
