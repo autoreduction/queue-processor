@@ -19,13 +19,23 @@ def fetch_instrument_fullname_mappings():
     """
     client = ICATClient()
     instrument_fullname_to_short_name_map = {}
+
+    try:
+        icat_instruments = client.execute_query("SELECT i FROM Instrument i")
+    except Exception: # pylint:disable=broad-except
+        warning_message = "ICAT Instrument query failed"
+        print(warning_message)
+        logger.warning(warning_message)
+        return None
+
     for instrument_fullname in AUTOREDUCTION_INSTRUMENT_NAMES:
-        try:
-            icat_instrument = client.execute_query(
-                f"SELECT i FROM Instrument i WHERE i.fullName = '{instrument_fullname}'")[0]
-        except Exception: # pylint:disable=broad-except
-            print("Warning: No instrument in ICAT with fullName", instrument_fullname)
-            logger.warning("No instrument in ICAT with fullName %s", instrument_fullname)
+        icat_instrument = next((x for x in icat_instruments if x.fullName == instrument_fullname),
+                               None)
+
+        if not icat_instrument:
+            warning_message = f"No instrument in ICAT with fullName {instrument_fullname}"
+            print(warning_message)
+            logger.warning(warning_message)
             # Missing an instrument should also be picked up in the tests
             continue
 

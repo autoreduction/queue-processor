@@ -21,7 +21,7 @@ class MockInstrumentQueryResult:
 
     def __init__(self, name, full_name):
         self.name = name
-        self.fullName = full_name # pylint:disable=invalid-name
+        self.fullName = full_name  # pylint:disable=invalid-name
 
 
 class TestICATPrefixMappings(unittest.TestCase):
@@ -35,9 +35,8 @@ class TestICATPrefixMappings(unittest.TestCase):
     @patch('utils.clients.icat_client.ICATClient.execute_query')
     def test_fetch_instrument_fullname_mappings_executes_icat_query(self, mock_exe, _):
         """
-        Test: If fetch_instrument_fullname_mappings executes a query from an instrument in
-              utils.settings.VALID_INSTRUMENTS
-        When: Testing if fetch_instrument_fullname_mappings executes a ICAT query
+        Test: If instruments are fetched through a query
+        When: Testing if fetch_instrument_fullname_mappings executes an ICAT query
         """
         fetch_instrument_fullname_mappings()
         mock_exe.assert_called_once()
@@ -46,15 +45,14 @@ class TestICATPrefixMappings(unittest.TestCase):
     @patch('utils.clients.tools.isisicat_prefix_mapping.AUTOREDUCTION_INSTRUMENT_NAMES',
            ['UNVALIDINSTUMENT'])
     @patch('logging.Logger.warning')
-    @patch('utils.clients.icat_client.ICATClient.execute_query')
-    def test_fetch_instrument_fullname_mappings_log_invalid_instrument(self, mock_exe,
+    @patch('utils.clients.icat_client.ICATClient.execute_query',
+           returns_value=[MockInstrumentQueryResult("ABCDE", "ABC")])
+    def test_fetch_instrument_fullname_mappings_log_invalid_instrument(self, _mock_exe,
                                                                        mock_logger_warning, _):
         """
         Test: If invalid instrument name in utils.settings.VALID_INSTRUMENTS is logged as not found
         When: Testing if fetch_instrument_fullname_mappings picks up invalid instruments
         """
-        mock_exe.side_effect = Exception()
-
         fetch_instrument_fullname_mappings()
         mock_logger_warning.assert_called_once()
 
@@ -62,7 +60,8 @@ class TestICATPrefixMappings(unittest.TestCase):
     @patch("utils.clients.tools.isisicat_prefix_mapping.AUTOREDUCTION_INSTRUMENT_NAMES",
            ["ENGINX", "GEM"])
     @patch('utils.clients.icat_client.ICATClient.execute_query',
-           return_value=[MockInstrumentQueryResult("N", "FN")])
+           return_value=[MockInstrumentQueryResult("n", "ENGINX"),
+                         MockInstrumentQueryResult("n", "GEM")])
     def test_icat_prefix_mappings_length(self, _mock_instruments, _mock_exe):
         """
         Test: fetch_instrument_fullname_mappings produces the same number of results as stored in
