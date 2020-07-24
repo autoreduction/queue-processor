@@ -223,9 +223,7 @@ class PostProcessAdmin:
         :param log_directory: (str) log directory path
         :return: (str) log file path
         """
-
         log_and_err_name = f"RB_{self.proposal}_Run_{self.run_number}_"
-
         return Path(log_directory, log_and_err_name + file_name_with_extension)
 
     def verify_directory_access(self, location, access_type):
