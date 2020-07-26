@@ -102,10 +102,9 @@ class TestManualSubmission(unittest.TestCase):
         expected = ('test/file/path/2.raw', 123)
         self.assertEqual(expected, actual)
 
-    @patch('icat.Client.__init__', return_value=None)
     @patch('scripts.manual_operations.manual_submission.fetch_instrument_fullname_mapping',
            return_value={'instrument': ''})
-    def test_get_from_icat_when_file_exists_without_zeroes(self, _mock_client,
+    def test_get_from_icat_when_file_exists_without_zeroes(self,
                                                            _mock_fetch_instrument_fullname_mapping):
         """
         Test: Data for a given run can be retrieved from ICAT in the expected format
@@ -116,10 +115,9 @@ class TestManualSubmission(unittest.TestCase):
         self.loc_and_rb_args[1].execute_query.assert_called_once()
         self.assertEqual(location_and_rb, self.valid_return)
 
-    @patch('icat.Client.__init__', return_value=None)
     @patch('scripts.manual_operations.manual_submission.fetch_instrument_fullname_mapping',
            return_value={'MARI': 'MAR'})
-    def test_icat_uses_prefix_mapper(self, _mock_client, _mock_fetch_instrument_fullname_mapping):
+    def test_icat_uses_prefix_mapper(self, _mock_fetch_instrument_fullname_mapping):
         """
         Test: The instrument shorthand name is used
         When: querying ICAT with function get_location_and_rb_from_icat
@@ -141,10 +139,9 @@ class TestManualSubmission(unittest.TestCase):
                                                           " df.name = 'MAR00123.nxs' INCLUDE"
                                                           " df.dataset AS ds, ds.investigation")
 
-    @patch('icat.Client.__init__', return_value=None)
     @patch('scripts.manual_operations.manual_submission.fetch_instrument_fullname_mapping',
            return_value={'instrument': ''})
-    def test_get_from_icat_when_file_exists_with_zeroes(self, _mock_client,
+    def test_get_from_icat_when_file_exists_with_zeroes(self,
                                                         _mock_fetch_instrument_fullname_mapping):
         """
         Test: Data for a given run can be retrieved from ICAT in the expected format
