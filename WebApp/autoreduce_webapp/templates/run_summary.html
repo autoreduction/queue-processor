@@ -102,6 +102,12 @@
                                         <em>Not yet finished</em>
                                     {% endif %}
                                 </div>
+                                <div>
+                                    {% if run.software is not null %}
+                                        <strong>Software used:</strong>
+                                        {{ run.software.name }} - {{ run.software.version }}
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                         <div class="row">
