@@ -103,9 +103,11 @@
                                     {% endif %}
                                 </div>
                                 <div>
+                                    <strong>Software used:</strong>
                                     {% if run.software is not null %}
-                                        <strong>Software used:</strong>
                                         {{ run.software.name }} - {{ run.software.version }}
+                                    {% else %}
+                                        <em>No software data found</em>
                                     {% endif %}
                                 </div>
                             </div>
