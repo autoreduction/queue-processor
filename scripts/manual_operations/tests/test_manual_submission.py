@@ -102,10 +102,8 @@ class TestManualSubmission(unittest.TestCase):
         expected = ('test/file/path/2.raw', 123)
         self.assertEqual(expected, actual)
 
-    @patch('scripts.manual_operations.manual_submission.fetch_instrument_fullname_mapping',
-           return_value={'instrument': ''})
-    def test_get_from_icat_when_file_exists_without_zeroes(self,
-                                                           _mock_fetch_instrument_fullname_mapping):
+    @patch('scripts.manual_operations.manual_submission.fetch_instrument_fullname_mapping')
+    def test_get_from_icat_when_file_exists_without_zeroes(self, _):
         """
         Test: Data for a given run can be retrieved from ICAT in the expected format
         When: get_location_and_rb_from_icat is called and the data is present in ICAT
