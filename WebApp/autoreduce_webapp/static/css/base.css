@@ -277,3 +277,7 @@ search#run_search {
         padding: 2px;
     }
 }
+
+.plot-container {
+    margin: 0.5em;
+}
