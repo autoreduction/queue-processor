@@ -102,7 +102,7 @@ class TestManualSubmission(unittest.TestCase):
         expected = ('test/file/path/2.raw', 123)
         self.assertEqual(expected, actual)
 
-    @patch('scripts.manual_operations.manual_submission.fetch_instrument_fullname_mapping')
+    @patch('scripts.manual_operations.manual_submission.get_icat_instrument_prefix')
     def test_get_from_icat_when_file_exists_without_zeroes(self, _):
         """
         Test: Data for a given run can be retrieved from ICAT in the expected format
@@ -113,9 +113,9 @@ class TestManualSubmission(unittest.TestCase):
         self.loc_and_rb_args[1].execute_query.assert_called_once()
         self.assertEqual(location_and_rb, self.valid_return)
 
-    @patch('scripts.manual_operations.manual_submission.fetch_instrument_fullname_mapping',
+    @patch('scripts.manual_operations.manual_submission.get_icat_instrument_prefix',
            return_value={'MARI': 'MAR'})
-    def test_icat_uses_prefix_mapper(self, _mock_fetch_instrument_fullname_mapping):
+    def test_icat_uses_prefix_mapper(self, _):
         """
         Test: The instrument shorthand name is used
         When: querying ICAT with function get_location_and_rb_from_icat
@@ -137,10 +137,9 @@ class TestManualSubmission(unittest.TestCase):
                                                           " df.name = 'MAR00123.nxs' INCLUDE"
                                                           " df.dataset AS ds, ds.investigation")
 
-    @patch('scripts.manual_operations.manual_submission.fetch_instrument_fullname_mapping',
+    @patch('scripts.manual_operations.manual_submission.get_icat_instrument_prefix',
            return_value={'instrument': ''})
-    def test_get_from_icat_when_file_exists_with_zeroes(self,
-                                                        _mock_fetch_instrument_fullname_mapping):
+    def test_get_from_icat_when_file_exists_with_zeroes(self, _):
         """
         Test: Data for a given run can be retrieved from ICAT in the expected format
         When: get_location_and_rb_from_icat is called and the data is present in ICAT

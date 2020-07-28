@@ -34,10 +34,10 @@ class TestICATPrefixMapping(unittest.TestCase):
     @patch('icat.Client.__init__', return_value=None)
     @patch(f"{DIR}.AUTOREDUCTION_INSTRUMENT_NAMES", ['ENGINGX'])
     @patch('utils.clients.icat_client.ICATClient.execute_query')
-    def test_fetch_instrument_fullname_mapping_executes_icat_query(self, mock_execute_query, _):
+    def test_get_icat_instrument_prefix_executes_icat_query(self, mock_execute_query, _):
         """
         Test: If instruments are fetched through a query
-        When: Testing if fetch_instrument_fullname_mapping executes an ICAT query
+        When: Testing if get_icat_instrument_prefix executes an ICAT query
         """
         get_icat_instrument_prefix()
         mock_execute_query.assert_called_once()
@@ -46,11 +46,11 @@ class TestICATPrefixMapping(unittest.TestCase):
     @patch(f"{DIR}.AUTOREDUCTION_INSTRUMENT_NAMES", ['INVALIDINSTUMENT'])
     @patch('logging.Logger.warning')
     @patch('utils.clients.icat_client.ICATClient.execute_query')
-    def test_fetch_instrument_fullname_mapping_log_invalid_instrument(self, _mock_execute_query,
+    def test_get_icat_instrument_prefix_log_invalid_instrument(self, _mock_execute_query,
                                                                       mock_logger_warning, _):
         """
         Test: If invalid instrument name in utils.settings.VALID_INSTRUMENTS is logged as not found
-        When: Testing if fetch_instrument_fullname_mapping picks up invalid instruments
+        When: Testing if get_icat_instrument_prefix picks up invalid instruments
         """
         get_icat_instrument_prefix()
         mock_logger_warning.assert_called_once()
@@ -62,7 +62,7 @@ class TestICATPrefixMapping(unittest.TestCase):
                          MockInstrumentQueryResult("GEM", "GEM")])
     def test_icat_prefix_mapping_length(self, _mock_instruments, _mock_execute_query):
         """
-        Test: fetch_instrument_fullname_mapping produces the same number of results as stored in
+        Test: get_icat_instrument_prefix produces the same number of results as stored in
               utils.settings.VALID_INSTRUMENTS
         When: Called when testing to see if the correct number of instruments in prefix mapping
         """
@@ -74,7 +74,7 @@ class TestICATPrefixMapping(unittest.TestCase):
     @patch(f"{DIR}.AUTOREDUCTION_INSTRUMENT_NAMES", ["ENGINX"])
     def test_icat_prefix_mapping(self, mock_execute_query, _):
         """
-        Test: If fetch_instrument_fullname_mapping properly maps instrument names map to ICAT
+        Test: If get_icat_instrument_prefix properly maps instrument names map to ICAT
               instrument prefixes using utils.settings.VALID_INSTRUMENTS
         When: Called when testing correct mapping
         """
