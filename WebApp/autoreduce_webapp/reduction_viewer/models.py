@@ -39,7 +39,14 @@ class Status(models.Model):
     """
     Enum table for status types of messages
     """
-    value = models.CharField(max_length=25)
+
+    value = models.CharField(max_length=25, choices=[
+        ("queued", "Queued"),
+        ("processing", "Processing"),
+        ("skipped", "Skipped"),
+        ("complete", "Complete"),
+        ("error", "Error")
+    ])
 
     def __unicode__(self):
         """ :return: Value of the status field"""
