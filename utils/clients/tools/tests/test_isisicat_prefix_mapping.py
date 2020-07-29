@@ -78,11 +78,11 @@ class TestICATPrefixMapping(unittest.TestCase):
               instrument prefixes using utils.settings.VALID_INSTRUMENTS
         When: Called when testing correct mapping
         """
-        icat_test_instrument = ("ENG", "ENGINX")
-        mock_execute_query.return_value = [MockInstrumentQueryResult(*icat_test_instrument)]
+        expected = ("ENG", "ENGINX")
+        mock_execute_query.return_value = [MockInstrumentQueryResult(*expected)]
 
         actual = get_icat_instrument_prefix()
-        self.assertEqual(icat_test_instrument[0], actual[icat_test_instrument[1]])
+        self.assertEqual(expected[0], actual[expected[1]])
 
     @patch('icat.Client.__init__', return_value=None)
     @patch('utils.clients.icat_client.ICATClient.execute_query')
@@ -92,8 +92,8 @@ class TestICATPrefixMapping(unittest.TestCase):
               instrument prefixes using a passed in list of instruments to check
         When: Called when testing correct mapping using passed in list
         """
-        test_instrument = ("ENG", "ENGINX")
-        mock_execute_query.return_value = [MockInstrumentQueryResult(*test_instrument)]
+        expected = ("ENG", "ENGINX")
+        mock_execute_query.return_value = [MockInstrumentQueryResult(*expected)]
 
-        actual = get_icat_instrument_prefix([test_instrument[1]])
-        self.assertEqual(test_instrument[0], actual[test_instrument[1]])
+        actual = get_icat_instrument_prefix([expected[1]])
+        self.assertEqual(expected[0], actual[expected[1]])
