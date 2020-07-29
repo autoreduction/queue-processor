@@ -47,7 +47,7 @@ class TestICATPrefixMapping(unittest.TestCase):
     @patch('logging.Logger.warning')
     @patch('utils.clients.icat_client.ICATClient.execute_query')
     def test_get_icat_instrument_prefix_log_invalid_instrument(self, _mock_execute_query,
-                                                                      mock_logger_warning, _):
+                                                               mock_logger_warning, _):
         """
         Test: If invalid instrument name in utils.settings.VALID_INSTRUMENTS is logged as not found
         When: Testing if get_icat_instrument_prefix picks up invalid instruments
@@ -72,7 +72,7 @@ class TestICATPrefixMapping(unittest.TestCase):
     @patch('icat.Client.__init__', return_value=None)
     @patch('utils.clients.icat_client.ICATClient.execute_query')
     @patch(f"{DIR}.AUTOREDUCTION_INSTRUMENT_NAMES", ["ENGINX"])
-    def test_icat_prefix_mapping(self, mock_execute_query, _):
+    def test_get_icat_instrument_prefix_without_argument(self, mock_execute_query, _):
         """
         Test: If get_icat_instrument_prefix properly maps instrument names map to ICAT
               instrument prefixes using utils.settings.VALID_INSTRUMENTS
@@ -83,3 +83,17 @@ class TestICATPrefixMapping(unittest.TestCase):
 
         actual = get_icat_instrument_prefix()
         self.assertEqual(icat_test_instrument[0], actual[icat_test_instrument[1]])
+
+    @patch('icat.Client.__init__', return_value=None)
+    @patch('utils.clients.icat_client.ICATClient.execute_query')
+    def test_get_icat_instrument_prefix_with_argument(self, mock_execute_query, _):
+        """
+        Test: If get_icat_instrument_prefix properly maps instrument names map to ICAT
+              instrument prefixes using a passed in list of instruments to check
+        When: Called when testing correct mapping using passed in list
+        """
+        test_instrument = ("ENG", "ENGINX")
+        mock_execute_query.return_value = [MockInstrumentQueryResult(*test_instrument)]
+
+        actual = get_icat_instrument_prefix([test_instrument[1]])
+        self.assertEqual(test_instrument[0], actual[test_instrument[1]])

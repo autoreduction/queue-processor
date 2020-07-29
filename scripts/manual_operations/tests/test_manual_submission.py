@@ -137,8 +137,7 @@ class TestManualSubmission(unittest.TestCase):
                                                           " df.name = 'MAR00123.nxs' INCLUDE"
                                                           " df.dataset AS ds, ds.investigation")
 
-    @patch('scripts.manual_operations.manual_submission.get_icat_instrument_prefix',
-           return_value={'instrument': ''})
+    @patch('scripts.manual_operations.manual_submission.get_icat_instrument_prefix')
     def test_get_from_icat_when_file_exists_with_zeroes(self, _):
         """
         Test: Data for a given run can be retrieved from ICAT in the expected format
