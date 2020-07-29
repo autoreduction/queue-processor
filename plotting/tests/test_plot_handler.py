@@ -31,6 +31,8 @@ class TestPlotHandler(unittest.TestCase):
         """
         self.expected_file_extension_regex = '(png|jpg|bmp|gif|tiff)'
         self.expected_mari_file_regex = f'MAR(I)?1234.*.{self.expected_file_extension_regex}'
+        self.expected_wish_file_regex = f"WISH1234.*.{self.expected_file_extension_regex}"
+        self.expected_wish_instrument_name = "WISH"
         self.expected_mari_instrument_name = "MARI"
         self.expected_mari_rb_number = 12345678
         self.expected_mari_run_number = 1234
@@ -63,10 +65,9 @@ class TestPlotHandler(unittest.TestCase):
         """
         actual = self.test_plot_handler._generate_file_name_regex()
         self.assertEqual(self.expected_mari_file_regex, actual)
-        expected_wish = f"WISH1234.*.{self.expected_file_extension_regex}"
-        self.test_plot_handler.instrument_name = "WISH"
+        self.test_plot_handler.instrument_name = self.expected_wish_instrument_name
         actual = self.test_plot_handler._generate_file_name_regex()
-        self.assertEqual(expected_wish, actual)
+        self.assertEqual(self.expected_wish_file_regex, actual)
 
     def test_generate_file_extension_regex(self):
         """
