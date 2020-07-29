@@ -64,10 +64,7 @@ class PlotHandler:
         .png, .gif and .jpg: The returned value would be (png|gif|jpg)
         :return: (str) expression pattern matching the file extensions of the plot handler
         """
-        _extension_regex = '('
-        for extension in self.file_extensions:
-            _extension_regex += f'{extension}|'
-        return _extension_regex[:-1] + ')'
+        return f"({','.join(self.file_extensions).replace(',','|')})"
 
     def _get_plot_files_locally(self):
         """
