@@ -57,6 +57,6 @@ class TestStatusUtils(unittest.TestCase):
         Note: we are mocking the database return to ensure it does exist
         """
         # pylint:disable=protected-access
-        actual = self.status_utils._get_status('valid')
+        actual = self.status_utils._get_status('c')
         self.assertIsNotNone(actual)
         self.assertIsInstance(actual, self.status_type)
