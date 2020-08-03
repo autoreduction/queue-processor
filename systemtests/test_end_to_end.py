@@ -191,7 +191,7 @@ if os.name != 'nt':
                 except IndexError:
                     # If no results found yet then continue
                     continue
-                if actual.status.value == 'Completed' or actual.status.value == 'Error':
+                if actual.status.value == 'c' or actual.status.value == 'e':
                     print('Job reached {} status after {} seconds'.format(actual.status.value,
                                                                           timeout))
                     break
