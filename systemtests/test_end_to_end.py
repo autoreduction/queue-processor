@@ -93,7 +93,7 @@ if os.name != 'nt':
             self.assertEqual(self.instrument, results[0].instrument.name)
             self.assertEqual(self.rb_number, results[0].experiment.reference_number)
             self.assertEqual(self.run_number, results[0].run_number)
-            self.assertEqual('Complete', results[0].status.value)
+            self.assertEqual('Complete', results[0].status.value_verbose())
 
         def test_wish_user_script_failure(self):
             """
