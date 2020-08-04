@@ -451,6 +451,7 @@ class PostProcessAdmin:
             logger.info("Calling: %s\n%s",
                         ACTIVEMQ_SETTINGS.reduction_complete,
                         self.message.serialize(limit_reduction_script=True))
+            logger.info(f"MESSAGE: \n{self.message}")
             logger.info("Reduction job successfully complete")
 
     @staticmethod
