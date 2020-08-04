@@ -167,3 +167,10 @@ class TestAccess(unittest.TestCase):
         mock_record = Mock()
         access.save_record(mock_record)
         mock_record.save.assert_called_once()
+
+    def test_get_status_with_invalid_status_value(self):
+        """
+        Test: When access.get_status is called with an invalid status_value a ValueError is raised
+        When: Calling access.get_status()
+        """
+        self.assertRaises(ValueError, access.get_status, "test")

@@ -44,7 +44,11 @@ def get_status(status_value, create=False):
     :param status_value: (str) The value of the status record e.g. 'Completed'
     :param create: (bool) If True, then create the record if it does not exist
     :return: (Status) The Status object from the database
+    :raises: (ValueError): If status_value is not: Error, Queued, Processing, Completed or Skipped
     """
+    if status_value not in ["Error", "Queued", "Processing", "Completed", "Skipped"]:
+        raise ValueError("Invalid status value passed")
+
     database = start_database()
     status_record = database.data_model.Status.objects.filter(value=status_value).first()
     if not status_record and create:

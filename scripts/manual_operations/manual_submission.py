@@ -21,10 +21,7 @@ from utils.clients.connection_exception import ConnectionException
 from utils.clients.icat_client import ICATClient
 from utils.clients.queue_client import QueueClient
 from utils.clients.django_database_client import DatabaseClient
-
-
-ICAT_PREFIX_MAP = {'MARI': 'MAR',
-                   'MAPS': 'MAP'}
+from utils.clients.tools.isisicat_prefix_mapping import get_icat_instrument_prefix
 
 
 def submit_run(active_mq_client, rb_number, instrument, data_file_location, run_number):
@@ -89,9 +86,9 @@ def get_location_and_rb_from_icat(icat_client, instrument, run_number, file_ext)
     if icat_client is None:
         print("ICAT not connected")  # pragma: no cover
         sys.exit(1)  # pragma: no cover
-    if instrument in ICAT_PREFIX_MAP.keys():
-        instrument = ICAT_PREFIX_MAP[instrument]
-    file_name = instrument + str(run_number).zfill(5) + "." + file_ext
+
+    icat_instrument_prefix = get_icat_instrument_prefix()[instrument]
+    file_name = f"{icat_instrument_prefix}{str(run_number).zfill(5)}.{file_ext}"
     datafile = icat_client.execute_query("SELECT df FROM Datafile df WHERE df.name = '"
                                          + file_name +
                                          "' INCLUDE df.dataset AS ds, ds.investigation")
@@ -99,7 +96,7 @@ def get_location_and_rb_from_icat(icat_client, instrument, run_number, file_ext)
     if not datafile:
         print("Cannot find datafile '" + file_name +
               "' in ICAT. Will try with zeros in front of run number.")
-        file_name = instrument + str(run_number).zfill(8) + "." + file_ext
+        file_name = f"{icat_instrument_prefix}{str(run_number).zfill(8)}.{file_ext}"
         datafile = icat_client.execute_query("SELECT df FROM Datafile df WHERE df.name = '"
                                              + file_name +
                                              "' INCLUDE df.dataset AS ds, ds.investigation")
