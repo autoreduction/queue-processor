@@ -50,12 +50,12 @@ class Status(models.Model):
     value = models.CharField(max_length=1, choices=STATUS_CHOICES)
 
     def __unicode__(self):
-        """ :return: Value of the status field"""
+        """ :return: (unicode str) of the status field"""
         return u'%s' % self.value
 
     def value_verbose(self):
         """
-        :return: the status as its textual value
+        :return: (str) the status as its textual value
         """
         return dict(Status.STATUS_CHOICES)[self.value]
 

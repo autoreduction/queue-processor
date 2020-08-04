@@ -177,7 +177,7 @@ if os.name != 'nt':
             results = []
             for timeout in wait_times:
                 # Wait before attempting database access
-                print('Waiting for: {}'.format(timeout))
+                print(f"Waiting for: {timeout}")
                 time.sleep(timeout)
                 # Check database has expected values
                 instrument_record = db.get_instrument(self.instrument)
@@ -191,10 +191,11 @@ if os.name != 'nt':
                 except IndexError:
                     # If no results found yet then continue
                     continue
+
                 if actual.status.value == 'c' or actual.status.value == 'e':
-                    print('Job reached {} status after {} seconds'.format(actual.status.value,
-                                                                          timeout))
+                    print(f"Job reached {actual.status.value} status after {timeout} seconds")
                     break
+
             return results
 
         @staticmethod
