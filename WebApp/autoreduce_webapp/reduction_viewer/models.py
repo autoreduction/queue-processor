@@ -43,7 +43,7 @@ class Status(models.Model):
         ('q', 'Queued'),
         ('p', 'Processing'),
         ('s', 'Skipped'),
-        ('c', 'Complete'),
+        ('c', 'Completed'),
         ('e', 'Error')
     )
 

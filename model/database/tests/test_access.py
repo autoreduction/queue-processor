@@ -68,7 +68,7 @@ class TestAccess(unittest.TestCase):
         """
         actual = access.get_status('c')
         self.assertIsNotNone(actual)
-        self.assertEqual('Complete', actual.value_verbose())
+        self.assertEqual('Completed', actual.value_verbose())
 
     def test_get_experiment(self):
         """

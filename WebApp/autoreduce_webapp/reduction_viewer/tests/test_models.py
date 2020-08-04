@@ -27,7 +27,7 @@ class TestModels(unittest.TestCase):
         When: Creating new Status model
         """
         actual = self.database.data_model.Status(value='c')
-        self.assertEqual('Complete', actual.value_verbose())
+        self.assertEqual('Completed', actual.value_verbose())
 
     def test_invalid_status_model_value(self):
         """
