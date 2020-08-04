@@ -6,15 +6,33 @@ steps = [
         placement: "bottom"
     },
     {
+        element: "#btn-instrument_active",
+        title: "Instrument Active",
+        content: "You can view details about the instrument when active here.",
+        placement: "bottom"
+    },
+        {
         element: "#pause",
         title: "Pause Reduction",
         content: "Here, you are able to pause and unpause reduction for the instrument.",
         placement: "bottom"
     },
     {
-        element: "#instrument-active",
-        title: "Instrument Active",
-        content: "You can view details about the instrument when active here.",
+        element: "#btn-re-run_past_job",
+        title: "Re-running Past Jobs",
+        content: "You can can re-run past jobs here",
+        placement: "bottom"
+    },
+    {
+        element: "#btn-configure_new_jobs",
+        title: "Configuring New Jobs",
+        content: "To configure a new job, you can select this button.",
+        placement: "bottom"
+    },
+    {
+        element: "#btn-see_instrument_variables",
+        title: "Instrument Variables",
+        content: "You can view and configure instrument variables by selecting this button.",
         placement: "bottom"
     },
     {

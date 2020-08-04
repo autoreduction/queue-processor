@@ -5,7 +5,7 @@
 
 {% block body %}
     {% if instrument %}
-        {% if instrument.is_active %}
+{#        {% if instrument.is_active %}#}
             <title>{{ instrument_name }}</title>
             <!-- Instrument Name -->
             <div class="row">
@@ -15,7 +15,7 @@
             </div>
 
             <!-- Instrument status and control buttons -->
-            <div class="row" id="instrument-active">
+            <div class="row" id="btn-instrument_active">
                 <!-- Status panel -->
                 <div class="col-md-6">
                     {% include "snippets/instrument_status.html" with processing=processing queued=queued last_instrument_run=last_instrument_run only %}
@@ -34,26 +34,26 @@
                     <p></p>
                 </div>
                 <!-- Re-run past runs button -->
-                <div class="col-md-6 text-center">
+                <div class="col-md-6 text-center" id="btn-re-run_past_job">
                     <p><a href="{% url 'instrument_submit_runs' instrument=instrument_name %}" class="btn btn-success btn-block"><i class="fa fa-arrow-left"></i>&nbsp;&nbsp;Re-run past jobs</a></p>
                 </div>
                 <!-- Configure new runs button -->
-                <div class="col-md-6 text-center">
+                <div class="col-md-6 text-center" id="btn-configure_new_jobs">
                     <p><a href="{% url 'instrument_variables' instrument=instrument_name %}" class="btn btn-success btn-block"><i class="fa fa-plus"></i>&nbsp;&nbsp;Configure New Jobs</a></p>
                 </div>
                 {% if reduction_variables_on %}
-                <div class="col-md-6 text-center">
+                <div class="col-md-6 text-center" id="btn-see_instrument_variables">
                     <p><a href="{% url 'instrument_variables_summary' instrument=instrument_name %}" class="btn btn-success btn-block"><i class="fa fa-eye"></i>&nbsp;&nbsp;See Instrument variables</a></p>
                 </div>
                 {% endif %}
 
             </div>
 
-        {% else %}
+       {% comment %} {% else %}
             <div class="text-center col-md-6 col-md-offset-3 well well-small" id="not-active">
                 Instrument is not active.
             </div>
-        {% endif %}
+        {% endif %}{% endcomment %}
 
         <br/>
         <hr/>
