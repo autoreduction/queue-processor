@@ -29,27 +29,27 @@ class TestStatusUtils(unittest.TestCase):
     @patch('queue_processors.queue_processor.queueproc_utils.status_utils.StatusUtils._get_status')
     def test_get_error(self, mock_get_status):
         self.status_utils.get_error()
-        mock_get_status.assert_called_with("e")
+        mock_get_status.assert_called_with('e')
 
     @patch('queue_processors.queue_processor.queueproc_utils.status_utils.StatusUtils._get_status')
     def test_get_completed(self, mock_get_status):
         self.status_utils.get_completed()
-        mock_get_status.assert_called_with("c")
+        mock_get_status.assert_called_with('c')
 
     @patch('queue_processors.queue_processor.queueproc_utils.status_utils.StatusUtils._get_status')
     def test_get_processing(self, mock_get_status):
         self.status_utils.get_processing()
-        mock_get_status.assert_called_with("p")
+        mock_get_status.assert_called_with('p')
 
     @patch('queue_processors.queue_processor.queueproc_utils.status_utils.StatusUtils._get_status')
     def test_get_queued(self, mock_get_status):
         self.status_utils.get_queued()
-        mock_get_status.assert_called_with("q")
+        mock_get_status.assert_called_with('q')
 
     @patch('queue_processors.queue_processor.queueproc_utils.status_utils.StatusUtils._get_status')
     def test_get_skipped(self, mock_get_status):
         self.status_utils.get_skipped()
-        mock_get_status.assert_called_with("s")
+        mock_get_status.assert_called_with('s')
 
     def test_get_status_valid(self):
         """

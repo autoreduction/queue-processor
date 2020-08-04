@@ -31,7 +31,7 @@ class TestModels(unittest.TestCase):
 
     def test_invalid_status_model_value(self):
         """
-        Test: Invalid Status model value is set correctly
+        Test: Invalid Status model value is not set correctly
         When: Creating new Status model
         """
         actual = self.database.data_model.Status(value='x')
