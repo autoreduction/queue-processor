@@ -16,7 +16,7 @@ from build.commands.migrate_settings import MigrateTestSettings
 from build.commands.start import Start
 
 
-setup_requires = ['attrs',
+setup_requires = ['attrs==19.2.0',
                   'dash',
                   'dash_html_components',
                   'dash_core_components',
@@ -45,7 +45,7 @@ setup_requires = ['attrs',
                   'SQLAlchemy',
                   'stomp.py',
                   'suds-py3',
-                  'Twisted==19.10.0',
+                  'Twisted',
                   'PyYAML']
 
 
