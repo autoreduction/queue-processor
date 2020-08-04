@@ -39,6 +39,8 @@ script:
   - py.test systemtests --cov-append
   - cat logs/queue_processor.log
   - cat logs/autoreduction_processor.log
+  - cat logs/job.log
+  - ls logs
 
 
   # ================ Static Analysis ================= #
