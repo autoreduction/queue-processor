@@ -24,6 +24,7 @@ from queue_processors.autoreduction_processor.settings import MISC
 from queue_processors.autoreduction_processor.post_process_admin import (windows_to_linux_path,
                                                                          PostProcessAdmin,
                                                                          main)
+from utils.clients.settings.client_settings_factory import ActiveMQSettings
 
 
 # pylint:disable=missing-docstring,invalid-name,protected-access,no-self-use,too-many-arguments
@@ -152,18 +153,102 @@ class TestPostProcessAdmin(unittest.TestCase):
         self.assertEqual(expected_directory_list[-5:], actual_directory_list[-5:])
         self.assertEqual(temporary_directory, f"/{actual_directory_list[0]}")
 
+    @patch(DIR + '.autoreduction_logging_setup.logger.info')
     @patch(DIR + '.autoreduction_logging_setup.logger.debug')
-    def test_send_reduction_started(self, mock_log):
+    def test_send_reduction_message_(self, mock_log_debug, mock_log_info):
         """
-        Test: reduction started message has been sent and logged
+        Test: reduction status message has been sent and logged
+        When: called within reduce method
+        """
+        amq_messages = [attr for attr in dir(ActiveMQSettings)
+                        if not callable(getattr(ActiveMQSettings, attr))
+                        and attr.startswith("reduction")]
+        amq_client_mock = Mock()
+        ppa = PostProcessAdmin(self.message, amq_client_mock)
+
+        for message in amq_messages:
+            amq_message = getattr(ACTIVEMQ_SETTINGS, message)
+            ppa.send_reduction_message(message="status",
+                                       amq_message=amq_message)
+
+            mock_log_debug.assert_called_with("Calling: %s\n%s",
+                                              amq_message,
+                                              self.message.serialize(limit_reduction_script=True))
+            amq_client_mock.send.assert_called_with(amq_message, ppa.message)
+
+        self.assertEqual(len(amq_messages), amq_client_mock.send.call_count)
+        mock_log_info.assert_called_with('Reduction: status')
+
+    @patch(DIR + '.autoreduction_logging_setup.logger.debug')
+    def test_send_reduction_message_exception(self, mock_log_debug):
+        """
+        Test: reduction status message has been sent and logged
         When: called within reduce method
         """
         amq_client_mock = Mock()
-        ppa = PostProcessAdmin(self.message, amq_client_mock)
-        ppa.send_reduction_started()
+        amq_client_mock.send.return_value = Exception
+        amq_message = "invalid"
 
-        mock_log.assert_called()
-        amq_client_mock.send.assert_called_with(ACTIVEMQ_SETTINGS.reduction_started, ppa.message)
+        ppa = PostProcessAdmin(self.message, amq_message)
+
+        ppa.send_reduction_message(message="status", amq_message=amq_message)
+
+        mock_log_debug.assert_called_with("Failed to find send reduction message: %s", amq_message)
+
+    @patch(f"{DIR}.post_process_admin.PostProcessAdmin.send_reduction_message")
+    def test_determine_reduction_status_problem(self, mock_srm):
+        """
+        Test: check the correct reduction message is used
+        When: when calling send_reduction_message() for each failed use case
+        """
+
+        messages = [("Skipped",
+                     "Run has been skipped in script",
+                     ACTIVEMQ_SETTINGS.reduction_skipped),
+                    ("Error",
+                     "Permission error: ",
+                     ACTIVEMQ_SETTINGS.reduction_error)]
+        # message_status = ["skipped", "error"]
+        amq_client_mock = Mock()
+        for message in messages:
+            self.message.message = message[1]
+            ppa = PostProcessAdmin(self.message, amq_client_mock)
+            ppa.determine_reduction_status()
+            mock_srm.assert_called_with(message=message[0],
+                                        amq_message=message[2])
+
+    @patch(f"{DIR}.post_process_admin.PostProcessAdmin.send_reduction_message")
+    def test_determine_reduction_status_complete(self, mock_srm):
+        """
+        Test: check the correct reduction message is used
+        When: when calling send_reduction_message() with complete status
+        """
+
+        # message_status = ["skipped", "error"]
+        amq_client_mock = Mock()
+        self.message.message = None
+
+        ppa = PostProcessAdmin(self.message, amq_client_mock)
+        ppa.determine_reduction_status()
+        mock_srm.assert_called_with(message="Complete",
+                                    amq_message=ACTIVEMQ_SETTINGS.reduction_complete)
+
+    @patch('logging.Logger.info')
+    @patch(f"{DIR}.post_process_admin.PostProcessAdmin.send_reduction_message")
+    def test_determine_reduction_status_exception(self, mock_srm, mock_log):
+        """
+        Test: Assert correct number of logs are performed when
+        When: exception triggered by send_reduction_message
+        """
+
+        amq_client_mock = Mock()
+        self.message.message = False
+        mock_srm.return_value = Exception("invalid")
+
+        ppa = PostProcessAdmin(self.message, amq_client_mock)
+        ppa.determine_reduction_status()
+
+        self.assertEqual(mock_log.call_count, 2)
 
     def test_reduction_script_location(self):
         location = PostProcessAdmin._reduction_script_location('WISH')
@@ -342,15 +427,15 @@ class TestPostProcessAdmin(unittest.TestCase):
                                                                                 'test'))
         shutil.rmtree(result_dir)
 
-    @patch(DIR + '.autoreduction_logging_setup.logger.info')
-    def test_send_error_and_log(self, mock_logger):
-        activemq_client_mock = Mock()
-        ppa = PostProcessAdmin(self.message, activemq_client_mock)
-        ppa._send_message_and_log(ACTIVEMQ_SETTINGS.reduction_error)
-        mock_logger.assert_called_with("\nCalling " + ACTIVEMQ_SETTINGS.reduction_error + " --- " +
-                                       self.message.serialize(limit_reduction_script=True))
-        activemq_client_mock.send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_error,
-                                                          ppa.message)
+    # @patch(DIR + '.autoreduction_logging_setup.logger.info')
+    # def test_send_error_and_log(self, mock_logger):
+    #     activemq_client_mock = Mock()
+    #     ppa = PostProcessAdmin(self.message, activemq_client_mock)
+    #     ppa._send_message_and_log(ACTIVEMQ_SETTINGS.reduction_error)
+    #     mock_logger.assert_called_with("\nCalling " + ACTIVEMQ_SETTINGS.reduction_error + " --- " +
+    #                                    self.message.serialize(limit_reduction_script=True))
+    #     activemq_client_mock.send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_error,
+    #                                                       ppa.message)
 
     @patch('shutil.rmtree')
     @patch(DIR + '.autoreduction_logging_setup.logger.info')
