@@ -432,8 +432,6 @@ class PostProcessAdmin:
         self.message.reduction_log = self.reduction_log_stream.getvalue()
         self.message.admin_log = self.admin_log_stream.getvalue()
 
-        logger.info(f"MESSGAE_EMPTY: \n{self.message.message}")
-        logger.info(f"MESSGAE: \n{self.message}")
         if self.message.message is not None:
             # This means an error has been produced somewhere
             try:
@@ -453,7 +451,6 @@ class PostProcessAdmin:
             logger.info("Calling: %s\n%s",
                         ACTIVEMQ_SETTINGS.reduction_complete,
                         self.message.serialize(limit_reduction_script=True))
-            logger.info(f"MESSAGE: \n{self.message}")
             logger.info("Reduction job successfully complete")
 
     @staticmethod
