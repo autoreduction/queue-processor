@@ -20,11 +20,11 @@ from model.message.message import Message
 from paths.path_manipulation import append_path
 from utils.settings import ACTIVEMQ_SETTINGS
 from utils.project.structure import get_project_root
+from utils.clients.settings.client_settings_factory import ActiveMQSettings
 from queue_processors.autoreduction_processor.settings import MISC
 from queue_processors.autoreduction_processor.post_process_admin import (windows_to_linux_path,
                                                                          PostProcessAdmin,
                                                                          main)
-from utils.clients.settings.client_settings_factory import ActiveMQSettings
 
 
 # pylint:disable=missing-docstring,invalid-name,protected-access,no-self-use,too-many-arguments
@@ -177,7 +177,7 @@ class TestPostProcessAdmin(unittest.TestCase):
             amq_client_mock.send.assert_called_with(amq_message, ppa.message)
 
         self.assertEqual(len(amq_messages), amq_client_mock.send.call_count)
-        mock_log_info.assert_called_with('Reduction: status')
+        mock_log_info.assert_called_with("Reduction: %s", 'status')
 
     @patch(DIR + '.autoreduction_logging_setup.logger.debug')
     def test_send_reduction_message_exception(self, mock_log_debug):
@@ -426,16 +426,6 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_log_and_msg.assert_called_once_with("Unable to copy to %s - %s" % ('copy-dir',
                                                                                 'test'))
         shutil.rmtree(result_dir)
-
-    # @patch(DIR + '.autoreduction_logging_setup.logger.info')
-    # def test_send_error_and_log(self, mock_logger):
-    #     activemq_client_mock = Mock()
-    #     ppa = PostProcessAdmin(self.message, activemq_client_mock)
-    #     ppa._send_message_and_log(ACTIVEMQ_SETTINGS.reduction_error)
-    #     mock_logger.assert_called_with("\nCalling " + ACTIVEMQ_SETTINGS.reduction_error + " --- " +
-    #                                    self.message.serialize(limit_reduction_script=True))
-    #     activemq_client_mock.send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_error,
-    #                                                       ppa.message)
 
     @patch('shutil.rmtree')
     @patch(DIR + '.autoreduction_logging_setup.logger.info')

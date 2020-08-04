@@ -189,11 +189,10 @@ class PostProcessAdmin:
                          amq_message,
                          self.message.serialize(limit_reduction_script=True))
             self.client.send(amq_message, self.message)
-            logger.info("Reduction: %s" % message)
+            logger.info("Reduction: %s", message)
 
-        except AttributeError as exp:
+        except AttributeError:
             logger.debug("Failed to find send reduction message: %s", amq_message)
-            return exp
 
     def determine_reduction_status(self):
         """
