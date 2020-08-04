@@ -13,11 +13,11 @@ VALUES
 INSERT INTO reduction_viewer_status
     (id, value)
 VALUES
-    (1, 4),
-    (2, 0),
-    (3, 1),
-    (4, 3),
-    (5, 2);
+    (1, 'e'),
+    (2, 'q'),
+    (3, 'p'),
+    (4, 'c'),
+    (5, 's');
 
 # ======================================= #
 # reduction_viewer_experiment
