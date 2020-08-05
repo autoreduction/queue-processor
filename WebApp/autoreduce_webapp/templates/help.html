@@ -9,15 +9,29 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-md-12">
+        <div class="col-md-9">
             <div class="form-group">
                 <label for="help_search" class="screenreader-only">Search</label>
                 <input type="search" placeholder="Search" name="help_search" id="help_search" class="form-control" autocomplete="off" data-toggle="popover" data-trigger="focus" data-content="Try entering a keyword to filter help topics." data-placement="top">
             </div>
         </div>
+        <div class="col-md-3">
+            <div id="category-filter" class="btn-group btn-group-toggle" data-toggle="buttons">
+                <label class="btn btn-secondary active" data-category="all">
+                    <input type="radio" name="options" id="option1" autocomplete="off" checked>
+                    All
+                </label>
+                <label class="btn btn-secondary" data-category="usage">
+                    <input type="radio" name="options" id="option2" autocomplete="off"> Usage
+                </label>
+                <label class="btn btn-secondary" data-category="question">
+                    <input type="radio" name="options" id="option3" autocomplete="off"> Questions
+                </label>
+            </div>
+        </div>
     </div>
 
-    <section class="help-topic panel panel-default" data-topics="link reduced data">
+    <section class="help-topic panel panel-default" data-category="question" data-topics="link reduced data">
         <div class="panel-heading">
             <h4>How do I access my reduced data?</h4>
         </div>
@@ -62,7 +76,7 @@
             </p>
         </div>
     </section>
-    <section class="help-topic panel panel-default" data-topics="instrument variables change new">
+    <section class="help-topic panel panel-default" data-category="usage" data-topics="instrument variables change new">
         <div class="panel-heading">
             <h4>How do I add new instrument variables?</h4>
         </div>
