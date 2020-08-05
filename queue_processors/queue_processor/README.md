@@ -1,6 +1,7 @@
 ## queue_processor module
 
-This modules handles the majority of message management in the autoreduction system. It is responsible for the intial creation of the database records for reduction jobs as well as updating the status of reduction records as the message traverses through the system. 
+This modules handles the majority of message management in the autoreduction system. It is responsible for the initial creation of the database records for reduction jobs. 
+This module also handles updating of status's to reduction records as the AMQ message traverses through the system. 
 
 The `queue_listener.py` is responsible for ingesting and distributing messages to their correct functions for processing. The `queue_listner` consumes messages from the `/DataReady`, `/ReductionStarted`,`/ReductionComplete`, `/ReductionError` and `/ReductionSkipped` queues. The service is run as a daemon service and is such only runs on linux. The daemon service is controlled by `queue_processor_daemon.py` which give a command line interface to start/stop/restart the daemon process. However, the daemon is normally controlled in tandem with the `autoreduction_processor` via the `../restart.sh` script that restarts both these processes. 
 
