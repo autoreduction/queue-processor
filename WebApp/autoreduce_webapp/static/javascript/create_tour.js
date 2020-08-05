@@ -5,7 +5,7 @@
             storage: false,      // avoids storing process between visits
             backdrop: true,
             backdropPadding: 2
-        })
+        });
         tour.init();
         tour.end();             // avoids bug where tour recognised as in progress on re-visit
 
@@ -22,7 +22,7 @@
             }
             tour.start(true);   // added 'true' arg forces start (alternative to localStorage.remove)
         });
-    };
+    }
 
     var init = function init(){
         document.getElementById('right_of_title').innerHTML = '<button class="btn btn-info btn-block" id="tour-btn">Take a tour</button>';
@@ -30,7 +30,7 @@
     };
 
     init();
-}())
+}());
 
 
 
