@@ -71,8 +71,8 @@
         <div class="panel-body">
             <h2>reduce_vars.py</h2>
             <p>
-                it is possible to define some additional variables for scripts that can be used
-                during reduction and altered via the web interface. These should be defined in the
+                It is possible to define some additional variables for scripts that can be used
+                during reduction. They can be altered via the web interface. These should be defined in the
                 <code>//isis/NDX.../user/script/autoreduction/reduce_vars.py</code> file. This file has the following format:
             </p>
             <pre><code>standard_vars = {
@@ -96,11 +96,15 @@ variable_help = {
             <h4>Reduction Script</h4>
             </div>
         <div class="panel-body">
+
             <h2>reduce.py</h2>
-            <p>In order to reduce your data you must have a reduction script written in python.
-                This script should be called reduce.py and should be placed in the <code>user/scripts/autoreduction/</code>
-                directory in the ISIS data archive. Below are examples of the sections you need.
-                A full example script can be seen below</p>
+            <p>
+                In order to reduce your data you must have a reduction script written in python.
+                This script should be called <code>reduce.py</code> and should be placed in the <code>user/scripts/autoreduction/</code>
+                directory in the ISIS data archive.
+                A full example script can be seen below:
+            </p>
+
             <pre><code>import os
 import sys
 from mantid.simpleapi import (Load, Rebin, SaveNexus)
@@ -123,9 +127,13 @@ def main(input_file, output_dir):
    # use rebin params defined in reduce_vars
    workspace = Rebin(workspace, params['rebin'])
    SaveNexus(workspace, output_dir)</code></pre>
+
             <h3>Imports</h3>
-            <p>All your imports should be done at the top of the file. These can include, python
-                packages, mantid packages and the <code>reduce_vars</code> we defined in the above section.</p>
+            <p>
+                All your imports should be placed at the top of the file. These can include, python
+                packages, mantid packages and the <code>reduce_vars</code> we defined in the above section.
+            </p>
+
             <pre><code># import standard python packages
 import os
 import sys
@@ -135,10 +143,14 @@ from mantid.simpleapi import (Rebin, ReductionAlgorithm, SaveNexusProcessed)
 
 # import reduce_vars
 import reduce_vars as params</code></pre>
+
             <h3>Validate</h3>
-            <p>The first function you define should validate that the files and directories you
-                require exist. This should include all files and directories and if any can not be
-                found an exception should be raised. Below is an example of how this should look.</p>
+            <p>
+                The first function you define should validate that the files and directories you
+                require exist. This should include all files and directories. If any can not be
+                found, an exception should be raised. Below is an example for reference:
+            </p>
+
             <pre><code>def validate(input_file, output_dir):
    required_files = [input_file, "path/to/calibration/file", ... ]
    required_dirs = [output_dir]
@@ -148,10 +160,13 @@ import reduce_vars as params</code></pre>
    for directory in required_dirs:
       if not os.path.isdir(directory):
          raise RuntimeError("Could not locate directory: {}".format(directory)</code></pre>
+
             <h3>Main</h3>
-            <p>This function should call the validate function to check inputs and then perform
-                reduction steps. This function must take an <code>input_file</code> and <code>output_dir</code>
-                as parameters and these should both be validated in the validate function.</p>
+            <p>
+                This function should call the validate function to check inputs and then perform
+                reduction steps. The function must take an <code>input_file</code> and <code>output_dir</code>
+                as parameters. Both arguments should be validated in the validate function.
+            </p>
             <pre><code>def main(input_file, output_dir):
    # validate
    validate(input_file, output_dir)
@@ -159,6 +174,7 @@ import reduce_vars as params</code></pre>
    reduced_workspace = ReductionAlgorithm(input_file, ...)
    # Save output
    SaveNexusProcessed(reduced_worksapce, output_dir)</code></pre>
+
             <p>If you have any difficulty please get in touch and we'll be happy to help </p>
             {% if support_email %}
                 <p>If you feel a value is incorrectly being marked as invalid please <a href="mailto:{{support_email}}">Contact Us</a>.</p>
