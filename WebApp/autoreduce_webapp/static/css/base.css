@@ -281,3 +281,7 @@ search#run_search {
 .plot-container {
     margin: 0.5em;
 }
+
+#category-filter * {
+    background-color: #f5f5f5;
+}
