@@ -1,1 +1,0 @@
-This folder includes images etc. used in the main Autoreduction [README](../../README.md). Other documentation can also be found on the Autoreduction [Wiki](https://github.com/ISISScientificComputing/autoreduce/wiki).

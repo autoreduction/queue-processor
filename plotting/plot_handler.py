@@ -11,8 +11,10 @@ Searching for and retrieving an existing plotting file via the SFTP client
 Getting the associated plotting meta data file
 Instructing the Plotting factory to build an IFrame based on the above
 """
-import os
 import logging
+import os
+import re
+
 from utils.clients.sftp_client import SFTPClient
 from utils.project.structure import get_project_root
 
@@ -42,19 +44,36 @@ class PlotHandler:
                                              'autoreduce_webapp', 'static',
                                              'graphs')
 
-    def _generate_file_name_regex(self, plot_type):
+    def _generate_file_name_regex(self):
         """
         Regular expression used for looking for plot files.
         This assumes that the file names follow the convention:
         <instrument_abbreviation><run_number>*<.png or other extension>
-        :param plot_type: (str) the type of file to be searched for, e.g. "png"
         """
         try:
             _inst_regex = INSTRUMENT_REGEX_MAP[self.instrument_name]
-            return f'{_inst_regex}{self.run_number}.*.{plot_type}'
+            _file_extension_regex = self._generate_file_extension_regex()
+            return f'{_inst_regex}{self.run_number}.*.{_file_extension_regex}'
         except KeyError:  # Instrument name does not appear in dictionary of known instruments
             LOGGER.info("The instrument name is not recognised")
             return None
+
+    def _generate_file_extension_regex(self):
+        """
+        Generates the file extension part of the file regex. For example if the file extensions were
+        .png, .gif and .jpg: The returned value would be (png|gif|jpg)
+        :return: (str) expression pattern matching the file extensions of the plot handler
+        """
+        return f"({','.join(self.file_extensions).replace(',','|')})"
+
+    def _get_plot_files_locally(self):
+        """
+        Searches the local graph folder for files matching the generated file name regex and returns
+        a list of matching paths
+        :return: (list) - The list of matching file paths.
+        """
+        return [f'/static/graphs/{file}' for file in os.listdir(self.static_graph_dir)
+                if re.match(self._generate_file_name_regex(), file)]
 
     def _check_for_plot_files(self):
         """
@@ -65,15 +84,14 @@ class PlotHandler:
         client = SFTPClient()
         # initialise list to store names of existing files matching the search
         _found_files = []
-        for plot_type in self.file_extensions:
-            # regular expression for plot file name(s)
-            file_regex = self._generate_file_name_regex(plot_type=plot_type)
-            if file_regex:
-                # Add files that match regex to the list of files found
-                _found_files.extend(client.get_filenames(server_dir_path=self.server_dir,
-                                                         regex=file_regex))
-            else:
-                return None
+        # regular expression for plot file name(s)
+        file_regex = self._generate_file_name_regex()
+        if file_regex:
+            # Add files that match regex to the list of files found
+            _found_files.extend(client.get_filenames(server_dir_path=self.server_dir,
+                                                     regex=file_regex))
+        else:
+            return None
         return _found_files
 
     def get_plot_file(self):
@@ -83,6 +101,10 @@ class PlotHandler:
         but will only copy over one.
         :return: (str) local path to downloaded files OR None if no files found
         """
+        _existing_plot_files = self._get_plot_files_locally()
+        if _existing_plot_files:
+            return _existing_plot_files
+
         _existing_plot_files = self._check_for_plot_files()
         local_plot_paths = []
         if _existing_plot_files:
