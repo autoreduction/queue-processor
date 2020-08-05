@@ -19,7 +19,7 @@ The `autoreduction_processor` itself is an ActiveMQ consumer that is implemented
     * Send a message to `/RedcutionComplete`
   * If the job was unsuccessful (Any errors were raised, exceptions thrown)
     * Send a message to `/ReductionError`
-  * The job **SHOULD** not be completed, i.e. it should be skipped. E.g. the run does not require reduction, it is found running in unknown mode of operation, the reduction script does not support the type of data it was given (such as event mode on EnginX) etc.
+  * The job should be skipped. Reasons for skipping a run are: the run does not require reduction, the instrument is running in an unknown mode of operation, the reduction script does not support the type of data it was given (e.g. event mode on EnginX)
     * Send a message to `ReductionSkipped`
     * *Note: skipped runs are also identified earlier than this stage if it is found there is an issue with the RB numbers, e.g. calibration runs (a RB number is a number that uniquely identify an ISIS experimental proposal. However, sometimes data are collected which are not associated with any specific ISIS proposal, such as to calibrate the beamline or other beamline maintenance/diagnosis tasks)*
 
