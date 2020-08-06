@@ -9,15 +9,34 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-md-12">
+        <div class="col-md-8">
             <div class="form-group">
                 <label for="help_search" class="screenreader-only">Search</label>
                 <input type="search" placeholder="Search" name="help_search" id="help_search" class="form-control" autocomplete="off" data-toggle="popover" data-trigger="focus" data-content="Try entering a keyword to filter help topics." data-placement="top">
             </div>
         </div>
+        <div class="col-md-4 text-center">
+            <div class="form-group">
+                <span>Category: </span>
+                <div id="category-filter" class="btn-group btn-group-toggle" data-toggle="buttons">
+                    <label class="btn btn-secondary active" data-category="all">
+                        <input type="radio" name="categories" id="category-all" checked>
+                        All
+                    </label>
+                    <label class="btn btn-secondary" data-category="usage">
+                        <input type="radio" name="categories" id="category-usage">
+                        Usage
+                    </label>
+                    <label class="btn btn-secondary" data-category="question">
+                        <input type="radio" name="categories" id="category-question">
+                        Questions
+                    </label>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <section class="help-topic panel panel-default" data-topics="link reduced data">
+    <section class="help-topic panel panel-default" data-category="question" data-topics="link reduced data">
         <div class="panel-heading">
             <h4>How do I access my reduced data?</h4>
         </div>
@@ -64,7 +83,7 @@
         </div>
     </section>
 
-    <section class="help-topic panel panel-default" data-topics="instrument variables change new">
+    <section class="help-topic panel panel-default" data-category="usage" data-topics="instrument variables change new">
         <div class="panel-heading">
             <h4>How do I add new instrument variables?</h4>
         </div>
@@ -80,7 +99,7 @@
         </div>
     </section>
 
-    <section class="help-topic panel panel-default" data-topics="invalid variables wrong error value">
+    <section class="help-topic panel panel-default" data-category="question" data-topics="invalid variables wrong error value">
         <div class="panel-heading">
             <h4>When changing variables why is value X invalid for variable Y?</h4>
         </div>
@@ -98,7 +117,7 @@
         </div>
     </section>
 
-    <section class="help-topic panel panel-default" data-topics="reduction data file location directory output reduced">
+    <section class="help-topic panel panel-default" data-category="question" data-topics="reduction data file location directory output reduced">
         <div class="panel-heading">
             <h4>I've modified my reduction scripts, why aren't my new runs using it?</h4>
         </div>
@@ -130,7 +149,7 @@
         </div>
     </section>
 
-    <section class="help-topic panel panel-default" data-topics="script compatible work">
+    <section class="help-topic panel panel-default" data-category="question" data-topics="script compatible work">
         <div class="panel-heading">
             <h4>How can I make a reduction script compatible with Autoreduction?</h4>
         </div>
@@ -162,7 +181,7 @@
         </div>
     </section>
 
-    <section class="help-topic panel panel-default" data-topics="reduction script file location directory">
+    <section class="help-topic panel panel-default" data-category="question" data-topics="reduction script file location directory">
         <div class="panel-heading">
             <h4>Where should I put reduction scripts?</h4>
         </div>
@@ -181,7 +200,7 @@
         </div>
     </section>
 
-    <section class="help-topic panel panel-default" data-topics="reduction data file location directory output reduced">
+    <section class="help-topic panel panel-default" data-category="question" data-topics="reduction data file location directory output reduced">
         <div class="panel-heading" id="reduction_data_location">
             <h4>Where does my reduced data go?</h4>
         </div>
@@ -197,7 +216,6 @@
             </p>
         </div>
     </section>
-
 
     <div class="no-results collapse row well">
         <div class="col-md-12 text-center">
