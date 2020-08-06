@@ -20,6 +20,7 @@ import logging
 import os
 import shutil
 import sys
+from pathlib import Path
 import time
 import types
 import traceback
@@ -215,6 +216,16 @@ class PostProcessAdmin:
         # Specify directories where autoreduction output will go
         return temporary_directory + instrument_output_directory
 
+    def create_log_path(self, file_name_with_extension, log_directory):
+        """
+        Create log file and place in reduction_log_directory
+        :param file_name_with_extension: (string) file name and extension type
+        :param log_directory: (str) log directory path
+        :return: (str) log file path
+        """
+        log_and_err_name = f"RB_{self.proposal}_Run_{self.run_number}_"
+        return Path(log_directory, log_and_err_name + file_name_with_extension)
+
     def verify_directory_access(self, location, access_type):
         """
         Tests directory access for a given location and type of access
@@ -325,9 +336,6 @@ class PostProcessAdmin:
             if self.message.description is not None:
                 logger.info("DESCRIPTION: %s", self.message.description)
             log_dir = reduce_result_dir + "/reduction_log/"
-            log_and_err_name = "RB" + self.proposal + "Run" + self.run_number
-            script_out = os.path.join(log_dir, log_and_err_name + "Script.out")
-            mantid_log = os.path.join(log_dir, log_and_err_name + "Mantid.log")
 
             # strip temp path off front of the temp directory to get the final archives directory
             final_result_dir, final_log_dir = self.create_final_result_and_log_directory(
@@ -351,7 +359,9 @@ class PostProcessAdmin:
             logger.info("Reduction script: %s ...", self.reduction_script[:50])
             logger.info("Result dir: %s", reduce_result_dir)
             logger.info("Log dir: %s", log_dir)
-            logger.info("Out log: %s", script_out)
+            logger.info("Out log: %s",
+                        self.create_log_path(file_name_with_extension="Script.out",
+                                             log_directory=log_dir))
             logger.info("Datafile: %s", self.data_file)
             logger.info("----------------")
 
@@ -360,7 +370,11 @@ class PostProcessAdmin:
             out_directories = None
 
             try:
-                with channels_redirected(script_out, mantid_log, self.reduction_log_stream):
+                with channels_redirected(self.create_log_path(file_name_with_extension="Script.out",
+                                                              log_directory=log_dir),
+                                         self.create_log_path(file_name_with_extension="Mantid.log",
+                                                              log_directory=log_dir),
+                                         self.reduction_log_stream):
                     # Load reduction script as a module. This works as long as reduce.py makes no
                     # assumption that it is in the same directory as reduce_vars, i.e., either it
                     # does not import it at all, or adds its location to os.path explicitly.
@@ -384,7 +398,9 @@ class PostProcessAdmin:
                     else:
                         self.message.message = "Run has been skipped in script"
             except Exception as exp:
-                with open(script_out, "a") as fle:
+                with open(self.create_log_path(file_name_with_extension="Script.out",
+                                               log_directory=log_dir),
+                          "a") as fle:
                     fle.writelines(str(exp) + "\n")
                     fle.write(traceback.format_exc())
                 self.copy_temp_directory(reduce_result_dir, final_result_dir)

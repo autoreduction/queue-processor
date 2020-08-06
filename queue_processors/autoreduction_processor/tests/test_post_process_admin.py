@@ -13,6 +13,7 @@ import shutil
 import sys
 
 import json
+from pathlib import PosixPath
 from tempfile import mkdtemp, NamedTemporaryFile
 from mock import patch, call, Mock
 
@@ -168,6 +169,24 @@ class TestPostProcessAdmin(unittest.TestCase):
     def test_reduction_script_location(self):
         location = PostProcessAdmin._reduction_script_location('WISH')
         self.assertEqual(location, MISC['scripts_directory'] % 'WISH')
+
+    @patch(f"{DIR}.post_process_admin.PostProcessAdmin.specify_instrument_directories")
+    def test_create_log_path(self, mock_instrument_output_dir):
+        """
+        Test: create_log_path returns a directory path following a specified format
+        When: called
+        """
+        ppa = PostProcessAdmin(self.message, None)
+
+        file_name = "test.log"
+        log_directory = f"{mock_instrument_output_dir}/reduction_log/"
+        log_and_error_name = f"RB_{ppa.proposal}_Run_{ppa.run_number}_"
+
+        actual = ppa.create_log_path(file_name_with_extension=file_name,
+                                     log_directory=log_directory)
+        expected = PosixPath(f"{log_directory}{log_and_error_name}{file_name}")
+
+        self.assertEqual(expected, actual)
 
     @patch('logging.Logger.info')
     @patch('os.access')

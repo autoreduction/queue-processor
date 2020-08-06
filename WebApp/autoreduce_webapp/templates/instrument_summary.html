@@ -5,7 +5,7 @@
 
 {% block body %}
     {% if instrument %}
-        {% if instrument.is_active %}
+{#        {% if instrument.is_active %}#}
             <title>{{ instrument_name }}</title>
             <!-- Instrument Name -->
             <div class="row">
@@ -15,7 +15,7 @@
             </div>
 
             <!-- Instrument status and control buttons -->
-            <div class="row">
+            <div class="row" id="btn-instrument_active">
                 <!-- Status panel -->
                 <div class="col-md-6">
                     {% include "snippets/instrument_status.html" with processing=processing queued=queued last_instrument_run=last_instrument_run only %}
@@ -34,31 +34,31 @@
                     <p></p>
                 </div>
                 <!-- Re-run past runs button -->
-                <div class="col-md-6 text-center">
+                <div class="col-md-6 text-center" id="btn-re-run_past_job">
                     <p><a href="{% url 'instrument_submit_runs' instrument=instrument_name %}" class="btn btn-success btn-block"><i class="fa fa-arrow-left"></i>&nbsp;&nbsp;Re-run past jobs</a></p>
                 </div>
                 <!-- Configure new runs button -->
-                <div class="col-md-6 text-center">
+                <div class="col-md-6 text-center" id="btn-configure_new_jobs">
                     <p><a href="{% url 'instrument_variables' instrument=instrument_name %}" class="btn btn-success btn-block"><i class="fa fa-plus"></i>&nbsp;&nbsp;Configure New Jobs</a></p>
                 </div>
                 {% if reduction_variables_on %}
-                <div class="col-md-6 text-center">
+                <div class="col-md-6 text-center" id="btn-see_instrument_variables">
                     <p><a href="{% url 'instrument_variables_summary' instrument=instrument_name %}" class="btn btn-success btn-block"><i class="fa fa-eye"></i>&nbsp;&nbsp;See Instrument variables</a></p>
                 </div>
                 {% endif %}
 
             </div>
 
-        {% else %}
-            <div class="text-center col-md-6 col-md-offset-3 well well-small">
+       {% comment %} {% else %}
+            <div class="text-center col-md-6 col-md-offset-3 well well-small" id="not-active">
                 Instrument is not active.
             </div>
-        {% endif %}
+        {% endif %}{% endcomment %}
 
         <br/>
         <hr/>
             <!-- Display table for reduction jobs -->
-            <div class="row">
+            <div class="row" id="filter-options">
                 <!-- Filter , Sort and Pagination options -->
                 <form action="{{ request.path }}" method="get" id="filter_options">
                     <div class="col-md-3">
@@ -95,18 +95,18 @@
             </div>
             <br/>
             <!-- Display table for every reduction job -->
-            <div class="row">
+            <div class="row" id="runs-table">
                 <div class="tab-content col-md-12">
                     {% if filtering == 'run' %}
                     <!-- Run number filtered jobs -->
                         <div class="row" id="by-run-number">
                             {% for run in paginator.current_page.records %}
                                 {% if forloop.first %}
-                                    <div class="row run-row-top">
+                                    <div class="row run-row-top" id="run-row-top">
                                 {% else %}
                                     <div class="row run-row">
                                 {% endif %}
-                                    <div class="col-md-5 col-sm-5 col-md-offset-1 col-xs-4"><a href="{% url 'run_summary' instrument_name=instrument_name run_number=run.run_number run_version=run.run_version %}">{{ run.title }}</a></div>
+                                    <div class="col-md-5 col-sm-5 col-md-offset-1 col-xs-4"><a href="{% url 'run_summary' instrument_name=instrument_name run_number=run.run_number run_version=run.run_version %}" id="top-run-number">{{ run.title }}</a></div>
                                     <div class="col-md-2 col-sm-2 col-xs-4 run-status text-{% colour_table_row run.status.value %}"><strong>{{ run.status.value }}</strong></div>
                                     <div class="col-md-4 col-sm-5 col-xs-4"><strong>Last updated:</strong> {{ run.last_updated }}</div>
                                 </div>
@@ -173,12 +173,15 @@
             {% endif %}
         </div>
     {% else %}
-        <div class="text-center col-md-6 col-md-offset-3 well well-small">
+        <div class="text-center col-md-6 col-md-offset-3 well well-small" id="notactive">
             Instrument not found.
         </div>
     {% endif %}
 {% endblock %}
-
+{% block stylesheets %}
+    <link rel="stylesheet" href="{% static "css/vendor/bootstrap.min.css" %}">
+    <link rel="stylesheet" href="{% static "css/vendor/bootstrap-tour.min.css" %}">
+{% endblock %}
 {% block scripts %}
     {% if preload_runs %}
         <script>window.preload_runs = true;</script>
@@ -195,4 +198,8 @@
     <script src="{% static "javascript/pause_instrument.js" %}"></script>
     <script src="{% static "javascript/instrument_variables.js" %}"></script>
     <script src="{% static "javascript/instrument_summary.js" %}"></script>
+
+    <script src="{% static "javascript/vendor/bootstrap-tour.min.js" %}"></script>
+    <script src="{% static "javascript/tours/instrument_summary_tour.js" %}"></script>
+    <script src="{% static "javascript/create_tour.js" %}"></script>
 {% endblock %}
