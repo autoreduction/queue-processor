@@ -407,7 +407,6 @@ class TestPostProcessAdmin(unittest.TestCase):
         mantid_log = os.path.join(log_dir, f"{self.log_and_err_name}Mantid.log")
 
         instrument_output_directory = self.ceph_directory[:self.ceph_directory.rfind('/') + 1]
-
         final_result_dir = instrument_output_directory + "0/"
 
         actual = ppa.validate_reduction_as_module(script_out=script_out,
