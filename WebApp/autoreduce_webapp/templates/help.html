@@ -1,6 +1,11 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block stylesheets %}
+<link rel="stylesheet" href="{% static "css/help.css" %}">
+
+{% endblock %}
+
 {% block body %}
     <title>Help Pages</title>
     <div class="row">
@@ -8,14 +13,14 @@
             <h2>Help Pages</h2>
         </div>
     </div>
-    <div class="row">
-        <div class="col-md-8">
+    <div id="search-row" class="row">
+        <div id="search-col" class="col-md-7">
             <div class="form-group">
                 <label for="help_search" class="screenreader-only">Search</label>
                 <input type="search" placeholder="Search" name="help_search" id="help_search" class="form-control" autocomplete="off" data-toggle="popover" data-trigger="focus" data-content="Try entering a keyword to filter help topics." data-placement="top">
             </div>
         </div>
-        <div class="col-md-4 text-center">
+        <div class="col-md-5 text-center">
             <div class="form-group">
                 <span>Category: </span>
                 <div id="category-filter" class="btn-group btn-group-toggle" data-toggle="buttons">
@@ -34,6 +39,10 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <div class="sidenav">
+        <h5>Topics:</h5>
     </div>
 
     <section class="help-topic panel panel-default" data-category="question" data-topics="link reduced data">
