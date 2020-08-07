@@ -308,10 +308,11 @@ class PostProcessAdmin:
         return final_result_directory, final_log_directory
 
     def check_for_skipped_runs(self, skip_numbers, reduce_script, reduce_result_dir):
-        """Check for skipped runs
-        :param skip_numbers:
-        :param reduce_script:
-        :param reduce_result_dir:
+        """Check for skipped runs, updating message if run is skipped
+        :param skip_numbers: (list) List of skipped run numbers
+        :param reduce_script: (module) Reduction script as module
+        :param reduce_result_dir: (str) Reduction result directory
+        :return (str) Reduction output directories
         """
         if self.message.run_number not in skip_numbers:
             reduce_script = self.replace_variables(reduce_script)
@@ -328,7 +329,8 @@ class PostProcessAdmin:
         This works as long as reduce.py makes no assumption that it is in the same directory
         as reduce_vars, i.e. - Either it does not import it at all, or adds its location
         to os.path explicitly.
-        :param reduce_result_dir: (str) reduce result directory
+        :param reduce_result_dir: (str) Reduce result directory
+        :return: (str) output directory
         """
         sys.path.append(MISC["mantid_path"])
         reduce_script_location = self._load_reduction_script(self.instrument)
@@ -346,11 +348,18 @@ class PostProcessAdmin:
                                            reduce_result_dir=reduce_result_dir)
 
     def validate_reduction_as_module(self, script_out, mantid_log, reduce_result, final_result):
-        """Validate reduction as module"""
+        """
+        Validate and Load reduction script as module and Add Mantid path to system path so we
+        can use Mantid to run the user's script.
+        :param script_out: (str) script out path
+        :param mantid_log: (str) mantid log path
+        :param reduce_result: (str) Directories where Autoreduction should output
+        :param final_result: (str) final result path
+        :return: (str/Exception) output directory or exception
+        """
         try:
             with channels_redirected(script_out, mantid_log, self.reduction_log_stream):
-                # load reduction script as module and
-                # Add Mantid path to system path so we can use Mantid to run the user's script
+
                 out_directories = self.reduction_as_module(reduce_result)
                 return out_directories
 
@@ -366,7 +375,6 @@ class PostProcessAdmin:
                 raise SkippedRunException(exp)
             error_str = f"Error in user reduction script: {type(exp).__name__} - {exp}"
             logger.error(traceback.format_exc())
-            # raise Exception(error_str)
             return Exception(error_str)
 
     # pylint:disable=too-many-nested-blocks
