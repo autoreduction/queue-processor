@@ -281,7 +281,6 @@ class PostProcessAdmin:
         :param reduce_dir: (str) final reduce directory
         :return (tuple) - (str, str) final result and final log directory paths
         """
-
         # validate dir before slicing
         if reduce_dir.startswith(temporary_root_directory):
             result_directory = reduce_dir[len(temporary_root_directory):]
@@ -296,6 +295,68 @@ class PostProcessAdmin:
         logger.info("Final log directory: %s", final_log_directory)
 
         return final_result_directory, final_log_directory
+
+    def check_for_skipped_runs(self, skip_numbers, reduce_script, reduce_result_dir):
+        """Check for skipped runs
+        :param skip_numbers:
+        :param reduce_script:
+        :param reduce_result_dir:
+        """
+        if self.message.run_number not in skip_numbers:
+            reduce_script = self.replace_variables(reduce_script)
+            with TimeOut(MISC["script_timeout"]):
+                out_directories = reduce_script.main(input_file=str(self.data_file),
+                                                     output_dir=str(reduce_result_dir))
+        else:
+            self.message.message = "Run has been skipped in script"
+        return out_directories
+
+    def reduction_as_module(self, reduce_result_dir):
+        """
+        Load reduction script as module
+        This works as long as reduce.py makes no assumption that it is in the same directory
+        as reduce_vars, i.e. - Either it does not import it at all, or adds its location
+        to os.path explicitly.
+        :param reduce_result_dir: (str) reduce result directory
+        """
+        sys.path.append(MISC["mantid_path"])
+        reduce_script_location = self._load_reduction_script(self.instrument)
+        spec = imp.spec_from_file_location('reducescript', reduce_script_location)
+        reduce_script = imp.module_from_spec(spec)
+        spec.loader.exec_module(reduce_script)
+
+        try:
+            skip_numbers = reduce_script.SKIP_RUNS
+        except Warning:
+            skip_numbers = []
+
+        return self.check_for_skipped_runs(skip_numbers=skip_numbers,
+                                           reduce_script=reduce_script,
+                                           reduce_result_dir=reduce_result_dir)
+
+    def validate_reduction_as_module(self, script_out, mantid_log, reduce_result, final_result):
+        """Validate reduction as module"""
+        try:
+            with channels_redirected(script_out, mantid_log, self.reduction_log_stream):
+                # load reduction script as module and
+                # Add Mantid path to system path so we can use Mantid to run the user's script
+                out_directories = self.reduction_as_module(reduce_result)
+                return out_directories
+
+        except Exception as exp:
+            with open(script_out, "a") as fle:
+                fle.writelines(str(exp) + "\n")
+                fle.write(traceback.format_exc())
+            self.copy_temp_directory(reduce_result, final_result)
+            self.delete_temp_directory(reduce_result)
+
+            # Parent except block will discard exception type, so format the type as a string
+            if 'skip' in str(exp).lower():
+                raise SkippedRunException(exp)
+            error_str = f"Error in user reduction script: {type(exp).__name__} - {exp}"
+            logger.error(traceback.format_exc())
+            # raise Exception(error_str)
+            return Exception(error_str)
 
     # pylint:disable=too-many-nested-blocks
     def reduce(self):
@@ -357,48 +418,12 @@ class PostProcessAdmin:
 
             logger.info("Reduction subprocess started.")
             logger.info(reduce_result_dir)
-            out_directories = None
 
-            try:
-                with channels_redirected(script_out, mantid_log, self.reduction_log_stream):
-                    # Load reduction script as a module. This works as long as reduce.py makes no
-                    # assumption that it is in the same directory as reduce_vars, i.e., either it
-                    # does not import it at all, or adds its location to os.path explicitly.
-
-                    # Add Mantid path to system path so we can use Mantid to run the user's script
-                    sys.path.append(MISC["mantid_path"])
-                    reduce_script_location = self._load_reduction_script(self.instrument)
-                    spec = imp.spec_from_file_location('reducescript', reduce_script_location)
-                    reduce_script = imp.module_from_spec(spec)
-                    spec.loader.exec_module(reduce_script)
-
-                    try:
-                        skip_numbers = reduce_script.SKIP_RUNS
-                    except:
-                        skip_numbers = []
-                    if self.message.run_number not in skip_numbers:
-                        reduce_script = self.replace_variables(reduce_script)
-                        with TimeOut(MISC["script_timeout"]):
-                            out_directories = reduce_script.main(input_file=str(self.data_file),
-                                                                 output_dir=str(reduce_result_dir))
-                    else:
-                        self.message.message = "Run has been skipped in script"
-            except Exception as exp:
-                with open(script_out, "a") as fle:
-                    fle.writelines(str(exp) + "\n")
-                    fle.write(traceback.format_exc())
-                self.copy_temp_directory(reduce_result_dir, final_result_dir)
-                self.delete_temp_directory(reduce_result_dir)
-
-                # Parent except block will discard exception type, so format the type as a string
-                if 'skip' in str(exp).lower():
-                    raise SkippedRunException(exp)
-                error_str = "Error in user reduction script: %s - %s" % (type(exp).__name__, exp)
-                logger.error(traceback.format_exc())
-                raise Exception(error_str)
-
-            logger.info("Reduction subprocess completed.")
-            logger.info("Additional save directories: %s", out_directories)
+            # Load reduction script as module and validate
+            out_directories = self.validate_reduction_as_module(script_out=script_out,
+                                                                mantid_log=mantid_log,
+                                                                reduce_result=reduce_result_dir,
+                                                                final_result=final_result_dir)
 
             self.copy_temp_directory(reduce_result_dir, final_result_dir)
 
