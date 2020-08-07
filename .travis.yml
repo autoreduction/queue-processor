@@ -28,7 +28,6 @@ install:
   - cat build.log
   - _LOCAL_PYTHON_PATH=$(which python3)
   - sudo $_LOCAL_PYTHON_PATH setup.py start
-  - cat logs/autoreduction_processor.log
 
 script:
   - py.test build/tests/test_db_generation.py  # perform initial check of database
@@ -38,6 +37,7 @@ script:
 
   - echo "Running System Tests"
   - py.test systemtests --cov-append
+  - cat logs/autoreduction_processor.log
 
   # ================ Static Analysis ================= #
   # ToDo: These should all be collapsed into one once autoreduction gets a single code package
