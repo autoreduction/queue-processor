@@ -428,9 +428,14 @@ class PostProcessAdmin:
 
             logger.info("Reduction subprocess started.")
             logger.info(reduce_result_dir)
-
+            out_directories = None
 
             # Load reduction script as module and validate
+            script_out = self.create_log_path(file_name_with_extension="Script.out",
+                                              log_directory=log_dir)
+            mantid_log = self.create_log_path(file_name_with_extension="Mantid.log",
+                                              log_directory=log_dir)
+
             out_directories = self.validate_reduction_as_module(script_out=script_out,
                                                                 mantid_log=mantid_log,
                                                                 reduce_result=reduce_result_dir,
