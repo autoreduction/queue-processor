@@ -312,7 +312,7 @@ class PostProcessAdmin:
         :param skip_numbers: (list) List of skipped run numbers
         :param reduce_script: (module) Reduction script as module
         :param reduce_result_dir: (str) Reduction result directory
-        :return (str) Reduction output directories
+        :return (str/list) Reduction output directories
         """
         if self.message.run_number not in skip_numbers:
             reduce_script = self.replace_variables(reduce_script)
@@ -330,7 +330,7 @@ class PostProcessAdmin:
         as reduce_vars, i.e. - Either it does not import it at all, or adds its location
         to os.path explicitly.
         :param reduce_result_dir: (str) Reduce result directory
-        :return: (str) output directory
+        :return: (str/list) output directory
         """
         sys.path.append(MISC["mantid_path"])
         reduce_script_location = self._load_reduction_script(self.instrument)
@@ -355,7 +355,7 @@ class PostProcessAdmin:
         :param mantid_log: (str) mantid log path
         :param reduce_result: (str) Directories where Autoreduction should output
         :param final_result: (str) final result path
-        :return: (str/Exception) output directory or exception
+        :return: ((str/list)/Exception) output directory or exception
         """
         try:
             with channels_redirected(script_out, mantid_log, self.reduction_log_stream):
