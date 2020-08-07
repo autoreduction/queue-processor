@@ -338,7 +338,7 @@ class PostProcessAdmin:
 
         try:
             skip_numbers = reduce_script.SKIP_RUNS
-        except Warning:
+        except:
             skip_numbers = []
 
         return self.check_for_skipped_runs(skip_numbers=skip_numbers,
