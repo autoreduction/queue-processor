@@ -394,8 +394,8 @@ class TestPostProcessAdmin(unittest.TestCase):
     @patch(f"{DIR}.post_process_admin.PostProcessAdmin.specify_instrument_directories")
     def test_validate_reduction_as_module(self, mock_sid, mock_ram, mock_ctd, mock_dtd, _):
         """
-        Test:
-        When:
+        Test: reduce_result returned
+        When: called with correct arguments and no error produced by reduction_as_module()
         """
         ppa = PostProcessAdmin(self.message, None)
 
