@@ -12,7 +12,6 @@ import unittest
 import os
 import shutil
 import sys
-import importlib.util
 
 import json
 from pathlib import PosixPath
@@ -43,7 +42,7 @@ class TestPostProcessAdminHelpers(unittest.TestCase):
         self.assertEqual(actual, '/temp/data/some/more/path.nxs')
 
 
-# pylint:disable=too-many-public-methods
+# pylint:disable=too-many-public-methods, too-many-instance-attributes
 class TestPostProcessAdmin(unittest.TestCase):
     DIR = "queue_processors.autoreduction_processor"
 
@@ -337,7 +336,6 @@ class TestPostProcessAdmin(unittest.TestCase):
         When:
         """
         print("TODO: COMPLETE THIS TEST METHOD WHEN POSSIBLE AS CURRENTLY UNTESTED")
-        pass
 
     @patch(f"{DIR}.post_process_admin.PostProcessAdmin.check_for_skipped_runs")
     def test_reduction_as_module(self, _):
@@ -352,17 +350,16 @@ class TestPostProcessAdmin(unittest.TestCase):
         When:
         """
         print("TODO: COMPLETE THIS TEST METHOD WHEN POSSIBLE AS CURRENTLY UNTESTED")
-        pass
 
     @patch("builtins.open", mock_open(read_data="data"))
     @patch(f"{DIR}.post_process_admin.PostProcessAdmin.delete_temp_directory")
     @patch(f"{DIR}.post_process_admin.PostProcessAdmin.copy_temp_directory")
     @patch(f"{DIR}.post_process_admin.PostProcessAdmin.reduction_as_module")
     @patch(f"{DIR}.post_process_admin.PostProcessAdmin.specify_instrument_directories")
-    def test_validate_reduction_as_module_exp(self, mock_sid, mock_ram, mock_ctd, mock_dtd, *args):
+    def test_validate_reduction_as_module_exp(self, mock_sid, mock_ram, mock_ctd, mock_dtd, *_):
         """
-        Test:
-        When:
+        Test: Exception is called and temporary dir path handling takes place
+        When: Reduction fails to load as module
         """
         mock_ram.side_effect = Exception('warning')
         log_dir = mock_sid + "/reduction_log"

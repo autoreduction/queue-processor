@@ -28,6 +28,7 @@ install:
   - cat build.log
   - _LOCAL_PYTHON_PATH=$(which python3)
   - sudo $_LOCAL_PYTHON_PATH setup.py start
+  - cat logs/autoreduction_processor.log
 
 script:
   - py.test build/tests/test_db_generation.py  # perform initial check of database
