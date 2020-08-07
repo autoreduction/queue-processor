@@ -6,6 +6,7 @@
     <div class="row">
         <div class="col-md-12 text-center">
             <h2>Help Pages</h2>
+            <p>Get in touch with the <a href="mailto:isisreduce@stfc.ac.uk">Support Team</a></p>
         </div>
     </div>
     <div class="row">
@@ -36,9 +37,9 @@
         </div>
     </div>
 
-    <section class="help-topic panel panel-default" data-category="question" data-topics="link reduced data">
+    <section class="help-topic panel panel-default" data-category="usage" data-topics="link reduced data">
         <div class="panel-heading">
-            <h4>How do I access my reduced data?</h4>
+            <h4>Accessing my reduced data</h4>
         </div>
         <div class="panel-body">
             <p>
@@ -82,8 +83,136 @@
             </p>
         </div>
     </section>
+    <section class="help-topic panel panel-default" data-category="usage" data-topics="reduction_scripts">
+        <div class="panel-heading">
+            <h4>Reduction Variables Script</h4>
+        </div>
+        <div class="panel-body">
+            <h2>reduce_vars.py</h2>
+            <p>
+                It is possible to define some additional variables for scripts that can be used
+                during reduction. They can be altered via the web interface. These should be defined in the
+                <code>//isis/NDX.../user/script/autoreduction/reduce_vars.py</code> file. This file has the following format:
+            </p>
+            <pre><code>standard_vars = {
+'perform corrections': False,
+'reduction option': "Default value"
+}
+
+advanced_vars = {
+    'crop range': [100, 10000]
+}
+
+variable_help = {
+  'standard_vars': {'do_absorb_corrections' : "Do you want corrections on?",
+                    'reduction option' : "message to explain option - this is displayed in the webapp"},
+  'advanced_vars': {'crop range' : "advanced settings are handled in a separate section"}
+}</code></pre>
+        </div>
+    </section>
+    <section class="help-topic panel panel-default" data-category="usage" data-topics="reduction_scripts">
+        <div class="panel-heading">
+            <h4>Reduction Script</h4>
+            </div>
+        <div class="panel-body">
+
+            <h2>reduce.py</h2>
+            <p>
+                In order to reduce your data you must have a reduction script written in python.
+                This script should be called <code>reduce.py</code> and should be placed in the <code>user/scripts/autoreduction/</code>
+                directory in the ISIS data archive.
+                A full example script can be seen below:
+            </p>
+
+            <pre><code>import os
+import sys
+from mantid.simpleapi import (Load, Rebin, SaveNexus)
+sys.path.append("/isis/NDXTEST/user/scripts/autoreduction")
+import reduce_vars as params
+
+def validate(input_file, output_dir):
+   required_files = [input_file]
+   required_directories = [output_dir]
+   for file in required_files:
+      if not os.path.isfile(file):
+         raise RuntimeError("File not found: {}".format(file))
+   for dir in required_directories:
+      if not os.path.isdir(dir):
+         raise RuntimeError("Dir not found: {}".format(dir))
+
+def main(input_file, output_dir):
+   validate(input_file, output_dir)
+   workspace = Load(input_file)
+   # use rebin params defined in reduce_vars
+   workspace = Rebin(workspace, params['rebin'])
+   SaveNexus(workspace, output_dir)</code></pre>
+
+            <h3>Imports</h3>
+            <p>
+                All your imports should be placed at the top of the file. These can include, python
+                packages, mantid packages and the <code>reduce_vars</code> we defined in the above section.
+            </p>
+
+            <pre><code># import standard python packages
+import os
+import sys
+
+# import mantid packages
+from mantid.simpleapi import (Rebin, ReductionAlgorithm, SaveNexusProcessed)
+
+# import reduce_vars
+import reduce_vars as params</code></pre>
+
+            <h3>Validate</h3>
+            <p>
+                The first function you define should validate that the files and directories you
+                require exist. This should include all files and directories. If any can not be
+                found, an exception should be raised. Below is an example for reference:
+            </p>
+
+            <pre><code>def validate(input_file, output_dir):
+   required_files = [input_file, "path/to/calibration/file", ... ]
+   required_dirs = [output_dir]
+   for file_path in required_files:
+      if not os.path.isfile(file_path):
+         raise RuntimeError("Could not locate file: {}".format(file_path)
+   for directory in required_dirs:
+      if not os.path.isdir(directory):
+         raise RuntimeError("Could not locate directory: {}".format(directory)</code></pre>
+
+            <h3>Main</h3>
+            <p>
+                This function should call the validate function to check inputs and then perform
+                reduction steps. The function must take an <code>input_file</code> and <code>output_dir</code>
+                as parameters. Both arguments should be validated in the validate function.
+            </p>
+            <pre><code>def main(input_file, output_dir):
+   # validate
+   validate(input_file, output_dir)
+   # Perform reduction
+   reduced_workspace = ReductionAlgorithm(input_file, ...)
+   # Save output
+   SaveNexusProcessed(reduced_worksapce, output_dir)</code></pre>
+
+            <p>If you have any difficulty please get in touch and we'll be happy to help </p>
+            {% if support_email %}
+                <p>If you feel a value is incorrectly being marked as invalid please <a href="mailto:{{support_email}}">Contact Us</a>.</p>
+            {% endif %}
+        </div>
+    </section>
+    <section class="help-topic panel panel-default" data-category="usage" data-topics="Autoreduction GitHub Repository">
+        <div class="panel-heading">
+            <h4>Autoreduction GitHub Repository</h4>
+        </div>
+        <div class="panel-body">
+            You can find the Autoreduction Github repository <a href="https://github.com/ISISScientificComputing/autoreduce">Here</a>
+        </div>
+    </section>
+
+{#    <section class="help-topic panel panel-default" data-topics="instrument variables change new">#}
 
     <section class="help-topic panel panel-default" data-category="usage" data-topics="instrument variables change new">
+
         <div class="panel-heading">
             <h4>How do I add new instrument variables?</h4>
         </div>
