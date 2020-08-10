@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# When updating activemq version also to this in activemq.bat and build/test_settings.py
+
 # Test sudo
 $(sudo -n echo)
 exitCode=$?
