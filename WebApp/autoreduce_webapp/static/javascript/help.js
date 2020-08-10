@@ -34,6 +34,20 @@
         }
     };
 
+    var headingTextToDashed = function headingTextToDashed (headingText) {
+        return headingText.replace(/ +/g, '-').toLowerCase();
+    }
+
+    var generateSideNavLinks = function generateSideNavLinks () {
+        $('.main-content section .panel-heading h4').each(function(){
+            var id = headingTextToDashed($(this).text());
+            var link = '<a href="#' + id + '">' + $(this).text() + '</a>';
+            $('#sidenav').append(link);
+            $(this).html(link);
+            $(this).attr("id", id);
+        });
+    }
+
     var mobileOnly = function mobileOnly() {
         $('#help_search').data('placement', 'top');
     };
@@ -62,6 +76,8 @@
         $('#category-filter .btn').on('click', function () {
             searchFilter(stringToSearchTerms($('#help_search').val()), $(this).data("category"));
         });
+
+        generateSideNavLinks();
     };
 
     init();
