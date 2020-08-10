@@ -42,7 +42,7 @@
         $('.main-content section .panel-heading h4').each(function(){
             var id = headingTextToDashed($(this).text());
             var link = '<a href="#' + id + '">' + $(this).text() + '</a>';
-            $('#sidenav').append(link);
+            $('#sidenav').append('<li>' + link + '</li>');
             $(this).html(link);
             $(this).attr("id", id);
         });

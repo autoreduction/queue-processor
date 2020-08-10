@@ -7,7 +7,7 @@
     flex-wrap: wrap;
 }
 
-#sidenav {
+#navbar {
     flex: 1;
     margin-bottom: 20px;
 }
@@ -17,7 +17,7 @@
     width: -webkit-fill-available;
 }
  .help-topic {
-     min-width: 400px;
+     min-width: 550px;
  }
 
 #sidenav a {
