@@ -499,7 +499,7 @@ class TestPostProcessAdmin(unittest.TestCase):
     def test_additional_save_directories_check_invalid_argument(self, mock_ctd, mock_logger):
         """
         Test: logs invalid argument
-        When: called with invalid argument type
+        When: called with invalid ar gument type
         """
         out_directories = {404}
         reduce_result_dir = self.temporary_directory + self.ceph_directory
@@ -508,16 +508,6 @@ class TestPostProcessAdmin(unittest.TestCase):
         self.assertEqual(mock_ctd.call_count, 0)
         mock_logger.assert_called_once_with("Optional output directories of reduce.py must "
                                             "be a string or list of stings: %s" % out_directories)
-
-    @patch(DIR + '.autoreduction_logging_setup.logger.info')
-    def test_send_error_and_log(self, mock_logger):
-        activemq_client_mock = Mock()
-        ppa = PostProcessAdmin(self.message, activemq_client_mock)
-        ppa._send_message_and_log(ACTIVEMQ_SETTINGS.reduction_error)
-        mock_logger.assert_called_with("\nCalling " + ACTIVEMQ_SETTINGS.reduction_error + " --- " +
-                                       self.message.serialize(limit_reduction_script=True))
-        activemq_client_mock.send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_error,
-                                                          ppa.message)
 
     @patch('shutil.rmtree')
     @patch(DIR + '.autoreduction_logging_setup.logger.info')
