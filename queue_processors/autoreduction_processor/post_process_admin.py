@@ -180,12 +180,42 @@ class PostProcessAdmin:
         """ Returns the path of the reduction script for an instrument. """
         return os.path.join(self._reduction_script_location(instrument_name), 'reduce.py')
 
-    def send_reduction_started(self):
-        """Log and update AMQ message to reduction started"""
-        logger.debug("Calling: %s\n%s",
-                     ACTIVEMQ_SETTINGS.reduction_started,
-                     self.message.serialize(limit_reduction_script=True))
-        self.client.send(ACTIVEMQ_SETTINGS.reduction_started, self.message)
+    def send_reduction_message(self, message, amq_message):
+        """Send/Update AMQ reduction message
+        :param message: (str) amq reduction  status
+        :param amq_message: (str) reduction status path
+        """
+        try:
+            logger.debug("Calling: %s\n%s",
+                         amq_message,
+                         self.message.serialize(limit_reduction_script=True))
+            self.client.send(amq_message, self.message)
+            logger.info("Reduction: %s", message)
+
+        except AttributeError:
+            logger.debug("Failed to find send reduction message: %s", amq_message)
+
+    def determine_reduction_status(self):
+        """
+        Determine which message type to log and send to AMQ, triggering exception if job failed
+        """
+        if self.message.message is not None:
+            # This means an error has been produced somewhere
+            try:
+                if 'skip' in self.message.message.lower():
+                    self.send_reduction_message(message="Skipped",
+                                                amq_message=ACTIVEMQ_SETTINGS.reduction_skipped)
+                else:
+                    self.send_reduction_message(message="Error",
+                                                amq_message=ACTIVEMQ_SETTINGS.reduction_error)
+            except Exception as exp2:
+                logger.info("Failed to send to queue! - %s - %s", exp2, repr(exp2))
+            finally:
+                logger.info("Reduction job failed")
+        else:
+            # Reduction has successfully completed
+            self.send_reduction_message(message="Complete",
+                                        amq_message=ACTIVEMQ_SETTINGS.reduction_complete)
 
     def specify_instrument_directories(self,
                                        instrument_output_directory,
@@ -334,12 +364,12 @@ class PostProcessAdmin:
     def reduce(self):
         """Start the reduction job."""
         # pylint: disable=too-many-nested-blocks
-        logger.info("reduce started")
         self.message.software = self._get_mantid_version()
 
         try:
             # log and update AMQ message to reduction started
-            self.send_reduction_started()
+            self.send_reduction_message(message="started",
+                                        amq_message=ACTIVEMQ_SETTINGS.reduction_started)
 
             # Specify instrument directories - if excitation instrument remove run_number from dir
             no_run_number_directory = False
@@ -457,27 +487,7 @@ class PostProcessAdmin:
 
         self.message.reduction_log = self.reduction_log_stream.getvalue()
         self.message.admin_log = self.admin_log_stream.getvalue()
-
-        if self.message.message is not None:
-            # This means an error has been produced somewhere
-            try:
-                if 'skip' in self.message.message.lower():
-                    self._send_message_and_log(ACTIVEMQ_SETTINGS.reduction_skipped)
-                else:
-                    self._send_message_and_log(ACTIVEMQ_SETTINGS.reduction_error)
-
-            except Exception as exp2:
-                logger.info("Failed to send to queue! - %s - %s", exp2, repr(exp2))
-            finally:
-                logger.info("Reduction job failed")
-
-        else:
-            # reduction has successfully completed
-            self.client.send(ACTIVEMQ_SETTINGS.reduction_complete, self.message)
-            logger.info("Calling: %s\n%s",
-                        ACTIVEMQ_SETTINGS.reduction_complete,
-                        self.message.serialize(limit_reduction_script=True))
-            logger.info("Reduction job successfully complete")
+        self.determine_reduction_status()  # Send AMQ reduce status message Skipped|Error|Complete
 
     @staticmethod
     def _get_mantid_version():
@@ -519,12 +529,6 @@ class PostProcessAdmin:
                 return append_path(path, [str(this_vers)])
         # (else) if no overwrite, overwrite true, or the path doesn't exist: return version 0 path
         return append_path(path, "0")
-
-    def _send_message_and_log(self, destination):
-        """ Send reduction run to error. """
-        logger.info("\nCalling " + destination + " --- " +
-                    self.message.serialize(limit_reduction_script=True))
-        self.client.send(destination, self.message)
 
     def copy_temp_directory(self, temp_result_dir, copy_destination):
         """
