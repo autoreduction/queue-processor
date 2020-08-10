@@ -48,8 +48,11 @@ class Start(Command):
                 time.sleep(2)  # Ensure that activemq process has started before you continue
         else:
             if self._check_valid_path(location):
-                run_process_and_log([location, 'start'])
-                time.sleep(2)  # Ensure that activemq process has started before you continue
+                if run_process_and_log([location, 'start']):
+                    time.sleep(2)  # Ensure that activemq process has started before you continue
+                else:
+                    print("Unable to start ActiveMQ service."
+                          " Please see build.log for details.")
 
     @staticmethod
     def _check_valid_path(path):

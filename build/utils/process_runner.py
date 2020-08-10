@@ -23,11 +23,11 @@ def run_process_and_log(list_of_args):
                                stderr=subprocess.PIPE)
     process_output, process_error = process.communicate()
     exit_status = process.returncode
-    if process_output:
-        BUILD_LOGGER.logger.info(process_output)
-    if exit_status != 0:
+    if exit_status != 0 or len(process_error) != 0:
         BUILD_LOGGER.logger.error(process_error)
         return False
+    if process_output:
+        BUILD_LOGGER.logger.info(process_output)
     return True
 
 
