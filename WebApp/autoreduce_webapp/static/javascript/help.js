@@ -77,6 +77,10 @@
             searchFilter(stringToSearchTerms($('#help_search').val()), $(this).data("category"));
         });
 
+        $('[data-toggle=offcanvas]').click(function() {
+            $('.row-offcanvas').toggleClass('active');
+        });
+
         generateSideNavLinks();
     };
 
