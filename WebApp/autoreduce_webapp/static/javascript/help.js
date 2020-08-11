@@ -1,6 +1,6 @@
 (function () {
 
-    // Search all topicstopics and filter them according to search terms and a category
+    // Search all topics and filter them according to search terms and a category
     var searchFilter = function filterHelpTopics(searchTerms, category) {
         $('section.help-topic, .no-results').hide();
 
