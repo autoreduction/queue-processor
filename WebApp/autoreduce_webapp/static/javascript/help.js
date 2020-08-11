@@ -1,6 +1,6 @@
 (function () {
 
-    // Search all topics and filter them according to search terms and a category
+    // Search all topicstopics and filter them according to search terms and a category
     var searchFilter = function filterHelpTopics(searchTerms, category) {
         $('section.help-topic, .no-results').hide();
 
@@ -34,12 +34,12 @@
         }
     };
 
-    var headingTextToDashed = function headingTextToDashed (headingText) {
+    var headingTextToDashed = function headingTextToDashed(headingText) {
         return headingText.replace(/ +/g, '-').toLowerCase();
     }
 
-    var generateSideNavLinks = function generateSideNavLinks () {
-        $('.main-content section .panel-heading h4').each(function(){
+    var generateSideNavLinks = function generateSideNavLinks() {
+        $('.main-content section .panel-heading h4').each(function () {
             var id = headingTextToDashed($(this).text());
             var link = '<a href="#' + id + '">' + $(this).text() + '</a>';
             $('#sidenav').append('<li>' + link + '</li>');
@@ -49,7 +49,7 @@
     }
 
     var mobileOnly = function mobileOnly() {
-        $('#help_search').data('placement', 'top');
+        $('#help-search').data('placement', 'top');
     };
 
     // Plain text input => array of terms
@@ -62,7 +62,7 @@
             mobileOnly();
         }
 
-        $('#help_search').on('keyup', function (event) {
+        $('#help-search').on('keyup', function (event) {
             // Ignore pressing enter
             if ((event.keyCode || event.which || event.charCode) === 13) {
                 event.preventDefault();
@@ -73,12 +73,19 @@
                 $('#category-filter > .btn.active').data("category"));
         }).popover();
 
-        $('#category-filter .btn').on('click', function () {
-            searchFilter(stringToSearchTerms($('#help_search').val()), $(this).data("category"));
+        $('#category-filter .btn').click(function () {
+            searchFilter(stringToSearchTerms($('#help-search').val()), $(this).data("category"));
         });
 
-        $('[data-toggle=offcanvas]').click(function() {
-            $('.row-offcanvas').toggleClass('active');
+        $('#hamburger-toggle').click(function () {
+            $('#sidebar').toggleClass('active');
+        });
+
+        $("#sidenav").click(function () {
+            $('[data-category="all"]').click();
+            $('#help-search').val("");
+            searchFilter(stringToSearchTerms($(this).val()),
+                $('#category-filter > .btn.active').data("category"));
         });
 
         generateSideNavLinks();

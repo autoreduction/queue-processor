@@ -12,7 +12,7 @@ h4::before {
     pointer-events: none;
 }
 
-#topics-nav {
+#topics-sidebar-nav {
     display: none;
 }
 
@@ -29,19 +29,12 @@ h4::before {
     display: block;
 }
 
-
-#topics-sidebar li {
-    border: 0 #f2f2f2 solid;
-    border-bottom-width: 1px;
-}
-
-.row {
-    margin-left: 0;
-    margin-right: 0;
+#topics-navbar-brand {
+    padding: 15px 15px;
 }
 
 @media screen and (max-width: 767px) {
-    #topics-nav {
+    #topics-sidebar-nav {
         display: block;
     }
 
@@ -49,33 +42,14 @@ h4::before {
         padding-top: 0;
     }
 
-    .row-offcanvas {
-        position: relative;
-        -webkit-transition: all 0.25s ease-out;
-        -moz-transition: all 0.25s ease-out;
-        transition: all 0.25s ease-out;
+    #sidebar {
+        width: 100%;
+        display: none;
+        margin-bottom: 20px;
     }
 
-    .row-offcanvas-right .sidebar-offcanvas {
-        right: -41.6%;
-    }
-
-    .row-offcanvas-left .sidebar-offcanvas {
-        left: -41.6%;
-    }
-
-    .row-offcanvas-right.active {
-        right: 41.6%;
-    }
-
-    .row-offcanvas-left.active {
-        left: 41.6%;
-    }
-
-    .sidebar-offcanvas {
-        position: absolute;
-        top: 0;
-        width: 41.6%;
+    #sidebar.active {
+        display: block;
     }
 
     #help-topics {
