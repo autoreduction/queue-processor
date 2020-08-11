@@ -135,7 +135,12 @@ class HandleMessage:
         message.reduction_arguments = arguments
 
         # Make sure the RB number is valid
-        message.validate("/queue/DataReady")
+        try:
+            message.validate("/queue/DataReady")
+        except RuntimeError as validation_err:
+            self._logger.error("Validation error from handler: %s", str(validation_err))
+            self._client.send_message('/queue/ReductionSkipped', message)
+            return
 
         if instrument.is_paused:
             self._logger.info("Run %s has been skipped",
