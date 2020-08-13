@@ -4,6 +4,8 @@ setlocal EnableDelayedExpansion
 REM This script requires 7zip to be installed and in the system path.
 REM If you do not have 7zip you can download it from: https://www.7-zip.org/download.html
 
+REM When updating activemq version also to this in activemq.sh and build/test_settings.py
+
 REM Download and extract
 set target_path=%1
 set path_to_7z=%2

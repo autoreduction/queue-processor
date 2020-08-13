@@ -1,5 +1,7 @@
-coverage==4.5.4
-coveralls==1.9.2
+# Test Env. Requirements
+
+coverage
+coveralls
 dash
 django-debug-toolbar
 django_plotly_dash
@@ -9,7 +11,7 @@ lxml
 mock
 pandas
 plotly
-pylint==2.4.4
+pylint
 pytest-cov
 python-coveralls
 requests

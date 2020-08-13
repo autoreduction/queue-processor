@@ -176,12 +176,12 @@ class SchedulerDataProcessor:
         if cycle_before:
             cycle_before_string = f"\n\tStart = {cycle_before.start}\n\tEnd = {cycle_before.end}\n"
         else:
-            cycle_before_string = f" NONE (No earlier cycle dates)\n"
+            cycle_before_string = " NONE (No earlier cycle dates)\n"
 
         if cycle_after:
             cycle_after_string = f"\n\tStart = {cycle_after.start}\n\tEnd = {cycle_after.end}\n"
         else:
-            cycle_after_string = f" NONE (No later cycle dates)\n"
+            cycle_after_string = " NONE (No later cycle dates)\n"
 
         print(f"WARNING - Encountered maintenance day outside of cycle dates "
               f"(assuming cycle_data and maintenance_data "
