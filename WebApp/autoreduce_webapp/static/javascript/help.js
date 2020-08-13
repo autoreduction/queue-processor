@@ -36,7 +36,7 @@
 
     var headingTextToDashed = function headingTextToDashed(headingText) {
         return headingText.replace(/ +/g, '-').toLowerCase();
-    }
+    };
 
     var generateSideNavLinks = function generateSideNavLinks() {
         $('.main-content section .panel-heading h4').each(function () {
@@ -46,7 +46,7 @@
             $(this).html(link);
             $(this).attr("id", id);
         });
-    }
+    };
 
     var mobileOnly = function mobileOnly() {
         $('#help-search').data('placement', 'top');
@@ -61,6 +61,20 @@
         if (Math.max(document.documentElement.clientWidth, window.innerWidth || 0) < 767) {
             mobileOnly();
         }
+
+        $(document).ready(function () {
+            var scrollpos = localStorage.getItem('scrollpos');
+            if (scrollpos) {
+                window.scrollTo(0, scrollpos);
+                $('html, body').animate({
+                    scrollTop: scrollpos
+                }, 'slow');
+            }
+        });
+
+        window.addEventListener('hashchange', function() {
+            localStorage.setItem('scrollpos', window.scrollY);
+        });
 
         $('#help-search').on('keyup', function (event) {
             // Ignore pressing enter
