@@ -119,19 +119,19 @@
                         <code>//isis/NDX.../user/script/autoreduction/reduce_vars.py</code> file. This file has the following format:
                     </p>
                     <pre><code>standard_vars = {
-        'perform corrections': False,
-        'reduction option': "Default value"
-        }
+    'perform corrections': False,
+    'reduction option': "Default value"
+}
 
-        advanced_vars = {
-            'crop range': [100, 10000]
-        }
+advanced_vars = {
+    'crop range': [100, 10000]
+}
 
-        variable_help = {
-          'standard_vars': {'do_absorb_corrections' : "Do you want corrections on?",
-                            'reduction option' : "message to explain option - this is displayed in the webapp"},
-          'advanced_vars': {'crop range' : "advanced settings are handled in a separate section"}
-        }</code></pre>
+variable_help = {
+    'standard_vars': {'do_absorb_corrections' : "Do you want corrections on?",
+                      'reduction option' : "message to explain option - this is displayed in the webapp"},
+    'advanced_vars': {'crop range' : "advanced settings are handled in a separate section"}
+}</code></pre>
                 </div>
             </section>
             <section class="help-topic panel panel-default" data-category="usage" data-topics="reduction_scripts">
@@ -149,27 +149,27 @@
                     </p>
 
                     <pre><code>import os
-        import sys
-        from mantid.simpleapi import (Load, Rebin, SaveNexus)
-        sys.path.append("/isis/NDXTEST/user/scripts/autoreduction")
-        import reduce_vars as params
+import sys
+from mantid.simpleapi import (Load, Rebin, SaveNexus)
+sys.path.append("/isis/NDXTEST/user/scripts/autoreduction")
+import reduce_vars as params
 
-        def validate(input_file, output_dir):
-           required_files = [input_file]
-           required_directories = [output_dir]
-           for file in required_files:
-              if not os.path.isfile(file):
-                 raise RuntimeError("File not found: {}".format(file))
-           for dir in required_directories:
-              if not os.path.isdir(dir):
-                 raise RuntimeError("Dir not found: {}".format(dir))
+def validate(input_file, output_dir):
+   required_files = [input_file]
+   required_directories = [output_dir]
+   for file in required_files:
+      if not os.path.isfile(file):
+         raise RuntimeError("File not found: {}".format(file))
+   for dir in required_directories:
+      if not os.path.isdir(dir):
+         raise RuntimeError("Dir not found: {}".format(dir))
 
-        def main(input_file, output_dir):
-           validate(input_file, output_dir)
-           workspace = Load(input_file)
-           # use rebin params defined in reduce_vars
-           workspace = Rebin(workspace, params['rebin'])
-           SaveNexus(workspace, output_dir)</code></pre>
+def main(input_file, output_dir):
+   validate(input_file, output_dir)
+   workspace = Load(input_file)
+   # use rebin params defined in reduce_vars
+   workspace = Rebin(workspace, params['rebin'])
+   SaveNexus(workspace, output_dir)</code></pre>
 
                     <h3>Imports</h3>
                     <p>
@@ -178,14 +178,14 @@
                     </p>
 
                     <pre><code># import standard python packages
-        import os
-        import sys
+import os
+import sys
 
-        # import mantid packages
-        from mantid.simpleapi import (Rebin, ReductionAlgorithm, SaveNexusProcessed)
+# import mantid packages
+from mantid.simpleapi import (Rebin, ReductionAlgorithm, SaveNexusProcessed)
 
-        # import reduce_vars
-        import reduce_vars as params</code></pre>
+# import reduce_vars
+import reduce_vars as params</code></pre>
 
                     <h3>Validate</h3>
                     <p>
@@ -195,14 +195,14 @@
                     </p>
 
                     <pre><code>def validate(input_file, output_dir):
-           required_files = [input_file, "path/to/calibration/file", ... ]
-           required_dirs = [output_dir]
-           for file_path in required_files:
-              if not os.path.isfile(file_path):
-                 raise RuntimeError("Could not locate file: {}".format(file_path)
-           for directory in required_dirs:
-              if not os.path.isdir(directory):
-                 raise RuntimeError("Could not locate directory: {}".format(directory)</code></pre>
+    required_files = [input_file, "path/to/calibration/file", ... ]
+    required_dirs = [output_dir]
+    for file_path in required_files:
+       if not os.path.isfile(file_path):
+          raise RuntimeError("Could not locate file: {}".format(file_path)
+    for directory in required_dirs:
+       if not os.path.isdir(directory):
+          raise RuntimeError("Could not locate directory: {}".format(directory)</code></pre>
 
                     <h3>Main</h3>
                     <p>
@@ -211,12 +211,12 @@
                         as parameters. Both arguments should be validated in the validate function.
                     </p>
                     <pre><code>def main(input_file, output_dir):
-           # validate
-           validate(input_file, output_dir)
-           # Perform reduction
-           reduced_workspace = ReductionAlgorithm(input_file, ...)
-           # Save output
-           SaveNexusProcessed(reduced_worksapce, output_dir)</code></pre>
+    # validate
+    validate(input_file, output_dir)
+    # Perform reduction
+    reduced_workspace = ReductionAlgorithm(input_file, ...)
+    # Save output
+    SaveNexusProcessed(reduced_worksapce, output_dir)</code></pre>
 
                     <p>If you have any difficulty please get in touch and we'll be happy to help </p>
                     {% if support_email %}
