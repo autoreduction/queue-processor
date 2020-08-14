@@ -23,23 +23,7 @@ from utils.settings import ACTIVEMQ_SETTINGS
 from utils.project.structure import get_project_root
 from utils.clients.settings.client_settings_factory import ActiveMQSettings
 from queue_processors.autoreduction_processor.settings import MISC
-from queue_processors.autoreduction_processor.post_process_admin import (windows_to_linux_path,
-                                                                         PostProcessAdmin,
-                                                                         main)
-
-
-# pylint:disable=missing-docstring,invalid-name,protected-access,no-self-use,too-many-arguments
-class TestPostProcessAdminHelpers(unittest.TestCase):
-
-    def test_windows_to_linux_data_path(self):
-        windows_path = "\\\\isis\\inst$\\some\\more\\path.nxs"
-        actual = windows_to_linux_path(windows_path, '')
-        self.assertEqual(actual, '/isis/some/more/path.nxs')
-
-    def test_windows_to_linux_autoreduce_path(self):
-        windows_path = "\\\\autoreduce\\data\\some\\more\\path.nxs"
-        actual = windows_to_linux_path(windows_path, '/temp')
-        self.assertEqual(actual, '/temp/data/some/more/path.nxs')
+from queue_processors.autoreduction_processor.post_process_admin import (PostProcessAdmin, main)
 
 
 # pylint:disable=too-many-public-methods
@@ -518,7 +502,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         ppa._remove_directory(directory_to_remove)
         self.assertFalse(os.path.exists(directory_to_remove))
 
-    @patch(DIR + '.post_process_admin.windows_to_linux_path', return_value='path')
+    @patch(DIR + '.post_process_admin_utilities.windows_to_linux_path', return_value='path')
     @patch(DIR + '.post_process_admin.PostProcessAdmin.reduce')
     @patch('utils.clients.queue_client.QueueClient.connect')
     @patch('utils.clients.queue_client.QueueClient.__init__', return_value=None)
