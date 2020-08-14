@@ -126,7 +126,7 @@ if os.name != 'nt':
             self.assertEqual(self.instrument, results[0].instrument.name)
             self.assertEqual(self.rb_number, results[0].experiment.reference_number)
             self.assertEqual(self.run_number, results[0].run_number)
-            self.assertEqual('e', results[0].status.value)
+            self.assertEqual('e', results[0].status.value)  # verbose value = "Error"
 
         def _setup_data_structures(self, reduce_script, vars_script):
             """
@@ -192,6 +192,7 @@ if os.name != 'nt':
                     # If no results found yet then continue
                     continue
 
+                # verbose values = "Completed" or "Error"
                 if actual.status.value == 'c' or actual.status.value == 'e':
                     print(f"Job reached {actual.status.value} status after {timeout} seconds")
                     break

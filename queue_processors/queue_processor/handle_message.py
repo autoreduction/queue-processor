@@ -181,7 +181,7 @@ class HandleMessage:
                 rb_number=message.rb_number, run_number=message.run_number,
                 run_version=message.run_version)
 
-        if reduction_run.status.value not in ['e', 'q']:
+        if reduction_run.status.value not in ['e', 'q']:  # verbose values = ["Error", "Queued"]
             raise InvalidStateException(
                 "An invalid attempt to re-start a reduction run was captured."
                 f" Experiment: {message.rb_number},"
@@ -205,7 +205,7 @@ class HandleMessage:
                 rb_number=message.rb_number, run_number=message.run_number,
                 run_version=message.run_version)
 
-        if not reduction_run.status.value == 'p':
+        if not reduction_run.status.value == 'p':  # verbose value = "Processing"
             raise InvalidStateException(
                 "An invalid attempt to complete a reduction run that wasn't"
                 " processing has been captured. "
