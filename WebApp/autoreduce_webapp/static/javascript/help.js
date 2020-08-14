@@ -34,10 +34,12 @@
         }
     };
 
+    // Convert text in a topic heading to a dashed separated format
     var headingTextToDashed = function headingTextToDashed(headingText) {
         return headingText.replace(/ +/g, '-').toLowerCase();
     };
 
+    // Generate a link for each topic heading and add the link also to the sidebar
     var generateSideNavLinks = function generateSideNavLinks() {
         $('.main-content section .panel-heading h4').each(function () {
             var id = headingTextToDashed($(this).text());
@@ -48,17 +50,19 @@
         });
     };
 
+    // Place search bar at the top when on mobile
     var mobileOnly = function mobileOnly() {
         $('#help-search').data('placement', 'top');
     };
 
-    // Plain text input => array of terms
+    // Plain text input to array of terms
     var stringToSearchTerms = function stringToSearchTerms(string) {
         return string.trim() && string.trim().split(' ');
     };
 
-    var escapeRegExp = function escapeRegExp(string){
-      return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    // Converts text to string with escape special characters
+    var escapeRegExp = function escapeRegExp(string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     };
 
     var init = function init() {
@@ -66,6 +70,7 @@
             mobileOnly();
         }
 
+        // Trigger searching and remove popover on keyup event of search bar
         $('#help-search').on('keyup', function (event) {
             // Ignore pressing enter
             if ((event.keyCode || event.which || event.charCode) === 13) {
@@ -77,15 +82,18 @@
                 $('#category-filter > .btn.active').data("category"));
         }).popover();
 
+        // Filter by category on clicking toggle button
         $('#category-filter .btn').click(function () {
             searchFilter(stringToSearchTerms($('#help-search').val()), $(this).data("category"));
         });
 
+        // Show sidebar when hamburger menu clicked
         $('#hamburger-toggle').click(function () {
             $('#sidebar').toggleClass('active');
         });
 
-        $("#sidenav").click(function () {
+        // Reset search filters on clicking sidebar link
+        $('#sidenav').click(function () {
             $('[data-category="all"]').click();
             $('#help-search').val("");
             searchFilter(stringToSearchTerms($(this).val()),
@@ -94,7 +102,9 @@
 
         generateSideNavLinks();
 
-        $(window).load(function(){
+        // Scroll to anchor link after window loaded
+        // 1 millisecond delay due to known chrome issue https://support.google.com/chrome/thread/11993079?hl=en
+        $(window).load(function () {
             var hash = $(location).attr('hash');
             if (hash) {
                 setTimeout(function () {
