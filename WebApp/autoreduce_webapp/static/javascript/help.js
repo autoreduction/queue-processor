@@ -98,7 +98,6 @@
             var hash = $(location).attr('hash');
             if (hash) {
                 setTimeout(function () {
-                    console.log($(escapeRegExp(hash)).offset().top);
                     window.scroll(0, $(escapeRegExp(hash)).offset().top);
                 }, 1);
             }
