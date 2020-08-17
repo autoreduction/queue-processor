@@ -277,11 +277,12 @@ search#run_search {
         padding: 2px;
     }
 }
-
+pre code {
+  white-space: pre;
+  overflow-x: auto;
+  display: inline-block;
+  min-width: 100%;
+}
 .plot-container {
     margin: 0.5em;
-}
-
-#category-filter * {
-    background-color: #f5f5f5;
 }

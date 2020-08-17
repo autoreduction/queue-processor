@@ -9,18 +9,14 @@ assignees: ''
 
 Before the next version of autoreduction can be released, the following must be checked:
 
-#### Internals
-* [ ] Release notes complete and checked
-* [ ] Update version number
+* [ ] Inform dev team of code freeze
+* [ ] Create release branch 
+  * [ ] Update version number in setup.py AND readme front page
+* [ ] Identify key issues for the release
+* [ ] Resolve remaining issues
+* [ ] Development environment smoke test
+* [ ] Production environment smoke test
+* [ ] Inform customers 
+* [ ] Release 
 
-
-#### Smoke testing
-* [ ] Ingestion code
-* [ ] Queue Processor
-* [ ] Autoreduction Processor
-* [ ] Web application
-
-#### Externals
-* [ ] Wipe database
-
-Once everything is complete, the release will be ready to deploy.
+Check the [Release documentation](https://github.com/ISISScientificComputing/autoreduce/wiki/Releases) for further details on each stage

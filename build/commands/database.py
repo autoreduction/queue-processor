@@ -11,8 +11,7 @@ import os
 # pylint:disable=no-name-in-module,import-error
 from distutils.core import Command
 
-from build.database.generate_database import (get_sql_from_file, get_test_user_sql,
-                                              run_sql, generate_schema)
+from build.database.generate_database import (get_sql_from_file, run_sql, generate_schema)
 from build.utils.common import BUILD_LOGGER, ROOT_DIR
 
 
@@ -44,16 +43,6 @@ class InitialiseTestDatabase(Command):
         local_db_connection = DatabaseClient(LOCAL_MYSQL_SETTINGS).connect()
 
         BUILD_LOGGER.print_and_log("==================== Building Database ======================")
-        BUILD_LOGGER.print_and_log("DROPPING and creating Autoreduction table")
-        if run_sql(connection=local_db_connection,
-                   sql=get_sql_from_file(self.setup_sql_path),
-                   logger=BUILD_LOGGER.logger) is False:
-            return
-        BUILD_LOGGER.print_and_log("Adding test user from settings")
-        if run_sql(connection=local_db_connection,
-                   sql=get_test_user_sql(),
-                   logger=BUILD_LOGGER.logger) is False:
-            return
         BUILD_LOGGER.print_and_log("Migrating databases from django model")
         if generate_schema(ROOT_DIR, BUILD_LOGGER.logger) is False:
             return

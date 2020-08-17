@@ -57,6 +57,7 @@ class DatabaseClient(AbstractClient):
         :return: True if connection is establish
         """
         try:
+            # pylint: disable=no-member
             self._connection.execute('SELECT 1').fetchall()
         # pylint:disable=broad-except
         except Exception as exp:
@@ -79,6 +80,7 @@ class DatabaseClient(AbstractClient):
         """
         Close the connection and reset variables
         """
+        # pylint: disable=no-member
         self._connection.close()
         self._connection = None
         self._meta_data = None
