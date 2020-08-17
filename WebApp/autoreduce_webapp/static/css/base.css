@@ -316,6 +316,14 @@ pre code {
     min-width: 100%;
 }
 
+.instrument-btns-row {
+    margin-bottom: 0 !important;
+}
+
+.instrument-btn {
+    margin-bottom: 20px;
+}
+
 .plot-container {
     margin: 0.5em;
 }
