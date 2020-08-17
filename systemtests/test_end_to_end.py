@@ -93,7 +93,7 @@ if os.name != 'nt':
             self.assertEqual(self.instrument, results[0].instrument.name)
             self.assertEqual(self.rb_number, results[0].experiment.reference_number)
             self.assertEqual(self.run_number, results[0].run_number)
-            self.assertEqual('Completed', results[0].status.value)
+            self.assertEqual('Completed', results[0].status.value_verbose())
 
         def test_wish_user_script_failure(self):
             """
@@ -126,7 +126,7 @@ if os.name != 'nt':
             self.assertEqual(self.instrument, results[0].instrument.name)
             self.assertEqual(self.rb_number, results[0].experiment.reference_number)
             self.assertEqual(self.run_number, results[0].run_number)
-            self.assertEqual('Error', results[0].status.value)
+            self.assertEqual('e', results[0].status.value)  # verbose value = "Error"
 
         def _setup_data_structures(self, reduce_script, vars_script):
             """
@@ -177,7 +177,7 @@ if os.name != 'nt':
             results = []
             for timeout in wait_times:
                 # Wait before attempting database access
-                print('Waiting for: {}'.format(timeout))
+                print(f"Waiting for: {timeout}")
                 time.sleep(timeout)
                 # Check database has expected values
                 instrument_record = db.get_instrument(self.instrument)
@@ -191,10 +191,12 @@ if os.name != 'nt':
                 except IndexError:
                     # If no results found yet then continue
                     continue
-                if actual.status.value == 'Completed' or actual.status.value == 'Error':
-                    print('Job reached {} status after {} seconds'.format(actual.status.value,
-                                                                          timeout))
+
+                # verbose values = "Completed" or "Error"
+                if actual.status.value == 'c' or actual.status.value == 'e':
+                    print(f"Job reached {actual.status.value} status after {timeout} seconds")
                     break
+
             return results
 
         @staticmethod

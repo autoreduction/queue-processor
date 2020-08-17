@@ -5,7 +5,7 @@
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 """
-handles colouring table rows
+Handles colouring table rows
 """
 from django.template import Library
 
@@ -16,7 +16,7 @@ register = Library()
 @register.simple_tag
 def colour_table_row(status):
     """
-    Switch statment for defining table colouring
+    Switch statement for defining table colouring
     """
     if status == 'Error':
         return 'danger'

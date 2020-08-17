@@ -46,7 +46,8 @@ def get_status(status_value, create=False):
     :return: (Status) The Status object from the database
     :raises: (ValueError): If status_value is not: Error, Queued, Processing, Completed or Skipped
     """
-    if status_value not in ["Error", "Queued", "Processing", "Completed", "Skipped"]:
+    # verbose values = ["Error", "Queued", "Processing", "Completed", "Stopped"]
+    if status_value not in ['e', 'q', 'p', 'c', 's']:
         raise ValueError("Invalid status value passed")
 
     database = start_database()

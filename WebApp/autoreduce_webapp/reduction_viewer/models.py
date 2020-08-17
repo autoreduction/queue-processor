@@ -39,11 +39,25 @@ class Status(models.Model):
     """
     Enum table for status types of messages
     """
-    value = models.CharField(max_length=25)
+    STATUS_CHOICES = (
+        ('q', 'Queued'),
+        ('p', 'Processing'),
+        ('s', 'Skipped'),
+        ('c', 'Completed'),
+        ('e', 'Error')
+    )
+
+    value = models.CharField(max_length=1, choices=STATUS_CHOICES)
 
     def __unicode__(self):
-        """ :return: Value of the status field"""
+        """ :return: (unicode str) of the status field"""
         return u'%s' % self.value
+
+    def value_verbose(self):
+        """
+        :return: (str) the status as its textual value
+        """
+        return dict(Status.STATUS_CHOICES)[self.value]
 
 
 class Software(models.Model):
