@@ -453,8 +453,8 @@ class TestPostProcessAdmin(unittest.TestCase):
     @patch(f"{DIR}.post_process_admin.PostProcessAdmin.copy_temp_directory")
     def test_additional_save_directories_check_string(self, mock_ctd):
         """
-        Test: correctly copies temp directory
-        When: called with valid path as string
+        Test: Correctly copies temp directory
+        When: Called with valid path as string
         """
         out_directories = "valid/path"
         reduce_result_dir = self.temporary_directory + self.ceph_directory
@@ -465,8 +465,8 @@ class TestPostProcessAdmin(unittest.TestCase):
     @patch(f"{DIR}.post_process_admin.PostProcessAdmin.copy_temp_directory")
     def test_additional_save_directories_check_list(self, mock_ctd):
         """
-        Test: correctly copies N temp directories
-        When: called with valid list of paths
+        Test: Correctly copies N temp directories
+        When: Called with valid list of paths
         """
         # mock_ctd.return_value =
         out_directories = ["valid/path/", "valid/path/"]
@@ -482,7 +482,7 @@ class TestPostProcessAdmin(unittest.TestCase):
     def test_additional_save_directories_check_invalid_list(self, mock_ctd, mock_logger):
         """
         Test: Logs invalid list input
-        When: list containing non strings is passed
+        When: List containing non strings is passed
         """
         out_directories = ["valid/path/", 404, "valid/path/"]
         reduce_result_dir = self.temporary_directory + self.ceph_directory
@@ -492,14 +492,14 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_ctd.assert_called_with(reduce_result_dir, out_directories[2])
         self.assertEqual(mock_ctd.call_count, 2)
         mock_logger.assert_called_once_with("Optional output directories of reduce.py must be "
-                                            "strings: %s" % out_directories[1])
+                                            f"strings: {out_directories[1]}")
 
     @patch(DIR + '.autoreduction_logging_setup.logger.info')
     @patch(f"{DIR}.post_process_admin.PostProcessAdmin.copy_temp_directory")
     def test_additional_save_directories_check_invalid_argument(self, mock_ctd, mock_logger):
         """
-        Test: logs invalid argument
-        When: called with invalid ar gument type
+        Test: Logs invalid argument
+        When: Called with invalid argument type
         """
         out_directories = {404}
         reduce_result_dir = self.temporary_directory + self.ceph_directory
@@ -507,7 +507,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         ppa.additional_save_directories_check(out_directories, reduce_result_dir)
         self.assertEqual(mock_ctd.call_count, 0)
         mock_logger.assert_called_once_with("Optional output directories of reduce.py must "
-                                            "be a string or list of stings: %s" % out_directories)
+                                            f"be a string or list of stings: {out_directories}")
 
     @patch('shutil.rmtree')
     @patch(DIR + '.autoreduction_logging_setup.logger.info')

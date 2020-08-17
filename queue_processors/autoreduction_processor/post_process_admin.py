@@ -353,12 +353,11 @@ class PostProcessAdmin:
                     if isinstance(out_dir, str):
                         self.copy_temp_directory(reduce_result, out_dir)
                     else:
-                        self.log_and_message(
-                            "Optional output directories of reduce.py must be strings: %s" %
-                            out_dir)
+                        self.log_and_message(f"Optional output directories of "
+                                             f"reduce.py must be strings: {out_dir}")
             else:
-                self.log_and_message("Optional output directories of reduce.py must be a string"
-                                     " or list of stings: %s" % out_directories)
+                self.log_and_message(f"Optional output directories of reduce.py must be a string "
+                                     f"or list of stings: {out_directories}")
 
     # pylint:disable=too-many-nested-blocks
     def reduce(self):
