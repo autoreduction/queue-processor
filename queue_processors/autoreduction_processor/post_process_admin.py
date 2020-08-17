@@ -338,6 +338,27 @@ class PostProcessAdmin:
 
         return final_result_directory, final_log_directory
 
+    def additional_save_directories_check(self, out_directories, reduce_result):
+        """
+        If the reduce script specified some additional save directories, copy to there first
+        :param out_directories: (str/list) output directories
+        :param reduce_result: (str) reduce result directory
+        """
+
+        if out_directories:
+            if isinstance(out_directories, str):
+                self.copy_temp_directory(reduce_result, out_directories)
+            elif isinstance(out_directories, list):
+                for out_dir in out_directories:
+                    if isinstance(out_dir, str):
+                        self.copy_temp_directory(reduce_result, out_dir)
+                    else:
+                        self.log_and_message(f"Optional output directories of "
+                                             f"reduce.py must be strings: {out_dir}")
+            else:
+                self.log_and_message(f"Optional output directories of reduce.py must be a string "
+                                     f"or list of stings: {out_directories}")
+
     # pylint:disable=too-many-nested-blocks
     def reduce(self):
         """Start the reduction job."""
@@ -448,21 +469,9 @@ class PostProcessAdmin:
 
             self.copy_temp_directory(reduce_result_dir, final_result_dir)
 
-            # If the reduce script specified some additional save directories, copy to there first
-            if out_directories:
-                if isinstance(out_directories, str):
-                    self.copy_temp_directory(reduce_result_dir, out_directories)
-                elif isinstance(out_directories, list):
-                    for out_dir in out_directories:
-                        if isinstance(out_dir, str):
-                            self.copy_temp_directory(reduce_result_dir, out_dir)
-                        else:
-                            self.log_and_message(
-                                "Optional output directories of reduce.py must be strings: %s" %
-                                out_dir)
-                else:
-                    self.log_and_message("Optional output directories of reduce.py must be a string"
-                                         " or list of stings: %s" % out_directories)
+            # Copy to additional directories if present in reduce script
+            self.additional_save_directories_check(out_directories=out_directories,
+                                                   reduce_result=reduce_result_dir)
 
             # no longer a need for the temp directory used for storing of reduction results
             self.delete_temp_directory(reduce_result_dir)

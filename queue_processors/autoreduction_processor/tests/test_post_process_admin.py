@@ -62,6 +62,10 @@ class TestPostProcessAdmin(unittest.TestCase):
                            os.path.join(self.test_root, "2")]
         self.message = Message()
         self.message.populate(self.data)
+        self.ceph_directory = MISC['ceph_directory'] % (self.data["instrument"],
+                                                        self.data["rb_number"],
+                                                        self.data["run_number"])
+        self.temporary_directory = MISC['temp_root_directory']
 
     def tearDown(self):
         self.teardown_test_dir_structure()
@@ -445,6 +449,65 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_log_and_msg.assert_called_once_with("Unable to copy to %s - %s" % ('copy-dir',
                                                                                 'test'))
         shutil.rmtree(result_dir)
+
+    @patch(f"{DIR}.post_process_admin.PostProcessAdmin.copy_temp_directory")
+    def test_additional_save_directories_check_string(self, mock_ctd):
+        """
+        Test: Correctly copies temp directory
+        When: Called with valid path as string
+        """
+        out_directories = "valid/path"
+        reduce_result_dir = self.temporary_directory + self.ceph_directory
+        ppa = PostProcessAdmin(self.message, None)
+        ppa.additional_save_directories_check(out_directories, reduce_result_dir)
+        mock_ctd.assert_called_with(reduce_result_dir, out_directories)
+
+    @patch(f"{DIR}.post_process_admin.PostProcessAdmin.copy_temp_directory")
+    def test_additional_save_directories_check_list(self, mock_ctd):
+        """
+        Test: Correctly copies N temp directories
+        When: Called with valid list of paths
+        """
+        # mock_ctd.return_value =
+        out_directories = ["valid/path/", "valid/path/"]
+        reduce_result_dir = self.temporary_directory + self.ceph_directory
+        ppa = PostProcessAdmin(self.message, None)
+        ppa.additional_save_directories_check(out_directories, reduce_result_dir)
+        for path in out_directories:
+            mock_ctd.assert_called_with(reduce_result_dir, path)
+        self.assertEqual(mock_ctd.call_count, 2)
+
+    @patch(DIR + '.autoreduction_logging_setup.logger.info')
+    @patch(f"{DIR}.post_process_admin.PostProcessAdmin.copy_temp_directory")
+    def test_additional_save_directories_check_invalid_list(self, mock_ctd, mock_logger):
+        """
+        Test: Logs invalid list input
+        When: List containing non strings is passed
+        """
+        out_directories = ["valid/path/", 404, "valid/path/"]
+        reduce_result_dir = self.temporary_directory + self.ceph_directory
+        ppa = PostProcessAdmin(self.message, None)
+        ppa.additional_save_directories_check(out_directories, reduce_result_dir)
+        mock_ctd.assert_called_with(reduce_result_dir, out_directories[0])
+        mock_ctd.assert_called_with(reduce_result_dir, out_directories[2])
+        self.assertEqual(mock_ctd.call_count, 2)
+        mock_logger.assert_called_once_with("Optional output directories of reduce.py must be "
+                                            f"strings: {out_directories[1]}")
+
+    @patch(DIR + '.autoreduction_logging_setup.logger.info')
+    @patch(f"{DIR}.post_process_admin.PostProcessAdmin.copy_temp_directory")
+    def test_additional_save_directories_check_invalid_argument(self, mock_ctd, mock_logger):
+        """
+        Test: Logs invalid argument
+        When: Called with invalid argument type
+        """
+        out_directories = {404}
+        reduce_result_dir = self.temporary_directory + self.ceph_directory
+        ppa = PostProcessAdmin(self.message, None)
+        ppa.additional_save_directories_check(out_directories, reduce_result_dir)
+        self.assertEqual(mock_ctd.call_count, 0)
+        mock_logger.assert_called_once_with("Optional output directories of reduce.py must "
+                                            f"be a string or list of stings: {out_directories}")
 
     @patch('shutil.rmtree')
     @patch(DIR + '.autoreduction_logging_setup.logger.info')
