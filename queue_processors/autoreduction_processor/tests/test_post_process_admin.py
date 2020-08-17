@@ -380,7 +380,7 @@ class TestPostProcessAdmin(unittest.TestCase):
                                                   reduce_result=self.reduce_result_dir,
                                                   final_result=final_result_dir)
 
-        assert open(script_out).read() == "data"
+        self.assertEqual(open(script_out).read(), "data")
 
         mock_ram.assert_called_with(self.reduce_result_dir)
         mock_ctd.assert_called()
@@ -395,7 +395,7 @@ class TestPostProcessAdmin(unittest.TestCase):
     def test_validate_reduction_as_module(self, mock_sid, mock_ram, mock_ctd, mock_dtd, _):
         """
         Test: reduce_result returned
-        When: called with correct arguments and no error produced by reduction_as_module()
+        When: Called with correct arguments and no error produced by reduction_as_module()
         """
         ppa = PostProcessAdmin(self.message, None)
 
