@@ -56,3 +56,6 @@ webtests/screenshots
 webtests/config.json
 
 data-archive/
+
+#Ignore django cache files
+*.djcache
