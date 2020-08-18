@@ -101,6 +101,17 @@ ROOT_URLCONF = 'autoreduce_webapp.urls'
 
 WSGI_APPLICATION = 'autoreduce_webapp.wsgi.application'
 
+#Caches
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'
+    },
+    'plot': {
+        'BACKEND': 'plotting.plot_cache.PlotCache',
+        'LOCATION': 'WebApp/autoreduce_webapp/static/cache'
+    }
+}
+
 # Database
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
 
