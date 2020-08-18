@@ -428,7 +428,6 @@ class PostProcessAdmin:
                 self.log_and_message(f"Optional output directories of reduce.py must be a string "
                                      f"or list of stings: {out_directories}")
 
-
     # pylint:disable=too-many-nested-blocks
     def reduce(self):
         """Start the reduction job."""
