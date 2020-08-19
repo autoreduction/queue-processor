@@ -111,12 +111,7 @@ class InstrumentVariablesUtils:
                                        reduce_vars_module.advanced_vars,
                                        True))
 
-        logger.error("**********************************************")
-        logger.error("After creating variables we have:")
-        logger.error("**********************************************")
         for var in variables:
-            logger.error("%s with id: %s, and name: %s and value: %s",
-                         var, var.id, var.name, var.value)
             var.tracks_script = True
 
         model = db.start_database().variable_model
@@ -250,65 +245,26 @@ class InstrumentVariablesUtils:
     def _create_variables(self, instrument, script, variable_dict, is_advanced):
         """ Create variables in the database. """
         variables = []
-        logging.warning("Creating variable")
         for key, value in list(variable_dict.items()):
             str_value = str(value).replace('[', '').replace(']', '')
             if len(str_value) > 300:
                 raise DataTooLong
             model = db.start_database().variable_model
-            logging.warning("name=%s", key)
-            logging.warning("value=%s", str_value)
-            logging.warning("type=%s", VariableUtils().get_type_string(value))
-            logging.warning("is_advanced=%s", is_advanced)
-            logging.warning("help_text=%s", self._get_help_text('standard_vars',
-                                                                key,
-                                                                instrument.name,
-                                                                script))
-
-            variable = model.Variable(name=key,
-                                      value=str_value,
-                                      type=VariableUtils().get_type_string(value),
-                                      is_advanced=is_advanced,
-                                      help_text=self._get_help_text('standard_vars',
-                                                                    key,
-                                                                    instrument.name,
-                                                                    script))
-
-            logger.error("before create fake var")
-            fake_var = model.Variable(name='elliot',
-                                      value='val',
-                                      type='str',
-                                      is_advanced=False,
-                                      help_text='help text')
-            logger.error("fake var before save: %s", fake_var)
-            db.save_record(fake_var)
-            logger.error("fake_var after save: %s", fake_var)
-
-            logger.error("created variable: %s", variable)
-
-            db.save_record(variable)
-
-            logger.error("Saved record: %s", variable)
-
-            retrieve_var = model.Variable.objects.filter(id=variable.id).first()
-            logger.error("Found var: %s with id: %s and name: % and value: %s",
-                         retrieve_var,
-                         retrieve_var.id,
-                         retrieve_var.name,
-                         retrieve_var.value)
-
-            instrument_variable = model.InstrumentVariable(start_run=0,
+            help_text = self._get_help_text('standard_vars', key, instrument.name, script)
+            var_type = VariableUtils().get_type_string(value)
+            # Please note: As instrument_variable inherits from Variable, the below creates BOTH an
+            # an InstrumentVariable and Variable record in the database when saved. As such,
+            # both sets of fields are required for initialisation.
+            instrument_variable = model.InstrumentVariable(name=key,
+                                                           value=str_value,
+                                                           type=var_type,
+                                                           is_advanced=is_advanced,
+                                                           help_text=help_text,
+                                                           start_run=0,
                                                            instrument_id=instrument.id,
-                                                           variable_ptr_id=variable.id,
                                                            tracks_script=1)
 
             db.save_record(instrument_variable)
-            retrieve_var = model.InstrumentVariable.objects.filter(id=instrument_variable.id).first()
-            logger.error("Found var: %s with inst: %s and variable: s% ",
-                         retrieve_var,
-                         retrieve_var.instrument,
-                         retrieve_var.variable)
-
             variables.append(instrument_variable)
         return variables
 
