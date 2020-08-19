@@ -513,7 +513,7 @@ class TestPostProcessAdmin(unittest.TestCase):
     @patch(DIR + '.post_process_admin.PostProcessAdmin._remove_directory')
     @patch(DIR + '.post_process_admin.PostProcessAdmin._copy_tree')
     @patch(DIR + '.autoreduction_logging_setup.logger.info')
-    def test_copy_temp_dir(self, mock_logger, mock_copy, mock_remove):
+    def test_copy_temp_dir(self, mock_logger, mock_copy, mock_remove, _):
         """
         Test: Assert directory is copied correctly
         When: Called with valid arguments
