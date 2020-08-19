@@ -35,7 +35,7 @@ def dict_to_string(validity_dict):
     :param validity_dict: (dict) containing the validity checks
     :return: (str) A string to print
     """
-    result_str = ""
+    result_str = "\n"
     for key, value in validity_dict.items():
-        result_str += f"{key} - {value}\n"
+        result_str += f"\t{key} - {value}\n"
     return result_str

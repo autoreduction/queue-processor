@@ -26,8 +26,6 @@ else:
     }
     # 7Zip not required on linux
 
-DB_ROOT_PASSWORD = ''
-
 # Note the apache-activemq version number in path joined below, must match that in
 # build/install/activemq.sh (and activemq.bat), which by default should be true 
 ACTIVEMQ_EXECUTABLE = os.path.join(INSTALL_DIRS['activemq'],

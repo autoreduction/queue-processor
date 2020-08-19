@@ -66,9 +66,9 @@ class TestAccess(unittest.TestCase):
         Test: The correct Status record is returned
         When: get_status is called on a database containing the expected Status value
         """
-        actual = access.get_status('Completed')
+        actual = access.get_status('c')
         self.assertIsNotNone(actual)
-        self.assertEqual('Completed', actual.value)
+        self.assertEqual('Completed', actual.value_verbose())
 
     def test_get_experiment(self):
         """

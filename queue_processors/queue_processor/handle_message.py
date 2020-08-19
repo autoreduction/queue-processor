@@ -19,6 +19,8 @@ import traceback
 from model.database import access as db_access
 import model.database.records as db_records
 from model.message.message import Message
+from model.message.validation.validators import validate_rb_number
+
 from queue_processors.queue_processor._utils_classes import _UtilsClasses
 from queue_processors.queue_processor.handling_exceptions import \
     MissingReductionRunRecord, InvalidStateException, MissingExperimentRecord
@@ -67,6 +69,14 @@ class HandleMessage:
         """
         self._logger.info("Data ready for processing run %s on %s",
                           message.run_number, message.instrument)
+        if not validate_rb_number(message.rb_number):
+            # rb_number is invalid so send message to skip queue and early return
+            message.message = f"Found non-integer RB number: {message.rb_number}"
+            self._logger.warning("%s. Skipping %s%s.", message.message,
+                                 message.instrument, message.run_number)
+            message.rb_number = 0
+
+
         run_no = str(message.run_number)
         instrument = self._get_and_activate_db_inst(message.instrument)
 
@@ -125,7 +135,12 @@ class HandleMessage:
         message.reduction_arguments = arguments
 
         # Make sure the RB number is valid
-        message.validate("/queue/DataReady")
+        try:
+            message.validate("/queue/DataReady")
+        except RuntimeError as validation_err:
+            self._logger.error("Validation error from handler: %s", str(validation_err))
+            self._client.send_message('/queue/ReductionSkipped', message)
+            return
 
         if instrument.is_paused:
             self._logger.info("Run %s has been skipped",
@@ -181,7 +196,7 @@ class HandleMessage:
                 rb_number=message.rb_number, run_number=message.run_number,
                 run_version=message.run_version)
 
-        if reduction_run.status.value not in ("Error", "Queued"):
+        if reduction_run.status.value not in ['e', 'q']:  # verbose values = ["Error", "Queued"]
             raise InvalidStateException(
                 "An invalid attempt to re-start a reduction run was captured."
                 f" Experiment: {message.rb_number},"
@@ -205,7 +220,7 @@ class HandleMessage:
                 rb_number=message.rb_number, run_number=message.run_number,
                 run_version=message.run_version)
 
-        if not reduction_run.status.value == "Processing":
+        if not reduction_run.status.value == 'p':  # verbose value = "Processing"
             raise InvalidStateException(
                 "An invalid attempt to complete a reduction run that wasn't"
                 " processing has been captured. "
