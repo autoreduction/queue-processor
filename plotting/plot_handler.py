@@ -73,14 +73,11 @@ class PlotHandler:
 
     def _get_plot_files_locally(self) -> List[str]:
         """
-        Searches the local graph folder for files matching the generated file name regex and returns
-        a list of matching paths
+        Searches the plot cache for matching plots
         :return: (list) - The list of matching file paths.
         """
-        file_name_regex = self._generate_file_name_regex()
-        return [
-            f'/static/graphs/{file}' for file in os.listdir(self.static_graph_dir) if re.match(file_name_regex, file)
-        ]
+        plot_cache = caches['plot']
+        return plot_cache.get(self.file_regex)
 
     def _cache_plots(self, plot_paths):
         """
