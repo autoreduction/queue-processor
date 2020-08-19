@@ -39,6 +39,7 @@ class PlotHandler:
         self.file_extensions = ["png", "jpg", "bmp", "gif", "tiff"]
         # Directory to place fetched data files / images
         self.static_graph_dir = os.path.join(get_project_root(), 'WebApp', 'autoreduce_webapp', 'static', 'graphs')
+        self.file_regex = self._generate_file_name_regex()
 
     @staticmethod
     def _get_only_data_file_name(data_filepath: str) -> str:
