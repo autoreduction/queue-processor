@@ -29,7 +29,7 @@ from reduction_variables.models import InstrumentVariable, RunVariable
 from reduction_viewer.models import ReductionRun, Notification
 from reduction_viewer.utils import InstrumentUtils, StatusUtils, ReductionRunUtils
 
-LOGGER = logging.getLogger('queue_processor')
+LOGGER = logging.getLogger('django')
 
 
 class DataTooLong(ValueError):
@@ -442,12 +442,7 @@ class InstrumentVariablesUtils(object):
                 self._create_variables(instrument, reduce_vars_module,
                                        reduce_vars_module.advanced_vars, True))
 
-        LOGGER.error("**********************************************")
-        LOGGER.error("After creating variables we have:")
-        LOGGER.error("**********************************************")
         for var in variables:
-            LOGGER.error("%s with id: %s, and name: %s and value: %s",
-                         var, var.id, var.name, var.value)
             var.tracks_script = True
 
         return variables
