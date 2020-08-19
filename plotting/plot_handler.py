@@ -79,6 +79,14 @@ class PlotHandler:
         return [f'/static/graphs/{file}' for file in os.listdir(self.static_graph_dir) if
                 re.match(file_name_regex, file)]
 
+    def _cache_plots(self, plot_paths):
+        """
+        Given a list of plots, add them to the plot cache, with the regex pattern as the key
+        :param plot_paths: The list of paths to be added
+        """
+        plot_cache = caches['plot']
+        plot_cache.add(self.file_regex, plot_paths)
+
     def _check_for_plot_files(self):
         """
         Searches the server directory for existing plot files using the directory specified.
