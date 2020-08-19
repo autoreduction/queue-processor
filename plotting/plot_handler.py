@@ -82,7 +82,7 @@ class PlotHandler:
     def _cache_plots(self, plot_paths):
         """
         Given a list of plots, add them to the plot cache, with the regex pattern as the key
-        :param plot_paths: The list of paths to be added
+        :param plot_paths: (list) The list of paths to be added
         """
         plot_cache = caches['plot']
         plot_cache.add(self.file_regex, plot_paths)
