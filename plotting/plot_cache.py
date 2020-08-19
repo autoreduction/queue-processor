@@ -48,8 +48,9 @@ class PlotCache(FileBasedCache):
         except EOFError:
             exp = 0
         if exp is not None and exp < time.time():
-            for path in pickle.loads(zlib.decompress(f.read())):
-                self._delete_plot(path)
+            if exp: # We only want to attempt to delete paths if the cache file isn't empty
+                for path in pickle.loads(zlib.decompress(f.read())):
+                    self._delete_plot(path)
             f.close()
             self._delete(f.name)
             return True
