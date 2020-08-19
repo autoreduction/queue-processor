@@ -87,6 +87,30 @@ class PlotHandler:
         plot_cache = caches['plot']
         plot_cache.add(self.file_regex, plot_paths)
 
+    def _get_plot_files_remotely(self, files):
+        """
+        Given a list of files, attempt to retrieve them from CEPH and add them to the plot cache
+        :param files: (list) The files to retrieve
+        :return: (list) The local paths
+        """
+        local_plot_paths = []
+        client = SFTPClient()
+        for file in files:
+            server_path = self.server_dir + file
+            local_path = os.path.join(self.static_graph_dir, file)
+            try:
+                client.retrieve(server_file_path=server_path,
+                                local_file_path=local_path,
+                                override=True)
+                LOGGER.info(f'File {server_path} found and saved to {local_path}')
+            except RuntimeError:
+                LOGGER.error(f'File does not exist: {server_path}')
+                continue
+            local_plot_paths.append(os.path.join(self.static_graph_dir, file))
+
+        self._cache_plots(local_plot_paths)
+        return local_plot_paths
+
     def _check_for_plot_files(self):
         """
         Searches the server directory for existing plot files using the directory specified.
