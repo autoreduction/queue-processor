@@ -12,7 +12,7 @@ import unittest
 import io
 
 from pathlib import PosixPath
-from mock import patch, MagicMock
+from mock import patch
 
 from queue_processors.autoreduction_processor.post_process_admin_utilities import \
     windows_to_linux_path, channels_redirected
@@ -40,10 +40,10 @@ class TestPostProcessAdminHelpers(unittest.TestCase):
         actual = windows_to_linux_path(windows_path, '/temp')
         self.assertEqual(actual, '/temp/data/some/more/path.nxs')
 
+    @patch(f"{DIR}.post_process_admin.PostProcessAdmin.create_log_path")
     @patch('os.path.isfile')
     @patch(f"{DIR}.post_process_admin.PostProcessAdmin.specify_instrument_directories")
-    @patch(f"{DIR}.post_process_admin.PostProcessAdmin.create_log_path")
-    def test_channels_redirect(self, mock_clp, mock_iod,  mock_is_file):
+    def test_channels_redirect(self, mock_iod, mock_is_file, _):
         """
         Test: A context manager is returned
         When: Called
@@ -51,7 +51,6 @@ class TestPostProcessAdminHelpers(unittest.TestCase):
 
         mock_is_file.return_value = True
 
-        file_name = "test.log"
         log_directory = f"{mock_iod}/reduction_log/"
         log_and_error_name = "RB_1234_Run_4321_"
 
@@ -63,4 +62,3 @@ class TestPostProcessAdminHelpers(unittest.TestCase):
                                      error_file=mantid_out,
                                      out_stream=out_stream)
         self.assertIsInstance(actual, contextlib._GeneratorContextManager)
-

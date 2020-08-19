@@ -26,7 +26,7 @@ def channels_redirected(out_file, error_file, out_stream):
     out_file and err_file respectively. The fd is at the C level and so picks up data sent via
     Mantid. Both output streams are additionally also sent to out_stream.
     :param out_file: (str) output path
-    :param error_file: (str) error file path 
+    :param error_file: (str) error file path
     :param out_stream: (class object) io.StringIO
     """
 
