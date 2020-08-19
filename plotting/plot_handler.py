@@ -104,9 +104,11 @@ class PlotHandler:
             except RuntimeError:
                 LOGGER.error(f'File does not exist: {server_path}')
                 continue
-            local_plot_paths.append(os.path.join(self.static_graph_dir, file))
+            local_plot_paths.append(local_path)
 
-        self._cache_plots(local_plot_paths)
+        if local_plot_paths:
+            self._cache_plots(local_plot_paths)
+
         return local_plot_paths
 
     def _check_for_plot_files(self):
