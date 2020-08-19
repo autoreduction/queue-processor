@@ -15,6 +15,9 @@ import logging
 import os
 import re
 from typing import List
+
+from django.core.cache import caches
+
 from utils.clients.sftp_client import SFTPClient
 from utils.project.structure import get_project_root
 
@@ -35,9 +38,7 @@ class PlotHandler:
         self.server_dir = server_dir
         self.file_extensions = ["png", "jpg", "bmp", "gif", "tiff"]
         # Directory to place fetched data files / images
-        self.static_graph_dir = os.path.join(get_project_root(), 'WebApp',
-                                             'autoreduce_webapp', 'static',
-                                             'graphs')
+        self.static_graph_dir = os.path.join(get_project_root(), 'WebApp', 'autoreduce_webapp', 'static', 'graphs')
 
     @staticmethod
     def _get_only_data_file_name(data_filepath: str) -> str:
@@ -76,8 +77,9 @@ class PlotHandler:
         :return: (list) - The list of matching file paths.
         """
         file_name_regex = self._generate_file_name_regex()
-        return [f'/static/graphs/{file}' for file in os.listdir(self.static_graph_dir) if
-                re.match(file_name_regex, file)]
+        return [
+            f'/static/graphs/{file}' for file in os.listdir(self.static_graph_dir) if re.match(file_name_regex, file)
+        ]
 
     def _cache_plots(self, plot_paths):
         """
@@ -100,8 +102,7 @@ class PlotHandler:
         file_regex = self._generate_file_name_regex()
         if file_regex:
             # Add files that match regex to the list of files found
-            _found_files.extend(client.get_filenames(server_dir_path=self.server_dir,
-                                                     regex=file_regex))
+            _found_files.extend(client.get_filenames(server_dir_path=self.server_dir, regex=file_regex))
         else:
             return None
         return _found_files
@@ -127,9 +128,7 @@ class PlotHandler:
                 _local_path = os.path.join(self.static_graph_dir, plot_file)
 
                 try:
-                    client.retrieve(server_file_path=_server_path,
-                                    local_file_path=_local_path,
-                                    override=True)
+                    client.retrieve(server_file_path=_server_path, local_file_path=_local_path, override=True)
                     LOGGER.info('File \'%s\' found and saved to %s', _server_path, _local_path)
                 except RuntimeError:
                     LOGGER.error("File \'%s\' does not exist", _server_path)
