@@ -27,7 +27,7 @@ from queue_processors.autoreduction_processor.settings import MISC
 from queue_processors.autoreduction_processor.post_process_admin import (PostProcessAdmin, main)
 
 
-# pylint:disable=too-many-public-methods, too-many-instance-attributes
+# pylint:disable=too-many-public-methods, protected-access,no-self-use,too-many-instance-attributes
 class TestPostProcessAdmin(unittest.TestCase):
     """Unit tests for Post Process Admin"""
     DIR = "queue_processors.autoreduction_processor"
@@ -746,6 +746,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_connect.assert_called_once()
         mock_reduce.assert_called_once()
 
+    # pylint: disable = too-many-arguments
     @patch('model.message.message.Message.serialize', return_value='test')
     @patch('sys.exit')
     @patch(DIR + '.autoreduction_logging_setup.logger.info')
@@ -774,6 +775,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_error,
                                           self.message)
 
+    # pylint: disable = too-many-arguments
     @patch('sys.exit')
     @patch(DIR + '.autoreduction_logging_setup.logger.info')
     @patch(DIR + '.post_process_admin.PostProcessAdmin.__init__', return_value=None)
