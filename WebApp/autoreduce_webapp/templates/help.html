@@ -1,6 +1,11 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block stylesheets %}
+<link rel="stylesheet" href="{% static "css/help.css" %}">
+
+{% endblock %}
+
 {% block body %}
     <title>Help Pages</title>
     <div class="row">
@@ -9,13 +14,17 @@
             <p>Get in touch with the <a href="mailto:isisreduce@stfc.ac.uk">Support Team</a></p>
         </div>
     </div>
-    <div class="row">
-        <div class="col-md-8">
+    <div id="search-row" class="row">
+        <div id="search-col" class="col-md-8">
             <div class="form-group">
-                <label for="help_search" class="screenreader-only">Search</label>
-                <input type="search" placeholder="Search" name="help_search" id="help_search" class="form-control" autocomplete="off" data-toggle="popover" data-trigger="focus" data-content="Try entering a keyword to filter help topics." data-placement="top">
+                <label for="help-search" class="screenreader-only">Search</label>
+                <input type="search" placeholder="Search" name="help-search" id="help-search"
+                       class="form-control" autocomplete="off" data-toggle="popover"
+                       data-trigger="focus" data-content="Try entering a keyword to filter help topics."
+                       data-placement="top">
             </div>
         </div>
+
         <div class="col-md-4 text-center">
             <div class="form-group">
                 <span>Category: </span>
@@ -37,66 +46,81 @@
         </div>
     </div>
 
-    <section class="help-topic panel panel-default" data-category="usage" data-topics="link reduced data">
-        <div class="panel-heading">
-            <h4>Accessing my reduced data</h4>
+    <div id="topics-sidebar-nav" class="navbar navbar-default" role="navigation">
+        <div id="topics-navbar-brand" class="navbar-brand">Topics</div>
+        <button type="button" id="hamburger-toggle" class="navbar-toggle">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+    </div>
+
+    <div>
+        <div class="col-xs-6 col-sm-3" id="sidebar" role="navigation">
+            <ul class="nav" id="sidenav"></ul>
         </div>
-        <div class="panel-body">
-            <p>
-                In order to copy reduced data from CEPH to your local machine, you will need to download an SFTP client.
-                We recommend <a href="https://winscp.net/eng/download.php">WinSCP</a> if you are using a windows operating system.
-                The steps below are based on WinSCP as the <code>SFTP Client</code> and assume you have downloaded and installed it.
-                Note that you can only access your data if you are on site, or using the VPN.
-            </p>
-            <h2>IDAaaS</h2>
-            <ol>
-                <li>Visit the IDAaaS page <a href="https://isis.analysis.stfc.ac.uk">https://isis.analysis.stfc.ac.uk</a></li>
-                <li>Create a new IDAaaS instance for your instrument / technique.</li>
-                <li>Follow the instructions on the <a href="https://isis.analysis.stfc.ac.uk/#/help">IDAaaS help page</a>
-                    under the <em>Download/Upload Files</em> section that will walk you through the SFTP process </li>
-            </ol>
-            <h2>ISIS Compute</h2>
-            If you do not currently have your instrument supported by IDAaaS, you should use the ISIS Compute service.
-            <ol>
-                <li>Open your SFTP client</li>
-                <li>Host name: <strong>isiscompute.nd.rl.ac.uk</strong></li>
-                <li>Port: <strong>22</strong></li>
-                <li>Enter your federal ID and password</li>
-                <ul>
-                    <li>To avoid repeating these steps in the future, click save and fill in the save dialog box that opens</li>
-                </ul>
-                <li>Click Login</li>
-                <ul>
-                    <li>You may get a warning message about a potential security breach.
-                        This is nothing to worry about and is common, especially if it's your first time accessing the server in a while.
-                        Simply click <strong>Update</strong> to continue.</li>
-                </ul>
-                <li>Once the client has connected to the server, you will see your files (default on the left) and the server files (default on the right)</li>
-                <li>From here you can now copy and paste between your local files and those on CEPH.</li>
-                <li>You can find the CEPH data at /instrument. See <a href="#reduction_data_location">Where does my reduced data go?</a> for more details.</li>
-            </ol>
-            <p>
-                If you follow the instructions above and still can't access your reduced data, it
-                may be that you don't have permission to access the experiment's reduced data
-                directory. Email <a href="mailto:isisreduce@stfc.ac.uk">isisreduce@stfc.ac.uk</a>
-                and state the experiment RB number you are trying to access.
-            </p>
-        </div>
-    </section>
-    <section class="help-topic panel panel-default" data-category="usage" data-topics="reduction_scripts">
-        <div class="panel-heading">
-            <h4>Reduction Variables Script</h4>
-        </div>
-        <div class="panel-body">
-            <h2>reduce_vars.py</h2>
-            <p>
-                It is possible to define some additional variables for scripts that can be used
-                during reduction. They can be altered via the web interface. These should be defined in the
-                <code>//isis/NDX.../user/script/autoreduction/reduce_vars.py</code> file. This file has the following format:
-            </p>
-            <pre><code>standard_vars = {
-'perform corrections': False,
-'reduction option': "Default value"
+
+        <div id="help-topics" class="col-xs-12 col-sm-9">
+            <section class="help-topic panel panel-default" data-category="usage" data-topics="link reduced data">
+                <div class="panel-heading">
+                    <h4>Accessing my reduced data</h4>
+                </div>
+                <div class="panel-body">
+                    <p>
+                        In order to copy reduced data from CEPH to your local machine, you will need to download an SFTP client.
+                        We recommend <a href="https://winscp.net/eng/download.php">WinSCP</a> if you are using a windows operating system.
+                        The steps below are based on WinSCP as the <code>SFTP Client</code> and assume you have downloaded and installed it.
+                        Note that you can only access your data if you are on site, or using the VPN.
+                    </p>
+                    <h2>IDAaaS</h2>
+                    <ol>
+                        <li>Visit the IDAaaS page <a href="https://isis.analysis.stfc.ac.uk">https://isis.analysis.stfc.ac.uk</a></li>
+                        <li>Create a new IDAaaS instance for your instrument / technique.</li>
+                        <li>Follow the instructions on the <a href="https://isis.analysis.stfc.ac.uk/#/help">IDAaaS help page</a>
+                            under the <em>Download/Upload Files</em> section that will walk you through the SFTP process </li>
+                    </ol>
+                    <h2>ISIS Compute</h2>
+                    If you do not currently have your instrument supported by IDAaaS, you should use the ISIS Compute service.
+                    <ol>
+                        <li>Open your SFTP client</li>
+                        <li>Host name: <strong>isiscompute.nd.rl.ac.uk</strong></li>
+                        <li>Port: <strong>22</strong></li>
+                        <li>Enter your federal ID and password</li>
+                        <ul>
+                            <li>To avoid repeating these steps in the future, click save and fill in the save dialog box that opens</li>
+                        </ul>
+                        <li>Click Login</li>
+                        <ul>
+                            <li>You may get a warning message about a potential security breach.
+                                This is nothing to worry about and is common, especially if it's your first time accessing the server in a while.
+                                Simply click <strong>Update</strong> to continue.</li>
+                        </ul>
+                        <li>Once the client has connected to the server, you will see your files (default on the left) and the server files (default on the right)</li>
+                        <li>From here you can now copy and paste between your local files and those on CEPH.</li>
+                        <li>You can find the CEPH data at /instrument. See <a href="#reduction_data_location">Where does my reduced data go?</a> for more details.</li>
+                    </ol>
+                    <p>
+                        If you follow the instructions above and still can't access your reduced data, it
+                        may be that you don't have permission to access the experiment's reduced data
+                        directory. Email <a href="mailto:isisreduce@stfc.ac.uk">isisreduce@stfc.ac.uk</a>
+                        and state the experiment RB number you are trying to access.
+                    </p>
+                </div>
+            </section>
+            <section class="help-topic panel panel-default" data-category="usage" data-topics="reduction_scripts">
+                <div class="panel-heading">
+                    <h4>Reduction Variables Script</h4>
+                </div>
+                <div class="panel-body">
+                    <h2>reduce_vars.py</h2>
+                    <p>
+                        It is possible to define some additional variables for scripts that can be used
+                        during reduction. They can be altered via the web interface. These should be defined in the
+                        <code>//isis/NDX.../user/script/autoreduction/reduce_vars.py</code> file. This file has the following format:
+                    </p>
+                    <pre><code>standard_vars = {
+    'perform corrections': False,
+    'reduction option': "Default value"
 }
 
 advanced_vars = {
@@ -104,27 +128,27 @@ advanced_vars = {
 }
 
 variable_help = {
-  'standard_vars': {'do_absorb_corrections' : "Do you want corrections on?",
-                    'reduction option' : "message to explain option - this is displayed in the webapp"},
-  'advanced_vars': {'crop range' : "advanced settings are handled in a separate section"}
+    'standard_vars': {'do_absorb_corrections' : "Do you want corrections on?",
+                      'reduction option' : "message to explain option - this is displayed in the webapp"},
+    'advanced_vars': {'crop range' : "advanced settings are handled in a separate section"}
 }</code></pre>
-        </div>
-    </section>
-    <section class="help-topic panel panel-default" data-category="usage" data-topics="reduction_scripts">
-        <div class="panel-heading">
-            <h4>Reduction Script</h4>
-            </div>
-        <div class="panel-body">
+                </div>
+            </section>
+            <section class="help-topic panel panel-default" data-category="usage" data-topics="reduction_scripts">
+                <div class="panel-heading">
+                    <h4>Reduction Script</h4>
+                    </div>
+                <div class="panel-body">
 
-            <h2>reduce.py</h2>
-            <p>
-                In order to reduce your data you must have a reduction script written in python.
-                This script should be called <code>reduce.py</code> and should be placed in the <code>user/scripts/autoreduction/</code>
-                directory in the ISIS data archive.
-                A full example script can be seen below:
-            </p>
+                    <h2>reduce.py</h2>
+                    <p>
+                        In order to reduce your data you must have a reduction script written in python.
+                        This script should be called <code>reduce.py</code> and should be placed in the <code>user/scripts/autoreduction/</code>
+                        directory in the ISIS data archive.
+                        A full example script can be seen below:
+                    </p>
 
-            <pre><code>import os
+                    <pre><code>import os
 import sys
 from mantid.simpleapi import (Load, Rebin, SaveNexus)
 sys.path.append("/isis/NDXTEST/user/scripts/autoreduction")
@@ -147,13 +171,13 @@ def main(input_file, output_dir):
    workspace = Rebin(workspace, params['rebin'])
    SaveNexus(workspace, output_dir)</code></pre>
 
-            <h3>Imports</h3>
-            <p>
-                All your imports should be placed at the top of the file. These can include, python
-                packages, mantid packages and the <code>reduce_vars</code> we defined in the above section.
-            </p>
+                    <h3>Imports</h3>
+                    <p>
+                        All your imports should be placed at the top of the file. These can include, python
+                        packages, mantid packages and the <code>reduce_vars</code> we defined in the above section.
+                    </p>
 
-            <pre><code># import standard python packages
+                    <pre><code># import standard python packages
 import os
 import sys
 
@@ -163,197 +187,198 @@ from mantid.simpleapi import (Rebin, ReductionAlgorithm, SaveNexusProcessed)
 # import reduce_vars
 import reduce_vars as params</code></pre>
 
-            <h3>Validate</h3>
-            <p>
-                The first function you define should validate that the files and directories you
-                require exist. This should include all files and directories. If any can not be
-                found, an exception should be raised. Below is an example for reference:
-            </p>
+                    <h3>Validate</h3>
+                    <p>
+                        The first function you define should validate that the files and directories you
+                        require exist. This should include all files and directories. If any can not be
+                        found, an exception should be raised. Below is an example for reference:
+                    </p>
 
-            <pre><code>def validate(input_file, output_dir):
-   required_files = [input_file, "path/to/calibration/file", ... ]
-   required_dirs = [output_dir]
-   for file_path in required_files:
-      if not os.path.isfile(file_path):
-         raise RuntimeError("Could not locate file: {}".format(file_path)
-   for directory in required_dirs:
-      if not os.path.isdir(directory):
-         raise RuntimeError("Could not locate directory: {}".format(directory)</code></pre>
+                    <pre><code>def validate(input_file, output_dir):
+    required_files = [input_file, "path/to/calibration/file", ... ]
+    required_dirs = [output_dir]
+    for file_path in required_files:
+       if not os.path.isfile(file_path):
+          raise RuntimeError("Could not locate file: {}".format(file_path)
+    for directory in required_dirs:
+       if not os.path.isdir(directory):
+          raise RuntimeError("Could not locate directory: {}".format(directory)</code></pre>
 
-            <h3>Main</h3>
-            <p>
-                This function should call the validate function to check inputs and then perform
-                reduction steps. The function must take an <code>input_file</code> and <code>output_dir</code>
-                as parameters. Both arguments should be validated in the validate function.
-            </p>
-            <pre><code>def main(input_file, output_dir):
-   # validate
-   validate(input_file, output_dir)
-   # Perform reduction
-   reduced_workspace = ReductionAlgorithm(input_file, ...)
-   # Save output
-   SaveNexusProcessed(reduced_worksapce, output_dir)</code></pre>
+                    <h3>Main</h3>
+                    <p>
+                        This function should call the validate function to check inputs and then perform
+                        reduction steps. The function must take an <code>input_file</code> and <code>output_dir</code>
+                        as parameters. Both arguments should be validated in the validate function.
+                    </p>
+                    <pre><code>def main(input_file, output_dir):
+    # validate
+    validate(input_file, output_dir)
+    # Perform reduction
+    reduced_workspace = ReductionAlgorithm(input_file, ...)
+    # Save output
+    SaveNexusProcessed(reduced_worksapce, output_dir)</code></pre>
 
-            <p>If you have any difficulty please get in touch and we'll be happy to help </p>
-            {% if support_email %}
-                <p>If you feel a value is incorrectly being marked as invalid please <a href="mailto:{{support_email}}">Contact Us</a>.</p>
-            {% endif %}
-        </div>
-    </section>
-    <section class="help-topic panel panel-default" data-category="usage" data-topics="Autoreduction GitHub Repository">
-        <div class="panel-heading">
-            <h4>Autoreduction GitHub Repository</h4>
-        </div>
-        <div class="panel-body">
-            You can find the Autoreduction Github repository <a href="https://github.com/ISISScientificComputing/autoreduce">Here</a>
-        </div>
-    </section>
+                    <p>If you have any difficulty please get in touch and we'll be happy to help </p>
+                    {% if support_email %}
+                        <p>If you feel a value is incorrectly being marked as invalid please <a href="mailto:{{support_email}}">Contact Us</a>.</p>
+                    {% endif %}
+                </div>
+            </section>
+            <section class="help-topic panel panel-default" data-category="usage" data-topics="Autoreduction GitHub Repository">
+                <div class="panel-heading">
+                    <h4>Autoreduction GitHub Repository</h4>
+                </div>
+                <div class="panel-body">
+                    You can find the Autoreduction Github repository <a href="https://github.com/ISISScientificComputing/autoreduce">Here</a>
+                </div>
+            </section>
 
-{#    <section class="help-topic panel panel-default" data-topics="instrument variables change new">#}
+            <section class="help-topic panel panel-default" data-category="usage" data-topics="instrument variables change new">
 
-    <section class="help-topic panel panel-default" data-category="usage" data-topics="instrument variables change new">
+                <div class="panel-heading">
+                    <h4>How do I add new instrument variables?</h4>
+                </div>
+                <div class="panel-body">
+                    <p>
+                        To add new instrument variables first you must be part of the instrument scientist
+                        team within ICAT. Once you are part of this team you should see an "Edit Reduction
+                        Variables" link on the right of the instrument name on the main run list page or
+                        "Add new run variables"
+                        Clicking either of these links will take you to a form in which you can set the
+                        values of variables exposed by that instrument's reduce script.
+                    </p>
+                </div>
+            </section>
 
-        <div class="panel-heading">
-            <h4>How do I add new instrument variables?</h4>
-        </div>
-        <div class="panel-body">
-            <p>
-                To add new instrument variables first you must be part of the instrument scientist
-                team within ICAT. Once you are part of this team you should see an "Edit Reduction
-                Variables" link on the right of the instrument name on the main run list page or
-                "Add new run variables"
-                Clicking either of these links will take you to a form in which you can set the
-                values of variables exposed by that instrument's reduce script.
-            </p>
-        </div>
-    </section>
+            <section class="help-topic panel panel-default" data-category="question" data-topics="invalid variables wrong error value">
+                <div class="panel-heading">
+                    <h4>When changing variables why is value X invalid for variable Y?</h4>
+                </div>
+                <div class="panel-body">
+                    <p>
+                        Any value entered for a variable must match the type of the default value already in
+                        the reduction script. If a value doesn't match, you should see a warning message
+                        explaining the reason why you will be prevented from submitting new variables until
+                        resolved.
+                    </p>
+                    {% if support_email %}
+                        <p>If you feel a value is incorrectly being marked as invalid please
+                            <a href="mailto:{{support_email}}">Contact Us</a>.</p>
+                    {% endif %}
+                </div>
+            </section>
 
-    <section class="help-topic panel panel-default" data-category="question" data-topics="invalid variables wrong error value">
-        <div class="panel-heading">
-            <h4>When changing variables why is value X invalid for variable Y?</h4>
-        </div>
-        <div class="panel-body">
-            <p>
-                Any value entered for a variable must match the type of the default value already in
-                the reduction script. If a value doesn't match, you should see a warning message
-                explaining the reason why you will be prevented from submitting new variables until
-                resolved.
-            </p>
-            {% if support_email %}
-                <p>If you feel a value is incorrectly being marked as invalid please
-                    <a href="mailto:{{support_email}}">Contact Us</a>.</p>
-            {% endif %}
-        </div>
-    </section>
+            <section class="help-topic panel panel-default" data-category="question" data-topics="reduction data file location directory output reduced">
+                <div class="panel-heading">
+                    <h4>I've modified my reduction scripts, why aren't my new runs using it?</h4>
+                </div>
+                <div class="panel-body">
+                    <p>
+                        To make sure new reductions coming straight from the instrument use new <code>reduce.py</code>
+                        scripts automatically, you can navigate to the instrument summary page for a
+                        given instrument. From here, select the "See instrument variables" link located on
+                        the right of the status table to view ongoing and upcoming instrument
+                        configurations.
+                        From here, you can select "edit variables" on the left side of the upcoming
+                        variables table. When presented with the variables, ensure that the
+                        "Track script changes" checkbox is checked. This is located on the right side of
+                        the page. You should then select the "Submit Changes" button at the bottom of the
+                        page to save this change.
+                    </p>
+                    <p>
+                        When re-running a job, if you want the re-run to use the current <code>reduce.py</code> script
+                        click the "Reset to values in current script" link under "Additional Actions" located
+                        on the right side of the page.
+                    </p>
+                    <p>
+                        To update instrument variables to the new ones entered into the <code>reduce_vars.py</code>
+                        script, navigate to the "Instrument Summary" page and select the
+                        "Configure New Jobs" button. This will take you to the instrument variables page.
+                        From here, click "Reset to values in current script", located on the right side of the page.
+                        This must be done any time <code>reduce_vars.py</code> is modified.
+                    </p>
+                </div>
+            </section>
 
-    <section class="help-topic panel panel-default" data-category="question" data-topics="reduction data file location directory output reduced">
-        <div class="panel-heading">
-            <h4>I've modified my reduction scripts, why aren't my new runs using it?</h4>
-        </div>
-        <div class="panel-body">
-            <p>
-                To make sure new reductions coming straight from the instrument use new <code>reduce.py</code>
-                scripts automatically, you can navigate to the instrument summary page for a
-                given instrument. From here, select the "See instrument variables" link located on
-                the right of the status table to view ongoing and upcoming instrument
-                configurations.
-                From here, you can select "edit variables" on the left side of the upcoming
-                variables table. When presented with the variables, ensure that the
-                "Track script changes" checkbox is checked. This is located on the right side of
-                the page. You should then select the "Submit Changes" button at the bottom of the
-                page to save this change.
-            </p>
-            <p>
-                When re-running a job, if you want the re-run to use the current <code>reduce.py</code> script
-                click the "Reset to values in current script" link under "Additional Actions" located
-                on the right side of the page.
-            </p>
-            <p>
-                To update instrument variables to the new ones entered into the <code>reduce_vars.py</code>
-                script, navigate to the "Instrument Summary" page and select the
-                "Configure New Jobs" button. This will take you to the instrument variables page.
-                From here, click "Reset to values in current script", located on the right side of the page.
-                This must be done any time <code>reduce_vars.py</code> is modified.
-            </p>
-        </div>
-    </section>
+            <section class="help-topic panel panel-default" data-category="question" data-topics="script compatible work">
+                <div class="panel-heading">
+                    <h4>How can I make a reduction script compatible with Autoreduction?</h4>
+                </div>
+                <div class="panel-body">
+                    <p>
+                        For a reduction script to be compatible with the Autoreduction web application,
+                        it must be named <code>reduce.py</code> Please make sure to expose what reduction variables
+                        can be modified.
+                        These variables must be made available in a file named
+                        <code>reduce_vars.py</code>. For an example of this please
+                        <a href="https://github.com/ISISScientificComputing/autoreduce/wiki/Getting-Started">See Here</a> for documentation.
+                        <a href="https://github.com/ISISScientificComputing/autoreduce/wiki/Example-reduction-script">See Here</a>
+                        for the full script.
+                        Autoreduction expects the reduction script to have a <code>main()</code> method
+                        that takes in two arguments, <strong>data</strong> and <strong>output</strong>.
+                        These are passed in a kwargs but it may be desirable for these to also be accepted from the command line.
+                        For an example of how to do this please
+                        <a href="https://github.com/ISISScientificComputing/autoreduce/wiki/Getting-Started#main">See Here</a>.
+                        The reduction script should perform all operations on the provided data file and
+                        save the output to the output directory provided to the script. The output will
+                        be copied to the cache upon completion. If additional save locations are
+                        required these can be returned as a list of system paths from the main method.
+                    </p>
+                    {% if support_email %}
+                        <p>If you feel your script will need to save to additional locations please
+                            <a href="mailto:{{support_email}}">Contact Us</a> to ensure the locations
+                            are accessible from the Autoreduction machine.</p>
+                    {% endif %}
+                </div>
+            </section>
 
-    <section class="help-topic panel panel-default" data-category="question" data-topics="script compatible work">
-        <div class="panel-heading">
-            <h4>How can I make a reduction script compatible with Autoreduction?</h4>
-        </div>
-        <div class="panel-body">
-            <p>
-                For a reduction script to be compatible with the Autoreduction web application,
-                it must be named <code>reduce.py</code> Please make sure to expose what reduction variables
-                can be modified.
-                These variables must be made available in a file named
-                <code>reduce_vars.py</code>. For an example of this please
-                <a href="https://github.com/ISISScientificComputing/autoreduce/wiki/Getting-Started">See Here</a> for documentation.
-                <a href="https://github.com/ISISScientificComputing/autoreduce/wiki/Example-reduction-script">See Here</a>
-                for the full script.
-                Autoreduction expects the reduction script to have a <code>main()</code> method
-                that takes in two arguments, <strong>data</strong> and <strong>output</strong>.
-                These are passed in a kwargs but it may be desirable for these to also be accepted from the command line.
-                For an example of how to do this please
-                <a href="https://github.com/ISISScientificComputing/autoreduce/wiki/Getting-Started#main">See Here</a>.
-                The reduction script should perform all operations on the provided data file and
-                save the output to the output directory provided to the script. The output will
-                be copied to the cache upon completion. If additional save locations are
-                required these can be returned as a list of system paths from the main method.
-            </p>
-            {% if support_email %}
-                <p>If you feel your script will need to save to additional locations please
-                    <a href="mailto:{{support_email}}">Contact Us</a> to ensure the locations
-                    are accessible from the Autoreduction machine.</p>
-            {% endif %}
-        </div>
-    </section>
+            <section class="help-topic panel panel-default" data-category="question" data-topics="reduction script file location directory">
+                <div class="panel-heading">
+                    <h4>Where should I put reduction scripts?</h4>
+                </div>
+                <div class="panel-body">
+                    <p>
+                        When you have made sure your reduction script is in the correct format and the
+                        variables are exposed, it must be placed within the Autoreduction directory
+                        within the user script directory of the appropriate instrument.
+                    </p>
+                    <p>
+                        For example, the reduction script for MERLIN would be located at:
+                        <code>\\isis\inst$\NDXMERLIN\user\scripts\autoreduction\reduce.py</code> <br/>
+                        and the variables at:
+                        <code>\\isis\inst$\NDXMERLIN\user\scripts\autoreduction\reduce_vars.py</code>
+                    </p>
+                </div>
+            </section>
 
-    <section class="help-topic panel panel-default" data-category="question" data-topics="reduction script file location directory">
-        <div class="panel-heading">
-            <h4>Where should I put reduction scripts?</h4>
-        </div>
-        <div class="panel-body">
-            <p>
-                When you have made sure your reduction script is in the correct format and the
-                variables are exposed, it must be placed within the Autoreduction directory
-                within the user script directory of the appropriate instrument.
-            </p>
-            <p>
-                For example, the reduction script for MERLIN would be located at:
-                <code>\\isis\inst$\NDXMERLIN\user\scripts\autoreduction\reduce.py</code> <br/>
-                and the variables at:
-                <code>\\isis\inst$\NDXMERLIN\user\scripts\autoreduction\reduce_vars.py</code>
-            </p>
-        </div>
-    </section>
+            <section class="help-topic panel panel-default" data-category="question" data-topics="reduction data file location directory output reduced">
+                <div class="panel-heading" id="reduction_data_location">
+                    <h4>Where does my reduced data go?</h4>
+                </div>
+                <div class="panel-body">
+                    <p>
+                        When a reduction job has completed, the reduced data is moved to the CEPH storage
+                        cluster. The full file path to the data is detailed in the run summary pages for
+                        completed runs.
+                    </p>
+                    <p>
+                        An example file path in CEPH would be:
+                        <code>/instrument/GEM/RBNumber/[RB NUMBER]/autoreduced/[RUN NUMBER]</code>.
+                    </p>
+                </div>
+            </section>
 
-    <section class="help-topic panel panel-default" data-category="question" data-topics="reduction data file location directory output reduced">
-        <div class="panel-heading" id="reduction_data_location">
-            <h4>Where does my reduced data go?</h4>
-        </div>
-        <div class="panel-body">
-            <p>
-                When a reduction job has completed, the reduced data is moved to the CEPH storage
-                cluster. The full file path to the data is detailed in the run summary pages for
-                completed runs.
-            </p>
-            <p>
-                An example file path in CEPH would be:
-                <code>/instrument/GEM/RBNumber/[RB NUMBER]/autoreduced/[RUN NUMBER]</code>.
-            </p>
-        </div>
-    </section>
-
-    <div class="no-results collapse row well">
-        <div class="col-md-12 text-center">
-            Sorry, no help topics matched your query.<br/>
-            {% if support_email %}
-            If you still require help, please <a href="mailto{{ support_email }}">Contact Us</a>.
-            {% endif %}
+            <div class="no-results collapse row well">
+                <div class="col-md-12 text-center">
+                    Sorry, no help topics matched your query.<br/>
+                    {% if support_email %}
+                    If you still require help, please <a href="mailto{{ support_email }}">Contact Us</a>.
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </div>
+
 {% endblock %}
 
 {% block scripts %}

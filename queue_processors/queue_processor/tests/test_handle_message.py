@@ -243,7 +243,7 @@ class TestHandleMessage(unittest.TestCase):
         mock_reduction_record = mock.NonCallableMock()
         self.handler.find_run = mock.Mock(return_value=mock_reduction_record)
 
-        valid_states = ["Error", "Queued"]
+        valid_states = ['e', 'q']  # verbose values = ["Error", "Queued"]
         for state in valid_states:
             mock_reduction_record.status.value = state
             self.handler.reduction_started(message=self._get_mock_message())
@@ -272,7 +272,7 @@ class TestHandleMessage(unittest.TestCase):
         Tests reduction started throws if the record state in not expected
         """
         reduction_run_record = mock.NonCallableMock()
-        reduction_run_record.state.value = "Unknown"
+        reduction_run_record.state.value = 'x'
         self.handler.find_run = mock.Mock(return_value=reduction_run_record)
 
         with self.assertRaises(InvalidStateException):
@@ -285,7 +285,7 @@ class TestHandleMessage(unittest.TestCase):
         mocked_msg = self._get_mock_message()
         mocked_msg.reduction_data = None
         mock_reduction_record = mock.NonCallableMock()
-        mock_reduction_record.status.value = "Processing"
+        mock_reduction_record.status.value = 'p'  # verbose value = "Processing"
         self.handler.find_run = mock.Mock(return_value=mock_reduction_record)
 
         self.handler.reduction_complete(message=mocked_msg)
@@ -307,7 +307,7 @@ class TestHandleMessage(unittest.TestCase):
         to the database
         """
         mock_reduction_record = mock.NonCallableMock()
-        mock_reduction_record.status.value = "Processing"
+        mock_reduction_record.status.value = 'p'  # verbose value = "Processing"
         self.handler.find_run = mock.Mock(return_value=mock_reduction_record)
 
         location_records = [mock.NonCallableMock(), mock.NonCallableMock()]
@@ -329,7 +329,7 @@ class TestHandleMessage(unittest.TestCase):
         Tests reduction complete throws if the reduction record is invalid
         """
         mock_reduction_record = mock.NonCallableMock()
-        mock_reduction_record.status.value = "Unknown"
+        mock_reduction_record.status.value = 'x'
         self.handler.find_run = mock.Mock(return_value=mock_reduction_record)
 
         with self.assertRaises(InvalidStateException):
@@ -351,7 +351,7 @@ class TestHandleMessage(unittest.TestCase):
         Tests reduction skipped handler in valid conditions
         """
         mock_reduction_record = mock.NonCallableMock()
-        mock_reduction_record.status.value = "Processing"
+        mock_reduction_record.status.value = 'p'  # verbose value = "Processing"
         self.handler.find_run = mock.Mock(return_value=mock_reduction_record)
 
         mock_msg = self._get_mock_message()

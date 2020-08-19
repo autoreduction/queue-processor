@@ -242,7 +242,7 @@ class InstrumentVariablesUtils(object):
 
         # First, we find the latest run number to determine what's upcoming.
         try:
-            if last_run_object and last_run_object.status.value == u'Completed':
+            if last_run_object and last_run_object.status.value_verbose() == 'Completed':
                 latest_completed_run_number = last_run_object.run_number
             else:
                 latest_completed_run_number = ReductionRun.objects.filter(instrument=instrument,
