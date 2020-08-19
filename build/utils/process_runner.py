@@ -23,7 +23,13 @@ def run_process_and_log(list_of_args):
                                stderr=subprocess.PIPE)
     process_output, process_error = process.communicate()
     exit_status = process.returncode
-    if exit_status != 0 or len(process_error) != 0:
+    # Typically, an exit status of 0 indicates that the process ran
+    # successfully. However, this is for example found not to be true when
+    # not have the right permission with activemq
+    if exit_status != 0 or 'Permission denied' in process_error.decode("utf-8"):
+        # log both process_output and process_error, since process_output
+        # may also info that help with diagnose the problem
+        BUILD_LOGGER.logger.info(process_output)
         BUILD_LOGGER.logger.error(process_error)
         return False
     if process_output:
