@@ -24,8 +24,8 @@ class TestPostProcessAdminHelpers(unittest.TestCase):
 
     def test_windows_to_linux_data_path(self):
         """
-        Test:
-        When:
+        Test: Windows to linux path is correctly modified to linux format
+        When: Called with a windows formatted path.
         """
         windows_path = "\\\\isis\\inst$\\some\\more\\path.nxs"
         actual = windows_to_linux_path(windows_path, '')
@@ -33,8 +33,8 @@ class TestPostProcessAdminHelpers(unittest.TestCase):
 
     def test_windows_to_linux_autoreduce_path(self):
         """
-        Test:
-        When:
+        Test: Linux path is correctly constructed from concatenating temp path and windows path
+        When: Called with windows path and temporary path
         """
         windows_path = "\\\\autoreduce\\data\\some\\more\\path.nxs"
         actual = windows_to_linux_path(windows_path, '/temp')

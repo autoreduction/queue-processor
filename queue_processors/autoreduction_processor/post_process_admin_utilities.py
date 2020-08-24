@@ -43,7 +43,7 @@ def channels_redirected(out_file, error_file, out_stream):
             self.streams = streams
 
         def write(self, stream_message):
-            """ Write to steams.
+            """ Write to streams.
             :param stream_message: (data) stream message
             """
             [stream.write(stream_message) for stream in self.streams]
@@ -53,7 +53,7 @@ def channels_redirected(out_file, error_file, out_stream):
             [stream.flush() for stream in self.streams]
 
     def _redirect_channels(output_file, err_file):
-        """ Redirect channels?
+        """ Redirect channels
         :param output_file: stdout stream
         :param err_file: stderr stream
         """
