@@ -100,9 +100,9 @@ class PlotHandler:
             local_path = os.path.join(self.static_graph_dir, file)
             try:
                 client.retrieve(server_file_path=server_path, local_file_path=local_path, override=True)
-                LOGGER.info(f'File {server_path} found and saved to {local_path}')
+                LOGGER.info('File %s found and saved to %s', server_path, local_path)
             except RuntimeError:
-                LOGGER.error(f'File does not exist: {server_path}')
+                LOGGER.error('File does not exist: %s', server_path)
                 continue
             local_plot_paths.append(local_path)
 
