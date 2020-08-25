@@ -31,7 +31,7 @@ class DatabaseClient(AbstractClient):
     def __init__(self, credentials=None):
         if not credentials:
             credentials = MYSQL_SETTINGS
-        super(DatabaseClient, self).__init__(credentials)
+        super(DatabaseClient, self).__init__(credentials)  # pylint:disable=super-with-arguments
         self._connection = None
         self._meta_data = None
         self._engine = None
@@ -65,7 +65,7 @@ class DatabaseClient(AbstractClient):
             # as such it is not being consistently caught so we should check
             # the exception name instead
             if type(exp).__name__ == 'OperationalError':
-                raise ConnectionException("MySQL")
+                raise ConnectionException("MySQL") from exp
             raise
         return True
 
