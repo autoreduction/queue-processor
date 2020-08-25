@@ -24,30 +24,16 @@ from utils.settings import ACTIVEMQ_SETTINGS
 from utils.project.structure import get_project_root
 from utils.clients.settings.client_settings_factory import ActiveMQSettings
 from queue_processors.autoreduction_processor.settings import MISC
-from queue_processors.autoreduction_processor.post_process_admin import (windows_to_linux_path,
-                                                                         PostProcessAdmin,
-                                                                         main)
+from queue_processors.autoreduction_processor.post_process_admin import (PostProcessAdmin, main)
 
 
-# pylint:disable=missing-docstring,invalid-name,protected-access,no-self-use,too-many-arguments
-class TestPostProcessAdminHelpers(unittest.TestCase):
-
-    def test_windows_to_linux_data_path(self):
-        windows_path = "\\\\isis\\inst$\\some\\more\\path.nxs"
-        actual = windows_to_linux_path(windows_path, '')
-        self.assertEqual(actual, '/isis/some/more/path.nxs')
-
-    def test_windows_to_linux_autoreduce_path(self):
-        windows_path = "\\\\autoreduce\\data\\some\\more\\path.nxs"
-        actual = windows_to_linux_path(windows_path, '/temp')
-        self.assertEqual(actual, '/temp/data/some/more/path.nxs')
-
-
-# pylint:disable=too-many-public-methods, too-many-instance-attributes
+# pylint:disable=too-many-public-methods, protected-access,no-self-use,too-many-instance-attributes
 class TestPostProcessAdmin(unittest.TestCase):
+    """Unit tests for Post Process Admin"""
     DIR = "queue_processors.autoreduction_processor"
 
     def setUp(self):
+        """Setup values for Post-Process Admin"""
         self.data = {'data': '\\\\isis\\inst$\\data.nxs',
                      'facility': 'ISIS',
                      'instrument': 'GEM',
@@ -72,6 +58,7 @@ class TestPostProcessAdmin(unittest.TestCase):
 
 
     def tearDown(self):
+        """Teardown of test directory structure"""
         self.teardown_test_dir_structure()
 
     def teardown_test_dir_structure(self):
@@ -88,8 +75,8 @@ class TestPostProcessAdmin(unittest.TestCase):
         Writes a file within each each directory given
         :param test_dirs: The directories to create
         """
-        for d in test_dirs:
-            abs_dir = os.path.join(os.getcwd(), d)
+        for directory in test_dirs:
+            abs_dir = os.path.join(os.getcwd(), directory)
             if not os.path.isdir(abs_dir):
                 os.makedirs(abs_dir)
 
@@ -98,6 +85,10 @@ class TestPostProcessAdmin(unittest.TestCase):
                 file.write("test file")
 
     def test_init(self):
+        """
+        Test: init parameters are as expected
+        When: called with expected arguments
+        """
         ppa = PostProcessAdmin(self.message, None)
         self.assertEqual(ppa.message, self.message)
         self.assertEqual(ppa.client, None)
@@ -113,9 +104,14 @@ class TestPostProcessAdmin(unittest.TestCase):
         self.assertEqual(ppa.reduction_arguments, 'None')
 
     def test_replace_variables(self):
-        pass
+        """Test replacement of variables"""
+        print("Should be Unit tested")
 
     def test_load_reduction_script(self):
+        """
+        Test: reduction script location is correct
+        When: reduction script loaded for a given instrument
+        """
         ppa = PostProcessAdmin(self.message, None)
         file_path = ppa._load_reduction_script('WISH')
         self.assertEqual(file_path, os.path.join(MISC['scripts_directory'] % 'WISH',
@@ -260,6 +256,10 @@ class TestPostProcessAdmin(unittest.TestCase):
         self.assertEqual(mock_log.call_count, 2)
 
     def test_reduction_script_location(self):
+        """
+        Test: Assert reduction location is correct
+        When: called for a given instrument
+        """
         location = PostProcessAdmin._reduction_script_location('WISH')
         self.assertEqual(location, MISC['scripts_directory'] % 'WISH')
 
@@ -397,6 +397,10 @@ class TestPostProcessAdmin(unittest.TestCase):
         self.assertEqual(expected_log, actual_log)
 
     def test_result_and_log_directory_incorrect(self):
+        """
+        Test: Value error is raised when
+        When: Result_and_log_directory called with invalid path format
+        """
         ppa = PostProcessAdmin(self.message, None)
         instrument_output_dir = MISC["ceph_directory"] % (ppa.instrument,
                                                           ppa.proposal,
@@ -510,6 +514,10 @@ class TestPostProcessAdmin(unittest.TestCase):
     @patch(DIR + '.post_process_admin.PostProcessAdmin._copy_tree')
     @patch(DIR + '.autoreduction_logging_setup.logger.info')
     def test_copy_temp_dir(self, mock_logger, mock_copy, mock_remove, _):
+        """
+        Test: Assert directory is copied correctly
+        When: Called with valid arguments
+        """
         result_dir = mkdtemp()
         copy_dir = mkdtemp()
         ppa = PostProcessAdmin(self.message, None)
@@ -525,6 +533,10 @@ class TestPostProcessAdmin(unittest.TestCase):
     @patch(DIR + '.post_process_admin.PostProcessAdmin._copy_tree')
     @patch(DIR + '.autoreduction_logging_setup.logger.info')
     def test_copy_temp_dir_with_excitation(self, _, mock_copy):
+        """
+        Test: Excitation instrument temporary directories are handled correctly
+        When: When called for an excitation instrument
+        """
         result_dir = mkdtemp()
         ppa = PostProcessAdmin(self.message, None)
         ppa.instrument = 'WISH'
@@ -537,8 +549,13 @@ class TestPostProcessAdmin(unittest.TestCase):
     @patch(DIR + '.post_process_admin.PostProcessAdmin.log_and_message')
     @patch(DIR + '.autoreduction_logging_setup.logger.info')
     def test_copy_temp_dir_with_error(self, _, mock_log_and_msg, mock_copy):
+        """
+        Test: Errors are handled correctly
+        When: Runtime error raised
+        """
         # pylint:disable=unused-argument
         def raise_runtime(arg1, arg2):  # pragma : no cover
+            """Raise Runtime Error"""
             raise RuntimeError('test')
         mock_copy.side_effect = raise_runtime
         result_dir = mkdtemp()
@@ -612,6 +629,10 @@ class TestPostProcessAdmin(unittest.TestCase):
     @patch('shutil.rmtree')
     @patch(DIR + '.autoreduction_logging_setup.logger.info')
     def test_delete_temp_dir_valid(self, mock_logger, mock_remove_dir):
+        """
+        Test: Assert deletion of temporary directory
+        When: Called with valid arguments
+        """
         temp_dir = mkdtemp()
         PostProcessAdmin.delete_temp_directory(temp_dir)
         rm_args = {'ignore_errors': True}
@@ -622,7 +643,12 @@ class TestPostProcessAdmin(unittest.TestCase):
     @patch('shutil.rmtree')
     @patch(DIR + '.autoreduction_logging_setup.logger.info')
     def test_delete_temp_dir_invalid(self, mock_logger, mock_remove_dir):
+        """
+        Test: Assert the inability to delete a record
+        When: Runtime error raised
+        """
         def raise_runtime():  # pragma: no cover
+            """Raise Runtime Error"""
             raise RuntimeError('test')
         mock_remove_dir.side_effect = raise_runtime
         PostProcessAdmin.delete_temp_directory('not-a-file-path.test')
@@ -632,6 +658,10 @@ class TestPostProcessAdmin(unittest.TestCase):
 
     @patch(DIR + '.autoreduction_logging_setup.logger.info')
     def test_empty_log_and_message(self, mock_logger):
+        """
+        Test: Log and message are correctly cleared repopulated with method argument
+        When: Called and message.message = ''
+        """
         ppa = PostProcessAdmin(self.message, None)
         ppa.message.message = ''
         ppa.log_and_message('test')
@@ -640,6 +670,10 @@ class TestPostProcessAdmin(unittest.TestCase):
 
     @patch(DIR + '.autoreduction_logging_setup.logger.info')
     def test_load_and_message_with_preexisting_message(self, mock_logger):
+        """
+        Test: Assert existing message persists and new message logged.
+        When: called with new message
+        """
         ppa = PostProcessAdmin(self.message, None)
         ppa.message.message = 'Old message'
         ppa.log_and_message('New message')
@@ -647,6 +681,10 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_logger.assert_called_with('New message')
 
     def test_remove_with_wait_folder(self):
+        """
+        Test: Directory removed
+        When: Called
+        """
         directory_to_remove = mkdtemp()
         self.assertTrue(os.path.exists(directory_to_remove))
         ppa = PostProcessAdmin(self.message, None)
@@ -654,6 +692,10 @@ class TestPostProcessAdmin(unittest.TestCase):
         self.assertFalse(os.path.exists(directory_to_remove))
 
     def test_remove_with_wait_file(self):
+        """
+         Test: File removed
+         When: Called
+         """
         file_to_remove = NamedTemporaryFile(delete=False).name
         self.assertTrue(os.path.exists(str(file_to_remove)))
         ppa = PostProcessAdmin(self.message, None)
@@ -661,6 +703,10 @@ class TestPostProcessAdmin(unittest.TestCase):
         self.assertFalse(os.path.exists(file_to_remove))
 
     def test_copy_tree_folder(self):
+        """
+        Test: Expected directory structure found
+        When: Called for a given file
+        """
         directory_to_copy = mkdtemp(prefix='test-dir')
         with open(os.path.join(directory_to_copy, 'test-file.txt'), 'w+') as test_file:
             test_file.write('test content')
@@ -675,13 +721,17 @@ class TestPostProcessAdmin(unittest.TestCase):
         shutil.rmtree(os.path.join(get_project_root(), 'test-dir'))
 
     def test_remove_directory(self):
+        """
+        Test: Directory removed
+        When: Called
+        """
         directory_to_remove = mkdtemp()
         self.assertTrue(os.path.exists(directory_to_remove))
         ppa = PostProcessAdmin(self.message, None)
         ppa._remove_directory(directory_to_remove)
         self.assertFalse(os.path.exists(directory_to_remove))
 
-    @patch(DIR + '.post_process_admin.windows_to_linux_path', return_value='path')
+    @patch(DIR + '.post_process_admin_utilities.windows_to_linux_path', return_value='path')
     @patch(DIR + '.post_process_admin.PostProcessAdmin.reduce')
     @patch('utils.clients.queue_client.QueueClient.connect')
     @patch('utils.clients.queue_client.QueueClient.__init__', return_value=None)
@@ -696,6 +746,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_connect.assert_called_once()
         mock_reduce.assert_called_once()
 
+    # pylint: disable = too-many-arguments
     @patch('model.message.message.Message.serialize', return_value='test')
     @patch('sys.exit')
     @patch(DIR + '.autoreduction_logging_setup.logger.info')
@@ -710,6 +761,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         When: A ValueError exception is raised from ppa.reduce
         """
         def raise_value_error(arg1, _):
+            """Raise Value Error"""
             self.assertEqual(arg1, self.message)
             raise ValueError('error-message')
         mock_ppa_init.side_effect = raise_value_error
@@ -723,6 +775,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_error,
                                           self.message)
 
+    # pylint: disable = too-many-arguments
     @patch('sys.exit')
     @patch(DIR + '.autoreduction_logging_setup.logger.info')
     @patch(DIR + '.post_process_admin.PostProcessAdmin.__init__', return_value=None)
@@ -736,6 +789,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         When: A bare Exception is raised from ppa.reduce
         """
         def raise_exception(arg1, _):
+            """Raise Exception"""
             self.assertEqual(arg1, self.message)
             raise Exception('error-message')
         mock_ppa_init.side_effect = raise_exception
