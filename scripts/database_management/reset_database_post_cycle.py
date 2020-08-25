@@ -58,8 +58,8 @@ class DatabaseReset:
             raise RuntimeError('\'Port\' for database required')
         try:
             int(self.port)
-        except ValueError:
-            raise RuntimeError('\'Port\' must be an integer')
+        except ValueError as exp:
+            raise RuntimeError('\'Port\' must be an integer') from exp
 
     def _validate_backfile_location(self):
         # Make the directory if it doesn't exist

@@ -173,9 +173,9 @@ def login_queue():
     activemq_client = QueueClient()
     try:
         activemq_client.connect()
-    except (ConnectionException, ValueError):
+    except (ConnectionException, ValueError) as exp:
         raise RuntimeError("Unable to proceed. Unable to log in to ActiveMQ."
-                           "This is required to perform a manual submission")
+                           "This is required to perform a manual submission") from exp
     return activemq_client
 
 

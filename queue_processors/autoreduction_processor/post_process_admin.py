@@ -239,9 +239,9 @@ class PostProcessAdmin:
                     raise OSError
             return True
 
-        except KeyError:
+        except KeyError as exp:
             raise KeyError("Invalid read or write input: %s read_write argument must be either"
-                           " 'R' or 'W'" % read_write)
+                           " 'R' or 'W'" % read_write) from exp
         except OSError as exp:
             # If we can't access now, abort the run, and tell the server to re-run at a later time.
             self.message.message = "Permission error: %s" % exp
@@ -350,7 +350,7 @@ class PostProcessAdmin:
 
             # Parent except block will discard exception type, so format the type as a string
             if 'skip' in str(exp).lower():
-                raise SkippedRunException(exp)
+                raise SkippedRunException(exp) from exp
             error_str = f"Error in user reduction script: {type(exp).__name__} - {exp}"
             logger.error(traceback.format_exc())
             return Exception(error_str)

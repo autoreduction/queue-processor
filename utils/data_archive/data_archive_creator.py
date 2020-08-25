@@ -247,10 +247,11 @@ class DataArchiveCreator:
                     file_handle.write(contents)
             os.utime(file_path, (creation_time, creation_time))
             self.data_files.append(file_path)
-        except IOError:
+        except IOError as exp:
             raise RuntimeError("Unable to create file at desired location. "
                                "Make sure this directory has been created "
-                               "in the archive.\n   Invalid file path: {}".format(file_path))
+                               "in the archive.\n    "
+                               "Invalid file path: {}".format(file_path)) from exp
 
     def overwrite_file_content(self, file_path, new_file_contents):
         """

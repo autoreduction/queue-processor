@@ -31,7 +31,7 @@ class ICATClient(AbstractClient):
     def __init__(self, credentials=None):
         if not credentials:
             credentials = ICAT_SETTINGS
-        super(ICATClient, self).__init__(credentials)
+        super(ICATClient, self).__init__(credentials)  # pylint:disable=super-with-arguments
         self.client = icat.Client(self.credentials.host)
 
     def connect(self):
@@ -48,8 +48,8 @@ class ICATClient(AbstractClient):
         """
         try:
             self.client.refresh()
-        except icat.exception.ICATSessionError:
-            raise ConnectionException("ICAT")
+        except icat.exception.ICATSessionError as exp:
+            raise ConnectionException("ICAT") from exp
         return True
 
     def refresh(self):
