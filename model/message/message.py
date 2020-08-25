@@ -80,8 +80,8 @@ class Message:
         if isinstance(source, str):
             try:
                 source = self.deserialize(source)
-            except json.decoder.JSONDecodeError:
-                raise ValueError(f"Unable to recognise serialized object {source}")
+            except json.decoder.JSONDecodeError as exp:
+                raise ValueError(f"Unable to recognise serialized object {source}") from exp
 
         self_dict = attr.asdict(self)
         for key, value in source.items():

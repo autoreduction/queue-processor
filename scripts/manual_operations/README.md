@@ -2,7 +2,7 @@
 These scripts are used to perform operations manually with autoreduction.
 Currently this includes submitting a new run or deleting an existing run.
 When using any of these scripts please ensure that your settings are correct before use:
-* Enter the correct ICAT and ActiveMQ login details into `utils/settings.py`.
+* Enter the correct ICAT and ActiveMQ login details into `utils/credentials.ini`.
 
 ## Manual Submission
 #### Single Run

@@ -23,8 +23,8 @@ def _generate_conf_file():
     """
     try:
         root_dir = sys.argv[1]
-    except IndexError:
-        raise RuntimeError("Root directory argument not given.")
+    except IndexError as exp:
+        raise RuntimeError("Root directory argument not given.") from exp
     root_dir = root_dir.strip('/')
     if os.path.isdir(root_dir):
         root_dir = root_dir.replace('\\', '/')
