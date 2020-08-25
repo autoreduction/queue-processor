@@ -32,7 +32,7 @@ class QueueClient(AbstractClient):
     def __init__(self, credentials=None, consumer_name='queue_client'):
         if not credentials:
             credentials = ACTIVEMQ_SETTINGS
-        super(QueueClient, self).__init__(credentials)
+        super(QueueClient, self).__init__(credentials)  # pylint:disable=super-with-arguments
         self._connection = None
         self._consumer_name = consumer_name
         self._autoreduce_queues = self.credentials.all_subscriptions
@@ -83,8 +83,8 @@ class QueueClient(AbstractClient):
                                    passcode=self.credentials.password,
                                    wait=False,
                                    header={'activemq.prefetchSize': '1'})
-            except ConnectFailedException:
-                raise ConnectionException("ActiveMQ")
+            except ConnectFailedException as exp:
+                raise ConnectionException("ActiveMQ") from exp
             # Sleep required to avoid using the service too quickly after establishing connection
             time.sleep(0.5)
             self._connection = connection

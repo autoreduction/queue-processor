@@ -40,5 +40,5 @@ class ClientSettings:
             # So just attempt a cast to str, don't check if we have a string
             # so we can use mock objects in-lieu
             return str(param)
-        except TypeError:
-            raise ValueError(f"{param} of type {type(param)} is not a string")
+        except TypeError as exp:
+            raise ValueError(f"{param} of type {type(param)} is not a string") from exp

@@ -23,16 +23,16 @@ class StatusUtils:
         return status_record
 
     def get_error(self):
-        return self._get_status("Error")
+        return self._get_status('e')
 
     def get_completed(self):
-        return self._get_status("Completed")
+        return self._get_status('c')
 
     def get_processing(self):
-        return self._get_status("Processing")
+        return self._get_status('p')
 
     def get_queued(self):
-        return self._get_status("Queued")
+        return self._get_status('q')
 
     def get_skipped(self):
-        return self._get_status("Skipped")
+        return self._get_status('s')
