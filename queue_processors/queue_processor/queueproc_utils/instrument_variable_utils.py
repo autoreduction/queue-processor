@@ -314,18 +314,22 @@ class InstrumentVariablesUtils:
             variables = self.\
                 show_variables_for_experiment(instrument_name,
                                               reduction_run.experiment.reference_number)
+            logger.info('variables from stage 1: %s', str(variables))
 
         if not variables:
             logger.info('Finding variables from run number')
             # No experiment-specific variables, so let's look for variables set by run number.
             variables = self.show_variables_for_run(instrument_name, reduction_run.run_number)
+            logger.info('variables from stage 2: %s', str(variables))
 
         if not variables:
             logger.info('Using default variables')
             # No variables are set, so we'll use the defaults, and set them them while we're at it.
             variables = self.get_default_variables(instrument_name)
+            logger.info('variables from stage 3: %s', str(variables))
             logger.info('Setting the variables for the run')
             self.set_variables_for_runs(instrument_name, variables, reduction_run.run_number)
+            logger.info('variables from stage 4: %s', str(variables))
 
         logger.info('Saving the found variables')
         # Create run variables from these instrument variables, and return them.
