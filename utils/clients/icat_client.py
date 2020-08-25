@@ -48,8 +48,8 @@ class ICATClient(AbstractClient):
         """
         try:
             self.client.refresh()
-        except icat.exception.ICATSessionError as exc:
-            raise ConnectionException("ICAT") from exc
+        except icat.exception.ICATSessionError as exp:
+            raise ConnectionException("ICAT") from exp
         return True
 
     def refresh(self):

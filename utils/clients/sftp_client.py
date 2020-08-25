@@ -67,8 +67,8 @@ class SFTPClient(AbstractClient):
 
         try:
             self._connection.pwd
-        except AttributeError as exc:
-            raise ConnectionException("SFTP") from exc
+        except AttributeError as exp:
+            raise ConnectionException("SFTP") from exp
         return True
 
     def retrieve(self, server_file_path, local_file_path=None, override=True):
@@ -99,11 +99,11 @@ class SFTPClient(AbstractClient):
 
         try:
             self._connection.get(server_file_path, local_file_path)
-        except FileNotFoundError as exc:
-            raise RuntimeError("The local_file_path does not exist.") from exc
-        except PermissionError as exc:
+        except FileNotFoundError as exp:
+            raise RuntimeError("The local_file_path does not exist.") from exp
+        except PermissionError as exp:
             raise RuntimeError("The local_file_path is a directory. "
-                               "Please ensure the local_path includes a full filename.") from exc
+                               "Please ensure the local_path includes a full filename.") from exp
 
     def get_filenames(self, server_dir_path, regex=".*"):
         """

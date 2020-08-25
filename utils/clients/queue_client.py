@@ -83,8 +83,8 @@ class QueueClient(AbstractClient):
                                    passcode=self.credentials.password,
                                    wait=False,
                                    header={'activemq.prefetchSize': '1'})
-            except ConnectFailedException as exc:
-                raise ConnectionException("ActiveMQ") from exc
+            except ConnectFailedException as exp:
+                raise ConnectionException("ActiveMQ") from exp
             # Sleep required to avoid using the service too quickly after establishing connection
             time.sleep(0.5)
             self._connection = connection
