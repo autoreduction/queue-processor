@@ -60,6 +60,9 @@ hr {
     padding: 10px;
 }
 
+.navbar-default .navbar-text {
+    color: #444444;
+}
 /****************
  3. Header
 ****************/
