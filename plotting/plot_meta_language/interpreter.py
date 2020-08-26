@@ -30,8 +30,9 @@ class Interpreter:
         try:
             with open(plot_type_file_location) as file:
                 return yaml.full_load(file)
-        except FileNotFoundError:
-            raise RuntimeError("The plot type file could not be found at the location provided.")
+        except FileNotFoundError as exp:
+            raise RuntimeError("The plot type file could not be "
+                               "found at the location provided.") from exp
 
     def interpret(self, plot_type_file_location):
         """

@@ -180,12 +180,42 @@ class PostProcessAdmin:
         """ Returns the path of the reduction script for an instrument. """
         return os.path.join(self._reduction_script_location(instrument_name), 'reduce.py')
 
-    def send_reduction_started(self):
-        """Log and update AMQ message to reduction started"""
-        logger.debug("Calling: %s\n%s",
-                     ACTIVEMQ_SETTINGS.reduction_started,
-                     self.message.serialize(limit_reduction_script=True))
-        self.client.send(ACTIVEMQ_SETTINGS.reduction_started, self.message)
+    def send_reduction_message(self, message, amq_message):
+        """Send/Update AMQ reduction message
+        :param message: (str) amq reduction  status
+        :param amq_message: (str) reduction status path
+        """
+        try:
+            logger.debug("Calling: %s\n%s",
+                         amq_message,
+                         self.message.serialize(limit_reduction_script=True))
+            self.client.send(amq_message, self.message)
+            logger.info("Reduction: %s", message)
+
+        except AttributeError:
+            logger.debug("Failed to find send reduction message: %s", amq_message)
+
+    def determine_reduction_status(self):
+        """
+        Determine which message type to log and send to AMQ, triggering exception if job failed
+        """
+        if self.message.message is not None:
+            # This means an error has been produced somewhere
+            try:
+                if 'skip' in self.message.message.lower():
+                    self.send_reduction_message(message="Skipped",
+                                                amq_message=ACTIVEMQ_SETTINGS.reduction_skipped)
+                else:
+                    self.send_reduction_message(message="Error",
+                                                amq_message=ACTIVEMQ_SETTINGS.reduction_error)
+            except Exception as exp2:
+                logger.info("Failed to send to queue! - %s - %s", exp2, repr(exp2))
+            finally:
+                logger.info("Reduction job failed")
+        else:
+            # Reduction has successfully completed
+            self.send_reduction_message(message="Complete",
+                                        amq_message=ACTIVEMQ_SETTINGS.reduction_complete)
 
     def specify_instrument_directories(self,
                                        instrument_output_directory,
@@ -261,9 +291,9 @@ class PostProcessAdmin:
                     raise OSError
             return True
 
-        except KeyError:
+        except KeyError as exp:
             raise KeyError("Invalid read or write input: %s read_write argument must be either"
-                           " 'R' or 'W'" % read_write)
+                           " 'R' or 'W'" % read_write) from exp
         except OSError as exp:
             # If we can't access now, abort the run, and tell the server to re-run at a later time.
             self.message.message = "Permission error: %s" % exp
@@ -292,7 +322,6 @@ class PostProcessAdmin:
         :param reduce_dir: (str) final reduce directory
         :return (tuple) - (str, str) final result and final log directory paths
         """
-
         # validate dir before slicing
         if reduce_dir.startswith(temporary_root_directory):
             result_directory = reduce_dir[len(temporary_root_directory):]
@@ -308,16 +337,107 @@ class PostProcessAdmin:
 
         return final_result_directory, final_log_directory
 
+    def check_for_skipped_runs(self, skip_numbers, reduce_script, reduce_result_dir):
+        """Check for skipped runs, updating message if run is skipped
+        :param skip_numbers: (list) List of skipped run numbers
+        :param reduce_script: (module) Reduction script as module
+        :param reduce_result_dir: (str) Reduction result directory
+        :return (str/list) Reduction output directories
+        """
+        if self.message.run_number not in skip_numbers:
+            reduce_script = self.replace_variables(reduce_script)
+            with TimeOut(MISC["script_timeout"]):
+                out_directories = reduce_script.main(input_file=str(self.data_file),
+                                                     output_dir=str(reduce_result_dir))
+        else:
+            self.message.message = "Run has been skipped in script"
+        return out_directories
+
+    def reduction_as_module(self, reduce_result_dir):
+        """
+        Load reduction script as module
+        This works as long as reduce.py makes no assumption that it is in the same directory
+        as reduce_vars, i.e. - Either it does not import it at all, or adds its location
+        to os.path explicitly.
+        :param reduce_result_dir: (str) Reduce result directory
+        :return: (str/list) output directory
+        """
+        sys.path.append(MISC["mantid_path"])
+        reduce_script_location = self._load_reduction_script(self.instrument)
+        spec = imp.spec_from_file_location('reducescript', reduce_script_location)
+        reduce_script = imp.module_from_spec(spec)
+        spec.loader.exec_module(reduce_script)
+
+        try:
+            skip_numbers = reduce_script.SKIP_RUNS
+        except:
+            skip_numbers = []
+
+        return self.check_for_skipped_runs(skip_numbers=skip_numbers,
+                                           reduce_script=reduce_script,
+                                           reduce_result_dir=reduce_result_dir)
+
+    def validate_reduction_as_module(self, script_out, mantid_log, reduce_result, final_result):
+        """
+        Validate and Load reduction script as module and Add Mantid path to system path so we
+        can use Mantid to run the user's script.
+        :param script_out: (str) script out path
+        :param mantid_log: (str) mantid log path
+        :param reduce_result: (str) Directories where Autoreduction should output
+        :param final_result: (str) final result path
+        :return: ((str/list)/Exception) output directory or exception
+        """
+        try:
+            with channels_redirected(script_out, mantid_log, self.reduction_log_stream):
+
+                out_directories = self.reduction_as_module(reduce_result)
+                return out_directories
+
+        except Exception as exp:
+            with open(script_out, "a") as fle:
+                fle.writelines(str(exp) + "\n")
+                fle.write(traceback.format_exc())
+            self.copy_temp_directory(reduce_result, final_result)
+            self.delete_temp_directory(reduce_result)
+
+            # Parent except block will discard exception type, so format the type as a string
+            if 'skip' in str(exp).lower():
+                raise SkippedRunException(exp) from exp
+            error_str = f"Error in user reduction script: {type(exp).__name__} - {exp}"
+            logger.error(traceback.format_exc())
+            return Exception(error_str)
+
+    def additional_save_directories_check(self, out_directories, reduce_result):
+        """
+        If the reduce script specified some additional save directories, copy to there first
+        :param out_directories: (str/list) output directories
+        :param reduce_result: (str) reduce result directory
+        """
+
+        if out_directories:
+            if isinstance(out_directories, str):
+                self.copy_temp_directory(reduce_result, out_directories)
+            elif isinstance(out_directories, list):
+                for out_dir in out_directories:
+                    if isinstance(out_dir, str):
+                        self.copy_temp_directory(reduce_result, out_dir)
+                    else:
+                        self.log_and_message(f"Optional output directories of "
+                                             f"reduce.py must be strings: {out_dir}")
+            else:
+                self.log_and_message(f"Optional output directories of reduce.py must be a string "
+                                     f"or list of stings: {out_directories}")
+
     # pylint:disable=too-many-nested-blocks
     def reduce(self):
         """Start the reduction job."""
         # pylint: disable=too-many-nested-blocks
-        logger.info("reduce started")
         self.message.software = self._get_mantid_version()
 
         try:
             # log and update AMQ message to reduction started
-            self.send_reduction_started()
+            self.send_reduction_message(message="started",
+                                        amq_message=ACTIVEMQ_SETTINGS.reduction_started)
 
             # Specify instrument directories - if excitation instrument remove run_number from dir
             no_run_number_directory = False
@@ -369,70 +489,23 @@ class PostProcessAdmin:
             logger.info(reduce_result_dir)
             out_directories = None
 
-            try:
-                with channels_redirected(self.create_log_path(file_name_with_extension="Script.out",
-                                                              log_directory=log_dir),
-                                         self.create_log_path(file_name_with_extension="Mantid.log",
-                                                              log_directory=log_dir),
-                                         self.reduction_log_stream):
-                    # Load reduction script as a module. This works as long as reduce.py makes no
-                    # assumption that it is in the same directory as reduce_vars, i.e., either it
-                    # does not import it at all, or adds its location to os.path explicitly.
+            # Create script out and mantid log paths
+            script_out = self.create_log_path(file_name_with_extension="Script.out",
+                                              log_directory=log_dir)
+            mantid_log = self.create_log_path(file_name_with_extension="Mantid.log",
+                                              log_directory=log_dir)
 
-                    # Add Mantid path to system path so we can use Mantid to run the user's script
-                    sys.path.append(MISC["mantid_path"])
-                    reduce_script_location = self._load_reduction_script(self.instrument)
-                    spec = imp.spec_from_file_location('reducescript', reduce_script_location)
-                    reduce_script = imp.module_from_spec(spec)
-                    spec.loader.exec_module(reduce_script)
-
-                    try:
-                        skip_numbers = reduce_script.SKIP_RUNS
-                    except:
-                        skip_numbers = []
-                    if self.message.run_number not in skip_numbers:
-                        reduce_script = self.replace_variables(reduce_script)
-                        with TimeOut(MISC["script_timeout"]):
-                            out_directories = reduce_script.main(input_file=str(self.data_file),
-                                                                 output_dir=str(reduce_result_dir))
-                    else:
-                        self.message.message = "Run has been skipped in script"
-            except Exception as exp:
-                with open(self.create_log_path(file_name_with_extension="Script.out",
-                                               log_directory=log_dir),
-                          "a") as fle:
-                    fle.writelines(str(exp) + "\n")
-                    fle.write(traceback.format_exc())
-                self.copy_temp_directory(reduce_result_dir, final_result_dir)
-                self.delete_temp_directory(reduce_result_dir)
-
-                # Parent except block will discard exception type, so format the type as a string
-                if 'skip' in str(exp).lower():
-                    raise SkippedRunException(exp)
-                error_str = "Error in user reduction script: %s - %s" % (type(exp).__name__, exp)
-                logger.error(traceback.format_exc())
-                raise Exception(error_str)
-
-            logger.info("Reduction subprocess completed.")
-            logger.info("Additional save directories: %s", out_directories)
+            # Load reduction script as module and validate
+            out_directories = self.validate_reduction_as_module(script_out=script_out,
+                                                                mantid_log=mantid_log,
+                                                                reduce_result=reduce_result_dir,
+                                                                final_result=final_result_dir)
 
             self.copy_temp_directory(reduce_result_dir, final_result_dir)
 
-            # If the reduce script specified some additional save directories, copy to there first
-            if out_directories:
-                if isinstance(out_directories, str):
-                    self.copy_temp_directory(reduce_result_dir, out_directories)
-                elif isinstance(out_directories, list):
-                    for out_dir in out_directories:
-                        if isinstance(out_dir, str):
-                            self.copy_temp_directory(reduce_result_dir, out_dir)
-                        else:
-                            self.log_and_message(
-                                "Optional output directories of reduce.py must be strings: %s" %
-                                out_dir)
-                else:
-                    self.log_and_message("Optional output directories of reduce.py must be a string"
-                                         " or list of stings: %s" % out_directories)
+            # Copy to additional directories if present in reduce script
+            self.additional_save_directories_check(out_directories=out_directories,
+                                                   reduce_result=reduce_result_dir)
 
             # no longer a need for the temp directory used for storing of reduction results
             self.delete_temp_directory(reduce_result_dir)
@@ -447,27 +520,7 @@ class PostProcessAdmin:
 
         self.message.reduction_log = self.reduction_log_stream.getvalue()
         self.message.admin_log = self.admin_log_stream.getvalue()
-
-        if self.message.message is not None:
-            # This means an error has been produced somewhere
-            try:
-                if 'skip' in self.message.message.lower():
-                    self._send_message_and_log(ACTIVEMQ_SETTINGS.reduction_skipped)
-                else:
-                    self._send_message_and_log(ACTIVEMQ_SETTINGS.reduction_error)
-
-            except Exception as exp2:
-                logger.info("Failed to send to queue! - %s - %s", exp2, repr(exp2))
-            finally:
-                logger.info("Reduction job failed")
-
-        else:
-            # reduction has successfully completed
-            self.client.send(ACTIVEMQ_SETTINGS.reduction_complete, self.message)
-            logger.info("Calling: %s\n%s",
-                        ACTIVEMQ_SETTINGS.reduction_complete,
-                        self.message.serialize(limit_reduction_script=True))
-            logger.info("Reduction job successfully complete")
+        self.determine_reduction_status()  # Send AMQ reduce status message Skipped|Error|Complete
 
     @staticmethod
     def _get_mantid_version():
@@ -509,12 +562,6 @@ class PostProcessAdmin:
                 return append_path(path, [str(this_vers)])
         # (else) if no overwrite, overwrite true, or the path doesn't exist: return version 0 path
         return append_path(path, "0")
-
-    def _send_message_and_log(self, destination):
-        """ Send reduction run to error. """
-        logger.info("\nCalling " + destination + " --- " +
-                    self.message.serialize(limit_reduction_script=True))
-        self.client.send(destination, self.message)
 
     def copy_temp_directory(self, temp_result_dir, copy_destination):
         """

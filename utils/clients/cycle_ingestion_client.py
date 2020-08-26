@@ -17,6 +17,8 @@ class CycleIngestionClient(AbstractClient):
     """
     Class for client to ingest cycle data from ISIS Business Applications (BusApps) via SOAP
     """
+
+    # pylint:disable=super-with-arguments
     def __init__(self, credentials=None):
         if not credentials:
             credentials = CYCLE_SETTINGS
@@ -52,8 +54,8 @@ class CycleIngestionClient(AbstractClient):
                 self._session_id = \
                     self._uows_client.service.login(Account=self.credentials.username,
                                                     Password=self.credentials.password)
-            except suds.WebFault:
-                raise self._errors["invalid_session_id"]
+            except suds.WebFault as exp:
+                raise self._errors["invalid_session_id"] from exp
 
         if self._scheduler_client is None:
             self.create_scheduler_client()
@@ -75,15 +77,15 @@ class CycleIngestionClient(AbstractClient):
         # 'getAllFacilityNames' and 'getFacilityList' chosen as arbitrary test methods
         try:
             self._uows_client.service.getAllFacilityNames()
-        except AttributeError:
-            raise self._errors["invalid_uows_client"]
+        except AttributeError as exp:
+            raise self._errors["invalid_uows_client"] from exp
 
         try:
             self._scheduler_client.service.getFacilityList(self._session_id)
-        except AttributeError:
-            raise self._errors["invalid_scheduler_client"]
-        except suds.WebFault:    # Raised by suds if the session id is not valid
-            raise self._errors["invalid_session_id"]
+        except AttributeError as exp:
+            raise self._errors["invalid_scheduler_client"] from exp
+        except suds.WebFault as exp:    # Raised by suds if the session id is not valid
+            raise self._errors["invalid_session_id"] from exp
 
         return True
 

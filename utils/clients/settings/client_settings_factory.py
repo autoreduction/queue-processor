@@ -116,7 +116,7 @@ class ICATSettings(ClientSettings):
     auth = None
 
     def __init__(self, authentication_type='Simple', **kwargs):
-        super(ICATSettings, self).__init__(**kwargs)
+        super(ICATSettings, self).__init__(**kwargs)   # pylint:disable=super-with-arguments
         self.auth = authentication_type
 
 
@@ -128,7 +128,7 @@ class MySQLSettings(ClientSettings):
     database = None
 
     def __init__(self, database_name='autoreduction', **kwargs):
-        super(MySQLSettings, self).__init__(**kwargs)
+        super(MySQLSettings, self).__init__(**kwargs)   # pylint:disable=super-with-arguments
         self.database = database_name
 
     def get_full_connection_string(self):
@@ -162,7 +162,7 @@ class ActiveMQSettings(ClientSettings):
                  reduction_skipped='/queue/ReductionSkipped',
                  **kwargs):
         # TODO explicitly state args
-        super(ActiveMQSettings, self).__init__(**kwargs)
+        super(ActiveMQSettings, self).__init__(**kwargs)   # pylint:disable=super-with-arguments
 
         self.reduction_pending = reduction_pending
         self.data_ready = data_ready
@@ -178,7 +178,7 @@ class SFTPSettings(ClientSettings):
     SFTP settings object
     """
     def __init__(self, **kwargs):  # pylint:disable=useless-super-delegation
-        super(SFTPSettings, self).__init__(**kwargs)
+        super(SFTPSettings, self).__init__(**kwargs)   # pylint:disable=super-with-arguments
 
 class CycleIngestionSettings(ClientSettings):
     """
@@ -187,6 +187,7 @@ class CycleIngestionSettings(ClientSettings):
     uows_url = None
     scheduler_url = None
 
+    # pylint:disable=super-with-arguments
     def __init__(self, uows_url, scheduler_url, **kwargs):
         super(CycleIngestionSettings, self).__init__(**kwargs)
         self.uows_url = uows_url

@@ -56,17 +56,17 @@ class MigrateTestSettings(Command):
         :param all_paths: All directories containing test_settings.py
         """
         try:
-            for path_to_dir in all_paths:
-                test_settings_path = os.path.join(path_to_dir, 'test_settings.py')
-                settings_path = os.path.join(path_to_dir, 'settings.py')
-                copyfile(test_settings_path, settings_path)
+            test_credentials_path = os.path.join(utils_path, 'test_credentials.ini')
+            credentials_path = os.path.join(utils_path, 'credentials.ini')
+            copyfile(test_credentials_path, credentials_path)
         except OSError as error:
             BUILD_LOGGER.logger.error(error)
             raise
         try:
-            test_credentials_path = os.path.join(utils_path, 'test_credentials.ini')
-            credentials_path = os.path.join(utils_path, 'credentials.ini')
-            copyfile(test_credentials_path, credentials_path)
+            for path_to_dir in all_paths:
+                test_settings_path = os.path.join(path_to_dir, 'test_settings.py')
+                settings_path = os.path.join(path_to_dir, 'settings.py')
+                copyfile(test_settings_path, settings_path)
         except OSError as error:
             BUILD_LOGGER.logger.error(error)
             raise

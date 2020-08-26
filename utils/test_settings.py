@@ -51,10 +51,10 @@ ACTIVEMQ_SETTINGS = SETTINGS_FACTORY.create('queue',
                                             port=get_str('QUEUE', 'port'))
 
 LOCAL_MYSQL_SETTINGS = SETTINGS_FACTORY.create('database',
-                                               username='root',
-                                               password='',
-                                               host='localhost',
-                                               port='3306')
+                                               username=get_str('DATABASE','user'),
+                                               password=get_str('DATABASE','password'),
+                                               host=get_str('DATABASE','host'),
+                                               port=get_str('DATABASE','port'))
 
 SFTP_SETTINGS = SETTINGS_FACTORY.create('sftp',
                                         username=get_str('SFTP', 'user'),

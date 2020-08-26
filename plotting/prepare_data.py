@@ -83,9 +83,9 @@ class PrepareData:
         """
         try:
             first_spectrum = int(row_as_string)
-        except ValueError:
+        except ValueError as exp:
             error_message = (f"Unexpected second row of file.\n"
                              f"Expected: Integer (first spectrum number)\n"
                              f"Actual:\t\t{row_as_string}\n")
-            raise RuntimeError(error_message)
+            raise RuntimeError(error_message) from exp
         return first_spectrum

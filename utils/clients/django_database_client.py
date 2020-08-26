@@ -47,8 +47,8 @@ class DatabaseClient:
             self.data_model.Instrument.objects.first()
             self.variable_model.Variable.objects.first()
         # pylint:disable=broad-except
-        except Exception:
-            raise ConnectionException("MySQL")
+        except Exception as exp:
+            raise ConnectionException("MySQL") from exp
         return True
 
     def disconnect(self):

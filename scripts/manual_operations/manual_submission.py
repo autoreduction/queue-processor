@@ -173,9 +173,9 @@ def login_queue():
     activemq_client = QueueClient()
     try:
         activemq_client.connect()
-    except (ConnectionException, ValueError):
+    except (ConnectionException, ValueError) as exp:
         raise RuntimeError("Unable to proceed. Unable to log in to ActiveMQ."
-                           "This is required to perform a manual submission")
+                           "This is required to perform a manual submission") from exp
     return activemq_client
 
 
@@ -200,7 +200,7 @@ def main(instrument, first_run, last_run=None):
 
     for run in run_numbers:
         location, rb_num = get_location_and_rb(database_client, icat_client, instrument, run, "nxs")
-        if location and rb_num:
+        if location and rb_num is not None:
             submit_run(activemq_client, rb_num, instrument, location, run)
         else:
             print("Unable to find rb number and location for {}{}".format(instrument, run))
