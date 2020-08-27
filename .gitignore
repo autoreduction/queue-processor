@@ -49,3 +49,4 @@ vault.yml
 
 # Ignore downloaded graphs
 Webapp/autoreduce_webapp/static/graphs/
+!Webapp/autoreduce_webapp/static/graphs/.keep
