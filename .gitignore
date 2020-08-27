@@ -48,9 +48,6 @@ vault.yml
 .DS_Store
 
 # Ignore downloaded graphs
-Webapp/autoreduce_webapp/static/graphs/*.png
-Webapp/autoreduce_webapp/static/graphs/*.jpg
-Webapp/autoreduce_webapp/static/graphs/*.bmp
-Webapp/autoreduce_webapp/static/graphs/*.gif
-Webapp/autoreduce_webapp/static/graphs/*.tiff
+Webapp/autoreduce_webapp/static/graphs/
+!Webapp/autoreduce_webapp/static/graphs/.keep
 
