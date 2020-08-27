@@ -60,6 +60,9 @@ hr {
     padding: 10px;
 }
 
+.navbar-default .navbar-text {
+    color: #444444;
+}
 /****************
  3. Header
 ****************/
@@ -78,7 +81,7 @@ header .alert {
 footer {
     text-align: center;
     margin-top: 30px;
-    color: #ccc;
+    color: #555555;
     margin-bottom: 10px;
 }
 
