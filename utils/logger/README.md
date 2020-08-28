@@ -4,10 +4,14 @@ This file describes the usage of logging utilities
 
 ## log_handler.py
 
-The log handler is a utility script to be used when logging. The GetLogger class can used as a 
+The log handler is a utility script to be used when logging. The `GetLogger` class can be used as a 
 direct replacement for the `logging` module.
 
-### Parameters & Usage:
+This package aims to centralise logging, enforce a standard logging format and allow configuring of 
+logger on call to set:  log level; output file location; and toggle streaming of logs to the 
+terminal.
+
+### Parameters & Usage
 
 ```python
 GetLogger(log_level, log_file_name, print_to_console)
@@ -29,44 +33,18 @@ GetLogger(log_level, log_file_name, print_to_console)
 Basic usage:
 ```python
 from utils.logger.log_handler import GetLogger
-logger = GetLogger().logger
-logger.logger.info(f"Adding: {6} + {10} = {6 + 10}")
-```
 
-## log_decorator.py
-The log class decorator can be used similarly to the log handler. The log decorator is a decorator 
-to place on methods which you wish to log.
+logger = GetLogger(stream_log=True, log_level="DEBUG", log_file_name='logs/test.log').logger
 
-### Parameters & Usage:
-
-```python
-@LogDecorator(logger, log_level, log_file_name, stream_log)
-```
-
-* logger:
-    * Logger object
-* log_leveL:
-    * Description: The level to log at
-    * Type: string
-    * Default value: None
-* log_file_name:
-    * Description: Name of log file
-    * Type: string
-    * Default value: None
-* stream_log:
-    * Description: Toggle streaming of logs to CLI
-    * Type: Bool (True, False)
-    * Default value: None
-
-Basic Usage
-```python
-from utils.logger.log_decorator import LogDecorator
-from utils.logger.log_handler import GetLogger
-
-logger = GetLogger()
-
-@LogDecorator(logger=logger, stream_log=True)
 def func(a, b, c):
     answer = a + b + c
+    logger.debug(f"Answer is: {answer}")
+    logger.error(f"Answer is not: {answer+1}")
     return answer
+
+func(1, 2, 3)
+
+logger.debug(f"Adding: {20} + {10} = {20 + 10}")
+logger.debug(f"Adding: {10} + {10} = {10 + 10}")
+
 ```

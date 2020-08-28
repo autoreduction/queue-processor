@@ -18,7 +18,7 @@ import logging
 
 class TestGetLogger(unittest.TestCase):
 
-    @patch("system_monitoring.utils.log_handler.GetLogger.create_logger", return_value=None)
+    @patch("utils.logger.log_handler.GetLogger.create_logger", return_value=None)
     def test_set_log_level(self, mock_create_logger):
         """
         Test: set_log_level returns a value equal to logging.DEBUG
@@ -28,7 +28,7 @@ class TestGetLogger(unittest.TestCase):
         expected = logging.DEBUG
         self.assertEqual(actual, expected)
 
-    @patch("system_monitoring.utils.log_handler.GetLogger.create_logger", return_value=None)
+    @patch("utils.logger.log_handler.GetLogger.create_logger", return_value=None)
     def test_set_log_format(self, mock_create_logger):
         """
         Test: set_log_format() returns the correct log format
@@ -38,7 +38,7 @@ class TestGetLogger(unittest.TestCase):
         expected = logging.Formatter('%(asctime)s:%(levelname)s:%(name)s:%(message)s')
         self.assertEqual(type(actual), type(expected))
 
-    @patch("system_monitoring.utils.log_handler.GetLogger.create_logger", return_value=None)
+    @patch("utils.logger.log_handler.GetLogger.create_logger", return_value=None)
     def test_set_stream_handler(self, _):
         """
         Test: set_stream_handler sets the correct logging.StreamHandler() format
@@ -48,7 +48,7 @@ class TestGetLogger(unittest.TestCase):
         expected = logging.StreamHandler('%(asctime)s:%(levelname)s:%(name)s:%(message)s')
         self.assertEqual(type(actual), type(expected))
 
-    @patch("system_monitoring.utils.log_handler.GetLogger.create_logger", return_value=None)
+    @patch("utils.logger.log_handler.GetLogger.create_logger", return_value=None)
     def test_create_logger_with_stream(self, _):
         """
         Test: create_logger_with_stream returns object
