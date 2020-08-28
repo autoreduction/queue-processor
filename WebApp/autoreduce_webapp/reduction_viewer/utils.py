@@ -47,23 +47,23 @@ class StatusUtils(object):
 
     def get_error(self):
         """ :return: Error Status object """
-        return self._get_status("Error")
+        return self._get_status("e")
 
     def get_completed(self):
         """ :return: Completed Status object """
-        return self._get_status("Completed")
+        return self._get_status("c")
 
     def get_processing(self):
         """ :return: Processing Status object """
-        return self._get_status("Processing")
+        return self._get_status("p")
 
     def get_queued(self):
         """ :return: Queued Status object """
-        return self._get_status("Queued")
+        return self._get_status("q")
 
     def get_skipped(self):
         """ :return: Skipped Status object """
-        return self._get_status("Skipped")
+        return self._get_status("s")
 
 
 # pylint:disable=too-few-public-methods

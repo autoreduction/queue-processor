@@ -9,7 +9,7 @@
                 <div class="col-md-4"><strong>Last run on instrument:</strong></div>
                 <div class="col-md-8">
                     <a href="{% url 'run_summary' instrument_name=last_instrument_run.instrument.name run_number=last_instrument_run.run_number run_version=last_instrument_run.run_version %}">{{ last_instrument_run.title }}</a>
-                    <strong class="text-{% colour_table_row last_instrument_run.status.value %}"> ({{ last_instrument_run.status.value }})</strong>
+                    <strong class="text-{% colour_table_row last_instrument_run.status.value_verbose %}"> ({{ last_instrument_run.status.value_verbose }})</strong>
                 </div>
             </div>
             {% if processing %}
@@ -44,7 +44,7 @@
             <div class="text-center">
                 <strong>Last run on instrument: </strong>
                 <a href="{% url 'run_summary' instrument_name=last_instrument_run.instrument.name run_number=last_instrument_run.run_number run_version=last_instrument_run.run_version %}">{{ last_instrument_run.title }}</a>
-                <strong class="text-{% colour_table_row last_instrument_run.status.value %}"> ({{ last_instrument_run.status.value }})</strong>
+                <strong class="text-{% colour_table_row last_instrument_run.status.value_verbose %}"> ({{ last_instrument_run.status.value_verbose }})</strong>
             </div>
             <div class="text-center">
                 All reduction jobs complete.

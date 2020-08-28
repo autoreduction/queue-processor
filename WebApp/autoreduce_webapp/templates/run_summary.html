@@ -30,12 +30,12 @@
         {% endif %}
         {% if run.message %}
             {% if 'Skipped' in run.message %}
-                <div class="alert alert-{% replace run.status.value 'Skipped' 'info' %} word-wrap" role="alert">
-                    <i class="fa fa-{% replace run.status.value 'Skipped' 'question' %} fa-{% replace run.status.value 'Skipped' 'question' %}-circle fa-lg"></i> <a href="#" class="js-log-display"> {{ run.message }}</a>
+                <div class="alert alert-{% replace run.status.value_verbose 'Skipped' 'info' %} word-wrap" role="alert">
+                    <i class="fa fa-{% replace run.status.value_verbose 'Skipped' 'question' %} fa-{% replace run.status.value_verbose 'Skipped' 'question' %}-circle fa-lg"></i> <a href="#" class="js-log-display"> {{ run.message }}</a>
                 </div>
             {% else %}
-                <div class="alert alert-{% replace run.status.value 'Error' 'danger' %} word-wrap" role="alert">
-                    <i class="fa fa-{% replace run.status.value 'Error' 'exclamation' %} fa-{% replace run.status.value 'Error' 'exclamation' %}-circle fa-lg"></i> <a href="#" class="js-log-display">[{{ run.finished }}] {{ run.message }}</a>
+                <div class="alert alert-{% replace run.status.value_verbose 'Error' 'danger' %} word-wrap" role="alert">
+                    <i class="fa fa-{% replace run.status.value_verbose 'Error' 'exclamation' %} fa-{% replace run.status.value_verbose 'Error' 'exclamation' %}-circle fa-lg"></i> <a href="#" class="js-log-display">[{{ run.finished }}] {{ run.message }}</a>
                 </div>
             {% endif %}
         {% endif %}
@@ -51,7 +51,7 @@
                                     {% endif %}
                                 </div>
                                 <div>
-                                    <strong>Status:</strong> <strong class="text-{% colour_table_row run.status.value %}">{{ run.status.value }}</strong>
+                                    <strong>Status:</strong> <strong class="text-{% colour_table_row run.status.value_verbose %}">{{ run.status.value_verbose }}</strong>
                                 </div>
                                 <div>
                                     <strong>Instrument:</strong> <a href="{% url 'instrument_summary' instrument=run.instrument.name %}">{{ run.instrument.name }}</a>
@@ -97,7 +97,7 @@
                                                 <span> (Last attempt)</span>
                                             {% endif %}
                                             {% if run.retry_run %}
-                                                <a href="{% url 'run_summary' instrument_name=run.instrument.name run_number=run.retry_run.run_number run_version=run.retry_run.run_version %}"> ({{ run.retry_run.status.value }})</a>
+                                                <a href="{% url 'run_summary' instrument_name=run.instrument.name run_number=run.retry_run.run_number run_version=run.retry_run.run_version %}"> ({{ run.retry_run.status.value_verbose }})</a>
                                             {% endif %}
                                         {% else %}
                                             Never
@@ -196,7 +196,7 @@
                                                 {{ job.title }}
                                             {% endif %}
                                         </td>
-                                        <td class="text-{% colour_table_row job.status.value %}"><strong>{{ job.status.value }}</strong></td>
+                                        <td class="text-{% colour_table_row job.status.value_verbose %}"><strong>{{ job.status.value_verbose }}</strong></td>
                                         <td title="{{ job.last_updated|date:'SHORT_DATETIME_FORMAT' }}">{{ job.last_updated|naturaltime }}</td>
                                         <td>
                                             {% if started_by %}
