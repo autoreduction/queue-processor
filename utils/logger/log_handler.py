@@ -9,9 +9,6 @@ A module for gathering and persistently storing data collected about Autoreducti
 performance.
 """
 
-# Internal Dependencies
-
-# External Dependencies
 import sys
 import os
 import logging
@@ -26,10 +23,8 @@ class GetLogger:
         :param log_file_name: (str) filename to log too - Default is script name calling GetLogger
         :param stream_log: (Bool) True or False to stream_log log to console when running
         """
-        # self.log_level = log_level
-        # self.message = message
 
-        # # Set log file name equal to callers filename with .log extension appended if None
+        #  Set log file name equal to callers filename with .log extension appended if None
         caller_frame = os.path.abspath((inspect.stack()[1])[1])
         caller_file_name = f"{os.path.splitext(os.path.basename(caller_frame))[0]}.log"
         self.log_file_name = log_file_name if log_file_name is not None else caller_file_name
@@ -70,13 +65,10 @@ class GetLogger:
         logger.setLevel(self.set_log_level(self.log_level))
 
         file_handler = logging.FileHandler(self.log_file_name)
-        file_handler.setLevel(self.set_log_level(self.log_level))  # remove if useless
+        file_handler.setLevel(self.set_log_level(self.log_level))
         file_handler.setFormatter(self.set_log_format())
-        # file_handler.setFormatter()
         logger.addHandler(file_handler)
 
         if self.stream_log:
             logger.addHandler(self.set_stream_handler())
-
-        print("logging from log handler")
         return logger
