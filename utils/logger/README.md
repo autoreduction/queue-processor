@@ -30,7 +30,15 @@ GetLogger(log_level, log_file_name, print_to_console)
     * Type: Bool (True False)
     * Default value: False
     
-Basic usage:
+
+#### Available log levels:
+* `logger.trace('trace')`
+* `logger.debug('debug')`
+* `logger.info('info')`
+* `logger.warning('warning')`
+* `logger.error('error')`
+
+#### Basic usage:
 ```python
 from utils.logger.log_handler import GetLogger
 
