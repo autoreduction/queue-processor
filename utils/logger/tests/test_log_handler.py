@@ -19,7 +19,7 @@ import logging
 class TestGetLogger(unittest.TestCase):
 
     @patch("utils.logger.log_handler.GetLogger.create_logger", return_value=None)
-    def test_set_log_level(self, mock_create_logger):
+    def test_set_log_level(self, _):
         """
         Test: set_log_level returns a value equal to logging.DEBUG
         When: called with a log level argument of DEBUG
@@ -29,7 +29,7 @@ class TestGetLogger(unittest.TestCase):
         self.assertEqual(actual, expected)
 
     @patch("utils.logger.log_handler.GetLogger.create_logger", return_value=None)
-    def test_set_log_format(self, mock_create_logger):
+    def test_set_log_format(self, _):
         """
         Test: set_log_format() returns the correct log format
         When: called
@@ -54,7 +54,7 @@ class TestGetLogger(unittest.TestCase):
         Test: create_logger_with_stream returns object
         When: called with valid init values
         """
-        with patch.object(GetLogger, "__init__", lambda w, x, y, z: None) as get_logger:
+        with patch.object(GetLogger, "__init__", lambda w, x, y, z: None):
             c = GetLogger(None, None, None)
             c.log_level = 'DEBUG'
             c.log_file_name = None
