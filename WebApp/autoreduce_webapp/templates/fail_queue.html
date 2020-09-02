@@ -45,9 +45,9 @@
                 <tbody>
                     {% for job in queue %}
                       {% if job.retry_run %}
-                        <tr name='runRow' class="{% colour_table_row job.retry_run.status.value %}">
+                        <tr name='runRow' class="{% colour_table_row job.retry_run.status.value_verbose %}">
                       {% else %}
-                        <tr name='runRow' class="{% colour_table_row job.status.value %}">
+                        <tr name='runRow' class="{% colour_table_row job.status.value_verbose %}">
                       {% endif %}
                             <td><input type='checkbox' name='runCheckbox' data-run_number='{{job.run_number}}' data-run_version='{{job.run_version}}' data-rb_number='{{job.experiment.reference_number}}'></td>
                             <td>
@@ -63,7 +63,7 @@
                                         <span> (Last attempt)</span>
                                     {% endif %}
                                     {% if job.retry_run %}
-                                        <a href="{% url 'run_summary' instrument_name=job.instrument.name run_number=job.retry_run.run_number run_version=job.retry_run.run_version %}"> ({{ job.retry_run.status.value }})</a>
+                                        <a href="{% url 'run_summary' instrument_name=job.instrument.name run_number=job.retry_run.run_number run_version=job.retry_run.run_version %}"> ({{ job.retry_run.status.value_verbose }})</a>
                                     {% endif %}
                                 {% else %}
                                     Never
