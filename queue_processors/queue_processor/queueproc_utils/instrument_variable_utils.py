@@ -250,24 +250,21 @@ class InstrumentVariablesUtils:
             if len(str_value) > 300:
                 raise DataTooLong
             model = db.start_database().variable_model
-            variable = model.Variable(name=key,
-                                      value=str_value,
-                                      type=VariableUtils().get_type_string(value),
-                                      is_advanced=is_advanced,
-                                      help_text=self._get_help_text('standard_vars',
-                                                                    key,
-                                                                    instrument.name,
-                                                                    script))
-
-            db.save_record(variable)
-
-            instrument_variable = model.InstrumentVariable(start_run=0,
+            help_text = self._get_help_text('standard_vars', key, instrument.name, script)
+            var_type = VariableUtils().get_type_string(value)
+            # Please note: As instrument_variable inherits from Variable, the below creates BOTH an
+            # an InstrumentVariable and Variable record in the database when saved. As such,
+            # both sets of fields are required for initialisation.
+            instrument_variable = model.InstrumentVariable(name=key,
+                                                           value=str_value,
+                                                           type=var_type,
+                                                           is_advanced=is_advanced,
+                                                           help_text=help_text,
+                                                           start_run=0,
                                                            instrument_id=instrument.id,
-                                                           variable_ptr_id=variable.id,
                                                            tracks_script=1)
 
             db.save_record(instrument_variable)
-
             variables.append(instrument_variable)
         return variables
 

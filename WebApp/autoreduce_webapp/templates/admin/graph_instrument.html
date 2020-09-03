@@ -22,7 +22,7 @@ var reductionRuns = [
         'runNumber': '{{ run.run_number}}',
         'runVersion': '{{ run.run_version}}',
         'executionTime': '{{ run.run_time }}',
-        'status': '{{ run.status.value }}',
+        'status': '{{ run.status.value_verbose }}',
         'created': '{{ run.created }}'
     },
     {% endfor %}
