@@ -17,6 +17,7 @@ def run_process_and_log(list_of_args):
     """
     Call a process using Popen and logs output to file
     :param list_of_args: list of arguments for Popen
+    :return: (bool) True if succeeded   
     """
     process = subprocess.Popen(list_of_args,
                                stdout=subprocess.PIPE,
