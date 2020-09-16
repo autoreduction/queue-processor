@@ -17,17 +17,24 @@ def run_process_and_log(list_of_args):
     """
     Call a process using Popen and logs output to file
     :param list_of_args: list of arguments for Popen
+    :return: (bool) True if succeeded
     """
     process = subprocess.Popen(list_of_args,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
     process_output, process_error = process.communicate()
     exit_status = process.returncode
-    if process_output:
+    # Typically, an exit status of 0 indicates that the process ran
+    # successfully. However, this is for example found not to be true when
+    # not have the right permission with activemq
+    if exit_status != 0 or 'Permission denied' in process_error.decode("utf-8"):
+        # log both process_output and process_error, since process_output
+        # may also info that help with diagnose the problem
         BUILD_LOGGER.logger.info(process_output)
-    if exit_status != 0:
         BUILD_LOGGER.logger.error(process_error)
         return False
+    if process_output:
+        BUILD_LOGGER.logger.info(process_output)
     return True
 
 
