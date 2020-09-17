@@ -1,0 +1,12 @@
+version: '3'
+services:
+# TODO the mysql needs the build/database/reset_autoreduction_db.sql commands ran into it as setup
+  mysql:
+    image: mysql/mysql-server:5.7
+    ports:
+    - "3306:3306"
+# test that this connects to the mysql server successfully
+  web:
+    build: ..
+    ports:
+      - "8000:8000"
