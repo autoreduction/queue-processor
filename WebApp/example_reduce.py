@@ -5,32 +5,52 @@
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 # pylint: skip-file
-import sys
+import os
 import shutil
+import sys
 import reduce_vars as web_var
 
+def validate(input_file, output_dir):
+    """
+    Function to ensure that the files we want to use in reduction exist.
+    Please add any files/directories to the required_files/dirs lists.
+    """
+    print("Running validation")
+    required_files = [input_file]
+    required_dirs = [output_dir]
+    for file_path in required_files:
+        if not os.path.isfile(file_path):
+            raise RuntimeError("Unable to find file: {}".format(file_path))
+    for dir in required_dirs:
+        if not os.path.isdir(dir):
+            raise RuntimeError("Unable to find directory: {}".format(dir))
+    print("Validation successful")
+        
 
-def reduce(data, output_dir):
-    shutil.copy(data, output_dir)
+def main(input_file, output_dir):
+    """
+    Method called by Autoreduction to a reduction job.
 
+    :param input_file: full path of raw data file
+    :type input_file: str
+    :param output_dir: directory where reduced data will be stored and a
+        location which user can access
+    :type output_dir: str
+    """
+    validate(input_file, output_dir)
 
-def main(*args, **kwargs):
-    if not kwargs and sys.argv: # If called from command line
-        if len(sys.argv) == 3 and '=' not in sys.argv:
-            # with two simple inputs
-            kwargs = {'data': sys.argv[1], 'output': sys.argv[2]}
-        else:
-            # With key value inputs
-            kwargs = dict(x.split('=', 1) for x in sys.argv[1:])
-    if not kwargs and 'data' not in kwargs and 'output' not in kwargs:
-        raise ValueError("Data and Output paths must be supplied")
-   
-    # If additional storage location are required,
-    # return them as a list of accessible directory paths
-    print kwargs
-    additional_save_location = reduce(kwargs['data'], kwargs['output'])
-    return additional_save_location
+    # Example of printing some stuff which is captured in autoreduction
+    # output log file
+    print(web_var)
+    print("input_file = " + str(input_file))
+    print("output_dir = " + str(output_dir))
 
+    # Copy raw data to output dir.
+    # Note this should only be done if raw files are small and for specific
+    # purpose such as testing
+    shutil.copy(input_file, output_dir)
+
+    # And of course, here and below insert your reduction code!
 
 if __name__ == "__main__":
-    main()
+    main("some input file", "some output dir")
