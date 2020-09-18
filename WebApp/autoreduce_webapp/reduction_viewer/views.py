@@ -9,7 +9,7 @@ The view for the django database model
 
 This file contains a large amount of pylint disables as there are no
 working unit tests for this code at the point of correcting the pylint errors
-as such we shoud remove the pylint disables and fix the code when we
+as such we should remove the pylint disables and fix the code when we
 can be more confident we are not affecting the execution
 """
 import json
@@ -99,7 +99,7 @@ def logout(request):
 @login_and_uows_valid
 @render_with('overview.html')
 # pylint:disable=no-member,unused-argument
-def overview(request):
+def overview(_):
     """
     Render the overview landing page (redirect from /index)
     """
@@ -214,126 +214,10 @@ def fail_queue(request):
 
 
 @login_and_uows_valid
-@render_with('run_list.html')
-# pylint:disable=no-member,too-many-locals,too-many-branches,too-many-statements
-def run_list(request):
-    """
-    Render list of runs
-    """
-    context_dictionary = {}
-    instruments = []
-    owned_instruments = []
-    experiments = {}
-
-    # Superuser sees everything
-    if request.user.is_superuser or not USER_ACCESS_CHECKS:
-        instrument_names = Instrument.objects.order_by('name', 'name')
-        is_instrument_scientist = True
-        if instrument_names:
-            for instrument_name in instrument_names:
-                experiments[instrument_name] = []
-                instrument = Instrument.objects.get(name=instrument_name)
-                instrument_experiments = Experiment.objects.\
-                    filter(reduction_runs__instrument=instrument).\
-                    values_list('reference_number', flat=True)
-                for experiment in instrument_experiments:
-                    experiments[instrument_name].append(str(experiment))
-    else:
-        with ICATCache(AUTH='uows',
-                       SESSION={'sessionid': request.session.get('sessionid')}) as icat:
-            instrument_names = icat.get_valid_instruments(int(request.user.username))
-            if instrument_names:
-                experiments = icat.\
-                    get_valid_experiments_for_instruments(int(request.user.username),
-                                                          instrument_names)
-            owned_instruments = icat.get_owned_instruments(int(request.user.username))
-            is_instrument_scientist = owned_instruments if owned_instruments else True
-
-    # get database status labels up front to reduce queries to database
-    status_error = StatusUtils().get_error()
-    status_queued = StatusUtils().get_queued()
-    status_processing = StatusUtils().get_processing()
-
-    # Keep count of the total number of runs, to preload if there aren't too many.
-    total_runs = 0
-
-    for instrument_name in instrument_names:
-        try:
-            instrument = Instrument.objects.get(name=instrument_name)
-        # pylint:disable=bare-except
-        except:
-            continue
-        instrument_queued_runs = 0
-        instrument_processing_runs = 0
-        instrument_error_runs = 0
-
-        instrument_obj = {
-            'name': instrument_name,
-            'experiments': [],
-            'is_instrument_scientist': is_instrument_scientist,
-            'is_active': instrument.is_active,
-            'is_paused': instrument.is_paused
-        }
-
-        if instrument_name in owned_instruments:
-            matching_experiments = list(set(Experiment.objects.
-                                            filter(reduction_runs__instrument=instrument)))
-        else:
-            exp_refs = experiments[instrument_name] if instrument_name in experiments else []
-            matching_experiments = Experiment.objects.filter(reference_number__in=exp_refs)
-
-        for experiment in matching_experiments:
-            runs = ReductionRun.objects.filter(experiment=experiment,
-                                               instrument=instrument).order_by('-created')
-            total_runs += runs.count()
-
-            # count how many runs are in status error, queued and processing
-            experiment_error_runs = runs.filter(status__exact=status_error).count()
-            experiment_queued_runs = runs.filter(status__exact=status_queued).count()
-            experiment_processing_runs = runs.filter(status__exact=status_processing).count()
-
-            # Add experiment stats to instrument
-            instrument_queued_runs += experiment_queued_runs
-            instrument_processing_runs += experiment_processing_runs
-            instrument_error_runs += experiment_error_runs
-
-            experiment_obj = {
-                'reference_number': experiment.reference_number,
-                'progress_summary': {
-                    'processing': experiment_processing_runs,
-                    'queued': experiment_queued_runs,
-                    'error': experiment_error_runs,
-                }
-            }
-            instrument_obj['experiments'].append(experiment_obj)
-
-        instrument_obj['progress_summary'] = {
-            'processing': instrument_processing_runs,
-            'queued': instrument_queued_runs,
-            'error': instrument_error_runs,
-        }
-
-        # Sort lists before appending
-        instrument_obj['experiments'] = sorted(instrument_obj['experiments'],
-                                               key=lambda k: k['reference_number'],
-                                               reverse=True)
-        instruments.append(instrument_obj)
-
-    context_dictionary['instrument_list'] = instruments
-    context_dictionary['preload_runs'] = (total_runs < PRELOAD_RUNS_UNDER)
-    if is_instrument_scientist:
-        context_dictionary['default_tab'] = 'run_number'
-    else:
-        context_dictionary['default_tab'] = 'experiment'
-
-    return context_dictionary
-
-
-@login_and_uows_valid
 @check_permissions
 @render_with('load_runs.html')
 # pylint:disable=no-member,unused-argument
-def load_runs(request, reference_number=None, instrument_name=None):
+def load_runs(_, reference_number=None, instrument_name=None):
     """
     Render load runs
     """
@@ -366,7 +250,7 @@ def load_runs(request, reference_number=None, instrument_name=None):
 @check_permissions
 @render_with('run_summary.html')
 # pylint:disable=no-member,unused-argument
-def run_summary(request, instrument_name=None, run_number=None, run_version=0):
+def run_summary(_, instrument_name=None, run_number=None, run_version=0):
     """
     Render run summary
     """
@@ -411,34 +295,6 @@ def run_summary(request, instrument_name=None, run_number=None, run_version=0):
     return context_dictionary
 
 
-def started_by_id_to_name(started_by_id=None):
-    """
-    Returns name of the user or team that submitted an autoreduction run given an ID number
-    :param started_by_id: The ID of the user who started the run, or a control code if not started by a user
-    :return:
-        If started by a valid user, returns the name either of the user in the format '[forename] [surname]'.
-        If started automatically, returns "Autoreduciton service".
-        If started manually, returns "Development team".
-        Otherwise, returns None.
-    """
-    name = None
-    if started_by_id is not None:
-        if started_by_id == -1:
-            name = "Development team"
-        elif started_by_id == 0:
-            name = "Autoreduction service"
-        elif started_by_id > 0:
-            try:
-                user_record = User.objects.get(id=started_by_id)
-                name = f"{user_record.first_name} {user_record.last_name}"
-            except ObjectDoesNotExist as exception:
-                LOGGER.error(exception)
-                name = None
-        elif started_by_id < -1:
-            name = None
-    return name
-
-
 @login_and_uows_valid
 @check_permissions
 @render_with('instrument_summary.html')
@@ -450,6 +306,10 @@ def instrument_summary(request, instrument=None):
     try:
         filter_by = request.GET.get('filter', 'run')
         instrument_obj = Instrument.objects.get(name=instrument)
+    except Instrument.DoesNotExist:
+        return {'message': "Instrument not found."}
+
+    try:
         sort_by = request.GET.get('sort', 'run')
         if sort_by == 'run':
             runs = (ReductionRun.objects
@@ -463,6 +323,10 @@ def instrument_summary(request, instrument=None):
                     .select_related('status')
                     .filter(instrument=instrument_obj)
                     .order_by('-last_updated'))
+
+        if len(runs) == 0:
+            return {'message': "No runs found for instrument."}
+
         context_dictionary = {
             'instrument': instrument_obj,
             'instrument_name': instrument_obj.name,
@@ -497,7 +361,7 @@ def instrument_summary(request, instrument=None):
     # pylint:disable=broad-except
     except Exception as exception:
         LOGGER.error(exception)
-        context_dictionary = {}
+        return {'message': "An unexpected error has occurred when loading the instrument."}
 
     return context_dictionary
 
@@ -567,7 +431,7 @@ def experiment_summary(request, reference_number=None):
 
 @render_with('help.html')
 # pylint:disable=redefined-builtin,unused-argument
-def help(request):
+def help(_):
     """
     Render help page
     """
@@ -591,7 +455,7 @@ def instrument_pause(request, instrument=None):
 
 @render_with('admin/graph_home.html')
 # pylint:disable=no-member,unused-argument
-def graph_home(request):
+def graph_home(_):
     """
     Render graph page
     """
@@ -650,7 +514,7 @@ def graph_instrument(request, instrument_name):
 @require_admin
 @render_with('admin/stats.html')
 # pylint:disable=no-member,unused-argument
-def stats(request):
+def stats(_):
     """
     Render run statistics page
     """
@@ -670,3 +534,31 @@ def stats(request):
     }
 
     return context_dictionary
+
+
+def started_by_id_to_name(started_by_id=None):
+    """
+    Returns name of the user or team that submitted an autoreduction run given an ID number
+    :param started_by_id: The ID of the user who started the run, or a control code if not started by a user
+    :return:
+        If started by a valid user, returns the name either of the user in the format '[forename] [surname]'.
+        If started automatically, returns "Autoreduciton service".
+        If started manually, returns "Development team".
+        Otherwise, returns None.
+    """
+    name = None
+    if started_by_id is not None:
+        if started_by_id == -1:
+            name = "Development team"
+        elif started_by_id == 0:
+            name = "Autoreduction service"
+        elif started_by_id > 0:
+            try:
+                user_record = User.objects.get(id=started_by_id)
+                name = f"{user_record.first_name} {user_record.last_name}"
+            except ObjectDoesNotExist as exception:
+                LOGGER.error(exception)
+                name = None
+        elif started_by_id < -1:
+            name = None
+    return name
