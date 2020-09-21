@@ -98,7 +98,7 @@ def logout(request):
 
 @login_and_uows_valid
 @render_with('overview.html')
-# pylint:disable=no-member,unused-argument
+# pylint:disable=no-member
 def overview(_):
     """
     Render the overview landing page (redirect from /index)
@@ -216,7 +216,7 @@ def fail_queue(request):
 @login_and_uows_valid
 @check_permissions
 @render_with('load_runs.html')
-# pylint:disable=no-member,unused-argument
+# pylint:disable=no-member
 def load_runs(_, reference_number=None, instrument_name=None):
     """
     Render load runs
@@ -249,7 +249,7 @@ def load_runs(_, reference_number=None, instrument_name=None):
 @login_and_uows_valid
 @check_permissions
 @render_with('run_summary.html')
-# pylint:disable=no-member,unused-argument
+# pylint:disable=no-member
 def run_summary(_, instrument_name=None, run_number=None, run_version=0):
     """
     Render run summary
@@ -430,7 +430,7 @@ def experiment_summary(request, reference_number=None):
 
 
 @render_with('help.html')
-# pylint:disable=redefined-builtin,unused-argument
+# pylint:disable=redefined-builtin
 def help(_):
     """
     Render help page
@@ -454,7 +454,7 @@ def instrument_pause(request, instrument=None):
 
 
 @render_with('admin/graph_home.html')
-# pylint:disable=no-member,unused-argument
+# pylint:disable=no-member
 def graph_home(_):
     """
     Render graph page
@@ -513,7 +513,7 @@ def graph_instrument(request, instrument_name):
 
 @require_admin
 @render_with('admin/stats.html')
-# pylint:disable=no-member,unused-argument
+# pylint:disable=no-member
 def stats(_):
     """
     Render run statistics page
@@ -539,10 +539,10 @@ def stats(_):
 def started_by_id_to_name(started_by_id=None):
     """
     Returns name of the user or team that submitted an autoreduction run given an ID number
-    :param started_by_id: The ID of the user who started the run, or a control code if not started by a user
+    :param started_by_id: (int) The ID of the user who started the run, or a control code if not started by a user
     :return:
         If started by a valid user, returns the name either of the user in the format '[forename] [surname]'.
-        If started automatically, returns "Autoreduciton service".
+        If started automatically, returns "Autoreducton service".
         If started manually, returns "Development team".
         Otherwise, returns None.
     """
