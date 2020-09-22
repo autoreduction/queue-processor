@@ -24,8 +24,7 @@ from django.http import JsonResponse, HttpResponseNotFound
 from django.shortcuts import redirect
 
 from autoreduce_webapp.icat_cache import ICATCache
-from autoreduce_webapp.settings import (UOWS_LOGIN_URL, PRELOAD_RUNS_UNDER,
-                                        USER_ACCESS_CHECKS, DEVELOPMENT_MODE)
+from autoreduce_webapp.settings import UOWS_LOGIN_URL, USER_ACCESS_CHECKS, DEVELOPMENT_MODE
 from autoreduce_webapp.uows_client import UOWSClient
 from autoreduce_webapp.view_utils import (login_and_uows_valid, render_with,
                                           require_admin, check_permissions)
@@ -125,16 +124,17 @@ def run_queue(request):
     # Filter those which the user shouldn't be able to see
     if USER_ACCESS_CHECKS and not request.user.is_superuser:
         with ICATCache(AUTH='uows', SESSION={'sessionid': request.session['sessionid']}) as icat:
-            # pylint:disable=deprecated-lambda
             pending_jobs = filter(lambda job: job.experiment.reference_number in
-                                  icat.get_associated_experiments(int(request.user.username)),
+                                              icat.get_associated_experiments(
+                                                  int(request.user.username)),
                                   pending_jobs)  # check RB numbers
             pending_jobs = filter(lambda job: job.instrument.name in
-                                  icat.get_owned_instruments(int(request.user.username)),
+                                              icat.get_owned_instruments(
+                                                  int(request.user.username)),
                                   pending_jobs)  # check instrument
     # Initialise list to contain the names of user/team that started runs
     started_by = []
-    # cycle through all the filtered runs and retrieve the name of the user/team that started the run
+    # cycle through all filtered runs and retrieve the name of the user/team that started the run
     for run in pending_jobs:
         started_by.append(started_by_id_to_name(run.started_by))
     # zip the run information with the user/team name to enable simultaneous iteration with django
@@ -157,7 +157,7 @@ def fail_queue(request):
     context_dictionary = {'queue': failed_jobs,
                           'status_success': StatusUtils().get_completed(),
                           'status_failed': StatusUtils().get_error()
-                         }
+                          }
 
     if request.method == 'POST':
         # perform the specified action
@@ -369,7 +369,7 @@ def instrument_summary(request, instrument=None):
 @login_and_uows_valid
 @check_permissions
 @render_with('experiment_summary.html')
-# pylint:disable=no-member
+# pylint:disable=no-member,too-many-locals
 def experiment_summary(request, reference_number=None):
     """
     Render experiment summary
@@ -536,29 +536,35 @@ def stats(_):
     return context_dictionary
 
 
+# Constants that define the type of user that submitted a run
+DEVELOPMENT_TEAM_SUBMISSION = -1  # For example: using manual_submission.py
+AUTOREDUCTION_SERVICE_SUBMISSION = 0  # A user submits a run
+
+
 def started_by_id_to_name(started_by_id=None):
     """
     Returns name of the user or team that submitted an autoreduction run given an ID number
-    :param started_by_id: (int) The ID of the user who started the run, or a control code if not started by a user
+    :param started_by_id: (int) The ID of the user who started the run, or a control code if not
+     started by a user
     :return:
-        If started by a valid user, returns the name either of the user in the format '[forename] [surname]'.
+        If started by a valid user, returns the name either of the user in the format
+         '[forename] [surname]'.
         If started automatically, returns "Autoreducton service".
         If started manually, returns "Development team".
         Otherwise, returns None.
     """
-    name = None
-    if started_by_id is not None:
-        if started_by_id == -1:
-            name = "Development team"
-        elif started_by_id == 0:
-            name = "Autoreduction service"
-        elif started_by_id > 0:
-            try:
-                user_record = User.objects.get(id=started_by_id)
-                name = f"{user_record.first_name} {user_record.last_name}"
-            except ObjectDoesNotExist as exception:
-                LOGGER.error(exception)
-                name = None
-        elif started_by_id < -1:
-            name = None
-    return name
+    if started_by_id is None or started_by_id < -1:
+        return None
+
+    if started_by_id == DEVELOPMENT_TEAM_SUBMISSION:
+        return "Development team"
+
+    if started_by_id == AUTOREDUCTION_SERVICE_SUBMISSION:
+        return "Autoreduction service"
+
+    try:
+        user_record = User.objects.get(id=started_by_id)
+        return f"{user_record.first_name} {user_record.last_name}"
+    except ObjectDoesNotExist as exception:
+        LOGGER.error(exception)
+        return None
