@@ -198,7 +198,7 @@ ICAT = {
     'AUTH': 'auth',
     'URL': 'host',
     'USER': 'user',
-    'PASSWORD': 'passwod'
+    'PASSWORD': 'password'
 }
 
 # Outdated Browsers
