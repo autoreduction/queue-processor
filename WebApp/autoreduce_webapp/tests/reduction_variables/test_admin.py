@@ -12,7 +12,7 @@ from unittest import mock
 class TestAdmin(unittest.TestCase):
 
     @mock.patch("django.contrib.admin")
-    def test_something(self, admin_mock):
+    def test_admin_registers_expected_models(self, admin_mock):
         # This import trigger the code under test
         import autoreduce_webapp.admin as imported_admin
 
