@@ -389,7 +389,7 @@ class PostProcessAdmin:
 
             # Specify instrument directories - if excitation instrument remove run_number from dir
             no_run_number_directory = False
-            if self.instrument in MISC["excitation_instruments"]:
+            if self.instrument in MISC["flat_output_instruments"]:
                 no_run_number_directory = True
 
             instrument_output_directory = MISC["ceph_directory"] % (self.instrument,
@@ -520,7 +520,7 @@ class PostProcessAdmin:
         sub-folders.
         """
         if os.path.isdir(copy_destination) \
-                and self.instrument not in MISC["excitation_instruments"]:
+                and self.instrument not in MISC["flat_output_instruments"]:
             self._remove_directory(copy_destination)
 
         self.message.reduction_data.append(copy_destination)
