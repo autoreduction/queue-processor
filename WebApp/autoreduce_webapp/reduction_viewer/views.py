@@ -156,8 +156,7 @@ def fail_queue(request):
                                               Q(hidden_in_failviewer=False)).order_by('-created')
     context_dictionary = {'queue': failed_jobs,
                           'status_success': StatusUtils().get_completed(),
-                          'status_failed': StatusUtils().get_error()
-                          }
+                          'status_failed': StatusUtils().get_error()}
 
     if request.method == 'POST':
         # perform the specified action
@@ -473,11 +472,12 @@ def graph_home(_):
 # pylint:disable=no-member
 def graph_instrument(request, instrument_name):
     """
-    Render instrument speciifc graphing page
+    Render instrument specific graphing page
     """
     instrument = Instrument.objects.filter(name=instrument_name)
     if not instrument:
         return HttpResponseNotFound('<h1>Instrument not found</h1>')
+
     runs = (ReductionRun.objects.
             # Get the foreign key 'status' now. Otherwise many queries
             # made from load_runs which is very slow.
@@ -504,10 +504,12 @@ def graph_instrument(request, instrument_name):
             run.run_time = (run.finished - run.started).total_seconds()
         else:
             run.run_time = 0
+
     context_dictionary = {
         'runs': runs,
         'instrument': instrument.first().name
     }
+
     return context_dictionary
 
 
@@ -536,11 +538,6 @@ def stats(_):
     return context_dictionary
 
 
-# Constants that define the type of user that submitted a run
-DEVELOPMENT_TEAM_SUBMISSION = -1  # For example: using manual_submission.py
-AUTOREDUCTION_SERVICE_SUBMISSION = 0  # A user submits a run
-
-
 def started_by_id_to_name(started_by_id=None):
     """
     Returns name of the user or team that submitted an autoreduction run given an ID number
@@ -556,10 +553,10 @@ def started_by_id_to_name(started_by_id=None):
     if started_by_id is None or started_by_id < -1:
         return None
 
-    if started_by_id == DEVELOPMENT_TEAM_SUBMISSION:
+    if started_by_id == -1:
         return "Development team"
 
-    if started_by_id == AUTOREDUCTION_SERVICE_SUBMISSION:
+    if started_by_id == 0:
         return "Autoreduction service"
 
     try:
