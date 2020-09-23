@@ -8,23 +8,23 @@
 Tests for post process admin and helper functionality
 """
 
-import unittest
+import json
 import os
 import shutil
 import sys
-
-import json
-from pathlib import PosixPath
+import unittest
+from pathlib import Path
 from tempfile import mkdtemp, NamedTemporaryFile
+
 from mock import patch, call, Mock, mock_open
 
 from model.message.message import Message
 from paths.path_manipulation import append_path
-from utils.settings import ACTIVEMQ_SETTINGS
-from utils.project.structure import get_project_root
-from utils.clients.settings.client_settings_factory import ActiveMQSettings
-from queue_processors.autoreduction_processor.settings import MISC
 from queue_processors.autoreduction_processor.post_process_admin import (PostProcessAdmin, main)
+from queue_processors.autoreduction_processor.settings import MISC
+from utils.clients.settings.client_settings_factory import ActiveMQSettings
+from utils.project.structure import get_project_root
+from utils.settings import ACTIVEMQ_SETTINGS
 
 
 # pylint:disable=too-many-public-methods, protected-access,no-self-use,too-many-instance-attributes
@@ -277,7 +277,7 @@ class TestPostProcessAdmin(unittest.TestCase):
 
         actual = ppa.create_log_path(file_name_with_extension=file_name,
                                      log_directory=log_directory)
-        expected = PosixPath(f"{log_directory}{log_and_error_name}{file_name}")
+        expected = Path(f"{log_directory}{log_and_error_name}{file_name}")
 
         self.assertEqual(expected, actual)
 
