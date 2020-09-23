@@ -187,7 +187,7 @@ class PostProcessAdmin:
                               "format: \n"
                               "%s", instrument_output_directory)
 
-        if no_run_number_directory is True:
+        if no_run_number_directory:
             # Remove the run number folder at the end
             remove_run_number_directory = instrument_output_directory.rfind('/') + 1
             instrument_output_directory = instrument_output_directory[:remove_run_number_directory]
