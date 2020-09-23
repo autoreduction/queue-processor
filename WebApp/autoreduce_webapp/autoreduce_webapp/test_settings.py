@@ -6,13 +6,26 @@
 # ############################################################################### #
 # pylint: skip-file
 import os
+import configparser
+
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+
+# Read the utilities .ini file that contains service credentials
+INI_FILE = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'utils', 'credentials.ini')
+CONFIG = configparser.ConfigParser()
+CONFIG.read(INI_FILE)
+
+
+def get_str(section, key):
+    return str(CONFIG.get(section, key))
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/dev/howto/deployment/checklist/
 
-SECRET_KEY = "TEST_SECRET"
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = 'YOUR-SECRET-KEY'
 
 # SECURITY WARNING: don't run with these turned on in production!
 
@@ -22,7 +35,7 @@ SECRET_KEY = "TEST_SECRET"
 DEBUG = True
 DEBUG_PROPAGATE_EXCEPTIONS = False
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'reducedev2.isis.cclrc.ac.uk']
 INTERNAL_IPS = ['localhost', '127.0.0.1']
 
 # Application definition
@@ -94,11 +107,17 @@ WSGI_APPLICATION = 'autoreduce_webapp.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': ':memory:',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': get_str('DATABASE', 'name'),
+        'USER': get_str('DATABASE', 'user'),
+        'PASSWORD': get_str('DATABASE', 'password'),
+        'HOST': get_str('DATABASE', 'host'),
+        'PORT': get_str('DATABASE', 'port'),
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        },
     }
 }
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/dev/topics/i18n/
@@ -170,9 +189,9 @@ ACTIVEMQ = {
         '/queue/ReductionComplete',
         '/queue/ReductionError'
     ],
-    'username': 'user',
-    'password': 'pass',
-    'broker': ['auth', '12345'],
+    'username': get_str('QUEUE', 'user'),
+    'password': get_str('QUEUE', 'password'),
+    'broker': [(get_str('QUEUE', 'host'), get_str('QUEUE', 'port'))],
     'SSL': False
 }
 
@@ -195,10 +214,10 @@ else:
 # ICAT
 
 ICAT = {
-    'AUTH': 'auth',
-    'URL': 'host',
-    'USER': 'user',
-    'PASSWORD': 'password'
+    'AUTH': get_str('ICAT', 'auth'),
+    'URL': get_str('ICAT', 'host'),
+    'USER': get_str('ICAT', 'user'),
+    'PASSWORD': get_str('ICAT', 'password')
 }
 
 # Outdated Browsers
