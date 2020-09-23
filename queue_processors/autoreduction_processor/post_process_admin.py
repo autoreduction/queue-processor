@@ -489,30 +489,6 @@ class PostProcessAdmin:
             logger.error(excep)
         return None
 
-    def _new_reduction_data_path(self, path):
-        """
-        Creates a pathname for the reduction data, factoring in existing run data.
-        :param path: Base path for the run data (should follow convention, without version number)
-        :return: A pathname for the new reduction data
-        """
-        logger.info("_new_reduction_data_path argument: %s", path)
-        # if there is an 'overwrite' key/member with a None/False value
-        if not self.message.overwrite:
-            if os.path.isdir(path):  # if the given path already exists..
-                contents = os.listdir(path)
-                highest_vers = -1
-                for item in contents:  # ..for every item, if it's a dir and a int..
-                    if os.path.isdir(os.path.join(path, item)):
-                        try:  # ..store the highest int
-                            vers = int(item)
-                            highest_vers = max(highest_vers, vers)
-                        except ValueError:
-                            pass
-                this_vers = highest_vers + 1
-                return append_path(path, [str(this_vers)])
-        # (else) if no overwrite, overwrite true, or the path doesn't exist: return version 0 path
-        return append_path(path, "0")
-
     def _append_run_version(self, path):
         """
         Append the run version to the output directory. If its the first run run-version-0 will be
