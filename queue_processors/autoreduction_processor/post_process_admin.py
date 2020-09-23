@@ -14,6 +14,7 @@
 """
 Post Process Administrator. It kicks off cataloging and reduction jobs.
 """
+import glob
 import io
 import errno
 import logging
@@ -509,6 +510,21 @@ class PostProcessAdmin:
                 return append_path(path, [str(this_vers)])
         # (else) if no overwrite, overwrite true, or the path doesn't exist: return version 0 path
         return append_path(path, "0")
+
+    def _append_run_version(self, path):
+        """
+        Append the run version to the output directory. If its the first run run-version-0 will be
+        added, if overwrite is true run-version-0 will always be overwritten
+        :param path: The reduction output path
+        :return: The reduction output path with the run version appended
+        """
+        if self.message.overwrite:
+            return append_path(path, ["run-version-0"])
+        run_versions = [int(i.split("-")[-1]) for i in glob.glob("run-version-[0-9]*")]
+        try:
+            return append_path(path, [f"run-version-{max(run_versions) + 1}"])
+        except ValueError:
+            return append_path(path, ["run-version-0"])
 
     def copy_temp_directory(self, temp_result_dir, copy_destination):
         """
