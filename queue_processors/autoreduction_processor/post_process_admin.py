@@ -435,7 +435,6 @@ class PostProcessAdmin:
 
             logger.info("Reduction subprocess started.")
             logger.info(reduce_result_dir)
-            out_directories = None
 
             # Create script out and mantid log paths
             script_out = self.create_log_path(file_name_with_extension="Script.out",
