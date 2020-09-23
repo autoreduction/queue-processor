@@ -35,7 +35,7 @@ class ISISReductionPathManager(ReductionPathManager):
         output_directory = MISC['ceph_directory'] % (instrument, proposal, run_number)
 
         # Excitations would like to remove the run number folder at the end
-        if instrument in MISC['excitation_instruments']:
+        if instrument in MISC['flat_output_instruments']:
             output_directory = output_directory[:output_directory.rfind('/') + 1]
 
         ReductionPathManager.__init__(self,
