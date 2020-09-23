@@ -273,12 +273,14 @@ class PostProcessAdmin:
         """
         # validate dir before slicing
         if reduce_dir.startswith(temporary_root_directory):
-            result_directory = reduce_dir[len(temporary_root_directory):]
+            final_result_directory = reduce_dir[len(temporary_root_directory):]
         else:
             return ValueError("The reduce directory does not start by following the expected "
                               "format: %s \n", temporary_root_directory)
 
-        final_result_directory = self._new_reduction_data_path(result_directory)
+        if self.instrument not in MISC["flat_output_instruments"]:
+            final_result_directory = self._append_run_version(final_result_directory)
+
         final_log_directory = append_path(final_result_directory, ['reduction_log'])
 
         logger.info("Final Result Directory = %s", final_result_directory)
