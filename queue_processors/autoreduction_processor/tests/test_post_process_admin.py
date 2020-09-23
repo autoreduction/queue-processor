@@ -802,46 +802,40 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_error,
                                           self.message)
 
-    @patch("os.access")
-    def test_new_reduction_data_path_no_overwrite_paths_exist(self, _):
+    @patch('glob.glob')
+    def test_append_run_version_overwrite_true(self, mock_glob):
         """
-        Test: A path is returned with a final directory one higher than the current highest
-        When: _new_reduction_data_path is called on an existing path with overwrite: None
+        Test: version 0 is appended
+        When: overwrite is true
         """
-        self.setup_test_dir_structure(self.test_paths)
-        mock_self = Mock()
-        mock_self.message = Message(overwrite=None)
+        self.message.overwrite = True
+        ppa = PostProcessAdmin(self.message, None)
+        test_path = '/some/test/path/'
+        expected = '/some/test/path/run-version-0/'
+        self.assertEqual(expected, ppa._append_run_version(test_path))
+        mock_glob.assert_not_called()
 
-        expected = append_path(self.test_root, "3")
-        actual = PostProcessAdmin._new_reduction_data_path(mock_self, self.test_root)
-        self.assertEqual(expected, actual)
-
-    @patch("os.access")
-    def test_new_reduction_data_path_overwrite_paths_exist(self, _):
+    @patch('glob.glob', return_value = ['run-version-1', 'run-version-2'])
+    def test_append_run_version_no_overwrite(self, _):
         """
-        Test: The given path is returned with a 0 directory appended
-        When: _new_reduction_data_path is called on an existing path with overwrite: True
+        Test: Next run version is appended
+        When: Overwrite is false and runs exist
         """
-        self.setup_test_dir_structure(self.test_paths)
-        mock_self = Mock()
-        mock_self.message = Message(overwrite=True)
+        ppa = PostProcessAdmin(self.message, None)
+        test_path = '/some/test/path'
+        expected = '/some/test/path/run-version-3/'
+        self.assertEqual(expected, ppa._append_run_version(test_path))
 
-        expected = append_path(self.test_root, "0")
-        actual = PostProcessAdmin._new_reduction_data_path(mock_self, self.test_root)
-        self.assertEqual(expected, actual)
-
-    def test_new_reduction_data_only_root_path_exists(self):
+    @patch('glob.glob', return_value = [])
+    def test_append_run_version_none_existing(self, _):
         """
-        Test: The given path is returned with a 0 directory appended
-        When: _new_reduction_data_path is called on a path without version sub-directories
+        Test: run version 0 is appended
+        When: overwrite is false and no runs exist
         """
-        self.setup_test_dir_structure([self.test_root])
-        mock_self = Mock()
-        mock_self.message = Message(overwrite=None)
-
-        expected = append_path(self.test_root, "0")
-        actual = PostProcessAdmin._new_reduction_data_path(mock_self, self.test_root)
-        self.assertEqual(expected, actual)
+        ppa = PostProcessAdmin(self.message, None)
+        test_path = '/some/test/path'
+        expected = '/some/test/path/run-version-0/'
+        self.assertEqual(expected, ppa._append_run_version(test_path))
 
     @patch(DIR + '.post_process_admin.PostProcessAdmin.__init__', return_value=None)
     def test_validate_input_success(self, _):
