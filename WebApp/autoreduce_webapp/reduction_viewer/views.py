@@ -28,13 +28,11 @@ from autoreduce_webapp.settings import UOWS_LOGIN_URL, USER_ACCESS_CHECKS, DEVEL
 from autoreduce_webapp.uows_client import UOWSClient
 from autoreduce_webapp.view_utils import (login_and_uows_valid, render_with,
                                           require_admin, check_permissions)
+from plotting.plot_handler import PlotHandler
 from reduction_variables.utils import MessagingUtils
 from reduction_viewer.models import Experiment, ReductionRun, Instrument, Status
 from reduction_viewer.utils import StatusUtils, ReductionRunUtils
 from reduction_viewer.view_utils import deactivate_invalid_instruments
-
-from plotting.plot_handler import PlotHandler
-
 from utilities.pagination import CustomPaginator
 
 LOGGER = logging.getLogger('app')
@@ -129,12 +127,10 @@ def run_queue(request):
     if USER_ACCESS_CHECKS and not request.user.is_superuser:
         with ICATCache(AUTH='uows', SESSION={'sessionid': request.session['sessionid']}) as icat:
             pending_jobs = filter(lambda job: job.experiment.reference_number in
-                                              icat.get_associated_experiments(
-                                                  int(request.user.username)),
+                                              icat.get_associated_experiments(int(request.user.username)),
                                   pending_jobs)  # check RB numbers
             pending_jobs = filter(lambda job: job.instrument.name in
-                                              icat.get_owned_instruments(
-                                                  int(request.user.username)),
+                                              icat.get_owned_instruments(int(request.user.username)),
                                   pending_jobs)  # check instrument
     # Initialise list to contain the names of user/team that started runs
     started_by = []
@@ -160,7 +156,8 @@ def fail_queue(request):
                                               Q(hidden_in_failviewer=False)).order_by('-created')
     context_dictionary = {'queue': failed_jobs,
                           'status_success': StatusUtils().get_completed(),
-                          'status_failed': StatusUtils().get_error()}
+                          'status_failed': StatusUtils().get_error()
+                          }
 
     if request.method == 'POST':
         # perform the specified action

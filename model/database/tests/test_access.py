@@ -141,9 +141,9 @@ class TestAccess(unittest.TestCase):
         When: Calling find_highest_run_version
         """
         run_objects = db_layer.return_value.data_model.ReductionRun.objects
-        db_call = run_objects.filter.return_value\
-            .filter.return_value\
-            .order_by.return_value\
+        db_call = run_objects.filter.return_value \
+            .filter.return_value \
+            .order_by.return_value \
             .first
 
         for test_in, output in [(None, -1), (0, 0), (1, 1), (5, 5)]:
@@ -155,7 +155,7 @@ class TestAccess(unittest.TestCase):
 
             actual = access.find_highest_run_version('rb_num', 'run_no')
             run_objects.filter.assert_called_with(run_number='run_no')
-            run_objects.filter.return_value.filter\
+            run_objects.filter.return_value.filter \
                 .assert_called_with(experiment='rb_num')
 
             self.assertEqual(output, actual)
