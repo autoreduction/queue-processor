@@ -76,7 +76,7 @@ class Listener(stomp.ConnectionListener):
             logger.warning("Could not find autoreduction post processing file "
                            "- please contact a system administrator")
         python_path = sys.executable
-        logger.info("Calling: %s %s %s", python_path)
+        logger.info("Calling: %s %s %s", python_path, MISC['post_process_directory'], destination,)
         proc = subprocess.Popen([python_path,
                                  MISC['post_process_directory'],
                                  destination,
