@@ -72,14 +72,11 @@ class Listener(stomp.ConnectionListener):
             self.cancel_run(message)  # pylint: disable=maybe-no-member
             return
 
-
         if not os.path.isfile(MISC['post_process_directory']):
             logger.warning("Could not find autoreduction post processing file "
                            "- please contact a system administrator")
         python_path = sys.executable
-        logger.info("Calling: %s %s %s %s",
-                    python_path, MISC['post_process_directory'], destination,
-                    message.serialize())    # TODO: limit reduction script  #pylint:disable=fixme
+        logger.info("Calling: %s %s %s", python_path)
         proc = subprocess.Popen([python_path,
                                  MISC['post_process_directory'],
                                  destination,
@@ -96,7 +93,7 @@ class Listener(stomp.ConnectionListener):
 
     def add_process(self, proc, message):
         """ Add child process to list. """
-        logger.info("Entered add_process. proc=%s message=%s", proc, message)
+        logger.info("Entered add_process. proc=%s", proc)
         self.proc_list.append(proc)
         self.rb_list.append(message.rb_number)
 
