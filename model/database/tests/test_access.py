@@ -9,11 +9,13 @@ Unit tests to exercise the code responsible for common database access methods
 """
 import unittest
 
+import pytest
 from mock import patch, Mock, NonCallableMock
 
 from model.database import access
 
 
+@pytest.mark.django_db
 class TestAccess(unittest.TestCase):
     """
     Test the access functionality for the database

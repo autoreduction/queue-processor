@@ -56,7 +56,10 @@ def index(request):
 
     if DEVELOPMENT_MODE:
         user = authenticate(username="super", password="super")
-        login(request, user)
+        # The super user is always authenticated using the ModelBackend
+        # (both from tests and on development environment)
+        # However, this needed to be explicit for pytest to login successfully
+        login(request, user, backend='django.contrib.auth.backends.ModelBackend')
         authenticated = True
     else:
         if 'sessionid' in request.session.keys():
