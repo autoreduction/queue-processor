@@ -10,18 +10,21 @@ import shutil
 import sys
 import reduce_vars as web_var
 
-def validate(input_file, output_dir):
+def validate(file, dir):
     """
-    Function to ensure that the files we want to use in reduction exist.
-    Please add any files/directories to the required_files/dirs lists.
+    Function that validates if a file and/or directory exist. If not a
+    RunTimeError is raised which is picked up by Autoreduction.
+
+    :param file: full path of data file. Provide empty string to ignore
+    :type file: str
+    :param dir: full path of a directory. Provide empty string to ignore
+    :type dir: str
     """
     print("Running validation")
-    required_files = [input_file]
-    required_dirs = [output_dir]
-    for file_path in required_files:
-        if not os.path.isfile(file_path):
-            raise RuntimeError("Unable to find file: {}".format(file_path))
-    for dir in required_dirs:
+    if file:
+        if not os.path.isfile(file):
+            raise RuntimeError("Unable to find file: {}".format(file))
+    if dir:
         if not os.path.isdir(dir):
             raise RuntimeError("Unable to find directory: {}".format(dir))
     print("Validation successful")
