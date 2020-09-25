@@ -101,6 +101,7 @@ def logout(request):
 def overview(_):
     """
     Render the overview landing page (redirect from /index)
+    Note: _ is replacing the passed in request parameter
     """
     instruments = Instrument.objects.order_by('name')
     context_dictionary = {}
@@ -433,6 +434,7 @@ def experiment_summary(request, reference_number=None):
 def help(_):
     """
     Render help page
+    Note: _ is replacing the passed in request parameter
     """
     return {}
 
@@ -457,6 +459,7 @@ def instrument_pause(request, instrument=None):
 def graph_home(_):
     """
     Render graph page
+    Note: _ is replacing the passed in request parameter
     """
     instruments = Instrument.objects.all()
 
@@ -519,6 +522,7 @@ def graph_instrument(request, instrument_name):
 def stats(_):
     """
     Render run statistics page
+    Note: _ is replacing the passed in request parameter
     """
     statuses = []
     for status in Status.objects.all():
