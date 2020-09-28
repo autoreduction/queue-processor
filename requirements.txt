@@ -1,5 +1,5 @@
 # Test Env. Requirements
-
+beautifulsoup4
 coverage
 coveralls
 dash
