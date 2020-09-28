@@ -9,7 +9,6 @@ Unit tests to exercise the code responsible for common database access methods
 """
 import unittest
 
-import pytest
 from mock import patch, Mock, NonCallableMock
 
 from model.database import access
