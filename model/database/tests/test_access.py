@@ -15,7 +15,6 @@ from mock import patch, Mock, NonCallableMock
 from model.database import access
 
 
-@pytest.mark.django_db
 class TestAccess(unittest.TestCase):
     """
     Test the access functionality for the database

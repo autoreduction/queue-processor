@@ -33,7 +33,10 @@ script:
   - py.test build/tests/test_db_generation.py  # perform initial check of database
   # ================ Functional tests =============== #
   - echo "Running Unit tests"
-  - py.test --ignore=systemtests --ignore=WebApp --cov=build --cov=monitors --cov=queue_processors --cov=scripts --cov=utils --cov=docker_reduction --cov=paths --cov=plotting --cov=model
+  - py.test -p no:django # disables the django plugin for tests outside the web app!
+            --ignore=systemtests --ignore=WebApp # ignores the web app directory so it's tests aren't ran
+            --cov=build --cov=monitors --cov=queue_processors --cov=scripts --cov=utils --cov=docker_reduction --cov=paths --cov=plotting --cov=model
+
   # Tests the web app separately as that requries setting up a custom settings.py file
   - py.test WebApp/autoreduce_webapp --cov-append --cov=WebApp/autoreduce_webapp
   - echo "Running System Tests"
