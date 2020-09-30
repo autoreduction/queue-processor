@@ -93,7 +93,7 @@
         });
 
         // Reset search filters on clicking sidebar link
-        // Temporarily disabled https://github.com/ISISScientificComputing/autoreduce/issues/699
+        // Temporarily disabled https://github.com/ISISScientificComputing/autoreduce/issues/701
         // $('#sidenav').click(function () {
         //     $('[data-category="all"]').click();
         //     $('#help-search').val("");
