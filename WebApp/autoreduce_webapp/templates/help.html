@@ -154,15 +154,24 @@ from mantid.simpleapi import (Load, Rebin, SaveNexus)
 sys.path.append("/isis/NDXTEST/user/scripts/autoreduction")
 import reduce_vars as params
 
-def validate(input_file, output_dir):
-   required_files = [input_file]
-   required_directories = [output_dir]
-   for file in required_files:
-      if not os.path.isfile(file):
-         raise RuntimeError("File not found: {}".format(file))
-   for dir in required_directories:
-      if not os.path.isdir(dir):
-         raise RuntimeError("Dir not found: {}".format(dir))
+def validate(file, dir):
+    """
+    Function that validates if a file and/or directory exist. If not a
+    RunTimeError is raised which is picked up by Autoreduction.
+
+    :param file: full path of data file. Provide empty string to ignore
+    :type file: str
+    :param dir: full path of a directory. Provide empty string to ignore
+    :type dir: str
+    """
+    print("Running validation")
+    if file:
+        if not os.path.isfile(file):
+            raise RuntimeError("Unable to find file: {}".format(file))
+    if dir:
+        if not os.path.isdir(dir):
+            raise RuntimeError("Unable to find directory: {}".format(dir))
+    print("Validation successful")
 
 def main(input_file, output_dir):
    validate(input_file, output_dir)
@@ -194,15 +203,24 @@ import reduce_vars as params</code></pre>
                         found, an exception should be raised. Below is an example for reference:
                     </p>
 
-                    <pre><code>def validate(input_file, output_dir):
-    required_files = [input_file, "path/to/calibration/file", ... ]
-    required_dirs = [output_dir]
-    for file_path in required_files:
-       if not os.path.isfile(file_path):
-          raise RuntimeError("Could not locate file: {}".format(file_path)
-    for directory in required_dirs:
-       if not os.path.isdir(directory):
-          raise RuntimeError("Could not locate directory: {}".format(directory)</code></pre>
+                    <pre><code>def validate(file, dir):
+    """
+    Function that validates if a file and/or directory exist. If not a
+    RunTimeError is raised which is picked up by Autoreduction.
+
+    :param file: full path of data file. Provide empty string to ignore
+    :type file: str
+    :param dir: full path of a directory. Provide empty string to ignore
+    :type dir: str
+    """
+    print("Running validation")
+    if file:
+        if not os.path.isfile(file):
+            raise RuntimeError("Unable to find file: {}".format(file))
+    if dir:
+        if not os.path.isdir(dir):
+            raise RuntimeError("Unable to find directory: {}".format(dir))
+    print("Validation successful")</code></pre>
 
                     <h3>Main</h3>
                     <p>
