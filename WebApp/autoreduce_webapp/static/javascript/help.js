@@ -93,12 +93,13 @@
         });
 
         // Reset search filters on clicking sidebar link
-        $('#sidenav').click(function () {
-            $('[data-category="all"]').click();
-            $('#help-search').val("");
-            searchFilter(stringToSearchTerms($(this).val()),
-                $('#category-filter > .btn.active').data("category"));
-        });
+        // Temporarily disabled https://github.com/ISISScientificComputing/autoreduce/issues/699
+        // $('#sidenav').click(function () {
+        //     $('[data-category="all"]').click();
+        //     $('#help-search').val("");
+        //     searchFilter(stringToSearchTerms($(this).val()),
+        //         $('#category-filter > .btn.active').data("category"));
+        // });
 
         generateSideNavLinks();
 
