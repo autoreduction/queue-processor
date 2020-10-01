@@ -7,12 +7,9 @@
 """
 Client for accessing the user office logon
 """
-import ssl
-from urllib.request import HTTPSHandler
 import logging
 
 import suds
-from suds.transport.https import HttpAuthenticated
 from suds.client import Client
 
 # The below is a template on the repository
