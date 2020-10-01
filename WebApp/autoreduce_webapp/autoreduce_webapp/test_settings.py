@@ -228,7 +228,7 @@ OUTDATED_BROWSERS = {
 
 # UserOffice WebService
 
-UOWS_URL = 'https://fitbaweb1.isis.cclrc.ac.uk:8443/UserOfficeWebService/UserOfficeWebService?wsdl'
+UOWS_URL = 'https://api.facilities.rl.ac.uk/ws/UserOfficeWebService?wsdl'
 UOWS_LOGIN_URL = 'https://users.facilities.rl.ac.uk/auth/?service=http://reduce.isis.cclrc.ac.uk&redirecturl='
 
 # Email for notifications
