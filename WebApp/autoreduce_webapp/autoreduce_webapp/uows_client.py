@@ -15,29 +15,8 @@ import suds
 from suds.transport.https import HttpAuthenticated
 from suds.client import Client
 
-# The below is a template on the repository
-# pylint: disable=relative-import
-from .settings import CERTIFICATE_LOCATION, UOWS_URL
-
 
 LOGGER = logging.getLogger(__name__)
-
-
-class CustomTransport(HttpAuthenticated):
-    """
-    Custom HTTPAuthentication class to check user certificate
-    """
-    def u2handlers(self):
-        # use handlers from superclass
-        handlers = HttpAuthenticated.u2handlers(self)
-        # create custom ssl context, e.g.
-        ctx = ssl.create_default_context(cafile=CERTIFICATE_LOCATION)
-        # configure context as needed...
-        ctx.check_hostname = False
-
-        # add a https handler using the custom context
-        handlers.append(HTTPSHandler(context=ctx))
-        return handlers
 
 
 class UOWSClient(object):
@@ -48,7 +27,7 @@ class UOWSClient(object):
         url = UOWS_URL
         if 'URL' in kwargs:
             url = kwargs['URL']
-        self.client = Client(url, transport=CustomTransport())
+        self.client = Client(url)
 
     # Add the ability to use 'with'
     def __enter__(self):

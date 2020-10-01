@@ -239,7 +239,6 @@ EMAIL_PORT = 25
 EMAIL_ERROR_RECIPIENTS = ['isisreduce@stfc.ac.uk']
 EMAIL_ERROR_SENDER = 'autoreducedev@reduce.isis.cclrc.ac.uk'
 BASE_URL = 'http://reduce.isis.cclrc.ac.uk/'
-CERTIFICATE_LOCATION = 'C:\\certificates\\FITBAWEB1isiscclrcacuk.crt'
 
 # Constant vars
 SESSION_COOKIE_AGE = 3600  # The MAX length before user is logged out, 1 hour in seconds
