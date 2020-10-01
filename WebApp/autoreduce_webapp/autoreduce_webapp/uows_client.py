@@ -15,6 +15,10 @@ import suds
 from suds.transport.https import HttpAuthenticated
 from suds.client import Client
 
+# The below is a template on the repository
+# pylint: disable=relative-import
+from .settings import UOWS_URL
+
 
 LOGGER = logging.getLogger(__name__)
 
