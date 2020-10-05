@@ -13,8 +13,10 @@
             <div class="col-md-12 text-center">
                 <h2>Reduction Job #{{ run.title }}</h2>
                 {% if history.count > 1 %}
-                    (This run has been re-reduced,
-                    <a href="#" class="js-reduction-run-history" id="run_history">see history</a>)
+                    <p>
+                        (This run has been re-reduced,
+                        <a href="#" class="js-reduction-run-history" id="run_history">see history</a>)
+                    </p>
                 {% endif %}
             </div>
         </div>
