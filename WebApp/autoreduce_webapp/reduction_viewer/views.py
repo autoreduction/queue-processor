@@ -28,13 +28,11 @@ from autoreduce_webapp.settings import UOWS_LOGIN_URL, USER_ACCESS_CHECKS, DEVEL
 from autoreduce_webapp.uows_client import UOWSClient
 from autoreduce_webapp.view_utils import (login_and_uows_valid, render_with,
                                           require_admin, check_permissions)
+from plotting.plot_handler import PlotHandler
 from reduction_variables.utils import MessagingUtils
 from reduction_viewer.models import Experiment, ReductionRun, Instrument, Status
 from reduction_viewer.utils import StatusUtils, ReductionRunUtils
 from reduction_viewer.view_utils import deactivate_invalid_instruments
-
-from plotting.plot_handler import PlotHandler
-
 from utilities.pagination import CustomPaginator
 
 LOGGER = logging.getLogger('app')
