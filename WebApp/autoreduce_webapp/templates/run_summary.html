@@ -30,7 +30,9 @@
             </div>
         {% elif plot_error_message %}
             <div class="row">
-                <p>{{ plot_error_message }}</p>
+                <div class="col-md-8 col-md-offset-2">
+                    <p class="panel panel-warning text-center">{{ plot_error_message }}</p>
+                </div>
             </div>
         {% endif %}
         {% if run.message %}
