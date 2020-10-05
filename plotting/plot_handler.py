@@ -76,9 +76,8 @@ class PlotHandler:
         file_name_regex = self._generate_file_name_regex()
         if file_name_regex is None:
             return None
-        else:
-            return [f'/static/graphs/{file}' for file in os.listdir(self.static_graph_dir)
-                    if re.match(file_name_regex, file)]
+        return [f'/static/graphs/{file}' for file in os.listdir(self.static_graph_dir) if
+                re.match(file_name_regex, file)]
 
     def _check_for_plot_files(self):
         """
