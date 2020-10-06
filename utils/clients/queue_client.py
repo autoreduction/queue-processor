@@ -18,11 +18,6 @@ from model.message.message import Message
 from utils.clients.abstract_client import AbstractClient
 from utils.clients.connection_exception import ConnectionException
 from utils.settings import ACTIVEMQ_SETTINGS
-from utils.project.structure import get_log_file
-from utils.project.static_content import LOG_FORMAT
-
-logging.basicConfig(filename=get_log_file('queue_client.log'), level=logging.INFO,
-                    format=LOG_FORMAT)
 
 
 class QueueClient(AbstractClient):
@@ -36,6 +31,7 @@ class QueueClient(AbstractClient):
         self._connection = None
         self._consumer_name = consumer_name
         self._autoreduce_queues = self.credentials.all_subscriptions
+        self._logger = logging.getLogger(__file__)
 
     # pylint:disable=arguments-differ
     def connect(self, listener=None):
@@ -56,7 +52,7 @@ class QueueClient(AbstractClient):
         """
         Disconnect from queue service
         """
-        logging.info("Disconnecting from activemq")
+        self._logger.info("Disconnecting from activemq")
         if self._connection is not None and self._connection.is_connected():
             # By passing a receipt Stomp will call stop on the transport layer
             # which causes it to wait on the listener thread (if it's still
@@ -78,7 +74,7 @@ class QueueClient(AbstractClient):
                                               use_ssl=False)
                 if listener:
                     connection.set_listener('Autoreduction', listener)
-                logging.info("Starting connection to %s", host_port)
+                self._logger.info("Starting connection to %s", host_port)
                 connection.connect(username=self.credentials.username,
                                    passcode=self.credentials.password,
                                    wait=False,
@@ -105,8 +101,8 @@ class QueueClient(AbstractClient):
                                        id='1',
                                        ack=ack,
                                        header={'activemq.prefetchSize': '1'})
-            logging.info("[%s] Subscribing to %s", consumer_name, queue)
-        logging.info("Successfully subscribed to all of the queues")
+            self._logger.info("[%s] Subscribing to %s", consumer_name, queue)
+        self._logger.info("Successfully subscribed to all of the queues")
 
     def subscribe_autoreduce(self, consumer_name, listener, ack='auto'):
         """

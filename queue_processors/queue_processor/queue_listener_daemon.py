@@ -11,11 +11,13 @@ Module for daemonising the queue processor.
 """
 import threading
 import logging
-from datetime import datetime
+import datetime
 
 from queue_processors.daemon import Daemon, control_daemon_from_cli
 from queue_processors.queue_processor import queue_listener
+from queue_processors.queue_processor.settings import LOGGING
 
+logging.config.dictConfig(LOGGING)
 
 class QueueListenerDaemon(Daemon):
     """ Queue Listener daemoniser """
@@ -32,6 +34,8 @@ class QueueListenerDaemon(Daemon):
         """
         super().__init__(*args, **kwargs)
 
+        # For more details on why this daemon shuts itself down on a timer
+        # check the README.md in this directory!
         stop_hours = 23
         stop_minutes = 45
         # ((hours -> Mins) + Mins) -> seconds)  => Stored in seconds
@@ -40,10 +44,13 @@ class QueueListenerDaemon(Daemon):
 
         self._client_handle = None
         self._stop_timer = None
+        self._logger = logging.getLogger(__file__)
 
     def run(self):
         """ Run queue processor. """
+        self._logger.info("Starting Queue Processor")
         self._client_handle = queue_listener.main()
+        self._logger.info("Setting shutdown timer for %s", str(datetime.datetime.now()+datetime.timedelta(hours=23, minutes=45)))
         self._stop_timer = threading.Timer(self.stop_interval, self.stop)
         self._stop_timer.start()
 
@@ -52,28 +59,36 @@ class QueueListenerDaemon(Daemon):
         Stops the Queue Processor Daemon, first making sure that
         the underlying client has finished
         """
-        self._client_handle.disconnect()
+        if self._client_handle is None:
+            print("Cannot safely disconnect _client_handle as it is "
+                  "running in original process. Messages might get lost. "
+                  "This happens when the process is manually stopped from CLI.")
+        else:
+            self._client_handle.disconnect()
+            self.safe_shutdown.set()
         super().stop()
-        self.safe_shutdown.set()
+
 
 
 def _wait_for_client(daemon):
     # Give 1 minute (60 s) to shutdown once stop has been called
-    timeout = 60 + daemon.stop_interval
-    was_safe_shutdown = daemon.safe_shutdown.wait(timeout=timeout)
+    was_safe_shutdown = daemon.safe_shutdown.wait(timeout=60)
 
     if not was_safe_shutdown:
-        logging.error(
-            "%s: Queue Client did not shutdown before timeout, so it was "
-            " killed ungracefully. This should be investigated as it could"
-            " cause messages to get lost.", datetime.now().isoformat())
+        log = logging.getLogger(__file__)
+        # You will also see this message in the log if manually stop the process
+        # that is expected and is OK. If seen and not manually shut-down
+        # this means the client_handle did not disconnect in time and was
+        # in the middle of processing something!
+        log.error("%s: Queue Client did not shutdown gracefully before timeout, "
+                  "so it was killed. This should be investigated as it could "
+                  "cause messages to get lost.", datetime.datetime.now().isoformat())
 
 
 def main():
     """ Main method. """
     daemon = QueueListenerDaemon('/tmp/QueueListenerDaemon.pid')
-    control_daemon_from_cli(daemon)
-    _wait_for_client(daemon)
+    control_daemon_from_cli(daemon, _wait_for_client)
 
 
 if __name__ == "__main__":
