@@ -50,7 +50,8 @@ class QueueListenerDaemon(Daemon):
         """ Run queue processor. """
         self._logger.info("Starting Queue Processor")
         self._client_handle = queue_listener.main()
-        self._logger.info("Setting shutdown timer for %s", str(datetime.datetime.now()+datetime.timedelta(hours=23, minutes=45)))
+        self._logger.info("Setting shutdown timer for %s",
+                          str(datetime.datetime.now() + datetime.timedelta(hours=23, minutes=45)))
         self._stop_timer = threading.Timer(self.stop_interval, self.stop)
         self._stop_timer.start()
 
