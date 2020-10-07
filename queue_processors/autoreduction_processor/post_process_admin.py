@@ -399,22 +399,22 @@ class PostProcessAdmin:
                                                                     self.proposal,
                                                                     self.run_number)
 
-            reduce_result_dir = self.specify_instrument_directories(
+            temp_reduce_result_dir = self.specify_instrument_directories(
                 instrument_output_directory=instrument_output_directory,
                 no_run_number_directory=no_run_number_directory,
                 temporary_directory=MISC["temp_root_directory"])
 
             if self.message.description is not None:
                 logger.info("DESCRIPTION: %s", self.message.description)
-            log_dir = reduce_result_dir + "/reduction_log/"
+            temp_log_dir = temp_reduce_result_dir + "/reduction_log/"
 
             # strip temp path off front of the temp directory to get the final archives directory
             final_result_dir, final_log_dir = self.create_final_result_and_log_directory(
                 temporary_root_directory=MISC["temp_root_directory"],
-                reduce_dir=reduce_result_dir)
+                reduce_dir=temp_reduce_result_dir)
 
             # Test path exists and access
-            should_be_writeable = [reduce_result_dir, log_dir, final_result_dir, final_log_dir]
+            should_be_writeable = [temp_reduce_result_dir, temp_log_dir, final_result_dir, final_log_dir]
             should_be_readable = [self.data_file]
 
             # Try to create directory if does not exist
@@ -434,27 +434,31 @@ class PostProcessAdmin:
 
             logger.info("----------------")
             logger.info("Reduction script: %s ...", self.reduction_script[:50])
+            logger.info("Temporary result dir: %s", temp_reduce_result_dir)
+            logger.info("Final result dir: %s", final_result_dir)
+            logger.info("Temporary log dir: %s", temp_log_dir)
+            logger.info("Final log dir: %s", final_log_dir)
             logger.info("Out log: %s", script_out)
             logger.info("Datafile: %s", self.data_file)
             logger.info("----------------")
 
             logger.info("Reduction subprocess started.")
-            logger.info(reduce_result_dir)
+            logger.info(temp_reduce_result_dir)
 
             # Load reduction script as module and validate
             out_directories = self.validate_reduction_as_module(script_out=script_out,
                                                                 mantid_log=mantid_log,
-                                                                reduce_result=reduce_result_dir,
+                                                                reduce_result=temp_reduce_result_dir,
                                                                 final_result=final_result_dir)
 
-            self.copy_temp_directory(reduce_result_dir, final_result_dir)
+            self.copy_temp_directory(temp_reduce_result_dir, final_result_dir)
 
             # Copy to additional directories if present in reduce script
             self.additional_save_directories_check(out_directories=out_directories,
-                                                   reduce_result=reduce_result_dir)
+                                                   reduce_result=temp_reduce_result_dir)
 
             # no longer a need for the temp directory used for storing of reduction results
-            self.delete_temp_directory(reduce_result_dir)
+            self.delete_temp_directory(temp_reduce_result_dir)
 
         except SkippedRunException as skip_exception:
             logger.info("Run %s has been skipped on %s",
