@@ -499,6 +499,8 @@ class PostProcessAdmin:
         if self.message.overwrite:
             return append_path(path, ["run-version-0"])
         run_versions = [int(i.split("-")[-1]) for i in glob.glob(f"{path}run-version-[0-9]*")]
+        logger.info(f"globbing {path}: {glob.glob(path)}")
+        logger.info(f"found run versions: {run_versions}")
         try:
             return append_path(path, [f"run-version-{max(run_versions) + 1}"])
         except ValueError:
