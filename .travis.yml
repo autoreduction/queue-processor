@@ -28,6 +28,7 @@ install:
   - sudo $_LOCAL_PYTHON_PATH setup.py start
 
 script:
+  - docker logs `docker ps | tail -1 | awk -F ' ' '{print $1}'`
   - py.test build/tests/test_db_generation.py  # perform initial check of database
   # ================ Functional tests =============== #
   - echo "Running Unit tests"
