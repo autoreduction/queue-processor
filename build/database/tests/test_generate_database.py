@@ -39,7 +39,7 @@ class TestGenerateDatabase(unittest.TestCase):
     def test_get_sql_from_file(self):
         sql_file = os.path.join(ROOT_DIR, 'build', 'database', 'reset_autoreduction_db.sql')
         actual = get_sql_from_file(sql_file)
-        self.assertTrue("GRANT ALL PRIVILEGES ON autoreduction.* TO 'test-user'@'localhost'"
+        self.assertTrue("GRANT ALL PRIVILEGES ON autoreduction.* TO 'test-user'@'127.0.0.1'"
                         in actual)
         self.assertTrue("DROP DATABASE IF EXISTS autoreduction;" in actual)
         self.assertTrue("CREATE DATABASE autoreduction;" in actual)
