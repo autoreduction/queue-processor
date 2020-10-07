@@ -414,7 +414,8 @@ class PostProcessAdmin:
                 reduce_dir=temp_reduce_result_dir)
 
             # Test path exists and access
-            should_be_writeable = [temp_reduce_result_dir, temp_log_dir, final_result_dir, final_log_dir]
+            should_be_writeable = [temp_reduce_result_dir, temp_log_dir,
+                                   final_result_dir, final_log_dir]
             should_be_readable = [self.data_file]
 
             # Try to create directory if does not exist
@@ -446,10 +447,11 @@ class PostProcessAdmin:
             logger.info(temp_reduce_result_dir)
 
             # Load reduction script as module and validate
-            out_directories = self.validate_reduction_as_module(script_out=script_out,
-                                                                mantid_log=mantid_log,
-                                                                reduce_result=temp_reduce_result_dir,
-                                                                final_result=final_result_dir)
+            out_directories = self \
+                .validate_reduction_as_module(script_out=script_out,
+                                              mantid_log=mantid_log,
+                                              reduce_result=temp_reduce_result_dir,
+                                              final_result=final_result_dir)
 
             self.copy_temp_directory(temp_reduce_result_dir, final_result_dir)
 
