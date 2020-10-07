@@ -426,24 +426,20 @@ class PostProcessAdmin:
 
             self.message.reduction_data = []
 
+            # Create script out and mantid log paths
+            script_out = self.create_log_path(file_name_with_extension="Script.out",
+                                              log_directory=temp_log_dir)
+            mantid_log = self.create_log_path(file_name_with_extension="Mantid.log",
+                                              log_directory=temp_log_dir)
+
             logger.info("----------------")
             logger.info("Reduction script: %s ...", self.reduction_script[:50])
-            logger.info("Result dir: %s", reduce_result_dir)
-            logger.info("Log dir: %s", log_dir)
-            logger.info("Out log: %s",
-                        self.create_log_path(file_name_with_extension="Script.out",
-                                             log_directory=log_dir))
+            logger.info("Out log: %s", script_out)
             logger.info("Datafile: %s", self.data_file)
             logger.info("----------------")
 
             logger.info("Reduction subprocess started.")
             logger.info(reduce_result_dir)
-
-            # Create script out and mantid log paths
-            script_out = self.create_log_path(file_name_with_extension="Script.out",
-                                              log_directory=log_dir)
-            mantid_log = self.create_log_path(file_name_with_extension="Mantid.log",
-                                              log_directory=log_dir)
 
             # Load reduction script as module and validate
             out_directories = self.validate_reduction_as_module(script_out=script_out,
