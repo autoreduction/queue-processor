@@ -4,15 +4,13 @@ python:
   - "3.7"
 
 services:
-  - mysql
+  - docker
 
 dist: xenial
 
 before_install:
-  - mysql_upgrade --force
-  - sudo service mysql restart
-  # Need to do this first time
-  - mysql < build/database/reset_autoreduction_db.sql
+  - docker pull dtasev/mysql_autoreduction:latest
+  - docker run --network=host -dit dtasev/mysql_autoreduction:latest
 
 install:
   # Install autoreduction
@@ -24,7 +22,7 @@ install:
   - python3 setup.py test_settings
   # Externals must be after test_settings
   - python3 setup.py externals -s activemq
-  - python3 setup.py database
+  # - python3 setup.py database
   - cat build.log
   - _LOCAL_PYTHON_PATH=$(which python3)
   - sudo $_LOCAL_PYTHON_PATH setup.py start
