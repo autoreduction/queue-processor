@@ -40,10 +40,7 @@
     };
 
     // Generate a link for each topic heading and add the link also to the sidebar
-    var generateSideNavLinks = function generateSideNavLinks() {
-        $('.main-content section .panel-heading h4').each(function () {
-            var id = headingTextToDashed($(this).text());
-            var link = '<a href="#' + id + '">' + $(this).text() + '</a>';
+        $('.main-content section .panel-heading h3').each(function () {
             $('#sidenav').append('<li>' + link + '</li>');
             $(this).html(link);
             $(this).attr("id", id);
