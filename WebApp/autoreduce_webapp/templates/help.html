@@ -386,6 +386,21 @@ import reduce_vars as params</code></pre>
                     </p>
                 </div>
             </section>
+            <section class="help-topic panel panel-default" data-category="question">
+                <div class="panel-heading" id="reduction-statuses">
+                    <h3>What do the reduction statuses mean?</h3>
+                </div>
+                <div class="panel-body">
+                    There are 5 different states a reduction can be in:
+                    <ul>
+                        <li>Queued - This is when a run is waiting to processed</li>
+                        <li>Processing - This is when a reduction is in progress</li>
+                        <li>Complete - The reduction has been complete and the reduced data is available</li>
+                        <li>Skipped - If a run was marked to be skipped and not reduced</li>
+                        <li>Error - Something has gone wrong processing the reduction or in the reduction script</li>
+                    </ul>
+                </div>
+            </section>
 
             <div class="no-results collapse row well">
                 <div class="col-md-12 text-center">
