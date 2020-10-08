@@ -79,7 +79,7 @@ class Listener(stomp.ConnectionListener):
         python_path = sys.executable
         logger.info("Calling: %s %s %s %s",
                     python_path, MISC['post_process_directory'], destination,
-                    message.serialize())    # TODO: limit reduction script  #pylint:disable=fixme
+                    message.serialize(limit_reduction_script=True))
         proc = subprocess.Popen([python_path,
                                  MISC['post_process_directory'],
                                  destination,
@@ -96,7 +96,8 @@ class Listener(stomp.ConnectionListener):
 
     def add_process(self, proc, message):
         """ Add child process to list. """
-        logger.info("Entered add_process. proc=%s message=%s", proc, message)
+        logger.info("Entered add_process. proc=%s message=%s", proc,
+                    message.serialize(limit_reduction_script=True))
         self.proc_list.append(proc)
         self.rb_list.append(message.rb_number)
 
