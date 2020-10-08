@@ -63,7 +63,12 @@ jobs:
         - docker pull dtasev/mysql_autoreduction:latest
         - sudo systemctl stop mysql
         - docker run --network=host --name mysql_autoreduction -dit dtasev/mysql_autoreduction:latest
+        # stop travis execution until the DB is successfully initialised
+        - grep -m 1 "Test database successfully initialised" <(docker logs --follow mysql_autoreduction)
         - docker logs mysql_autoreduction
+        - _LOCAL_PYTHON_PATH=$(which python3)
+        - sudo $_LOCAL_PYTHON_PATH setup.py start
+
         - py.test build/tests/test_db_generation.py  # perform initial check of database
         # ================ Functional tests =============== #
         - echo "Running Unit tests"
