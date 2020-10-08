@@ -10,7 +10,7 @@ dist: xenial
 
 before_install:
   - docker pull dtasev/mysql_autoreduction:latest
-  - docker run --network=host -dit dtasev/mysql_autoreduction:latest
+  - docker run --network=host --name mysql_autoreduction -dit dtasev/mysql_autoreduction:latest
 
 install:
   # Install autoreduction
@@ -28,7 +28,7 @@ install:
   - sudo $_LOCAL_PYTHON_PATH setup.py start
 
 script:
-  - docker logs `docker ps | tail -1 | awk -F ' ' '{print $1}'`
+  - docker logs mysql_autoreduction
   - py.test build/tests/test_db_generation.py  # perform initial check of database
   # ================ Functional tests =============== #
   - echo "Running Unit tests"
