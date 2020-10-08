@@ -295,8 +295,9 @@ def run_summary(_, instrument_name=None, run_number=None, run_version=0):
             # Lack of plot images is recoverable - we shouldn't stop the whole page rendering
             # if something is wrong with the plot images - but display an error message
             err_msg = "Encountered error while retrieving plots for this run"
-            LOGGER.error(f"{err_msg}. Run {run}\n. Error: {exception}")
-            context_dictionary["plot_error_message"] = f"{err_msg}. Error: {str(exception)}"
+            LOGGER.error("%s. Instrument: %s, run %s. RB Number %s Error: %s",
+                         err_msg, run.instrument.name, run, rb_number, exception)
+            context_dictionary["plot_error_message"] = f"{err_msg}."
 
     return context_dictionary
 
