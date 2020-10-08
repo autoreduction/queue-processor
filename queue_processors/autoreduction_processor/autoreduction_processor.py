@@ -79,7 +79,7 @@ class Listener(stomp.ConnectionListener):
         python_path = sys.executable
         logger.info("Calling: %s %s %s %s",
                     python_path, MISC['post_process_directory'], destination,
-                    message.serialize(limit_reduction_script=True))    # TODO: limit reduction script  #pylint:disable=fixme
+                    message.serialize(limit_reduction_script=True))
         proc = subprocess.Popen([python_path,
                                  MISC['post_process_directory'],
                                  destination,
