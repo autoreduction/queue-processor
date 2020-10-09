@@ -3,7 +3,7 @@
 }
 
 /* Used for a top margin when using anchor links */
-h4::before {
+h3::before {
     display: block;
     content: " ";
     margin-top: -32px;
