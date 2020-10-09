@@ -73,14 +73,14 @@
                         The steps below are based on WinSCP as the <code>SFTP Client</code> and assume you have downloaded and installed it.
                         Note that you can only access your data if you are on site, or using the VPN.
                     </p>
-                    <h3>IDAaaS</h3>
+                    <h4>IDAaaS</h4>
                     <ol>
                         <li>Visit the IDAaaS page <a href="https://isis.analysis.stfc.ac.uk">https://isis.analysis.stfc.ac.uk</a></li>
                         <li>Create a new IDAaaS instance for your instrument / technique.</li>
                         <li>Follow the instructions on the <a href="https://isis.analysis.stfc.ac.uk/#/help">IDAaaS help page</a>
                             under the <em>Download/Upload Files</em> section that will walk you through the SFTP process </li>
                     </ol>
-                    <h3>ISIS Compute</h3>
+                    <h4>ISIS Compute</h4>
                     If you do not currently have your instrument supported by IDAaaS, you should use the ISIS Compute service.
                     <ol>
                         <li>Open your SFTP client</li>
@@ -113,7 +113,7 @@
                     <h3>Reduction Variables Script</h3>
                 </div>
                 <div class="panel-body">
-                    <h3>reduce_vars.py</h3>
+                    <h4>reduce_vars.py</h4>
                     <p>
                         It is possible to define some additional variables for scripts that can be used
                         during reduction. They can be altered via the web interface. These should be defined in the
@@ -141,7 +141,7 @@ variable_help = {
                 </div>
                 <div class="panel-body">
 
-                    <h3>reduce.py</h3>
+                    <h4>reduce.py</h4>
                     <p>
                         In order to reduce your data you must have a reduction script written in python.
                         This script should be called <code>reduce.py</code> and should be placed in the <code>user/scripts/autoreduction/</code>
@@ -181,7 +181,7 @@ def main(input_file, output_dir):
    workspace = Rebin(workspace, params['rebin'])
    SaveNexus(workspace, output_dir)</code></pre>
 
-                    <h3>Imports</h3>
+                    <h4>Imports</h4>
                     <p>
                         All your imports should be placed at the top of the file. These can include, python
                         packages, mantid packages and the <code>reduce_vars</code> we defined in the above section.
@@ -197,7 +197,7 @@ from mantid.simpleapi import (Rebin, ReductionAlgorithm, SaveNexusProcessed)
 # import reduce_vars
 import reduce_vars as params</code></pre>
 
-                    <h3>Validate</h3>
+                    <h4>Validate</h4>
                     <p>
                         The first function you define should validate that the files and directories you
                         require exist. This should include all files and directories. If any can not be
@@ -223,7 +223,7 @@ import reduce_vars as params</code></pre>
             raise RuntimeError("Unable to find directory: {}".format(dir))
     print("Validation successful")</code></pre>
 
-                    <h3>Main</h3>
+                    <h4>Main</h4>
                     <p>
                         This function should call the validate function to check inputs and then perform
                         reduction steps. The function must take an <code>input_file</code> and <code>output_dir</code>
