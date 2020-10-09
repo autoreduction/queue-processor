@@ -11,7 +11,7 @@
     <div class="row">
         <div class="col-md-12 text-center">
             <h2>Help Pages</h2>
-            <p>Get in touch with the <a href="mailto:isisreduce@stfc.ac.uk">Support Team</a></p>
+            <p>Get in touch with the <a href="mailto:{{support_email}}">Support Team</a></p>
         </div>
     </div>
     <!-- Temporarily disabled https://github.com/ISISScientificComputing/autoreduce/issues/701 -->
@@ -103,7 +103,7 @@
                     <p>
                         If you follow the instructions above and still can't access your reduced data, it
                         may be that you don't have permission to access the experiment's reduced data
-                        directory. Email <a href="mailto:isisreduce@stfc.ac.uk">isisreduce@stfc.ac.uk</a>
+                        directory. Email <a href="mailto:{{support_email}}">isisreduce@stfc.ac.uk</a>
                         and state the experiment RB number you are trying to access.
                     </p>
                 </div>
@@ -238,9 +238,7 @@ import reduce_vars as params</code></pre>
     SaveNexusProcessed(reduced_worksapce, output_dir)</code></pre>
 
                     <p>If you have any difficulty please get in touch and we'll be happy to help </p>
-                    {% if support_email %}
-                        <p>If you feel a value is incorrectly being marked as invalid please <a href="mailto:{{support_email}}">Contact Us</a>.</p>
-                    {% endif %}
+                    <p>If you feel a value is incorrectly being marked as invalid please <a href="mailto:{{support_email}}">Contact Us</a>.</p>
                 </div>
             </section>
             <section class="help-topic panel panel-default" data-category="usage" data-topics="Autoreduction GitHub Repository">
@@ -280,10 +278,11 @@ import reduce_vars as params</code></pre>
                         explaining the reason why you will be prevented from submitting new variables until
                         resolved.
                     </p>
-                    {% if support_email %}
-                        <p>If you feel a value is incorrectly being marked as invalid please
-                            <a href="mailto:{{support_email}}">Contact Us</a>.</p>
-                    {% endif %}
+                    <p>
+                        If you feel a value is incorrectly being marked as invalid please
+                        <a href="mailto:{{support_email}}">Contact Us</a>.
+                    </p>
+
                 </div>
             </section>
 
@@ -343,11 +342,10 @@ import reduce_vars as params</code></pre>
                         be copied to the cache upon completion. If additional save locations are
                         required these can be returned as a list of system paths from the main method.
                     </p>
-                    {% if support_email %}
                         <p>If you feel your script will need to save to additional locations please
                             <a href="mailto:{{support_email}}">Contact Us</a> to ensure the locations
-                            are accessible from the Autoreduction machine.</p>
-                    {% endif %}
+                            are accessible from the Autoreduction machine.
+                        </p>
                 </div>
             </section>
 
@@ -397,7 +395,10 @@ import reduce_vars as params</code></pre>
                         <li>Processing - This is when a reduction is in progress</li>
                         <li>Complete - The reduction has been complete and the reduced data is available</li>
                         <li>Skipped - If a run was marked to be skipped and not reduced</li>
-                        <li>Error - Something has gone wrong processing the reduction or in the reduction script</li>
+                        <li>
+                            Error - Something has gone wrong processing the reduction or in the reduction script.
+                            If this happens you can <a href="mailto:{{ support_email }}">contact us</a> for support.
+                        </li>
                     </ul>
                 </div>
             </section>
@@ -405,9 +406,7 @@ import reduce_vars as params</code></pre>
             <div class="no-results collapse row well">
                 <div class="col-md-12 text-center">
                     Sorry, no help topics matched your query.<br/>
-                    {% if support_email %}
-                    If you still require help, please <a href="mailto{{ support_email }}">Contact Us</a>.
-                    {% endif %}
+                    If you still require help, please <a href="mailto:{{support_email}}">Contact Us</a>.
                 </div>
             </div>
         </div>
