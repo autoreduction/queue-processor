@@ -7,7 +7,7 @@ h3::before {
     display: block;
     content: " ";
     margin-top: -40px;
-    height: 32px;
+    height: 40px;
     visibility: hidden;
     pointer-events: none;
 }
