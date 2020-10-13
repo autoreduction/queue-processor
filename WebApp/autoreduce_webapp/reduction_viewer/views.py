@@ -37,6 +37,8 @@ from plotting.plot_handler import PlotHandler
 
 from utilities.pagination import CustomPaginator
 
+from utils.settings import VALID_INSTRUMENTS
+
 LOGGER = logging.getLogger('app')
 
 
@@ -103,7 +105,7 @@ def overview(_):
     Render the overview landing page (redirect from /index)
     Note: _ is replacing the passed in request parameter
     """
-    instruments = Instrument.objects.order_by('name')
+    instruments = VALID_INSTRUMENTS
     context_dictionary = {}
     if instruments:
         context_dictionary = {'instrument_list': instruments}
