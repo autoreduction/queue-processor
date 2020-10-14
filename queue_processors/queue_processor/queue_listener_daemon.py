@@ -76,12 +76,12 @@ def _wait_for_client(daemon):
     was_safe_shutdown = daemon.safe_shutdown.wait(timeout=60)
 
     if not was_safe_shutdown:
-        log = logging.getLogger(__file__)
-        # You will also see this message in the log if manually stop the process
+        logger = logging.getLogger(__file__)
+        # You will also see this message in the logger if manually stop the process
         # that is expected and is OK. If seen and not manually shut-down
         # this means the client_handle did not disconnect in time and was
         # in the middle of processing something!
-        log.error("%s: Queue Client did not shutdown gracefully before timeout, "
+        logger.error("%s: Queue Client did not shutdown gracefully before timeout, "
                   "so it was killed. This should be investigated as it could "
                   "cause messages to get lost.", datetime.datetime.now().isoformat())
 
