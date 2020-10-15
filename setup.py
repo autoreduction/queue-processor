@@ -17,42 +17,42 @@ from build.commands.start import Start
 
 
 setup_requires = ['attrs==19.2.0',
-                  'dash',
-                  'dash_html_components',
-                  'dash_core_components',
-                  'docker',
-                  'Django',
-                  'django_extensions',
-                  'django_plotly_dash',
-                  'django-user-agents',
-                  'filelock',
-                  'fire',
-                  'gitpython',
-                  'IPython',
-                  'mysqlclient',
-                  'mysql-connector',
-                  'nexusformat',
-                  'numpy',
-                  'pandas',
-                  'plotly',
-                  'pytz',
-                  'PyMySQL',
-                  'pysftp',
-                  'python-icat',
-                  'requests',
-                  'sentry_sdk==0.18.0',
-                  'service_identity',
-                  'SQLAlchemy',
-                  'stomp.py',
-                  'suds-py3',
-                  'Twisted',
-                  'PyYAML']
+                  'dash==1.14.0',
+                  'dash_html_components==1.0.3',
+                  'dash_core_components==1.10.2',
+                  'docker==4.3.0',
+                  'Django==3.1',
+                  'django_extensions==3.0.5',
+                  'django_plotly_dash==1.4.2',
+                  'django-user-agents==0.4.0',
+                  'filelock==3.0.12',
+                  'fire==0.3.1',
+                  'gitpython==3.1.7',
+                  'IPython==7.17.0',
+                  'mysqlclient==2.0.1',
+                  'mysql-connector==2.2.9',
+                  'nexusformat==0.5.3',
+                  'numpy==1.19.1',
+                  'pandas==1.1.0',
+                  'plotly==4.9.0',
+                  'pytz==2020.1',
+                  'PyMySQL==0.10.0',
+                  'pysftp==0.2.9',
+                  'python-icat==0.17.0',
+                  'requests==2.24.0',
+                  'sentry_sdk==0.18',
+                  'service_identity==18.1.0',
+                  'SQLAlchemy==1.3.18',
+                  'stomp.py==6.1.0',
+                  'suds-py3==1.4.1.0',
+                  'Twisted==20.3.0',
+                  'PyYAML==5.3.1']
 
 
 if platform.system() == 'Windows':
     setup_requires.append('pypiwin32')
 else:
-    setup_requires.append('python-daemon')
+    setup_requires.append('python-daemon==2.2.4')
 
 
 setup(name='AutoReduction',

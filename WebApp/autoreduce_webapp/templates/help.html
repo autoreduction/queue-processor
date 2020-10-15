@@ -11,9 +11,10 @@
     <div class="row">
         <div class="col-md-12 text-center">
             <h2>Help Pages</h2>
-            <p>Get in touch with the <a href="mailto:isisreduce@stfc.ac.uk">Support Team</a></p>
+            <p>Get in touch with the <a href="mailto:{{support_email}}">Support Team</a></p>
         </div>
     </div>
+    <!-- Temporarily disabled https://github.com/ISISScientificComputing/autoreduce/issues/701 -->
     <!--<div id="search-row" class="row">
         <div id="search-col" class="col-md-8">
             <div class="form-group">
@@ -63,7 +64,7 @@
         <div id="help-topics" class="col-xs-12 col-sm-9">
             <section class="help-topic panel panel-default" data-category="usage" data-topics="link reduced data">
                 <div class="panel-heading">
-                    <h4>Accessing my reduced data</h4>
+                    <h3>Accessing my reduced data</h3>
                 </div>
                 <div class="panel-body">
                     <p>
@@ -72,14 +73,14 @@
                         The steps below are based on WinSCP as the <code>SFTP Client</code> and assume you have downloaded and installed it.
                         Note that you can only access your data if you are on site, or using the VPN.
                     </p>
-                    <h2>IDAaaS</h2>
+                    <h4>IDAaaS</h4>
                     <ol>
                         <li>Visit the IDAaaS page <a href="https://isis.analysis.stfc.ac.uk">https://isis.analysis.stfc.ac.uk</a></li>
                         <li>Create a new IDAaaS instance for your instrument / technique.</li>
                         <li>Follow the instructions on the <a href="https://isis.analysis.stfc.ac.uk/#/help">IDAaaS help page</a>
                             under the <em>Download/Upload Files</em> section that will walk you through the SFTP process </li>
                     </ol>
-                    <h2>ISIS Compute</h2>
+                    <h4>ISIS Compute</h4>
                     If you do not currently have your instrument supported by IDAaaS, you should use the ISIS Compute service.
                     <ol>
                         <li>Open your SFTP client</li>
@@ -102,17 +103,17 @@
                     <p>
                         If you follow the instructions above and still can't access your reduced data, it
                         may be that you don't have permission to access the experiment's reduced data
-                        directory. Email <a href="mailto:isisreduce@stfc.ac.uk">isisreduce@stfc.ac.uk</a>
+                        directory. Email <a href="mailto:{{support_email}}">isisreduce@stfc.ac.uk</a>
                         and state the experiment RB number you are trying to access.
                     </p>
                 </div>
             </section>
             <section class="help-topic panel panel-default" data-category="usage" data-topics="reduction_scripts">
                 <div class="panel-heading">
-                    <h4>Reduction Variables Script</h4>
+                    <h3>Reduction Variables Script</h3>
                 </div>
                 <div class="panel-body">
-                    <h2>reduce_vars.py</h2>
+                    <h4>reduce_vars.py</h4>
                     <p>
                         It is possible to define some additional variables for scripts that can be used
                         during reduction. They can be altered via the web interface. These should be defined in the
@@ -136,11 +137,11 @@ variable_help = {
             </section>
             <section class="help-topic panel panel-default" data-category="usage" data-topics="reduction_scripts">
                 <div class="panel-heading">
-                    <h4>Reduction Script</h4>
-                    </div>
+                    <h3>Reduction Script</h3>
+                </div>
                 <div class="panel-body">
 
-                    <h2>reduce.py</h2>
+                    <h4>reduce.py</h4>
                     <p>
                         In order to reduce your data you must have a reduction script written in python.
                         This script should be called <code>reduce.py</code> and should be placed in the <code>user/scripts/autoreduction/</code>
@@ -154,15 +155,24 @@ from mantid.simpleapi import (Load, Rebin, SaveNexus)
 sys.path.append("/isis/NDXTEST/user/scripts/autoreduction")
 import reduce_vars as params
 
-def validate(input_file, output_dir):
-   required_files = [input_file]
-   required_directories = [output_dir]
-   for file in required_files:
-      if not os.path.isfile(file):
-         raise RuntimeError("File not found: {}".format(file))
-   for dir in required_directories:
-      if not os.path.isdir(dir):
-         raise RuntimeError("Dir not found: {}".format(dir))
+def validate(file, dir):
+    """
+    Function that validates if a file and/or directory exist. If not a
+    RunTimeError is raised which is picked up by Autoreduction.
+
+    :param file: full path of data file. Provide empty string to ignore
+    :type file: str
+    :param dir: full path of a directory. Provide empty string to ignore
+    :type dir: str
+    """
+    print("Running validation")
+    if file:
+        if not os.path.isfile(file):
+            raise RuntimeError("Unable to find file: {}".format(file))
+    if dir:
+        if not os.path.isdir(dir):
+            raise RuntimeError("Unable to find directory: {}".format(dir))
+    print("Validation successful")
 
 def main(input_file, output_dir):
    validate(input_file, output_dir)
@@ -171,7 +181,7 @@ def main(input_file, output_dir):
    workspace = Rebin(workspace, params['rebin'])
    SaveNexus(workspace, output_dir)</code></pre>
 
-                    <h3>Imports</h3>
+                    <h4>Imports</h4>
                     <p>
                         All your imports should be placed at the top of the file. These can include, python
                         packages, mantid packages and the <code>reduce_vars</code> we defined in the above section.
@@ -187,24 +197,33 @@ from mantid.simpleapi import (Rebin, ReductionAlgorithm, SaveNexusProcessed)
 # import reduce_vars
 import reduce_vars as params</code></pre>
 
-                    <h3>Validate</h3>
+                    <h4>Validate</h4>
                     <p>
                         The first function you define should validate that the files and directories you
                         require exist. This should include all files and directories. If any can not be
                         found, an exception should be raised. Below is an example for reference:
                     </p>
 
-                    <pre><code>def validate(input_file, output_dir):
-    required_files = [input_file, "path/to/calibration/file", ... ]
-    required_dirs = [output_dir]
-    for file_path in required_files:
-       if not os.path.isfile(file_path):
-          raise RuntimeError("Could not locate file: {}".format(file_path)
-    for directory in required_dirs:
-       if not os.path.isdir(directory):
-          raise RuntimeError("Could not locate directory: {}".format(directory)</code></pre>
+                    <pre><code>def validate(file, dir):
+    """
+    Function that validates if a file and/or directory exist. If not a
+    RunTimeError is raised which is picked up by Autoreduction.
 
-                    <h3>Main</h3>
+    :param file: full path of data file. Provide empty string to ignore
+    :type file: str
+    :param dir: full path of a directory. Provide empty string to ignore
+    :type dir: str
+    """
+    print("Running validation")
+    if file:
+        if not os.path.isfile(file):
+            raise RuntimeError("Unable to find file: {}".format(file))
+    if dir:
+        if not os.path.isdir(dir):
+            raise RuntimeError("Unable to find directory: {}".format(dir))
+    print("Validation successful")</code></pre>
+
+                    <h4>Main</h4>
                     <p>
                         This function should call the validate function to check inputs and then perform
                         reduction steps. The function must take an <code>input_file</code> and <code>output_dir</code>
@@ -219,14 +238,12 @@ import reduce_vars as params</code></pre>
     SaveNexusProcessed(reduced_worksapce, output_dir)</code></pre>
 
                     <p>If you have any difficulty please get in touch and we'll be happy to help </p>
-                    {% if support_email %}
-                        <p>If you feel a value is incorrectly being marked as invalid please <a href="mailto:{{support_email}}">Contact Us</a>.</p>
-                    {% endif %}
+                    <p>If you feel a value is incorrectly being marked as invalid please <a href="mailto:{{support_email}}">Contact Us</a>.</p>
                 </div>
             </section>
             <section class="help-topic panel panel-default" data-category="usage" data-topics="Autoreduction GitHub Repository">
                 <div class="panel-heading">
-                    <h4>Autoreduction GitHub Repository</h4>
+                    <h3>Autoreduction GitHub Repository</h3>
                 </div>
                 <div class="panel-body">
                     You can find the Autoreduction Github repository <a href="https://github.com/ISISScientificComputing/autoreduce">Here</a>
@@ -236,7 +253,7 @@ import reduce_vars as params</code></pre>
             <section class="help-topic panel panel-default" data-category="usage" data-topics="instrument variables change new">
 
                 <div class="panel-heading">
-                    <h4>How do I add new instrument variables?</h4>
+                    <h3>How do I add new instrument variables?</h3>
                 </div>
                 <div class="panel-body">
                     <p>
@@ -252,7 +269,7 @@ import reduce_vars as params</code></pre>
 
             <section class="help-topic panel panel-default" data-category="question" data-topics="invalid variables wrong error value">
                 <div class="panel-heading">
-                    <h4>When changing variables why is value X invalid for variable Y?</h4>
+                    <h3>When changing variables why is value X invalid for variable Y?</h3>
                 </div>
                 <div class="panel-body">
                     <p>
@@ -261,16 +278,17 @@ import reduce_vars as params</code></pre>
                         explaining the reason why you will be prevented from submitting new variables until
                         resolved.
                     </p>
-                    {% if support_email %}
-                        <p>If you feel a value is incorrectly being marked as invalid please
-                            <a href="mailto:{{support_email}}">Contact Us</a>.</p>
-                    {% endif %}
+                    <p>
+                        If you feel a value is incorrectly being marked as invalid please
+                        <a href="mailto:{{support_email}}">Contact Us</a>.
+                    </p>
+
                 </div>
             </section>
 
             <section class="help-topic panel panel-default" data-category="question" data-topics="reduction data file location directory output reduced">
                 <div class="panel-heading">
-                    <h4>I've modified my reduction scripts, why aren't my new runs using it?</h4>
+                    <h3>I've modified my reduction scripts, why aren't my new runs using it?</h3>
                 </div>
                 <div class="panel-body">
                     <p>
@@ -302,7 +320,7 @@ import reduce_vars as params</code></pre>
 
             <section class="help-topic panel panel-default" data-category="question" data-topics="script compatible work">
                 <div class="panel-heading">
-                    <h4>How can I make a reduction script compatible with Autoreduction?</h4>
+                    <h3>How can I make a reduction script compatible with Autoreduction?</h3>
                 </div>
                 <div class="panel-body">
                     <p>
@@ -324,17 +342,16 @@ import reduce_vars as params</code></pre>
                         be copied to the cache upon completion. If additional save locations are
                         required these can be returned as a list of system paths from the main method.
                     </p>
-                    {% if support_email %}
                         <p>If you feel your script will need to save to additional locations please
                             <a href="mailto:{{support_email}}">Contact Us</a> to ensure the locations
-                            are accessible from the Autoreduction machine.</p>
-                    {% endif %}
+                            are accessible from the Autoreduction machine.
+                        </p>
                 </div>
             </section>
 
             <section class="help-topic panel panel-default" data-category="question" data-topics="reduction script file location directory">
                 <div class="panel-heading">
-                    <h4>Where should I put reduction scripts?</h4>
+                    <h3>Where should I put reduction scripts?</h3>
                 </div>
                 <div class="panel-body">
                     <p>
@@ -353,7 +370,7 @@ import reduce_vars as params</code></pre>
 
             <section class="help-topic panel panel-default" data-category="question" data-topics="reduction data file location directory output reduced">
                 <div class="panel-heading" id="reduction_data_location">
-                    <h4>Where does my reduced data go?</h4>
+                    <h3>Where does my reduced data go?</h3>
                 </div>
                 <div class="panel-body">
                     <p>
@@ -367,13 +384,29 @@ import reduce_vars as params</code></pre>
                     </p>
                 </div>
             </section>
+            <section class="help-topic panel panel-default" data-category="question" data-topics="reduction status error queued processing skipped complete error">
+                <div class="panel-heading" id="reduction-statuses">
+                    <h3>What do the reduction statuses mean?</h3>
+                </div>
+                <div class="panel-body">
+                    There are 5 different states a reduction can be in:
+                    <ul>
+                        <li>Queued - The run is waiting to be processed</li>
+                        <li>Processing - The reduction is in progress</li>
+                        <li>Complete - The reduction has been complete and the reduced data is available</li>
+                        <li>
+                            Error - Something has gone wrong processing the reduction or in the reduction script.
+                            If this happens you can <a href="mailto:{{ support_email }}">contact us</a> for support.
+                        </li>
+                        <li>Skipped - The run was marked to be skipped and has not been reduced</li>
+                    </ul>
+                </div>
+            </section>
 
             <div class="no-results collapse row well">
                 <div class="col-md-12 text-center">
                     Sorry, no help topics matched your query.<br/>
-                    {% if support_email %}
-                    If you still require help, please <a href="mailto{{ support_email }}">Contact Us</a>.
-                    {% endif %}
+                    If you still require help, please <a href="mailto:{{support_email}}">Contact Us</a>.
                 </div>
             </div>
         </div>

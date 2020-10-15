@@ -1,19 +1,19 @@
 # Test Env. Requirements
 
-coverage
-coveralls
-dash
-django-debug-toolbar
-django_plotly_dash
-gitpython
-ipython
-lxml
-mock
-pandas
-plotly
-pylint
-pytest-cov
-python-coveralls
-requests
-sentry-sdk
-stomp.py
+coverage==5.2.1
+coveralls==2.1.2
+dash==1.14.0
+django-debug-toolbar==2.2
+django_plotly_dash==1.4.2
+gitpython==3.1.7
+ipython==7.17.0
+lxml==4.5.2
+mock==4.0.2
+pandas==1.1.0
+plotly==4.9.0
+pylint==2.6.0
+pytest-cov==2.10.0
+python-coveralls==2.9.3
+requests==2.24.0
+sentry-sdk==0.18
+stomp.py==6.1.0
