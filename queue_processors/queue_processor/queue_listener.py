@@ -32,7 +32,7 @@ class QueueListener:
         # Set up logging and attach the logging to the right part of the
         # config.
         logging.config.dictConfig(LOGGING)
-        self._logger = logging.getLogger("queue_listener")
+        self._logger = logging.getLogger(__file__)
 
     def on_message(self, headers, message):
         """ This method is where consumed messages are dealt with. It will

@@ -11,8 +11,9 @@ Tests the Queue Listener Daemon
 import unittest
 from unittest import mock
 
-from queue_processors.queue_processor.queue_listener_daemon import \
-    QueueListenerDaemon
+from mock import PropertyMock
+
+from queue_processors.queue_processor.queue_listener_daemon import QueueListenerDaemon
 import queue_processors.queue_processor.queue_listener_daemon
 from utils.clients.queue_client import QueueClient
 
@@ -24,41 +25,89 @@ class TestQueueListenerDaemon(unittest.TestCase):
     Tests both the class and main method for Queue Listener Daemon
     """
     @staticmethod
+    @mock.patch("queue_processors.daemon.sys")
     @mock.patch("queue_processors.queue_processor."
                 "queue_listener_daemon.QueueListenerDaemon")
-    @mock.patch("queue_processors.queue_processor."
-                "queue_listener_daemon.control_daemon_from_cli")
-    @mock.patch("logging.error")
-    def test_main(patched_logging, patched_cli, patched_daemon):
+    @mock.patch("queue_processors.queue_processor.queue_listener_daemon.logging")
+    def test_main_daemon_start(patched_logging, patched_daemon, patched_sys):
         """
-        Test: The main method correctly starts and handles the nominal case
+        Test: The main method correctly starts the daemon
         When: Called by the module main method
         """
+        type(patched_sys).argv = PropertyMock(return_value=["", "start"])
         daemon_instance = patched_daemon.return_value
         daemon_instance.safe_shutdown.wait.return_value = True
         queue_processors.queue_processor.queue_listener_daemon.main()
 
         patched_daemon.assert_called_once_with("/tmp/QueueListenerDaemon.pid")
-        patched_cli.assert_called_once_with(patched_daemon.return_value)
-        daemon_instance.safe_shutdown.wait.assert_called()
+        daemon_instance.start.assert_called_once()
+        patched_sys.exit.assert_called_once_with(0)
         patched_logging.assert_not_called()
 
     @staticmethod
+    @mock.patch("queue_processors.daemon.sys")
     @mock.patch("queue_processors.queue_processor."
                 "queue_listener_daemon.QueueListenerDaemon")
-    @mock.patch("logging.error")
-    def test_main_timeout_logs(patched_logging, patched_daemon):
+    @mock.patch("queue_processors.queue_processor.queue_listener_daemon.logging")
+    def test_main_daemon_stop(patched_logging, patched_daemon, patched_sys):
+        """
+        Test: The main method correctly stops
+        When: Called by the module main method
+        """
+        type(patched_sys).argv = PropertyMock(return_value=["", "stop"])
+        daemon_instance = patched_daemon.return_value
+        daemon_instance.safe_shutdown.wait.return_value = True
+        queue_processors.queue_processor.queue_listener_daemon.main()
+
+        patched_daemon.assert_called_once_with("/tmp/QueueListenerDaemon.pid")
+        daemon_instance.stop.assert_called_once()
+        daemon_instance.safe_shutdown.wait.assert_called_once_with(timeout=60)
+        patched_sys.exit.assert_called_once_with(0)
+        patched_logging.assert_not_called()
+
+    @staticmethod
+    @mock.patch("queue_processors.daemon.sys")
+    @mock.patch("queue_processors.queue_processor."
+                "queue_listener_daemon.QueueListenerDaemon")
+    @mock.patch("queue_processors.queue_processor.queue_listener_daemon.logging")
+    def test_main_daemon_stop_unsafe_shutdown_logs(patched_logging, patched_daemon, patched_sys):
         """
         Test: Main will correctly log a timeout as an error
         When: Trying to shutdown the client after timer fires
         """
-        daemon_event = patched_daemon.return_value.safe_shutdown
-        daemon_event.wait.return_value = False  # i.e. unsafe shutdown
-        with mock.patch("queue_processors.queue_processor."
-                        "queue_listener_daemon.control_daemon_from_cli"):
-            queue_processors.queue_processor.queue_listener_daemon.main()
+        type(patched_sys).argv = PropertyMock(return_value=["", "stop"])
+        daemon_instance = patched_daemon.return_value
+        daemon_instance.safe_shutdown.wait.return_value = False
+        queue_processors.queue_processor.queue_listener_daemon.main()
 
-        patched_logging.assert_called()
+        patched_daemon.assert_called_once_with("/tmp/QueueListenerDaemon.pid")
+        daemon_instance.stop.assert_called_once()
+        daemon_instance.safe_shutdown.wait.assert_called_once_with(timeout=60)
+        patched_sys.exit.assert_called_once_with(0)
+
+        patched_logging.getLogger.assert_called_once()
+        mock_log = patched_logging.getLogger.return_value
+        mock_log.error.assert_called_once()
+
+    @staticmethod
+    @mock.patch("queue_processors.daemon.sys")
+    @mock.patch("queue_processors.queue_processor."
+                "queue_listener_daemon.QueueListenerDaemon")
+    @mock.patch("queue_processors.queue_processor.queue_listener_daemon.logging")
+    def test_main_daemon_restart(patched_logging, patched_daemon, patched_sys):
+        """
+        Test: The main method correctly stops
+        When: Called by the module main method
+        """
+        type(patched_sys).argv = PropertyMock(return_value=["", "restart"])
+        daemon_instance = patched_daemon.return_value
+        daemon_instance.safe_shutdown.wait.return_value = True
+        queue_processors.queue_processor.queue_listener_daemon.main()
+
+        patched_daemon.assert_called_once_with("/tmp/QueueListenerDaemon.pid")
+        daemon_instance.restart.assert_called_once()
+        patched_sys.exit.assert_called_once_with(0)
+        patched_logging.assert_not_called()
 
     def setUp(self):
         self.instance = QueueListenerDaemon(pidfile="/should/never/be/created")
