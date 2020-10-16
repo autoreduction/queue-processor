@@ -52,11 +52,12 @@ class PlotHandler:
         """
         try:
             _inst_regex = INSTRUMENT_REGEX_MAP[self.instrument_name]
-            _file_extension_regex = self._generate_file_extension_regex()
-            return f'{_inst_regex}{self.run_number}.*.{_file_extension_regex}'
-        except KeyError:  # Instrument name does not appear in dictionary of known instruments
-            LOGGER.info("The instrument name is not recognised")
+        except KeyError:
+            LOGGER.info("Plots for this instruments are not currently handled")
             return None
+
+        _file_extension_regex = self._generate_file_extension_regex()
+        return f'{_inst_regex}{self.run_number}.*.{_file_extension_regex}'
 
     def _generate_file_extension_regex(self):
         """
@@ -64,7 +65,7 @@ class PlotHandler:
         .png, .gif and .jpg: The returned value would be (png|gif|jpg)
         :return: (str) expression pattern matching the file extensions of the plot handler
         """
-        return f"({','.join(self.file_extensions).replace(',','|')})"
+        return f"({','.join(self.file_extensions).replace(',', '|')})"
 
     def _get_plot_files_locally(self):
         """
@@ -72,8 +73,11 @@ class PlotHandler:
         a list of matching paths
         :return: (list) - The list of matching file paths.
         """
-        return [f'/static/graphs/{file}' for file in os.listdir(self.static_graph_dir)
-                if re.match(self._generate_file_name_regex(), file)]
+        file_name_regex = self._generate_file_name_regex()
+        if file_name_regex is None:
+            return None
+        return [f'/static/graphs/{file}' for file in os.listdir(self.static_graph_dir) if
+                re.match(file_name_regex, file)]
 
     def _check_for_plot_files(self):
         """

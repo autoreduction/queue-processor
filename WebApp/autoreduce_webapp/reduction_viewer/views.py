@@ -28,13 +28,11 @@ from autoreduce_webapp.settings import UOWS_LOGIN_URL, USER_ACCESS_CHECKS, DEVEL
 from autoreduce_webapp.uows_client import UOWSClient
 from autoreduce_webapp.view_utils import (login_and_uows_valid, render_with,
                                           require_admin, check_permissions)
+from plotting.plot_handler import PlotHandler
 from reduction_variables.utils import MessagingUtils
 from reduction_viewer.models import Experiment, ReductionRun, Instrument, Status
 from reduction_viewer.utils import StatusUtils, ReductionRunUtils
 from reduction_viewer.view_utils import deactivate_invalid_instruments
-
-from plotting.plot_handler import PlotHandler
-
 from utilities.pagination import CustomPaginator
 
 LOGGER = logging.getLogger('app')
@@ -277,7 +275,15 @@ def run_summary(_, instrument_name=None, run_number=None, run_version=0):
                               'reduction_location': reduction_location,
                               'started_by': started_by}
 
-        if reduction_location:
+    except PermissionDenied:
+        raise
+    except Exception as exception:
+        # Error that we cannot recover from - something wrong with instrument, run, or experiment
+        LOGGER.error(exception)
+        return {"message": str(exception)}
+
+    if reduction_location:
+        try:
             plot_handler = PlotHandler(instrument_name=run.instrument.name,
                                        rb_number=rb_number,
                                        run_number=run.run_number,
@@ -285,12 +291,13 @@ def run_summary(_, instrument_name=None, run_number=None, run_version=0):
             plot_locations = plot_handler.get_plot_file()
             if plot_locations:
                 context_dictionary['plot_locations'] = plot_locations
-
-    except PermissionDenied:
-        raise
-    except Exception as exception:
-        LOGGER.error(exception)
-        context_dictionary = {}
+        except Exception as exception:
+            # Lack of plot images is recoverable - we shouldn't stop the whole page rendering
+            # if something is wrong with the plot images - but display an error message
+            err_msg = "Encountered error while retrieving plots for this run"
+            LOGGER.error("%s. Instrument: %s, run %s. RB Number %s Error: %s",
+                         err_msg, run.instrument.name, run, rb_number, exception)
+            context_dictionary["plot_error_message"] = f"{err_msg}."
 
     return context_dictionary
 
