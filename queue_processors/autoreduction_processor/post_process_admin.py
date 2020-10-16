@@ -14,6 +14,7 @@
 """
 Post Process Administrator. It kicks off cataloging and reduction jobs.
 """
+import glob
 import io
 import errno
 import logging
@@ -186,7 +187,7 @@ class PostProcessAdmin:
                               "format: \n"
                               "%s", instrument_output_directory)
 
-        if no_run_number_directory is True:
+        if no_run_number_directory:
             # Remove the run number folder at the end
             remove_run_number_directory = instrument_output_directory.rfind('/') + 1
             instrument_output_directory = instrument_output_directory[:remove_run_number_directory]
@@ -272,12 +273,14 @@ class PostProcessAdmin:
         """
         # validate dir before slicing
         if reduce_dir.startswith(temporary_root_directory):
-            result_directory = reduce_dir[len(temporary_root_directory):]
+            final_result_directory = reduce_dir[len(temporary_root_directory):]
         else:
             return ValueError("The reduce directory does not start by following the expected "
                               "format: %s \n", temporary_root_directory)
 
-        final_result_directory = self._new_reduction_data_path(result_directory)
+        if self.instrument not in MISC["flat_output_instruments"]:
+            final_result_directory = self._append_run_version(final_result_directory)
+
         final_log_directory = append_path(final_result_directory, ['reduction_log'])
 
         logger.info("Final Result Directory = %s", final_result_directory)
@@ -389,29 +392,30 @@ class PostProcessAdmin:
 
             # Specify instrument directories - if excitation instrument remove run_number from dir
             no_run_number_directory = False
-            if self.instrument in MISC["excitation_instruments"]:
+            if self.instrument in MISC["flat_output_instruments"]:
                 no_run_number_directory = True
 
             instrument_output_directory = MISC["ceph_directory"] % (self.instrument,
                                                                     self.proposal,
                                                                     self.run_number)
 
-            reduce_result_dir = self.specify_instrument_directories(
+            temp_reduce_result_dir = self.specify_instrument_directories(
                 instrument_output_directory=instrument_output_directory,
                 no_run_number_directory=no_run_number_directory,
                 temporary_directory=MISC["temp_root_directory"])
 
             if self.message.description is not None:
                 logger.info("DESCRIPTION: %s", self.message.description)
-            log_dir = reduce_result_dir + "/reduction_log/"
+            temp_log_dir = temp_reduce_result_dir + "/reduction_log/"
 
             # strip temp path off front of the temp directory to get the final archives directory
             final_result_dir, final_log_dir = self.create_final_result_and_log_directory(
                 temporary_root_directory=MISC["temp_root_directory"],
-                reduce_dir=reduce_result_dir)
+                reduce_dir=temp_reduce_result_dir)
 
             # Test path exists and access
-            should_be_writeable = [reduce_result_dir, log_dir, final_result_dir, final_log_dir]
+            should_be_writeable = [temp_reduce_result_dir, temp_log_dir,
+                                   final_result_dir, final_log_dir]
             should_be_readable = [self.data_file]
 
             # Try to create directory if does not exist
@@ -423,40 +427,40 @@ class PostProcessAdmin:
 
             self.message.reduction_data = []
 
+            # Create script out and mantid log paths
+            script_out = self.create_log_path(file_name_with_extension="Script.out",
+                                              log_directory=temp_log_dir)
+            mantid_log = self.create_log_path(file_name_with_extension="Mantid.log",
+                                              log_directory=temp_log_dir)
+
             logger.info("----------------")
             logger.info("Reduction script: %s ...", self.reduction_script[:50])
-            logger.info("Result dir: %s", reduce_result_dir)
-            logger.info("Log dir: %s", log_dir)
-            logger.info("Out log: %s",
-                        self.create_log_path(file_name_with_extension="Script.out",
-                                             log_directory=log_dir))
+            logger.info("Temporary result dir: %s", temp_reduce_result_dir)
+            logger.info("Final result dir: %s", final_result_dir)
+            logger.info("Temporary log dir: %s", temp_log_dir)
+            logger.info("Final log dir: %s", final_log_dir)
+            logger.info("Out log: %s", script_out)
             logger.info("Datafile: %s", self.data_file)
             logger.info("----------------")
 
             logger.info("Reduction subprocess started.")
-            logger.info(reduce_result_dir)
-            out_directories = None
-
-            # Create script out and mantid log paths
-            script_out = self.create_log_path(file_name_with_extension="Script.out",
-                                              log_directory=log_dir)
-            mantid_log = self.create_log_path(file_name_with_extension="Mantid.log",
-                                              log_directory=log_dir)
+            logger.info(temp_reduce_result_dir)
 
             # Load reduction script as module and validate
-            out_directories = self.validate_reduction_as_module(script_out=script_out,
-                                                                mantid_log=mantid_log,
-                                                                reduce_result=reduce_result_dir,
-                                                                final_result=final_result_dir)
+            out_directories = self \
+                .validate_reduction_as_module(script_out=script_out,
+                                              mantid_log=mantid_log,
+                                              reduce_result=temp_reduce_result_dir,
+                                              final_result=final_result_dir)
 
-            self.copy_temp_directory(reduce_result_dir, final_result_dir)
+            self.copy_temp_directory(temp_reduce_result_dir, final_result_dir)
 
             # Copy to additional directories if present in reduce script
             self.additional_save_directories_check(out_directories=out_directories,
-                                                   reduce_result=reduce_result_dir)
+                                                   reduce_result=temp_reduce_result_dir)
 
             # no longer a need for the temp directory used for storing of reduction results
-            self.delete_temp_directory(reduce_result_dir)
+            self.delete_temp_directory(temp_reduce_result_dir)
 
         except SkippedRunException as skip_exception:
             logger.info("Run %s has been skipped on %s",
@@ -487,29 +491,20 @@ class PostProcessAdmin:
             logger.error(excep)
         return None
 
-    def _new_reduction_data_path(self, path):
+    def _append_run_version(self, path):
         """
-        Creates a pathname for the reduction data, factoring in existing run data.
-        :param path: Base path for the run data (should follow convention, without version number)
-        :return: A pathname for the new reduction data
+        Append the run version to the output directory. If its the first run run-version-0 will be
+        added, if overwrite is true run-version-0 will always be overwritten
+        :param path: The reduction output path
+        :return: The reduction output path with the run version appended
         """
-        logger.info("_new_reduction_data_path argument: %s", path)
-        # if there is an 'overwrite' key/member with a None/False value
-        if not self.message.overwrite:
-            if os.path.isdir(path):  # if the given path already exists..
-                contents = os.listdir(path)
-                highest_vers = -1
-                for item in contents:  # ..for every item, if it's a dir and a int..
-                    if os.path.isdir(os.path.join(path, item)):
-                        try:  # ..store the highest int
-                            vers = int(item)
-                            highest_vers = max(highest_vers, vers)
-                        except ValueError:
-                            pass
-                this_vers = highest_vers + 1
-                return append_path(path, [str(this_vers)])
-        # (else) if no overwrite, overwrite true, or the path doesn't exist: return version 0 path
-        return append_path(path, "0")
+        if self.message.overwrite:
+            return append_path(path, ["run-version-0"])
+        run_versions = [int(i.split("-")[-1]) for i in glob.glob(f"{path}/run-version-[0-9]*")]
+        try:
+            return append_path(path, [f"run-version-{max(run_versions) + 1}"])
+        except ValueError:
+            return append_path(path, ["run-version-0"])
 
     def copy_temp_directory(self, temp_result_dir, copy_destination):
         """
@@ -520,7 +515,7 @@ class PostProcessAdmin:
         sub-folders.
         """
         if os.path.isdir(copy_destination) \
-                and self.instrument not in MISC["excitation_instruments"]:
+                and self.instrument not in MISC["flat_output_instruments"]:
             self._remove_directory(copy_destination)
 
         self.message.reduction_data.append(copy_destination)

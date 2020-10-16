@@ -24,5 +24,5 @@ MISC = {
     "post_process_directory": append_path(os.path.dirname(os.path.realpath(__file__)), ["post_process_admin.py"]),
     "ceph_directory": append_path(get_project_root(), ['reduced-data', '%s', 'RB%s', 'autoreduced', '%s']),
     "temp_root_directory": "/autoreducetmp",
-    "excitation_instruments": ["LET", "MARI", "MAPS", "MERLIN", "WISH", "GEM"]
+    "flat_output_instruments": ["LET", "MARI", "MAPS", "MERLIN", "WISH", "GEM"]
 }
