@@ -5,7 +5,7 @@ coveralls==2.1.2
 dash==1.16.3
 django-debug-toolbar==3.1.1
 django_plotly_dash==1.4.2
-gitpython==3.1.7
+gitpython==3.1.9
 # this is the highest available version that pip can find on CentOS - be careful when updating
 # because Travis runs on Ubuntu so even if the build pass, the installation could fail
 ipython==7.16.1
