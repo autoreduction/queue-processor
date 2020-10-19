@@ -103,8 +103,12 @@ def get_reduction_run(instrument, run_number):
     Note: The query set could contain multiple records or None
     """
     database = start_database()
+    instrument_record = get_instrument(instrument)
+    # if instrument not yet in database then return empty record
+    if not instrument_record:
+        return instrument_record
     return database.data_model.ReductionRun.objects \
-        .filter(instrument=get_instrument(instrument).id) \
+        .filter(instrument=instrument_record.id) \
         .filter(run_number=run_number)
 
 
