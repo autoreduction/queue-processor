@@ -90,10 +90,10 @@
                                 </div>
                                 <div>
                                     <strong>Finish:</strong>
-                                    {% if run.finished %}
-                                        {{ run.finished }}
-                                    {% elif is_skipped %}
+                                    {% if is_skipped %}
                                         <em>Not run</em>
+                                    {% elif run.finished %}
+                                        {{ run.finished }}
                                     {% else %}
                                         <em>Not yet finished</em>
                                     {% endif %}
