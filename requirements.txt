@@ -14,7 +14,7 @@ mock==4.0.2
 pandas==1.1.0
 plotly==4.11.0
 pylint==2.6.0
-pytest-cov==2.10.0
+pytest-cov==2.10.1
 python-coveralls==2.9.3
 requests==2.24.0
 sentry-sdk==0.18
