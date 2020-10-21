@@ -82,6 +82,8 @@
                                     <strong>Start:</strong>
                                     {% if run.started %}
                                         {{ run.started }}
+                                    {% elif is_skipped %}
+                                        <em>Not run</em>
                                     {% else %}
                                         <em>Not yet started</em>
                                     {% endif %}
@@ -90,6 +92,8 @@
                                     <strong>Finish:</strong>
                                     {% if run.finished %}
                                         {{ run.finished }}
+                                    {% elif is_skipped %}
+                                        <em>Not run</em>
                                     {% else %}
                                         <em>Not yet finished</em>
                                     {% endif %}
@@ -98,6 +102,8 @@
                                     <strong>Duration:</strong>
                                     {% if run.started and run.finished %}
                                         {% natural_time_difference run.started run.finished %}
+                                    {% elif is_skipped %}
+                                        <em>Not run</em>
                                     {% else %}
                                         <em>Not yet finished</em>
                                     {% endif %}
@@ -157,35 +163,39 @@
                                         <em>No reduced data found</em>
                                     {% endif %}
                                 </div>
-                                <strong>Logs:</strong>
-                                <a href="#" class="js-log-display" id="show_reduction_logs">Show reduction logs</a>
+                                {% if not is_skipped %}
+                                    <strong>Logs:</strong>
+                                    <a href="#" class="js-log-display" id="show_reduction_logs">Show reduction logs</a>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div id="re-run_and_graphs">
-            {% if run.graph %}
-                <div class="panel panel-default" id="re-run_job">
-                    <div class="panel-heading">
-                        <div class="panel-title"><a data-toggle="collapse" href="#collapseGraphs" data-target="#graphs"><i
-                                class="fa fa-chevron-down"></i> Images</a></div>
+        {% if not is_skipped %}
+            <div id="re-run_and_graphs">
+                {% if run.graph %}
+                    <div class="panel panel-default" id="re-run_job">
+                        <div class="panel-heading">
+                            <div class="panel-title"><a data-toggle="collapse" href="#collapseGraphs" data-target="#graphs"><i
+                                    class="fa fa-chevron-down"></i> Images</a></div>
+                        </div>
+                        <div class="panel-body collapse in" id="graphs">
+                            {% for graph in run.graph %}
+                                <div class="text-center"><a href="{{ graph }}" target="_blank"><img src="{{ graph }}"/></a>
+                                </div>
+                            {% endfor %}
+                        </div>
                     </div>
-                    <div class="panel-body collapse in" id="graphs">
-                        {% for graph in run.graph %}
-                            <div class="text-center"><a href="{{ graph }}" target="_blank"><img src="{{ graph }}"/></a>
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            {% endif %}
-            {% if reduction_variables_on %}
-                {% autoescape on %}
-                    {% view "reduction_variables.views.run_summary" run.instrument.name run.run_number run.run_version %}
-                {% endautoescape %}
-            {% endif %}
-        </div>
+                {% endif %}
+                {% if reduction_variables_on %}
+                    {% autoescape on %}
+                        {% view "reduction_variables.views.run_summary" run.instrument.name run.run_number run.run_version %}
+                    {% endautoescape %}
+                {% endif %}
+            </div>
+        {% endif %}
         <div class="run-history modal fade" tabindex="-1" role="dialog" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
