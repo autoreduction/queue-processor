@@ -185,8 +185,7 @@ class ReductionRunUtils(object):
         # Check record is safe to save
         try:
             new_job.full_clean()
-        # pylint:disable=catching-non-exception
-        except django.core.exceptions as exception:
+        except Exception as exception:
             LOGGER.error(traceback.format_exc())
             LOGGER.error(exception)
             raise
