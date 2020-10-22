@@ -1,8 +1,8 @@
 if ($("#navbar-username").length == 0){     // if there is no element with id="navbar-username"
-    var content = "Lastly, you can sign in to access additional pages."
+    var content = "You can sign in to access additional pages."
 }
 else{
-    var content = "Lastly, you can also use the navigation bar to go to different pages."
+    var content = "You can use the navigation bar to go to different pages."
 }
 
 steps = [
