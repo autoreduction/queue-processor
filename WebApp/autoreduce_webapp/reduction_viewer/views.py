@@ -16,25 +16,24 @@ import json
 import logging
 import operator
 
+from autoreduce_webapp.icat_cache import ICATCache
+from autoreduce_webapp.settings import UOWS_LOGIN_URL, USER_ACCESS_CHECKS, DEVELOPMENT_MODE
+from autoreduce_webapp.uows_client import UOWSClient
+from autoreduce_webapp.view_utils import (login_and_uows_valid, render_with,
+                                          require_admin, check_permissions)
 from django.contrib.auth import logout as django_logout, authenticate, login
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponseNotFound
 from django.shortcuts import redirect
-
-from autoreduce_webapp.icat_cache import ICATCache
-from autoreduce_webapp.settings import UOWS_LOGIN_URL, USER_ACCESS_CHECKS, DEVELOPMENT_MODE
-from autoreduce_webapp.uows_client import UOWSClient
-from autoreduce_webapp.view_utils import (login_and_uows_valid, render_with,
-                                          require_admin, check_permissions)
-from plotting.plot_handler import PlotHandler
-from reduction_variables.utils import MessagingUtils
+from reduction_variables.utils import InstrumentVariablesUtils, MessagingUtils
 from reduction_viewer.models import Experiment, ReductionRun, Instrument, Status
 from reduction_viewer.utils import StatusUtils, ReductionRunUtils
 from reduction_viewer.view_utils import deactivate_invalid_instruments
 from utilities.pagination import CustomPaginator
 
+from plotting.plot_handler import PlotHandler
 from utils.settings import VALID_INSTRUMENTS
 
 LOGGER = logging.getLogger('app')
