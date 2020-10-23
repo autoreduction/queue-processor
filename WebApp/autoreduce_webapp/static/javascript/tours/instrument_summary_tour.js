@@ -20,7 +20,7 @@ steps = [
     {
         element: "#btn-re-run_past_job",
         title: "Re-running Past Jobs",
-        content: "You can can re-run past jobs here",
+        content: "You can can re-run past jobs here.",
         placement: "bottom"
     },
     {
