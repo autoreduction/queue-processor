@@ -339,6 +339,8 @@ def instrument_summary(request, instrument=None):
         if len(runs) == 0:
             return {'message': "No runs found for instrument."}
 
+        has_variables = InstrumentVariablesUtils().get_default_variables(instrument_obj.name)
+
         context_dictionary = {
             'instrument': instrument_obj,
             'instrument_name': instrument_obj.name,
@@ -347,7 +349,8 @@ def instrument_summary(request, instrument=None):
             'processing': runs.filter(status=StatusUtils().get_processing()),
             'queued': runs.filter(status=StatusUtils().get_queued()),
             'filtering': filter_by,
-            'sort': sort_by
+            'sort': sort_by,
+            'has_variables': has_variables
         }
 
         if filter_by == 'experiment':
