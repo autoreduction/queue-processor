@@ -270,11 +270,15 @@ def run_summary(_, instrument_name=None, run_number=None, run_version=0):
             reduction_location = reduction_location.replace('\\', '/')
 
         rb_number = Experiment.objects.get(id=run.experiment_id).reference_number
+        has_variables = bool(
+            InstrumentVariablesUtils().get_default_variables(run.instrument.name)
+            or run.run_variables.all())
 
         context_dictionary = {'run': run,
                               'history': history,
                               'reduction_location': reduction_location,
-                              'started_by': started_by}
+                              'started_by': started_by,
+                              'has_variables': has_variables}
 
     except PermissionDenied:
         raise
