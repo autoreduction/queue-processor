@@ -260,6 +260,8 @@ def run_summary(_, instrument_name=None, run_number=None, run_version=0):
         run = ReductionRun.objects.get(instrument=instrument,
                                        run_number=run_number,
                                        run_version=run_version)
+        # run status value of "s" means the run is skipped
+        is_skipped = run.status.value == "s"
         history = ReductionRun.objects.filter(run_number=run_number).order_by('-run_version')
         started_by = started_by_id_to_name(run.started_by)
 
@@ -273,6 +275,7 @@ def run_summary(_, instrument_name=None, run_number=None, run_version=0):
         rb_number = Experiment.objects.get(id=run.experiment_id).reference_number
 
         context_dictionary = {'run': run,
+                              'is_skipped': is_skipped,
                               'history': history,
                               'reduction_location': reduction_location,
                               'started_by': started_by}
