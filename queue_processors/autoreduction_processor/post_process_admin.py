@@ -117,7 +117,8 @@ class PostProcessAdmin:
 
         if not hasattr(reduce_script, "web_var"):
             reduce_script.web_var = types.ModuleType("reduce_vars")
-        map(merge_dicts, ["standard_vars", "advanced_vars"])
+        merge_dicts("standard_vars")
+        merge_dicts("advanced_vars")
         return reduce_script
 
     @staticmethod
