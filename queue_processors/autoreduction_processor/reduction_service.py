@@ -9,7 +9,6 @@ Reduction service contains the classes, and functions that performs a reduction
 """
 import logging
 import os
-import time
 import traceback
 from distutils.dir_util import copy_tree
 from importlib.util import spec_from_file_location, module_from_spec
