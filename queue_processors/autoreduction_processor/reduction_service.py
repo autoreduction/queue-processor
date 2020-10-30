@@ -189,7 +189,7 @@ def reduce(reduction_dir, temp_dir, datafile, script, run_number, log_stream):
         except Exception as ex:
             LOGGER.error("exception caught in reduction script")
             LOGGER.error(traceback.format_exc())
-            with open(temp_dir.script_log(), "a") as target:
+            with open(temp_dir.script_log, "a") as target:
                 target.writelines(str(ex) + "\n")
                 target.write(traceback.format_exc())
             raise ReductionScriptError("Exception in reduction script", ex) from ex
