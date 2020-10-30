@@ -9,7 +9,9 @@ Reduction service contains the classes, and functions that performs a reduction
 """
 import logging
 import time
+from distutils.dir_util import copy_tree
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from queue_processors.autoreduction_processor.settings import MISC
 
@@ -81,4 +83,34 @@ class ReductionDirectory:
                 self.path = self.path / f"run-version-{max(versions) + 1}"
             except ValueError:
                 self.path = self.path / "run-version-0"
+
+
+class TemporaryReductionDirectory:
+    """
+    Encapsulates the use of the temporary reduction directory
+    """
+    def __init__(self, rb_number, run_number ):
+        self._temp_dir = TemporaryDirectory()
+        self.path = Path(self._temp_dir.name)
+        self.log_path = self.path / "reduction_log"
+        self.mantid_log = self.log_path / f"RB_{rb_number}_Run_{run_number}_Mantid.log"
+        self.script_log = self.log_path / f"RB_{rb_number}_Run_{run_number}_Script.out"
+        self._create()
+
+    def _create(self):
+        self.log_path.mkdir()
+        self.mantid_log.touch()
+        self.script_log.touch()
+
+    def delete(self):
+        self._temp_dir.cleanup()
+
+    def copy(self, destination):
+        """
+        Copy the contents of the temporary directory to the given destination, overwriting what is
+        already present.
+        :param destination: (Path like) the copy destination
+        """
+        LOGGER.info("Copying %s to %s", self.path, destination)
+        copy_tree(self.path, str(destination))  # We have to convert path objects to str
 
