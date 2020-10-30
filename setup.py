@@ -17,7 +17,7 @@ from build.commands.start import Start
 
 
 setup_requires = ['attrs==20.2.0',
-                  'dash==1.16.3',
+                  'dash==1.17.0',
                   'dash_html_components==1.1.1',
                   'dash_core_components==1.12.1',
                   'docker==4.3.1',
