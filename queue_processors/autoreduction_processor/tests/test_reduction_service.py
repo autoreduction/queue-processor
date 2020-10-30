@@ -4,6 +4,9 @@
 # Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
+"""
+Tests for parts of the reduction_service
+"""
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -17,9 +20,12 @@ from queue_processors.autoreduction_processor.settings import MISC
 
 REDUCTION_SERVICE_DIR = "queue_processors.autoreduction_processor.reduction_service"
 
+# pylint:disable=protected-access
 
 class TestReductionService(unittest.TestCase):
-
+    """
+    Test cases for classes and functions of reduction_service
+    """
     def setUp(self) -> None:
         patch(f"{REDUCTION_SERVICE_DIR}.LOGGER")
         self.instrument = "testinstrument"
@@ -73,11 +79,11 @@ class TestReductionService(unittest.TestCase):
         Tests: Run number is removed from path
         When: _build_path is called for flat output instrument
         """
-        d = {
+        misc_values = {
             "flat_output_instruments": [self.instrument],
             "ceph_directory": "/instrument/%s/RBNumber/RB%s/autoreduced/%s"
         }
-        mock_misc.__getitem__.side_effect = d.__getitem__
+        mock_misc.__getitem__.side_effect = misc_values.__getitem__
         reduction_dir = ReductionDirectory(self.instrument, self.rb_number, self.run_number)
         expected = Path(f"/instrument/{self.instrument}/RBNumber/RB{self.rb_number}/autoreduced")
         self.assertEqual(expected, reduction_dir.path)
@@ -90,9 +96,7 @@ class TestReductionService(unittest.TestCase):
         """
         reduction_dir = ReductionDirectory(self.instrument, self.rb_number, self.run_number)
         mock_append.assert_called_once()
-        expected = Path(
-            f"/instrument/{self.instrument}/"
-            f"RBNumber/RB{self.rb_number}/autoreduced/{self.run_number}")
+        expected = Path(MISC["ceph_directory"] % (self.instrument, self.rb_number, self.run_number))
         self.assertEqual(expected, reduction_dir.path)
 
     def test_reduction_directory_append_run_version_overwrite_true(self):
@@ -119,11 +123,11 @@ class TestReductionService(unittest.TestCase):
         """
         with TemporaryDirectory() as directory:
             # We need to do this MISC mocking to allow string formatting in the __init__
-            d = {
+            misc_values = {
                 "flat_output_instruments": [self.instrument],
                 "ceph_directory": directory + "/%s/%s/%s"
             }
-            mock_misc.__getitem__.side_effect = d.__getitem__
+            mock_misc.__getitem__.side_effect = misc_values.__getitem__
             reduction_dir = ReductionDirectory(self.instrument,
                                                self.rb_number,
                                                self.run_number)
@@ -141,11 +145,11 @@ class TestReductionService(unittest.TestCase):
         """
         with TemporaryDirectory() as directory:
             # We need to do this MISC mocking to allow string formatting in the __init__
-            d = {
+            misc_values = {
                 "flat_output_instruments": [self.instrument],
                 "ceph_directory": directory + "/%s/%s/%s"
             }
-            mock_misc.__getitem__.side_effect = d.__getitem__
+            mock_misc.__getitem__.side_effect = misc_values.__getitem__
             reduction_dir = ReductionDirectory(self.instrument,
                                                self.rb_number,
                                                self.run_number)
@@ -254,6 +258,10 @@ class TestReductionService(unittest.TestCase):
     @patch(f"{REDUCTION_SERVICE_DIR}.spec_from_file_location")
     @patch(f"{REDUCTION_SERVICE_DIR}.module_from_spec")
     def test_reduction_script_load_no_skip_runs(self, mock_module_from_spec, mock_spec_from_file):
+        """
+        Test: Reduction script is loaded
+        When: script has no skipped runs
+        """
         module_mock = MagicMock()
         mock_spec_from_file.return_value = MagicMock()
         mock_module_from_spec.return_value = module_mock

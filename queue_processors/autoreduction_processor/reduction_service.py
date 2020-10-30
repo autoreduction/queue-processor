@@ -69,7 +69,7 @@ class ReductionDirectory:
             except ValueError:
                 self.path = self.path / "run-version-0"
 
-
+# pylint:disable=too-few-public-methods;
 class TemporaryReductionDirectory:
     """
     Encapsulates the use of the temporary reduction directory
