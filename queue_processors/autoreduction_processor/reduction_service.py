@@ -16,8 +16,10 @@ from importlib.util import spec_from_file_location, module_from_spec
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from queue_processors.autoreduction_processor.post_process_admin_utilities import channels_redirected
-from queue_processors.autoreduction_processor.reduction_exceptions import DatafileError, SkippedRunException, \
+from queue_processors.autoreduction_processor.post_process_admin_utilities import \
+    channels_redirected
+from queue_processors.autoreduction_processor.reduction_exceptions import DatafileError, \
+    SkippedRunException, \
     ReductionScriptError
 from queue_processors.autoreduction_processor.settings import MISC
 from queue_processors.autoreduction_processor.timeout import TimeOut
@@ -112,6 +114,9 @@ class TemporaryReductionDirectory:
         self.script_log.touch()
 
     def delete(self):
+        """
+        Deletes the temporary directory and all of its contents.
+        """
         self._temp_dir.cleanup()
 
     def copy(self, destination):
@@ -124,6 +129,7 @@ class TemporaryReductionDirectory:
         copy_tree(self.path, str(destination))  # We have to convert path objects to str
 
 
+# pylint:disable=too-few-public-methods; As pylint does not like value objects
 class Datafile:
     """
     Encapsulates datafile path and verification
@@ -133,8 +139,8 @@ class Datafile:
         self.path = Path(path)
         try:
             assert os.access(path, os.R_OK)
-        except AssertionError:
-            raise DatafileError(f"Problem reading datafile: {path}")
+        except AssertionError as ex:
+            raise DatafileError(f"Problem reading datafile: {path}") from ex
 
 
 class ReductionScript:
@@ -157,7 +163,7 @@ class ReductionScript:
         spec.loader.exec_module(self.script)
         try:
             self.skipped_runs = self.script.SKIP_RUNS
-        except:
+        except:  # pylint:disable=bare-except
             pass
 
     def run(self, input_file, output_dir):
@@ -172,7 +178,8 @@ class ReductionScript:
         with TimeOut(MISC["script_timeout"]):
             return self.script.main(input_file=input_file, output_dir=output_dir)
 
-
+# pylint:disable=too-many-arguments; We will remove the log_Stream once we look at logging in ppa
+# more closely
 def reduce(reduction_dir, temp_dir, datafile, script, run_number, log_stream):
     """
     Performs a reduction on the given datafile using the given script, outputting to the given
@@ -210,7 +217,7 @@ def reduce(reduction_dir, temp_dir, datafile, script, run_number, log_stream):
             with open(temp_dir.script_log(), "a") as target:
                 target.writelines(str(ex) + "\n")
                 target.write(traceback.format_exc())
-            raise ReductionScriptError("Exception in reduction script", ex)
+            raise ReductionScriptError("Exception in reduction script", ex) from ex
         finally:
             temp_dir.copy(reduction_dir.path)
 
