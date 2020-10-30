@@ -10,16 +10,20 @@ Reduction service contains the classes, and functions that performs a reduction
 import logging
 import os
 import time
+import traceback
 from distutils.dir_util import copy_tree
-from pathlib import Path
 from importlib.util import spec_from_file_location, module_from_spec
+from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from queue_processors.autoreduction_processor.reduction_exceptions import DatafileError
+from queue_processors.autoreduction_processor.post_process_admin_utilities import channels_redirected
+from queue_processors.autoreduction_processor.reduction_exceptions import DatafileError, SkippedRunException, \
+    ReductionScriptError
 from queue_processors.autoreduction_processor.settings import MISC
 from queue_processors.autoreduction_processor.timeout import TimeOut
 
 LOGGER = logging.getLogger(__file__)
+
 
 class ReductionDirectory:
     """
@@ -93,7 +97,8 @@ class TemporaryReductionDirectory:
     """
     Encapsulates the use of the temporary reduction directory
     """
-    def __init__(self, rb_number, run_number ):
+
+    def __init__(self, rb_number, run_number):
         self._temp_dir = TemporaryDirectory()
         self.path = Path(self._temp_dir.name)
         self.log_path = self.path / "reduction_log"
@@ -166,3 +171,50 @@ class ReductionScript:
         LOGGER.info("Running reduction script: %s", self.script_path)
         with TimeOut(MISC["script_timeout"]):
             return self.script.main(input_file=input_file, output_dir=output_dir)
+
+
+def reduce(reduction_dir, temp_dir, datafile, script, run_number, log_stream):
+    """
+    Performs a reduction on the given datafile using the given script, outputting to the given
+    output directory
+    :param reduction_dir: (ReductionDirectory) The final directory to output to
+    :param temp_dir: (TemporaryReductionDirectory) Where the reduction initially outputs to
+    :param datafile: (Datafile) The datafile to perform the reduction on
+    :param script: (ReductionScript) The Script used to reduce the data
+    :param run_number: (String) The run number of this reduction
+    :param log_stream: (StringIO) The logstream to redirect the reduction logs to.
+    """
+    reduction_dir.create()
+    LOGGER.info("-------------------------------------------------------")
+    LOGGER.info("Temporary result directory: %s", temp_dir.path)
+    LOGGER.info("Final Result directory: %s", reduction_dir.path)
+    LOGGER.info("Temporary log dir: %s", temp_dir.log_path)
+    LOGGER.info("Final log dir: %s", reduction_dir.log_path)
+    LOGGER.info("Datafile: %s", datafile.path)
+    LOGGER.info("Reduction script: %s", script.script_path)
+    LOGGER.info("-------------------------------------------------------")
+    LOGGER.info("Starting reduction...")
+
+    with channels_redirected(temp_dir.script_log,
+                             temp_dir.mantid_log,
+                             log_stream):
+        script.load()
+        if run_number in script.skipped_runs:
+            raise SkippedRunException("Run has been skipped in script")
+
+        try:
+            additional_output_dirs = script.run(datafile.path, temp_dir.path)
+        except Exception as ex:
+            LOGGER.error("exception caught in reduction script")
+            LOGGER.error(traceback.format_exc())
+            with open(temp_dir.script_log(), "a") as target:
+                target.writelines(str(ex) + "\n")
+                target.write(traceback.format_exc())
+            raise ReductionScriptError("Exception in reduction script", ex)
+        finally:
+            temp_dir.copy(reduction_dir.path)
+
+        if additional_output_dirs:
+            temp_dir.copy(additional_output_dirs)
+
+        temp_dir.delete()
