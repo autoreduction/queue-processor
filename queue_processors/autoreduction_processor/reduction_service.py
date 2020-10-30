@@ -151,7 +151,8 @@ class ReductionScript:
         """
         LOGGER.info("Running reduction script: %s", self.script_path)
         with TimeOut(MISC["script_timeout"]):
-            return self.script.main(input_file=input_file, output_dir=output_dir)
+            return self.script.main(input_file=str(input_file.path),
+                                    output_dir=str(output_dir.path))
 
 # pylint:disable=too-many-arguments; We will remove the log_Stream once we look at logging in ppa
 # more closely
@@ -185,7 +186,7 @@ def reduce(reduction_dir, temp_dir, datafile, script, run_number, log_stream):
             raise SkippedRunException("Run has been skipped in script")
 
         try:
-            additional_output_dirs = script.run(datafile.path, temp_dir.path)
+            additional_output_dirs = script.run(datafile, temp_dir)
         except Exception as ex:
             LOGGER.error("exception caught in reduction script")
             LOGGER.error(traceback.format_exc())
