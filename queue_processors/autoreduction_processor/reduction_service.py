@@ -53,30 +53,6 @@ class ReductionDirectory:
         self.script_log.touch()
         self.mantid_log.touch()
 
-    def delete(self):
-        """
-        Delete the Reduction directory and all of its contents recursively
-        """
-        LOGGER.info("Deleting directory: %s", self.path)
-        for sleep in [0, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20]:
-            self._rm_tree(self.path)
-            if not self.path.exists():
-                break
-            time.sleep(sleep)
-        else:
-            LOGGER.warning("Failed to delete %s", self.path)
-
-    def _rm_tree(self, path):
-        for child in path.glob("*"):
-            if child.is_file():
-                try:
-                    child.unlink()
-                except FileNotFoundError:
-                    pass
-            else:
-                self._rm_tree(child)
-        path.rmdir()
-
     def _build_path(self):
         if self._is_flat_directory:
             self.path = self.path.parent
