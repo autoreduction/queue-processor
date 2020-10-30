@@ -47,10 +47,10 @@ class ReductionDirectory:
         Creates the reduction directory including the log path, Script.out and Mantid.log files
         """
         LOGGER.info("Creating reduction directory: %s", self.path)
-        self.path.mkdir(parents=True)
-        self.log_path.mkdir()
-        self.script_log.touch()
-        self.mantid_log.touch()
+        self.path.mkdir(parents=True, exist_ok=True)
+        self.log_path.mkdir(exist_ok=True)
+        self.script_log.touch(exist_ok=True)
+        self.mantid_log.touch(exist_ok=True)
 
     def _build_path(self):
         if self._is_flat_directory:
