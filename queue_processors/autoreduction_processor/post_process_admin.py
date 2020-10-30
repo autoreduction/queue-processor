@@ -35,7 +35,10 @@ from paths.path_manipulation import append_path
 from queue_processors.autoreduction_processor.autoreduction_logging_setup import logger
 from queue_processors.autoreduction_processor.post_process_admin_utilities import \
     channels_redirected, windows_to_linux_path
-from queue_processors.autoreduction_processor.reduction_exceptions import SkippedRunException
+from queue_processors.autoreduction_processor.reduction_exceptions import SkippedRunException, DatafileError, \
+    ReductionScriptError
+from queue_processors.autoreduction_processor.reduction_service import Datafile, ReductionScript, ReductionDirectory, \
+    TemporaryReductionDirectory, reduce
 from queue_processors.autoreduction_processor.settings import MISC
 from queue_processors.autoreduction_processor.timeout import TimeOut
 from utils.clients.queue_client import QueueClient
@@ -383,7 +386,6 @@ class PostProcessAdmin:
     # pylint:disable=too-many-nested-blocks
     def reduce(self):
         """Start the reduction job."""
-        # pylint: disable=too-many-nested-blocks
         self.message.software = self._get_mantid_version()
 
         try:
@@ -391,82 +393,29 @@ class PostProcessAdmin:
             self.send_reduction_message(message="started",
                                         amq_message=ACTIVEMQ_SETTINGS.reduction_started)
 
-            # Specify instrument directories - if excitation instrument remove run_number from dir
-            no_run_number_directory = False
-            if self.instrument in MISC["flat_output_instruments"]:
-                no_run_number_directory = True
-
-            instrument_output_directory = MISC["ceph_directory"] % (self.instrument,
-                                                                    self.proposal,
-                                                                    self.run_number)
-
-            temp_reduce_result_dir = self.specify_instrument_directories(
-                instrument_output_directory=instrument_output_directory,
-                no_run_number_directory=no_run_number_directory,
-                temporary_directory=MISC["temp_root_directory"])
-
             if self.message.description is not None:
                 logger.info("DESCRIPTION: %s", self.message.description)
-            temp_log_dir = temp_reduce_result_dir + "/reduction_log/"
 
-            # strip temp path off front of the temp directory to get the final archives directory
-            final_result_dir, final_log_dir = self.create_final_result_and_log_directory(
-                temporary_root_directory=MISC["temp_root_directory"],
-                reduce_dir=temp_reduce_result_dir)
+            datafile = Datafile(self.data_file)
+            reduction_script = ReductionScript(self.instrument)
+            reduction_dir = ReductionDirectory(self.instrument, self.proposal, self.run_number)
+            temp_dir = TemporaryReductionDirectory(self.proposal, self.run_number)
+            reduce(reduction_dir, temp_dir, datafile, reduction_script, self.run_number,
+                   self.reduction_log_stream)
+            self.message.reduction_data = [str(reduction_dir.path)]
 
-            # Test path exists and access
-            should_be_writeable = [temp_reduce_result_dir, temp_log_dir,
-                                   final_result_dir, final_log_dir]
-            should_be_readable = [self.data_file]
+        except DatafileError as exp:
+            logger.error("Problem reading datafile: %s", self.data_file)
+            self.message.message = "REDUCTION Error: %s" % exp
 
-            # Try to create directory if does not exist
-            self.create_directory(should_be_writeable)
-
-            # Check permissions of paths which should be writeable and readable
-            self.write_and_readability_checks(directory_list=should_be_writeable, read_write="W")
-            self.write_and_readability_checks(directory_list=should_be_readable, read_write="R")
-
-            self.message.reduction_data = []
-
-            # Create script out and mantid log paths
-            script_out = self.create_log_path(file_name_with_extension="Script.out",
-                                              log_directory=temp_log_dir)
-            mantid_log = self.create_log_path(file_name_with_extension="Mantid.log",
-                                              log_directory=temp_log_dir)
-
-            logger.info("----------------")
-            logger.info("Reduction script: %s ...", self.reduction_script[:50])
-            logger.info("Temporary result dir: %s", temp_reduce_result_dir)
-            logger.info("Final result dir: %s", final_result_dir)
-            logger.info("Temporary log dir: %s", temp_log_dir)
-            logger.info("Final log dir: %s", final_log_dir)
-            logger.info("Out log: %s", script_out)
-            logger.info("Datafile: %s", self.data_file)
-            logger.info("----------------")
-
-            logger.info("Reduction subprocess started.")
-            logger.info(temp_reduce_result_dir)
-
-            # Load reduction script as module and validate
-            out_directories = self \
-                .validate_reduction_as_module(script_out=script_out,
-                                              mantid_log=mantid_log,
-                                              reduce_result=temp_reduce_result_dir,
-                                              final_result=final_result_dir)
-
-            self.copy_temp_directory(temp_reduce_result_dir, final_result_dir)
-
-            # Copy to additional directories if present in reduce script
-            self.additional_save_directories_check(out_directories=out_directories,
-                                                   reduce_result=temp_reduce_result_dir)
-
-            # no longer a need for the temp directory used for storing of reduction results
-            self.delete_temp_directory(temp_reduce_result_dir)
-
-        except SkippedRunException as skip_exception:
+        except SkippedRunException:
             logger.info("Run %s has been skipped on %s",
                         self.message.run_number, self.message.instrument)
-            self.message.message = "Reduction Skipped: %s" % str(skip_exception)
+            self.message.message = "Run has been skipped in script"
+
+        except ReductionScriptError as exp:
+            self.message.message = "REDUCTION Error: %s" % exp
+
         except Exception as exp:
             logger.error(traceback.format_exc())
             self.message.message = "REDUCTION Error: %s " % exp
