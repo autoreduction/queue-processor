@@ -8,11 +8,13 @@
 Reduction service contains the classes, and functions that performs a reduction
 """
 import logging
+import os
 import time
 from distutils.dir_util import copy_tree
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from queue_processors.autoreduction_processor.reduction_exceptions import DatafileError
 from queue_processors.autoreduction_processor.settings import MISC
 
 LOGGER = logging.getLogger(__file__)
@@ -114,3 +116,15 @@ class TemporaryReductionDirectory:
         LOGGER.info("Copying %s to %s", self.path, destination)
         copy_tree(self.path, str(destination))  # We have to convert path objects to str
 
+
+class Datafile:
+    """
+    Encapsulates datafile path and verification
+    """
+
+    def __init__(self, path):
+        self.path = Path(path)
+        try:
+            assert os.access(path, os.R_OK)
+        except AssertionError:
+            raise DatafileError(f"Problem reading datafile: {path}")
