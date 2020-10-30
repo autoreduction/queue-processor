@@ -12,10 +12,12 @@ import os
 import time
 from distutils.dir_util import copy_tree
 from pathlib import Path
+from importlib.util import spec_from_file_location, module_from_spec
 from tempfile import TemporaryDirectory
 
 from queue_processors.autoreduction_processor.reduction_exceptions import DatafileError
 from queue_processors.autoreduction_processor.settings import MISC
+from queue_processors.autoreduction_processor.timeout import TimeOut
 
 LOGGER = logging.getLogger(__file__)
 
@@ -128,3 +130,39 @@ class Datafile:
             assert os.access(path, os.R_OK)
         except AssertionError:
             raise DatafileError(f"Problem reading datafile: {path}")
+
+
+class ReductionScript:
+    """
+    Encapsulates the loading and running of a reduction script
+    """
+
+    def __init__(self, instrument):
+        self.script_path = Path(MISC["scripts_directory"] % instrument) / "reduce.py"
+        self.skipped_runs = []
+        self.script = None
+
+    def load(self):
+        """
+        Loads the reduction script as a module and stores any run numbers that are to be skipped
+        by the script
+        """
+        spec = spec_from_file_location("reducescript", self.script_path)
+        self.script = module_from_spec(spec)
+        spec.loader.exec_module(self.script)
+        try:
+            self.skipped_runs = self.script.SKIP_RUNS
+        except:
+            pass
+
+    def run(self, input_file, output_dir):
+        """
+        Runs the reduction script on the given input file and outputs to the given
+        ReductionReturn and returns the return value of the main function of the script.
+        :param input_file: (Datafile) Input datafile
+        :param output_dir: (ReductionDirectory) Directory to output to
+        :return:
+        """
+        LOGGER.info("Running reduction script: %s", self.script_path)
+        with TimeOut(MISC["script_timeout"]):
+            return self.script.main(input_file=input_file, output_dir=output_dir)
