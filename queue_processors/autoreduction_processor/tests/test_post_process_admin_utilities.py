@@ -8,10 +8,10 @@
 Tests for post process helper functionality
 """
 import contextlib
-import unittest
 import io
+import unittest
+from pathlib import Path
 
-from pathlib import PosixPath
 from mock import patch
 
 from queue_processors.autoreduction_processor.post_process_admin_utilities import \
@@ -40,22 +40,18 @@ class TestPostProcessAdminHelpers(unittest.TestCase):
         actual = windows_to_linux_path(windows_path, '/temp')
         self.assertEqual(actual, '/temp/data/some/more/path.nxs')
 
-    @patch(f"{DIR}.post_process_admin.PostProcessAdmin.create_log_path")
     @patch('os.path.isfile')
-    @patch(f"{DIR}.post_process_admin.PostProcessAdmin.specify_instrument_directories")
-    def test_channels_redirect(self, mock_iod, mock_is_file, _):
+    def test_channels_redirect(self, mock_is_file):
         """
         Test: A context manager is returned
         When: Called
         """
-
         mock_is_file.return_value = True
-
-        log_directory = f"{mock_iod}/reduction_log/"
+        log_directory = f"/reduction_log/"
         log_and_error_name = "RB_1234_Run_4321_"
 
-        script_out = PosixPath(f"{log_directory}{log_and_error_name}{'Script.out'}")
-        mantid_out = PosixPath(f"{log_directory}{log_and_error_name}{'Mantid.log'}")
+        script_out = Path(f"{log_directory}{log_and_error_name}{'Script.out'}")
+        mantid_out = Path(f"{log_directory}{log_and_error_name}{'Mantid.log'}")
         out_stream = io.StringIO()
 
         actual = channels_redirected(out_file=script_out,
