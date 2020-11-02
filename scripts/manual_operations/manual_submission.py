@@ -87,11 +87,29 @@ def get_location_and_rb_from_icat(icat_client, instrument, run_number, file_ext)
         print("ICAT not connected")  # pragma: no cover
         sys.exit(1)  # pragma: no cover
 
-    icat_instrument_prefix = get_icat_instrument_prefix(instrument)
-    file_name = f"{icat_instrument_prefix}{str(run_number).zfill(5)}.{file_ext}"
+    # look for file-name assuming file-name uses full instrument name
+    file_name = f"{instrument}{str(run_number).zfill(5)}.{file_ext}"
     datafile = icat_client.execute_query("SELECT df FROM Datafile df WHERE df.name = '"
                                          + file_name +
                                          "' INCLUDE df.dataset AS ds, ds.investigation")
+
+    if not datafile:
+        print("Cannot find datafile '" + file_name +
+              "' in ICAT. Will try with zeros in front of run number.")
+        file_name = f"{instrument}{str(run_number).zfill(8)}.{file_ext}"
+        datafile = icat_client.execute_query("SELECT df FROM Datafile df WHERE df.name = '"
+                                             + file_name +
+                                             "' INCLUDE df.dataset AS ds, ds.investigation")
+
+    # look for file-name assuming file-name uses prefix instrument name
+    icat_instrument_prefix = get_icat_instrument_prefix(instrument)
+    if not datafile:
+        print("Cannot find datafile '" + file_name +
+              "' in ICAT. Will try with pre-fix instrument name.")
+        file_name = f"{icat_instrument_prefix}{str(run_number).zfill(5)}.{file_ext}"
+        datafile = icat_client.execute_query("SELECT df FROM Datafile df WHERE df.name = '"
+                                             + file_name +
+                                             "' INCLUDE df.dataset AS ds, ds.investigation")
 
     if not datafile:
         print("Cannot find datafile '" + file_name +
