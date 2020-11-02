@@ -23,9 +23,11 @@ from model.message.message import Message
 from queue_processors.autoreduction_processor.autoreduction_logging_setup import logger
 from queue_processors.autoreduction_processor.post_process_admin_utilities import \
     windows_to_linux_path
-from queue_processors.autoreduction_processor.reduction_exceptions import SkippedRunException, DatafileError, \
+from queue_processors.autoreduction_processor.reduction_exceptions import SkippedRunException, \
+    DatafileError, \
     ReductionScriptError
-from queue_processors.autoreduction_processor.reduction_service import Datafile, ReductionScript, ReductionDirectory, \
+from queue_processors.autoreduction_processor.reduction_service import Datafile, ReductionScript, \
+    ReductionDirectory, \
     TemporaryReductionDirectory, reduce
 from queue_processors.autoreduction_processor.settings import MISC
 from utils.clients.queue_client import QueueClient

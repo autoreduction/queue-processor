@@ -7,7 +7,6 @@
 """
 Reduction service contains the classes, and functions that performs a reduction
 """
-import logging
 import os
 import traceback
 from distutils.dir_util import copy_tree
@@ -15,6 +14,7 @@ from importlib.util import spec_from_file_location, module_from_spec
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from queue_processors.autoreduction_processor.autoreduction_logging_setup import logger as LOGGER
 from queue_processors.autoreduction_processor.post_process_admin_utilities import \
     channels_redirected
 from queue_processors.autoreduction_processor.reduction_exceptions import DatafileError, \
@@ -23,8 +23,8 @@ from queue_processors.autoreduction_processor.reduction_exceptions import Datafi
 from queue_processors.autoreduction_processor.settings import MISC
 from queue_processors.autoreduction_processor.timeout import TimeOut
 
-LOGGER = logging.getLogger(__file__)
 
+# pylint:disable=too-few-public-methods; As pylint does not like value objects
 
 class ReductionDirectory:
     """
@@ -69,7 +69,7 @@ class ReductionDirectory:
             except ValueError:
                 self.path = self.path / "run-version-0"
 
-# pylint:disable=too-few-public-methods;
+
 class TemporaryReductionDirectory:
     """
     Encapsulates the use of the temporary reduction directory
@@ -104,7 +104,6 @@ class TemporaryReductionDirectory:
         copy_tree(self.path, str(destination))  # We have to convert path objects to str
 
 
-# pylint:disable=too-few-public-methods; As pylint does not like value objects
 class Datafile:
     """
     Encapsulates datafile path and verification
@@ -153,6 +152,7 @@ class ReductionScript:
         with TimeOut(MISC["script_timeout"]):
             return self.script.main(input_file=str(input_file.path),
                                     output_dir=str(output_dir.path))
+
 
 # pylint:disable=too-many-arguments; We will remove the log_Stream once we look at logging in ppa
 # more closely

@@ -47,7 +47,7 @@ class TestPostProcessAdminHelpers(unittest.TestCase):
         When: Called
         """
         mock_is_file.return_value = True
-        log_directory = f"/reduction_log/"
+        log_directory = "/reduction_log/"
         log_and_error_name = "RB_1234_Run_4321_"
 
         script_out = Path(f"{log_directory}{log_and_error_name}{'Script.out'}")
