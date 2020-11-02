@@ -14,8 +14,7 @@ from utils.clients.tools.isisicat_prefix_mapping_logging_setup import logger
 def get_icat_instrument_prefix(instrument_fullname: str) -> str:
     """
     Queries ICAT for shorter names for all Autoreduction instruments or only selection if passed in
-    :param autoreduction_instruments: Optionally input custom list of autoreduction instrument names
-    :return: A map of Autoreduction to ICAT instrument prefixes
+    :return: instrument prefix
     """
     client = ICATClient()
 
