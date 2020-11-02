@@ -114,7 +114,7 @@ class TestManualSubmission(unittest.TestCase):
         self.assertEqual(location_and_rb, self.valid_return)
 
     @patch('scripts.manual_operations.manual_submission.get_icat_instrument_prefix',
-           return_value={'MARI': 'MAR'})
+           return_value='MAR')
     def test_icat_uses_prefix_mapper(self, _):
         """
         Test: The instrument shorthand name is used
