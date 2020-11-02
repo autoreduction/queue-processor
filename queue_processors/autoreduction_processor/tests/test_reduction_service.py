@@ -11,16 +11,17 @@ import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from mock import patch, MagicMock
+from mock import patch, MagicMock, call
 
-from queue_processors.autoreduction_processor.reduction_exceptions import DatafileError
+from queue_processors.autoreduction_processor.reduction_exceptions import DatafileError, \
+    SkippedRunException, ReductionScriptError
 from queue_processors.autoreduction_processor.reduction_service import ReductionDirectory, \
-    TemporaryReductionDirectory, Datafile, ReductionScript
+    TemporaryReductionDirectory, Datafile, ReductionScript, reduce
 from queue_processors.autoreduction_processor.settings import MISC
 
 REDUCTION_SERVICE_DIR = "queue_processors.autoreduction_processor.reduction_service"
 
-# pylint:disable=protected-access
+# pylint:disable=protected-access,too-many-instance-attributes
 
 class TestReductionService(unittest.TestCase):
     """
@@ -33,6 +34,9 @@ class TestReductionService(unittest.TestCase):
         self.rb_number = "1234"
         self.datafile = MagicMock()
         self.script = MagicMock()
+        self.temp_dir = MagicMock()
+        self.reduction_dir = MagicMock()
+        self.log_stream = MagicMock()
 
     @patch(f"{REDUCTION_SERVICE_DIR}.ReductionDirectory._build_path")
     def test_reduction_directory_init_(self, mock_build):
@@ -271,7 +275,69 @@ class TestReductionService(unittest.TestCase):
         mock_spec_from_file.assert_called_once_with("reducescript", script.script_path)
         mock_module_from_spec.assert_called_once_with(mock_spec_from_file.return_value)
 
-      
+    @patch(f"{REDUCTION_SERVICE_DIR}.channels_redirected")
+    def test_reduce(self, _):
+        """
+        Test: Reduce goes through with no exceptions
+        """
+        self.script.skipped_runs = []
+        self.script.run.return_value = None
+        reduce(self.reduction_dir, self.temp_dir, self.datafile, self.script, self.run_number,
+               self.log_stream)
+        self.reduction_dir.create.assert_called_once()
+        self.script.load.assert_called_once()
+        self.temp_dir.copy.assert_called_once_with(self.reduction_dir.path)
+        self.temp_dir.delete.assert_called_once()
+
+    @patch(f"{REDUCTION_SERVICE_DIR}.channels_redirected")
+    def test_reduce_skipped_run_raises_skipped_run_exception(self, _):
+        """
+        Test: SkippedRunException raised
+        When: Run is skipped in script
+        """
+        self.script.skipped_runs = [self.run_number]
+        with self.assertRaises(SkippedRunException):
+            reduce(self.reduction_dir, self.temp_dir, self.datafile, self.script, self.run_number,
+                   self.log_stream)
+        self.reduction_dir.create.assert_called_once()
+        self.script.load.assert_called_once()
+
+    @patch(f"{REDUCTION_SERVICE_DIR}.channels_redirected")
+    def test_reduce_script_copies_to_additional_output(self, _):
+        """
+        Test: Copy called on additional outputs
+        When: Script returns additional output directories
+        """
+        self.script.skipped_runs = []
+        self.script.run.return_value = "some/path"
+        reduce(self.reduction_dir, self.temp_dir, self.datafile, self.script, self.run_number,
+               self.log_stream)
+        self.reduction_dir.create.assert_called_once()
+        self.script.load.assert_called_once()
+        self.temp_dir.copy.assert_has_calls([call(self.reduction_dir.path), call("some/path")])
+        self.temp_dir.delete.assert_called_once()
+
+    @patch(f"{REDUCTION_SERVICE_DIR}.open")
+    @patch(f"{REDUCTION_SERVICE_DIR}.channels_redirected")
+    @patch(f"{REDUCTION_SERVICE_DIR}.traceback")
+    def test_reduce_script_exception_raises_script_error_and_writes_to_log(self, mock_traceback, _,
+                                                                           mock_open):
+        """
+        Test: ReductionScriptError raised and script out written to
+        When: Exception in reduction script
+        """
+        self.script.skipped_runs = []
+        self.script.run.side_effect = Exception
+        file = mock_open.return_value
+        with self.assertRaises(ReductionScriptError):
+            reduce(self.reduction_dir, self.temp_dir, self.datafile, self.script, self.run_number,
+                   self.log_stream)
+            file.writelines.assert_called_once()
+            mock_traceback.format_exc.assert_called_once()
+            file.write.assert_called_once()
+            self.temp_dir.copy.assert_called_once_with(self.reduction_dir.path)
+
+
 def fill_mockup_directory(directory):
     """
     Populates the given TemporaryDirectory object with folder and files
