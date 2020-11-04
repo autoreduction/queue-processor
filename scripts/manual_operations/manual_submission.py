@@ -85,8 +85,8 @@ def icat_datafile_query(icat_client, file_name):
         sys.exit(1)  # pragma: no cover
 
     return icat_client.execute_query("SELECT df FROM Datafile df WHERE df.name = '"
-                                         + file_name +
-                                         "' INCLUDE df.dataset AS ds, ds.investigation")
+                                     + file_name +
+                                     "' INCLUDE df.dataset AS ds, ds.investigation")
 
 
 def get_location_and_rb_from_icat(icat_client, instrument, run_number, file_ext):
