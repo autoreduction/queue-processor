@@ -43,7 +43,7 @@ class ManualRemove:
             .filter(instrument=instrument_record.id) \
             .filter(run_number=run_number) \
             .order_by('-created')
-        self.to_delete[run_number] = result
+        self.to_delete[run_number] = list(result)
         return result
 
     def process_results(self):
@@ -93,8 +93,7 @@ class ManualRemove:
             if not int(reduction_job.run_version) in user_input:
                 # this excludes the versions that the user DID NOT type
                 # from the list of run versions that will be DELETED
-                self.to_delete[run_number] = self.to_delete[run_number].exclude(
-                    run_version=reduction_job.run_version)
+                self.to_delete[run_number].remove(reduction_job)
 
     def delete_records(self):
         """
