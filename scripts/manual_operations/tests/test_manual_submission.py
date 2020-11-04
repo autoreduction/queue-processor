@@ -138,16 +138,22 @@ class TestManualSubmission(unittest.TestCase):
                                                           " df.dataset AS ds, ds.investigation")
 
     @patch('scripts.manual_operations.manual_submission.get_icat_instrument_prefix')
-    def test_get_from_icat_when_file_exists_with_zeroes(self, _):
+    def test_get_location_and_rb_from_icat_when_first_file_not_found(self, _):
         """
-        Test: Data for a given run can be retrieved from ICAT in the expected format
-        When: get_location_and_rb_from_icat is called and the data is present in ICAT
-        but named with prepended zeroes
+        Test: that get_location_and_rb_from_icat can handle a number of failed ICAT
+        data file search attempts before it returns valid data file and check that
+        expected format is then still returned.
+        When: get_location_and_rb_from_icat is called and the file is initially not
+        found in ICAT.
         """
+        # icat returns: not found a number of times before file found
         self.loc_and_rb_args[1].execute_query.side_effect =\
-            [None, self.make_query_return_object("icat")]
+            [None, None, None, self.make_query_return_object("icat")]
+        # call the method to test
         location_and_rb = ms.get_location_and_rb_from_icat(*self.loc_and_rb_args[1:])
-        self.assertEqual(self.loc_and_rb_args[1].execute_query.call_count, 2)
+        # how many times have icat been called
+        self.assertEqual(self.loc_and_rb_args[1].execute_query.call_count, 4)
+        # check returned format is OK
         self.assertEqual(location_and_rb, self.valid_return)
 
     @patch('scripts.manual_operations.manual_submission.get_location_and_rb_from_database')
