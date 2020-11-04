@@ -91,6 +91,8 @@ class ManualRemove:
         # Remove runs that the user does NOT want to delete from the delete list
         for reduction_job in self.to_delete[run_number]:
             if not int(reduction_job.run_version) in user_input:
+                # this excludes the versions that the user DID NOT type
+                # from the list of run versions that will be DELETED
                 self.to_delete[run_number] = self.to_delete[run_number].exclude(
                     run_version=reduction_job.run_version)
 
