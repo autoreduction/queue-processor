@@ -138,7 +138,7 @@ class InstrumentMonitor:
             try:
                 message.validate('/queue/DataReady')
             except RuntimeError as err:
-                EORM_LOG.error(f"Validation failed for {summary_rb_number}: {str(err)}")
+                EORM_LOG.error("Validation failed for %s: %s", summary_rb_number, str(err))
                 raise
             self.client.send('/queue/DataReady', message, priority='9')
         else:
