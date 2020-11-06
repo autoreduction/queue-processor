@@ -61,7 +61,7 @@ def index(request):
     else:
         if 'sessionid' in request.session.keys():
             authenticated = request.user.is_authenticated \
-                            and UOWSClient().check_session(request.session['sessionId'])
+                            and UOWSClient().check_session(request.session['sessionid'])
 
     if authenticated:
         if request.GET.get('next'):
