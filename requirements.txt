@@ -8,7 +8,7 @@ django_plotly_dash==1.4.2
 gitpython==3.1.9
 # this is the highest available version that pip can find on CentOS - be careful when updating
 # because Travis runs on Ubuntu so even if the build pass, the installation could fail
-ipython==7.16.1
+ipython==7.19.0
 lxml==4.6.1
 mock==4.0.2
 pandas==1.1.4
