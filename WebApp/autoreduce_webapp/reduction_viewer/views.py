@@ -274,7 +274,8 @@ def run_summary(_, instrument_name=None, run_number=None, run_version=0):
         rb_number = Experiment.objects.get(id=run.experiment_id).reference_number
         has_variables = bool(
             InstrumentVariablesUtils().get_default_variables(run.instrument.name)
-            or run.run_variables.all())
+            or run.run_variables.all()) # We check default vars and run vars in case none exist
+                                        # for run but could exist for default
 
         context_dictionary = {'run': run,
                               'is_skipped': is_skipped,
@@ -342,7 +343,7 @@ def instrument_summary(request, instrument=None):
         if len(runs) == 0:
             return {'message': "No runs found for instrument."}
 
-        has_variables = InstrumentVariablesUtils().get_default_variables(instrument_obj.name)
+        has_variables = bool(InstrumentVariablesUtils().get_default_variables(instrument_obj.name))
 
         context_dictionary = {
             'instrument': instrument_obj,
