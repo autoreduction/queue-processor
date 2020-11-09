@@ -89,11 +89,10 @@ class ManualRemove:
             input_valid, user_input = self.validate_csv_input(user_input)
 
         # Remove runs that the user does NOT want to delete from the delete list
-        for reduction_job in self.to_delete[run_number]:
-            if not int(reduction_job.run_version) in user_input:
-                # this removes the versions that the user DID NOT enter
-                # from the list of run versions that will be DELETED
-                self.to_delete[run_number].remove(reduction_job)
+        self.to_delete[run_number] = [
+            reduction_job for reduction_job in self.to_delete[run_number]
+            if reduction_job.run_version in user_input
+        ]
 
     def delete_records(self):
         """
