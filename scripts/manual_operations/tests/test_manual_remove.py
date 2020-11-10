@@ -117,7 +117,7 @@ class TestManualRemove(unittest.TestCase):
                                                self.gem_object_2]
         self.assertEqual(2, len(self.manual_remove.to_delete['123']))
         mock_input.return_value = '2'
-        mock_validate_csv.return_value = (True, [2])
+        mock_validate_csv.return_value = (True, ['2'])
         self.manual_remove.multiple_versions_found('123')
         # We said to delete version 2 so it should be the only entry for that run number
         self.assertEqual(1, len(self.manual_remove.to_delete['123']))
@@ -134,7 +134,7 @@ class TestManualRemove(unittest.TestCase):
                                                self.gem_object_2]
         self.assertEqual(2, len(self.manual_remove.to_delete['123']))
         mock_input.side_effect = ['invalid', '2']
-        mock_validate_csv.side_effect = [(False, []), (True, [2])]
+        mock_validate_csv.side_effect = [(False, []), (True, ['2'])]
         self.manual_remove.multiple_versions_found('123')
         self.assertEqual(2, mock_validate_csv.call_count)
         mock_validate_csv.assert_has_calls([call('invalid'), call('2')])
