@@ -150,7 +150,7 @@ class TestManualRemove(unittest.TestCase):
                                                self.gem_object_2]
         self.assertEqual(2, len(self.manual_remove.to_delete['123']))
         mock_input.return_value = '1,2'
-        mock_validate_csv.return_value = (True, [1, 2])
+        mock_validate_csv.return_value = (True, ['1', '2'])
         self.manual_remove.multiple_versions_found('123')
         # We said to delete version 2 so it should be the only entry for that run number
         self.assertEqual(2, len(self.manual_remove.to_delete['123']))
