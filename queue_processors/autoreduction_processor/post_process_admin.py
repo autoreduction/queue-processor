@@ -4,7 +4,7 @@
 # Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
-#!/usr/bin/env python
+# !/usr/bin/env python
 # pylint: disable=broad-except
 # pylint: disable=bare-except
 
@@ -43,13 +43,9 @@ class PostProcessAdmin:
     def __init__(self, message, client):
         logger.debug("Message data: %s", message.serialize(limit_reduction_script=True))
         self.read_write_map = {"R": "read", "W": "write"}
-
         self.message = message
         self.client = client
-
-        self.reduction_log_stream = io.StringIO()
         self.admin_log_stream = io.StringIO()
-
         try:
             self.data_file = windows_to_linux_path(self.validate_input('data'),
                                                    MISC["temp_root_directory"])
@@ -166,8 +162,8 @@ class PostProcessAdmin:
             reduction_script = ReductionScript(self.instrument)
             reduction_dir = ReductionDirectory(self.instrument, self.proposal, self.run_number)
             temp_dir = TemporaryReductionDirectory(self.proposal, self.run_number)
-            reduce(reduction_dir, temp_dir, datafile, reduction_script, self.run_number,
-                   self.reduction_log_stream)
+            reduction_log_stream = \
+                reduce(reduction_dir, temp_dir, datafile, reduction_script, self.run_number)
             self.message.reduction_data = [str(reduction_dir.path)]
 
         except DatafileError as exp:
@@ -186,7 +182,7 @@ class PostProcessAdmin:
             logger.error(traceback.format_exc())
             self.message.message = "REDUCTION Error: %s " % exp
 
-        self.message.reduction_log = self.reduction_log_stream.getvalue()
+        self.message.reduction_log = reduction_log_stream.getvalue()
         self.message.admin_log = self.admin_log_stream.getvalue()
         self.determine_reduction_status()  # Send AMQ reduce status message Skipped|Error|Complete
 

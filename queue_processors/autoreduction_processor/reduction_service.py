@@ -7,6 +7,8 @@
 """
 Reduction service contains the classes, and functions that performs a reduction
 """
+import io
+import logging
 import os
 import traceback
 from distutils.dir_util import copy_tree
@@ -25,6 +27,8 @@ from queue_processors.autoreduction_processor.timeout import TimeOut
 
 
 # pylint:disable=too-few-public-methods; As pylint does not like value objects
+log_stream = io.StringIO()
+
 
 class ReductionDirectory:
     """
@@ -156,7 +160,7 @@ class ReductionScript:
 
 # pylint:disable=too-many-arguments; We will remove the log_Stream once we look at logging in ppa
 # more closely
-def reduce(reduction_dir, temp_dir, datafile, script, run_number, log_stream):
+def reduce(reduction_dir, temp_dir, datafile, script, run_number):
     """
     Performs a reduction on the given datafile using the given script, outputting to the given
     output directory
@@ -178,26 +182,29 @@ def reduce(reduction_dir, temp_dir, datafile, script, run_number, log_stream):
     LOGGER.info("-------------------------------------------------------")
     LOGGER.info("Starting reduction...")
 
-    with channels_redirected(temp_dir.script_log,
-                             temp_dir.mantid_log,
-                             log_stream):
-        script.load()
-        if run_number in script.skipped_runs:
-            raise SkippedRunException("Run has been skipped in script")
 
-        try:
+    script.load()
+    if run_number in script.skipped_runs:
+        raise SkippedRunException("Run has been skipped in script")
+
+    try:
+        log_stream_handler = logging.StreamHandler(log_stream)
+        LOGGER.addHandler(log_stream_handler)
+        with channels_redirected(temp_dir.script_log, temp_dir.manig_log, log_stream):
             additional_output_dirs = script.run(datafile, temp_dir)
-        except Exception as ex:
-            LOGGER.error("exception caught in reduction script")
-            LOGGER.error(traceback.format_exc())
-            with open(temp_dir.script_log, "a") as target:
-                target.writelines(str(ex) + "\n")
-                target.write(traceback.format_exc())
-            raise ReductionScriptError("Exception in reduction script", ex) from ex
-        finally:
-            temp_dir.copy(reduction_dir.path)
+        LOGGER.removeHandler(log_stream_handler)
+    except Exception as ex:
+        LOGGER.error("exception caught in reduction script")
+        LOGGER.error(traceback.format_exc())
+        with open(temp_dir.script_log, "a") as target:
+            target.writelines(str(ex) + "\n")
+            target.write(traceback.format_exc())
+        raise ReductionScriptError("Exception in reduction script", ex) from ex
+    finally:
+        temp_dir.copy(reduction_dir.path)
 
-        if additional_output_dirs:
-            temp_dir.copy(additional_output_dirs)
+    if additional_output_dirs:
+        temp_dir.copy(additional_output_dirs)
 
-        temp_dir.delete()
+    temp_dir.delete()
+    return log_stream

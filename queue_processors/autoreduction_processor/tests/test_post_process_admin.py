@@ -46,9 +46,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         ppa = PostProcessAdmin(self.message, None)
         self.assertEqual(ppa.message, self.message)
         self.assertEqual(ppa.client, None)
-        self.assertIsNotNone(ppa.reduction_log_stream)
         self.assertIsNotNone(ppa.admin_log_stream)
-
         self.assertEqual(ppa.data_file, '/isis/data.nxs')
         self.assertEqual(ppa.facility, 'ISIS')
         self.assertEqual(ppa.instrument, 'GEM')
