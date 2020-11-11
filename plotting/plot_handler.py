@@ -14,13 +14,11 @@ Instructing the Plotting factory to build an IFrame based on the above
 import logging
 import os
 import re
-
+from typing import List
 from utils.clients.sftp_client import SFTPClient
 from utils.project.structure import get_project_root
 
 LOGGER = logging.getLogger('app')
-
-INSTRUMENT_REGEX_MAP = {"MARI": "MAR(I)?", "WISH": "WISH"}
 
 
 # pylint:disable=too-few-public-methods
@@ -33,10 +31,9 @@ class PlotHandler:
     :param server_dir: (str) The path for the directory to search for the data/image files
     """
 
-    def __init__(self, instrument_name, run_number, server_dir, rb_number=None):
-        self.instrument_name = instrument_name
+    def __init__(self, data_filepath: str, server_dir, rb_number=None):
+        self.data_filename: str = self._get_only_data_file_name(data_filepath)
         self.rb_number = rb_number  # Used when searching for full Experiment graph
-        self.run_number = run_number
         self.server_dir = server_dir
         self.file_extensions = ["png", "jpg", "bmp", "gif", "tiff"]
         # Directory to place fetched data files / images
@@ -44,22 +41,22 @@ class PlotHandler:
                                              'autoreduce_webapp', 'static',
                                              'graphs')
 
-    def _generate_file_name_regex(self):
+    @staticmethod
+    def _get_only_data_file_name(data_filepath: str)->str:
+        full_filename = data_filepath.split("\\")[-1]
+        filename,_ = os.path.splitext(full_filename)
+        return filename
+
+    def _generate_file_name_regex(self) -> str:
         """
         Regular expression used for looking for plot files.
         This assumes that the file names follow the convention:
         <instrument_abbreviation><run_number>*<.png or other extension>
         """
-        try:
-            _inst_regex = INSTRUMENT_REGEX_MAP[self.instrument_name]
-        except KeyError:
-            LOGGER.info("Plots for this instruments are not currently handled")
-            return None
-
         _file_extension_regex = self._generate_file_extension_regex()
-        return f'{_inst_regex}{self.run_number}.*.{_file_extension_regex}'
+        return f'{self.data_filename}.*.{_file_extension_regex}'
 
-    def _generate_file_extension_regex(self):
+    def _generate_file_extension_regex(self) -> str:
         """
         Generates the file extension part of the file regex. For example if the file extensions were
         .png, .gif and .jpg: The returned value would be (png|gif|jpg)
@@ -67,15 +64,13 @@ class PlotHandler:
         """
         return f"({','.join(self.file_extensions).replace(',', '|')})"
 
-    def _get_plot_files_locally(self):
+    def _get_plot_files_locally(self) -> List[str]:
         """
         Searches the local graph folder for files matching the generated file name regex and returns
         a list of matching paths
         :return: (list) - The list of matching file paths.
         """
         file_name_regex = self._generate_file_name_regex()
-        if file_name_regex is None:
-            return None
         return [f'/static/graphs/{file}' for file in os.listdir(self.static_graph_dir) if
                 re.match(file_name_regex, file)]
 
