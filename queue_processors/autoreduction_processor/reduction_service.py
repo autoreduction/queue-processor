@@ -169,7 +169,7 @@ def reduce(reduction_dir, temp_dir, datafile, script, run_number):
     :param datafile: (Datafile) The datafile to perform the reduction on
     :param script: (ReductionScript) The Script used to reduce the data
     :param run_number: (String) The run number of this reduction
-    :param log_stream: (StringIO) The logstream to redirect the reduction logs to.
+    :return (StringIO): The log stream of the reduction script
     """
     reduction_dir.create()
     LOGGER.info("-------------------------------------------------------")
