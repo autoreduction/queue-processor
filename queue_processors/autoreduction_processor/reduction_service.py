@@ -190,7 +190,7 @@ def reduce(reduction_dir, temp_dir, datafile, script, run_number):
     try:
         log_stream_handler = logging.StreamHandler(log_stream)
         LOGGER.addHandler(log_stream_handler)
-        with channels_redirected(temp_dir.script_log, temp_dir.manig_log, log_stream):
+        with channels_redirected(temp_dir.script_log, temp_dir.mantid_log, log_stream):
             additional_output_dirs = script.run(datafile, temp_dir)
         LOGGER.removeHandler(log_stream_handler)
     except Exception as ex:
