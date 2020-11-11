@@ -289,10 +289,9 @@ def run_summary(_, instrument_name=None, run_number=None, run_version=0):
 
     if reduction_location:
         try:
-            plot_handler = PlotHandler(instrument_name=run.instrument.name,
-                                       rb_number=rb_number,
-                                       run_number=run.run_number,
-                                       server_dir=reduction_location)
+            plot_handler = PlotHandler(data_filepath=run.data_location.first().file_path,
+                                       server_dir=reduction_location,
+                                       rb_number=rb_number)
             plot_locations = plot_handler.get_plot_file()
             if plot_locations:
                 context_dictionary['plot_locations'] = plot_locations
