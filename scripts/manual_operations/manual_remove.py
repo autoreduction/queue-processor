@@ -43,7 +43,7 @@ class ManualRemove:
             .filter(instrument=instrument_record.id) \
             .filter(run_number=run_number) \
             .order_by('-created')
-        self.to_delete[run_number] = result
+        self.to_delete[run_number] = list(result)
         return result
 
     def process_results(self):
@@ -89,9 +89,10 @@ class ManualRemove:
             input_valid, user_input = self.validate_csv_input(user_input)
 
         # Remove runs that the user does NOT want to delete from the delete list
-        for reduction_job in self.to_delete[run_number]:
-            if not int(reduction_job.run_version) in user_input:
-                self.to_delete[run_number].remove(reduction_job)
+        self.to_delete[run_number] = [
+            reduction_job for reduction_job in self.to_delete[run_number]
+            if reduction_job.run_version in user_input
+        ]
 
     def delete_records(self):
         """
@@ -102,7 +103,7 @@ class ManualRemove:
         for run_number, job_list in to_delete_copy.items():
             for version in job_list:
                 # Delete the specified version
-                print('{}{}:'.format(self.instrument, run_number))
+                print(f'{self.instrument}{run_number} - v{version.run_version}')
                 self.delete_reduction_location(version.id)
                 self.delete_data_location(version.id)
                 self.delete_variables(version.id)
