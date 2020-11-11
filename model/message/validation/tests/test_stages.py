@@ -37,14 +37,16 @@ class TestStages(unittest.TestCase):
         Test: validate_data_ready returns true
         When: supplied with a valid message
         """
-        self.assertTrue(stages.validate_data_ready(self.valid_message))
+        # This function raises on invalid message
+        # if this test passes there was no raise
+        stages.validate_data_ready(self.valid_message)
 
     def test_invalid_validate_data_ready(self):
         """
         Test: validate_data_ready returns false
         When: supplied with an invalid message
         """
-        self.assertFalse(stages.validate_data_ready(self.invalid_message))
+        self.assertRaises(RuntimeError, stages.validate_data_ready, self.invalid_message)
 
     @mock.patch("model.message.validation.stages.validators", spec=validators)
     def test_validate_data_ready_calls_validators(self, patched_validators):

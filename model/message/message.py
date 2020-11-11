@@ -13,7 +13,6 @@ import logging
 import attr
 
 from model.message.validation import stages
-
 from utils.project.static_content import LOG_FORMAT
 from utils.project.structure import get_log_file
 
@@ -101,10 +100,8 @@ class Message:
         Ensure that the message is valid to be sent to a given destination queue
         :param destination: (str) The name of the queue to send the data to
         """
-        is_valid = True
         if destination == '/queue/DataReady':
-            is_valid = stages.validate_data_ready(self)
-
-        if not is_valid:
-            raise RuntimeError(f"Message was not valid for queue {destination}. "
-                               f"Please check logs for more detail.")
+            try:
+                stages.validate_data_ready(self)
+            except RuntimeError as err:
+                raise RuntimeError(f"Message was not valid for queue {destination}.") from err
