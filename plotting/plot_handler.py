@@ -25,13 +25,11 @@ LOGGER = logging.getLogger('app')
 class PlotHandler:
     """
     Takes parameters for a run and (for now) checks if an associated image exists and retrieves it.
-    :param instrument_name: (str) The name of the beamline/spectrometer/instrument.
-    :param rb_number: (str)The ISIS RB number.
-    :param run_number: (str/int) The run number on the given instrument for the given RB number.
+    :param data_filepath: (str) The full path to the input data
     :param server_dir: (str) The path for the directory to search for the data/image files
+    :param rb_number: (str)The ISIS RB number.
     """
-
-    def __init__(self, data_filepath: str, server_dir, rb_number=None):
+    def __init__(self, data_filepath: str, server_dir: str, rb_number: str = None):
         self.data_filename: str = self._get_only_data_file_name(data_filepath)
         self.rb_number = rb_number  # Used when searching for full Experiment graph
         self.server_dir = server_dir
@@ -42,16 +40,23 @@ class PlotHandler:
                                              'graphs')
 
     @staticmethod
-    def _get_only_data_file_name(data_filepath: str)->str:
+    def _get_only_data_file_name(data_filepath: str) -> str:
+        """
+        Parses the file name to return the name of the data file only.
+
+        Currently assumes the path is a Windows path!
+
+        :param data_filepath: (str) The full path to the input data
+        """
         full_filename = data_filepath.split("\\")[-1]
-        filename,_ = os.path.splitext(full_filename)
+        filename, _ = os.path.splitext(full_filename)
         return filename
 
     def _generate_file_name_regex(self) -> str:
         """
         Regular expression used for looking for plot files.
         This assumes that the file names follow the convention:
-        <instrument_abbreviation><run_number>*<.png or other extension>
+        <data_file_name>*<.png or other extension>
         """
         _file_extension_regex = self._generate_file_extension_regex()
         return f'{self.data_filename}.*.{_file_extension_regex}'
