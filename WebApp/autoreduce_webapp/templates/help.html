@@ -68,44 +68,24 @@
                 </div>
                 <div class="panel-body">
                     <p>
-                        In order to copy reduced data from CEPH to your local machine, you will need to download an SFTP client.
-                        We recommend <a href="https://winscp.net/eng/download.php">WinSCP</a> if you are using a windows operating system.
-                        The steps below are based on WinSCP as the <code>SFTP Client</code> and assume you have downloaded and installed it.
-                        Note that you can only access your data if you are on site, or using the VPN.
+                        The reduced data can be access in two ways. Either through an IDAaaS virtual machine or
+                        using the IDAaaS FileBrowser.
                     </p>
-                    <h4>IDAaaS</h4>
+                    <h4>Access reduced files within IDAaaS Virtual Machines</h4>
                     <ol>
                         <li>Visit the IDAaaS page <a href="https://isis.analysis.stfc.ac.uk">https://isis.analysis.stfc.ac.uk</a></li>
-                        <li>Create a new IDAaaS instance for your instrument / technique.</li>
-                        <li>Follow the instructions on the <a href="https://isis.analysis.stfc.ac.uk/#/help">IDAaaS help page</a>
-                            under the <em>Download/Upload Files</em> section that will walk you through the SFTP process </li>
+                        <li>Open an existing or create and open a new IDAaaS virtual machine / instance</li>
+                        <li>The reduced files are then available within the virtual machine within folders named "autoreduced"
+                            within RB folders; and at data locations as detailed on completed Reduction Job pages on the WebApp </li>
                     </ol>
-                    <h4>ISIS Compute</h4>
-                    If you do not currently have your instrument supported by IDAaaS, you should use the ISIS Compute service.
+                    <h4>Use the IDAaaS FileBrowser to copy reduced data elsewhere</h4>
                     <ol>
-                        <li>Open your SFTP client</li>
-                        <li>Host name: <strong>isiscompute.nd.rl.ac.uk</strong></li>
-                        <li>Port: <strong>22</strong></li>
-                        <li>Enter your federal ID and password</li>
-                        <ul>
-                            <li>To avoid repeating these steps in the future, click save and fill in the save dialog box that opens</li>
-                        </ul>
-                        <li>Click Login</li>
-                        <ul>
-                            <li>You may get a warning message about a potential security breach.
-                                This is nothing to worry about and is common, especially if it's your first time accessing the server in a while.
-                                Simply click <strong>Update</strong> to continue.</li>
-                        </ul>
-                        <li>Once the client has connected to the server, you will see your files (default on the left) and the server files (default on the right)</li>
-                        <li>From here you can now copy and paste between your local files and those on CEPH.</li>
-                        <li>You can find the CEPH data at /instrument. See <a href="#reduction_data_location">Where does my reduced data go?</a> for more details.</li>
+                        <li>Visit the page <a href="https://data.analysis.stfc.ac.uk">https://data.analysis.stfc.ac.uk</a> and login</li>
+                        <li>Click on "Data" on the left menu</li>
+                        <li>Reduced data are then available within RB folders that you have access to from HOME or by stepping through to
+                            the relevant RB folder from INSTRUMENT. Within these reduced file are within "autoreduced"
+                            sub-folders; and at data locations as detailed on completed Reduction Job pages on the WebApp</li>
                     </ol>
-                    <p>
-                        If you follow the instructions above and still can't access your reduced data, it
-                        may be that you don't have permission to access the experiment's reduced data
-                        directory. Email <a href="mailto:{{support_email}}">isisreduce@stfc.ac.uk</a>
-                        and state the experiment RB number you are trying to access.
-                    </p>
                 </div>
             </section>
             <section class="help-topic panel panel-default" data-category="usage" data-topics="reduction_scripts">
