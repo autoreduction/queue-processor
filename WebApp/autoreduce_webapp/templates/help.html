@@ -382,6 +382,35 @@ import reduce_vars as params</code></pre>
                     </ul>
                 </div>
             </section>
+            <section class="help-topic panel panel-default" data-category="question" data-topics="reduction status error queued processing skipped complete error">
+                <div class="panel-heading" id="reduction-statuses">
+                    <h3>How do I save out plots from my reduce.py?</h3>
+                </div>
+                <div class="panel-body">
+                    To get a plot to show into the web app you need to save it into the reduction output directory with the following file name:
+                    <pre><code>&lt;Name of the Data File&gt;.png</code></pre>.
+
+                    The following function is provided to help you get that information from the input parameter:
+                    <pre><code>def get_name_of_data_file(datafile):
+    """
+    Finds only the name of the data file and returns it. Removes the rest
+    of the input full path and the file extension.
+
+    :param datafile: The input file provided in the reduce.py file
+    :return: Only the name of the instrument and the run number
+    """
+    import os
+    filename_and_extension = os.path.basename(datafile)
+    just_filename, extension = os.path.splitext(filename_and_extension)
+    return just_filename</code></pre>
+
+    To save out your matplotlib figure you can do:
+                    <pre><code> ... some plotting code with matplotlib ...
+
+filename = get_name_of_data_file(input_file)
+my_matplotlib_figure.savefig(os.path.join(output_dir, f"{filename}.png"), dpi=None)</code></pre>
+    </div>
+            </section>
 
             <div class="no-results collapse row well">
                 <div class="col-md-12 text-center">
