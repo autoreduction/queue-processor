@@ -40,9 +40,6 @@ jobs:
       
       - name: Set up database
         run: |
-          sudo mysql_upgrade --host 127.0.0.1 --port 3306 -u root --force
-          sudo service mysql restart
-          # Need to do this first time
           mysql --host 127.0.0.1 --port 3306 -u root < build/database/reset_autoreduction_db.sql
       
       - name: Install Autoreduction
