@@ -174,6 +174,13 @@ class ManualRemove:
                     processed_input.append(number)
                 except ValueError:
                     return False, []
+        elif "-" in user_input:
+            range_of_versions_to_delete = user_input.split('-')
+            if len(range_of_versions_to_delete) != 2:
+                return False, []
+            start = int(range_of_versions_to_delete[0])
+            end = int(range_of_versions_to_delete[1])
+            return True, list(range(start, end+1))
         else:
             try:
                 user_input = int(user_input)
