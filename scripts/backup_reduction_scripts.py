@@ -16,8 +16,15 @@ remote - otherwise this script will fail to commit/push.
 There is also a --dry-run option that will just show which files are traversed,
 but will not do anything.
 
-"""
+The cronjob should be:
 
+0 1 * * * python3 /home/reduce/backup_reduction_scripts.py
+
+The reason it runs at 1AM is that the queue_processor restarting happens at midnight and
+there might be some interference. There shouldn't be, but just in case it doesn't hurt
+to be scheduled for a bit later.
+"""
+import os
 import sys
 import argparse
 import datetime
@@ -32,7 +39,6 @@ from git import Git
 
 from utils.project.static_content import LOG_FORMAT
 from utils.project.structure import get_log_file
-from utils.settings import VALID_INSTRUMENTS
 
 ISIS_MOUNT_PATH = Path("/isis")
 AUTOREDUCTION_PATH = Path("user/scripts/autoreduction")
@@ -82,8 +88,10 @@ def main(args):
             "Please configure it manually before running this script.", str(STORAGE_DIR))
         sys.exit(1)
 
-    for inst in VALID_INSTRUMENTS:
-        path = ISIS_MOUNT_PATH / f"NDX{inst}" / AUTOREDUCTION_PATH
+    for inst in [
+            directory for directory in os.listdir(ISIS_MOUNT_PATH) if directory.startswith("NDX")
+    ]:
+        path = ISIS_MOUNT_PATH / inst / AUTOREDUCTION_PATH
         destination = STORAGE_DIR / inst
 
         ensure_storage_exists(destination)
