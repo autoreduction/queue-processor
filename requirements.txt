@@ -16,6 +16,8 @@ plotly==4.12.0
 pylint==2.6.0
 pytest-cov==2.10.1
 python-coveralls==2.9.3
+pytest-xdist==2.1.0
 requests==2.24.0
+selenium==3.141.0
 sentry-sdk==0.19.2
 stomp.py==6.1.0
