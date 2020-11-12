@@ -75,17 +75,17 @@ class ManualRemove:
         :param run_number: (int) The run number with multiple versions
         """
         # Display run_number - title - version for all matching runs
-        print("Discovered multiple reduction versions for {}{}:".format(self. instrument,
+        print("Discovered multiple reduction versions for {}{}:".format(self.instrument,
                                                                         run_number))
         for run in self.to_delete[run_number]:
             print("\tv{} - {}".format(run.run_version, run.run_name))
 
         # Get user input for which versions they wish to delete
-        user_input = input("Which runs would you like to delete (e.g. 1,2,3): ")
+        user_input = input("Which runs would you like to delete (e.g. 0,1,2,3 or 0-3): ")
         input_valid, user_input = self.validate_csv_input(user_input)
         while input_valid is False:
-            user_input = input('Input of \'{}\' was invalid. '
-                               'Please provide a comma separated list of values:')
+            user_input = input('Input was invalid. '
+                               'Please provide a comma separated list or a range of values: ')
             input_valid, user_input = self.validate_csv_input(user_input)
 
         # Remove runs that the user does NOT want to delete from the delete list
@@ -103,7 +103,7 @@ class ManualRemove:
         for run_number, job_list in to_delete_copy.items():
             for version in job_list:
                 # Delete the specified version
-                print(f'{self.instrument}{run_number} - v{version.run_version}')
+                print(f'Deleting {self.instrument}{run_number} - v{version.run_version}')
                 self.delete_reduction_location(version.id)
                 self.delete_data_location(version.id)
                 self.delete_variables(version.id)
