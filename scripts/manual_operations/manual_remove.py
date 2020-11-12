@@ -180,7 +180,7 @@ class ManualRemove:
                 return False, []
             start = int(range_of_versions_to_delete[0])
             end = int(range_of_versions_to_delete[1])
-            return True, list(range(start, end+1))
+            return True, list(range(start, end + 1))
         else:
             try:
                 user_input = int(user_input)
@@ -192,9 +192,9 @@ class ManualRemove:
 
 def remove(instrument, run_number):
     """
-    Run the remove script
-    :param instrument:
-    :param run_number:
+    Run the remove script for an instrument and run_number
+    :param instrument: (str) Instrument to run on
+    :param run_number: (int) The run number to remove
     """
     manual_remove = ManualRemove(instrument)
     manual_remove.find_runs_in_database(run_number)
