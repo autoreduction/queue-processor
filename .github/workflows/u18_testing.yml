@@ -18,7 +18,10 @@ jobs:
       mysql:
         image: mysql:5.7
         env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes # to allow empty password for root
+          MYSQL_USER: test-user
+          MYSQL_PASSWORD: pass
+          MYSQL_DATABASE: autoreduction
         ports:
           - '3306:3306'
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
@@ -28,7 +31,7 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
       
-      - name: Set up Python 3.6.8
+      - name: Set up Python
         uses: actions/setup-python@v2
         with:
           python-version: 3.7
@@ -40,7 +43,7 @@ jobs:
       
       - name: Set up database
         run: |
-          mysql --host 127.0.0.1 --port 3306 -u root < build/database/reset_autoreduction_db.sql
+          mysql < build/database/reset_autoreduction_db.sql
       
       - name: Install Autoreduction
         run: |
