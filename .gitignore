@@ -50,3 +50,7 @@ vault.yml
 # Ignore downloaded graphs
 Webapp/autoreduce_webapp/static/graphs/
 !Webapp/autoreduce_webapp/static/graphs/.keep
+
+# Ignore The screenshot folder in webtests
+webtests/screenshots
+!webtests/screenshots/.keep
