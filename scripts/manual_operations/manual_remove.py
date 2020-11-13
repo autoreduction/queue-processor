@@ -178,9 +178,12 @@ class ManualRemove:
             range_of_versions_to_delete = user_input.split('-')
             if len(range_of_versions_to_delete) != 2:
                 return False, []
-            start = int(range_of_versions_to_delete[0])
-            end = int(range_of_versions_to_delete[1])
-            return True, list(range(start, end + 1))
+
+            sorted_range_of_versions = sorted(map(int, range_of_versions_to_delete))
+            smaller_version = int(sorted_range_of_versions[0])
+            larger_version = int(sorted_range_of_versions[1])
+
+            return True, list(range(smaller_version, larger_version + 1))
         else:
             try:
                 user_input = int(user_input)
