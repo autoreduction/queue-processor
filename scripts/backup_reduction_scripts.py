@@ -31,7 +31,6 @@ import datetime
 import logging
 import shutil
 import traceback
-from datetime import date
 from pathlib import Path
 
 import git
@@ -53,12 +52,26 @@ log = logging.getLogger(__file__)
 log.addHandler(logging.StreamHandler())
 
 
-def ensure_git_directory(path: Path):
-    g = Git(path.absolute())
-    g.status()
+def check_if_git_directory(path: Path):
+    """
+    Ensures that the directory is a git repo.
+
+    If it is not the function will raise
+
+    :param path: The path to the directory
+    """
+    repo = Git(path.absolute())
+    repo.status()
 
 
 def ensure_storage_exists(path: Path):
+    """
+    Tries to make the storage directory, if it doesn't already exist.
+
+    If it didn't succeed raises a RuntimeError.
+
+    :param path: The path to the directory
+    """
     path.mkdir(exist_ok=True)
 
     if not path.is_dir():
@@ -66,22 +79,38 @@ def ensure_storage_exists(path: Path):
 
 
 def get_today() -> str:
+    """
+    Returns today in "YYYY-MM-DD" format
+    """
     return str(datetime.date.today())
 
 
 def commit_and_push(path: Path):
-    g = Git(path.absolute())
+    """
+    Commits all files in the path directory and pushes to origin/master
+
+    :param path: The path to the directory
+    """
+    repo = Git(path.absolute())
     today = get_today()
-    g.add(".")
-    g.commit("-m", f"Reduction files for {today}")
-    g.push("--set-upstream", "origin", "master")
+    repo.add(".")
+    repo.commit("-m", f"Reduction files for {today}")
+    repo.push("--set-upstream", "origin", "master")
 
 
 def main(args):
+    """
+    Ensures expected directories exist. Then queries the ISIS_MOUNT_PATH for all folders
+    starting with NDX, and iterates through each one checking if they contain a
+    reduce.py and reduce_vars.py in the expected AUTOREDUCTION_PATH.
+
+    If the expected python files are found they are copied to STORAGE_DIR
+    and later committed and pushed to the storage repository.
+    """
     ensure_storage_exists(STORAGE_DIR)
 
     try:
-        ensure_git_directory(STORAGE_DIR)
+        check_if_git_directory(STORAGE_DIR)
     except git.exc.GitCommandError as err:  # pylint: disable=no-member
         log.error(
             "Destination folder %s is not a Git repository. "
@@ -116,6 +145,6 @@ if __name__ == '__main__':
         action="store_true",
         help="Dry run and display all files that will be copied and to where. But do nothing!")
 
-    args = parser.parse_args()
+    _args = parser.parse_args()
 
-    main(args)
+    main(_args)
