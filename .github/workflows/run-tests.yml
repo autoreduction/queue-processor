@@ -1,11 +1,8 @@
 name: Tests
 
-on: 
-  push:
-  pull_request:
-    types: [opened]
+on: [push]
 
-jobs:     
+jobs:
   test:
     runs-on: ubuntu-18.04
 
