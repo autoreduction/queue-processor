@@ -18,13 +18,13 @@ jobs:
       mysql:
         image: mysql:5.7
         env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: yes # to allow empty password for root
           MYSQL_HOST: localhost
+          MYSQL_PORT: 3306
           MYSQL_USER: test-user
           MYSQL_PASSWORD: pass
           MYSQL_DATABASE: autoreduction
         ports:
-          - '3306:3306'
+          - 3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     # Steps represent a sequence of tasks that will be executed as part of the job
@@ -40,11 +40,11 @@ jobs:
       - name: Verify MySQL connection from host
         run: |
           sudo apt-get install -y mysql-client
-          mysql --host localhost --port 3306 -u root -e "SHOW DATABASES"
+          mysql --host localhost --port 3306 -u test-user -p pass -e "SHOW DATABASES"
       
       - name: Set up database
         run: |
-          mysql --host localhost --port 3306 -u root < build/database/reset_autoreduction_db.sql
+          mysql --host localhost --port 3306 -u test-user -p pass < build/database/reset_autoreduction_db.sql
       
       - name: Install Autoreduction
         run: |
