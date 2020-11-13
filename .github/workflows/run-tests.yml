@@ -1,42 +1,28 @@
-# This is a basic workflow to help you get started with Actions
-
-name: Testing on Ubuntu 18 (Xenial)
+name: Tests
 
 on: 
   push:
   pull_request:
     types: [opened]
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
-jobs:
-  # This workflow contains a single job called "build"
+jobs:     
   test:
-    # The type of runner that the job will run on
     runs-on: ubuntu-18.04
-    
+
     services:
       mysql:
         image: mysql:5.7
         env:
           MYSQL_ALLOW_EMPTY_PASSWORD: yes
-#           MYSQL_HOST: 127.0.0.1
-#           MYSQL_PORT: 3306
-#           MYSQL_USER: test-user
-#           MYSQL_PASSWORD: pass
-#           MYSQL_DATABASE: autoreduction
+          MYSQL_USER: test-user
+          MYSQL_PASSWORD: pass
+          MYSQL_DATABASE: autoreduction
         ports:
           - '3306:3306'
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-      
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.7
       
       - name: Verify MySQL connection from host
         run: |
@@ -44,8 +30,12 @@ jobs:
           mysql --host 127.0.0.1 --port 3306 -u root -e "SHOW DATABASES"
       
       - name: Set up database
-        run: |
-          mysql --host 127.0.0.1 --port 3306 -u root < build/database/reset_autoreduction_db.sql
+        run: mysql --host 127.0.0.1 --port 3306 -u root < build/database/reset_autoreduction_db.sql
+      
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
       
       - name: Install Autoreduction
         run: |
@@ -54,13 +44,12 @@ jobs:
       
       - name: Install test suite dependencies
         run: pip3 install -r requirements.txt
-      
+
       - name: Setup test environment
         run: |
          python3 setup.py test_settings
          # Externals must be after test_settings
          python3 setup.py externals -s activemq
-         tree
          python3 setup.py database
          cat build.log
          _LOCAL_PYTHON_PATH=$(which python3)
@@ -68,7 +57,7 @@ jobs:
       
       - name: Perform initial check of database
         run: py.test build/tests/test_db_generation.py
-      
+
       - name: Functional tests
         run: |
           echo "Running Unit tests"
@@ -76,7 +65,7 @@ jobs:
           echo "Running System Tests"
           py.test systemtests --cov-append
       
-      - name: Static Analysis
+      - name: Pylint tests
         run: |
           pylint build
           pylint docker_reduction
@@ -89,6 +78,6 @@ jobs:
           pylint plotting
           
       - name: Coveralls
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: coveralls
