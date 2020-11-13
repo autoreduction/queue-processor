@@ -43,11 +43,13 @@
             </div>
 
             <!-- Re-run past runs button -->
-            <div class="col-md-6 text-center" id="btn-re-run_past_job">
-                <p><a href="{% url 'instrument_submit_runs' instrument=instrument_name %}"
-                      class="btn btn-success btn-block"><i class="fa fa-arrow-left"></i>&nbsp;&nbsp;Re-run
-                    past jobs</a></p>
-            </div>
+            {% if has_variables %}
+                <div class="col-md-6 text-center" id="btn-re-run_past_job">
+                    <p><a href="{% url 'instrument_submit_runs' instrument=instrument_name %}"
+                          class="btn btn-success btn-block"><i class="fa fa-arrow-left"></i>&nbsp;&nbsp;Re-run
+                        past jobs</a></p>
+                </div>
+            {% endif %}
 
             <!-- Configure new runs button -->
             <div class="col-md-6 text-center" id="btn-configure_new_jobs">
@@ -55,7 +57,8 @@
                       class="btn btn-success btn-block"><i class="fa fa-plus"></i>&nbsp;&nbsp;Configure
                     New Jobs</a></p>
             </div>
-            {% if reduction_variables_on %}
+
+            {% if reduction_variables_on and has_variables %}
                 <div class="col-md-6 text-center" id="btn-see_instrument_variables">
                     <p><a href="{% url 'instrument_variables_summary' instrument=instrument_name %}"
                           class="btn btn-success btn-block"><i class="fa fa-eye"></i>&nbsp;&nbsp;See

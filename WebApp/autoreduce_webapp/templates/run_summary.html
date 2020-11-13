@@ -188,13 +188,13 @@
                             {% endfor %}
                         </div>
                     </div>
-                {% endif %}
-                {% if reduction_variables_on %}
-                    {% autoescape on %}
-                        {% view "reduction_variables.views.run_summary" run.instrument.name run.run_number run.run_version %}
-                    {% endautoescape %}
-                {% endif %}
-            </div>
+            {% endif %}
+            {% if reduction_variables_on and has_variables%}
+                {% autoescape on %}
+                    {% view "reduction_variables.views.run_summary" run.instrument.name run.run_number run.run_version %}
+                {% endautoescape %}
+            {% endif %}
+          </div>
         {% endif %}
         <div class="run-history modal fade" tabindex="-1" role="dialog" aria-hidden="true">
             <div class="modal-dialog">
