@@ -1,0 +1,5 @@
+{
+    "environment_type": "remote",
+    "url": "localhost:8000",
+    "run_headless": false
+}
