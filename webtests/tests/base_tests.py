@@ -145,3 +145,38 @@ class NavbarTestMixin:
             .click_navbar_help()
         self.assertEqual(HelpPage.url(), self.driver.current_url)
 
+class FooterTestMixin:
+    """
+    Contains test cases for pages with the FooterMixin
+    """
+    GITHUB_URL = "https://github.com/ISISScientificComputing/autoreduce"
+
+    def test_footer_visible(self):
+        """
+        Tests: Footer is visible
+        When: Page has FooterMixin
+        """
+        self.page.launch()
+        self.assertTrue(self.page.is_footer_visible())
+
+    def test_github_link_navigates_to_github(self):
+        """
+        Tests: Github link navigates to autoreduction github page
+        When: Github link is clicked
+        """
+        self.page \
+            .launch() \
+            .click_footer_github_link()
+        self.driver.switch_to.window(self.driver.window_handles[-1])
+        self.assertEqual(self.GITHUB_URL, self.driver.current_url)
+
+    def test_help_link_navigates_to_help_page(self):
+        """
+        Tests: Help page link navigates to help page
+        When Help page link is clicked
+        """
+        self.page \
+            .launch() \
+            .click_footer_help_link()
+        self.driver.switch_to.window(self.driver.window_handles[-1])
+        self.assertEqual(HelpPage.url(), self.driver.current_url)
