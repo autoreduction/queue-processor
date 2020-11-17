@@ -91,7 +91,8 @@ def cleanup_config():
     to test runner
     """
     copyfile(TEMP_CONFIG_PATH, CONFIG_PATH)
-    TEMP_CONFIG_PATH.unlink(missing_ok=True)
+    if TEMP_CONFIG_PATH.exists():
+        TEMP_CONFIG_PATH.unlink()
 
 
 def load_config_file():
