@@ -16,6 +16,8 @@ from pathlib import Path
 from utils.project.structure import get_project_root
 from webtests import configuration
 from webtests.driver import get_chrome_driver
+from webtests.pages.page import OverviewPage, HelpPage, JobQueuePage, FailedJobsPage, GraphsPage
+
 
 def local_only(method):
     """
@@ -67,3 +69,79 @@ class BaseTestCase(unittest.TestCase):
             self._feedErrorsToResult(result, self._outcome.errors)
             return len(result.failures) > 0
         return False
+
+
+class NavbarTestMixin:
+    """
+    Contains test cases for pages with the NavbarMixin
+    """
+    def test_navbar_visible(self):
+        """
+        Test: Navbar is visible on current page
+        """
+        self.page \
+            .launch()
+        self.assertTrue(self.page.is_navbar_visible())
+
+    # add visibility tests for links and logo etc.
+
+    def test_logo_returns_to_overview(self):
+        """
+        Test: driver navigates to overview page
+        When: navbar logo is clicked
+        """
+        self.page \
+            .launch() \
+            .click_navbar_logo()
+        self.assertEqual(OverviewPage.url(), self.driver.current_url)
+
+    def test_all_instruments_goes_returns_to_overview(self):
+        """
+        Tests: driver navigates to overview page
+        When: all instruments link is clicked
+        """
+        self.page \
+            .launch() \
+            .click_navbar_all_instruments()
+        self.assertEqual(OverviewPage.url(), self.driver.current_url)
+
+    def test_job_queue_goes_to_job_queue(self):
+        """
+        Test: driver navigates to job queue
+        When: job queue link is clicked
+        """
+        self.page \
+            .launch() \
+            .click_navbar_job_queue()
+        self.assertEqual(JobQueuePage.url(), self.driver.current_url)
+
+    def test_failed_jobs_goes_to_failed_jobs(self):
+        """
+        Tests: driver navigates to failed jobs page
+        When: failed jobs link is clicked
+        """
+        self.page \
+            .launch() \
+            .click_navbar_failed_jobs()
+        self.assertEqual(FailedJobsPage.url(), self.driver.current_url)
+
+    def test_graphs_goes_to_graphs(self):
+        """
+        Test: driver navigates to graphs page
+        When: Navbar graphs link is clicked
+        """
+        self.page \
+            .launch() \
+            .click_navbar_graphs()
+        self.assertEqual(GraphsPage.url(), self.driver.current_url)
+
+    def test_help_goes_to_help(self):
+        """
+        Test: driver goes to help page
+        When: Help link is clicked
+        """
+        self.page \
+            .launch() \
+            .click_navbar_help()
+        self.assertEqual(HelpPage.url(), self.driver.current_url)
+
