@@ -1,0 +1,5 @@
+{
+    "environment_type": "local",
+    "url": "http://172.29.105.30:8000",
+    "run_headless": false
+}
