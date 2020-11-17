@@ -43,6 +43,7 @@ ISIS_MOUNT_PATH = Path("/isis")
 AUTOREDUCTION_PATH = Path("user/scripts/autoreduction")
 REDUCE_FILES_TO_SAVE = ["reduce.py", "reduce_vars.py"]
 
+# STORAGE_DIR is the git repository dir that has been configured to point to the correct remote
 STORAGE_DIR = Path("~/autoreduction_scripts").expanduser().absolute()
 
 logging.basicConfig(filename=get_log_file('backup_reduction_scripts.log'),
