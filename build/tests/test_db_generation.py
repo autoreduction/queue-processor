@@ -50,7 +50,7 @@ class TestDatabaseGeneration(unittest.TestCase):
         Test that the local host database on travis is correctly
         generated from the .sql construction files
         """
-        database = MySQLdb.connect(host="localhost",
+        database = MySQLdb.connect(host="127.0.0.1",
                                    user="test-user",
                                    passwd="pass",
                                    db="autoreduction")
@@ -69,7 +69,7 @@ class TestDatabaseGeneration(unittest.TestCase):
         Current test data adds 3 rows per table (so check this)
         exception to this is status that has 5 columns
         """
-        database = MySQLdb.connect(host="localhost",
+        database = MySQLdb.connect(host="127.0.0.1",
                                    user="test-user",
                                    passwd="pass",
                                    db="autoreduction")

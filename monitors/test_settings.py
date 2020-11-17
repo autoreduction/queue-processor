@@ -8,8 +8,6 @@
 """
 Settings for end of run monitor script run_detection
 """
-from sentry_sdk import init
-init('http://4b7c7658e2204228ad1cfd640f478857@172.16.114.151:9000/1')
 
 # Please update the cycle number before a new cycle
 CYCLE_FOLDER = "cycle_18_4"
