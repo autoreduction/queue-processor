@@ -101,3 +101,72 @@ class OverviewPage(Page, NavbarMixin, FooterMixin, TourMixin):
         self.driver.find_element_by_id(f"{instrument}-instrument-btn").click()
         return self  # Return instrument page
 
+
+class HelpPage(Page, NavbarMixin, FooterMixin):
+    """
+    Page model class for help page
+    """
+
+    @staticmethod
+    def url_path():
+        """
+        Return the path section of the help page
+        :return: (str) Path section of the page url
+        """
+        return "/help/"
+
+
+class InstrumentSummaryPage(Page, NavbarMixin, FooterMixin, TourMixin):
+    """
+    Page model class for instrument summary page
+    """
+
+    @staticmethod
+    def url_path():
+        """
+        Return the path section of the instrument url
+        :return: (str) Path section of the page url
+        """
+        return "/instrument/%s/"
+
+
+class JobQueuePage(Page, NavbarMixin, FooterMixin):
+    """
+    Page model class for job queue page
+    """
+
+    @staticmethod
+    def url_path():
+        """
+        Return the path section of the job queue url
+        :return: (str) Path section of the page url
+        """
+        return "/runs/queue/"
+
+
+class FailedJobsPage(Page, NavbarMixin, FooterMixin):
+    """
+    Page model class for failed jobs page
+    """
+
+    @staticmethod
+    def url_path():
+        """
+        Return the path section of the failed jobs url
+        :return: (str) Path section of the page url
+        """
+        return "/runs/failed/"
+
+
+class GraphsPage(Page):
+    """
+    Page model class for graphs page
+    """
+
+    @staticmethod
+    def url_path():
+        """
+        Return the path section of the graphs url
+        :return: (str) Path section of the page url
+        """
+        return "/graph/"
