@@ -15,7 +15,7 @@ from shutil import copyfile
 
 from utils.project.structure import get_project_root
 
-CONFIG_PATH = Path(get_project_root(), "webtests/confibg.json")
+CONFIG_PATH = Path(get_project_root(), "webtests/config.json")
 TEMP_CONFIG_PATH = Path(get_project_root(), "webtests/temp_config.json")
 
 
