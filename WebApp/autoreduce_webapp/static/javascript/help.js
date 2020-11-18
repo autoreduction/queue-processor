@@ -35,14 +35,14 @@
 
     // Convert text in a topic heading to a dashed separated format
     function headingTextToDashed(headingText) {
-        return headingText.replace(/ +/g, '-').toLowerCase();
+        return headingText.replace(/[^a-z0-9\s]/gi, '').replace(/[_\s]/g, '-').toLowerCase();
     }
 
     // Generate a link for each topic heading and add the link also to the sidebar
     function generateSideNavLinks() {
         $('.main-content section .panel-heading h3').each(function () {
-            let id = headingTextToDashed($.find(this).text());
-            let link = '<a href="#' + id + '">' + $.find(this).text() + '</a>';
+            let id = headingTextToDashed($(this).text());
+            let link = '<a href="#' + id + '">' + $(this).text() + '</a>';
             $('#sidenav').append('<li>' + link + '</li>');
             $(this).html(link);
             $(this).attr("id", id);
