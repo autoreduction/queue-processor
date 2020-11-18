@@ -61,4 +61,6 @@ jobs:
           sleep 10
 
       - name: Run selenium Tests
-        run: python3 -m webtests.runner
+        run: |
+          mv webtests/config.json.example webtests/config.json
+          python3 -m webtests.runner
