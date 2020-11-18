@@ -19,10 +19,3 @@ class ReductionScriptError(Exception):
     """
     Exception raised when an unhandled exception is produced within the reduction script
     """
-
-
-class SkippedRunException(Exception):
-    """
-    Exception for runs that have been skipped
-    Note: this is currently only the case for EnginX Event mode runs at ISIS
-    """

@@ -14,12 +14,13 @@ from tempfile import TemporaryDirectory
 from mock import patch, MagicMock, call
 
 from queue_processors.autoreduction_processor.reduction_exceptions import DatafileError, \
-    SkippedRunException, ReductionScriptError
+    ReductionScriptError
 from queue_processors.autoreduction_processor.reduction_service import ReductionDirectory, \
     TemporaryReductionDirectory, Datafile, ReductionScript, reduce
 from queue_processors.autoreduction_processor.settings import MISC
 
 REDUCTION_SERVICE_DIR = "queue_processors.autoreduction_processor.reduction_service"
+
 
 # pylint:disable=protected-access,too-many-instance-attributes
 
@@ -27,6 +28,7 @@ class TestReductionService(unittest.TestCase):
     """
     Test cases for classes and functions of reduction_service
     """
+
     def setUp(self) -> None:
         patch(f"{REDUCTION_SERVICE_DIR}.LOGGER")
         self.instrument = "testinstrument"
@@ -242,26 +244,7 @@ class TestReductionService(unittest.TestCase):
 
     @patch(f"{REDUCTION_SERVICE_DIR}.spec_from_file_location")
     @patch(f"{REDUCTION_SERVICE_DIR}.module_from_spec")
-    def test_reduction_script_load_with_skipped_runs(self, mock_module_from_spec,
-                                                     mock_spec_from_file):
-        """
-        Tests: Reduction script should attempt to be loaded
-        When: Load is called
-        """
-        module_mock = MagicMock()
-        mock_spec_from_file.return_value = MagicMock()
-        mock_module_from_spec.return_value = module_mock
-        module_mock.SKIP_RUNS = ["123"]
-        script = ReductionScript(self.instrument)
-
-        script.load()
-        self.assertEqual(["123"], script.skipped_runs)
-        mock_spec_from_file.assert_called_once_with("reducescript", script.script_path)
-        mock_module_from_spec.assert_called_once_with(mock_spec_from_file.return_value)
-
-    @patch(f"{REDUCTION_SERVICE_DIR}.spec_from_file_location")
-    @patch(f"{REDUCTION_SERVICE_DIR}.module_from_spec")
-    def test_reduction_script_load_no_skip_runs(self, mock_module_from_spec, mock_spec_from_file):
+    def test_reduction_script_load(self, mock_module_from_spec, mock_spec_from_file):
         """
         Test: Reduction script is loaded
         When: script has no skipped runs
@@ -269,7 +252,6 @@ class TestReductionService(unittest.TestCase):
         module_mock = MagicMock()
         mock_spec_from_file.return_value = MagicMock()
         mock_module_from_spec.return_value = module_mock
-        module_mock.SKIP_RUNS.side_effect = Exception
         script = ReductionScript(self.instrument)
         script.load()
         mock_spec_from_file.assert_called_once_with("reducescript", script.script_path)
@@ -287,18 +269,6 @@ class TestReductionService(unittest.TestCase):
         self.script.load.assert_called_once()
         self.temp_dir.copy.assert_called_once_with(self.reduction_dir.path)
         self.temp_dir.delete.assert_called_once()
-
-    @patch(f"{REDUCTION_SERVICE_DIR}.channels_redirected")
-    def test_reduce_skipped_run_raises_skipped_run_exception(self, _):
-        """
-        Test: SkippedRunException raised
-        When: Run is skipped in script
-        """
-        self.script.skipped_runs = [self.run_number]
-        with self.assertRaises(SkippedRunException):
-            reduce(self.reduction_dir, self.temp_dir, self.datafile, self.script, self.run_number)
-        self.reduction_dir.create.assert_called_once()
-        self.script.load.assert_called_once()
 
     @patch(f"{REDUCTION_SERVICE_DIR}.channels_redirected")
     def test_reduce_script_copies_to_additional_output(self, _):

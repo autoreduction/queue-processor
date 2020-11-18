@@ -23,8 +23,7 @@ from model.message.message import Message
 from queue_processors.autoreduction_processor.autoreduction_logging_setup import logger
 from queue_processors.autoreduction_processor.post_process_admin_utilities import \
     windows_to_linux_path
-from queue_processors.autoreduction_processor.reduction_exceptions import SkippedRunException, \
-    DatafileError, \
+from queue_processors.autoreduction_processor.reduction_exceptions import DatafileError, \
     ReductionScriptError
 from queue_processors.autoreduction_processor.reduction_service import Datafile, ReductionScript, \
     ReductionDirectory, \
@@ -169,11 +168,6 @@ class PostProcessAdmin:
         except DatafileError as exp:
             logger.error("Problem reading datafile: %s", self.data_file)
             self.message.message = "REDUCTION Error: %s" % exp
-
-        except SkippedRunException:
-            logger.info("Run %s has been skipped on %s",
-                        self.message.run_number, self.message.instrument)
-            self.message.message = "Run has been skipped in script"
 
         except ReductionScriptError as exp:
             self.message.message = "REDUCTION Error: %s" % exp
