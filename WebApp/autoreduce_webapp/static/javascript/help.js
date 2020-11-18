@@ -41,8 +41,8 @@
     // Generate a link for each topic heading and add the link also to the sidebar
     function generateSideNavLinks() {
         $('.main-content section .panel-heading h3').each(function () {
-            let id = headingTextToDashed($.find(this).text());
-            let link = '<a href="#' + id + '">' + $.find(this).text() + '</a>';
+            let id = headingTextToDashed($(this).text());
+            let link = '<a href="#' + id + '">' + $(this).text() + '</a>';
             $('#sidenav').append('<li>' + link + '</li>');
             $(this).html(link);
             $(this).attr("id", id);
