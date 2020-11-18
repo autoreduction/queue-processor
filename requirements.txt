@@ -1,21 +1,18 @@
 # Test Env. Requirements
 
-coverage==5.3
 coveralls==2.1.2
 dash==1.16.3
 django-debug-toolbar==3.1.1
 django_plotly_dash==1.4.2
-gitpython==3.1.9
+gitpython==3.1.11
 # this is the highest available version that pip can find on CentOS - be careful when updating
 # because Travis runs on Ubuntu so even if the build pass, the installation could fail
-ipython==7.16.1
+ipython==7.19.0
 lxml==4.6.1
 mock==4.0.2
-pandas==1.1.0
-plotly==4.11.0
+pandas==1.1.4
+plotly==4.12.0
 pylint==2.6.0
 pytest-cov==2.10.1
-python-coveralls==2.9.3
-requests==2.24.0
-sentry-sdk==0.19.1
+requests==2.25.0
 stomp.py==6.1.0

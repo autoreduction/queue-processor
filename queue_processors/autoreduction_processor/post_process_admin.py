@@ -17,7 +17,6 @@ import sys
 import traceback
 import types
 
-from sentry_sdk import init
 
 from model.message.message import Message
 from queue_processors.autoreduction_processor.autoreduction_logging_setup import logger
@@ -31,8 +30,6 @@ from queue_processors.autoreduction_processor.reduction_service import Datafile,
 from queue_processors.autoreduction_processor.settings import MISC
 from utils.clients.queue_client import QueueClient
 from utils.settings import ACTIVEMQ_SETTINGS
-
-init('http://4b7c7658e2204228ad1cfd640f478857@172.16.114.151:9000/1')
 
 
 class PostProcessAdmin:
