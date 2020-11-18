@@ -65,4 +65,4 @@ jobs:
       - name: Run selenium Tests
         run: |
           mv webtests/config.json.example webtests/config.json
-          python3 -m webtests.runner
+          python3 -m webtests.runner --headless
