@@ -16,43 +16,44 @@ from build.commands.migrate_settings import MigrateTestSettings
 from build.commands.start import Start
 
 
-setup_requires = ['attrs==19.2.0',
-                  'dash',
-                  'dash_html_components',
-                  'dash_core_components',
-                  'docker',
-                  'Django',
-                  'django_extensions',
-                  'django_plotly_dash',
-                  'django-user-agents',
-                  'filelock',
-                  'fire',
-                  'gitpython',
-                  'IPython',
-                  'mysqlclient',
-                  'mysql-connector',
-                  'nexusformat',
-                  'numpy',
-                  'pandas',
-                  'plotly',
-                  'pytz',
-                  'PyMySQL',
-                  'pysftp',
-                  'python-icat',
-                  'requests',
-                  'sentry_sdk',
-                  'service_identity',
-                  'SQLAlchemy',
-                  'stomp.py',
-                  'suds-py3',
-                  'Twisted',
-                  'PyYAML']
+setup_requires = ['attrs==20.3.0',
+                  'dash==1.16.3',
+                  'dash_html_components==1.1.1',
+                  'dash_core_components==1.13.0',
+                  'docker==4.3.1',
+                  'Django==3.1.2',
+                  'django_extensions==3.0.9',
+                  'django_plotly_dash==1.4.2',
+                  'django-user-agents==0.4.0',
+                  'filelock==3.0.12',
+                  'fire==0.3.1',
+                  'gitpython==3.1.11',
+                  # this is the highest available version that pip can find on CentOS - be careful when updating
+                  # because Travis runs on Ubuntu so even if the build pass, the installation could fail
+                  'IPython==7.19.0',
+                  'mysqlclient==2.0.1',
+                  'mysql-connector==2.2.9',
+                  'nexusformat==0.5.3',
+                  'numpy==1.19.2',
+                  'pandas==1.1.4',
+                  'plotly==4.12.0',
+                  'pytz==2020.4',
+                  'PyMySQL==0.10.1',
+                  'pysftp==0.2.9',
+                  'python-icat==0.17.0',
+                  'requests==2.25.0',
+                  'service_identity==18.1.0',
+                  'SQLAlchemy==1.3.20',
+                  'stomp.py==6.1.0',
+                  'suds-py3==1.4.3.0',
+                  'Twisted==20.3.0',
+                  'PyYAML==5.3.1']
 
 
 if platform.system() == 'Windows':
     setup_requires.append('pypiwin32')
 else:
-    setup_requires.append('python-daemon')
+    setup_requires.append('python-daemon==2.2.4')
 
 
 setup(name='AutoReduction',

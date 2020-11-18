@@ -8,23 +8,22 @@
 Tests for post process admin and helper functionality
 """
 
-import unittest
+import json
 import os
 import shutil
 import sys
-
-import json
-from pathlib import PosixPath
+import unittest
+from pathlib import Path
 from tempfile import mkdtemp, NamedTemporaryFile
+
 from mock import patch, call, Mock, mock_open
 
 from model.message.message import Message
-from paths.path_manipulation import append_path
-from utils.settings import ACTIVEMQ_SETTINGS
-from utils.project.structure import get_project_root
-from utils.clients.settings.client_settings_factory import ActiveMQSettings
-from queue_processors.autoreduction_processor.settings import MISC
 from queue_processors.autoreduction_processor.post_process_admin import (PostProcessAdmin, main)
+from queue_processors.autoreduction_processor.settings import MISC
+from utils.clients.settings.client_settings_factory import ActiveMQSettings
+from utils.project.structure import get_project_root
+from utils.settings import ACTIVEMQ_SETTINGS
 
 
 # pylint:disable=too-many-public-methods, protected-access,no-self-use,too-many-instance-attributes
@@ -277,7 +276,7 @@ class TestPostProcessAdmin(unittest.TestCase):
 
         actual = ppa.create_log_path(file_name_with_extension=file_name,
                                      log_directory=log_directory)
-        expected = PosixPath(f"{log_directory}{log_and_error_name}{file_name}")
+        expected = Path(f"{log_directory}{log_and_error_name}{file_name}")
 
         self.assertEqual(expected, actual)
 
@@ -369,29 +368,29 @@ class TestPostProcessAdmin(unittest.TestCase):
             list_of_paths=['should/be/writeable']))
 
     @patch('logging.Logger.info')
-    @patch(f"{DIR}.post_process_admin.PostProcessAdmin._new_reduction_data_path")
-    def test_result_and_log_directory(self, mock_nrdp, mock_logging):
+    @patch(f'{DIR}.post_process_admin.PostProcessAdmin._append_run_version')
+    def test_create_final_result_and_log_directory_non_flat_output(self, mock_append, mock_logging):
         """
         Test: final result and log directories are returned
         When: called with temp root directory, result and log locations
         """
+        self.message.instrument = "LARMOR"
         ppa = PostProcessAdmin(self.message, None)
-        instrument_output_dir = MISC["ceph_directory"] % (ppa.instrument,
+        instrument_output_directory = MISC["ceph_directory"] % (ppa.instrument,
                                                           ppa.proposal,
                                                           ppa.run_number)
-        mock_nrdp.return_value = append_path(instrument_output_dir, "0")
-        instrument_output_directory = instrument_output_dir[:instrument_output_dir.rfind('/') + 1]
         reduce_directory = MISC["temp_root_directory"] + instrument_output_directory
         reduction_log = "/reduction_log/"
+        mock_append.return_value = instrument_output_directory + "/run-version-0/"
         actual_final_result, actual_log = ppa.create_final_result_and_log_directory(
             temporary_root_directory=MISC["temp_root_directory"],
             reduce_dir=reduce_directory)
 
-        expected_log = f"{instrument_output_directory}0{reduction_log}"
+        expected_log = f"{instrument_output_directory}/run-version-0{reduction_log}"
         expected_logs_called_with = [call("Final Result Directory = %s", actual_final_result),
                                      call("Final log directory: %s", actual_log)]
 
-        mock_nrdp.assert_called_once_with(instrument_output_dir)
+        mock_append.assert_called_once_with(instrument_output_directory)
         self.assertEqual(mock_logging.call_count, 2)
         self.assertEqual(mock_logging.call_args_list, expected_logs_called_with)
         self.assertEqual(expected_log, actual_log)
@@ -802,46 +801,40 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_error,
                                           self.message)
 
-    @patch("os.access")
-    def test_new_reduction_data_path_no_overwrite_paths_exist(self, _):
+    @patch('glob.glob')
+    def test_append_run_version_overwrite_true(self, mock_glob):
         """
-        Test: A path is returned with a final directory one higher than the current highest
-        When: _new_reduction_data_path is called on an existing path with overwrite: None
+        Test: version 0 is appended
+        When: overwrite is true
         """
-        self.setup_test_dir_structure(self.test_paths)
-        mock_self = Mock()
-        mock_self.message = Message(overwrite=None)
+        self.message.overwrite = True
+        ppa = PostProcessAdmin(self.message, None)
+        test_path = '/some/test/path/'
+        expected = '/some/test/path/run-version-0/'
+        self.assertEqual(expected, ppa._append_run_version(test_path))
+        mock_glob.assert_not_called()
 
-        expected = append_path(self.test_root, "3")
-        actual = PostProcessAdmin._new_reduction_data_path(mock_self, self.test_root)
-        self.assertEqual(expected, actual)
-
-    @patch("os.access")
-    def test_new_reduction_data_path_overwrite_paths_exist(self, _):
+    @patch('glob.glob', return_value = ['run-version-1', 'run-version-2'])
+    def test_append_run_version_no_overwrite(self, _):
         """
-        Test: The given path is returned with a 0 directory appended
-        When: _new_reduction_data_path is called on an existing path with overwrite: True
+        Test: Next run version is appended
+        When: Overwrite is false and runs exist
         """
-        self.setup_test_dir_structure(self.test_paths)
-        mock_self = Mock()
-        mock_self.message = Message(overwrite=True)
+        ppa = PostProcessAdmin(self.message, None)
+        test_path = '/some/test/path'
+        expected = '/some/test/path/run-version-3/'
+        self.assertEqual(expected, ppa._append_run_version(test_path))
 
-        expected = append_path(self.test_root, "0")
-        actual = PostProcessAdmin._new_reduction_data_path(mock_self, self.test_root)
-        self.assertEqual(expected, actual)
-
-    def test_new_reduction_data_only_root_path_exists(self):
+    @patch('glob.glob', return_value = [])
+    def test_append_run_version_none_existing(self, _):
         """
-        Test: The given path is returned with a 0 directory appended
-        When: _new_reduction_data_path is called on a path without version sub-directories
+        Test: run version 0 is appended
+        When: overwrite is false and no runs exist
         """
-        self.setup_test_dir_structure([self.test_root])
-        mock_self = Mock()
-        mock_self.message = Message(overwrite=None)
-
-        expected = append_path(self.test_root, "0")
-        actual = PostProcessAdmin._new_reduction_data_path(mock_self, self.test_root)
-        self.assertEqual(expected, actual)
+        ppa = PostProcessAdmin(self.message, None)
+        test_path = '/some/test/path'
+        expected = '/some/test/path/run-version-0/'
+        self.assertEqual(expected, ppa._append_run_version(test_path))
 
     @patch(DIR + '.post_process_admin.PostProcessAdmin.__init__', return_value=None)
     def test_validate_input_success(self, _):

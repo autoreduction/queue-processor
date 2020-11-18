@@ -46,6 +46,11 @@ LOGGING = {
             'formatter': 'verbose'
         },
     },
+    'root': {
+        'level':LOG_LEVEL,
+        'handlers': ['file'],
+        'propagate': True
+    },
     'loggers': {
         'queue_processor': {
             'handlers': ['file'],

@@ -17,6 +17,8 @@ import time
 import atexit
 from signal import SIGTERM
 
+LOGGER = logging.getLogger(__file__)
+
 
 class Daemon:
     """
@@ -42,7 +44,7 @@ class Daemon:
                 # exit first parent
                 sys.exit(0)
         except OSError as exp:
-            logging.error("fork #1 failed: %d (%s)\n", exp.errno, exp.strerror)
+            LOGGER.error("fork #1 failed: %d (%s)\n", exp.errno, exp.strerror)
             sys.exit(1)
 
         # decouple from parent environment
@@ -59,7 +61,7 @@ class Daemon:
                 # exit from second parent
                 sys.exit(0)
         except OSError as exp:
-            logging.error("fork #2 failed: %d (%s)\n", exp.errno, exp.strerror)
+            LOGGER.error("fork #2 failed: %d (%s)\n", exp.errno, exp.strerror)
             sys.exit(1)
 
         # redirect standard file descriptors
@@ -78,7 +80,7 @@ class Daemon:
         pid = str(os.getpid())
         with open(self.pidfile, 'w+') as pid_file:
             pid_file.write("%s\n" % pid)
-        logging.info("Started daemon with PID %s", str(pid))
+        LOGGER.info("Started daemon with PID %s", str(pid))
 
     def delpid(self):
         """ delete the pid file """
@@ -97,7 +99,7 @@ class Daemon:
 
         if pid:
             message = "pidfile %s already exist. Daemon already running?\n"
-            logging.warning(message, self.pidfile)
+            LOGGER.warning(message, self.pidfile)
             sys.exit(1)
 
         # Start the daemon
@@ -117,11 +119,11 @@ class Daemon:
 
         if not pid:
             message = "pidfile %s does not exist. Daemon not running?\n"
-            logging.error(message, self.pidfile)
+            LOGGER.error(message, self.pidfile)
             # Not an error in a restart
             return
 
-        logging.info("Stopping daemon with PID %s", str(pid))
+        LOGGER.info("Stopping daemon with PID %s", str(pid))
 
         # Try killing the daemon process
         try:
@@ -134,7 +136,7 @@ class Daemon:
                 if os.path.exists(self.pidfile):
                     os.remove(self.pidfile)
             else:
-                logging.error(str(err))
+                LOGGER.error(str(err))
                 sys.exit(1)
 
     def restart(self):
@@ -151,7 +153,7 @@ class Daemon:
         """
 
 
-def control_daemon_from_cli(daemon):
+def control_daemon_from_cli(daemon, callback=None):
     """
     Small helper function required in implementations of the Daemon class to validate and respond
     to CLI user input
@@ -163,6 +165,8 @@ def control_daemon_from_cli(daemon):
             daemon.start()
         elif sys.argv[1] == 'stop':
             daemon.stop()
+            if callback is not None:
+                callback(daemon)
         elif sys.argv[1] == 'restart':
             daemon.restart()
         else:

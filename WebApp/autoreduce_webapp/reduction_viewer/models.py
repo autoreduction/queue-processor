@@ -111,7 +111,9 @@ class ReductionRun(models.Model):
                                    on_delete=models.CASCADE)
     retry_run = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
     status = models.ForeignKey(Status, blank=False, related_name='+', on_delete=models.CASCADE)
-    software = models.ForeignKey(Software, blank=False, related_name='reduction_runs', null=True,
+    # Allowed software field to be black in code line below. Issued opened (#852) to later
+    # populate this field
+    software = models.ForeignKey(Software, blank=True, related_name='reduction_runs', null=True,
                                  on_delete=models.CASCADE)
 
     def __unicode__(self):

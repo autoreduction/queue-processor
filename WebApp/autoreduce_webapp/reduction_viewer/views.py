@@ -16,26 +16,25 @@ import json
 import logging
 import operator
 
+from autoreduce_webapp.icat_cache import ICATCache
+from autoreduce_webapp.settings import UOWS_LOGIN_URL, USER_ACCESS_CHECKS, DEVELOPMENT_MODE
+from autoreduce_webapp.uows_client import UOWSClient
+from autoreduce_webapp.view_utils import (login_and_uows_valid, render_with,
+                                          require_admin, check_permissions)
 from django.contrib.auth import logout as django_logout, authenticate, login
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponseNotFound
 from django.shortcuts import redirect
-
-from autoreduce_webapp.icat_cache import ICATCache
-from autoreduce_webapp.settings import UOWS_LOGIN_URL, USER_ACCESS_CHECKS, DEVELOPMENT_MODE
-from autoreduce_webapp.uows_client import UOWSClient
-from autoreduce_webapp.view_utils import (login_and_uows_valid, render_with,
-                                          require_admin, check_permissions)
-from reduction_variables.utils import MessagingUtils
+from reduction_variables.utils import InstrumentVariablesUtils, MessagingUtils
 from reduction_viewer.models import Experiment, ReductionRun, Instrument, Status
 from reduction_viewer.utils import StatusUtils, ReductionRunUtils
 from reduction_viewer.view_utils import deactivate_invalid_instruments
+from utilities.pagination import CustomPaginator
 
 from plotting.plot_handler import PlotHandler
-
-from utilities.pagination import CustomPaginator
+from utils.settings import VALID_INSTRUMENTS
 
 LOGGER = logging.getLogger('app')
 
@@ -61,7 +60,7 @@ def index(request):
     else:
         if 'sessionid' in request.session.keys():
             authenticated = request.user.is_authenticated \
-                            and UOWSClient().check_session(request.session['sessionId'])
+                            and UOWSClient().check_session(request.session['sessionid'])
 
     if authenticated:
         if request.GET.get('next'):
@@ -103,7 +102,7 @@ def overview(_):
     Render the overview landing page (redirect from /index)
     Note: _ is replacing the passed in request parameter
     """
-    instruments = Instrument.objects.order_by('name')
+    instruments = VALID_INSTRUMENTS
     context_dictionary = {}
     if instruments:
         context_dictionary = {'instrument_list': instruments}
@@ -260,6 +259,8 @@ def run_summary(_, instrument_name=None, run_number=None, run_version=0):
         run = ReductionRun.objects.get(instrument=instrument,
                                        run_number=run_number,
                                        run_version=run_version)
+        # run status value of "s" means the run is skipped
+        is_skipped = run.status.value == "s"
         history = ReductionRun.objects.filter(run_number=run_number).order_by('-run_version')
         started_by = started_by_id_to_name(run.started_by)
 
@@ -271,26 +272,40 @@ def run_summary(_, instrument_name=None, run_number=None, run_version=0):
             reduction_location = reduction_location.replace('\\', '/')
 
         rb_number = Experiment.objects.get(id=run.experiment_id).reference_number
+        has_variables = bool(
+            InstrumentVariablesUtils().get_default_variables(run.instrument.name)
+            or run.run_variables.all()) # We check default vars and run vars in case none exist
+                                        # for run but could exist for default
 
         context_dictionary = {'run': run,
+                              'is_skipped': is_skipped,
                               'history': history,
                               'reduction_location': reduction_location,
-                              'started_by': started_by}
-
-        if reduction_location:
-            plot_handler = PlotHandler(instrument_name=run.instrument.name,
-                                       rb_number=rb_number,
-                                       run_number=run.run_number,
-                                       server_dir=reduction_location)
-            plot_locations = plot_handler.get_plot_file()
-            if plot_locations:
-                context_dictionary['plot_locations'] = plot_locations
+                              'started_by': started_by,
+                              'has_variables': has_variables}
 
     except PermissionDenied:
         raise
     except Exception as exception:
+        # Error that we cannot recover from - something wrong with instrument, run, or experiment
         LOGGER.error(exception)
-        context_dictionary = {}
+        return {"message": str(exception)}
+
+    if reduction_location:
+        try:
+            plot_handler = PlotHandler(data_filepath=run.data_location.first().file_path,
+                                       server_dir=reduction_location,
+                                       rb_number=rb_number)
+            plot_locations = plot_handler.get_plot_file()
+            if plot_locations:
+                context_dictionary['plot_locations'] = plot_locations
+        except Exception as exception:
+            # Lack of plot images is recoverable - we shouldn't stop the whole page rendering
+            # if something is wrong with the plot images - but display an error message
+            err_msg = "Encountered error while retrieving plots for this run"
+            LOGGER.error("%s. Instrument: %s, run %s. RB Number %s Error: %s",
+                         err_msg, run.instrument.name, run, rb_number, exception)
+            context_dictionary["plot_error_message"] = f"{err_msg}."
 
     return context_dictionary
 
@@ -327,6 +342,8 @@ def instrument_summary(request, instrument=None):
         if len(runs) == 0:
             return {'message': "No runs found for instrument."}
 
+        has_variables = bool(InstrumentVariablesUtils().get_default_variables(instrument_obj.name))
+
         context_dictionary = {
             'instrument': instrument_obj,
             'instrument_name': instrument_obj.name,
@@ -335,7 +352,8 @@ def instrument_summary(request, instrument=None):
             'processing': runs.filter(status=StatusUtils().get_processing()),
             'queued': runs.filter(status=StatusUtils().get_queued()),
             'filtering': filter_by,
-            'sort': sort_by
+            'sort': sort_by,
+            'has_variables': has_variables
         }
 
         if filter_by == 'experiment':

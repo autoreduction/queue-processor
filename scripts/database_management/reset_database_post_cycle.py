@@ -110,6 +110,7 @@ class DatabaseReset:
         # The list of tables to be deleted
         tables_to_delete = ['reduction_viewer_datalocation',
                             'reduction_viewer_experiment',
+                            'reduction_viewer_instrument',
                             'reduction_viewer_notification',
                             'reduction_viewer_reductionrun',
                             'reduction_viewer_reductionlocation',

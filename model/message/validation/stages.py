@@ -8,7 +8,7 @@
 Combination of validation checks to be performed on the Message at each stage of the pipeline
 """
 import model.message.validation.validators as validators
-from model.message.validation.process import check_validity_dict
+from model.message.validation.process import dict_to_string
 
 
 def validate_data_ready(message):
@@ -25,4 +25,5 @@ def validate_data_ready(message):
         'file_path': isinstance(message.data, str),
         'facility': isinstance(message.facility, str)
     }
-    return check_validity_dict(validity_dict)
+    if False in validity_dict.values():
+        raise RuntimeError(f"Validation failed: {dict_to_string(validity_dict)}")
