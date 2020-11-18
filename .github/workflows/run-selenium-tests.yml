@@ -1,0 +1,62 @@
+name: Tests
+
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-18.04
+
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_USER: test-user
+          MYSQL_PASSWORD: pass
+          MYSQL_DATABASE: autoreduction
+        ports:
+          - '3306:3306'
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Verify MySQL connection from host
+        run: |
+          sudo apt-get install -y mysql-client
+          mysql --host 127.0.0.1 --port 3306 -u root -e "SHOW DATABASES"
+
+      - name: Set up database
+        run: mysql --host 127.0.0.1 --port 3306 -u root < build/database/reset_autoreduction_db.sql
+
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+
+      - name: Install Autoreduction
+        run: |
+          python -m pip install --upgrade pip
+          pip3 install -e .
+
+      - name: Install test suite dependencies
+        run: pip3 install -r requirements.txt
+
+      - name: Setup test environment
+        run: |
+         python3 setup.py test_settings
+         # Externals must be after test_settings
+         python3 setup.py externals -s activemq
+         python3 setup.py database
+         cat build.log
+         _LOCAL_PYTHON_PATH=$(which python3)
+         sudo $_LOCAL_PYTHON_PATH setup.py start
+
+      - name: Perform initial check of database
+        run: py.test build/tests/test_db_generation.py
+
+      - name: Run Django server
+        run: python3 WebApp/autoreduce_webapp/manage.py runserver &
+
+      - name: Run selenium Tests
+        run: python3 -m webtests.runserver 
