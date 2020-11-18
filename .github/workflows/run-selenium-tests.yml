@@ -1,4 +1,4 @@
-name: Tests
+name: Selenium - Tests
 
 on: [push]
 
@@ -56,7 +56,9 @@ jobs:
         run: py.test build/tests/test_db_generation.py
 
       - name: Run Django server
-        run: python3 WebApp/autoreduce_webapp/manage.py runserver &
+        run: |
+          python3 WebApp/autoreduce_webapp/manage.py runserver &
+          sleep 10
 
       - name: Run selenium Tests
-        run: python3 -m webtests.runserver 
+        run: python3 -m webtests.runner
