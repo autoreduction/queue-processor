@@ -20,11 +20,9 @@ from queue_processors.autoreduction_processor.autoreduction_logging_setup import
 from queue_processors.autoreduction_processor.post_process_admin_utilities import \
     channels_redirected
 from queue_processors.autoreduction_processor.reduction_exceptions import DatafileError, \
-    SkippedRunException, \
     ReductionScriptError
 from queue_processors.autoreduction_processor.settings import MISC
 from queue_processors.autoreduction_processor.timeout import TimeOut
-
 
 # pylint:disable=too-few-public-methods; As pylint does not like value objects
 log_stream = io.StringIO()
@@ -133,16 +131,11 @@ class ReductionScript:
 
     def load(self):
         """
-        Loads the reduction script as a module and stores any run numbers that are to be skipped
-        by the script
+        Loads the reduction script as a module
         """
         spec = spec_from_file_location("reducescript", self.script_path)
         self.script = module_from_spec(spec)
         spec.loader.exec_module(self.script)
-        try:
-            self.skipped_runs = self.script.SKIP_RUNS
-        except:  # pylint:disable=bare-except
-            pass
 
     def run(self, input_file, output_dir):
         """
@@ -182,10 +175,7 @@ def reduce(reduction_dir, temp_dir, datafile, script, run_number):
     LOGGER.info("-------------------------------------------------------")
     LOGGER.info("Starting reduction...")
 
-
     script.load()
-    if run_number in script.skipped_runs:
-        raise SkippedRunException("Run has been skipped in script")
 
     try:
         log_stream_handler = logging.StreamHandler(log_stream)
