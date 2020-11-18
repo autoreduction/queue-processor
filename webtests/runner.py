@@ -8,6 +8,7 @@
 Test runner script for selenium tests
 """
 import argparse
+import sys
 
 import pytest
 
@@ -43,8 +44,9 @@ def main():
     if args.is_headless:
         configuration.set_headless(True)
 
-    pytest.main([get_project_root() + "/webtests/tests", f"-n{args.cpu}", "-v"])
+    exit_code = pytest.main([get_project_root() + "/webtests/tests", f"-n{args.cpu}", "-v"])
     configuration.cleanup_config()
+    sys.exit(exit_code)
 
 
 if __name__ == "__main__":
