@@ -264,7 +264,7 @@ class TestReductionService(unittest.TestCase):
         """
         self.script.skipped_runs = []
         self.script.run.return_value = None
-        reduce(self.reduction_dir, self.temp_dir, self.datafile, self.script, self.run_number)
+        reduce(self.reduction_dir, self.temp_dir, self.datafile, self.script)
         self.reduction_dir.create.assert_called_once()
         self.script.load.assert_called_once()
         self.temp_dir.copy.assert_called_once_with(self.reduction_dir.path)
@@ -278,7 +278,7 @@ class TestReductionService(unittest.TestCase):
         """
         self.script.skipped_runs = []
         self.script.run.return_value = "some/path"
-        reduce(self.reduction_dir, self.temp_dir, self.datafile, self.script, self.run_number)
+        reduce(self.reduction_dir, self.temp_dir, self.datafile, self.script)
         self.reduction_dir.create.assert_called_once()
         self.script.load.assert_called_once()
         self.temp_dir.copy.assert_has_calls([call(self.reduction_dir.path), call("some/path")])
@@ -297,7 +297,7 @@ class TestReductionService(unittest.TestCase):
         self.script.run.side_effect = Exception
         file = mock_open.return_value
         with self.assertRaises(ReductionScriptError):
-            reduce(self.reduction_dir, self.temp_dir, self.datafile, self.script, self.run_number)
+            reduce(self.reduction_dir, self.temp_dir, self.datafile, self.script)
             file.writelines.assert_called_once()
             mock_traceback.format_exc.assert_called_once()
             file.write.assert_called_once()

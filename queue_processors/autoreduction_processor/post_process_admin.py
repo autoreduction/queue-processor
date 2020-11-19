@@ -158,8 +158,7 @@ class PostProcessAdmin:
             reduction_script = ReductionScript(self.instrument)
             reduction_dir = ReductionDirectory(self.instrument, self.proposal, self.run_number)
             temp_dir = TemporaryReductionDirectory(self.proposal, self.run_number)
-            reduction_log_stream = \
-                reduce(reduction_dir, temp_dir, datafile, reduction_script, self.run_number)
+            reduction_log_stream = reduce(reduction_dir, temp_dir, datafile, reduction_script)
             self.message.reduction_data = [str(reduction_dir.path)]
 
         except DatafileError as exp:

@@ -153,7 +153,7 @@ class ReductionScript:
 
 # pylint:disable=too-many-arguments; We will remove the log_Stream once we look at logging in ppa
 # more closely
-def reduce(reduction_dir, temp_dir, datafile, script, run_number):
+def reduce(reduction_dir, temp_dir, datafile, script):
     """
     Performs a reduction on the given datafile using the given script, outputting to the given
     output directory
