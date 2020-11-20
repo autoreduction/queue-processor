@@ -120,6 +120,7 @@ class TestTimeFilterFiles(unittest.TestCase):
             with open(file_path, 'w+') as new_file:
                 new_file.write("test_file")
         actual = filter_files_by_time(self.test_output_directory, cut_off)
+        # We use a counter as we cannot guarantee the order of the return from os.listdir
         self.assertEqual(Counter(actual), Counter(new_file_paths))
 
     def test_filter_files_by_time_with_timestamp(self):
