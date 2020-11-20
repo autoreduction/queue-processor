@@ -2,9 +2,7 @@ name: 'Build Autoreduction in a test enviroment'
 description: 'Intial steps to build Autoreduction in a test enviroment'
 runs:
   using: "composite"
-  steps: 
-    - uses: actions/checkout@v2
-      
+  steps:       
     - name: Verify MySQL connection from host
       run: |
         sudo apt-get install -y mysql-client
