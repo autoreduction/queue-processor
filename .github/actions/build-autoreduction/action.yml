@@ -7,9 +7,11 @@ runs:
       run: |
         sudo apt-get install -y mysql-client
         mysql --host 127.0.0.1 --port 3306 -u root -e "SHOW DATABASES"
+      shell: bash
 
     - name: Set up database
       run: mysql --host 127.0.0.1 --port 3306 -u root < build/database/reset_autoreduction_db.sql
+      shell: bash
 
     - name: Set up Python 3.7
       uses: actions/setup-python@v2
@@ -20,16 +22,19 @@ runs:
       run: |
         python -m pip install --upgrade pip
         pip3 install -e .
+      shell: bash
 
     - name: Install test suite dependencies
       run: pip3 install -r requirements.txt
+      shell: bash
 
     - name: Setup test environment
       run: |
-       python3 setup.py test_settings
-       # Externals must be after test_settings
-       python3 setup.py externals -s activemq
-       python3 setup.py database
-       cat build.log
-       _LOCAL_PYTHON_PATH=$(which python3)
-       sudo $_LOCAL_PYTHON_PATH setup.py start
+        python3 setup.py test_settings
+        # Externals must be after test_settings
+        python3 setup.py externals -s activemq
+        python3 setup.py database
+        cat build.log
+        _LOCAL_PYTHON_PATH=$(which python3)
+        sudo $_LOCAL_PYTHON_PATH setup.py start
+      shell: bash
