@@ -9,20 +9,14 @@ Tests for post process admin and helper functionality
 """
 
 import json
-import os
-import shutil
 import sys
 import unittest
-from pathlib import Path
-from tempfile import mkdtemp, NamedTemporaryFile
 
-from mock import patch, call, Mock, mock_open
+from mock import patch, call, Mock
 
 from model.message.message import Message
 from queue_processors.autoreduction_processor.post_process_admin import (PostProcessAdmin, main)
-from queue_processors.autoreduction_processor.settings import MISC
 from utils.clients.settings.client_settings_factory import ActiveMQSettings
-from utils.project.structure import get_project_root
 from utils.settings import ACTIVEMQ_SETTINGS
 
 
@@ -40,48 +34,9 @@ class TestPostProcessAdmin(unittest.TestCase):
                      'run_number': '4321',
                      'reduction_script': 'print(\'hello\')',
                      'reduction_arguments': 'None'}
-        self.test_fname = "111.txt"
-        self.test_root = os.path.join("instrument", "GEM", "RBNumber",
-                                      "RB2010163", "autoreduced", "111")
-        self.test_paths = [os.path.join(self.test_root, "0"),
-                           os.path.join(self.test_root, "1"),
-                           os.path.join(self.test_root, "2")]
+
         self.message = Message()
         self.message.populate(self.data)
-        self.ceph_directory = MISC['ceph_directory'] % (self.data["instrument"],
-                                                        self.data["rb_number"],
-                                                        self.data["run_number"])
-        self.temporary_directory = MISC['temp_root_directory']
-        self.log_and_err_name = f"RB{self.data['rb_number']}Run{self.data['run_number']}"
-        self.reduce_result_dir = self.temporary_directory + self.ceph_directory
-
-
-    def tearDown(self):
-        """Teardown of test directory structure"""
-        self.teardown_test_dir_structure()
-
-    def teardown_test_dir_structure(self):
-        """
-        Removes test directory structure (if one exists) from the root
-        """
-        abs_test_root = os.path.join(os.getcwd(), self.test_root)
-        if os.path.isdir(abs_test_root):
-            shutil.rmtree(self.test_root)
-
-    def setup_test_dir_structure(self, test_dirs):
-        """
-        Sets up a directory structure within the test environment.
-        Writes a file within each each directory given
-        :param test_dirs: The directories to create
-        """
-        for directory in test_dirs:
-            abs_dir = os.path.join(os.getcwd(), directory)
-            if not os.path.isdir(abs_dir):
-                os.makedirs(abs_dir)
-
-            abs_path = os.path.join(abs_dir, self.test_fname)
-            with open(abs_path, 'w') as file:
-                file.write("test file")
 
     def test_init(self):
         """
@@ -91,9 +46,7 @@ class TestPostProcessAdmin(unittest.TestCase):
         ppa = PostProcessAdmin(self.message, None)
         self.assertEqual(ppa.message, self.message)
         self.assertEqual(ppa.client, None)
-        self.assertIsNotNone(ppa.reduction_log_stream)
         self.assertIsNotNone(ppa.admin_log_stream)
-
         self.assertEqual(ppa.data_file, '/isis/data.nxs')
         self.assertEqual(ppa.facility, 'ISIS')
         self.assertEqual(ppa.instrument, 'GEM')
@@ -105,57 +58,6 @@ class TestPostProcessAdmin(unittest.TestCase):
     def test_replace_variables(self):
         """Test replacement of variables"""
         print("Should be Unit tested")
-
-    def test_load_reduction_script(self):
-        """
-        Test: reduction script location is correct
-        When: reduction script loaded for a given instrument
-        """
-        ppa = PostProcessAdmin(self.message, None)
-        file_path = ppa._load_reduction_script('WISH')
-        self.assertEqual(file_path, os.path.join(MISC['scripts_directory'] % 'WISH',
-                                                 'reduce.py'))
-
-    def test_specify_instrument_directories_invalid(self):
-        """
-        Test: Error is returned
-        When: called with invalid directory format
-        """
-        ppa = PostProcessAdmin(self.message, None)
-
-        ceph_directory = MISC["ceph_directory"] % (ppa.instrument,
-                                                   ppa.proposal,
-                                                   'invalid')
-
-        actual = ppa.specify_instrument_directories(
-            instrument_output_directory=ceph_directory,
-            no_run_number_directory=True,
-            temporary_directory=MISC["temp_root_directory"])
-
-        self.assertIsInstance(actual, ValueError)
-
-    def test_specify_instrument_directories(self):
-        """
-        Test: Expected instrument, stripped of run number if excitation returned
-        When: called
-        """
-        ppa = PostProcessAdmin(self.message, None)
-
-        ceph_directory = MISC['ceph_directory'] % (ppa.instrument,
-                                                   ppa.proposal,
-                                                   ppa.run_number)
-        temporary_directory = MISC['temp_root_directory']
-
-        actual = ppa.specify_instrument_directories(
-            instrument_output_directory=ceph_directory,
-            no_run_number_directory=True,
-            temporary_directory=temporary_directory)
-
-        actual_directory_list = [i for i in actual.split('/') if i]
-        expected_directory_list = [i for i in ceph_directory.split('/') if i]
-
-        self.assertEqual(expected_directory_list[-5:], actual_directory_list[-5:])
-        self.assertEqual(temporary_directory, f"/{actual_directory_list[0]}")
 
     @patch(DIR + '.autoreduction_logging_setup.logger.info')
     @patch(DIR + '.autoreduction_logging_setup.logger.debug')
@@ -254,482 +156,6 @@ class TestPostProcessAdmin(unittest.TestCase):
 
         self.assertEqual(mock_log.call_count, 2)
 
-    def test_reduction_script_location(self):
-        """
-        Test: Assert reduction location is correct
-        When: called for a given instrument
-        """
-        location = PostProcessAdmin._reduction_script_location('WISH')
-        self.assertEqual(location, MISC['scripts_directory'] % 'WISH')
-
-    @patch(f"{DIR}.post_process_admin.PostProcessAdmin.specify_instrument_directories")
-    def test_create_log_path(self, mock_instrument_output_dir):
-        """
-        Test: create_log_path returns a directory path following a specified format
-        When: called
-        """
-        ppa = PostProcessAdmin(self.message, None)
-
-        file_name = "test.log"
-        log_directory = f"{mock_instrument_output_dir}/reduction_log/"
-        log_and_error_name = f"RB_{ppa.proposal}_Run_{ppa.run_number}_"
-
-        actual = ppa.create_log_path(file_name_with_extension=file_name,
-                                     log_directory=log_directory)
-        expected = Path(f"{log_directory}{log_and_error_name}{file_name}")
-
-        self.assertEqual(expected, actual)
-
-    @patch('logging.Logger.info')
-    @patch('os.access')
-    def test_verify_directory_access(self, mock_os_access, mock_logging):
-        """
-        Test: True is returned if there is no problem with directory path and logged as successful
-        When: Called with valid path with write access
-        """
-        ppa = PostProcessAdmin(self.message, None)
-
-        location = "directory/path/"
-        mock_os_access.return_value = True
-
-        actual = ppa.verify_directory_access(location, "W")
-        expected_logs_called_with = [call("Successful %s access to %s", "write", location)]
-
-        self.assertTrue(actual)
-        self.assertEqual(expected_logs_called_with, mock_logging.call_args_list)
-
-    @patch('os.access')
-    def test_verify_directory_access_invalid(self, mock_os_access):
-        """
-        Test: OSError is raised if there is a problem with directory path access
-        When: Called with valid path
-        """
-        ppa = PostProcessAdmin(self.message, None)
-
-        location = "directory/path/"
-        mock_os_access.return_value = False
-
-        with self.assertRaises(Exception):
-            ppa.verify_directory_access(location, 'W')
-
-    @patch(f"{DIR}.post_process_admin.PostProcessAdmin.verify_directory_access")
-    def test_write_and_readability_checks(self, mock_vda):
-        """
-        Test: True is returned if there is no problem with directory path and logged as successful
-        When: Called with valid path and access type
-        """
-        ppa = PostProcessAdmin(self.message, None)
-        write_list = ["directory/path/"]
-        mock_vda.return_type = True
-
-        actual_write = ppa.write_and_readability_checks(write_list, 'W')
-
-        self.assertTrue(actual_write)
-
-    @patch(f"{DIR}.post_process_admin.PostProcessAdmin.verify_directory_access")
-    def test_write_and_readability_checks_invalid_path(self, mock_vda):
-        """
-        Test: Exception is raised
-        When: Called with invalid path/incorrect path access
-        """
-        ppa = PostProcessAdmin(self.message, None)
-        write_list = ["directory/path/"]
-
-        mock_vda.return_value = False
-
-        with self.assertRaises(OSError):
-            ppa.write_and_readability_checks(write_list, 'W')
-
-    def test_write_and_readability_checks_invalid_input(self):
-        """
-        Test: ValueError returned
-        When: Called with invalid read_write argument
-        """
-        ppa = PostProcessAdmin(self.message, None)
-        write_list = ["directory/path/"]
-
-        with self.assertRaises(KeyError):
-            ppa.write_and_readability_checks(write_list, 'INVALID_KEY')
-
-    @patch('os.access')
-    @patch('os.path.isdir')
-    @patch(DIR + '.post_process_admin.PostProcessAdmin.write_and_readability_checks')
-    def test_create_directory(self, mock_wrc, mock_dir, mock_os_access):
-        """
-        Test: None returned
-        When: Path checks pass
-        """
-        mock_wrc.return_value = True
-        mock_dir.return_value = True
-        mock_os_access.return_value = False
-        ppa = PostProcessAdmin(self.message, None)
-
-        self.assertFalse(ppa.create_directory(
-            list_of_paths=['should/be/writeable']))
-
-    @patch('logging.Logger.info')
-    @patch(f'{DIR}.post_process_admin.PostProcessAdmin._append_run_version')
-    def test_create_final_result_and_log_directory_non_flat_output(self, mock_append, mock_logging):
-        """
-        Test: final result and log directories are returned
-        When: called with temp root directory, result and log locations
-        """
-        self.message.instrument = "LARMOR"
-        ppa = PostProcessAdmin(self.message, None)
-        instrument_output_directory = MISC["ceph_directory"] % (ppa.instrument,
-                                                          ppa.proposal,
-                                                          ppa.run_number)
-        reduce_directory = MISC["temp_root_directory"] + instrument_output_directory
-        reduction_log = "/reduction_log/"
-        mock_append.return_value = instrument_output_directory + "/run-version-0/"
-        actual_final_result, actual_log = ppa.create_final_result_and_log_directory(
-            temporary_root_directory=MISC["temp_root_directory"],
-            reduce_dir=reduce_directory)
-
-        expected_log = f"{instrument_output_directory}/run-version-0{reduction_log}"
-        expected_logs_called_with = [call("Final Result Directory = %s", actual_final_result),
-                                     call("Final log directory: %s", actual_log)]
-
-        mock_append.assert_called_once_with(instrument_output_directory)
-        self.assertEqual(mock_logging.call_count, 2)
-        self.assertEqual(mock_logging.call_args_list, expected_logs_called_with)
-        self.assertEqual(expected_log, actual_log)
-
-    def test_result_and_log_directory_incorrect(self):
-        """
-        Test: Value error is raised when
-        When: Result_and_log_directory called with invalid path format
-        """
-        ppa = PostProcessAdmin(self.message, None)
-        instrument_output_dir = MISC["ceph_directory"] % (ppa.instrument,
-                                                          ppa.proposal,
-                                                          ppa.run_number)
-        incorrect_temporary_directory = "incorrect_directory_format"
-        instrument_output_directory = instrument_output_dir[:instrument_output_dir.rfind('/') + 1]
-        reduce_directory = MISC["temp_root_directory"] + instrument_output_directory
-        actual_final_result = ppa.create_final_result_and_log_directory(
-            temporary_root_directory=incorrect_temporary_directory,
-            reduce_dir=reduce_directory)
-
-        self.assertIsInstance(actual_final_result, ValueError)
-
-    def test_check_for_skipped_runs(self):
-        """
-        This method will be left untested for the moment due to the complexity of mocking
-        importlib.util usage effectively and current time constraints on the overall refactoring of
-        reduce().
-        This should be tested correctly later as it would be a very useful, and crucial test to
-        have!
-        See here:
-        Test:
-        When:
-        """
-        print("TODO: COMPLETE THIS TEST METHOD WHEN POSSIBLE AS CURRENTLY UNTESTED")
-
-    @patch(f"{DIR}.post_process_admin.PostProcessAdmin.check_for_skipped_runs")
-    def test_reduction_as_module(self, _):
-        """
-        This method will be left untested for the moment due to the complexity of mocking
-        importlib.util usage effectively and current time constraints on the overall refactoring of
-        reduce().
-        This should be tested correctly later as it would be a very useful, and crucial test to
-        have!
-        See here:
-        Test:
-        When:
-        """
-        print("TODO: COMPLETE THIS TEST METHOD WHEN POSSIBLE AS CURRENTLY UNTESTED")
-
-    @patch("builtins.open", mock_open(read_data="data"))
-    @patch(f"{DIR}.post_process_admin.PostProcessAdmin.delete_temp_directory")
-    @patch(f"{DIR}.post_process_admin.PostProcessAdmin.copy_temp_directory")
-    @patch(f"{DIR}.post_process_admin.PostProcessAdmin.reduction_as_module")
-    @patch(f"{DIR}.post_process_admin.PostProcessAdmin.specify_instrument_directories")
-    def test_validate_reduction_as_module_exp(self, mock_sid, mock_ram, mock_ctd, mock_dtd, *_):
-        """
-        Test: Exception is called and temporary dir path handling takes place
-        When: Reduction fails to load as module
-        """
-        mock_ram.side_effect = Exception('warning')
-        log_dir = mock_sid + "/reduction_log"
-        error_str = f"Error in user reduction script: {type(Exception('warning')).__name__} - " \
-                    f"{Exception('warning')}"
-
-        ppa = PostProcessAdmin(self.message, None)
-
-        script_out = os.path.join(log_dir, f"{self.log_and_err_name}Script.out")
-        mantid_log = os.path.join(log_dir, f"{self.log_and_err_name}Mantid.log")
-
-        instrument_output_directory = self.ceph_directory[:self.ceph_directory.rfind('/') + 1]
-
-        final_result_dir = instrument_output_directory+"0/"
-
-        actual = ppa.validate_reduction_as_module(script_out=script_out,
-                                                  mantid_log=mantid_log,
-                                                  reduce_result=self.reduce_result_dir,
-                                                  final_result=final_result_dir)
-
-        self.assertEqual(open(script_out).read(), "data")
-
-        mock_ram.assert_called_with(self.reduce_result_dir)
-        mock_ctd.assert_called()
-        mock_dtd.assert_called()
-        self.assertEqual(str(Exception(error_str)), str(actual))
-
-    @patch("builtins.open")
-    @patch(f"{DIR}.post_process_admin.PostProcessAdmin.delete_temp_directory")
-    @patch(f"{DIR}.post_process_admin.PostProcessAdmin.copy_temp_directory")
-    @patch(f"{DIR}.post_process_admin.PostProcessAdmin.reduction_as_module")
-    @patch(f"{DIR}.post_process_admin.PostProcessAdmin.specify_instrument_directories")
-    def test_validate_reduction_as_module(self, mock_sid, mock_ram, mock_ctd, mock_dtd, _):
-        """
-        Test: reduce_result returned
-        When: Called with correct arguments and no error produced by reduction_as_module()
-        """
-        ppa = PostProcessAdmin(self.message, None)
-
-        mock_ram.return_value = True
-
-        log_dir = mock_sid + "/reduction_log"
-
-        script_out = os.path.join(log_dir, f"{self.log_and_err_name}Script.out")
-        mantid_log = os.path.join(log_dir, f"{self.log_and_err_name}Mantid.log")
-
-        instrument_output_directory = self.ceph_directory[:self.ceph_directory.rfind('/') + 1]
-        final_result_dir = instrument_output_directory + "0/"
-
-        actual = ppa.validate_reduction_as_module(script_out=script_out,
-                                                  mantid_log=mantid_log,
-                                                  reduce_result=self.reduce_result_dir,
-                                                  final_result=final_result_dir)
-
-        mock_ram.assert_called_with(self.reduce_result_dir)
-        self.assertEqual(mock_ctd.call_count, 0)
-        self.assertEqual(mock_dtd.call_count, 0)
-        self.assertEqual(True, actual)
-
-    @patch(DIR + '.post_process_admin.PostProcessAdmin.reduction_as_module')
-    @patch(DIR + '.post_process_admin.PostProcessAdmin._remove_directory')
-    @patch(DIR + '.post_process_admin.PostProcessAdmin._copy_tree')
-    @patch(DIR + '.autoreduction_logging_setup.logger.info')
-    def test_copy_temp_dir(self, mock_logger, mock_copy, mock_remove, _):
-        """
-        Test: Assert directory is copied correctly
-        When: Called with valid arguments
-        """
-        result_dir = mkdtemp()
-        copy_dir = mkdtemp()
-        ppa = PostProcessAdmin(self.message, None)
-        ppa.instrument = 'POLARIS'
-        ppa.message.reduction_data = ['']
-        ppa.copy_temp_directory(result_dir, copy_dir)
-        mock_remove.assert_called_once_with(copy_dir)
-        mock_logger.assert_called_with("Moving %s to %s", result_dir, copy_dir)
-        mock_copy.assert_called_once_with(result_dir, copy_dir)
-        shutil.rmtree(result_dir)
-        shutil.rmtree(copy_dir)
-
-    @patch(DIR + '.post_process_admin.PostProcessAdmin._copy_tree')
-    @patch(DIR + '.autoreduction_logging_setup.logger.info')
-    def test_copy_temp_dir_with_excitation(self, _, mock_copy):
-        """
-        Test: Excitation instrument temporary directories are handled correctly
-        When: When called for an excitation instrument
-        """
-        result_dir = mkdtemp()
-        ppa = PostProcessAdmin(self.message, None)
-        ppa.instrument = 'WISH'
-        ppa.message.reduction_data = ['']
-        ppa.copy_temp_directory(result_dir, 'copy-dir')
-        mock_copy.assert_called_once_with(result_dir, 'copy-dir')
-        shutil.rmtree(result_dir)
-
-    @patch(DIR + '.post_process_admin.PostProcessAdmin._copy_tree')
-    @patch(DIR + '.post_process_admin.PostProcessAdmin.log_and_message')
-    @patch(DIR + '.autoreduction_logging_setup.logger.info')
-    def test_copy_temp_dir_with_error(self, _, mock_log_and_msg, mock_copy):
-        """
-        Test: Errors are handled correctly
-        When: Runtime error raised
-        """
-        # pylint:disable=unused-argument
-        def raise_runtime(arg1, arg2):  # pragma : no cover
-            """Raise Runtime Error"""
-            raise RuntimeError('test')
-        mock_copy.side_effect = raise_runtime
-        result_dir = mkdtemp()
-        ppa = PostProcessAdmin(self.message, None)
-        ppa.instrument = 'WISH'
-        ppa.message.reduction_data = ['']
-        ppa.copy_temp_directory(result_dir, 'copy-dir')
-        mock_log_and_msg.assert_called_once_with("Unable to copy to %s - %s" % ('copy-dir',
-                                                                                'test'))
-        shutil.rmtree(result_dir)
-
-    @patch(f"{DIR}.post_process_admin.PostProcessAdmin.copy_temp_directory")
-    def test_additional_save_directories_check_string(self, mock_ctd):
-        """
-        Test: Correctly copies temp directory
-        When: Called with valid path as string
-        """
-        out_directories = "valid/path"
-        reduce_result_dir = self.temporary_directory + self.ceph_directory
-        ppa = PostProcessAdmin(self.message, None)
-        ppa.additional_save_directories_check(out_directories, reduce_result_dir)
-        mock_ctd.assert_called_with(reduce_result_dir, out_directories)
-
-    @patch(f"{DIR}.post_process_admin.PostProcessAdmin.copy_temp_directory")
-    def test_additional_save_directories_check_list(self, mock_ctd):
-        """
-        Test: Correctly copies N temp directories
-        When: Called with valid list of paths
-        """
-        # mock_ctd.return_value =
-        out_directories = ["valid/path/", "valid/path/"]
-        reduce_result_dir = self.temporary_directory + self.ceph_directory
-        ppa = PostProcessAdmin(self.message, None)
-        ppa.additional_save_directories_check(out_directories, reduce_result_dir)
-        for path in out_directories:
-            mock_ctd.assert_called_with(reduce_result_dir, path)
-        self.assertEqual(mock_ctd.call_count, 2)
-
-    @patch(DIR + '.autoreduction_logging_setup.logger.info')
-    @patch(f"{DIR}.post_process_admin.PostProcessAdmin.copy_temp_directory")
-    def test_additional_save_directories_check_invalid_list(self, mock_ctd, mock_logger):
-        """
-        Test: Logs invalid list input
-        When: List containing non strings is passed
-        """
-        out_directories = ["valid/path/", 404, "valid/path/"]
-        reduce_result_dir = self.temporary_directory + self.ceph_directory
-        ppa = PostProcessAdmin(self.message, None)
-        ppa.additional_save_directories_check(out_directories, reduce_result_dir)
-        mock_ctd.assert_called_with(reduce_result_dir, out_directories[0])
-        mock_ctd.assert_called_with(reduce_result_dir, out_directories[2])
-        self.assertEqual(mock_ctd.call_count, 2)
-        mock_logger.assert_called_once_with("Optional output directories of reduce.py must be "
-                                            f"strings: {out_directories[1]}")
-
-    @patch(DIR + '.autoreduction_logging_setup.logger.info')
-    @patch(f"{DIR}.post_process_admin.PostProcessAdmin.copy_temp_directory")
-    def test_additional_save_directories_check_invalid_argument(self, mock_ctd, mock_logger):
-        """
-        Test: Logs invalid argument
-        When: Called with invalid argument type
-        """
-        out_directories = {404}
-        reduce_result_dir = self.temporary_directory + self.ceph_directory
-        ppa = PostProcessAdmin(self.message, None)
-        ppa.additional_save_directories_check(out_directories, reduce_result_dir)
-        self.assertEqual(mock_ctd.call_count, 0)
-        mock_logger.assert_called_once_with("Optional output directories of reduce.py must "
-                                            f"be a string or list of stings: {out_directories}")
-
-    @patch('shutil.rmtree')
-    @patch(DIR + '.autoreduction_logging_setup.logger.info')
-    def test_delete_temp_dir_valid(self, mock_logger, mock_remove_dir):
-        """
-        Test: Assert deletion of temporary directory
-        When: Called with valid arguments
-        """
-        temp_dir = mkdtemp()
-        PostProcessAdmin.delete_temp_directory(temp_dir)
-        rm_args = {'ignore_errors': True}
-        mock_remove_dir.assert_called_once_with(temp_dir, **rm_args)
-        mock_logger.assert_called_once_with('Remove temp dir %s', temp_dir)
-        shutil.rmtree(temp_dir)
-
-    @patch('shutil.rmtree')
-    @patch(DIR + '.autoreduction_logging_setup.logger.info')
-    def test_delete_temp_dir_invalid(self, mock_logger, mock_remove_dir):
-        """
-        Test: Assert the inability to delete a record
-        When: Runtime error raised
-        """
-        def raise_runtime():  # pragma: no cover
-            """Raise Runtime Error"""
-            raise RuntimeError('test')
-        mock_remove_dir.side_effect = raise_runtime
-        PostProcessAdmin.delete_temp_directory('not-a-file-path.test')
-        mock_logger.assert_has_calls([call('Remove temp dir %s', 'not-a-file-path.test'),
-                                      call('Unable to remove temporary directory - %s',
-                                           'not-a-file-path.test')])
-
-    @patch(DIR + '.autoreduction_logging_setup.logger.info')
-    def test_empty_log_and_message(self, mock_logger):
-        """
-        Test: Log and message are correctly cleared repopulated with method argument
-        When: Called and message.message = ''
-        """
-        ppa = PostProcessAdmin(self.message, None)
-        ppa.message.message = ''
-        ppa.log_and_message('test')
-        self.assertEqual(ppa.message.message, 'test')
-        mock_logger.assert_called_with('test')
-
-    @patch(DIR + '.autoreduction_logging_setup.logger.info')
-    def test_load_and_message_with_preexisting_message(self, mock_logger):
-        """
-        Test: Assert existing message persists and new message logged.
-        When: called with new message
-        """
-        ppa = PostProcessAdmin(self.message, None)
-        ppa.message.message = 'Old message'
-        ppa.log_and_message('New message')
-        self.assertEqual(ppa.message.message, 'Old message')
-        mock_logger.assert_called_with('New message')
-
-    def test_remove_with_wait_folder(self):
-        """
-        Test: Directory removed
-        When: Called
-        """
-        directory_to_remove = mkdtemp()
-        self.assertTrue(os.path.exists(directory_to_remove))
-        ppa = PostProcessAdmin(self.message, None)
-        ppa._remove_with_wait(True, directory_to_remove)
-        self.assertFalse(os.path.exists(directory_to_remove))
-
-    def test_remove_with_wait_file(self):
-        """
-         Test: File removed
-         When: Called
-         """
-        file_to_remove = NamedTemporaryFile(delete=False).name
-        self.assertTrue(os.path.exists(str(file_to_remove)))
-        ppa = PostProcessAdmin(self.message, None)
-        ppa._remove_with_wait(False, file_to_remove)
-        self.assertFalse(os.path.exists(file_to_remove))
-
-    def test_copy_tree_folder(self):
-        """
-        Test: Expected directory structure found
-        When: Called for a given file
-        """
-        directory_to_copy = mkdtemp(prefix='test-dir')
-        with open(os.path.join(directory_to_copy, 'test-file.txt'), 'w+') as test_file:
-            test_file.write('test content')
-        ppa = PostProcessAdmin(self.message, None)
-        ppa._copy_tree(directory_to_copy, os.path.join(get_project_root(), 'test-dir'))
-        self.assertTrue(os.path.exists(os.path.join(get_project_root(), 'test-dir')))
-        self.assertTrue(os.path.isdir(os.path.join(get_project_root(), 'test-dir')))
-        self.assertTrue(os.path.exists(os.path.join(get_project_root(), 'test-dir',
-                                                    'test-file.txt')))
-        self.assertTrue(os.path.isfile(os.path.join(get_project_root(), 'test-dir',
-                                                    'test-file.txt')))
-        shutil.rmtree(os.path.join(get_project_root(), 'test-dir'))
-
-    def test_remove_directory(self):
-        """
-        Test: Directory removed
-        When: Called
-        """
-        directory_to_remove = mkdtemp()
-        self.assertTrue(os.path.exists(directory_to_remove))
-        ppa = PostProcessAdmin(self.message, None)
-        ppa._remove_directory(directory_to_remove)
-        self.assertFalse(os.path.exists(directory_to_remove))
-
     @patch(DIR + '.post_process_admin_utilities.windows_to_linux_path', return_value='path')
     @patch(DIR + '.post_process_admin.PostProcessAdmin.reduce')
     @patch('utils.clients.queue_client.QueueClient.connect')
@@ -759,10 +185,12 @@ class TestPostProcessAdmin(unittest.TestCase):
         Test: The correct message is sent from the exception handlers in main
         When: A ValueError exception is raised from ppa.reduce
         """
+
         def raise_value_error(arg1, _):
             """Raise Value Error"""
             self.assertEqual(arg1, self.message)
             raise ValueError('error-message')
+
         mock_ppa_init.side_effect = raise_value_error
         sys.argv = ['', '/queue/ReductionPending', json.dumps(self.data)]
         main()
@@ -787,10 +215,12 @@ class TestPostProcessAdmin(unittest.TestCase):
         Test: The correct message is sent from the exception handlers in main
         When: A bare Exception is raised from ppa.reduce
         """
+
         def raise_exception(arg1, _):
             """Raise Exception"""
             self.assertEqual(arg1, self.message)
             raise Exception('error-message')
+
         mock_ppa_init.side_effect = raise_exception
         sys.argv = ['', '/queue/ReductionPending', json.dumps(self.data)]
         main()
@@ -800,41 +230,6 @@ class TestPostProcessAdmin(unittest.TestCase):
         mock_exit.assert_called_once()
         mock_send.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_error,
                                           self.message)
-
-    @patch('glob.glob')
-    def test_append_run_version_overwrite_true(self, mock_glob):
-        """
-        Test: version 0 is appended
-        When: overwrite is true
-        """
-        self.message.overwrite = True
-        ppa = PostProcessAdmin(self.message, None)
-        test_path = '/some/test/path/'
-        expected = '/some/test/path/run-version-0/'
-        self.assertEqual(expected, ppa._append_run_version(test_path))
-        mock_glob.assert_not_called()
-
-    @patch('glob.glob', return_value = ['run-version-1', 'run-version-2'])
-    def test_append_run_version_no_overwrite(self, _):
-        """
-        Test: Next run version is appended
-        When: Overwrite is false and runs exist
-        """
-        ppa = PostProcessAdmin(self.message, None)
-        test_path = '/some/test/path'
-        expected = '/some/test/path/run-version-3/'
-        self.assertEqual(expected, ppa._append_run_version(test_path))
-
-    @patch('glob.glob', return_value = [])
-    def test_append_run_version_none_existing(self, _):
-        """
-        Test: run version 0 is appended
-        When: overwrite is false and no runs exist
-        """
-        ppa = PostProcessAdmin(self.message, None)
-        test_path = '/some/test/path'
-        expected = '/some/test/path/run-version-0/'
-        self.assertEqual(expected, ppa._append_run_version(test_path))
 
     @patch(DIR + '.post_process_admin.PostProcessAdmin.__init__', return_value=None)
     def test_validate_input_success(self, _):
