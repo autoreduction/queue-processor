@@ -46,7 +46,7 @@ class ManualRemove:
         self.to_delete[run_number] = list(result)
         return result
 
-    def process_results(self):
+    def process_results(self, delete_all_versions: bool):
         """
         Process all the results what to do with the run based on the result of database query
         """
@@ -56,7 +56,7 @@ class ManualRemove:
                 self.run_not_found(run_number=key)
             if len(value) == 1:
                 continue
-            if len(value) > 1:
+            if len(value) > 1 and not delete_all_versions:
                 self.multiple_versions_found(run_number=key)
 
     def run_not_found(self, run_number):
@@ -139,7 +139,7 @@ class ManualRemove:
         return True, processed_input
 
 
-def remove(instrument, run_number):
+def remove(instrument, run_number, delete_all_versions:bool):
     """
     Run the remove script for an instrument and run_number
     :param instrument: (str) Instrument to run on
@@ -147,7 +147,7 @@ def remove(instrument, run_number):
     """
     manual_remove = ManualRemove(instrument)
     manual_remove.find_run_versions_in_database(run_number)
-    manual_remove.process_results()
+    manual_remove.process_results(delete_all_versions)
     manual_remove.delete_records()
 
 
@@ -171,12 +171,13 @@ def user_input_check(instrument, run_numbers):
     return user_input
 
 
-def main(instrument: str, first_run: int, last_run: int = None):
+def main(instrument: str, first_run: int, last_run: int = None, delete_all_versions=False):
     """
     Parse user input and run the script to remove runs for a given instrument
     :param instrument: (str) Instrument to run on
     :param first_run: (int) First run to be removed
     :param last_run: (int) Optional last run to be removed
+    :param delete_all_versions: (bool) Deletes all versions for a run without asking
     """
     run_numbers = get_run_range(first_run, last_run=last_run)
 
@@ -188,7 +189,7 @@ def main(instrument: str, first_run: int, last_run: int = None):
             sys.exit()
 
     for run in run_numbers:
-        remove(instrument, run)
+        remove(instrument, run, delete_all_versions)
 
 
 if __name__ == "__main__":  # pragma: no cover
