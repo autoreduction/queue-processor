@@ -102,62 +102,8 @@ class ManualRemove:
         to_delete_copy = self.to_delete.copy()
         for run_number, job_list in to_delete_copy.items():
             for version in job_list:
-                # Delete the specified version
                 print(f'Deleting {self.instrument}{run_number} - v{version.run_version}')
-                self.delete_reduction_location(version.id)
-                self.delete_data_location(version.id)
-                self.delete_variables(version.id)
-                self.delete_reduction_run(version.id)
-
-            # Remove deleted run from dictionary
-            del self.to_delete[run_number]
-
-    def delete_reduction_location(self, reduction_run_id):
-        """
-        Delete a ReductionLocation record from the database
-        :param reduction_run_id: (int) The id of the associated reduction job
-        """
-        self.database.data_model.ReductionLocation.objects \
-            .filter(reduction_run_id=reduction_run_id) \
-            .delete()
-
-    def delete_data_location(self, reduction_run_id):
-        """
-        Delete a DataLocation record from the database
-        :param reduction_run_id: (int) The id of the associated reduction job
-        """
-        self.database.data_model.DataLocation.objects \
-            .filter(reduction_run_id=reduction_run_id) \
-            .delete()
-
-    def delete_variables(self, reduction_run_id):
-        """
-        Removes all the RunVariable records associated with a given ReductionRun from the database
-        :param reduction_run_id: (int) The id of the associated reduction job
-        """
-        run_variables = self.find_variables_of_reduction(reduction_run_id)
-        for record in run_variables:
-            self.database.variable_model.RunVariable.objects \
-                .filter(variable_ptr_id=record.variable_ptr_id) \
-                .delete()
-
-    def find_variables_of_reduction(self, reduction_run_id):
-        """
-        Find all the RunVariable records in the database associated with a reduction job
-        :param reduction_run_id: (int) The id of the reduction job to filter by
-        :return: (QuerySet) of the associated RunVariables
-        """
-        return self.database.variable_model.RunVariable.objects \
-            .filter(reduction_run_id=reduction_run_id)
-
-    def delete_reduction_run(self, reduction_run_id):
-        """
-        Delete a ReductionRun record from the database
-        :param reduction_run_id: (int) The id of the associated reduction job
-        """
-        self.database.data_model.ReductionRun.objects \
-            .filter(id=reduction_run_id) \
-            .delete()
+                version.delete()
 
     @staticmethod
     def validate_csv_input(user_input):
