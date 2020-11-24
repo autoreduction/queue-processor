@@ -335,13 +335,13 @@ def instrument_summary(request, instrument=None):
         sort_by = request.GET.get('sort', 'run')
         if sort_by == 'run':
             runs = (ReductionRun.objects
-                    .only('status', 'last_updated', 'run_number', 'run_version')
+                    .only('status', 'last_updated', 'run_number', 'run_version', 'run_name')
                     .select_related('status')
                     .filter(instrument=instrument_obj)
                     .order_by('-run_number', 'run_version'))
         else:
             runs = (ReductionRun.objects
-                    .only('status', 'last_updated', 'run_number', 'run_version')
+                    .only('status', 'last_updated', 'run_number', 'run_version', 'run_name')
                     .select_related('status')
                     .filter(instrument=instrument_obj)
                     .order_by('-last_updated'))
