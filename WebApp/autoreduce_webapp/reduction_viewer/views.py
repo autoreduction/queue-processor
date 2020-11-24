@@ -255,14 +255,17 @@ def run_summary(_, instrument_name=None, run_number=None, run_version=0):
     """
     # pylint:disable=broad-except
     try:
-        instrument = Instrument.objects.get(name=instrument_name)
-        run = ReductionRun.objects.get(instrument=instrument,
-                                       run_number=run_number,
-                                       run_version=run_version)
+        history = list(ReductionRun.objects
+                       .filter(instrument__name=instrument_name, run_number=run_number)
+                       .order_by('-run_version')
+                       .select_related('status')
+                       .select_related('experiment')
+                       .select_related('instrument'))
+        run = next(run for run in history if run.run_version == int(run_version))
+        started_by = started_by_id_to_name(run.started_by)
         # run status value of "s" means the run is skipped
         is_skipped = run.status.value == "s"
-        history = ReductionRun.objects.filter(run_number=run_number).order_by('-run_version')
-        started_by = started_by_id_to_name(run.started_by)
+        is_rerun = len(history) > 1
 
         location_list = run.reduction_location.all()
         reduction_location = None
@@ -271,14 +274,18 @@ def run_summary(_, instrument_name=None, run_number=None, run_version=0):
         if reduction_location and '\\' in reduction_location:
             reduction_location = reduction_location.replace('\\', '/')
 
-        rb_number = Experiment.objects.get(id=run.experiment_id).reference_number
+        rb_number = run.experiment.reference_number
         has_variables = bool(
             InstrumentVariablesUtils().get_default_variables(run.instrument.name)
-            or run.run_variables.all()) # We check default vars and run vars in case none exist
-                                        # for run but could exist for default
+            or run.run_variables.all())  # We check default vars and run vars in case none exist
+        # for run but could exist for default
 
         context_dictionary = {'run': run,
+                              'run_number': run_number,
+                              'instrument': instrument_name,
+                              'run_version': run_version,
                               'is_skipped': is_skipped,
+                              'is_rerun': is_rerun,
                               'history': history,
                               'reduction_location': reduction_location,
                               'started_by': started_by,
