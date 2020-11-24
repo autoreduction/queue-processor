@@ -73,7 +73,7 @@ class TestManualRemove(unittest.TestCase):
         Test: run_not_found is called
         When: No matching records are found in the database
         """
-        self.manual_remove.to_exclude_from_deletion['123'] = []
+        self.manual_remove.to_delete['123'] = []
         self.manual_remove.process_results()
         mock_not_found.assert_called_once()
 
@@ -84,7 +84,7 @@ class TestManualRemove(unittest.TestCase):
         Test: That the code falls through to multiple_version_found
         When If the results only contain single runs (not multiple versions)
         """
-        self.manual_remove.to_exclude_from_deletion['123'] = ['test']
+        self.manual_remove.to_delete['123'] = ['test']
         self.manual_remove.process_results()
         mock_multi.assert_not_called()
         mock_not_found.assert_not_called()
@@ -97,7 +97,7 @@ class TestManualRemove(unittest.TestCase):
 
         Note: for this test the content of results[key] list does not have to be Run objects
         """
-        self.manual_remove.to_exclude_from_deletion['123'] = ['test', 'test2']
+        self.manual_remove.to_delete['123'] = ['test', 'test2']
         self.manual_remove.process_results()
         mock_multi_version.assert_called_once()
 
@@ -106,9 +106,9 @@ class TestManualRemove(unittest.TestCase):
         Test: The correct corresponding key is deleted
         When: The value of the key is empty
         """
-        self.manual_remove.to_exclude_from_deletion['123'] = []
+        self.manual_remove.to_delete['123'] = []
         self.manual_remove.run_not_found('123')
-        self.assertEqual(0, len(self.manual_remove.to_exclude_from_deletion))
+        self.assertEqual(0, len(self.manual_remove.to_delete))
 
     @patch('scripts.manual_operations.manual_remove.ManualRemove.validate_csv_input')
     @patch.object(builtins, 'input')
@@ -117,15 +117,15 @@ class TestManualRemove(unittest.TestCase):
         Test: That the user is not asked more than once for input
         When: The input is valid
         """
-        self.manual_remove.to_exclude_from_deletion['123'] = [self.gem_object_1,
-                                                              self.gem_object_2]
-        self.assertEqual(2, len(self.manual_remove.to_exclude_from_deletion['123']))
+        self.manual_remove.to_delete['123'] = [self.gem_object_1,
+                                               self.gem_object_2]
+        self.assertEqual(2, len(self.manual_remove.to_delete['123']))
         mock_input.return_value = '2'
         mock_validate_csv.return_value = (True, ['2'])
         self.manual_remove.multiple_versions_found('123')
         # We said to delete version 2 so it should be the only entry for that run number
-        self.assertEqual(1, len(self.manual_remove.to_exclude_from_deletion['123']))
-        self.assertEqual('2', self.manual_remove.to_exclude_from_deletion['123'][0].run_version)
+        self.assertEqual(1, len(self.manual_remove.to_delete['123']))
+        self.assertEqual('2', self.manual_remove.to_delete['123'][0].run_version)
 
     @patch('scripts.manual_operations.manual_remove.ManualRemove.validate_csv_input')
     @patch.object(builtins, 'input')
@@ -134,9 +134,9 @@ class TestManualRemove(unittest.TestCase):
         Test: Input is re-validated
         When: the user initially gives incorrect input
         """
-        self.manual_remove.to_exclude_from_deletion['123'] = [self.gem_object_1,
-                                                              self.gem_object_2]
-        self.assertEqual(2, len(self.manual_remove.to_exclude_from_deletion['123']))
+        self.manual_remove.to_delete['123'] = [self.gem_object_1,
+                                               self.gem_object_2]
+        self.assertEqual(2, len(self.manual_remove.to_delete['123']))
         mock_input.side_effect = ['invalid', '2']
         mock_validate_csv.side_effect = [(False, []), (True, ['2'])]
         self.manual_remove.multiple_versions_found('123')
@@ -150,14 +150,14 @@ class TestManualRemove(unittest.TestCase):
         Test: The correct version is deleted
         When: The user asks to delete the second run version
         """
-        self.manual_remove.to_exclude_from_deletion['123'] = [self.gem_object_1,
-                                                              self.gem_object_2]
-        self.assertEqual(2, len(self.manual_remove.to_exclude_from_deletion['123']))
+        self.manual_remove.to_delete['123'] = [self.gem_object_1,
+                                               self.gem_object_2]
+        self.assertEqual(2, len(self.manual_remove.to_delete['123']))
         mock_input.return_value = '1,2'
         mock_validate_csv.return_value = (True, ['1', '2'])
         self.manual_remove.multiple_versions_found('123')
         # We said to delete version 2 so it should be the only entry for that run number
-        self.assertEqual(2, len(self.manual_remove.to_exclude_from_deletion['123']))
+        self.assertEqual(2, len(self.manual_remove.to_delete['123']))
 
     @patch('scripts.manual_operations.manual_remove.ManualRemove.validate_csv_input')
     @patch.object(builtins, 'input')
@@ -166,15 +166,15 @@ class TestManualRemove(unittest.TestCase):
         Test: The correct version is deleted
         When: The user asks to delete the second run version
         """
-        self.manual_remove.to_exclude_from_deletion['123'] = [self.gem_object_1,
-                                                              self.gem_object_2,
-                                                              self.gem_object_3]
-        self.assertEqual(3, len(self.manual_remove.to_exclude_from_deletion['123']))
+        self.manual_remove.to_delete['123'] = [self.gem_object_1,
+                                               self.gem_object_2,
+                                               self.gem_object_3]
+        self.assertEqual(3, len(self.manual_remove.to_delete['123']))
         mock_input.return_value = '1-3'
         mock_validate_csv.return_value = (True, ['1', '2', '3'])
         self.manual_remove.multiple_versions_found('123')
         # We said to delete version 2 so it should be the only entry for that run number
-        self.assertEqual(3, len(self.manual_remove.to_exclude_from_deletion['123']))
+        self.assertEqual(3, len(self.manual_remove.to_delete['123']))
 
     @patch('scripts.manual_operations.manual_remove.ManualRemove.validate_csv_input')
     @patch.object(builtins, 'input')
@@ -183,15 +183,15 @@ class TestManualRemove(unittest.TestCase):
         Test: The correct version is deleted
         When: The user asks to delete the second run version
         """
-        self.manual_remove.to_exclude_from_deletion['123'] = [self.gem_object_1,
-                                                              self.gem_object_2,
-                                                              self.gem_object_3]
-        self.assertEqual(3, len(self.manual_remove.to_exclude_from_deletion['123']))
+        self.manual_remove.to_delete['123'] = [self.gem_object_1,
+                                               self.gem_object_2,
+                                               self.gem_object_3]
+        self.assertEqual(3, len(self.manual_remove.to_delete['123']))
         mock_input.return_value = '3-1'
         mock_validate_csv.return_value = (True, ['1', '2', '3'])
         self.manual_remove.multiple_versions_found('123')
         # We said to delete version 2 so it should be the only entry for that run number
-        self.assertEqual(3, len(self.manual_remove.to_exclude_from_deletion['123']))
+        self.assertEqual(3, len(self.manual_remove.to_delete['123']))
 
     def test_validate_csv_single_val(self):
         """
@@ -334,7 +334,7 @@ class TestManualRemove(unittest.TestCase):
         """
         mock_record = Mock()
         mock_record.id = 12
-        self.manual_remove.to_exclude_from_deletion = {'1234': [mock_record]}
+        self.manual_remove.to_delete = {'1234': [mock_record]}
         self.manual_remove.delete_records()
         mock_rr.assert_called_once_with(12)
         mock_rv.assert_called_once_with(12)
