@@ -32,11 +32,11 @@ class ManualRemove:
         self.to_delete = {}
         self.instrument = instrument
 
-    def find_runs_in_database(self, run_number):
+    def find_run_versions_in_database(self, run_number):
         """
         Find all run versions in the database that relate to a given instrument and run number
         :param run_number: (int) The run to search for in the database
-        :return: The result of the query
+        :return: (QuerySet) The result of the query
         """
         instrument_record = db.get_instrument(self.instrument)
         result = self.database.data_model.ReductionRun.objects \
@@ -200,7 +200,7 @@ def remove(instrument, run_number):
     :param run_number: (int) The run number to remove
     """
     manual_remove = ManualRemove(instrument)
-    manual_remove.find_runs_in_database(run_number)
+    manual_remove.find_run_versions_in_database(run_number)
     manual_remove.process_results()
     manual_remove.delete_records()
 
