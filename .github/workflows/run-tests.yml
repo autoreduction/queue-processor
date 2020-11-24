@@ -20,9 +20,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-        
-      - uses: ./.github/actions/build-autoreduction
-      
+
+      - name: Set up Python 3.7
+          uses: actions/setup-python@v2
+          with:
+            python-version: 3.7
+
+      - uses: ${{ github.action_path }}/build-autoreduction
+
       - name: Perform initial check of database
         run: py.test build/tests/test_db_generation.py
 
@@ -32,7 +37,7 @@ jobs:
           py.test --ignore=systemtests --cov=build --cov=monitors --cov=queue_processors --cov=scripts --cov=utils --cov=WebApp/autoreduce_webapp --cov=docker_reduction --cov=paths --cov=plotting --cov=model
           echo "Running System Tests"
           py.test systemtests --cov-append
-      
+
       - name: Pylint tests
         run: |
           pylint build
@@ -44,7 +49,7 @@ jobs:
           pylint systemtests
           pylint utils
           pylint plotting
-          
+
       - name: Coveralls
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
