@@ -38,4 +38,7 @@ Example:
 $ python manual_remove.py WISH 40421
 ```
 
+Then enter the run version(s) that you want to remove. To remove multiple run versions you need to 
+input a comma separated list or a range of versions. E.g. `0, 1, 2` or `0 - 2`.
+
 *Note: Whilst runs are removed from the database, the reduce data will still remain on CEPH*
