@@ -29,7 +29,7 @@ class ManualRemove:
         """
         self.database = DatabaseClient()
         self.database.connect()
-        self.to_exclude_from_deletion = {}
+        self.to_delete = {}
         self.instrument = instrument
 
     def find_runs_in_database(self, run_number):
@@ -43,14 +43,14 @@ class ManualRemove:
             .filter(instrument=instrument_record.id) \
             .filter(run_number=run_number) \
             .order_by('-created')
-        self.to_exclude_from_deletion[run_number] = list(result)
+        self.to_delete[run_number] = list(result)
         return result
 
     def process_results(self):
         """
         Process all the results what to do with the run based on the result of database query
         """
-        copy_to_delete = self.to_exclude_from_deletion.copy()
+        copy_to_delete = self.to_delete.copy()
         for key, value in copy_to_delete.items():
             if not value:
                 self.run_not_found(run_number=key)
@@ -66,7 +66,7 @@ class ManualRemove:
         """
         print('No runs found associated with {} for instrument {}'.format(run_number,
                                                                           self.instrument))
-        del self.to_exclude_from_deletion[run_number]
+        del self.to_delete[run_number]
 
     def multiple_versions_found(self, run_number):
         """
@@ -77,7 +77,7 @@ class ManualRemove:
         # Display run_number - title - version for all matching runs
         print("Discovered multiple reduction versions for {}{}:".format(self.instrument,
                                                                         run_number))
-        for run in self.to_exclude_from_deletion[run_number]:
+        for run in self.to_delete[run_number]:
             print("\tv{} - {}".format(run.run_version, run.run_name))
 
         # Get user input for which versions they wish to delete
@@ -89,8 +89,8 @@ class ManualRemove:
             input_valid, user_input = self.validate_csv_input(user_input)
 
         # Remove runs that the user does NOT want to delete from the delete list
-        self.to_exclude_from_deletion[run_number] = [
-            reduction_job for reduction_job in self.to_exclude_from_deletion[run_number]
+        self.to_delete[run_number] = [
+            reduction_job for reduction_job in self.to_delete[run_number]
             if reduction_job.run_version in user_input
         ]
 
@@ -99,7 +99,7 @@ class ManualRemove:
         Delete all records from the database that match those found in self.to_delete
         """
         # Make a copy to ensure dict being iterated stays same size through processing
-        to_delete_copy = self.to_exclude_from_deletion.copy()
+        to_delete_copy = self.to_delete.copy()
         for run_number, job_list in to_delete_copy.items():
             for version in job_list:
                 # Delete the specified version
@@ -110,7 +110,7 @@ class ManualRemove:
                 self.delete_reduction_run(version.id)
 
             # Remove deleted run from dictionary
-            del self.to_exclude_from_deletion[run_number]
+            del self.to_delete[run_number]
 
     def delete_reduction_location(self, reduction_run_id):
         """
