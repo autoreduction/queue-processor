@@ -12,13 +12,6 @@ import sys
 from contextlib import contextmanager
 
 
-class SkippedRunException(Exception):
-    """
-    Exception for runs that have been skipped
-    Note: this is currently only the case for EnginX Event mode runs at ISIS
-    """
-
-
 @contextmanager
 def channels_redirected(out_file, error_file, out_stream):
     """

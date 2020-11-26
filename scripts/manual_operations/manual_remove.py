@@ -32,11 +32,11 @@ class ManualRemove:
         self.to_delete = {}
         self.instrument = instrument
 
-    def find_runs_in_database(self, run_number):
+    def find_run_versions_in_database(self, run_number):
         """
         Find all run versions in the database that relate to a given instrument and run number
         :param run_number: (int) The run to search for in the database
-        :return: The result of the query
+        :return: (QuerySet) The result of the query
         """
         instrument_record = db.get_instrument(self.instrument)
         result = self.database.data_model.ReductionRun.objects \
@@ -75,17 +75,17 @@ class ManualRemove:
         :param run_number: (int) The run number with multiple versions
         """
         # Display run_number - title - version for all matching runs
-        print("Discovered multiple reduction versions for {}{}:".format(self. instrument,
+        print("Discovered multiple reduction versions for {}{}:".format(self.instrument,
                                                                         run_number))
         for run in self.to_delete[run_number]:
             print("\tv{} - {}".format(run.run_version, run.run_name))
 
         # Get user input for which versions they wish to delete
-        user_input = input("Which runs would you like to delete (e.g. 1,2,3): ")
+        user_input = input("Which runs would you like to delete (e.g. 0,1,2,3 or 0-3): ")
         input_valid, user_input = self.validate_csv_input(user_input)
         while input_valid is False:
-            user_input = input('Input of \'{}\' was invalid. '
-                               'Please provide a comma separated list of values:')
+            user_input = input('Input was invalid. '
+                               'Please provide a comma separated list or a range of values: ')
             input_valid, user_input = self.validate_csv_input(user_input)
 
         # Remove runs that the user does NOT want to delete from the delete list
@@ -103,7 +103,7 @@ class ManualRemove:
         for run_number, job_list in to_delete_copy.items():
             for version in job_list:
                 # Delete the specified version
-                print(f'{self.instrument}{run_number} - v{version.run_version}')
+                print(f'Deleting {self.instrument}{run_number} - v{version.run_version}')
                 self.delete_reduction_location(version.id)
                 self.delete_data_location(version.id)
                 self.delete_variables(version.id)
@@ -174,6 +174,16 @@ class ManualRemove:
                     processed_input.append(number)
                 except ValueError:
                     return False, []
+        elif "-" in user_input:
+            range_of_versions_to_delete = user_input.split('-')
+            if len(range_of_versions_to_delete) != 2:
+                return False, []
+
+            sorted_range_of_versions = sorted(map(int, range_of_versions_to_delete))
+            smaller_version = int(sorted_range_of_versions[0])
+            larger_version = int(sorted_range_of_versions[1])
+
+            return True, list(range(smaller_version, larger_version + 1))
         else:
             try:
                 user_input = int(user_input)
@@ -185,12 +195,12 @@ class ManualRemove:
 
 def remove(instrument, run_number):
     """
-    Run the remove script
-    :param instrument:
-    :param run_number:
+    Run the remove script for an instrument and run_number
+    :param instrument: (str) Instrument to run on
+    :param run_number: (int) The run number to remove
     """
     manual_remove = ManualRemove(instrument)
-    manual_remove.find_runs_in_database(run_number)
+    manual_remove.find_run_versions_in_database(run_number)
     manual_remove.process_results()
     manual_remove.delete_records()
 

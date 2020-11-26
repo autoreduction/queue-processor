@@ -20,38 +20,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      
-      - name: Verify MySQL connection from host
-        run: |
-          sudo apt-get install -y mysql-client
-          mysql --host 127.0.0.1 --port 3306 -u root -e "SHOW DATABASES"
-      
-      - name: Set up database
-        run: mysql --host 127.0.0.1 --port 3306 -u root < build/database/reset_autoreduction_db.sql
-      
+
       - name: Set up Python 3.7
         uses: actions/setup-python@v2
         with:
           python-version: 3.7
-      
-      - name: Install Autoreduction
-        run: |
-          python -m pip install --upgrade pip
-          pip3 install -e .
-      
-      - name: Install test suite dependencies
-        run: pip3 install -r requirements.txt
 
-      - name: Setup test environment
-        run: |
-         python3 setup.py test_settings
-         # Externals must be after test_settings
-         python3 setup.py externals -s activemq
-         python3 setup.py database
-         cat build.log
-         _LOCAL_PYTHON_PATH=$(which python3)
-         sudo $_LOCAL_PYTHON_PATH setup.py start
-      
+      - uses: ./.github/actions/build-autoreduction
+
       - name: Perform initial check of database
         run: py.test build/tests/test_db_generation.py
 
@@ -61,7 +37,7 @@ jobs:
           py.test --ignore=systemtests --cov=build --cov=monitors --cov=queue_processors --cov=scripts --cov=utils --cov=WebApp/autoreduce_webapp --cov=docker_reduction --cov=paths --cov=plotting --cov=model --ignore=webtests/
           echo "Running System Tests"
           py.test systemtests --cov-append
-      
+
       - name: Pylint tests
         run: |
           pylint build
@@ -73,7 +49,7 @@ jobs:
           pylint systemtests
           pylint utils
           pylint plotting
-          
+
       - name: Coveralls
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
