@@ -134,8 +134,7 @@ class TestManualRemove(unittest.TestCase):
         Test: That the user is not asked more than once for input
         When: The input is valid
         """
-        self.manual_remove.to_delete['123'] = [self.gem_object_1,
-                                               self.gem_object_2]
+        self.manual_remove.to_delete['123'] = [self.gem_object_1, self.gem_object_2]
         mock_input.return_value = '2'
         mock_validate_csv.return_value = (True, ['2'])
         self.manual_remove.multiple_versions_found('123')
@@ -150,8 +149,7 @@ class TestManualRemove(unittest.TestCase):
         Test: Input is re-validated
         When: The user initially gives incorrect input
         """
-        self.manual_remove.to_delete['123'] = [self.gem_object_1,
-                                               self.gem_object_2]
+        self.manual_remove.to_delete['123'] = [self.gem_object_1, self.gem_object_2]
         mock_input.side_effect = ['invalid', '2']
         mock_validate_csv.side_effect = [(False, []), (True, ['2'])]
         self.manual_remove.multiple_versions_found('123')
@@ -166,8 +164,7 @@ class TestManualRemove(unittest.TestCase):
         Test: That manual_remove will remove one run version
         When: Multiple versions are found for a run and one version is inputted
         """
-        self.manual_remove.to_delete['123'] = [self.gem_object_1,
-                                               self.gem_object_2]
+        self.manual_remove.to_delete['123'] = [self.gem_object_1, self.gem_object_2]
         mock_input.return_value = '2'
         mock_validate_csv.return_value = (True, ['2'])
         self.manual_remove.multiple_versions_found('123')
@@ -183,8 +180,7 @@ class TestManualRemove(unittest.TestCase):
         Test: The correct versions are deleted
         When: The user asks to delete two run versions as an inputted list
         """
-        self.manual_remove.to_delete['123'] = [self.gem_object_1,
-                                               self.gem_object_3]
+        self.manual_remove.to_delete['123'] = [self.gem_object_1, self.gem_object_3]
         mock_input.return_value = '1,3'
         mock_validate_csv.return_value = (True, ['1', '3'])
         self.manual_remove.multiple_versions_found('123')
@@ -201,9 +197,9 @@ class TestManualRemove(unittest.TestCase):
         Test: That the correct versions are deleted
         When: The user asks to delete a range of versions
         """
-        self.manual_remove.to_delete['123'] = [self.gem_object_1,
-                                               self.gem_object_2,
-                                               self.gem_object_3]
+        self.manual_remove.to_delete['123'] = [
+            self.gem_object_1, self.gem_object_2, self.gem_object_3
+        ]
         mock_input.return_value = '1-3'
         mock_validate_csv.return_value = (True, ['1', '2', '3'])
         self.manual_remove.multiple_versions_found('123')
@@ -221,9 +217,9 @@ class TestManualRemove(unittest.TestCase):
         Test: That the correct versions are deleted
         When: The user asks to delete a range of versions in reverse
         """
-        self.manual_remove.to_delete['123'] = [self.gem_object_1,
-                                               self.gem_object_2,
-                                               self.gem_object_3]
+        self.manual_remove.to_delete['123'] = [
+            self.gem_object_1, self.gem_object_2, self.gem_object_3
+        ]
         mock_input.return_value = '3-1'
         mock_validate_csv.return_value = (True, ['1', '2', '3'])
         self.manual_remove.multiple_versions_found('123')
@@ -416,8 +412,10 @@ class TestManualRemove(unittest.TestCase):
         Test: ALL variable records are successfully deleted from the database
         When: Delete_variables function is called.
         """
-        mock_run_variables = [self._run_variable(variable_ptr_id=3),
-                              self._run_variable(variable_ptr_id=5)]
+        mock_run_variables = [
+            self._run_variable(variable_ptr_id=3),
+            self._run_variable(variable_ptr_id=5)
+        ]
         mock_find_vars.return_value = mock_run_variables
         mock_variable_model = Mock()
         self.manual_remove.database.variable_model = mock_variable_model
