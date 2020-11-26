@@ -12,17 +12,16 @@ from __future__ import print_function
 import sys
 
 import fire
-
+from django.db import IntegrityError
+from model.database import access as db
 from scripts.manual_operations.util import get_run_range
 from utils.clients.django_database_client import DatabaseClient
-from model.database import access as db
 
 
 class ManualRemove:
     """
     Handles removing a run from the database
     """
-
     def __init__(self, instrument):
         """
         :param instrument: (str) The name of the instrument associated with runs
@@ -199,7 +198,7 @@ class ManualRemove:
         return True, processed_input
 
 
-def remove(instrument, run_number, delete_all_versions:bool):
+def remove(instrument, run_number, delete_all_versions: bool):
     """
     Run the remove script for an instrument and run_number
     :param instrument: (str) Instrument to run on
