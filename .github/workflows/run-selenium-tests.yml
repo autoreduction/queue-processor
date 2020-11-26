@@ -24,7 +24,16 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.7
+      
+      - name: Set up chromedriver
+        run: |
+          wget https://chromedriver.storage.googleapis.com/87.0.4280.20/chromedriver_linux64.zip
+          unzip chromedriver_linux64.zip
+          export PATH=$PATH:./chromedriver_linux64/
 
+      - name: Install chrome
+        run: sudo apt-get install -y google-chrome-stable
+      
       - uses: ./.github/actions/build-autoreduction
 
       - name: Perform initial check of database
