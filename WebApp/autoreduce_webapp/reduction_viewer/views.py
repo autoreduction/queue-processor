@@ -454,8 +454,7 @@ def help(_):
     Render help page
     Note: _ is replacing the passed in request parameter
     """
-    context_dictionary = {"support_email": "isisreduce@stfc.ac.uk"}
-    return context_dictionary
+    return {}
 
 
 @login_and_uows_valid
