@@ -103,7 +103,67 @@ class ManualRemove:
         for run_number, job_list in to_delete_copy.items():
             for version in job_list:
                 print(f'Deleting {self.instrument}{run_number} - v{version.run_version}')
-                version.delete()
+                try:
+                    version.delete()
+                except IntegrityError as err:
+                    print(
+                        f"Encountered integrity error: {err}\n\n"
+                        "Reverting to old behaviour - manual deletion. This can take much longer.")
+                    # For some reason some entries can throw an integrity error.
+                    # In that case we revert to the previous (much slower) way of manually
+                    # deleting everything. Perhaps there is a badly configured relation
+                    # but I am not sure why it works on _most_
+                    self.delete_reduction_location(version.id)
+                    self.delete_data_location(version.id)
+                    self.delete_variables(version.id)
+                    self.delete_reduction_run(version.id)
+
+    def delete_reduction_location(self, reduction_run_id):
+        """
+        Delete a ReductionLocation record from the database
+        :param reduction_run_id: (int) The id of the associated reduction job
+        """
+        self.database.data_model.ReductionLocation.objects \
+            .filter(reduction_run_id=reduction_run_id) \
+            .delete()
+
+    def delete_data_location(self, reduction_run_id):
+        """
+        Delete a DataLocation record from the database
+        :param reduction_run_id: (int) The id of the associated reduction job
+        """
+        self.database.data_model.DataLocation.objects \
+            .filter(reduction_run_id=reduction_run_id) \
+            .delete()
+
+    def delete_variables(self, reduction_run_id):
+        """
+        Removes all the RunVariable records associated with a given ReductionRun from the database
+        :param reduction_run_id: (int) The id of the associated reduction job
+        """
+        run_variables = self.find_variables_of_reduction(reduction_run_id)
+        for record in run_variables:
+            self.database.variable_model.RunVariable.objects \
+                .filter(variable_ptr_id=record.variable_ptr_id) \
+                .delete()
+
+    def find_variables_of_reduction(self, reduction_run_id):
+        """
+        Find all the RunVariable records in the database associated with a reduction job
+        :param reduction_run_id: (int) The id of the reduction job to filter by
+        :return: (QuerySet) of the associated RunVariables
+        """
+        return self.database.variable_model.RunVariable.objects \
+            .filter(reduction_run_id=reduction_run_id)
+
+    def delete_reduction_run(self, reduction_run_id):
+        """
+        Delete a ReductionRun record from the database
+        :param reduction_run_id: (int) The id of the associated reduction job
+        """
+        self.database.data_model.ReductionRun.objects \
+            .filter(id=reduction_run_id) \
+            .delete()
 
     @staticmethod
     def validate_csv_input(user_input):
