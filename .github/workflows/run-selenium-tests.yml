@@ -24,7 +24,11 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.7
-      
+
+      # Temporary workaround for double backend in settings breaking authentication
+      - name: Authentication workaround
+        run: sed -i '79d' WebApp/autoreduce_webapp/autoreduce_webapp/test_settings.py
+
       - name: Set up chromedriver
         run: |
           wget https://chromedriver.storage.googleapis.com/87.0.4280.20/chromedriver_linux64.zip
