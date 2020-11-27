@@ -68,6 +68,7 @@ class OverviewPage(Page, NavbarMixin, FooterMixin, TourMixin):
         connecting to / and not /overview Once we have a better way to simulate logging in on the
         dev/local environments we can remove this method and add proper logging in methods and tests
         """
+        self.driver.get(configuration.get_url())
         self.driver.get(OverviewPage.url())
         WebDriverWait(self.driver, 10).until(
             presence_of_element_located((By.CLASS_NAME, "instrument-btn")))
