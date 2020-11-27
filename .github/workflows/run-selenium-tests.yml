@@ -39,12 +39,10 @@ jobs:
       - name: Perform initial check of database
         run: py.test build/tests/test_db_generation.py
 
-      - name: Run Django server
+      - name: Run tests
         run: |
           python3 WebApp/autoreduce_webapp/manage.py runserver &
           sleep 10
-
-      - name: Run selenium Tests
-        run: |
           mv webtests/config.json.example webtests/config.json
           python3 -m webtests.runner --headless
+
