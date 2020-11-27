@@ -44,9 +44,9 @@ jobs:
         languages: ${{ matrix.language }}
 
     - name: Set up Python 3.7
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.7
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.7
 
     - uses: ./.github/actions/build-autoreduction
 
