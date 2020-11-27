@@ -67,7 +67,7 @@ class BaseTestCase(unittest.TestCase):
         if hasattr(self, '_outcome'):
             result = self.defaultTestResult()
             self._feedErrorsToResult(result, self._outcome.errors)
-            return len(result.failures) > 0
+            return len(result.failures) > 0 or len(result.errors) > 0
         return False
 
 
