@@ -375,7 +375,6 @@
     };
 
     var init = function init() {
-        $('#run_variables,#instrument_variables,#submit_jobs').on('click', '#previewScript', previewScript);
         $('#script-preview-modal').on('click', '#downloadScript', downloadScript);
 
         $('#run_variables,#instrument_variables').on('click', '#resetValues', resetDefaultVariables);
