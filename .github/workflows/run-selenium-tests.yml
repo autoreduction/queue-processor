@@ -46,3 +46,8 @@ jobs:
           mv webtests/config.json.example webtests/config.json
           python3 -m webtests.runner --headless
 
+      - uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: screenshots
+          path: webtests/screenshots/
