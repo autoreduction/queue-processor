@@ -18,6 +18,4 @@ pytest-cov==2.10.1
 pytest-xdist==2.1.0
 requests==2.25.0
 selenium==3.141.0
-sentry-sdk==0.19.2
 stomp.py==6.1.0
-
