@@ -44,5 +44,3 @@ class Page(ABC):
         """
         self.driver.get(self.url())
         return self
-
-
