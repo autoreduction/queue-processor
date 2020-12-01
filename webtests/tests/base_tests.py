@@ -16,7 +16,11 @@ from pathlib import Path
 from utils.project.structure import get_project_root
 from webtests import configuration
 from webtests.driver import get_chrome_driver
-from webtests.pages.page import OverviewPage, HelpPage, JobQueuePage, FailedJobsPage, GraphsPage
+from webtests.pages.graphs_page import GraphsPage
+from webtests.pages.failed_jobs_page import FailedJobsPage
+from webtests.pages.job_queue_page import JobQueuePage
+from webtests.pages.help_page import HelpPage
+from webtests.pages.overview_page import OverviewPage
 
 
 def local_only(method):

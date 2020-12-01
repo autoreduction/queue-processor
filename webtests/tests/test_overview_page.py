@@ -9,7 +9,8 @@ Selenium tests for the overview page
 """
 
 from utils.settings import VALID_INSTRUMENTS
-from webtests.pages.page import OverviewPage, InstrumentSummaryPage
+from webtests.pages.instrument_summary_page import InstrumentSummaryPage
+from webtests.pages.overview_page import OverviewPage
 from webtests.tests.base_tests import NavbarTestMixin, BaseTestCase, local_only, FooterTestMixin
 
 
