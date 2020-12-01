@@ -19,7 +19,8 @@ from build.commands.start import Start
 setup_requires = ['attrs==20.3.0',
                   'dash==1.16.3',
                   'dash_html_components==1.1.1',
-                  'dash_core_components==1.13.0',
+                  # dash 1.16.3 depends on dash-core-components==1.12.1
+                  'dash_core_components==1.12.1',
                   'docker==4.4.0',
                   'Django==3.1.2',
                   'django_extensions==3.0.9',
