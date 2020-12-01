@@ -49,6 +49,7 @@ jobs:
           pylint systemtests
           pylint utils
           pylint plotting
+          pylint webtests
 
       - name: Coveralls
         env:
