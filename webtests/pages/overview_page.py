@@ -62,7 +62,7 @@ class OverviewPage(Page, NavbarMixin, FooterMixin, TourMixin):
         """
         Clicks the instrument button for the given instrument
         :param instrument: (str) instrument name
-        :return:
+        :return: (OverviewPage) The overview page object
         """
         self.driver.find_element_by_id(f"{instrument}-instrument-btn").click()
-        return self  # Return instrument page
+        return self
