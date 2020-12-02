@@ -26,8 +26,7 @@ class NavbarMixin:
         """
         Click the brand logo in the navbar and return the current page
         """
-        logo = self.driver.find_element_by_class_name(self.NAVBAR_CLASS)
-        logo.click()
+        self.driver.find_element_by_class_name(self.NAVBAR_CLASS).click()
         return self
 
     def click_navbar_all_instruments(self):

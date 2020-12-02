@@ -34,7 +34,7 @@ class FooterMixin:
 
     def click_footer_github_link(self):
         """
-        Click the github link in the footer
+        Clicks the github link in the footer
         """
         github_link = self.driver.find_element_by_id(self.GITHUB_LINK_ID)
         github_link.click()

@@ -35,7 +35,7 @@ class TourMixin:
     def is_tour_visible(self):
         """
         Checks if the tour is currently visible
-        :return: (bool) True if tour is visible, false otherwise
+        :return: (bool) True if tour is visible, False otherwise
         """
         return WebDriverWait(self.driver, 10).until(
             EC.presence_of_element_located((By.ID, self.TOUR_STEP_ID % self.step)))
@@ -43,7 +43,7 @@ class TourMixin:
     def is_tour_hidden(self):
         """
         Checks if the tour is currently hidden
-        :return: (bool) True if tour is visible, false otherwise
+        :return: (bool) True if tour is visible, False otherwise
         """
         return WebDriverWait(self.driver, 30).until_not(
             EC.presence_of_element_located((By.ID, self.TOUR_STEP_ID % self.step)))

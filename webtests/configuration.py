@@ -26,8 +26,8 @@ def store_original_config():
     """
     try:
         copyfile(CONFIG_PATH, TEMP_CONFIG_PATH)
-    except FileNotFoundError:
-        sys.exit(f"Config is missing please create: {CONFIG_PATH}")
+    except OSError:
+        sys.exit(f"Config file: {CONFIG_PATH} could not be loaded...")
 
 
 def is_local_environment():

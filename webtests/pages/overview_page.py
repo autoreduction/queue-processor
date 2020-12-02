@@ -30,7 +30,7 @@ class OverviewPage(Page, NavbarMixin, FooterMixin, TourMixin):
     def launch(self):
         """
         This is a bit of a hack to get around the fact that you will only be logged in when
-        connecting to / and not /overview Once we have a better way to simulate logging in on the
+        connecting to / and not /overview. Once we have a better way to simulate logging in on the
         dev/local environments we can remove this method and add proper logging in methods and tests
         """
         self.driver.get(configuration.get_url())

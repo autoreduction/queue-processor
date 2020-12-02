@@ -20,7 +20,7 @@ This package holds the selenium tests for the autoreduction webapp. It has the f
     │   ├── test_overiew_page.py
     │   ├── test_help_page.py
     │   └── test_instrument_summary_page.py
-    ├── config.ini
+    ├── config.json
     ├── configuration.py
     ├── driver.py    
     ├── runner.py
