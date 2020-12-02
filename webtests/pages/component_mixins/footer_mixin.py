@@ -20,7 +20,7 @@ class FooterMixin:
     def is_footer_visible(self):
         """
         Checks whether the footer is visible
-        :returns: True if footer is visible, otherwise False
+        :returns: (bool) True if footer is visible, otherwise False
         """
         return self.driver.find_element_by_id(self.FOOTER_ID).is_displayed()
 
