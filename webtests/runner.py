@@ -24,7 +24,7 @@ def main():
     store_original_config()
     parser = argparse.ArgumentParser(description="Selenium tests for autoreduction WebApp")
     parser.add_argument("-e", "--environment", metavar="<environment>",
-                        help="target environment type: remote or local. Default is remote")
+                        help="Target environment type: remote or local. Default is remote")
     parser.add_argument("-u", "--url", metavar="<url>",
                         help="target url to run tests against. Default is localhost:8000."
                              " Note if you are passing an ip address, it must still be prefixed"
