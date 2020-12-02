@@ -41,7 +41,7 @@ If this property is set to local tests decorated with `@local_only` will also be
 rely on inspecting settings that the WebApp is currently using e.g. `VALID_INSTRUMENTS` 
 
 
-##Pages
+## Pages
 The pages are built using the fluent page object model pattern. With common components being created
 as mixins.
 
