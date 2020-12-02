@@ -1,4 +1,4 @@
-#webtests
+# webtests
 
 This package holds the selenium tests for the autoreduction webapp. It has the following structure:
 
