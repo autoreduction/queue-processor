@@ -53,7 +53,7 @@ class TestOverviewPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
 
     def test_tour(self):
         """
-        Tests Tour run through on overview page
+        Tests: Tour run through on overview page
         """
         self.page \
             .launch() \
