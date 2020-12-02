@@ -177,7 +177,7 @@ class FooterTestMixin:
     def test_help_link_navigates_to_help_page(self):
         """
         Tests: Help page link navigates to help page
-        When Help page link is clicked
+        When: Help page link is clicked
         """
         self.page \
             .launch() \
