@@ -12,7 +12,7 @@ jobs:
         id: setmatrix
         run: |
           STRINGIFIED_MATRIX=$(echo '{"os":["ubuntu-16.04","ubuntu-18.04"]}' | sed 's/"/\\"/g')
-          echo "::set-output name=matrix::$STRINGIFIED_MATRIX"
+          echo "::set-output name=matrix::$(echo $STRINGIFIED_MATRIX)"
 
   pytest:
     needs: setup
