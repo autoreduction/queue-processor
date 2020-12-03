@@ -4,15 +4,16 @@ on: [push]
 
 jobs:
   setup:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     outputs:
-      matrix: ${{ steps.setmatrix.outputs.matrix }}
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - name: Set Dynamic Matrix
-        id: setmatrix
-        run: |
-          STRINGIFIED_MATRIX=$(echo '{"os":["ubuntu-16.04","ubuntu-18.04"]}' | sed 's/"/\\"/g')
-          echo "::set-output name=matrix::$(echo $STRINGIFIED_MATRIX)"
+    - id: set-matrix
+      run: |
+        MATRIX='{
+          "os": ["ubuntu-16.04", "ubuntu-18.04"]
+        }'
+        echo "::set-output name=matrix::$(echo $MATRIX | tr -d " \t\n\r")"
 
   pytest:
     needs: setup
