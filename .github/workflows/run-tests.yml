@@ -3,7 +3,7 @@ name: Tests
 on: [push]
 
 jobs:
-  setup:
+  pytest:
     runs-on: ubuntu-18.04
     services:
       mysql:
@@ -27,22 +27,6 @@ jobs:
 
       - uses: ./.github/actions/build-autoreduction
 
-  pytest:
-    needs: setup
-    runs-on: ubuntu-18.04
-    services:
-      mysql:
-        image: mysql:5.7
-        env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: yes
-          MYSQL_USER: test-user
-          MYSQL_PASSWORD: pass
-          MYSQL_DATABASE: autoreduction
-        ports:
-          - '3306:3306'
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
-
-    steps:
       - name: Perform initial check of database
         run: py.test build/tests/test_db_generation.py
 
@@ -54,7 +38,6 @@ jobs:
           py.test systemtests --cov-append
 
   pylint:
-    needs: setup
     runs-on: ubuntu-18.04
     services:
       mysql:
@@ -69,6 +52,15 @@ jobs:
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+
+      - uses: ./.github/actions/build-autoreduction
+
       - name: Pylint tests
         run: |
           pylint build
@@ -83,7 +75,6 @@ jobs:
           pylint webtests
 
   coveralls:
-    needs: setup
     runs-on: ubuntu-18.04
     services:
       mysql:
@@ -98,13 +89,21 @@ jobs:
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+
+      - uses: ./.github/actions/build-autoreduction
+
       - name: Coveralls
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: coveralls
 
   selenium:
-    needs: setup
     runs-on: ubuntu-18.04
     services:
       mysql:
@@ -119,6 +118,15 @@ jobs:
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+
+      - uses: ./.github/actions/build-autoreduction
+
       # Temporary workaround for double backend in settings breaking authentication
       - name: Authentication workaround
         run: sed -i '79d' WebApp/autoreduce_webapp/autoreduce_webapp/test_settings.py
