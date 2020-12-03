@@ -21,10 +21,7 @@ jobs:
     needs: setup
     runs-on: ${{ matrix.os }}
     strategy:
-      matrix: ${{ fromJson(needs.job1.outputs.matrix) }}
-#        os: ['ubuntu-16.04', 'ubuntu-18.04']
-#        python: [3.7, 3.8] # we are currently using different versions of python on prod and dev
-#        browser: ['chrome', 'firefox']
+      matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
     services:
       mysql:
         image: mysql:5.7
@@ -39,6 +36,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+
+      - run: echo 'Matrix ${{ matrix.os }}'
 
       - name: Set up Python 3.7
         uses: actions/setup-python@v2
