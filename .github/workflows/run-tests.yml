@@ -3,9 +3,8 @@ name: Tests
 on: [push]
 
 jobs:
-  test:
+  setup:
     runs-on: ubuntu-18.04
-
     services:
       mysql:
         image: mysql:5.7
@@ -28,6 +27,22 @@ jobs:
 
       - uses: ./.github/actions/build-autoreduction
 
+  pytest:
+    needs: setup
+    runs-on: ubuntu-18.04
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_USER: test-user
+          MYSQL_PASSWORD: pass
+          MYSQL_DATABASE: autoreduction
+        ports:
+          - '3306:3306'
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
       - name: Perform initial check of database
         run: py.test build/tests/test_db_generation.py
 
@@ -38,6 +53,22 @@ jobs:
           echo "Running System Tests"
           py.test systemtests --cov-append
 
+  pylint:
+    needs: setup
+    runs-on: ubuntu-18.04
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_USER: test-user
+          MYSQL_PASSWORD: pass
+          MYSQL_DATABASE: autoreduction
+        ports:
+          - '3306:3306'
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
       - name: Pylint tests
         run: |
           pylint build
@@ -51,7 +82,68 @@ jobs:
           pylint plotting
           pylint webtests
 
+  coveralls:
+    needs: setup
+    runs-on: ubuntu-18.04
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_USER: test-user
+          MYSQL_PASSWORD: pass
+          MYSQL_DATABASE: autoreduction
+        ports:
+          - '3306:3306'
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
       - name: Coveralls
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: coveralls
+
+  selenium:
+    needs: setup
+    runs-on: ubuntu-18.04
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_USER: test-user
+          MYSQL_PASSWORD: pass
+          MYSQL_DATABASE: autoreduction
+        ports:
+          - '3306:3306'
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      # Temporary workaround for double backend in settings breaking authentication
+      - name: Authentication workaround
+        run: sed -i '79d' WebApp/autoreduce_webapp/autoreduce_webapp/test_settings.py
+
+      - name: Set up chromedriver
+        run: |
+          wget https://chromedriver.storage.googleapis.com/87.0.4280.20/chromedriver_linux64.zip
+          unzip chromedriver_linux64.zip
+          export PATH=$PATH:./chromedriver_linux64/
+      - name: Install chrome
+        run: sudo apt-get install -y google-chrome-stable
+
+      - name: Run Django server
+        run: |
+          cd WebApp/autoreduce_webapp
+          python3 manage.py runserver &
+          sleep 10
+
+      - name: Run tests
+        run: |
+          mv webtests/config.json.example webtests/config.json
+          python3 -m webtests.runner --headless
+
+      - uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: screenshots
+          path: webtests/screenshots/
