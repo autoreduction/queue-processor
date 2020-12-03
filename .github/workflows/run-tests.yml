@@ -4,7 +4,7 @@ on: [push]
 
 env:
   STRATEGY_MATRIX:
-    os: [ubuntu-16.04, ubuntu-18.04]
+    os: ['ubuntu-16.04', 'ubuntu-18.04']
 #    python: [3.7, 3.8] # we are currently using different versions of python on prod and dev
 #    browser: ['chrome', 'firefox']
 
@@ -83,7 +83,6 @@ jobs:
           pylint webtests
 
   selenium:
-    name: Selenuim - Browser ${{ matrix.browser }}
     runs-on: ubuntu-18.04
     services:
       mysql:
