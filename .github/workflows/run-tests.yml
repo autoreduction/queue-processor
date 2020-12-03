@@ -11,11 +11,14 @@ jobs:
     - id: set-matrix
       run: |
         MATRIX='{
-          "os": ["ubuntu-16.04", "ubuntu-18.04"]
+          "os": ["ubuntu-16.04", "ubuntu-18.04"],
+          "python": ["3.7", "3.8"],
+          "browser": ["chrome", "firefox"]
         }'
         echo "::set-output name=matrix::$(echo $MATRIX | tr -d " \t\n\r")"
 
   pytest:
+    name: Pytest - OS ${{ matrix.os }} / Python ${{ matrix.python }}
     needs: setup
     runs-on: ${{ matrix.os }}
     strategy:
@@ -35,12 +38,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - run: echo 'Matrix ${{ matrix.os }}'
-
-      - name: Set up Python 3.7
+      - name: Set up Python ${{ matrix.python }}
         uses: actions/setup-python@v2
         with:
-          python-version: 3.7
+          python-version: ${{ matrix.python }}
+          architecture: x64
 
       - uses: ./.github/actions/build-autoreduction
 
@@ -54,7 +56,81 @@ jobs:
           echo "Running System Tests"
           pytest systemtests --cov-append
 
+  selenium:
+    name: Selenium - OS ${{ matrix.os }} / Python ${{ matrix.python }} / Browser ${{ matrix.browser }}
+    needs: setup
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_USER: test-user
+          MYSQL_PASSWORD: pass
+          MYSQL_DATABASE: autoreduction
+        ports:
+          - '3306:3306'
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python ${{ matrix.python }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+          architecture: x64
+
+      - uses: ./.github/actions/build-autoreduction
+
+      # Temporary workaround for double backend in settings breaking authentication
+      - name: Authentication workaround
+        run: sed -i '79d' WebApp/autoreduce_webapp/autoreduce_webapp/test_settings.py
+
+#       - name: Set up chromedriver
+#         run: |
+#           wget https://chromedriver.storage.googleapis.com/87.0.4280.20/chromedriver_linux64.zip
+#           unzip chromedriver_linux64.zip
+#           export PATH=$PATH:./chromedriver_linux64/
+          
+      - name: Install Chrome Webdriver
+        if: ${{ matrix.browser == 'chrome' }}
+        run: |
+          pip install seleniumbase
+          sudo apt-get install -y google-chrome-stable
+          seleniumbase install chromedriver
+          
+      - name: Install Firefox Webdriver
+        if: ${{ matrix.browser == 'firefox' }}
+        run: |
+          pip install seleniumbase
+          sudo apt-get install -y firefox
+          seleniumbase install geckodriver
+      
+      - name: Install chrome
+        run: sudo apt-get install -y google-chrome-stable
+
+      - name: Run Django server
+        run: |
+          cd WebApp/autoreduce_webapp
+          python manage.py runserver &
+          sleep 10
+
+      - name: Run tests
+        run: |
+          mv webtests/config.json.example webtests/config.json
+          python -m webtests.runner --headless
+
+      - uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: screenshots
+          path: webtests/screenshots/
+
   pylint:
+    name: Pylint
     runs-on: ubuntu-18.04
     services:
       mysql:
@@ -91,60 +167,8 @@ jobs:
           pylint plotting
           pylint webtests
 
-  selenium:
-    runs-on: ubuntu-18.04
-    services:
-      mysql:
-        image: mysql:5.7
-        env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: yes
-          MYSQL_USER: test-user
-          MYSQL_PASSWORD: pass
-          MYSQL_DATABASE: autoreduction
-        ports:
-          - '3306:3306'
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.7
-
-      - uses: ./.github/actions/build-autoreduction
-
-      # Temporary workaround for double backend in settings breaking authentication
-      - name: Authentication workaround
-        run: sed -i '79d' WebApp/autoreduce_webapp/autoreduce_webapp/test_settings.py
-
-      - name: Set up chromedriver
-        run: |
-          wget https://chromedriver.storage.googleapis.com/87.0.4280.20/chromedriver_linux64.zip
-          unzip chromedriver_linux64.zip
-          export PATH=$PATH:./chromedriver_linux64/
-      - name: Install chrome
-        run: sudo apt-get install -y google-chrome-stable
-
-      - name: Run Django server
-        run: |
-          cd WebApp/autoreduce_webapp
-          python manage.py runserver &
-          sleep 10
-
-      - name: Run tests
-        run: |
-          mv webtests/config.json.example webtests/config.json
-          python -m webtests.runner --headless
-
-      - uses: actions/upload-artifact@v2
-        if: failure()
-        with:
-          name: screenshots
-          path: webtests/screenshots/
-
   coveralls:
+    name: Coveralls
     runs-on: ubuntu-18.04
     services:
       mysql:
