@@ -2,9 +2,17 @@ name: Tests
 
 on: [push]
 
+env:
+  STRATEGY_MATRIX:
+    os: [ubuntu-16.04, ubuntu-18.04]
+#    python: [3.7, 3.8] # we are currently using different versions of python on prod and dev
+#    browser: ['chrome', 'firefox']
+
 jobs:
   pytest:
-    runs-on: ubuntu-18.04
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix: ${{ env.STRATEGY_MATRIX }}
     services:
       mysql:
         image: mysql:5.7
@@ -74,36 +82,8 @@ jobs:
           pylint plotting
           pylint webtests
 
-  coveralls:
-    runs-on: ubuntu-18.04
-    services:
-      mysql:
-        image: mysql:5.7
-        env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: yes
-          MYSQL_USER: test-user
-          MYSQL_PASSWORD: pass
-          MYSQL_DATABASE: autoreduction
-        ports:
-          - '3306:3306'
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.7
-
-      - uses: ./.github/actions/build-autoreduction
-
-      - name: Coveralls
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: coveralls
-
   selenium:
+    name: Selenuim - Browser ${{ matrix.browser }}
     runs-on: ubuntu-18.04
     services:
       mysql:
@@ -155,3 +135,32 @@ jobs:
         with:
           name: screenshots
           path: webtests/screenshots/
+
+  coveralls:
+    runs-on: ubuntu-18.04
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_USER: test-user
+          MYSQL_PASSWORD: pass
+          MYSQL_DATABASE: autoreduction
+        ports:
+          - '3306:3306'
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+
+      - uses: ./.github/actions/build-autoreduction
+
+      - name: Coveralls
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: coveralls
