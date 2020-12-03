@@ -4,17 +4,14 @@ on: [push]
 
 jobs:
   setup:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     outputs:
       matrix: ${{ steps.setmatrix.outputs.matrix }}
     steps:
       - name: Set Dynamic Matrix
         id: setmatrix
         run: |
-          STRINGIFIED_MATRIX=$(echo '
-            {"os": ["ubuntu-16.04", "ubuntu-18.04"]}
-          ' | sed 's/"/\\"/g')
-
+          STRINGIFIED_MATRIX=$(echo '{"os":["ubuntu-16.04","ubuntu-18.04"]}' | sed 's/"/\\"/g')
           echo "::set-output name=matrix::STRINGIFIED_MATRIX"
 
   pytest:
