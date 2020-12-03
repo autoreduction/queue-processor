@@ -28,14 +28,14 @@ jobs:
       - uses: ./.github/actions/build-autoreduction
 
       - name: Perform initial check of database
-        run: py.test build/tests/test_db_generation.py
+        run: pytest build/tests/test_db_generation.py
 
       - name: Functional tests
         run: |
           echo "Running Unit tests"
-          py.test --ignore=systemtests --cov=build --cov=monitors --cov=queue_processors --cov=scripts --cov=utils --cov=WebApp/autoreduce_webapp --cov=docker_reduction --cov=paths --cov=plotting --cov=model --ignore=webtests/
+          pytest --ignore=systemtests --cov=build --cov=monitors --cov=queue_processors --cov=scripts --cov=utils --cov=WebApp/autoreduce_webapp --cov=docker_reduction --cov=paths --cov=plotting --cov=model --ignore=webtests/
           echo "Running System Tests"
-          py.test systemtests --cov-append
+          pytest systemtests --cov-append
 
   pylint:
     runs-on: ubuntu-18.04
@@ -142,13 +142,13 @@ jobs:
       - name: Run Django server
         run: |
           cd WebApp/autoreduce_webapp
-          python3 manage.py runserver &
+          python manage.py runserver &
           sleep 10
 
       - name: Run tests
         run: |
           mv webtests/config.json.example webtests/config.json
-          python3 -m webtests.runner --headless
+          python -m webtests.runner --headless
 
       - uses: actions/upload-artifact@v2
         if: failure()
