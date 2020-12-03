@@ -2,17 +2,29 @@ name: Tests
 
 on: [push]
 
-env:
-  STRATEGY_MATRIX:
-    os: ['ubuntu-16.04', 'ubuntu-18.04']
-#    python: [3.7, 3.8] # we are currently using different versions of python on prod and dev
-#    browser: ['chrome', 'firefox']
-
 jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.setmatrix.outputs.matrix }}
+    steps:
+      - name: Set Dynamic Matrix
+        id: setmatrix
+        run: |
+          STRINGIFIED_MATRIX=$(echo '
+            {"os": ["ubuntu-16.04", "ubuntu-18.04"]}
+          ' | sed 's/"/\\"/g')
+
+          echo "::set-output name=matrix::STRINGIFIED_MATRIX"
+
   pytest:
+    needs: setup
     runs-on: ${{ matrix.os }}
     strategy:
-      matrix: ${{ env.STRATEGY_MATRIX }}
+      matrix: ${{ fromJson(needs.job1.outputs.matrix) }}
+#        os: ['ubuntu-16.04', 'ubuntu-18.04']
+#        python: [3.7, 3.8] # we are currently using different versions of python on prod and dev
+#        browser: ['chrome', 'firefox']
     services:
       mysql:
         image: mysql:5.7
