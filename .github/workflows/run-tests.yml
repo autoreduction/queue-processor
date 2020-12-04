@@ -11,16 +11,17 @@ jobs:
     - id: set-matrix
       run: |
         MATRIX='{
-          "os": ["ubuntu-16.04", "ubuntu-18.04"],
-          "python": ["3.7", "3.8"],
-          "browser": ["chrome", "firefox"]
+          "container": ["ubuntu:16.04", "ubuntu:18.04"], # 16.04 is currently used in travis but support will run out 
+          "python": ["3.6.8", "3.7.4", "3.7.8"], # https://github.com/ISISScientificComputing/autoreduce/issues/916
+          "browser": ["chrome"]
         }'
         echo "::set-output name=matrix::$(echo $MATRIX | tr -d " \t\n\r")"
 
   pytest:
-    name: Pytest - OS ${{ matrix.os }} / Python ${{ matrix.python }}
+    name: Pytest - Container ${{ matrix.container }} / Python ${{ matrix.python }}
     needs: setup
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
+    container: ${{ matrix.container }}
     strategy:
       matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
       fail-fast: false
@@ -58,9 +59,10 @@ jobs:
           pytest systemtests --cov-append
 
   selenium:
-    name: Selenium - OS ${{ matrix.os }} / Python ${{ matrix.python }} / Browser ${{ matrix.browser }}
+    name: Selenium - Container ${{ matrix.container }} / Python ${{ matrix.python }} / Browser ${{ matrix.browser }}
     needs: setup
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
+    container: ${{ matrix.container }}
     strategy:
       matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
       fail-fast: false
@@ -91,28 +93,21 @@ jobs:
       - name: Authentication workaround
         run: sed -i '79d' WebApp/autoreduce_webapp/autoreduce_webapp/test_settings.py
 
-#       - name: Set up chromedriver
-#         run: |
-#           wget https://chromedriver.storage.googleapis.com/87.0.4280.20/chromedriver_linux64.zip
-#           unzip chromedriver_linux64.zip
-#           export PATH=$PATH:./chromedriver_linux64/
-          
-      - name: Install Chrome Webdriver
+      - name: Set up Chrome
         if: ${{ matrix.browser == 'chrome' }}
         run: |
-          pip install seleniumbase
+          wget https://chromedriver.storage.googleapis.com/87.0.4280.20/chromedriver_linux64.zip
+          unzip chromedriver_linux64.zip
+          export PATH=$PATH:./chromedriver_linux64/
           sudo apt-get install -y google-chrome-stable
-          seleniumbase install chromedriver
           
-      - name: Install Firefox Webdriver
-        if: ${{ matrix.browser == 'firefox' }}
-        run: |
-          pip install seleniumbase
-          sudo apt-get install -y firefox
-          seleniumbase install geckodriver
-      
-      - name: Install chrome
-        run: sudo apt-get install -y google-chrome-stable
+#       - name: Install Firefox
+#         if: ${{ matrix.browser == 'firefox' }}
+#         run: |
+#           wget https://github.com/mozilla/geckodriver/releases/download/v0.24.0/geckodriver-v0.24.0-linux64.tar.gz
+#           tar -xvzf geckodriver-v0.24.0-linux64.tar.gz -C geckodriver-v0.24.0-linux64
+#           export PATH=$PATH:./geckodriver-v0.24.0-linux64/
+#           sudo apt install -y firefox
 
       - name: Run Django server
         run: |
