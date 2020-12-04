@@ -46,7 +46,6 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python }}
-          architecture: x64
 
       - uses: ./.github/actions/build-autoreduction
 
@@ -87,7 +86,6 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python }}
-          architecture: x64
 
       - uses: ./.github/actions/build-autoreduction
 
