@@ -10,9 +10,11 @@ jobs:
     steps:
     - id: set-matrix
       run: |
+        # 16.04 is currently used in travis but support will run out
+        # Test multiple version of Python - https://github.com/ISISScientificComputing/autoreduce/issues/916
         MATRIX='{
-          "container": ["ubuntu:16.04", "ubuntu:18.04"], # 16.04 is currently used in travis but support will run out 
-          "python": ["3.6.8", "3.7.4", "3.7.8"], # https://github.com/ISISScientificComputing/autoreduce/issues/916
+          "container": ["ubuntu:16.04", "ubuntu:18.04"], 
+          "python": ["3.6.8", "3.7.4", "3.7.8"],
           "browser": ["chrome"]
         }'
         echo "::set-output name=matrix::$(echo $MATRIX | tr -d " \t\n\r")"
