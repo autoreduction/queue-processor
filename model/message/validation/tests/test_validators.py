@@ -48,6 +48,6 @@ class TestValidators(unittest.TestCase):
         for i in valid_values:
             self.assertTrue(validators.validate_rb_number(i))
 
-        invalid_values = [0, 0.1, -1, -100, None, "foo"]
+        invalid_values = [0, 0.1, -1, -100, None, "foo", 12345678910, "1231435252242"]
         for i in invalid_values:
             self.assertFalse(validators.validate_rb_number(i))
