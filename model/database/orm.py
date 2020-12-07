@@ -53,11 +53,12 @@ class DjangoORM:
             # import here to avoid failure without calling add_webapp_path first
             # pylint:disable=import-outside-toplevel
             from WebApp.autoreduce_webapp.autoreduce_webapp.settings import DATABASES, ORM_INSTALL
-            settings.configure(
-                DATABASES=DATABASES,
-                INSTALLED_APPS=ORM_INSTALL,
-            )
-            django.setup()
+            if not settings.configured:
+                settings.configure(
+                    DATABASES=DATABASES,
+                    INSTALLED_APPS=ORM_INSTALL,
+                )
+                django.setup()
         except RuntimeError as excep:
             logging.warning("Exception raised when attempting to setup: %s", excep)
 

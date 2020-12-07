@@ -12,7 +12,7 @@
         <div class="row">
             <div class="col-md-12 text-center">
                 <h2>Reduction Job #{{ run.title }}</h2>
-                {% if history.count > 1 %}
+                {% if is_rerun %}
                     <p>
                         (This run has been re-reduced,
                         <a href="#" class="js-reduction-run-history" id="run_history">see history</a>)
@@ -191,7 +191,7 @@
             {% endif %}
             {% if reduction_variables_on and has_variables%}
                 {% autoescape on %}
-                    {% view "reduction_variables.views.run_summary" run.instrument.name run.run_number run.run_version %}
+                    {% view "reduction_variables.views.run_summary" instrument run_number run_version %}
                 {% endautoescape %}
             {% endif %}
           </div>
