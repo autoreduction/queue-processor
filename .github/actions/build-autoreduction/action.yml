@@ -6,7 +6,7 @@ runs:
   steps:
     - name: Verify MySQL connection from host
       run: |
-        sudo apt-get install -y mysql-client
+        apt-get update && apt-get install -y mysql-client
         mysql --host 127.0.0.1 --port 3306 -u root -e "SHOW DATABASES"
       shell: bash
 
@@ -32,5 +32,5 @@ runs:
         python setup.py database
         cat build.log
         _LOCAL_PYTHON_PATH=$(which python)
-        sudo $_LOCAL_PYTHON_PATH setup.py start
+        $_LOCAL_PYTHON_PATH setup.py start
       shell: bash
