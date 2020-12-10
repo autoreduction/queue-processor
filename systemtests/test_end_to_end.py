@@ -205,7 +205,7 @@ if os.name != 'nt':
             Uses the scripts.manual_operations.manual_remove script
             to remove records added to the database
             """
-            remove.remove(instrument, run_number)
+            remove.remove(instrument, run_number, delete_all_versions=False)
 
         @staticmethod
         def _delete_reduction_directory():
