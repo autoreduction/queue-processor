@@ -28,15 +28,13 @@ jobs:
       matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
       fail-fast: false
     services:
-      mysql:
+      autoreduction_db:
         image: mysql:5.7
         env:
           MYSQL_ALLOW_EMPTY_PASSWORD: yes
           MYSQL_USER: test-user
           MYSQL_PASSWORD: pass
           MYSQL_DATABASE: autoreduction
-        ports:
-          - '3306:3306'
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
@@ -68,15 +66,13 @@ jobs:
       matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
       fail-fast: false
     services:
-      mysql:
+      autoreduction_db:
         image: mysql:5.7
         env:
           MYSQL_ALLOW_EMPTY_PASSWORD: yes
           MYSQL_USER: test-user
           MYSQL_PASSWORD: pass
           MYSQL_DATABASE: autoreduction
-        ports:
-          - '3306:3306'
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
@@ -128,19 +124,18 @@ jobs:
 
   pylint:
     name: Pylint
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
+    container: ${{ matrix.container[0] }}
     strategy:
       fail-fast: false
     services:
-      mysql:
+      autoreduction_db:
         image: mysql:5.7
         env:
           MYSQL_ALLOW_EMPTY_PASSWORD: yes
           MYSQL_USER: test-user
           MYSQL_PASSWORD: pass
           MYSQL_DATABASE: autoreduction
-        ports:
-          - '3306:3306'
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
@@ -168,19 +163,18 @@ jobs:
 
   coveralls:
     name: Coveralls
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
+    container: ${{ matrix.container[0] }}
     strategy:
       fail-fast: false
     services:
-      mysql:
+      autoreduction_db:
         image: mysql:5.7
         env:
           MYSQL_ALLOW_EMPTY_PASSWORD: yes
           MYSQL_USER: test-user
           MYSQL_PASSWORD: pass
           MYSQL_DATABASE: autoreduction
-        ports:
-          - '3306:3306'
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:

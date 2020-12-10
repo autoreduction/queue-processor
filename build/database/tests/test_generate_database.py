@@ -15,7 +15,7 @@ from sqlalchemy.exc import OperationalError
 
 from build.database.generate_database import (get_test_user_sql, get_sql_from_file,
                                               run_sql)
-from build.utils.common import ROOT_DIR
+from build.utils.common import ROOT_DIRF
 
 
 # pylint:disable=missing-docstring
@@ -32,14 +32,14 @@ class TestGenerateDatabase(unittest.TestCase):
         # pylint:disable=import-outside-toplevel
         from utils.settings import MYSQL_SETTINGS
         actual = get_test_user_sql()
-        expected = "GRANT ALL ON *.* TO '{0}'@'127.0.0.1' IDENTIFIED BY '{1}';\n" \
+        expected = "GRANT ALL ON *.* TO '{0}'@'autoreduction_db' IDENTIFIED BY '{1}';\n" \
                    "FLUSH PRIVILEGES;".format(MYSQL_SETTINGS.username, MYSQL_SETTINGS.password)
         self.assertEqual(expected, actual)
 
     def test_get_sql_from_file(self):
         sql_file = os.path.join(ROOT_DIR, 'build', 'database', 'reset_autoreduction_db.sql')
         actual = get_sql_from_file(sql_file)
-        self.assertTrue("GRANT ALL PRIVILEGES ON autoreduction.* TO 'test-user'@'127.0.0.1'"
+        self.assertTrue("GRANT ALL PRIVILEGES ON autoreduction.* TO 'test-user'@'autoreduction_db'"
                         in actual)
         self.assertTrue("DROP DATABASE IF EXISTS autoreduction;" in actual)
         self.assertTrue("CREATE DATABASE autoreduction;" in actual)
