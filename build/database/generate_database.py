@@ -55,7 +55,7 @@ def get_test_user_sql():
     """
     # pylint:disable=import-outside-toplevel
     from utils.settings import MYSQL_SETTINGS
-    return "GRANT ALL ON *.* TO '{0}'@'autoreduction_db' IDENTIFIED BY '{1}';\n" \
+    return "GRANT ALL ON *.* TO '{0}'@'127.0.0.1' IDENTIFIED BY '{1}';\n" \
            "FLUSH PRIVILEGES;".format(MYSQL_SETTINGS.username, MYSQL_SETTINGS.password)
 
 

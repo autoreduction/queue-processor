@@ -1,5 +1,4 @@
 name: Tests
-
 on: [push]
 
 jobs:
@@ -12,8 +11,9 @@ jobs:
       run: |
         # 16.04 is currently used in travis but support will run out
         # Test multiple version of Python - https://github.com/ISISScientificComputing/autoreduce/issues/916
+        # A CentOS container should be added in the future to replicate production servers
         MATRIX='{
-          "container": ["ubuntu:16.04", "ubuntu:18.04"], 
+          "container": ["ubuntu:16.04", "ubuntu:18.04"],
           "python": ["3.6", "3.7"],
           "browser": ["chrome"]
         }'
@@ -27,15 +27,6 @@ jobs:
     strategy:
       matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
       fail-fast: false
-    services:
-      autoreduction_db:
-        image: mysql:5.7
-        env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: yes
-          MYSQL_USER: test-user
-          MYSQL_PASSWORD: pass
-          MYSQL_DATABASE: autoreduction
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
       - uses: actions/checkout@v2
@@ -44,6 +35,11 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python }}
+
+      - name: Install packages
+        run: |
+          apt-get update
+          apt-get install -y docker.io mysql-client
 
       - uses: ./.github/actions/build-autoreduction
 
@@ -65,15 +61,6 @@ jobs:
     strategy:
       matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
       fail-fast: false
-    services:
-      autoreduction_db:
-        image: mysql:5.7
-        env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: yes
-          MYSQL_USER: test-user
-          MYSQL_PASSWORD: pass
-          MYSQL_DATABASE: autoreduction
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
       - uses: actions/checkout@v2
@@ -82,6 +69,11 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python }}
+
+      - name: Install packages
+        run: |
+          apt-get update
+          apt-get install -y docker.io mysql-client
 
       - uses: ./.github/actions/build-autoreduction
 
@@ -95,7 +87,7 @@ jobs:
           wget https://chromedriver.storage.googleapis.com/87.0.4280.20/chromedriver_linux64.zip
           unzip chromedriver_linux64.zip
           export PATH=$PATH:./chromedriver_linux64/
-          sudo apt-get install -y google-chrome-stable
+          apt-get install -y google-chrome-stable
           
 #       - name: Install Firefox
 #         if: ${{ matrix.browser == 'firefox' }}
@@ -103,7 +95,7 @@ jobs:
 #           wget https://github.com/mozilla/geckodriver/releases/download/v0.24.0/geckodriver-v0.24.0-linux64.tar.gz
 #           tar -xvzf geckodriver-v0.24.0-linux64.tar.gz -C geckodriver-v0.24.0-linux64
 #           export PATH=$PATH:./geckodriver-v0.24.0-linux64/
-#           sudo apt install -y firefox
+#           apt install -y firefox
 
       - name: Run Django server
         run: |
@@ -128,15 +120,6 @@ jobs:
     container: ${{ matrix.container[0] }}
     strategy:
       fail-fast: false
-    services:
-      autoreduction_db:
-        image: mysql:5.7
-        env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: yes
-          MYSQL_USER: test-user
-          MYSQL_PASSWORD: pass
-          MYSQL_DATABASE: autoreduction
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
       - uses: actions/checkout@v2
@@ -145,6 +128,11 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.7
+
+      - name: Install packages
+        run: |
+          apt-get update
+          apt-get install -y docker.io mysql-client
 
       - uses: ./.github/actions/build-autoreduction
 
@@ -167,15 +155,6 @@ jobs:
     container: ${{ matrix.container[0] }}
     strategy:
       fail-fast: false
-    services:
-      autoreduction_db:
-        image: mysql:5.7
-        env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: yes
-          MYSQL_USER: test-user
-          MYSQL_PASSWORD: pass
-          MYSQL_DATABASE: autoreduction
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
       - uses: actions/checkout@v2
@@ -184,6 +163,11 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.7
+
+      - name: Install packages
+        run: |
+          apt-get update
+          apt-get install -y docker.io mysql-client
 
       - uses: ./.github/actions/build-autoreduction
 

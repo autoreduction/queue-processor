@@ -1,30 +1,43 @@
-name: Build Autoreduction in a test environment
+name: Build Autoreduction
+description: Build Autoreduction in a test environment
 
 runs:
   using: composite
 
   steps:
-    - name: Verify MySQL connection from host
-      run: |
-        apt-get update && apt-get install -y mysql-server mysql-client
-        mysql --host autoreduction_db --port 3306 -u root -e "SHOW DATABASES"
+    - name: Setup Docker MySQL
       shell: bash
+      run: |
+        docker run -e MYSQL_ALLOW_EMPTY_PASSWORD=yes \
+        -e MYSQL_USER=test-user \
+        -e MYSQL_PASSWORD=pass \
+        -e MYSQL_DATABASE=autoreduction \
+        --name=autoreduction_db \
+        --network=host \
+        -dit mysql:5.7
+        grep -m 1 "Test database successfully initialised" < $(docker logs --follow autoreduction_db)
+
+    - name: Verify MySQL connection from host
+      shell: bash
+      run: |
+        mysql --host 127.0.0.1 --port 3306 -u root -e "SHOW DATABASES"
 
     - name: Set up database
-      run: mysql --host autoreduction_db --port 3306 -u root < build/database/reset_autoreduction_db.sql
       shell: bash
+      run: mysql --host 127.0.0.1 --port 3306 -u root < build/database/reset_autoreduction_db.sql
 
     - name: Install Autoreduction
+      shell: bash
       run: |
         python -m pip install --upgrade pip
         pip install -e .
-      shell: bash
 
     - name: Install test suite dependencies
-      run: pip install -r requirements.txt
       shell: bash
+      run: pip install -r requirements.txt
 
     - name: Setup test environment
+      shell: bash
       run: |
         python setup.py test_settings
         # Externals must be after test_settings
@@ -33,4 +46,3 @@ runs:
         cat build.log
         _LOCAL_PYTHON_PATH=$(which python)
         $_LOCAL_PYTHON_PATH setup.py start
-      shell: bash
