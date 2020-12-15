@@ -15,7 +15,7 @@ from sqlalchemy.exc import OperationalError
 
 from build.database.generate_database import (get_test_user_sql, get_sql_from_file,
                                               run_sql)
-from build.utils.common import ROOT_DIRF
+from build.utils.common import ROOT_DIR
 
 
 # pylint:disable=missing-docstring

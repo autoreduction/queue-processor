@@ -2,78 +2,73 @@ name: Tests
 on: [push]
 
 jobs:
-  setup:
-    runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
-    steps:
-    - id: set-matrix
-      run: |
-        # 16.04 is currently used in travis but support will run out
-        # Test multiple version of Python - https://github.com/ISISScientificComputing/autoreduce/issues/916
-        # A CentOS container should be added in the future to replicate production servers
-        MATRIX='{
-          "container": ["ubuntu:16.04", "ubuntu:18.04"],
-          "python": ["3.6", "3.7"],
-          "browser": ["chrome"]
-        }'
-        echo "::set-output name=matrix::$(echo $MATRIX | tr -d " \t\n\r")"
-
   pytest:
-    name: Pytest - Container ${{ matrix.container }} / Python ${{ matrix.python }}
-    needs: setup
-    runs-on: ubuntu-latest
-    container: ${{ matrix.container }}
+    name: Pytest
+    runs-on: ubuntu-18.04
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_USER: test-user
+          MYSQL_PASSWORD: pass
+          MYSQL_DATABASE: autoreduction
+        ports:
+          - '3306:3306'
+        options: >-
+          --health-cmd="mysqladmin ping" --health-interval=10s
+          --health-timeout=5s --health-retries=3
     strategy:
-      matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
       fail-fast: false
 
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up Python ${{ matrix.python }}
+      - name: Set up Python 3.7
         uses: actions/setup-python@v2
         with:
-          python-version: ${{ matrix.python }}
-
-      - name: Install packages
-        run: |
-          apt-get update
-          apt-get install -y docker.io mysql-client
+          python-version: 3.7
 
       - uses: ./.github/actions/build-autoreduction
 
       - name: Perform initial check of database
         run: pytest build/tests/test_db_generation.py
 
-      - name: Functional tests
-        run: |
-          echo "Running Unit tests"
-          pytest --ignore=systemtests --cov=build --cov=monitors --cov=queue_processors --cov=scripts --cov=utils --cov=WebApp/autoreduce_webapp --cov=docker_reduction --cov=paths --cov=plotting --cov=model --ignore=webtests/
-          echo "Running System Tests"
-          pytest systemtests --cov-append
+      - name: Run unit tests
+        run: >-
+          pytest --ignore=systemtests --cov=build --cov=monitors --cov=queue_processors
+          --cov=scripts --cov=utils --cov=WebApp/autoreduce_webapp --cov=docker_reduction
+          --cov=paths --cov=plotting --cov=model --ignore=webtests/
+
+      - name: Run system tests
+        run: pytest systemtests --cov-append
 
   selenium:
-    name: Selenium - Container ${{ matrix.container }} / Python ${{ matrix.python }} / Browser ${{ matrix.browser }}
-    needs: setup
-    runs-on: ubuntu-latest
-    container: ${{ matrix.container }}
+    name: Selenium
+    runs-on: ubuntu-18.04
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_USER: test-user
+          MYSQL_PASSWORD: pass
+          MYSQL_DATABASE: autoreduction
+        ports:
+          - '3306:3306'
+        options: >-
+          --health-cmd="mysqladmin ping" --health-interval=10s
+          --health-timeout=5s --health-retries=3
     strategy:
-      matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
       fail-fast: false
 
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up Python ${{ matrix.python }}
+      - name: Set up Python 3.7
         uses: actions/setup-python@v2
         with:
-          python-version: ${{ matrix.python }}
-
-      - name: Install packages
-        run: |
-          apt-get update
-          apt-get install -y docker.io mysql-client
+          python-version: 3.7
 
       - uses: ./.github/actions/build-autoreduction
 
@@ -81,21 +76,14 @@ jobs:
       - name: Authentication workaround
         run: sed -i '79d' WebApp/autoreduce_webapp/autoreduce_webapp/test_settings.py
 
-      - name: Set up Chrome
-        if: ${{ matrix.browser == 'chrome' }}
+      - name: Set up chromedriver
         run: |
           wget https://chromedriver.storage.googleapis.com/87.0.4280.20/chromedriver_linux64.zip
           unzip chromedriver_linux64.zip
           export PATH=$PATH:./chromedriver_linux64/
-          apt-get install -y google-chrome-stable
-          
-#       - name: Install Firefox
-#         if: ${{ matrix.browser == 'firefox' }}
-#         run: |
-#           wget https://github.com/mozilla/geckodriver/releases/download/v0.24.0/geckodriver-v0.24.0-linux64.tar.gz
-#           tar -xvzf geckodriver-v0.24.0-linux64.tar.gz -C geckodriver-v0.24.0-linux64
-#           export PATH=$PATH:./geckodriver-v0.24.0-linux64/
-#           apt install -y firefox
+
+      - name: Install chrome
+        run: sudo apt-get install -y google-chrome-stable
 
       - name: Run Django server
         run: |
@@ -116,8 +104,20 @@ jobs:
 
   pylint:
     name: Pylint
-    runs-on: ubuntu-latest
-    container: ${{ matrix.container[0] }}
+    runs-on: ubuntu-18.04
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_USER: test-user
+          MYSQL_PASSWORD: pass
+          MYSQL_DATABASE: autoreduction
+        ports:
+          - '3306:3306'
+        options: >-
+          --health-cmd="mysqladmin ping" --health-interval=10s
+          --health-timeout=5s --health-retries=3
     strategy:
       fail-fast: false
 
@@ -128,11 +128,6 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.7
-
-      - name: Install packages
-        run: |
-          apt-get update
-          apt-get install -y docker.io mysql-client
 
       - uses: ./.github/actions/build-autoreduction
 
@@ -151,8 +146,20 @@ jobs:
 
   coveralls:
     name: Coveralls
-    runs-on: ubuntu-latest
-    container: ${{ matrix.container[0] }}
+    runs-on: ubuntu-18.04
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_USER: test-user
+          MYSQL_PASSWORD: pass
+          MYSQL_DATABASE: autoreduction
+        ports:
+          - '3306:3306'
+        options: >-
+          --health-cmd="mysqladmin ping" --health-interval=10s
+          --health-timeout=5s --health-retries=3
     strategy:
       fail-fast: false
 
@@ -163,11 +170,6 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.7
-
-      - name: Install packages
-        run: |
-          apt-get update
-          apt-get install -y docker.io mysql-client
 
       - uses: ./.github/actions/build-autoreduction
 
