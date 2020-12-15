@@ -31,13 +31,7 @@ jobs:
         
     steps:
       - uses: actions/checkout@v2
-
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v1
-        with:
-          languages: ${{ matrix.language }}
-          queries: +security-and-quality
-
+      
       - name: Set up Python 3.7
         uses: actions/setup-python@v2
         with:
@@ -51,6 +45,16 @@ jobs:
             ${{ runner.os }}-pip-
 
       - uses: ./.github/actions/build-autoreduction
+      
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v1
+        with:
+          languages: ${{ matrix.language }}
+          queries: +security-and-quality
+          setup-python-dependencies: false
+      
+      - name: Set CODEQL_PYTHON path
+        run: echo "CODEQL_PYTHON=$(which python)" >> $GITHUB_ENV
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v1
