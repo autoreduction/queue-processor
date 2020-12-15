@@ -1,9 +1,9 @@
-name: "CodeQL"
+name: "Code Scanning"
 
 on:
   push:
   schedule:
-    - cron: '0 14 * * 6'
+    - cron: '0 8 * * 1' # Runs at 08:00 UTC on Monday
 
 jobs:
   analyze:
@@ -20,7 +20,9 @@ jobs:
           MYSQL_DATABASE: autoreduction
         ports:
           - '3306:3306'
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+        options: >-
+          --health-cmd="mysqladmin ping" --health-interval=10s 
+          --health-timeout=5s --health-retries=3
 
     strategy:
       fail-fast: false
@@ -28,15 +30,7 @@ jobs:
         language: ['python', 'javascript']
         
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 2
-
-      # If this run was triggered by a pull request event, then checkout
-      # the head of the pull request instead of the merge commit.
-      - run: git checkout HEAD^2
-        if: ${{ github.event_name == 'pull_request' }}
+      - uses: actions/checkout@v2
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v1
@@ -47,6 +41,13 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.7
+      
+      - uses: actions/cache@v1
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
       - uses: ./.github/actions/build-autoreduction
 
