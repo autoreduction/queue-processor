@@ -1,4 +1,3 @@
-
 [![Build Status](https://travis-ci.org/ISISScientificComputing/autoreduce.svg?branch=master)](https://travis-ci.org/ISISScientificComputing/autoreduce) [![Master Coverage Status](https://coveralls.io/repos/github/ISISScientificComputing/autoreduce/badge.svg?branch=master)](https://coveralls.io/github/ISISScientificComputing/autoreduce?branch=master) 
 
 # Autoreduction v20.1
