@@ -184,3 +184,12 @@ class FooterTestMixin:
             .click_footer_help_link()
         self.driver.switch_to.window(self.driver.window_handles[-1])
         self.assertEqual(HelpPage.url(), self.driver.current_url)
+
+    def test_support_email_visible(self):
+        """
+        Test: Support email is displayed in footer
+        When: Page has FooterMixin
+        """
+        self.page \
+            .launch()
+        self.assertTrue(self.page.is_footer_email_visible())

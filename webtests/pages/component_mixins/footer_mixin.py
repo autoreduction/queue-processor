@@ -16,6 +16,7 @@ class FooterMixin:
     FOOTER_ID = "footer"
     HELP_LINK_ID = "footer-help"
     GITHUB_LINK_ID = "footer-github"
+    SUPPORT_EMAIL_LINK_ID = "footer-email"
 
     def is_footer_visible(self):
         """
@@ -39,3 +40,10 @@ class FooterMixin:
         github_link = self.driver.find_element_by_id(self.GITHUB_LINK_ID)
         github_link.click()
         return self
+
+    def is_footer_email_visible(self):
+        """
+        Check if the support email is visible within the header
+        :return: (bool) True if visible, otherwise False
+        """
+        return self.driver.find_element_by_id(self.SUPPORT_EMAIL_LINK_ID).is_displayed()
