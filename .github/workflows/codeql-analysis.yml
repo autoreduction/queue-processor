@@ -98,5 +98,5 @@ jobs:
             $URL \
             -H "Content-Type: application/json" \
             -H "Authorization: token $GITHUB_TOKEN" \
-            --data '{ "body": "[**Code scanning has finished for '${{ matrix.language }}'**](https://github.com/'$GITHUB_REPOSITORY'/security/code-scanning?query=ref%3Arefs%2Fheads%2F'$GITHUB_REF'+is%3Aopen+)" }'
+            --data '{ "body": "[**Code scanning has finished for '${{ matrix.language }}'**](https://github.com/'$GITHUB_REPOSITORY'/security/code-scanning)" }'
 
