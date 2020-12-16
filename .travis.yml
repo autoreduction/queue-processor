@@ -32,7 +32,7 @@ script:
   - py.test build/tests/test_db_generation.py  # perform initial check of database
   # ================ Functional tests =============== #
   - echo "Running Unit tests"
-  - py.test --ignore=systemtests --cov=build --cov=monitors --cov=queue_processors --cov=scripts --cov=utils --cov=WebApp/autoreduce_webapp --cov=docker_reduction --cov=paths --cov=plotting --cov=model
+  - py.test --ignore=systemtests --ignore=webtests --cov=build --cov=monitors --cov=queue_processors --cov=scripts --cov=utils --cov=WebApp/autoreduce_webapp --cov=docker_reduction --cov=paths --cov=plotting --cov=model
 
   - echo "Running System Tests"
   - py.test systemtests --cov-append
@@ -48,6 +48,3 @@ script:
   - pylint systemtests
   - pylint utils
   - pylint plotting
-
-after_success:
-  - coveralls

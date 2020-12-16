@@ -3,16 +3,19 @@
 coveralls==2.2.0
 dash==1.16.3
 django-debug-toolbar==3.1.1
-django_plotly_dash==1.4.2
+django_plotly_dash==1.5.0
 gitpython==3.1.11
 # this is the highest available version that pip can find on CentOS - be careful when updating
 # because Travis runs on Ubuntu so even if the build pass, the installation could fail
 ipython==7.19.0
-lxml==4.6.1
+lxml==4.6.2
 mock==4.0.2
-pandas==1.1.4
+pandas==1.1.5
 plotly==4.12.0
 pylint==2.6.0
+pytest==6.0.2
 pytest-cov==2.10.1
+pytest-xdist==2.1.0
 requests==2.25.0
+selenium==3.141.0
 stomp.py==6.1.0

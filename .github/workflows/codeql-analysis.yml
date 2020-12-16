@@ -1,0 +1,102 @@
+name: "Code Scanning"
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '0 6 * * 1' # Runs at 06:00 UTC on Monday
+  issue_comment:
+    types: [created]
+  
+
+jobs:
+  analyze:
+    name: Analyze
+    if: >
+      (github.event.issue.pull_request && startsWith(github.event.comment.body, '/scan-code')) || 
+      github.event_name == 'schedule' || 
+      github.event_name == 'push' || 
+      github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-18.04
+    
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_USER: test-user
+          MYSQL_PASSWORD: pass
+          MYSQL_DATABASE: autoreduction
+        ports:
+          - '3306:3306'
+        options: >-
+          --health-cmd="mysqladmin ping" --health-interval=10s 
+          --health-timeout=5s --health-retries=3
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ['python', 'javascript']
+        
+    steps:
+      - name: Add comment to PR - Code scanning is in progress
+        if: ${{ github.event.issue.pull_request }}
+        env:
+          URL: ${{ github.event.issue.comments_url }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          curl \
+            -X POST \
+            $URL \
+            -H "Content-Type: application/json" \
+            -H "Authorization: token $GITHUB_TOKEN" \
+            --data '{ "body": "[**Code scanning is in progress for '${{ matrix.language }}'...**](https://github.com/'$GITHUB_REPOSITORY'/actions/runs/'$GITHUB_RUN_ID')" }'
+      
+      - uses: actions/checkout@v2
+      
+      # If this run was triggered by a pull request event, then checkout
+      # the head of the pull request instead of the merge commit.
+      - run: git checkout HEAD^2
+        if: ${{ github.event_name == 'pull_request' }}
+      
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+      
+      - uses: actions/cache@v1
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - uses: ./.github/actions/build-autoreduction
+      
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v1
+        with:
+          languages: ${{ matrix.language }}
+          queries: +security-and-quality
+          setup-python-dependencies: false
+      
+      - name: Set CODEQL_PYTHON path
+        run: echo "CODEQL_PYTHON=$(which python)" >> $GITHUB_ENV
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v1
+      
+      - name: Add comment to PR - Code scanning has finished
+        if: ${{ always() && github.event.issue.pull_request }}
+        env:
+          URL: ${{ github.event.issue.comments_url }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          curl \
+            -X POST \
+            $URL \
+            -H "Content-Type: application/json" \
+            -H "Authorization: token $GITHUB_TOKEN" \
+            --data '{ "body": "[**Code scanning has finished for '${{ matrix.language }}'**](https://github.com/'$GITHUB_REPOSITORY'/security/code-scanning)" }'
+
