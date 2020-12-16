@@ -1,6 +1,7 @@
 [run]
 branch = True
 omit = 
+    WebApp/autoreduce_webapp/context_processors.py
     webtests/*
     # Requires external deps
     */virtualenv/*
