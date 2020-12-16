@@ -1,11 +1,10 @@
 name: Tests
-
 on: [push]
 
 jobs:
-  test:
+  pytest:
+    name: Pytest
     runs-on: ubuntu-18.04
-
     services:
       mysql:
         image: mysql:5.7
@@ -16,7 +15,11 @@ jobs:
           MYSQL_DATABASE: autoreduction
         ports:
           - '3306:3306'
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+        options: >-
+          --health-cmd="mysqladmin ping" --health-interval=10s
+          --health-timeout=5s --health-retries=3
+    strategy:
+      fail-fast: false
 
     steps:
       - uses: actions/checkout@v2
@@ -26,17 +29,128 @@ jobs:
         with:
           python-version: 3.7
 
+      - uses: actions/cache@v1
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
       - uses: ./.github/actions/build-autoreduction
 
       - name: Perform initial check of database
-        run: py.test build/tests/test_db_generation.py
+        run: pytest build/tests/test_db_generation.py
 
-      - name: Functional tests
+      - name: Run unit tests
+        run: >-
+          pytest --ignore=systemtests --cov=build --cov=monitors --cov=queue_processors
+          --cov=scripts --cov=utils --cov=WebApp/autoreduce_webapp --cov=docker_reduction
+          --cov=paths --cov=plotting --cov=model --ignore=webtests/
+
+      - name: Run system tests
+        run: pytest systemtests --cov-append
+
+  selenium:
+    name: Selenium
+    runs-on: ubuntu-18.04
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_USER: test-user
+          MYSQL_PASSWORD: pass
+          MYSQL_DATABASE: autoreduction
+        ports:
+          - '3306:3306'
+        options: >-
+          --health-cmd="mysqladmin ping" --health-interval=10s
+          --health-timeout=5s --health-retries=3
+    strategy:
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+
+      - uses: actions/cache@v1
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - uses: ./.github/actions/build-autoreduction
+
+      # Temporary workaround for double backend in settings breaking authentication
+      - name: Authentication workaround
+        run: sed -i '79d' WebApp/autoreduce_webapp/autoreduce_webapp/test_settings.py
+
+      - name: Set up chromedriver
         run: |
-          echo "Running Unit tests"
-          py.test --ignore=systemtests --cov=build --cov=monitors --cov=queue_processors --cov=scripts --cov=utils --cov=WebApp/autoreduce_webapp --cov=docker_reduction --cov=paths --cov=plotting --cov=model
-          echo "Running System Tests"
-          py.test systemtests --cov-append
+          wget https://chromedriver.storage.googleapis.com/87.0.4280.20/chromedriver_linux64.zip
+          unzip chromedriver_linux64.zip
+          export PATH=$PATH:./chromedriver_linux64/
+
+      - name: Install chrome
+        run: sudo apt-get install -y google-chrome-stable
+
+      - name: Run Django server
+        run: |
+          cd WebApp/autoreduce_webapp
+          python manage.py runserver &
+          sleep 10
+
+      - name: Run tests
+        run: |
+          mv webtests/config.json.example webtests/config.json
+          python -m webtests.runner --headless
+
+      - uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: screenshots
+          path: webtests/screenshots/
+
+  pylint:
+    name: Pylint
+    runs-on: ubuntu-18.04
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_USER: test-user
+          MYSQL_PASSWORD: pass
+          MYSQL_DATABASE: autoreduction
+        ports:
+          - '3306:3306'
+        options: >-
+          --health-cmd="mysqladmin ping" --health-interval=10s
+          --health-timeout=5s --health-retries=3
+    strategy:
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+
+      - uses: actions/cache@v1
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - uses: ./.github/actions/build-autoreduction
 
       - name: Pylint tests
         run: |
@@ -49,6 +163,43 @@ jobs:
           pylint systemtests
           pylint utils
           pylint plotting
+          pylint webtests
+
+  coveralls:
+    name: Coveralls
+    runs-on: ubuntu-18.04
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_USER: test-user
+          MYSQL_PASSWORD: pass
+          MYSQL_DATABASE: autoreduction
+        ports:
+          - '3306:3306'
+        options: >-
+          --health-cmd="mysqladmin ping" --health-interval=10s
+          --health-timeout=5s --health-retries=3
+    strategy:
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+
+      - uses: actions/cache@v1
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - uses: ./.github/actions/build-autoreduction
 
       - name: Coveralls
         env:

@@ -1,6 +1,7 @@
 [run]
 branch = True
 omit = 
+    webtests/*
     # Requires external deps
     */virtualenv/*
     *.so

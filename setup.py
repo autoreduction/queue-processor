@@ -19,12 +19,12 @@ from build.commands.start import Start
 setup_requires = ['attrs==20.3.0',
                   'dash==1.16.3',
                   'dash_html_components==1.1.1',
-                  # dash 1.16.3 depends on dash-core-components==1.12.1
+                  # dash 1.16.3 depends on dash-core-components 1.12.1
                   'dash_core_components==1.12.1',
                   'docker==4.4.0',
                   'Django==3.1.2',
                   'django_extensions==3.0.9',
-                  'django_plotly_dash==1.4.2',
+                  'django_plotly_dash==1.5.0',
                   'django-user-agents==0.4.0',
                   'filelock==3.0.12',
                   'fire==0.3.1',
@@ -32,11 +32,11 @@ setup_requires = ['attrs==20.3.0',
                   # this is the highest available version that pip can find on CentOS - be careful when updating
                   # because Travis runs on Ubuntu so even if the build pass, the installation could fail
                   'IPython==7.19.0',
-                  'mysqlclient==2.0.1',
+                  'mysqlclient==2.0.2',
                   'mysql-connector==2.2.9',
                   'nexusformat==0.5.3',
                   'numpy==1.19.2',
-                  'pandas==1.1.4',
+                  'pandas==1.1.5',
                   'plotly==4.12.0',
                   'pytz==2020.4',
                   'PyMySQL==0.10.1',
