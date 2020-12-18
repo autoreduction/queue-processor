@@ -42,4 +42,4 @@ def validate_rb_number(rb_number):
     except (ValueError, TypeError):
         return False
 
-    return rb_number > 0
+    return 0 < rb_number < 9999999
