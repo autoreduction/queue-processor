@@ -16,6 +16,6 @@ pylint==2.6.0
 pytest==6.2.1
 pytest-cov==2.10.1
 pytest-xdist==2.2.0
-requests==2.25.0
+requests==2.25.1
 selenium==3.141.0
 stomp.py==6.1.0
