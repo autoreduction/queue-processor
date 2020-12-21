@@ -250,3 +250,12 @@ class InstrumentVariablesUtils:
         help_text = html.escape(help_text)  # Remove any HTML already in the help string
         help_text = help_text.replace('\n', '<br>').replace('\t', '&nbsp;&nbsp;&nbsp;&nbsp;')
         return help_text
+
+     def get_current_script_text(self, instrument_name):
+        """
+        Fetches the reduction script and variables script for the given
+        instrument, and returns each as a string.
+        """
+        script_text = self._load_reduction_script(instrument_name)
+        script_vars_text = self._load_reduction_vars_script(instrument_name)
+        return script_text, script_vars_text
