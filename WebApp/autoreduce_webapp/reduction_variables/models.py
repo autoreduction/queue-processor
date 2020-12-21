@@ -37,6 +37,11 @@ class Variable(models.Model):
 class InstrumentVariable(Variable):
     """
     Instrument specific variable class
+
+    - Holds the IDs of the variables used for the instrument
+
+    - Holds `start_run` for functionality to "Configure new jobs" - e.g. variables starting from `start_run` will use the defaults that are queried with
+
     """
     instrument = models.ForeignKey(Instrument, on_delete=models.CASCADE)
     experiment_reference = models.IntegerField(blank=True, null=True)
@@ -44,9 +49,11 @@ class InstrumentVariable(Variable):
     tracks_script = models.BooleanField(default=False)
 
 
-class RunVariable(Variable):
+class RunVariable(models.Model):
     """
     Run specific Variable class
     """
-    reduction_run = models.ForeignKey(ReductionRun, related_name="run_variables",
+    variable = models.ForeignKey(Variable, related_name="runs", on_delete=models.CASCADE)
+    reduction_run = models.ForeignKey(ReductionRun,
+                                      related_name="run_variables",
                                       on_delete=models.CASCADE)

@@ -144,8 +144,10 @@ class ReductionRunUtils:
     @staticmethod
     def get_script_and_arguments(reduction_run):
         """
-        Fetch the reduction script from the given run and return it as a string, along with a
-        dictionary of arguments.
+        MISLEADING just get the script from the reduction run? Why have a function that does both when one is just reduction_run.script
+
+        ~~Fetch the reduction script from the given run and return it as a string, along with a
+        dictionary of arguments.~~
         """
         model = access.start_database().variable_model
         run_variable_records = model.RunVariable.objects \
@@ -153,7 +155,7 @@ class ReductionRunUtils:
 
         standard_vars, advanced_vars = {}, {}
         for run_variable in run_variable_records:
-            variable = model.Variable.objects.filter(id=run_variable.variable_ptr_id).first()
+            variable = run_variable.variable
             value = VariableUtils().convert_variable_to_type(variable.value, variable.type)
             if variable.is_advanced:
                 advanced_vars[variable.name] = value
