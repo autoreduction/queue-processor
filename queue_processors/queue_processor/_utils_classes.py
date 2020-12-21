@@ -11,16 +11,10 @@ which is used by the message handler
 """
 from typing import NamedTuple
 
-from queue_processors.queue_processor.queueproc_utils.messaging_utils import \
-    MessagingUtils
-from queue_processors.queue_processor.queueproc_utils \
-    .instrument_variable_utils \
-    import InstrumentVariablesUtils
-from queue_processors.queue_processor.queueproc_utils.reduction_run_utils \
-    import \
-    ReductionRunUtils
-from queue_processors.queue_processor.queueproc_utils.status_utils import \
-    StatusUtils
+from queue_processors.queue_processor.queueproc_utils.messaging_utils import MessagingUtils
+from queue_processors.queue_processor.queueproc_utils.instrument_variable_utils import InstrumentVariablesUtils
+from queue_processors.queue_processor.queueproc_utils.reduction_run_utils import ReductionRunUtils
+from queue_processors.queue_processor.queueproc_utils.status_utils import StatusUtils
 
 
 class _UtilsClasses(NamedTuple):
