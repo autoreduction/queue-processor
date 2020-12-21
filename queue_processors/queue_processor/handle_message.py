@@ -121,8 +121,7 @@ class HandleMessage:
         # the script can run
         # through in the desired way
         self._logger.info('Creating variables for run')
-        variables = self._utils.instrument_variable.create_variables_for_run(
-            reduction_run)
+        variables = self._utils.instrument_variable.create_variables_for_run(reduction_run)
         if not variables:
             self._logger.warning(
                 "No instrument variables found on %s for run %s",
