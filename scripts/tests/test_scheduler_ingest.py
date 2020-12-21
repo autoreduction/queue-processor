@@ -44,7 +44,7 @@ class TestCycle(unittest.TestCase):
         self.assertEqual(cycle.name, self.test_cycle_values["name"])
         self.assertEqual(cycle.start, self.test_cycle_values["start"])
         self.assertEqual(cycle.end, self.test_cycle_values["end"])
-        self.assertTrue(len(cycle.maintenance_days) == 0)
+        self.assertEqual(0, len(cycle.maintenance_days))
 
     def test_add_maintenance_day(self):
         """
@@ -56,7 +56,7 @@ class TestCycle(unittest.TestCase):
                       self.test_cycle_values["end"])
         cycle.add_maintenance_day(self.test_maintenance_day_values["start"],
                                   self.test_maintenance_day_values["end"])
-        self.assertTrue(len(cycle.maintenance_days) == 1)
+        self.assertEqual(1, len(cycle.maintenance_days))
         self.assertIsInstance(cycle.maintenance_days[0], MaintenanceDay)
         self.assertEqual(cycle.maintenance_days[0].start,
                          self.test_maintenance_day_values["start"])
@@ -161,7 +161,7 @@ class TestSchedulerDataProcessor(unittest.TestCase):
         local_cycle_data[0]["name"] = "invalid"
         sdp = SchedulerDataProcessor()
         result = sdp._clean_data(local_cycle_data)
-        self.assertTrue(len(result) == len(local_cycle_data)-1)
+        self.assertEqual(len(local_cycle_data) - 1, len(result))
 
     def test_clean_with_invalid_date(self):
         """
@@ -174,7 +174,7 @@ class TestSchedulerDataProcessor(unittest.TestCase):
         earlier_than_possible = sdp._earliest_possible_date + relativedelta(days=-1)
         local_cycle_data[0]["start"] = earlier_than_possible
         result = sdp._clean_data(local_cycle_data)
-        self.assertTrue(len(result) == len(local_cycle_data)-1)
+        self.assertEqual(len(local_cycle_data) - 1, len(result))
 
     @patch('scripts.scheduler_ingest.SchedulerDataProcessor._clean_data')
     @patch('scripts.scheduler_ingest.SchedulerDataProcessor._sort_by_date')
@@ -187,9 +187,9 @@ class TestSchedulerDataProcessor(unittest.TestCase):
         sdp = SchedulerDataProcessor()
         result = sdp._pre_process(self.test_cycle_data,
                                   self.test_maintenance_dict.values())
-        self.assertTrue(mocked_sort_by_date.call_count == 2)
-        self.assertTrue(mocked_clean_data.call_count == 2)
-        self.assertTrue(len(result) == 2)
+        self.assertEqual(2, mocked_sort_by_date.call_count)
+        self.assertEqual(2, mocked_clean_data.call_count)
+        self.assertEqual(2, len(result))
 
     def check_process_output(self, _process_output, expected_length):
         """
@@ -201,7 +201,7 @@ class TestSchedulerDataProcessor(unittest.TestCase):
         self.assertEqual(len(_process_output), expected_length)
         for cycle in _process_output:
             self.assertIsInstance(cycle, Cycle)
-            self.assertTrue(len(cycle.maintenance_days) == 0)
+            self.assertEqual(0, len(cycle.maintenance_days))
 
     @patch('scripts.scheduler_ingest.SchedulerDataProcessor._md_warning')
     def test_process_with_maintenance_before_cycles(self, mocked_md_warning):
@@ -216,7 +216,7 @@ class TestSchedulerDataProcessor(unittest.TestCase):
         (_, kwargs) = mocked_md_warning.call_args
         self.assertEqual(kwargs["md_data"],
                          self.test_maintenance_dict["before_cycles"])
-        self.assertEqual(kwargs["cycle_before"], None)
+        self.assertIsNone(kwargs['cycle_before'])
         self.assertEqual(kwargs["cycle_after"],
                          self.create_cycle_from_dict(self.test_cycle_data[0]))
 
@@ -236,7 +236,7 @@ class TestSchedulerDataProcessor(unittest.TestCase):
         self.assertEqual(kwargs["md_data"], self.test_maintenance_dict["after_cycles"])
         self.assertEqual(kwargs["cycle_before"],
                          self.create_cycle_from_dict(self.test_cycle_data[2]))
-        self.assertEqual(kwargs["cycle_after"], None)
+        self.assertIsNone(kwargs["cycle_after"])
 
         self.check_process_output(cycles, len(self.test_cycle_data))
 
