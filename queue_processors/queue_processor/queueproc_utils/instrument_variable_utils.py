@@ -158,18 +158,14 @@ class InstrumentVariablesUtils:
             .filter(experiment_reference=experiment_reference)
         return [VariableUtils().copy_variable(ins_var) for ins_var in ins_vars]
 
-    def find_variables_for_run(self, instrument_name, run_number=None):
+    def find_variables_for_run(self, instrument_name, run_number:int):
         """
         Look for the applicable variables for the given run number. If none are set, return an empty
         list (or QuerySet)
         """
         instrument = db.get_instrument(instrument_name)
         var_model = self.model.variable_model
-        if not run_number:
-            # If we haven't been given a run number, assume the variables are from the latest run available
-            return var_model.InstrumentVariable.objects.filter(instrument_id=instrument.id).last()
-        else:
-            return var_model.InstrumentVariable.objects.filter(instrument_id=instrument.id, start_run=run_number)
+        return var_model.InstrumentVariable.objects.filter(instrument_id=instrument.id, start_run=run_number)
 
     def _create_new_var(self, name, value, help_text: str, run_number: int, instrument_id: int, is_advanced: bool):
         new_var = self.model.variable_model.InstrumentVariable(name=name,
