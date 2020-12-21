@@ -259,3 +259,30 @@ class InstrumentVariablesUtils:
         script_text = self._load_reduction_script(instrument_name)
         script_vars_text = self._load_reduction_vars_script(instrument_name)
         return script_text, script_vars_text
+
+    def _load_reduction_script(self, instrument_name):
+        """ Loads reduction script. """
+        return self._load_script(os.path.join(self._reduction_script_location(instrument_name), 'reduce.py'))
+
+    def _load_reduction_vars_script(self, instrument_name):
+        """ Loads reduction variables script. """
+        return self._load_script(os.path.join(self._reduction_script_location(instrument_name), 'reduce_vars.py'))
+
+    def _load_script(self, path):
+        """
+        First detect the file encoding using chardet.
+        Then load the relevant reduction script and return back the text of the script.
+        If the script cannot be loaded, None is returned.
+        """
+        try:
+            # Read raw bytes and determine encoding
+            f_raw = io.open(path, 'rb')
+            encoding = chardet.detect(f_raw.read(32))["encoding"]
+
+            # Read the file in decoded; io is used for the encoding kwarg
+            f_decoded = io.open(path, 'r', encoding=encoding)
+            script_text = f_decoded.read()
+            return script_text
+        except Exception as exp:  # pylint: disable = broad-except
+            self.log_error_and_notify("Unable to load reduction script %s - %s" % (path, exp))
+            return None
