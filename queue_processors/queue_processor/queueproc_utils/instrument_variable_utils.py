@@ -158,7 +158,7 @@ class InstrumentVariablesUtils:
             .filter(experiment_reference=experiment_reference)
         return [VariableUtils().copy_variable(ins_var) for ins_var in ins_vars]
 
-    def find_variables_for_run(self, instrument_name, run_number:int):
+    def find_variables_for_run(self, instrument_name, run_number: int):
         """
         Look for the applicable variables for the given run number. If none are set, return an empty
         list (or QuerySet)
