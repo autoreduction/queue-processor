@@ -49,50 +49,16 @@ class InstrumentVariablesUtils:
     def create_variables_for_run(self, reduction_run):
         """
         Finds the appropriate InstrumentVariables for the given reduction run, and creates
-        RunVariables from them. If the run is a re-run, use the previous run's variables.
+        RunVariables from them.
+
+        If the run is a re-run, use the previous run's variables.
+
         If instrument variables set for the run's experiment are found, they're used.
+
         Otherwise if variables set for the run's run number exist, they'll be used.
+
         If not, the instrument's default variables will be used.
         """
-        """
-        PATHS
-
-        Input: Run Number
-
-        Distinction is made with `tracks_script`
-        QP should only handle:
-            - Already exists (reruns should be modified by webapp)
-                - Reruns
-                - Scheduled ahead
-            - New
-
-        For this Run Number:
-
-        - If new run number = no variables -> create and set value from script
-            -> Return new instrument variables that `tracks_script`
-
-        - Existing variables
-            - Rerun (this should be handled by the webapp)
-            - Scheduled ahead
-            - They look the same, we query for Variable where Run number = parameter
-
-            -> Depending on tracks_script
-                -> IF existing variables == what's in the script -> return the same instrument variables
-                -> IF existing variables != what's in the script -> make new instrument variables, and return those
-
-
-        AT END -> Reference the InstVars received via RunVariable(variable=instvar, run=...)
-
-        """
-
-        # Check for existing variables. This is the case when:
-        # - This is a rerun
-        #   - There's 2 entrypoints for a rerun:
-        #       -> Via manual_submission
-        #       -> Via rerun from the web-app
-        # - The variables are scheduled ahead via "Configure new jobs"
-        #   - In this case the variable's new values should have been set from the web app
-
         instrument_name = reduction_run.instrument.name
         # Find if any variables exist. This happens when:
         # - This is a re-run
