@@ -10,8 +10,10 @@ This module deals with the updating of the database backend.
 It consumes messages from the queues and then updates the reduction run
 status in the database.
 """
+from logging import debug
 import logging.config
 import sys
+import time
 import traceback
 from model.message.message import Message
 from queue_processors.queue_processor.handle_message import HandleMessage
@@ -37,6 +39,7 @@ class QueueListener:
     def on_message(self, headers, message):
         """ This method is where consumed messages are dealt with. It will
         consume a message. """
+
         destination = headers["destination"]
         self._priority = headers["priority"]
         self._logger.info("Destination: %s Priority: %s", destination,
@@ -109,3 +112,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+    while True:
+        time.sleep(0.5)

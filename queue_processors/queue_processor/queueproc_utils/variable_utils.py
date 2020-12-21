@@ -32,13 +32,16 @@ class VariableUtils:
                                  help_text=instrument_var.help_text,
                                  reduction_run=reduction_run)
 
-    def save_run_variables(self, instrument_vars, reduction_run):
+
+    def save_run_variables(self, variables, reduction_run):
         """ Save reduction run variables in the database. """
+        model = access.start_database().variable_model
         logger.info('Saving run variables for %s', str(reduction_run.run_number))
-        run_variables = map(lambda ins_var: self.derive_run_variable(ins_var, reduction_run),
-                            instrument_vars)
-        for run_variable in run_variables:
-            access.save_record(run_variable)
+        run_variables=[]
+        for variable in variables:
+            run_var = model.RunVariable(variable=variable, reduction_run=reduction_run)
+            run_var.save()
+            run_variables.append(run_var)
         return run_variables
 
     @staticmethod

@@ -100,6 +100,7 @@ class Daemon:
         if pid:
             message = "pidfile %s already exist. Daemon already running?\n"
             LOGGER.warning(message, self.pidfile)
+            print(message, self.pidfile)
             sys.exit(1)
 
         # Start the daemon
@@ -153,7 +154,7 @@ class Daemon:
         """
 
 
-def control_daemon_from_cli(daemon, callback=None):
+def control_daemon_from_cli(daemon):
     """
     Small helper function required in implementations of the Daemon class to validate and respond
     to CLI user input
@@ -165,8 +166,6 @@ def control_daemon_from_cli(daemon, callback=None):
             daemon.start()
         elif sys.argv[1] == 'stop':
             daemon.stop()
-            if callback is not None:
-                callback(daemon)
         elif sys.argv[1] == 'restart':
             daemon.restart()
         else:
