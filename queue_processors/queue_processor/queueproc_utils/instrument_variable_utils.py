@@ -251,7 +251,7 @@ class InstrumentVariablesUtils:
         help_text = help_text.replace('\n', '<br>').replace('\t', '&nbsp;&nbsp;&nbsp;&nbsp;')
         return help_text
 
-     def get_current_script_text(self, instrument_name):
+    def get_current_script_text(self, instrument_name):
         """
         Fetches the reduction script and variables script for the given
         instrument, and returns each as a string.
