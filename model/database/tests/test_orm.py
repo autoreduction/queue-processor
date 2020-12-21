@@ -28,7 +28,7 @@ class TestDjangoORM(unittest.TestCase):
         path = sys.path
         expected = os.path.join(get_project_root(), 'WebApp', 'autoreduce_webapp')
         DjangoORM.add_webapp_path()
-        self.assertTrue(expected in path)
+        self.assertIn(expected, path)
         sys.path.remove(expected)  # Cleanup test
 
     def test_add_webapp_path_duplication(self):
