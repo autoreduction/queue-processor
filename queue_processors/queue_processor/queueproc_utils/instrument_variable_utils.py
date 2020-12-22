@@ -60,9 +60,7 @@ class InstrumentVariablesUtils:
         If not, the instrument's default variables will be used.
         """
         instrument_name = reduction_run.instrument.name
-        # Find if any variables exist. This happens when:
-        # - This is a re-run
-        # - There are variables configured for future runs
+
         variables = self.find_existing_variables(instrument_name, reduction_run)
         reduce_vars_file = os.path.join(self._reduction_script_location(instrument_name), 'reduce_vars.py')
         reduce_vars_module = self._import_module(reduce_vars_file)
@@ -76,8 +74,6 @@ class InstrumentVariablesUtils:
         return VariableUtils().save_run_variables(variables, reduction_run)
 
     def get_variables(self, reduce_vars_module, vars_type, variables, reduction_run, is_advanced):
-        # Match variables found for this experiment/run number, with the variables that are currently
-        # in the reduce_vars script.
         final_variables, missing_variables = self.match_variables_with_script_vars(reduce_vars_module, vars_type,
                                                                                    variables, reduction_run.run_number)
 
@@ -109,9 +105,18 @@ class InstrumentVariablesUtils:
         """
         Match variables found for this experiment/run number, with the variables that are currently in the reduce_vars script.
 
-        Variables that match will be checked for changes, if changed will be copied and updated.
 
-        Variables that don't match will be returned to be processed further.
+        Variables that don't track the script will be re-used, as there's nothing to verify their values against.
+            - These are usually pre-configured from the Web App's "Configure new jobs"
+
+        Variables that match will be checked for changes:
+            - If all fields are the same, the variable object will be re-used.
+            - If any fields ARE CHANGED, a new variable obejct will be made and used.
+
+        Variables that don't match will be ignored.
+
+        Any variables from reduce_vars script that don't get matched with a Variable from the DB will be returned
+        as "missing variables", which will be created in a following step.
 
         :return: List of matching variables, and a dict of ones that don't exist yet
         """
