@@ -2,22 +2,17 @@ name: "Code Scanning"
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
   schedule:
-    - cron: '0 6 * * 1' # Runs at 06:00 UTC on Monday
+    - cron: '0 5 * * 1' # Runs at 05:00 UTC on Monday
   issue_comment:
     types: [created]
   
-
 jobs:
   analyze:
     name: Analyze
     if: >
       (github.event.issue.pull_request && startsWith(github.event.comment.body, '/scan-code')) || 
-      github.event_name == 'schedule' || 
-      github.event_name == 'push' || 
+      (github.ref == 'refs/heads/master' && github.event_name == 'schedule') || 
       github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-18.04
     
@@ -54,12 +49,17 @@ jobs:
             -H "Authorization: token $GITHUB_TOKEN" \
             --data '{ "body": "[**Code scanning is in progress for '${{ matrix.language }}'...**](https://github.com/'$GITHUB_REPOSITORY'/actions/runs/'$GITHUB_RUN_ID')" }'
       
-      - uses: actions/checkout@v2
-      
-      # If this run was triggered by a pull request event, then checkout
-      # the head of the pull request instead of the merge commit.
-      - run: git checkout HEAD^2
-        if: ${{ github.event_name == 'pull_request' }}
+      - name: Get Branch name
+        id: branchName
+        run: |
+          echo ::set-output name=branch::$(echo $PR_COMMENT | cut -d "[" -f2 | cut -d "]" -f1)
+        env:
+          PR_COMMENT: ${{ github.event.comment.body }}
+          
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with: 
+          ref: ${{ steps.branchName.outputs.branch }}
       
       - name: Set up Python 3.7
         uses: actions/setup-python@v2
@@ -100,4 +100,3 @@ jobs:
             -H "Content-Type: application/json" \
             -H "Authorization: token $GITHUB_TOKEN" \
             --data '{ "body": "[**Code scanning has finished for '${{ matrix.language }}'**](https://github.com/'$GITHUB_REPOSITORY'/security/code-scanning)" }'
-
