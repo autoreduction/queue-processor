@@ -13,6 +13,8 @@ import logging.config
 import os
 import html
 from typing import Any, Dict, List, Tuple
+from django.db import transaction
+from django.db.models import Q
 
 import chardet
 
@@ -61,156 +63,51 @@ class InstrumentVariablesUtils:
         """
         instrument_name = reduction_run.instrument.name
 
-        variables = self.find_existing_variables(reduction_run)
         reduce_vars_file = os.path.join(self._reduction_script_location(instrument_name), 'reduce_vars.py')
         reduce_vars_module = self._import_module(reduce_vars_file)
 
-        final_variables = self.get_variables(reduce_vars_module, 'standard_vars', variables, reduction_run, False)
-
-        final_variables.extend(self.get_variables(reduce_vars_module, 'advanced_vars', variables, reduction_run, True))
+        variables = self.find_or_make_variables(reduction_run, reduce_vars_module, 'standard_vars', False)
+        variables.extend(self.find_or_make_variables(reduction_run, reduce_vars_module, 'advanced_vars', True))
 
         logger.info('Creating RunVariables')
         # Create run variables from these instrument variables, and return them.
         return VariableUtils().save_run_variables(variables, reduction_run)
 
-    def get_variables(self, reduce_vars_module, vars_type, variables, reduction_run, is_advanced):
-        final_variables, missing_variables = self.match_variables_with_script_vars(reduce_vars_module, vars_type,
-                                                                                   variables, reduction_run.run_number)
-
-        final_variables.extend(
-            self.make_missing_variables(missing_variables, reduce_vars_module, vars_type, reduction_run.run_number,
-                                        reduction_run.instrument.id, is_advanced))
-        return final_variables
-
-    def make_missing_variables(self, missing_variables: Dict, reduce_vars_module, vars_type: str, run_number: int,
-                               instrument_id: int, is_advanced: bool) -> List:
-        """
-        Makes any variables that were found missing when matched against the database variables.
-
-        The Variables get created in the database with values from the current reduce_vars script.
-
-        :returns: List of created variables
-        """
-        # Process any variables left in the dictionary from the script
-        final_reduction_variables = []
-        for name, value in missing_variables.items():
-            help_text = self._get_help_text(vars_type, name, reduce_vars_module)
-            new_var = self._create_new_var(name, value, help_text, run_number, instrument_id, is_advanced)
-            final_reduction_variables.append(new_var)
-
-        return final_reduction_variables
-
-    def match_variables_with_script_vars(self, reduce_vars_module, vars_type: str, variables: List,
-                                         run_number: int) -> Tuple[List, Dict]:
-        """
-        Match variables found for this experiment/run number, with the variables that are currently in the reduce_vars script.
-
-        Variables that don't track the script will be re-used, as there's nothing to verify their values against.
-            - These are usually pre-configured from the Web App's "Configure new jobs"
-
-        Variables that match will be checked for changes:
-            - If all fields are the same, the variable object will be re-used.
-            - If any fields ARE CHANGED, a new variable obejct will be made and used.
-
-        Variables that don't match will be ignored.
-
-        Any variables from reduce_vars script that don't get matched with a Variable from the DB will be returned
-        as "missing variables", which will be created in a following step.
-
-        :return: List of matching variables, and a dict of ones that don't exist yet
-        """
+    @transaction.atomic
+    def find_or_make_variables(self, reduction_run, reduce_vars_module, vars_type, is_advanced) -> List:
         dictionary = getattr(reduce_vars_module, vars_type, None)
         if dictionary is None:
-            return [], {}
-
-        final_reduction_variables = []
-        for var in variables:
-            # we've processed all variables in the script,
-            # no need to waste further iterations in which we do nothing at all
-            if len(dictionary) == 0:
-                break
-            # if the variable is still used within the reduce_vars script
-            if var.name in dictionary:
-                # if the variable is tracking the script, then we make sure that it's value is up to date
-                # - if changed a new variable will be made, and the fields updated
-                # - if NOT changed the same variable object will be used
-                if var.tracks_script:
-                    help_text = self._get_help_text(vars_type, var.name, reduce_vars_module)
-                    var = self._create_new_var_if_changed(var, dictionary[var.name], help_text, run_number)
-                final_reduction_variables.append(var)
-
-                # remove from the dictionary, so it's not processed further as a missing variable
-                del dictionary[var.name]
-
-        return final_reduction_variables, dictionary
-
-    def find_existing_variables(self, reduction_run):
-        logger.info('Finding variables from experiment')
-        instrument_id = reduction_run.instrument.id
-        variables = self.find_variables_for_experiment(instrument_id, reduction_run.experiment.reference_number)
-
-        if not variables:  # if none were found from experiment ref number, then use the run number
-            logger.info('Finding variables from run number')
-            # No experiment-specific variables, so let's look for variables set by run number.
-            variables = self.find_variables_for_run(instrument_id, reduction_run.run_number)
-        return variables
-
-    def find_variables_for_experiment(self, instrument_id, experiment_reference):
-        """
-        Look for currently set variables for the experiment.
-        If none are set, return an empty list (or QuerySet) anyway.
-        """
+            return []
         model = self.model.variable_model
-        return model.InstrumentVariable.objects.filter(instrument_id=instrument_id,
-                                                       experiment_reference=experiment_reference).order_by("-id")
+        experiment_reference = reduction_run.experiment.reference_number
+        run_number = reduction_run.run_number
+        instrument_id = reduction_run.instrument.id
 
-    def find_variables_for_run(self, instrument_id, run_number: int):
-        """
-        Look for the applicable variables for the given run number. If none are set, return an empty
-        list (or QuerySet)
-        """
-        var_model = self.model.variable_model
-        # try to find existing variables for this run number
-        return var_model.InstrumentVariable.objects.filter(instrument_id=instrument_id,
-                                                           start_run__lte=run_number).order_by("-id")
+        possible_variables = model.InstrumentVariable.objects.filter(Q(experiment_reference=experiment_reference)
+                                                                     | Q(start_run__lte=run_number),
+                                                                     instrument_id=instrument_id)
+        variables = []
+        for name, value in dictionary.items():
+            script_help_text = self._get_help_text(vars_type, name, reduce_vars_module)
+            script_value = str(value).replace('[', '').replace(']', '')
+            script_type = VariableUtils().get_type_string(value)
 
-    def _create_new_var(self, name, value, help_text: str, run_number: int, instrument_id: int, is_advanced: bool):
-        new_var = self.model.variable_model.InstrumentVariable(name=name,
-                                                               value=str(value).replace('[', '').replace(']', ''),
-                                                               type=VariableUtils().get_type_string(value),
-                                                               help_text=help_text,
-                                                               is_advanced=is_advanced,
-                                                               start_run=run_number,
-                                                               instrument_id=instrument_id,
-                                                               tracks_script=1)
-        return new_var.save()
+            variable, created = possible_variables.get_or_create(name=name,
+                                                                 value=script_value,
+                                                                 type=script_type,
+                                                                 help_text=script_help_text,
+                                                                 is_advanced=is_advanced,
+                                                                 instrument_id=instrument_id)
 
-    def _create_new_var_if_changed(self, variable, dict_value: Any, help_text: str, run_number: int):
-        new_value = str(dict_value).replace('[', '').replace(']', '')
-        new_type = VariableUtils().get_type_string(dict_value)
-        new_help_text = help_text
-        changed = False
+            if created:
+                # if the variable was just created then set it to track the script and that it starts on the current run
+                # if it was found already existing just leave it as it is
+                variable.tracks_script = True
+                variable.start_run = run_number
+                variable.save()
 
-        if new_value != variable.value:
-            variable.value = new_value
-            changed = True
-
-        if new_type != variable.type:
-            variable.type = new_type
-            changed = True
-
-        if new_help_text != variable.help_text:
-            variable.help_text = new_help_text
-            changed = True
-
-        if changed:
-            # forces a new object to be made
-            variable.pk = None
-            variable.id = None
-            # updates the effect of the new variable value to start from the current run
-            variable.start_run = run_number
-            variable.save()
-        return variable
+            variables.append(variable)
+        return variables
 
     @staticmethod
     def _reduction_script_location(instrument_name):
