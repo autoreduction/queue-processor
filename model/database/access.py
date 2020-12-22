@@ -31,10 +31,8 @@ def get_instrument(instrument_name, create=False):
     instrument_record = database.data_model.Instrument.objects \
         .filter(name=instrument_name).first()
     if not instrument_record and create:
-        instrument_record = database.data_model.Instrument(name=instrument_record,
-                                                           is_active=True,
-                                                           is_paused=False)
-        save_record(instrument_record)
+        instrument_record = database.data_model.Instrument(name=instrument_record, is_active=True, is_paused=False)
+        instrument_record.save()
     return instrument_record
 
 
@@ -112,22 +110,18 @@ def get_reduction_run(instrument, run_number):
         .filter(run_number=run_number)
 
 
-def find_highest_run_version(experiment, run_number):
+def find_highest_run_version(experiment, run_number) -> int:
     """
     Search for the highest run version in the database
     :param experiment: (str) The experiment number associated
     :param run_number: (int) The run number to search for
     :return: (int) The highest known version number for a given reduction job
     """
-    database = start_database()
-    last_run = database.data_model.ReductionRun.objects \
-        .filter(run_number=run_number) \
-        .filter(experiment=experiment) \
-        .order_by('-run_version') \
-        .first()
-
-    # By returning -1 callers can blindly increment the version
-    return last_run.run_version if last_run else -1
+    last_run = experiment.reduction_runs.filter(run_number=run_number).order_by('-run_version').first()
+    if last_run:  # previous run exists - increment version by 1 for this run
+        return last_run.run_version + 1
+    else:  # previous run doesn't exist - start at 0
+        return 0
 
 
 def save_record(record):
