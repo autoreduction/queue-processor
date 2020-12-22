@@ -51,6 +51,7 @@ class InstrumentVariablesUtils:
                                           message=message)
         db.save_record(notification)
 
+    @transaction.atomic
     def create_variables_for_run(self, reduction_run):
         """
         Finds the appropriate InstrumentVariables for the given reduction run, and creates
@@ -88,7 +89,6 @@ class InstrumentVariablesUtils:
         # Create run variables from these instrument variables, and return them.
         return VariableUtils().save_run_variables(variables, reduction_run)
 
-    @transaction.atomic
     def find_or_make_variables(self, possible_variables, run_number, instrument_id,
                                reduce_vars_module, vars_type, is_advanced) -> List:
         dictionary = getattr(reduce_vars_module, vars_type, None)
