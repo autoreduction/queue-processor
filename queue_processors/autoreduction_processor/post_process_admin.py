@@ -7,7 +7,6 @@
 # !/usr/bin/env python
 # pylint: disable=broad-except
 # pylint: disable=bare-except
-
 """
 Post Process Administrator. It kicks off cataloging and reduction jobs.
 """
@@ -16,7 +15,6 @@ import logging
 import sys
 import traceback
 import types
-
 
 from model.message.message import Message
 from queue_processors.autoreduction_processor.autoreduction_logging_setup import logger
@@ -74,13 +72,11 @@ class PostProcessAdmin:
         and advanced_vars, e.g.
         https://github.com/mantidproject/mantid/blob/master/scripts/Inelastic/Direct/ReductionWrapper.py
         """
-
         def merge_dicts(dict_name):
             """
             Merge self.reduction_arguments[dictName] into reduce_script.web_var[dictName],
             overwriting any key that exists in both with the value from sourceDict.
             """
-
             def merge_dict_to_name(dictionary_name, source_dict):
                 """ Merge the two dictionaries. """
                 old_dict = {}
@@ -95,8 +91,10 @@ class PostProcessAdmin:
                 """ ASCII encode var. """
                 return var.encode('ascii', 'ignore') if type(var).__name__ == "unicode" else var
 
-            encoded_dict = {k: ascii_encode(v) for k, v in
-                            self.reduction_arguments[dict_name].items()}
+            encoded_dict = {
+                k: ascii_encode(v)
+                for k, v in self.reduction_arguments[dict_name].items()
+            }
             merge_dict_to_name(dict_name, encoded_dict)
 
         if not hasattr(reduce_script, "web_var"):
@@ -111,8 +109,7 @@ class PostProcessAdmin:
         :param amq_message: (str) reduction status path
         """
         try:
-            logger.debug("Calling: %s\n%s",
-                         amq_message,
+            logger.debug("Calling: %s\n%s", amq_message,
                          self.message.serialize(limit_reduction_script=True))
             self.client.send(amq_message, self.message)
             logger.info("Reduction: %s", message)
