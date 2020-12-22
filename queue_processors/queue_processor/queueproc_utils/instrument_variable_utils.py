@@ -158,10 +158,8 @@ class InstrumentVariablesUtils:
         """
         instrument = db.get_instrument(instrument_name)
         model = self.model.variable_model
-        ins_vars = model.InstrumentVariable.objects \
-            .filter(instrument_id=instrument.id) \
-            .filter(experiment_reference=experiment_reference)
-        return [VariableUtils().copy_variable(ins_var) for ins_var in ins_vars]
+        return model.InstrumentVariable.objects.filter(instrument_id=instrument.id,
+                                                       experiment_reference=experiment_reference).order_by("-id")
 
     def find_variables_for_run(self, instrument_name, run_number: int):
         """
