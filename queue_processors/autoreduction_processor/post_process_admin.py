@@ -15,6 +15,7 @@ import logging
 import sys
 import traceback
 import types
+from typing import IO, TYPE_CHECKING
 
 from model.message.message import Message
 from queue_processors.autoreduction_processor.autoreduction_logging_setup import logger
@@ -34,11 +35,10 @@ class PostProcessAdmin:
     """ Main class for the PostProcessAdmin """
 
     # pylint: disable=too-many-instance-attributes
-    def __init__(self, message, client):
+    def __init__(self, message):
         logger.debug("Message data: %s", message.serialize(limit_reduction_script=True))
         self.read_write_map = {"R": "read", "W": "write"}
         self.message = message
-        self.client = client
         self.admin_log_stream = io.StringIO()
         try:
             self.data_file = windows_to_linux_path(self.validate_input('data'),
@@ -103,41 +103,41 @@ class PostProcessAdmin:
         merge_dicts("advanced_vars")
         return reduce_script
 
-    def send_reduction_message(self, message, amq_message):
-        """Send/Update AMQ reduction message
-        :param message: (str) amq reduction  status
-        :param amq_message: (str) reduction status path
-        """
-        try:
-            logger.debug("Calling: %s\n%s", amq_message,
-                         self.message.serialize(limit_reduction_script=True))
-            self.client.send(amq_message, self.message)
-            logger.info("Reduction: %s", message)
+    # def send_reduction_message(self, message, amq_message):
+    #     """Send/Update AMQ reduction message
+    #     :param message: (str) amq reduction  status
+    #     :param amq_message: (str) reduction status path
+    #     """
+    #     try:
+    #         logger.debug("Calling: %s\n%s", amq_message,
+    #                      self.message.serialize(limit_reduction_script=True))
+    #         self.client.send(amq_message, self.message)
+    #         logger.info("Reduction: %s", message)
 
-        except AttributeError:
-            logger.debug("Failed to find send reduction message: %s", amq_message)
+    #     except AttributeError:
+    #         logger.debug("Failed to find send reduction message: %s", amq_message)
 
-    def determine_reduction_status(self):
-        """
-        Determine which message type to log and send to AMQ, triggering exception if job failed
-        """
-        if self.message.message is not None:
-            # This means an error has been produced somewhere
-            try:
-                if 'skip' in self.message.message.lower():
-                    self.send_reduction_message(message="Skipped",
-                                                amq_message=ACTIVEMQ_SETTINGS.reduction_skipped)
-                else:
-                    self.send_reduction_message(message="Error",
-                                                amq_message=ACTIVEMQ_SETTINGS.reduction_error)
-            except Exception as exp2:
-                logger.info("Failed to send to queue! - %s - %s", exp2, repr(exp2))
-            finally:
-                logger.info("Reduction job failed")
-        else:
-            # Reduction has successfully completed
-            self.send_reduction_message(message="Complete",
-                                        amq_message=ACTIVEMQ_SETTINGS.reduction_complete)
+    # def determine_reduction_status(self):
+    #     """
+    #     Determine which message type to log and send to AMQ, triggering exception if job failed
+    #     """
+    #     if self.message.message is not None:
+    #         # This means an error has been produced somewhere
+    #         try:
+    #             if 'skip' in self.message.message.lower():
+    #                 self.send_reduction_message(message="Skipped",
+    #                                             amq_message=ACTIVEMQ_SETTINGS.reduction_skipped)
+    #             else:
+    #                 self.send_reduction_message(message="Error",
+    #                                             amq_message=ACTIVEMQ_SETTINGS.reduction_error)
+    #         except Exception as exp2:
+    #             logger.info("Failed to send to queue! - %s - %s", exp2, repr(exp2))
+    #         finally:
+    #             logger.info("Reduction job failed")
+    #     else:
+    #         # Reduction has successfully completed
+    #         self.send_reduction_message(message="Complete",
+    #                                     amq_message=ACTIVEMQ_SETTINGS.reduction_complete)
 
     def reduce(self):
         """Start the reduction job."""
@@ -145,9 +145,6 @@ class PostProcessAdmin:
 
         try:
             # log and update AMQ message to reduction started
-            self.send_reduction_message(message="started",
-                                        amq_message=ACTIVEMQ_SETTINGS.reduction_started)
-
             if self.message.description is not None:
                 logger.info("DESCRIPTION: %s", self.message.description)
 
@@ -156,6 +153,7 @@ class PostProcessAdmin:
             reduction_dir = ReductionDirectory(self.instrument, self.proposal, self.run_number)
             temp_dir = TemporaryReductionDirectory(self.proposal, self.run_number)
             reduction_log_stream = reduce(reduction_dir, temp_dir, datafile, reduction_script)
+            self.message.reduction_log = reduction_log_stream.getvalue()
             self.message.reduction_data = [str(reduction_dir.path)]
 
         except DatafileError as exp:
@@ -169,9 +167,7 @@ class PostProcessAdmin:
             logger.error(traceback.format_exc())
             self.message.message = "REDUCTION Error: %s " % exp
 
-        self.message.reduction_log = reduction_log_stream.getvalue()
         self.message.admin_log = self.admin_log_stream.getvalue()
-        self.determine_reduction_status()  # Send AMQ reduce status message Skipped|Error|Complete
 
     @staticmethod
     def _get_mantid_version():
@@ -193,48 +189,37 @@ class PostProcessAdmin:
 
 def main():
     """ Main method. """
-    queue_client = QueueClient()
+    data, temp_output_file = sys.argv[1:3]  # pylint: disable=unbalanced-tuple-unpacking
     try:
-        logger.info("PostProcessAdmin Connecting to ActiveMQ")
-        queue_client.connect()
-        logger.info("PostProcessAdmin Successfully Connected to ActiveMQ")
-
-        destination, data = sys.argv[1:3]  # pylint: disable=unbalanced-tuple-unpacking
         message = Message()
         message.populate(data)
-        logger.info("destination: %s", destination)
-        logger.info("message: %s", message.serialize(limit_reduction_script=True))
+    except Exception as exp:
+        logger.error("Could not populate message from data: %s", str(exp))
+        sys.exit(1)
 
-        try:
-            post_proc = PostProcessAdmin(message, queue_client)
-            log_stream_handler = logging.StreamHandler(post_proc.admin_log_stream)
-            logger.addHandler(log_stream_handler)
-            if destination == '/queue/ReductionPending':
-                post_proc.reduce()
+    try:
+        post_proc = PostProcessAdmin(message)
+        log_stream_handler = logging.StreamHandler(post_proc.admin_log_stream)
+        logger.addHandler(log_stream_handler)
+        post_proc.reduce()
+        # write out the reduction message
+        with open(temp_output_file, "w") as f:
+            f.write(post_proc.message.serialize())
 
-        except ValueError as exp:
-            message.message = str(exp)  # Note: I believe this should be .message
-            logger.info("Message data error: %s", message.serialize(limit_reduction_script=True))
-            raise
-
-        except Exception as exp:
-            logger.info("PostProcessAdmin error: %s", str(exp))
-            raise
-
-        finally:
-            try:
-                logger.removeHandler(log_stream_handler)
-            except:
-                pass
+    except ValueError as exp:
+        message.message = str(exp)
+        logger.info("Message data error: %s", message.serialize(limit_reduction_script=True))
+        raise
 
     except Exception as exp:
-        logger.info("Something went wrong: %s", str(exp))
+        logger.info("PostProcessAdmin error: %s", str(exp))
+        raise
+
+    finally:
         try:
-            queue_client.send(ACTIVEMQ_SETTINGS.reduction_error, message)
-            logger.info("Called %s ---- %s", ACTIVEMQ_SETTINGS.reduction_error,
-                        message.serialize(limit_reduction_script=True))
-        finally:
-            sys.exit()
+            logger.removeHandler(log_stream_handler)
+        except:
+            pass
 
 
 if __name__ == "__main__":  # pragma : no cover
