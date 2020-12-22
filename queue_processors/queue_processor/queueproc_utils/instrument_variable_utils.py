@@ -45,7 +45,10 @@ class InstrumentVariablesUtils:
         """
         logger.error(message)
         model = db.start_database().data_model
-        notification = model.Notification(is_active=True, is_staff_only=True, severity='e', message=message)
+        notification = model.Notification(is_active=True,
+                                          is_staff_only=True,
+                                          severity='e',
+                                          message=message)
         db.save_record(notification)
 
     def create_variables_for_run(self, reduction_run):
@@ -63,29 +66,35 @@ class InstrumentVariablesUtils:
         """
         instrument_name = reduction_run.instrument.name
 
-        reduce_vars_file = os.path.join(self._reduction_script_location(instrument_name), 'reduce_vars.py')
+        reduce_vars_file = os.path.join(self._reduction_script_location(instrument_name),
+                                        'reduce_vars.py')
         reduce_vars_module = self._import_module(reduce_vars_file)
+        model = self.model.variable_model
+        experiment_reference = reduction_run.experiment.reference_number
+        run_number = reduction_run.run_number
+        instrument_id = reduction_run.instrument.id
+        possible_variables = model.InstrumentVariable.objects.filter(
+            Q(experiment_reference=experiment_reference)
+            | Q(start_run__lte=run_number),
+            instrument_id=instrument_id)
 
-        variables = self.find_or_make_variables(reduction_run, reduce_vars_module, 'standard_vars', False)
-        variables.extend(self.find_or_make_variables(reduction_run, reduce_vars_module, 'advanced_vars', True))
+        variables = self.find_or_make_variables(possible_variables, run_number, instrument_id,
+                                                reduce_vars_module, 'standard_vars', False)
+        variables.extend(
+            self.find_or_make_variables(possible_variables, run_number, instrument_id,
+                                        reduce_vars_module, 'advanced_vars', True))
 
         logger.info('Creating RunVariables')
         # Create run variables from these instrument variables, and return them.
         return VariableUtils().save_run_variables(variables, reduction_run)
 
     @transaction.atomic
-    def find_or_make_variables(self, reduction_run, reduce_vars_module, vars_type, is_advanced) -> List:
+    def find_or_make_variables(self, possible_variables, run_number, instrument_id,
+                               reduce_vars_module, vars_type, is_advanced) -> List:
         dictionary = getattr(reduce_vars_module, vars_type, None)
         if dictionary is None:
             return []
-        model = self.model.variable_model
-        experiment_reference = reduction_run.experiment.reference_number
-        run_number = reduction_run.run_number
-        instrument_id = reduction_run.instrument.id
 
-        possible_variables = model.InstrumentVariable.objects.filter(Q(experiment_reference=experiment_reference)
-                                                                     | Q(start_run__lte=run_number),
-                                                                     instrument_id=instrument_id)
         variables = []
         for name, value in dictionary.items():
             script_help_text = self._get_help_text(vars_type, name, reduce_vars_module)
@@ -127,8 +136,9 @@ class InstrumentVariablesUtils:
             spec.loader.exec_module(module)
             return module
         except ImportError as exp:
-            self.log_error_and_notify("Unable to load reduction script %s due to missing import. (%s)" %
-                                      (script_path, exp))
+            self.log_error_and_notify(
+                "Unable to load reduction script %s due to missing import. (%s)" %
+                (script_path, exp))
             return None
         except SyntaxError:
             self.log_error_and_notify("Syntax error in reduction script %s" % script_path)
@@ -141,7 +151,8 @@ class InstrumentVariablesUtils:
         if 'variable_help' in dir(reduce_vars_module):
             if dict_name in reduce_vars_module.variable_help:
                 if key in reduce_vars_module.variable_help[dict_name]:
-                    return self._replace_special_chars(reduce_vars_module.variable_help[dict_name][key])
+                    return self._replace_special_chars(
+                        reduce_vars_module.variable_help[dict_name][key])
         return ""
 
     @staticmethod
@@ -162,11 +173,13 @@ class InstrumentVariablesUtils:
 
     def _load_reduction_script(self, instrument_name):
         """ Loads reduction script. """
-        return self._load_script(os.path.join(self._reduction_script_location(instrument_name), 'reduce.py'))
+        return self._load_script(
+            os.path.join(self._reduction_script_location(instrument_name), 'reduce.py'))
 
     def _load_reduction_vars_script(self, instrument_name):
         """ Loads reduction variables script. """
-        return self._load_script(os.path.join(self._reduction_script_location(instrument_name), 'reduce_vars.py'))
+        return self._load_script(
+            os.path.join(self._reduction_script_location(instrument_name), 'reduce_vars.py'))
 
     def _load_script(self, path):
         """
