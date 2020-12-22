@@ -12,9 +12,6 @@ import os
 
 from utils.project.structure import get_project_root
 
-# MISC
-# "scripts_directory": "/isis/NDX%s/user/scripts/autoreduction",
-# "ceph_directory": "/instrument/%s/RBNumber/RB%s/autoreduced/%s",
 MISC = {
     "script_timeout": 3600,  # The max time to wait for a user script to finish running (seconds)
     "mantid_path": "/opt/Mantid/lib",
