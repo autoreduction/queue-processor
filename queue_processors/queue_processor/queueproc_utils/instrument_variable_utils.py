@@ -166,7 +166,8 @@ class InstrumentVariablesUtils:
         instrument = db.get_instrument(instrument_name)
         var_model = self.model.variable_model
         # try to find existing variables for this run number
-        return var_model.InstrumentVariable.objects.filter(instrument_id=instrument.id, start_run__lte=run_number)
+        return var_model.InstrumentVariable.objects.filter(instrument_id=instrument.id,
+                                                           start_run__lte=run_number).order_by("-id")
 
     def _create_new_var(self, name, value, help_text: str, run_number: int, instrument_id: int, is_advanced: bool):
         new_var = self.model.variable_model.InstrumentVariable(name=name,
