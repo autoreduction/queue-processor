@@ -97,10 +97,11 @@ class QueueClient(AbstractClient):
             queue_list = [queue_list]
         self._connection.set_listener(consumer_name, listener)
         for queue in queue_list:
+            # NOTE TO SELF with this we limit ourselves to processing 1 message at a time 
             self._connection.subscribe(destination=queue,
                                        id='1',
                                        ack=ack,
-                                       header={'activemq.prefetchSize': '1'})
+                                       header={'activemq.prefetchSize': '1'}) 
             self._logger.info("[%s] Subscribing to %s", consumer_name, queue)
         self._logger.info("Successfully subscribed to all of the queues")
 
