@@ -145,14 +145,10 @@ class ReductionRunUtils:
         ~~Fetch the reduction script from the given run and return it as a string, along with a
         dictionary of arguments.~~
         """
-        model = access.start_database().variable_model
-        run_variable_records = model.RunVariable.objects \
-            .filter(reduction_run_id=reduction_run.id)
-
         standard_vars, advanced_vars = {}, {}
-        for run_variable in run_variable_records:
+        for run_variable in reduction_run.run_variables.all():
             variable = run_variable.variable
-            value = VariableUtils().convert_variable_to_type(variable.value, variable.type)
+            value = VariableUtils.convert_variable_to_type(variable.value, variable.type)
             if variable.is_advanced:
                 advanced_vars[variable.name] = value
             else:
