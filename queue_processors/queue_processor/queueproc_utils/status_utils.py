@@ -11,15 +11,20 @@ from model.database import access
 
 
 class StatusUtils:
-    # pylint: disable=missing-docstring
-    @staticmethod
-    def _get_status(status_value):
+    def __init__(self) -> None:
+        self._cached_statuses = {}
+
+    def _get_status(self, status_value: str):
         """
         Attempt to get a status matching the given name or create one if it
         doesn't yet exist
         :param status_value: The value of the status record in the database
         """
-        status_record = access.get_status(status_value, create=True)
+        if status_value in self._cached_statuses:
+            return self._cached_statuses[status_value]
+        else:
+            status_record = access.get_status(status_value, create=True)
+            self._cached_statuses[status_value] = status_record
         return status_record
 
     def get_error(self):
