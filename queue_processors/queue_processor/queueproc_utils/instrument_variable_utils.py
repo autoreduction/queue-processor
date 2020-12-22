@@ -105,7 +105,6 @@ class InstrumentVariablesUtils:
         """
         Match variables found for this experiment/run number, with the variables that are currently in the reduce_vars script.
 
-
         Variables that don't track the script will be re-used, as there's nothing to verify their values against.
             - These are usually pre-configured from the Web App's "Configure new jobs"
 
