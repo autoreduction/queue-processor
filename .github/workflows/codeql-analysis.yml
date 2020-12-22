@@ -12,7 +12,7 @@ jobs:
     name: Analyze
     if: >
       (github.event.issue.pull_request && startsWith(github.event.comment.body, '/scan-code')) || 
-      (github.ref == 'refs/heads/master' && github.event_name == 'schedule') || 
+      github.event_name == 'schedule' || 
       github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-18.04
     
@@ -50,9 +50,9 @@ jobs:
             --data '{ "body": "[**Code scanning is in progress for '${{ matrix.language }}'...**](https://github.com/'$GITHUB_REPOSITORY'/actions/runs/'$GITHUB_RUN_ID')" }'
       
       - name: Get Branch name
+        if: ${{ always() && github.event.issue.pull_request }}
         id: branchName
-        run: |
-          echo ::set-output name=branch::$(echo $PR_COMMENT | cut -d "[" -f2 | cut -d "]" -f1)
+        run: echo ::set-output name=branch::$(echo $PR_COMMENT | cut -d "[" -f2 | cut -d "]" -f1)
         env:
           PR_COMMENT: ${{ github.event.comment.body }}
           
@@ -99,4 +99,4 @@ jobs:
             $URL \
             -H "Content-Type: application/json" \
             -H "Authorization: token $GITHUB_TOKEN" \
-            --data '{ "body": "[**Code scanning has finished for '${{ matrix.language }}'**](https://github.com/'$GITHUB_REPOSITORY'/security/code-scanning)" }'
+            --data '{ "body": "[**Code scanning has finished for '${{ matrix.language }}'**](https://github.com/'$GITHUB_REPOSITORY'/security/code-scanning?query=ref%3A'${{ steps.branchName.outputs.branch }}')" }'
