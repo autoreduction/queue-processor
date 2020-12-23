@@ -110,7 +110,7 @@ class InstrumentVariablesUtils:
                 'instrument_id': instrument_id
             }
 
-            variable = possible_variables.filter(**var_kwargs).order_by("-start_run").first()
+            variable = possible_variables.filter(name=name).order_by("-start_run").first()
 
             if variable is None:
                 variable = possible_variables.create(**var_kwargs)
@@ -121,6 +121,11 @@ class InstrumentVariablesUtils:
                 variable.start_run = run_number
                 variable.save()
             elif variable.tracks_script:
+                # if the variable is tracking the reduce_vars script
+                # then update it's value to the one from the script. This is True
+                # for variables that were created via manual_submission or run_detection.
+                # "Configuring new jobs" from the web app will set it to False so that
+                # the value always overrides the script, until changed back by the user
                 self._update_or_copy_if_changed(variable, script_value, script_type,
                                                 script_help_text, run_number)
 
