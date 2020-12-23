@@ -65,7 +65,7 @@ class InstrumentVariablesUtils:
 
         logger.info('Creating RunVariables')
         # Create run variables from these instrument variables, and return them.
-        return VariableUtils().save_run_variables(variables, reduction_run)
+        return VariableUtils.save_run_variables(variables, reduction_run)
 
     def _find_or_make_variables(self, possible_variables, run_number, instrument_id, reduce_vars_module) -> List:
         # pylint: disable=too-many-locals

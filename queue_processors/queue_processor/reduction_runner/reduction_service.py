@@ -16,13 +16,11 @@ from importlib.util import spec_from_file_location, module_from_spec
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from queue_processors.autoreduction_processor.autoreduction_logging_setup import logger as LOGGER
-from queue_processors.autoreduction_processor.post_process_admin_utilities import \
-    channels_redirected
-from queue_processors.autoreduction_processor.reduction_exceptions import DatafileError, \
-    ReductionScriptError
-from queue_processors.autoreduction_processor.settings import MISC
-from queue_processors.autoreduction_processor.timeout import TimeOut
+from .autoreduction_logging_setup import logger as LOGGER
+from .reduction_runner_utilities import channels_redirected
+from .reduction_exceptions import DatafileError, ReductionScriptError
+from ..settings import SCRIPTS_DIRECTORY, FLAT_OUTPUT_INSTRUMENTS, CEPH_DIRECTORY, SCRIPT_TIMEOUT
+from .timeout import TimeOut
 
 # pylint:disable=too-few-public-methods; As pylint does not like value objects
 log_stream = io.StringIO()
@@ -35,8 +33,8 @@ class ReductionDirectory:
     """
     def __init__(self, instrument, rb_number, run_number, overwrite=False):
         self.overwrite = overwrite
-        self._is_flat_directory = instrument in MISC["flat_output_instruments"]
-        self.path = Path(MISC["ceph_directory"] % (instrument, rb_number, run_number))
+        self._is_flat_directory = instrument in FLAT_OUTPUT_INSTRUMENTS
+        self.path = Path(CEPH_DIRECTORY % (instrument, rb_number, run_number))
         self._build_path()
         self.log_path = self.path / "reduction_log"
         self.mantid_log = self.log_path / f"RB_{rb_number}_Run_{run_number}_Mantid.log"
@@ -122,7 +120,7 @@ class ReductionScript:
     Encapsulates the loading and running of a reduction script
     """
     def __init__(self, instrument):
-        self.script_path = Path(MISC["scripts_directory"] % instrument) / "reduce.py"
+        self.script_path = Path(SCRIPTS_DIRECTORY % instrument) / "reduce.py"
         self.skipped_runs = []
         self.script = None
 
@@ -143,7 +141,7 @@ class ReductionScript:
         :return:
         """
         LOGGER.info("Running reduction script: %s", self.script_path)
-        with TimeOut(MISC["script_timeout"]):
+        with TimeOut(SCRIPT_TIMEOUT):
             return self.script.main(input_file=str(input_file.path),
                                     output_dir=str(output_dir.path))
 

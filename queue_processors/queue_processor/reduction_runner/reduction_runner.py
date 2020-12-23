@@ -15,24 +15,17 @@ import logging
 import sys
 import traceback
 import types
-from typing import IO, TYPE_CHECKING
 
 from model.message.message import Message
-from queue_processors.autoreduction_processor.autoreduction_logging_setup import logger
-from queue_processors.autoreduction_processor.post_process_admin_utilities import \
-    windows_to_linux_path
-from queue_processors.autoreduction_processor.reduction_exceptions import DatafileError, \
-    ReductionScriptError
-from queue_processors.autoreduction_processor.reduction_service import Datafile, ReductionScript, \
-    ReductionDirectory, \
-    TemporaryReductionDirectory, reduce
-from queue_processors.autoreduction_processor.settings import MISC
-from utils.clients.queue_client import QueueClient
-from utils.settings import ACTIVEMQ_SETTINGS
+from .autoreduction_logging_setup import logger
+from .reduction_runner_utilities import windows_to_linux_path
+from .reduction_exceptions import DatafileError, ReductionScriptError
+from .reduction_service import Datafile, ReductionScript, ReductionDirectory, TemporaryReductionDirectory, reduce
+from ..settings import TEMP_ROOT_DIRECTORY
 
 
-class PostProcessAdmin:
-    """ Main class for the PostProcessAdmin """
+class ReductionRunner:
+    """ Main class for the ReductionRunner """
 
     # pylint: disable=too-many-instance-attributes
     def __init__(self, message):
@@ -41,8 +34,7 @@ class PostProcessAdmin:
         self.message = message
         self.admin_log_stream = io.StringIO()
         try:
-            self.data_file = windows_to_linux_path(self.validate_input('data'),
-                                                   MISC["temp_root_directory"])
+            self.data_file = windows_to_linux_path(self.validate_input('data'), TEMP_ROOT_DIRECTORY)
             self.facility = self.validate_input('facility')
             self.instrument = self.validate_input('instrument').upper()
             self.proposal = str(int(self.validate_input('rb_number')))  # Integer-string validation
@@ -176,7 +168,7 @@ class PostProcessAdmin:
         Attempt to get Mantid software version
         :return: (str) Mantid version or None if not found
         """
-        if MISC["mantid_path"] not in sys.path:
+        if MANTID_PATH not in sys.path:
             sys.path.append(MISC['mantid_path'])
         try:
             # pylint:disable=import-outside-toplevel
@@ -199,7 +191,7 @@ def main():
         sys.exit(1)
 
     try:
-        post_proc = PostProcessAdmin(message)
+        post_proc = ReductionRunner(message)
         log_stream_handler = logging.StreamHandler(post_proc.admin_log_stream)
         logger.addHandler(log_stream_handler)
         post_proc.reduce()
@@ -213,7 +205,7 @@ def main():
         raise
 
     except Exception as exp:
-        logger.info("PostProcessAdmin error: %s", str(exp))
+        logger.info("ReductionRunner error: %s", str(exp))
         raise
 
     finally:
