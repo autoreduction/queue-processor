@@ -101,22 +101,58 @@ class InstrumentVariablesUtils:
             script_value = str(value).replace('[', '').replace(']', '')
             script_type = VariableUtils().get_type_string(value)
 
-            variable, created = possible_variables.get_or_create(name=name,
-                                                                 value=script_value,
-                                                                 type=script_type,
-                                                                 help_text=script_help_text,
-                                                                 is_advanced=is_advanced,
-                                                                 instrument_id=instrument_id)
+            var_kwargs = {
+                'name': name,
+                'value': script_value,
+                'type': script_type,
+                'help_text': script_help_text,
+                'is_advanced': is_advanced,
+                'instrument_id': instrument_id
+            }
 
-            if created:
-                # if the variable was just created then set it to track the script and that it starts on the current run
+            variable = possible_variables.filter(**var_kwargs).order_by("-start_run").first()
+
+            if variable is None:
+                variable = possible_variables.create(**var_kwargs)
+                # if the variable was just created then set it to track the script
+                # and that it starts on the current run
                 # if it was found already existing just leave it as it is
                 variable.tracks_script = True
                 variable.start_run = run_number
                 variable.save()
+            elif variable.tracks_script:
+                self._update_or_copy_if_changed(variable, script_value, script_type,
+                                                script_help_text, run_number)
 
             variables.append(variable)
         return variables
+
+    @staticmethod
+    def _update_or_copy_if_changed(variable, new_value, new_type, new_help_text, run_number: int):
+        changed = False
+        if new_value != variable.value:
+            variable.value = new_value
+            changed = True
+
+        if new_type != variable.type:
+            variable.type = new_type
+            changed = True
+
+        if new_help_text != variable.help_text:
+            variable.help_text = new_help_text
+            changed = True
+
+        if changed:
+            # if the run number is different than what is already saved, then we will copy the
+            # variable that contains the new values. Otherwise just overwrite them
+            if variable.start_run != run_number:
+                variable.pk = None
+                variable.id = None
+                # updates the effect of the new variable value to start from the current run
+                variable.start_run = run_number
+
+            variable.save()
+        return variable
 
     @staticmethod
     def _reduction_script_location(instrument_name):
