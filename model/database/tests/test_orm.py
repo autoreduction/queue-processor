@@ -20,16 +20,30 @@ from utils.project.structure import get_project_root
 # pylint:disable=missing-class-docstring
 class TestDjangoORM(unittest.TestCase):
 
-    def test_add_webapp_path(self):
+    def test_add_webapp_path_already_exist(self):
         """
-        Test: The correct path is added to sys.path
-        When: add_webapp_path is called
+        Test: The webapp path is not added to sys.path
+        When: webapp path already exists and add_webapp_path is called
         """
-        path = sys.path
-        expected = os.path.join(get_project_root(), 'WebApp', 'autoreduce_webapp')
+        webapp_path = os.path.join(get_project_root(), 'WebApp', 'autoreduce_webapp')
+        sys.path.append(webapp_path)
         DjangoORM.add_webapp_path()
-        self.assertIn(expected, path)
-        sys.path.remove(expected)  # Cleanup test
+        self.assertEquals(1, sys.path.count(webapp_path))
+        sys.path.remove(webapp_path)  # Cleanup test
+    
+    def test_add_webapp_path_not_already_exist(self):
+        """
+        Test: The webapp path is added to sys.path
+        When: webapp path does not already exist and add_webapp_path is called
+        """
+        expected = os.path.join(get_project_root(), 'WebApp', 'autoreduce_webapp')
+        old_sys_path = sys.path.copy()
+        if sys.path.exists(expected):
+            sys.path.remove(expected)
+
+        DjangoORM.add_webapp_path()
+        self.assertIn(expected, sys.path)
+        sys.path = old_sys_path # Cleanup test
 
     def test_add_webapp_path_duplication(self):
         """
