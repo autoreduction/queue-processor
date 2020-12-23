@@ -10,16 +10,14 @@ This module deals with the updating of the database backend.
 It consumes messages from the queues and then updates the reduction run
 status in the database.
 """
-import logging.config
+import logging
 import sys
 import time
 import traceback
 
 from model.message.message import Message
 from queue_processors.queue_processor.handle_message import HandleMessage
-from queue_processors.queue_processor.handling_exceptions import \
-    InvalidStateException
-from queue_processors.queue_processor.settings import LOGGING
+from queue_processors.queue_processor.handling_exceptions import InvalidStateException
 from utils.clients.queue_client import QueueClient
 
 
@@ -31,9 +29,6 @@ class QueueListener:
         self._message_handler = HandleMessage(queue_listener=self)
         self._priority = ''
 
-        # Set up logging and attach the logging to the right part of the
-        # config.
-        logging.config.dictConfig(LOGGING)
         self._logger = logging.getLogger(__file__)
 
     def on_message(self, headers, message):

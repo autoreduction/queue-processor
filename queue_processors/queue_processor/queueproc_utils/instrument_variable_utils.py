@@ -18,12 +18,7 @@ from django.db.models import Q
 from model.database import access as db
 from queue_processors.queue_processor.queueproc_utils.script_utils import (import_module, reduction_script_location)
 from queue_processors.queue_processor.queueproc_utils.variable_utils import VariableUtils
-# pylint:disable=no-name-in-module,import-error
-from queue_processors.queue_processor.settings import LOGGING
-
-# Set up logging and attach the logging to the right part of the config.
-logging.config.dictConfig(LOGGING)
-logger = logging.getLogger("queue_processor")  # pylint: disable=invalid-name
+from .variable_utils import VariableUtils
 
 
 class DataTooLong(ValueError):
@@ -63,7 +58,7 @@ class InstrumentVariablesUtils:
 
         variables = self._find_or_make_variables(possible_variables, run_number, instrument_id, reduce_vars_module)
 
-        logger.info('Creating RunVariables')
+        logging.info('Creating RunVariables')
         # Create run variables from these instrument variables, and return them.
         return VariableUtils.save_run_variables(variables, reduction_run)
 

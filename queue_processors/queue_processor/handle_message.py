@@ -13,9 +13,8 @@ For example, this may include shuffling the message to another queue,
 update relevant DB fields or logging out the status.
 """
 import datetime
-import logging.config
+import logging
 from django.db import transaction, IntegrityError
-from queue_processors.queue_processor.processing_runner import ProcessingRunner
 
 import model.database.records as db_records
 from model.database import access as db_access
@@ -24,8 +23,8 @@ from model.message.validation.validators import validate_rb_number
 from queue_processors.queue_processor._utils_classes import _UtilsClasses
 from queue_processors.queue_processor.queueproc_utils.script_utils import get_current_script_text
 from queue_processors.queue_processor.handling_exceptions import InvalidStateException
-from queue_processors.queue_processor.settings import LOGGING
 from utils.settings import ACTIVEMQ_SETTINGS
+from .reduction_runner.reduction_process_manager import ReductionProcessManager
 
 
 class HandleMessage:
@@ -39,7 +38,6 @@ class HandleMessage:
         self._client = queue_listener
         self._utils = _UtilsClasses()
 
-        logging.config.dictConfig(LOGGING)
         self._logger = logging.getLogger("handle_queue_message")
 
         self._cached_db = None
@@ -161,7 +159,7 @@ class HandleMessage:
             self.do_reduction(reduction_run, message)
 
     def do_reduction(self, reduction_run, message):
-        pr = ProcessingRunner(message)
+        pr = ReductionProcessManager(message)
         self.reduction_started(reduction_run, message)
         process_finished, message, err = pr.run()
         if process_finished:

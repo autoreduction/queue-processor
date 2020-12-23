@@ -7,15 +7,10 @@
 """
 Class to deal with reduction run variables
 """
-import logging.config
 import re
+import logging
 
 from model.database import access
-from queue_processors.queue_processor.settings import LOGGING
-
-# Set up logging and attach the logging to the right part of the config.
-logging.config.dictConfig(LOGGING)
-logger = logging.getLogger("queue_processor")  # pylint: disable=invalid-name
 
 
 class VariableUtils:
@@ -23,7 +18,7 @@ class VariableUtils:
     def save_run_variables(variables, reduction_run):
         """ Save reduction run variables in the database. """
         model = access.start_database().variable_model
-        logger.info('Saving run variables for %s', str(reduction_run.run_number))
+        logging.info('Saving run variables for %s', str(reduction_run.run_number))
         run_variables = []
         for variable in variables:
             run_var = model.RunVariable(variable=variable, reduction_run=reduction_run)

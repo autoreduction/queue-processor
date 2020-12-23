@@ -13,55 +13,12 @@ FACILITY = 'ISIS'
 MYSQL = {'HOST': 'localhost:3306', 'USER': 'test-user', 'PASSWD': 'pass', 'DB': 'autoreduction'}
 
 # Logging
-LOG_FILE = os.path.join(get_project_root(), 'logs', '{{ qp_log_file }}')
 DEBUG = False
 
 if DEBUG:
     LOG_LEVEL = 'DEBUG'
 else:
     LOG_LEVEL = 'INFO'
-
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
-            'datefmt': "%d/%b/%Y %H:%M:%S"
-        },
-        'simple': {
-            'format': '%(levelname)s %(message)s'
-        },
-    },
-    'handlers': {
-        'file': {
-            'level': LOG_LEVEL,
-            'class': 'logging.FileHandler',
-            'filename': LOG_FILE,
-            'formatter': 'verbose'
-        },
-    },
-<<<<<<< HEAD:build/ansible-compute/roles/queue_processors/templates/qp_settings.py.j2
-=======
-    'root': {
-        'level': LOG_LEVEL,
-        'handlers': ['file'],
-        'propagate': True
-    },
->>>>>>> Removes autoreduction_processor module:queue_processors/queue_processor/test_settings.py
-    'loggers': {
-        'queue_processor': {
-            'handlers': ['file'],
-            'propagate': True,
-            'level': LOG_LEVEL,
-        },
-        'app': {
-            'handlers': ['file'],
-            'propagate': True,
-            'level': 'DEBUG',
-        },
-    }
-}
 
 # Directory Locations
 if os.name == 'nt':
@@ -86,7 +43,6 @@ else:
     TEST_REDUCTION_DIRECTORY = '/reducedev/isis/output/NDX%s/user/scripts/autoreduction'
     TEST_ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s'
 
-<<<<<<< HEAD:build/ansible-compute/roles/queue_processors/templates/qp_settings.py.j2
 # Email for notifications
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'exchsmtp.stfc.ac.uk'
@@ -94,13 +50,3 @@ EMAIL_PORT = 25
 EMAIL_ERROR_RECIPIENTS = ['YOUR-EMAIL']
 EMAIL_ERROR_SENDER = 'autoreduce@reduce.isis.cclrc.ac.uk'
 BASE_URL = 'http://reduce.isis.cclrc.ac.uk/'
-=======
-# The max time to wait for a user script to finish running (seconds)
-SCRIPT_TIMEOUT = 3600
-MANTID_PATH = "/opt/Mantid/lib"
-SCRIPTS_DIRECTORY = "/isis/NDX%s/user/scripts/autoreduction",
-REDUCTION_RUNNER_DIRECTORY = f"{os.path.dirname(os.path.realpath(__file__))}/reduction_runner.py"
-CEPH_DIRECTORY = "/instrument/%s/RBNumber/RB%s/autoreduced/%s",
-TEMP_ROOT_DIRECTORY = "/autoreducetmp"
-FLAT_OUTPUT_INSTRUMENTS = ["LET", "MARI", "MAPS", "MERLIN", "WISH", "GEM"]
->>>>>>> Removes autoreduction_processor module:queue_processors/queue_processor/test_settings.py

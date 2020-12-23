@@ -455,35 +455,6 @@ class TestHandleMessage(unittest.TestCase):
         with self.assertRaises(MissingExperimentRecord):
             self.handler.find_run(self._get_mock_message())
 
-    def test_retry_run(self, _):
-        """
-        Tests that retry run queues up the given message and sends
-        it onwards to the queue client
-        """
-        reduction_run = mock.Mock()
-        reduction_run.cancel = False
-
-        mock_uid = mock.Mock()
-        expected_time = 123
-
-        self.handler.retry_run(user_id=mock_uid, retry_in=expected_time, reduction_run=reduction_run)
-        self.mocked_utils.reduction_run.create_retry_run \
-            .assert_called_once_with(user_id=mock_uid, delay=expected_time,
-                                     reduction_run=reduction_run)
-        create_retry_run_ret = \
-            self.mocked_utils.reduction_run.create_retry_run()
-        self.mocked_utils.messaging.send_pending.assert_called_once_with(create_retry_run_ret,
-                                                                         delay=(expected_time * 1000))
-
-    def test_retry_run_cancel(self, _):
-        """
-        Tests that retry run does not requeue up a cancelled message
-        """
-        reduction_run = mock.Mock()
-        reduction_run.cancel = True
-        self.assertIsNone(self.handler.retry_run(user_id=None, reduction_run=reduction_run, retry_in=None))
-        self.mocked_utils.reduction_run.create_retry_run.assert_not_called()
-
     def test_construct_and_send_skipped(self, _):
         """
         Tests that the message contents is updated with the passed in msg

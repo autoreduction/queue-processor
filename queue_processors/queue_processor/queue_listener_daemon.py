@@ -15,7 +15,7 @@ import time
 
 from queue_processors.daemon import Daemon, control_daemon_from_cli
 from queue_processors.queue_processor import queue_listener
-from queue_processors.queue_processor.settings import LOGGING
+from MISC.queue_processors.queue_processor.test_settings import LOGGING
 
 logging.config.dictConfig(LOGGING)
 

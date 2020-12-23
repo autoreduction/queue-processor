@@ -17,11 +17,12 @@ import traceback
 import types
 
 from model.message.message import Message
-from .autoreduction_logging_setup import logger
-from .reduction_runner_utilities import windows_to_linux_path
-from .reduction_exceptions import DatafileError, ReductionScriptError
-from .reduction_service import Datafile, ReductionScript, ReductionDirectory, TemporaryReductionDirectory, reduce
-from ..settings import TEMP_ROOT_DIRECTORY
+from queue_processors.queue_processor.reduction_runner.reduction_runner_utilities import windows_to_linux_path
+from queue_processors.queue_processor.reduction_runner.reduction_exceptions import DatafileError, ReductionScriptError
+from queue_processors.queue_processor.reduction_runner.reduction_service import Datafile, ReductionScript, ReductionDirectory, TemporaryReductionDirectory, reduce
+from queue_processors.queue_processor.settings import TEMP_ROOT_DIRECTORY, MANTID_PATH
+
+logger = logging.getLogger("reduction_runner")
 
 
 class ReductionRunner:
@@ -169,7 +170,7 @@ class ReductionRunner:
         :return: (str) Mantid version or None if not found
         """
         if MANTID_PATH not in sys.path:
-            sys.path.append(MISC['mantid_path'])
+            sys.path.append(MANTID_PATH)
         try:
             # pylint:disable=import-outside-toplevel
             import mantid
