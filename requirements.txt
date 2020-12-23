@@ -6,7 +6,7 @@ django-debug-toolbar==3.2
 django_plotly_dash==1.5.0
 gitpython==3.1.11
 # this is the highest available version that pip can find on CentOS - be careful when updating
-# because Travis runs on Ubuntu so even if the build pass, the installation could fail
+# because GitHub Actions runs Ubuntu so even if the build pass, the installation could fail
 ipython==7.19.0
 lxml==4.6.2
 mock==4.0.2
