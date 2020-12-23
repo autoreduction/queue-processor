@@ -47,7 +47,7 @@ class TestDatabaseGeneration(unittest.TestCase):
 
     def test_localhost_db_construction(self):
         """
-        Test that the local host database on travis is correctly
+        Test that the local host database is correctly
         generated from the .sql construction files
         """
         database = MySQLdb.connect(host="127.0.0.1",
