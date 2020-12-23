@@ -16,16 +16,14 @@ import datetime
 import logging.config
 from django.db import transaction, IntegrityError
 from queue_processors.queue_processor.processing_runner import ProcessingRunner
-import traceback
 
 import model.database.records as db_records
 from model.database import access as db_access
 from model.message.message import Message
 from model.message.validation.validators import validate_rb_number
 from queue_processors.queue_processor._utils_classes import _UtilsClasses
-from queue_processors.queue_processor.handling_exceptions import (InvalidStateException, MissingExperimentRecord,
-                                                                  MissingReductionRunRecord)
 from queue_processors.queue_processor.queueproc_utils.script_utils import get_current_script_text
+from queue_processors.queue_processor.handling_exceptions import InvalidStateException
 from queue_processors.queue_processor.settings import LOGGING
 from utils.settings import ACTIVEMQ_SETTINGS
 
@@ -74,13 +72,11 @@ class HandleMessage:
         - If rb number isn't an integer, or isn't a 7 digit integer
         - If instrument is paused
         """
-        self._logger.info("Data ready for processing run %s on %s", message.run_number,
-                          message.instrument)
+        self._logger.info("Data ready for processing run %s on %s", message.run_number, message.instrument)
         if not validate_rb_number(message.rb_number):
             # rb_number is invalid so send message to skip queue and early return
             message.message = f"Found non-integer RB number: {message.rb_number}"
-            self._logger.warning("%s. Skipping %s%s.", message.message, message.instrument,
-                                 message.run_number)
+            self._logger.warning("%s. Skipping %s%s.", message.message, message.instrument, message.run_number)
             message.rb_number = 0
 
         run_no = str(message.run_number)
@@ -116,8 +112,7 @@ class HandleMessage:
         # Create a new data location entry which has a foreign key linking it to the current
         # reduction run. The file path itself will point to a datafile
         # (e.g. "\isis\inst$\NDXWISH\Instrument\data\cycle_17_1\WISH00038774 .nxs")
-        data_location = self._data_model.DataLocation(file_path=message.data,
-                                                      reduction_run_id=reduction_run.id)
+        data_location = self._data_model.DataLocation(file_path=message.data, reduction_run_id=reduction_run.id)
         self.safe_save(data_location)
 
         # Create all of the variables for the run that are described in it's reduce_vars.py
@@ -125,17 +120,15 @@ class HandleMessage:
         try:
             variables = self._utils.instrument_variable.create_variables_for_run(reduction_run)
             if not variables:
-                self._logger.warning("No instrument variables found on %s for run %s",
-                                     instrument.name, message.run_number)
+                self._logger.warning("No instrument variables found on %s for run %s", instrument.name,
+                                     message.run_number)
         except IntegrityError as err:
             # couldn't save the state in the database properly
-            self._logger.error("Encountered error in transaction to save RunVariables, error: %s",
-                               str(err))
+            self._logger.error("Encountered error in transaction to save RunVariables, error: %s", str(err))
             raise
 
         self._logger.info('Getting script and arguments')
-        reduction_script, arguments = self._utils.reduction_run.get_script_and_arguments(
-            reduction_run)
+        reduction_script, arguments = self._utils.reduction_run.get_script_and_arguments(reduction_run)
         message.reduction_script = reduction_script
         message.reduction_arguments = arguments
 
@@ -159,8 +152,8 @@ class HandleMessage:
             return
 
         if instrument.is_paused:
-            self._logger.info("Run %s has been skipped because the instrument %s is paused",
-                              message.run_number, instrument.name)
+            self._logger.info("Run %s has been skipped because the instrument %s is paused", message.run_number,
+                              instrument.name)
             self.reduction_skipped(reduction_run, message)
         else:
             # success branch
@@ -180,8 +173,7 @@ class HandleMessage:
             # subprocess exited with 1 - any unexpected errors encountered will be caught here
             # Note that this doesn't handle any errors inside the reduce.py itself, the error
             # needs to have happened in the setup code before or after the reduce.py execution
-            self._logger.error(
-                "Encountered an error while trying to start the reduction process %s", err)
+            self._logger.error("Encountered an error while trying to start the reduction process %s", err)
 
     def _get_and_activate_db_inst(self, instrument_name):
         """
@@ -220,11 +212,10 @@ class HandleMessage:
         self._logger.info("Run %s has started reduction", message.run_number)
 
         if reduction_run.status.value not in ['e', 'q']:  # verbose values = ["Error", "Queued"]
-            raise InvalidStateException(
-                "An invalid attempt to re-start a reduction run was captured."
-                f" Experiment: {message.rb_number},"
-                f" Run Number: {message.run_number},"
-                f" Run Version {message.run_version}")
+            raise InvalidStateException("An invalid attempt to re-start a reduction run was captured."
+                                        f" Experiment: {message.rb_number},"
+                                        f" Run Number: {message.run_number},"
+                                        f" Run Version {message.run_version}")
 
         reduction_run.status = self._utils.status.get_processing()
         reduction_run.started = datetime.datetime.utcnow()
@@ -244,8 +235,7 @@ class HandleMessage:
                                         f" Run Number: {message.run_number},"
                                         f" Run Version {message.run_version}")
 
-        self._common_reduction_run_update(reduction_run, self._utils.status.get_completed(),
-                                          message)
+        self._common_reduction_run_update(reduction_run, self._utils.status.get_completed(), message)
 
         if message.reduction_data is not None:
             for location in message.reduction_data:
@@ -265,8 +255,7 @@ class HandleMessage:
         if message.message is not None:
             self._logger.info("Run %s has been skipped - %s", message.run_number, message.message)
         else:
-            self._logger.info("Run %s has been skipped - No error message was found",
-                              message.run_number)
+            self._logger.info("Run %s has been skipped - No error message was found", message.run_number)
 
         self._common_reduction_run_update(reduction_run, self._utils.status.get_skipped(), message)
         self.safe_save(reduction_run)
@@ -277,11 +266,9 @@ class HandleMessage:
         Updates the run as complete in the database.
         """
         if message.message:
-            self._logger.info("Run %s has encountered an error - %s", message.run_number,
-                              message.message)
+            self._logger.info("Run %s has encountered an error - %s", message.run_number, message.message)
         else:
-            self._logger.info("Run %s has encountered an error - No error message was found",
-                              message.run_number)
+            self._logger.info("Run %s has encountered an error - No error message was found", message.run_number)
 
         self._common_reduction_run_update(reduction_run, self._utils.status.get_error(), message)
         self.safe_save(reduction_run)
