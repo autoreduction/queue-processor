@@ -38,10 +38,7 @@ class DjangoORM:
         """
         path = os.path.join(get_project_root(), 'WebApp', 'autoreduce_webapp')
         if path not in sys.path:
-            # Can't properly replicate this in a testing environment due to travis
-            # constraint on sys path access and mocking would break underlying dependency
-            # but it's simple enough we don't need to worry about testing it
-            sys.path.append(path)  # pragma: no cover
+            sys.path.append(path)
 
     @staticmethod
     def setup_django():
