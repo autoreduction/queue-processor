@@ -269,6 +269,7 @@ class HandleMessage:
                               message.run_number)
 
         self._common_reduction_run_update(reduction_run, self._utils.status.get_skipped(), message)
+        self.safe_save(reduction_run)
 
     def reduction_error(self, reduction_run, message: Message):
         """
