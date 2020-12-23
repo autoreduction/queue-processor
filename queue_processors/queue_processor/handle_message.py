@@ -155,14 +155,13 @@ class HandleMessage:
             message.validate("/queue/DataReady")
         except RuntimeError as validation_err:
             self._logger.error("Validation error from handler: %s", str(validation_err))
-            # TODO can probably just take the current run from context outside of this function call
-            self.reduction_skipped(message)
+            self.reduction_skipped(reduction_run, message)
             return
 
         if instrument.is_paused:
             self._logger.info("Run %s has been skipped because the instrument %s is paused",
                               message.run_number, instrument.name)
-            self.reduction_skipped(message)
+            self.reduction_skipped(reduction_run, message)
         else:
             # success branch
             self._logger.info("Run %s ready for reduction", message.run_number)
@@ -173,7 +172,7 @@ class HandleMessage:
         self.reduction_started(reduction_run, message)
         process_finished, message, err = pr.run()
         if process_finished:
-            if message.message is not None:  # TODO needs to handle
+            if message.message is not None:
                 self.reduction_error(reduction_run, message)
             else:
                 self.reduction_complete(reduction_run, message)
