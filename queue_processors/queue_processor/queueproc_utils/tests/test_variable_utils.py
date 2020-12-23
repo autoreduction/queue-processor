@@ -78,18 +78,6 @@ class TestVariableUtils(unittest.TestCase):
         #     mock_derive_run_var.assert_called_once()
         #     mock_save.assert_called_once()
 
-    def test_copy_variable(self):
-        """
-        Test: A Variable object can is copied
-        When: copy_variable function is called
-        """
-        expected = self.valid_variable
-        expected.pk = None
-
-        actual = vu.copy_variable(vu.copy_variable(self.valid_inst_var))
-        self.assertIsInstance(actual, self.var_model.InstrumentVariable)
-        self.assertEqual(actual.name, expected.name)
-
     def test_get_type_string(self):
         """
         Test: Python types are successfully recognised and converted to database input
