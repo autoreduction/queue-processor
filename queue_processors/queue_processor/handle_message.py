@@ -134,7 +134,6 @@ class HandleMessage:
             raise
 
         self._logger.info('Getting script and arguments')
-        # TODO these aren't necessary when not ASYNCing away
         reduction_script, arguments = self._utils.reduction_run.get_script_and_arguments(
             reduction_run)
         message.reduction_script = reduction_script
@@ -163,11 +162,9 @@ class HandleMessage:
         if instrument.is_paused:
             self._logger.info("Run %s has been skipped because the instrument %s is paused",
                               message.run_number, instrument.name)
-            # TODO can probably just take the current run from context outside of this function call
             self.reduction_skipped(message)
         else:
             # success branch
-            # TODO run the processing here, for now
             self._logger.info("Run %s ready for reduction", message.run_number)
             self.do_reduction(reduction_run, message)
 

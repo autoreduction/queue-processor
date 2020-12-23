@@ -33,12 +33,10 @@ class ReductionDirectory:
     ReductionDirectory encapsulated directory creation, deletion and handling output type
     (flat or not)
     """
-
     def __init__(self, instrument, rb_number, run_number, overwrite=False):
         self.overwrite = overwrite
         self._is_flat_directory = instrument in MISC["flat_output_instruments"]
-        self.path = Path(
-            MISC["ceph_directory"] % (instrument, rb_number, run_number))
+        self.path = Path(MISC["ceph_directory"] % (instrument, rb_number, run_number))
         self._build_path()
         self.log_path = self.path / "reduction_log"
         self.mantid_log = self.log_path / f"RB_{rb_number}_Run_{run_number}_Mantid.log"
@@ -64,8 +62,10 @@ class ReductionDirectory:
         if self.overwrite:
             self.path = self.path / "run-version-0"
         else:
-            versions = [int(str(i).split("-")[-1])
-                        for i in self.path.glob("run-version-[0-9]*") if i.is_dir()]
+            versions = [
+                int(str(i).split("-")[-1]) for i in self.path.glob("run-version-[0-9]*")
+                if i.is_dir()
+            ]
             try:
                 self.path = self.path / f"run-version-{max(versions) + 1}"
             except ValueError:
@@ -76,7 +76,6 @@ class TemporaryReductionDirectory:
     """
     Encapsulates the use of the temporary reduction directory
     """
-
     def __init__(self, rb_number, run_number):
         self._temp_dir = TemporaryDirectory()
         self.path = Path(self._temp_dir.name)
@@ -110,7 +109,6 @@ class Datafile:
     """
     Encapsulates datafile path and verification
     """
-
     def __init__(self, path):
         self.path = Path(path)
         try:
@@ -123,7 +121,6 @@ class ReductionScript:
     """
     Encapsulates the loading and running of a reduction script
     """
-
     def __init__(self, instrument):
         self.script_path = Path(MISC["scripts_directory"] % instrument) / "reduce.py"
         self.skipped_runs = []
@@ -184,7 +181,7 @@ def reduce(reduction_dir, temp_dir, datafile, script):
             additional_output_dirs = script.run(datafile, temp_dir)
         LOGGER.removeHandler(log_stream_handler)
     except Exception as ex:
-        LOGGER.error("exception caught in reduction script")
+        LOGGER.error("Exception caught in reduction script. Traceback is logged below:")
         LOGGER.error(traceback.format_exc())
         with open(temp_dir.script_log, "a") as target:
             target.writelines(str(ex) + "\n")

@@ -56,14 +56,6 @@ class QueueListener:
         try:
             if destination == '/queue/DataReady':
                 self._message_handler.data_ready(message)
-            # elif destination == '/queue/ReductionStarted':
-            #     self._message_handler.reduction_started(message)
-            # elif destination == '/queue/ReductionComplete':
-            #     self._message_handler.reduction_complete(message)
-            # elif destination == '/queue/ReductionError':
-            #     self._message_handler.reduction_error(message)
-            # elif destination == '/queue/ReductionSkipped':
-            #     self._message_handler.reduction_skipped(message)
             else:
                 self._logger.warning("Received a message on an unknown topic '%s'", destination)
         except InvalidStateException as exp:

@@ -161,6 +161,7 @@ class PostProcessAdmin:
             self.message.message = "REDUCTION Error: %s" % exp
 
         except ReductionScriptError as exp:
+            logger.error("Error encountered when running the reduction script: %s", self.data_file)
             self.message.message = "REDUCTION Error: %s" % exp
 
         except Exception as exp:
