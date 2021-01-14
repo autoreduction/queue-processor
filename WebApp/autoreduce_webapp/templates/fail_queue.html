@@ -12,19 +12,19 @@
                     <h2>Failed Jobs</h2>
                 </div>
             </div>
-        {% if message %}
-            <div class="alert alert-danger word-wrap" role="alert">
-                <i class="fa fa-exclamation fa-exclamation-circle fa-lg"></i> {{ message }}
-            </div>
-        {% endif %}
+            {% if message %}
+                <div class="alert alert-danger word-wrap" role="alert">
+                    <i class="fa fa-exclamation fa-exclamation-circle fa-lg"></i> {{ message }}
+                </div>
+            {% endif %}
             <div>
                 <select id="runAction" style="float: left;">
                     <option value="default">Select action to apply to selected runs</option>
-                    <option value="rerun">Re-run </option>
-                    <option value="hide">Hide </option>
+                    <option value="rerun">Re-run</option>
+                    <option value="hide">Hide</option>
                     <option value="cancel">Cancel retry</option>
                 </select>
-                <form id="actionForm" method="POST" action="{% url 'runs:failed' %}" style="float: left; padding-left: 5px;">
+                <form id="actionForm" method="POST" action="{% url 'fail_queue' %}" style="float: left; padding-left: 5px;">
                     <input type='hidden' name='csrfmiddlewaretoken' value='{{ csrf_token }}' />
                     <input type="hidden" name="selectedRuns">
                     <input type="hidden" name="action">
@@ -33,43 +33,47 @@
             </div>
             <table class="table table-striped table-bordered">
                 <thead>
-                    <tr>
-                        <th><input type='checkbox' id="selectAllRuns"></th>
-                        <th>Run Number</th>
-                        <th>Instrument</th>
-                        <th>Message</th>
-                        <th>Submitted</th>
-                        <th>Retrying</th>
-                    </tr>
+                <tr>
+                    <th><input type='checkbox' id="selectAllRuns"></th>
+                    <th>Run Number</th>
+                    <th>Instrument</th>
+                    <th>Message</th>
+                    <th>Submitted</th>
+                    <th>Retrying</th>
+                </tr>
                 </thead>
                 <tbody>
-                    {% for job in queue %}
-                      {% if job.retry_run %}
+                {% for job in queue %}
+                    {% if job.retry_run %}
                         <tr name='runRow' class="{% colour_table_row job.retry_run.status.value_verbose %}">
-                      {% else %}
+                            {% else %}
                         <tr name='runRow' class="{% colour_table_row job.status.value_verbose %}">
-                      {% endif %}
-                            <td><input type='checkbox' name='runCheckbox' data-run_number='{{job.run_number}}' data-run_version='{{job.run_version}}' data-rb_number='{{job.experiment.reference_number}}'></td>
-                            <td>
-                                <a href="{% url 'runs:summary' instrument_name=job.instrument.name run_number=job.run_number run_version=job.run_version %}">{{ job.title }}</a>
-                            </td>
-                            <td>{{ job.instrument.name }}</td>
-                            <td style="width:600px;"><strong>{{ job.message }}</strong></td>
-                            <td title="{{ job.created|date:'SHORT_DATETIME_FORMAT' }}">{{ job.created|naturaltime }}</td>
-                            <td>
-                                {% if job.retry_when %}
-                                    {{ job.retry_when|naturaltime }}
-                                    {% if job.cancel %}
-                                        <span> (Last attempt)</span>
-                                    {% endif %}
-                                    {% if job.retry_run %}
-                                        <a href="{% url 'runs:summary' instrument_name=job.instrument.name run_number=job.retry_run.run_number run_version=job.retry_run.run_version %}"> ({{ job.retry_run.status.value_verbose }})</a>
-                                    {% endif %}
-                                {% else %}
-                                    Never
-                                {% endif %}
-                            </td>
-                    {% endfor %}
+                    {% endif %}
+                    <td><input type='checkbox' name='runCheckbox' data-run_number='{{ job.run_number }}'
+                               data-run_version='{{ job.run_version }}'
+                               data-rb_number='{{ job.experiment.reference_number }}'></td>
+                    <td>
+                        <a href="{% url 'runs:summary' instrument_name=job.instrument.name run_number=job.run_number run_version=job.run_version %}">{{ job.title }}</a>
+                    </td>
+                    <td>{{ job.instrument.name }}</td>
+                    <td style="width:600px;"><strong>{{ job.message }}</strong></td>
+                    <td title="{{ job.created|date:'SHORT_DATETIME_FORMAT' }}">{{ job.created|naturaltime }}</td>
+                    <td>
+                        {% if job.retry_when %}
+                            {{ job.retry_when|naturaltime }}
+                            {% if job.cancel %}
+                                <span> (Last attempt)</span>
+                            {% endif %}
+                            {% if job.retry_run %}
+                                <a href="{% url 'runs:summary' instrument_name=job.instrument.name run_number=job.retry_run.run_number run_version=job.retry_run.run_version %}">
+                                    ({{ job.retry_run.status.value_verbose }})
+                                </a>
+                            {% endif %}
+                        {% else %}
+                            Never
+                        {% endif %}
+                    </td>
+                {% endfor %}
                 </tbody>
             </table>
         </div>
@@ -83,5 +87,5 @@
 {% endblock %}
 
 {% block scripts %}
-    <script src='{% static "javascript/runs_failed.js" %}'> </script>
+    <script src='{% static "javascript/runs_failed.js" %}'></script>
 {% endblock %}

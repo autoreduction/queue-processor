@@ -3,7 +3,7 @@
 {% load static %}
 
 {% block stylesheets %}
-<link rel="stylesheet" href="{% static "css/help.css" %}">
+    <link rel="stylesheet" href="{% static "css/help.css" %}">
 
 {% endblock %}
 
@@ -11,7 +11,7 @@
     <div class="row">
         <div class="col-md-12 text-center">
             <h2>Help Pages</h2>
-            <p>Get in touch with the <a href="mailto:{{support_email}}">Support Team</a></p>
+            <p>Get in touch with the <a href="mailto:{{ support_email }}">Support Team</a></p>
         </div>
     </div>
     <!-- Temporarily disabled https://github.com/ISISScientificComputing/autoreduce/issues/701 -->
@@ -73,18 +73,26 @@
                     </p>
                     <h4>Access reduced files within IDAaaS Virtual Machines</h4>
                     <ol>
-                        <li>Visit the IDAaaS page <a href="https://isis.analysis.stfc.ac.uk">https://isis.analysis.stfc.ac.uk</a></li>
+                        <li>Visit the IDAaaS page <a href="https://isis.analysis.stfc.ac.uk">https://isis.analysis.stfc.ac.uk</a>
+                        </li>
                         <li>Open an existing or create and open a new IDAaaS virtual machine / instance</li>
-                        <li>The reduced files are then available within the virtual machine within folders named "autoreduced"
-                            within RB folders; and at data locations as detailed on completed Reduction Job pages on the WebApp </li>
+                        <li>The reduced files are then available within the virtual machine within folders named
+                            "autoreduced" within RB folders; and at data locations as detailed on completed
+                            Reduction Job pages on the WebApp
+                        </li>
                     </ol>
                     <h4>Use the IDAaaS FileBrowser to copy reduced data elsewhere</h4>
                     <ol>
-                        <li>Visit the page <a href="https://data.analysis.stfc.ac.uk">https://data.analysis.stfc.ac.uk</a> and login</li>
+                        <li>Visit the page <a
+                                href="https://data.analysis.stfc.ac.uk">https://data.analysis.stfc.ac.uk</a> and login
+                        </li>
                         <li>Click on "Data" on the left menu</li>
-                        <li>Reduced data are then available within RB folders that you have access to from HOME or by stepping through to
+                        <li>Reduced data are then available within RB folders that you have access to from HOME or by
+                            stepping through to
                             the relevant RB folder from INSTRUMENT. Within these reduced file are within "autoreduced"
-                            sub-folders; and at data locations as detailed on completed Reduction Job pages on the WebApp</li>
+                            sub-folders; and at data locations as detailed on completed Reduction Job pages on the
+                            WebApp
+                        </li>
                     </ol>
                 </div>
             </section>
@@ -97,7 +105,8 @@
                     <p>
                         It is possible to define some additional variables for scripts that can be used
                         during reduction. They can be altered via the web interface. These should be defined in the
-                        <code>//isis/NDX.../user/script/autoreduction/reduce_vars.py</code> file. This file has the following format:
+                        <code>//isis/NDX.../user/script/autoreduction/reduce_vars.py</code> file. This file has the
+                        following format:
                     </p>
                     <pre><code>standard_vars = {
     'perform corrections': False,
@@ -218,10 +227,13 @@ import reduce_vars as params</code></pre>
     SaveNexusProcessed(reduced_worksapce, output_dir)</code></pre>
 
                     <p>If you have any difficulty please get in touch and we'll be happy to help </p>
-                    <p>If you feel a value is incorrectly being marked as invalid please <a href="mailto:{{support_email}}">Contact Us</a>.</p>
+                    <p>If you feel a value is incorrectly being marked as invalid please
+                        <a href="mailto:{{ support_email }}">Contact Us</a>.
+                    </p>
                 </div>
             </section>
-            <section class="help-topic panel panel-default" data-category="usage" data-topics="Autoreduction GitHub Repository">
+            <section class="help-topic panel panel-default" data-category="usage"
+                     data-topics="Autoreduction GitHub Repository">
                 <div class="panel-heading">
                     <h3>Autoreduction GitHub Repository</h3>
                 </div>
@@ -230,7 +242,8 @@ import reduce_vars as params</code></pre>
                 </div>
             </section>
 
-            <section class="help-topic panel panel-default" data-category="usage" data-topics="instrument variables change new">
+            <section class="help-topic panel panel-default" data-category="usage"
+                     data-topics="instrument variables change new">
 
                 <div class="panel-heading">
                     <h3>How do I add new instrument variables?</h3>
@@ -247,7 +260,8 @@ import reduce_vars as params</code></pre>
                 </div>
             </section>
 
-            <section class="help-topic panel panel-default" data-category="question" data-topics="invalid variables wrong error value">
+            <section class="help-topic panel panel-default" data-category="question"
+                     data-topics="invalid variables wrong error value">
                 <div class="panel-heading">
                     <h3>When changing variables why is value X invalid for variable Y?</h3>
                 </div>
@@ -260,13 +274,14 @@ import reduce_vars as params</code></pre>
                     </p>
                     <p>
                         If you feel a value is incorrectly being marked as invalid please
-                        <a href="mailto:{{support_email}}">Contact Us</a>.
+                        <a href="mailto:{{ support_email }}">Contact Us</a>.
                     </p>
 
                 </div>
             </section>
 
-            <section class="help-topic panel panel-default" data-category="question" data-topics="reduction data file location directory output reduced">
+            <section class="help-topic panel panel-default" data-category="question"
+                     data-topics="reduction data file location directory output reduced">
                 <div class="panel-heading">
                     <h3>I've modified my reduction scripts, why aren't my new runs using it?</h3>
                 </div>
@@ -298,7 +313,8 @@ import reduce_vars as params</code></pre>
                 </div>
             </section>
 
-            <section class="help-topic panel panel-default" data-category="question" data-topics="script compatible work">
+            <section class="help-topic panel panel-default" data-category="question"
+                     data-topics="script compatible work">
                 <div class="panel-heading">
                     <h3>How can I make a reduction script compatible with Autoreduction?</h3>
                 </div>
@@ -310,26 +326,31 @@ import reduce_vars as params</code></pre>
                         These variables must be made available in a file named
                         <code>reduce_vars.py</code>. For an example of this please
                         <a href="https://github.com/ISISScientificComputing/autoreduce/wiki/Getting-Started">See Here</a> for documentation.
-                        <a href="https://github.com/ISISScientificComputing/autoreduce/wiki/Example-reduction-script">See Here</a>
+                        <a href="https://github.com/ISISScientificComputing/autoreduce/wiki/Example-reduction-script">
+                            See Here
+                        </a>
                         for the full script.
                         Autoreduction expects the reduction script to have a <code>main()</code> method
                         that takes in two arguments, <strong>data</strong> and <strong>output</strong>.
-                        These are passed in a kwargs but it may be desirable for these to also be accepted from the command line.
+                        These are passed in a kwargs but it may be desirable for these to also be accepted from the
+                        command line.
                         For an example of how to do this please
-                        <a href="https://github.com/ISISScientificComputing/autoreduce/wiki/Getting-Started#main">See Here</a>.
+                        <a href="https://github.com/ISISScientificComputing/autoreduce/wiki/Getting-Started#main">
+                            See Here
+                        </a>.
                         The reduction script should perform all operations on the provided data file and
                         save the output to the output directory provided to the script. The output will
                         be copied to the cache upon completion. If additional save locations are
                         required these can be returned as a list of system paths from the main method.
                     </p>
-                        <p>If you feel your script will need to save to additional locations please
-                            <a href="mailto:{{support_email}}">Contact Us</a> to ensure the locations
-                            are accessible from the Autoreduction machine.
-                        </p>
+                    <p>If you feel your script will need to save to additional locations please
+                        <a href="mailto:{{ support_email }}">Contact Us</a> to ensure the locations are accessible from the Autoreduction machine.
+                    </p>
                 </div>
             </section>
 
-            <section class="help-topic panel panel-default" data-category="question" data-topics="reduction script file location directory">
+            <section class="help-topic panel panel-default" data-category="question"
+                     data-topics="reduction script file location directory">
                 <div class="panel-heading">
                     <h3>Where should I put reduction scripts?</h3>
                 </div>
@@ -348,7 +369,8 @@ import reduce_vars as params</code></pre>
                 </div>
             </section>
 
-            <section class="help-topic panel panel-default" data-category="question" data-topics="reduction data file location directory output reduced">
+            <section class="help-topic panel panel-default" data-category="question"
+                     data-topics="reduction data file location directory output reduced">
                 <div class="panel-heading" id="reduction_data_location">
                     <h3>Where does my reduced data go?</h3>
                 </div>
@@ -364,7 +386,8 @@ import reduce_vars as params</code></pre>
                     </p>
                 </div>
             </section>
-            <section class="help-topic panel panel-default" data-category="question" data-topics="reduction status error queued processing skipped complete error">
+            <section class="help-topic panel panel-default" data-category="question"
+                     data-topics="reduction status error queued processing skipped complete error">
                 <div class="panel-heading" id="reduction-statuses">
                     <h3>What do the reduction statuses mean?</h3>
                 </div>
@@ -382,18 +405,21 @@ import reduce_vars as params</code></pre>
                     </ul>
                 </div>
             </section>
-            <section class="help-topic panel panel-default" data-category="question" data-topics="reduction status error queued processing skipped complete error">
+            <section class="help-topic panel panel-default" data-category="question"
+                     data-topics="reduction status error queued processing skipped complete error">
                 <div class="panel-heading" id="reduction-statuses">
                     <h3>How do I save out plots from my reduce.py?</h3>
                 </div>
                 <div class="panel-body">
-                    <p>To get a plot to show into the web app you need to save it into the reduction output directory with the following file name:</p>
+                    <p>To get a plot to show into the web app you need to save it into the reduction output directory
+                        with the following file name:</p>
                     <pre><code>&lt;name-part-of-the-data-file&gt;*&lt;.png or other extension&gt;</code></pre>
-                    <p>where e.g. if the data file is "GEM90963.nxs" then "GEM90963" is the name-part-of-the-data-file, and the plot file extensions
-                    supported are "png", "jpg", "bmp", "gif", "tiff".</p>
+                    <p>where e.g. if the data file is "GEM90963.nxs" then "GEM90963" is the name-part-of-the-data-file,
+                        and the plot file extensions
+                        supported are "png", "jpg", "bmp", "gif", "tiff".</p>
 
                     <p>The following function is provided to help you get that information from the input file parameter
-                    Autoreduction called the main() method with in reduce.py:</p>
+                        Autoreduction called the main() method with in reduce.py:</p>
                     <pre><code>def get_name_of_data_file(datafile):
     """
     Finds only the name of the data file and returns it. Removes the rest
@@ -406,19 +432,19 @@ import reduce_vars as params</code></pre>
     filename_and_extension = os.path.basename(datafile)
     just_filename, extension = os.path.splitext(filename_and_extension)
     return just_filename</code></pre>
-    <p>To save out your matplotlib figure you can do:</p>
+                    <p>To save out your matplotlib figure you can do:</p>
                     <pre><code> ... some plotting code with matplotlib ...
 
 filename = get_name_of_data_file(input_file)
 my_matplotlib_figure.savefig(os.path.join(output_dir, f"{filename}.png"), dpi=None)
                         </code></pre>
-    </div>
+                </div>
             </section>
 
             <div class="no-results collapse row well">
                 <div class="col-md-12 text-center">
                     Sorry, no help topics matched your query.<br/>
-                    If you still require help, please <a href="mailto:{{support_email}}">Contact Us</a>.
+                    If you still require help, please <a href="mailto:{{ support_email }}">Contact Us</a>.
                 </div>
             </div>
         </div>

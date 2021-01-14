@@ -17,10 +17,10 @@
                 <div class="middle">
                     Runs
                     <div>{{ instrument:variables.run_start }}</div>
-                        <div>
-                            <i class="fa fa-arrow-down hidden-xs"></i>
-                            <i class="fa fa-arrow-right visible-xs"></i>
-                        </div>
+                    <div>
+                        <i class="fa fa-arrow-down hidden-xs"></i>
+                        <i class="fa fa-arrow-right visible-xs"></i>
+                    </div>
                     {% if instrument:variables.run_end > 0 %}
                         <div>{{ instrument:variables.run_end }}</div>
                     {% else %}
@@ -29,8 +29,8 @@
                 </div>
             </div>
             {% if instrument:variables.tracks_script %}
-            <small>(Tracking script changes)</small>
-            <br/>
+                <small>(Tracking script changes)</small>
+                <br/>
             {% endif %}
             <br/>
             <a href="{% url 'instrument:variables' instrument=instrument.name start=instrument:variables.run_start end=instrument:variables.run_end %}">edit variables</a>

@@ -9,7 +9,9 @@
                 <div class="col-md-4"><strong>Last run on instrument:</strong></div>
                 <div class="col-md-8">
                     <a href="{% url 'runs:summary' instrument_name=last_instrument_run.instrument.name run_number=last_instrument_run.run_number run_version=last_instrument_run.run_version %}">{{ last_instrument_run.title }}</a>
-                    <strong class="text-{% colour_table_row last_instrument_run.status.value_verbose %}"> ({{ last_instrument_run.status.value_verbose }})</strong>
+                    <strong class="text-{% colour_table_row last_instrument_run.status.value_verbose %}">
+                        ({{ last_instrument_run.status.value_verbose }})
+                    </strong>
                 </div>
             </div>
             {% if processing %}
@@ -18,9 +20,9 @@
                     <div class="col-md-8">
                         <ul class="list-inline comma-seperated-list">
                             {% for job in processing %}
-                            <li>
-                                <a href="{% url 'runs:summary' instrument_name=last_instrument_run.instrument.name run_number=job.run_number run_version=job.run_version %}">{{ job.title }}</a>
-                            </li>
+                                <li>
+                                    <a href="{% url 'run:summary' instrument_name=last_instrument_run.instrument.name run_number=job.run_number run_version=job.run_version %}">{{ job.title }}</a>
+                                </li>
                             {% endfor %}
                         </ul>
                     </div>
@@ -44,7 +46,9 @@
             <div class="text-center">
                 <strong>Last run on instrument: </strong>
                 <a href="{% url 'runs:summary' instrument_name=last_instrument_run.instrument.name run_number=last_instrument_run.run_number run_version=last_instrument_run.run_version %}">{{ last_instrument_run.title }}</a>
-                <strong class="text-{% colour_table_row last_instrument_run.status.value_verbose %}"> ({{ last_instrument_run.status.value_verbose }})</strong>
+                <strong class="text-{% colour_table_row last_instrument_run.status.value_verbose %}">
+                    ({{ last_instrument_run.status.value_verbose }})
+                </strong>
             </div>
             <div class="text-center">
                 All reduction jobs complete.

@@ -17,8 +17,9 @@
                 </div>
             </div>
             <br/>
-            <input type="hidden" id="last_run_number" value="{{last_instrument_run.run_number}}"/>
-            <form id="submit_jobs" method="POST" action="{% url 'run_confirmation' instrument=instrument.name %}" class="form-horizontal">
+            <input type="hidden" id="last_run_number" value="{{ last_instrument_run.run_number }}"/>
+            <form id="submit_jobs" method="POST" action="{% url 'run_confirmation' instrument=instrument.name %}"
+                  class="form-horizontal">
                 {% csrf_token %}
                 <div class="row">
                     <div class="col-md-9">
@@ -35,16 +36,22 @@
                             <div class="row">
                                 <label for="run_range" class="control-label col-md-3">
                                     Run Numbers
-                                    <a href="#" data-toggle="popover" data-content="A list of run number to re-run, the list can include ranges e.g. 1, 4-6. All the run numbers must be in the same experiment in order to apply the desired variables." data-trigger="hover click focus" data-placement="top" data-container="body"><i class="fa fa-info-circle"></i></a>
+                                    <a href="#" data-toggle="popover"
+                                       data-content="A list of run number to re-run, the list can include ranges e.g. 1, 4-6. All the run numbers must be in the same experiment in order to apply the desired variables."
+                                       data-trigger="hover click focus" data-placement="top" data-container="body"><i
+                                            class="fa fa-info-circle"></i></a>
                                 </label>
                                 <div class="col-md-5">
-                                    <input type="text" id="run_range" name="run_range" value="{{last_instrument_run.run_number}}" class="form-control"/>
+                                    <input type="text" id="run_range" name="run_range"
+                                           value="{{ last_instrument_run.run_number }}" class="form-control"/>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="form-group">
-                                        <label for="only_re_runs" class="control-label col-md-10">Only submit re-runs</label>
+                                        <label for="only_re_runs" class="control-label col-md-10">Only submit
+                                            re-runs</label>
                                         <div class="col-md-2">
-                                            <input type="checkbox" id="only_re_runs" name="only_re_runs" checked disabled/>
+                                            <input type="checkbox" id="only_re_runs" name="only_re_runs" checked
+                                                   disabled/>
                                         </div>
                                     </div>
                                 </div>
@@ -53,7 +60,10 @@
                         <div class="form-group">
                             <label for="run_description" class="control-label col-md-3">
                                 Re-run description
-                                <a href="#" data-toggle="popover" data-content="This will be appended onto the run number for you and others to identify the reason for re-submitting." data-trigger="hover click focus" data-placement="top" data-container="body"><i class="fa fa-info-circle"></i></a>
+                                <a href="#" data-toggle="popover"
+                                   data-content="This will be appended onto the run number for you and others to identify the reason for re-submitting."
+                                   data-trigger="hover click focus" data-placement="top" data-container="body"><i
+                                        class="fa fa-info-circle"></i></a>
                             </label>
                             <div class="col-md-9">
                                 <input type="text" id="run_description" name="run_description" class="form-control"/>
@@ -71,16 +81,22 @@
                             <div class="row">
                                 <ul class="js-form-actions">
                                     <li>
-                                        <a href="#currentScript" id="currentScript">Reset to values in current script</a>
-                                        <div class="js-explaination visible-xs-block">Reset all variables to those set in the script. This will pick up any changes made to the reduce_vars.py script.</div>
+                                        <a href="#currentScript" id="currentScript">Reset to values in current
+                                            script</a>
+                                        <div class="js-explaination visible-xs-block">Reset all variables to those set
+                                            in the script. This will pick up any changes made to the reduce_vars.py
+                                            script.
+                                        </div>
                                     </li>
                                     <li>
-                                        <input type="checkbox" name="overwrite_checkbox" id="overwrite_checkbox" checked>
+                                        <input type="checkbox" name="overwrite_checkbox" id="overwrite_checkbox"
+                                               checked>
                                         <label for="overwrite_checkbox">
                                             Overwrite previous data
                                             <a href="#" data-toggle="popover" data-content="By default, when an autoreduction job is re-run, the original data from the initial run will be overwritten. If you uncheck this box,
                                                                                             original data will not be overwritten and you will have distinct folders to separate out the data output from your different re-runs."
-                                               data-trigger="hover click focus" data-placement="top" data-container="body"><i class="fa fa-info-circle"></i></a>
+                                               data-trigger="hover click focus" data-placement="top"
+                                               data-container="body"><i class="fa fa-info-circle"></i></a>
                                         </label>
                                     </li>
                                 </ul>
@@ -93,8 +109,8 @@
                 </div>
                 <div class="form-group variables-buttons">
                     <div class="col-md-9 text-right">
-                        <a href="#cancelForm" class="btn btn-danger" id="cancelForm">Cancel</a> 
-                        <input type="submit" value="Submit Runs" class="btn btn-success" id="variableSubmit" />
+                        <a href="#cancelForm" class="btn btn-danger" id="cancelForm">Cancel</a>
+                        <input type="submit" value="Submit Runs" class="btn btn-success" id="variableSubmit"/>
                     </div>
                 </div>
             </form>
@@ -103,7 +119,8 @@
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                            <button type="button" class="close" data-dismiss="modal"><span
+                                    aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
                             <h4 class="modal-title">Default Variables</h4>
                         </div>
                         <div class="modal-body">
@@ -129,7 +146,8 @@
                     <div class="modal-content">
                         <div class="modal-body">
                             <div class="progress">
-                                <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="100" aria-valuemax="100" style="width: 100%">
+                                <div class="progress-bar progress-bar-striped active" role="progressbar"
+                                     aria-valuenow="100" aria-valuemin="100" aria-valuemax="100" style="width: 100%">
                                 </div>
                             </div>
                             <pre class="prettyprint js-script-container">
@@ -137,7 +155,8 @@
                         </div>
                         <div class="modal-footer">
                             <div class="col-md-12 pull-right">
-                                <a href="#downloadScript" id="downloadScript" class="btn btn-primary">Download Script</a>
+                                <a href="#downloadScript" id="downloadScript" class="btn btn-primary">Download
+                                    Script</a>
                             </div>
                         </div>
                     </div>
