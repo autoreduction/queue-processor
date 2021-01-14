@@ -3,7 +3,7 @@
 
 {% block body %}
 <div class="container-fluid" id="instrument-btns-container">
-    <div class="instrument-btns-row row form-group">
+    <div class="instrument-btns-row row">
     {% if instrument_list %}
         {% for instrument in instrument_list %}
                 <div class="instrument-btn col-md-4 text-center" id={{ instrument }}-instrument-btn>
@@ -11,7 +11,7 @@
                 </div>
         {% if forloop.counter|divisibleby:3 %}
         </div>
-        <div class="instrument-btns-row row form-group">
+        <div class="instrument-btns-row row">
         {% endif %}
         {% endfor %}
     {% else %}
