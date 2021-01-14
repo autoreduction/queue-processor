@@ -74,9 +74,9 @@
             <!-- Filter , Sort and Pagination options -->
             <form action="{{ request.path }}" method="get" id="filter_options">
                 <div class="col-md-3">
-                    <h3>Filter by</h3>
+                    <label for="filter_select">Filter by: </label>
                     <select class="form-control" name="filter" form="filter_options"
-                            id="filter_select">
+                                                               id="filter_select">
                         <option value="run" title="Display run numbers"
                                 {% if filtering == 'run' %}selected="selected"{% endif %}>Run number
                         </option>
@@ -88,7 +88,7 @@
                 </div>
 
                 <div class="col-md-3">
-                    <h3>Sort by</h3>
+                    <label for="sort_select">Sort by</label>
                     <select class="form-control" name="sort" form="filter_options" id="sort_select">
                         <option value="run" {% if sort == 'run' %}selected="selected"{% endif %}>
                             Number
@@ -102,7 +102,7 @@
 
                 {% if filtering == 'run' %}
                     <div class="col-md-3">
-                        <h3>Items per page</h3>
+                        <label for="pagination_select">Items per page</label>
                         <select title="The number of reduction jobs that should be shown per page"
                                 class="form-control" name="pagination" form="filter_options"
                                 id="pagination_select">
