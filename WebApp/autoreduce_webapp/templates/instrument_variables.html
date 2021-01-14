@@ -1,11 +1,10 @@
 {% extends "base.html" %}
+{% block title %}{{ instrument.name|default:"Instrument not found" }} - Configure new jobs{% endblock %}
 {% load view %}
 {% load static %}
 {% block body %}
     {% if instrument %}
         {% if instrument.is_active %}
-            <title>{{ instrument.name }} - Configure New Jobs</title>
-
             <div class="row">
                 <div class="col-md-12 text-center">
                     <h2>{{ instrument.name }} - Configure New Jobs</h2>

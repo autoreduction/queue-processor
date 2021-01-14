@@ -1,11 +1,11 @@
 {% extends "base.html" %}
+{% block title %}{{ instrument.name|default:"Instrument not found" }} - Re-run past jobs{% endblock %}
 {% load view %}
 {% load static %}
 
 {% block body %}
     {% if instrument %}
         {% if instrument.is_active %}
-            <title>{{ instrument.name }} - Re-run past jobs</title>
             <div class="row">
                 <div class="col-md-12 text-center">
                     <h2>{{ instrument.name }} - Re-run past jobs</h2>

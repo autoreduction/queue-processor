@@ -1,10 +1,9 @@
 {% extends "base.html" %}
+{% block title %}{{ instrument.name|default:"Instrument not found" }} - Reduction variables{% endblock %}
 {% load view %}
 {% load static %}
 {% block body %}
     {% if instrument %}
-        <title>{{ instrument.name }} - Reduction variables</title>
-
         <div class="row">
             <div class="col-md-12 text-center">
                 <h2>{{ instrument.name }} - Reduction Variables</h2>

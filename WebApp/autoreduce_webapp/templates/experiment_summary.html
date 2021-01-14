@@ -1,11 +1,10 @@
 {% extends "base.html" %}
+{% block title %}RB{{ experiment.reference_number|default:" not found" }}{% endblock %}
 {% load colour_table_rows %}
 {% load naturaltime from humanize %}
 
 {% block body %}
     {% if experiment %}
-        <title>RB{{ experiment.reference_number }}</title>
-
         <div class="row">
             <div class="col-md-12 text-center">
                 <h2>RB{{ experiment.reference_number }}</h2>

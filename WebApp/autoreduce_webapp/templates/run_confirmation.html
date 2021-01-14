@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% block title %}Run confirmation{% endblock %}
 {% load view %}
 {% load colour_table_rows %}
 {% load natural_time_difference %}
@@ -7,7 +8,6 @@
 
 {% block body %}
     {% if runs and not error %}
-        <title>Run Confirmation</title>
         <div class="row">
             <div class="col-md-8 col-md-offset-2">
                 <div class="panel panel-success">

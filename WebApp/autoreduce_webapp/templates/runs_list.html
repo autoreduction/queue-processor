@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% block title %}{{ instrument_name|default:"Instrument not found" }}{% endblock %}
 {% load view %}
 {% load static %}
 {% load colour_table_rows %}
@@ -9,7 +10,6 @@
             {{ message }}
         </div>
     {% else %}
-        <title>{{ instrument_name }}</title>
         <!-- Instrument Name -->
         <div class="row">
             <div class="col-md-12 text-center">

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% block title %}Reduction job #{{ run.title|default:"null" }}{% endblock %}
 {% load view %}
 {% load colour_table_rows %}
 {% load natural_time_difference %}
@@ -8,7 +9,6 @@
 
 {% block body %}
     {% if run %}
-        <title>Reduction Job #{{ run.title }}</title>
         <div class="row">
             <div class="col-md-12 text-center">
                 <h2>Reduction Job #{{ run.title }}</h2>
