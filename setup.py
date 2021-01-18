@@ -32,7 +32,7 @@ setup_requires = ['attrs==20.3.0',
                   # this is the highest available version that pip can find on CentOS - be careful when updating
                   # because Travis runs on Ubuntu so even if the build pass, the installation could fail
                   'IPython==7.19.0',
-                  'mysqlclient==2.0.2',
+                  'mysqlclient==2.0.3',
                   'mysql-connector==2.2.9',
                   'nexusformat==0.5.3',
                   'numpy==1.19.2',
