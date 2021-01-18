@@ -105,6 +105,7 @@ class HandleMessage:
                                                                script_text=script_text,
                                                                status=status)
         if script_text is None:
+            message.message = "Script text for current instrument is null"
             self.reduction_error(reduction_run, message)
             raise InvalidStateException("Script text for current instrument is null")
         self.safe_save(reduction_run)
