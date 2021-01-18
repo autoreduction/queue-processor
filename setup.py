@@ -28,7 +28,7 @@ setup_requires = ['attrs==20.3.0',
                   'django-user-agents==0.4.0',
                   'filelock==3.0.12',
                   'fire==0.3.1',
-                  'gitpython==3.1.11',
+                  'gitpython==3.1.12',
                   # this is the highest available version that pip can find on CentOS - be careful when updating
                   # because Travis runs on Ubuntu so even if the build pass, the installation could fail
                   'IPython==7.19.0',
