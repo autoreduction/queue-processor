@@ -94,8 +94,7 @@ class HandleMessage:
         # error queue
         script_text = get_current_script_text(instrument.name)[0]
         if script_text is None:
-            self.reduction_error(message)
-            raise InvalidStateException("Script text for current instrument is null")
+            script_text = ""
 
         # Make the new reduction run with the information collected so far
         # and add it into the database
@@ -105,6 +104,9 @@ class HandleMessage:
                                                                run_version=run_version,
                                                                script_text=script_text,
                                                                status=status)
+        if script_text is None:
+            self.reduction_error(reduction_run, message)
+            raise InvalidStateException("Script text for current instrument is null")
         self.safe_save(reduction_run)
 
         # Create a new data location entry which has a foreign key linking it to the current
