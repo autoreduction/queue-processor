@@ -70,8 +70,7 @@ class QueueClient(AbstractClient):
         if self._connection is None or not self._connection.is_connected():
             try:
                 host_port = [(self.credentials.host, int(self.credentials.port))]
-                connection = stomp.Connection(host_and_ports=host_port,
-                                              use_ssl=False)
+                connection = stomp.Connection(host_and_ports=host_port, use_ssl=False)
                 if listener:
                     connection.set_listener('Autoreduction', listener)
                 self._logger.info("Starting connection to %s", host_port)
@@ -98,10 +97,7 @@ class QueueClient(AbstractClient):
         self._connection.set_listener(consumer_name, listener)
         for queue in queue_list:
             # NOTE TO SELF with this we limit ourselves to processing 1 message at a time
-            self._connection.subscribe(destination=queue,
-                                       id='1',
-                                       ack=ack,
-                                       header={'activemq.prefetchSize': '1'})
+            self._connection.subscribe(destination=queue, id='1', ack=ack, header={'activemq.prefetchSize': '1'})
             self._logger.info("[%s] Subscribing to %s", consumer_name, queue)
         self._logger.info("Successfully subscribed to all of the queues")
 
@@ -129,13 +125,13 @@ class QueueClient(AbstractClient):
                               listener=listener,
                               ack=ack)
 
-    def ack(self, frame):
+    def ack(self, message_id, subscription):
         """
         Acknowledge receipt of a message
-        :param frame: The identifier of the message
+        :param message_id: The identifier of the message
         """
         # pylint:disable=no-value-for-parameter
-        self._connection.ack(frame)
+        self._connection.ack(message_id, subscription)
 
     # pylint:disable=too-many-arguments
     def send(self, destination, message, persistent='true', priority='4', delay=None):
@@ -154,7 +150,4 @@ class QueueClient(AbstractClient):
         else:
             message_json_dump = message
 
-        self._connection.send(destination, message_json_dump,
-                              persistent=persistent,
-                              priority=priority,
-                              delay=delay)
+        self._connection.send(destination, message_json_dump, persistent=persistent, priority=priority, delay=delay)

@@ -23,9 +23,9 @@ from utils.clients.queue_client import QueueClient
 
 class QueueListener:
     """ Listener class that is used to consume messages from ActiveMQ. """
-    def __init__(self, client):
+    def __init__(self, client: QueueClient):
         """ Initialise listener. """
-        self._client = client
+        self._client: QueueClient = client
         self._message_handler = HandleMessage(queue_listener=self)
         self._priority = ''
 
@@ -48,6 +48,8 @@ class QueueListener:
             self._logger.error("Could not decode message from %s", destination)
             self._logger.error(sys.exc_info()[1])
             return
+
+        self._client.ack(headers["message-id"], headers["subscription"])
         try:
             if destination == '/queue/DataReady':
                 self._message_handler.data_ready(message)
