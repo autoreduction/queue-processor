@@ -22,15 +22,7 @@ logging.config.dictConfig(LOGGING)
 class QueueListenerDaemon(Daemon):
     """ Queue Listener daemoniser """
     def __init__(self, *args, **kwargs):
-        """
-        Sets the time to shutdown and a handler for the Daemon
-        This time was selected so that the cron job will restart roughly
-        at the same time each day whilst accounting for thread timing drift.
-
-        If it was set to dead 24 hours we might stop after
-        cron tries to start us. So we take a 15 minute time buffer where
-        the QP is offline to give us a window where we can shutdown.
-        """
+        """ Initialise the queue_processor daemon """
         super().__init__(*args, **kwargs)
 
         self._client_handle = None
