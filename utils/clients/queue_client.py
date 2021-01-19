@@ -30,7 +30,6 @@ class QueueClient(AbstractClient):
         super(QueueClient, self).__init__(credentials)  # pylint:disable=super-with-arguments
         self._connection = None
         self._consumer_name = consumer_name
-        self._autoreduce_queues = self.credentials.all_subscriptions
         self._logger = logging.getLogger(__file__)
 
     # pylint:disable=arguments-differ
@@ -74,14 +73,11 @@ class QueueClient(AbstractClient):
                 if listener:
                     connection.set_listener('Autoreduction', listener)
                 self._logger.info("Starting connection to %s", host_port)
-                connection.connect(username=self.credentials.username,
-                                   passcode=self.credentials.password,
-                                   wait=True,
-                                   header={'activemq.prefetchSize': '1'})
+                connection.connect(username=self.credentials.username, passcode=self.credentials.password, wait=True)
             except ConnectFailedException as exp:
                 raise ConnectionException("ActiveMQ") from exp
             # Sleep required to avoid using the service too quickly after establishing connection
-            time.sleep(0.5)
+            # time.sleep(0.5)
             self._connection = connection
 
     def subscribe_queues(self, queue_list, consumer_name, listener, ack='auto'):
@@ -91,13 +87,18 @@ class QueueClient(AbstractClient):
         :param consumer_name: A name to assign to the consumer
         :param listener: A ConnectionListener object to assign to the stomp connection, optionally
         :param ack: The acknowledge type
+
+        TODO remove ack from call stack & tests
         """
         if not isinstance(queue_list, list):
             queue_list = [queue_list]
         self._connection.set_listener(consumer_name, listener)
         for queue in queue_list:
             # NOTE TO SELF with this we limit ourselves to processing 1 message at a time
-            self._connection.subscribe(destination=queue, id='1', ack=ack, header={'activemq.prefetchSize': '1'})
+            self._connection.subscribe(destination=queue,
+                                       id='1',
+                                       ack="client-individual",
+                                       header={'activemq.prefetchSize': '1'})
             self._logger.info("[%s] Subscribing to %s", consumer_name, queue)
         self._logger.info("Successfully subscribed to all of the queues")
 
@@ -108,19 +109,7 @@ class QueueClient(AbstractClient):
         :param listener: A ConnectionListener object to assign to the stomp connection, optionally
         :param ack: The acknowledge type
         """
-        self.subscribe_queues(queue_list=self.credentials.all_subscriptions,
-                              consumer_name=consumer_name,
-                              listener=listener,
-                              ack=ack)
-
-    def subscribe_amq(self, consumer_name, listener, ack='auto'):
-        """
-        Subscribe to ReductionPending
-        :param consumer_name: A name to assign to the consumer
-        :param listener: A ConnectionListener object to assign to the stomp connection, optionally
-        :param ack: The acknowledge type
-        """
-        self.subscribe_queues(queue_list=self.credentials.reduction_pending,
+        self.subscribe_queues(queue_list=[self.credentials.data_ready],
                               consumer_name=consumer_name,
                               listener=listener,
                               ack=ack)

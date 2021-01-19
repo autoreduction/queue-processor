@@ -131,22 +131,6 @@ class TestQueueClient(unittest.TestCase):
         mock_stomp_ack.assert_called_once_with('test')
 
     @patch('utils.clients.queue_client.QueueClient.subscribe_queues')
-    def test_subscribe_to_pending(self, mock_subscribe):
-        """
-        Test: subscribe_amq calls subscribe_queues with given arguments,
-        including a single queue (ReductionPending)
-        When: subscribe_amq is called once with the arguments given
-        """
-        client = QueueClient()
-        client.subscribe_amq('consumer', None, 'auto')
-        # due to default params these have to be supplied to the mock in a dictionary
-        expected_args = {'queue_list': '/queue/ReductionPending',
-                         'ack': 'auto',
-                         'listener': None,
-                         'consumer_name': 'consumer'}
-        mock_subscribe.assert_called_once_with(**expected_args)
-
-    @patch('utils.clients.queue_client.QueueClient.subscribe_queues')
     def test_subscribe_to_all_queues(self, mock_subscribe):
         """
         Test: subscribe_autoreduce calls subscribe_queues with given arguments,
