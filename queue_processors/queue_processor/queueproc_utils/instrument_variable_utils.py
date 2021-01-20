@@ -79,25 +79,29 @@ class InstrumentVariablesUtils:
             | Q(start_run__lte=run_number),
             instrument_id=instrument_id)
 
-        variables = self.find_or_make_variables(possible_variables, run_number, instrument_id,
-                                                reduce_vars_module, 'standard_vars', False)
-        variables.extend(
-            self.find_or_make_variables(possible_variables, run_number, instrument_id,
-                                        reduce_vars_module, 'advanced_vars', True))
+        variables = self._find_or_make_variables(possible_variables, run_number, instrument_id,
+                                                 reduce_vars_module)
 
         logger.info('Creating RunVariables')
         # Create run variables from these instrument variables, and return them.
         return VariableUtils().save_run_variables(variables, reduction_run)
 
-    def find_or_make_variables(self, possible_variables, run_number, instrument_id,
-                               reduce_vars_module, vars_type, is_advanced) -> List:
-        dictionary = getattr(reduce_vars_module, vars_type, None)
-        if dictionary is None:
+    def _find_or_make_variables(self, possible_variables, run_number, instrument_id,
+                                reduce_vars_module) -> List:
+        standard_vars = getattr(reduce_vars_module, 'standard_vars', None)
+        advanced_vars = getattr(reduce_vars_module, 'advanced_vars', None)
+
+        all_vars: List[Tuple[str, Any, bool]] = [(name, value, False)
+                                                 for name, value in standard_vars.items()]
+        all_vars.extend([(name, value, True) for name, value in advanced_vars.items()])
+
+        if len(all_vars) == 0:
             return []
 
         variables = []
-        for name, value in dictionary.items():
-            script_help_text = self._get_help_text(vars_type, name, reduce_vars_module)
+        for name, value, is_advanced in all_vars:
+            script_help_text = self._get_help_text(
+                'standard_vars' if not is_advanced else 'advanced_vars', name, reduce_vars_module)
             script_value = str(value).replace('[', '').replace(']', '')
             script_type = VariableUtils().get_type_string(value)
 
