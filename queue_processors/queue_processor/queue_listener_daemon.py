@@ -9,9 +9,7 @@
 """
 Module for daemonising the queue processor.
 """
-import threading
 import logging
-import datetime
 import signal
 import time
 
@@ -21,9 +19,9 @@ from queue_processors.queue_processor.settings import LOGGING
 
 logging.config.dictConfig(LOGGING)
 
+
 class QueueListenerDaemon(Daemon):
     """ Queue Listener daemoniser """
-
     def __init__(self, *args, **kwargs):
         """
         Sets the time to shutdown and a handler for the Daemon
@@ -45,9 +43,11 @@ class QueueListenerDaemon(Daemon):
         """ Run queue processor. """
         self._logger.info("Starting Queue Processor")
         self._client_handle = queue_listener.main()
+        # keeps the daemon alive as the main call above does not block
+        # but simply runs the connections in async. If this sleep isn't
+        # here the deamon will just exit after connecting
         while True:
             time.sleep(0.5)
-
 
     def stop(self):
         """
