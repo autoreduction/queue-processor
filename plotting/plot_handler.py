@@ -115,7 +115,7 @@ class PlotHandler:
             client = SFTPClient()
             for plot_file in _existing_plot_files:
                 # Generate paths to data on server and destination on local machine
-                _server_path = self.server_dir + plot_file
+                _server_path = f"{self.server_dir}/{plot_file}"
                 _local_path = os.path.join(self.static_graph_dir, plot_file)
 
                 try:
