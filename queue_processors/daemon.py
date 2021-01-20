@@ -100,7 +100,6 @@ class Daemon:
         if pid:
             message = "pidfile %s already exist. Daemon already running?\n"
             LOGGER.warning(message, self.pidfile)
-            print(message, self.pidfile)
             sys.exit(1)
 
         # Start the daemon

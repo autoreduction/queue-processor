@@ -42,8 +42,7 @@ class QueueListener:
 
         destination = headers["destination"]
         self._priority = headers["priority"]
-        self._logger.info("Destination: %s Priority: %s", destination,
-                          self._priority)
+        self._logger.info("Destination: %s Priority: %s", destination, self._priority)
         # Load the JSON message and header into dictionaries
         try:
             if not isinstance(message, Message):
@@ -66,15 +65,12 @@ class QueueListener:
             elif destination == '/queue/ReductionSkipped':
                 self._message_handler.reduction_skipped(message)
             else:
-                self._logger.warning(
-                    "Received a message on an unknown topic '%s'", destination)
+                self._logger.warning("Received a message on an unknown topic '%s'", destination)
         except InvalidStateException as exp:
-            self._logger.error("Stomp Client message handling exception:"
-                               "%s %s", type(exp).__name__, exp)
+            self._logger.error("Stomp Client message handling exception:" "%s %s", type(exp).__name__, exp)
             self._logger.error(traceback.format_exc())
 
-    def send_message(self, target: str, message: Message,
-                     priority: int = None):
+    def send_message(self, target: str, message: Message, priority: int = None):
         """
         Sends the given message to the given queue. Priority is optionally
         provided by the caller if required, else it will use the client
@@ -112,5 +108,9 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+    # if running this script as main (e.g. when debigging the queue listener)
+    # the activemq connection runs async and without this sleep the process will
+    # just connect to activemq then exit completely
     while True:
         time.sleep(0.5)
