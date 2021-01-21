@@ -10,12 +10,7 @@ from utils.project.structure import get_project_root
 
 FACILITY = 'ISIS'
 
-MYSQL = {
-    'HOST': 'localhost:3306',
-    'USER': 'test-user',
-    'PASSWD': 'pass',
-    'DB': 'autoreduction'
-}
+MYSQL = {'HOST': 'localhost:3306', 'USER': 'test-user', 'PASSWD': 'pass', 'DB': 'autoreduction'}
 
 # Logging
 LOG_FILE = os.path.join(get_project_root(), 'logs', 'queue_processor.log')
@@ -46,11 +41,6 @@ LOGGING = {
             'formatter': 'verbose'
         },
     },
-    'root': {
-        'level':LOG_LEVEL,
-        'handlers': ['file'],
-        'propagate': True
-    },
     'loggers': {
         'queue_processor': {
             'handlers': ['file'],
@@ -67,24 +57,16 @@ LOGGING = {
 
 # Directory Locations
 if os.name == 'nt':
-    # %(instrument)
-    REDUCTION_DIRECTORY = r'\\isis\inst$\NDX%s\user\scripts\autoreduction'
-    # %(instrument, cycle, experiment_number, run_number)
-    ARCHIVE_DIRECTORY = r'\\isis\inst$\NDX%s\Instrument\data\cycle_%s\autoreduced\%s\%s'
-
-    TEST_REDUCTION_DIRECTORY = r'\\reducedev\isis\output\NDX%s\user\scripts\autoreduction'
-    TEST_ARCHIVE_DIRECTORY = r'\\isis\inst$\NDX%s\Instrument\data\cycle_%s\autoreduced\%s\%s'
-
+    # Adding this as we no longer have any nodes running on Windows.
+    # The change will appear in https://github.com/ISISScientificComputing/autoreduce/pull/1002
+    # If Windows must be used you will have to redefine the variables from below
+    raise RuntimeError(
+        "Running the queue processor on Windows is no longer expected, nor actively supported.")
 else:
     # %(instrument)
-    # REDUCTION_DIRECTORY = '/isis/NDX%s/user/scripts/autoreduction'
-    REDUCTION_DIRECTORY = os.path.join(get_project_root(), 'data-archive', 'NDX%s',
-                                       'user', 'scripts', 'autoreduction')
+    REDUCTION_DIRECTORY = '/isis/NDX%s/user/scripts/autoreduction'
     # %(instrument, cycle, experiment_number, run_number)
-    # ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s'
-    ARCHIVE_DIRECTORY = os.path.join(get_project_root(), 'data-archive', 'NDX%s',
-                                     'Instrument', 'data', 'cycle_%s', 'autoreduced',
-                                     '%s', '%s')
+    ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s'
 
-    TEST_REDUCTION_DIRECTORY = '/reducedev/isis/output/NDX%s/user/scripts/autoreduction'
-    TEST_ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s'
+TEST_REDUCTION_DIRECTORY = '/reducedev/isis/output/NDX%s/user/scripts/autoreduction'
+TEST_ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s'
