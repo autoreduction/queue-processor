@@ -169,7 +169,7 @@ class TestPlotHandler(unittest.TestCase):
         expected_files = ['expected.png']
         mock_find_files.return_value = expected_files
         expected_local = os.path.join(self.expected_static_graph_dir, expected_files[0])
-        expected_server = self.expected_mari_rb_folder + expected_files[0]
+        expected_server = os.path.join(self.expected_mari_rb_folder, expected_files[0])
 
         actual_path = self.test_plot_handler.get_plot_file()
         mock_client_init.assert_called_once()
