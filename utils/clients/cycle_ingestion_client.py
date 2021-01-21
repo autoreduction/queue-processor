@@ -10,7 +10,7 @@ Client class for ingesting cycle data from ISIS Business Applications (BusApps) 
 import suds
 from utils.clients.abstract_client import AbstractClient
 from utils.clients.connection_exception import ConnectionException
-from utils.test_settings import CYCLE_SETTINGS
+from utils.settings import CYCLE_SETTINGS
 
 
 class CycleIngestionClient(AbstractClient):
@@ -27,11 +27,14 @@ class CycleIngestionClient(AbstractClient):
         self._scheduler_client = None
         self._session_id = None
         self._errors = {
-            "invalid_uows_client": TypeError("The UOWS Client does not exist"
-                                             "or has not been initialised properly"),
-            "invalid_scheduler_client": TypeError("The Scheduler Client does not exist"
-                                                  "or has not been initialised properly"),
-            "invalid_session_id": ConnectionException("Cycle Ingestion")
+            "invalid_uows_client":
+            TypeError("The UOWS Client does not exist"
+                      "or has not been initialised properly"),
+            "invalid_scheduler_client":
+            TypeError("The Scheduler Client does not exist"
+                      "or has not been initialised properly"),
+            "invalid_session_id":
+            ConnectionException("Cycle Ingestion")
         }
 
     def create_uows_client(self):
@@ -84,7 +87,7 @@ class CycleIngestionClient(AbstractClient):
             self._scheduler_client.service.getFacilityList(self._session_id)
         except AttributeError as exp:
             raise self._errors["invalid_scheduler_client"] from exp
-        except suds.WebFault as exp:    # Raised by suds if the session id is not valid
+        except suds.WebFault as exp:  # Raised by suds if the session id is not valid
             raise self._errors["invalid_session_id"] from exp
 
         return True

@@ -24,11 +24,6 @@ class MigrateTestSettings(Command):
     description = 'Overwrite the credentials.py files with test_credentials.py'
     user_options = []
 
-    def initialize_options(self):
-        """ Initialise empty list """
-        # pylint:disable=attribute-defined-outside-init
-        self.test_settings_paths = []
-
     def finalize_options(self):
         # pylint:disable=attribute-defined-outside-init
         self.utils_path = os.path.join(ROOT_DIR, 'utils')
@@ -37,11 +32,10 @@ class MigrateTestSettings(Command):
         """ Copy all test files from the test files list to desired locations """
         BUILD_LOGGER.print_and_log("================== Migrate credentials ====================")
         self._migrate_test_settings(self.utils_path)
-        BUILD_LOGGER.print_and_log("Test settings successfully migrated\n")
+        BUILD_LOGGER.print_and_log("Credentials successfully migrated\n")
 
     @staticmethod
     def _migrate_test_settings(utils_path):
-
         try:
             test_credentials_path = os.path.join(utils_path, 'test_credentials.ini')
             credentials_path = os.path.join(utils_path, 'credentials.ini')
