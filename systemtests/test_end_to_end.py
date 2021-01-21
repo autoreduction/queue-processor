@@ -20,18 +20,17 @@ from model.message.message import Message
 from scripts.manual_operations import manual_remove as remove
 
 from utils import service_handling as external
-from utils.test_settings import ACTIVEMQ_SETTINGS
+from utils.settings import ACTIVEMQ_SETTINGS
 from utils.clients.django_database_client import DatabaseClient
 from utils.clients.queue_client import QueueClient
 from utils.data_archive.data_archive_creator import DataArchiveCreator
 from utils.data_archive.archive_explorer import ArchiveExplorer
 from utils.project.structure import get_project_root
 
-
 if os.name != 'nt':
+
     class TestEndToEnd(unittest.TestCase):
         """ Class to test pipelines in autoreduction"""
-
         @classmethod
         def setUpClass(cls):
             # Start all services
@@ -72,8 +71,7 @@ if os.name != 'nt':
                 '\tmain()\n'
 
             # Create supporting data structures e.g. Data Archive, Reduce directory
-            file_location = self._setup_data_structures(reduce_script=reduce_script,
-                                                        vars_script='')
+            file_location = self._setup_data_structures(reduce_script=reduce_script, vars_script='')
 
             # Create and send json message to ActiveMQ
             data_ready_message = Message(rb_number=self.rb_number,
@@ -83,8 +81,7 @@ if os.name != 'nt':
                                          facility="ISIS",
                                          started_by=0)
 
-            self.queue_client.send('/queue/DataReady',
-                                   data_ready_message)
+            self.queue_client.send('/queue/DataReady', data_ready_message)
 
             # Get Result from database
             results = self._find_run_in_database()
@@ -105,8 +102,7 @@ if os.name != 'nt':
             self.run_number = 101
 
             # Create supporting data structures e.g. Data Archive, Reduce directory
-            file_location = self._setup_data_structures(reduce_script='fail',
-                                                        vars_script='')
+            file_location = self._setup_data_structures(reduce_script='fail', vars_script='')
 
             # Create and send json message to ActiveMQ
             data_ready_message = Message(rb_number=self.rb_number,
@@ -116,8 +112,7 @@ if os.name != 'nt':
                                          facility="ISIS",
                                          started_by=0)
 
-            self.queue_client.send('/queue/DataReady',
-                                   data_ready_message)
+            self.queue_client.send('/queue/DataReady', data_ready_message)
 
             # Get Result from database
             results = self._find_run_in_database()
@@ -227,11 +222,11 @@ if os.name != 'nt':
             external.stop_queue_processors()
 
 else:
+
     class TestEndToEnd(unittest.TestCase):
         """
         This will be skipped on windows
         """
-
         @unittest.skip("System test skipped on windows")
         def test_windows(self):
             """
