@@ -48,7 +48,7 @@ setup_requires = ['attrs==20.3.0',
                   'stomp.py==6.1.0',
                   'suds-py3==1.4.3.0',
                   'Twisted==20.3.0',
-                  'PyYAML==5.3.1']
+                  'PyYAML==5.4.1']
 
 
 if platform.system() == 'Windows':
