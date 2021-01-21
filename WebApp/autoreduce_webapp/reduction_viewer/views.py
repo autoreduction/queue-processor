@@ -54,7 +54,8 @@ def index(request):
     authenticated = False
 
     if DEVELOPMENT_MODE:
-        user = authenticate(username="super", password="super")
+        user = authenticate(username="super", password="super", 
+                            backend="django.contrib.auth.backends.ModelBackend")
         login(request, user)
         authenticated = True
     else:
