@@ -18,10 +18,10 @@ from build.utils.common import BUILD_LOGGER, ROOT_DIR
 
 class MigrateTestSettings(Command):
     """
-    Class to copy all test_settings.py files listed to settings.py
+    Class to copy test_credentials.ini to credentials.ini
     """
 
-    description = 'Overwrite the settings.py files with test_settings.py'
+    description = 'Overwrite the credentials.py files with test_credentials.py'
     user_options = []
 
     def initialize_options(self):
@@ -30,22 +30,18 @@ class MigrateTestSettings(Command):
         self.test_settings_paths = []
 
     def finalize_options(self):
-        """ Add known test_settings.py files to list """
         # pylint:disable=attribute-defined-outside-init
         self.utils_path = os.path.join(ROOT_DIR, 'utils')
 
     def run(self):
         """ Copy all test files from the test files list to desired locations """
-        BUILD_LOGGER.print_and_log("================== Migrate test settings ====================")
+        BUILD_LOGGER.print_and_log("================== Migrate credentials ====================")
         self._migrate_test_settings(self.utils_path)
         BUILD_LOGGER.print_and_log("Test settings successfully migrated\n")
 
     @staticmethod
     def _migrate_test_settings(utils_path):
-        """
-        Copy any test_settings.py files in given directory list to settings.py files
-        :param all_paths: All directories containing test_settings.py
-        """
+
         try:
             test_credentials_path = os.path.join(utils_path, 'test_credentials.ini')
             credentials_path = os.path.join(utils_path, 'credentials.ini')
