@@ -24,6 +24,9 @@ class MigrateTestSettings(Command):
     description = 'Overwrite the credentials.py files with test_credentials.py'
     user_options = []
 
+    def initialize_options(self):
+        pass
+
     def finalize_options(self):
         # pylint:disable=attribute-defined-outside-init
         self.utils_path = os.path.join(ROOT_DIR, 'utils')
