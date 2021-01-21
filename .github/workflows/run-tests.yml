@@ -91,10 +91,6 @@ jobs:
 
       - uses: ./.github/actions/build-autoreduction
 
-      # Temporary workaround for double backend in settings breaking authentication
-      - name: Authentication workaround
-        run: sed -i '79d' WebApp/autoreduce_webapp/autoreduce_webapp/settings.py
-
       - name: Set up chromedriver
         run: |
           wget https://chromedriver.storage.googleapis.com/87.0.4280.20/chromedriver_linux64.zip
