@@ -49,7 +49,7 @@ jobs:
 
       - name: Run system tests
         run: pytest systemtests --cov-append
-      
+
       - name: Coveralls
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -93,7 +93,7 @@ jobs:
 
       # Temporary workaround for double backend in settings breaking authentication
       - name: Authentication workaround
-        run: sed -i '79d' WebApp/autoreduce_webapp/autoreduce_webapp/test_settings.py
+        run: sed -i '79d' WebApp/autoreduce_webapp/autoreduce_webapp/settings.py
 
       - name: Set up chromedriver
         run: |
