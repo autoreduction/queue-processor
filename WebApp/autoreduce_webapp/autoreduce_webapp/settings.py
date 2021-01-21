@@ -8,7 +8,6 @@
 import os
 import configparser
 
-
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 # Read the utilities .ini file that contains service credentials
@@ -44,7 +43,6 @@ ORM_INSTALL = [  # Minimal apps required to setup JUST the ORM - (increases ORM 
     'reduction_viewer',
     'reduction_variables',
 ]
-
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -185,15 +183,16 @@ LOGGING = {
 
 ACTIVEMQ = {
     'topics': [
-        '/queue/DataReady',
-        '/queue/ReductionStarted',
-        '/queue/ReductionComplete',
+        '/queue/DataReady', '/queue/ReductionStarted', '/queue/ReductionComplete',
         '/queue/ReductionError'
     ],
-    'username': get_str('QUEUE', 'user'),
-    'password': get_str('QUEUE', 'password'),
+    'username':
+    get_str('QUEUE', 'user'),
+    'password':
+    get_str('QUEUE', 'password'),
     'broker': [(get_str('QUEUE', 'host'), get_str('QUEUE', 'port'))],
-    'SSL': False
+    'SSL':
+    False
 }
 
 # File Locations
@@ -248,6 +247,6 @@ PRELOAD_RUNS_UNDER = 100  # If the index run list has fewer than this many runs 
 CACHE_LIFETIME = 3600  # Objects in ICATCache live this many seconds when ICAT is available to update them.
 USER_ACCESS_CHECKS = False  # Should the webapp prevent users from accessing runs/instruments they're not allowed to?
 DEVELOPMENT_MODE = True  # If the installation is in a development environment, set this variable to True so that
-                         # we are not constrained by having to log in through the user office. This will authenticate
-                         # anyone visiting the site as a super user
+# we are not constrained by having to log in through the user office. This will authenticate
+# anyone visiting the site as a super user
 X_FRAME_OPTIONS = 'SAMEORIGIN'  # Enables the use of frames within HTML
