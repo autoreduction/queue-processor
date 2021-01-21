@@ -13,8 +13,7 @@ logs/
 
 # *.out
 
-# Ignore settings files
-settings.py
+# Ignore credentials files
 credentials.ini
 
 # Ignore distutils installation
