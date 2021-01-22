@@ -1,28 +1,25 @@
 # ############################################################################### #
 # Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
 #
-# Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
+# Copyright &copy; 2021 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 """
 Module for dealing with instrument reduction variables.
 """
-import importlib.util as imp
-import io
-import logging.config
 import os
 import html
-from typing import Any, Dict, List, Tuple
+import logging
+import logging.config
+from typing import Any, List, Tuple
+
 from django.db import transaction
 from django.db.models import Q
-
-import chardet
-
-# pylint:disable=no-name-in-module,import-error
-from queue_processors.queue_processor.settings import REDUCTION_DIRECTORY, LOGGING
-from queue_processors.queue_processor.queueproc_utils.variable_utils import VariableUtils
-
 from model.database import access as db
+from queue_processors.queue_processor.queueproc_utils.script_utils import import_module, reduction_script_location
+from queue_processors.queue_processor.queueproc_utils.variable_utils import VariableUtils
+# pylint:disable=no-name-in-module,import-error
+from queue_processors.queue_processor.settings import LOGGING
 
 # Set up logging and attach the logging to the right part of the config.
 logging.config.dictConfig(LOGGING)
@@ -37,19 +34,6 @@ class InstrumentVariablesUtils:
     """ Class used to parse and process instrument reduction variables. """
     def __init__(self) -> None:
         self.model = db.start_database()
-
-    @staticmethod
-    def log_error_and_notify(message):
-        """
-        Helper method to log an error and save a notification
-        """
-        logger.error(message)
-        model = db.start_database().data_model
-        notification = model.Notification(is_active=True,
-                                          is_staff_only=True,
-                                          severity='e',
-                                          message=message)
-        db.save_record(notification)
 
     @transaction.atomic
     def create_variables_for_run(self, reduction_run):
@@ -67,9 +51,9 @@ class InstrumentVariablesUtils:
         """
         instrument_name = reduction_run.instrument.name
 
-        reduce_vars_file = os.path.join(self._reduction_script_location(instrument_name),
+        reduce_vars_file = os.path.join(reduction_script_location(instrument_name),
                                         'reduce_vars.py')
-        reduce_vars_module = self._import_module(reduce_vars_file)
+        reduce_vars_module = import_module(reduce_vars_file)
         model = self.model.variable_model
         experiment_reference = reduction_run.experiment.reference_number
         run_number = reduction_run.run_number
@@ -88,6 +72,7 @@ class InstrumentVariablesUtils:
 
     def _find_or_make_variables(self, possible_variables, run_number, instrument_id,
                                 reduce_vars_module) -> List:
+        # pylint: disable=too-many-locals
         standard_vars = getattr(reduce_vars_module, 'standard_vars', None)
         advanced_vars = getattr(reduce_vars_module, 'advanced_vars', None)
 
@@ -163,32 +148,6 @@ class InstrumentVariablesUtils:
             variable.save()
         return variable
 
-    @staticmethod
-    def _reduction_script_location(instrument_name):
-        """ Get reduction script location. """
-        return REDUCTION_DIRECTORY % instrument_name
-
-    def _import_module(self, script_path):
-        """
-        Takes a python script as a text string, and returns it loaded as a module.
-        Failure will return None, and notify.
-        """
-        # file name without extension
-        module_name = os.path.basename(script_path).split(".")[0]
-        try:
-            spec = imp.spec_from_file_location(module_name, script_path)
-            module = imp.module_from_spec(spec)
-            spec.loader.exec_module(module)
-            return module
-        except ImportError as exp:
-            self.log_error_and_notify(
-                "Unable to load reduction script %s due to missing import. (%s)" %
-                (script_path, exp))
-            return None
-        except SyntaxError:
-            self.log_error_and_notify("Syntax error in reduction script %s" % script_path)
-            return None
-
     def _get_help_text(self, dict_name, key, reduce_vars_module):
         """ Get variable help text. """
         if not dict_name or not key:
@@ -206,41 +165,3 @@ class InstrumentVariablesUtils:
         help_text = html.escape(help_text)  # Remove any HTML already in the help string
         help_text = help_text.replace('\n', '<br>').replace('\t', '&nbsp;&nbsp;&nbsp;&nbsp;')
         return help_text
-
-    def get_current_script_text(self, instrument_name):
-        """
-        Fetches the reduction script and variables script for the given
-        instrument, and returns each as a string.
-        """
-        script_text = self._load_reduction_script(instrument_name)
-        script_vars_text = self._load_reduction_vars_script(instrument_name)
-        return script_text, script_vars_text
-
-    def _load_reduction_script(self, instrument_name):
-        """ Loads reduction script. """
-        return self._load_script(
-            os.path.join(self._reduction_script_location(instrument_name), 'reduce.py'))
-
-    def _load_reduction_vars_script(self, instrument_name):
-        """ Loads reduction variables script. """
-        return self._load_script(
-            os.path.join(self._reduction_script_location(instrument_name), 'reduce_vars.py'))
-
-    def _load_script(self, path):
-        """
-        First detect the file encoding using chardet.
-        Then load the relevant reduction script and return back the text of the script.
-        If the script cannot be loaded, None is returned.
-        """
-        try:
-            # Read raw bytes and determine encoding
-            f_raw = io.open(path, 'rb')
-            encoding = chardet.detect(f_raw.read(32))["encoding"]
-
-            # Read the file in decoded; io is used for the encoding kwarg
-            f_decoded = io.open(path, 'r', encoding=encoding)
-            script_text = f_decoded.read()
-            return script_text
-        except Exception as exp:  # pylint: disable = broad-except
-            self.log_error_and_notify("Unable to load reduction script %s - %s" % (path, exp))
-            return None
