@@ -14,6 +14,7 @@ update relevant DB fields or logging out the status.
 """
 import datetime
 import logging.config
+from queue_processors.queue_processor.queueproc_utils.script_utils import get_current_script_text
 import traceback
 
 from model.database import access as db_access
@@ -36,6 +37,7 @@ class HandleMessage:
     # We cannot type hint queue listener without introducing a circular dep.
     def __init__(self, queue_listener):
         self._client = queue_listener
+        # TODO remove this it's pointless
         self._utils = _UtilsClasses()
 
         logging.config.dictConfig(LOGGING)
@@ -94,8 +96,7 @@ class HandleMessage:
         # Get the script text for the current instrument. If the script text
         # is null then send to
         # error queue
-        script_text = self._utils. \
-            instrument_variable.get_current_script_text(instrument.name)[0]
+        script_text = get_current_script_text(instrument.name)[0]
         if script_text is None:
             self.reduction_error(message)
             raise InvalidStateException(
