@@ -25,6 +25,9 @@ class MigrateTestSettings(Command):
     user_options = []
 
     def initialize_options(self):
+        # This function needs to be overriden for a class inheriting the distutils.utils.Command
+        # even if it is left empty, otherwise a RuntimeError is thrown whenever the
+        # command is called from setup.py
         pass
 
     def finalize_options(self):
