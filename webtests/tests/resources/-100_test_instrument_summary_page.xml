@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<dataset>
+    <reduction_viewer_reductionrun id="-1000" run_number="99999" instrument_id="16" status_id="4" run_version="0"
+                                   run_name="testrun" script="test" created="2045-10-19 17:35:04"
+                                   last_updated="2020-10-19 17:35:04" reduction_log="test_log" admin_log="log"
+                                   cancel="0" hidden_in_failviewer="0" overwrite="0" experiment_id="-1000"/>
+    <reduction_viewer_experiment id="-1000" reference_number="12345"/>
+
+</dataset>
