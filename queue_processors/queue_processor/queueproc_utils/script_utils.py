@@ -10,9 +10,9 @@ Module that provides script utils
 import importlib.util as imp
 import io
 import os
-from queue_processors.queue_processor.queueproc_utils.error_message_utils import log_error_and_notify
 
 import chardet
+from queue_processors.queue_processor.queueproc_utils.error_message_utils import log_error_and_notify
 from queue_processors.queue_processor.settings import REDUCTION_DIRECTORY
 
 
@@ -72,8 +72,7 @@ def import_module(script_path):
         spec.loader.exec_module(module)
         return module
     except ImportError as exp:
-        log_error_and_notify("Unable to load reduction script %s due to missing import. (%s)" %
-                             (script_path, exp))
+        log_error_and_notify("Unable to load reduction script %s due to missing import. (%s)" % (script_path, exp))
         raise
     except SyntaxError:
         log_error_and_notify("Syntax error in reduction script %s" % script_path)

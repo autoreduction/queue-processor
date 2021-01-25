@@ -10,9 +10,8 @@ Class to deal with reduction run variables
 import logging.config
 import re
 
-from queue_processors.queue_processor.settings import LOGGING
-
 from model.database import access
+from queue_processors.queue_processor.settings import LOGGING
 
 # Set up logging and attach the logging to the right part of the config.
 logging.config.dictConfig(LOGGING)

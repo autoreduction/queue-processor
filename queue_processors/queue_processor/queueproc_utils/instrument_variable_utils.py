@@ -7,16 +7,16 @@
 """
 Module for dealing with instrument reduction variables.
 """
-import os
 import html
 import logging
 import logging.config
+import os
 from typing import Any, List, Tuple
 
 from django.db import transaction
 from django.db.models import Q
 from model.database import access as db
-from queue_processors.queue_processor.queueproc_utils.script_utils import import_module, reduction_script_location
+from queue_processors.queue_processor.queueproc_utils.script_utils import (import_module, reduction_script_location)
 from queue_processors.queue_processor.queueproc_utils.variable_utils import VariableUtils
 # pylint:disable=no-name-in-module,import-error
 from queue_processors.queue_processor.settings import LOGGING
@@ -51,33 +51,28 @@ class InstrumentVariablesUtils:
         """
         instrument_name = reduction_run.instrument.name
 
-        reduce_vars_file = os.path.join(reduction_script_location(instrument_name),
-                                        'reduce_vars.py')
+        reduce_vars_file = os.path.join(reduction_script_location(instrument_name), 'reduce_vars.py')
         reduce_vars_module = import_module(reduce_vars_file)
         model = self.model.variable_model
         experiment_reference = reduction_run.experiment.reference_number
         run_number = reduction_run.run_number
         instrument_id = reduction_run.instrument.id
-        possible_variables = model.InstrumentVariable.objects.filter(
-            Q(experiment_reference=experiment_reference)
-            | Q(start_run__lte=run_number),
-            instrument_id=instrument_id)
+        possible_variables = model.InstrumentVariable.objects.filter(Q(experiment_reference=experiment_reference)
+                                                                     | Q(start_run__lte=run_number),
+                                                                     instrument_id=instrument_id)
 
-        variables = self._find_or_make_variables(possible_variables, run_number, instrument_id,
-                                                 reduce_vars_module)
+        variables = self._find_or_make_variables(possible_variables, run_number, instrument_id, reduce_vars_module)
 
         logger.info('Creating RunVariables')
         # Create run variables from these instrument variables, and return them.
         return VariableUtils().save_run_variables(variables, reduction_run)
 
-    def _find_or_make_variables(self, possible_variables, run_number, instrument_id,
-                                reduce_vars_module) -> List:
+    def _find_or_make_variables(self, possible_variables, run_number, instrument_id, reduce_vars_module) -> List:
         # pylint: disable=too-many-locals
         standard_vars = getattr(reduce_vars_module, 'standard_vars', None)
         advanced_vars = getattr(reduce_vars_module, 'advanced_vars', None)
 
-        all_vars: List[Tuple[str, Any, bool]] = [(name, value, False)
-                                                 for name, value in standard_vars.items()]
+        all_vars: List[Tuple[str, Any, bool]] = [(name, value, False) for name, value in standard_vars.items()]
         all_vars.extend([(name, value, True) for name, value in advanced_vars.items()])
 
         if len(all_vars) == 0:
@@ -85,8 +80,8 @@ class InstrumentVariablesUtils:
 
         variables = []
         for name, value, is_advanced in all_vars:
-            script_help_text = self._get_help_text(
-                'standard_vars' if not is_advanced else 'advanced_vars', name, reduce_vars_module)
+            script_help_text = self._get_help_text('standard_vars' if not is_advanced else 'advanced_vars', name,
+                                                   reduce_vars_module)
             script_value = str(value).replace('[', '').replace(']', '')
             script_type = VariableUtils.get_type_string(value)
 
@@ -115,8 +110,7 @@ class InstrumentVariablesUtils:
                 # for variables that were created via manual_submission or run_detection.
                 # "Configuring new jobs" from the web app will set it to False so that
                 # the value always overrides the script, until changed back by the user
-                self._update_or_copy_if_changed(variable, script_value, script_type,
-                                                script_help_text, run_number)
+                self._update_or_copy_if_changed(variable, script_value, script_type, script_help_text, run_number)
 
             variables.append(variable)
         return variables
@@ -155,8 +149,7 @@ class InstrumentVariablesUtils:
         if 'variable_help' in dir(reduce_vars_module):
             if dict_name in reduce_vars_module.variable_help:
                 if key in reduce_vars_module.variable_help[dict_name]:
-                    return self._replace_special_chars(
-                        reduce_vars_module.variable_help[dict_name][key])
+                    return self._replace_special_chars(reduce_vars_module.variable_help[dict_name][key])
         return ""
 
     @staticmethod

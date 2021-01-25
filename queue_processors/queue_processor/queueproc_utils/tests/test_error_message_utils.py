@@ -10,12 +10,12 @@ Module that tests error_message_utils
 
 from unittest import mock
 
-from queue_processors.queue_processor.queueproc_utils.error_message_utils import \
-    log_error_and_notify
+from queue_processors.queue_processor.queueproc_utils.error_message_utils import log_error_and_notify
 
 
 @mock.patch("queue_processors.queue_processor.queueproc_utils.error_message_utils.db")
 @mock.patch("queue_processors.queue_processor.queueproc_utils.error_message_utils.logger")
+# disable: invalid-name
 def test_log_error_and_notify(logger: mock.Mock, db: mock.Mock):
     """
     Tests logging an error and creating a staff notification
