@@ -136,6 +136,9 @@ class TestInstrumentVariableUtils(unittest.TestCase):
 
 
 def with_db(func):
+    """
+    Sets up the DB access and passes it into the func. Workaround having no setUp
+    """
     def inner(type_of_variable):
         db_handle = model.database.access.start_database()
         data_model = db_handle.data_model
