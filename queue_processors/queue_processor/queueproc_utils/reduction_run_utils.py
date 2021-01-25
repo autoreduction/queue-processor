@@ -137,7 +137,10 @@ class ReductionRunUtils:
     @staticmethod
     def get_script_and_arguments(reduction_run):
         """
-        MISLEADING just get the script from the reduction run? Why have a function that does both when one is just reduction_run.script
+        MISLEADING just get the script from the reduction run? Why have a function that
+        does both when one is just reduction_run.script
+
+        TODO with queue processor PR
 
         ~~Fetch the reduction script from the given run and return it as a string, along with a
         dictionary of arguments.~~
