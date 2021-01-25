@@ -32,12 +32,11 @@ class VariableUtils:
                                  help_text=instrument_var.help_text,
                                  reduction_run=reduction_run)
 
-
     def save_run_variables(self, variables, reduction_run):
         """ Save reduction run variables in the database. """
         model = access.start_database().variable_model
         logger.info('Saving run variables for %s', str(reduction_run.run_number))
-        run_variables=[]
+        run_variables = []
         for variable in variables:
             run_var = model.RunVariable(variable=variable, reduction_run=reduction_run)
             run_var.save()
@@ -63,17 +62,19 @@ class VariableUtils:
         var_type = type(value).__name__
         if var_type == 'str':
             return "text"
-        if var_type in ('int', 'float'):
+        elif var_type in ('int', 'float'):
             return "number"
-        if var_type == 'bool':
+        elif var_type == 'bool':
             return "boolean"
-        if var_type == 'list':
+        elif var_type == 'list':
             list_type = "number"
             for val in value:
                 if type(val).__name__ == 'str':
                     list_type = "text"
+                    break
             return "list_" + list_type
-        return "text"
+        else:
+            return "text"
 
     @staticmethod
     def convert_variable_to_type(value, var_type):
