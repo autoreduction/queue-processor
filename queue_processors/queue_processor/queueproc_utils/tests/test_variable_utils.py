@@ -19,7 +19,6 @@ from model.database import access
 
 # pylint:disable=missing-class-docstring
 class TestVariableUtils(unittest.TestCase):
-
     def setUp(self):
         self.var_model = access.start_database().variable_model
         self.data_model = access.start_database().data_model
@@ -52,35 +51,35 @@ class TestVariableUtils(unittest.TestCase):
                                                           script='script',
                                                           started_by=1)
 
-    def test_derive_run_variable(self):
-        """
-        Test: A RunVariable record is created
-        When: calling the derive_run_variable function with valid input
-        """
-        expected = self.var_model.RunVariable(name=self.valid_variable.name,
-                                              value=self.valid_variable.value,
-                                              is_advanced=self.valid_variable.is_advanced,
-                                              type=self.valid_variable.type,
-                                              help_text=self.valid_variable.help_text,
-                                              reduction_run=self.reduction_run)
-        actual = vu.derive_run_variable(self.valid_variable, self.reduction_run)
-        self.assertIsInstance(actual, self.var_model.RunVariable)
-        self.assertEqual(actual.name, expected.name)
+        # def test_derive_run_variable(self):
+        #     """
+        #     Test: A RunVariable record is created
+        #     When: calling the derive_run_variable function with valid input
+        #     """
+        #     expected = self.var_model.RunVariable(name=self.valid_variable.name,
+        #                                           value=self.valid_variable.value,
+        #                                           is_advanced=self.valid_variable.is_advanced,
+        #                                           type=self.valid_variable.type,
+        #                                           help_text=self.valid_variable.help_text,
+        #                                           reduction_run=self.reduction_run)
+        #     actual = vu.derive_run_variable(self.valid_variable, self.reduction_run)
+        #     self.assertIsInstance(actual, self.var_model.RunVariable)
+        #     self.assertEqual(actual.name, expected.name)
 
-    @patch('queue_processors.queue_processor.queueproc_utils.variable_utils.'
-           'VariableUtils.derive_run_variable')
-    @patch('model.database.access.save_record')
-    def test_save_run_variable(self, mock_derive_run_var, mock_save):
-        """
-        Test: A record is correctly generated and saved in the database
-        When: Calling the save_run_variable function
-        """
-        var_utils = vu()
-        var_utils.save_run_variables([self.valid_variable], self.reduction_run)
-        mock_derive_run_var.assert_called_once()
-        mock_save.assert_called_once()
+        # @patch('queue_processors.queue_processor.queueproc_utils.variable_utils.'
+        #        'VariableUtils.derive_run_variable')
+        # @patch('model.database.access.save_record')
+        # def test_save_run_variable(self, mock_derive_run_var, mock_save):
+        #     """
+        #     Test: A record is correctly generated and saved in the database
+        #     When: Calling the save_run_variable function
+        #     """
+        #     var_utils = vu()
+        #     var_utils.save_run_variables([self.valid_variable], self.reduction_run)
+        #     mock_derive_run_var.assert_called_once()
+        #     mock_save.assert_called_once()
 
-    def test_copy_variable(self):
+        # def test_copy_variable(self):
         """
         Test: A Variable object can is copied
         When: copy_variable function is called
