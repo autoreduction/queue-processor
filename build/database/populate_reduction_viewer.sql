@@ -148,7 +148,7 @@ VALUES
 # ======================================= #
 # reduction_variables_runvariable
 INSERT INTO reduction_variables_runvariable
-    (variable_ptr_id, reduction_run_id)
+    (variable_id, reduction_run_id)
 VALUES
     (1, 1),
     (2, 1),
