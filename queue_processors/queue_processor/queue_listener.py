@@ -10,11 +10,11 @@ This module deals with the updating of the database backend.
 It consumes messages from the queues and then updates the reduction run
 status in the database.
 """
-from logging import debug
 import logging.config
 import sys
 import time
 import traceback
+
 from model.message.message import Message
 from queue_processors.queue_processor.handle_message import HandleMessage
 from queue_processors.queue_processor.handling_exceptions import \

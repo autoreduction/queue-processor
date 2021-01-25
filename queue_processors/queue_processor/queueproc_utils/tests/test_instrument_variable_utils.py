@@ -7,26 +7,29 @@
 """
 Test cases for the messaging utils
 """
+import operator
 import unittest
 from collections.abc import Iterable
-import operator
+from typing import Any, List, Union
 
-import pytest
 import model.database.access
+import pytest
 from mock import patch
 from model.database.records import create_reduction_run_record
-from queue_processors.queue_processor.queueproc_utils.instrument_variable_utils import \
-    InstrumentVariablesUtils
+from queue_processors.queue_processor.queueproc_utils.instrument_variable_utils import InstrumentVariablesUtils
 
 UTILS_PATH = "queue_processors.queue_processor.queueproc_utils"
 MESSAGE_CLASS_PATH = UTILS_PATH + ".messaging_utils.MessagingUtils"
 
 
-def delete_objects(objects):
+def delete_objects(objects: List[Union[list, Any]]):
+    """
+    Deletes the list of objects
+    """
     for val in objects:
         if isinstance(val, Iterable):
-            for v in val:
-                v.delete()
+            for obj in val:
+                obj.delete()
         else:
             val.delete()
 
@@ -73,18 +76,17 @@ class TestInstrumentVariableUtils(unittest.TestCase):
         delete_objects(self.delete_on_teardown)
         self.delete_on_teardown = []
 
-    @patch(
-        "queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.import_module",
-        return_value=FakeModule())
-    def test_new_reduction_run(self, import_module):
+    @patch("queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.import_module",
+           return_value=FakeModule())
+    def test_new_reduction_run(self, _):
+        """
+        Tests with a never before seen Reduction Run
+        """
         experiment = self.data_model.Experiment.objects.create(reference_number=1231231)
-        instrument = self.data_model.Instrument.objects.create(name="MyInstrument",
-                                                               is_active=1,
-                                                               is_paused=0)
+        instrument = self.data_model.Instrument.objects.create(name="MyInstrument", is_active=1, is_paused=0)
         status = self.data_model.Status.objects.get(value="q")
         fake_script_text = "scripttext"
-        reduction_run = create_reduction_run_record(experiment, instrument, FakeMessage(), 0,
-                                                    fake_script_text, status)
+        reduction_run = create_reduction_run_record(experiment, instrument, FakeMessage(), 0, fake_script_text, status)
         reduction_run.save()
 
         before_creating_variables = self.variable_model.InstrumentVariable.objects.count()
@@ -100,22 +102,18 @@ class TestInstrumentVariableUtils(unittest.TestCase):
 
         self.delete_on_teardown = [reduction_run, new_variables]
 
-    @patch(
-        "queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.import_module",
-        return_value=FakeModule())
-    def test_two_reduction_runs_only_creates_one_set_of_variables(self, import_module):
+    @patch("queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.import_module",
+           return_value=FakeModule())
+    def test_two_reduction_runs_only_creates_one_set_of_variables(self, _):
         """
         Tests that creating variables for a module that has the same variables will
         re-use the variables once they have been created
         """
         experiment = self.data_model.Experiment.objects.create(reference_number=1231231)
-        instrument = self.data_model.Instrument.objects.create(name="MyInstrument",
-                                                               is_active=1,
-                                                               is_paused=0)
+        instrument = self.data_model.Instrument.objects.create(name="MyInstrument", is_active=1, is_paused=0)
         status = self.data_model.Status.objects.get(value="q")
         fake_script_text = "scripttext"
-        reduction_run = create_reduction_run_record(experiment, instrument, FakeMessage(), 0,
-                                                    fake_script_text, status)
+        reduction_run = create_reduction_run_record(experiment, instrument, FakeMessage(), 0, fake_script_text, status)
         reduction_run.save()
 
         before_creating_variables = self.variable_model.InstrumentVariable.objects.count()
@@ -180,26 +178,24 @@ def test_imported_module_variable_dict_changed(data_model, variable_model, type_
     instrument = data_model.Instrument.objects.create(name="MyInstrument", is_active=1, is_paused=0)
     status = data_model.Status.objects.get(value="q")
     fake_script_text = "scripttext"
-    reduction_run = create_reduction_run_record(experiment, instrument, FakeMessage(), 0,
-                                                fake_script_text, status)
+    reduction_run = create_reduction_run_record(experiment, instrument, FakeMessage(), 0, fake_script_text, status)
     reduction_run.save()
 
     before_creating_variables = variable_model.InstrumentVariable.objects.count()
 
-    with patch(
-            "queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.import_module",
-            return_value=FakeModule()):
+    with patch("queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.import_module",
+               return_value=FakeModule()):
         new_variables = InstrumentVariablesUtils().create_variables_for_run(reduction_run)
 
     after_creating_variables = variable_model.InstrumentVariable.objects.count()
     assert after_creating_variables > before_creating_variables
 
+    new_variables_again = None
     # loop twice and check that no new variables are created
     for _ in range(2):
         # MODIFIES an advanced value so that they no longer match
-        with patch(
-                "queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.import_module",
-                return_value=FakeModule(**type_of_variable)):
+        with patch("queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.import_module",
+                   return_value=FakeModule(**type_of_variable)):
             new_variables_again = InstrumentVariablesUtils().create_variables_for_run(reduction_run)
 
         after_creating_variables_again = variable_model.InstrumentVariable.objects.count()
@@ -236,26 +232,24 @@ def test_imported_module_one_dict_gets_a_new_variable(data_model, variable_model
     instrument = data_model.Instrument.objects.create(name="MyInstrument", is_active=1, is_paused=0)
     status = data_model.Status.objects.get(value="q")
     fake_script_text = "scripttext"
-    reduction_run = create_reduction_run_record(experiment, instrument, FakeMessage(), 0,
-                                                fake_script_text, status)
+    reduction_run = create_reduction_run_record(experiment, instrument, FakeMessage(), 0, fake_script_text, status)
     reduction_run.save()
 
     before_creating_variables = variable_model.InstrumentVariable.objects.count()
 
-    with patch(
-            "queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.import_module",
-            return_value=FakeModule()):
+    with patch("queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.import_module",
+               return_value=FakeModule()):
         new_variables = InstrumentVariablesUtils().create_variables_for_run(reduction_run)
 
     after_creating_variables = variable_model.InstrumentVariable.objects.count()
     assert after_creating_variables > before_creating_variables
 
+    new_variables_again = None
     # loop twice and check that no new variables are created
     for _ in range(2):
         # MODIFIES an advanced value so that they no longer match
-        with patch(
-                "queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.import_module",
-                return_value=FakeModule(**type_of_variable)):
+        with patch("queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.import_module",
+                   return_value=FakeModule(**type_of_variable)):
             new_variables_again = InstrumentVariablesUtils().create_variables_for_run(reduction_run)
 
         after_creating_variables_again = variable_model.InstrumentVariable.objects.count()
@@ -267,9 +261,7 @@ def test_imported_module_one_dict_gets_a_new_variable(data_model, variable_model
         assert new_variables[1].variable in [nv.variable for nv in new_variables_again]
 
         # check that ONE variable (the new one) is not contained in the first variable creation
-        assert len({nva.variable
-                    for nva in new_variables_again} - {nv.variable
-                                                       for nv in new_variables}) == 1
+        assert len({nva.variable for nva in new_variables_again} - {nv.variable for nv in new_variables}) == 1
 
     return reduction_run, new_variables, new_variables_again
 
@@ -287,8 +279,7 @@ def test_imported_module_one_dict_gets_a_new_variable(data_model, variable_model
 }])
 @delete_returned
 @with_db
-def test_imported_module_one_dict_loses_a_new_variable(data_model, variable_model,
-                                                       type_of_variable):
+def test_imported_module_one_dict_loses_a_new_variable(data_model, variable_model, type_of_variable):
     """
     Test that when the variable module has lost a variable it is not used.
 
@@ -297,26 +288,24 @@ def test_imported_module_one_dict_loses_a_new_variable(data_model, variable_mode
     instrument = data_model.Instrument.objects.create(name="MyInstrument", is_active=1, is_paused=0)
     status = data_model.Status.objects.get(value="q")
     fake_script_text = "scripttext"
-    reduction_run = create_reduction_run_record(experiment, instrument, FakeMessage(), 0,
-                                                fake_script_text, status)
+    reduction_run = create_reduction_run_record(experiment, instrument, FakeMessage(), 0, fake_script_text, status)
     reduction_run.save()
 
     before_creating_variables = variable_model.InstrumentVariable.objects.count()
 
-    with patch(
-            "queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.import_module",
-            return_value=FakeModule(**type_of_variable)):
+    with patch("queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.import_module",
+               return_value=FakeModule(**type_of_variable)):
         new_variables = InstrumentVariablesUtils().create_variables_for_run(reduction_run)
 
     after_creating_variables = variable_model.InstrumentVariable.objects.count()
     assert after_creating_variables > before_creating_variables
 
+    new_variables_again = None
     # loop twice and check that no new variables are created
     for _ in range(2):
         # MODIFIES an advanced value so that they no longer match
-        with patch(
-                "queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.import_module",
-                return_value=FakeModule()):
+        with patch("queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.import_module",
+                   return_value=FakeModule()):
             new_variables_again = InstrumentVariablesUtils().create_variables_for_run(reduction_run)
 
         after_creating_variables_again = variable_model.InstrumentVariable.objects.count()
@@ -328,8 +317,6 @@ def test_imported_module_one_dict_loses_a_new_variable(data_model, variable_mode
         assert new_variables_again[1].variable in [nv.variable for nv in new_variables]
 
         # check that ONE variable (the new one) is not contained in the first variable creation
-        assert len({nva.variable
-                    for nva in new_variables} - {nv.variable
-                                                 for nv in new_variables_again}) == 1
+        assert len({nva.variable for nva in new_variables} - {nv.variable for nv in new_variables_again}) == 1
 
     return reduction_run, new_variables, new_variables_again

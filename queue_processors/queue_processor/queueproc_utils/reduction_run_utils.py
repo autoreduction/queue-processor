@@ -10,15 +10,12 @@ Module to deal with creating and caneling of reduction runs in the database.
 import datetime
 import logging.config
 
-from queue_processors.queue_processor.settings import LOGGING
-
-from queue_processors.queue_processor.queueproc_utils.instrument_variable_utils \
-    import InstrumentVariablesUtils
+from model.database import access
+from queue_processors.queue_processor.queueproc_utils.instrument_variable_utils import InstrumentVariablesUtils
 from queue_processors.queue_processor.queueproc_utils.messaging_utils import MessagingUtils
 from queue_processors.queue_processor.queueproc_utils.status_utils import StatusUtils
 from queue_processors.queue_processor.queueproc_utils.variable_utils import VariableUtils
-
-from model.database import access
+from queue_processors.queue_processor.settings import LOGGING
 
 # Set up logging and attach the logging to the right part of the config.
 logging.config.dictConfig(LOGGING)
@@ -27,7 +24,6 @@ logger = logging.getLogger("queue_processor")  # pylint: disable=invalid-name
 
 class ReductionRunUtils:
     """ Reduction run utils, deals with creating and canceling of runs. """
-
     @staticmethod
     def cancel_run(reduction_run):
         """
@@ -38,7 +34,6 @@ class ReductionRunUtils:
         (retry_run.cancel) that tells the frontend to not schedule another retry if the next run
         fails.
         """
-
         def set_cancelled(run):
             """ Set a run as canceled """
             run.message = "Run cancelled by user"
@@ -86,8 +81,7 @@ class ReductionRunUtils:
         """
         model = access.start_database().data_model
         # find the previous run version, so we don't create a duplicate
-        last_version = access.find_highest_run_version(reduction_run.experiment,
-                                                       reduction_run.run_number)
+        last_version = access.find_highest_run_version(reduction_run.experiment, reduction_run.run_number)
 
         # get the script to use:
         script_text = script if script is not None else reduction_run.script
@@ -122,8 +116,7 @@ class ReductionRunUtils:
 
             # copy the previous data locations
             for data_location in data_locations:
-                new_data_location = model.DataLocation(file_path=data_location.file_path,
-                                                       reduction_run=new_job)
+                new_data_location = model.DataLocation(file_path=data_location.file_path, reduction_run=new_job)
                 access.save_record(new_data_location)
 
             if variables is not None:
