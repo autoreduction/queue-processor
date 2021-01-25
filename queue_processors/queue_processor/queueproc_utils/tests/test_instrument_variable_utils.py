@@ -11,12 +11,13 @@ import operator
 import unittest
 from collections.abc import Iterable
 from typing import Any, List, Union
-
-import model.database.access
 import pytest
 from mock import patch
+
+import model.database.access
 from model.database.records import create_reduction_run_record
-from queue_processors.queue_processor.queueproc_utils.instrument_variable_utils import InstrumentVariablesUtils
+from queue_processors.queue_processor.queueproc_utils.instrument_variable_utils import \
+    InstrumentVariablesUtils
 
 UTILS_PATH = "queue_processors.queue_processor.queueproc_utils"
 MESSAGE_CLASS_PATH = UTILS_PATH + ".messaging_utils.MessagingUtils"
