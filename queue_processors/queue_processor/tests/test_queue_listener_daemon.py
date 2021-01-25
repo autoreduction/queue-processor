@@ -26,8 +26,7 @@ class TestQueueListenerDaemon(unittest.TestCase):
     """
     @staticmethod
     @mock.patch("queue_processors.daemon.sys")
-    @mock.patch("queue_processors.queue_processor."
-                "queue_listener_daemon.QueueListenerDaemon")
+    @mock.patch("queue_processors.queue_processor." "queue_listener_daemon.QueueListenerDaemon")
     @mock.patch("queue_processors.queue_processor.queue_listener_daemon.logging")
     def test_main_daemon_start(patched_logging, patched_daemon, patched_sys):
         """
@@ -46,8 +45,7 @@ class TestQueueListenerDaemon(unittest.TestCase):
 
     @staticmethod
     @mock.patch("queue_processors.daemon.sys")
-    @mock.patch("queue_processors.queue_processor."
-                "queue_listener_daemon.QueueListenerDaemon")
+    @mock.patch("queue_processors.queue_processor." "queue_listener_daemon.QueueListenerDaemon")
     @mock.patch("queue_processors.queue_processor.queue_listener_daemon.logging")
     def test_main_daemon_stop(patched_logging, patched_daemon, patched_sys):
         """
@@ -67,8 +65,7 @@ class TestQueueListenerDaemon(unittest.TestCase):
 
     @staticmethod
     @mock.patch("queue_processors.daemon.sys")
-    @mock.patch("queue_processors.queue_processor."
-                "queue_listener_daemon.QueueListenerDaemon")
+    @mock.patch("queue_processors.queue_processor." "queue_listener_daemon.QueueListenerDaemon")
     @mock.patch("queue_processors.queue_processor.queue_listener_daemon.logging")
     def test_main_daemon_stop_unsafe_shutdown_logs(patched_logging, patched_daemon, patched_sys):
         """
@@ -91,8 +88,7 @@ class TestQueueListenerDaemon(unittest.TestCase):
 
     @staticmethod
     @mock.patch("queue_processors.daemon.sys")
-    @mock.patch("queue_processors.queue_processor."
-                "queue_listener_daemon.QueueListenerDaemon")
+    @mock.patch("queue_processors.queue_processor." "queue_listener_daemon.QueueListenerDaemon")
     @mock.patch("queue_processors.queue_processor.queue_listener_daemon.logging")
     def test_main_daemon_restart(patched_logging, patched_daemon, patched_sys):
         """
@@ -112,8 +108,7 @@ class TestQueueListenerDaemon(unittest.TestCase):
     def setUp(self):
         self.instance = QueueListenerDaemon(pidfile="/should/never/be/created")
 
-    @mock.patch("queue_processors.queue_processor."
-                "queue_listener_daemon.queue_listener")
+    @mock.patch("queue_processors.queue_processor." "queue_listener_daemon.queue_listener")
     @mock.patch("threading.Timer")
     def test_run(self, patched_timer, patched_processor):
         """
@@ -124,8 +119,7 @@ class TestQueueListenerDaemon(unittest.TestCase):
 
         patched_processor.main.assert_called_once()
         patched_timer.assert_called_once_with(mock.ANY, self.instance.stop)
-        self.assertEqual(self.instance._client_handle,
-                         patched_processor.main.return_value)
+        self.assertEqual(self.instance._client_handle, patched_processor.main.return_value)
 
     @mock.patch("queue_processors.daemon.Daemon.stop")
     def test_stop(self, super_class_stop):
@@ -137,33 +131,12 @@ class TestQueueListenerDaemon(unittest.TestCase):
         mocked_client = mock.Mock(spec=QueueClient)
         mocked_event = mock.Mock()
         self.instance._client_handle = mocked_client
-        self.instance.safe_shutdown = mocked_event
 
         self.instance.stop()
 
         mocked_client.disconnect.assert_called_once()
         super_class_stop.assert_called_once()
         mocked_event.set.assert_called_once()
-
-    def test_timer_fires_stop(self):
-        """
-        Test: The timer correctly calls stop (without testing stop)
-              when a given time elapses
-        When: The pre-set timer fires indicating the daemon should restart
-        """
-        self.instance.stop = mock.Mock()
-
-        # Ensure that timer will fire after a delay
-        test_time = 1  # second
-        self.instance.stop_interval = test_time
-        with mock.patch("queue_processors.queue_processor."
-                        "queue_listener_daemon.queue_listener"):
-            self.instance.run()
-
-        # Now wait for the timer to fire
-        self.instance.stop.assert_not_called()
-        self.instance._stop_timer.join()  # Wait for thread to fire
-        self.instance.stop.assert_called_once()
 
 
 if __name__ == '__main__':

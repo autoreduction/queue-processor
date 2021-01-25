@@ -15,7 +15,7 @@ from queue_processors.queue_processor.queueproc_utils.error_message_utils import
 
 @mock.patch("queue_processors.queue_processor.queueproc_utils.error_message_utils.db")
 @mock.patch("queue_processors.queue_processor.queueproc_utils.error_message_utils.logger")
-# disable: invalid-name
+# pylint:disable=invalid-name
 def test_log_error_and_notify(logger: mock.Mock, db: mock.Mock):
     """
     Tests logging an error and creating a staff notification
