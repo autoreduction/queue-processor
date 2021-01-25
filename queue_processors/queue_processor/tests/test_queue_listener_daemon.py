@@ -26,7 +26,7 @@ class TestQueueListenerDaemon(unittest.TestCase):
     """
     @staticmethod
     @mock.patch("queue_processors.daemon.sys")
-    @mock.patch("queue_processors.queue_processor." "queue_listener_daemon.QueueListenerDaemon")
+    @mock.patch("queue_processors.queue_processor.queue_listener_daemon.QueueListenerDaemon")
     @mock.patch("queue_processors.queue_processor.queue_listener_daemon.logging")
     def test_main_daemon_start(patched_logging, patched_daemon, patched_sys):
         """
@@ -45,7 +45,7 @@ class TestQueueListenerDaemon(unittest.TestCase):
 
     @staticmethod
     @mock.patch("queue_processors.daemon.sys")
-    @mock.patch("queue_processors.queue_processor." "queue_listener_daemon.QueueListenerDaemon")
+    @mock.patch("queue_processors.queue_processor.queue_listener_daemon.QueueListenerDaemon")
     @mock.patch("queue_processors.queue_processor.queue_listener_daemon.logging")
     def test_main_daemon_stop(patched_logging, patched_daemon, patched_sys):
         """
@@ -65,7 +65,7 @@ class TestQueueListenerDaemon(unittest.TestCase):
 
     @staticmethod
     @mock.patch("queue_processors.daemon.sys")
-    @mock.patch("queue_processors.queue_processor." "queue_listener_daemon.QueueListenerDaemon")
+    @mock.patch("queue_processors.queue_processor.queue_listener_daemon.QueueListenerDaemon")
     @mock.patch("queue_processors.queue_processor.queue_listener_daemon.logging")
     def test_main_daemon_stop_unsafe_shutdown_logs(patched_logging, patched_daemon, patched_sys):
         """
@@ -88,7 +88,7 @@ class TestQueueListenerDaemon(unittest.TestCase):
 
     @staticmethod
     @mock.patch("queue_processors.daemon.sys")
-    @mock.patch("queue_processors.queue_processor." "queue_listener_daemon.QueueListenerDaemon")
+    @mock.patch("queue_processors.queue_processor.queue_listener_daemon.QueueListenerDaemon")
     @mock.patch("queue_processors.queue_processor.queue_listener_daemon.logging")
     def test_main_daemon_restart(patched_logging, patched_daemon, patched_sys):
         """
@@ -108,7 +108,7 @@ class TestQueueListenerDaemon(unittest.TestCase):
     def setUp(self):
         self.instance = QueueListenerDaemon(pidfile="/should/never/be/created")
 
-    @mock.patch("queue_processors.queue_processor." "queue_listener_daemon.queue_listener")
+    @mock.patch("queue_processors.queue_processor.queue_listener_daemon.queue_listener")
     @mock.patch("threading.Timer")
     def test_run(self, patched_timer, patched_processor):
         """
