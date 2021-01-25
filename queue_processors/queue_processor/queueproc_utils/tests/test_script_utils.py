@@ -44,8 +44,13 @@ def test_import_module_syntax_error(log_error_and_notify: Mock):
     """
     Test importing a module that has a syntax error in it
     """
-    module_path = os.path.join(os.path.dirname(__file__), "module_with_syntax_error.py")
+    module_with_syntax_error_str = """TEST_DICTIONARY = {"key1": "value1"""
+    module_path = os.path.join("/tmp", "module_with_syntax_error.py")
+
+    with open(module_path, 'w') as file:
+        file.write(module_with_syntax_error_str)
 
     assert_raises(SyntaxError, import_module, module_path)
 
     log_error_and_notify.assert_called_once()
+    os.remove(module_path)
