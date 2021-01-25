@@ -88,7 +88,7 @@ class InstrumentVariablesUtils:
             script_help_text = self._get_help_text(
                 'standard_vars' if not is_advanced else 'advanced_vars', name, reduce_vars_module)
             script_value = str(value).replace('[', '').replace(']', '')
-            script_type = VariableUtils().get_type_string(value)
+            script_type = VariableUtils.get_type_string(value)
 
             var_kwargs = {
                 'name': name,
