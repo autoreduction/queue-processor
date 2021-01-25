@@ -31,7 +31,8 @@ class VariableUtils:
                                  help_text=instrument_var.help_text,
                                  reduction_run=reduction_run)
 
-    def save_run_variables(self, variables, reduction_run):
+    @staticmethod
+    def save_run_variables(variables, reduction_run):
         """ Save reduction run variables in the database. """
         model = access.start_database().variable_model
         logger.info('Saving run variables for %s', str(reduction_run.run_number))

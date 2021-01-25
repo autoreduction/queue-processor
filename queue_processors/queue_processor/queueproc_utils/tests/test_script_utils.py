@@ -5,15 +5,18 @@
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 import os
+from unittest.mock import Mock, patch
 from queue_processors.queue_processor.queueproc_utils.script_utils import import_module
 from queue_processors.queue_processor.queueproc_utils.tests.module_to_import import TEST_DICTIONARY
-from unittest.mock import Mock, patch
 
 
 def assert_raises(exc, func, args):
+    """
+    Custom assert raises function
+    """
     try:
         func(args)
-    except Exception as actual_exc:
+    except Exception as actual_exc:  # pylint:disable=broad-except
         assert isinstance(actual_exc, exc), f"Expected exception {exc}, got {actual_exc}"
 
 
