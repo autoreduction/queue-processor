@@ -13,6 +13,7 @@ from xml.etree.ElementTree import parse
 
 import pymysql
 
+from utils.project.structure import get_project_root
 from utils.settings import get_str
 
 
@@ -87,3 +88,18 @@ def clear_dataset(dataset: Path) -> None:
             cursor.execute("SET FOREIGN_KEY_CHECKS=1")
         connection.commit()
 
+
+def inject_datasets() -> None:
+    """
+    Inject all the datasets contained within the resources directory
+    """
+    for file in Path(get_project_root(), "webtests", "tests", "resources").iterdir():
+        inject_dataset(file)
+
+
+def clear_datasets() -> None:
+    """
+    Clear all the injected datasets from the database
+    """
+    for file in Path(get_project_root(), "webtests", "tests", "resources").iterdir():
+        clear_dataset(file)
