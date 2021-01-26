@@ -14,6 +14,11 @@ from xml.etree.ElementTree import parse
 import pymysql
 
 from utils.settings import get_str
+
+
+# pylint:disable = not-context-manager
+# Above disable caused by false positive
+
 def get_connection() -> pymysql.Connection:
     """
     Return a PyMySql connection object for querying the database
@@ -44,3 +49,21 @@ def parse_dataset(dataset: Path) -> List[Tuple[str, Any]]:
     return rows
 
 
+def inject_dataset(dataset: Path) -> None:
+    """
+    Given the filename of an included dataset, inject the values into the database.
+    :param dataset: (Path) Path object for dataset
+    """
+    dataset = parse_dataset(dataset)
+    queries = ["INSERT INTO %s (%s) VALUES (%s)" %
+               (row[0], ", ".join(row[1].keys()),
+                ", ".join("'{0}'".format(n) for n in row[1].values()))
+               for row in dataset]
+    connection = get_connection()
+    with connection:
+        with connection.cursor() as cursor:
+            cursor.execute("SET FOREIGN_KEY_CHECKS=0")
+            for query in queries:
+                cursor.execute(query)
+            cursor.execute("SET FOREIGN_KEY_CHECKS=1")
+        connection.commit()
