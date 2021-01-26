@@ -77,7 +77,7 @@ class QueueClient(AbstractClient):
                 self._logger.info("Starting connection to %s", host_port)
                 connection.connect(username=self.credentials.username,
                                    passcode=self.credentials.password,
-                                   wait=False,
+                                   wait=True,
                                    header={'activemq.prefetchSize': '1'})
             except ConnectFailedException as exp:
                 raise ConnectionException("ActiveMQ") from exp
