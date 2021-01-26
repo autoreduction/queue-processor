@@ -24,6 +24,9 @@ class ReductionProcessManager:
         self.message: Message = message
 
     def run(self) -> Message:
+        """
+        Runs the reduction process
+        """
         if not os.path.isfile(REDUCTION_RUNNER_DIRECTORY):
             logging.error("Could not find autoreduction post processing file "
                           "- please contact a system administrator")

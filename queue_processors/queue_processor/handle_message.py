@@ -144,7 +144,7 @@ class HandleMessage:
             self._logger.error("Encountered error in transaction, error: %s", str(err))
             raise
 
-    def send_message_onwards(self, reduction_run, message, instrument):
+    def send_message_onwards(self, reduction_run, message: Message, instrument):
         try:
             message.validate("/queue/DataReady")
         except RuntimeError as validation_err:
@@ -161,20 +161,14 @@ class HandleMessage:
             self._logger.info("Run %s ready for reduction", message.run_number)
             self.do_reduction(reduction_run, message)
 
-    def do_reduction(self, reduction_run, message):
+    def do_reduction(self, reduction_run, message: Message):
         pr = ReductionProcessManager(message)
         self.reduction_started(reduction_run, message)
-        process_finished, message, err = pr.run()
-        if process_finished:
-            if message.message is not None:
-                self.reduction_error(reduction_run, message)
-            else:
-                self.reduction_complete(reduction_run, message)
+        message = pr.run()
+        if message.message is not None:
+            self.reduction_error(reduction_run, message)
         else:
-            # subprocess exited with 1 - any unexpected errors encountered will be caught here
-            # Note that this doesn't handle any errors inside the reduce.py itself, the error
-            # needs to have happened in the setup code before or after the reduce.py execution
-            self._logger.error("Encountered an error while trying to start the reduction process %s", err)
+            self.reduction_complete(reduction_run, message)
 
     def _get_and_activate_db_inst(self, instrument_name):
         """
