@@ -67,3 +67,23 @@ def inject_dataset(dataset: Path) -> None:
                 cursor.execute(query)
             cursor.execute("SET FOREIGN_KEY_CHECKS=1")
         connection.commit()
+
+
+def clear_dataset(dataset: Path) -> None:
+    """
+    Given the filename of an included dataset, remove the values from the database
+    :param dataset: (Path) Path object of dataset
+    """
+    dataset = parse_dataset(dataset)
+    queries = ["DELETE FROM %s WHERE id='%s'" %
+               (row[0], row[1]["id"])
+               for row in dataset]
+    connection = get_connection()
+    with connection:
+        with connection.cursor() as cursor:
+            cursor.execute("SET FOREIGN_KEY_CHECKS=0")
+            for query in queries:
+                cursor.execute(query)
+            cursor.execute("SET FOREIGN_KEY_CHECKS=1")
+        connection.commit()
+
