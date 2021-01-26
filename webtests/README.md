@@ -45,6 +45,16 @@ rely on inspecting settings that the WebApp is currently using e.g. `VALID_INSTR
 The pages are built using the fluent page object model pattern. With common components being created
 as mixins.
 
+### Login Workaround
+Due to there being no real login mechanism being enabled for local deployments (Such as
+within the selenium test action) There is currently a workaround on each launch method.
+This is the reason why the base url is navigated to first, to simulate logging in as 
+seen below:  
+```python
+self.driver.get(configuration.get_url())
+self.driver.get(OverviewPage.url())
+```
+
 ## Screenshots
 If a test produces an error or fails, the webdriver will attempt to save a screenshot to the 
 screenshot directory. If the tests are running within a github action worflow and an error or 
