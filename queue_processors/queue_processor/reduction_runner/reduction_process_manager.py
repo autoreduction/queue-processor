@@ -12,22 +12,22 @@ import os
 import subprocess
 import sys
 import tempfile
-from typing import Optional, Tuple
+import traceback
 
 from model.message.message import Message
 
-from ..settings import REDUCTION_RUNNER_DIRECTORY
+REDUCTION_RUNNER_DIRECTORY = f"{os.path.dirname(os.path.realpath(__file__))}/reduction_runner.py"
 
 
 class ReductionProcessManager:
-    def __init__(self, message) -> None:
-        self.message = message
+    def __init__(self, message: Message) -> None:
+        self.message: Message = message
 
-    def run(self) -> Tuple[bool, Optional[Message], str]:
+    def run(self) -> Message:
         if not os.path.isfile(REDUCTION_RUNNER_DIRECTORY):
-            # TODO - should this be an error??
-            logging.warning("Could not find autoreduction post processing file "
-                            "- please contact a system administrator")
+            logging.error("Could not find autoreduction post processing file "
+                          "- please contact a system administrator")
+        result_message = None
         try:
             # We need to run the reduction in a new process, otherwise scripts
             # will fail when they use things that don't like being subprocesses,
@@ -42,8 +42,9 @@ class ReductionProcessManager:
 
             result_message = Message()
             result_message.populate(result_message_raw)
-            return True, result_message, ""
         except subprocess.CalledProcessError as err:
-            # TODO mark script error
-            logging.error("Processing encountered an error: %s", str(err))
-            return False, None, err
+            logging.error("Processing encountered an error: %s", traceback.format_exc())
+            self.message.message = str(err)
+            result_message = self.message
+
+        return result_message
