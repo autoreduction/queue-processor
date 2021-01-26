@@ -15,6 +15,7 @@ from webtests import configuration
 from webtests.pages.component_mixins.footer_mixin import FooterMixin
 from webtests.pages.component_mixins.navbar_mixin import NavbarMixin
 from webtests.pages.component_mixins.tour_mixin import TourMixin
+from webtests.pages.instrument_summary_page import InstrumentSummaryPage
 from webtests.pages.page import Page
 
 
@@ -55,11 +56,11 @@ class OverviewPage(Page, NavbarMixin, FooterMixin, TourMixin):
         """
         return [instrument_btn.get_attribute("id").split("-")[0] for instrument_btn in self._get_instrument_buttons()]
 
-    def click_instrument(self, instrument):
+    def click_instrument(self, instrument: str) -> InstrumentSummaryPage:
         """
         Clicks the instrument button for the given instrument
         :param instrument: (str) instrument name
-        :return: (OverviewPage) The overview page object
+        :return: (InstrumentSummaryPage) The overview page object
         """
         self.driver.find_element_by_id(f"{instrument}-instrument-btn").click()
-        return self
+        return InstrumentSummaryPage(self.driver, instrument)
