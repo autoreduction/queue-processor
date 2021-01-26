@@ -78,7 +78,7 @@ class TestVariableUtils(unittest.TestCase):
         #     mock_derive_run_var.assert_called_once()
         #     mock_save.assert_called_once()
 
-        # def test_copy_variable(self):
+    def test_copy_variable(self):
         """
         Test: A Variable object can is copied
         When: copy_variable function is called
