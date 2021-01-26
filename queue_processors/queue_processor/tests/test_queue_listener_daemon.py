@@ -13,10 +13,10 @@ from unittest import mock
 
 from mock import PropertyMock
 
-from queue_processors.queue_processor.queue_listener_daemon import QueueListenerDaemon
 import queue_processors.queue_processor.queue_listener_daemon
-from utils.clients.queue_client import QueueClient
 
+# from queue_processors.queue_processor.queue_listener_daemon import QueueListenerDaemon
+# from utils.clients.queue_client import QueueClient
 # pylint: disable=protected-access
 
 

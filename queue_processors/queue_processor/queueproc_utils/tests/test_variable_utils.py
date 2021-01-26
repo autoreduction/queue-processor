@@ -7,10 +7,9 @@
 """
 Test utility functions for constructing run variables
 """
+
 import unittest
 import datetime
-
-from mock import patch
 
 from queue_processors.queue_processor.queueproc_utils.variable_utils import VariableUtils as vu
 
