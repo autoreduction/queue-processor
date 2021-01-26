@@ -57,7 +57,7 @@ self.driver.get(OverviewPage.url())
 
 ## Screenshots
 If a test produces an error or fails, the webdriver will attempt to save a screenshot to the 
-screenshot directory. If the tests are running within a github action worflow and an error or 
+screenshot directory. If the tests are running within a github action workflow and an error or 
 failure is produced, a ZIP of the screenshot folder for that run is downloadable as an artifact for
 that run.
 
