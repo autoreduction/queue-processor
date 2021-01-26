@@ -15,6 +15,7 @@ import pytest
 from utils.project.structure import get_project_root
 from webtests import configuration
 from webtests.configuration import store_original_config
+from webtests.database import inject_datasets, clear_datasets
 
 
 def main():
@@ -62,7 +63,9 @@ def main():
     if args.is_headless:
         configuration.set_headless(True)
 
+    inject_datasets()
     exit_code = pytest.main([get_project_root() + "/webtests/tests", f"-n{args.cpu}", "-v"])
+    clear_datasets()
     configuration.cleanup_config()
     sys.exit(exit_code)
 
