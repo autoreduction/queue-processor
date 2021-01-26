@@ -48,7 +48,7 @@ jobs:
           --cov=paths --cov=plotting --cov=model --ignore=webtests/
 
       - name: Run system tests
-        run: >-
+        run: |
           pytest systemtests --cov-append
           python queue_processors/queue_processor/queue_listener.py
 
