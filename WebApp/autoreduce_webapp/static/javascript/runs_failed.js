@@ -7,7 +7,7 @@
         var action = $('#runAction').val();
         $("[name='action']").attr('value', action);
         
-        var selectedRuns = $("[name='runCheckbox']").filter(':checked').map( function() {
+        var selectedRuns = $(".runCheckbox").filter(':checked').map( function() {
             return [[$(this).attr('data-run_number'), $(this).attr('data-run_version'), $(this).attr('data-rb_number')]];
         }).get(); // a list of checked runs, each element of the form [run number, run version, RB number]
         $("[name='selectedRuns']").attr('value', JSON.stringify(selectedRuns));
@@ -30,7 +30,7 @@
     
     var toggleAllRuns = function toggleAllRuns()
     {
-        $("[name='runCheckbox']").prop("checked", $('#selectAllRuns').is(":checked"));
+        $(".runCheckbox").prop("checked", $('#selectAllRuns').is(":checked"));
     }
     
     var init = function init() 
