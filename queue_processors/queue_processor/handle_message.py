@@ -14,17 +14,17 @@ update relevant DB fields or logging out the status.
 """
 import datetime
 import logging
-from django.db import transaction, IntegrityError
 
 import model.database.records as db_records
+from django.db import IntegrityError, transaction
 from model.database import access as db_access
 from model.message.message import Message
 from model.message.validation.validators import validate_rb_number
-from queue_processors.queue_processor._utils_classes import _UtilsClasses
-from queue_processors.queue_processor.queueproc_utils.script_utils import get_current_script_text
-from queue_processors.queue_processor.handling_exceptions import InvalidStateException
-from utils.settings import ACTIVEMQ_SETTINGS
+
+from ._utils_classes import _UtilsClasses
+from .handling_exceptions import InvalidStateException
 from .reduction_runner.reduction_process_manager import ReductionProcessManager
+from .reduction_runner.reduction_service import ReductionScript
 
 
 class HandleMessage:
@@ -69,6 +69,7 @@ class HandleMessage:
         When we DO NO PROCESSING:
         - If rb number isn't an integer, or isn't a 7 digit integer
         - If instrument is paused
+        - If there is no reduce.py
         """
         self._logger.info("Data ready for processing run %s on %s", message.run_number, message.instrument)
         if not validate_rb_number(message.rb_number):
@@ -113,6 +114,7 @@ class HandleMessage:
         # Create a new data location entry which has a foreign key linking it to the current
         # reduction run. The file path itself will point to a datafile
         # (e.g. "\isis\inst$\NDXWISH\Instrument\data\cycle_17_1\WISH00038774.nxs")
+        # TODO figure out whether we only use this for visualisation in the web app
         data_location = self._data_model.DataLocation(file_path=message.data, reduction_run_id=reduction_run.id)
         self.safe_save(data_location)
 
@@ -129,13 +131,17 @@ class HandleMessage:
             raise
 
         self._logger.info('Getting script and arguments')
-        reduction_script, arguments = self._utils.reduction_run.get_script_and_arguments(reduction_run)
-        message.reduction_script = reduction_script
+        arguments = self._utils.reduction_run.get_script_arguments(variables)
+        message.reduction_script = reduction_run.script
         message.reduction_arguments = arguments
 
         return self.send_message_onwards(reduction_run, message, instrument)
 
     def safe_save(self, obj):
+        """
+        Save objects with a transaction, if an integrity error is encountered the handling
+        raises the exception and stops processing
+        """
         try:
             with transaction.atomic():
                 return obj.save()

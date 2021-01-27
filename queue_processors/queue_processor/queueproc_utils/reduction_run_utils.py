@@ -7,31 +7,21 @@
 """
 Module to deal with creating and caneling of reduction runs in the database.
 """
-import logging.config
-
-from queue_processors.queue_processor.settings import LOGGING
 
 from ..queueproc_utils.variable_utils import VariableUtils
 
-logging.config.dictConfig(LOGGING)
-logger = logging.getLogger("queue_processor")
 
 
 class ReductionRunUtils:
     """ Reduction run utils, deals with creating and canceling of runs. """
     @staticmethod
-    def get_script_and_arguments(reduction_run):
+    def get_script_arguments(run_variables):
         """
-        MISLEADING just get the script from the reduction run? Why have a function that
-        does both when one is just reduction_run.script
-
-        TODO with queue processor PR
-
-        ~~Fetch the reduction script from the given run and return it as a string, along with a
-        dictionary of arguments.~~
+        Converts the RunVariables that have been created into Python kwargs which can
+        be passed as the script parameters at runtime.
         """
         standard_vars, advanced_vars = {}, {}
-        for run_variable in reduction_run.run_variables.all():
+        for run_variable in run_variables:
             variable = run_variable.variable
             value = VariableUtils.convert_variable_to_type(variable.value, variable.type)
             if variable.is_advanced:
@@ -41,4 +31,4 @@ class ReductionRunUtils:
 
         arguments = {'standard_vars': standard_vars, 'advanced_vars': advanced_vars}
 
-        return reduction_run.script, arguments
+        return arguments
