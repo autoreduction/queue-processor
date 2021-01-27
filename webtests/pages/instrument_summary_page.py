@@ -9,13 +9,13 @@ Module for the instrument summary page model
 """
 from typing import List
 
+from selenium.common.exceptions import NoSuchElementException
+
 from webtests import configuration
 from webtests.pages.component_mixins.footer_mixin import FooterMixin
 from webtests.pages.component_mixins.navbar_mixin import NavbarMixin
 from webtests.pages.component_mixins.tour_mixin import TourMixin
 from webtests.pages.page import Page
-from selenium.common.exceptions import NoSuchElementException
-
 from webtests.pages.run_summary_page import RunSummaryPage
 
 
@@ -65,5 +65,5 @@ class InstrumentSummaryPage(Page, NavbarMixin, FooterMixin, TourMixin):
             if run.text == run_string:
                 run.click()
                 return RunSummaryPage(self.driver, self.instrument, run_number, version)
-        else:
-            raise NoSuchElementException
+            else:
+                raise NoSuchElementException
