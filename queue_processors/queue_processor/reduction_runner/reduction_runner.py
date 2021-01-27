@@ -96,42 +96,6 @@ class ReductionRunner:
         merge_dicts("advanced_vars")
         return reduce_script
 
-    # def send_reduction_message(self, message, amq_message):
-    #     """Send/Update AMQ reduction message
-    #     :param message: (str) amq reduction  status
-    #     :param amq_message: (str) reduction status path
-    #     """
-    #     try:
-    #         logger.debug("Calling: %s\n%s", amq_message,
-    #                      self.message.serialize(limit_reduction_script=True))
-    #         self.client.send(amq_message, self.message)
-    #         logger.info("Reduction: %s", message)
-
-    #     except AttributeError:
-    #         logger.debug("Failed to find send reduction message: %s", amq_message)
-
-    # def determine_reduction_status(self):
-    #     """
-    #     Determine which message type to log and send to AMQ, triggering exception if job failed
-    #     """
-    #     if self.message.message is not None:
-    #         # This means an error has been produced somewhere
-    #         try:
-    #             if 'skip' in self.message.message.lower():
-    #                 self.send_reduction_message(message="Skipped",
-    #                                             amq_message=ACTIVEMQ_SETTINGS.reduction_skipped)
-    #             else:
-    #                 self.send_reduction_message(message="Error",
-    #                                             amq_message=ACTIVEMQ_SETTINGS.reduction_error)
-    #         except Exception as exp2:
-    #             logger.info("Failed to send to queue! - %s - %s", exp2, repr(exp2))
-    #         finally:
-    #             logger.info("Reduction job failed")
-    #     else:
-    #         # Reduction has successfully completed
-    #         self.send_reduction_message(message="Complete",
-    #                                     amq_message=ACTIVEMQ_SETTINGS.reduction_complete)
-
     def reduce(self):
         """Start the reduction job."""
         self.message.software = self._get_mantid_version()
@@ -192,13 +156,13 @@ def main():
         sys.exit(1)
 
     try:
-        post_proc = ReductionRunner(message)
-        log_stream_handler = logging.StreamHandler(post_proc.admin_log_stream)
+        reduction_runner = ReductionRunner(message)
+        log_stream_handler = logging.StreamHandler(reduction_runner.admin_log_stream)
         logger.addHandler(log_stream_handler)
-        post_proc.reduce()
+        reduction_runner.reduce()
         # write out the reduction message
-        with open(temp_output_file, "w") as f:
-            f.write(post_proc.message.serialize())
+        with open(temp_output_file, "w") as out_file:
+            out_file.write(reduction_runner.message.serialize())
 
     except ValueError as exp:
         message.message = str(exp)
