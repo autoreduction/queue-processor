@@ -39,7 +39,7 @@ class QueueListenerDaemon(Daemon):
         # keeps the daemon alive as the main call above does not block
         # but simply runs the connections in async. If this sleep isn't
         # here the deamon will just exit after connecting
-        while True:
+        while not self._shutting_down:
             time.sleep(0.5)
 
     def stop(self, *args):
