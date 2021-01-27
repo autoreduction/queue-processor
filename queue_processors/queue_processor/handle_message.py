@@ -81,9 +81,7 @@ class HandleMessage:
         run_no = str(message.run_number)
         instrument = db_access.get_instrument(str(message.instrument))
 
-
-        # This must be done before looking up the run version to make sure
-        # the record exists
+        # This must be done before looking up the run version to make sure the record exists
         experiment = db_access.get_experiment(message.rb_number, create=True)
         run_version = db_access.find_highest_run_version(run_number=run_no, experiment=experiment)
         message.run_version = run_version
