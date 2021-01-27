@@ -80,7 +80,6 @@ class HandleMessage:
         run_no = str(message.run_number)
         instrument = db_access.get_instrument(str(message.instrument))
 
-        status = self._utils.status.get_skipped() if instrument.is_paused else self._utils.status.get_queued()
 
         # This must be done before looking up the run version to make sure
         # the record exists
@@ -88,13 +87,12 @@ class HandleMessage:
         run_version = db_access.find_highest_run_version(run_number=run_no, experiment=experiment)
         message.run_version = run_version
 
+        status = self._utils.status.get_skipped() if instrument.is_paused else self._utils.status.get_queued()
         # Get the script text for the current instrument. If the script text
         # is null then send to
         # error queue
-        script_text = get_current_script_text(instrument.name)[0]
-        if script_text is None:
-            script_text = ""
-
+        script = ReductionScript(instrument.name)
+        script_text = script.text()
         # Make the new reduction run with the information collected so far
         # and add it into the database
         reduction_run = db_records.create_reduction_run_record(experiment=experiment,
@@ -108,6 +106,7 @@ class HandleMessage:
             self.reduction_error(reduction_run, message)
             raise InvalidStateException("Script text for current instrument is null")
 
+        # activate instrument if script was found
         instrument = self.activate_db_inst(message.instrument)
         self.safe_save(reduction_run)
 
