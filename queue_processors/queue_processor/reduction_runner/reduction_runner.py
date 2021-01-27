@@ -17,10 +17,10 @@ import traceback
 import types
 
 from model.message.message import Message
-from queue_processors.queue_processor.reduction_runner.reduction_runner_utilities import windows_to_linux_path
-from queue_processors.queue_processor.reduction_runner.reduction_exceptions import DatafileError, ReductionScriptError
-from queue_processors.queue_processor.reduction_runner.reduction_service import Datafile, ReductionScript, ReductionDirectory, TemporaryReductionDirectory, reduce
-from queue_processors.queue_processor.settings import TEMP_ROOT_DIRECTORY, MANTID_PATH
+from .reduction_runner_utilities import windows_to_linux_path
+from .reduction_exceptions import DatafileError, ReductionScriptError
+from .reduction_service import Datafile, ReductionScript, ReductionDirectory, TemporaryReductionDirectory, reduce
+from ..settings import TEMP_ROOT_DIRECTORY, MANTID_PATH
 
 logger = logging.getLogger("reduction_runner")
 
@@ -84,10 +84,7 @@ class ReductionRunner:
                 """ ASCII encode var. """
                 return var.encode('ascii', 'ignore') if type(var).__name__ == "unicode" else var
 
-            encoded_dict = {
-                k: ascii_encode(v)
-                for k, v in self.reduction_arguments[dict_name].items()
-            }
+            encoded_dict = {k: ascii_encode(v) for k, v in self.reduction_arguments[dict_name].items()}
             merge_dict_to_name(dict_name, encoded_dict)
 
         if not hasattr(reduce_script, "web_var"):
