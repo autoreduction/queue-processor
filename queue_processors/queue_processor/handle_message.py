@@ -106,7 +106,7 @@ class HandleMessage:
             raise InvalidStateException("Script text for current instrument is null")
 
         # activate instrument if script was found
-        instrument = self.activate_db_inst(message.instrument)
+        instrument = self.activate_db_inst(instrument)
         self.safe_save(reduction_run)
 
         # Create a new data location entry which has a foreign key linking it to the current
