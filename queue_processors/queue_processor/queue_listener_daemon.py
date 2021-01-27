@@ -12,11 +12,11 @@ Module for daemonising the queue processor.
 import logging
 import signal
 import time
+from typing import Optional
+from utils.clients.queue_client import QueueClient
 
 from queue_processors.daemon import Daemon, control_daemon_from_cli
-from queue_processors.queue_processor import queue_listener, LOGGING
-
-logging.config.dictConfig(LOGGING)
+from queue_processors.queue_processor import queue_listener
 
 
 class QueueListenerDaemon(Daemon):
@@ -25,8 +25,10 @@ class QueueListenerDaemon(Daemon):
         """ Initialise the queue_processor daemon """
         super().__init__(*args, **kwargs)
 
-        self._client_handle = None
+        self._client_handle: Optional[QueueClient] = None
+        self._listener_handle: Optional[queue_listener.QueueListener] = None
         self._logger = logging.getLogger(__file__)
+        self._shutting_down = False
         signal.signal(signal.SIGTERM, self.stop)
         signal.signal(signal.SIGINT, self.stop)
 
@@ -40,19 +42,20 @@ class QueueListenerDaemon(Daemon):
         while True:
             time.sleep(0.5)
 
-    def stop(self):
+    def stop(self, *args):
         """
         Stops the Queue Processor Daemon, first making sure that
         the underlying client has finished
         """
+
+        self._shutting_down = True
         if self._client_handle is None:
-            print("Cannot safely disconnect _client_handle as it is "
-                  "running in original process. Messages might get lost. "
-                  "This happens when the process is manually stopped from CLI.")
+            self._logger.info("Cannot safely disconnect _client_handle as it is "
+                              "running in original process. Messages might get lost. "
+                              "This happens when the process is manually stopped from CLI.")
         else:
             self._client_handle.disconnect()
-        super().stop()
-        self._logger.info("Queue Processor exited gracefully from SIGTERM")
+            self._logger.info("Queue Processor exited gracefully from SIGTERM")
 
 
 def main():
