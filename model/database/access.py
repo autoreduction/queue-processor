@@ -27,13 +27,9 @@ def get_instrument(instrument_name, create=False):
     :param create: (bool) If True, then create the record if it does not exist
     :return: (Instrument) The instrument object from the database
     """
+    # TODO refactor create=True out
     database = start_database()
-    instrument_record = database.data_model.Instrument.objects \
-        .filter(name=instrument_name).first()
-    if not instrument_record and create:
-        instrument_record = database.data_model.Instrument(name=instrument_record, is_active=True, is_paused=False)
-        instrument_record.save()
-    return instrument_record
+    return database.data_model.Instrument.objects.get_or_create(name=instrument_name)
 
 
 def get_status(status_value, create=False):

@@ -78,10 +78,9 @@ class HandleMessage:
             message.rb_number = 0
 
         run_no = str(message.run_number)
-        instrument = self._get_and_activate_db_inst(message.instrument)
+        instrument = db_access.get_instrument(str(message.instrument))
 
-        status = self._utils.status.get_skipped() if instrument.is_paused \
-            else self._utils.status.get_queued()
+        status = self._utils.status.get_skipped() if instrument.is_paused else self._utils.status.get_queued()
 
         # This must be done before looking up the run version to make sure
         # the record exists
@@ -104,15 +103,17 @@ class HandleMessage:
                                                                run_version=run_version,
                                                                script_text=script_text,
                                                                status=status)
-        if script_text is None:
+        if script_text == "":
             message.message = "Script text for current instrument is null"
             self.reduction_error(reduction_run, message)
             raise InvalidStateException("Script text for current instrument is null")
+
+        instrument = self.activate_db_inst(message.instrument)
         self.safe_save(reduction_run)
 
         # Create a new data location entry which has a foreign key linking it to the current
         # reduction run. The file path itself will point to a datafile
-        # (e.g. "\isis\inst$\NDXWISH\Instrument\data\cycle_17_1\WISH00038774 .nxs")
+        # (e.g. "\isis\inst$\NDXWISH\Instrument\data\cycle_17_1\WISH00038774.nxs")
         data_location = self._data_model.DataLocation(file_path=message.data, reduction_run_id=reduction_run.id)
         self.safe_save(data_location)
 
@@ -162,6 +163,10 @@ class HandleMessage:
             self.do_reduction(reduction_run, message)
 
     def do_reduction(self, reduction_run, message: Message):
+        """
+        Handovers to the ReductionProcessManager to actually run the reduction process.
+        Handles the outcome from the run.
+        """
         pr = ReductionProcessManager(message)
         self.reduction_started(reduction_run, message)
         message = pr.run()
@@ -170,17 +175,15 @@ class HandleMessage:
         else:
             self.reduction_complete(reduction_run, message)
 
-    def _get_and_activate_db_inst(self, instrument_name):
+    def activate_db_inst(self, instrument):
         """
         Gets the DB instrument record from the database, if one is not
         found it instead creates and saves the record to the DB, then
         returns it.
         """
-        # Check if the instrument is active or not in the MySQL database
-        instrument = db_access.get_instrument(str(instrument_name), create=True)
         # Activate the instrument if it is currently set to inactive
         if not instrument.is_active:
-            self._logger.info("Activating %s", instrument_name)
+            self._logger.info("Activating %s", instrument.name)
             instrument.is_active = 1
             instrument.save()
         return instrument
