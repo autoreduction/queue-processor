@@ -14,9 +14,7 @@ import os
 from utils.project.structure import get_project_root
 from utils.clients.settings.client_settings_factory import ClientSettingsFactory
 
-VALID_INSTRUMENTS = [
-    'ENGINX', 'GEM', 'HRPD', 'MAPS', 'MARI', 'MUSR', 'OSIRIS', 'POLARIS', 'POLREF', 'WISH'
-]
+VALID_INSTRUMENTS = ['ENGINX', 'GEM', 'HRPD', 'MAPS', 'MARI', 'MUSR', 'OSIRIS', 'POLARIS', 'POLREF', 'WISH']
 
 CONFIG = configparser.ConfigParser()
 INI_FILE = os.path.join(get_project_root(), 'utils', 'credentials.ini')
@@ -24,8 +22,7 @@ CONFIG.read(INI_FILE)
 
 
 def get_str(section, key):
-    return str(CONFIG.get(
-        section, key, raw=True))  # raw=True to allow strings with special characters to be passed
+    return str(CONFIG.get(section, key, raw=True))  # raw=True to allow strings with special characters to be passed
 
 
 SETTINGS_FACTORY = ClientSettingsFactory()
