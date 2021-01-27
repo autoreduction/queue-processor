@@ -16,8 +16,8 @@ from typing import Any, List, Tuple
 from django.db import transaction
 from django.db.models import Q
 from model.database import access as db
-from queue_processors.queue_processor.queueproc_utils.script_utils import (import_module, reduction_script_location)
-from queue_processors.queue_processor.queueproc_utils.variable_utils import VariableUtils
+
+from .script_utils import import_module, reduction_script_location
 from .variable_utils import VariableUtils
 
 
@@ -31,7 +31,7 @@ class InstrumentVariablesUtils:
         self.model = db.start_database()
 
     @transaction.atomic
-    def create_variables_for_run(self, reduction_run):
+    def create_run_variables(self, reduction_run) -> List:
         """
         Finds the appropriate InstrumentVariables for the given reduction run, and creates
         RunVariables from them.
