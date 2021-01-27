@@ -5,9 +5,9 @@
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 import os
-import pytest
-
 from unittest.mock import Mock, patch
+
+import pytest
 from queue_processors.queue_processor.queueproc_utils.script_utils import import_module
 from queue_processors.queue_processor.queueproc_utils.tests.module_to_import import TEST_DICTIONARY
 
