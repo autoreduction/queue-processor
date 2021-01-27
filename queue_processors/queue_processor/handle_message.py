@@ -151,6 +151,10 @@ class HandleMessage:
             raise
 
     def send_message_onwards(self, reduction_run, message: Message, instrument):
+        """
+        Sends the message onwards, either for processing, if validation is OK and instrument isn't paused
+        or skips it if either of those is true.
+        """
         try:
             message.validate("/queue/DataReady")
         except RuntimeError as validation_err:
@@ -172,9 +176,9 @@ class HandleMessage:
         Handovers to the ReductionProcessManager to actually run the reduction process.
         Handles the outcome from the run.
         """
-        pr = ReductionProcessManager(message)
+        reduction_process_manager = ReductionProcessManager(message)
         self.reduction_started(reduction_run, message)
-        message = pr.run()
+        message = reduction_process_manager.run()
         if message.message is not None:
             self.reduction_error(reduction_run, message)
         else:
