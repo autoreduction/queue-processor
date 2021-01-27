@@ -21,45 +21,6 @@ if DEBUG:
 else:
     LOG_LEVEL = 'INFO'
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
-            'datefmt': "%d/%b/%Y %H:%M:%S"
-        },
-        'simple': {
-            'format': '%(levelname)s %(message)s'
-        },
-    },
-    'handlers': {
-        'file': {
-            'level': LOG_LEVEL,
-            'class': 'logging.FileHandler',
-            'filename': LOG_FILE,
-            'formatter': 'verbose'
-        },
-    },
-    'root': {
-        'level': LOG_LEVEL,
-        'handlers': ['file'],
-        'propagate': True
-    },
-    'loggers': {
-        'queue_processor': {
-            'handlers': ['file'],
-            'propagate': True,
-            'level': LOG_LEVEL,
-        },
-        'app': {
-            'handlers': ['file'],
-            'propagate': True,
-            'level': 'DEBUG',
-        },
-    }
-}
-
 # Directory Locations
 if os.name == 'nt':
     # Adding this as we no longer have any nodes running on Windows.
