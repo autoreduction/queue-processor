@@ -33,7 +33,8 @@ LOGGING = {
             'formatter': 'verbose',
             'maxBytes': 104857600,
             'backupCount': 20,
-        },  'file': {
+        },
+        'file': {
             'level': LOG_LEVEL,
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': os.path.join(get_project_root(), 'logs', 'queue_processor.log'),
@@ -84,6 +85,10 @@ LOGGING = {
             'propagate': True,
             'level': LOG_LEVEL,
         },
+        'stomp.py': {
+            'propagate': False,
+            'level': 'ERROR'
+        }
     }
 }
 
