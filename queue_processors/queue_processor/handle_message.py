@@ -185,20 +185,6 @@ class HandleMessage:
             instrument.save()
         return instrument
 
-    # note: Why does this take arguments and not just take from the message attribs
-    def _construct_and_send_skipped(self, rb_number, reason, message: Message):
-        """
-        Construct a message and send to the skipped reduction queue
-        :param rb_number: The RB Number associated with the reduction job
-        :param reason: The error that caused the run to be skipped
-        """
-        self._logger.warning("Skipping non-integer RB number: %s", rb_number)
-        msg = 'Reduction Skipped: {}. Assuming run number to be ' \
-              'a calibration run.'.format(reason)
-        message.message = msg
-        skipped_queue = ACTIVEMQ_SETTINGS.reduction_skipped
-        self._client.send_message(skipped_queue, message)
-
     def reduction_started(self, reduction_run, message: Message):
         """
         Called when destination queue was reduction_started.

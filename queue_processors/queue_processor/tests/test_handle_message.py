@@ -455,18 +455,8 @@ class TestHandleMessage(unittest.TestCase):
         with self.assertRaises(MissingExperimentRecord):
             self.handler.find_run(self._get_mock_message())
 
-    def test_construct_and_send_skipped(self, _):
-        """
-        Tests that the message contents is updated with the passed in msg
-        then send onwards to the skipped queue
-        """
-        expected_msg = self._get_mock_message()
-        self.handler._construct_and_send_skipped(rb_number=mock.NonCallableMock(),
-                                                 reason=mock.NonCallableMock(),
-                                                 message=expected_msg)
 
-        self.mocked_client.send_message.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_skipped, expected_msg)
-
+# test that instrument is not enabled when it's reduce.py script is missing
 
 if __name__ == '__main__':
     unittest.main()
