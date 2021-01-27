@@ -42,5 +42,9 @@ class RunSummaryPage(Page, NavbarMixin, FooterMixin, TourMixin):
         self.driver.get(RunSummaryPage.url() % (self.instrument, self.run_number, self.version))
         return self
 
-    def is_rerun_form_visible(self):
+    def is_rerun_form_visible(self) -> bool:
+        """
+        Check if the rerun form is visible on a page
+        :return: (bool) True if form is visible False otherwise
+        """
         return self.driver.find_element_by_id("rerun-form").is_displayed()
