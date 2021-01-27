@@ -3,45 +3,17 @@
 #### This script will stop the queue processors if they're running
 #### and then start them back up again.
 ####
-#### WARNING: If there's currently reduction runs "processing" this may 
-#### cause them to get stuck in the "processing" state.
+#### It will send SIGTERM to allow the queue processor to gracefully close.
 
 ROOT_DIR="$(dirname "$0")"
 EXECUTABLE_PATH=$1
 
-## Autoreduction Processor
-pkill -9 -f "python3 .*autoreduction_processor/autoreduction_processor_daemon.py start" &&
-echo "Stopped autoreduction_processor_daemon.py";
-if [ -e /tmp/AutoreduceQueueProcessorDaemon.pid ]
-then
-    rm /tmp/AutoreduceQueueProcessorDaemon.pid && # Removes the tmp pid file
-    echo "Removed /tmp/AutoreduceQueueProcessorDaemon.pid"
-else
-    echo ".pid file not found - starting process"
-fi
-if [ $EXECUTABLE_PATH ];
-then
-    $EXECUTABLE_PATH $ROOT_DIR/autoreduction_processor/autoreduction_processor_daemon.py start &&
-    echo "Started autoreduction_processor_daemon";
-else
-    echo "Using default python";
-    python3 $ROOT_DIR/autoreduction_processor/autoreduction_processor_daemon.py start &&
-    echo "Started autoreduction_processor_daemon";
-fi
-
-echo ""; # New line
-
-
 ## QueueProcessor
-pkill -9 -f "python3 .*queue_processor/queue_listener_daemon.py start" &&
-echo "Stopped queue_listener_daemon";
-if [ -e /tmp/QueueListenerDaemon.pid ]
-then
-    rm /tmp/QueueListenerDaemon.pid && # Removes the tmp pid file
-    echo "Removed /tmp/QueueListenerDaemon.pid"
-else
-    echo ".pid file not found - starting process"
-fi
+pkill -15 -f "python3 .*queue_processor/queue_listener_daemon.py start" &&\
+    echo -e "\n>>>>>>>>>>>>>> Queue Processor log tail <<<<<<<<<<<<<<" &&\
+    tail ../logs/queue_processor.log && echo -e "-----------------------------------------------------\n" &&\
+    grep -m 1 "Queue Processor exited gracefully" <(tail -f ../logs/queue_processor.log);
+
 if [ $EXECUTABLE_PATH ];
 then
     $EXECUTABLE_PATH $ROOT_DIR/queue_processor/queue_listener_daemon.py start &&

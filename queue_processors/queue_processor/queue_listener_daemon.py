@@ -48,13 +48,10 @@ class QueueListenerDaemon(Daemon):
         Stops the Queue Processor Daemon, first making sure that
         the underlying client has finished
         """
-        self.client.disconnect()
-
-        while self.listener.processing_message:
+        if self.listener.processing_message:
             self._logger.info("Shutdown requested but the listener is processing a run. "
-                              "Waiting for it to finish before proceeding with shutdown.")
-            time.sleep(1)
-
+                              "The client will wait for it to finish before exiting.")
+        self.client.disconnect()
         self._shutting_down = True
         if self.client is None:
             self._logger.info("Cannot safely disconnect client as it is "
