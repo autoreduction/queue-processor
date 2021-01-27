@@ -21,42 +21,6 @@ def reduction_script_location(instrument_name):
     return REDUCTION_DIRECTORY % instrument_name
 
 
-def load_script(path):
-    """
-    First detect the file encoding using chardet.
-    Then load the relevant reduction script and return back the text of the script.
-    If the script cannot be loaded, None is returned.
-    """
-    # Read raw bytes and determine encoding
-    f_raw = io.open(path, 'rb')
-    encoding = chardet.detect(f_raw.read(32))["encoding"]
-
-    # Read the file in decoded; io is used for the encoding kwarg
-    f_decoded = io.open(path, 'r', encoding=encoding)
-    script_text = f_decoded.read()
-    return script_text
-
-
-def get_current_script_text(instrument_name):
-    """
-    Fetches the reduction script and variables script for the given
-    instrument, and returns each as a string.
-    """
-    script_text = load_reduction_script(instrument_name)
-    script_vars_text = load_reduction_vars_script(instrument_name)
-    return script_text, script_vars_text
-
-
-def load_reduction_script(instrument_name):
-    """ Loads reduction script. """
-    return load_script(os.path.join(reduction_script_location(instrument_name), 'reduce.py'))
-
-
-def load_reduction_vars_script(instrument_name):
-    """ Loads reduction variables script. """
-    return load_script(os.path.join(reduction_script_location(instrument_name), 'reduce_vars.py'))
-
-
 def import_module(script_path):
     """
     Takes a python script as a text string, and returns it loaded as a module.

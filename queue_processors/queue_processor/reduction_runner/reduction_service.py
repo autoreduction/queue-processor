@@ -16,6 +16,8 @@ from importlib.util import spec_from_file_location, module_from_spec
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+import chardet
+
 from .reduction_runner_utilities import channels_redirected
 from .reduction_exceptions import DatafileError, ReductionScriptError
 from ..settings import SCRIPTS_DIRECTORY, FLAT_OUTPUT_INSTRUMENTS, CEPH_DIRECTORY, SCRIPT_TIMEOUT
@@ -127,10 +129,31 @@ class ReductionScript:
     def load(self):
         """
         Loads the reduction script as a module
+        :raises ImportError: If the reduction script is missing an import
+        :raises SyntaxError: If there is a syntax error in the reduction script
         """
         spec = spec_from_file_location("reducescript", self.script_path)
         self.script = module_from_spec(spec)
         spec.loader.exec_module(self.script)
+        # TODO handle at caller
+        # except ImportError as exp:
+        #     log_error_and_notify("Unable to load reduction script %s due to missing import. (%s)" % (script_path, exp))
+        #     raise
+        # except SyntaxError:
+        #     log_error_and_notify("Syntax error in reduction script %s" % script_path)
+        #     raise
+
+    def text(self)->str:
+        # Read raw bytes and determine encoding
+        try:
+            with io.open(self.script_path, 'rb') as file_raw:
+                encoding = chardet.detect(file_raw.read(32))["encoding"]
+        except IOError:
+            return ""
+
+        # Read the file in decoded; io is used for the encoding kwarg
+        with io.open(self.script_path, 'r', encoding=encoding) as file_decoded:
+            return file_decoded.read()
 
     def run(self, input_file, output_dir):
         """
