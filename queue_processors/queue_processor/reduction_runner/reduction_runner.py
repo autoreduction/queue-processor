@@ -17,10 +17,13 @@ import traceback
 import types
 
 from model.message.message import Message
-from .reduction_runner_utilities import windows_to_linux_path
-from .reduction_exceptions import DatafileError, ReductionScriptError
-from .reduction_service import Datafile, ReductionScript, ReductionDirectory, TemporaryReductionDirectory, reduce
-from ..settings import TEMP_ROOT_DIRECTORY, MANTID_PATH
+from queue_processors.queue_processor.reduction_runner.reduction_exceptions import (DatafileError, ReductionScriptError)
+from queue_processors.queue_processor.reduction_runner.reduction_runner_utilities import \
+    windows_to_linux_path
+from queue_processors.queue_processor.reduction_runner.reduction_service import (Datafile, ReductionDirectory,
+                                                                                 ReductionScript,
+                                                                                 TemporaryReductionDirectory, reduce)
+from queue_processors.queue_processor.settings import (MANTID_PATH, TEMP_ROOT_DIRECTORY)
 
 logger = logging.getLogger("reduction_runner")
 
