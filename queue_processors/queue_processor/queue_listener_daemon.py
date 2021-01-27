@@ -25,17 +25,18 @@ class QueueListenerDaemon(Daemon):
         """ Initialise the queue_processor daemon """
         super().__init__(*args, **kwargs)
 
-        self._client_handle: Optional[QueueClient] = None
-        self._listener_handle: Optional[queue_listener.QueueListener] = None
+        self.client: Optional[QueueClient] = None
+        self.listener: Optional[queue_listener.QueueListener] = None
         self._logger = logging.getLogger(__file__)
         self._shutting_down = False
+
         signal.signal(signal.SIGTERM, self.stop)
         signal.signal(signal.SIGINT, self.stop)
 
     def run(self):
         """ Run queue processor. """
         self._logger.info("Starting Queue Processor")
-        self._client_handle = queue_listener.main()
+        self.client, self.listener = queue_listener.main()
         # keeps the daemon alive as the main call above does not block
         # but simply runs the connections in async. If this sleep isn't
         # here the deamon will just exit after connecting
@@ -47,14 +48,19 @@ class QueueListenerDaemon(Daemon):
         Stops the Queue Processor Daemon, first making sure that
         the underlying client has finished
         """
+        self.client.disconnect()
+
+        while self.listener.processing_message:
+            self._logger.info("Shutdown requested but the listener is processing a run. "
+                              "Waiting for it to finish before proceeding with shutdown.")
+            time.sleep(1)
 
         self._shutting_down = True
-        if self._client_handle is None:
-            self._logger.info("Cannot safely disconnect _client_handle as it is "
+        if self.client is None:
+            self._logger.info("Cannot safely disconnect client as it is "
                               "running in original process. Messages might get lost. "
                               "This happens when the process is manually stopped from CLI.")
         else:
-            self._client_handle.disconnect()
             self._logger.info("Queue Processor exited gracefully from SIGTERM")
 
 

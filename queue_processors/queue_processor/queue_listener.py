@@ -31,10 +31,12 @@ class QueueListener:
 
         self._logger = logging.getLogger(__file__)
 
+        self.processing_message = False
+
     def on_message(self, headers, message):
         """ This method is where consumed messages are dealt with. It will
         consume a message. """
-
+        self.processing_message = True
         destination = headers["destination"]
         self._priority = headers["priority"]
         self._logger.info("Destination: %s Priority: %s", destination, self._priority)
@@ -58,6 +60,7 @@ class QueueListener:
         except InvalidStateException as exp:
             self._logger.error("Stomp Client message handling exception:" "%s %s", type(exp).__name__, exp)
             self._logger.error(traceback.format_exc())
+        self.processing_message = False
 
     def send_message(self, target: str, message: Message, priority: int = None):
         """
@@ -84,7 +87,7 @@ def setup_connection(consumer_name):
 
     # Subscribe to queues
     activemq_client.subscribe_autoreduce(consumer_name, listener)
-    return activemq_client
+    return activemq_client, listener
 
 
 def main():
