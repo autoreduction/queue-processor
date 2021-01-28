@@ -73,6 +73,28 @@ class HandleMessage:
         """
         self._logger.info("Data ready for processing run %s on %s", message.run_number, message.instrument)
 
+        try:
+            reduction_run, message, instrument = self.create_run_record(message)
+        except Exception as err:
+            # failed to even create the reduction run object - can't reacover from this
+            self._logger.error("Encountered error in transaction to save RunVariables, error: %s", str(err))
+            raise
+
+        try:
+            message = self.create_run_variables(reduction_run, message, instrument)
+        except IntegrityError as err:
+            # couldn't save the state in the database properly - mark the run as errored
+            err_msg = "Encountered error in transaction to save RunVariables, error: %s", str(err)
+            self._logger.error(err_msg)
+            message.message = err_msg
+            self.reduction_error(reduction_run, message)
+
+        self.send_message_onwards(reduction_run, message, instrument)
+
+    def create_run_record(self, message: Message):
+        """
+        Creates or gets the necessary records to construct a ReductionRun
+        """
         # This must be done before looking up the run version to make sure the record exists
         experiment = db_access.get_experiment(message.rb_number)
         run_version = db_access.find_highest_run_version(run_number=str(message.run_number), experiment=experiment)
@@ -107,26 +129,24 @@ class HandleMessage:
         data_location = self.data_model.DataLocation(file_path=message.data, reduction_run_id=reduction_run.id)
         self.safe_save(data_location)
 
+        return reduction_run, message, instrument
+
+    def create_run_variables(self, reduction_run, message, instrument):
+        """
+        Creates the RunVariables for this ReductionRun
+        """
         # Create all of the variables for the run that are described in it's reduce_vars.py
         self._logger.info('Creating variables for run')
-        try:
-            variables = self._utils.instrument_variable.create_run_variables(reduction_run)
-            if not variables:
-                # TODO is there a way to show some warning on the reduction run view page itself?
-                # at the moment this is a developer only warning
-                self._logger.warning("No instrument variables found on %s for run %s", instrument.name,
-                                     message.run_number)
-        except IntegrityError as err:
-            # couldn't save the state in the database properly - this is a developer error
-            self._logger.error("Encountered error in transaction to save RunVariables, error: %s", str(err))
-            raise
+        variables = self._utils.instrument_variable.create_run_variables(reduction_run)
+        if not variables:
+            self._logger.warning("No instrument variables found on %s for run %s", instrument.name, message.run_number)
 
         self._logger.info('Getting script and arguments')
         arguments = self._utils.reduction_run.get_script_arguments(variables)
         message.reduction_script = reduction_run.script
         message.reduction_arguments = arguments
 
-        return self.send_message_onwards(reduction_run, message, instrument)
+        return message
 
     def safe_save(self, obj):
         """

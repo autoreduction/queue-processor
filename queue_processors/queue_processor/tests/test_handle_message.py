@@ -226,7 +226,7 @@ class TestHandleMessage(unittest.TestCase):
             assert self.reduction_run.finished is not None
             assert self.reduction_run.message == "Something failed"
 
-    def test_activare_db_inst(self):
+    def test_activate_db_inst(self):
         self.instrument.is_active = False
         self.instrument.save()
 
