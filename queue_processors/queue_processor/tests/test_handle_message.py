@@ -226,6 +226,14 @@ class TestHandleMessage(unittest.TestCase):
             assert self.reduction_run.finished is not None
             assert self.reduction_run.message == "Something failed"
 
+    def test_activare_db_inst(self):
+        self.instrument.is_active = False
+        self.instrument.save()
+
+        self.handler.activate_db_inst(self.instrument)
+
+        assert self.instrument.is_active
+
 
 # TODO test that instrument is not enabled when it's reduce.py script is missing
 if __name__ == '__main__':
