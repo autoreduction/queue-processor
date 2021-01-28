@@ -25,11 +25,12 @@ class TestDjangoORM(unittest.TestCase):
         Test: The webapp path is not added to sys.path
         When: webapp path already exists and add_webapp_path is called
         """
-        expected = os.path.join(get_project_root(), 'WebApp', 'autoreduce_webapp')
-        sys.path.append(expected)
+        webapp_path = os.path.join(get_project_root(), 'WebApp', 'autoreduce_webapp')
+        sys.path.append(webapp_path)
+        expected = sys.path.count(webapp_path)
         DjangoORM.add_webapp_path()
-        self.assertIn(expected, sys.path)
-        sys.path.remove(expected) # Cleanup test
+        self.assertEqual(expected, sys.path.count(webapp_path))
+        sys.path.remove(webapp_path) # Cleanup test
 
     def test_add_webapp_path_not_already_exist(self):
         """
