@@ -63,9 +63,11 @@ def main():
     if args.is_headless:
         configuration.set_headless(True)
 
-    inject_datasets()
-    exit_code = pytest.main([get_project_root() + "/webtests/tests", f"-n{args.cpu}", "-v"])
-    clear_datasets()
+    try:
+        inject_datasets()
+        exit_code = pytest.main([get_project_root() + "/webtests/tests", f"-n{args.cpu}", "-v"])
+    finally:
+        clear_datasets()
     configuration.cleanup_config()
     sys.exit(exit_code)
 
