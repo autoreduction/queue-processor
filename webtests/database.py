@@ -46,7 +46,8 @@ def parse_dataset(dataset: Path) -> List[Tuple[str, Any]]:
     rows = []
     for child in root:
         for column in root.iter(child.tag):
-            rows.append((column.tag, column.attrib))
+            if (column.tag, column.attrib) not in rows:
+                rows.append((column.tag, column.attrib))
     return rows
 
 
