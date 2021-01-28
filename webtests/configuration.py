@@ -30,14 +30,6 @@ def store_original_config():
         sys.exit(f"Config file: {CONFIG_PATH} could not be loaded...")
 
 
-def is_local_environment():
-    """
-    Returns true if the environment type in the config is set to local
-    :return: (bool) True if the environment type in the config is set to local
-    """
-    return load_config_file()["environment_type"].lower() == "local"
-
-
 def get_url():
     """
     Returns the url to test against from the config
@@ -53,16 +45,6 @@ def is_headless():
     :return: (bool) The headless boolean from the config
     """
     return load_config_file()["run_headless"]
-
-
-def set_environment(environment):
-    """
-    Set the environment type in the config. Either local or remote
-    :param environment: (str) the environment type to be set
-    """
-    config = load_config_file()
-    config["environment_type"] = environment
-    dump_to_config_file(config)
 
 
 def set_url(url):
