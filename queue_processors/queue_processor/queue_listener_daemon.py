@@ -43,7 +43,7 @@ class QueueListenerDaemon(Daemon):
         while not self._shutting_down:
             time.sleep(0.5)
 
-    def stop(self, *args):
+    def stop(self, *_):
         """
         Stops the Queue Processor Daemon, first making sure that
         the underlying client has finished
