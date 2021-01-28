@@ -34,7 +34,7 @@ LOGGING = {
             'maxBytes': 104857600,
             'backupCount': 20,
         },
-        'file': {
+        'queue_processor_file': {
             'level': LOG_LEVEL,
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': os.path.join(get_project_root(), 'logs', 'queue_processor.log'),
@@ -61,17 +61,22 @@ LOGGING = {
     },
     'root': {
         'level': LOG_LEVEL,
-        'handlers': ['file'],
+        'handlers': ['queue_processor_file'],
         'propagate': True
     },
     'loggers': {
         'queue_processor': {
-            'handlers': ['file'],
+            'handlers': ['queue_processor_file'],
+            'propagate': True,
+            'level': LOG_LEVEL,
+        },
+        'queue_listener': {
+            'handlers': ['queue_processor_file'],
             'propagate': True,
             'level': LOG_LEVEL,
         },
         'app': {
-            'handlers': ['file'],
+            'handlers': ['queue_processor_file'],
             'propagate': True,
             'level': 'DEBUG',
         },

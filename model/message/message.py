@@ -16,8 +16,8 @@ from model.message.validation import stages
 from utils.project.static_content import LOG_FORMAT
 from utils.project.structure import get_log_file
 
-logging.basicConfig(filename=get_log_file('job.log'), level=logging.INFO,
-                    format=LOG_FORMAT)
+# TODO use the common logging config
+logging.basicConfig(filename=get_log_file('job.log'), level=logging.INFO, format=LOG_FORMAT)
 
 
 # pylint:disable=too-many-instance-attributes
@@ -90,10 +90,7 @@ class Message:
                     # Set the value of the variable on this object accessing it by name
                     setattr(self, key, value)
             else:
-                warning_message = (f"Unexpected key encountered during Message population: '{key}'."
-                                   f"Skipping this key...")
-                logging.warning(warning_message)
-                print(warning_message)  # Note: for debug purposes
+                raise ValueError("Unexpected key encountered during Message population: '{key}'.")
 
     def validate(self, destination):
         """
