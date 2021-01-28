@@ -9,17 +9,15 @@ Module containing the base test cases for a page and componenets
 """
 
 import datetime
-import functools
 import unittest
 from pathlib import Path
 
 from utils.project.structure import get_project_root
-from webtests import configuration
 from webtests.driver import get_chrome_driver
-from webtests.pages.graphs_page import GraphsPage
 from webtests.pages.failed_jobs_page import FailedJobsPage
-from webtests.pages.job_queue_page import JobQueuePage
+from webtests.pages.graphs_page import GraphsPage
 from webtests.pages.help_page import HelpPage
+from webtests.pages.job_queue_page import JobQueuePage
 from webtests.pages.overview_page import OverviewPage
 
 
