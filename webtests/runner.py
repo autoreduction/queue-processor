@@ -24,10 +24,6 @@ def main():
     """
     store_original_config()
     parser = argparse.ArgumentParser(description="Selenium tests for autoreduction WebApp")
-    parser.add_argument("-e",
-                        "--environment",
-                        metavar="<environment>",
-                        help="Target environment type: remote or local. Default is remote")
     parser.add_argument("-u",
                         "--url",
                         metavar="<url>",
@@ -56,8 +52,7 @@ def main():
                         help="Run the tests with headless browser")
     parser.add_argument("-n", "--numcpu", metavar="<Number of CPUs to use>", dest="cpu", default=2)
     args = parser.parse_args()
-    if args.environment:
-        configuration.set_environment(args.environment)
+
     if args.url:
         configuration.set_url(args.url)
     if args.is_headless:

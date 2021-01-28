@@ -23,23 +23,6 @@ from webtests.pages.help_page import HelpPage
 from webtests.pages.overview_page import OverviewPage
 
 
-def local_only(method):
-    """
-    Decorator to mark tests as local_only, meaning they will only run if the environment_type is set
-    to local within the config.
-    :param method: The test method to wrap
-    :return: The wrapped test method
-    """
-    @functools.wraps(method)
-    def wrapper_local_only(*args, **kwargs):
-        if not configuration.is_local_environment():
-            args[0].skipTest("Test is local only")
-            return
-        method(*args, **kwargs)
-
-    return wrapper_local_only
-
-
 class BaseTestCase(unittest.TestCase):
     """
     Base test class that provides setup and teardown of driver aswell as screenshotting capability
