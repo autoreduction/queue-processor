@@ -1,7 +1,7 @@
 # ############################################################################### #
 # Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
 #
-# Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
+# Copyright &copy; 2021 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 """
@@ -34,7 +34,6 @@ from instrument.utils import InstrumentVariablesUtils
 from utilities.pagination import CustomPaginator
 
 from plotting.plot_handler import PlotHandler
-from utils.settings import VALID_INSTRUMENTS
 
 LOGGER = logging.getLogger('app')
 
@@ -102,8 +101,8 @@ def overview(_):
     Render the overview landing page (redirect from /index)
     Note: _ is replacing the passed in request parameter
     """
-    instruments = VALID_INSTRUMENTS
     context_dictionary = {}
+    instruments = Instrument.objects.values_list("name", flat=True)
     if instruments:
         context_dictionary = {'instrument_list': instruments}
     return context_dictionary
