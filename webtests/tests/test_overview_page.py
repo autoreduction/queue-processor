@@ -8,10 +8,9 @@
 Selenium tests for the overview page
 """
 
-from utils.settings import VALID_INSTRUMENTS
 from webtests.pages.instrument_summary_page import InstrumentSummaryPage
 from webtests.pages.overview_page import OverviewPage
-from webtests.tests.base_tests import NavbarTestMixin, BaseTestCase, local_only, FooterTestMixin
+from webtests.tests.base_tests import NavbarTestMixin, BaseTestCase, FooterTestMixin
 
 
 class TestOverviewPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
@@ -25,7 +24,6 @@ class TestOverviewPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
         super().setUp()
         self.page = OverviewPage(self.driver)
 
-    @local_only
     def test_correct_instruments_visible(self):
         """
         Tests: Correct instruments displayed
@@ -34,8 +32,8 @@ class TestOverviewPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
         actual_instruments = self.page\
             .launch() \
             .get_instruments_from_buttons()
-        expected_instruments = VALID_INSTRUMENTS
-        self.assertEqual(expected_instruments, actual_instruments)
+        expected_instruments = ["ActiveInstrument", "InactiveInstrument", "PausedInstrument"]
+        self.assertTrue(set(expected_instruments).issubset(actual_instruments))
 
     def test_instrument_buttons_go_to_instrument_summary_pages(self):
         """
