@@ -43,7 +43,7 @@ class Message:
     admin_log = attr.ib(default="")  # Cannot be null in database
     message = attr.ib(default=None)
     retry_in = attr.ib(default=None)
-    reduction_data = attr.ib(default=None)  # Required by PPA
+    reduction_data = attr.ib(default=None)  # Required by reduction runner
     cancel = attr.ib(default=None)  # Required by messaging_utils/autoreduction_processor
     software = attr.ib(default=None)
 

@@ -53,7 +53,7 @@ class HandleMessage:
         return self._cached_db
 
     @property
-    def _data_model(self):
+    def data_model(self):
         """
         Gets a handle to the data model from the database
         """
@@ -72,24 +72,13 @@ class HandleMessage:
         - If there is no reduce.py
         """
         self._logger.info("Data ready for processing run %s on %s", message.run_number, message.instrument)
-        if not validate_rb_number(message.rb_number):
-            # rb_number is invalid so send message to skip queue and early return
-            message.message = f"Found non-integer RB number: {message.rb_number}"
-            self._logger.warning("%s. Skipping %s%s.", message.message, message.instrument, message.run_number)
-            message.rb_number = 0
-
-        run_no = str(message.run_number)
-        instrument = db_access.get_instrument(str(message.instrument))
 
         # This must be done before looking up the run version to make sure the record exists
-        experiment = db_access.get_experiment(message.rb_number, create=True)
-        run_version = db_access.find_highest_run_version(run_number=run_no, experiment=experiment)
+        experiment = db_access.get_experiment(message.rb_number)
+        run_version = db_access.find_highest_run_version(run_number=str(message.run_number), experiment=experiment)
         message.run_version = run_version
 
-        status = self._utils.status.get_skipped() if instrument.is_paused else self._utils.status.get_queued()
-        # Get the script text for the current instrument. If the script text
-        # is null then send to
-        # error queue
+        instrument = db_access.get_instrument(str(message.instrument))
         script = ReductionScript(instrument.name)
         script_text = script.text()
         # Make the new reduction run with the information collected so far
@@ -99,7 +88,8 @@ class HandleMessage:
                                                                message=message,
                                                                run_version=run_version,
                                                                script_text=script_text,
-                                                               status=status)
+                                                               status=self._utils.status.get_queued())
+        # if the script text is empty then send to error queue
         if script_text == "":
             message.message = "Script text for current instrument is null"
             self.reduction_error(reduction_run, message)
@@ -111,9 +101,10 @@ class HandleMessage:
 
         # Create a new data location entry which has a foreign key linking it to the current
         # reduction run. The file path itself will point to a datafile
-        # (e.g. "\isis\inst$\NDXWISH\Instrument\data\cycle_17_1\WISH00038774.nxs")
-        # TODO figure out whether we only use this for visualisation in the web app
-        data_location = self._data_model.DataLocation(file_path=message.data, reduction_run_id=reduction_run.id)
+        # (e.g. "/isis/inst$/NDXWISH/Instrument/data/cycle_17_1/WISH00038774.nxs")
+        # TODO figure out whether we only use this for showing the ReductionLocation line in the web app
+        # TODO this should probably be part of the ReductionRun rather than the huge script text!
+        data_location = self.data_model.DataLocation(file_path=message.data, reduction_run_id=reduction_run.id)
         self.safe_save(data_location)
 
         # Create all of the variables for the run that are described in it's reduce_vars.py
@@ -121,10 +112,12 @@ class HandleMessage:
         try:
             variables = self._utils.instrument_variable.create_run_variables(reduction_run)
             if not variables:
+                # TODO is there a way to show some warning on the reduction run view page itself?
+                # at the moment this is a developer only warning
                 self._logger.warning("No instrument variables found on %s for run %s", instrument.name,
                                      message.run_number)
         except IntegrityError as err:
-            # couldn't save the state in the database properly
+            # couldn't save the state in the database properly - this is a developer error
             self._logger.error("Encountered error in transaction to save RunVariables, error: %s", str(err))
             raise
 
@@ -201,17 +194,11 @@ class HandleMessage:
         Updates the run as started in the database.
         """
         self._logger.info("Run %s has started reduction", message.run_number)
-
-        if reduction_run.status.value not in ['e', 'q']:  # verbose values = ["Error", "Queued"]
-            raise InvalidStateException("An invalid attempt to re-start a reduction run was captured."
-                                        f" Experiment: {message.rb_number},"
-                                        f" Run Number: {message.run_number},"
-                                        f" Run Version {message.run_version}")
-
         reduction_run.status = self._utils.status.get_processing()
         reduction_run.started = datetime.datetime.utcnow()
         self.safe_save(reduction_run)
 
+    @transaction.atomic
     def reduction_complete(self, reduction_run, message: Message):
         """
         Called when the destination queue was reduction_complete
@@ -219,21 +206,11 @@ class HandleMessage:
         """
         self._logger.info("Run %s has completed reduction", message.run_number)
 
-        if not reduction_run.status.value == 'p':  # verbose value = "Processing"
-            raise InvalidStateException("An invalid attempt to complete a reduction run that wasn't"
-                                        " processing has been captured. "
-                                        f" Experiment: {message.rb_number},"
-                                        f" Run Number: {message.run_number},"
-                                        f" Run Version {message.run_version}")
-
         self._common_reduction_run_update(reduction_run, self._utils.status.get_completed(), message)
 
         if message.reduction_data is not None:
             for location in message.reduction_data:
-                model = db_access.start_database().data_model
-                reduction_location = model \
-                    .ReductionLocation(file_path=location,
-                                       reduction_run=reduction_run)
+                reduction_location = self.data_model.ReductionLocation(file_path=location, reduction_run=reduction_run)
                 self.safe_save(reduction_location)
         self.safe_save(reduction_run)
 

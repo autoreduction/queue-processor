@@ -52,7 +52,7 @@ def get_status(status_value, create=False):
     return status_record
 
 
-def get_experiment(rb_number, create=False):
+def get_experiment(rb_number):
     """
     Find the Experiment record associated with the rb_number provided in the database
     :param rb_number: (str) The rb_number of the Experiment record e.g. 12345
@@ -60,12 +60,7 @@ def get_experiment(rb_number, create=False):
     :return: (Experiment) The Experiment object from the database
     """
     database = start_database()
-    experiment_record = database.data_model.Experiment.objects \
-        .filter(reference_number=rb_number).first()
-    if not experiment_record and create:
-        experiment_record = database.data_model.Experiment(reference_number=rb_number)
-        save_record(experiment_record)
-    return experiment_record
+    return database.data_model.Experiment.objects.get_or_create(reference_number=rb_number)[0]
 
 
 def get_software(name, version, create=False):
