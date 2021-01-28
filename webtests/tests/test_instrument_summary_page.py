@@ -22,7 +22,7 @@ class TestInstrumentSummaryPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
         Sets up the InstrumentSummaryPage object
         """
         super().setUp()
-        self.page = InstrumentSummaryPage(self.driver, "WISH")
+        self.page = InstrumentSummaryPage(self.driver, "TestInstrument")
 
     def test_reduction_run_displayed(self):
         """
