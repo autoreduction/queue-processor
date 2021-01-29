@@ -62,10 +62,7 @@ class ReductionDirectory:
         if self.overwrite:
             self.path = self.path / "run-version-0"
         else:
-            versions = [
-                int(str(i).split("-")[-1]) for i in self.path.glob("run-version-[0-9]*")
-                if i.is_dir()
-            ]
+            versions = [int(str(i).split("-")[-1]) for i in self.path.glob("run-version-[0-9]*") if i.is_dir()]
             try:
                 self.path = self.path / f"run-version-{max(versions) + 1}"
             except ValueError:
@@ -135,15 +132,8 @@ class ReductionScript:
         spec = spec_from_file_location("reducescript", self.script_path)
         self.script = module_from_spec(spec)
         spec.loader.exec_module(self.script)
-        # TODO handle at caller
-        # except ImportError as exp:
-        #     log_error_and_notify("Unable to load reduction script %s due to missing import. (%s)" % (script_path, exp))
-        #     raise
-        # except SyntaxError:
-        #     log_error_and_notify("Syntax error in reduction script %s" % script_path)
-        #     raise
 
-    def text(self)->str:
+    def text(self) -> str:
         # Read raw bytes and determine encoding
         try:
             with io.open(self.script_path, 'rb') as file_raw:
@@ -165,8 +155,7 @@ class ReductionScript:
         """
         logger.info("Running reduction script: %s", self.script_path)
         with TimeOut(SCRIPT_TIMEOUT):
-            return self.script.main(input_file=str(input_file.path),
-                                    output_dir=str(output_dir.path))
+            return self.script.main(input_file=str(input_file.path), output_dir=str(output_dir.path))
 
 
 # pylint:disable=too-many-arguments; We will remove the log_Stream once we look at logging in ppa
