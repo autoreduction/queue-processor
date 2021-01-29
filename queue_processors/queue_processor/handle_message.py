@@ -15,16 +15,16 @@ update relevant DB fields or logging out the status.
 import datetime
 import logging
 from typing import Optional
-from django.db import IntegrityError, transaction
+from django.db import transaction
 
 import model.database.records as db_records
 from model.database import access as db_access
 from model.message.message import Message
 
-from queue_processors.queue_processor._utils_classes import _UtilsClasses
-from queue_processors.queue_processor.handling_exceptions import InvalidStateException
+from queue_processors.queue_processor._utils_classes import UtilsClasses
 from queue_processors.queue_processor.reduction_runner.reduction_process_manager import ReductionProcessManager
 from queue_processors.queue_processor.reduction_runner.reduction_service import ReductionScript
+from queue_processors.queue_processor.queueproc_utils.instrument_variable_utils import InstrumentVariablesUtils
 
 
 class HandleMessage:
@@ -36,30 +36,13 @@ class HandleMessage:
     # We cannot type hint queue listener without introducing a circular dep.
     def __init__(self, queue_listener):
         self._client = queue_listener
-        self._utils = _UtilsClasses()
+        self._utils = UtilsClasses()
+        self.instrument_variable = InstrumentVariablesUtils()
 
         self._logger = logging.getLogger("handle_queue_message")
 
-        self._cached_db = None
-        self._cached_data_model = None
-
-    @property
-    def _database(self):
-        """
-        Gets a handle to the database, starting it if required
-        """
-        if not self._cached_db:
-            self._cached_db = db_access.start_database()
-        return self._cached_db
-
-    @property
-    def data_model(self):
-        """
-        Gets a handle to the data model from the database
-        """
-        if not self._cached_data_model:
-            self._cached_data_model = self._database.data_model
-        return self._cached_data_model
+        self.database = db_access.start_database()
+        self.data_model = self.database.data_model
 
     def data_ready(self, message: Message):
         """
@@ -75,26 +58,25 @@ class HandleMessage:
 
         try:
             reduction_run, message, instrument = self.create_run_records(message)
-        except InvalidStateException as err:
-            # TODO consider delegating this skip to send_message_onwards
-            message.message = str(err)
-            self.reduction_skipped(err.reduction_run, message)
-            raise
         except Exception as err:
             # failed to even create the reduction run object - can't reacover from this
-            self._logger.error("Encountered error in transaction to save RunVariables, error: %s", str(err))
+            self._logger.error("Encountered error in transaction to create ReductionRun and related records, error: %s",
+                               str(err))
             raise
 
         try:
             message = self.create_run_variables(reduction_run, message, instrument)
-        except IntegrityError as err:
-            # couldn't save the state in the database properly - mark the run as errored
-            err_msg = "Encountered error in transaction to save RunVariables, error: %s", str(err)
-            self._logger.error(err_msg)
-            message.message = err_msg
-            self.reduction_error(reduction_run, message)
+            self.send_message_onwards(reduction_run, message, instrument)
+        except Exception as err:
+            self._handle_error(reduction_run, message, err)
+            raise
 
-        self.send_message_onwards(reduction_run, message, instrument)
+    def _handle_error(self, reduction_run, message, err):
+        # couldn't save the state in the database properly - mark the run as errored
+        err_msg = f"Encountered error in transaction to save RunVariables, error: {str(err)}"
+        self._logger.error(err_msg)
+        message.message = err_msg
+        self.reduction_error(reduction_run, message)
 
     @transaction.atomic
     def create_run_records(self, message: Message):
@@ -110,21 +92,13 @@ class HandleMessage:
         script = ReductionScript(instrument.name)
         script_text = script.text()
         # Make the new reduction run with the information collected so far
-        # and add it into the database
         reduction_run = db_records.create_reduction_run_record(experiment=experiment,
                                                                instrument=instrument,
                                                                message=message,
                                                                run_version=run_version,
                                                                script_text=script_text,
                                                                status=self._utils.status.get_queued())
-        self.safe_save(reduction_run)
-        # if the script text is empty then send to error queue, but do it after we've
-        # made the ReductionRun otherwise we can't display the error on the web app
-        if script_text == "":
-            raise InvalidStateException("Script text for current instrument is null", reduction_run)
-
-        # activate instrument if script was found
-        instrument = self.activate_db_inst(instrument)
+        reduction_run.save()
 
         # Create a new data location entry which has a foreign key linking it to the current
         # reduction run. The file path itself will point to a datafile
@@ -132,7 +106,7 @@ class HandleMessage:
         # TODO figure out whether we only use this for showing the ReductionLocation line in the web app
         # TODO this should probably be part of the ReductionRun rather than the huge script text!
         data_location = self.data_model.DataLocation(file_path=message.data, reduction_run_id=reduction_run.id)
-        self.safe_save(data_location)
+        data_location.save()
 
         return reduction_run, message, instrument
 
@@ -142,7 +116,7 @@ class HandleMessage:
         """
         # Create all of the variables for the run that are described in it's reduce_vars.py
         self._logger.info('Creating variables for run')
-        variables = self._utils.instrument_variable.create_run_variables(reduction_run)
+        variables = self.instrument_variable.create_run_variables(reduction_run)
         if not variables:
             self._logger.warning("No instrument variables found on %s for run %s", instrument.name, message.run_number)
 
@@ -150,38 +124,29 @@ class HandleMessage:
         message.reduction_arguments = self._utils.get_script_arguments(variables)
         return message
 
-    def safe_save(self, obj):
-        """
-        Save objects with a transaction, if an integrity error is encountered the handling
-        raises the exception and stops processing
-        """
-        try:
-            with transaction.atomic():
-                return obj.save()
-        except IntegrityError as err:
-            # couldn't save the state in the database
-            self._logger.error("Encountered error in transaction, error: %s", str(err))
-            raise
-
     def send_message_onwards(self, reduction_run, message: Message, instrument):
         """
         Sends the message onwards, either for processing, if validation is OK and instrument isn't paused
         or skips it if either of those is true.
         """
-        skip_reason = self.should_skip(message, instrument)
+        # activate instrument if script was found
+        skip_reason = self.should_skip(reduction_run, message, instrument)
         if skip_reason is not None:
             message.message = skip_reason
             self.reduction_skipped(reduction_run, message)
         else:
+            instrument = self.activate_db_inst(instrument)
             self.do_reduction(reduction_run, message)
 
     @staticmethod
-    def should_skip(message: Message, instrument) -> Optional[str]:
+    def should_skip(reduction_run, message: Message, instrument) -> Optional[str]:
         """
         Determines whether the processing should be skippped.
 
         The run will be skipped if the message validation fails or if the instrument is paused
         """
+        if reduction_run.script == "":
+            return "Script text for current instrument is empty"
         try:
             message.validate("/queue/DataReady")
         except RuntimeError as validation_err:
@@ -226,7 +191,7 @@ class HandleMessage:
         self._logger.info("Run %s has started reduction", message.run_number)
         reduction_run.status = self._utils.status.get_processing()
         reduction_run.started = datetime.datetime.utcnow()
-        self.safe_save(reduction_run)
+        reduction_run.save()
 
     @transaction.atomic
     def reduction_complete(self, reduction_run, message: Message):
@@ -241,8 +206,8 @@ class HandleMessage:
         if message.reduction_data is not None:
             reduction_location = self.data_model.ReductionLocation(file_path=message.reduction_data,
                                                                    reduction_run=reduction_run)
-            self.safe_save(reduction_location)
-        self.safe_save(reduction_run)
+            reduction_location.save()
+        reduction_run.save()
 
     def reduction_skipped(self, reduction_run, message: Message):
         """
@@ -256,7 +221,7 @@ class HandleMessage:
             self._logger.info("Run %s has been skipped - No error message was found", message.run_number)
 
         self._common_reduction_run_update(reduction_run, self._utils.status.get_skipped(), message)
-        self.safe_save(reduction_run)
+        reduction_run.save()
 
     def reduction_error(self, reduction_run, message: Message):
         """
@@ -269,7 +234,7 @@ class HandleMessage:
             self._logger.info("Run %s has encountered an error - No error message was found", message.run_number)
 
         self._common_reduction_run_update(reduction_run, self._utils.status.get_error(), message)
-        self.safe_save(reduction_run)
+        reduction_run.save()
 
     @staticmethod
     def _common_reduction_run_update(reduction_run, status, message):

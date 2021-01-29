@@ -39,3 +39,6 @@ def import_module(script_path):
     except SyntaxError:
         log_error_and_notify("Syntax error in reduction script %s" % script_path)
         raise
+    except FileNotFoundError as err:
+        log_error_and_notify("Reduction script not found at %s" % err.filename)
+        raise

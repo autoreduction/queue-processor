@@ -9,20 +9,19 @@
 Contains various Utility classes for accessing the DB / message queue
 which is used by the message handler
 """
-from typing import NamedTuple
 
 from .queueproc_utils.instrument_variable_utils import InstrumentVariablesUtils
 from .queueproc_utils.status_utils import StatusUtils
 from .queueproc_utils.variable_utils import VariableUtils
 
 
-class _UtilsClasses(NamedTuple):
+class UtilsClasses:
     """
     Holds various util classes used by the Queue Processor, this can
     be replaced with a mock object at test time if required.
     """
-    status = StatusUtils()
-    instrument_variable = InstrumentVariablesUtils()
+    def __init__(self):
+        self.status = StatusUtils()
 
     @staticmethod
     def get_script_arguments(run_variables):
