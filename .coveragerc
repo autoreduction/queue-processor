@@ -2,6 +2,8 @@
 branch = True
 omit = 
     webtests/*
+    WebApp/autoreduce_webapp/reduction_viewer/migrations/*
+    WebApp/autoreduce_webapp/reduction_variables/migrations/*
     # Requires external deps
     */virtualenv/*
     *.so
