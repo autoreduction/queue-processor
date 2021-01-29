@@ -9,10 +9,11 @@
 Contains various Utility classes for accessing the DB / message queue
 which is used by the message handler
 """
-from .queueproc_utils.reduction_run_utils import ReductionRunUtils
+from typing import NamedTuple
+
 from .queueproc_utils.instrument_variable_utils import InstrumentVariablesUtils
 from .queueproc_utils.status_utils import StatusUtils
-from typing import NamedTuple
+from .queueproc_utils.variable_utils import VariableUtils
 
 
 class _UtilsClasses(NamedTuple):
@@ -22,4 +23,22 @@ class _UtilsClasses(NamedTuple):
     """
     status = StatusUtils()
     instrument_variable = InstrumentVariablesUtils()
-    reduction_run = ReductionRunUtils()
+
+    @staticmethod
+    def get_script_arguments(run_variables):
+        """
+        Converts the RunVariables that have been created into Python kwargs which can
+        be passed as the script parameters at runtime.
+        """
+        standard_vars, advanced_vars = {}, {}
+        for run_variable in run_variables:
+            variable = run_variable.variable
+            value = VariableUtils.convert_variable_to_type(variable.value, variable.type)
+            if variable.is_advanced:
+                advanced_vars[variable.name] = value
+            else:
+                standard_vars[variable.name] = value
+
+        arguments = {'standard_vars': standard_vars, 'advanced_vars': advanced_vars}
+
+        return arguments
