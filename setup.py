@@ -46,7 +46,7 @@ setup_requires = ['attrs==20.3.0',
                   'service_identity==18.1.0',
                   'SQLAlchemy==1.3.22',
                   'stomp.py==6.1.0',
-                  'suds-py3==1.4.3.0',
+                  'suds-py3==1.4.4.1',
                   'Twisted==20.3.0',
                   'PyYAML==5.4.1']
 
