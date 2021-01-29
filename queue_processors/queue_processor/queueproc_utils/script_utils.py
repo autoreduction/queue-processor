@@ -8,10 +8,8 @@
 Module that provides script utils
 """
 import importlib.util as imp
-import io
 import os
 
-import chardet
 from queue_processors.queue_processor.queueproc_utils.error_message_utils import log_error_and_notify
 from queue_processors.queue_processor.settings import REDUCTION_DIRECTORY
 
