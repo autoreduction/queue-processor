@@ -91,7 +91,7 @@ class TestInstrumentVariableUtils(unittest.TestCase):
         reduction_run.save()
 
         before_creating_variables = self.variable_model.InstrumentVariable.objects.count()
-        new_variables = InstrumentVariablesUtils().create_variables_for_run(reduction_run)
+        new_variables = InstrumentVariablesUtils().create_run_variables(reduction_run)
         after_creating_variables = self.variable_model.InstrumentVariable.objects.count()
 
         self.assertGreater(after_creating_variables, before_creating_variables)
@@ -118,9 +118,9 @@ class TestInstrumentVariableUtils(unittest.TestCase):
         reduction_run.save()
 
         before_creating_variables = self.variable_model.InstrumentVariable.objects.count()
-        new_variables = InstrumentVariablesUtils().create_variables_for_run(reduction_run)
+        new_variables = InstrumentVariablesUtils().create_run_variables(reduction_run)
         after_creating_variables = self.variable_model.InstrumentVariable.objects.count()
-        new_variables_again = InstrumentVariablesUtils().create_variables_for_run(reduction_run)
+        new_variables_again = InstrumentVariablesUtils().create_run_variables(reduction_run)
         after_creating_variables_again = self.variable_model.InstrumentVariable.objects.count()
 
         self.assertGreater(after_creating_variables, before_creating_variables)
@@ -189,7 +189,7 @@ def test_imported_module_variable_dict_changed(data_model, variable_model, type_
 
     with patch("queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.import_module",
                return_value=FakeModule()):
-        new_variables = InstrumentVariablesUtils().create_variables_for_run(reduction_run)
+        new_variables = InstrumentVariablesUtils().create_run_variables(reduction_run)
 
     after_creating_variables = variable_model.InstrumentVariable.objects.count()
     assert after_creating_variables > before_creating_variables
@@ -200,7 +200,7 @@ def test_imported_module_variable_dict_changed(data_model, variable_model, type_
         # MODIFIES an advanced value so that they no longer match
         with patch("queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.import_module",
                    return_value=FakeModule(**type_of_variable)):
-            new_variables_again = InstrumentVariablesUtils().create_variables_for_run(reduction_run)
+            new_variables_again = InstrumentVariablesUtils().create_run_variables(reduction_run)
 
         after_creating_variables_again = variable_model.InstrumentVariable.objects.count()
 
@@ -243,7 +243,7 @@ def test_imported_module_one_dict_gets_a_new_variable(data_model, variable_model
 
     with patch("queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.import_module",
                return_value=FakeModule()):
-        new_variables = InstrumentVariablesUtils().create_variables_for_run(reduction_run)
+        new_variables = InstrumentVariablesUtils().create_run_variables(reduction_run)
 
     after_creating_variables = variable_model.InstrumentVariable.objects.count()
     assert after_creating_variables > before_creating_variables
@@ -254,7 +254,7 @@ def test_imported_module_one_dict_gets_a_new_variable(data_model, variable_model
         # MODIFIES an advanced value so that they no longer match
         with patch("queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.import_module",
                    return_value=FakeModule(**type_of_variable)):
-            new_variables_again = InstrumentVariablesUtils().create_variables_for_run(reduction_run)
+            new_variables_again = InstrumentVariablesUtils().create_run_variables(reduction_run)
 
         after_creating_variables_again = variable_model.InstrumentVariable.objects.count()
 
@@ -299,7 +299,7 @@ def test_imported_module_one_dict_loses_a_new_variable(data_model, variable_mode
 
     with patch("queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.import_module",
                return_value=FakeModule(**type_of_variable)):
-        new_variables = InstrumentVariablesUtils().create_variables_for_run(reduction_run)
+        new_variables = InstrumentVariablesUtils().create_run_variables(reduction_run)
 
     after_creating_variables = variable_model.InstrumentVariable.objects.count()
     assert after_creating_variables > before_creating_variables
@@ -310,7 +310,7 @@ def test_imported_module_one_dict_loses_a_new_variable(data_model, variable_mode
         # MODIFIES an advanced value so that they no longer match
         with patch("queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.import_module",
                    return_value=FakeModule()):
-            new_variables_again = InstrumentVariablesUtils().create_variables_for_run(reduction_run)
+            new_variables_again = InstrumentVariablesUtils().create_run_variables(reduction_run)
 
         after_creating_variables_again = variable_model.InstrumentVariable.objects.count()
 
