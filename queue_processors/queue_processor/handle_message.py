@@ -234,9 +234,9 @@ class HandleMessage:
         self._common_reduction_run_update(reduction_run, self._utils.status.get_completed(), message)
 
         if message.reduction_data is not None:
-            for location in message.reduction_data:
-                reduction_location = self.data_model.ReductionLocation(file_path=location, reduction_run=reduction_run)
-                self.safe_save(reduction_location)
+            reduction_location = self.data_model.ReductionLocation(file_path=message.reduction_data,
+                                                                   reduction_run=reduction_run)
+            self.safe_save(reduction_location)
         self.safe_save(reduction_run)
 
     def reduction_skipped(self, reduction_run, message: Message):
