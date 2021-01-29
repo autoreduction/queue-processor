@@ -147,7 +147,7 @@ class ReductionRunner:
 
 def main():
     """ Main method. """
-    data, temp_output_file = sys.argv[1:3]  # pylint: disable=unbalanced-tuple-unpacking
+    data, temp_output_file = sys.argv[1], sys.argv[2]
     try:
         message = Message()
         message.populate(data)
