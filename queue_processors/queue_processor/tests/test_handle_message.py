@@ -10,27 +10,25 @@ Tests message handling for the queue processor
 """
 
 from functools import partial
-import json
 import os
-from queue_processors.queue_processor.queueproc_utils.tests.module_to_import import TEST_DICTIONARY
 import random
 import unittest
 from unittest import mock
 from unittest.mock import Mock, patch
 import tempfile
 from django.db.utils import IntegrityError
+from parameterized import parameterized
 
 import model.database.access
 from model.database.records import create_reduction_run_record
 from model.message.message import Message
-from parameterized import parameterized
-from queue_processors.queue_processor._utils_classes import UtilsClasses
 from queue_processors.queue_processor.handle_message import HandleMessage
+from queue_processors.queue_processor.queueproc_utils.status_utils import StatusUtils
 from queue_processors.queue_processor.queue_listener import QueueListener
 from queue_processors.queue_processor.queueproc_utils.tests.test_instrument_variable_utils import \
     FakeModule
 
-utils = UtilsClasses()
+STATUS = StatusUtils()
 
 TEST_REDUCE_VARS_CONTENT = """
 standard_vars = {
@@ -65,7 +63,6 @@ class TestHandleMessage(unittest.TestCase):
     def setUp(self):
         self.mocked_client = mock.Mock(spec=QueueListener)
 
-        self._utils = UtilsClasses()
         self.msg = Message()
         self.msg.populate({
             "run_number": 7654321,
@@ -98,8 +95,8 @@ class TestHandleMessage(unittest.TestCase):
         self.reduction_run.delete()
 
     @parameterized.expand([
-        ["reduction_error", utils.status.get_error()],
-        ["reduction_skipped", utils.status.get_skipped()],
+        ["reduction_error", STATUS.get_error()],
+        ["reduction_skipped", STATUS.get_skipped()],
     ])
     def test_reduction_with_message(self, callable, expected_status):
         """
@@ -114,8 +111,8 @@ class TestHandleMessage(unittest.TestCase):
         assert self.mocked_logger.info.call_args[0][1] == self.msg.run_number
 
     @parameterized.expand([
-        ["reduction_error", utils.status.get_error()],
-        ["reduction_skipped", utils.status.get_skipped()],
+        ["reduction_error", STATUS.get_error()],
+        ["reduction_skipped", STATUS.get_skipped()],
     ])
     def test_reduction_without_message(self, callable, expected_status):
         """
@@ -136,7 +133,7 @@ class TestHandleMessage(unittest.TestCase):
 
         assert self.reduction_run.started is not None
         assert self.reduction_run.finished is None
-        assert self.reduction_run.status == utils.status.get_processing()
+        assert self.reduction_run.status == STATUS.get_processing()
         self.mocked_logger.info.assert_called_once()
 
     def test_reduction_complete(self):
@@ -146,7 +143,7 @@ class TestHandleMessage(unittest.TestCase):
         self.mocked_logger.info.assert_called_once()
 
         assert self.reduction_run.finished is not None
-        assert self.reduction_run.status == utils.status.get_completed()
+        assert self.reduction_run.status == STATUS.get_completed()
         self.mocked_logger.info.assert_called_once()
         assert self.reduction_run.reduction_location.count() == 0
 
@@ -156,7 +153,7 @@ class TestHandleMessage(unittest.TestCase):
         self.mocked_logger.info.assert_called_once()
 
         assert self.reduction_run.finished is not None
-        assert self.reduction_run.status == utils.status.get_completed()
+        assert self.reduction_run.status == STATUS.get_completed()
         self.mocked_logger.info.assert_called_once()
 
         assert self.reduction_run.reduction_location.first().file_path == "/path/1"
@@ -166,13 +163,13 @@ class TestHandleMessage(unittest.TestCase):
         rpm.return_value.run = self.do_post_started_assertions
 
         self.handler.do_reduction(self.reduction_run, self.msg)
-        assert self.reduction_run.status == utils.status.get_completed()
+        assert self.reduction_run.status == STATUS.get_completed()
         assert self.reduction_run.started is not None
         assert self.reduction_run.finished is not None
         assert self.reduction_run.reduction_location.first().file_path == "/path/1"
 
     def do_post_started_assertions(self, expected_info_calls=1):
-        assert self.reduction_run.status == utils.status.get_processing()
+        assert self.reduction_run.status == STATUS.get_processing()
         assert self.reduction_run.started is not None
         assert self.reduction_run.finished is None
         assert self.mocked_logger.info.call_count == expected_info_calls
@@ -188,7 +185,7 @@ class TestHandleMessage(unittest.TestCase):
         rpm.return_value.run = self.do_post_started_assertions
 
         self.handler.do_reduction(self.reduction_run, self.msg)
-        assert self.reduction_run.status == utils.status.get_error()
+        assert self.reduction_run.status == STATUS.get_error()
         assert self.reduction_run.started is not None
         assert self.reduction_run.finished is not None
         assert self.reduction_run.message == "Something failed"
@@ -243,7 +240,7 @@ class TestHandleMessage(unittest.TestCase):
 
         self.handler.send_message_onwards(self.reduction_run, self.msg, self.instrument)
 
-        assert self.reduction_run.status == utils.status.get_completed()
+        assert self.reduction_run.status == STATUS.get_completed()
         assert self.instrument.is_active
 
     @patch("queue_processors.queue_processor.handle_message.ReductionProcessManager")
@@ -256,7 +253,7 @@ class TestHandleMessage(unittest.TestCase):
         self.handler.send_message_onwards(self.reduction_run, self.msg, self.instrument)
 
         rpm.return_value.run.assert_not_called()
-        assert self.reduction_run.status == utils.status.get_skipped()
+        assert self.reduction_run.status == STATUS.get_skipped()
         assert "Validation error" in self.reduction_run.message
 
     @patch("queue_processors.queue_processor.handle_message.ReductionScript")
@@ -279,7 +276,7 @@ class TestHandleMessage(unittest.TestCase):
             assert instrument.is_active
             assert reduction_run.script == "print(123)"
             assert reduction_run.data_location.first().file_path == message.data
-            assert reduction_run.status == utils.status.get_queued()
+            assert reduction_run.status == STATUS.get_queued()
 
         for obj in db_objects_to_delete:
             obj.delete()
@@ -318,7 +315,7 @@ class TestHandleMessage(unittest.TestCase):
             self.handler.data_ready(self.msg)
         assert self.mocked_logger.info.call_count == 2
         self.mocked_logger.error.assert_called_once()
-        assert self.reduction_run.status == utils.status.get_error()
+        assert self.reduction_run.status == STATUS.get_error()
         assert "Encountered error in transaction to save RunVariables" in self.reduction_run.message
 
     def test_data_ready_no_reduce_vars(self):
@@ -327,7 +324,7 @@ class TestHandleMessage(unittest.TestCase):
             self.handler.data_ready(self.msg)
         assert self.mocked_logger.info.call_count == 3
         self.mocked_logger.error.assert_called_once()
-        assert self.reduction_run.status == utils.status.get_error()
+        assert self.reduction_run.status == STATUS.get_error()
         assert "Encountered error in transaction to save RunVariables" in self.reduction_run.message
 
     @patch('queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.reduction_script_location')
@@ -343,7 +340,7 @@ class TestHandleMessage(unittest.TestCase):
             self.handler.data_ready(self.msg)
             assert self.mocked_logger.info.call_count == 1
             assert self.reduction_run.finished is not None
-            assert self.reduction_run.status == utils.status.get_completed()
+            assert self.reduction_run.status == STATUS.get_completed()
 
     @patch('queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.reduction_script_location')
     @patch("queue_processors.queue_processor.handle_message.ReductionProcessManager")
@@ -358,7 +355,7 @@ class TestHandleMessage(unittest.TestCase):
             self.handler.data_ready(self.msg)
             assert self.mocked_logger.info.call_count == 1
             assert self.reduction_run.finished is not None
-            assert self.reduction_run.status == utils.status.get_error()
+            assert self.reduction_run.status == STATUS.get_error()
             assert self.reduction_run.message == "I am error"
 
 

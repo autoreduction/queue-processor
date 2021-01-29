@@ -14,6 +14,7 @@ update relevant DB fields or logging out the status.
 """
 import datetime
 import logging
+from queue_processors.queue_processor.queueproc_utils.variable_utils import VariableUtils
 from typing import Optional
 from django.db import transaction
 
@@ -21,10 +22,10 @@ import model.database.records as db_records
 from model.database import access as db_access
 from model.message.message import Message
 
-from queue_processors.queue_processor._utils_classes import UtilsClasses
 from queue_processors.queue_processor.reduction_runner.reduction_process_manager import ReductionProcessManager
 from queue_processors.queue_processor.reduction_runner.reduction_service import ReductionScript
 from queue_processors.queue_processor.queueproc_utils.instrument_variable_utils import InstrumentVariablesUtils
+from queue_processors.queue_processor.queueproc_utils.status_utils import StatusUtils
 
 
 class HandleMessage:
@@ -36,7 +37,7 @@ class HandleMessage:
     # We cannot type hint queue listener without introducing a circular dep.
     def __init__(self, queue_listener):
         self._client = queue_listener
-        self._utils = UtilsClasses()
+        self.status = StatusUtils()
         self.instrument_variable = InstrumentVariablesUtils()
 
         self._logger = logging.getLogger("handle_queue_message")
@@ -97,7 +98,7 @@ class HandleMessage:
                                                                message=message,
                                                                run_version=run_version,
                                                                script_text=script_text,
-                                                               status=self._utils.status.get_queued())
+                                                               status=self.status.get_queued())
         reduction_run.save()
 
         # Create a new data location entry which has a foreign key linking it to the current
@@ -121,7 +122,7 @@ class HandleMessage:
             self._logger.warning("No instrument variables found on %s for run %s", instrument.name, message.run_number)
 
         self._logger.info('Getting script and arguments')
-        message.reduction_arguments = self._utils.get_script_arguments(variables)
+        message.reduction_arguments = self.get_script_arguments(variables)
         return message
 
     def send_message_onwards(self, reduction_run, message: Message, instrument):
@@ -189,7 +190,7 @@ class HandleMessage:
         Updates the run as started in the database.
         """
         self._logger.info("Run %s has started reduction", message.run_number)
-        reduction_run.status = self._utils.status.get_processing()
+        reduction_run.status = self.status.get_processing()
         reduction_run.started = datetime.datetime.utcnow()
         reduction_run.save()
 
@@ -201,7 +202,7 @@ class HandleMessage:
         """
         self._logger.info("Run %s has completed reduction", message.run_number)
 
-        self._common_reduction_run_update(reduction_run, self._utils.status.get_completed(), message)
+        self._common_reduction_run_update(reduction_run, self.status.get_completed(), message)
 
         if message.reduction_data is not None:
             reduction_location = self.data_model.ReductionLocation(file_path=message.reduction_data,
@@ -220,7 +221,7 @@ class HandleMessage:
         else:
             self._logger.info("Run %s has been skipped - No error message was found", message.run_number)
 
-        self._common_reduction_run_update(reduction_run, self._utils.status.get_skipped(), message)
+        self._common_reduction_run_update(reduction_run, self.status.get_skipped(), message)
         reduction_run.save()
 
     def reduction_error(self, reduction_run, message: Message):
@@ -233,7 +234,7 @@ class HandleMessage:
         else:
             self._logger.info("Run %s has encountered an error - No error message was found", message.run_number)
 
-        self._common_reduction_run_update(reduction_run, self._utils.status.get_error(), message)
+        self._common_reduction_run_update(reduction_run, self.status.get_error(), message)
         reduction_run.save()
 
     @staticmethod
@@ -243,3 +244,22 @@ class HandleMessage:
         reduction_run.message = message.message
         reduction_run.reduction_log = message.reduction_log
         reduction_run.admin_log = message.admin_log
+
+    @staticmethod
+    def get_script_arguments(run_variables):
+        """
+        Converts the RunVariables that have been created into Python kwargs which can
+        be passed as the script parameters at runtime.
+        """
+        standard_vars, advanced_vars = {}, {}
+        for run_variable in run_variables:
+            variable = run_variable.variable
+            value = VariableUtils.convert_variable_to_type(variable.value, variable.type)
+            if variable.is_advanced:
+                advanced_vars[variable.name] = value
+            else:
+                standard_vars[variable.name] = value
+
+        arguments = {'standard_vars': standard_vars, 'advanced_vars': advanced_vars}
+
+        return arguments
