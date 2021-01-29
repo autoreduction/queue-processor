@@ -9,16 +9,18 @@
 Tests message handling for the queue processor
 """
 
+import random
 import unittest
 from unittest import mock
-from unittest.mock import patch
-from parameterized import parameterized
+from unittest.mock import Mock, patch
 
 import model.database.access
 from model.database.records import create_reduction_run_record
 from model.message.message import Message
+from parameterized import parameterized
 from queue_processors.queue_processor._utils_classes import _UtilsClasses
 from queue_processors.queue_processor.handle_message import HandleMessage
+from queue_processors.queue_processor.handling_exceptions import InvalidStateException
 from queue_processors.queue_processor.queue_listener import QueueListener
 
 utils = _UtilsClasses()
@@ -45,7 +47,8 @@ class TestHandleMessage(unittest.TestCase):
             "run_version": 0,
             "reduction_data": "/path/1",
             "started_by": -1,
-            "data": "/path"
+            "data": "/path",
+            "instrument": "ARMI"  # Autoreduction Mock Instrument
         })
         with patch("logging.getLogger") as patched_logger:
             self.handler = HandleMessage(self.mocked_client)
@@ -55,8 +58,8 @@ class TestHandleMessage(unittest.TestCase):
         self.data_model = db_handle.data_model
         self.variable_model = db_handle.variable_model
 
-        self.experiment = self.data_model.Experiment.objects.create(reference_number=1231231)
-        self.instrument = self.data_model.Instrument.objects.create(name="MyInstrument", is_active=1, is_paused=0)
+        self.experiment, _ = self.data_model.Experiment.objects.get_or_create(reference_number=1231231)
+        self.instrument, _ = self.data_model.Instrument.objects.get_or_create(name="ARMI", is_active=1, is_paused=0)
         status = self.data_model.Status.objects.get(value="q")
         fake_script_text = "scripttext"
         self.reduction_run = create_reduction_run_record(self.experiment, self.instrument, FakeMessage(), 0,
@@ -174,6 +177,9 @@ class TestHandleMessage(unittest.TestCase):
         assert self.reduction_run.message == "Something failed"
 
     def test_activate_db_inst(self):
+        """
+        Tests whether the function enables the instrument
+        """
         self.instrument.is_active = False
         self.instrument.save()
 
@@ -225,6 +231,48 @@ class TestHandleMessage(unittest.TestCase):
         rpm.return_value.run.assert_not_called()
         assert self.reduction_run.status == utils.status.get_skipped()
         assert "Validation error" in self.reduction_run.message
+
+    def test_create_run_records_reduction_script_text_empty_raises_InvalidStateException(self):
+        self.instrument.is_active = False
+        self.msg.run_number = random.randint(1000000, 10000000)
+        with self.assertRaises(InvalidStateException) as context:
+            self.handler.create_run_records(self.msg)
+
+        # retrieves the ReductionRun passed in the exception
+        reduction_run = context.exception.args[0]
+        assert reduction_run.run_number == self.msg.run_number
+        assert reduction_run.experiment.reference_number == self.msg.rb_number
+        assert reduction_run.run_version == 0
+        assert not self.instrument.is_active
+
+        reduction_run.delete()
+
+    @patch("queue_processors.queue_processor.handle_message.ReductionScript")
+    def test_create_run_records_multiple_versions(self, reduction_script: Mock):
+        self.instrument.is_active = False
+
+        reduction_script.return_value.text.return_value = "print(123)"
+        self.msg.run_number = random.randint(1000000, 10000000)
+        db_objects_to_delete = []
+        for i in range(5):
+            reduction_run, message, instrument = self.handler.create_run_records(self.msg)
+            db_objects_to_delete.append(reduction_run)
+
+            assert reduction_run.run_number == self.msg.run_number
+            assert reduction_run.experiment.reference_number == self.msg.rb_number
+            assert reduction_run.run_version == i
+            assert message.run_version == i
+            assert instrument == self.instrument
+            assert instrument.name == self.msg.instrument
+            assert instrument.is_active
+            assert reduction_run.script == "print(123)"
+            assert reduction_run.data_location.first().file_path == message.data
+            assert reduction_run.status == utils.status.get_queued()
+
+        for obj in db_objects_to_delete:
+            obj.delete()
+
+    def test_create_run_variables(self):
 
 
 # TODO test that instrument is not enabled when it's reduce.py script is missing

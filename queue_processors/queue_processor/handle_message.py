@@ -75,7 +75,7 @@ class HandleMessage:
         self._logger.info("Data ready for processing run %s on %s", message.run_number, message.instrument)
 
         try:
-            reduction_run, message, instrument = self.create_run_record(message)
+            reduction_run, message, instrument = self.create_run_records(message)
         except InvalidStateException as err:
             # TODO consider delegating this skip to send_message_onwards
             message.message = str(err)
@@ -97,7 +97,8 @@ class HandleMessage:
 
         self.send_message_onwards(reduction_run, message, instrument)
 
-    def create_run_record(self, message: Message):
+    @transaction.atomic
+    def create_run_records(self, message: Message):
         """
         Creates or gets the necessary records to construct a ReductionRun
         """
@@ -136,7 +137,7 @@ class HandleMessage:
 
         return reduction_run, message, instrument
 
-    def create_run_variables(self, reduction_run, message, instrument):
+    def create_run_variables(self, reduction_run, message: Message, instrument):
         """
         Creates the RunVariables for this ReductionRun
         """
