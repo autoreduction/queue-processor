@@ -43,7 +43,6 @@ class ReductionRunner:
             self.instrument = self.validate_input('instrument').upper()
             self.proposal = str(int(self.validate_input('rb_number')))  # Integer-string validation
             self.run_number = str(int(self.validate_input('run_number')))
-            self.reduction_script = self.validate_input('reduction_script')
             self.reduction_arguments = self.validate_input('reduction_arguments')
         except ValueError:
             logger.info('JSON data error', exc_info=True)
