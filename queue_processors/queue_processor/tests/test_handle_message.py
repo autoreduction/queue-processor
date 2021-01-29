@@ -9,11 +9,10 @@
 Tests message handling for the queue processor
 """
 
-import pytest
-from queue_processors.queue_processor.queueproc_utils.tests.test_instrument_variable_utils import FakeModule
 import unittest
 from unittest import mock
 from unittest.mock import patch
+from parameterized import parameterized
 
 import model.database.access
 from model.database.records import create_reduction_run_record
@@ -21,7 +20,6 @@ from model.message.message import Message
 from queue_processors.queue_processor._utils_classes import _UtilsClasses
 from queue_processors.queue_processor.handle_message import HandleMessage
 from queue_processors.queue_processor.queue_listener import QueueListener
-from parameterized import parameterized
 
 utils = _UtilsClasses()
 
@@ -32,25 +30,23 @@ class FakeMessage:
     message = "I am a message"
 
 
-# @patch("queue_processors.queue_processor.handle_message.db_access", spec=access)
 class TestHandleMessage(unittest.TestCase):
     """
     Directly tests the message handling classes
     """
-
-    # pylint: disable=arguments-differ
-    # @patch("queue_processors.queue_processor.handle_message._UtilsClasses")
-    # @patch("queue_processors.queue_processor.handle_message.db_records")
-    # @patch("logging.getLogger")
-    # def setUp(self, log_const, db_records, util_const):
     def setUp(self):
-        # self.db_records = db_records
         self.mocked_client = mock.Mock(spec=QueueListener)
-        # self.mocked_utils = mock.MagicMock(spec=_UtilsClasses)
-        # util_const.return_value = self.mocked_utils
 
         self._utils = _UtilsClasses()
-
+        self.msg = Message()
+        self.msg.populate({
+            "run_number": 7654321,
+            "rb_number": 1234567,
+            "run_version": 0,
+            "reduction_data": "/path/1",
+            "started_by": -1,
+            "data": "/path"
+        })
         with patch("logging.getLogger") as patched_logger:
             self.handler = HandleMessage(self.mocked_client)
             self.mocked_logger = patched_logger.return_value
@@ -80,31 +76,13 @@ class TestHandleMessage(unittest.TestCase):
         """
         Tests a reduction error where the message contains an error message
         """
-        msg = Message()
-        msg.populate({"message": "I am a message", "run_number": 7654321})
-        getattr(self.handler, callable)(self.reduction_run, msg)
+        self.msg.message = "I am a message"
+        getattr(self.handler, callable)(self.reduction_run, self.msg)
 
         assert self.reduction_run.status == expected_status
         assert self.reduction_run.message == "I am a message"
         self.mocked_logger.info.assert_called_once()
-        assert self.mocked_logger.info.call_args[0][1] == msg.run_number
-
-    @parameterized.expand([
-        ["reduction_error", utils.status.get_error()],
-        ["reduction_skipped", utils.status.get_skipped()],
-    ])
-    def test_reduction_with_message(self, callable, expected_status):
-        """
-        Tests a reduction error where the message contains an error message
-        """
-        msg = Message()
-        msg.populate({"message": "I am a message", "run_number": 7654321})
-        getattr(self.handler, callable)(self.reduction_run, msg)
-
-        assert self.reduction_run.status == expected_status
-        assert self.reduction_run.message == "I am a message"
-        self.mocked_logger.info.assert_called_once()
-        assert self.mocked_logger.info.call_args[0][1] == msg.run_number
+        assert self.mocked_logger.info.call_args[0][1] == self.msg.run_number
 
     @parameterized.expand([
         ["reduction_error", utils.status.get_error()],
@@ -114,21 +92,17 @@ class TestHandleMessage(unittest.TestCase):
         """
         Tests a reduction error where the message does not contain an error message
         """
-        msg = Message()
-        msg.populate({"run_number": 7654321})
-        getattr(self.handler, callable)(self.reduction_run, msg)
+        getattr(self.handler, callable)(self.reduction_run, self.msg)
 
         assert self.reduction_run.status == expected_status
         self.mocked_logger.info.assert_called_once()
-        assert self.mocked_logger.info.call_args[0][1] == msg.run_number
+        assert self.mocked_logger.info.call_args[0][1] == self.msg.run_number
 
     def test_reduction_started(self):
-        msg = Message()
-        msg.populate({"run_number": 7654321, "rb_number": 1234567, "run_version": 0})
         assert self.reduction_run.started is None
         assert self.reduction_run.finished is None
 
-        self.handler.reduction_started(self.reduction_run, msg)
+        self.handler.reduction_started(self.reduction_run, self.msg)
         self.mocked_logger.info.assert_called_once()
 
         assert self.reduction_run.started is not None
@@ -137,10 +111,8 @@ class TestHandleMessage(unittest.TestCase):
         self.mocked_logger.info.assert_called_once()
 
     def test_reduction_complete(self):
-        msg = Message()
-        msg.populate({"run_number": 7654321, "rb_number": 1234567, "run_version": 0})
         assert self.reduction_run.finished is None
-        self.handler.reduction_complete(self.reduction_run, msg)
+        self.handler.reduction_complete(self.reduction_run, self.msg)
         self.mocked_logger.info.assert_called_once()
 
         assert self.reduction_run.finished is not None
@@ -148,15 +120,8 @@ class TestHandleMessage(unittest.TestCase):
         self.mocked_logger.info.assert_called_once()
 
     def test_reduction_complete_with_reduction_data(self):
-        msg = Message()
-        msg.populate({
-            "run_number": 7654321,
-            "rb_number": 1234567,
-            "run_version": 0,
-            "reduction_data": ["/path/1", "/path/2"]
-        })
         assert self.reduction_run.finished is None
-        self.handler.reduction_complete(self.reduction_run, msg)
+        self.handler.reduction_complete(self.reduction_run, self.msg)
         self.mocked_logger.info.assert_called_once()
 
         assert self.reduction_run.finished is not None
@@ -164,17 +129,8 @@ class TestHandleMessage(unittest.TestCase):
         self.mocked_logger.info.assert_called_once()
 
         assert self.reduction_run.reduction_location.first().file_path == "/path/1"
-        assert self.reduction_run.reduction_location.last().file_path == "/path/2"
 
     def test_do_reduction_success(self):
-        msg = Message()
-        msg.populate({
-            "run_number": 7654321,
-            "rb_number": 1234567,
-            "run_version": 0,
-            "reduction_data": ["/path/1", "/path/2"]
-        })
-
         # a bit of a nasty patch, but everything underneath should be unit tested separately
         with patch("queue_processors.queue_processor.handle_message.ReductionProcessManager") as rpm:
 
@@ -185,46 +141,37 @@ class TestHandleMessage(unittest.TestCase):
                 self.mocked_logger.info.assert_called_once()
                 # reset for follow logger calls
                 self.mocked_logger.info.reset_mock()
-                return msg
+                return self.msg
 
             rpm.return_value.run = do_post_started_assertions
 
-            self.handler.do_reduction(self.reduction_run, msg)
+            self.handler.do_reduction(self.reduction_run, self.msg)
             assert self.reduction_run.status == utils.status.get_completed()
             assert self.reduction_run.started is not None
             assert self.reduction_run.finished is not None
             assert self.reduction_run.reduction_location.first().file_path == "/path/1"
-            assert self.reduction_run.reduction_location.last().file_path == "/path/2"
 
-    def test_do_reduction_fail(self):
-        msg = Message()
-        msg.populate({
-            "run_number": 7654321,
-            "rb_number": 1234567,
-            "run_version": 0,
-            "reduction_data": ["/path/1", "/path/2"],
-            "message": "Something failed"
-        })
+    def do_post_started_assertions(self):
+        assert self.reduction_run.status == utils.status.get_processing()
+        assert self.reduction_run.started is not None
+        assert self.reduction_run.finished is None
+        self.mocked_logger.info.assert_called_once()
+        # reset for follow logger calls
+        self.mocked_logger.info.reset_mock()
+        return self.msg
 
-        # a bit of a nasty patch, but everything underneath should be unit tested separately
-        with patch("queue_processors.queue_processor.handle_message.ReductionProcessManager") as rpm:
+    # a bit of a nasty patch, but everything underneath should be unit tested separately
+    @patch("queue_processors.queue_processor.handle_message.ReductionProcessManager")
+    def test_do_reduction_fail(self, rpm):
+        self.msg.message = "Something failed"
 
-            def do_post_started_assertions():
-                assert self.reduction_run.status == utils.status.get_processing()
-                assert self.reduction_run.started is not None
-                assert self.reduction_run.finished is None
-                self.mocked_logger.info.assert_called_once()
-                # reset for follow logger calls
-                self.mocked_logger.info.reset_mock()
-                return msg
+        rpm.return_value.run = self.do_post_started_assertions
 
-            rpm.return_value.run = do_post_started_assertions
-
-            self.handler.do_reduction(self.reduction_run, msg)
-            assert self.reduction_run.status == utils.status.get_error()
-            assert self.reduction_run.started is not None
-            assert self.reduction_run.finished is not None
-            assert self.reduction_run.message == "Something failed"
+        self.handler.do_reduction(self.reduction_run, self.msg)
+        assert self.reduction_run.status == utils.status.get_error()
+        assert self.reduction_run.started is not None
+        assert self.reduction_run.finished is not None
+        assert self.reduction_run.message == "Something failed"
 
     def test_activate_db_inst(self):
         self.instrument.is_active = False
@@ -233,6 +180,51 @@ class TestHandleMessage(unittest.TestCase):
         self.handler.activate_db_inst(self.instrument)
 
         assert self.instrument.is_active
+
+    def test_should_skip_message_validation_fails(self):
+        """
+        Test should_skip correctly captures validation failing on the message
+        """
+        self.msg.rb_number = 123  # invalid RB number, should be 7 digits
+        assert "Validation error" in self.handler.should_skip(self.msg, self.instrument)
+
+    def test_should_skip_instrument_paused(self):
+        """
+        Test should_skip correctly captures that the instrument is paused
+        """
+        self.instrument.is_paused = True
+
+        assert "is paused" in self.handler.should_skip(self.msg, self.instrument)
+
+    def test_should_skip_doesnt_skip_when_all_is_ok(self):
+        """
+        Test should_skip returns None when all the validation passes
+        """
+        assert self.handler.should_skip(self.msg, self.instrument) is None
+
+    @patch("queue_processors.queue_processor.handle_message.ReductionProcessManager")
+    def test_send_message_onwards_ok(self, rpm):
+        """
+        Test that a run where all is OK is reduced
+        """
+        rpm.return_value.run = self.do_post_started_assertions
+
+        self.handler.send_message_onwards(self.reduction_run, self.msg, self.instrument)
+
+        assert self.reduction_run.status == utils.status.get_completed()
+
+    @patch("queue_processors.queue_processor.handle_message.ReductionProcessManager")
+    def test_send_message_onwards_skip_run(self, rpm):
+        """
+        Test that a run that fails validation is skipped
+        """
+        self.msg.rb_number = 123
+
+        self.handler.send_message_onwards(self.reduction_run, self.msg, self.instrument)
+
+        rpm.return_value.run.assert_not_called()
+        assert self.reduction_run.status == utils.status.get_skipped()
+        assert "Validation error" in self.reduction_run.message
 
 
 # TODO test that instrument is not enabled when it's reduce.py script is missing

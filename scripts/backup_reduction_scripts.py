@@ -7,8 +7,8 @@
 """
 This script is expected to be called by a cronjob daily.
 
-It will traverse all instruments in VALID_INSTRUMENTS, grab reduce.py and reduce_vars.py
-and upload it to the repository.
+It will traverse all instrument folders in the archive (all NDX... folders),
+grab reduce.py and reduce_vars.py and upload it to the repository.
 
 The repository of the STORAGE_DIR needs to be manually configured to point to the correct
 remote - otherwise this script will fail to commit/push.
@@ -46,9 +46,7 @@ REDUCE_FILES_TO_SAVE = ["reduce.py", "reduce_vars.py"]
 # STORAGE_DIR is the git repository dir that has been configured to point to the correct remote
 STORAGE_DIR = Path("~/autoreduction_scripts").expanduser().absolute()
 
-logging.basicConfig(filename=get_log_file('backup_reduction_scripts.log'),
-                    level=logging.INFO,
-                    format=LOG_FORMAT)
+logging.basicConfig(filename=get_log_file('backup_reduction_scripts.log'), level=logging.INFO, format=LOG_FORMAT)
 log = logging.getLogger(__file__)
 log.addHandler(logging.StreamHandler())
 
@@ -118,9 +116,7 @@ def main(args):
             "Please configure it manually before running this script.", str(STORAGE_DIR))
         sys.exit(1)
 
-    for inst in [
-            directory for directory in os.listdir(ISIS_MOUNT_PATH) if directory.startswith("NDX")
-    ]:
+    for inst in [directory for directory in os.listdir(ISIS_MOUNT_PATH) if directory.startswith("NDX")]:
         path = ISIS_MOUNT_PATH / inst / AUTOREDUCTION_PATH
         destination = STORAGE_DIR / inst
 
@@ -133,18 +129,16 @@ def main(args):
                 try:
                     shutil.copy(fullpath, destination, follow_symlinks=True)
                 except OSError as err:
-                    log.error("Could not copy last entry. Error: %s.\n\n %s", str(err),
-                              traceback.format_exc())
+                    log.error("Could not copy last entry. Error: %s.\n\n %s", str(err), traceback.format_exc())
     if not args.dry_run:
         commit_and_push(STORAGE_DIR)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser("Backup reduction scripts")
-    parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Dry run and display all files that will be copied and to where. But do nothing!")
+    parser.add_argument("--dry-run",
+                        action="store_true",
+                        help="Dry run and display all files that will be copied and to where. But do nothing!")
 
     _args = parser.parse_args()
 

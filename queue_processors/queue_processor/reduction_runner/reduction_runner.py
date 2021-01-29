@@ -111,7 +111,7 @@ class ReductionRunner:
             temp_dir = TemporaryReductionDirectory(self.proposal, self.run_number)
             reduction_log_stream = reduce(reduction_dir, temp_dir, datafile, reduction_script)
             self.message.reduction_log = reduction_log_stream.getvalue()
-            self.message.reduction_data = [str(reduction_dir.path)]
+            self.message.reduction_data = str(reduction_dir.path)
 
         except DatafileError as exp:
             logger.error("Problem reading datafile: %s", self.data_file)
