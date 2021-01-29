@@ -171,21 +171,29 @@ class HandleMessage:
         Sends the message onwards, either for processing, if validation is OK and instrument isn't paused
         or skips it if either of those is true.
         """
+        skip_reason = self.should_skip(message, instrument)
+        if skip_reason is not None:
+            message.message = skip_reason
+            self.reduction_skipped(reduction_run, message)
+        else:
+            self.do_reduction(reduction_run, message)
+
+    @staticmethod
+    def should_skip(message: Message, instrument) -> Optional[str]:
+        """
+        Determines whether the processing should be skippped.
+
+        The run will be skipped if the message validation fails or if the instrument is paused
+        """
         try:
             message.validate("/queue/DataReady")
         except RuntimeError as validation_err:
-            self._logger.error("Validation error from handler: %s", str(validation_err))
-            self.reduction_skipped(reduction_run, message)
-            return
+            return f"Validation error from handler: {str(validation_err)}"
 
         if instrument.is_paused:
-            self._logger.info("Run %s has been skipped because the instrument %s is paused", message.run_number,
-                              instrument.name)
-            self.reduction_skipped(reduction_run, message)
-        else:
-            # success branch
-            self._logger.info("Run %s ready for reduction", message.run_number)
-            self.do_reduction(reduction_run, message)
+            return f"Run {message.run_number} has been skipped because the instrument {instrument.name} is paused"
+
+        return None
 
     def do_reduction(self, reduction_run, message: Message):
         """
