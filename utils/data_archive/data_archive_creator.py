@@ -40,7 +40,7 @@ import os
 import shutil
 import time
 
-from utils.settings import VALID_INSTRUMENTS
+VALID_INSTRUMENTS = ['ENGINX', 'GEM', 'HRPD', 'MAPS', 'MARI', 'MUSR', 'OSIRIS', 'POLARIS', 'POLREF', 'WISH']
 
 GENERIC_CYCLE_PATH = os.path.join('NDX{}', 'Instrument', 'data', 'cycle_{}_{}')
 
@@ -113,8 +113,7 @@ class DataArchiveCreator:
             os.makedirs(data_dir_path.format(instrument))
             os.makedirs(jrnl_dir_path.format(instrument))
             os.makedirs(auto_dir_path.format(instrument))
-            self._make_cycle_directories(start_year, end_year, current_cycle,
-                                         inst_dir_path.format(instrument))
+            self._make_cycle_directories(start_year, end_year, current_cycle, inst_dir_path.format(instrument))
 
     @staticmethod
     def _check_valid_inst(instrument):
@@ -123,8 +122,7 @@ class DataArchiveCreator:
         """
         if instrument not in VALID_INSTRUMENTS:
             raise ValueError("Instrument provided: \'{0}\' is not recognised as  a valid "
-                             "instrument. Valid instruments are {1}".format(instrument,
-                                                                            VALID_INSTRUMENTS))
+                             "instrument. Valid instruments are {1}".format(instrument, VALID_INSTRUMENTS))
 
     def _make_cycle_directories(self, start_year, end_year, current_cycle, base_dir):
         """
@@ -174,15 +172,12 @@ class DataArchiveCreator:
         if isinstance(data_files, str):
             data_files = [data_files]
         elif not isinstance(data_files, list):
-            raise TypeError("data_files is of: {}. "
-                            "Valid type are list or str".format(type(data_files)))
+            raise TypeError("data_files is of: {}. " "Valid type are list or str".format(type(data_files)))
 
         if cycle_year < 10:
             cycle_year = '0{}'.format(cycle_year)
         path_to_data_dir = os.path.join(self._archive_dir,
-                                        GENERIC_CYCLE_PATH).format(instrument,
-                                                                   cycle_year,
-                                                                   cycle_iteration)
+                                        GENERIC_CYCLE_PATH).format(instrument, cycle_year, cycle_iteration)
         for file_name in data_files:
             file_path = os.path.join(path_to_data_dir, file_name)
             self.create_file_at_location(file_path)
@@ -194,9 +189,8 @@ class DataArchiveCreator:
         :param file_contents: the contents of the file (normally RB number)
         """
         self._check_valid_inst(instrument)
-        path_to_log_file = os.path.join(self._archive_dir, 'NDX{}',
-                                        'Instrument', 'logs',
-                                        'journal', 'summary.txt').format(instrument)
+        path_to_log_file = os.path.join(self._archive_dir, 'NDX{}', 'Instrument', 'logs', 'journal',
+                                        'summary.txt').format(instrument)
         self.create_file_at_location(path_to_log_file, str(file_contents))
 
     def add_reduce_script(self, instrument, file_content):
@@ -206,9 +200,8 @@ class DataArchiveCreator:
         :param file_content: The content of the file
         """
         self._check_valid_inst(instrument)
-        path_to_reduce_file = os.path.join(self._archive_dir, 'NDX{}',
-                                           'user', 'scripts',
-                                           'autoreduction', 'reduce.py').format(instrument)
+        path_to_reduce_file = os.path.join(self._archive_dir, 'NDX{}', 'user', 'scripts', 'autoreduction',
+                                           'reduce.py').format(instrument)
         self.create_file_at_location(path_to_reduce_file, file_content)
 
     def add_reduce_vars_script(self, instrument, file_content):
@@ -218,9 +211,8 @@ class DataArchiveCreator:
         :param file_content: The content of the file
         """
         self._check_valid_inst(instrument)
-        path_to_reduce_file = os.path.join(self._archive_dir, 'NDX{}',
-                                           'user', 'scripts',
-                                           'autoreduction', 'reduce_vars.py').format(instrument)
+        path_to_reduce_file = os.path.join(self._archive_dir, 'NDX{}', 'user', 'scripts', 'autoreduction',
+                                           'reduce_vars.py').format(instrument)
         self.create_file_at_location(path_to_reduce_file, file_content)
 
     def add_last_run_file(self, instrument, file_contents):
@@ -230,8 +222,7 @@ class DataArchiveCreator:
         :param file_contents: the contents of the file (normally RB number)
         """
         self._check_valid_inst(instrument)
-        path_to_log_file = os.path.join(self._archive_dir, 'NDX{}',
-                                        'Instrument', 'logs').format(instrument)
+        path_to_log_file = os.path.join(self._archive_dir, 'NDX{}', 'Instrument', 'logs').format(instrument)
         self.create_file_at_location(os.path.join(path_to_log_file, 'lastrun.txt'), file_contents)
 
     def create_file_at_location(self, file_path, contents=None):
@@ -261,8 +252,7 @@ class DataArchiveCreator:
         :param new_file_contents: The new content for the file
         """
         if not os.path.exists(file_path) or file_path not in self.data_files:
-            raise ValueError("File path: {} \n"
-                             "Either does not exist or is not present in self.data_files")
+            raise ValueError("File path: {} \n" "Either does not exist or is not present in self.data_files")
 
         with open(file_path, 'w') as file_handle:
             file_handle.write(new_file_contents)
@@ -273,8 +263,7 @@ class DataArchiveCreator:
         :param file_path: the file path to the file to delete
         """
         if not os.path.exists(file_path) or file_path not in self.data_files:
-            raise ValueError("File path: {} \n"
-                             "Either does not exist or is not present in self.data_files")
+            raise ValueError("File path: {} \n" "Either does not exist or is not present in self.data_files")
         os.remove(file_path)
         self.data_files.remove(file_path)
 

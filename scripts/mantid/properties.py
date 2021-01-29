@@ -8,14 +8,13 @@
 Generate a mantid properties file
 """
 import os
-from utils.settings import VALID_INSTRUMENTS
+VALID_INSTRUMENTS = ['ENGINX', 'GEM', 'HRPD', 'MAPS', 'MARI', 'MUSR', 'OSIRIS', 'POLARIS', 'POLREF', 'WISH']
 
-CALIBRATION_DIRECTORIES = [r'/home/autoreduce/InstrumentFiles/WISH/Calibration/Cycle_11_4/',
-                           r'/isis/NDXENGINX/Instrument/data/cycle_14_3/',
-                           r'/isis/NDXENGINX/Instrument/data/cycle_15_1/',
-                           r'/isis/NDXGEM/Instrument/data/cycle_19_1/',
-                           r'/isis/NDXMARI/Instrument/data/cycle_19_2/',
-                           r'/isis/NDXPOLARIS/Instrument/data/cycle_18_3/']
+CALIBRATION_DIRECTORIES = [
+    r'/home/autoreduce/InstrumentFiles/WISH/Calibration/Cycle_11_4/', r'/isis/NDXENGINX/Instrument/data/cycle_14_3/',
+    r'/isis/NDXENGINX/Instrument/data/cycle_15_1/', r'/isis/NDXGEM/Instrument/data/cycle_19_1/',
+    r'/isis/NDXMARI/Instrument/data/cycle_19_2/', r'/isis/NDXPOLARIS/Instrument/data/cycle_18_3/'
+]
 
 MANTID_TEMPLATE = """
 # Sets a list of directories for mantid to also look for data
@@ -56,6 +55,8 @@ ScriptLocalRepository=/tmp/repo
 
 pythonscripts.directories=/tmp/repo/direct_inelastic/MARI/;/tmp/repo/direct_inelastic/MAPS
 """
+
+# TODO is this used at all?
 
 
 # pylint:disable=dangerous-default-value
