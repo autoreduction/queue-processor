@@ -46,8 +46,6 @@ class InstrumentVariablesUtils:
         """
         instrument_name = reduction_run.instrument.name
 
-        reduce_vars_file = os.path.join(reduction_script_location(instrument_name), 'reduce_vars.py')
-        reduce_vars_module = import_module(reduce_vars_file)
         model = self.model.variable_model
         experiment_reference = reduction_run.experiment.reference_number
         run_number = reduction_run.run_number
@@ -55,6 +53,8 @@ class InstrumentVariablesUtils:
         possible_variables = model.InstrumentVariable.objects.filter(Q(experiment_reference=experiment_reference)
                                                                      | Q(start_run__lte=run_number),
                                                                      instrument_id=instrument_id)
+        reduce_vars_file = os.path.join(reduction_script_location(instrument_name), 'reduce_vars.py')
+        reduce_vars_module = import_module(reduce_vars_file)
 
         variables = self._find_or_make_variables(possible_variables, run_number, instrument_id, reduce_vars_module)
 
