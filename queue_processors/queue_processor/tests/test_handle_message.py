@@ -20,8 +20,11 @@ from model.message.message import Message
 from parameterized import parameterized
 from queue_processors.queue_processor._utils_classes import _UtilsClasses
 from queue_processors.queue_processor.handle_message import HandleMessage
-from queue_processors.queue_processor.handling_exceptions import InvalidStateException
+from queue_processors.queue_processor.handling_exceptions import \
+    InvalidStateException
 from queue_processors.queue_processor.queue_listener import QueueListener
+from queue_processors.queue_processor.queueproc_utils.tests.test_instrument_variable_utils import \
+    FakeModule
 
 utils = _UtilsClasses()
 
@@ -272,7 +275,25 @@ class TestHandleMessage(unittest.TestCase):
         for obj in db_objects_to_delete:
             obj.delete()
 
-    def test_create_run_variables(self):
+    def test_create_run_variables_no_variables_creates_nothing(self):
+        expected_args = {'standard_vars': {}, 'advanced_vars': {}}
+
+        self.handler._utils.instrument_variable.create_run_variables = mock.Mock(return_value=[])
+
+        message = self.handler.create_run_variables(self.reduction_run, self.msg, self.instrument)
+        self.handler._utils.instrument_variable.create_run_variables.assert_called_once_with(self.reduction_run)
+        assert self.mocked_logger.info.call_count == 2
+        self.mocked_logger.warning.assert_called_once()
+        assert message.reduction_arguments == expected_args
+
+    @patch('queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.import_module',
+           return_value=FakeModule)
+    def test_create_run_variables(self, import_module: Mock):
+        expected_args = {'standard_vars': FakeModule.standard_vars, 'advanced_vars': FakeModule.advanced_vars}
+        message = self.handler.create_run_variables(self.reduction_run, self.msg, self.instrument)
+        assert self.mocked_logger.info.call_count == 2
+        assert message.reduction_arguments == expected_args
+        import_module.assert_called_once()
 
 
 # TODO test that instrument is not enabled when it's reduce.py script is missing
