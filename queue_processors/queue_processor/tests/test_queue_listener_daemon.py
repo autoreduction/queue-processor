@@ -15,8 +15,6 @@ from mock import PropertyMock
 
 import queue_processors.queue_processor.queue_listener_daemon
 
-# from queue_processors.queue_processor.queue_listener_daemon import QueueListenerDaemon
-# from utils.clients.queue_client import QueueClient
 # pylint: disable=protected-access
 
 
@@ -59,27 +57,6 @@ class TestQueueListenerDaemon(unittest.TestCase):
         daemon_instance.stop.assert_called_once()
         patched_sys.exit.assert_called_once_with(0)
         patched_logging.assert_not_called()
-
-    # @staticmethod
-    # @mock.patch("queue_processors.daemon.sys")
-    # @mock.patch("queue_processors.queue_processor.queue_listener_daemon.QueueListenerDaemon")
-    # @mock.patch("queue_processors.queue_processor.queue_listener_daemon.logging")
-    # def test_main_daemon_stop_unsafe_shutdown_logs(patched_logging, patched_daemon, patched_sys):
-    #     """
-    #     Test: Main will correctly log a timeout as an error
-    #     When: Trying to shutdown the client after timer fires
-    #     """
-    #     type(patched_sys).argv = PropertyMock(return_value=["", "stop"])
-    #     daemon_instance = patched_daemon.return_value
-    #     queue_processors.queue_processor.queue_listener_daemon.main()
-
-    #     patched_daemon.assert_called_once_with("/tmp/QueueListenerDaemon.pid")
-    #     daemon_instance.stop.assert_called_once()
-    #     patched_sys.exit.assert_called_once_with(0)
-
-    #     patched_logging.getLogger.assert_called_once()
-    #     mock_log = patched_logging.getLogger.return_value
-    #     mock_log.error.assert_called_once()
 
     @staticmethod
     @mock.patch("queue_processors.daemon.sys")
