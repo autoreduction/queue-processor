@@ -7,7 +7,6 @@
 """
 Validators to be used in the Message class
 """
-from utils.settings import VALID_INSTRUMENTS
 
 
 def validate_run_number(run_number):
@@ -21,14 +20,6 @@ def validate_run_number(run_number):
     except (ValueError, TypeError):
         return False
     return False
-
-
-def validate_instrument(instrument):
-    """
-    Assert an instrument exists in the valid set of instruments
-    :param instrument: The instrument to validate
-    """
-    return isinstance(instrument, str) and instrument in VALID_INSTRUMENTS
 
 
 def validate_rb_number(rb_number):
