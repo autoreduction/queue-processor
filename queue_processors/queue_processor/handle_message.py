@@ -15,17 +15,16 @@ update relevant DB fields or logging out the status.
 import datetime
 import logging
 from typing import Optional
+from django.db import IntegrityError, transaction
 
 import model.database.records as db_records
-from django.db import IntegrityError, transaction
 from model.database import access as db_access
 from model.message.message import Message
-from model.message.validation.validators import validate_rb_number
 
-from ._utils_classes import _UtilsClasses
-from .handling_exceptions import InvalidStateException
-from .reduction_runner.reduction_process_manager import ReductionProcessManager
-from .reduction_runner.reduction_service import ReductionScript
+from queue_processors.queue_processor._utils_classes import _UtilsClasses
+from queue_processors.queue_processor.handling_exceptions import InvalidStateException
+from queue_processors.queue_processor.reduction_runner.reduction_process_manager import ReductionProcessManager
+from queue_processors.queue_processor.reduction_runner.reduction_service import ReductionScript
 
 
 class HandleMessage:
@@ -148,10 +147,7 @@ class HandleMessage:
             self._logger.warning("No instrument variables found on %s for run %s", instrument.name, message.run_number)
 
         self._logger.info('Getting script and arguments')
-        arguments = self._utils.reduction_run.get_script_arguments(variables)
-        message.reduction_script = reduction_run.script
-        message.reduction_arguments = arguments
-
+        message.reduction_arguments = self._utils.get_script_arguments(variables)
         return message
 
     def safe_save(self, obj):
