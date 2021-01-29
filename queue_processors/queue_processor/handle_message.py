@@ -14,6 +14,7 @@ update relevant DB fields or logging out the status.
 """
 import datetime
 import logging
+from typing import Optional
 
 import model.database.records as db_records
 from django.db import IntegrityError, transaction
@@ -75,6 +76,11 @@ class HandleMessage:
 
         try:
             reduction_run, message, instrument = self.create_run_record(message)
+        except InvalidStateException as err:
+            # TODO consider delegating this skip to send_message_onwards
+            message.message = str(err)
+            self.reduction_skipped(err.reduction_run, message)
+            raise
         except Exception as err:
             # failed to even create the reduction run object - can't reacover from this
             self._logger.error("Encountered error in transaction to save RunVariables, error: %s", str(err))
@@ -111,15 +117,14 @@ class HandleMessage:
                                                                run_version=run_version,
                                                                script_text=script_text,
                                                                status=self._utils.status.get_queued())
-        # if the script text is empty then send to error queue
+        self.safe_save(reduction_run)
+        # if the script text is empty then send to error queue, but do it after we've
+        # made the ReductionRun otherwise we can't display the error on the web app
         if script_text == "":
-            message.message = "Script text for current instrument is null"
-            self.reduction_error(reduction_run, message)
-            raise InvalidStateException("Script text for current instrument is null")
+            raise InvalidStateException("Script text for current instrument is null", reduction_run)
 
         # activate instrument if script was found
         instrument = self.activate_db_inst(instrument)
-        self.safe_save(reduction_run)
 
         # Create a new data location entry which has a foreign key linking it to the current
         # reduction run. The file path itself will point to a datafile
