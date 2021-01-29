@@ -22,25 +22,3 @@ class InvalidStateException(Exception):
     def __init__(self, reduction_run, *args) -> None:
         super().__init__(*args)
         self.reduction_run = reduction_run
-
-
-class MissingReductionRunRecord(InvalidStateException):
-    """
-    Thrown when a reduction record is expected in the database, but it
-    cannot be found.
-    """
-    def __init__(self, rb_number, run_number, run_version):
-        super().__init__("A reduction run could not be found in the database."
-                         f" RB Number: {str(rb_number)}, Run Number: {str(run_number)},"
-                         f" Run Version: {str(run_version)}")
-
-
-class MissingExperimentRecord(InvalidStateException):
-    """
-    Thrown when an experiment record is expected in the database,
-    but it cannot be found
-    """
-    def __init__(self, rb_number, run_number, run_version):
-        super().__init__("A Experiment Record could not be found in the database."
-                         f" RB Number: {str(rb_number)}, Run Number: {str(run_number)},"
-                         f" Run Version: {str(run_version)}")
