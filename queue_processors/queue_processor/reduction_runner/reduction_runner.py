@@ -18,7 +18,7 @@ import types
 
 from model.message.message import Message
 from queue_processors.queue_processor.reduction_runner.reduction_exceptions import (DatafileError, ReductionScriptError)
-from queue_processors.queue_processor.reduction_runner.reduction_runner_utilities import \
+from queue_processors.queue_processor.reduction_runner.utilities import \
     windows_to_linux_path
 from queue_processors.queue_processor.reduction_runner.reduction_service import (Datafile, ReductionDirectory,
                                                                                  ReductionScript,

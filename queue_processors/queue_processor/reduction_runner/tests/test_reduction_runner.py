@@ -13,7 +13,6 @@ import sys
 import unittest
 import tempfile
 from mock import patch, call, Mock
-from parameterized import parameterized
 
 from model.message.message import Message
 from queue_processors.queue_processor.reduction_runner.reduction_runner import ReductionRunner, main
@@ -53,7 +52,7 @@ class TestReductionRunner(unittest.TestCase):
         self.assertEqual(runner.run_number, '4321')
         self.assertEqual(runner.reduction_arguments, 'None')
 
-    @patch(f'{DIR}.reduction_runner_utilities.windows_to_linux_path', return_value='path')
+    @patch(f'{DIR}.utilities.windows_to_linux_path', return_value='path')
     @patch(f'{DIR}.reduction_runner.ReductionRunner.reduce')
     def test_main(self, mock_reduce, _):
         """
