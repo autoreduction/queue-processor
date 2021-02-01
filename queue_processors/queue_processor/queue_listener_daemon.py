@@ -48,17 +48,15 @@ class QueueListenerDaemon(Daemon):
         Stops the Queue Processor Daemon, first making sure that
         the underlying client has finished
         """
+        if self.client is None or self.listener is None:
+            raise RuntimeError("The QueueListenerDaemon was never started!")
+
         if self.listener.is_processing_message():
             self.logger.info("Shutdown requested but the listener is processing a run. "
                              "The client will wait for it to finish before exiting.")
         self.client.disconnect()
         self._shutting_down = True
-        if self.client is None:
-            self.logger.info("Cannot safely disconnect client as it is "
-                             "running in original process. Messages might get lost. "
-                             "This happens when the process is manually stopped from CLI.")
-        else:
-            self.logger.info("Queue Processor exited gracefully from SIGTERM")
+        self.logger.info("Queue Processor exited gracefully from SIGTERM")
 
 
 def main():
