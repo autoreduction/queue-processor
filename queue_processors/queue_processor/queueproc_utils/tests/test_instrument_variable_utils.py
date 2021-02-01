@@ -47,7 +47,6 @@ class FakeModule:
         """
         Allows overwriting the advanced vars
         """
-        super().__init__()
         self.standard_vars = {"standard_var1": "standard_value1"}
         self.advanced_vars = {"advanced_var1": "advanced_value1"}
 

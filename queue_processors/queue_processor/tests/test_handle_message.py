@@ -293,9 +293,9 @@ class TestHandleMessage(unittest.TestCase):
         assert message.reduction_arguments == expected_args
 
     @patch('queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.import_module',
-           return_value=FakeModule)
+           return_value=FakeModule())
     def test_create_run_variables(self, import_module: Mock):
-        expected_args = {'standard_vars': FakeModule.standard_vars, 'advanced_vars': FakeModule.advanced_vars}
+        expected_args = {'standard_vars': FakeModule().standard_vars, 'advanced_vars': FakeModule().advanced_vars}
         message = self.handler.create_run_variables(self.reduction_run, self.msg, self.instrument)
         assert self.mocked_logger.info.call_count == 2
         assert message.reduction_arguments == expected_args
