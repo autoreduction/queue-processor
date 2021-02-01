@@ -52,9 +52,9 @@ jobs:
           pytest systemtests --cov-append
 
       - name: Coveralls
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
   selenium:
     name: Selenium
