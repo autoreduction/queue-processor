@@ -18,8 +18,6 @@ from queue_processors.queue_processor.reduction.utilities import windows_to_linu
 
 
 class TestReductionRunnerHelpers(unittest.TestCase):
-    DIR = "queue_processors.autoreduction_processor"
-
     def test_windows_to_linux_data_path(self):
         """
         Test: Windows to linux path is correctly modified to linux format

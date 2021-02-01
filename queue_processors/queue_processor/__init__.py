@@ -80,7 +80,7 @@ LOGGING = {
             'propagate': True,
             'level': 'DEBUG',
         },
-        'autoreduction_processor': {
+        'reduction_runner': {
             'handlers': ['autoreduction_file'],
             'propagate': True,
             'level': LOG_LEVEL,

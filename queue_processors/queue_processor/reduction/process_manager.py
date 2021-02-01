@@ -16,7 +16,7 @@ import traceback
 
 from model.message.message import Message
 
-reduction_DIRECTORY = f"{os.path.dirname(os.path.realpath(__file__))}/reduction.py"
+REDUCTION_DIRECTORY = f"{os.path.dirname(os.path.realpath(__file__))}/runner.py"
 
 
 class ReductionProcessManager:
@@ -27,7 +27,7 @@ class ReductionProcessManager:
         """
         Runs the reduction process
         """
-        if not os.path.isfile(reduction_DIRECTORY):
+        if not os.path.isfile(REDUCTION_DIRECTORY):
             logging.error("Could not find autoreduction post processing file "
                           "- please contact a system administrator")
         result_message = None
@@ -37,8 +37,8 @@ class ReductionProcessManager:
             # e.g. matplotlib or Mantid
             python_path = sys.executable
             with tempfile.NamedTemporaryFile("w+") as temp_output_file:
-                args = [python_path, reduction_DIRECTORY, self.message.serialize(), temp_output_file.name]
-                logging.info("Calling: %s %s %s %s", python_path, reduction_DIRECTORY,
+                args = [python_path, REDUCTION_DIRECTORY, self.message.serialize(), temp_output_file.name]
+                logging.info("Calling: %s %s %s %s", python_path, REDUCTION_DIRECTORY,
                              self.message.serialize(limit_reduction_script=True), temp_output_file.name)
                 subprocess.run(args, check=True)
                 result_message_raw = temp_output_file.file.read()
