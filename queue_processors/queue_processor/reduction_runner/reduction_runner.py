@@ -33,7 +33,6 @@ class ReductionRunner:
 
     # pylint: disable=too-many-instance-attributes
     def __init__(self, message):
-        logger.debug("Message data: %s", message.serialize(limit_reduction_script=True))
         self.read_write_map = {"R": "read", "W": "write"}
         self.message = message
         self.admin_log_stream = io.StringIO()
@@ -154,6 +153,7 @@ def main():
         logger.error("Could not populate message from data: %s", str(exp))
         sys.exit(1)
 
+    log_stream_handler = None
     try:
         reduction_runner = ReductionRunner(message)
         log_stream_handler = logging.StreamHandler(reduction_runner.admin_log_stream)
@@ -173,10 +173,8 @@ def main():
         raise
 
     finally:
-        try:
+        if log_stream_handler is not None:
             logger.removeHandler(log_stream_handler)
-        except:
-            pass
 
 
 if __name__ == "__main__":  # pragma : no cover
