@@ -27,7 +27,7 @@ class QueueListenerDaemon(Daemon):
 
         self.client: Optional[QueueClient] = None
         self.listener: Optional[queue_listener.QueueListener] = None
-        self._logger = logging.getLogger(__file__)
+        self.logger = logging.getLogger(__file__)
         self._shutting_down = False
 
         signal.signal(signal.SIGTERM, self.stop)
@@ -35,7 +35,7 @@ class QueueListenerDaemon(Daemon):
 
     def run(self):
         """ Run queue processor. """
-        self._logger.info("Starting Queue Processor")
+        self.logger.info("Starting Queue Processor")
         self.client, self.listener = queue_listener.main()
         # keeps the daemon alive as the main call above does not block
         # but simply runs the connections in async. If this sleep isn't
@@ -49,16 +49,16 @@ class QueueListenerDaemon(Daemon):
         the underlying client has finished
         """
         if self.listener.is_processing_message():
-            self._logger.info("Shutdown requested but the listener is processing a run. "
-                              "The client will wait for it to finish before exiting.")
+            self.logger.info("Shutdown requested but the listener is processing a run. "
+                             "The client will wait for it to finish before exiting.")
         self.client.disconnect()
         self._shutting_down = True
         if self.client is None:
-            self._logger.info("Cannot safely disconnect client as it is "
-                              "running in original process. Messages might get lost. "
-                              "This happens when the process is manually stopped from CLI.")
+            self.logger.info("Cannot safely disconnect client as it is "
+                             "running in original process. Messages might get lost. "
+                             "This happens when the process is manually stopped from CLI.")
         else:
-            self._logger.info("Queue Processor exited gracefully from SIGTERM")
+            self.logger.info("Queue Processor exited gracefully from SIGTERM")
 
 
 def main():
