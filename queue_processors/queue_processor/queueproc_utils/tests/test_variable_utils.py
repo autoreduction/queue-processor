@@ -11,7 +11,6 @@ Test utility functions for constructing run variables
 import unittest
 import datetime
 
-from unittest.mock import patch
 from queue_processors.queue_processor.queueproc_utils.variable_utils import VariableUtils as vu
 
 from model.database import access
