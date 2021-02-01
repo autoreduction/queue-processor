@@ -8,18 +8,12 @@
 Tests for post process admin and helper functionality
 """
 
-import json
-from subprocess import CalledProcessError
-from unittest import result
-from queue_processors.queue_processor.reduction.process_manager import ReductionProcessManager
-import sys
 import unittest
-import tempfile
-from mock import patch, call, Mock
+from subprocess import CalledProcessError
 
+from mock import Mock, patch
 from model.message.message import Message
-from queue_processors.queue_processor.reduction.exceptions import ReductionScriptError
-from queue_processors.queue_processor.reduction.runner import ReductionRunner, main
+from queue_processors.queue_processor.reduction.process_manager import ReductionProcessManager
 
 
 class TestReductionProcessManager(unittest.TestCase):
@@ -38,12 +32,15 @@ class TestReductionProcessManager(unittest.TestCase):
         self.message.populate(self.data)
 
     def test_init(self):
+        "Test that the constructor is doing what's expected"
         rpm = ReductionProcessManager(self.message)
 
         assert rpm.message == self.message
 
     @patch('queue_processors.queue_processor.reduction.process_manager.subprocess.run')
     def test_run_subprocess_error(self, subprocess_run: Mock):
+        "Test proper handling of a subprocess encountering an error"
+
         def side_effect(args, check):
             raise CalledProcessError(1, args)
 
@@ -56,6 +53,8 @@ class TestReductionProcessManager(unittest.TestCase):
 
     @patch('queue_processors.queue_processor.reduction.process_manager.subprocess.run')
     def test_run(self, subprocess_run: Mock):
+        "Tests success path - it uses side effect to set the expected output file rather than raise an exception"
+
         def side_effect(args, check):
             with open(args[-1], 'w') as tmpfile:
                 tmpfile.write(self.message.serialize())

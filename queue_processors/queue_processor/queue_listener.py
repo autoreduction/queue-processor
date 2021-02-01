@@ -82,7 +82,7 @@ class QueueListener:
             except InvalidStateException as exp:
                 self.logger.error("Encountered invalid state exception: %s %s\n\n%s",
                                   type(exp).__name__, exp, traceback.format_exc())
-            except Exception as exp:
+            except Exception as exp:  # pylint:disable=broad-except
                 self.logger.error("Unhandled exception encountered: %s %s\n\n%s",
                                   type(exp).__name__, exp, traceback.format_exc())
 

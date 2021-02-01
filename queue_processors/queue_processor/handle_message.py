@@ -103,9 +103,7 @@ class HandleMessage:
         # Create a new data location entry which has a foreign key linking it to the current
         # reduction run. The file path itself will point to a datafile
         # (e.g. "/isis/inst$/NDXWISH/Instrument/data/cycle_17_1/WISH00038774.nxs")
-        # TODO figure out whether we only use this for showing the ReductionLocation line in the web app
-        # TODO this should probably be part of the ReductionRun rather than the huge script text!
-        data_location = self.data_model.DataLocation(file_path=message.data, reduction_run_id=reduction_run.id)
+        data_location = self.data_model.DataLocation(file_path=message.data, reduction_run_id=reduction_run.pk)
         data_location.save()
 
         return reduction_run, message, instrument

@@ -56,7 +56,8 @@ ScriptLocalRepository=/tmp/repo
 pythonscripts.directories=/tmp/repo/direct_inelastic/MARI/;/tmp/repo/direct_inelastic/MAPS
 """
 
-# TODO is this used at all?
+# This is not used at the moment, but the idea is for it to automate the creation of instrument specific MANTID
+# user configurations - to allow different instruments to allow calibration files and other metadata more easily.
 
 
 # pylint:disable=dangerous-default-value
