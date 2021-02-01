@@ -90,8 +90,7 @@ class TestReductionService(unittest.TestCase):
            new_callable=PropertyMock(return_value=["testinstrument"]))
     @patch(f"{REDUCTION_SERVICE_DIR}.CEPH_DIRECTORY",
            new_callable=PropertyMock(return_value="/instrument/%s/RBNumber/RB%s/autoreduced/%s"))
-    def test_reduction_directory_build_path_flat_output_removes_run_number(self, CEPH_DIRECTORY: Mock,
-                                                                           FLAT_OUTPUT_INSTRUMENTS: Mock):
+    def test_reduction_directory_build_path_flat_output_removes_run_number(self, _, __):
         """
         Tests: Run number is removed from path
         When: _build_path is called for flat output instrument

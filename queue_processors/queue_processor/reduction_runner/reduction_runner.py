@@ -14,7 +14,6 @@ import io
 import logging
 import sys
 import traceback
-import types
 
 from model.message.message import Message
 from queue_processors.queue_processor.reduction_runner.reduction_exceptions import (DatafileError, ReductionScriptError)

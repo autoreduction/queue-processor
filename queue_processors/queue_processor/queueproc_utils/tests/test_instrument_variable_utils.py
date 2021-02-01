@@ -380,7 +380,8 @@ class TestInstrumentVariableUtils(unittest.TestCase):
 
     def test_variable_changed_for_new_run_gets_copied(self):
         """
-        Test: Existing variable that tracks the script gets copied when its value/type/help is updated and the run_number is different
+        Test: Existing variable that tracks the script gets copied when its
+              value/type/help is updated and the run_number is different
         When: The variable was created for a previous reduction run, but the value was changed in reduce_vars
         """
         reduction_run = create_reduction_run_record(self.experiment, self.instrument, FakeMessage(), 0,
