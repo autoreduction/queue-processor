@@ -27,9 +27,6 @@ class ReductionProcessManager:
         """
         Runs the reduction process
         """
-        if not os.path.isfile(REDUCTION_DIRECTORY):
-            logging.error("Could not find autoreduction post processing file "
-                          "- please contact a system administrator")
         result_message = None
         try:
             # We need to run the reduction in a new process, otherwise scripts
@@ -45,9 +42,9 @@ class ReductionProcessManager:
 
             result_message = Message()
             result_message.populate(result_message_raw)
-        except subprocess.CalledProcessError as err:
+        except subprocess.CalledProcessError:
             logging.error("Processing encountered an error: %s", traceback.format_exc())
-            self.message.message = str(err)
+            self.message.message = f"Processing encountered an error: {traceback.format_exc()}"
             result_message = self.message
 
         return result_message
