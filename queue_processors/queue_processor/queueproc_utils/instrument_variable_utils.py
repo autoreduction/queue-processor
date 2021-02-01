@@ -25,6 +25,13 @@ class DataTooLong(ValueError):
     """ Error class used for when reduction variables are too long. """
 
 
+def _replace_special_chars(help_text):
+    """ Remove any special chars in the help text. """
+    help_text = html.escape(help_text)  # Remove any HTML already in the help string
+    help_text = help_text.replace('\n', '<br>').replace('\t', '&nbsp;&nbsp;&nbsp;&nbsp;')
+    return help_text
+
+
 class InstrumentVariablesUtils:
     """ Class used to parse and process instrument reduction variables. """
     def __init__(self) -> None:
@@ -75,8 +82,8 @@ class InstrumentVariablesUtils:
 
         variables = []
         for name, value, is_advanced in all_vars:
-            script_help_text = self._get_help_text('standard_vars' if not is_advanced else 'advanced_vars', name,
-                                                   reduce_vars_module)
+            script_help_text = self.get_help_text('standard_vars' if not is_advanced else 'advanced_vars', name,
+                                                  reduce_vars_module)
             script_value = str(value).replace('[', '').replace(']', '')
             script_type = VariableUtils.get_type_string(value)
 
@@ -127,7 +134,8 @@ class InstrumentVariablesUtils:
 
         if changed:
             # if the run number is different than what is already saved, then we will copy the
-            # variable that contains the new values. Otherwise just overwrite them
+            # variable that contains the new values rather than overwriting them.
+            # This allows the user to see the old run with the exact values that were used the first time
             if variable.start_run != run_number:
                 variable.pk = None
                 variable.id = None
@@ -137,19 +145,11 @@ class InstrumentVariablesUtils:
             variable.save()
         return variable
 
-    def _get_help_text(self, dict_name, key, reduce_vars_module):
+    @staticmethod
+    def get_help_text(dict_name, key, reduce_vars_module):
         """ Get variable help text. """
-        if not dict_name or not key:
-            return ""
         if 'variable_help' in dir(reduce_vars_module):
             if dict_name in reduce_vars_module.variable_help:
                 if key in reduce_vars_module.variable_help[dict_name]:
-                    return self._replace_special_chars(reduce_vars_module.variable_help[dict_name][key])
+                    return _replace_special_chars(reduce_vars_module.variable_help[dict_name][key])
         return ""
-
-    @staticmethod
-    def _replace_special_chars(help_text):
-        """ Remove any special chars in the help text. """
-        help_text = html.escape(help_text)  # Remove any HTML already in the help string
-        help_text = help_text.replace('\n', '<br>').replace('\t', '&nbsp;&nbsp;&nbsp;&nbsp;')
-        return help_text
