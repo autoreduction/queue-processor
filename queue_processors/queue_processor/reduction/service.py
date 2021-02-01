@@ -19,7 +19,7 @@ from tempfile import TemporaryDirectory
 import chardet
 
 from .utilities import channels_redirected
-from .reduction_exceptions import DatafileError, ReductionScriptError
+from .exceptions import DatafileError, ReductionScriptError
 from ..settings import SCRIPTS_DIRECTORY, FLAT_OUTPUT_INSTRUMENTS, CEPH_DIRECTORY, SCRIPT_TIMEOUT
 from .timeout import TimeOut
 

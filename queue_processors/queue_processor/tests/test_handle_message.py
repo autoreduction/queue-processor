@@ -23,9 +23,9 @@ import model.database.access
 from model.database.records import create_reduction_run_record
 from model.message.message import Message
 from queue_processors.queue_processor.handle_message import HandleMessage
-from queue_processors.queue_processor.queueproc_utils.status_utils import StatusUtils
+from queue_processors.queue_processor.utils.status_utils import StatusUtils
 from queue_processors.queue_processor.queue_listener import QueueListener
-from queue_processors.queue_processor.queueproc_utils.tests.test_instrument_variable_utils import \
+from queue_processors.queue_processor.utils.tests.test_instrument_variable_utils import \
     FakeModule
 
 STATUS = StatusUtils()
@@ -292,8 +292,7 @@ class TestHandleMessage(unittest.TestCase):
         self.mocked_logger.warning.assert_called_once()
         assert message.reduction_arguments == expected_args
 
-    @patch('queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.import_module',
-           return_value=FakeModule())
+    @patch('queue_processors.queue_processor.utils.instrument_variable_utils.import_module', return_value=FakeModule())
     def test_create_run_variables(self, import_module: Mock):
         expected_args = {'standard_vars': FakeModule().standard_vars, 'advanced_vars': FakeModule().advanced_vars}
         message = self.handler.create_run_variables(self.reduction_run, self.msg, self.instrument)
@@ -327,7 +326,7 @@ class TestHandleMessage(unittest.TestCase):
         assert self.reduction_run.status == STATUS.get_error()
         assert "Encountered error in transaction to save RunVariables" in self.reduction_run.message
 
-    @patch('queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.reduction_script_location')
+    @patch('queue_processors.queue_processor.utils.instrument_variable_utils.reduction_script_location')
     @patch("queue_processors.queue_processor.handle_message.ReductionProcessManager")
     def test_data_ready_sends_onwards_completed(self, rpm, reduction_script_location: Mock):
         with tempfile.TemporaryDirectory() as tmp:
@@ -342,7 +341,7 @@ class TestHandleMessage(unittest.TestCase):
             assert self.reduction_run.finished is not None
             assert self.reduction_run.status == STATUS.get_completed()
 
-    @patch('queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.reduction_script_location')
+    @patch('queue_processors.queue_processor.utils.instrument_variable_utils.reduction_script_location')
     @patch("queue_processors.queue_processor.handle_message.ReductionProcessManager")
     def test_data_ready_sends_onwards_error(self, rpm, reduction_script_location: Mock):
         with tempfile.TemporaryDirectory() as tmp:

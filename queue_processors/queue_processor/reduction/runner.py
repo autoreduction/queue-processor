@@ -16,15 +16,13 @@ import sys
 import traceback
 
 from model.message.message import Message
-from queue_processors.queue_processor.reduction_runner.reduction_exceptions import (DatafileError, ReductionScriptError)
-from queue_processors.queue_processor.reduction_runner.utilities import \
-    windows_to_linux_path
-from queue_processors.queue_processor.reduction_runner.reduction_service import (Datafile, ReductionDirectory,
-                                                                                 ReductionScript,
-                                                                                 TemporaryReductionDirectory, reduce)
-from queue_processors.queue_processor.settings import (MANTID_PATH, TEMP_ROOT_DIRECTORY)
+from queue_processors.queue_processor.reduction.exceptions import DatafileError, ReductionScriptError
+from queue_processors.queue_processor.reduction.utilities import windows_to_linux_path
+from queue_processors.queue_processor.reduction.service import (Datafile, ReductionDirectory, ReductionScript,
+                                                                TemporaryReductionDirectory, reduce)
+from queue_processors.queue_processor.settings import MANTID_PATH, TEMP_ROOT_DIRECTORY
 
-logger = logging.getLogger("reduction_runner")
+logger = logging.getLogger("reduction")
 
 
 class ReductionRunner:
@@ -120,13 +118,13 @@ def main():
 
     log_stream_handler = None
     try:
-        reduction_runner = ReductionRunner(message)
-        log_stream_handler = logging.StreamHandler(reduction_runner.admin_log_stream)
+        reduction = ReductionRunner(message)
+        log_stream_handler = logging.StreamHandler(reduction.admin_log_stream)
         logger.addHandler(log_stream_handler)
-        reduction_runner.reduce()
+        reduction.reduce()
         # write out the reduction message
         with open(temp_output_file, "w") as out_file:
-            out_file.write(reduction_runner.message.serialize())
+            out_file.write(reduction.message.serialize())
 
     except ValueError as exp:
         message.message = str(exp)

@@ -14,7 +14,7 @@ from pathlib import Path
 
 from mock import patch
 
-from queue_processors.queue_processor.reduction_runner.utilities import windows_to_linux_path, channels_redirected
+from queue_processors.queue_processor.reduction.utilities import windows_to_linux_path, channels_redirected
 
 
 class TestReductionRunnerHelpers(unittest.TestCase):

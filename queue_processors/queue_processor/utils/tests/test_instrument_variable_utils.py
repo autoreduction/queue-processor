@@ -16,10 +16,10 @@ from mock import patch
 
 import model.database.access
 from model.database.records import create_reduction_run_record
-from queue_processors.queue_processor.queueproc_utils.instrument_variable_utils import \
+from queue_processors.queue_processor.utils.instrument_variable_utils import \
     InstrumentVariablesUtils
 
-UTILS_PATH = "queue_processors.queue_processor.queueproc_utils"
+UTILS_PATH = "queue_processors.queue_processor.utils"
 MESSAGE_CLASS_PATH = UTILS_PATH + ".messaging_utils.MessagingUtils"
 
 
@@ -89,8 +89,7 @@ class TestInstrumentVariableUtils(unittest.TestCase):
         delete_objects(self.delete_on_teardown)
         self.delete_on_teardown = []
 
-    @patch("queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.import_module",
-           return_value=FakeModule())
+    @patch("queue_processors.queue_processor.utils.instrument_variable_utils.import_module", return_value=FakeModule())
     def test_new_reduction_run(self, _):
         """
         Tests with a never before seen Reduction Run
@@ -112,8 +111,7 @@ class TestInstrumentVariableUtils(unittest.TestCase):
 
         self.delete_on_teardown = [reduction_run, new_variables]
 
-    @patch("queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.import_module",
-           return_value=FakeModule())
+    @patch("queue_processors.queue_processor.utils.instrument_variable_utils.import_module", return_value=FakeModule())
     def test_two_reduction_runs_only_creates_one_set_of_variables(self, _):
         """
         Tests that creating variables for a module that has the same variables will
@@ -157,7 +155,7 @@ class TestInstrumentVariableUtils(unittest.TestCase):
 
         before_creating_variables = self.variable_model.InstrumentVariable.objects.count()
 
-        with patch("queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.import_module",
+        with patch("queue_processors.queue_processor.utils.instrument_variable_utils.import_module",
                    return_value=FakeModule()):
             new_variables = InstrumentVariablesUtils().create_run_variables(reduction_run)
 
@@ -168,7 +166,7 @@ class TestInstrumentVariableUtils(unittest.TestCase):
         # loop twice and check that no new variables are created
         for _ in range(2):
             # MODIFIES an advanced value so that they no longer match
-            with patch("queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.import_module",
+            with patch("queue_processors.queue_processor.utils.instrument_variable_utils.import_module",
                        return_value=FakeModule(**param_variable_dict)):
                 new_variables_again = InstrumentVariablesUtils().create_run_variables(reduction_run)
 
@@ -206,7 +204,7 @@ class TestInstrumentVariableUtils(unittest.TestCase):
 
         before_creating_variables = self.variable_model.InstrumentVariable.objects.count()
 
-        with patch("queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.import_module",
+        with patch("queue_processors.queue_processor.utils.instrument_variable_utils.import_module",
                    return_value=FakeModule()):
             new_variables = InstrumentVariablesUtils().create_run_variables(reduction_run)
 
@@ -217,7 +215,7 @@ class TestInstrumentVariableUtils(unittest.TestCase):
         # loop twice and check that no new variables are created
         for _ in range(2):
             # MODIFIES an advanced value so that they no longer match
-            with patch("queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.import_module",
+            with patch("queue_processors.queue_processor.utils.instrument_variable_utils.import_module",
                        return_value=FakeModule(**param_variable_dict)):
                 new_variables_again = InstrumentVariablesUtils().create_run_variables(reduction_run)
 
@@ -257,7 +255,7 @@ class TestInstrumentVariableUtils(unittest.TestCase):
 
         before_creating_variables = self.variable_model.InstrumentVariable.objects.count()
 
-        with patch("queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.import_module",
+        with patch("queue_processors.queue_processor.utils.instrument_variable_utils.import_module",
                    return_value=FakeModule(**param_variable_dict)):
             new_variables = InstrumentVariablesUtils().create_run_variables(reduction_run)
 
@@ -268,7 +266,7 @@ class TestInstrumentVariableUtils(unittest.TestCase):
         # loop twice and check that no new variables are created
         for _ in range(2):
             # MODIFIES an advanced value so that they no longer match
-            with patch("queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.import_module",
+            with patch("queue_processors.queue_processor.utils.instrument_variable_utils.import_module",
                        return_value=FakeModule()):
                 new_variables_again = InstrumentVariablesUtils().create_run_variables(reduction_run)
 
@@ -296,7 +294,7 @@ class TestInstrumentVariableUtils(unittest.TestCase):
 
         before_creating_variables = self.variable_model.InstrumentVariable.objects.count()
 
-        with patch("queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.import_module",
+        with patch("queue_processors.queue_processor.utils.instrument_variable_utils.import_module",
                    return_value=FakeModule(standard_vars={}, advanced_vars={})):
             new_variables = InstrumentVariablesUtils().create_run_variables(reduction_run)
 
@@ -315,7 +313,7 @@ class TestInstrumentVariableUtils(unittest.TestCase):
 
         before_creating_variables = self.variable_model.InstrumentVariable.objects.count()
 
-        with patch("queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.import_module",
+        with patch("queue_processors.queue_processor.utils.instrument_variable_utils.import_module",
                    return_value=FakeModule(advanced_vars={})):
             new_variables = InstrumentVariablesUtils().create_run_variables(reduction_run)
 
@@ -323,7 +321,7 @@ class TestInstrumentVariableUtils(unittest.TestCase):
         assert after_creating_variables > before_creating_variables
 
         # change the VALUE and the TYPE of the variable
-        with patch("queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.import_module",
+        with patch("queue_processors.queue_processor.utils.instrument_variable_utils.import_module",
                    return_value=FakeModule(
                        standard_vars={"standard_var1": 123},
                        advanced_vars={},
@@ -351,7 +349,7 @@ class TestInstrumentVariableUtils(unittest.TestCase):
 
         before_creating_variables = self.variable_model.InstrumentVariable.objects.count()
 
-        with patch("queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.import_module",
+        with patch("queue_processors.queue_processor.utils.instrument_variable_utils.import_module",
                    return_value=FakeModule(advanced_vars={})):
             new_variables = InstrumentVariablesUtils().create_run_variables(reduction_run)
 
@@ -362,7 +360,7 @@ class TestInstrumentVariableUtils(unittest.TestCase):
         assert after_creating_variables > before_creating_variables
 
         # change the VALUE and the TYPE of the variable
-        with patch("queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.import_module",
+        with patch("queue_processors.queue_processor.utils.instrument_variable_utils.import_module",
                    return_value=FakeModule(
                        standard_vars={"standard_var1": 123},
                        advanced_vars={},
@@ -388,7 +386,7 @@ class TestInstrumentVariableUtils(unittest.TestCase):
                                                     self.fake_script_text, self.status)
         reduction_run.save()
 
-        with patch("queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.import_module",
+        with patch("queue_processors.queue_processor.utils.instrument_variable_utils.import_module",
                    return_value=FakeModule(advanced_vars={})):
             variables = InstrumentVariablesUtils().create_run_variables(reduction_run)
 
@@ -397,7 +395,7 @@ class TestInstrumentVariableUtils(unittest.TestCase):
                                                           self.status)
         newer_reduction_run.save()
 
-        with patch("queue_processors.queue_processor.queueproc_utils.instrument_variable_utils.import_module",
+        with patch("queue_processors.queue_processor.utils.instrument_variable_utils.import_module",
                    return_value=FakeModule(
                        standard_vars={"standard_var1": 123},
                        advanced_vars={},

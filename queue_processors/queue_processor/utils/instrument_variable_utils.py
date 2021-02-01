@@ -17,8 +17,8 @@ from django.db import transaction
 from django.db.models import Q
 from model.database import access as db
 
-from queue_processors.queue_processor.queueproc_utils.script_utils import import_module, reduction_script_location
-from queue_processors.queue_processor.queueproc_utils.variable_utils import VariableUtils
+from queue_processors.queue_processor.utils.script_utils import import_module, reduction_script_location
+from queue_processors.queue_processor.utils.variable_utils import VariableUtils
 
 
 class DataTooLong(ValueError):

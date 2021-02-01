@@ -85,6 +85,11 @@ LOGGING = {
             'propagate': True,
             'level': LOG_LEVEL,
         },
+        'reduction_service': {
+            'handlers': ['autoreduction_file'],
+            'propagate': True,
+            'level': LOG_LEVEL,
+        },
         'handle_queue_message': {
             'handlers': ['handle_queue_message_file'],
             'propagate': True,

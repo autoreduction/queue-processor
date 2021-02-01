@@ -8,8 +8,8 @@ import os
 from unittest.mock import Mock, patch
 
 import pytest
-from queue_processors.queue_processor.queueproc_utils.script_utils import import_module
-from queue_processors.queue_processor.queueproc_utils.tests.module_to_import import TEST_DICTIONARY
+from queue_processors.queue_processor.utils.script_utils import import_module
+from queue_processors.queue_processor.utils.tests.module_to_import import TEST_DICTIONARY
 
 
 def test_import_module():
@@ -22,7 +22,7 @@ def test_import_module():
     assert getattr(module, "TEST_DICTIONARY") == TEST_DICTIONARY
 
 
-@patch("queue_processors.queue_processor.queueproc_utils.script_utils.log_error_and_notify")
+@patch("queue_processors.queue_processor.utils.script_utils.log_error_and_notify")
 def test_import_module_invalid_module(log_error_and_notify: Mock):
     """
     Test importing a module that does not exist
@@ -32,7 +32,7 @@ def test_import_module_invalid_module(log_error_and_notify: Mock):
     log_error_and_notify.assert_called_once()
 
 
-@patch("queue_processors.queue_processor.queueproc_utils.script_utils.log_error_and_notify")
+@patch("queue_processors.queue_processor.utils.script_utils.log_error_and_notify")
 def test_import_module_syntax_error(log_error_and_notify: Mock):
     """
     Test importing a module that has a syntax error in it

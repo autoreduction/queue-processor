@@ -10,17 +10,16 @@ Tests for parts of the reduction_service
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from unittest.mock import Mock, PropertyMock
+from unittest.mock import PropertyMock
 
 from mock import patch, MagicMock, call
 
-from queue_processors.queue_processor.reduction_runner.reduction_exceptions import DatafileError, \
-    ReductionScriptError
-from queue_processors.queue_processor.reduction_runner.reduction_service import ReductionDirectory, \
+from queue_processors.queue_processor.reduction.exceptions import DatafileError, ReductionScriptError
+from queue_processors.queue_processor.reduction.service import ReductionDirectory, \
     TemporaryReductionDirectory, Datafile, ReductionScript, reduce
-from queue_processors.queue_processor.settings import CEPH_DIRECTORY, FLAT_OUTPUT_INSTRUMENTS, SCRIPTS_DIRECTORY
+from queue_processors.queue_processor.settings import CEPH_DIRECTORY, SCRIPTS_DIRECTORY
 
-REDUCTION_SERVICE_DIR = "queue_processors.queue_processor.reduction_runner.reduction_service"
+REDUCTION_SERVICE_DIR = "queue_processors.queue_processor.reduction.service"
 
 
 class TempDirPropertyMock(PropertyMock):

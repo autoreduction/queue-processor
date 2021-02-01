@@ -15,12 +15,12 @@ import tempfile
 from mock import patch, call, Mock
 
 from model.message.message import Message
-from queue_processors.queue_processor.reduction_runner.reduction_runner import ReductionRunner, main
+from queue_processors.queue_processor.reduction.runner import ReductionRunner, main
 
 
 class TestReductionRunner(unittest.TestCase):
     """Unit tests for Post Process Admin"""
-    DIR = "queue_processors.queue_processor.reduction_runner"
+    DIR = "queue_processors.queue_processor.reduction"
 
     def setUp(self):
         """Setup values for Post-Process Admin"""
@@ -53,7 +53,7 @@ class TestReductionRunner(unittest.TestCase):
         self.assertEqual(runner.reduction_arguments, 'None')
 
     @patch(f'{DIR}.utilities.windows_to_linux_path', return_value='path')
-    @patch(f'{DIR}.reduction_runner.ReductionRunner.reduce')
+    @patch(f'{DIR}.runner.ReductionRunner.reduce')
     def test_main(self, mock_reduce, _):
         """
         Test: A QueueClient is initialised and connected and ppa.reduce is called
@@ -72,8 +72,8 @@ class TestReductionRunner(unittest.TestCase):
         assert self.data["reduction_script"] == out_data["reduction_script"]
         assert self.data["reduction_arguments"] == out_data["reduction_arguments"]
 
-    @patch(f'{DIR}.reduction_runner.logger.info')
-    @patch(f'{DIR}.reduction_runner.ReductionRunner.__init__')
+    @patch(f'{DIR}.runner.logger.info')
+    @patch(f'{DIR}.runner.ReductionRunner.__init__')
     def test_main_inner_value_error(self, mock_runner_init, mock_logger_info):
         """
         Test: The correct message is sent from the exception handlers in main
@@ -96,8 +96,8 @@ class TestReductionRunner(unittest.TestCase):
             [call('Message data error: %s', self.message.serialize(limit_reduction_script=True))])
 
     # pylint: disable = too-many-arguments
-    @patch(f'{DIR}.reduction_runner.logger.info')
-    @patch(f'{DIR}.reduction_runner.ReductionRunner.__init__')
+    @patch(f'{DIR}.runner.logger.info')
+    @patch(f'{DIR}.runner.ReductionRunner.__init__')
     def test_main_inner_exception(self, mock_runner_init, mock_logger_info):
         """
         Test: The correct message is sent from the exception handlers in main
@@ -114,7 +114,7 @@ class TestReductionRunner(unittest.TestCase):
             self.assertRaises(Exception, main)
         mock_logger_info.assert_has_calls([call('ReductionRunner error: %s', 'error-message')])
 
-    @patch(f'{DIR}.reduction_runner.ReductionRunner.__init__', return_value=None)
+    @patch(f'{DIR}.runner.ReductionRunner.__init__', return_value=None)
     def test_validate_input_success(self, _):
         """
         Test: The attribute value is returned
@@ -126,7 +126,7 @@ class TestReductionRunner(unittest.TestCase):
         actual = ReductionRunner.validate_input(mock_self, 'facility')
         self.assertEqual(actual, self.message.facility)
 
-    @patch(f'{DIR}.reduction_runner.ReductionRunner.__init__', return_value=None)
+    @patch(f'{DIR}.runner.ReductionRunner.__init__', return_value=None)
     def test_validate_input_failure(self, _):
         """
         Test: A ValueError is raised
