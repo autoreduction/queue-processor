@@ -60,40 +60,6 @@ class ReductionRunner:
             return value
         raise ValueError('%s is missing' % attribute)
 
-    def replace_variables(self, reduce_script):
-        """
-        We mock up the web_var module according to what's expected. The scripts want standard_vars
-        and advanced_vars, e.g.
-        https://github.com/mantidproject/mantid/blob/master/scripts/Inelastic/Direct/ReductionWrapper.py
-        """
-        def merge_dicts(dict_name):
-            """
-            Merge self.reduction_arguments[dictName] into reduce_script.web_var[dictName],
-            overwriting any key that exists in both with the value from sourceDict.
-            """
-            def merge_dict_to_name(dictionary_name, source_dict):
-                """ Merge the two dictionaries. """
-                old_dict = {}
-                if hasattr(reduce_script.web_var, dictionary_name):
-                    old_dict = getattr(reduce_script.web_var, dictionary_name)
-                else:
-                    pass
-                old_dict.update(source_dict)
-                setattr(reduce_script.web_var, dictionary_name, old_dict)
-
-            def ascii_encode(var):
-                """ ASCII encode var. """
-                return var.encode('ascii', 'ignore') if type(var).__name__ == "unicode" else var
-
-            encoded_dict = {k: ascii_encode(v) for k, v in self.reduction_arguments[dict_name].items()}
-            merge_dict_to_name(dict_name, encoded_dict)
-
-        if not hasattr(reduce_script, "web_var"):
-            reduce_script.web_var = types.ModuleType("reduce_vars")
-        merge_dicts("standard_vars")
-        merge_dicts("advanced_vars")
-        return reduce_script
-
     def reduce(self):
         """Start the reduction job."""
         self.message.software = self._get_mantid_version()

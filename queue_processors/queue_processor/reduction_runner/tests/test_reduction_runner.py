@@ -53,10 +53,6 @@ class TestReductionRunner(unittest.TestCase):
         self.assertEqual(runner.run_number, '4321')
         self.assertEqual(runner.reduction_arguments, 'None')
 
-    def test_replace_variables(self):
-        """Test replacement of variables"""
-        self.skipTest("Should be Unit tested")
-
     @patch(f'{DIR}.reduction_runner_utilities.windows_to_linux_path', return_value='path')
     @patch(f'{DIR}.reduction_runner.ReductionRunner.reduce')
     def test_main(self, mock_reduce, _):
