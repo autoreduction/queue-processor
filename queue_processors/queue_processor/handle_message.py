@@ -14,18 +14,22 @@ update relevant DB fields or logging out the status.
 """
 import datetime
 import logging
-from queue_processors.queue_processor.queueproc_utils.variable_utils import VariableUtils
 from typing import Optional
 from django.db import transaction
 
 import model.database.records as db_records
 from model.database import access as db_access
 from model.message.message import Message
-
-from queue_processors.queue_processor.reduction_runner.reduction_process_manager import ReductionProcessManager
-from queue_processors.queue_processor.reduction_runner.reduction_service import ReductionScript
-from queue_processors.queue_processor.queueproc_utils.instrument_variable_utils import InstrumentVariablesUtils
-from queue_processors.queue_processor.queueproc_utils.status_utils import StatusUtils
+from queue_processors.queue_processor.queueproc_utils.instrument_variable_utils import \
+    InstrumentVariablesUtils
+from queue_processors.queue_processor.queueproc_utils.status_utils import \
+    StatusUtils
+from queue_processors.queue_processor.queueproc_utils.variable_utils import \
+    VariableUtils
+from queue_processors.queue_processor.reduction_runner.reduction_process_manager import \
+    ReductionProcessManager
+from queue_processors.queue_processor.reduction_runner.reduction_service import \
+    ReductionScript
 
 
 class HandleMessage:
@@ -122,6 +126,7 @@ class HandleMessage:
             self._logger.warning("No instrument variables found on %s for run %s", instrument.name, message.run_number)
 
         self._logger.info('Getting script and arguments')
+        message.reduction_script = reduction_run.script
         message.reduction_arguments = self.get_script_arguments(variables)
         return message
 
