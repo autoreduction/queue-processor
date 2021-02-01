@@ -118,8 +118,8 @@ class ReductionScript:
     """
     Encapsulates the loading and running of a reduction script
     """
-    def __init__(self, instrument):
-        self.script_path = Path(SCRIPTS_DIRECTORY % instrument) / "reduce.py"
+    def __init__(self, instrument, module="reduce.py"):
+        self.script_path: Path = Path(SCRIPTS_DIRECTORY % instrument) / module
         self.skipped_runs = []
         self.script = None
 
@@ -129,9 +129,24 @@ class ReductionScript:
         :raises ImportError: If the reduction script is missing an import
         :raises SyntaxError: If there is a syntax error in the reduction script
         """
-        spec = spec_from_file_location("reducescript", self.script_path)
-        self.script = module_from_spec(spec)
-        spec.loader.exec_module(self.script)
+
+        module_name = os.path.splitext(self.script_path.name)[0]
+        try:
+            spec = spec_from_file_location(module_name, self.script_path)
+            if spec is None:
+                raise ImportError(f"Module at {self.script_path} does not exist.")
+            module = module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module
+        except ImportError as exp:
+            logger.error("Unable to load reduction script %s due to missing import. (%s)", self.script_path, exp)
+            raise
+        except SyntaxError:
+            logger.error("Syntax error in reduction script %s", self.script_path)
+            raise
+        except FileNotFoundError as err:
+            logger.error("Reduction script not found at %s", err.filename)
+            raise
 
     def text(self) -> str:
         # Read raw bytes and determine encoding

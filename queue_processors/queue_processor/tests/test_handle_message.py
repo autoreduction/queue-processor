@@ -292,7 +292,7 @@ class TestHandleMessage(unittest.TestCase):
         self.mocked_logger.warning.assert_called_once()
         assert message.reduction_arguments == expected_args
 
-    @patch('queue_processors.queue_processor.utils.instrument_variable_utils.import_module', return_value=FakeModule())
+    @patch('queue_processors.queue_processor.reduction.service.ReductionScript.load', return_value=FakeModule())
     def test_create_run_variables(self, import_module: Mock):
         expected_args = {'standard_vars': FakeModule().standard_vars, 'advanced_vars': FakeModule().advanced_vars}
         message = self.handler.create_run_variables(self.reduction_run, self.msg, self.instrument)
@@ -326,38 +326,30 @@ class TestHandleMessage(unittest.TestCase):
         assert self.reduction_run.status == STATUS.get_error()
         assert "Encountered error in transaction to save RunVariables" in self.reduction_run.message
 
-    @patch('queue_processors.queue_processor.utils.instrument_variable_utils.reduction_script_location')
+    @patch('queue_processors.queue_processor.reduction.service.ReductionScript.load', return_value=FakeModule())
     @patch("queue_processors.queue_processor.handle_message.ReductionProcessManager")
-    def test_data_ready_sends_onwards_completed(self, rpm, reduction_script_location: Mock):
-        with tempfile.TemporaryDirectory() as tmp:
-            reduction_script_location.return_value = tmp
-            with open(os.path.join(tmp, "reduce_vars.py"), 'w') as f:
-                f.write(TEST_REDUCE_VARS_CONTENT)
+    def test_data_ready_sends_onwards_completed(self, rpm, load: Mock):
+        rpm.return_value.run = partial(self.do_post_started_assertions, 4)
+        self.handler.create_run_records = Mock(return_value=(self.reduction_run, self.msg, self.instrument))
+        self.handler.data_ready(self.msg)
+        assert self.mocked_logger.info.call_count == 1
+        assert self.reduction_run.finished is not None
+        assert self.reduction_run.status == STATUS.get_completed()
+        load.assert_called_once()
 
-            rpm.return_value.run = partial(self.do_post_started_assertions, 4)
-            self.handler.create_run_records = Mock(return_value=(self.reduction_run, self.msg, self.instrument))
-            self.handler.data_ready(self.msg)
-            assert self.mocked_logger.info.call_count == 1
-            assert self.reduction_run.finished is not None
-            assert self.reduction_run.status == STATUS.get_completed()
-
-    @patch('queue_processors.queue_processor.utils.instrument_variable_utils.reduction_script_location')
+    @patch('queue_processors.queue_processor.reduction.service.ReductionScript.load', return_value=FakeModule())
     @patch("queue_processors.queue_processor.handle_message.ReductionProcessManager")
-    def test_data_ready_sends_onwards_error(self, rpm, reduction_script_location: Mock):
-        with tempfile.TemporaryDirectory() as tmp:
-            reduction_script_location.return_value = tmp
-            with open(os.path.join(tmp, "reduce_vars.py"), 'w') as f:
-                f.write(TEST_REDUCE_VARS_CONTENT)
-            self.msg.message = "I am error"
-            rpm.return_value.run = partial(self.do_post_started_assertions, 4)
-            self.handler.create_run_records = Mock(return_value=(self.reduction_run, self.msg, self.instrument))
-            self.handler.data_ready(self.msg)
-            assert self.mocked_logger.info.call_count == 1
-            assert self.reduction_run.finished is not None
-            assert self.reduction_run.status == STATUS.get_error()
-            assert self.reduction_run.message == "I am error"
+    def test_data_ready_sends_onwards_error(self, rpm, load: Mock):
+        self.msg.message = "I am error"
+        rpm.return_value.run = partial(self.do_post_started_assertions, 4)
+        self.handler.create_run_records = Mock(return_value=(self.reduction_run, self.msg, self.instrument))
+        self.handler.data_ready(self.msg)
+        assert self.mocked_logger.info.call_count == 1
+        assert self.reduction_run.finished is not None
+        assert self.reduction_run.status == STATUS.get_error()
+        assert self.reduction_run.message == "I am error"
+        load.assert_called_once()
 
 
-# TODO test that instrument is not enabled when it's reduce.py script is missing
 if __name__ == '__main__':
     unittest.main()

@@ -10,15 +10,14 @@ Module for dealing with instrument reduction variables.
 import html
 import logging
 import logging.config
-import os
 from typing import Any, List, Tuple
 
 from django.db import transaction
 from django.db.models import Q
 from model.database import access as db
 
-from queue_processors.queue_processor.utils.script_utils import import_module, reduction_script_location
 from queue_processors.queue_processor.utils.variable_utils import VariableUtils
+from queue_processors.queue_processor.reduction.service import ReductionScript
 
 
 class DataTooLong(ValueError):
@@ -60,8 +59,9 @@ class InstrumentVariablesUtils:
         possible_variables = model.InstrumentVariable.objects.filter(Q(experiment_reference=experiment_reference)
                                                                      | Q(start_run__lte=run_number),
                                                                      instrument_id=instrument_id)
-        reduce_vars_file = os.path.join(reduction_script_location(instrument_name), 'reduce_vars.py')
-        reduce_vars_module = import_module(reduce_vars_file)
+
+        reduce_vars = ReductionScript(instrument_name, 'reduce_vars.py')
+        reduce_vars_module = reduce_vars.load()
 
         variables = self._find_or_make_variables(possible_variables, run_number, instrument_id, reduce_vars_module)
 

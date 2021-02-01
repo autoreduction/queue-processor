@@ -7,6 +7,7 @@
 """
 Tests for parts of the reduction_service
 """
+import os
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -18,6 +19,7 @@ from queue_processors.queue_processor.reduction.exceptions import DatafileError,
 from queue_processors.queue_processor.reduction.service import ReductionDirectory, \
     TemporaryReductionDirectory, Datafile, ReductionScript, reduce
 from queue_processors.queue_processor.settings import CEPH_DIRECTORY, SCRIPTS_DIRECTORY
+from queue_processors.queue_processor.reduction.tests.module_to_import import TEST_DICTIONARY
 
 REDUCTION_SERVICE_DIR = "queue_processors.queue_processor.reduction.service"
 
@@ -221,20 +223,41 @@ class TestReductionService(unittest.TestCase):
         self.assertEqual([], script.skipped_runs)
         self.assertIsNone(script.script)
 
-    @patch(f"{REDUCTION_SERVICE_DIR}.spec_from_file_location")
-    @patch(f"{REDUCTION_SERVICE_DIR}.module_from_spec")
-    def test_reduction_script_load(self, mock_module_from_spec, mock_spec_from_file):
+    def test_reduction_script_load(self):
         """
-        Test: Reduction script is loaded
-        When: script has no skipped runs
+        Test importing a module that is all OK
         """
-        module_mock = MagicMock()
-        mock_spec_from_file.return_value = MagicMock()
-        mock_module_from_spec.return_value = module_mock
-        script = ReductionScript(self.instrument)
-        script.load()
-        mock_spec_from_file.assert_called_once_with("reducescript", script.script_path)
-        mock_module_from_spec.assert_called_once_with(mock_spec_from_file.return_value)
+        red_script = ReductionScript(self.instrument)
+        red_script.script_path = Path(os.path.join(os.path.dirname(__file__), "module_to_import.py"))
+        module = red_script.load()
+
+        assert getattr(module, "TEST_DICTIONARY") == TEST_DICTIONARY
+
+    def test_reduction_script_load_invalid_module(self):
+        """
+        Test importing a module that does not exist
+        """
+        red_script = ReductionScript(self.instrument)
+        red_script.script_path = Path("some.module.that.does.not.exist")
+        with self.assertRaises(ImportError):
+            red_script.load()
+
+    def test_reduction_script_load_syntax_error(self):
+        """
+        Test importing a module that has a syntax error in it
+        """
+        red_script = ReductionScript(self.instrument)
+        module_with_syntax_error_str = """TEST_DICTIONARY = {"key1": "value1"""
+        module_path = os.path.join("/tmp", "module_with_syntax_error.py")
+        red_script.script_path = Path(module_path)
+
+        with open(module_path, 'w') as file:
+            file.write(module_with_syntax_error_str)
+
+        with self.assertRaises(SyntaxError):
+            red_script.load()
+
+        os.remove(module_path)
 
     @patch(f"{REDUCTION_SERVICE_DIR}.channels_redirected")
     def test_reduce(self, _):
