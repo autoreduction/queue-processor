@@ -14,7 +14,8 @@ import uuid
 from copy import deepcopy
 from unittest import mock
 
-from mock import patch
+from mock import Mock, patch
+from parameterized.parameterized import parameterized
 from model.message.message import Message
 from queue_processors.queue_processor import queue_listener
 from queue_processors.queue_processor.handle_message import HandleMessage
@@ -80,17 +81,20 @@ class TestQueueListener(unittest.TestCase):
 
     def test_on_message_message_unknown_field(self):
         """
+        Test receiving a message with an unknown field
         """
         self.listener.on_message(self.headers, {"apples": 1234567})
         self.mocked_logger.error.assert_called_once()
 
     def test_on_message_unknown_topic(self):
+        "Test receiving a message on an unknown topic"
         headers = deepcopy(self.headers)
         headers["destination"] = "unknown"
         self.listener.on_message(headers, {"run_number": 1234567})
         self.mocked_logger.error.assert_called_once()
 
-    def test_on_message_can_receive_a_prepopulated_Message(self):
+    def test_on_message_can_receive_a_prepopulated_message(self):
+        "Test receiving an already constructed Message object"
         message = Message()
         message.populate({"run_number": 1234567})
         self.listener.on_message(self.headers, message)
@@ -101,6 +105,7 @@ class TestQueueListener(unittest.TestCase):
         self.assertIsInstance(self.mocked_handler.data_ready.call_args[0][0], Message)
 
     def test_on_message_sends_acknowledgement(self):
+        "Test that acknowledgement is sent when the message is received and parsed successfully"
         message = {"run_number": 1234567}
         self.listener.on_message(self.headers, message)
         self.assertFalse(self.listener.is_processing_message())
@@ -109,7 +114,13 @@ class TestQueueListener(unittest.TestCase):
         self.mocked_handler.data_ready.assert_called_once()
         self.assertIsInstance(self.mocked_handler.data_ready.call_args[0][0], Message)
 
-    def test_on_message_handler_catches_InvalidStateException(self):
-        self.mocked_handler.data_ready.side_effect = InvalidStateException
+    @parameterized.expand([[InvalidStateException], [Exception]])
+    def test_on_message_handler_catches_exceptions(self, exception_class):
+        "Test on_message correctly handles an exception being raised"
+
+        def raise_expected_exception(msg):
+            raise exception_class(Mock(), msg)
+
+        self.mocked_handler.data_ready.side_effect = raise_expected_exception
         self.listener.on_message(self.headers, {"run_number": 1234567})
         self.mocked_logger.error.assert_called_once()
