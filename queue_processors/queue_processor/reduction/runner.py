@@ -22,7 +22,7 @@ from queue_processors.queue_processor.reduction.service import (Datafile, Reduct
                                                                 TemporaryReductionDirectory, reduce)
 from queue_processors.queue_processor.settings import MANTID_PATH, TEMP_ROOT_DIRECTORY
 
-logger = logging.getLogger("reduction")
+logger = logging.getLogger("reduction_runner")
 
 
 class ReductionRunner:
@@ -60,27 +60,31 @@ class ReductionRunner:
     def reduce(self):
         """Start the reduction job."""
         self.message.software = self._get_mantid_version()
+        reduction_script_path = ""
+        if self.message.description is not None:
+            logger.info("DESCRIPTION: %s", self.message.description)
 
         try:
-            # log and update AMQ message to reduction started
-            if self.message.description is not None:
-                logger.info("DESCRIPTION: %s", self.message.description)
-
             datafile = Datafile(self.data_file)
-            reduction_script = ReductionScript(self.instrument)
-            reduction_dir = ReductionDirectory(self.instrument, self.proposal, self.run_number)
-            temp_dir = TemporaryReductionDirectory(self.proposal, self.run_number)
+        except DatafileError as exp:
+            logger.error("Problem reading datafile: %s", traceback.format_exc())
+            self.message.message = "REDUCTION Error: %s" % exp
+            return  # stops the reduction and allows the parent to read the outcome in the message
+
+        reduction_script = ReductionScript(self.instrument)
+        reduction_script_path = reduction_script.script_path
+
+        reduction_dir = ReductionDirectory(self.instrument, self.proposal, self.run_number)
+        temp_dir = TemporaryReductionDirectory(self.proposal, self.run_number)
+        try:
             reduction_log_stream = reduce(reduction_dir, temp_dir, datafile, reduction_script)
             self.message.reduction_log = reduction_log_stream.getvalue()
             self.message.reduction_data = str(reduction_dir.path)
-
-        except DatafileError as exp:
-            logger.error("Problem reading datafile: %s", self.data_file)
-            self.message.message = "REDUCTION Error: %s" % exp
-
         except ReductionScriptError as exp:
-            logger.error("Error encountered when running the reduction script: %s", self.data_file)
-            self.message.message = "REDUCTION Error: %s" % exp
+
+            logger.error("Error encountered when running the reduction script: %s", reduction_script_path)
+            self.message.message = "REDUCTION Error: Error encountered when running the reduction script: %s\n\n%s" % (
+                reduction_script_path, exp)
 
         except Exception as exp:
             logger.error(traceback.format_exc())
@@ -107,37 +111,43 @@ class ReductionRunner:
 
 
 def main():
-    """ Main method. """
+    """
+    This is the entrypoint when a reduction is started. This is run in a subprocess from
+    ReductionProcessManager, and the required parameters to perform the reduction are passed
+    as process arguments.
+
+    Additionally, the resulting Message is written to a temporary file which the
+    parent process reads back to mark the result of the reduction run in the DB.
+    """
     data, temp_output_file = sys.argv[1], sys.argv[2]
     try:
         message = Message()
         message.populate(data)
-    except Exception as exp:
+    except ValueError as exp:
         logger.error("Could not populate message from data: %s", str(exp))
-        sys.exit(1)
+        raise
 
-    log_stream_handler = None
     try:
         reduction = ReductionRunner(message)
-        log_stream_handler = logging.StreamHandler(reduction.admin_log_stream)
-        logger.addHandler(log_stream_handler)
+    except Exception as exp:
+        message.message = str(exp)
+        logger.info("Message data error: %s", message.serialize(limit_reduction_script=True))
+        raise
+
+    log_stream_handler = logging.StreamHandler(reduction.admin_log_stream)
+    logger.addHandler(log_stream_handler)
+    try:
         reduction.reduce()
         # write out the reduction message
         with open(temp_output_file, "w") as out_file:
             out_file.write(reduction.message.serialize())
-
-    except ValueError as exp:
-        message.message = str(exp)
-        logger.info("Message data error: %s", message.serialize(limit_reduction_script=True))
-        raise
 
     except Exception as exp:
         logger.info("ReductionRunner error: %s", str(exp))
         raise
 
     finally:
-        if log_stream_handler is not None:
-            logger.removeHandler(log_stream_handler)
+        logger.removeHandler(log_stream_handler)
 
 
 if __name__ == "__main__":  # pragma : no cover

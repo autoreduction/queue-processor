@@ -15,6 +15,7 @@ import tempfile
 from mock import patch, call, Mock
 
 from model.message.message import Message
+from queue_processors.queue_processor.reduction.exceptions import ReductionScriptError
 from queue_processors.queue_processor.reduction.runner import ReductionRunner, main
 
 
@@ -52,11 +53,19 @@ class TestReductionRunner(unittest.TestCase):
         self.assertEqual(runner.run_number, '4321')
         self.assertEqual(runner.reduction_arguments, 'None')
 
-    @patch(f'{DIR}.utilities.windows_to_linux_path', return_value='path')
-    @patch(f'{DIR}.runner.ReductionRunner.reduce')
-    def test_main(self, mock_reduce, _):
+    @patch(f'{DIR}.runner.ReductionRunner.validate_input', side_effect=ValueError)
+    def test_init_validate_throws(self, _: Mock):
         """
-        Test: A QueueClient is initialised and connected and ppa.reduce is called
+        Test: Failing to parse a parameter will raise a ValueError
+        When: called with a parameter that can't be validated
+        """
+        with self.assertRaises(ValueError):
+            ReductionRunner(self.message)
+
+    @patch(f'{DIR}.runner.ReductionRunner.reduce')
+    def test_main(self, mock_reduce):
+        """
+        Test: the reduction is run and on success finishes as expected
         When: The main method is called
         """
         with tempfile.NamedTemporaryFile() as tmp_file:
@@ -72,9 +81,25 @@ class TestReductionRunner(unittest.TestCase):
         assert self.data["reduction_script"] == out_data["reduction_script"]
         assert self.data["reduction_arguments"] == out_data["reduction_arguments"]
 
+    @patch(f'{DIR}.runner.ReductionRunner.reduce', side_effect=Exception)
+    def test_main_reduce_raises(self, mock_reduce):
+        """
+        Test: the reduction is called but the reduce function raises an Exception
+        When: The main method is called
+        """
+        with tempfile.NamedTemporaryFile() as tmp_file:
+            sys.argv = ['', json.dumps(self.data), tmp_file.name]
+            self.assertRaises(Exception, main)
+        mock_reduce.assert_called_once()
+
+    def test_main_bad_data_for_populate(self):
+        with tempfile.NamedTemporaryFile() as tmp_file:
+            sys.argv = ['', json.dumps({"apples": 13}), tmp_file.name]
+            self.assertRaises(ValueError, main)
+
     @patch(f'{DIR}.runner.logger.info')
     @patch(f'{DIR}.runner.ReductionRunner.__init__')
-    def test_main_inner_value_error(self, mock_runner_init, mock_logger_info):
+    def test_main_inner_exception(self, mock_runner_init, mock_logger_info):
         """
         Test: The correct message is sent from the exception handlers in main
         When: A ValueError exception is raised from ppa.reduce
@@ -84,35 +109,16 @@ class TestReductionRunner(unittest.TestCase):
         def raise_value_error(arg1):
             """Raise Value Error"""
             self.assertEqual(arg1, self.message)
-            raise ValueError(expected_error_msg)
+            raise Exception(expected_error_msg)
 
         mock_runner_init.side_effect = raise_value_error
         with tempfile.NamedTemporaryFile() as tmp_file:
             sys.argv = ['', json.dumps(self.data), tmp_file.name]
-            self.assertRaises(ValueError, main)
+            self.assertRaises(Exception, main)
 
         self.message.message = expected_error_msg
         mock_logger_info.assert_has_calls(
             [call('Message data error: %s', self.message.serialize(limit_reduction_script=True))])
-
-    # pylint: disable = too-many-arguments
-    @patch(f'{DIR}.runner.logger.info')
-    @patch(f'{DIR}.runner.ReductionRunner.__init__')
-    def test_main_inner_exception(self, mock_runner_init, mock_logger_info):
-        """
-        Test: The correct message is sent from the exception handlers in main
-        When: A bare Exception is raised from ppa.reduce
-        """
-        def raise_exception(arg1):
-            """Raise Exception"""
-            self.assertEqual(arg1, self.message)
-            raise Exception('error-message')
-
-        mock_runner_init.side_effect = raise_exception
-        with tempfile.NamedTemporaryFile() as tmp_file:
-            sys.argv = ['', json.dumps(self.data), tmp_file.name]
-            self.assertRaises(Exception, main)
-        mock_logger_info.assert_has_calls([call('ReductionRunner error: %s', 'error-message')])
 
     @patch(f'{DIR}.runner.ReductionRunner.__init__', return_value=None)
     def test_validate_input_success(self, _):
@@ -138,3 +144,84 @@ class TestReductionRunner(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             ReductionRunner.validate_input(mock_self, 'facility')
+
+    @patch(f'{DIR}.runner.logger.info')
+    @patch(f'{DIR}.runner.ReductionRunner._get_mantid_version', return_value="5.1.0")
+    def test_reduce_bad_datafile(self, _get_mantid_version: Mock, mock_logger_info: Mock):
+        self.message.description = "testdescription"
+        runner = ReductionRunner(self.message)
+        runner.reduce()
+        mock_logger_info.assert_called_once()
+        assert mock_logger_info.call_args[0][1] == "testdescription"
+        _get_mantid_version.assert_called_once()
+        assert runner.message.message == 'REDUCTION Error: Problem reading datafile: /isis/data.nxs'
+
+    @patch(f'{DIR}.runner.ReductionRunner._get_mantid_version', return_value="5.1.0")
+    @patch(f'{DIR}.runner.reduce')
+    def test_reduce_throws_reductionscripterror(self, reduce: Mock, _get_mantid_version: Mock):
+        reduce.side_effect = ReductionScriptError
+        with tempfile.NamedTemporaryFile() as tmpfile:
+            self.message.data = tmpfile.name
+
+            runner = ReductionRunner(self.message)
+            runner.reduce()
+
+        reduce.assert_called_once()
+        _get_mantid_version.assert_called_once()
+        assert str(reduce.call_args[0][2].path) == tmpfile.name
+        assert runner.message.reduction_data is None
+        assert runner.message.software == "5.1.0"
+        assert "REDUCTION Error: Error encountered when running the reduction script" in runner.message.message
+
+    @patch(f'{DIR}.runner.ReductionRunner._get_mantid_version', return_value="5.1.0")
+    @patch(f'{DIR}.runner.reduce')
+    def test_reduce_throws_any_exception(self, reduce: Mock, _get_mantid_version: Mock):
+        reduce.side_effect = Exception
+        with tempfile.NamedTemporaryFile() as tmpfile:
+            self.message.data = tmpfile.name
+
+            runner = ReductionRunner(self.message)
+            runner.reduce()
+
+        reduce.assert_called_once()
+        _get_mantid_version.assert_called_once()
+        assert str(reduce.call_args[0][2].path) == tmpfile.name
+        assert runner.message.reduction_data is None
+        assert runner.message.software == "5.1.0"
+        assert "REDUCTION Error:" in runner.message.message
+
+    @patch(f'{DIR}.runner.ReductionRunner._get_mantid_version', return_value="5.1.0")
+    @patch(f'{DIR}.runner.reduce')
+    def test_reduce_ok(self, reduce: Mock, _get_mantid_version: Mock):
+        with tempfile.NamedTemporaryFile() as tmpfile:
+            self.message.data = tmpfile.name
+
+            runner = ReductionRunner(self.message)
+            runner.reduce()
+
+        reduce.assert_called_once()
+        _get_mantid_version.assert_called_once()
+        assert str(reduce.call_args[0][2].path) == tmpfile.name
+        assert runner.message.reduction_data is not None
+        assert runner.message.reduction_log is not None
+        assert runner.message.message is None
+        assert runner.message.software == "5.1.0"
+
+    @patch(f'{DIR}.runner.logger')
+    def test_get_mantid_version(self, logger: Mock):
+        assert ReductionRunner._get_mantid_version() is None
+        assert logger.error.call_count == 2
+
+    # @patch(f'{DIR}.runner.ReductionRunner._get_mantid_version', return_value="5.1.0")
+    # @patch(f'{DIR}.runner.reduce')
+    # def test_reduce(self, reduce: Mock, _get_mantid_version: Mock):
+    #     with tempfile.NamedTemporaryFile() as tmpfile:
+    #         self.message.data = tmpfile.name
+
+    #         runner = ReductionRunner(self.message)
+    #         runner.reduce()
+
+    #     reduce.assert_called_once()
+    #     assert reduce.call_args[0][3] == tmpfile.name
+    #     assert runner.message.reduction_data is not None
+    #     assert runner.message.software == "5.1.0"
