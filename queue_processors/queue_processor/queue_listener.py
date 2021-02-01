@@ -80,7 +80,10 @@ class QueueListener:
                 else:
                     self.logger.error("Received a message on an unknown topic '%s'", destination)
             except InvalidStateException as exp:
-                self.logger.error("Stomp Client message handling exception: %s %s\n\n%s",
+                self.logger.error("Encountered invalid state exception: %s %s\n\n%s",
+                                  type(exp).__name__, exp, traceback.format_exc())
+            except Exception as exp:
+                self.logger.error("Unhandled exception encountered: %s %s\n\n%s",
                                   type(exp).__name__, exp, traceback.format_exc())
 
 
