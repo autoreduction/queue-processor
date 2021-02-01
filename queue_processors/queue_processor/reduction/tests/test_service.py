@@ -11,7 +11,7 @@ import os
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from unittest.mock import PropertyMock
+from unittest.mock import Mock, PropertyMock
 
 from mock import patch, MagicMock, call
 
@@ -223,6 +223,18 @@ class TestReductionService(unittest.TestCase):
         self.assertEqual([], script.skipped_runs)
         self.assertIsNone(script.script)
 
+    def test_reduction_script_run(self):
+        """
+        Tests: Correct fields set up
+        When: reduction script object is created
+        """
+        script = ReductionScript(self.instrument)
+
+        script.script = Mock()
+        script.run(Datafile("/tmp"), Datafile("/tmp"))
+
+        script.script.main.assert_called_once()
+
     def test_reduction_script_load(self):
         """
         Test importing a module that is all OK
@@ -258,6 +270,31 @@ class TestReductionService(unittest.TestCase):
             red_script.load()
 
         os.remove(module_path)
+
+    @patch("io.open", side_effect=IOError)
+    def test_reduction_script_text_ioerror(self, _: Mock):
+        """
+        Test importing a module that has a syntax error in it
+        """
+        red_script = ReductionScript(self.instrument)
+        assert red_script.text() == ""
+
+    def test_reduction_script_text(self):
+        """
+        Test importing a module that has a syntax error in it
+        """
+        script_file = Path("/tmp/somepath.py")
+        test_string = 'print(123)'
+
+        with open("/tmp/somepath.py", 'w') as file:
+            file.write(test_string)
+
+        red_script = ReductionScript(self.instrument)
+        red_script.script_path = script_file
+
+        assert red_script.text() == test_string
+
+        os.remove(script_file)
 
     @patch(f"{REDUCTION_SERVICE_DIR}.channels_redirected")
     def test_reduce(self, _):

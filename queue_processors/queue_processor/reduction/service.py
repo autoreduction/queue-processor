@@ -144,9 +144,6 @@ class ReductionScript:
         except SyntaxError:
             logger.error("Syntax error in reduction script %s", self.script_path)
             raise
-        except FileNotFoundError as err:
-            logger.error("Reduction script not found at %s", err.filename)
-            raise
 
     def text(self) -> str:
         "Returns the text of the script file. Does not load it as a module"
