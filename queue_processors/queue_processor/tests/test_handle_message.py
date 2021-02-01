@@ -10,12 +10,11 @@ Tests message handling for the queue processor
 """
 
 from functools import partial
-import os
 import random
 import unittest
 from unittest import mock
 from unittest.mock import Mock, patch
-import tempfile
+
 from django.db.utils import IntegrityError
 from parameterized import parameterized
 
@@ -98,12 +97,12 @@ class TestHandleMessage(unittest.TestCase):
         ["reduction_error", STATUS.get_error()],
         ["reduction_skipped", STATUS.get_skipped()],
     ])
-    def test_reduction_with_message(self, callable, expected_status):
+    def test_reduction_with_message(self, function_to_call, expected_status):
         """
         Tests a reduction error where the message contains an error message
         """
         self.msg.message = "I am a message"
-        getattr(self.handler, callable)(self.reduction_run, self.msg)
+        getattr(self.handler, function_to_call)(self.reduction_run, self.msg)
 
         assert self.reduction_run.status == expected_status
         assert self.reduction_run.message == "I am a message"
@@ -114,17 +113,18 @@ class TestHandleMessage(unittest.TestCase):
         ["reduction_error", STATUS.get_error()],
         ["reduction_skipped", STATUS.get_skipped()],
     ])
-    def test_reduction_without_message(self, callable, expected_status):
+    def test_reduction_without_message(self, function_to_call, expected_status):
         """
         Tests a reduction error where the message does not contain an error message
         """
-        getattr(self.handler, callable)(self.reduction_run, self.msg)
+        getattr(self.handler, function_to_call)(self.reduction_run, self.msg)
 
         assert self.reduction_run.status == expected_status
         self.mocked_logger.info.assert_called_once()
         assert self.mocked_logger.info.call_args[0][1] == self.msg.run_number
 
     def test_reduction_started(self):
+        "Tests starting a reduction"
         assert self.reduction_run.started is None
         assert self.reduction_run.finished is None
 
@@ -137,6 +137,7 @@ class TestHandleMessage(unittest.TestCase):
         self.mocked_logger.info.assert_called_once()
 
     def test_reduction_complete(self):
+        "Tests completing a reduction"
         self.msg.reduction_data = None
         assert self.reduction_run.finished is None
         self.handler.reduction_complete(self.reduction_run, self.msg)
@@ -148,6 +149,8 @@ class TestHandleMessage(unittest.TestCase):
         assert self.reduction_run.reduction_location.count() == 0
 
     def test_reduction_complete_with_reduction_data(self):
+        "Tests completing a reduction that has an output location at reduction_data"
+
         assert self.reduction_run.finished is None
         self.handler.reduction_complete(self.reduction_run, self.msg)
         self.mocked_logger.info.assert_called_once()
@@ -160,6 +163,7 @@ class TestHandleMessage(unittest.TestCase):
 
     @patch("queue_processors.queue_processor.handle_message.ReductionProcessManager")
     def test_do_reduction_success(self, rpm):
+        "Tests do_reduction success path"
         rpm.return_value.run = self.do_post_started_assertions
 
         self.handler.do_reduction(self.reduction_run, self.msg)
@@ -169,6 +173,7 @@ class TestHandleMessage(unittest.TestCase):
         assert self.reduction_run.reduction_location.first().file_path == "/path/1"
 
     def do_post_started_assertions(self, expected_info_calls=1):
+        "Helper to capture common assertions between tests"
         assert self.reduction_run.status == STATUS.get_processing()
         assert self.reduction_run.started is not None
         assert self.reduction_run.finished is None
@@ -180,6 +185,7 @@ class TestHandleMessage(unittest.TestCase):
     # a bit of a nasty patch, but everything underneath should be unit tested separately
     @patch("queue_processors.queue_processor.handle_message.ReductionProcessManager")
     def test_do_reduction_fail(self, rpm):
+        "Tests do_reduction failure path"
         self.msg.message = "Something failed"
 
         rpm.return_value.run = self.do_post_started_assertions
@@ -258,6 +264,7 @@ class TestHandleMessage(unittest.TestCase):
 
     @patch("queue_processors.queue_processor.handle_message.ReductionScript")
     def test_create_run_records_multiple_versions(self, reduction_script: Mock):
+        "Test creating multiple version of the same run"
         self.instrument.is_active = False
 
         reduction_script.return_value.text.return_value = "print(123)"
@@ -282,6 +289,7 @@ class TestHandleMessage(unittest.TestCase):
             obj.delete()
 
     def test_create_run_variables_no_variables_creates_nothing(self):
+        "Test running a reduction run with an empty reduce_vars.py"
         expected_args = {'standard_vars': {}, 'advanced_vars': {}}
 
         self.handler.instrument_variable.create_run_variables = mock.Mock(return_value=[])
@@ -294,6 +302,7 @@ class TestHandleMessage(unittest.TestCase):
 
     @patch('queue_processors.queue_processor.reduction.service.ReductionScript.load', return_value=FakeModule())
     def test_create_run_variables(self, import_module: Mock):
+        "Test the creation of RunVariables for the ReductionRun"
         expected_args = {'standard_vars': FakeModule().standard_vars, 'advanced_vars': FakeModule().advanced_vars}
         message = self.handler.create_run_variables(self.reduction_run, self.msg, self.instrument)
         assert self.mocked_logger.info.call_count == 2
@@ -301,13 +310,15 @@ class TestHandleMessage(unittest.TestCase):
         import_module.assert_called_once()
 
     def test_data_ready_other_exception_raised_ends_processing(self):
+        "Test an exception being raised inside data_ready handler"
         self.handler.create_run_records = Mock(side_effect=RuntimeError)
         with self.assertRaises(RuntimeError):
             self.handler.data_ready(self.msg)
         self.mocked_logger.info.assert_called_once()
         self.mocked_logger.error.assert_called_once()
 
-    def test_data_ready_variable_integrity_error_marks_reducion_error(self):
+    def test_data_ready_variable_integrity_error_marks_reduction_error(self):
+        "Test that an integrity error inside data_ready marks the reduction as errored"
         self.handler.create_run_records = Mock(return_value=(self.reduction_run, self.msg, self.instrument))
         self.handler.create_run_variables = Mock(side_effect=IntegrityError)
         with self.assertRaises(IntegrityError):
@@ -318,6 +329,7 @@ class TestHandleMessage(unittest.TestCase):
         assert "Encountered error in transaction to save RunVariables" in self.reduction_run.message
 
     def test_data_ready_no_reduce_vars(self):
+        "Test data_ready when the reduce_vars script does not exist and throws a FileNotFoundError"
         self.handler.create_run_records = Mock(return_value=(self.reduction_run, self.msg, self.instrument))
         with self.assertRaises(FileNotFoundError):
             self.handler.data_ready(self.msg)
@@ -329,6 +341,7 @@ class TestHandleMessage(unittest.TestCase):
     @patch('queue_processors.queue_processor.reduction.service.ReductionScript.load', return_value=FakeModule())
     @patch("queue_processors.queue_processor.handle_message.ReductionProcessManager")
     def test_data_ready_sends_onwards_completed(self, rpm, load: Mock):
+        "Test data_ready success path sends the message onwards for reduction"
         rpm.return_value.run = partial(self.do_post_started_assertions, 4)
         self.handler.create_run_records = Mock(return_value=(self.reduction_run, self.msg, self.instrument))
         self.handler.data_ready(self.msg)
@@ -340,6 +353,7 @@ class TestHandleMessage(unittest.TestCase):
     @patch('queue_processors.queue_processor.reduction.service.ReductionScript.load', return_value=FakeModule())
     @patch("queue_processors.queue_processor.handle_message.ReductionProcessManager")
     def test_data_ready_sends_onwards_error(self, rpm, load: Mock):
+        "Test data_ready error path sends the message onwards to be marked as errored"
         self.msg.message = "I am error"
         rpm.return_value.run = partial(self.do_post_started_assertions, 4)
         self.handler.create_run_records = Mock(return_value=(self.reduction_run, self.msg, self.instrument))

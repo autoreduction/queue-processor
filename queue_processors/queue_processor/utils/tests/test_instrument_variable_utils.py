@@ -407,16 +407,22 @@ class TestInstrumentVariableUtils(unittest.TestCase):
         assert variables[0].variable != newer_variables[0].variable
         self.delete_on_teardown = [reduction_run, variables, newer_reduction_run, newer_variables]
 
-    def test_get_help_module_dict_name_not_in_variable_help(self):
-        """
-        Test that empty string is returned
-        When the variable name is not contained in the help
-        """
-        assert not InstrumentVariablesUtils.get_help_text("apples", "123", FakeModule())
 
-    def test_get_help_module_no_variable_help(self):
-        """
-        Test that empty string is returned
-        When there is no variable_help in reduce_vars
-        """
-        assert not InstrumentVariablesUtils.get_help_text("apples", "123", {})
+def test_get_help_module_dict_name_not_in_variable_help():
+    """
+    Test that empty string is returned
+    When the variable name is not contained in the help
+    """
+    assert not InstrumentVariablesUtils.get_help_text("apples", "123", FakeModule())
+
+
+def test_get_help_module_no_variable_help():
+    """
+    Test that empty string is returned
+    When there is no variable_help in reduce_vars
+    """
+    assert not InstrumentVariablesUtils.get_help_text("apples", "123", {})
+
+
+if __name__ == '__main__':
+    unittest.main()

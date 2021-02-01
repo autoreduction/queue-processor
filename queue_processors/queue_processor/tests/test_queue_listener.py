@@ -23,8 +23,6 @@ from queue_processors.queue_processor.handling_exceptions import InvalidStateExc
 from queue_processors.queue_processor.queue_listener import QueueListener
 from utils.clients.queue_client import QueueClient
 
-from model.message.message import Message
-
 
 class TestQueueProcessor(unittest.TestCase):
     """

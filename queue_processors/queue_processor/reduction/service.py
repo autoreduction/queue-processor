@@ -149,6 +149,7 @@ class ReductionScript:
             raise
 
     def text(self) -> str:
+        "Returns the text of the script file. Does not load it as a module"
         # Read raw bytes and determine encoding
         try:
             with io.open(self.script_path, 'rb') as file_raw:

@@ -13,12 +13,12 @@ status in the database.
 import logging
 import time
 import traceback
+from contextlib import contextmanager
 
 from model.message.message import Message
 from queue_processors.queue_processor.handle_message import HandleMessage
 from queue_processors.queue_processor.handling_exceptions import InvalidStateException
 from utils.clients.queue_client import QueueClient
-from contextlib import contextmanager
 
 
 class QueueListener:
