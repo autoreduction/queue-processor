@@ -1,17 +1,18 @@
 """
 Unit tests for the end of run monitor
 """
-import unittest
-import os
 import csv
-from filelock import FileLock
+import os
+import unittest
 from unittest.mock import (Mock, patch, call)
 
-from model.message.message import Message
-from monitors.settings import (CYCLE_FOLDER, LAST_RUNS_CSV)
+from filelock import FileLock
+
 import monitors.run_detection as eorm
+from model.message.message import Message
 from monitors.run_detection import (InstrumentMonitor,
                                     InstrumentMonitorError)
+from monitors.settings import (CYCLE_FOLDER, LAST_RUNS_CSV)
 
 # Test data
 SUMMARY_FILE = ("WIS44731Smith,Smith,"
