@@ -9,8 +9,8 @@ Tests for code that generates a working local database for autoredction
 """
 import os
 import unittest
-
 from unittest.mock import Mock
+
 from sqlalchemy.exc import OperationalError
 
 from build.database.generate_database import (get_test_user_sql, get_sql_from_file,
