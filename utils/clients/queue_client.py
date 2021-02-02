@@ -8,7 +8,6 @@
 Client class for accessing queuing service
 """
 import logging
-import time
 import uuid
 
 import stomp

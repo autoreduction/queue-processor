@@ -37,3 +37,6 @@ def get_log_file(filename):
         with open(file_path, 'w') as _:
             pass
     return file_path
+
+
+PROJECT_ROOT = get_project_root()
