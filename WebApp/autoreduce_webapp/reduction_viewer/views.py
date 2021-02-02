@@ -212,40 +212,6 @@ def fail_queue(request):
 
     return context_dictionary
 
-
-@login_and_uows_valid
-@check_permissions
-@render_with('load_runs.html')
-# pylint:disable=no-member
-def load_runs(_, reference_number=None, instrument_name=None):
-    """
-    Render load runs
-    """
-    runs = []
-
-    if reference_number:
-        experiments = Experiment.objects.filter(reference_number=reference_number)
-        if experiments:
-            experiment = experiments[0]
-            runs = ReductionRun.objects.filter(experiment=experiment).order_by('-created')
-
-    elif instrument_name:
-        instrument = Instrument.objects.filter(name=instrument_name)
-
-        if instrument.exists():
-            runs = (ReductionRun.objects.
-                    # Get the foreign key 'status' now.
-                    # Otherwise many queries made from load_runs which is very slow.
-                    select_related('status')
-                    # Only get these attributes, to speed it up.
-                    .only('status', 'last_updated', 'run_number', 'run_name', 'run_version')
-                    .filter(instrument=instrument.first())
-                    .order_by('-created'))
-
-    context_dictionary = {"runs": runs}
-    return context_dictionary
-
-
 @login_and_uows_valid
 @check_permissions
 @render_with('run_summary.html')
