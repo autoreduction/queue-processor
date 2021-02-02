@@ -9,9 +9,9 @@ Test cases for the data preparation class
 """
 import os
 import unittest
+from unittest.mock import patch
 
 import pandas as pd
-from unittest.mock import patch
 
 from plotting.prepare_data import PrepareData
 

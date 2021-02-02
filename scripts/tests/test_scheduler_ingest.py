@@ -7,12 +7,11 @@
 """
 Tests the functionality within scheduler_ingest.py
 """
-from datetime import datetime
-
 import unittest
+from datetime import datetime
+from unittest.mock import patch
 
 from dateutil.relativedelta import relativedelta
-from unittest.mock import patch
 
 from scripts.scheduler_ingest import Cycle, MaintenanceDay, SchedulerDataProcessor
 
