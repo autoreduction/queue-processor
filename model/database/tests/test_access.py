@@ -86,7 +86,7 @@ class TestAccess(unittest.TestCase):
         When: get_experiment is called with create option True
         """
         database = access.start_database()
-        actual = access.get_experiment(rb_number=9999999, create=True)
+        actual = access.get_experiment(rb_number=9999999)
         self.assertIsInstance(actual, database.data_model.Experiment)
         mock_save.assert_called_once()
 
