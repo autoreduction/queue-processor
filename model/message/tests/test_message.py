@@ -10,8 +10,6 @@ Test the Message class
 import unittest
 import json
 
-from mock import patch
-
 import attr
 
 from model.message.message import Message

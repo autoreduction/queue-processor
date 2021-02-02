@@ -9,12 +9,10 @@ Unit tests to exercise the code responsible for common database access methods
 """
 import unittest
 
-from mock import patch, Mock
-
+from mock import Mock, patch
 from model.database import access
-
-from queue_processors.queue_processor.tests.test_handle_message import FakeMessage
 from model.database.records import create_reduction_run_record
+from queue_processors.queue_processor.tests.test_handle_message import FakeMessage
 
 
 class TestAccess(unittest.TestCase):
