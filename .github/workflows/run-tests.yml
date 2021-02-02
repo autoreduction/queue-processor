@@ -53,7 +53,7 @@ jobs:
       - name: Coveralls
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: coveralls --service=githu
+        run: coveralls --service=github
 
   selenium:
     name: Selenium
