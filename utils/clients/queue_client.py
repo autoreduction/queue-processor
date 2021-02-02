@@ -81,7 +81,7 @@ class QueueClient(AbstractClient):
             # time.sleep(0.5)
             self._connection = connection
 
-    def subscribe_queues(self, queue_list, consumer_name, listener, ack='auto'):
+    def subscribe_queues(self, queue_list, consumer_name, listener):
         """
         Subscribe a listener to the provided queues
         :param queue_list: The queue(s) to subscribe to as a string or list of strings
@@ -103,17 +103,14 @@ class QueueClient(AbstractClient):
             self._logger.info("[%s] Subscribing to %s", consumer_name, queue)
         self._logger.info("Successfully subscribed to all of the queues")
 
-    def subscribe_autoreduce(self, consumer_name, listener, ack='auto'):
+    def subscribe_autoreduce(self, consumer_name, listener):
         """
         Subscribe to queues including DataReady
         :param consumer_name: A name to assign to the consumer
         :param listener: A ConnectionListener object to assign to the stomp connection, optionally
         :param ack: The acknowledge type
         """
-        self.subscribe_queues(queue_list=[self.credentials.data_ready],
-                              consumer_name=consumer_name,
-                              listener=listener,
-                              ack=ack)
+        self.subscribe_queues(queue_list=[self.credentials.data_ready], consumer_name=consumer_name, listener=listener)
 
     def ack(self, message_id, subscription):
         """
