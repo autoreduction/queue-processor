@@ -13,4 +13,3 @@ if [[ $REPLY =~ ^[Yy]$ ]]
 then
     pkill -9 -f "python3 .*queue_processor/queue_listener_daemon.py start";
 fi
-## QueueProcessor
