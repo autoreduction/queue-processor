@@ -8,7 +8,7 @@
 Generate a mantid properties file
 """
 import os
-VALID_INSTRUMENTS = ['ENGINX', 'GEM', 'HRPD', 'MAPS', 'MARI', 'MUSR', 'OSIRIS', 'POLARIS', 'POLREF', 'WISH']
+from utils.settings import VALID_INSTRUMENTS
 
 CALIBRATION_DIRECTORIES = [
     r'/home/autoreduce/InstrumentFiles/WISH/Calibration/Cycle_11_4/', r'/isis/NDXENGINX/Instrument/data/cycle_14_3/',
