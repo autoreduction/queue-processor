@@ -20,7 +20,7 @@ def start_database():
     return database
 
 
-def get_instrument(instrument_name, create=False):
+def get_instrument(instrument_name):
     """
     Find the instrument record associated with the name provided in the database
     :param instrument_name: (str) The name of the instrument to search for
@@ -93,12 +93,7 @@ def get_reduction_run(instrument, run_number):
     """
     database = start_database()
     instrument_record = get_instrument(instrument)
-    # if instrument not yet in database then return empty record
-    if not instrument_record:
-        return instrument_record
-    return database.data_model.ReductionRun.objects \
-        .filter(instrument=instrument_record.id) \
-        .filter(run_number=run_number)
+    return database.data_model.ReductionRun.objects.filter(instrument=instrument_record.id, run_number=run_number)
 
 
 def find_highest_run_version(experiment, run_number) -> int:
