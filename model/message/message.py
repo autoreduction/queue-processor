@@ -8,16 +8,10 @@
 Represents the messages passed between AMQ queues
 """
 import json
-import logging
 
 import attr
 
 from model.message.validation import stages
-from utils.project.static_content import LOG_FORMAT
-from utils.project.structure import get_log_file
-
-# TODO use the common logging config
-logging.basicConfig(filename=get_log_file('job.log'), level=logging.INFO, format=LOG_FORMAT)
 
 
 # pylint:disable=too-many-instance-attributes
