@@ -11,7 +11,7 @@ import builtins
 import unittest
 
 from django.db import IntegrityError
-from mock import DEFAULT, Mock, call, patch
+from unittest.mock import DEFAULT, Mock, call, patch
 from scripts.manual_operations.manual_remove import (ManualRemove, main, remove, user_input_check)
 from utils.clients.django_database_client import DatabaseClient
 

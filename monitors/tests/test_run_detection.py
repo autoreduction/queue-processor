@@ -5,7 +5,7 @@ import unittest
 import os
 import csv
 from filelock import FileLock
-from mock import (Mock, patch, call)
+from unittest.mock import (Mock, patch, call)
 
 from model.message.message import Message
 from monitors.settings import (CYCLE_FOLDER, LAST_RUNS_CSV)

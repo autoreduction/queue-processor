@@ -11,7 +11,7 @@ import os
 import unittest
 
 import pandas as pd
-from mock import patch
+from unittest.mock import patch
 
 from plotting.prepare_data import PrepareData
 

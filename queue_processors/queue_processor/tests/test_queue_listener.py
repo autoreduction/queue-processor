@@ -13,8 +13,8 @@ import unittest
 import uuid
 from copy import deepcopy
 from unittest import mock
-
 from unittest.mock import patch
+
 from model.message.message import Message
 from queue_processors.queue_processor import queue_listener
 from queue_processors.queue_processor.handle_message import HandleMessage

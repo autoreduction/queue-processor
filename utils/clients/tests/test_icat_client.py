@@ -11,7 +11,7 @@ This is because we can not connect to icat for testing and it is not feasible
 to set up a local version for testing at this point.
 """
 import unittest
-from mock import patch
+from unittest.mock import patch
 
 import icat
 

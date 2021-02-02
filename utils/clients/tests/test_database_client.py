@@ -9,7 +9,7 @@ Test cases for the database client
 """
 import unittest
 
-from mock import patch
+from unittest.mock import patch
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm.session import Session
 

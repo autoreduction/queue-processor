@@ -9,7 +9,7 @@ Exercise the helper functions that process the validation results
 """
 import unittest
 
-from mock import patch
+from unittest.mock import patch
 from model.message.validation import process
 
 

@@ -9,7 +9,7 @@ Test cases for the django database client
 """
 import unittest
 
-from mock import patch
+from unittest.mock import patch
 
 from utils.clients.connection_exception import ConnectionException
 from utils.clients.django_database_client import DatabaseClient

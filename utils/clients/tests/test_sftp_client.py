@@ -10,7 +10,7 @@ Test SFTP client
 import unittest
 from unittest.mock import MagicMock
 
-from mock import patch
+from unittest.mock import patch
 
 from utils.clients.connection_exception import ConnectionException
 from utils.clients.sftp_client import SFTPClient
