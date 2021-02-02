@@ -33,10 +33,10 @@ class TestValidators(unittest.TestCase):
         """
         Tests the valid and invalid cases for RB numbers
         """
-        valid_values = [1, 20, "10000"]
+        valid_values = [1000000, 2000000, "1000000", 9999999]
         for i in valid_values:
-            self.assertTrue(validators.validate_rb_number(i))
+            self.assertTrue(validators.validate_rb_number(i), "Failed with value %s" % i)
 
         invalid_values = [0, 0.1, -1, -100, None, "foo", 12345678910, "1231435252242"]
         for i in invalid_values:
-            self.assertFalse(validators.validate_rb_number(i))
+            self.assertFalse(validators.validate_rb_number(i), "Failed with value %s" % i)
