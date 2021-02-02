@@ -116,6 +116,9 @@ def main():
 if __name__ == '__main__':
     main()
 
+    # print a success message to the terminal in case it's not being run through the daemon
+    print("QueueClient connected and QueueListener active.")
+
     # if running this script as main (e.g. when debigging the queue listener)
     # the activemq connection runs async and without this sleep the process will
     # just connect to activemq then exit completely

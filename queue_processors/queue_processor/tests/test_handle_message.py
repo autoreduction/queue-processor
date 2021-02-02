@@ -22,9 +22,9 @@ import model.database.access
 from model.database.records import create_reduction_run_record
 from model.message.message import Message
 from queue_processors.queue_processor.handle_message import HandleMessage
-from queue_processors.queue_processor.utils.status_utils import StatusUtils
+from queue_processors.queue_processor.status_utils import StatusUtils
 from queue_processors.queue_processor.queue_listener import QueueListener
-from queue_processors.queue_processor.utils.tests.test_instrument_variable_utils import \
+from queue_processors.queue_processor.tests.test_instrument_variable_utils import \
     FakeModule
 
 STATUS = StatusUtils()

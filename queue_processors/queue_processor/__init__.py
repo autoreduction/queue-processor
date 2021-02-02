@@ -9,7 +9,8 @@
 
 import logging.config
 import os
-from utils.project.structure import get_project_root
+
+from utils.settings import PROJECT_ROOT
 
 from .settings import LOG_LEVEL
 
@@ -29,7 +30,7 @@ LOGGING = {
         'root_file': {
             'level': LOG_LEVEL,
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(get_project_root(), 'logs', 'everything_else.log'),
+            'filename': os.path.join(PROJECT_ROOT, 'logs', 'everything_else.log'),
             'formatter': 'verbose',
             'maxBytes': 104857600,
             'backupCount': 20,
@@ -37,7 +38,7 @@ LOGGING = {
         'queue_processor_file': {
             'level': LOG_LEVEL,
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(get_project_root(), 'logs', 'queue_processor.log'),
+            'filename': os.path.join(PROJECT_ROOT, 'logs', 'queue_processor.log'),
             'formatter': 'verbose',
             'maxBytes': 104857600,
             'backupCount': 20,
@@ -45,7 +46,7 @@ LOGGING = {
         'autoreduction_file': {
             'level': LOG_LEVEL,
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(get_project_root(), 'logs', 'autoreduction_processor.log'),
+            'filename': os.path.join(PROJECT_ROOT, 'logs', 'autoreduction_processor.log'),
             'formatter': 'verbose',
             'maxBytes': 104857600,
             'backupCount': 20,
@@ -53,7 +54,7 @@ LOGGING = {
         'handle_queue_message_file': {
             'level': LOG_LEVEL,
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(get_project_root(), 'logs', 'handle_queue_message.log'),
+            'filename': os.path.join(PROJECT_ROOT, 'logs', 'handle_queue_message.log'),
             'formatter': 'verbose',
             'maxBytes': 104857600,
             'backupCount': 20,

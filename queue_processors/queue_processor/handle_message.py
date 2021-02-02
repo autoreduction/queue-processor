@@ -20,9 +20,9 @@ from django.db import transaction
 import model.database.records as db_records
 from model.database import access as db_access
 from model.message.message import Message
-from queue_processors.queue_processor.utils.instrument_variable_utils import InstrumentVariablesUtils
-from queue_processors.queue_processor.utils.status_utils import StatusUtils
-from queue_processors.queue_processor.utils.variable_utils import VariableUtils
+from queue_processors.queue_processor.instrument_variable_utils import InstrumentVariablesUtils
+from queue_processors.queue_processor.status_utils import StatusUtils
+from queue_processors.queue_processor.variable_utils import VariableUtils
 from queue_processors.queue_processor.reduction.process_manager import ReductionProcessManager
 from queue_processors.queue_processor.reduction.service import ReductionScript
 

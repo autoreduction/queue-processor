@@ -16,7 +16,7 @@ from django.db import transaction
 from django.db.models import Q
 from model.database import access as db
 
-from queue_processors.queue_processor.utils.variable_utils import VariableUtils
+from queue_processors.queue_processor.variable_utils import VariableUtils
 from queue_processors.queue_processor.reduction.service import ReductionScript
 
 

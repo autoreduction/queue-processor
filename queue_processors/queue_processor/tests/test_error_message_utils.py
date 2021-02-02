@@ -10,11 +10,11 @@ Module that tests error_message_utils
 
 from unittest import mock
 
-from queue_processors.queue_processor.utils.error_message_utils import log_error_and_notify
+from queue_processors.queue_processor.error_message_utils import log_error_and_notify
 
 
-@mock.patch("queue_processors.queue_processor.utils.error_message_utils.db")
-@mock.patch("queue_processors.queue_processor.utils.error_message_utils.logger")
+@mock.patch("queue_processors.queue_processor.error_message_utils.db")
+@mock.patch("queue_processors.queue_processor.error_message_utils.logger")
 # pylint:disable=invalid-name
 def test_log_error_and_notify(logger: mock.Mock, db: mock.Mock):
     """

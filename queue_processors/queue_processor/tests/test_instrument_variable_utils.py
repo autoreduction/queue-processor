@@ -16,10 +16,10 @@ from mock import patch
 
 import model.database.access
 from model.database.records import create_reduction_run_record
-from queue_processors.queue_processor.utils.instrument_variable_utils import \
+from queue_processors.queue_processor.instrument_variable_utils import \
     InstrumentVariablesUtils
 
-UTILS_PATH = "queue_processors.queue_processor.utils"
+UTILS_PATH = "queue_processors.queue_processor."
 MESSAGE_CLASS_PATH = UTILS_PATH + ".messaging_utils.MessagingUtils"
 
 
