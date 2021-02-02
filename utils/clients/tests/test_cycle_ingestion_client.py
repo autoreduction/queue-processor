@@ -12,7 +12,7 @@ from urllib.error import URLError
 
 import unittest
 
-from mock import patch, MagicMock
+from unittest.mock import patch, MagicMock
 
 import suds
 

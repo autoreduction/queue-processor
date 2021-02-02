@@ -11,7 +11,7 @@ Unit tests for _plot_handler
 # Core Dependencies
 import unittest
 
-from mock import patch, Mock
+from unittest.mock import patch, Mock
 
 # Internal Dependencies
 from plotting._plot_handler.plot_handler import DjangoDashApp

@@ -4,7 +4,7 @@ Unit tests for the Custom pagination module
 
 import unittest
 from datetime import datetime, timedelta
-from mock import patch
+from unittest.mock import patch
 
 
 from utilities.pagination import CustomPage, RunPage, CustomPaginator, PageLimitException

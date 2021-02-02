@@ -10,7 +10,7 @@ Tests that the mantid docker container can be built and can run a simple reducti
 import unittest
 import os
 
-from mock import patch, MagicMock
+from unittest.mock import patch, MagicMock
 
 from docker_reduction.mount import Mount
 from docker_reduction.mantid.operations import MantidDocker

@@ -8,7 +8,7 @@
 Test cases for the manual job submission script
 """
 import unittest
-from mock import patch, Mock, MagicMock
+from unittest.mock import patch, Mock, MagicMock
 import scripts.manual_operations.manual_submission as ms
 
 from utils.clients.django_database_client import DatabaseClient

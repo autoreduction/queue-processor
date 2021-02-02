@@ -11,7 +11,7 @@ import sys
 import unittest
 import os
 
-from mock import patch
+from unittest.mock import patch
 
 from model.database import DjangoORM
 from utils.project.structure import get_project_root

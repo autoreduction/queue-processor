@@ -9,9 +9,8 @@ gitpython==3.1.12
 # because GitHub Actions runs Ubuntu so even if the build pass, the installation could fail
 ipython==7.20.0
 lxml==4.6.2
-mock==4.0.2
-pandas==1.2.1
-plotly==4.14.3
+pandas==1.1.5
+plotly==4.12.0
 pylint==2.6.0
 pytest==6.2.2
 pytest-cov==2.11.1

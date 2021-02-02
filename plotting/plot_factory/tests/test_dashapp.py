@@ -10,7 +10,7 @@ Unit tests for plot factory DashApp
 
 # Core Dependencies
 import unittest
-from mock import patch, Mock
+from unittest.mock import patch, Mock
 
 # Internal Dependencies
 from plotting.plot_factory.dashapp import DashApp

@@ -12,7 +12,7 @@ from datetime import datetime
 import unittest
 
 from dateutil.relativedelta import relativedelta
-from mock import patch
+from unittest.mock import patch
 
 from scripts.scheduler_ingest import Cycle, MaintenanceDay, SchedulerDataProcessor
 

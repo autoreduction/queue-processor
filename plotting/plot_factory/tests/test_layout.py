@@ -8,7 +8,7 @@
 
 # Core Dependencies
 import unittest
-from mock import patch
+from unittest.mock import patch
 
 
 # Internal Dependencies

@@ -8,7 +8,7 @@
 
 # Core Dependencies
 import unittest
-from mock import patch, PropertyMock
+from unittest.mock import patch, PropertyMock
 
 # Internal Dependencies
 from plotting.plot_factory.plot_factory import PlotFactory

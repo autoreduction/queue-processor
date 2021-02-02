@@ -10,7 +10,7 @@ Test cases for the meta-language interpreter
 import unittest
 
 from unittest.mock import MagicMock
-from mock import patch
+from unittest.mock import patch
 from plotting.plot_meta_language.interpreter import Interpreter
 
 

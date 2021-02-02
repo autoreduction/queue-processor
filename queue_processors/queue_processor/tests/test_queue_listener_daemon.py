@@ -9,8 +9,8 @@ Tests the Queue Listener Daemon
 """
 import unittest
 from unittest import mock
-
 import pytest
+
 from queue_processors.queue_processor import queue_listener_daemon
 
 from queue_processors.queue_processor.queue_listener_daemon import QueueListenerDaemon
