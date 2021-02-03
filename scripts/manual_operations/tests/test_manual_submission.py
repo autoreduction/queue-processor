@@ -11,16 +11,14 @@ import unittest
 from unittest.mock import patch, Mock, MagicMock
 import scripts.manual_operations.manual_submission as ms
 
-from model.database import access
-from model.database.records import create_reduction_run_record
 from model.message.message import Message
 
 from queue_processors.queue_processor.status_utils import StatusUtils
-from queue_processors.queue_processor.tests.test_handle_message import FakeMessage
 from utils.clients.connection_exception import ConnectionException
 from utils.clients.django_database_client import DatabaseClient
 from utils.clients.icat_client import ICATClient
 from utils.clients.queue_client import QueueClient
+from scripts.manual_operations.tests.test_manual_remove import create_experiment_and_instrument, make_test_run
 
 STATUS = StatusUtils()
 
@@ -39,19 +37,9 @@ class TestManualSubmission(unittest.TestCase):
         self.sub_run_args = [MagicMock(name="QueueClient"), -1, "instrument", "data_file_location", -1]
         self.valid_return = ("location", "rb")
 
-        db_handle = access.start_database()
-        self.data_model = db_handle.data_model
-        self.variable_model = db_handle.variable_model
+        self.experiment, self.instrument = create_experiment_and_instrument()
 
-        self.experiment, _ = self.data_model.Experiment.objects.get_or_create(reference_number=1231231)
-        self.instrument, _ = self.data_model.Instrument.objects.get_or_create(name="ARMI", is_active=1, is_paused=0)
-        status = STATUS.get_queued()
-        fake_script_text = "scripttext"
-
-        msg1 = FakeMessage()
-        msg1.run_number = 101
-        self.run1 = create_reduction_run_record(self.experiment, self.instrument, msg1, "1", fake_script_text, status)
-        self.run1.save()
+        self.run1 = make_test_run(self.experiment, self.instrument, "1")
         self.run1.data_location.create(file_path='test/file/path/2.raw')
 
     def tearDown(self) -> None:
