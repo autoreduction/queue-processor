@@ -20,7 +20,6 @@ class TestDatabaseClient(unittest.TestCase):
     """
     Exercises the database client
     """
-
     def test_default_init(self):
         """
         Test: Class variables are created and set
@@ -48,8 +47,8 @@ class TestDatabaseClient(unittest.TestCase):
         client.connect()
         self.assertIsNotNone(client.data_model)
         self.assertIsNotNone(client.variable_model)
-        self.assertIsNotNone(client.data_model.Instrument.objects.first())
-        self.assertIsNotNone(client.variable_model.Variable.objects.first())
+        self.assertIsNotNone(client.data_model.Instrument.objects.all())
+        self.assertIsNotNone(client.variable_model.Variable.objects.all())
 
     @patch('utils.clients.django_database_client.DatabaseClient.data_model')
     @patch('utils.clients.django_database_client.DatabaseClient.variable_model')
