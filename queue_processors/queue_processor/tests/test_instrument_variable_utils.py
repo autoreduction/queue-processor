@@ -11,8 +11,8 @@ import operator
 import unittest
 from collections.abc import Iterable
 from typing import Any, List, Union
-from parameterized import parameterized
 from unittest.mock import patch
+from parameterized import parameterized
 
 import model.database.access
 from model.database.records import create_reduction_run_record
