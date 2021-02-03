@@ -27,7 +27,7 @@ setup_requires = ['attrs==20.3.0',
                   'django_plotly_dash==1.5.0',
                   'django-user-agents==0.4.0',
                   'filelock==3.0.12',
-                  'fire==0.3.1',
+                  'fire==0.4.0',
                   'gitpython==3.1.12',
                   # this is the highest available version that pip can find on CentOS - be careful when updating
                   # because GitHub Actions runs Ubuntu so even if the build pass, the installation could fail
