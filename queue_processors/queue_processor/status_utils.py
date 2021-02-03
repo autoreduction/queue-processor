@@ -23,7 +23,7 @@ class StatusUtils:
         if status_value in self._cached_statuses:
             return self._cached_statuses[status_value]
         else:
-            status_record = access.get_status(status_value, create=True)
+            status_record = access.get_status(status_value)
             self._cached_statuses[status_value] = status_record
         return status_record
 

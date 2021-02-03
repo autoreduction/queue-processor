@@ -32,7 +32,7 @@ def get_instrument(instrument_name):
     return instrument
 
 
-def get_status(status_value, create=False):
+def get_status(status_value):
     """
     Find the status record associated with the value provided in the database
     :param status_value: (str) The value of the status record e.g. 'Completed'
