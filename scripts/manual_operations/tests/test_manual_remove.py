@@ -8,13 +8,16 @@
 Test cases for the manual job submission script
 """
 import builtins
+from queue_processors.queue_processor.tests.test_handle_message import FakeMessage
 import unittest
 from unittest.mock import DEFAULT, Mock, call, patch
 
 from django.db import IntegrityError
 
 from scripts.manual_operations.manual_remove import (ManualRemove, main, remove, user_input_check)
-from utils.clients.django_database_client import DatabaseClient
+from queue_processors.queue_processor.status_utils import StatusUtils
+
+STATUS = StatusUtils()
 
 
 # pylint:disable=invalid-name,too-many-public-methods
@@ -23,24 +26,32 @@ class TestManualRemove(unittest.TestCase):
     Test manual_remove.py
     """
     def setUp(self):
-        self.manual_remove = ManualRemove(instrument='GEM')
+        self.manual_remove = ManualRemove(instrument='ARMI')
         # Setup database connection so it is possible to use
         # ReductionRun objects with valid meta data
-        self.database_client = DatabaseClient()
-        self.database_client.connect()
+        db_handle = model.database.access.start_database()
+        self.data_model = db_handle.data_model
+        self.variable_model = db_handle.variable_model
 
-        # Fake ReductionRun objects for testing
-        self.gem_object_1 = self.database_client.data_model.ReductionRun(run_number='123',
-                                                                         run_name='v1 of GEM123',
-                                                                         run_version='1')
+        self.experiment, _ = self.data_model.Experiment.objects.get_or_create(reference_number=1231231)
+        self.instrument, _ = self.data_model.Instrument.objects.get_or_create(name="ARMI", is_active=1, is_paused=0)
+        status = STATUS.get_queued()
+        fake_script_text = "scripttext"
 
-        self.gem_object_2 = self.database_client.data_model.ReductionRun(run_number='123',
-                                                                         run_name='v2 of GEM123',
-                                                                         run_version='2')
+        msg1 = FakeMessage()
+        msg1.run_number = 101
+        self.run1 = create_reduction_run_record(self.experiment, self.instrument, msg1, "1", fake_script_text, status)
+        self.run2 = create_reduction_run_record(self.experiment, self.instrument, msg1, "2", fake_script_text, status)
+        self.run3 = create_reduction_run_record(self.experiment, self.instrument, msg1, "3", fake_script_text, status)
 
-        self.gem_object_3 = self.database_client.data_model.ReductionRun(run_number='123',
-                                                                         run_name='v3 of GEM123',
-                                                                         run_version='3')
+        self.run1.save()
+        self.run2.save()
+        self.run3.save()
+
+    def tearDown(self) -> None:
+        self.run1.delete()
+        self.run2.delete()
+        self.run3.delete()
 
     @staticmethod
     def _run_variable(reduction_run_id=None, variable_ptr_id=None):
@@ -58,8 +69,8 @@ class TestManualRemove(unittest.TestCase):
         When: find_run_versions_in_database is called
         """
         # Test data originates from build/database/populate_reduction_viewer.sql
-        actual = self.manual_remove.find_run_versions_in_database(run_number='001')
-        self.assertEqual(2, len(actual))
+        actual = self.manual_remove.find_run_versions_in_database(run_number=101)
+        self.assertEqual(3, len(actual))
 
     def test_find_run_invalid(self):
         """
@@ -76,7 +87,7 @@ class TestManualRemove(unittest.TestCase):
         Test: run_not_found is called
         When: No matching records are found in the database
         """
-        self.manual_remove.to_delete['123'] = []
+        self.manual_remove.to_delete['101'] = []
         self.manual_remove.process_results(delete_all_versions=True)
         mock_not_found.assert_called_once()
         mock_not_found.reset_mock()
@@ -90,7 +101,7 @@ class TestManualRemove(unittest.TestCase):
         Test: That the code does not call multiple_versions_found
         When: The results only contain single runs (not multiple versions)
         """
-        self.manual_remove.to_delete['123'] = ['test']
+        self.manual_remove.to_delete['101'] = ['test']
         self.manual_remove.process_results(delete_all_versions=False)
         mock_multi.assert_not_called()
         mock_not_found.assert_not_called()
@@ -103,7 +114,7 @@ class TestManualRemove(unittest.TestCase):
 
         Note: For this test the content of results[key] list does not have to be Run objects
         """
-        self.manual_remove.to_delete['123'] = ['test', 'test2']
+        self.manual_remove.to_delete['101'] = ['test', 'test2']
         self.manual_remove.process_results(delete_all_versions=False)
         mock_multi_version.assert_called_once()
 
@@ -115,7 +126,7 @@ class TestManualRemove(unittest.TestCase):
 
         Note: For this test the content of results[key] list does not have to be Run objects
         """
-        self.manual_remove.to_delete['123'] = ['test', 'test2']
+        self.manual_remove.to_delete['101'] = ['test', 'test2']
         self.manual_remove.process_results(delete_all_versions=True)
         mock_multi_version.assert_not_called()
 
@@ -124,8 +135,8 @@ class TestManualRemove(unittest.TestCase):
         Test: That the correct corresponding run is deleted
         When: The value of a to_delete key is empty
         """
-        self.manual_remove.to_delete['123'] = []
-        self.manual_remove.run_not_found('123')
+        self.manual_remove.to_delete['101'] = []
+        self.manual_remove.run_not_found('101')
         self.assertEqual(0, len(self.manual_remove.to_delete))
 
     @patch('scripts.manual_operations.manual_remove.ManualRemove.validate_csv_input')
@@ -135,10 +146,10 @@ class TestManualRemove(unittest.TestCase):
         Test: That the user is not asked more than once for input
         When: The input is valid
         """
-        self.manual_remove.to_delete['123'] = [self.gem_object_1, self.gem_object_2]
+        self.manual_remove.to_delete['101'] = [self.run1, self.run2, self.run3]
         mock_input.return_value = '2'
         mock_validate_csv.return_value = (True, ['2'])
-        self.manual_remove.multiple_versions_found('123')
+        self.manual_remove.multiple_versions_found('101')
 
         self.assertEqual(1, mock_validate_csv.call_count)
         mock_validate_csv.assert_has_calls([call('2')])
@@ -150,10 +161,10 @@ class TestManualRemove(unittest.TestCase):
         Test: Input is re-validated
         When: The user initially gives incorrect input
         """
-        self.manual_remove.to_delete['123'] = [self.gem_object_1, self.gem_object_2]
+        self.manual_remove.to_delete['101'] = [self.run1, self.run2, self.run3]
         mock_input.side_effect = ['invalid', '2']
         mock_validate_csv.side_effect = [(False, []), (True, ['2'])]
-        self.manual_remove.multiple_versions_found('123')
+        self.manual_remove.multiple_versions_found('101')
 
         self.assertEqual(2, mock_validate_csv.call_count)
         mock_validate_csv.assert_has_calls([call('invalid'), call('2')])
@@ -165,14 +176,14 @@ class TestManualRemove(unittest.TestCase):
         Test: That manual_remove will remove one run version
         When: Multiple versions are found for a run and one version is inputted
         """
-        self.manual_remove.to_delete['123'] = [self.gem_object_1, self.gem_object_2]
+        self.manual_remove.to_delete['101'] = [self.run1, self.run2, self.run3]
         mock_input.return_value = '2'
         mock_validate_csv.return_value = (True, ['2'])
-        self.manual_remove.multiple_versions_found('123')
+        self.manual_remove.multiple_versions_found('101')
 
         # We said to delete version 2 so it should be the only entry for that run number
-        self.assertEqual(1, len(self.manual_remove.to_delete['123']))
-        self.assertEqual('2', self.manual_remove.to_delete['123'][0].run_version)
+        self.assertEqual(1, len(self.manual_remove.to_delete['101']))
+        self.assertEqual('2', self.manual_remove.to_delete['101'][0].run_version)
 
     @patch('scripts.manual_operations.manual_remove.ManualRemove.validate_csv_input')
     @patch.object(builtins, 'input')
@@ -181,15 +192,15 @@ class TestManualRemove(unittest.TestCase):
         Test: The correct versions are deleted
         When: The user asks to delete two run versions as an inputted list
         """
-        self.manual_remove.to_delete['123'] = [self.gem_object_1, self.gem_object_3]
+        self.manual_remove.to_delete['101'] = [self.run1, self.run2, self.run3]
         mock_input.return_value = '1,3'
         mock_validate_csv.return_value = (True, ['1', '3'])
-        self.manual_remove.multiple_versions_found('123')
+        self.manual_remove.multiple_versions_found('101')
 
         # We said to delete versions 1 and 3 so there should be those entries to delete for that run
-        self.assertEqual(2, len(self.manual_remove.to_delete['123']))
-        self.assertEqual('1', self.manual_remove.to_delete['123'][0].run_version)
-        self.assertEqual('3', self.manual_remove.to_delete['123'][1].run_version)
+        self.assertEqual(2, len(self.manual_remove.to_delete['101']))
+        self.assertEqual('1', self.manual_remove.to_delete['101'][0].run_version)
+        self.assertEqual('3', self.manual_remove.to_delete['101'][1].run_version)
 
     @patch('scripts.manual_operations.manual_remove.ManualRemove.validate_csv_input')
     @patch.object(builtins, 'input')
@@ -198,18 +209,16 @@ class TestManualRemove(unittest.TestCase):
         Test: That the correct versions are deleted
         When: The user asks to delete a range of versions
         """
-        self.manual_remove.to_delete['123'] = [
-            self.gem_object_1, self.gem_object_2, self.gem_object_3
-        ]
+        self.manual_remove.to_delete['101'] = [self.run1, self.run2, self.run3]
         mock_input.return_value = '1-3'
         mock_validate_csv.return_value = (True, ['1', '2', '3'])
-        self.manual_remove.multiple_versions_found('123')
+        self.manual_remove.multiple_versions_found('101')
 
         # We said to delete versions 1, 2 and 3 so there should 3 entries to delete for that run
-        self.assertEqual(3, len(self.manual_remove.to_delete['123']))
-        self.assertEqual('1', self.manual_remove.to_delete['123'][0].run_version)
-        self.assertEqual('2', self.manual_remove.to_delete['123'][1].run_version)
-        self.assertEqual('3', self.manual_remove.to_delete['123'][2].run_version)
+        self.assertEqual(3, len(self.manual_remove.to_delete['101']))
+        self.assertEqual('1', self.manual_remove.to_delete['101'][0].run_version)
+        self.assertEqual('2', self.manual_remove.to_delete['101'][1].run_version)
+        self.assertEqual('3', self.manual_remove.to_delete['101'][2].run_version)
 
     @patch('scripts.manual_operations.manual_remove.ManualRemove.validate_csv_input')
     @patch.object(builtins, 'input')
@@ -218,17 +227,15 @@ class TestManualRemove(unittest.TestCase):
         Test: That the correct versions are deleted
         When: The user asks to delete a range of versions in reverse
         """
-        self.manual_remove.to_delete['123'] = [
-            self.gem_object_1, self.gem_object_2, self.gem_object_3
-        ]
+        self.manual_remove.to_delete['101'] = [self.run1, self.run2, self.run3]
         mock_input.return_value = '3-1'
         mock_validate_csv.return_value = (True, ['1', '2', '3'])
-        self.manual_remove.multiple_versions_found('123')
+        self.manual_remove.multiple_versions_found('101')
         # We said to delete version 2 so it should be the only entry for that run number
-        self.assertEqual(3, len(self.manual_remove.to_delete['123']))
-        self.assertEqual('1', self.manual_remove.to_delete['123'][0].run_version)
-        self.assertEqual('2', self.manual_remove.to_delete['123'][1].run_version)
-        self.assertEqual('3', self.manual_remove.to_delete['123'][2].run_version)
+        self.assertEqual(3, len(self.manual_remove.to_delete['101']))
+        self.assertEqual('1', self.manual_remove.to_delete['101'][0].run_version)
+        self.assertEqual('2', self.manual_remove.to_delete['101'][1].run_version)
+        self.assertEqual('3', self.manual_remove.to_delete['101'][2].run_version)
 
     def test_validate_csv_single_val(self):
         """
@@ -284,8 +291,7 @@ class TestManualRemove(unittest.TestCase):
     @patch('scripts.manual_operations.manual_remove.ManualRemove.delete_records')
     @patch('scripts.manual_operations.manual_remove.user_input_check')
     @patch('scripts.manual_operations.manual_remove.get_run_range', return_value=range(1, 12))
-    def test_main_range_greater_than_ten(self, mock_get_run_range, mock_uic, mock_delete,
-                                         mock_process, mock_find):
+    def test_main_range_greater_than_ten(self, mock_get_run_range, mock_uic, mock_delete, mock_process, mock_find):
         """
         Test: The correct control functions are called including handle_input for many runs
         When: The main() function is called
@@ -302,8 +308,7 @@ class TestManualRemove(unittest.TestCase):
     @patch('scripts.manual_operations.manual_remove.ManualRemove.process_results')
     @patch('scripts.manual_operations.manual_remove.ManualRemove.delete_records')
     @patch('scripts.manual_operations.manual_remove.get_run_range', return_value=range(1, 10))
-    def test_main_range_less_than_ten(self, mock_get_run_range, mock_delete, mock_process,
-                                      mock_find):
+    def test_main_range_less_than_ten(self, mock_get_run_range, mock_delete, mock_process, mock_find):
         """
         Test: The correct control functions are called including handle_input for many runs
         When: The main() function is called
@@ -376,9 +381,8 @@ class TestManualRemove(unittest.TestCase):
                     delete_data_location=DEFAULT,
                     delete_variables=DEFAULT,
                     delete_reduction_run=DEFAULT)
-    def test_delete_records_integrity_err_reverts_to_manual(self, delete_reduction_location,
-                                                            delete_data_location, delete_variables,
-                                                            delete_reduction_run):
+    def test_delete_records_integrity_err_reverts_to_manual(self, delete_reduction_location, delete_data_location,
+                                                            delete_variables, delete_reduction_run):
         """
         Test: If the ReducedRun.delete fails with Integrity Error
               the code reverts back to the manual deletion of each table entry
@@ -413,10 +417,7 @@ class TestManualRemove(unittest.TestCase):
         Test: ALL variable records are successfully deleted from the database
         When: Delete_variables function is called.
         """
-        mock_run_variables = [
-            self._run_variable(variable_ptr_id=3),
-            self._run_variable(variable_ptr_id=5)
-        ]
+        mock_run_variables = [self._run_variable(variable_ptr_id=3), self._run_variable(variable_ptr_id=5)]
         mock_find_vars.return_value = mock_run_variables
         mock_variable_model = Mock()
         self.manual_remove.database.variable_model = mock_variable_model
