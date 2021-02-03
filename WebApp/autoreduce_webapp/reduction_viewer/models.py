@@ -192,6 +192,9 @@ class Notification(models.Model):
         """ :return: The message """
         return u'%s' % self.message
 
+    def __str__(self):
+        return f"Notification: {self.message}"
+
     def severity_verbose(self):
         """
         :return: the severity as its textual value
