@@ -11,12 +11,18 @@ import unittest
 from unittest.mock import patch, Mock, MagicMock
 import scripts.manual_operations.manual_submission as ms
 
-from utils.clients.django_database_client import DatabaseClient
-from utils.clients.queue_client import QueueClient
-from utils.clients.icat_client import ICATClient
-from utils.clients.connection_exception import ConnectionException
-
+from model.database import access
+from model.database.records import create_reduction_run_record
 from model.message.message import Message
+
+from queue_processors.queue_processor.status_utils import StatusUtils
+from queue_processors.queue_processor.tests.test_handle_message import FakeMessage
+from utils.clients.connection_exception import ConnectionException
+from utils.clients.django_database_client import DatabaseClient
+from utils.clients.icat_client import ICATClient
+from utils.clients.queue_client import QueueClient
+
+STATUS = StatusUtils()
 
 
 # pylint:disable=no-self-use,too-many-public-methods
@@ -26,11 +32,32 @@ class TestManualSubmission(unittest.TestCase):
     """
     def setUp(self):
         """ Creates test variables used throughout the test suite """
-        self.loc_and_rb_args = [MagicMock(name="DatabaseClient"), MagicMock(name="ICATClient"),
-                                "instrument", -1, "file_ext"]
-        self.sub_run_args = [MagicMock(name="QueueClient"),
-                             -1, "instrument", "data_file_location", -1]
+        self.loc_and_rb_args = [
+            MagicMock(name="DatabaseClient"),
+            MagicMock(name="ICATClient"), "instrument", -1, "file_ext"
+        ]
+        self.sub_run_args = [MagicMock(name="QueueClient"), -1, "instrument", "data_file_location", -1]
         self.valid_return = ("location", "rb")
+
+        db_handle = access.start_database()
+        self.data_model = db_handle.data_model
+        self.variable_model = db_handle.variable_model
+
+        self.experiment, _ = self.data_model.Experiment.objects.get_or_create(reference_number=1231231)
+        self.instrument, _ = self.data_model.Instrument.objects.get_or_create(name="ARMI", is_active=1, is_paused=0)
+        status = STATUS.get_queued()
+        fake_script_text = "scripttext"
+
+        msg1 = FakeMessage()
+        msg1.run_number = 101
+        self.run1 = create_reduction_run_record(self.experiment, self.instrument, msg1, "1", fake_script_text, status)
+        self.run1.save()
+        self.run1.data_location.create(file_path='test/file/path/2.raw')
+
+    def tearDown(self) -> None:
+        self.experiment.delete()
+        self.instrument.delete()
+        self.run1.delete()
 
     def mock_database_query_result(self, side_effects):
         """ Sets the return value(s) of database queries to those provided
@@ -59,8 +86,7 @@ class TestManualSubmission(unittest.TestCase):
             ret_obj[0].reference_number = self.valid_return[1]
         return ret_obj
 
-    @patch('scripts.manual_operations.manual_submission.get_location_and_rb_from_database',
-           return_value=None)
+    @patch('scripts.manual_operations.manual_submission.get_location_and_rb_from_database', return_value=None)
     @patch('scripts.manual_operations.manual_submission.get_location_and_rb_from_icat')
     def test_get_checks_database_then_icat(self, mock_from_icat, mock_from_database):
         """
@@ -97,9 +123,9 @@ class TestManualSubmission(unittest.TestCase):
         """
         db_client = DatabaseClient()
         db_client.connect()
-        actual = ms.get_location_and_rb_from_database(db_client, 'MUSR', 2)
+        actual = ms.get_location_and_rb_from_database(db_client, 'ARMI', 101)
         # Values from testing database
-        expected = ('test/file/path/2.raw', 123)
+        expected = ('test/file/path/2.raw', 1231231)
         self.assertEqual(expected, actual)
 
     @patch('scripts.manual_operations.manual_submission.get_icat_instrument_prefix')
@@ -113,8 +139,7 @@ class TestManualSubmission(unittest.TestCase):
         self.loc_and_rb_args[1].execute_query.assert_called_once()
         self.assertEqual(location_and_rb, self.valid_return)
 
-    @patch('scripts.manual_operations.manual_submission.get_icat_instrument_prefix',
-           return_value='MAR')
+    @patch('scripts.manual_operations.manual_submission.get_icat_instrument_prefix', return_value='MAR')
     def test_icat_uses_prefix_mapper(self, _):
         """
         Test: The instrument shorthand name is used
@@ -127,10 +152,7 @@ class TestManualSubmission(unittest.TestCase):
         # Add return here to ensure we do NOT try fall through cases
         # and do NOT have to deal with multiple calls to mock
         icat_client.execute_query.return_value = [data_file]
-        actual_loc, actual_inv_name = ms.get_location_and_rb_from_icat(icat_client,
-                                                                       'MARI',
-                                                                       '123',
-                                                                       'nxs')
+        actual_loc, actual_inv_name = ms.get_location_and_rb_from_icat(icat_client, 'MARI', '123', 'nxs')
         self.assertEqual('location', actual_loc)
         self.assertEqual('inv_name', actual_inv_name)
         icat_client.execute_query.assert_called_once_with("SELECT df FROM Datafile df WHERE"
@@ -181,9 +203,7 @@ class TestManualSubmission(unittest.TestCase):
                           run_number=self.sub_run_args[4],
                           facility="ISIS",
                           started_by=-1)
-        self.sub_run_args[0].send.assert_called_with('/queue/DataReady',
-                                                     message,
-                                                     priority=1)
+        self.sub_run_args[0].send.assert_called_with('/queue/DataReady', message, priority=1)
 
     @patch('icat.Client')
     @patch('utils.clients.icat_client.ICATClient.connect')
@@ -253,11 +273,12 @@ class TestManualSubmission(unittest.TestCase):
         Test: That there is an early return
         When: Calling submit_run with active_mq as None
         """
-        self.assertIsNone(ms.submit_run(active_mq_client=None,
-                                        rb_number=None,
-                                        instrument=None,
-                                        data_file_location=None,
-                                        run_number=None))
+        self.assertIsNone(
+            ms.submit_run(active_mq_client=None,
+                          rb_number=None,
+                          instrument=None,
+                          data_file_location=None,
+                          run_number=None))
 
     # pylint:disable=too-many-arguments
     @patch('scripts.manual_operations.manual_submission.login_icat')
@@ -266,8 +287,7 @@ class TestManualSubmission(unittest.TestCase):
     @patch('scripts.manual_operations.manual_submission.get_location_and_rb')
     @patch('scripts.manual_operations.manual_submission.submit_run')
     @patch('scripts.manual_operations.manual_submission.get_run_range')
-    def test_main_valid(self, mock_run_range, mock_submit, mock_get_loc,
-                        mock_queue, mock_database, mock_icat):
+    def test_main_valid(self, mock_run_range, mock_submit, mock_get_loc, mock_queue, mock_database, mock_icat):
         """
         Test: The control methods are called in the correct order
         When: main is called and the environment (client settings, input, etc.) is valid
