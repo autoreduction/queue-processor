@@ -8,14 +8,16 @@
 Test cases for the manual job submission script
 """
 import builtins
-from queue_processors.queue_processor.tests.test_handle_message import FakeMessage
 import unittest
 from unittest.mock import DEFAULT, Mock, call, patch
 
 from django.db import IntegrityError
 
-from scripts.manual_operations.manual_remove import (ManualRemove, main, remove, user_input_check)
+from model.database import access
+from model.database.records import create_reduction_run_record
 from queue_processors.queue_processor.status_utils import StatusUtils
+from queue_processors.queue_processor.tests.test_handle_message import FakeMessage
+from scripts.manual_operations.manual_remove import (ManualRemove, main, remove, user_input_check)
 
 STATUS = StatusUtils()
 
@@ -29,7 +31,7 @@ class TestManualRemove(unittest.TestCase):
         self.manual_remove = ManualRemove(instrument='ARMI')
         # Setup database connection so it is possible to use
         # ReductionRun objects with valid meta data
-        db_handle = model.database.access.start_database()
+        db_handle = access.start_database()
         self.data_model = db_handle.data_model
         self.variable_model = db_handle.variable_model
 
@@ -49,6 +51,8 @@ class TestManualRemove(unittest.TestCase):
         self.run3.save()
 
     def tearDown(self) -> None:
+        self.experiment.delete()
+        self.instrument.delete()
         self.run1.delete()
         self.run2.delete()
         self.run3.delete()
