@@ -39,7 +39,6 @@ import calendar
 import os
 import shutil
 import time
-from utils.settings import VALID_INSTRUMENTS
 
 GENERIC_CYCLE_PATH = os.path.join('NDX{}', 'Instrument', 'data', 'cycle_{}_{}')
 

@@ -9,7 +9,7 @@ Module to test the utility functions for status records in the database
 """
 import unittest
 
-from mock import patch
+from unittest.mock import patch
 
 from queue_processors.queue_processor.status_utils import StatusUtils
 

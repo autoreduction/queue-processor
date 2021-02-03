@@ -11,7 +11,7 @@ Tests for post process admin and helper functionality
 import unittest
 from subprocess import CalledProcessError
 
-from mock import Mock, patch
+from unittest.mock import Mock, patch
 from model.message.message import Message
 from queue_processors.queue_processor.reduction.process_manager import ReductionProcessManager
 

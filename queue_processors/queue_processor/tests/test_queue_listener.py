@@ -14,7 +14,7 @@ import uuid
 from copy import deepcopy
 from unittest import mock
 
-from mock import Mock, patch
+from unittest.mock import Mock, patch
 from parameterized.parameterized import parameterized
 from model.message.message import Message
 from queue_processors.queue_processor import queue_listener

@@ -12,7 +12,7 @@ import json
 import sys
 import unittest
 import tempfile
-from mock import patch, call, Mock
+from unittest.mock import patch, call, Mock
 
 from model.message.message import Message
 from queue_processors.queue_processor.reduction.exceptions import ReductionScriptError

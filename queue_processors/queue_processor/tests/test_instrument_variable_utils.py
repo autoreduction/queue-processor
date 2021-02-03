@@ -12,7 +12,7 @@ import unittest
 from collections.abc import Iterable
 from typing import Any, List, Union
 from parameterized import parameterized
-from mock import patch
+from unittest.mock import patch
 
 import model.database.access
 from model.database.records import create_reduction_run_record

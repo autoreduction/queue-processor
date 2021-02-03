@@ -12,7 +12,7 @@ import io
 import unittest
 from pathlib import Path
 
-from mock import patch
+from unittest.mock import patch
 
 from queue_processors.queue_processor.reduction.utilities import windows_to_linux_path, channels_redirected
 

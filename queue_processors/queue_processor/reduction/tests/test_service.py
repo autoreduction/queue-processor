@@ -13,7 +13,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import Mock, PropertyMock
 
-from mock import patch, MagicMock, call
+from unittest.mock import patch, MagicMock, call
 
 from queue_processors.queue_processor.reduction.exceptions import DatafileError, ReductionScriptError
 from queue_processors.queue_processor.reduction.service import ReductionDirectory, \
