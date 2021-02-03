@@ -27,7 +27,7 @@ class Instrument(models.Model):
         """
         :return: str representation of instrument
         """
-        return f"{name}"
+        return f"{self.name}"
 
 
 class Experiment(models.Model):
