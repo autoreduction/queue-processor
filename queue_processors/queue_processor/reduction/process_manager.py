@@ -30,8 +30,8 @@ class ReductionProcessManager:
         result_message = None
         try:
             # We need to run the reduction in a new process, otherwise scripts
-            # will fail when they use things that don't like being subprocesses,
-            # e.g. matplotlib or Mantid
+            # will fail when they use things that require access to a main loop
+            # e.g. a GUI main loop, for matplotlib or Mantid
             python_path = sys.executable
             with tempfile.NamedTemporaryFile("w+") as temp_output_file:
                 args = [python_path, REDUCTION_DIRECTORY, self.message.serialize(), temp_output_file.name]

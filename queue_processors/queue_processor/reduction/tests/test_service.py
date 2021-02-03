@@ -221,7 +221,7 @@ class TestReductionService(unittest.TestCase):
         script = ReductionScript(self.instrument)
         self.assertEqual(Path(SCRIPTS_DIRECTORY % self.instrument) / "reduce.py", script.script_path)
         self.assertEqual([], script.skipped_runs)
-        self.assertIsNone(script.script)
+        self.assertIsNone(script.module)
 
     def test_reduction_script_run(self):
         """
@@ -230,10 +230,10 @@ class TestReductionService(unittest.TestCase):
         """
         script = ReductionScript(self.instrument)
 
-        script.script = Mock()
+        script.module = Mock()
         script.run(Datafile("/tmp"), Datafile("/tmp"))
 
-        script.script.main.assert_called_once()
+        script.module.main.assert_called_once()
 
     def test_reduction_script_load(self):
         """
@@ -244,6 +244,7 @@ class TestReductionService(unittest.TestCase):
         module = red_script.load()
 
         assert getattr(module, "TEST_DICTIONARY") == TEST_DICTIONARY
+        assert red_script.module is not None
 
     def test_reduction_script_load_invalid_module(self):
         """

@@ -8,25 +8,24 @@
 Linux only!
 Tests that data can traverse through the autoreduction system successfully
 """
-
+import shutil
 import os
 import unittest
 import time
-import shutil
-
+from pathlib import Path
 from model.database import access as db
 from model.message.message import Message
 
 from scripts.manual_operations import manual_remove as remove
 
-from utils.settings import ACTIVEMQ_SETTINGS
 from utils.clients.django_database_client import DatabaseClient
-from utils.clients.queue_client import QueueClient
 from utils.data_archive.data_archive_creator import DataArchiveCreator
 from utils.data_archive.archive_explorer import ArchiveExplorer
-from utils.project.structure import get_project_root
+from utils.project.structure import PROJECT_ROOT
 
 from utils.clients.connection_exception import ConnectionException
+
+from queue_processors.queue_processor.queue_listener import main
 
 REDUCE_SCRIPT = \
     'def main(input_file, output_dir):\n' \
@@ -34,6 +33,17 @@ REDUCE_SCRIPT = \
     '\n' \
     'if __name__ == "__main__":\n' \
     '\tmain()\n'
+
+SYNTAX_ERROR_REDUCE_SCRIPT = \
+    'def main(input_file, output_dir):\n' \
+    '\tprint("WISH system test\n' \
+    '\n' \
+    'if __name__ == "__main__":\n' \
+    '\tmain()\n'
+
+VARS_SCRIPT = """
+standard_vars={"variable1":"value1"}
+"""
 
 
 class TestEndToEnd(unittest.TestCase):
@@ -43,91 +53,28 @@ class TestEndToEnd(unittest.TestCase):
         # Get all clients
         self.database_client = DatabaseClient()
         self.database_client.connect()
-        self.queue_client = QueueClient(ACTIVEMQ_SETTINGS)
         try:
-            self.queue_client.connect()
+            self.queue_client, self.listener = main()
         except ConnectionException as err:
             raise RuntimeError("Could not connect to ActiveMQ - check you credentials. If running locally check that "
                                "ActiveMQ is running and started by `python setup.py start`") from err
         # Create test archive and add data
-        self.data_archive_creator = DataArchiveCreator(os.path.join(get_project_root()), overwrite=True)
-        self.archive_explorer = ArchiveExplorer(os.path.join(get_project_root(), 'data-archive'))
+        self.data_archive_creator = DataArchiveCreator(PROJECT_ROOT, overwrite=True)
+        self.archive_explorer = ArchiveExplorer(f'{PROJECT_ROOT}/data-archive')
         # Add placeholder variables:
         # these are used to ensure runs are deleted even if test fails before completion
-        self.instrument = None
-        self.rb_number = None
-        self.run_number = None
+        self.instrument = 'ARMI'
+        self.rb_number = 1234567
+        self.run_number = 101
 
     def tearDown(self):
         """ Disconnect from services, stop external services and delete data archive """
         self.queue_client.disconnect()
         self.database_client.disconnect()
-        self._delete_reduction_directory()
-        del self.data_archive_creator
-        # Done in tearDown to ensure run is removed even if test fails early
         self._remove_run_from_database(self.instrument, self.run_number)
 
-    def test_end_to_end_wish(self):
-        """
-        Test that WISH data goes through the system without issue
-        """
-        # Set meta data for test
-        self.instrument = 'WISH'
-        self.rb_number = 222
-        self.run_number = 101
-
-        # Create supporting data structures e.g. Data Archive, Reduce directory
-        file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script='')
-
-        # Create and send json message to ActiveMQ
-        data_ready_message = Message(rb_number=self.rb_number,
-                                     instrument=self.instrument,
-                                     data=file_location,
-                                     run_number=self.run_number,
-                                     facility="ISIS",
-                                     started_by=0)
-
-        self.queue_client.send('/queue/DataReady', data_ready_message)
-
-        # Get Result from database
-        results = self._find_run_in_database()
-
-        # Validate
-        self.assertEqual(self.instrument, results[0].instrument.name)
-        self.assertEqual(self.rb_number, results[0].experiment.reference_number)
-        self.assertEqual(self.run_number, results[0].run_number)
-        self.assertEqual('Completed', results[0].status.value_verbose())
-
-#         def test_wish_user_script_failure(self):
-#             """
-#             Test that WISH data goes through the system without issue
-#             """
-#             # Set meta data for test
-#             self.instrument = 'WISH'
-#             self.rb_number = 222
-#             self.run_number = 101
-
-#             # Create supporting data structures e.g. Data Archive, Reduce directory
-#             file_location = self._setup_data_structures(reduce_script='fail', vars_script='')
-
-#             # Create and send json message to ActiveMQ
-#             data_ready_message = Message(rb_number=self.rb_number,
-#                                          instrument=self.instrument,
-#                                          data=file_location,
-#                                          run_number=self.run_number,
-#                                          facility="ISIS",
-#                                          started_by=0)
-
-#             self.queue_client.send('/queue/DataReady', data_ready_message)
-
-#             # Get Result from database
-#             results = self._find_run_in_database()
-
-#             # Validate
-#             self.assertEqual(self.instrument, results[0].instrument.name)
-#             self.assertEqual(self.rb_number, results[0].experiment.reference_number)
-#             self.assertEqual(self.run_number, results[0].run_number)
-#             self.assertEqual('e', results[0].status.value)  # verbose value = "Error"
+        self._delete_reduction_directory()
+        del self.data_archive_creator
 
     def _setup_data_structures(self, reduce_script, vars_script):
         """
@@ -150,22 +97,6 @@ class TestEndToEnd(unittest.TestCase):
         cycle_path = self.archive_explorer.get_cycle_directory(self.instrument, 19, 1)
         return os.path.join(cycle_path, raw_file)
 
-    # @staticmethod
-    # def _make_reduction_directory(instrument, rb_number, run_number):
-    #     """
-    #     Make a directory in the expected location for reduced runs to be written to
-    #     """
-    #     reduced_dir = os.path.join(get_project_root(), 'reduced-data')
-    #     reduced_inst = os.path.join(reduced_dir, str(instrument))
-    #     reduced_rb = os.path.join(reduced_inst, 'RB{}'.format(str(rb_number)))
-    #     reduced_auto = os.path.join(reduced_rb, 'autoreduced')
-    #     reduced_run = os.path.join(reduced_auto, str(run_number))
-    #     os.mkdir(reduced_dir)
-    #     os.mkdir(reduced_inst)
-    #     os.mkdir(reduced_rb)
-    #     os.mkdir(reduced_auto)
-    #     os.mkdir(reduced_run)
-
     def _find_run_in_database(self):
         """
         Find a ReductionRun record in the database
@@ -173,31 +104,8 @@ class TestEndToEnd(unittest.TestCase):
         the record in question
         :return: The resulting record
         """
-        wait_times = [0, 1, 2, 3, 5]
-        results = []
-        for timeout in wait_times:
-            # Wait before attempting database access
-            print(f"Waiting for: {timeout}")
-            time.sleep(timeout)
-            # Check database has expected values
-            instrument_record = db.get_instrument(self.instrument)
-            results = self.database_client.data_model.ReductionRun.objects \
-                .filter(instrument=instrument_record.id) \
-                .filter(run_number=self.run_number) \
-                .select_related() \
-                .all()
-            try:
-                actual = results[0]
-            except IndexError:
-                # If no results found yet then continue
-                continue
-
-            # verbose values = "Completed" or "Error"
-            if actual.status.value == 'c' or actual.status.value == 'e':
-                print(f"Job reached {actual.status.value} status after {timeout} seconds")
-                break
-
-        return results
+        instrument = db.get_instrument(self.instrument)
+        return instrument.reduction_runs.filter(run_number=self.run_number)
 
     @staticmethod
     def _remove_run_from_database(instrument, run_number):
@@ -205,15 +113,303 @@ class TestEndToEnd(unittest.TestCase):
         Uses the scripts.manual_operations.manual_remove script
         to remove records added to the database
         """
-        remove.remove(instrument, run_number, delete_all_versions=False)
+        if not isinstance(run_number, list):
+            run_number = [run_number]
+        for run in run_number:
+            remove.remove(instrument, run, delete_all_versions=True)
 
     @staticmethod
     def _delete_reduction_directory():
         """ Delete the temporary reduction directory"""
-        shutil.rmtree(os.path.join(get_project_root(), 'reduced-data'))
+        path = Path(os.path.join(PROJECT_ROOT, 'reduced-data'))
+        if path.exists():
+            shutil.rmtree(path.absolute())
 
+    def send_and_wait_for_result(self, message):
+        "Sends the message to the queue and waits until the listener has finished processing it"
+        # forces the is_processing to return True so that the listener has time to actually start processing the message
+        self.listener._processing = True  #pylint:disable=protected-access
+        self.queue_client.send('/queue/DataReady', message)
 
-#         @classmethod
-#         def tearDownClass(cls):
-#             # Stop external services
-#             external.stop_queue_processors()
+        while self.listener.is_processing_message():
+            time.sleep(0.5)
+
+        # Get Result from database
+        results = self._find_run_in_database()
+
+        assert results
+        return results
+
+    def test_end_to_end_wish_invalid_rb_number_skipped(self):
+        """
+        Test that data gets skipped when the RB Number doesn't validate
+        """
+        # Set meta data for test
+        self.rb_number = 222
+
+        # Create supporting data structures e.g. Data Archive, Reduce directory
+        file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script='')
+
+        # Create and send json message to ActiveMQ
+        data_ready_message = Message(rb_number=self.rb_number,
+                                     instrument=self.instrument,
+                                     data=file_location,
+                                     run_number=self.run_number,
+                                     facility="ISIS",
+                                     started_by=0)
+
+        results = self.send_and_wait_for_result(data_ready_message)
+
+        # Validate
+        self.assertEqual(self.instrument, results[0].instrument.name)
+        self.assertEqual(self.rb_number, results[0].experiment.reference_number)
+        self.assertEqual(self.run_number, results[0].run_number)
+        self.assertEqual('Skipped', results[0].status.value_verbose())
+
+    def test_end_to_end_wish_completed(self):
+        """
+        Test that runs gets completed when everything is OK
+        """
+        # Create supporting data structures e.g. Data Archive, Reduce directory
+        file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script='')
+
+        # Create and send json message to ActiveMQ
+        data_ready_message = Message(rb_number=self.rb_number,
+                                     instrument=self.instrument,
+                                     data=file_location,
+                                     run_number=self.run_number,
+                                     facility="ISIS",
+                                     started_by=0)
+
+        results = self.send_and_wait_for_result(data_ready_message)
+
+        # Validate
+        self.assertEqual(self.instrument, results[0].instrument.name)
+        self.assertEqual(self.rb_number, results[0].experiment.reference_number)
+        self.assertEqual(self.run_number, results[0].run_number)
+        self.assertEqual('Completed', results[0].status.value_verbose())
+
+    def test_end_to_end_wish_bad_script_syntax_error(self):
+        """
+        Test that run gets marked as error when the script has a syntax error
+        """
+        # Create supporting data structures e.g. Data Archive, Reduce directory
+        file_location = self._setup_data_structures(reduce_script=SYNTAX_ERROR_REDUCE_SCRIPT, vars_script='')
+
+        # Create and send json message to ActiveMQ
+        data_ready_message = Message(rb_number=self.rb_number,
+                                     instrument=self.instrument,
+                                     data=file_location,
+                                     run_number=self.run_number,
+                                     facility="ISIS",
+                                     started_by=0)
+
+        results = self.send_and_wait_for_result(data_ready_message)
+
+        # Validate
+        self.assertEqual(self.instrument, results[0].instrument.name)
+        self.assertEqual(self.rb_number, results[0].experiment.reference_number)
+        self.assertEqual(self.run_number, results[0].run_number)
+        self.assertEqual('Error', results[0].status.value_verbose())
+
+        self.assertIn("REDUCTION Error", results[0].message)
+        self.assertIn("Error encountered when running the reduction script", results[0].message)
+        self.assertIn("SyntaxError('EOL while scanning string literal'", results[0].message)
+
+    def test_end_to_end_wish_bad_script_raises_exception(self):
+        """
+        Test that WISH data goes through the system without issue
+        """
+        # Create supporting data structures e.g. Data Archive, Reduce directory
+        file_location = self._setup_data_structures(reduce_script="raise ValueError('hello from the other side')",
+                                                    vars_script='')
+
+        # Create and send json message to ActiveMQ
+        data_ready_message = Message(rb_number=self.rb_number,
+                                     instrument=self.instrument,
+                                     data=file_location,
+                                     run_number=self.run_number,
+                                     facility="ISIS",
+                                     started_by=0)
+
+        results = self.send_and_wait_for_result(data_ready_message)
+
+        # Validate
+        self.assertEqual(self.instrument, results[0].instrument.name)
+        self.assertEqual(self.rb_number, results[0].experiment.reference_number)
+        self.assertEqual(self.run_number, results[0].run_number)
+        self.assertEqual('Error', results[0].status.value_verbose())
+        self.assertIn("ValueError('hello from the other side')", results[0].message)
+
+    def test_end_to_end_wish_vars_script_gets_new_variable(self):
+        "Test running the same run twice, but the second time the reduce_vars has a new variable"
+        # Create supporting data structures e.g. Data Archive, Reduce directory
+        file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script='')
+
+        # Create and send json message to ActiveMQ
+        data_ready_message = Message(rb_number=self.rb_number,
+                                     instrument=self.instrument,
+                                     data=file_location,
+                                     run_number=self.run_number,
+                                     facility="ISIS",
+                                     started_by=0)
+
+        result_one = self.send_and_wait_for_result(data_ready_message)
+
+        assert len(result_one) == 1
+        run_without_vars = result_one[0]
+
+        self.data_archive_creator.add_reduce_vars_script(self.instrument, VARS_SCRIPT)
+        result_two = self.send_and_wait_for_result(data_ready_message)
+
+        assert len(result_two) == 2
+        assert run_without_vars == result_two[0]  # check that the first run is queried again
+
+        run_with_vars = result_two[1]
+        assert run_without_vars.run_variables.count() == 0
+        assert run_with_vars.run_variables.count() == 1  # the one standard variable in the VARS_SCRIPT
+        var = run_with_vars.run_variables.first().variable
+        assert var.name == "variable1"
+        assert var.value == "value1"
+
+    def test_end_to_end_wish_vars_script_loses_variable(self):
+        "Test running the same run twice, but the second time the reduce_vars has one less variable"
+        # Create supporting data structures e.g. Data Archive, Reduce directory
+        file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script=VARS_SCRIPT)
+
+        # Create and send json message to ActiveMQ
+        data_ready_message = Message(rb_number=self.rb_number,
+                                     instrument=self.instrument,
+                                     data=file_location,
+                                     run_number=self.run_number,
+                                     facility="ISIS",
+                                     started_by=0)
+
+        result_one = self.send_and_wait_for_result(data_ready_message)
+
+        assert len(result_one) == 1
+        run_with_vars = result_one[0]
+        assert run_with_vars.run_variables.count() == 1  # the one standard variable in the VARS_SCRIPT
+        var = run_with_vars.run_variables.first().variable
+        assert var.name == "variable1"
+        assert var.value == "value1"
+
+        self.data_archive_creator.add_reduce_vars_script(self.instrument, "")
+        result_two = self.send_and_wait_for_result(data_ready_message)
+
+        assert len(result_two) == 2
+        assert run_with_vars == result_two[0]
+        run_without_vars = result_two[1]
+        assert run_without_vars.run_variables.count() == 0
+
+    def test_end_to_end_vars_script_has_variable_value_changed(self):
+        "Test that reducing the same run after changing the reduce_vars updates the variable's value"
+        # Create supporting data structures e.g. Data Archive, Reduce directory
+        file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script=VARS_SCRIPT)
+
+        # Create and send json message to ActiveMQ
+        data_ready_message = Message(rb_number=self.rb_number,
+                                     instrument=self.instrument,
+                                     data=file_location,
+                                     run_number=self.run_number,
+                                     facility="ISIS",
+                                     started_by=0)
+
+        result_one = self.send_and_wait_for_result(data_ready_message)
+
+        assert len(result_one) == 1
+        run_with_initial_var = result_one[0]
+        assert run_with_initial_var.run_variables.count() == 1  # the one standard variable in the VARS_SCRIPT
+        var = run_with_initial_var.run_variables.first().variable
+        assert var.name == "variable1"
+        assert var.value == "value1"
+
+        self.data_archive_creator.add_reduce_vars_script(self.instrument, 'standard_vars={"variable1": 123}')
+        result_two = self.send_and_wait_for_result(data_ready_message)
+
+        assert len(result_two) == 2
+        assert run_with_initial_var == result_two[0]
+
+        run_with_changed_var = result_two[1]
+
+        assert run_with_initial_var.run_variables.count() == 1
+        assert run_with_changed_var.run_variables.count() == 1
+
+        initial_var = run_with_initial_var.run_variables.first().variable
+        changed_var = run_with_changed_var.run_variables.first().variable
+
+        assert initial_var == changed_var
+
+    def test_end_to_end_wish_vars_script_has_variable_reused_on_new_run_number(self):
+        # Create supporting data structures e.g. Data Archive, Reduce directory
+        file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script=VARS_SCRIPT)
+
+        # Create and send json message to ActiveMQ
+        data_ready_message = Message(rb_number=self.rb_number,
+                                     instrument=self.instrument,
+                                     data=file_location,
+                                     run_number=self.run_number,
+                                     facility="ISIS",
+                                     started_by=0)
+
+        result_one = self.send_and_wait_for_result(data_ready_message)
+
+        run_with_initial_var = result_one[0]
+
+        data_ready_message.run_number = 1234568
+        result_two = self.send_and_wait_for_result(data_ready_message)
+        run_with_different_run_number = result_two[0]
+
+        assert run_with_initial_var.run_variables.count() == 1
+        assert run_with_different_run_number.run_variables.count() == 1
+
+        initial_var = run_with_initial_var.run_variables.first().variable
+        new_var = run_with_different_run_number.run_variables.first().variable
+
+        assert initial_var == new_var
+
+    def test_end_to_end_wish_vars_script_has_variable_copied_on_new_run_number_when_value_changed(self):
+        # Create supporting data structures e.g. Data Archive, Reduce directory
+        file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script=VARS_SCRIPT)
+
+        self.run_number = 101
+        # Create and send json message to ActiveMQ
+        data_ready_message = Message(rb_number=self.rb_number,
+                                     instrument=self.instrument,
+                                     data=file_location,
+                                     run_number=self.run_number,
+                                     facility="ISIS",
+                                     started_by=0)
+
+        result_one = self.send_and_wait_for_result(data_ready_message)
+
+        assert len(result_one) == 1
+        run_with_initial_var = result_one[0]
+        assert run_with_initial_var.run_variables.count() == 1  # the one standard variable in the VARS_SCRIPT
+        var = run_with_initial_var.run_variables.first().variable
+        assert var.name == "variable1"
+        assert var.value == "value1"
+
+        # update the run number in the class because it's used to query for the correct run
+        data_ready_message.run_number = self.run_number = 102
+        self.data_archive_creator.add_reduce_vars_script(self.instrument, 'standard_vars={"variable1": 123}')
+        result_two = self.send_and_wait_for_result(data_ready_message)
+
+        # making the run_number a list so that they can be deleted by the tearDown!
+        self.run_number = [101, 102]
+
+        assert len(result_two) == 1
+
+        run_with_changed_var = result_two[0]
+
+        assert run_with_initial_var.run_variables.count() == 1
+        assert run_with_changed_var.run_variables.count() == 1
+
+        initial_var = run_with_initial_var.run_variables.first().variable
+        changed_var = run_with_changed_var.run_variables.first().variable
+
+        assert initial_var != changed_var
+        assert initial_var.name == changed_var.name
+        assert initial_var.value != changed_var.value
+        assert initial_var.type != changed_var.type
+        assert initial_var.instrumentvariable.start_run < changed_var.instrumentvariable.start_run

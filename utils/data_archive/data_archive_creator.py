@@ -95,8 +95,6 @@ class DataArchiveCreator:
         :param end_year: The final year to create a dir for
         :param current_cycle: The current cycle (1-5) in the final year
         """
-        for instrument in instruments:
-            self._check_valid_inst(instrument)
         self._end_year = end_year
         self._end_iteration = current_cycle
         ndx_dir_path = os.path.join(self._archive_dir, 'NDX{}')
@@ -113,15 +111,6 @@ class DataArchiveCreator:
             os.makedirs(jrnl_dir_path.format(instrument))
             os.makedirs(auto_dir_path.format(instrument))
             self._make_cycle_directories(start_year, end_year, current_cycle, inst_dir_path.format(instrument))
-
-    @staticmethod
-    def _check_valid_inst(instrument):
-        """
-        Ensure that an instrument is valid - else throw an exception
-        """
-        if instrument not in VALID_INSTRUMENTS:
-            raise ValueError("Instrument provided: \'{0}\' is not recognised as  a valid "
-                             "instrument. Valid instruments are {1}".format(instrument, VALID_INSTRUMENTS))
 
     def _make_cycle_directories(self, start_year, end_year, current_cycle, base_dir):
         """
@@ -156,7 +145,6 @@ class DataArchiveCreator:
         :param instrument: The instrument to add the files for
         :param data_files: The files to add
         """
-        self._check_valid_inst(instrument)
         self.add_data_files(instrument, self._end_year, self._end_iteration, data_files)
 
     def add_data_files(self, instrument, cycle_year, cycle_iteration, data_files):
@@ -167,7 +155,6 @@ class DataArchiveCreator:
         :param cycle_iteration: The cycle iteration for the file to be added to
         :param data_files: The data file name
         """
-        self._check_valid_inst(instrument)
         if isinstance(data_files, str):
             data_files = [data_files]
         elif not isinstance(data_files, list):
@@ -187,7 +174,6 @@ class DataArchiveCreator:
         :param instrument: The instrument to add the file to
         :param file_contents: the contents of the file (normally RB number)
         """
-        self._check_valid_inst(instrument)
         path_to_log_file = os.path.join(self._archive_dir, 'NDX{}', 'Instrument', 'logs', 'journal',
                                         'summary.txt').format(instrument)
         self.create_file_at_location(path_to_log_file, str(file_contents))
@@ -198,7 +184,6 @@ class DataArchiveCreator:
         :param instrument: The instrument to add the file for
         :param file_content: The content of the file
         """
-        self._check_valid_inst(instrument)
         path_to_reduce_file = os.path.join(self._archive_dir, 'NDX{}', 'user', 'scripts', 'autoreduction',
                                            'reduce.py').format(instrument)
         self.create_file_at_location(path_to_reduce_file, file_content)
@@ -209,7 +194,6 @@ class DataArchiveCreator:
         :param instrument: The instrument to add the file for
         :param file_content: The content of the file
         """
-        self._check_valid_inst(instrument)
         path_to_reduce_file = os.path.join(self._archive_dir, 'NDX{}', 'user', 'scripts', 'autoreduction',
                                            'reduce_vars.py').format(instrument)
         self.create_file_at_location(path_to_reduce_file, file_content)
@@ -220,7 +204,6 @@ class DataArchiveCreator:
         :param instrument: The instrument to add the file to
         :param file_contents: the contents of the file (normally RB number)
         """
-        self._check_valid_inst(instrument)
         path_to_log_file = os.path.join(self._archive_dir, 'NDX{}', 'Instrument', 'logs').format(instrument)
         self.create_file_at_location(os.path.join(path_to_log_file, 'lastrun.txt'), file_contents)
 

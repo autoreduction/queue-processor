@@ -81,14 +81,13 @@ class ReductionRunner:
             self.message.reduction_log = reduction_log_stream.getvalue()
             self.message.reduction_data = str(reduction_dir.path)
         except ReductionScriptError as exp:
-
             logger.error("Error encountered when running the reduction script: %s", reduction_script_path)
             self.message.message = "REDUCTION Error: Error encountered when running the reduction script: %s\n\n%s" % (
                 reduction_script_path, exp)
 
         except Exception as exp:
             logger.error(traceback.format_exc())
-            self.message.message = "REDUCTION Error: %s " % exp
+            self.message.message = "REDUCTION Error: %s" % exp
 
         self.message.admin_log = self.admin_log_stream.getvalue()
 

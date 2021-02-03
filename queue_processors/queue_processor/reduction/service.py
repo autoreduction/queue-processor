@@ -121,7 +121,7 @@ class ReductionScript:
     def __init__(self, instrument, module="reduce.py"):
         self.script_path: Path = Path(SCRIPTS_DIRECTORY % instrument) / module
         self.skipped_runs = []
-        self.script = None
+        self.module = None
 
     def load(self):
         """
@@ -135,9 +135,9 @@ class ReductionScript:
             spec = spec_from_file_location(module_name, self.script_path)
             if spec is None:
                 raise ImportError(f"Module at {self.script_path} does not exist.")
-            module = module_from_spec(spec)
-            spec.loader.exec_module(module)
-            return module
+            self.module = module_from_spec(spec)
+            spec.loader.exec_module(self.module)
+            return self.module
         except ImportError as exp:
             logger.error("Unable to load reduction script %s due to missing import. (%s)", self.script_path, exp)
             raise
@@ -168,7 +168,7 @@ class ReductionScript:
         """
         logger.info("Running reduction script: %s", self.script_path)
         with TimeOut(SCRIPT_TIMEOUT):
-            return self.script.main(input_file=str(input_file.path), output_dir=str(output_dir.path))
+            return self.module.main(input_file=str(input_file.path), output_dir=str(output_dir.path))
 
 
 # pylint:disable=too-many-arguments; We will remove the log_Stream once we look at logging in ppa
@@ -195,11 +195,11 @@ def reduce(reduction_dir, temp_dir, datafile, script):
     logger.info("-------------------------------------------------------")
     logger.info("Starting reduction...")
 
-    script.load()
+    log_stream_handler = logging.StreamHandler(log_stream)
+    logger.addHandler(log_stream_handler)
 
     try:
-        log_stream_handler = logging.StreamHandler(log_stream)
-        logger.addHandler(log_stream_handler)
+        script.load()
         with channels_redirected(temp_dir.script_log, temp_dir.mantid_log, log_stream):
             additional_output_dirs = script.run(datafile, temp_dir)
         logger.removeHandler(log_stream_handler)

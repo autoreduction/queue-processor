@@ -71,8 +71,8 @@ class InstrumentVariablesUtils:
 
     def _find_or_make_variables(self, possible_variables, run_number, instrument_id, reduce_vars_module) -> List:
         # pylint: disable=too-many-locals
-        standard_vars = getattr(reduce_vars_module, 'standard_vars', None)
-        advanced_vars = getattr(reduce_vars_module, 'advanced_vars', None)
+        standard_vars = getattr(reduce_vars_module, 'standard_vars', {})
+        advanced_vars = getattr(reduce_vars_module, 'advanced_vars', {})
 
         all_vars: List[Tuple[str, Any, bool]] = [(name, value, False) for name, value in standard_vars.items()]
         all_vars.extend([(name, value, True) for name, value in advanced_vars.items()])
