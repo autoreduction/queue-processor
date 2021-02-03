@@ -22,6 +22,27 @@ from scripts.manual_operations.manual_remove import (ManualRemove, main, remove,
 STATUS = StatusUtils()
 
 
+def create_experiment_and_instrument():
+    "Creates a test experiment and instrument"
+    db_handle = access.start_database()
+    data_model = db_handle.data_model
+
+    experiment, _ = data_model.Experiment.objects.get_or_create(reference_number=1231231)
+    instrument, _ = data_model.Instrument.objects.get_or_create(name="ARMI", is_active=1, is_paused=0)
+    return experiment, instrument
+
+
+def make_test_run(experiment, instrument, run_version: str):
+    "Creates a test run and saves it to the database"
+    status = STATUS.get_queued()
+    fake_script_text = "scripttext"
+    msg1 = FakeMessage()
+    msg1.run_number = 101
+    run = create_reduction_run_record(experiment, instrument, msg1, run_version, fake_script_text, status)
+    run.save()
+    return run
+
+
 # pylint:disable=invalid-name,too-many-public-methods
 class TestManualRemove(unittest.TestCase):
     """
@@ -35,20 +56,11 @@ class TestManualRemove(unittest.TestCase):
         self.data_model = db_handle.data_model
         self.variable_model = db_handle.variable_model
 
-        self.experiment, _ = self.data_model.Experiment.objects.get_or_create(reference_number=1231231)
-        self.instrument, _ = self.data_model.Instrument.objects.get_or_create(name="ARMI", is_active=1, is_paused=0)
-        status = STATUS.get_queued()
-        fake_script_text = "scripttext"
+        self.experiment, self.instrument = create_experiment_and_instrument()
 
-        msg1 = FakeMessage()
-        msg1.run_number = 101
-        self.run1 = create_reduction_run_record(self.experiment, self.instrument, msg1, "1", fake_script_text, status)
-        self.run2 = create_reduction_run_record(self.experiment, self.instrument, msg1, "2", fake_script_text, status)
-        self.run3 = create_reduction_run_record(self.experiment, self.instrument, msg1, "3", fake_script_text, status)
-
-        self.run1.save()
-        self.run2.save()
-        self.run3.save()
+        self.run1 = make_test_run(self.experiment, self.instrument, "1")
+        self.run2 = make_test_run(self.experiment, self.instrument, "2")
+        self.run3 = make_test_run(self.experiment, self.instrument, "3")
 
     def tearDown(self) -> None:
         self.experiment.delete()
