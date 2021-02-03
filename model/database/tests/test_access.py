@@ -58,7 +58,7 @@ class TestAccess(unittest.TestCase):
         """
         actual = access.get_experiment('123')
         self.assertIsNotNone(actual)
-        self.assertEqual(123, actual.reference_number)
+        self.assertEqual(str(123), str(actual.reference_number))
 
     def test_get_experiment_create(self):
         """
@@ -78,17 +78,7 @@ class TestAccess(unittest.TestCase):
         self.assertIsNotNone(actual)
         self.assertEqual('Mantid', actual.name)
         self.assertEqual('4.0', actual.version)
-
-    @patch('model.database.access.save_record')
-    def test_get_software_create(self, mock_save):
-        """
-        Test: A Software record is created
-        When: get_software is called with create option True
-        """
-        actual = access.get_software(name='Fake', version='test', create=True)
-        self.assertIsNotNone(actual)
-        self.assertIsInstance(actual, self.database.data_model.Software)
-        mock_save.assert_called_once()
+        actual.delete()
 
     # pylint:disable=no-self-use
     def test_get_reduction_run_valid(self):
@@ -98,7 +88,7 @@ class TestAccess(unittest.TestCase):
         """
         experiment, _ = self.database.data_model.Experiment.objects.get_or_create(reference_number=1231231)
         instrument, _ = self.database.data_model.Instrument.objects.get_or_create(name="ARMI", is_active=1, is_paused=0)
-        status = self.database.data_model.Status.objects.get(value="q")
+        status = access.get_status("q")
         fake_script_text = "scripttext"
         reduction_run = create_reduction_run_record(experiment, instrument, FakeMessage(), 0, fake_script_text, status)
         reduction_run.save()
@@ -125,7 +115,7 @@ class TestAccess(unittest.TestCase):
 
         experiment, _ = self.database.data_model.Experiment.objects.get_or_create(reference_number=1231231)
         instrument, _ = self.database.data_model.Instrument.objects.get_or_create(name="ARMI", is_active=1, is_paused=0)
-        status = self.database.data_model.Status.objects.get(value="q")
+        status = access.get_status("q")
         fake_script_text = "scripttext"
         reduction_run_v0 = create_reduction_run_record(experiment, instrument, FakeMessage(), 0, fake_script_text,
                                                        status)
