@@ -341,6 +341,7 @@ class TestEndToEnd(unittest.TestCase):
         assert initial_var == changed_var
 
     def test_end_to_end_wish_vars_script_has_variable_reused_on_new_run_number(self):
+        "Test that the variables are reused on new run numbers, IF their value has not changed"
         # Create supporting data structures e.g. Data Archive, Reduce directory
         file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script=VARS_SCRIPT)
 
@@ -369,6 +370,7 @@ class TestEndToEnd(unittest.TestCase):
         assert initial_var == new_var
 
     def test_end_to_end_wish_vars_script_has_variable_copied_on_new_run_number_when_value_changed(self):
+        "Test that the variable is copied for a new run WHEN it's value has been changed"
         # Create supporting data structures e.g. Data Archive, Reduce directory
         file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script=VARS_SCRIPT)
 
