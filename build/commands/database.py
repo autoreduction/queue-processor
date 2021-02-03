@@ -11,7 +11,7 @@ import os
 # pylint:disable=no-name-in-module,import-error
 from distutils.core import Command
 
-from build.database.generate_database import (get_sql_from_file, run_sql, generate_schema)
+from build.database.generate_database import generate_schema
 from build.utils.common import BUILD_LOGGER, ROOT_DIR
 
 
@@ -38,17 +38,8 @@ class InitialiseTestDatabase(Command):
     def run(self):
         """ Run the setup scripts required for localhost database """
         # pylint:disable=import-outside-toplevel
-        from utils.clients.database_client import DatabaseClient
-        from utils.settings import LOCAL_MYSQL_SETTINGS
-        local_db_connection = DatabaseClient(LOCAL_MYSQL_SETTINGS).connect()
-
         BUILD_LOGGER.print_and_log("==================== Building Database ======================")
         BUILD_LOGGER.print_and_log("Migrating databases from django model")
         if generate_schema(ROOT_DIR, BUILD_LOGGER.logger) is False:
-            return
-        BUILD_LOGGER.print_and_log("Populating database with test data")
-        if run_sql(connection=local_db_connection,
-                   sql=get_sql_from_file(self.populate_sql_path),
-                   logger=BUILD_LOGGER.logger) is False:
             return
         BUILD_LOGGER.print_and_log("Test database successfully initialised\n")

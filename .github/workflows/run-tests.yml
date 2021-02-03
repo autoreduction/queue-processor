@@ -38,9 +38,6 @@ jobs:
 
       - uses: ./.github/actions/build-autoreduction
 
-      - name: Perform initial check of database
-        run: pytest build/tests/test_db_generation.py
-
       - name: Run unit tests
         run: >-
           pytest --ignore=systemtests --cov=build --cov=monitors --cov=queue_processors
