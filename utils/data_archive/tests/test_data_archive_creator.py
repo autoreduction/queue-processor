@@ -90,10 +90,6 @@ class TestDataArchiveCreator(unittest.TestCase):
             os.path.isdir(
                 os.path.join(self.test_output_directory, 'data-archive', 'NDXGEM', 'Instrument', 'data', 'cycle_01_1')))
 
-    def test_non_inst_make_data_archive(self):
-        self.assertRaisesRegex(ValueError, "Instrument provided: \'not instrument\'", self.dac.make_data_archive,
-                               ['not instrument'], 17, 18, 2)
-
     def test_add_data_to_recent(self):
         self.dac.make_data_archive(['GEM'], 17, 18, 2)
         self.dac.add_data_to_most_recent_cycle('GEM', ['test-file.nxs'])
