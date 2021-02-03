@@ -7,7 +7,7 @@ django_plotly_dash==1.5.0
 gitpython==3.1.12
 # this is the highest available version that pip can find on CentOS - be careful when updating
 # because GitHub Actions runs Ubuntu so even if the build pass, the installation could fail
-ipython==7.19.0
+ipython==7.20.0
 lxml==4.6.2
 mock==4.0.2
 pandas==1.2.1
