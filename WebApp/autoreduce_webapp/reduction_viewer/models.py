@@ -23,6 +23,12 @@ class Instrument(models.Model):
         """ :return: Unicode name """
         return u'%s' % self.name
 
+    def __str__(self):
+        """
+        :return: str representation of instrument
+        """
+        return f"{self.name}"
+
 
 class Experiment(models.Model):
     """
@@ -33,6 +39,12 @@ class Experiment(models.Model):
     def __unicode__(self):
         """ :return: Unicode reference number (RB number)"""
         return u'%s' % self.reference_number
+
+    def __str__(self):
+        """
+        :return: str representation of experiment
+        """
+        return f"RB{self.reference_number}"
 
 
 class Status(models.Model):
@@ -52,6 +64,12 @@ class Status(models.Model):
     def __unicode__(self):
         """ :return: (unicode str) of the status field"""
         return u'%s' % self.value
+
+    def __str__(self):
+        """
+        :return: str representation of status
+        """
+        return f"{self.value}"
 
     def value_verbose(self):
         """
@@ -122,6 +140,13 @@ class ReductionRun(models.Model):
             return u'%s-%s' % (self.run_number, self.run_name)
         return u'%s' % self.run_number
 
+    def __str__(self):
+        """
+        Return str representation of reduction run based on run name if available else run number
+        :return: str representation of ReductionRun
+        """
+        return f"{self.run_number}: {self.run_name}" if self.run_name else f"{self.run_number}"
+
     def title(self):
         """
         :return: An interface-friendly name that identifies this run using either
@@ -149,6 +174,12 @@ class DataLocation(models.Model):
         """ :return: the file path to the data"""
         return u'%s' % self.file_path
 
+    def __str__(self):
+        """
+        :return: str representation of file path
+        """
+        return f"{self.file_path}"
+
 
 class ReductionLocation(models.Model):
     """
@@ -162,6 +193,12 @@ class ReductionLocation(models.Model):
         """ :return: the file path to the data"""
         return u'%s' % self.file_path
 
+    def __str__(self):
+        """
+        :return: str representation of ReductionLocation
+        """
+        return f"{self.file_path}"
+
 
 class Setting(models.Model):
     """
@@ -173,6 +210,12 @@ class Setting(models.Model):
     def __unicode__(self):
         """ :return: unicode string of: name=value """
         return u'%s=%s' % (self.name, self.value)
+
+    def __str__(self):
+        """
+        :return: str representation of Setting
+        """
+        return f"{self.name} = {self.value}"
 
 
 class Notification(models.Model):
@@ -191,6 +234,12 @@ class Notification(models.Model):
     def __unicode__(self):
         """ :return: The message """
         return u'%s' % self.message
+
+    def __str__(self):
+        """
+        :return: str representation of Notification based on message
+        """
+        return f"Notification: {self.message}"
 
     def severity_verbose(self):
         """
