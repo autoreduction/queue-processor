@@ -82,7 +82,7 @@ class TestHandleMessage(unittest.TestCase):
 
         self.experiment, _ = self.data_model.Experiment.objects.get_or_create(reference_number=1231231)
         self.instrument, _ = self.data_model.Instrument.objects.get_or_create(name="ARMI", is_active=1, is_paused=0)
-        status = self.data_model.Status.objects.get(value="q")
+        status = STATUS.get_queued()
         fake_script_text = "scripttext"
         self.reduction_run = create_reduction_run_record(self.experiment, self.instrument, FakeMessage(), 0,
                                                          fake_script_text, status)

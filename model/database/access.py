@@ -45,11 +45,7 @@ def get_status(status_value, create=False):
         raise ValueError("Invalid status value passed")
 
     database = start_database()
-    status_record = database.data_model.Status.objects.filter(value=status_value).first()
-    if not status_record and create:
-        status_record = database.data_model.Status(value=status_value)
-        save_record(status_record)
-    return status_record
+    return database.data_model.Status.objects.get_or_create(value=status_value)[0]
 
 
 def get_experiment(rb_number):
