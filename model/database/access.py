@@ -56,7 +56,7 @@ def get_experiment(rb_number):
     return database.data_model.Experiment.objects.get_or_create(reference_number=rb_number)[0]
 
 
-def get_software(name, version, create=False):
+def get_software(name, version):
     """
     Find the Software record associated with the name and version provided
     :param name: (str) The name of the software
@@ -65,14 +65,7 @@ def get_software(name, version, create=False):
     :return: (Software) The Software object from the database
     """
     database = start_database()
-    software_record = database.data_model.Software.objects \
-        .filter(name=name) \
-        .filter(version=version) \
-        .first()
-    if not software_record and create:
-        software_record = database.data_model.Software(name=name, version=version)
-        save_record(software_record)
-    return software_record
+    return database.data_model.Software.objects.get_or_create(name=name, version=version)[0]
 
 
 def get_reduction_run(instrument, run_number):

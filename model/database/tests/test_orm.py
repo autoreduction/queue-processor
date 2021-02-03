@@ -19,7 +19,6 @@ from utils.project.structure import get_project_root
 
 # pylint:disable=missing-class-docstring
 class TestDjangoORM(unittest.TestCase):
-
     def test_add_webapp_path_already_exist(self):
         """
         Test: The webapp path is not added to sys.path
@@ -30,7 +29,7 @@ class TestDjangoORM(unittest.TestCase):
         expected = sys.path.count(webapp_path)
         DjangoORM.add_webapp_path()
         self.assertEqual(expected, sys.path.count(webapp_path))
-        sys.path.remove(webapp_path) # Cleanup test
+        sys.path.remove(webapp_path)  # Cleanup test
 
     def test_add_webapp_path_not_already_exist(self):
         """
@@ -41,11 +40,11 @@ class TestDjangoORM(unittest.TestCase):
         old_sys_path = sys.path.copy()
         if expected in sys.path:
             # Remove all expected from sys.path
-            sys.path = list(filter(lambda a: a != expected , sys.path))
+            sys.path = list(filter(lambda a: a != expected, sys.path))
 
         DjangoORM.add_webapp_path()
         self.assertIn(expected, sys.path)
-        sys.path = old_sys_path # Cleanup test
+        sys.path = old_sys_path  # Cleanup test
 
     def test_add_webapp_path_duplication(self):
         """
@@ -66,9 +65,10 @@ class TestDjangoORM(unittest.TestCase):
         orm.connect()
         # pylint:disable=protected-access
         model = orm._get_data_model()
-        actual = model.Instrument.objects.filter(name='GEM').first()
+        actual = model.Instrument.objects.get_or_create(name='GEM')[0]
         self.assertIsNotNone(actual)
         self.assertEqual(actual.name, 'GEM')
+        actual.delete()
 
     def test_get_variable_model(self):
         """
@@ -80,10 +80,12 @@ class TestDjangoORM(unittest.TestCase):
         orm.connect()
         # pylint:disable=protected-access
         model = orm._get_variable_model()
-        actual = model.Variable.objects.filter(name='bool_variable').first()
+        actual = model.Variable.objects.create(name='bool_variable', value=True, type="boolean")
         self.assertIsNotNone(actual)
         self.assertEqual(actual.name, 'bool_variable')
         self.assertEqual(actual.type, 'boolean')
+        self.assertEqual(actual.value, True)
+        actual.delete()
 
     def test_connect(self):
         """
@@ -92,8 +94,8 @@ class TestDjangoORM(unittest.TestCase):
         """
         orm = DjangoORM()
         self.assertTrue(orm.connect())
-        self.assertIsNotNone(orm.data_model.Instrument.objects.first())
-        self.assertIsNotNone(orm.variable_model.Variable.objects.first())
+        self.assertIsNotNone(orm.data_model.Instrument.objects.all())
+        self.assertIsNotNone(orm.variable_model.Variable.objects.all())
 
     @patch('model.database.orm.DjangoORM.data_model')
     def test_failed_connect(self, mock_data):
