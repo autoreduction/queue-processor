@@ -17,48 +17,6 @@ from build.utils.process_runner import run_process_and_log
 PATH_TO_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
-def run_sql(connection, sql, logger):
-    """
-    Execute an SQL command and then commit the changes to the database
-    :param connection: The connection to the database
-    :param sql: The sql command to run as a string
-    :param logger: Where to log the errors to
-    :return: True / False depending on command success
-    """
-    # pylint:disable=import-outside-toplevel
-    from sqlalchemy.exc import OperationalError
-    logger.info("Running sql: %s" % sql)
-    try:
-        connection.execute(sql)
-        connection.commit()
-    except OperationalError as exp:
-        logger.error("SQL command failed with exception: %s" % exp)
-        return False
-    logger.info("SQL command completed successfully")
-    return True
-
-
-def get_sql_from_file(sql_file_location):
-    """
-    Runs a sql file using the database client
-    :param sql_file_location: file path to the sql file
-    :return: The contents of the sql file as a string
-    """
-    with open(sql_file_location, 'r') as sql_file:
-        return " ".join(sql_file.readlines())
-
-
-def get_test_user_sql():
-    """
-    Generate sql to add a new user to the database
-    :return: True if process completed successfully
-    """
-    # pylint:disable=import-outside-toplevel
-    from utils.settings import MYSQL_SETTINGS
-    return "GRANT ALL ON *.* TO '{0}'@'127.0.0.1' IDENTIFIED BY '{1}';\n" \
-           "FLUSH PRIVILEGES;".format(MYSQL_SETTINGS.username, MYSQL_SETTINGS.password)
-
-
 def generate_schema(project_root_path, logger):
     """
     Call django migrations to create testing database schema

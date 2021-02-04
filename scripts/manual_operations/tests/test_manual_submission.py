@@ -50,8 +50,6 @@ class TestManualSubmission(unittest.TestCase):
     def mock_database_query_result(self, side_effects):
         """ Sets the return value(s) of database queries to those provided
         :param side_effects: A list of values to return from the database query (in sequence)"""
-        # Note: SQLAlchemy query call complicated to mock (the code below).
-        #  This code will need to change when Django ORM implemented anyway.
         mock_query_result = MagicMock(name="mock_query_result")
         mock_query_result.fetchall.side_effect = side_effects
         mock_connection = MagicMock(name="mock_connection")
