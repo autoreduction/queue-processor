@@ -26,14 +26,12 @@ class InitialiseTestDatabase(Command):
         """ Initialise path variables """
         # pylint:disable=attribute-defined-outside-init
         self.setup_sql_path = None
-        self.populate_sql_path = None
 
     def finalize_options(self):
         """ Generate paths to sql scripts """
         database_build_dir = os.path.join(ROOT_DIR, 'build', 'database')
         # pylint:disable=attribute-defined-outside-init
         self.setup_sql_path = os.path.join(database_build_dir, 'reset_autoreduction_db.sql')
-        self.populate_sql_path = os.path.join(database_build_dir, 'populate_reduction_viewer.sql')
 
     def run(self):
         """ Run the setup scripts required for localhost database """
