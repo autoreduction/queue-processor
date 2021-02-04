@@ -105,16 +105,21 @@ WSGI_APPLICATION = 'autoreduce_webapp.wsgi.application'
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
 
 DATABASES = {
+    # To switch the backend database to MySQL, uncomment the lines below, and comment out sqlite3 references
+    #     'default': {
+    #         'ENGINE': 'django.db.backends.mysql',
+    #         'NAME': get_str('DATABASE', 'name'),
+    #         'USER': get_str('DATABASE', 'user'),
+    #         'PASSWORD': get_str('DATABASE', 'password'),
+    #         'HOST': get_str('DATABASE', 'host'),
+    #         'PORT': get_str('DATABASE', 'port'),
+    #         'OPTIONS': {
+    #             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+    #         },
+    #     }
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': get_str('DATABASE', 'name'),
-        'USER': get_str('DATABASE', 'user'),
-        'PASSWORD': get_str('DATABASE', 'password'),
-        'HOST': get_str('DATABASE', 'host'),
-        'PORT': get_str('DATABASE', 'port'),
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-        },
+        'ENGINE': 'django.db.backends.sqlite3',  # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+        'NAME': 'sqlite3.db',  # Or path to database file if using sqlite3.
     }
 }
 
@@ -182,17 +187,11 @@ LOGGING = {
 # ActiveMQ
 
 ACTIVEMQ = {
-    'topics': [
-        '/queue/DataReady', '/queue/ReductionStarted', '/queue/ReductionComplete',
-        '/queue/ReductionError'
-    ],
-    'username':
-    get_str('QUEUE', 'user'),
-    'password':
-    get_str('QUEUE', 'password'),
+    'topics': ['/queue/DataReady', '/queue/ReductionStarted', '/queue/ReductionComplete', '/queue/ReductionError'],
+    'username': get_str('QUEUE', 'user'),
+    'password': get_str('QUEUE', 'password'),
     'broker': [(get_str('QUEUE', 'host'), get_str('QUEUE', 'port'))],
-    'SSL':
-    False
+    'SSL': False
 }
 
 # File Locations
