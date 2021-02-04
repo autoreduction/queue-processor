@@ -44,7 +44,6 @@ setup_requires = [
     'python-icat==0.17.0',
     'requests==2.25.1',
     'service_identity==18.1.0',
-    'SQLAlchemy==1.3.23',
     'stomp.py==6.1.0',
     'suds-py3==1.4.4.1',
     'Twisted==20.3.0',
