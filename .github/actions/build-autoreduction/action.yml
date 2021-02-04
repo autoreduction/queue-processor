@@ -5,14 +5,6 @@ runs:
   using: composite
 
   steps:
-    - name: Verify MySQL connection from host
-      run: mysql --host 127.0.0.1 --port 3306 -u root -e "SHOW DATABASES"
-      shell: bash
-
-    - name: Set up database
-      run: mysql --host 127.0.0.1 --port 3306 -u root < build/database/reset_autoreduction_db.sql
-      shell: bash
-
     - name: Install Autoreduction
       run: |
         python -m pip install --upgrade pip
