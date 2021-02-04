@@ -134,7 +134,7 @@ class HandleMessage:
             message.message = skip_reason
             self.reduction_skipped(reduction_run, message)
         else:
-            instrument = self.activate_db_inst(instrument)
+            self.activate_db_inst(instrument)
             self.do_reduction(reduction_run, message)
 
     @staticmethod
@@ -184,8 +184,7 @@ class HandleMessage:
 
     def reduction_started(self, reduction_run, message: Message):
         """
-        Called when destination queue was reduction_started.
-        Updates the run as started in the database.
+        Called when the run is ready to start. Updates the run as started/processing in the database.
         """
         self._logger.info("Run %s has started reduction", message.run_number)
         reduction_run.status = self.status.get_processing()
@@ -195,8 +194,7 @@ class HandleMessage:
     @transaction.atomic
     def reduction_complete(self, reduction_run, message: Message):
         """
-        Called when the destination queue was reduction_complete
-        Updates the run as complete in the database.
+        Called when the run has completed. Updates the run as complete in the database.
         """
         self._logger.info("Run %s has completed reduction", message.run_number)
 
@@ -210,9 +208,8 @@ class HandleMessage:
 
     def reduction_skipped(self, reduction_run, message: Message):
         """
-        Called when the destination was reduction skipped
-        Updates the run to Skipped status in database
-        Will NOT attempt re-run
+        Called when there was a reason to skip the run.
+        Updates the run to Skipped status in database. Will NOT attempt re-run
         """
         if message.message is not None:
             self._logger.info("Run %s has been skipped - %s", message.run_number, message.message)
@@ -224,8 +221,7 @@ class HandleMessage:
 
     def reduction_error(self, reduction_run, message: Message):
         """
-        Called when the destination was reduction_error.
-        Updates the run as complete in the database.
+        Called when the run encountered an error. Updates the run as complete in the database.
         """
         if message.message:
             self._logger.info("Run %s has encountered an error - %s", message.run_number, message.message)

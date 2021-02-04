@@ -28,21 +28,21 @@ class StatusUtils:
         return status_record
 
     def get_error(self):
-        "Gets the error status"
+        """Gets the error status"""
         return self._get_status('e')
 
     def get_completed(self):
-        "Gets the completed status"
+        """Gets the completed status"""
         return self._get_status('c')
 
     def get_processing(self):
-        "Gets the processing status"
+        """Gets the processing status"""
         return self._get_status('p')
 
     def get_queued(self):
-        "Gets the queued status"
+        """Gets the queued status"""
         return self._get_status('q')
 
     def get_skipped(self):
-        "Gets the skipped status"
+        """Gets the skipped status"""
         return self._get_status('s')

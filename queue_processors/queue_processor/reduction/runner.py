@@ -60,7 +60,6 @@ class ReductionRunner:
     def reduce(self):
         """Start the reduction job."""
         self.message.software = self._get_mantid_version()
-        reduction_script_path = ""
         if self.message.description is not None:
             logger.info("DESCRIPTION: %s", self.message.description)
 

@@ -27,7 +27,6 @@ class ReductionProcessManager:
         """
         Runs the reduction process
         """
-        result_message = None
         try:
             # We need to run the reduction in a new process, otherwise scripts
             # will fail when they use things that require access to a main loop
