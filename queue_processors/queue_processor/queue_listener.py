@@ -17,7 +17,6 @@ from contextlib import contextmanager
 
 from model.message.message import Message
 from queue_processors.queue_processor.handle_message import HandleMessage
-from queue_processors.queue_processor.handling_exceptions import InvalidStateException
 from utils.clients.queue_client import QueueClient
 
 
@@ -79,9 +78,6 @@ class QueueListener:
                     self.message_handler.data_ready(message)
                 else:
                     self.logger.error("Received a message on an unknown topic '%s'", destination)
-            except InvalidStateException as exp:
-                self.logger.error("Encountered invalid state exception: %s %s\n\n%s",
-                                  type(exp).__name__, exp, traceback.format_exc())
             except Exception as exp:  # pylint:disable=broad-except
                 self.logger.error("Unhandled exception encountered: %s %s\n\n%s",
                                   type(exp).__name__, exp, traceback.format_exc())

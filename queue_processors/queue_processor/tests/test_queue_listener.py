@@ -19,7 +19,6 @@ from parameterized.parameterized import parameterized
 from model.message.message import Message
 from queue_processors.queue_processor import queue_listener
 from queue_processors.queue_processor.handle_message import HandleMessage
-from queue_processors.queue_processor.handling_exceptions import InvalidStateException
 from queue_processors.queue_processor.queue_listener import QueueListener
 from utils.clients.queue_client import QueueClient
 
@@ -112,12 +111,11 @@ class TestQueueListener(unittest.TestCase):
         self.mocked_handler.data_ready.assert_called_once()
         self.assertIsInstance(self.mocked_handler.data_ready.call_args[0][0], Message)
 
-    @parameterized.expand([[InvalidStateException], [Exception]])
-    def test_on_message_handler_catches_exceptions(self, exception_class):
+    def test_on_message_handler_catches_exceptions(self):
         "Test on_message correctly handles an exception being raised"
 
         def raise_expected_exception(msg):
-            raise exception_class(Mock(), msg)
+            raise Exception(msg)
 
         self.mocked_handler.data_ready.side_effect = raise_expected_exception
         self.listener.on_message(self.headers, {"run_number": 1234567})
