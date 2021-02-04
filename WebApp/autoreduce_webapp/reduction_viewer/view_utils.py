@@ -30,8 +30,10 @@ def deactivate_invalid_instruments(func):
         """
         instruments = Instrument.objects.all()
         for instrument in instruments:
-            instrument.is_active = Path(REDUCTION_DIRECTORY % instrument.name, 'reduce.py').exists()
-            instrument.save()
+            script_path = Path(REDUCTION_DIRECTORY % instrument.name, 'reduce.py')
+            if instrument.is_active != script_path.exists():
+                instrument.is_active = script_path.exists()
+                instrument.save(update_fields=['is_active'])
 
         return func(request, *args, **kws)
 
