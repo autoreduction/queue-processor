@@ -7,6 +7,7 @@
 # pylint: skip-file
 import os
 import configparser
+from utils.project.structure import PROJECT_ROOT
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
@@ -119,7 +120,7 @@ DATABASES = {
     #     }
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',  # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'sqlite3.db',  # Or path to database file if using sqlite3.
+        'NAME': f'{PROJECT_ROOT}/sqlite3.db',  # Or path to database file if using sqlite3.
     }
 }
 
