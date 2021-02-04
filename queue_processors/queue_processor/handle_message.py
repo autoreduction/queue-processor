@@ -129,7 +129,7 @@ class HandleMessage:
         or skips it if either of those is true.
         """
         # activate instrument if script was found
-        skip_reason = self.should_skip(reduction_run, message, instrument)
+        skip_reason = self.find_reason_to_skip_run(reduction_run, message, instrument)
         if skip_reason is not None:
             message.message = skip_reason
             self.reduction_skipped(reduction_run, message)
@@ -138,7 +138,7 @@ class HandleMessage:
             self.do_reduction(reduction_run, message)
 
     @staticmethod
-    def should_skip(reduction_run, message: Message, instrument) -> Optional[str]:
+    def find_reason_to_skip_run(reduction_run, message: Message, instrument) -> Optional[str]:
         """
         Determines whether the processing should be skippped.
 

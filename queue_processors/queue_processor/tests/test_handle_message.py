@@ -207,34 +207,34 @@ class TestHandleMessage(unittest.TestCase):
 
         assert self.instrument.is_active
 
-    def test_should_skip_empty_script(self):
+    def test_find_reason_to_skip_run_empty_script(self):
         """
-        Test should_skip correctly captures validation failing on the message
+        Test find_reason_to_skip_run correctly captures validation failing on the message
         """
         self.reduction_run.script = ""
-        assert "Script text for current instrument is empty" in self.handler.should_skip(
+        assert "Script text for current instrument is empty" in self.handler.find_reason_to_skip_run(
             self.reduction_run, self.msg, self.instrument)
 
-    def test_should_skip_message_validation_fails(self):
+    def test_find_reason_to_skip_run_message_validation_fails(self):
         """
-        Test should_skip correctly captures validation failing on the message
+        Test find_reason_to_skip_run correctly captures validation failing on the message
         """
         self.msg.rb_number = 123  # invalid RB number, should be 7 digits
-        assert "Validation error" in self.handler.should_skip(self.reduction_run, self.msg, self.instrument)
+        assert "Validation error" in self.handler.find_reason_to_skip_run(self.reduction_run, self.msg, self.instrument)
 
-    def test_should_skip_instrument_paused(self):
+    def test_find_reason_to_skip_run_instrument_paused(self):
         """
-        Test should_skip correctly captures that the instrument is paused
+        Test find_reason_to_skip_run correctly captures that the instrument is paused
         """
         self.instrument.is_paused = True
 
-        assert "is paused" in self.handler.should_skip(self.reduction_run, self.msg, self.instrument)
+        assert "is paused" in self.handler.find_reason_to_skip_run(self.reduction_run, self.msg, self.instrument)
 
-    def test_should_skip_doesnt_skip_when_all_is_ok(self):
+    def test_find_reason_to_skip_run_doesnt_skip_when_all_is_ok(self):
         """
-        Test should_skip returns None when all the validation passes
+        Test find_reason_to_skip_run returns None when all the validation passes
         """
-        assert self.handler.should_skip(self.reduction_run, self.msg, self.instrument) is None
+        assert self.handler.find_reason_to_skip_run(self.reduction_run, self.msg, self.instrument) is None
 
     @patch("queue_processors.queue_processor.handle_message.ReductionProcessManager")
     def test_send_message_onwards_ok(self, rpm):
