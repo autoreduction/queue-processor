@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<dataset>
-    <reduction_viewer_instrument id="-1100" name="ActiveInstrument" is_active="1" is_paused="0"/>
-    <reduction_viewer_instrument id="-1101" name="InactiveInstrument" is_active="0" is_paused="0"/>
-    <reduction_viewer_instrument id="-1102" name="PausedInstrument" is_active="1" is_paused="1"/>
-</dataset>
