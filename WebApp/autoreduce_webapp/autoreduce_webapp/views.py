@@ -31,35 +31,27 @@ def get_admin_email():
 
 def handler400(request, exception):
     """Error 400 handler"""
-    response = render(None, '400.html',
-                      {'admin_email': get_admin_email()},
-                      RequestContext(request))
+    response = render(None, '400.html', {'admin_email': get_admin_email()}, RequestContext(request))
     response.status_code = 400
     return response
 
 
 def handler404(request, exception):
     """Error 404 handler"""
-    response = render('404.html',
-                      {'admin_email': get_admin_email()},
-                      RequestContext(request))
+    response = render('404.html', {'admin_email': get_admin_email()}, RequestContext(request))
     response.status_code = 404
     return response
 
 
 def handler403(request, exception):
     """Error 403 handler"""
-    response = render('403.html',
-                      {'admin_email': get_admin_email()},
-                      RequestContext(request))
+    response = render('403.html', {'admin_email': get_admin_email()}, RequestContext(request))
     response.status_code = 403
     return response
 
 
 def handler500(request):
     """Error 500 handler"""
-    response = render(RequestContext(request),
-                      '500.html',
-                      {'admin_email': get_admin_email()})
+    response = render(RequestContext(request), '500.html', {'admin_email': get_admin_email()})
     response.status_code = 500
     return response

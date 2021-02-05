@@ -19,7 +19,6 @@ from reduction_viewer.models import Instrument, ReductionRun
 from reduction_viewer.utils import InstrumentUtils, StatusUtils, ReductionRunUtils
 from utilities import input_processing
 
-
 LOGGER = logging.getLogger("app")
 
 
@@ -57,8 +56,7 @@ def instrument_summary(request, instrument, last_run_object):
 
     current_start = current_variables[0].start_run
     # pylint:disable=deprecated-lambda
-    next_run_starts = list(filter(lambda start: start > current_start,
-                                  sorted(upcoming_variables_by_run_dict.keys())))
+    next_run_starts = list(filter(lambda start: start > current_start, sorted(upcoming_variables_by_run_dict.keys())))
     current_end = next_run_starts[0] - 1 if next_run_starts else 0
 
     current_vars = {
@@ -101,11 +99,11 @@ def instrument_summary(request, instrument, last_run_object):
 
     return render(request, 'snippets/instrument_summary_variables.html', context_dictionary)
 
+
 # pylint:disable=unused-argument
 @login_and_uows_valid
 @check_permissions
-def delete_instrument_variables(request, instrument=None, start=0, end=0,
-                                experiment_reference=None):
+def delete_instrument_variables(request, instrument=None, start=0, end=0, experiment_reference=None):
     """
     Handles request for deleting instrument variables
     """
@@ -114,8 +112,7 @@ def delete_instrument_variables(request, instrument=None, start=0, end=0,
 
     # We "save" an empty list to delete the previous variables.
     if experiment_reference is not None:
-        InstrumentVariablesUtils().set_variables_for_experiment(instrument_name,
-                                                                [], experiment_reference)
+        InstrumentVariablesUtils().set_variables_for_experiment(instrument_name, [], experiment_reference)
     else:
         InstrumentVariablesUtils().set_variables_for_runs(instrument_name, [], start, end)
 
@@ -131,14 +128,11 @@ def instrument_variables_summary(request, instrument):
     Handles request to view instrument variables
     """
     instrument = Instrument.objects.get(name=instrument)
-    runs = (ReductionRun.objects
-            .only('status', 'last_updated', 'run_number', 'run_version')
-            .select_related('status')
-            .filter(instrument=instrument)
-            .order_by('-run_number', 'run_version'))
+    runs = (ReductionRun.objects.only('status', 'last_updated', 'run_number',
+                                      'run_version').select_related('status').filter(instrument=instrument).order_by(
+                                          '-run_number', 'run_version'))
 
-    context_dictionary = {'instrument': instrument,
-                          'last_instrument_run': runs[0]}
+    context_dictionary = {'instrument': instrument, 'last_instrument_run': runs[0]}
     return context_dictionary
 
 
@@ -182,8 +176,7 @@ def instrument_variables(request, instrument=None, start=0, end=0, experiment_re
             # Get the variables for the first run, modify them, and set them for the given range.
             instr_vars = InstrumentVariablesUtils().show_variables_for_run(instrument_name, start)
             modify_vars(instr_vars, new_var_dict)
-            InstrumentVariablesUtils().set_variables_for_runs(instrument_name, instr_vars,
-                                                              start, end)
+            InstrumentVariablesUtils().set_variables_for_runs(instrument_name, instr_vars, start, end)
         else:
             # Get the variables for the experiment, modify them, and set them for the experiment.
             instr_vars = InstrumentVariablesUtils().\
@@ -192,9 +185,7 @@ def instrument_variables(request, instrument=None, start=0, end=0, experiment_re
             if not instr_vars:
                 instr_vars = InstrumentVariablesUtils().get_default_variables(instrument_name)
             modify_vars(instr_vars, new_var_dict)
-            InstrumentVariablesUtils().set_variables_for_experiment(instrument_name,
-                                                                    instr_vars,
-                                                                    experiment_reference)
+            InstrumentVariablesUtils().set_variables_for_experiment(instrument_name, instr_vars, experiment_reference)
 
         return redirect('instrument_summary', instrument=instrument_name)
 
@@ -250,8 +241,7 @@ def instrument_variables(request, instrument=None, start=0, end=0, experiment_re
             InstrumentVariablesUtils().get_current_and_upcoming_variables(instrument.name)
 
         # Unique, comma-joined list of all start runs belonging to the upcoming variables.
-        upcoming_run_variables = ','.join(list(set([str(var.start_run) for var in
-                                                    upcoming_variables_by_run])))
+        upcoming_run_variables = ','.join(list(set([str(var.start_run) for var in upcoming_variables_by_run])))
 
         default_variables = InstrumentVariablesUtils().get_default_variables(instrument.name)
         default_standard_variables = {}
@@ -269,10 +259,8 @@ def instrument_variables(request, instrument=None, start=0, end=0, experiment_re
         context_dictionary = {
             'instrument': instrument,
             'last_instrument_run': last_inst_run,
-            'processing': ReductionRun.objects.filter(instrument=instrument,
-                                                      status=processing_status),
-            'queued': ReductionRun.objects.filter(instrument=instrument,
-                                                  status=queued_status),
+            'processing': ReductionRun.objects.filter(instrument=instrument, status=processing_status),
+            'queued': ReductionRun.objects.filter(instrument=instrument, status=queued_status),
             'standard_variables': standard_vars,
             'advanced_variables': advanced_vars,
             'default_standard_variables': default_standard_variables,
@@ -328,10 +316,8 @@ def submit_runs(request, instrument=None):
         context_dictionary = {
             'instrument': instrument,
             'last_instrument_run': last_run,
-            'processing': ReductionRun.objects.filter(instrument=instrument,
-                                                      status=processing_status),
-            'queued': ReductionRun.objects.filter(instrument=instrument,
-                                                  status=queued_status),
+            'processing': ReductionRun.objects.filter(instrument=instrument, status=processing_status),
+            'queued': ReductionRun.objects.filter(instrument=instrument, status=queued_status),
             'standard_variables': standard_vars,
             'advanced_variables': advanced_vars,
             'default_standard_variables': default_standard_variables,
@@ -371,9 +357,7 @@ def run_summary(request, instrument_name, run_number, run_version=0):
     # pylint:disable=no-member
     instrument = Instrument.objects.get(name=instrument_name)
     # pylint:disable=no-member
-    reduction_run = ReductionRun.objects.get(instrument=instrument,
-                                             run_number=run_number,
-                                             run_version=run_version)
+    reduction_run = ReductionRun.objects.get(instrument=instrument, run_number=run_number, run_version=run_version)
     variables = reduction_run.run_variables.all()
 
     standard_vars = {}
@@ -551,4 +535,3 @@ def run_confirmation(request, instrument):
             context_dictionary['error'] = 'Failed to send new job. (%s)' % str(exception)
 
     return context_dictionary
-

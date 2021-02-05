@@ -29,8 +29,7 @@ def checkQueueLength(warning, critical):
              2 - Critical
     """
     for queue in ACTIVEMQ['queues']:
-        r = requests.get(ACTIVEMQ_URL + ",destinationName=" + queue + "/QueueSize",
-                         auth=ACTIVEMQ_AUTH)
+        r = requests.get(ACTIVEMQ_URL + ",destinationName=" + queue + "/QueueSize", auth=ACTIVEMQ_AUTH)
 
         queue_length = r.json()['value']
         # print(queue + " length = " + str(queue_length))

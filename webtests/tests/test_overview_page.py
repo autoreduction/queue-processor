@@ -18,7 +18,6 @@ class TestOverviewPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
     """
     Test cases for the overview page
     """
-
     def setUp(self) -> None:
         """
         Sets up the OverviewPage object

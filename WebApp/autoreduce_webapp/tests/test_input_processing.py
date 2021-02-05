@@ -12,6 +12,7 @@ import unittest
 
 from utilities import input_processing
 
+
 # pylint:disable=missing-docstring
 class RunParsingTestCase(unittest.TestCase):
     def test_empty_input(self):

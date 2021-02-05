@@ -20,7 +20,6 @@ from plotting.plot_factory.tests.mocked_values import MockPlotVariables
 
 
 class TestDashApp(unittest.TestCase):
-
     def setUp(self):
         """Contains setup variables to be used in unit tests for Trace class methods"""
         self.figure = None
@@ -39,7 +38,4 @@ class TestDashApp(unittest.TestCase):
 
         # self.assertEqual(mock_dash_obj, "Div([Div(Graph(id='Instrument_Run_number'))])")
         self.assertEqual('Div', type(mock_dash_obj.layout).__name__)
-        self.assertEqual("[Div(Graph(id='Instrument_Run_number'))]",
-                         str(mock_dash_obj.layout.__dict__['children']))
-
-
+        self.assertEqual("[Div(Graph(id='Instrument_Run_number'))]", str(mock_dash_obj.layout.__dict__['children']))

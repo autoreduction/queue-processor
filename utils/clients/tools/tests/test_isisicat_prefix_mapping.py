@@ -55,8 +55,7 @@ class TestICATPrefixMapping(unittest.TestCase):
     @patch('logging.Logger.warning')
     @patch('utils.clients.icat_client.ICATClient.execute_query',
            return_value=[MockInstrumentQueryResult("ENG", "ENGINX")])
-    def test_get_icat_instrument_prefix_log_invalid_instrument(self, _mock_execute_query,
-                                                               mock_logger_warning, _):
+    def test_get_icat_instrument_prefix_log_invalid_instrument(self, _mock_execute_query, mock_logger_warning, _):
         """
         Test: If invalid instrument name in utils.settings.VALID_INSTRUMENTS is logged as not found
         When: Testing if get_icat_instrument_prefix picks up invalid instruments

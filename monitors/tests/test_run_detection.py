@@ -22,14 +22,15 @@ SUMMARY_FILE = ("WIS44731Smith,Smith,"
 LAST_RUN_FILE = "WISH 00044733 0 \n"
 INVALID_LAST_RUN_FILE = "INVALID LAST RUN FILE"
 FILE_NAME = "WISH00044733.nxs"
-RUN_DATA = {'instrument': 'WISH',
-            'run_number': '00044733',
-            'data': '/my/data/dir/cycle_18_4/' + FILE_NAME,
-            'rb_number': '1820461',
-            'summary_rb_number': '1820333',
-            'facility': 'ISIS',
-            'started_by': 0
-            }
+RUN_DATA = {
+    'instrument': 'WISH',
+    'run_number': '00044733',
+    'data': '/my/data/dir/cycle_18_4/' + FILE_NAME,
+    'rb_number': '1820461',
+    'summary_rb_number': '1820333',
+    'facility': 'ISIS',
+    'started_by': 0
+}
 CSV_FILE = "WISH,44733,lastrun_wish.txt,summary_wish.txt,data_dir,.nxs"
 
 
@@ -38,7 +39,6 @@ class DataHolder:
     """
     Small helper class to represent expected nexus data format
     """
-
     def __init__(self, data):
         self.data = data
 
@@ -121,8 +121,7 @@ class TestRunDetection(unittest.TestCase):
         self.assertRaises(monitors.run_detection.InstrumentMonitorError, inst_mon.read_rb_number_from_summary)
 
     @patch('os.path.isfile', return_value=True)
-    @patch('monitors.run_detection.read_rb_number_from_nexus_file',
-           return_value=RUN_DATA['rb_number'])
+    @patch('monitors.run_detection.read_rb_number_from_nexus_file', return_value=RUN_DATA['rb_number'])
     def test_submit_run(self, read_rb_mock, isfile_mock):
         client = Mock()
         client.send = Mock(return_value=None)
@@ -155,8 +154,7 @@ class TestRunDetection(unittest.TestCase):
         isfile_mock.assert_called_with(data_loc)
 
     @patch('os.path.isfile', return_vaule=True)
-    @patch('monitors.run_detection.read_rb_number_from_nexus_file',
-           return_value=None)
+    @patch('monitors.run_detection.read_rb_number_from_nexus_file', return_value=None)
     def test_submit_run_invalid_nexus(self, read_rb_mock, isfile_mock):
         client = Mock()
         client.send = Mock(return_value=None)
@@ -171,9 +169,7 @@ class TestRunDetection(unittest.TestCase):
                           run_number=RUN_DATA['run_number'],
                           data=data_loc,
                           started_by=0)
-        client.send.assert_called_with('/queue/DataReady',
-                                       message,
-                                       priority='9')
+        client.send.assert_called_with('/queue/DataReady', message, priority='9')
         isfile_mock.assert_called_with(data_loc)
         read_rb_mock.assert_called_once_with(data_loc)
 
@@ -203,9 +199,7 @@ class TestRunDetection(unittest.TestCase):
         inst_mon = monitors.run_detection.InstrumentMonitor(None, 'WISH')
         inst_mon.submit_run = Mock(return_value=None)
         inst_mon.file_ext = '.nxs'
-        inst_mon.read_instrument_last_run = Mock(return_value=['WISH',
-                                                               RUN_DATA['run_number'],
-                                                               '0'])
+        inst_mon.read_instrument_last_run = Mock(return_value=['WISH', RUN_DATA['run_number'], '0'])
         inst_mon.read_rb_number_from_summary = Mock(return_value=RUN_DATA['rb_number'])
 
         # Perform test
@@ -221,19 +215,15 @@ class TestRunDetection(unittest.TestCase):
         inst_mon = monitors.run_detection.InstrumentMonitor(None, 'WISH')
         inst_mon.submit_run = Mock(side_effect=FileNotFoundError('File not found'))
         inst_mon.file_ext = '.nxs'
-        inst_mon.read_instrument_last_run = Mock(return_value=['WISH',
-                                                               RUN_DATA['run_number'],
-                                                               '0'])
+        inst_mon.read_instrument_last_run = Mock(return_value=['WISH', RUN_DATA['run_number'], '0'])
         inst_mon.read_rb_number_from_summary = Mock(return_value=RUN_DATA['rb_number'])
 
         # Perform test
         run_number = inst_mon.submit_run_difference(44731)
         self.assertEqual(run_number, '44731')
 
-    @patch('monitors.run_detection.InstrumentMonitor.__init__',
-           return_value=None)
-    @patch('monitors.run_detection.InstrumentMonitor.submit_run_difference',
-           return_value='44736')
+    @patch('monitors.run_detection.InstrumentMonitor.__init__', return_value=None)
+    @patch('monitors.run_detection.InstrumentMonitor.submit_run_difference', return_value='44736')
     def test_update_last_runs(self, run_diff_mock, inst_mon_mock):
         # Setup test
         with open('test_last_runs.csv', 'w') as last_runs:
@@ -251,8 +241,7 @@ class TestRunDetection(unittest.TestCase):
                 if row:  # Avoid the empty rows
                     self.assertEqual('44736', row[1])
 
-    @patch('monitors.run_detection.InstrumentMonitor.__init__',
-           return_value=None)
+    @patch('monitors.run_detection.InstrumentMonitor.__init__', return_value=None)
     @patch('monitors.run_detection.InstrumentMonitor.submit_run_difference',
            side_effect=monitors.run_detection.InstrumentMonitorError('Error'))
     def test_update_last_runs_with_error(self, run_diff_mock, inst_mon_mock):

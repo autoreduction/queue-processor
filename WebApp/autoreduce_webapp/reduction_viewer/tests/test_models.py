@@ -16,7 +16,6 @@ class TestModels(unittest.TestCase):
     """
     Test reduction_viewer.models
     """
-
     def setUp(self):
         self.database = DjangoORM()
         self.database.connect()

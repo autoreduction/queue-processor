@@ -14,10 +14,7 @@ standard_vars = {
     'Psi Starts': [0, 7],
     'Psi Increments': [2, 0.5]
 }
-advanced_vars = {
-    'Number of Runs to Merge': [5],
-    'Filenames': []
-}
+advanced_vars = {'Number of Runs to Merge': [5], 'Filenames': []}
 variable_help = {
     'standard_vars': {
         'UB Matrix': "The list of a, b, c"

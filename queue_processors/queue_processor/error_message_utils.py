@@ -21,8 +21,5 @@ def log_error_and_notify(message):
     """
     logger.error(message)
     model = db.start_database().data_model
-    notification = model.Notification(is_active=True,
-                                      is_staff_only=True,
-                                      severity='e',
-                                      message=message)
+    notification = model.Notification(is_active=True, is_staff_only=True, severity='e', message=message)
     db.save_record(notification)

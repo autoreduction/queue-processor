@@ -20,7 +20,6 @@ class PrepareData:
     validating initial rows are as expected, and ultimately converting the data
     into a pandas data frame.
     """
-
     def __init__(self):
         self.expected_first_row = "# X , Y , E"
         self.columns = ["Spectrum", "X", "Y", "E"]
@@ -44,7 +43,7 @@ class PrepareData:
                 if len(float_list) == 1:
                     spectrum = int(row[0])
                 else:
-                    processed_data.append([spectrum]+float_list)
+                    processed_data.append([spectrum] + float_list)
 
         return pd.DataFrame(processed_data, columns=self.columns)
 
@@ -65,8 +64,7 @@ class PrepareData:
                              f"Actual:\t\t{row}\n"
                              f"\nDifference breakdown:\n")
 
-            diff = ndiff(self.expected_first_row.splitlines(keepends=True),
-                         row.splitlines(keepends=True))
+            diff = ndiff(self.expected_first_row.splitlines(keepends=True), row.splitlines(keepends=True))
             error_message += "\n".join(diff)
 
             raise RuntimeError(error_message)

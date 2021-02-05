@@ -19,9 +19,7 @@ def run_process_and_log(list_of_args):
     :param list_of_args: list of arguments for Popen
     :return: (bool) True if succeeded
     """
-    process = subprocess.Popen(list_of_args,
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE)
+    process = subprocess.Popen(list_of_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     process_output, process_error = process.communicate()
     exit_status = process.returncode
     # Typically, an exit status of 0 indicates that the process ran

@@ -15,7 +15,6 @@ from model.message.validation import process
 
 # pylint:disable=missing-class-docstring
 class TestProcess(unittest.TestCase):
-
     def setUp(self):
         self.true_validity_dict = {
             'check_1': True,

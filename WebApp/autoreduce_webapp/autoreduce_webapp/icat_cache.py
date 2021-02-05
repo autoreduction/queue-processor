@@ -59,8 +59,7 @@ class ICATCache(object):
 
     def is_valid(self, cache_obj):
         """ Check whether a cache object is fresh and is not None. """
-        return cache_obj and (cache_obj.created +
-                              datetime.timedelta(seconds=self.cache_lifetime) > timezone.now())
+        return cache_obj and (cache_obj.created + datetime.timedelta(seconds=self.cache_lifetime) > timezone.now())
 
     @staticmethod
     def to_list(target_list):
@@ -87,17 +86,21 @@ class ICATCache(object):
             # Check func_list for the attributes that each model should have,
             # and the corresponding ICATCommunication function to query for it;
             #  call it for each, building a dict, and then splice it into the constructor kwargs.
-            new_obj = obj_type(**{attr: (getattr(self.icat, func)(obj_id)
-                                         if typ is None
-                                         else self.to_list(getattr(self.icat, func)(obj_id)))
-                                  for (func, model, attr, typ) in FUNC_LIST if model == obj_type})
+            new_obj = obj_type(
+                **{
+                    attr: (getattr(self.icat, func)
+                           (obj_id) if typ is None else self.to_list(getattr(self.icat, func)(obj_id)))
+                    for (func, model, attr, typ) in FUNC_LIST if model == obj_type
+                })
         else:
             # In this case, ICATCommunication returns all the ExperimentCache
             # fields in one query, so we splice that into the constructor.
-            new_obj = obj_type(**{attr: str(val)
-                                  for attr, val in
-                                  list(self.icat.get_experiment_details(obj_id).items())
-                                  if attr != "reference_number"})
+            new_obj = obj_type(
+                **{
+                    attr: str(val)
+                    for attr, val in list(self.icat.get_experiment_details(obj_id).items())
+                    if attr != "reference_number"
+                })
         new_obj.id_name = obj_id
         new_obj.save()
         return new_obj
@@ -135,8 +138,7 @@ class ICATCache(object):
         user_experiments = set(self.get_associated_experiments(user_number))
         for instrument_name in instruments:
             instrument_experiments = self.get_valid_experiments_for_instrument(instrument_name)
-            experiment_dict[instrument_name] = list(user_experiments.
-                                                    intersection(instrument_experiments))
+            experiment_dict[instrument_name] = list(user_experiments.intersection(instrument_experiments))
         return experiment_dict
 
     def get_experiment_details(self, experiment_number):
@@ -150,14 +152,11 @@ class ICATCache(object):
 # Here we define (ICATCommunication function to wrap, Cache object type,
 # field of object to get, type of list element if the field is a list)
 FUNC_LIST = [("get_owned_instruments", UserCache, "owned_instruments", str),
-             ("get_valid_instruments", UserCache, "valid_instruments", str),
-             ("is_admin", UserCache, "is_admin", None),
+             ("get_valid_instruments", UserCache, "valid_instruments", str), ("is_admin", UserCache, "is_admin", None),
              ("is_instrument_scientist", UserCache, "is_instrument_scientist", None),
              ("get_associated_experiments", UserCache, "associated_experiments", int),
-             ("get_upcoming_experiments_for_instrument",
-              InstrumentCache, "upcoming_experiments", int),
-             ("get_valid_experiments_for_instrument",
-              InstrumentCache, "valid_experiments", int)]
+             ("get_upcoming_experiments_for_instrument", InstrumentCache, "upcoming_experiments", int),
+             ("get_valid_experiments_for_instrument", InstrumentCache, "valid_experiments", int)]
 
 
 def make_member_func(obj_type, cache_attr, list_type):
@@ -190,6 +189,7 @@ def make_member_func(obj_type, cache_attr, list_type):
             attr = map(list_type, filter(isvalid, attr.split(",")))
 
         return attr
+
     return member_func
 
 

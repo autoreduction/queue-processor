@@ -27,9 +27,11 @@ def raise_icat_session_error():
 
 # pylint:disable=missing-docstring,no-self-use
 class TestICATClient(unittest.TestCase):
-
     @patch('icat.Client.__init__', return_value=None)
-    def test_default_init(self, mock_icat,):
+    def test_default_init(
+        self,
+        mock_icat,
+    ):
         """
         Test: Class variables are created and set
         When: ICATClient is initialised with default credentials
@@ -53,8 +55,10 @@ class TestICATClient(unittest.TestCase):
         mock_icat.assert_called_once()
         client.connect()
         mock_icat_login.assert_called_once_with(auth='simple',
-                                                credentials={'username': 'YOUR-ICAT-USERNAME',
-                                                             'password': 'YOUR-PASSWORD'})
+                                                credentials={
+                                                    'username': 'YOUR-ICAT-USERNAME',
+                                                    'password': 'YOUR-PASSWORD'
+                                                })
 
     def test_invalid_connection(self):
         """

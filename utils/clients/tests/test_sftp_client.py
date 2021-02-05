@@ -151,8 +151,7 @@ class TestSFTPClient(unittest.TestCase):
         """
         client = self.create_mocked_connection_client()
         with self.assertRaises(RuntimeError):
-            client.retrieve(server_file_path=self.valid_argument,
-                            local_file_path=self.valid_argument, override=False)
+            client.retrieve(server_file_path=self.valid_argument, local_file_path=self.valid_argument, override=False)
 
     @patch('os.path.isfile', return_value=False)
     def test_override_is_false_and_local_file_path_does_not_exists(self, _):
@@ -161,8 +160,7 @@ class TestSFTPClient(unittest.TestCase):
         When: A file at local_file_path exists and override is True
         """
         client = self.create_mocked_connection_client()
-        client.retrieve(server_file_path=self.valid_argument,
-                        local_file_path=self.valid_argument, override=False)
+        client.retrieve(server_file_path=self.valid_argument, local_file_path=self.valid_argument, override=False)
         client._connection.get.assert_called_with(self.valid_argument, self.valid_argument)
 
     def test_get_filenames_valid_path(self):
@@ -191,6 +189,5 @@ class TestSFTPClient(unittest.TestCase):
         """
         client = self.create_mocked_connection_client()
         client._connection.listdir.return_value = self.filenames
-        filenames_returned = client.get_filenames(server_dir_path=self.valid_argument,
-                                                  regex=self.textfile_regex)
+        filenames_returned = client.get_filenames(server_dir_path=self.valid_argument, regex=self.textfile_regex)
         self.assertEqual(filenames_returned, [self.filenames[0]])

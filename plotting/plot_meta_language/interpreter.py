@@ -18,7 +18,6 @@ class Interpreter:
     This class reads in plot type files from given locations
     and interprets them as a dictionary to be used as a 'plotly' graph layout
     """
-
     @staticmethod
     def read(plot_type_file_location):
         """
@@ -31,8 +30,7 @@ class Interpreter:
             with open(plot_type_file_location) as file:
                 return yaml.full_load(file)
         except FileNotFoundError as exp:
-            raise RuntimeError("The plot type file could not be "
-                               "found at the location provided.") from exp
+            raise RuntimeError("The plot type file could not be " "found at the location provided.") from exp
 
     def interpret(self, plot_type_file_location):
         """
@@ -46,8 +44,7 @@ class Interpreter:
         """
         file_data = self.read(plot_type_file_location)
         if len(file_data) < 1:
-            raise RuntimeError("The plot type file is empty. "
-                               "Please see the example.yaml file for guidance.")
+            raise RuntimeError("The plot type file is empty. " "Please see the example.yaml file for guidance.")
         if not isinstance(file_data, dict):
             raise RuntimeError("The format of the plot type file is not as expected. "
                                "Please see the example.yaml file for guidance.")

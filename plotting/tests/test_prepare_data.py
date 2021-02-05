@@ -23,11 +23,7 @@ class TestPrepareData(unittest.TestCase):
     """
     def setUp(self):
         self.valid_first_row = "first"
-        self.valid_data = (
-            f"{self.valid_first_row}\n"
-            f"2\n"
-            f"3.1, 3.2, 3.3"
-        )
+        self.valid_data = (f"{self.valid_first_row}\n" f"2\n" f"3.1, 3.2, 3.3")
         self.test_file_name = "test_data.csv"
         with open(self.test_file_name, 'w') as file:
             file.write(self.valid_data)
@@ -84,8 +80,7 @@ class TestPrepareData(unittest.TestCase):
         prep = PrepareData()
         second_row = self.valid_data.split("\n")[1]
         expected_return = int(second_row)
-        self.assertEqual(prep._check_second_row(second_row),
-                         expected_return)
+        self.assertEqual(prep._check_second_row(second_row), expected_return)
 
     def test_invalid_path(self):
         """

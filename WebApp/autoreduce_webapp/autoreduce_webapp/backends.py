@@ -47,8 +47,7 @@ class UOWSAuthenticationBackend(object):
                     # This will be checked upon each login
                     # pylint: disable=no-member
                     user.is_superuser = icat.is_admin(int(person['usernumber']))
-                    user.is_staff = (icat.is_instrument_scientist(
-                        int(person['usernumber'])) or user.is_superuser)
+                    user.is_staff = (icat.is_instrument_scientist(int(person['usernumber'])) or user.is_superuser)
                 user.save()
                 return user
         return None

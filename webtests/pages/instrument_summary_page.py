@@ -17,7 +17,6 @@ class InstrumentSummaryPage(Page, NavbarMixin, FooterMixin, TourMixin):
     """
     Page model class for instrument summary page
     """
-
     @staticmethod
     def url_path():
         """

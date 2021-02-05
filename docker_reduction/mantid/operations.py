@@ -20,8 +20,7 @@ class MantidDocker:
     """
 
     # pylint:disable=too-many-arguments
-    def __init__(self, reduction_script, input_file, output_directory,
-                 input_mount=None, output_mount=None):
+    def __init__(self, reduction_script, input_file, output_directory, input_mount=None, output_mount=None):
         self.image_name = 'mantid-reduction-container'
         self.reduction_script = reduction_script
         self.input_file = input_file
@@ -45,9 +44,7 @@ class MantidDocker:
         """
         client = docker.from_env()
         build_path = os.path.dirname(os.path.realpath(__file__))
-        client.images.build(path=build_path,
-                            dockerfile=os.path.join(build_path, 'Dockerfile'),
-                            tag=self.image_name)
+        client.images.build(path=build_path, dockerfile=os.path.join(build_path, 'Dockerfile'), tag=self.image_name)
 
     def create_volumes(self):
         """
@@ -61,8 +58,16 @@ class MantidDocker:
         self.output_mount = data_out
 
         # Volumes
-        volumes = {data_in.host_location: {'bind': data_in.container_destination, 'mode': 'ro'},
-                   data_out.host_location: {'bind': data_out.container_destination, 'mode': 'rw'}}
+        volumes = {
+            data_in.host_location: {
+                'bind': data_in.container_destination,
+                'mode': 'ro'
+            },
+            data_out.host_location: {
+                'bind': data_out.container_destination,
+                'mode': 'rw'
+            }
+        }
 
         return volumes
 
@@ -72,9 +77,11 @@ class MantidDocker:
         :return: a dictionary of environment variables in the expected format for docker
         """
         # Environment variables
-        environment = {'SCRIPT': self.reduction_script,
-                       'INPUT_FILE': self.input_file,
-                       'OUTPUT_DIR': self.output_mount.container_destination}
+        environment = {
+            'SCRIPT': self.reduction_script,
+            'INPUT_FILE': self.input_file,
+            'OUTPUT_DIR': self.output_mount.container_destination
+        }
         return environment
 
     def run(self, volumes, environment_variables):
@@ -85,6 +92,4 @@ class MantidDocker:
         """
         client = docker.from_env()
         # Run the container
-        client.containers.run(image=self.image_name,
-                              volumes=volumes,
-                              environment=environment_variables)
+        client.containers.run(image=self.image_name, volumes=volumes, environment=environment_variables)

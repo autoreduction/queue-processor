@@ -106,8 +106,7 @@ def do_view(_, token):
     kwargs = {}
     tokens = token.split_contents()
     if len(tokens) < 2:
-        raise TemplateSyntaxError("%r tag requires one or more arguments" %
-                                  token.contents.split()[0])
+        raise TemplateSyntaxError("%r tag requires one or more arguments" % token.contents.split()[0])
     _ = tokens.pop(0)
     url_or_view = tokens.pop(0)
     # pylint: disable=redefined-argument-from-local
@@ -116,7 +115,7 @@ def do_view(_, token):
         if equals == -1:
             args.append(token)
         else:
-            kwargs[str(token[:equals])] = token[equals+1:]
+            kwargs[str(token[:equals])] = token[equals + 1:]
     return ViewNode(url_or_view, args, kwargs)
 
 

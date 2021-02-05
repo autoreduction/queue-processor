@@ -10,7 +10,6 @@ Generic client class used as an interface for other classes
 
 from abc import ABCMeta, abstractmethod
 
-
 from utils.clients.settings.client_settings import ClientSettings
 
 
@@ -25,14 +24,13 @@ class AbstractClient:
 
     def __init__(self, credentials):
         if not isinstance(credentials, ClientSettings):
-            raise TypeError("Expected instance of ClientSettings not {}".
-                            format(type(credentials)))
+            raise TypeError("Expected instance of ClientSettings not {}".format(type(credentials)))
         self.credentials = credentials
 
     @abstractmethod
     def connect(self):
         """ Abstract function for connecting to a service """
-        raise NotImplementedError # pragma: no cover
+        raise NotImplementedError  # pragma: no cover
 
     @abstractmethod
     def disconnect(self):
@@ -42,4 +40,4 @@ class AbstractClient:
     @abstractmethod
     def _test_connection(self):
         """ Abstract function to test if a service connection has been made/is active """
-        raise NotImplementedError # pragma: no cover
+        raise NotImplementedError  # pragma: no cover

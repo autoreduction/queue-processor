@@ -12,7 +12,6 @@ from django.template.defaultfilters import pluralize
 # pylint: disable=relative-import
 from .common_helpers import get_var
 
-
 # pylint:disable=invalid-name
 register = Library()
 
@@ -62,8 +61,7 @@ def natural_time_difference(_, token):
     """
     args = token.split_contents()[1:]
     if len(args) != 2:
-        raise TemplateSyntaxError('%r tag requires two datetimes.'
-                                  % token.contents.split()[0])
+        raise TemplateSyntaxError('%r tag requires two datetimes.' % token.contents.split()[0])
     return NaturalTimeDifferenceNode(*args)
 
 

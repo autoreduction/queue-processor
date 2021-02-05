@@ -45,8 +45,7 @@ class InstallExternals(Command):
                 service_dict[service_name] = False
             self.services = service_dict
         else:
-            self.services = {'activemq': False,
-                             'mantid': False}
+            self.services = {'activemq': False, 'mantid': False}
         if os.name == 'nt' and '7zip' not in self.services:
             self.services['7zip'] = False
 
@@ -68,8 +67,9 @@ class InstallExternals(Command):
         # pylint:disable=attribute-defined-outside-init
         self.services = self._validate_services(self.services.keys(), quiet=False)
         # Return a list of all non-valid services (those with value of false)
-        services_to_install = [service_name for service_name in self.services.keys()
-                               if self.services[service_name] is False]
+        services_to_install = [
+            service_name for service_name in self.services.keys() if self.services[service_name] is False
+        ]
         # Ensure 7zip is installed first
         if '7zip' in services_to_install:
             BUILD_LOGGER.print_and_log("Installing 7zip (required for other installations")
@@ -91,8 +91,7 @@ class InstallExternals(Command):
 
         valid = self._validate_services(services_to_install, quiet=False)
         if False in valid.values():
-            BUILD_LOGGER.print_and_log("One or more services did not correctly install:",
-                                       logging.ERROR)
+            BUILD_LOGGER.print_and_log("One or more services did not correctly install:", logging.ERROR)
             for service_name, _ in valid.items():
                 if valid[service_name] is False:
                     BUILD_LOGGER.print_and_log("* %s" % service_name, logging.ERROR)
@@ -106,12 +105,11 @@ class InstallExternals(Command):
         """
         try:
             # pylint:disable=unused-import,import-outside-toplevel
-            from build.install.install_services import (install_service, validate_input,
-                                                        valid_services)
+            from build.install.install_services import (install_service, validate_input, valid_services)
         except ImportError:
-            BUILD_LOGGER.print_and_log("Could not import install_services. "
-                                       "Have you migrated the test settings correctly?",
-                                       logging.ERROR)
+            BUILD_LOGGER.print_and_log(
+                "Could not import install_services. "
+                "Have you migrated the test settings correctly?", logging.ERROR)
             return False
         return True
 
@@ -123,9 +121,9 @@ class InstallExternals(Command):
         # pylint:disable=import-outside-toplevel
         from build.install.install_services import valid_services, validate_input
         if not validate_input(self.services, BUILD_LOGGER):
-            BUILD_LOGGER.print_and_log("Some services supplied were not valid.\n"
-                                       "Valid services are: %s" % valid_services(),
-                                       logging.ERROR)
+            BUILD_LOGGER.print_and_log(
+                "Some services supplied were not valid.\n"
+                "Valid services are: %s" % valid_services(), logging.ERROR)
             return False
         return True
 

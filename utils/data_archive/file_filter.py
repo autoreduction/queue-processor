@@ -29,8 +29,7 @@ def filter_files_by_extension(files_to_check, accepted_extensions):
     :param accepted_extensions: List of valid extensions
     :return: List of files that have valid extensions
     """
-    return [current_file for current_file in files_to_check
-            if check_file_extension(current_file, accepted_extensions)]
+    return [current_file for current_file in files_to_check if check_file_extension(current_file, accepted_extensions)]
 
 
 def filter_files_by_time(directory, cut_off_time):

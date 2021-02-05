@@ -44,9 +44,7 @@ class Trace:  # pylint: disable=too-many-arguments, line-too-long
         trace = {}
         for axis in list(data.columns):
             if axis == 'E':
-                trace['error_y'] = dict(type='data',
-                                        array=data[axis].to_list(),
-                                        visible=error_bars)
+                trace['error_y'] = dict(type='data', array=data[axis].to_list(), visible=error_bars)
             else:
                 trace[axis.lower()] = data[axis]
         return trace

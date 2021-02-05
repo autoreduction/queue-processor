@@ -10,7 +10,6 @@
 import unittest
 from unittest.mock import patch
 
-
 # Internal Dependencies
 from plotting.plot_factory.layout import Layout
 
@@ -19,7 +18,6 @@ from plotting.plot_factory.tests.mocked_values import MockPlotVariables
 
 
 class TestLayout(unittest.TestCase):
-
     @patch('plotting.plot_meta_language.interpreter.Interpreter.interpret')
     def test_read_plot_meta_data(self, mock_interpreter):
         """
@@ -28,8 +26,7 @@ class TestLayout(unittest.TestCase):
         """
         mock_interpreter.return_value = MockPlotVariables().raw_interpreted_layout
 
-        actual = Layout(MockPlotVariables().plot_meta_file_location,
-                        'Instrument_Run_Number')._read_plot_meta_data()
+        actual = Layout(MockPlotVariables().plot_meta_file_location, 'Instrument_Run_Number')._read_plot_meta_data()
 
         # assert that interpreter has been called with correct argument
         mock_interpreter.assert_called_with(MockPlotVariables().plot_meta_file_location)
@@ -47,9 +44,7 @@ class TestLayout(unittest.TestCase):
 
         mock_rpmd.return_value = MockPlotVariables().raw_interpreted_layout
 
-        actual = Layout(
-            MockPlotVariables().raw_interpreted_layout,
-            'Instrument_Run_Number')._extract_layout()
+        actual = Layout(MockPlotVariables().raw_interpreted_layout, 'Instrument_Run_Number')._extract_layout()
 
         self.assertIsInstance(actual, dict)
         self.assertEqual(actual, MockPlotVariables().processed_layout)

@@ -19,8 +19,7 @@ import operator
 from autoreduce_webapp.icat_cache import ICATCache
 from autoreduce_webapp.settings import UOWS_LOGIN_URL, USER_ACCESS_CHECKS, DEVELOPMENT_MODE
 from autoreduce_webapp.uows_client import UOWSClient
-from autoreduce_webapp.view_utils import (login_and_uows_valid, render_with,
-                                          require_admin, check_permissions)
+from autoreduce_webapp.view_utils import (login_and_uows_valid, render_with, require_admin, check_permissions)
 from django.contrib.auth import logout as django_logout, authenticate, login
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
@@ -54,8 +53,7 @@ def index(request):
     authenticated = False
 
     if DEVELOPMENT_MODE:
-        user = authenticate(username="super", password="super", 
-                            backend="django.contrib.auth.backends.ModelBackend")
+        user = authenticate(username="super", password="super", backend="django.contrib.auth.backends.ModelBackend")
         login(request, user)
         authenticated = True
     else:
@@ -120,19 +118,16 @@ def run_queue(request):
     # Get all runs that should be shown
     queued_status = StatusUtils().get_queued()
     processing_status = StatusUtils().get_processing()
-    pending_jobs = ReductionRun.objects.filter(Q(status=queued_status) |
-                                               Q(status=processing_status)).order_by('created')
+    pending_jobs = ReductionRun.objects.filter(Q(status=queued_status)
+                                               | Q(status=processing_status)).order_by('created')
     # Filter those which the user shouldn't be able to see
     if USER_ACCESS_CHECKS and not request.user.is_superuser:
         with ICATCache(AUTH='uows', SESSION={'sessionid': request.session['sessionid']}) as icat:
-            pending_jobs = filter(lambda job: job.experiment.reference_number in
-                                              icat.get_associated_experiments(
-                                                  int(request.user.username)),
-                                  pending_jobs)  # check RB numbers
-            pending_jobs = filter(lambda job: job.instrument.name in
-                                              icat.get_owned_instruments(
-                                                  int(request.user.username)),
-                                  pending_jobs)  # check instrument
+            pending_jobs = filter(lambda job: job.experiment.reference_number in icat.get_associated_experiments(
+                int(request.user.username)), pending_jobs)  # check RB numbers
+            pending_jobs = filter(
+                lambda job: job.instrument.name in icat.get_owned_instruments(int(request.user.username)),
+                pending_jobs)  # check instrument
     # Initialise list to contain the names of user/team that started runs
     started_by = []
     # cycle through all filtered runs and retrieve the name of the user/team that started the run
@@ -153,11 +148,13 @@ def fail_queue(request):
     """
     # render the page
     error_status = StatusUtils().get_error()
-    failed_jobs = ReductionRun.objects.filter(Q(status=error_status) &
-                                              Q(hidden_in_failviewer=False)).order_by('-created')
-    context_dictionary = {'queue': failed_jobs,
-                          'status_success': StatusUtils().get_completed(),
-                          'status_failed': StatusUtils().get_error()}
+    failed_jobs = ReductionRun.objects.filter(Q(status=error_status)
+                                              & Q(hidden_in_failviewer=False)).order_by('-created')
+    context_dictionary = {
+        'queue': failed_jobs,
+        'status_success': StatusUtils().get_completed(),
+        'status_failed': StatusUtils().get_error()
+    }
 
     if request.method == 'POST':
         # perform the specified action
@@ -180,15 +177,13 @@ def fail_queue(request):
                     reduction_run.save()
 
                 elif action == "rerun":
-                    highest_version = max([int(runL[1]) for runL in
-                                           selected_runs if int(runL[0]) == run_number])
+                    highest_version = max([int(runL[1]) for runL in selected_runs if int(runL[0]) == run_number])
                     if run_version != highest_version:
                         continue  # do not run multiples of the same run
 
                     ReductionRunUtils().cancelRun(reduction_run)
                     reduction_run.cancel = False
-                    new_job = ReductionRunUtils().createRetryRun(user_id=request.user.id,
-                                                                 reduction_run=reduction_run)
+                    new_job = ReductionRunUtils().createRetryRun(user_id=request.user.id, reduction_run=reduction_run)
 
                     try:
                         MessagingUtils().send_pending(new_job)
@@ -205,12 +200,12 @@ def fail_queue(request):
 
         # pylint:disable=broad-except
         except Exception as exception:
-            fail_str = "Selected action failed: %s %s" % (type(exception).__name__,
-                                                          exception)
+            fail_str = "Selected action failed: %s %s" % (type(exception).__name__, exception)
             LOGGER.info("Failed to carry out fail_queue action - %s", fail_str)
             context_dictionary["message"] = fail_str
 
     return context_dictionary
+
 
 @login_and_uows_valid
 @check_permissions
@@ -222,12 +217,9 @@ def run_summary(_, instrument_name=None, run_number=None, run_version=0):
     """
     # pylint:disable=broad-except
     try:
-        history = list(ReductionRun.objects
-                       .filter(instrument__name=instrument_name, run_number=run_number)
-                       .order_by('-run_version')
-                       .select_related('status')
-                       .select_related('experiment')
-                       .select_related('instrument'))
+        history = list(
+            ReductionRun.objects.filter(instrument__name=instrument_name, run_number=run_number).order_by(
+                '-run_version').select_related('status').select_related('experiment').select_related('instrument'))
         run = next(run for run in history if run.run_version == int(run_version))
         started_by = started_by_id_to_name(run.started_by)
         # run status value of "s" means the run is skipped
@@ -242,21 +234,22 @@ def run_summary(_, instrument_name=None, run_number=None, run_version=0):
             reduction_location = reduction_location.replace('\\', '/')
 
         rb_number = run.experiment.reference_number
-        has_variables = bool(
-            InstrumentVariablesUtils().get_default_variables(run.instrument.name)
-            or run.run_variables.all())  # We check default vars and run vars in case none exist
+        has_variables = bool(InstrumentVariablesUtils().get_default_variables(run.instrument.name)
+                             or run.run_variables.all())  # We check default vars and run vars in case none exist
         # for run but could exist for default
 
-        context_dictionary = {'run': run,
-                              'run_number': run_number,
-                              'instrument': instrument_name,
-                              'run_version': run_version,
-                              'is_skipped': is_skipped,
-                              'is_rerun': is_rerun,
-                              'history': history,
-                              'reduction_location': reduction_location,
-                              'started_by': started_by,
-                              'has_variables': has_variables}
+        context_dictionary = {
+            'run': run,
+            'run_number': run_number,
+            'instrument': instrument_name,
+            'run_version': run_version,
+            'is_skipped': is_skipped,
+            'is_rerun': is_rerun,
+            'history': history,
+            'reduction_location': reduction_location,
+            'started_by': started_by,
+            'has_variables': has_variables
+        }
 
     except PermissionDenied:
         raise
@@ -277,8 +270,8 @@ def run_summary(_, instrument_name=None, run_number=None, run_version=0):
             # Lack of plot images is recoverable - we shouldn't stop the whole page rendering
             # if something is wrong with the plot images - but display an error message
             err_msg = "Encountered error while retrieving plots for this run"
-            LOGGER.error("%s. Instrument: %s, run %s. RB Number %s Error: %s",
-                         err_msg, run.instrument.name, run, rb_number, exception)
+            LOGGER.error("%s. Instrument: %s, run %s. RB Number %s Error: %s", err_msg, run.instrument.name, run,
+                         rb_number, exception)
             context_dictionary["plot_error_message"] = f"{err_msg}."
 
     return context_dictionary
@@ -301,17 +294,13 @@ def instrument_summary(request, instrument=None):
     try:
         sort_by = request.GET.get('sort', 'run')
         if sort_by == 'run':
-            runs = (ReductionRun.objects
-                    .only('status', 'last_updated', 'run_number', 'run_version', 'run_name')
-                    .select_related('status')
-                    .filter(instrument=instrument_obj)
-                    .order_by('-run_number', 'run_version'))
+            runs = (ReductionRun.objects.only('status', 'last_updated', 'run_number', 'run_version',
+                                              'run_name').select_related('status').filter(
+                                                  instrument=instrument_obj).order_by('-run_number', 'run_version'))
         else:
-            runs = (ReductionRun.objects
-                    .only('status', 'last_updated', 'run_number', 'run_version', 'run_name')
-                    .select_related('status')
-                    .filter(instrument=instrument_obj)
-                    .order_by('-last_updated'))
+            runs = (ReductionRun.objects.only(
+                'status', 'last_updated', 'run_number', 'run_version',
+                'run_name').select_related('status').filter(instrument=instrument_obj).order_by('-last_updated'))
 
         if len(runs) == 0:
             return {'message': "No runs found for instrument."}
@@ -390,8 +379,7 @@ def experiment_summary(request, reference_number=None):
                 with ICATCache() as icat:
                     experiment_details = icat.get_experiment_details(int(reference_number))
             else:
-                with ICATCache(AUTH='uows',
-                               SESSION={'sessionid': request.session['sessionid']}) as icat:
+                with ICATCache(AUTH='uows', SESSION={'sessionid': request.session['sessionid']}) as icat:
                     experiment_details = icat.get_experiment_details(int(reference_number))
         # pylint:disable=broad-except
         except Exception as icat_e:
@@ -455,9 +443,7 @@ def graph_home(_):
     """
     instruments = Instrument.objects.all()
 
-    context_dictionary = {
-        'instruments': instruments
-    }
+    context_dictionary = {'instruments': instruments}
 
     return context_dictionary
 
@@ -473,15 +459,14 @@ def graph_instrument(request, instrument_name):
     if not instrument:
         return HttpResponseNotFound('<h1>Instrument not found</h1>')
 
-    runs = (ReductionRun.objects.
-            # Get the foreign key 'status' now. Otherwise many queries
-            # made from load_runs which is very slow.
-            select_related('status')
-            # Only get these attributes, to speed it up.
-            .only('status', 'started', 'finished', 'last_updated',
-                  'created', 'run_number', 'run_name', 'run_version')
-            .filter(instrument=instrument.first())
-            .order_by('-created'))
+    runs = (
+        ReductionRun.objects.
+        # Get the foreign key 'status' now. Otherwise many queries
+        # made from load_runs which is very slow.
+        select_related('status')
+        # Only get these attributes, to speed it up.
+        .only('status', 'started', 'finished', 'last_updated', 'created', 'run_number', 'run_name',
+              'run_version').filter(instrument=instrument.first()).order_by('-created'))
 
     try:
         if 'last' in request.GET:
@@ -500,10 +485,7 @@ def graph_instrument(request, instrument_name):
         else:
             run.run_time = 0
 
-    context_dictionary = {
-        'runs': runs,
-        'instrument': instrument.first().name
-    }
+    context_dictionary = {'runs': runs, 'instrument': instrument.first().name}
 
     return context_dictionary
 
@@ -518,13 +500,13 @@ def stats(_):
     """
     statuses = []
     for status in Status.objects.all():
-        status_count = (ReductionRun.objects.
-                        # Get the foreign key 'status' now.
-                        # Otherwise many queries made from load_runs which is very slow.
-                        select_related('status')
-                        # Only get these attributes, to speed it up.
-                        .only('status')
-                        .filter(status__value=status.value).count())
+        status_count = (
+            ReductionRun.objects.
+            # Get the foreign key 'status' now.
+            # Otherwise many queries made from load_runs which is very slow.
+            select_related('status')
+            # Only get these attributes, to speed it up.
+            .only('status').filter(status__value=status.value).count())
         statuses.append({'name': status, 'count': status_count})
 
     context_dictionary = {

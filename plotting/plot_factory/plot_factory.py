@@ -20,7 +20,6 @@ class PlotFactory:
     Creates figures from formatted data and layout
     producing a DashApp for direct insertion inside a given web page
     """
-
     @staticmethod
     def create_trace_list(data, layout):
         """
@@ -33,11 +32,12 @@ class PlotFactory:
         trace_list = []
         for spectrum in data.index.unique():
 
-            trace_list.append(Trace(mode=layout.mode,
-                                    plot_style=layout.plot_type,
-                                    plot_name=f"{spectrum}_{layout.plot_type}",
-                                    data=data.loc[spectrum],
-                                    error_bars=layout.error_bars).trace)
+            trace_list.append(
+                Trace(mode=layout.mode,
+                      plot_style=layout.plot_type,
+                      plot_name=f"{spectrum}_{layout.plot_type}",
+                      data=data.loc[spectrum],
+                      error_bars=layout.error_bars).trace)
 
         return trace_list
 

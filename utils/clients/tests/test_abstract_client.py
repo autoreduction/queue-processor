@@ -15,16 +15,12 @@ from utils.clients.settings.client_settings import ClientSettings
 
 # pylint:disable=missing-docstring
 class TestAbstractClient(unittest.TestCase):
-
     def test_client_settings_init(self):
         """
         Test: A client is created
         When: A class which implements AbstractClient is initiated with a ClientSettings argument
         """
-        valid_settings = ClientSettings(username='user',
-                                        password='pass',
-                                        host='host',
-                                        port='123')
+        valid_settings = ClientSettings(username='user', password='pass', host='host', port='123')
         interface = ClientWrapper(credentials=valid_settings)
         self.assertIsNotNone(interface)
 
@@ -34,24 +30,22 @@ class TestAbstractClient(unittest.TestCase):
         When: A class which implements AbstractClient is initiated with an argument that
         extends ClientSettings
         """
+
         # pylint:disable=too-few-public-methods
         class DerivedSettings(ClientSettings):
             pass
-        derived_settings = DerivedSettings(username='user',
-                                           password='pass',
-                                           host='host',
-                                           port='123')
+
+        derived_settings = DerivedSettings(username='user', password='pass', host='host', port='123')
 
         interface = ClientWrapper(credentials=derived_settings)
         self.assertIsNotNone(interface)
 
     def test_invalid_init(self):
-        self.assertRaisesRegex(TypeError, "Expected instance of ClientSettings not <class 'int'>",
-                               ClientWrapper, 10)
-        self.assertRaisesRegex(TypeError, "Expected instance of ClientSettings not <class 'str'>",
-                               ClientWrapper, 'string')
-        self.assertRaisesRegex(TypeError, "Expected instance of ClientSettings not <class 'list'>",
-                               ClientWrapper, [1, 2, 3, 4])
+        self.assertRaisesRegex(TypeError, "Expected instance of ClientSettings not <class 'int'>", ClientWrapper, 10)
+        self.assertRaisesRegex(TypeError, "Expected instance of ClientSettings not <class 'str'>", ClientWrapper,
+                               'string')
+        self.assertRaisesRegex(TypeError, "Expected instance of ClientSettings not <class 'list'>", ClientWrapper,
+                               [1, 2, 3, 4])
 
 
 class ClientWrapper(AbstractClient):  # pragma: no cover

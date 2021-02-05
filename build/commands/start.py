@@ -51,13 +51,11 @@ class Start(Command):
                 if run_process_and_log([location, 'start']):
                     time.sleep(2)  # Ensure that activemq process has started before you continue
                 else:
-                    print("Unable to start ActiveMQ service."
-                          " Please see build.log for details.")
+                    print("Unable to start ActiveMQ service." " Please see build.log for details.")
 
     @staticmethod
     def _check_valid_path(path):
         if os.path.isfile(path):
             return True
-        print("Unable to start ActiveMQ service."
-              "Files not found at location %s" % path)
+        print("Unable to start ActiveMQ service." "Files not found at location %s" % path)
         return False

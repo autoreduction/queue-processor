@@ -6,13 +6,11 @@ import unittest
 from datetime import datetime, timedelta
 from unittest.mock import patch
 
-
 from utilities.pagination import CustomPage, RunPage, CustomPaginator, PageLimitException
 
 
 class TestCustomPage(unittest.TestCase):
     """ Test the generic CustomPage functionality """
-
     def setUp(self):
         self.page = CustomPage(1, 1, False)
 
@@ -60,7 +58,6 @@ class TestCustomPage(unittest.TestCase):
 # pylint:disable=too-few-public-methods
 class MockRunData(object):
     """ Test class to simulate a Run record from the database """
-
     def __init__(self, run_number, date):
         self.run_number = run_number
         self.last_updated = date
@@ -69,7 +66,6 @@ class MockRunData(object):
 # pylint:disable=too-few-public-methods
 class TestRunPage(unittest.TestCase):
     """ Test the specific RunPage functionality """
-
     def test_set_start_and_end(self):
         """
         Ensure the start and end values for the page are calculated correctly
@@ -87,24 +83,25 @@ class TestRunPage(unittest.TestCase):
 # pylint:disable=invalid-name
 class TestCustomPaginator(unittest.TestCase):
     """ Test the functionality of the Custom Pagination """
-
     def setUp(self):
         """
         Generate mock data to use for page population
         """
         now = datetime.now()
-        self.data = [MockRunData(1, now),
-                     MockRunData(2, now - timedelta(1)),
-                     MockRunData(3, now - timedelta(2)),
-                     MockRunData(4, now - timedelta(3)),
-                     MockRunData(5, now - timedelta(4))]
+        self.data = [
+            MockRunData(1, now),
+            MockRunData(2, now - timedelta(1)),
+            MockRunData(3, now - timedelta(2)),
+            MockRunData(4, now - timedelta(3)),
+            MockRunData(5, now - timedelta(4))
+        ]
 
     @patch('utilities.pagination.CustomPaginator._validate_current_page')
     @patch('utilities.pagination.CustomPaginator._construct_pagination')
     @patch('utilities.pagination.CustomPaginator._set_next_and_previous')
     @patch('utilities.pagination.CustomPaginator._create_display_list')
-    def test_init(self, mock_create_display_list, mock_set_next_and_previous,
-                  mock_construct_pagination, mock_validate_current_page):
+    def test_init(self, mock_create_display_list, mock_set_next_and_previous, mock_construct_pagination,
+                  mock_validate_current_page):
         """
         Ensure that all variables are set as expected in the __init__
         and the functions to populate / validate / render the paginator are run
@@ -190,10 +187,8 @@ class TestCustomPaginator(unittest.TestCase):
         """
         paginator = CustomPaginator('date', self.data, 1, 1, 1)
         self.assertEqual(len(paginator.display_list), 3)
-        self.assertEqual(paginator.display_list[0].records[0].last_updated,
-                         self.data[0].last_updated)
-        self.assertEqual(paginator.display_list[1].records[0].last_updated,
-                         self.data[1].last_updated)
+        self.assertEqual(paginator.display_list[0].records[0].last_updated, self.data[0].last_updated)
+        self.assertEqual(paginator.display_list[1].records[0].last_updated, self.data[1].last_updated)
         self.assertEqual(paginator.display_list[2], '...')
 
     def test_set_next_and_previous_with_both(self):

@@ -48,8 +48,7 @@ def log_error_and_notify(message):
     # pylint:disable=no-member
     existing_notifications = Notification.objects.filter(message=message)
     if not existing_notifications:
-        notification = Notification(is_active=True, is_staff_only=True,
-                                    severity='e', message=message)
+        notification = Notification(is_active=True, is_staff_only=True, severity='e', message=message)
         notification.save()
 
 
@@ -57,7 +56,6 @@ class VariableUtils(object):
     """
     Utilities for the generic Variable model
     """
-
     @staticmethod
     def derive_run_variable(instrument_var, reduction_run):
         """
@@ -68,16 +66,14 @@ class VariableUtils(object):
                            is_advanced=instrument_var.is_advanced,
                            type=instrument_var.type,
                            help_text=instrument_var.help_text,
-                           reduction_run=reduction_run
-                          )
+                           reduction_run=reduction_run)
 
     def save_run_variables(self, instrument_vars, reduction_run):
         """
         Create and save a run variable class
         """
         # pylint:disable=deprecated-lambda
-        run_variables = map(lambda i_var: self.derive_run_variable(i_var, reduction_run),
-                            instrument_vars)
+        run_variables = map(lambda i_var: self.derive_run_variable(i_var, reduction_run), instrument_vars)
         # pylint:disable=deprecated-lambda
         map(lambda r_var: r_var.save(), run_variables)
         return run_variables
@@ -96,8 +92,7 @@ class VariableUtils(object):
                                   instrument=variable.instrument,
                                   experiment_reference=variable.experiment_reference,
                                   start_run=variable.start_run,
-                                  tracks_script=variable.tracks_script
-                                 )
+                                  tracks_script=variable.tracks_script)
 
     @staticmethod
     def wrap_in_type_syntax(value, var_type):
@@ -194,7 +189,6 @@ class InstrumentVariablesUtils(object):
     """
     Instrument variable specific helper functions
     """
-
     def create_variables_for_run(self, reduction_run):
         """
         Finds the appropriate `InstrumentVariable`s for the given reduction run,
@@ -209,9 +203,7 @@ class InstrumentVariablesUtils(object):
 
         if not variables:
             # No previous run versions. Find the instrument variables we want to use.
-            variables = self.show_variables_for_experiment(instrument_name,
-                                                           reduction_run.experiment.
-                                                           reference_number)
+            variables = self.show_variables_for_experiment(instrument_name, reduction_run.experiment.reference_number)
 
         if not variables:
             # No experiment-specific variables, so let's look for variables set by run number.
@@ -261,12 +253,10 @@ class InstrumentVariablesUtils(object):
 
         upcoming_run_numbers = set([var.start_run for var in upcoming_run_variables])
         # pylint:disable=expression-not-assigned
-        [self.show_variables_for_run(instrument_name, run_number)
-         for run_number in upcoming_run_numbers]
+        [self.show_variables_for_run(instrument_name, run_number) for run_number in upcoming_run_numbers]
 
         # Get the most recent run variables.
-        current_variables = self.show_variables_for_run(instrument_name,
-                                                        latest_completed_run_number)
+        current_variables = self.show_variables_for_run(instrument_name, latest_completed_run_number)
         if not current_variables:
             # If no variables are saved, we'll use the default ones, and set them while we're at it.
             current_variables = self.get_default_variables(instrument_name)
@@ -274,19 +264,16 @@ class InstrumentVariablesUtils(object):
 
         # And then select the variables for all subsequent run numbers;
         # collect the immediate upcoming variables and all subsequent sets.
-        upcoming_variables_by_run = self.show_variables_for_run(instrument_name,
-                                                                latest_completed_run_number + 1)
+        upcoming_variables_by_run = self.show_variables_for_run(instrument_name, latest_completed_run_number + 1)
         # pylint:disable=no-member
         upcoming_variables_by_run += list(
-            InstrumentVariable.objects.
-            filter(instrument=instrument,
-                   start_run__in=upcoming_run_numbers).order_by('start_run'))
+            InstrumentVariable.objects.filter(instrument=instrument,
+                                              start_run__in=upcoming_run_numbers).order_by('start_run'))
 
         # Get the upcoming experiments, and then select all variables for these experiments.
         upcoming_experiments = []
         with ICATCommunication() as icat:
-            upcoming_experiments = list(icat.
-                                        get_upcoming_experiments_for_instrument(instrument_name))
+            upcoming_experiments = list(icat.get_upcoming_experiments_for_instrument(instrument_name))
 
         # pylint:disable=line-too-long,no-member
         upcoming_variables_by_experiment = InstrumentVariable.objects.\
@@ -302,8 +289,7 @@ class InstrumentVariablesUtils(object):
         """
         # Delete old instrument variables if they exist.
         # pylint:disable=deprecated-lambda
-        map(lambda var: var.delete(), self.show_variables_for_experiment(instrument_name,
-                                                                         experiment_reference))
+        map(lambda var: var.delete(), self.show_variables_for_experiment(instrument_name, experiment_reference))
         # Save the new ones.
         for var in variables:
             var.experiment_reference = experiment_reference
@@ -325,8 +311,7 @@ class InstrumentVariablesUtils(object):
         # with the right values.
         # First, find all variables that are in the range.
         # pylint:disable=no-member
-        applicable_variables = InstrumentVariable.objects.filter(instrument=instrument,
-                                                                 start_run__gte=start_run)
+        applicable_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run__gte=start_run)
         final_variables = []
         if end_run:
             applicable_variables = applicable_variables.filter(start_run__lte=end_run)
@@ -335,8 +320,7 @@ class InstrumentVariablesUtils(object):
                 filter(instrument=instrument,
                        start_run=end_run + 1).order_by('start_run')
             # pylint:disable=no-member
-            previous_variables = InstrumentVariable.objects.filter(instrument=instrument,
-                                                                   start_run__lt=start_run)
+            previous_variables = InstrumentVariable.objects.filter(instrument=instrument, start_run__lt=start_run)
 
             if applicable_variables and not after_variables:
                 # The last set of applicable variables extends outside our range.
@@ -379,9 +363,8 @@ class InstrumentVariablesUtils(object):
         """
         instrument = InstrumentUtils().get_instrument(instrument_name)
         # pylint:disable=no-member
-        variables = list(InstrumentVariable.objects.
-                         filter(instrument=instrument,
-                                experiment_reference=experiment_reference))
+        variables = list(
+            InstrumentVariable.objects.filter(instrument=instrument, experiment_reference=experiment_reference))
         self._update_variables(variables)
         return [VariableUtils().copy_variable(var) for var in variables]
 
@@ -408,8 +391,7 @@ class InstrumentVariablesUtils(object):
             variable_run_number = applicable_variables.first().start_run
             # Select all variables with that run number.
             # pylint:disable=no-member
-            variables = list(InstrumentVariable.objects.filter(instrument=instrument,
-                                                               start_run=variable_run_number))
+            variables = list(InstrumentVariable.objects.filter(instrument=instrument, start_run=variable_run_number))
             self._update_variables(variables)
             return [VariableUtils().copy_variable(var) for var in variables]
         return []
@@ -424,9 +406,8 @@ class InstrumentVariablesUtils(object):
         if not reduce_script:
             reduce_script = self._load_reduction_vars_script(instrument_name)
 
-        reduce_vars_module = self._read_script(reduce_script, os.path.join(
-            self._reduction_script_location(instrument_name),
-            'reduce_vars.py'))
+        reduce_vars_module = self._read_script(
+            reduce_script, os.path.join(self._reduction_script_location(instrument_name), 'reduce_vars.py'))
 
         if not reduce_vars_module:
             return []
@@ -435,12 +416,10 @@ class InstrumentVariablesUtils(object):
         variables = []
         if 'standard_vars' in dir(reduce_vars_module):
             variables.extend(
-                self._create_variables(instrument, reduce_vars_module,
-                                       reduce_vars_module.standard_vars, False))
+                self._create_variables(instrument, reduce_vars_module, reduce_vars_module.standard_vars, False))
         if 'advanced_vars' in dir(reduce_vars_module):
             variables.extend(
-                self._create_variables(instrument, reduce_vars_module,
-                                       reduce_vars_module.advanced_vars, True))
+                self._create_variables(instrument, reduce_vars_module, reduce_vars_module.advanced_vars, True))
 
         for var in variables:
             var.tracks_script = True
@@ -489,8 +468,7 @@ class InstrumentVariablesUtils(object):
                 # Copy the new one's important attributes onto the old variable.
                 # pylint:disable=deprecated-lambda
                 map(lambda name: setattr(old_var, name, getattr(new_var, name)),
-                    ["value", "type", "is_advanced",
-                     "help_text"])
+                    ["value", "type", "is_advanced", "help_text"])
                 if save:
                     old_var.save()
             elif not matching_vars:
@@ -544,9 +522,8 @@ class InstrumentVariablesUtils(object):
             spec.loader.exec_module(module)
             return module
         except ImportError as exception:
-            log_error_and_notify(
-                "Unable to load reduction script %s "
-                "due to missing import. (%s)" % (script_path, exception))
+            log_error_and_notify("Unable to load reduction script %s "
+                                 "due to missing import. (%s)" % (script_path, exception))
             return None
         except SyntaxError:
             log_error_and_notify("Syntax error in reduction script %s" % script_path)
@@ -578,12 +555,10 @@ class InstrumentVariablesUtils(object):
         return REDUCTION_DIRECTORY % instrument_name
 
     def _load_reduction_script(self, instrument_name):
-        return self._load_script(os.path.join(self._reduction_script_location(instrument_name),
-                                              'reduce.py'))
+        return self._load_script(os.path.join(self._reduction_script_location(instrument_name), 'reduce.py'))
 
     def _load_reduction_vars_script(self, instrument_name):
-        return self._load_script(os.path.join(self._reduction_script_location(instrument_name),
-                                              'reduce_vars.py'))
+        return self._load_script(os.path.join(self._reduction_script_location(instrument_name), 'reduce_vars.py'))
 
     def _create_variables(self, instrument, script, variable_dict, is_advanced):
         variables = []
@@ -593,15 +568,12 @@ class InstrumentVariablesUtils(object):
             if len(str_value) > InstrumentVariable._meta.get_field('value').max_length:
                 raise DataTooLong
             variable = InstrumentVariable(instrument=instrument,
-                                          name=key, value=str_value,
+                                          name=key,
+                                          value=str_value,
                                           is_advanced=is_advanced,
                                           type=VariableUtils().get_type_string(value),
                                           start_run=0,
-                                          help_text=self._get_help_text('standard_vars',
-                                                                        key,
-                                                                        instrument.name,
-                                                                        script)
-                                         )
+                                          help_text=self._get_help_text('standard_vars', key, instrument.name, script))
             variables.append(variable)
         return variables
 
@@ -613,8 +585,7 @@ class InstrumentVariablesUtils(object):
         if 'variable_help' in dir(reduce_script):
             if dictionary in reduce_script.variable_help:
                 if key in reduce_script.variable_help[dictionary]:
-                    return self._replace_special_chars(
-                        reduce_script.variable_help[dictionary][key])
+                    return self._replace_special_chars(reduce_script.variable_help[dictionary][key])
         return ""
 
     @staticmethod
@@ -628,7 +599,6 @@ class MessagingUtils(object):
     """
     Utilities for sending messages to ActiveMQ
     """
-
     def send_pending(self, reduction_run, delay=None):
         """ Sends a message to the queue with the details of the job to run. """
         message = self._make_pending_msg(reduction_run)
@@ -652,17 +622,15 @@ class MessagingUtils(object):
         else:
             raise Exception("No data path found for reduction run")
 
-        message = Message(
-            run_number=reduction_run.run_number,
-            instrument=reduction_run.instrument.name,
-            rb_number=str(reduction_run.experiment.reference_number),
-            data=data_path,
-            reduction_script=script,
-            reduction_arguments=arguments,
-            run_version=reduction_run.run_version,
-            facility=FACILITY,
-            overwrite=reduction_run.overwrite
-        )
+        message = Message(run_number=reduction_run.run_number,
+                          instrument=reduction_run.instrument.name,
+                          rb_number=str(reduction_run.experiment.reference_number),
+                          data=data_path,
+                          reduction_script=script,
+                          reduction_arguments=arguments,
+                          run_version=reduction_run.run_version,
+                          facility=FACILITY,
+                          overwrite=reduction_run.overwrite)
         return message
 
     @staticmethod
@@ -685,6 +653,5 @@ class MessagingUtils(object):
         message_client = QueueClient()
         message_client.connect()
 
-        message_client.send('/queue/ReductionPending', message,
-                            priority='0', delay=delay)
+        message_client.send('/queue/ReductionPending', message, priority='0', delay=delay)
         message_client.disconnect()

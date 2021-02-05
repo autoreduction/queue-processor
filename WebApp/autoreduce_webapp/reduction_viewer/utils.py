@@ -34,7 +34,6 @@ class StatusUtils(object):
     """
     Utilities for the Status model
     """
-
     @staticmethod
     def _get_status(status_value):
         """
@@ -71,7 +70,6 @@ class InstrumentUtils(object):
     """
     Utilities for the Instrument model
     """
-
     @staticmethod
     def get_instrument(instrument_name):
         """
@@ -147,8 +145,7 @@ class ReductionRunUtils(object):
 
     # pylint:disable=invalid-name,too-many-arguments,too-many-locals
     @staticmethod
-    def createRetryRun(user_id, reduction_run, overwrite=None, script=None,
-                       variables=None, delay=0, description=''):
+    def createRetryRun(user_id, reduction_run, overwrite=None, script=None, variables=None, delay=0, description=''):
         """
         Create a run ready for re-running based on the run provided.
         If variables (RunVariable) are provided, copy them and associate
@@ -210,8 +207,7 @@ class ReductionRunUtils(object):
         # copy the previous data locations
         # pylint:disable=no-member
         for data_location in reduction_run.data_location.all():
-            new_data_location = DataLocation(file_path=data_location.file_path,
-                                             reduction_run=new_job)
+            new_data_location = DataLocation(file_path=data_location.file_path, reduction_run=new_job)
             new_data_location.save()
             new_job.data_location.add(new_data_location)
 
@@ -255,7 +251,6 @@ class ScriptUtils(object):
     """
     Utilities for the scripts field
     """
-
     @staticmethod
     def get_reduce_scripts(scripts):
         """

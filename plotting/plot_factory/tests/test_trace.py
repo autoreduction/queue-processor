@@ -19,7 +19,6 @@ from plotting.plot_factory.tests.mocked_values import MockPlotVariables
 
 
 class TestTrace(unittest.TestCase):
-
     def setUp(self):
         """Contains setup variables to be used in unit tests for Trace class methods"""
 
@@ -32,8 +31,7 @@ class TestTrace(unittest.TestCase):
         """
 
         actual = MockPlotVariables().trace_object.trace_dict(
-            data=MockPlotVariables().indexed_multi_single_raw_data_dataframe,
-            error_bars=self.error_bars)
+            data=MockPlotVariables().indexed_multi_single_raw_data_dataframe, error_bars=self.error_bars)
 
         expected = MockPlotVariables().trace_multi_single
 
