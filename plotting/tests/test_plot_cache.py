@@ -4,13 +4,12 @@
 #  Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 #  SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
-
 """
 Tests for the PlotCache class
 """
 from unittest import TestCase
 
-from mock import patch, MagicMock, call
+from unittest.mock import patch, MagicMock, call
 
 from plotting.plot_cache import PlotCache
 
@@ -28,7 +27,6 @@ class TestPlotCache(TestCase):
         params = MagicMock()
         self.cache = PlotCache(dir_, params)
         self.openened_cache_file = MagicMock()
-
 
     @patch('os.remove')
     def test__delete_plot_removes_plot(self, mock_os_remove):
@@ -51,9 +49,7 @@ class TestPlotCache(TestCase):
     @patch('pickle.load', side_effect=EOFError)
     @patch('time.time', return_value=100.1)
     @patch('plotting.plot_cache.PlotCache._delete')
-    def test__is_expired_eof_error_and_expired_returns_true(self, mock_delete,
-                                                            mock_time_time,
-                                                            mock_pickle_load):
+    def test__is_expired_eof_error_and_expired_returns_true(self, mock_delete, mock_time_time, mock_pickle_load):
         """
         Test: _is_expired returns true
         When: The cache file is empty
@@ -74,12 +70,8 @@ class TestPlotCache(TestCase):
     @patch('zlib.decompress')
     @patch('plotting.plot_cache.PlotCache._delete_plot')
     @patch('plotting.plot_cache.PlotCache._delete')
-    def test__is_expired_is_expired_returns_true(self, mock_delete,
-                                                 mock_plot_delete,
-                                                 mock_zlib_decompress,
-                                                 mock_pickle_loads,
-                                                 mock_time_time,
-                                                 mock_pickle_load):
+    def test__is_expired_is_expired_returns_true(self, mock_delete, mock_plot_delete, mock_zlib_decompress,
+                                                 mock_pickle_loads, mock_time_time, mock_pickle_load):
         """
         Test: _is_expired returns true and cache entry and plot are deleted
         When: When the cache entry has expired

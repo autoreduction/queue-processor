@@ -13,7 +13,7 @@ calling the SFTPClient with correct parameters
 """
 import os
 import unittest
-from unittest.mock import patch, MagicMock, call
+from unittest.mock import patch, call
 
 from plotting.plot_handler import PlotHandler
 from utils.project.structure import get_project_root
