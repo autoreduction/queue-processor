@@ -47,9 +47,7 @@ vault.yml
 Webapp/autoreduce_webapp/static/graphs/
 !Webapp/autoreduce_webapp/static/graphs/.keep
 
-# Ignore The screenshot folder in webtests
-webtests/screenshots
-!webtests/screenshots/.keep
-webtests/config.json
-
-data-archive/
+# Ignore The screenshot folder in Selenium tests
+WebApp/autoreduce_webapp/selenium_tests/screenshots
+!WebApp/autoreduce_webapp/selenium_tests/screenshots/.keep
+WebApp/autoreduce_webapp/selenium_tests/config.json
