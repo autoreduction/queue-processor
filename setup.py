@@ -24,7 +24,7 @@ setup_requires = [
     'docker==4.4.1',
     'Django==3.1.2',
     'django_extensions==3.1.0',
-    'django_plotly_dash==1.5.0',
+    'django_plotly_dash==1.6.0',
     'django-user-agents==0.4.0',
     'filelock==3.0.12',
     'fire==0.4.0',
