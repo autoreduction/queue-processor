@@ -106,14 +106,6 @@ class TestPlotHandler(unittest.TestCase):
         actual_pattern = self.test_plot_handler._generate_file_extension_regex()
         self.assertEqual(expected_pattern, actual_pattern)
 
-    def test_generate_file_name_regex_invalid(self):
-        """
-        Test: Assert None is returned
-        When: calling _generate_file_name_regex with invalid instrument
-        """
-        self.test_plot_handler.instrument_name = "Not instrument"
-        self.assertIsNone(self.test_plot_handler._generate_file_name_regex())
-
     @patch('plotting.plot_handler.PlotHandler._get_plot_files_locally', return_value=[])
     @patch('plotting.plot_handler.PlotHandler._check_for_plot_files', return_value=["file1", "file2"])
     @patch('plotting.plot_handler.PlotHandler._get_plot_files_remotely', return_value=["file1", "file2"])
