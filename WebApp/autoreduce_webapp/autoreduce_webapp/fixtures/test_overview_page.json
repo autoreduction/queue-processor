@@ -1,0 +1,29 @@
+[
+  {
+    "model": "reduction_viewer.instrument",
+    "pk": 1,
+    "fields": {
+      "name": "ActiveInstrument",
+      "is_active": true,
+      "is_paused": false
+    }
+  },
+  {
+    "model": "reduction_viewer.instrument",
+    "pk": 2,
+    "fields": {
+      "name": "InactiveInstrument",
+      "is_active": false,
+      "is_paused": false
+    }
+  },
+  {
+    "model": "reduction_viewer.instrument",
+    "pk": 3,
+    "fields": {
+      "name": "PausedInstrument",
+      "is_active": true,
+      "is_paused": true
+    }
+  }
+]
