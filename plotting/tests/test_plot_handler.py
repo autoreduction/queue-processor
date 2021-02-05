@@ -34,7 +34,7 @@ class TestPlotHandler(unittest.TestCase):
         self.expected_file_extension_regex = '(png|jpg|bmp|gif|tiff)'
         self.expected_wish_data_filename = "WISH1234"
         self.expected_wish_file_regex = f"{self.expected_wish_data_filename}.*.{self.expected_file_extension_regex}"
-
+        self.expected_mari_instrument_name = "MARI"
         self.expected_mari_data_filename = "MARI1234"
         self.expected_mari_file_regex = f'{self.expected_mari_data_filename}.*.{self.expected_file_extension_regex}'
         self.input_data_filepath = "\\\\isis\\inst$\\NDXMARI\\Instrument\\data\\cycle_test\\MARI1234.nxs"
