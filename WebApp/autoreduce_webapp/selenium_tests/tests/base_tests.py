@@ -9,12 +9,10 @@ Module containing the base test cases for a page and componenets
 """
 
 import datetime
-import unittest
 from pathlib import Path
 
-from django.test import TestCase, LiveServerTestCase
-
-from utils.project.structure import get_project_root
+from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+from selenium_tests.configuration import set_url
 from selenium_tests.driver import get_chrome_driver
 from selenium_tests.pages.failed_jobs_page import FailedJobsPage
 from selenium_tests.pages.graphs_page import GraphsPage
@@ -22,8 +20,10 @@ from selenium_tests.pages.help_page import HelpPage
 from selenium_tests.pages.job_queue_page import JobQueuePage
 from selenium_tests.pages.overview_page import OverviewPage
 
+from utils.project.structure import get_project_root
 
-class BaseTestCase(LiveServerTestCase):
+
+class BaseTestCase(StaticLiveServerTestCase):
     """
     Base test class that provides setup and teardown of driver aswell as screenshotting capability
     on failed tests
@@ -34,6 +34,7 @@ class BaseTestCase(LiveServerTestCase):
         Obtain the webdriver to be used in a testcase
         """
         self.driver = get_chrome_driver()
+        set_url(self.live_server_url)
 
     def tearDown(self) -> None:
         """
