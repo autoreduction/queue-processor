@@ -9,13 +9,12 @@ Tests for the ClientSettingsFactory
 """
 import unittest
 
-from utils.clients.settings.client_settings_factory import (ClientSettingsFactory, MySQLSettings,
-                                                            ICATSettings, ActiveMQSettings)
+from utils.clients.settings.client_settings_factory import (ClientSettingsFactory, MySQLSettings, ICATSettings,
+                                                            ActiveMQSettings)
 
 
 # pylint:disable=missing-docstring
 class TestClientSettingsFactory(unittest.TestCase):
-
     def setUp(self):
         self.factory = ClientSettingsFactory()
 
@@ -32,8 +31,7 @@ class TestClientSettingsFactory(unittest.TestCase):
         self.assertEqual(actual.host, 'test-host')
         self.assertEqual(actual.port, 'test-port')
         self.assertEqual(actual.database, 'test-name')
-        self.assertEqual(actual.get_full_connection_string(),
-                         'mysql+mysqldb://test-user:test-pass@test-host/test-name')
+        self.assertEqual(actual.get_full_connection_string(), 'mysql+mysqldb://test-user:test-pass@test-host/test-name')
 
     def test_create_queue(self):
         actual = self.factory.create('queue',
@@ -41,19 +39,13 @@ class TestClientSettingsFactory(unittest.TestCase):
                                      password='test-pass',
                                      host='test-host',
                                      port='test-port',
-                                     reduction_pending='test-rp',
-                                     data_ready='test-dr',
-                                     reduction_started='test-rs')
+                                     data_ready='test-dr')
         self.assertIsInstance(actual, ActiveMQSettings)
         self.assertEqual(actual.username, 'test-user')
         self.assertEqual(actual.password, 'test-pass')
         self.assertEqual(actual.host, 'test-host')
         self.assertEqual(actual.port, 'test-port')
-        self.assertEqual(actual.reduction_pending, 'test-rp')
         self.assertEqual(actual.data_ready, 'test-dr')
-        self.assertEqual(actual.reduction_started, 'test-rs')
-        self.assertEqual(actual.reduction_complete, '/queue/ReductionComplete')
-        self.assertEqual(actual.reduction_error, '/queue/ReductionError')
 
     def test_create_icat(self):
         actual = self.factory.create('icat',
@@ -70,21 +62,39 @@ class TestClientSettingsFactory(unittest.TestCase):
         self.assertEqual(actual.auth, 'test-auth')
 
     def test_invalid_not_a_factory(self):
-        self.assertRaisesRegex(ValueError, f"Factories creation settings type must be one of:"
-                                           f"{','.join(self.factory.valid_types)}",
-                               self.factory.create, 'not-factory', 'user', 'pass', 'host', 'port')
+        self.assertRaisesRegex(
+            ValueError, f"Factories creation settings type must be one of:"
+            f"{','.join(self.factory.valid_types)}", self.factory.create, 'not-factory', 'user', 'pass', 'host', 'port')
 
     def test_invalid_database_args(self):
         self.assertRaisesRegex(ValueError, "database_invalid is not a recognised key "
-                               "word argument.", self.factory.create, 'database', 'user',
-                               'pass', 'host', 'port', database_invalid='invalid')
+                               "word argument.",
+                               self.factory.create,
+                               'database',
+                               'user',
+                               'pass',
+                               'host',
+                               'port',
+                               database_invalid='invalid')
 
     def test_invalid_queue_args(self):
-        self.assertRaisesRegex(ValueError, "queue_invalid is not a recognised key word argument.",
-                               self.factory.create, 'queue', 'user', 'pass', 'host', 'port',
+        self.assertRaisesRegex(ValueError,
+                               "queue_invalid is not a recognised key word argument.",
+                               self.factory.create,
+                               'queue',
+                               'user',
+                               'pass',
+                               'host',
+                               'port',
                                queue_invalid='invalid')
 
     def test_invalid_icat_args(self):
-        self.assertRaisesRegex(ValueError, "icat_invalid is not a recognised key word argument."
-                               , self.factory.create, 'icat', 'user', 'pass', 'host', 'port',
+        self.assertRaisesRegex(ValueError,
+                               "icat_invalid is not a recognised key word argument.",
+                               self.factory.create,
+                               'icat',
+                               'user',
+                               'pass',
+                               'host',
+                               'port',
                                icat_invalid='invalid')

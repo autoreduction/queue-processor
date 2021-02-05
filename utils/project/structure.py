@@ -11,7 +11,7 @@ Helper functions for navigating the project
 import os
 
 
-def get_project_root():
+def get_project_root() -> str:
     """
     Use git to find the project root
     :return: file path to root of the project folder
@@ -22,7 +22,7 @@ def get_project_root():
     git_root = git_repo.git.rev_parse("--show-toplevel")
 
     assert os.path.exists(git_root)
-    return git_root
+    return str(git_root)
 
 
 def get_log_file(filename):
@@ -37,3 +37,6 @@ def get_log_file(filename):
         with open(file_path, 'w') as _:
             pass
     return file_path
+
+
+PROJECT_ROOT = get_project_root()

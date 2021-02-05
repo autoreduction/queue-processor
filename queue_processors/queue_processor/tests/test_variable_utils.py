@@ -11,7 +11,7 @@ Test utility functions for constructing run variables
 import unittest
 import datetime
 
-from queue_processors.queue_processor.queueproc_utils.variable_utils import VariableUtils as vu
+from queue_processors.queue_processor.variable_utils import VariableUtils as vu
 
 from model.database import access
 
@@ -49,46 +49,6 @@ class TestVariableUtils(unittest.TestCase):
                                                           status_id=4,
                                                           script='script',
                                                           started_by=1)
-
-        # def test_derive_run_variable(self):
-        #     """
-        #     Test: A RunVariable record is created
-        #     When: calling the derive_run_variable function with valid input
-        #     """
-        #     expected = self.var_model.RunVariable(name=self.valid_variable.name,
-        #                                           value=self.valid_variable.value,
-        #                                           is_advanced=self.valid_variable.is_advanced,
-        #                                           type=self.valid_variable.type,
-        #                                           help_text=self.valid_variable.help_text,
-        #                                           reduction_run=self.reduction_run)
-        #     actual = vu.derive_run_variable(self.valid_variable, self.reduction_run)
-        #     self.assertIsInstance(actual, self.var_model.RunVariable)
-        #     self.assertEqual(actual.name, expected.name)
-
-        # @patch('queue_processors.queue_processor.queueproc_utils.variable_utils.'
-        #        'VariableUtils.derive_run_variable')
-        # @patch('model.database.access.save_record')
-        # def test_save_run_variable(self, mock_derive_run_var, mock_save):
-        #     """
-        #     Test: A record is correctly generated and saved in the database
-        #     When: Calling the save_run_variable function
-        #     """
-        #     var_utils = vu()
-        #     var_utils.save_run_variables([self.valid_variable], self.reduction_run)
-        #     mock_derive_run_var.assert_called_once()
-        #     mock_save.assert_called_once()
-
-    def test_copy_variable(self):
-        """
-        Test: A Variable object can is copied
-        When: copy_variable function is called
-        """
-        expected = self.valid_variable
-        expected.pk = None
-
-        actual = vu.copy_variable(vu.copy_variable(self.valid_inst_var))
-        self.assertIsInstance(actual, self.var_model.InstrumentVariable)
-        self.assertEqual(actual.name, expected.name)
 
     def test_get_type_string(self):
         """

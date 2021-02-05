@@ -7,8 +7,3 @@ The `queue_listener.py` is responsible for ingesting and distributing messages t
 However, the daemon is normally controlled in tandem with the `autoreduction_processor` via the `../restart.sh` script that restarts both these processes.
 
 The process that performs the message management and logic is stored in `handle_message.py`. This contains individual functions that are responsible for each stage of the autoreduction workflow (except for the reduction stage that is handled by the `autoreduction_processor`). The code for this is fairly self documenting, so read the functions and the docstrings in the `handle_message.py` file to learn what each stage is responsible for.
-
-## Daily restart to update permissions
-The `queue_listener_daemon.py` is rigged to gracefully stop after running for 23h 45min. This is because the process needs to be restarted in order to reload permissions on data files.
-
-It is expected that a cronjob is set up to restart the `queue_processor` at midnight: `0 0 * * * .../path/to/queue_processor/restart.sh`. If the cronjob is missing then the `queue_processor` will be shutting down when the timer triggers, and the queue processing will stop.

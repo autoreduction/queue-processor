@@ -9,14 +9,9 @@ Module that provides error message utils
 """
 
 import logging
-import logging.config
 
 from model.database import access as db
 
-from queue_processors.queue_processor.settings import LOGGING
-
-# Set up logging and attach the logging to the right part of the config.
-logging.config.dictConfig(LOGGING)
 logger = logging.getLogger("queue_processor")  # pylint: disable=invalid-name
 
 

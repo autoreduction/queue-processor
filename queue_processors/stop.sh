@@ -2,28 +2,12 @@
 
 #### This script will stop the queue processors if they're running
 ####
-#### WARNING: If there's currently reduction runs "processing" this may
-#### cause them to get stuck in the "processing" state.
+#### It will send SIGTERM to allow the queue processor to gracefully close.
 
 ROOT_DIR="$(dirname "$0")"
 
-## Autoreduction Processor
-pgrep -f "python.* .*autoreduction_processor/autoreduction_processor_daemon.py start" | xargs kill -9 &&
-echo "Stopped autoreduction_processor_daemon.py";
-if [ -e /tmp/AutoreduceQueueListenerDaemon.pid ]
-then
-    rm /tmp/AutoreduceQueueListenerDaemon.pid && # Removes the tmp pid file
-    echo "Removed /tmp/AutoreduceQueueListenerDaemon.pid"
-fi
-
-echo ""; # New line
-
-
 ## QueueProcessor
-pgrep -f "python.* .*queue_processor/queue_listener_daemon.py start" | xargs kill -9 &&
-echo "Stopped queue_listener_daemon";
-if [ -e /tmp/QueueListenerDaemon.pid ]
-then
-    rm /tmp/QueueListenerDaemon.pid && # Removes the tmp pid file
-    echo "Removed /tmp/QueueListenerDaemon.pid"
-fi
+pkill -15 -f "python3 .*queue_processor/queue_listener_daemon.py start" &&\
+    echo -e "\n>>>>>>>>>>>>>> Queue Processor log tail <<<<<<<<<<<<<<" &&\
+    tail ../logs/queue_processor.log && echo -e "-----------------------------------------------------\n" &&\
+    grep -m 1 "Queue Processor exited gracefully" <(tail -f ../logs/queue_processor.log);

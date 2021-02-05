@@ -17,7 +17,6 @@ class TestValidators(unittest.TestCase):
     As the validators are simple bool returns,
     we are validating a function completely per test case
     """
-
     def test_validate_run_number(self):
         """
         Test: validate_run_number returns the expected result
@@ -30,24 +29,14 @@ class TestValidators(unittest.TestCase):
         self.assertFalse(validators.validate_run_number(-1))
         self.assertFalse(validators.validate_run_number('string'))
 
-    def test_validate_instrument(self):
-        """
-        Test: validate_instrument returns the expected result
-        When: In valid and invalid cases
-        """
-        self.assertTrue(validators.validate_instrument('GEM'))
-
-        self.assertFalse(validators.validate_instrument('NOT INST'))
-        self.assertFalse(validators.validate_instrument(1))
-
     def test_validate_rb_number(self):
         """
         Tests the valid and invalid cases for RB numbers
         """
-        valid_values = [1, 20, "10000"]
+        valid_values = [1000000, 2000000, "1000000", 9999999]
         for i in valid_values:
-            self.assertTrue(validators.validate_rb_number(i))
+            self.assertTrue(validators.validate_rb_number(i), "Failed with value %s" % i)
 
         invalid_values = [0, 0.1, -1, -100, None, "foo", 12345678910, "1231435252242"]
         for i in invalid_values:
-            self.assertFalse(validators.validate_rb_number(i))
+            self.assertFalse(validators.validate_rb_number(i), "Failed with value %s" % i)

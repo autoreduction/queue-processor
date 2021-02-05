@@ -7,50 +7,24 @@
 """
 Class to deal with reduction run variables
 """
-import logging.config
 import re
+import logging
 
 from model.database import access
-from queue_processors.queue_processor.settings import LOGGING
-
-# Set up logging and attach the logging to the right part of the config.
-logging.config.dictConfig(LOGGING)
-logger = logging.getLogger("queue_processor")  # pylint: disable=invalid-name
 
 
 class VariableUtils:
-    """ Class to deal with reduction run variables. """
-    @staticmethod
-    def derive_run_variable(instrument_var, reduction_run):
-        """ Returns a RunJoin record for creation in the database. """
-        model = access.start_database().variable_model
-        return model.RunVariable(name=instrument_var.name,
-                                 value=instrument_var.value,
-                                 is_advanced=instrument_var.is_advanced,
-                                 type=instrument_var.type,
-                                 help_text=instrument_var.help_text,
-                                 reduction_run=reduction_run)
-
     @staticmethod
     def save_run_variables(variables, reduction_run):
         """ Save reduction run variables in the database. """
         model = access.start_database().variable_model
-        logger.info('Saving run variables for %s', str(reduction_run.run_number))
+        logging.info('Saving run variables for %s', str(reduction_run.run_number))
         run_variables = []
         for variable in variables:
             run_var = model.RunVariable(variable=variable, reduction_run=reduction_run)
             run_var.save()
             run_variables.append(run_var)
         return run_variables
-
-    @staticmethod
-    def copy_variable(variable):
-        """
-        Return a temporary copy (unsaved) of the variable,
-        which can be modified and then saved without modifying the original.
-        """
-        variable.pk = None  # Creates a copy by changing primary key to None
-        return variable
 
     @staticmethod
     def get_type_string(value):

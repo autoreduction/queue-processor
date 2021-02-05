@@ -4,24 +4,18 @@
 # Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
-"""
-Tests for post process helper functionality
-"""
+
 import contextlib
 import io
 import unittest
 from pathlib import Path
 
-from mock import patch
+from unittest.mock import patch
 
-from queue_processors.autoreduction_processor.post_process_admin_utilities import \
-    windows_to_linux_path, channels_redirected
+from queue_processors.queue_processor.reduction.utilities import windows_to_linux_path, channels_redirected
 
 
-# pylint:disable=missing-docstring,invalid-name,protected-access,no-self-use,too-many-arguments
-class TestPostProcessAdminHelpers(unittest.TestCase):
-    DIR = "queue_processors.autoreduction_processor"
-
+class TestReductionRunnerHelpers(unittest.TestCase):
     def test_windows_to_linux_data_path(self):
         """
         Test: Windows to linux path is correctly modified to linux format
@@ -54,7 +48,5 @@ class TestPostProcessAdminHelpers(unittest.TestCase):
         mantid_out = Path(f"{log_directory}{log_and_error_name}{'Mantid.log'}")
         out_stream = io.StringIO()
 
-        actual = channels_redirected(out_file=script_out,
-                                     error_file=mantid_out,
-                                     out_stream=out_stream)
+        actual = channels_redirected(out_file=script_out, error_file=mantid_out, out_stream=out_stream)
         self.assertIsInstance(actual, contextlib._GeneratorContextManager)

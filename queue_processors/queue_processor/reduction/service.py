@@ -16,16 +16,16 @@ from importlib.util import spec_from_file_location, module_from_spec
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from queue_processors.autoreduction_processor.autoreduction_logging_setup import logger as LOGGER
-from queue_processors.autoreduction_processor.post_process_admin_utilities import \
-    channels_redirected
-from queue_processors.autoreduction_processor.reduction_exceptions import DatafileError, \
-    ReductionScriptError
-from queue_processors.autoreduction_processor.settings import MISC
-from queue_processors.autoreduction_processor.timeout import TimeOut
+import chardet
+
+from .utilities import channels_redirected
+from .exceptions import DatafileError, ReductionScriptError
+from ..settings import SCRIPTS_DIRECTORY, FLAT_OUTPUT_INSTRUMENTS, CEPH_DIRECTORY, SCRIPT_TIMEOUT
+from .timeout import TimeOut
 
 # pylint:disable=too-few-public-methods; As pylint does not like value objects
 log_stream = io.StringIO()
+logger = logging.getLogger("reduction_service")
 
 
 class ReductionDirectory:
@@ -33,12 +33,10 @@ class ReductionDirectory:
     ReductionDirectory encapsulated directory creation, deletion and handling output type
     (flat or not)
     """
-
     def __init__(self, instrument, rb_number, run_number, overwrite=False):
         self.overwrite = overwrite
-        self._is_flat_directory = instrument in MISC["flat_output_instruments"]
-        self.path = Path(
-            MISC["ceph_directory"] % (instrument, rb_number, run_number))
+        self._is_flat_directory = instrument in FLAT_OUTPUT_INSTRUMENTS
+        self.path = Path(CEPH_DIRECTORY % (instrument, rb_number, run_number))
         self._build_path()
         self.log_path = self.path / "reduction_log"
         self.mantid_log = self.log_path / f"RB_{rb_number}_Run_{run_number}_Mantid.log"
@@ -48,7 +46,7 @@ class ReductionDirectory:
         """
         Creates the reduction directory including the log path, Script.out and Mantid.log files
         """
-        LOGGER.info("Creating reduction directory: %s", self.path)
+        logger.info("Creating reduction directory: %s", self.path)
         self.path.mkdir(parents=True, exist_ok=True)
         self.log_path.mkdir(exist_ok=True)
         self.script_log.touch(exist_ok=True)
@@ -64,8 +62,7 @@ class ReductionDirectory:
         if self.overwrite:
             self.path = self.path / "run-version-0"
         else:
-            versions = [int(str(i).split("-")[-1])
-                        for i in self.path.glob("run-version-[0-9]*") if i.is_dir()]
+            versions = [int(str(i).split("-")[-1]) for i in self.path.glob("run-version-[0-9]*") if i.is_dir()]
             try:
                 self.path = self.path / f"run-version-{max(versions) + 1}"
             except ValueError:
@@ -76,7 +73,6 @@ class TemporaryReductionDirectory:
     """
     Encapsulates the use of the temporary reduction directory
     """
-
     def __init__(self, rb_number, run_number):
         self._temp_dir = TemporaryDirectory()
         self.path = Path(self._temp_dir.name)
@@ -102,7 +98,7 @@ class TemporaryReductionDirectory:
         already present.
         :param destination: (Path like) the copy destination
         """
-        LOGGER.info("Copying %s to %s", self.path, destination)
+        logger.info("Copying %s to %s", self.path, destination)
         copy_tree(self.path, str(destination))  # We have to convert path objects to str
 
 
@@ -110,7 +106,6 @@ class Datafile:
     """
     Encapsulates datafile path and verification
     """
-
     def __init__(self, path):
         self.path = Path(path)
         try:
@@ -123,19 +118,45 @@ class ReductionScript:
     """
     Encapsulates the loading and running of a reduction script
     """
-
-    def __init__(self, instrument):
-        self.script_path = Path(MISC["scripts_directory"] % instrument) / "reduce.py"
+    def __init__(self, instrument, module="reduce.py"):
+        self.script_path: Path = Path(SCRIPTS_DIRECTORY % instrument) / module
         self.skipped_runs = []
-        self.script = None
+        self.module = None
 
     def load(self):
         """
         Loads the reduction script as a module
+        :raises ImportError: If the reduction script is missing an import
+        :raises SyntaxError: If there is a syntax error in the reduction script
         """
-        spec = spec_from_file_location("reducescript", self.script_path)
-        self.script = module_from_spec(spec)
-        spec.loader.exec_module(self.script)
+
+        module_name = os.path.splitext(self.script_path.name)[0]
+        try:
+            spec = spec_from_file_location(module_name, self.script_path)
+            if spec is None:
+                raise ImportError(f"Module at {self.script_path} does not exist.")
+            self.module = module_from_spec(spec)
+            spec.loader.exec_module(self.module)
+            return self.module
+        except ImportError as exp:
+            logger.error("Unable to load reduction script %s due to missing import. (%s)", self.script_path, exp)
+            raise
+        except SyntaxError:
+            logger.error("Syntax error in reduction script %s", self.script_path)
+            raise
+
+    def text(self) -> str:
+        """Returns the text of the script file. Does not load it as a module"""
+        # Read raw bytes and determine encoding
+        try:
+            with io.open(self.script_path, 'rb') as file_raw:
+                encoding = chardet.detect(file_raw.read(32))["encoding"]
+        except IOError:
+            return ""
+
+        # Read the file in decoded; io is used for the encoding kwarg
+        with io.open(self.script_path, 'r', encoding=encoding) as file_decoded:
+            return file_decoded.read()
 
     def run(self, input_file, output_dir):
         """
@@ -145,10 +166,9 @@ class ReductionScript:
         :param output_dir: (ReductionDirectory) Directory to output to
         :return:
         """
-        LOGGER.info("Running reduction script: %s", self.script_path)
-        with TimeOut(MISC["script_timeout"]):
-            return self.script.main(input_file=str(input_file.path),
-                                    output_dir=str(output_dir.path))
+        logger.info("Running reduction script: %s", self.script_path)
+        with TimeOut(SCRIPT_TIMEOUT):
+            return self.module.main(input_file=str(input_file.path), output_dir=str(output_dir.path))
 
 
 # pylint:disable=too-many-arguments; We will remove the log_Stream once we look at logging in ppa
@@ -165,27 +185,27 @@ def reduce(reduction_dir, temp_dir, datafile, script):
     :return (StringIO): The log stream of the reduction script
     """
     reduction_dir.create()
-    LOGGER.info("-------------------------------------------------------")
-    LOGGER.info("Temporary result directory: %s", temp_dir.path)
-    LOGGER.info("Final Result directory: %s", reduction_dir.path)
-    LOGGER.info("Temporary log dir: %s", temp_dir.log_path)
-    LOGGER.info("Final log dir: %s", reduction_dir.log_path)
-    LOGGER.info("Datafile: %s", datafile.path)
-    LOGGER.info("Reduction script: %s", script.script_path)
-    LOGGER.info("-------------------------------------------------------")
-    LOGGER.info("Starting reduction...")
+    logger.info("-------------------------------------------------------")
+    logger.info("Temporary result directory: %s", temp_dir.path)
+    logger.info("Final Result directory: %s", reduction_dir.path)
+    logger.info("Temporary log dir: %s", temp_dir.log_path)
+    logger.info("Final log dir: %s", reduction_dir.log_path)
+    logger.info("Datafile: %s", datafile.path)
+    logger.info("Reduction script: %s", script.script_path)
+    logger.info("-------------------------------------------------------")
+    logger.info("Starting reduction...")
 
-    script.load()
+    log_stream_handler = logging.StreamHandler(log_stream)
+    logger.addHandler(log_stream_handler)
 
     try:
-        log_stream_handler = logging.StreamHandler(log_stream)
-        LOGGER.addHandler(log_stream_handler)
+        script.load()
         with channels_redirected(temp_dir.script_log, temp_dir.mantid_log, log_stream):
             additional_output_dirs = script.run(datafile, temp_dir)
-        LOGGER.removeHandler(log_stream_handler)
+        logger.removeHandler(log_stream_handler)
     except Exception as ex:
-        LOGGER.error("exception caught in reduction script")
-        LOGGER.error(traceback.format_exc())
+        logger.error("Exception caught in reduction script. Traceback is logged below:")
+        logger.error(traceback.format_exc())
         with open(temp_dir.script_log, "a") as target:
             target.writelines(str(ex) + "\n")
             target.write(traceback.format_exc())

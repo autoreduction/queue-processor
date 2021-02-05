@@ -20,29 +20,21 @@ def start_database():
     return database
 
 
-def get_instrument(instrument_name, create=False):
+def get_instrument(instrument_name):
     """
     Find the instrument record associated with the name provided in the database
     :param instrument_name: (str) The name of the instrument to search for
-    :param create: (bool) If True, then create the record if it does not exist
     :return: (Instrument) The instrument object from the database
     """
     database = start_database()
-    instrument_record = database.data_model.Instrument.objects \
-        .filter(name=instrument_name).first()
-    if not instrument_record and create:
-        instrument_record = database.data_model.Instrument(name=instrument_record,
-                                                           is_active=True,
-                                                           is_paused=False)
-        save_record(instrument_record)
-    return instrument_record
+    instrument, _ = database.data_model.Instrument.objects.get_or_create(name=instrument_name)
+    return instrument
 
 
-def get_status(status_value, create=False):
+def get_status(status_value):
     """
     Find the status record associated with the value provided in the database
     :param status_value: (str) The value of the status record e.g. 'Completed'
-    :param create: (bool) If True, then create the record if it does not exist
     :return: (Status) The Status object from the database
     :raises: (ValueError): If status_value is not: Error, Queued, Processing, Completed or Skipped
     """
@@ -51,27 +43,17 @@ def get_status(status_value, create=False):
         raise ValueError("Invalid status value passed")
 
     database = start_database()
-    status_record = database.data_model.Status.objects.filter(value=status_value).first()
-    if not status_record and create:
-        status_record = database.data_model.Status(value=status_value)
-        save_record(status_record)
-    return status_record
+    return database.data_model.Status.objects.get_or_create(value=status_value)[0]
 
 
-def get_experiment(rb_number, create=False):
+def get_experiment(rb_number):
     """
     Find the Experiment record associated with the rb_number provided in the database
     :param rb_number: (str) The rb_number of the Experiment record e.g. 12345
-    :param create: (bool) If True, then create the record if it does not exist
     :return: (Experiment) The Experiment object from the database
     """
     database = start_database()
-    experiment_record = database.data_model.Experiment.objects \
-        .filter(reference_number=rb_number).first()
-    if not experiment_record and create:
-        experiment_record = database.data_model.Experiment(reference_number=rb_number)
-        save_record(experiment_record)
-    return experiment_record
+    return database.data_model.Experiment.objects.get_or_create(reference_number=rb_number)[0]
 
 
 def get_software(name, version, create=False):
@@ -104,30 +86,21 @@ def get_reduction_run(instrument, run_number):
     """
     database = start_database()
     instrument_record = get_instrument(instrument)
-    # if instrument not yet in database then return empty record
-    if not instrument_record:
-        return instrument_record
-    return database.data_model.ReductionRun.objects \
-        .filter(instrument=instrument_record.id) \
-        .filter(run_number=run_number)
+    return database.data_model.ReductionRun.objects.filter(instrument=instrument_record.id, run_number=run_number)
 
 
-def find_highest_run_version(experiment, run_number):
+def find_highest_run_version(experiment, run_number) -> int:
     """
     Search for the highest run version in the database
     :param experiment: (str) The experiment number associated
     :param run_number: (int) The run number to search for
-    :return: (int) The highest known version number for a given reduction job
+    :return: (int) The highest known run version for a given run number
     """
-    database = start_database()
-    last_run = database.data_model.ReductionRun.objects \
-        .filter(run_number=run_number) \
-        .filter(experiment=experiment) \
-        .order_by('-run_version') \
-        .first()
-
-    # By returning -1 callers can blindly increment the version
-    return last_run.run_version if last_run else -1
+    last_run = experiment.reduction_runs.filter(run_number=run_number).order_by('-run_version').first()
+    if last_run:  # previous run exists - increment version by 1 for this run
+        return last_run.run_version + 1
+    else:  # previous run doesn't exist - start at 0
+        return 0
 
 
 def save_record(record):

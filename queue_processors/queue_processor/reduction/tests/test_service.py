@@ -7,28 +7,37 @@
 """
 Tests for parts of the reduction_service
 """
+import os
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from unittest.mock import Mock, PropertyMock
 
-from mock import patch, MagicMock, call
+from unittest.mock import patch, MagicMock, call
 
-from queue_processors.autoreduction_processor.reduction_exceptions import DatafileError, \
-    ReductionScriptError
-from queue_processors.autoreduction_processor.reduction_service import ReductionDirectory, \
+from queue_processors.queue_processor.reduction.exceptions import DatafileError, ReductionScriptError
+from queue_processors.queue_processor.reduction.service import ReductionDirectory, \
     TemporaryReductionDirectory, Datafile, ReductionScript, reduce
-from queue_processors.autoreduction_processor.settings import MISC
+from queue_processors.queue_processor.settings import CEPH_DIRECTORY, SCRIPTS_DIRECTORY
+from queue_processors.queue_processor.reduction.tests.module_to_import import TEST_DICTIONARY
 
-REDUCTION_SERVICE_DIR = "queue_processors.autoreduction_processor.reduction_service"
+REDUCTION_SERVICE_DIR = "queue_processors.queue_processor.reduction.service"
+
+
+class TempDirPropertyMock(PropertyMock):
+    def __init__(self, path_string, *args) -> None:
+        super().__init__(*args)
+        directory = TemporaryDirectory()
+        self.return_value = directory.name + path_string
 
 
 # pylint:disable=protected-access,too-many-instance-attributes
+
 
 class TestReductionService(unittest.TestCase):
     """
     Test cases for classes and functions of reduction_service
     """
-
     def setUp(self) -> None:
         patch(f"{REDUCTION_SERVICE_DIR}.LOGGER")
         self.instrument = "testinstrument"
@@ -47,8 +56,7 @@ class TestReductionService(unittest.TestCase):
         When: Object is created
         """
         reduction_dir = ReductionDirectory(self.instrument, self.rb_number, self.run_number)
-        expected_path = Path(
-            MISC["ceph_directory"] % (self.instrument, self.rb_number, self.run_number))
+        expected_path = Path(CEPH_DIRECTORY % (self.instrument, self.rb_number, self.run_number))
         expected_log_path = expected_path / "reduction_log"
         expected_mantid_log = expected_log_path / f"RB_{self.rb_number}_" \
                                                   f"Run_{self.run_number}_Mantid.log"
@@ -79,17 +87,15 @@ class TestReductionService(unittest.TestCase):
             self.assertTrue(reduction_dir.mantid_log.exists())
             self.assertTrue(reduction_dir.script_log.exists())
 
-    @patch(f"{REDUCTION_SERVICE_DIR}.MISC")
-    def test_reduction_directory_build_path_flat_output_removes_run_number(self, mock_misc):
+    @patch(f"{REDUCTION_SERVICE_DIR}.FLAT_OUTPUT_INSTRUMENTS",
+           new_callable=PropertyMock(return_value=["testinstrument"]))
+    @patch(f"{REDUCTION_SERVICE_DIR}.CEPH_DIRECTORY",
+           new_callable=PropertyMock(return_value="/instrument/%s/RBNumber/RB%s/autoreduced/%s"))
+    def test_reduction_directory_build_path_flat_output_removes_run_number(self, _, __):
         """
         Tests: Run number is removed from path
         When: _build_path is called for flat output instrument
         """
-        misc_values = {
-            "flat_output_instruments": [self.instrument],
-            "ceph_directory": "/instrument/%s/RBNumber/RB%s/autoreduced/%s"
-        }
-        mock_misc.__getitem__.side_effect = misc_values.__getitem__
         reduction_dir = ReductionDirectory(self.instrument, self.rb_number, self.run_number)
         expected = Path(f"/instrument/{self.instrument}/RBNumber/RB{self.rb_number}/autoreduced")
         self.assertEqual(expected, reduction_dir.path)
@@ -102,7 +108,7 @@ class TestReductionService(unittest.TestCase):
         """
         reduction_dir = ReductionDirectory(self.instrument, self.rb_number, self.run_number)
         mock_append.assert_called_once()
-        expected = Path(MISC["ceph_directory"] % (self.instrument, self.rb_number, self.run_number))
+        expected = Path(CEPH_DIRECTORY % (self.instrument, self.rb_number, self.run_number))
         self.assertEqual(expected, reduction_dir.path)
 
     def test_reduction_directory_append_run_version_overwrite_true(self):
@@ -110,10 +116,7 @@ class TestReductionService(unittest.TestCase):
         Tests: run-version-0 is appended
         When: overwrite is True
         """
-        reduction_dir = ReductionDirectory(self.instrument,
-                                           self.rb_number,
-                                           self.run_number,
-                                           overwrite=True)
+        reduction_dir = ReductionDirectory(self.instrument, self.rb_number, self.run_number, overwrite=True)
         with TemporaryDirectory() as directory:
             reduction_dir.path = Path(directory)
             reduction_dir._append_run_version()
@@ -121,44 +124,26 @@ class TestReductionService(unittest.TestCase):
             expected_path = Path(directory) / "run-version-0"
             self.assertEqual(expected_path, reduction_dir.path)
 
-    @patch(f"{REDUCTION_SERVICE_DIR}.MISC")
-    def test_reduction_directory_append_run_version_existing_version(self, mock_misc):
+    def test_reduction_directory_append_run_version_existing_version(self):
         """
         Tests: Correct run-version appened
         When: a run-version already exists
         """
         with TemporaryDirectory() as directory:
-            # We need to do this MISC mocking to allow string formatting in the __init__
-            misc_values = {
-                "flat_output_instruments": [self.instrument],
-                "ceph_directory": directory + "/%s/%s/%s"
-            }
-            mock_misc.__getitem__.side_effect = misc_values.__getitem__
-            reduction_dir = ReductionDirectory(self.instrument,
-                                               self.rb_number,
-                                               self.run_number)
+            reduction_dir = ReductionDirectory(self.instrument, self.rb_number, self.run_number)
             reduction_dir.path = Path(directory)
             (reduction_dir.path / "run-version-0").mkdir()
             reduction_dir._append_run_version()
             expected_path = Path(directory) / "run-version-1"
             self.assertEqual(expected_path, reduction_dir.path)
 
-    @patch(f"{REDUCTION_SERVICE_DIR}.MISC")
-    def test_reduction_directory_append_run_version_no_existing_version(self, mock_misc):
+    def test_reduction_directory_append_run_version_no_existing_version(self):
         """
         Tests: run-version-0 is appended
         When: No versions currently exist
         """
         with TemporaryDirectory() as directory:
-            # We need to do this MISC mocking to allow string formatting in the __init__
-            misc_values = {
-                "flat_output_instruments": [self.instrument],
-                "ceph_directory": directory + "/%s/%s/%s"
-            }
-            mock_misc.__getitem__.side_effect = misc_values.__getitem__
-            reduction_dir = ReductionDirectory(self.instrument,
-                                               self.rb_number,
-                                               self.run_number)
+            reduction_dir = ReductionDirectory(self.instrument, self.rb_number, self.run_number)
             reduction_dir.path = Path(directory)
             reduction_dir._append_run_version()
             expected_path = Path(directory) / "run-version-0"
@@ -176,10 +161,8 @@ class TestReductionService(unittest.TestCase):
         self.assertTrue(temp_dir.mantid_log.exists())
         self.assertTrue(temp_dir.script_log.exists())
         self.assertEqual("reduction_log", temp_dir.log_path.name)
-        self.assertEqual(f"RB_{self.rb_number}_Run_{self.run_number}_Mantid.log",
-                         temp_dir.mantid_log.name)
-        self.assertEqual(f"RB_{self.rb_number}_Run_{self.run_number}_Script.out",
-                         temp_dir.script_log.name)
+        self.assertEqual(f"RB_{self.rb_number}_Run_{self.run_number}_Mantid.log", temp_dir.mantid_log.name)
+        self.assertEqual(f"RB_{self.rb_number}_Run_{self.run_number}_Script.out", temp_dir.script_log.name)
         temp_dir.delete()
         self.assertFalse(temp_dir.path.exists())
 
@@ -199,8 +182,7 @@ class TestReductionService(unittest.TestCase):
         When: copy is called
         """
         with TemporaryDirectory() as dest, TemporaryDirectory() as src:
-            temp_reduction_dir = TemporaryReductionDirectory(self.instrument,
-                                                             self.rb_number)
+            temp_reduction_dir = TemporaryReductionDirectory(self.instrument, self.rb_number)
             dest_folder = Path(dest)
             src_folder = Path(src)
             temp_reduction_dir.path = src_folder
@@ -237,25 +219,83 @@ class TestReductionService(unittest.TestCase):
         When: reduction script object is created
         """
         script = ReductionScript(self.instrument)
-        self.assertEqual(Path(MISC["scripts_directory"] % self.instrument) / "reduce.py",
-                         script.script_path)
+        self.assertEqual(Path(SCRIPTS_DIRECTORY % self.instrument) / "reduce.py", script.script_path)
         self.assertEqual([], script.skipped_runs)
-        self.assertIsNone(script.script)
+        self.assertIsNone(script.module)
 
-    @patch(f"{REDUCTION_SERVICE_DIR}.spec_from_file_location")
-    @patch(f"{REDUCTION_SERVICE_DIR}.module_from_spec")
-    def test_reduction_script_load(self, mock_module_from_spec, mock_spec_from_file):
+    def test_reduction_script_run(self):
         """
-        Test: Reduction script is loaded
-        When: script has no skipped runs
+        Tests: Correct fields set up
+        When: reduction script object is created
         """
-        module_mock = MagicMock()
-        mock_spec_from_file.return_value = MagicMock()
-        mock_module_from_spec.return_value = module_mock
         script = ReductionScript(self.instrument)
-        script.load()
-        mock_spec_from_file.assert_called_once_with("reducescript", script.script_path)
-        mock_module_from_spec.assert_called_once_with(mock_spec_from_file.return_value)
+
+        script.module = Mock()
+        script.run(Datafile("/tmp"), Datafile("/tmp"))
+
+        script.module.main.assert_called_once()
+
+    def test_reduction_script_load(self):
+        """
+        Test importing a module that is all OK
+        """
+        red_script = ReductionScript(self.instrument)
+        red_script.script_path = Path(os.path.join(os.path.dirname(__file__), "module_to_import.py"))
+        module = red_script.load()
+
+        assert getattr(module, "TEST_DICTIONARY") == TEST_DICTIONARY
+        assert red_script.module is not None
+
+    def test_reduction_script_load_invalid_module(self):
+        """
+        Test importing a module that does not exist
+        """
+        red_script = ReductionScript(self.instrument)
+        red_script.script_path = Path("some.module.that.does.not.exist")
+        with self.assertRaises(ImportError):
+            red_script.load()
+
+    def test_reduction_script_load_syntax_error(self):
+        """
+        Test importing a module that has a syntax error in it
+        """
+        red_script = ReductionScript(self.instrument)
+        module_with_syntax_error_str = """TEST_DICTIONARY = {"key1": "value1"""
+        module_path = os.path.join("/tmp", "module_with_syntax_error.py")
+        red_script.script_path = Path(module_path)
+
+        with open(module_path, 'w') as file:
+            file.write(module_with_syntax_error_str)
+
+        with self.assertRaises(SyntaxError):
+            red_script.load()
+
+        os.remove(module_path)
+
+    @patch("io.open", side_effect=IOError)
+    def test_reduction_script_text_ioerror(self, _: Mock):
+        """
+        Test importing a module that has a syntax error in it
+        """
+        red_script = ReductionScript(self.instrument)
+        assert red_script.text() == ""
+
+    def test_reduction_script_text(self):
+        """
+        Test importing a module that has a syntax error in it
+        """
+        script_file = Path("/tmp/somepath.py")
+        test_string = 'print(123)'
+
+        with open("/tmp/somepath.py", 'w') as file:
+            file.write(test_string)
+
+        red_script = ReductionScript(self.instrument)
+        red_script.script_path = script_file
+
+        assert red_script.text() == test_string
+
+        os.remove(script_file)
 
     @patch(f"{REDUCTION_SERVICE_DIR}.channels_redirected")
     def test_reduce(self, _):
@@ -287,8 +327,7 @@ class TestReductionService(unittest.TestCase):
     @patch(f"{REDUCTION_SERVICE_DIR}.open")
     @patch(f"{REDUCTION_SERVICE_DIR}.channels_redirected")
     @patch(f"{REDUCTION_SERVICE_DIR}.traceback")
-    def test_reduce_script_exception_raises_script_error_and_writes_to_log(self, mock_traceback, _,
-                                                                           mock_open):
+    def test_reduce_script_exception_raises_script_error_and_writes_to_log(self, mock_traceback, _, mock_open):
         """
         Test: ReductionScriptError raised and script out written to
         When: Exception in reduction script

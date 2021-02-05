@@ -18,14 +18,14 @@ class TestStages(unittest.TestCase):
     """
     Assert the stages return the correct bool value based on if they are valid
     """
-
     def setUp(self):
-        self.valid_message = Message(run_number=1234,
-                                     instrument='GEM',
-                                     rb_number=1,
-                                     started_by=-1,
-                                     data='test/file/path',
-                                     )
+        self.valid_message = Message(
+            run_number=1234,
+            instrument='GEM',
+            rb_number=1000000,
+            started_by=-1,
+            data='test/file/path',
+        )
         self.invalid_message = Message(run_number='12345',
                                        instrument='not inst',
                                        rb_number=-1,
@@ -57,5 +57,4 @@ class TestStages(unittest.TestCase):
         stages.validate_data_ready(self.valid_message)
 
         patched_validators.validate_run_number.assert_called_once()
-        patched_validators.validate_instrument.assert_called_once()
         patched_validators.validate_rb_number.assert_called_once()

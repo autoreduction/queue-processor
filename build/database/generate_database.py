@@ -10,9 +10,9 @@ Python wraps to windows/linux schema generation scripts for services
 from __future__ import print_function
 
 import os
+import sys
 
 from build.utils.process_runner import run_process_and_log
-
 
 PATH_TO_DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -70,16 +70,16 @@ def generate_schema(project_root_path, logger):
     path_to_manage = os.path.join(project_root_path, 'WebApp', 'autoreduce_webapp', 'manage.py')
     for database in ['admin', 'sessions', 'auth', 'reduction_viewer', 'reduction_variables']:
         logger.info("Migrating %s" % database)
-        if run_process_and_log(['python', path_to_manage, 'makemigrations', database]) is False:
+        if run_process_and_log([sys.executable, path_to_manage, 'makemigrations', database]) is False:
             logger.error("Error encountered when makingmigrations for %s" % database)
             return False
-        if run_process_and_log(['python', path_to_manage, 'migrate', database]) is False:
+        if run_process_and_log([sys.executable, path_to_manage, 'migrate', database]) is False:
             logger.error("Error encountered when migrating %s" % database)
             return False
 
     logger.info("Adding super user")
     # Custom manage.py command
-    if run_process_and_log(['python', path_to_manage, 'add_super']) is False:
+    if run_process_and_log([sys.executable, path_to_manage, 'add_super']) is False:
         logger.error("Error encountered when adding super user")
         return False
     logger.info("Database migrated successfully")

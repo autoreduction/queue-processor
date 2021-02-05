@@ -35,8 +35,7 @@ class TestDatabaseRecords(unittest.TestCase):
 
     @mock.patch("model.database.access")
     @mock.patch("datetime.datetime")
-    def test_create_reduction_record_forwards_correctly(self, datetime_patch,
-                                                        db_layer):
+    def test_create_reduction_record_forwards_correctly(self, datetime_patch, db_layer):
         """
         Test: Reduction Record uses args correctly.
         Any fields which are hard-coded are mocked with ANY to prevent
@@ -52,10 +51,12 @@ class TestDatabaseRecords(unittest.TestCase):
         mock_script_text = mock.NonCallableMock()
         mock_status = mock.NonCallableMock()
 
-        returned = records.create_reduction_run_record(
-            experiment=mock_experiment, instrument=mock_inst, message=mock_msg,
-            run_version=mock_run_version, script_text=mock_script_text,
-            status=mock_status)
+        returned = records.create_reduction_run_record(experiment=mock_experiment,
+                                                       instrument=mock_inst,
+                                                       message=mock_msg,
+                                                       run_version=mock_run_version,
+                                                       script_text=mock_script_text,
+                                                       status=mock_status)
 
         mock_record_orm = db_layer.start_database.return_value.data_model
 
@@ -66,12 +67,14 @@ class TestDatabaseRecords(unittest.TestCase):
             run_version=mock_run_version,
             created=datetime_patch.utcnow.return_value,
             last_updated=datetime_patch.utcnow.return_value,
-            experiment_id=mock_experiment.id,
-            instrument_id=mock_inst.id,
+            experiment=mock_experiment,
+            instrument=mock_inst,
             status_id=mock_status.id,
             script=mock_script_text,
             started_by=mock_msg.started_by,
             # Hardcoded below
-            run_name=mock.ANY, cancel=mock.ANY, hidden_in_failviewer=mock.ANY,
-            admin_log=mock.ANY, reduction_log=mock.ANY
-        )
+            run_name=mock.ANY,
+            cancel=mock.ANY,
+            hidden_in_failviewer=mock.ANY,
+            admin_log=mock.ANY,
+            reduction_log=mock.ANY)

@@ -11,28 +11,38 @@ from model.database import access
 
 
 class StatusUtils:
-    # pylint: disable=missing-docstring
-    @staticmethod
-    def _get_status(status_value):
+    def __init__(self) -> None:
+        self._cached_statuses = {}
+
+    def _get_status(self, status_value: str):
         """
         Attempt to get a status matching the given name or create one if it
         doesn't yet exist
         :param status_value: The value of the status record in the database
         """
-        status_record = access.get_status(status_value, create=True)
+        if status_value in self._cached_statuses:
+            return self._cached_statuses[status_value]
+        else:
+            status_record = access.get_status(status_value)
+            self._cached_statuses[status_value] = status_record
         return status_record
 
     def get_error(self):
+        """Gets the error status"""
         return self._get_status('e')
 
     def get_completed(self):
+        """Gets the completed status"""
         return self._get_status('c')
 
     def get_processing(self):
+        """Gets the processing status"""
         return self._get_status('p')
 
     def get_queued(self):
+        """Gets the queued status"""
         return self._get_status('q')
 
     def get_skipped(self):
+        """Gets the skipped status"""
         return self._get_status('s')

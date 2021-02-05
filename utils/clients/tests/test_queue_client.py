@@ -10,7 +10,7 @@ Test functionality for the activemq client
 import unittest
 from unittest import mock
 
-from mock import patch, call
+from mock import patch
 
 from model.message.message import Message
 from utils.clients.connection_exception import ConnectionException
@@ -23,7 +23,6 @@ class TestQueueClient(unittest.TestCase):
     """
     Exercises the queue client
     """
-
     def setUp(self):
         self.incorrect_credentials = ClientSettingsFactory().create('queue',
                                                                     username='not-user',
@@ -127,65 +126,8 @@ class TestQueueClient(unittest.TestCase):
         """
         client = QueueClient()
         client.connect()
-        client.ack('test')
-        mock_stomp_ack.assert_called_once_with('test')
-
-    @patch('utils.clients.queue_client.QueueClient.subscribe_queues')
-    def test_subscribe_to_pending(self, mock_subscribe):
-        """
-        Test: subscribe_amq calls subscribe_queues with given arguments,
-        including a single queue (ReductionPending)
-        When: subscribe_amq is called once with the arguments given
-        """
-        client = QueueClient()
-        client.subscribe_amq('consumer', None, 'auto')
-        # due to default params these have to be supplied to the mock in a dictionary
-        expected_args = {'queue_list': '/queue/ReductionPending',
-                         'ack': 'auto',
-                         'listener': None,
-                         'consumer_name': 'consumer'}
-        mock_subscribe.assert_called_once_with(**expected_args)
-
-    @patch('utils.clients.queue_client.QueueClient.subscribe_queues')
-    def test_subscribe_to_all_queues(self, mock_subscribe):
-        """
-        Test: subscribe_autoreduce calls subscribe_queues with given arguments,
-        including a list of multiple queues (all)
-        When: subscribe_autoreduce is called once with the arguments given
-        """
-        client = QueueClient()
-        client.subscribe_autoreduce('consumer', None, 'auto')
-        expected_args = {'queue_list': ['/queue/DataReady',
-                                        '/queue/ReductionStarted',
-                                        '/queue/ReductionComplete',
-                                        '/queue/ReductionError',
-                                        '/queue/ReductionSkipped'],
-                         'ack': 'auto',
-                         'listener': None,
-                         'consumer_name': 'consumer'}
-        mock_subscribe.assert_called_once_with(**expected_args)
-
-    @patch('stomp.connect.StompConnection11.set_listener')
-    @patch('stomp.connect.StompConnection11.subscribe')
-    def test_subscribe_to_queue_list(self, mock_stomp_subscribe, mock_stomp_set_listener):
-        """
-        Test: subscribe_queues calls stomp.subscribe_queues twice, once for each queue given
-        When: subscribe_queues is called with a queue_list length of 2
-        """
-        client = QueueClient()
-        client.connect()
-        client.subscribe_queues(['test', 'queues'], 'consumer', None, 'auto')
-        mock_stomp_set_listener.assert_called_once_with('consumer', None)
-        test_expected_args = {'destination': 'test',
-                              'id': '1',
-                              'ack': 'auto',
-                              'header': {'activemq.prefetchSize': '1'}}
-        queue_expected_args = {'destination': 'queues',
-                               'id': '1',
-                               'ack': 'auto',
-                               'header': {'activemq.prefetchSize': '1'}}
-        mock_stomp_subscribe.assert_has_calls([call(**test_expected_args),
-                                               call(**queue_expected_args)])
+        client.ack("test", "subscription")
+        mock_stomp_ack.assert_called_once_with('test', "subscription")
 
     @patch('stomp.connect.StompConnection11.set_listener')
     @patch('stomp.connect.StompConnection11.subscribe')
@@ -197,10 +139,6 @@ class TestQueueClient(unittest.TestCase):
         """
         client = QueueClient()
         client.connect()
-        client.subscribe_queues('single-queue', 'consumer', None, 'auto')
+        client.subscribe_queues('single-queue', 'consumer', None)
         mock_stomp_set_listener.assert_called_once_with('consumer', None)
-        test_expected_args = {'destination': 'single-queue',
-                              'id': '1',
-                              'ack': 'auto',
-                              'header': {'activemq.prefetchSize': '1'}}
-        mock_stomp_subscribe.assert_called_once_with(**test_expected_args)
+        mock_stomp_subscribe.assert_called_once()

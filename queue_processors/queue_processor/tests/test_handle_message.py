@@ -9,492 +9,360 @@
 Tests message handling for the queue processor
 """
 
+from functools import partial
+import random
 import unittest
 from unittest import mock
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
-from model.database import access
+from django.db.utils import IntegrityError
+from parameterized import parameterized
+
+import model.database.access
+from model.database.records import create_reduction_run_record
 from model.message.message import Message
-from queue_processors.queue_processor._utils_classes import _UtilsClasses
 from queue_processors.queue_processor.handle_message import HandleMessage
-from queue_processors.queue_processor.handling_exceptions import \
-    InvalidStateException, MissingReductionRunRecord, MissingExperimentRecord
+from queue_processors.queue_processor.status_utils import StatusUtils
 from queue_processors.queue_processor.queue_listener import QueueListener
+from queue_processors.queue_processor.tests.test_instrument_variable_utils import \
+    FakeModule
 
-# Disable warnings which don't really apply to test classes
-# pylint: disable=protected-access
-# pylint: disable=too-many-public-methods
+STATUS = StatusUtils()
 
-from utils.settings import ACTIVEMQ_SETTINGS
+TEST_REDUCE_VARS_CONTENT = """
+standard_vars = {
+    "variable" : False
+}
+advanced_vars = {
+    "advanced" : 123
+}
+
+variable_help = {
+    "standard_vars" : {
+        "variable" : "I am help"
+    },
+    "advanced_vars":{
+        "advanced": "I am advanced help"
+    }
+}
+
+"""
 
 
-@patch("queue_processors.queue_processor.handle_message.db_access", spec=access)
+class FakeMessage:
+    started_by = 0
+    run_number = 1234567
+    message = "I am a message"
+
+
 class TestHandleMessage(unittest.TestCase):
     """
     Directly tests the message handling classes
     """
-
-    # pylint: disable=arguments-differ
-    @patch("queue_processors.queue_processor.handle_message._UtilsClasses")
-    @patch("queue_processors.queue_processor.handle_message.db_records")
-    @patch("logging.getLogger")
-    def setUp(self, log_const, db_records, util_const):
-        self.db_records = db_records
+    def setUp(self):
         self.mocked_client = mock.Mock(spec=QueueListener)
-        self.mocked_utils = mock.MagicMock(spec=_UtilsClasses)
-        util_const.return_value = self.mocked_utils
 
-        self.handler = HandleMessage(self.mocked_client)
-        self.mocked_logger = log_const.return_value
+        self.msg = Message()
+        self.msg.populate({
+            "run_number": 7654321,
+            "rb_number": 1234567,
+            "run_version": 0,
+            "reduction_data": "/path/1",
+            "started_by": -1,
+            "data": "/path",
+            "instrument": "ARMI"  # Autoreduction Mock Instrument
+        })
+        with patch("logging.getLogger") as patched_logger:
+            self.handler = HandleMessage(self.mocked_client)
+            self.mocked_logger = patched_logger.return_value
 
-    @staticmethod
-    def _get_mocked_db_return_vals(mock_instrument, mock_data_location):
-        return {
-            "get_instrument.return_value": mock_instrument,
-            "start_database.return_value.data_model"
-            ".DataLocation.return_value": mock_data_location
-        }
+        db_handle = model.database.access.start_database()
+        self.data_model = db_handle.data_model
+        self.variable_model = db_handle.variable_model
 
-    @staticmethod
-    def _get_mock_message():
-        mocked_message = mock.Mock(spec=Message())
-        mocked_message.rb_number = 1
-        return mocked_message
+        self.experiment, _ = self.data_model.Experiment.objects.get_or_create(reference_number=1231231)
+        self.instrument, _ = self.data_model.Instrument.objects.get_or_create(name="ARMI", is_active=1, is_paused=0)
+        status = STATUS.get_queued()
+        fake_script_text = "scripttext"
+        self.reduction_run = create_reduction_run_record(self.experiment, self.instrument, FakeMessage(), 0,
+                                                         fake_script_text, status)
+        self.reduction_run.save()
 
-    def test_data_model_only_inits_once(self, patched_db):
+    def tearDown(self) -> None:
+        self.experiment.delete()
+        self.instrument.delete()
+        self.reduction_run.delete()
+
+    @parameterized.expand([
+        ["reduction_error", STATUS.get_error()],
+        ["reduction_skipped", STATUS.get_skipped()],
+    ])
+    def test_reduction_with_message(self, function_to_call, expected_status):
         """
-        Tests that the data model property only performs the init once,
-        then holds onto and returns the same instance again
+        Tests a reduction error where the message contains an error message
         """
-        model_mock = patched_db.start_database.return_value.data_model
-        first_call = self.handler._data_model
-        patched_db.start_database.assert_called_once()
-        self.assertEqual(model_mock, first_call)
+        self.msg.message = "I am a message"
+        getattr(self.handler, function_to_call)(self.reduction_run, self.msg)
 
-        patched_db.start_database.reset_mock()
-        second_call = self.handler._data_model
-        patched_db.start_database.assert_not_called()
-        self.assertEqual(first_call, second_call)
+        assert self.reduction_run.status == expected_status
+        assert self.reduction_run.message == "I am a message"
+        self.mocked_logger.info.assert_called_once()
+        assert self.mocked_logger.info.call_args[0][1] == self.msg.run_number
 
-    # @patch("queue_processors.queue_processor.handle_message.db_records")
-    # def test_data_ready_marks_inst_active(self, _, patched_db):
-    #     """
-    #     Tests that calling data ready on an inactive instrument record
-    #     updates the record to become active
-    #     """
-    #     self.mocked_utils.reduction_run. \
-    #         get_script_and_arguments.return_value = (mock.NonCallableMock(),
-    #                                                  mock.NonCallableMock())
-
-    #     mock_inst_record = mock.NonCallableMock()
-    #     mock_inst_record.is_active = 0
-
-    #     patched_db.configure_mock(**self._get_mocked_db_return_vals(
-    #         # We only care about the inst record being modified / saved
-    #         mock_instrument=mock_inst_record,
-    #         mock_data_location=None))
-
-    #     self.handler.data_ready(message=self._get_mock_message())
-    #     self.assertEqual(1, mock_inst_record.is_active)
-    #     patched_db.save_record.assert_any_call(mock_inst_record)
-
-    # @patch("queue_processors.queue_processor.handle_message.db_records")
-    # def test_data_ready_constructs_reduction_record(self, patched_record,
-    #                                                 patched_db):
-    #     """
-    #     Tests the calling data ready with an instrument that does not
-    #     exist in the DB creates the record
-    #     """
-    #     self.mocked_utils.reduction_run. \
-    #         get_script_and_arguments.return_value = (mock.NonCallableMock(),
-    #                                                  mock.NonCallableMock())
-    #     mock_inst = mock.Mock()
-    #     mock_inst.is_paused = False
-
-    #     patched_db.configure_mock(**self._get_mocked_db_return_vals(
-    #         mock_instrument=mock_inst,
-    #         mock_data_location=mock.NonCallableMock()
-    #     ))
-
-    #     # This method should not cap our highest version
-    #     test_inputs = [-1, 100]
-
-    #     for i in test_inputs:
-    #         patched_db.find_highest_run_version = mock.Mock(return_value=i)
-    #         mock_message = self._get_mock_message()
-    #         self.handler.data_ready(message=mock_message)
-
-    #         patched_record.create_reduction_run_record\
-    #             .assert_called_once_with(
-    #                 experiment=patched_db.get_experiment.return_value,
-    #                 instrument=mock_inst, message=mock_message,
-    #                 run_version=i + 1,
-    #                 script_text=self.mocked_utils.
-    #                 instrument_variable.get_current_script_text()[0],
-    #                 status=self.mocked_utils.status.get_queued()
-    #             )
-    #         patched_record.reset_mock()
-
-    def test_data_ready_skips_paused_inst(self, patched_db):
+    @parameterized.expand([
+        ["reduction_error", STATUS.get_error()],
+        ["reduction_skipped", STATUS.get_skipped()],
+    ])
+    def test_reduction_without_message(self, function_to_call, expected_status):
         """
-        Tests that calling data ready on a paused instrument does
-        not queue up that data for processing and instead skips it
+        Tests a reduction error where the message does not contain an error message
         """
-        self.mocked_utils.reduction_run. \
-            get_script_and_arguments.return_value = (mock.NonCallableMock(),
-                                                     mock.NonCallableMock())
-        mock_instrument = mock.Mock()
-        mock_instrument.is_paused = True
+        getattr(self.handler, function_to_call)(self.reduction_run, self.msg)
 
-        patched_db.configure_mock(**self._get_mocked_db_return_vals(
-            mock_instrument=mock_instrument,
-            mock_data_location=mock.Mock(),
-        ))
+        assert self.reduction_run.status == expected_status
+        self.mocked_logger.info.assert_called_once()
+        assert self.mocked_logger.info.call_args[0][1] == self.msg.run_number
 
-        self.mocked_client.send_message.assert_not_called()
+    def test_reduction_started(self):
+        "Tests starting a reduction"
+        assert self.reduction_run.started is None
+        assert self.reduction_run.finished is None
 
-    # def test_data_ready_empty_script_calls_error(self, patched_db):
-    #     """
-    #     Tests that calling data empty with an empty script will
-    #     throw an exception noting that the script text was empty.
-    #     """
-    #     patched_db.configure_mock(**self._get_mocked_db_return_vals(
-    #         mock_data_location=mock.Mock(),
-    #         mock_instrument=mock.Mock()))
+        self.handler.reduction_started(self.reduction_run, self.msg)
+        self.mocked_logger.info.assert_called_once()
 
-    #     self.handler.reduction_error = mock.Mock()
-    #     self.mocked_utils.instrument_variable \
-    #         .get_current_script_text.return_value = [None]
+        assert self.reduction_run.started is not None
+        assert self.reduction_run.finished is None
+        assert self.reduction_run.status == STATUS.get_processing()
+        self.mocked_logger.info.assert_called_once()
 
-    #     with self.assertRaises(InvalidStateException):
-    #         self.handler.data_ready(self._get_mock_message())
-    #     self.handler.reduction_error.assert_called_once()
+    def test_reduction_complete(self):
+        "Tests completing a reduction"
+        self.msg.reduction_data = None
+        assert self.reduction_run.finished is None
+        self.handler.reduction_complete(self.reduction_run, self.msg)
+        self.mocked_logger.info.assert_called_once()
 
-    # @patch("queue_processors.queue_processor.handle_message.db_records")
-    # def test_data_ready_with_new_data(self, patched_records, patched_db):
-    #     """
-    #     Tests the ideal flow for data ready, where we will queue up
-    #     actual data for processing
-    #     """
-    #     # Setup DB return values
-    #     mock_instrument = mock.NonCallableMock()
-    #     mock_instrument.is_active = True
-    #     mock_instrument.is_paused = False
+        assert self.reduction_run.finished is not None
+        assert self.reduction_run.status == STATUS.get_completed()
+        self.mocked_logger.info.assert_called_once()
+        assert self.reduction_run.reduction_location.count() == 0
 
-    #     mock_data_location = mock.NonCallableMock()
-    #     mock_script_and_args = (mock.NonCallableMock(), mock.NonCallableMock())
-    #     self.mocked_utils.reduction_run. \
-    #         get_script_and_arguments.return_value = mock_script_and_args
+    def test_reduction_complete_with_reduction_data(self):
+        "Tests completing a reduction that has an output location at reduction_data"
 
-    #     db_return_values = \
-    #         self._get_mocked_db_return_vals(mock_instrument,
-    #                                         mock_data_location)
-    #     # Setup other mock returns
-    #     patched_db.find_highest_run_version = mock.Mock(return_value=-1)
-    #     patched_db.configure_mock(**db_return_values)
+        assert self.reduction_run.finished is None
+        self.handler.reduction_complete(self.reduction_run, self.msg)
+        self.mocked_logger.info.assert_called_once()
 
-    #     mock_reduction_run = mock.NonCallableMock()
-    #     patched_records.create_reduction_run_record\
-    #         .return_value = mock_reduction_run
+        assert self.reduction_run.finished is not None
+        assert self.reduction_run.status == STATUS.get_completed()
+        self.mocked_logger.info.assert_called_once()
 
-    #     # Run
-    #     mocked_msg = self._get_mock_message()
-    #     self.handler.data_ready(message=mocked_msg)
+        assert self.reduction_run.reduction_location.first().file_path == "/path/1"
 
-    #     mocked_msg.validate.assert_called()
+    @patch("queue_processors.queue_processor.handle_message.ReductionProcessManager")
+    def test_do_reduction_success(self, rpm):
+        "Tests do_reduction success path"
+        rpm.return_value.run = self.do_post_started_assertions
 
-    #     # Assert Database accesses
-    #     patched_db.get_instrument.assert_called_with(
-    #         str(mocked_msg.instrument), create=True)
-    #     patched_db.get_experiment.assert_called_with(
-    #         mocked_msg.rb_number, create=True)
-    #     patched_db.save_record.assert_any_call(mock_data_location)
-    #     patched_db.save_record.assert_any_call(mock_reduction_run)
+        self.handler.do_reduction(self.reduction_run, self.msg)
+        assert self.reduction_run.status == STATUS.get_completed()
+        assert self.reduction_run.started is not None
+        assert self.reduction_run.finished is not None
+        assert self.reduction_run.reduction_location.first().file_path == "/path/1"
 
-    #     # Assert utils used correctly
-    #     self.mocked_utils.status.get_queued.assert_called_once()
+    def do_post_started_assertions(self, expected_info_calls=1):
+        "Helper to capture common assertions between tests"
+        assert self.reduction_run.status == STATUS.get_processing()
+        assert self.reduction_run.started is not None
+        assert self.reduction_run.finished is None
+        assert self.mocked_logger.info.call_count == expected_info_calls
+        # reset for follow logger calls
+        self.mocked_logger.info.reset_mock()
+        return self.msg
 
-    #     self.mocked_utils.instrument_variable.get_current_script_text. \
-    #         assert_called_once_with(mock_instrument.name)
-    #     self.mocked_utils.instrument_variable.create_variables_for_run. \
-    #         assert_called_once_with(mock_reduction_run)
+    # a bit of a nasty patch, but everything underneath should be unit tested separately
+    @patch("queue_processors.queue_processor.handle_message.ReductionProcessManager")
+    def test_do_reduction_fail(self, rpm):
+        "Tests do_reduction failure path"
+        self.msg.message = "Something failed"
 
-    #     self.mocked_utils.reduction_run.get_script_and_arguments. \
-    #         assert_called_once_with(mock_reduction_run)
+        rpm.return_value.run = self.do_post_started_assertions
 
-    #     # Check message is packed correctly
-    #     # Since we set existing run_version to None this will be 0
-    #     self.assertEqual(0, mocked_msg.run_version)
-    #     self.assertEqual(mock_script_and_args[0],
-    #                      mocked_msg.reduction_script)
-    #     self.assertEqual(mock_script_and_args[1],
-    #                      mocked_msg.reduction_arguments)
+        self.handler.do_reduction(self.reduction_run, self.msg)
+        assert self.reduction_run.status == STATUS.get_error()
+        assert self.reduction_run.started is not None
+        assert self.reduction_run.finished is not None
+        assert self.reduction_run.message == "Something failed"
 
-    #     # Finally check if the data is sent
-    #     self.mocked_client.send_message.assert_called_once_with(
-    #         "/queue/ReductionPending", mocked_msg)
-
-    def test_reduction_started(self, patched_db):
+    def test_activate_db_inst(self):
         """
-        Tests the reduction started message handler with valid data
+        Tests whether the function enables the instrument
         """
-        mock_reduction_record = mock.NonCallableMock()
-        self.handler.find_run = mock.Mock(return_value=mock_reduction_record)
+        self.instrument.is_active = False
+        self.instrument.save()
 
-        valid_states = ['e', 'q']  # verbose values = ["Error", "Queued"]
-        for state in valid_states:
-            mock_reduction_record.status.value = state
-            self.handler.reduction_started(message=self._get_mock_message())
+        self.handler.activate_db_inst(self.instrument)
 
-            self.mocked_utils.status.get_processing.assert_called_once()
-            self.assertEqual(self.mocked_utils.status.get_processing(), mock_reduction_record.status)
-            patched_db.save_record.called_once_with(mock_reduction_record)
+        assert self.instrument.is_active
 
-            self.mocked_utils.status.get_processing.reset_mock()
-            patched_db.save_record.reset_mock()
-
-    def test_reduction_started_missing_record(self, patched_db):
+    def test_find_reason_to_skip_run_empty_script(self):
         """
-        Tests reduction started with a missing DB record throws
+        Test find_reason_to_skip_run correctly captures validation failing on the message
         """
-        self.handler.find_run = mock.Mock(return_value=None)
-        with self.assertRaises(MissingReductionRunRecord):
-            self.handler.reduction_started(message=self._get_mock_message())
+        self.reduction_run.script = ""
+        assert "Script text for current instrument is empty" in self.handler.find_reason_to_skip_run(
+            self.reduction_run, self.msg, self.instrument)
 
-        self.mocked_utils.status.get_processing.assert_not_called()
-        patched_db.save_record.assert_not_called()
-
-    def test_reduction_started_invalid_state(self, _):
+    def test_find_reason_to_skip_run_message_validation_fails(self):
         """
-        Tests reduction started throws if the record state in not expected
+        Test find_reason_to_skip_run correctly captures validation failing on the message
         """
-        reduction_run_record = mock.NonCallableMock()
-        reduction_run_record.state.value = 'x'
-        self.handler.find_run = mock.Mock(return_value=reduction_run_record)
+        self.msg.rb_number = 123  # invalid RB number, should be 7 digits
+        assert "Validation error" in self.handler.find_reason_to_skip_run(self.reduction_run, self.msg, self.instrument)
 
-        with self.assertRaises(InvalidStateException):
-            self.handler.reduction_started(self._get_mock_message())
-
-    def test_reduction_complete(self, patched_db):
+    def test_find_reason_to_skip_run_instrument_paused(self):
         """
-        Tests reduction complete handler in valid conditions
+        Test find_reason_to_skip_run correctly captures that the instrument is paused
         """
-        mocked_msg = self._get_mock_message()
-        mocked_msg.reduction_data = None
-        mock_reduction_record = mock.NonCallableMock()
-        mock_reduction_record.status.value = 'p'  # verbose value = "Processing"
-        self.handler.find_run = mock.Mock(return_value=mock_reduction_record)
+        self.instrument.is_paused = True
 
-        self.handler.reduction_complete(message=mocked_msg)
+        assert "is paused" in self.handler.find_reason_to_skip_run(self.reduction_run, self.msg, self.instrument)
 
-        self.assertEqual(self.mocked_utils.status.get_completed(), mock_reduction_record.status)
-        self.assertEqual(mocked_msg.message, mock_reduction_record.message)
-        self.assertEqual(mocked_msg.reduction_log, mock_reduction_record.reduction_log)
-        self.assertEqual(mocked_msg.admin_log, mock_reduction_record.admin_log)
-
-        patched_db.save_record.assert_called_once_with(mock_reduction_record)
-
-    def test_reduction_complete_saves_location_records(self, patched_db):
+    def test_find_reason_to_skip_run_doesnt_skip_when_all_is_ok(self):
         """
-        Tests reduction complete saves location records if they are available
-        to the database
+        Test find_reason_to_skip_run returns None when all the validation passes
         """
-        mock_reduction_record = mock.NonCallableMock()
-        mock_reduction_record.status.value = 'p'  # verbose value = "Processing"
-        self.handler.find_run = mock.Mock(return_value=mock_reduction_record)
+        assert self.handler.find_reason_to_skip_run(self.reduction_run, self.msg, self.instrument) is None
 
-        location_records = [mock.NonCallableMock(), mock.NonCallableMock()]
-        mocked_msg = self._get_mock_message()
-        mocked_msg.reduction_data = location_records
-
-        mocked_reduction_location = mock.NonCallableMock()
-        patched_db.start_database.return_value.data_model. \
-            ReductionLocation.return_value = mocked_reduction_location
-
-        self.handler.reduction_complete(message=mocked_msg)
-        patched_db.save_record.assert_any_call(mocked_reduction_location)
-        # n - Location records, +1 for Reduction Run Record
-        self.assertEqual(len(location_records) + 1, patched_db.save_record.call_count)
-
-    def test_reduction_complete_with_invalid_state(self, patched_db):
+    @patch("queue_processors.queue_processor.handle_message.ReductionProcessManager")
+    def test_send_message_onwards_ok(self, rpm):
         """
-        Tests reduction complete throws if the reduction record is invalid
+        Test that a run where all is OK is reduced
         """
-        mock_reduction_record = mock.NonCallableMock()
-        mock_reduction_record.status.value = 'x'
-        self.handler.find_run = mock.Mock(return_value=mock_reduction_record)
+        self.instrument.is_active = False
+        rpm.return_value.run = partial(self.do_post_started_assertions, 2)
 
-        with self.assertRaises(InvalidStateException):
-            self.handler.reduction_complete(message=self._get_mock_message())
-        patched_db.save_record.assert_not_called()
+        self.handler.send_message_onwards(self.reduction_run, self.msg, self.instrument)
 
-    def test_reduction_complete_with_missing_record(self, patched_db):
+        assert self.reduction_run.status == STATUS.get_completed()
+        assert self.instrument.is_active
+
+    @patch("queue_processors.queue_processor.handle_message.ReductionProcessManager")
+    def test_send_message_onwards_skip_run(self, rpm):
         """
-        Tests reduction complete throws if the reduction record is missing
+        Test that a run that fails validation is skipped
         """
-        self.handler.find_run = mock.Mock(return_value=None)
+        self.msg.rb_number = 123
 
-        with self.assertRaises(MissingReductionRunRecord):
-            self.handler.reduction_complete(message=self._get_mock_message())
-        patched_db.save_record.assert_not_called()
+        self.handler.send_message_onwards(self.reduction_run, self.msg, self.instrument)
 
-    def test_reduction_skipped(self, patched_db):
-        """
-        Tests reduction skipped handler in valid conditions
-        """
-        mock_reduction_record = mock.NonCallableMock()
-        mock_reduction_record.status.value = 'p'  # verbose value = "Processing"
-        self.handler.find_run = mock.Mock(return_value=mock_reduction_record)
+        rpm.return_value.run.assert_not_called()
+        assert self.reduction_run.status == STATUS.get_skipped()
+        assert "Validation error" in self.reduction_run.message
 
-        mock_msg = self._get_mock_message()
+    @patch("queue_processors.queue_processor.handle_message.ReductionScript")
+    def test_create_run_records_multiple_versions(self, reduction_script: Mock):
+        "Test creating multiple version of the same run"
+        self.instrument.is_active = False
 
-        self.handler.reduction_skipped(message=mock_msg)
-        self.assertEqual(self.mocked_utils.status.get_skipped(), mock_reduction_record.status)
-        self.assertEqual(mock_msg.message, mock_reduction_record.message)
-        self.assertEqual(mock_msg.reduction_log, mock_reduction_record.reduction_log)
-        self.assertEqual(mock_msg.admin_log, mock_reduction_record.admin_log)
+        reduction_script.return_value.text.return_value = "print(123)"
+        self.msg.run_number = random.randint(1000000, 10000000)
+        db_objects_to_delete = []
+        for i in range(5):
+            reduction_run, message, instrument = self.handler.create_run_records(self.msg)
+            db_objects_to_delete.append(reduction_run)
 
-        patched_db.save_record.assert_called_once_with(mock_reduction_record)
+            assert reduction_run.run_number == self.msg.run_number
+            assert reduction_run.experiment.reference_number == self.msg.rb_number
+            assert reduction_run.run_version == i
+            assert message.run_version == i
+            assert instrument == self.instrument
+            assert instrument.name == self.msg.instrument
+            assert instrument.is_active
+            assert reduction_run.script == "print(123)"
+            assert reduction_run.data_location.first().file_path == message.data
+            assert reduction_run.status == STATUS.get_queued()
 
-    def test_reduction_skipped_no_record(self, patched_db):
-        """
-        Tests reduction skipped raises if the reduction record is not in the db
-        """
-        self.handler.find_run = mock.Mock(return_value=None)
-        with self.assertRaises(MissingReductionRunRecord):
-            self.handler.reduction_skipped(message=self._get_mock_message())
-        patched_db.save_record.assert_not_called()
+        for obj in db_objects_to_delete:
+            obj.delete()
 
-    def test_reduction_error_no_retry(self, patched_db):
-        """
-        Tests reduction error handler when retry is not set
-        """
-        mock_reduction_record = mock.NonCallableMock()
-        self.handler.find_run = mock.Mock(return_value=mock_reduction_record)
+    def test_create_run_variables_no_variables_creates_nothing(self):
+        "Test running a reduction run with an empty reduce_vars.py"
+        expected_args = {'standard_vars': {}, 'advanced_vars': {}}
 
-        mock_msg = self._get_mock_message()
-        mock_msg.retry_in = None
-        self.handler.reduction_error(message=mock_msg)
-        self.assertEqual(self.mocked_utils.status.get_error(), mock_reduction_record.status)
-        self.assertEqual(mock_msg.message, mock_reduction_record.message)
-        self.assertEqual(mock_msg.reduction_log, mock_reduction_record.reduction_log)
-        self.assertEqual(mock_msg.admin_log, mock_reduction_record.admin_log)
+        self.handler.instrument_variable.create_run_variables = mock.Mock(return_value=[])
 
-        patched_db.save_record.assert_called_once_with(mock_reduction_record)
+        message = self.handler.create_run_variables(self.reduction_run, self.msg, self.instrument)
+        self.handler.instrument_variable.create_run_variables.assert_called_once_with(self.reduction_run)
+        assert self.mocked_logger.info.call_count == 2
+        self.mocked_logger.warning.assert_called_once()
+        assert message.reduction_arguments == expected_args
 
-    def test_reduction_error_missing_record(self, _):
-        """
-        Tests reduction error handler throws when a record is not in the db
-        """
-        self.handler.find_run = mock.Mock(return_value=None)
-        with self.assertRaises(MissingReductionRunRecord):
-            self.handler.reduction_error(message=self._get_mock_message())
+    @patch('queue_processors.queue_processor.reduction.service.ReductionScript.load', return_value=FakeModule())
+    def test_create_run_variables(self, import_module: Mock):
+        "Test the creation of RunVariables for the ReductionRun"
+        expected_args = {'standard_vars': FakeModule().standard_vars, 'advanced_vars': FakeModule().advanced_vars}
+        message = self.handler.create_run_variables(self.reduction_run, self.msg, self.instrument)
+        assert self.mocked_logger.info.call_count == 2
+        assert message.reduction_arguments == expected_args
+        import_module.assert_called_once()
 
-    def test_reduction_error_retry_mechanism(self, patched_db):
-        """
-        Tests the reduction error method retries a set number of times
-        before backing off.
-        """
-        mock_reduction_record = mock.NonCallableMock()
-        self.handler.find_run = mock.Mock(return_value=mock_reduction_record)
+    def test_data_ready_other_exception_raised_ends_processing(self):
+        "Test an exception being raised inside data_ready handler"
+        self.handler.create_run_records = Mock(side_effect=RuntimeError)
+        with self.assertRaises(RuntimeError):
+            self.handler.data_ready(self.msg)
+        self.mocked_logger.info.assert_called_once()
+        self.mocked_logger.error.assert_called_once()
 
-        # Valid value *not* including 5
-        for i in range(0, 5):
-            mocked_msg = self._get_mock_message()
-            patched_db.find_highest_run_version = mock.Mock(return_value=i)
-            self.handler.retry_run = mock.Mock()
+    def test_data_ready_variable_integrity_error_marks_reduction_error(self):
+        "Test that an integrity error inside data_ready marks the reduction as errored"
+        self.handler.create_run_records = Mock(return_value=(self.reduction_run, self.msg, self.instrument))
+        self.handler.create_run_variables = Mock(side_effect=IntegrityError)
+        with self.assertRaises(IntegrityError):
+            self.handler.data_ready(self.msg)
+        assert self.mocked_logger.info.call_count == 2
+        self.mocked_logger.error.assert_called_once()
+        assert self.reduction_run.status == STATUS.get_error()
+        assert "Encountered error in transaction to save RunVariables" in self.reduction_run.message
 
-            self.handler.reduction_error(message=mocked_msg)
-            patched_db.get_experiment.assert_called_with(mocked_msg.rb_number)
-            self.handler.retry_run.assert_called_once_with(mocked_msg.started_by, mock_reduction_record,
-                                                           mocked_msg.retry_in)
+    def test_data_ready_no_reduce_vars(self):
+        "Test data_ready when the reduce_vars script does not exist and throws a FileNotFoundError"
+        self.handler.create_run_records = Mock(return_value=(self.reduction_run, self.msg, self.instrument))
+        with self.assertRaises(FileNotFoundError):
+            self.handler.data_ready(self.msg)
+        assert self.mocked_logger.info.call_count == 3
+        self.mocked_logger.error.assert_called_once()
+        assert self.reduction_run.status == STATUS.get_error()
+        assert "Encountered error in transaction to save RunVariables" in self.reduction_run.message
 
-        # 5 and above should never retry
-        for i in range(5, 7):
-            mocked_msg = self._get_mock_message()
-            self.handler.retry_run = mock.Mock()
-            patched_db.find_highest_run_version = mock.Mock(return_value=i)
+    @patch('queue_processors.queue_processor.reduction.service.ReductionScript.load', return_value=FakeModule())
+    @patch("queue_processors.queue_processor.handle_message.ReductionProcessManager")
+    def test_data_ready_sends_onwards_completed(self, rpm, load: Mock):
+        "Test data_ready success path sends the message onwards for reduction"
+        rpm.return_value.run = partial(self.do_post_started_assertions, 4)
+        self.handler.create_run_records = Mock(return_value=(self.reduction_run, self.msg, self.instrument))
+        self.handler.data_ready(self.msg)
+        assert self.mocked_logger.info.call_count == 1
+        assert self.reduction_run.finished is not None
+        assert self.reduction_run.status == STATUS.get_completed()
+        load.assert_called_once()
 
-            self.handler.reduction_error(mocked_msg)
-            # As we are > limit the retry should be set to None
-            self.assertIsNone(mocked_msg.retry_in)
-            self.handler.retry_run.assert_not_called()
-
-    def test_find_run(self, patched_db):
-        """
-        Tests fiind run makes the expected DB calls when invoked
-        """
-        mocked_msg = self._get_mock_message()
-        mocked_msg.run_number = 100
-        mocked_msg.run_version = 200
-        mocked_experiment = mock.NonCallableMock()
-        patched_db.get_experiment.return_value = mocked_experiment
-
-        return_val = patched_db.start_database.return_value \
-            .data_model.ReductionRun.objects \
-            .filter.return_value \
-            .filter.return_value \
-            .filter.return_value \
-            .first.return_value
-
-        self.assertEqual(return_val, self.handler.find_run(message=mocked_msg))
-        top_level_query = patched_db.start_database.return_value.data_model \
-            .ReductionRun.objects
-        top_level_query.filter \
-            .assert_called_once_with(experiment_id=mocked_experiment.id)
-        top_level_query.filter.return_value.filter \
-            .assert_called_once_with(run_number=100)
-        top_level_query.filter.return_value.filter.return_value.filter \
-            .assert_called_once_with(run_version=200)
-
-    def test_find_run_missing_experiment_record(self, patched_db):
-        """
-        Ensures find run will throw if the RB number passed does not exist
-        """
-        patched_db.get_experiment.return_value = None
-        with self.assertRaises(MissingExperimentRecord):
-            self.handler.find_run(self._get_mock_message())
-
-    def test_retry_run(self, _):
-        """
-        Tests that retry run queues up the given message and sends
-        it onwards to the queue client
-        """
-        reduction_run = mock.Mock()
-        reduction_run.cancel = False
-
-        mock_uid = mock.Mock()
-        expected_time = 123
-
-        self.handler.retry_run(user_id=mock_uid, retry_in=expected_time, reduction_run=reduction_run)
-        self.mocked_utils.reduction_run.create_retry_run \
-            .assert_called_once_with(user_id=mock_uid, delay=expected_time,
-                                     reduction_run=reduction_run)
-        create_retry_run_ret = \
-            self.mocked_utils.reduction_run.create_retry_run()
-        self.mocked_utils.messaging.send_pending.assert_called_once_with(create_retry_run_ret,
-                                                                         delay=(expected_time * 1000))
-
-    def test_retry_run_cancel(self, _):
-        """
-        Tests that retry run does not requeue up a cancelled message
-        """
-        reduction_run = mock.Mock()
-        reduction_run.cancel = True
-        self.assertIsNone(self.handler.retry_run(user_id=None, reduction_run=reduction_run, retry_in=None))
-        self.mocked_utils.reduction_run.create_retry_run.assert_not_called()
-
-    def test_construct_and_send_skipped(self, _):
-        """
-        Tests that the message contents is updated with the passed in msg
-        then send onwards to the skipped queue
-        """
-        expected_msg = self._get_mock_message()
-        self.handler._construct_and_send_skipped(rb_number=mock.NonCallableMock(),
-                                                 reason=mock.NonCallableMock(),
-                                                 message=expected_msg)
-
-        self.mocked_client.send_message.assert_called_once_with(ACTIVEMQ_SETTINGS.reduction_skipped, expected_msg)
+    @patch('queue_processors.queue_processor.reduction.service.ReductionScript.load', return_value=FakeModule())
+    @patch("queue_processors.queue_processor.handle_message.ReductionProcessManager")
+    def test_data_ready_sends_onwards_error(self, rpm, load: Mock):
+        "Test data_ready error path sends the message onwards to be marked as errored"
+        self.msg.message = "I am error"
+        rpm.return_value.run = partial(self.do_post_started_assertions, 4)
+        self.handler.create_run_records = Mock(return_value=(self.reduction_run, self.msg, self.instrument))
+        self.handler.data_ready(self.msg)
+        assert self.mocked_logger.info.call_count == 1
+        assert self.reduction_run.finished is not None
+        assert self.reduction_run.status == STATUS.get_error()
+        assert self.reduction_run.message == "I am error"
+        load.assert_called_once()
 
 
 if __name__ == '__main__':

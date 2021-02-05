@@ -7,97 +7,131 @@
 """
 Tests the Queue Listener Daemon
 """
-
 import unittest
 from unittest import mock
 
-from mock import PropertyMock
+import pytest
+from queue_processors.queue_processor import queue_listener_daemon
 
-import queue_processors.queue_processor.queue_listener_daemon
-
-# from queue_processors.queue_processor.queue_listener_daemon import QueueListenerDaemon
-# from utils.clients.queue_client import QueueClient
-# pylint: disable=protected-access
+from queue_processors.queue_processor.queue_listener_daemon import QueueListenerDaemon
 
 
-class TestQueueListenerDaemon(unittest.TestCase):
+@mock.patch("queue_processors.queue_processor.queue_listener_daemon.queue_listener")
+def test_daemon_start(patched_queue_listener):
     """
-    Tests both the class and main method for Queue Listener Daemon
+    Test: The main method correctly starts the daemon
     """
-    @staticmethod
-    @mock.patch("queue_processors.daemon.sys")
-    @mock.patch("queue_processors.queue_processor.queue_listener_daemon.QueueListenerDaemon")
-    @mock.patch("queue_processors.queue_processor.queue_listener_daemon.logging")
-    def test_main_daemon_start(patched_logging, patched_daemon, patched_sys):
-        """
-        Test: The main method correctly starts the daemon
-        When: Called by the module main method
-        """
-        type(patched_sys).argv = PropertyMock(return_value=["", "start"])
-        daemon_instance = patched_daemon.return_value
-        queue_processors.queue_processor.queue_listener_daemon.main()
+    mock_client, mock_listener = mock.Mock(), mock.Mock()
+    patched_queue_listener.main.return_value = (mock_client, mock_listener)
+    qld = QueueListenerDaemon("/tmp/file.pid")
+    qld.logger = mock.Mock()
+    # avoids blocking the test in the while sleep loop
+    qld._shutting_down = True  # pylint:disable=protected-access
+    qld.run()
 
-        patched_daemon.assert_called_once_with("/tmp/QueueListenerDaemon.pid")
-        daemon_instance.start.assert_called_once()
-        patched_sys.exit.assert_called_once_with(0)
-        patched_logging.assert_not_called()
+    mock_client.disconnect.assert_not_called()
+    mock_listener.is_processing_message.assert_not_called()
 
-    @staticmethod
-    @mock.patch("queue_processors.daemon.sys")
-    @mock.patch("queue_processors.queue_processor.queue_listener_daemon.QueueListenerDaemon")
-    @mock.patch("queue_processors.queue_processor.queue_listener_daemon.logging")
-    def test_main_daemon_stop(patched_logging, patched_daemon, patched_sys):
-        """
-        Test: The main method correctly stops
-        When: Called by the module main method
-        """
-        type(patched_sys).argv = PropertyMock(return_value=["", "stop"])
-        daemon_instance = patched_daemon.return_value
-        queue_processors.queue_processor.queue_listener_daemon.main()
+    patched_queue_listener.main.assert_called_once()
+    qld.logger.info.assert_called_once()
 
-        patched_daemon.assert_called_once_with("/tmp/QueueListenerDaemon.pid")
-        daemon_instance.stop.assert_called_once()
-        patched_sys.exit.assert_called_once_with(0)
-        patched_logging.assert_not_called()
 
-    # @staticmethod
-    # @mock.patch("queue_processors.daemon.sys")
-    # @mock.patch("queue_processors.queue_processor.queue_listener_daemon.QueueListenerDaemon")
-    # @mock.patch("queue_processors.queue_processor.queue_listener_daemon.logging")
-    # def test_main_daemon_stop_unsafe_shutdown_logs(patched_logging, patched_daemon, patched_sys):
-    #     """
-    #     Test: Main will correctly log a timeout as an error
-    #     When: Trying to shutdown the client after timer fires
-    #     """
-    #     type(patched_sys).argv = PropertyMock(return_value=["", "stop"])
-    #     daemon_instance = patched_daemon.return_value
-    #     queue_processors.queue_processor.queue_listener_daemon.main()
+@mock.patch("queue_processors.queue_processor.queue_listener_daemon.time")
+@mock.patch("queue_processors.queue_processor.queue_listener_daemon.queue_listener")
+def test_daemon_start_goes_into_while_loop(patched_queue_listener, time: mock.Mock):
+    """
+    Test: The main method correctly starts the daemon
+    """
+    mock_client, mock_listener = mock.Mock(), mock.Mock()
+    patched_queue_listener.main.return_value = (mock_client, mock_listener)
 
-    #     patched_daemon.assert_called_once_with("/tmp/QueueListenerDaemon.pid")
-    #     daemon_instance.stop.assert_called_once()
-    #     patched_sys.exit.assert_called_once_with(0)
+    qld = QueueListenerDaemon("/tmp/file.pid")
+    qld.logger = mock.Mock()
 
-    #     patched_logging.getLogger.assert_called_once()
-    #     mock_log = patched_logging.getLogger.return_value
-    #     mock_log.error.assert_called_once()
+    def start_shutting_down(_):
+        qld._shutting_down = True  # pylint:disable=protected-access
 
-    @staticmethod
-    @mock.patch("queue_processors.daemon.sys")
-    @mock.patch("queue_processors.queue_processor.queue_listener_daemon.QueueListenerDaemon")
-    @mock.patch("queue_processors.queue_processor.queue_listener_daemon.logging")
-    def test_main_daemon_restart(patched_logging, patched_daemon, patched_sys):
-        """
-        Test: The main method correctly stops
-        When: Called by the module main method
-        """
-        type(patched_sys).argv = PropertyMock(return_value=["", "restart"])
-        daemon_instance = patched_daemon.return_value
-        queue_processors.queue_processor.queue_listener_daemon.main()
+    # avoid getting stuck into infinite while loop by adding a side effect to the
+    # mock call - which sets the Daemon into shutting down mode so that it breaks the loop
+    time.sleep.side_effect = start_shutting_down
+    # avoids blocking the test in the while sleep loop
+    qld.run()
+    time.sleep.assert_called_once_with(0.5)
 
-        patched_daemon.assert_called_once_with("/tmp/QueueListenerDaemon.pid")
-        daemon_instance.restart.assert_called_once()
-        patched_sys.exit.assert_called_once_with(0)
-        patched_logging.assert_not_called()
+    mock_client.disconnect.assert_not_called()
+    mock_listener.is_processing_message.assert_not_called()
+
+    patched_queue_listener.main.assert_called_once()
+    qld.logger.info.assert_called_once()
+
+
+@mock.patch("queue_processors.queue_processor.queue_listener_daemon.queue_listener")
+def test_daemon_start_and_stop_while_not_processing(patched_queue_listener):
+    """
+    Test: The main method correctly stops the daemon when nothing is being processed
+    """
+    mock_client, mock_listener = mock.Mock(), mock.Mock()
+    patched_queue_listener.main.return_value = (mock_client, mock_listener)
+    qld = QueueListenerDaemon("/tmp/file.pid")
+    # avoids blocking the test in the while sleep loop
+    qld._shutting_down = True  # pylint:disable=protected-access
+    qld.run()
+
+    qld.logger = mock.Mock()
+    mock_listener.is_processing_message.return_value = False
+    qld.stop()
+
+    mock_client.disconnect.assert_called_once()
+    mock_listener.is_processing_message.assert_called_once()
+    qld.logger.info.assert_called_once()
+
+
+@mock.patch("queue_processors.queue_processor.queue_listener_daemon.queue_listener")
+def test_daemon_start_and_stop_while_processing(patched_queue_listener):
+    """
+    Test: The main method stops the daemon and logs when a run is processing
+    """
+    mock_client, mock_listener = mock.Mock(), mock.Mock()
+    patched_queue_listener.main.return_value = (mock_client, mock_listener)
+    qld = QueueListenerDaemon("/tmp/file.pid")
+    # avoids blocking the test in the while sleep loop
+    qld._shutting_down = True  # pylint:disable=protected-access
+    qld.run()
+
+    qld.logger = mock.Mock()
+    mock_listener.is_processing_message.return_value = True
+    qld.stop()
+
+    mock_client.disconnect.assert_called_once()
+    mock_listener.is_processing_message.assert_called_once()
+    assert qld.logger.info.call_count == 2
+
+
+def test_daemon_stop_without_starting():
+    """
+    Test: The main method stops the daemon and logs when a run is processing
+    """
+    qld = QueueListenerDaemon("/tmp/file.pid")
+    with pytest.raises(RuntimeError):
+        qld.stop()
+
+
+@mock.patch("queue_processors.daemon.sys")
+@mock.patch("queue_processors.queue_processor.queue_listener_daemon.QueueListenerDaemon")
+@mock.patch("queue_processors.queue_processor.queue_listener_daemon.logging")
+def test_main_daemon_start(patched_logging, patched_daemon, patched_sys):
+    """
+    Test: The main method correctly starts the daemon
+    When: Called by the module main method
+    """
+    type(patched_sys).argv = mock.PropertyMock(return_value=["", "start"])
+    daemon_instance = patched_daemon.return_value
+    queue_listener_daemon.main()
+
+    patched_daemon.assert_called_once_with("/tmp/QueueListenerDaemon.pid")
+    daemon_instance.start.assert_called_once()
+    patched_sys.exit.assert_called_once_with(0)
+    patched_logging.assert_not_called()
 
 
 if __name__ == '__main__':

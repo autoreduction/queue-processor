@@ -37,8 +37,7 @@ class ClientSettingsFactory:
         :return: A ClientSettings object
         """
         if settings_type.lower() not in self.valid_types:
-            raise ValueError(f"Factories creation settings type must be one of:"
-                             f"{','.join(self.valid_types)}")
+            raise ValueError(f"Factories creation settings type must be one of:" f"{','.join(self.valid_types)}")
         kwargs['username'] = username
         kwargs['password'] = password
         kwargs['host'] = host
@@ -69,8 +68,7 @@ class ClientSettingsFactory:
         """
         :return: Queue compatible settings object
         """
-        queue_kwargs = ['reduction_pending', 'data_ready', 'reduction_started',
-                        'reduction_complete', 'reduction_error']
+        queue_kwargs = ['data_ready']
         self._test_kwargs(queue_kwargs, kwargs)
         return ActiveMQSettings(**kwargs)
 
@@ -86,7 +84,7 @@ class ClientSettingsFactory:
         """
         :return: SFTP compatible settings object
         """
-        sftp_kwargs = []    # No additional kwargs needed for sftp
+        sftp_kwargs = []  # No additional kwargs needed for sftp
         self._test_kwargs(sftp_kwargs, kwargs)
         return SFTPSettings(**kwargs)
 
@@ -116,7 +114,7 @@ class ICATSettings(ClientSettings):
     auth = None
 
     def __init__(self, authentication_type='Simple', **kwargs):
-        super(ICATSettings, self).__init__(**kwargs)   # pylint:disable=super-with-arguments
+        super(ICATSettings, self).__init__(**kwargs)  # pylint:disable=super-with-arguments
         self.auth = authentication_type
 
 
@@ -128,15 +126,12 @@ class MySQLSettings(ClientSettings):
     database = None
 
     def __init__(self, database_name='autoreduction', **kwargs):
-        super(MySQLSettings, self).__init__(**kwargs)   # pylint:disable=super-with-arguments
+        super(MySQLSettings, self).__init__(**kwargs)  # pylint:disable=super-with-arguments
         self.database = database_name
 
     def get_full_connection_string(self):
         """ :return: string for connecting directly to mysql service with user + pass """
-        return 'mysql+mysqldb://{0}:{1}@{2}/{3}'.format(self.username,
-                                                        self.password,
-                                                        self.host,
-                                                        self.database)
+        return 'mysql+mysqldb://{0}:{1}@{2}/{3}'.format(self.username, self.password, self.host, self.database)
 
 
 # pylint:disable=too-few-public-methods
@@ -144,41 +139,25 @@ class ActiveMQSettings(ClientSettings):
     """
     ActiveMq settings to be used as a Queue settings object
     """
-    reduction_pending = None
     data_ready = None
-    reduction_started = None
-    reduction_complete = None
-    reduction_error = None
-    reduction_skipped = None
     all_subscriptions = None
 
     # pylint:disable=too-many-arguments
-    def __init__(self,
-                 reduction_pending='/queue/ReductionPending',
-                 data_ready='/queue/DataReady',
-                 reduction_started='/queue/ReductionStarted',
-                 reduction_complete='/queue/ReductionComplete',
-                 reduction_error='/queue/ReductionError',
-                 reduction_skipped='/queue/ReductionSkipped',
-                 **kwargs):
+    def __init__(self, data_ready='/queue/DataReady', **kwargs):
         # TODO explicitly state args
-        super(ActiveMQSettings, self).__init__(**kwargs)   # pylint:disable=super-with-arguments
+        super(ActiveMQSettings, self).__init__(**kwargs)  # pylint:disable=super-with-arguments
 
-        self.reduction_pending = reduction_pending
         self.data_ready = data_ready
-        self.reduction_started = reduction_started
-        self.reduction_complete = reduction_complete
-        self.reduction_error = reduction_error
-        self.reduction_skipped = reduction_skipped
-        self.all_subscriptions = [data_ready, reduction_started,
-                                  reduction_complete, reduction_error, reduction_skipped]
+        self.all_subscriptions = [data_ready]
+
 
 class SFTPSettings(ClientSettings):
     """
     SFTP settings object
     """
     def __init__(self, **kwargs):  # pylint:disable=useless-super-delegation
-        super(SFTPSettings, self).__init__(**kwargs)   # pylint:disable=super-with-arguments
+        super(SFTPSettings, self).__init__(**kwargs)  # pylint:disable=super-with-arguments
+
 
 class CycleIngestionSettings(ClientSettings):
     """

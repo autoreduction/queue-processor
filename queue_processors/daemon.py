@@ -164,13 +164,19 @@ def control_daemon_from_cli(daemon):
         if sys.argv[1] == 'start':
             daemon.start()
         elif sys.argv[1] == 'stop':
-            daemon.stop()
-        elif sys.argv[1] == 'restart':
-            daemon.restart()
+            print("Sending SIGTERM to allow graceful exit. Check the log output for the shutdown state.")
+            with open(daemon.pidfile, 'r') as pidfile:
+                pid = int(pidfile.read().strip())
+            os.kill(pid, 15)  # send kill -15
+        elif sys.argv[1] == 'kill-dangerous':
+            print("Sending SIGKILL, jobs may be left hanging.")
+            with open(daemon.pidfile, 'r') as pidfile:
+                pid = int(pidfile.read().strip())
+            os.kill(pid, 9)  # send kill -9
         else:
             print("Unknown command")
             sys.exit(2)
         sys.exit(0)
     else:
-        print("usage: %s start|stop|restart" % sys.argv[0])
+        print("usage: %s start|stop" % sys.argv[0])
         sys.exit(2)

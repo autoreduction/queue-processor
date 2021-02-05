@@ -10,24 +10,25 @@ Module for dealing with instrument reduction variables.
 import html
 import logging
 import logging.config
-import os
 from typing import Any, List, Tuple
 
 from django.db import transaction
 from django.db.models import Q
 from model.database import access as db
-from queue_processors.queue_processor.queueproc_utils.script_utils import (import_module, reduction_script_location)
-from queue_processors.queue_processor.queueproc_utils.variable_utils import VariableUtils
-# pylint:disable=no-name-in-module,import-error
-from queue_processors.queue_processor.settings import LOGGING
 
-# Set up logging and attach the logging to the right part of the config.
-logging.config.dictConfig(LOGGING)
-logger = logging.getLogger("queue_processor")  # pylint: disable=invalid-name
+from queue_processors.queue_processor.variable_utils import VariableUtils
+from queue_processors.queue_processor.reduction.service import ReductionScript
 
 
 class DataTooLong(ValueError):
     """ Error class used for when reduction variables are too long. """
+
+
+def _replace_special_chars(help_text):
+    """ Remove any special chars in the help text. """
+    help_text = html.escape(help_text)  # Remove any HTML already in the help string
+    help_text = help_text.replace('\n', '<br>').replace('\t', '&nbsp;&nbsp;&nbsp;&nbsp;')
+    return help_text
 
 
 class InstrumentVariablesUtils:
@@ -36,7 +37,7 @@ class InstrumentVariablesUtils:
         self.model = db.start_database()
 
     @transaction.atomic
-    def create_variables_for_run(self, reduction_run):
+    def create_run_variables(self, reduction_run) -> List:
         """
         Finds the appropriate InstrumentVariables for the given reduction run, and creates
         RunVariables from them.
@@ -51,8 +52,6 @@ class InstrumentVariablesUtils:
         """
         instrument_name = reduction_run.instrument.name
 
-        reduce_vars_file = os.path.join(reduction_script_location(instrument_name), 'reduce_vars.py')
-        reduce_vars_module = import_module(reduce_vars_file)
         model = self.model.variable_model
         experiment_reference = reduction_run.experiment.reference_number
         run_number = reduction_run.run_number
@@ -61,16 +60,19 @@ class InstrumentVariablesUtils:
                                                                      | Q(start_run__lte=run_number),
                                                                      instrument_id=instrument_id)
 
+        reduce_vars = ReductionScript(instrument_name, 'reduce_vars.py')
+        reduce_vars_module = reduce_vars.load()
+
         variables = self._find_or_make_variables(possible_variables, run_number, instrument_id, reduce_vars_module)
 
-        logger.info('Creating RunVariables')
+        logging.info('Creating RunVariables')
         # Create run variables from these instrument variables, and return them.
-        return VariableUtils().save_run_variables(variables, reduction_run)
+        return VariableUtils.save_run_variables(variables, reduction_run)
 
     def _find_or_make_variables(self, possible_variables, run_number, instrument_id, reduce_vars_module) -> List:
         # pylint: disable=too-many-locals
-        standard_vars = getattr(reduce_vars_module, 'standard_vars', None)
-        advanced_vars = getattr(reduce_vars_module, 'advanced_vars', None)
+        standard_vars = getattr(reduce_vars_module, 'standard_vars', {})
+        advanced_vars = getattr(reduce_vars_module, 'advanced_vars', {})
 
         all_vars: List[Tuple[str, Any, bool]] = [(name, value, False) for name, value in standard_vars.items()]
         all_vars.extend([(name, value, True) for name, value in advanced_vars.items()])
@@ -80,8 +82,8 @@ class InstrumentVariablesUtils:
 
         variables = []
         for name, value, is_advanced in all_vars:
-            script_help_text = self._get_help_text('standard_vars' if not is_advanced else 'advanced_vars', name,
-                                                   reduce_vars_module)
+            script_help_text = self.get_help_text('standard_vars' if not is_advanced else 'advanced_vars', name,
+                                                  reduce_vars_module)
             script_value = str(value).replace('[', '').replace(']', '')
             script_type = VariableUtils.get_type_string(value)
 
@@ -132,7 +134,8 @@ class InstrumentVariablesUtils:
 
         if changed:
             # if the run number is different than what is already saved, then we will copy the
-            # variable that contains the new values. Otherwise just overwrite them
+            # variable that contains the new values rather than overwriting them.
+            # This allows the user to see the old run with the exact values that were used the first time
             if variable.start_run != run_number:
                 variable.pk = None
                 variable.id = None
@@ -142,19 +145,11 @@ class InstrumentVariablesUtils:
             variable.save()
         return variable
 
-    def _get_help_text(self, dict_name, key, reduce_vars_module):
+    @staticmethod
+    def get_help_text(dict_name, key, reduce_vars_module):
         """ Get variable help text. """
-        if not dict_name or not key:
-            return ""
         if 'variable_help' in dir(reduce_vars_module):
             if dict_name in reduce_vars_module.variable_help:
                 if key in reduce_vars_module.variable_help[dict_name]:
-                    return self._replace_special_chars(reduce_vars_module.variable_help[dict_name][key])
+                    return _replace_special_chars(reduce_vars_module.variable_help[dict_name][key])
         return ""
-
-    @staticmethod
-    def _replace_special_chars(help_text):
-        """ Remove any special chars in the help text. """
-        help_text = html.escape(help_text)  # Remove any HTML already in the help string
-        help_text = help_text.replace('\n', '<br>').replace('\t', '&nbsp;&nbsp;&nbsp;&nbsp;')
-        return help_text

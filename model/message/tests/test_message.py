@@ -10,8 +10,6 @@ Test the Message class
 import unittest
 import json
 
-from mock import patch
-
 import attr
 
 from model.message.message import Message
@@ -21,59 +19,59 @@ class TestMessage(unittest.TestCase):
     """
     Test cases for the Message class used with AMQ
     """
-
     @staticmethod
     def _empty():
         """ Create and return an empty message object and corresponding dictionary"""
         empty_msg = Message()
-        empty_dict = {'description': None,
-                      'facility': "ISIS",
-                      'run_number': None,
-                      'instrument': None,
-                      'rb_number': None,
-                      'started_by': None,
-                      'file_path': None,
-                      'overwrite': None,
-                      'run_version': None,
-                      'job_id': None,
-                      'reduction_script': None,
-                      'reduction_arguments': None,
-                      'reduction_log': "",
-                      'admin_log': "",
-                      'return_message': None,
-                      'retry_in': None,
-                      'software': None}
+        empty_dict = {
+            'description': None,
+            'facility': "ISIS",
+            'run_number': None,
+            'instrument': None,
+            'rb_number': None,
+            'started_by': None,
+            'file_path': None,
+            'overwrite': None,
+            'run_version': None,
+            'job_id': None,
+            'reduction_script': None,
+            'reduction_arguments': None,
+            'reduction_log': "",
+            'admin_log': "",
+            'return_message': None,
+            'retry_in': None,
+            'software': None
+        }
         return empty_msg, empty_dict
 
     @staticmethod
     def _populated():
         """ Create and return a populated message object and corresponding dictionary """
         run_number = 11111
-        rb_number = 22222
+        rb_number = 2222222
         description = 'test message'
-        populated_msg = Message(run_number=run_number,
-                                rb_number=rb_number,
-                                description=description)
-        populated_dict = {'description': description,
-                          'facility': "ISIS",
-                          'run_number': run_number,
-                          'instrument': None,
-                          'rb_number': rb_number,
-                          'started_by': None,
-                          'data': None,
-                          'overwrite': None,
-                          'run_version': None,
-                          'job_id': None,
-                          'reduction_script': None,
-                          'reduction_arguments': None,
-                          'reduction_log': "",
-                          'admin_log': "",
-                          'message': None,
-                          'retry_in': None,
-                          'reduction_data': None,
-                          'cancel': None,
-                          'software': None,
-                          }
+        populated_msg = Message(run_number=run_number, rb_number=rb_number, description=description)
+        populated_dict = {
+            'description': description,
+            'facility': "ISIS",
+            'run_number': run_number,
+            'instrument': None,
+            'rb_number': rb_number,
+            'started_by': None,
+            'data': None,
+            'overwrite': None,
+            'run_version': None,
+            'job_id': None,
+            'reduction_script': None,
+            'reduction_arguments': None,
+            'reduction_log': "",
+            'admin_log': "",
+            'message': None,
+            'retry_in': None,
+            'reduction_data': None,
+            'cancel': None,
+            'software': None,
+        }
         return populated_msg, populated_dict
 
     def test_init(self):
@@ -189,17 +187,15 @@ class TestMessage(unittest.TestCase):
         empty_msg, _ = self._empty()
         self.assertRaises(ValueError, empty_msg.populate, serialized)
 
-    # pylint:disable=no-self-use
-    @patch('logging.warning')
-    def test_populate_with_invalid_key(self, mock_log):
+    def test_populate_with_invalid_key(self):
         """
         Test: A warning is logged
         When: An unknown key is used to populate the Message
         """
         args = {'unknown': True}
         msg = Message()
-        msg.populate(args)
-        mock_log.assert_called_once()
+        with self.assertRaises(ValueError):
+            msg.populate(args)
 
     def test_validate_data_ready_valid(self):
         """
@@ -208,7 +204,7 @@ class TestMessage(unittest.TestCase):
         """
         message = Message(instrument='GEM',
                           run_number=111,
-                          rb_number=222,
+                          rb_number=2222222,
                           data='file/path',
                           facility="ISIS",
                           started_by=0)

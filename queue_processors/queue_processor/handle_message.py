@@ -13,19 +13,18 @@ For example, this may include shuffling the message to another queue,
 update relevant DB fields or logging out the status.
 """
 import datetime
-import logging.config
-import traceback
+import logging
+from typing import Optional
+from django.db import transaction
 
 import model.database.records as db_records
 from model.database import access as db_access
 from model.message.message import Message
-from model.message.validation.validators import validate_rb_number
-from queue_processors.queue_processor._utils_classes import _UtilsClasses
-from queue_processors.queue_processor.handling_exceptions import (InvalidStateException, MissingExperimentRecord,
-                                                                  MissingReductionRunRecord)
-from queue_processors.queue_processor.queueproc_utils.script_utils import get_current_script_text
-from queue_processors.queue_processor.settings import LOGGING
-from utils.settings import ACTIVEMQ_SETTINGS
+from queue_processors.queue_processor.instrument_variable_utils import InstrumentVariablesUtils
+from queue_processors.queue_processor.status_utils import StatusUtils
+from queue_processors.queue_processor.variable_utils import VariableUtils
+from queue_processors.queue_processor.reduction.process_manager import ReductionProcessManager
+from queue_processors.queue_processor.reduction.service import ReductionScript
 
 
 class HandleMessage:
@@ -37,295 +36,224 @@ class HandleMessage:
     # We cannot type hint queue listener without introducing a circular dep.
     def __init__(self, queue_listener):
         self._client = queue_listener
-        self._utils = _UtilsClasses()
+        self.status = StatusUtils()
+        self.instrument_variable = InstrumentVariablesUtils()
 
-        logging.config.dictConfig(LOGGING)
         self._logger = logging.getLogger("handle_queue_message")
 
-        self._cached_db = None
-        self._cached_data_model = None
-
-    @property
-    def _database(self):
-        """
-        Gets a handle to the database, starting it if required
-        """
-        if not self._cached_db:
-            self._cached_db = db_access.start_database()
-        return self._cached_db
-
-    @property
-    def _data_model(self):
-        """
-        Gets a handle to the data model from the database
-        """
-        if not self._cached_data_model:
-            self._cached_data_model = self._database.data_model
-        return self._cached_data_model
+        self.database = db_access.start_database()
+        self.data_model = self.database.data_model
 
     def data_ready(self, message: Message):
         """
         Called when destination queue was data_ready.
         Updates the reduction run in the database.
+
+        When we DO NO PROCESSING:
+        - If rb number isn't an integer, or isn't a 7 digit integer
+        - If instrument is paused
+        - If there is no reduce.py
         """
         self._logger.info("Data ready for processing run %s on %s", message.run_number, message.instrument)
-        if not validate_rb_number(message.rb_number):
-            # rb_number is invalid so send message to skip queue and early return
-            message.message = f"Found non-integer RB number: {message.rb_number}"
-            self._logger.warning("%s. Skipping %s%s.", message.message, message.instrument, message.run_number)
-            message.rb_number = 0
 
-        run_no = str(message.run_number)
-        instrument = self._get_and_activate_db_inst(message.instrument)
+        try:
+            reduction_run, message, instrument = self.create_run_records(message)
+        except Exception as err:
+            # failed to even create the reduction run object - can't reacover from this
+            self._logger.error("Encountered error in transaction to create ReductionRun and related records, error: %s",
+                               str(err))
+            raise
 
-        status = self._utils.status.get_skipped() if instrument.is_paused \
-            else self._utils.status.get_queued()
+        try:
+            message = self.create_run_variables(reduction_run, message, instrument)
+            self.send_message_onwards(reduction_run, message, instrument)
+        except Exception as err:
+            self._handle_error(reduction_run, message, err)
+            raise
 
-        # This must be done before looking up the run version to make sure
-        # the record exists
-        experiment = db_access.get_experiment(message.rb_number, create=True)
-        run_version = db_access.find_highest_run_version(run_number=run_no, experiment=experiment)
-        run_version += 1
+    def _handle_error(self, reduction_run, message, err):
+        # couldn't save the state in the database properly - mark the run as errored
+        err_msg = f"Encountered error in transaction to save RunVariables, error: {str(err)}"
+        self._logger.error(err_msg)
+        message.message = err_msg
+        self.reduction_error(reduction_run, message)
+
+    @transaction.atomic
+    def create_run_records(self, message: Message):
+        """
+        Creates or gets the necessary records to construct a ReductionRun
+        """
+        # This must be done before looking up the run version to make sure the record exists
+        experiment = db_access.get_experiment(message.rb_number)
+        run_version = db_access.find_highest_run_version(experiment, run_number=str(message.run_number))
         message.run_version = run_version
 
-        # Get the script text for the current instrument. If the script text
-        # is null then send to
-        # error queue
-        script_text = get_current_script_text(instrument.name)[0]
-        if script_text is None:
-            self.reduction_error(message)
-            raise InvalidStateException("Script text for current instrument is null")
-
+        instrument = db_access.get_instrument(str(message.instrument))
+        script = ReductionScript(instrument.name)
+        script_text = script.text()
         # Make the new reduction run with the information collected so far
-        # and add it into the database
         reduction_run = db_records.create_reduction_run_record(experiment=experiment,
                                                                instrument=instrument,
                                                                message=message,
                                                                run_version=run_version,
                                                                script_text=script_text,
-                                                               status=status)
-        db_access.save_record(reduction_run)
+                                                               status=self.status.get_queued())
+        reduction_run.save()
 
-        # Create a new data location entry which has a foreign key linking
-        # it to the current
+        # Create a new data location entry which has a foreign key linking it to the current
         # reduction run. The file path itself will point to a datafile
-        # (e.g. "\isis\inst$\NDXWISH\Instrument\data\cycle_17_1\WISH00038774
-        # .nxs")
-        data_location = self._data_model.DataLocation(file_path=message.data, reduction_run_id=reduction_run.id)
-        db_access.save_record(data_location)
+        # (e.g. "/isis/inst$/NDXWISH/Instrument/data/cycle_17_1/WISH00038774.nxs")
+        data_location = self.data_model.DataLocation(file_path=message.data, reduction_run_id=reduction_run.pk)
+        data_location.save()
 
-        # We now need to create all of the variables for the run such that
-        # the script can run
-        # through in the desired way
+        return reduction_run, message, instrument
+
+    def create_run_variables(self, reduction_run, message: Message, instrument):
+        """
+        Creates the RunVariables for this ReductionRun
+        """
+        # Create all of the variables for the run that are described in it's reduce_vars.py
         self._logger.info('Creating variables for run')
-        variables = self._utils.instrument_variable.create_variables_for_run(reduction_run)
+        variables = self.instrument_variable.create_run_variables(reduction_run)
         if not variables:
             self._logger.warning("No instrument variables found on %s for run %s", instrument.name, message.run_number)
 
         self._logger.info('Getting script and arguments')
-        reduction_script, arguments = self._utils.reduction_run. \
-            get_script_and_arguments(reduction_run)
-        message.reduction_script = reduction_script
-        message.reduction_arguments = arguments
+        message.reduction_script = reduction_run.script
+        message.reduction_arguments = self.get_script_arguments(variables)
+        return message
 
-        # Make sure the RB number is valid
+    def send_message_onwards(self, reduction_run, message: Message, instrument):
+        """
+        Sends the message onwards, either for processing, if validation is OK and instrument isn't paused
+        or skips it if either of those is true.
+        """
+        # activate instrument if script was found
+        skip_reason = self.find_reason_to_skip_run(reduction_run, message, instrument)
+        if skip_reason is not None:
+            message.message = skip_reason
+            self.reduction_skipped(reduction_run, message)
+        else:
+            self.activate_db_inst(instrument)
+            self.do_reduction(reduction_run, message)
+
+    @staticmethod
+    def find_reason_to_skip_run(reduction_run, message: Message, instrument) -> Optional[str]:
+        """
+        Determines whether the processing should be skippped.
+
+        The run will be skipped if the message validation fails or if the instrument is paused
+        """
+        if reduction_run.script == "":
+            return "Script text for current instrument is empty"
         try:
             message.validate("/queue/DataReady")
         except RuntimeError as validation_err:
-            self._logger.error("Validation error from handler: %s", str(validation_err))
-            self._client.send_message('/queue/ReductionSkipped', message)
-            return
+            return f"Validation error from handler: {str(validation_err)}"
 
         if instrument.is_paused:
-            self._logger.info("Run %s has been skipped", message.run_number)
-        else:
-            self._client.send_message('/queue/ReductionPending', message)
-            self._logger.info("Run %s ready for reduction", message.run_number)
+            return f"Run {message.run_number} has been skipped because the instrument {instrument.name} is paused"
 
-    def _get_and_activate_db_inst(self, instrument_name):
+        return None
+
+    def do_reduction(self, reduction_run, message: Message):
+        """
+        Handovers to the ReductionProcessManager to actually run the reduction process.
+        Handles the outcome from the run.
+        """
+        reduction_process_manager = ReductionProcessManager(message)
+        self.reduction_started(reduction_run, message)
+        message = reduction_process_manager.run()
+        if message.message is not None:
+            self.reduction_error(reduction_run, message)
+        else:
+            self.reduction_complete(reduction_run, message)
+
+    def activate_db_inst(self, instrument):
         """
         Gets the DB instrument record from the database, if one is not
         found it instead creates and saves the record to the DB, then
         returns it.
         """
-        # Check if the instrument is active or not in the MySQL database
-        instrument = db_access.get_instrument(str(instrument_name), create=True)
         # Activate the instrument if it is currently set to inactive
         if not instrument.is_active:
-            self._logger.info("Activating %s", instrument_name)
+            self._logger.info("Activating %s", instrument.name)
             instrument.is_active = 1
-            db_access.save_record(instrument)
+            instrument.save()
         return instrument
 
-    # note: Why does this take arguments and not just take from the message
-    # attribs
-    def _construct_and_send_skipped(self, rb_number, reason, message: Message):
+    def reduction_started(self, reduction_run, message: Message):
         """
-        Construct a message and send to the skipped reduction queue
-        :param rb_number: The RB Number associated with the reduction job
-        :param reason: The error that caused the run to be skipped
-        """
-        self._logger.warning("Skipping non-integer RB number: %s", rb_number)
-        msg = 'Reduction Skipped: {}. Assuming run number to be ' \
-              'a calibration run.'.format(reason)
-        message.message = msg
-        skipped_queue = ACTIVEMQ_SETTINGS.reduction_skipped
-        self._client.send_message(skipped_queue, message)
-
-    def reduction_started(self, message: Message):
-        """
-        Called when destination queue was reduction_started.
-        Updates the run as started in the database.
+        Called when the run is ready to start. Updates the run as started/processing in the database.
         """
         self._logger.info("Run %s has started reduction", message.run_number)
-
-        reduction_run = self.find_run(message=message)
-
-        if not reduction_run:
-            raise MissingReductionRunRecord(rb_number=message.rb_number,
-                                            run_number=message.run_number,
-                                            run_version=message.run_version)
-
-        if reduction_run.status.value not in ['e', 'q']:  # verbose values = ["Error", "Queued"]
-            raise InvalidStateException("An invalid attempt to re-start a reduction run was captured."
-                                        f" Experiment: {message.rb_number},"
-                                        f" Run Number: {message.run_number},"
-                                        f" Run Version {message.run_version}")
-
-        reduction_run.status = self._utils.status.get_processing()
+        reduction_run.status = self.status.get_processing()
         reduction_run.started = datetime.datetime.utcnow()
-        db_access.save_record(reduction_run)
+        reduction_run.save()
 
-    def reduction_complete(self, message: Message):
+    @transaction.atomic
+    def reduction_complete(self, reduction_run, message: Message):
         """
-        Called when the destination queue was reduction_complete
-        Updates the run as complete in the database.
+        Called when the run has completed. Updates the run as complete in the database.
         """
         self._logger.info("Run %s has completed reduction", message.run_number)
-        reduction_run = self.find_run(message)
 
-        if not reduction_run:
-            raise MissingReductionRunRecord(rb_number=message.rb_number,
-                                            run_number=message.run_number,
-                                            run_version=message.run_version)
-
-        if not reduction_run.status.value == 'p':  # verbose value = "Processing"
-            raise InvalidStateException("An invalid attempt to complete a reduction run that wasn't"
-                                        " processing has been captured. "
-                                        f" Experiment: {message.rb_number},"
-                                        f" Run Number: {message.run_number},"
-                                        f" Run Version {message.run_version}")
-
-        reduction_run.status = self._utils.status.get_completed()
-        reduction_run.finished = datetime.datetime.utcnow()
-        reduction_run.message = message.message
-        reduction_run.reduction_log = message.reduction_log
-        reduction_run.admin_log = message.admin_log
+        self._common_reduction_run_update(reduction_run, self.status.get_completed(), message)
 
         if message.reduction_data is not None:
-            for location in message.reduction_data:
-                model = db_access.start_database().data_model
-                reduction_location = model \
-                    .ReductionLocation(file_path=location,
-                                       reduction_run=reduction_run)
-                db_access.save_record(reduction_location)
-        db_access.save_record(reduction_run)
+            reduction_location = self.data_model.ReductionLocation(file_path=message.reduction_data,
+                                                                   reduction_run=reduction_run)
+            reduction_location.save()
+        reduction_run.save()
 
-    def reduction_skipped(self, message: Message):
+    def reduction_skipped(self, reduction_run, message: Message):
         """
-        Called when the destination was reduction skipped
-        Updates the run to Skipped status in database
-        Will NOT attempt re-run
+        Called when there was a reason to skip the run.
+        Updates the run to Skipped status in database. Will NOT attempt re-run
         """
         if message.message is not None:
             self._logger.info("Run %s has been skipped - %s", message.run_number, message.message)
         else:
             self._logger.info("Run %s has been skipped - No error message was found", message.run_number)
 
-        reduction_run = self.find_run(message)
-        if not reduction_run:
-            raise MissingReductionRunRecord(rb_number=message.rb_number,
-                                            run_number=message.run_number,
-                                            run_version=message.run_version)
+        self._common_reduction_run_update(reduction_run, self.status.get_skipped(), message)
+        reduction_run.save()
 
-        reduction_run.status = self._utils.status.get_skipped()
-        reduction_run.finished = datetime.datetime.utcnow()
-        reduction_run.message = message.message
-        reduction_run.reduction_log = message.reduction_log
-        reduction_run.admin_log = message.admin_log
-
-        db_access.save_record(reduction_run)
-
-    def reduction_error(self, message: Message):
+    def reduction_error(self, reduction_run, message: Message):
         """
-        Called when the destination was reduction_error.
-        Updates the run as complete in the database.
+        Called when the run encountered an error. Updates the run as complete in the database.
         """
         if message.message:
             self._logger.info("Run %s has encountered an error - %s", message.run_number, message.message)
         else:
             self._logger.info("Run %s has encountered an error - No error message was found", message.run_number)
 
-        reduction_run = self.find_run(message)
+        self._common_reduction_run_update(reduction_run, self.status.get_error(), message)
+        reduction_run.save()
 
-        if not reduction_run:
-            raise MissingReductionRunRecord(rb_number=message.rb_number,
-                                            run_number=message.run_number,
-                                            run_version=message.run_version)
-
-        reduction_run.status = self._utils.status.get_error()
+    @staticmethod
+    def _common_reduction_run_update(reduction_run, status, message):
+        reduction_run.status = status
         reduction_run.finished = datetime.datetime.utcnow()
         reduction_run.message = message.message
         reduction_run.reduction_log = message.reduction_log
         reduction_run.admin_log = message.admin_log
-        db_access.save_record(reduction_run)
 
-        if message.retry_in is not None:
-            experiment = db_access.get_experiment(message.rb_number)
-            max_version = db_access.find_highest_run_version(run_number=message.run_number, experiment=experiment)
-
-            # If we have already tried more than 5 times, we want to give up
-            # and we don't want
-            # to retry the run
-            if max_version <= 4:
-                self.retry_run(message.started_by, reduction_run, message.retry_in)
+    @staticmethod
+    def get_script_arguments(run_variables):
+        """
+        Converts the RunVariables that have been created into Python kwargs which can
+        be passed as the script parameters at runtime.
+        """
+        standard_vars, advanced_vars = {}, {}
+        for run_variable in run_variables:
+            variable = run_variable.variable
+            value = VariableUtils.convert_variable_to_type(variable.value, variable.type)
+            if variable.is_advanced:
+                advanced_vars[variable.name] = value
             else:
-                # Need to delete the retry_in entry from the dictionary so
-                # that the front end
-                # doesn't report a false retry instance.
-                message.retry_in = None
+                standard_vars[variable.name] = value
 
-    def find_run(self, message: Message):
-        """ Find a reduction run in the database. """
-        experiment = db_access.get_experiment(message.rb_number)
-        if not experiment:
-            raise MissingExperimentRecord(rb_number=message.rb_number,
-                                          run_number=message.run_number,
-                                          run_version=message.run_version)
-        self._logger.info('Finding a run with an experiment ID %s, run number %s and run '
-                          'version %s', experiment.id, int(message.run_number), int(message.run_version))
-        model = db_access.start_database().data_model
-        reduction_run = model.ReductionRun.objects \
-            .filter(experiment_id=experiment.id) \
-            .filter(run_number=int(message.run_number)) \
-            .filter(run_version=int(message.run_version)) \
-            .first()
-        return reduction_run
+        arguments = {'standard_vars': standard_vars, 'advanced_vars': advanced_vars}
 
-    def retry_run(self, user_id, reduction_run, retry_in):
-        """ Retry a reduction run. """
-        if reduction_run.cancel:
-            self._logger.info("Cancelling run retry")
-            return
-
-        self._logger.info("Retrying run in %i seconds", retry_in)
-
-        new_job = self._utils.reduction_run.create_retry_run(user_id=user_id,
-                                                             reduction_run=reduction_run,
-                                                             delay=retry_in)
-        try:
-            #  Seconds to Milliseconds
-            self._utils.messaging.send_pending(new_job, delay=retry_in * 1000)
-        except Exception as exp:
-            self._logger.error(traceback.format_exc())
-            raise exp
+        return arguments

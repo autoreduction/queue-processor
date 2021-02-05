@@ -54,3 +54,5 @@ Webapp/autoreduce_webapp/static/graphs/
 webtests/screenshots
 !webtests/screenshots/.keep
 webtests/config.json
+
+data-archive/

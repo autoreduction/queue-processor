@@ -51,13 +51,7 @@ class Status(models.Model):
     """
     Enum table for status types of messages
     """
-    STATUS_CHOICES = (
-        ('q', 'Queued'),
-        ('p', 'Processing'),
-        ('s', 'Skipped'),
-        ('c', 'Completed'),
-        ('e', 'Error')
-    )
+    STATUS_CHOICES = (('q', 'Queued'), ('p', 'Processing'), ('s', 'Skipped'), ('c', 'Completed'), ('e', 'Error'))
 
     value = models.CharField(max_length=1, choices=STATUS_CHOICES)
 
@@ -76,6 +70,9 @@ class Status(models.Model):
         :return: (str) the status as its textual value
         """
         return dict(Status.STATUS_CHOICES)[self.value]
+
+    def __str__(self) -> str:
+        return self.value_verbose()
 
 
 class Software(models.Model):
@@ -123,15 +120,16 @@ class ReductionRun(models.Model):
     overwrite = models.NullBooleanField(default=True)
 
     # Foreign Keys
-    experiment = models.ForeignKey(Experiment, blank=False, related_name='reduction_runs',
-                                   on_delete=models.CASCADE)
-    instrument = models.ForeignKey(Instrument, related_name='reduction_runs', null=True,
-                                   on_delete=models.CASCADE)
+    experiment = models.ForeignKey(Experiment, blank=False, related_name='reduction_runs', on_delete=models.CASCADE)
+    instrument = models.ForeignKey(Instrument, related_name='reduction_runs', null=True, on_delete=models.CASCADE)
     retry_run = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
     status = models.ForeignKey(Status, blank=False, related_name='+', on_delete=models.CASCADE)
     # Allowed software field to be black in code line below. Issued opened (#852) to later
     # populate this field
-    software = models.ForeignKey(Software, blank=True, related_name='reduction_runs', null=True,
+    software = models.ForeignKey(Software,
+                                 blank=True,
+                                 related_name='reduction_runs',
+                                 null=True,
                                  on_delete=models.CASCADE)
 
     def __unicode__(self):
@@ -167,8 +165,7 @@ class DataLocation(models.Model):
     Represents the location at which the unreduced data is stored on disk
     """
     file_path = models.CharField(max_length=255)
-    reduction_run = models.ForeignKey(ReductionRun, blank=False, related_name='data_location',
-                                      on_delete=models.CASCADE)
+    reduction_run = models.ForeignKey(ReductionRun, blank=False, related_name='data_location', on_delete=models.CASCADE)
 
     def __unicode__(self):
         """ :return: the file path to the data"""
@@ -186,7 +183,9 @@ class ReductionLocation(models.Model):
     Represents the location at which the reduced data is stored on disk
     """
     file_path = models.CharField(max_length=255)
-    reduction_run = models.ForeignKey(ReductionRun, blank=False, related_name='reduction_location',
+    reduction_run = models.ForeignKey(ReductionRun,
+                                      blank=False,
+                                      related_name='reduction_location',
                                       on_delete=models.CASCADE)
 
     def __unicode__(self):
@@ -222,9 +221,7 @@ class Notification(models.Model):
     """
     Represents possible notification messages regarding reduction runs
     """
-    SEVERITY_CHOICES = (('i', 'info'),
-                        ('w', 'warning'),
-                        ('e', 'error'))
+    SEVERITY_CHOICES = (('i', 'info'), ('w', 'warning'), ('e', 'error'))
 
     message = models.CharField(max_length=255, blank=False)
     is_active = models.BooleanField(default=True)
@@ -260,8 +257,6 @@ class Output(models.Model):
     """
     Represents the output of a reduction job (file path and type)
     """
-    job = models.ForeignKey(ReductionRun, blank=False, related_name='output',
-                            on_delete=models.CASCADE)
+    job = models.ForeignKey(ReductionRun, blank=False, related_name='output', on_delete=models.CASCADE)
     file_path = models.CharField(max_length=255, blank=False)
-    type = models.ForeignKey(OutputType, blank=False, related_name='output',
-                             on_delete=models.CASCADE)
+    type = models.ForeignKey(OutputType, blank=False, related_name='output', on_delete=models.CASCADE)

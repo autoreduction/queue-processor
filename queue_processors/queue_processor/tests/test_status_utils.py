@@ -9,16 +9,15 @@ Module to test the utility functions for status records in the database
 """
 import unittest
 
-from mock import patch
+from unittest.mock import patch
 
-from queue_processors.queue_processor.queueproc_utils.status_utils import StatusUtils
+from queue_processors.queue_processor.status_utils import StatusUtils
 
 from utils.clients.django_database_client import DjangoORM
 
 
 # pylint:disable=missing-class-docstring,missing-function-docstring
 class TestStatusUtils(unittest.TestCase):
-
     def setUp(self):
         self.status_utils = StatusUtils()
         database = DjangoORM()
@@ -26,27 +25,27 @@ class TestStatusUtils(unittest.TestCase):
         self.completed_status = database.data_model.Status(value='c')
         self.status_type = database.data_model.Status
 
-    @patch('queue_processors.queue_processor.queueproc_utils.status_utils.StatusUtils._get_status')
+    @patch('queue_processors.queue_processor.status_utils.StatusUtils._get_status')
     def test_get_error(self, mock_get_status):
         self.status_utils.get_error()
         mock_get_status.assert_called_with('e')
 
-    @patch('queue_processors.queue_processor.queueproc_utils.status_utils.StatusUtils._get_status')
+    @patch('queue_processors.queue_processor.status_utils.StatusUtils._get_status')
     def test_get_completed(self, mock_get_status):
         self.status_utils.get_completed()
         mock_get_status.assert_called_with('c')
 
-    @patch('queue_processors.queue_processor.queueproc_utils.status_utils.StatusUtils._get_status')
+    @patch('queue_processors.queue_processor.status_utils.StatusUtils._get_status')
     def test_get_processing(self, mock_get_status):
         self.status_utils.get_processing()
         mock_get_status.assert_called_with('p')
 
-    @patch('queue_processors.queue_processor.queueproc_utils.status_utils.StatusUtils._get_status')
+    @patch('queue_processors.queue_processor.status_utils.StatusUtils._get_status')
     def test_get_queued(self, mock_get_status):
         self.status_utils.get_queued()
         mock_get_status.assert_called_with('q')
 
-    @patch('queue_processors.queue_processor.queueproc_utils.status_utils.StatusUtils._get_status')
+    @patch('queue_processors.queue_processor.status_utils.StatusUtils._get_status')
     def test_get_skipped(self, mock_get_status):
         self.status_utils.get_skipped()
         mock_get_status.assert_called_with('s')
