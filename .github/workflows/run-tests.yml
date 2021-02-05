@@ -90,7 +90,7 @@ jobs:
         if: failure()
         with:
           name: screenshots
-          path: webtests/screenshots/
+          path: WebApp/autoreduce_webapp/selenium_tests/screenshots
 
   pylint:
     name: Pylint
