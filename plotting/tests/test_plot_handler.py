@@ -34,11 +34,10 @@ class TestPlotHandler(unittest.TestCase):
         self.expected_file_extension_regex = '(png|jpg|bmp|gif|tiff)'
         self.expected_wish_data_filename = "WISH1234"
         self.expected_wish_file_regex = f"{self.expected_wish_data_filename}.*.{self.expected_file_extension_regex}"
-        self.expected_mari_instrument_name = "MARI"
         self.expected_mari_data_filename = "MARI1234"
         self.expected_mari_file_regex = f'{self.expected_mari_data_filename}.*.{self.expected_file_extension_regex}'
         self.input_data_filepath = "\\\\isis\\inst$\\NDXMARI\\Instrument\\data\\cycle_test\\MARI1234.nxs"
-        self.expected_mari_rb_number = 12345678
+        self.expected_mari_rb_number = "12345678"
         self.expected_mari_rb_folder = "/instrument/MARI/RBNumber/RB12345678/1234/autoreduced"
 
         self.test_plot_handler = PlotHandler(data_filepath=self.input_data_filepath,
@@ -47,28 +46,17 @@ class TestPlotHandler(unittest.TestCase):
 
         self.expected_static_graph_dir = os.path.join(get_project_root(), 'WebApp', 'autoreduce_webapp', 'static',
                                                       'graphs')
-        self.mock_cache = MagicMock()
 
-    # pylint:disable=unused-argument
-    @patch('plotting.plot_handler.PlotHandler._generate_file_name_regex', return_value="pattern")
-    def test_init(self, mock_gen_reg):
+    def test_init(self):
         """
         Test: Class variables are initiated correctly
         When: PlotHandler is initialised
         """
-        # Cannot use handler from setup else we cant patch the mock method
-        plot_handler = PlotHandler(self.expected_mari_instrument_name,
-                                   self.expected_mari_run_number,
-                                   self.expected_mari_rb_folder,
-                                   rb_number=self.expected_mari_rb_number)
-
-        self.assertEqual(self.expected_mari_instrument_name, plot_handler.instrument_name)
-        self.assertEqual(self.expected_mari_run_number, plot_handler.run_number)
-        self.assertEqual(self.expected_mari_rb_folder, plot_handler.server_dir)
-        self.assertEqual(self.expected_file_extensions, plot_handler.file_extensions)
-        self.assertEqual(self.expected_mari_rb_number, plot_handler.rb_number)
-        self.assertEqual(self.expected_static_graph_dir, plot_handler.static_graph_dir)
-        self.assertEqual("pattern", plot_handler.file_regex)
+        self.assertEqual(self.test_plot_handler.data_filename, self.expected_mari_data_filename)
+        self.assertEqual(self.test_plot_handler.server_dir, self.expected_mari_rb_folder)
+        self.assertEqual(self.test_plot_handler.file_extensions, ["png", "jpg", "bmp", "gif", "tiff"])
+        self.assertEqual(self.test_plot_handler.rb_number, self.expected_mari_rb_number)
+        self.assertEqual(self.test_plot_handler.static_graph_dir, self.expected_static_graph_dir)
 
     def test_get_only_data_file_name(self):
         """
