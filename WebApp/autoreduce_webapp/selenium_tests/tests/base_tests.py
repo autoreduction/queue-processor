@@ -12,6 +12,7 @@ import datetime
 from pathlib import Path
 
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+from django.test import override_settings
 from selenium_tests.configuration import set_url
 from selenium_tests.driver import get_chrome_driver
 from selenium_tests.pages.failed_jobs_page import FailedJobsPage
@@ -22,7 +23,7 @@ from selenium_tests.pages.overview_page import OverviewPage
 
 from utils.project.structure import get_project_root
 
-
+@override_settings(AUTHENTICATION_BACKENDS=('django.contrib.auth.backends.ModelBackend',))
 class BaseTestCase(StaticLiveServerTestCase):
     """
     Base test class that provides setup and teardown of driver aswell as screenshotting capability
