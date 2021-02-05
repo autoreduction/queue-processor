@@ -15,14 +15,11 @@ import tempfile
 import unittest
 from collections import Counter
 
-from utils.data_archive.file_filter import (check_file_extension,
-                                            filter_files_by_extension,
-                                            filter_files_by_time)
+from utils.data_archive.file_filter import (check_file_extension, filter_files_by_extension, filter_files_by_time)
 
 
 # pylint:disable=missing-docstring, invalid-name
 class TestFileFilters(unittest.TestCase):
-
     def test_file_ext_valid_file_in_list(self):
         self.assertTrue(check_file_extension('test.nxs', '.nxs'))
 
@@ -73,7 +70,6 @@ class TestTimeFilterFiles(unittest.TestCase):
     """
     Test the functionality that filters files by modification time
     """
-
     def setUp(self):
         """
         Create test directory and populate it with some test files
@@ -114,8 +110,10 @@ class TestTimeFilterFiles(unittest.TestCase):
         the time filter they are returned
         """
         cut_off = datetime.datetime.fromtimestamp(1000.0)
-        new_file_paths = [os.path.join(self.test_output_directory, 'new_file.txt'),
-                          os.path.join(self.test_output_directory, 'new_file1.txt')]
+        new_file_paths = [
+            os.path.join(self.test_output_directory, 'new_file.txt'),
+            os.path.join(self.test_output_directory, 'new_file1.txt')
+        ]
         for file_path in new_file_paths:
             with open(file_path, 'w+') as new_file:
                 new_file.write("test_file")
@@ -137,8 +135,8 @@ class TestTimeFilterFiles(unittest.TestCase):
         Test that string is not a valid time input
         """
         error_msg = "cut_off_time must be a numerical timestamp or datetime object. Type found: {}"
-        self.assertRaisesRegex(RuntimeError, error_msg.format("<class 'str'>"),
-                               filter_files_by_time, self.test_output_directory, "string")
+        self.assertRaisesRegex(RuntimeError, error_msg.format("<class 'str'>"), filter_files_by_time,
+                               self.test_output_directory, "string")
 
     def tearDown(self):
         """

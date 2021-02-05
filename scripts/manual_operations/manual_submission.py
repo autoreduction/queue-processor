@@ -84,8 +84,7 @@ def icat_datafile_query(icat_client, file_name):
         print("ICAT not connected")  # pragma: no cover
         sys.exit(1)  # pragma: no cover
 
-    return icat_client.execute_query("SELECT df FROM Datafile df WHERE df.name = '"
-                                     + file_name +
+    return icat_client.execute_query("SELECT df FROM Datafile df WHERE df.name = '" + file_name +
                                      "' INCLUDE df.dataset AS ds, ds.investigation")
 
 
@@ -110,21 +109,18 @@ def get_location_and_rb_from_icat(icat_client, instrument, run_number, file_ext)
     datafile = icat_datafile_query(icat_client, file_name)
 
     if not datafile:
-        print("Cannot find datafile '" + file_name +
-              "' in ICAT. Will try with zeros in front of run number.")
+        print("Cannot find datafile '" + file_name + "' in ICAT. Will try with zeros in front of run number.")
         file_name = f"{icat_instrument_prefix}{str(run_number).zfill(8)}.{file_ext}"
         datafile = icat_datafile_query(icat_client, file_name)
 
     # look for file-name assuming file-name uses full instrument name
     if not datafile:
-        print("Cannot find datafile '" + file_name +
-              "' in ICAT. Will try using full instrument name.")
+        print("Cannot find datafile '" + file_name + "' in ICAT. Will try using full instrument name.")
         file_name = f"{instrument}{str(run_number).zfill(5)}.{file_ext}"
         datafile = icat_datafile_query(icat_client, file_name)
 
     if not datafile:
-        print("Cannot find datafile '" + file_name +
-              "' in ICAT. Will try with zeros in front of run number.")
+        print("Cannot find datafile '" + file_name + "' in ICAT. Will try with zeros in front of run number.")
         file_name = f"{instrument}{str(run_number).zfill(8)}.{file_ext}"
         datafile = icat_datafile_query(icat_client, file_name)
 
@@ -155,8 +151,7 @@ def get_location_and_rb(database_client, icat_client, instrument, run_number, fi
     result = get_location_and_rb_from_database(database_client, instrument, run_number)
     if result:
         return result
-    print(f"Cannot find datafile for run_number {run_number} in Auto-reduction database. "
-          f"Will try ICAT...")
+    print(f"Cannot find datafile for run_number {run_number} in Auto-reduction database. " f"Will try ICAT...")
 
     return get_location_and_rb_from_icat(icat_client, instrument, run_number, file_ext)
 

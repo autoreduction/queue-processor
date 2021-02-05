@@ -67,40 +67,35 @@ class TestArchiveExplorer(unittest.TestCase):
 
     def test_journal_path(self):
         """ Test path to journal directory """
-        expected = os.path.join(self.archive_directory, 'NDXGEM', 'Instrument', 'logs',
-                                'journal')
+        expected = os.path.join(self.archive_directory, 'NDXGEM', 'Instrument', 'logs', 'journal')
         actual = self.explorer.get_journal_directory('GEM')
         self.assertEqual(actual, expected)
 
     def test_last_run_file_path(self):
         """ Test path to lastrun.txt file """
         self.dac.add_last_run_file('GEM', 'test')
-        expected = os.path.join(self.archive_directory, 'NDXGEM', 'Instrument', 'logs',
-                                'lastrun.txt')
+        expected = os.path.join(self.archive_directory, 'NDXGEM', 'Instrument', 'logs', 'lastrun.txt')
         actual = self.explorer.get_last_run_file('GEM')
         self.assertEqual(actual, expected)
 
     def test_summary_file_path(self):
         """ Test path to summary.txt file """
         self.dac.add_journal_file('GEM', 'test')
-        expected = os.path.join(self.archive_directory, 'NDXGEM', 'Instrument', 'logs',
-                                'journal', 'summary.txt')
+        expected = os.path.join(self.archive_directory, 'NDXGEM', 'Instrument', 'logs', 'journal', 'summary.txt')
         actual = self.explorer.get_summary_file('GEM')
         self.assertEqual(actual, expected)
 
     def test_reduce_file_path(self):
         """ Test path to reduce.py file """
         self.dac.add_reduce_script('GEM', 'test')
-        expected = os.path.join(self.archive_directory, 'NDXGEM', 'user', 'scripts',
-                                'autoreduction', 'reduce.py')
+        expected = os.path.join(self.archive_directory, 'NDXGEM', 'user', 'scripts', 'autoreduction', 'reduce.py')
         actual = self.explorer.get_reduce_file('GEM')
         self.assertEqual(actual, expected)
 
     def test_reduce_vars_file_path(self):
         """ Test path to reduce_vars.py file """
         self.dac.add_reduce_vars_script('GEM', 'test')
-        expected = os.path.join(self.archive_directory, 'NDXGEM', 'user', 'scripts',
-                                'autoreduction', 'reduce_vars.py')
+        expected = os.path.join(self.archive_directory, 'NDXGEM', 'user', 'scripts', 'autoreduction', 'reduce_vars.py')
         actual = self.explorer.get_reduce_vars_file('GEM')
         self.assertEqual(actual, expected)
 
@@ -112,8 +107,7 @@ class TestArchiveExplorer(unittest.TestCase):
 
     def test_custom_cycle_dir_path(self):
         """ Test path to custom defined cycle directory """
-        expected = os.path.join(self.archive_directory, 'NDXGEM', 'Instrument', 'data',
-                                'cycle_17_2')
+        expected = os.path.join(self.archive_directory, 'NDXGEM', 'Instrument', 'data', 'cycle_17_2')
         actual = self.explorer.get_cycle_directory('GEM', 17, 2)
         self.assertEqual(actual, expected)
 
@@ -123,16 +117,14 @@ class TestArchiveExplorer(unittest.TestCase):
 
     def test_current_cycle_dir_path(self):
         """ Test path to most recent cycle directory """
-        expected = os.path.join(self.archive_directory, 'NDXGEM', 'Instrument', 'data',
-                                'cycle_18_2')
+        expected = os.path.join(self.archive_directory, 'NDXGEM', 'Instrument', 'data', 'cycle_18_2')
         actual = self.explorer.get_current_cycle_directory('GEM')
         self.assertEqual(actual, expected)
 
     def test_current_cycle_directory_not_exist(self):
         """ Test current cycle returns None when directory is empty """
         self.dac.delete_archive()
-        os.makedirs(os.path.join(self.test_output_directory, 'data-archive', 'NDXGEM',
-                                 'Instrument', 'data'))
+        os.makedirs(os.path.join(self.test_output_directory, 'data-archive', 'NDXGEM', 'Instrument', 'data'))
         self.assertIsNone(self.explorer.get_current_cycle_directory('GEM'))
         shutil.rmtree(os.path.join(self.test_output_directory, 'data-archive'))
 
@@ -149,8 +141,7 @@ class TestArchiveExplorer(unittest.TestCase):
 
     def test_get_most_recent_run_single(self):
         """ Test path valid most recent run """
-        expected = os.path.join(self.archive_directory, 'NDXGEM', 'Instrument', 'data',
-                                'cycle_18_2', 'GEM001.nxs')
+        expected = os.path.join(self.archive_directory, 'NDXGEM', 'Instrument', 'data', 'cycle_18_2', 'GEM001.nxs')
         # Ensure that the time is set in the past - Note we can not rely on the system clock for
         # this as the linux system clock does not always match up with file modification times
         time_in_past = datetime.datetime.fromtimestamp(10000)

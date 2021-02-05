@@ -4,8 +4,6 @@
 # Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
-
-
 """
 Module containing the base Page object class
 """
@@ -18,7 +16,6 @@ class Page(ABC):
     """
     Abstract base class for page object model classes
     """
-
     def __init__(self, driver):
         self.driver = driver
 

@@ -13,7 +13,6 @@ import os
 import datetime
 import argparse
 
-
 # Directories to ignore - any pathss including these strings will be ignored, so it will cascade
 directories_to_ignore = ["Documentation", "venv", ".pytesy_cache", "logs", ".git"]
 # Accepted file extensions
@@ -64,8 +63,7 @@ def process_file(file_path):
 def main():
     parser = argparse.ArgumentParser(description='Add a copyright statement to all files in the project',
                                      epilog='./copyright.py /path/tp/project/root')
-    parser.add_argument('file_path', metavar='file_path', type=str,
-                        help='project root directory')
+    parser.add_argument('file_path', metavar='file_path', type=str, help='project root directory')
     args = parser.parse_args()
     file_path = args.file_path
     if not os.path.isdir(file_path):

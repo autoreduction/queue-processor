@@ -15,6 +15,7 @@ from plotting.plot_meta_language.interpreter import Interpreter
 
 class Layout:
     """ Extract Layout as dictionary from interpreted meta data """
+
     # pylint: disable=too-few-public-methods
     def __init__(self, plot_style, title):
         """

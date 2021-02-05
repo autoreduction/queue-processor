@@ -13,6 +13,7 @@ Template Script to display how Plot Handler can create DashApps
 from plotting.plot_factory.plot_factory import PlotFactory  # Returns DashApp
 from plotting.prepare_data import PrepareData  # Read CSV to generate dataframe
 
+
 # pylint: disable=too-few-public-methods
 class DjangoDashApp:
     """Returns a Dash"""
@@ -24,7 +25,6 @@ class DjangoDashApp:
 
     def get_dashapp(self):
         """Get DashApp from Plot Factory"""
-        return PlotFactory().create_plot(
-            plot_meta_file_location=f"../../{self.meta_location}",
-            data=PrepareData().prepare_data(f"../../{self.data_location}"),
-            figure_name=self.dashapp_name)
+        return PlotFactory().create_plot(plot_meta_file_location=f"../../{self.meta_location}",
+                                         data=PrepareData().prepare_data(f"../../{self.data_location}"),
+                                         figure_name=self.dashapp_name)

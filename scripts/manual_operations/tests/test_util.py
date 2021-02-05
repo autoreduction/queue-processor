@@ -4,7 +4,6 @@
 # Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
-
 """
 Unit tests for manual submission utility functions
 """
@@ -18,7 +17,6 @@ class TestUtil(TestCase):
     """
     Test util.py
     """
-
     def test_get_run_numbers_one_run_returns_correct_range(self):
         """
         Test: Correct range is returned

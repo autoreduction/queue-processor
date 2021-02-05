@@ -24,7 +24,6 @@ sys.path.append(os.path.join(get_project_root(), 'WebApp', 'autoreduce_webapp'))
 
 from reduction_viewer.models import Setting
 
-
 LOGGER = logging.getLogger(__name__)
 sys.path.insert(0, BASE_DIR)
 
@@ -75,9 +74,8 @@ class ICATCommunication(object):
 
         if reference_number > 0:
             try:
-                investigation = self.client.search("SELECT i from Investigation i where i.name = '"
-                                                   + str(reference_number) +
-                                                   "' INCLUDE i.investigationInstruments."
+                investigation = self.client.search("SELECT i from Investigation i where i.name = '" +
+                                                   str(reference_number) + "' INCLUDE i.investigationInstruments."
                                                    "instrument, i.investigationUsers.user")
 
                 trimmed_investigation = {
@@ -87,7 +85,8 @@ class ICATCommunication(object):
                     'title': smart_str(investigation[0].title),
                     'summary': smart_str(investigation[0].summary),
                     'instrument': investigation[0].investigationInstruments[0].instrument.fullName,
-                    'pi': ''}
+                    'pi': ''
+                }
 
                 for investigation_user in investigation[0].investigationUsers:
                     if investigation_user.role == 'principal_experimenter':
@@ -103,7 +102,8 @@ class ICATCommunication(object):
             'end_date': 'N/A',
             'title': 'N/A',
             'summary': u'N/A',
-            'pi': ''}
+            'pi': ''
+        }
 
         return trimmed_investigation
 
@@ -118,17 +118,16 @@ class ICATCommunication(object):
 
         instruments = set()
         if self.is_admin(user_number):
-            self._add_list_to_set(self.client.search("SELECT inst.fullName FROM Instrument inst"),
-                                  instruments)
+            self._add_list_to_set(self.client.search("SELECT inst.fullName FROM Instrument inst"), instruments)
         else:
             self._add_list_to_set(self.get_owned_instruments(user_number), instruments)
-            self._add_list_to_set(self.client.search("SELECT inst.fullName FROM Instrument inst"
-                                                     " JOIN inst.investigationInstruments ii"
-                                                     " WHERE ii.investigation.id IN"
-                                                     " (SELECT i.id from Investigation i JOIN"
-                                                     " i.investigationUsers iu WHERE"
-                                                     " iu.user.name = 'uows/"
-                                                     + str(user_number) + "')"), instruments)
+            self._add_list_to_set(
+                self.client.search("SELECT inst.fullName FROM Instrument inst"
+                                   " JOIN inst.investigationInstruments ii"
+                                   " WHERE ii.investigation.id IN"
+                                   " (SELECT i.id from Investigation i JOIN"
+                                   " i.investigationUsers iu WHERE"
+                                   " iu.user.name = 'uows/" + str(user_number) + "')"), instruments)
         return sorted(instruments)
 
     def get_owned_instruments(self, user_number):
@@ -140,10 +139,10 @@ class ICATCommunication(object):
             raise TypeError("User number must be a number")
 
         instruments = set()
-        self._add_list_to_set(self.client.search("SELECT ins.instrument.fullName from"
-                                                 " InstrumentScientist ins WHERE"
-                                                 " ins.user.name = 'uows/"
-                                                 + str(user_number) + "'"), instruments)
+        self._add_list_to_set(
+            self.client.search("SELECT ins.instrument.fullName from"
+                               " InstrumentScientist ins WHERE"
+                               " ins.user.name = 'uows/" + str(user_number) + "'"), instruments)
         return sorted(instruments)
 
     def is_instrument_scientist(self, user_number):
@@ -167,9 +166,8 @@ class ICATCommunication(object):
 
         is_on_team = self.client.search("SELECT i.name from Investigation i JOIN"
                                         " i.investigationUsers iu where"
-                                        " iu.user.name = 'uows/"
-                                        + str(user_number) + "' and i.name = '"
-                                        + str(reference_number) + "'")
+                                        " iu.user.name = 'uows/" + str(user_number) + "' and i.name = '" +
+                                        str(reference_number) + "'")
         if is_on_team:
             return True
         return False
@@ -184,10 +182,10 @@ class ICATCommunication(object):
             raise TypeError("User number must be a number")
 
         experiments = set()
-        self._add_list_to_set(self.client.search("SELECT i.name from Investigation i JOIN"
-                                                 " i.investigationUsers iu where"
-                                                 " iu.user.name = 'uows/"
-                                                 + str(user_number) + "'"), experiments)
+        self._add_list_to_set(
+            self.client.search("SELECT i.name from Investigation i JOIN"
+                               " i.investigationUsers iu where"
+                               " iu.user.name = 'uows/" + str(user_number) + "'"), experiments)
         return sorted(experiments, reverse=True)
 
     # pylint: disable=invalid-name
@@ -209,18 +207,16 @@ class ICATCommunication(object):
         # pylint: disable=bare-except
         except:
             number_of_years = 3
-        years_back = datetime.datetime.now() - datetime.timedelta(days=(number_of_years*365.24))
+        years_back = datetime.datetime.now() - datetime.timedelta(days=(number_of_years * 365.24))
 
         for instrument in instruments:
             experiments = set()
-            self._add_list_to_set(self.client.search("SELECT i.name FROM Investigation i"
-                                                     " JOIN i.investigationInstruments inst"
-                                                     " WHERE i.name NOT LIKE 'CAL%' and"
-                                                     " i.endDate > '" + str(years_back) +
-                                                     "' and (inst.instrument.name = '"
-                                                     + instrument +
-                                                     "' OR inst.instrument.fullName = '"
-                                                     + instrument + "')"), experiments)
+            self._add_list_to_set(
+                self.client.search("SELECT i.name FROM Investigation i"
+                                   " JOIN i.investigationInstruments inst"
+                                   " WHERE i.name NOT LIKE 'CAL%' and"
+                                   " i.endDate > '" + str(years_back) + "' and (inst.instrument.name = '" + instrument +
+                                   "' OR inst.instrument.fullName = '" + instrument + "')"), experiments)
 
             instruments_dict[instrument] = sorted(experiments, reverse=True)
 
@@ -239,17 +235,15 @@ class ICATCommunication(object):
         # pylint: disable=bare-except
         except:
             number_of_years = 3
-        years_back = datetime.datetime.now() - datetime.timedelta(days=(number_of_years*365.24))
+        years_back = datetime.datetime.now() - datetime.timedelta(days=(number_of_years * 365.24))
 
         experiments = set()
-        self._add_list_to_set(self.client.search("SELECT i.name FROM Investigation i JOIN"
-                                                 " i.investigationInstruments inst WHERE"
-                                                 " i.name NOT LIKE 'CAL%' and i.endDate > '"
-                                                 + str(years_back) +
-                                                 "' and (inst.instrument.name = '"
-                                                 + instrument +
-                                                 "' OR inst.instrument.fullName = '"
-                                                 + instrument+"')"), experiments)
+        self._add_list_to_set(
+            self.client.search("SELECT i.name FROM Investigation i JOIN"
+                               " i.investigationInstruments inst WHERE"
+                               " i.name NOT LIKE 'CAL%' and i.endDate > '" + str(years_back) +
+                               "' and (inst.instrument.name = '" + instrument + "' OR inst.instrument.fullName = '" +
+                               instrument + "')"), experiments)
         return sorted(experiments, reverse=True)
 
     # pylint: disable=invalid-name
@@ -262,13 +256,13 @@ class ICATCommunication(object):
             raise Exception("At least one instrument must be supplied")
 
         experiments = set()
-        self._add_list_to_set(self.client.search("SELECT i.name FROM Investigation i JOIN"
-                                                 " i.investigationInstruments inst WHERE"
-                                                 " i.name NOT LIKE 'CAL%' and"
-                                                 " i.endDate > CURRENT_TIMESTAMP and"
-                                                 " (inst.instrument.name = '" +
-                                                 instrument + "' OR inst.instrument.fullName = '"
-                                                 + instrument + "')"), experiments)
+        self._add_list_to_set(
+            self.client.search("SELECT i.name FROM Investigation i JOIN"
+                               " i.investigationInstruments inst WHERE"
+                               " i.name NOT LIKE 'CAL%' and"
+                               " i.endDate > CURRENT_TIMESTAMP and"
+                               " (inst.instrument.name = '" + instrument + "' OR inst.instrument.fullName = '" +
+                               instrument + "')"), experiments)
         return sorted(experiments, reverse=True)
 
     def is_admin(self, user_number):
@@ -277,8 +271,7 @@ class ICATCommunication(object):
         """
         LOGGER.debug("Calling ICATCommunication.is_admin")
         admin_group = 'Autoreduce Admins'
-        if self.client.search("SELECT g FROM Grouping g JOIN g.userGroups ug WHERE g.name = '"
-                              + admin_group +
+        if self.client.search("SELECT g FROM Grouping g JOIN g.userGroups ug WHERE g.name = '" + admin_group +
                               "' and ug.user.name = 'uows/" + str(user_number) + "'"):
             return True
         return False
@@ -297,12 +290,12 @@ class ICATCommunication(object):
 
         return self.client.search("SELECT dfp FROM DatafileParameter dfp JOIN "
                                   "dfp.datafile.dataset.investigation.investigationInstruments "
-                                  "ii WHERE dfp.type.name='run_number' and dfp.numericValue >= "
-                                  + str(start_run_number)+" and dfp.numericValue <= " +
-                                  str(end_run_number)+" and ii.instrument.fullName = '" +
-                                  instrument + "' and dfp.datafile.dataset.investigation.name "
-                                               "not LIKE 'CAL%%' include "
-                                               "dfp.datafile.dataset.investigation")
+                                  "ii WHERE dfp.type.name='run_number' and dfp.numericValue >= " +
+                                  str(start_run_number) + " and dfp.numericValue <= " + str(end_run_number) +
+                                  " and ii.instrument.fullName = '" + instrument +
+                                  "' and dfp.datafile.dataset.investigation.name "
+                                  "not LIKE 'CAL%%' include "
+                                  "dfp.datafile.dataset.investigation")
 
     @staticmethod
     def post_process(_):

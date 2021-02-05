@@ -76,11 +76,9 @@ class CustomPaginator(object):
                 self.page_list.append(current_page)
                 next_page_index = current_page.number + 1
                 if abs(self.current_page_index - next_page_index) <= self.page_tolerance:
-                    current_page = self._create_page(self.page_type, next_page_index,
-                                                     self.items_per_page, True)
+                    current_page = self._create_page(self.page_type, next_page_index, self.items_per_page, True)
                 else:
-                    current_page = self._create_page(self.page_type, next_page_index,
-                                                     self.items_per_page, False)
+                    current_page = self._create_page(self.page_type, next_page_index, self.items_per_page, False)
                 # Make sure we add the record to the new page we created
                 current_page.add_record(record)
         current_page.set_start_and_end()
@@ -125,7 +123,6 @@ class CustomPage(object):
     """
     Generic CustomPage class to model a single page in the pagination
     """
-
     def __init__(self, number, max_limit, is_visible):
         """
         :param number: The page number
@@ -160,7 +157,6 @@ class RunPage(CustomPage):
     """
     Specific implementation for rendering the pagination if sorting by Run Number
     """
-
     def set_start_and_end(self):
         """
         Custom function to set the start and end variables and
@@ -179,7 +175,6 @@ class DatePage(CustomPage):
     """
     Specific implementation for rendering the pagination if sorting by Date
     """
-
     def set_start_and_end(self):
         """
         Custom function to set the start and end variables and
@@ -191,6 +186,5 @@ class DatePage(CustomPage):
         if self.start == self.end:
             self.display_name = "{}/{}/{}".format(self.start.day, self.start.month, self.start.year)
         else:
-            self.display_name = "{}/{}/{} - {}/{}/{}".format(self.start.day, self.start.month,
-                                                             self.start.year, self.end.day,
-                                                             self.end.month, self.end.year)
+            self.display_name = "{}/{}/{} - {}/{}/{}".format(self.start.day, self.start.month, self.start.year,
+                                                             self.end.day, self.end.month, self.end.year)

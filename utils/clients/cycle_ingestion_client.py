@@ -100,5 +100,4 @@ class CycleIngestionClient(AbstractClient):
     def ingest_maintenance_days(self):
         """ Ingests maintenance day dates from the Scheduler client.
         :return: Maintenance day data as a list of 'sudsobject's """
-        return self._scheduler_client.service.getOfflinePeriods(sessionId=self._session_id,
-                                                                reason='Maintenance')
+        return self._scheduler_client.service.getOfflinePeriods(sessionId=self._session_id, reason='Maintenance')

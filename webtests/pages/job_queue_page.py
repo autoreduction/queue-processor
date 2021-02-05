@@ -16,7 +16,6 @@ class JobQueuePage(Page, NavbarMixin, FooterMixin):
     """
     Page model class for job queue page
     """
-
     @staticmethod
     def url_path():
         """

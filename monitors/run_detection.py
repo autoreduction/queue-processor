@@ -93,8 +93,7 @@ class InstrumentMonitor:
         with open(self.last_run_file, 'r') as last_run:
             line_parts = last_run.readline().split()
             if len(line_parts) != 3:
-                raise InstrumentMonitorError("Unexpected last run file format for '{}'"
-                                             .format(self.last_run_file))
+                raise InstrumentMonitorError("Unexpected last run file format for '{}'".format(self.last_run_file))
         return line_parts
 
     def read_rb_number_from_summary(self):
@@ -129,12 +128,11 @@ class InstrumentMonitor:
             if rb_number is None:
                 rb_number = summary_rb_number
             EORM_LOG.info("Submitting '%s' with RB number '%s'", file_name, rb_number)
-            message = Message(
-                instrument=self.instrument_name,
-                rb_number=rb_number,
-                run_number=run_number,
-                data=file_path,
-                started_by=0)  # Autoreduction service code
+            message = Message(instrument=self.instrument_name,
+                              rb_number=rb_number,
+                              run_number=run_number,
+                              data=file_path,
+                              started_by=0)  # Autoreduction service code
             self.client.send('/queue/DataReady', message, priority='9')
         else:
             raise FileNotFoundError("File does not exist '{}'".format(file_path))
@@ -155,9 +153,7 @@ class InstrumentMonitor:
         summary_rb_number = self.read_rb_number_from_summary()
         zeros = get_prefix_zeros(instrument_last_run)
         if instrument_run_int > local_run_int:
-            EORM_LOG.info("Submitting runs in range %i - %i for %s",
-                          local_run_int,
-                          instrument_run_int,
+            EORM_LOG.info("Submitting runs in range %i - %i for %s", local_run_int, instrument_run_int,
                           self.instrument_name)
             for i in range(local_run_int + 1, instrument_run_int + 1):
                 # Construct the file name and run number
@@ -216,8 +212,7 @@ def main():
         with FileLock("{}.lock".format(LAST_RUNS_CSV), timeout=1):
             update_last_runs(LAST_RUNS_CSV)
     except Timeout:
-        EORM_LOG.error(("Error acquiring lock on last runs CSV."
-                        " There may be another instance running."))
+        EORM_LOG.error(("Error acquiring lock on last runs CSV." " There may be another instance running."))
 
 
 if __name__ == '__main__':

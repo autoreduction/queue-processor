@@ -33,17 +33,14 @@ class Help(Command):
         Print out the help documentation to console
         """
         help_text = (('Usage       :', 'python setup.py [commands]'),
-                     ('Description :', 'Script to setup project and testing environment'), ('', ''),
-                     ('Commands: ', ''))
+                     ('Description :', 'Script to setup project and testing environment'), ('', ''), ('Commands: ', ''))
         commands = (('     test_settings', 'Copy test_credentials.py to credentials.py'),
-                    ('     database', 'Initialise database on localhost'),
-                    ('     externals', 'Install all external programs'),
+                    ('     database', 'Initialise database on localhost'), ('     externals',
+                                                                            'Install all external programs'),
                     ('              ', 'Use the -s argument to specify a comma'
-                     'separated list of services:'),
-                    ('              ', '    python setup.py externals -s activemq,mantid'),
-                    ('     start',
-                     'starts required services: activemq'), ('     help',
-                                                             'Show the help documentation'))
+                     'separated list of services:'), ('              ',
+                                                      '    python setup.py externals -s activemq,mantid'),
+                    ('     start', 'starts required services: activemq'), ('     help', 'Show the help documentation'))
         for args in help_text:
             print('{0:<15} {1:<10}'.format(*args))
         for command in commands:

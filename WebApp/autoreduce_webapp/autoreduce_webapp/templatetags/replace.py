@@ -11,7 +11,6 @@ from django.template import Library, Node, Variable, TemplateSyntaxError
 # pylint: disable=relative-import
 from .common_helpers import get_var
 
-
 # pylint:disable=invalid-name
 register = Library()
 
@@ -42,6 +41,6 @@ def replace(_, token):
     """
     args = token.split_contents()[1:]
     if len(args) != 3:
-        raise TemplateSyntaxError('%r tag requires a string, an old value, and a new value.'
-                                  % token.contents.split()[0])
+        raise TemplateSyntaxError('%r tag requires a string, an old value, and a new value.' %
+                                  token.contents.split()[0])
     return ReplaceNode(*args)

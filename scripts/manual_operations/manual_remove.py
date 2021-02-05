@@ -63,8 +63,7 @@ class ManualRemove:
         Inform user and remove key from dictionary
         :param run_number: (int) The run to remove from the dictionary
         """
-        print('No runs found associated with {} for instrument {}'.format(run_number,
-                                                                          self.instrument))
+        print('No runs found associated with {} for instrument {}'.format(run_number, self.instrument))
         del self.to_delete[run_number]
 
     def multiple_versions_found(self, run_number):
@@ -74,8 +73,7 @@ class ManualRemove:
         :param run_number: (int) The run number with multiple versions
         """
         # Display run_number - title - version for all matching runs
-        print("Discovered multiple reduction versions for {}{}:".format(self.instrument,
-                                                                        run_number))
+        print("Discovered multiple reduction versions for {}{}:".format(self.instrument, run_number))
         for run in self.to_delete[run_number]:
             print("\tv{} - {}".format(run.run_version, run.run_name))
 
@@ -83,14 +81,12 @@ class ManualRemove:
         user_input = input("Which runs would you like to delete (e.g. 0,1,2,3 or 0-3): ")
         input_valid, user_input = self.validate_csv_input(user_input)
         while input_valid is False:
-            user_input = input('Input was invalid. '
-                               'Please provide a comma separated list or a range of values: ')
+            user_input = input('Input was invalid. ' 'Please provide a comma separated list or a range of values: ')
             input_valid, user_input = self.validate_csv_input(user_input)
 
         # Remove runs that the user does NOT want to delete from the delete list
         self.to_delete[run_number] = [
-            reduction_job for reduction_job in self.to_delete[run_number]
-            if reduction_job.run_version in user_input
+            reduction_job for reduction_job in self.to_delete[run_number] if reduction_job.run_version in user_input
         ]
 
     def delete_records(self):
@@ -105,9 +101,8 @@ class ManualRemove:
                 try:
                     version.delete()
                 except IntegrityError as err:
-                    print(
-                        f"Encountered integrity error: {err}\n\n"
-                        "Reverting to old behaviour - manual deletion. This can take much longer.")
+                    print(f"Encountered integrity error: {err}\n\n"
+                          "Reverting to old behaviour - manual deletion. This can take much longer.")
                     # For some reason some entries can throw an integrity error.
                     # In that case we revert to the previous (much slower) way of manually
                     # deleting everything. Perhaps there is a badly configured relation

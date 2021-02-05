@@ -14,12 +14,8 @@ from utils.clients.settings.client_settings import ClientSettings
 
 # pylint:disable=missing-docstring
 class TestClientSettings(TestCase):
-
     def test_valid_init(self):
-        settings = ClientSettings(username='user',
-                                  password='pass',
-                                  host='host',
-                                  port='123')
+        settings = ClientSettings(username='user', password='pass', host='host', port='123')
         self.assertIsNotNone(settings)
         self.assertEqual(settings.username, 'user')
         self.assertEqual(settings.password, 'pass')
@@ -27,10 +23,10 @@ class TestClientSettings(TestCase):
         self.assertEqual(settings.port, '123')
 
     def test_invalid_init(self):
-        self.assertRaisesRegex(ValueError, "True of type <class 'bool'> is not a string",
-                               ClientSettings, 'string', 'string', True, 99.99)
-        self.assertRaisesRegex(ValueError, "99.99 of type <class 'float'> is not a string",
-                               ClientSettings, 'string', 'string', 'string', 99.99)
+        self.assertRaisesRegex(ValueError, "True of type <class 'bool'> is not a string", ClientSettings, 'string',
+                               'string', True, 99.99)
+        self.assertRaisesRegex(ValueError, "99.99 of type <class 'float'> is not a string", ClientSettings, 'string',
+                               'string', 'string', 99.99)
 
     def test_accepts_mock_types(self):
         settings = ClientSettings(username=mock.Mock(),

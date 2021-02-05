@@ -19,8 +19,7 @@ from mantid.simpleapi import SaveNexusProcessed, Load
 def reduce(input_file, output_dir):
     ws = Load(input_file)
     file_name = os.path.join(output_dir, 'load-successful.nxs')
-    SaveNexusProcessed(InputWorkspace=ws,
-                       Filename=file_name)
+    SaveNexusProcessed(InputWorkspace=ws, Filename=file_name)
 
 
 #  pragma: no cover

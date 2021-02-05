@@ -25,8 +25,7 @@ def checkConsumer():
              2 - Failure
     """
     for queue in ACTIVEMQ['queues']:
-        r = requests.get(ACTIVEMQ_URL + ",destinationName=" + queue + "/ConsumerCount",
-                         auth=ACTIVEMQ_AUTH)
+        r = requests.get(ACTIVEMQ_URL + ",destinationName=" + queue + "/ConsumerCount", auth=ACTIVEMQ_AUTH)
 
         consumer_count = r.json()['value']
         # print(queue + " consumerCount = " + str(r.json()['value']))

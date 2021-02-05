@@ -30,7 +30,6 @@ def local_only(method):
     :param method: The test method to wrap
     :return: The wrapped test method
     """
-
     @functools.wraps(method)
     def wrapper_local_only(*args, **kwargs):
         if not configuration.is_local_environment():
@@ -46,7 +45,6 @@ class BaseTestCase(unittest.TestCase):
     Base test class that provides setup and teardown of driver aswell as screenshotting capability
     on failed tests
     """
-
     def setUp(self) -> None:
         """
         Obtain the webdriver to be used in a testcase
@@ -148,6 +146,7 @@ class NavbarTestMixin:
             .launch() \
             .click_navbar_help()
         self.assertEqual(HelpPage.url(), self.driver.current_url)
+
 
 class FooterTestMixin:
     """

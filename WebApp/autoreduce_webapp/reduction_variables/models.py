@@ -54,6 +54,4 @@ class RunVariable(models.Model):
     Run specific Variable class
     """
     variable = models.ForeignKey(Variable, related_name="runs", on_delete=models.CASCADE)
-    reduction_run = models.ForeignKey(ReductionRun,
-                                      related_name="run_variables",
-                                      on_delete=models.CASCADE)
+    reduction_run = models.ForeignKey(ReductionRun, related_name="run_variables", on_delete=models.CASCADE)

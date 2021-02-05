@@ -23,7 +23,6 @@ class DatabaseReset:
     """
     Handles resetting the database after cycle
     """
-
     def __init__(self, latest_cycle, user, host='localhost', port='3306', password=''):
         # initial setup
         self.backup_directory = 'C:\\database_backup\\'
@@ -66,7 +65,7 @@ class DatabaseReset:
         if not os.path.exists(self.new_cycle_dir):
             os.makedirs(self.new_cycle_dir)
 
-        self.backup_file = os.path.join(self.new_cycle_dir, self.cycle+'.sql')
+        self.backup_file = os.path.join(self.new_cycle_dir, self.cycle + '.sql')
 
     def backup_sql(self):
         """
@@ -103,21 +102,16 @@ class DatabaseReset:
             raise RuntimeError('No backup file found at expected location: \'{}\'.\n'
                                'Please run the backup procedure first before '
                                'wiping the database'.format(self.backup_file))
-        connection = pymysql.connect(user=self.user, password=self.password,
-                                     host=self.host, database=self.databases)
+        connection = pymysql.connect(user=self.user, password=self.password, host=self.host, database=self.databases)
         cursor = connection.cursor()
 
         # The list of tables to be deleted
-        tables_to_delete = ['reduction_viewer_datalocation',
-                            'reduction_viewer_experiment',
-                            'reduction_viewer_instrument',
-                            'reduction_viewer_notification',
-                            'reduction_viewer_reductionrun',
-                            'reduction_viewer_reductionlocation',
-                            'reduction_viewer_setting',
-                            'reduction_variables_instrumentvariable',
-                            'reduction_variables_runvariable',
-                            'reduction_variables_variable']
+        tables_to_delete = [
+            'reduction_viewer_datalocation', 'reduction_viewer_experiment', 'reduction_viewer_instrument',
+            'reduction_viewer_notification', 'reduction_viewer_reductionrun', 'reduction_viewer_reductionlocation',
+            'reduction_viewer_setting', 'reduction_variables_instrumentvariable', 'reduction_variables_runvariable',
+            'reduction_variables_variable'
+        ]
 
         # Turn off foreign key checks and safe updating momentarily
         cursor.execute("SET FOREIGN_KEY_CHECKS = 0")
@@ -152,11 +146,7 @@ def main():
     print('Using \'localhost\' as database host')
     print('Using \'3306\' as database port')
     print('\n')
-    cycle_reset = DatabaseReset(latest_cycle=cycle,
-                                user=user,
-                                host='localhost',
-                                port='3306',
-                                password=password)
+    cycle_reset = DatabaseReset(latest_cycle=cycle, user=user, host='localhost', port='3306', password=password)
     if choice == 'backup':
         cycle_reset.backup_sql()
     if choice == 'wipe':

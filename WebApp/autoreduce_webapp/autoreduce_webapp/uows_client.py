@@ -16,7 +16,6 @@ from suds.client import Client
 # pylint: disable=relative-import
 from .settings import UOWS_URL
 
-
 LOGGER = logging.getLogger(__name__)
 
 

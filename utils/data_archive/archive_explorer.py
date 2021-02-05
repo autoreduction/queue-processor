@@ -31,53 +31,45 @@ class ArchiveExplorer:
 
     def get_ndx_directory(self, instrument):
         """ :return: archive_directory/NDXGEM """
-        return self._file_path_exists((os.path.join(self._archive_base_directory,
-                                                    'NDX{}').format(instrument)))
+        return self._file_path_exists((os.path.join(self._archive_base_directory, 'NDX{}').format(instrument)))
 
     def get_instrument_directory(self, instrument):
         """ :return: archive_directory/NDXGEM/Instrument """
-        return self._file_path_exists(os.path.join(self.get_ndx_directory(instrument),
-                                                   'Instrument'))
+        return self._file_path_exists(os.path.join(self.get_ndx_directory(instrument), 'Instrument'))
 
     def get_user_directory(self, instrument):
         """ :return: archive_directory/NDXGEM/user """
-        return self._file_path_exists(os.path.join(self.get_ndx_directory(instrument),
-                                                   'user'))
+        return self._file_path_exists(os.path.join(self.get_ndx_directory(instrument), 'user'))
 
     # ================================= Log directories ========================================= #
     def get_log_directory(self, instrument):
         """ :return: archive_directory/NDXGEM/Instrument/logs """
-        return self._file_path_exists(os.path.join(self.get_instrument_directory(instrument),
-                                                   'logs'))
+        return self._file_path_exists(os.path.join(self.get_instrument_directory(instrument), 'logs'))
 
     def get_journal_directory(self, instrument):
         """ :return: archive_directory/NDXGEM/Instrument/logs/journal """
-        return self._file_path_exists(os.path.join(self.get_log_directory(instrument),
-                                                   'journal'))
+        return self._file_path_exists(os.path.join(self.get_log_directory(instrument), 'journal'))
 
     def get_last_run_file(self, instrument):
         """ :return: archive_directory/NDXGEM/Instrument/logs/lastrun.txt """
-        return self._file_path_exists(os.path.join(self.get_log_directory(instrument),
-                                                   'lastrun.txt'))
+        return self._file_path_exists(os.path.join(self.get_log_directory(instrument), 'lastrun.txt'))
 
     def get_summary_file(self, instrument):
         """ :return: archive_directory/NDXGEM/Instrument/logs/journal/summary.txt """
-        return self._file_path_exists(os.path.join(self.get_journal_directory(instrument),
-                                                   'summary.txt'))
+        return self._file_path_exists(os.path.join(self.get_journal_directory(instrument), 'summary.txt'))
 
     # ================================== Data directories ======================================= #
     def get_data_directory(self, instrument):
         """ :return: archive_directory/NDXGEM/Instrument/data """
-        return self._file_path_exists(os.path.join(self.get_instrument_directory(instrument),
-                                                   'data'))
+        return self._file_path_exists(os.path.join(self.get_instrument_directory(instrument), 'data'))
 
     def get_cycle_directory(self, instrument, year, cycle_number):
         """
         Attempt to find a cycle from input
         :return: archive_directory/NDXGEM/Instrument/data/cycle_<year>_<cycle_number>
         """
-        return self._file_path_exists(os.path.join(self.get_data_directory(instrument),
-                                                   "cycle_{}_{}").format(year, cycle_number))
+        return self._file_path_exists(
+            os.path.join(self.get_data_directory(instrument), "cycle_{}_{}").format(year, cycle_number))
 
     def get_current_cycle_directory(self, instrument):
         """
@@ -100,8 +92,7 @@ class ArchiveExplorer:
         :param cut_off_time: Time to filter files by
         :return: archive_directory/NDXGEM/Instrument/data/cycle_18_1/GEM001.nxs
         """
-        time_filtered_files = filter_files_by_time(self.get_current_cycle_directory(instrument),
-                                                   cut_off_time)
+        time_filtered_files = filter_files_by_time(self.get_current_cycle_directory(instrument), cut_off_time)
         valid_files = filter_files_by_extension(time_filtered_files, ('.nxs', '.raw'))
         valid_files.sort(key=os.path.getmtime)
         if valid_files:
@@ -111,15 +102,13 @@ class ArchiveExplorer:
     # ============================= Script Directories ===================================== #
     def get_script_directory(self, instrument):
         """ :return: archive_directory/NDXGEM/user/scripts/autoreduce"""
-        return self._file_path_exists(os.path.join(self.get_user_directory(instrument), 'scripts',
-                                                   'autoreduction'))
+        return self._file_path_exists(os.path.join(self.get_user_directory(instrument), 'scripts', 'autoreduction'))
 
     def get_reduce_file(self, instrument):
         """ :return: archive_directory/NDXGEM/user/scripts/autoreduce/reduce.py"""
-        return self._file_path_exists(os.path.join(self.get_script_directory(instrument),
-                                                   'reduce.py').format(instrument))
+        return self._file_path_exists(
+            os.path.join(self.get_script_directory(instrument), 'reduce.py').format(instrument))
 
     def get_reduce_vars_file(self, instrument):
         """ :return: archive_directory/NDXGEM/user/scripts/autoreduce/reduce.py"""
-        return self._file_path_exists(os.path.join(self.get_script_directory(instrument),
-                                                   'reduce_vars.py'))
+        return self._file_path_exists(os.path.join(self.get_script_directory(instrument), 'reduce_vars.py'))

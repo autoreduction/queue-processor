@@ -25,8 +25,7 @@ class TimePeriod:
     def as_dict(self):
         """ Returns this time period's attributes as a dict.
         :return: This time period's attributes as a dict """
-        return {"start": self.start,
-                "end": self.end}
+        return {"start": self.start, "end": self.end}
 
 
 class MaintenanceDay(TimePeriod):
@@ -34,7 +33,7 @@ class MaintenanceDay(TimePeriod):
     """
     Class to represent a cycle maintenance day
     """
-    def __init__(self, start, end):    # pylint:disable=useless-super-delegation
+    def __init__(self, start, end):  # pylint:disable=useless-super-delegation
         super().__init__(start, end)
 
 
@@ -53,8 +52,7 @@ class Cycle(TimePeriod):
         Used by the __eq__ method inherited from TimePeriod.
         :return: This cycle's attributes as a dict """
         dict_ = super().as_dict()
-        dict_.update({"name": self.name,
-                      "maintenance_days": self.maintenance_days})
+        dict_.update({"name": self.name, "maintenance_days": self.maintenance_days})
         return dict_
 
     def add_maintenance_day(self, start, end):
@@ -147,23 +145,19 @@ class SchedulerDataProcessor:
         maintenance_day_candidates = maintenance_data.copy()
         previous_cycle = None
         for current_cycle_data in cycle_data:
-            cycle = Cycle(current_cycle_data['name'],
-                          current_cycle_data['start'],
-                          current_cycle_data['end'])
+            cycle = Cycle(current_cycle_data['name'], current_cycle_data['start'], current_cycle_data['end'])
             while len(maintenance_day_candidates) > 0:
                 md_candidate = maintenance_day_candidates[0]
-                if md_candidate['start'] < cycle.start:         # candidate BEFORE cycle START
-                    self._md_warning(md_data=md_candidate,
-                                     cycle_before=previous_cycle, cycle_after=cycle)
+                if md_candidate['start'] < cycle.start:  # candidate BEFORE cycle START
+                    self._md_warning(md_data=md_candidate, cycle_before=previous_cycle, cycle_after=cycle)
                     maintenance_day_candidates.pop(0)
-                elif md_candidate['end'] > cycle.end:           # candidate AFTER cycle END..
-                    if current_cycle_data is cycle_data[-1]:       # ..of LAST cycle
-                        self._md_warning(md_data=md_candidate,
-                                         cycle_before=cycle, cycle_after=None)
+                elif md_candidate['end'] > cycle.end:  # candidate AFTER cycle END..
+                    if current_cycle_data is cycle_data[-1]:  # ..of LAST cycle
+                        self._md_warning(md_data=md_candidate, cycle_before=cycle, cycle_after=None)
                         maintenance_day_candidates.pop(0)
-                    else:                                          # ..of INTERMEDIARY cycle
+                    else:  # ..of INTERMEDIARY cycle
                         break
-                else:                                           # candidate WITHIN cycle
+                else:  # candidate WITHIN cycle
                     cycle.add_maintenance_day(md_candidate["start"], md_candidate["end"])
                     maintenance_day_candidates.pop(0)
 

@@ -16,8 +16,8 @@ from django.shortcuts import render
 
 # The below is a template on the repository
 # pylint: disable=relative-import
-from .settings import (DEVELOPMENT_MODE, INSTALLED_APPS, LOGIN_URL,
-                      OUTDATED_BROWSERS, UOWS_LOGIN_URL, USER_ACCESS_CHECKS)
+from .settings import (DEVELOPMENT_MODE, INSTALLED_APPS, LOGIN_URL, OUTDATED_BROWSERS, UOWS_LOGIN_URL,
+                       USER_ACCESS_CHECKS)
 # pylint: disable=relative-import
 from .icat_cache import ICATCache
 
@@ -26,7 +26,6 @@ sys.path.append(os.path.join(get_project_root(), 'WebApp', 'autoreduce_webapp'))
 
 from reduction_viewer.models import ReductionRun, Experiment
 from reduction_viewer.models import Notification, Setting
-
 
 LOGGER = logging.getLogger(__name__)
 
@@ -50,8 +49,9 @@ def handle_redirect(request):
     Redirect the user to either capture the session id or to go and log in
     """
     if request.GET.get('sessionid'):
-        return redirect(request.build_absolute_uri(LOGIN_URL) + "?next=" +
-                        request.build_absolute_uri().replace('?sessionid=', '&sessionid='))
+        return redirect(
+            request.build_absolute_uri(LOGIN_URL) + "?next=" +
+            request.build_absolute_uri().replace('?sessionid=', '&sessionid='))
     return redirect(UOWS_LOGIN_URL + request.build_absolute_uri())
 
 
@@ -59,11 +59,13 @@ def login_and_uows_valid(func):
     """
     Function decorator to check whether the user's session is still valid
     """
+
     # pylint: disable=missing-docstring
     def request_processor(request, *args, **kws):
         if has_valid_login(request):
             return func(request, *args, **kws)
         return handle_redirect(request)
+
     return request_processor
 
 
@@ -71,6 +73,7 @@ def require_staff(function_name):
     """
     Function decorator to check whether the user is a staff memeber
     """
+
     # pylint: disable=missing-docstring
     def request_processor(request, *args, **kws):
         if has_valid_login(request):
@@ -80,6 +83,7 @@ def require_staff(function_name):
                 raise PermissionDenied()
         else:
             return handle_redirect(request)
+
     return request_processor
 
 
@@ -87,6 +91,7 @@ def require_admin(func):
     """
     Function decorator to check whether the user is a superuser
     """
+
     # pylint: disable=missing-docstring
     def request_processor(request, *args, **kws):
         if has_valid_login(request):
@@ -96,6 +101,7 @@ def require_admin(func):
                 raise PermissionDenied()
         else:
             return handle_redirect(request)
+
     return request_processor
 
 
@@ -104,6 +110,7 @@ def render_with(template):
     Decorator for Django views that sends returned dict to render function
     with given template and RequestContext as context instance.
     """
+
     # pylint: disable=missing-docstring, too-many-branches
     def renderer(function_name):
         def populate_template_dict(request, output):
@@ -112,9 +119,8 @@ def render_with(template):
 
             # pylint: disable=no-member
             notifications = Notification.objects.filter(is_active=True,
-                                                        is_staff_only=
-                                                        (request.user.is_authenticated
-                                                         and request.user.is_staff))
+                                                        is_staff_only=(request.user.is_authenticated
+                                                                       and request.user.is_staff))
             if 'notifications' not in output:
                 output['notifications'] = notifications
             else:
@@ -168,7 +174,9 @@ def render_with(template):
                 output = populate_template_dict(request, output)
                 return render(request, template, output)
             return output
+
         return wrapper
+
     return renderer
 
 
@@ -177,6 +185,7 @@ def check_permissions(func):
     Checks that the user has permission to access the given experiment and/or instrument.
     Queries ICATCache to check owned instruments and experiments.
     """
+
     # pylint: disable=missing-docstring
     def request_processor(request, *args, **kwargs):
         if USER_ACCESS_CHECKS and not request.user.is_superuser:
@@ -197,29 +206,24 @@ def check_permissions(func):
                     experiment_reference = int(kwargs["reference_number"])
                     # Find the associated instrument.
                     # pylint: disable=no-member
-                    experiment_obj = Experiment.objects.filter(reference_number=
-                                                               experiment_reference).first()
+                    experiment_obj = Experiment.objects.filter(reference_number=experiment_reference).first()
                     if experiment_obj:
-                        optional_instrument_names = list(set([run.instrument.name for run in
-                                                              experiment_obj.
-                                                              reduction_runs.all()]))
+                        optional_instrument_names = list(
+                            set([run.instrument.name for run in experiment_obj.reduction_runs.all()]))
                 else:
                     # Look for an instrument name under 'instrument_name', or,
                     # failing that, 'instrument'.
-                    owned_instrument_name = kwargs.get("instrument_name",
-                                                       kwargs.get("instrument"))
+                    owned_instrument_name = kwargs.get("instrument_name", kwargs.get("instrument"))
 
-            with ICATCache(AUTH='uows',
-                           SESSION={'sessionid': request.session['sessionid']}) as icat:
+            with ICATCache(AUTH='uows', SESSION={'sessionid': request.session['sessionid']}) as icat:
                 # pylint: disable=no-member
                 owned_instrument_list = icat.get_owned_instruments(int(request.user.username))
                 valid_instrument_list = icat.get_valid_instruments(int(request.user.username))
 
                 # Check for access to the instrument
                 if owned_instrument_name or viewed_instrument_name:
-                    optional_instrument_names.append(owned_instrument_name if
-                                                     owned_instrument_name is not None
-                                                     else viewed_instrument_name)
+                    optional_instrument_names.append(
+                        owned_instrument_name if owned_instrument_name is not None else viewed_instrument_name)
 
                     # Check access to an owned instrument.
                     if owned_instrument_name is not None \

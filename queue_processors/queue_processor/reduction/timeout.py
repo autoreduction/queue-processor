@@ -16,8 +16,7 @@ class TimeOut:
     # pylint: disable=too-few-public-methods
     def __init__(self,
                  seconds=1,
-                 error_message='Script ran for more than ' + str(SCRIPT_TIMEOUT) +
-                 ' seconds - timed out'):
+                 error_message='Script ran for more than ' + str(SCRIPT_TIMEOUT) + ' seconds - timed out'):
         self.seconds = seconds
         self.error_message = error_message
 

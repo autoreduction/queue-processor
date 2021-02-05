@@ -18,7 +18,6 @@ from plotting.plot_factory.tests.mocked_values import MockPlotVariables
 
 
 class TestPlotFactory(unittest.TestCase):
-
     @patch('plotting.plot_factory.plot_factory.Trace')
     @patch('plotting.plot_factory.plot_factory.Layout')
     def test_get_trace_list(self, mock_layout, _):
@@ -31,24 +30,21 @@ class TestPlotFactory(unittest.TestCase):
         layout = mock_layout
 
         # Assert that a list of trace object is returned
-        actual = PlotFactory().create_trace_list(
-            MockPlotVariables().indexed_single_multi_raw_data_dataframe,
-            layout)
+        actual = PlotFactory().create_trace_list(MockPlotVariables().indexed_single_multi_raw_data_dataframe, layout)
         self.assertIsInstance(actual, list)  # is list
         self.assertEqual(len(actual), 2)
 
     @patch("plotting.plot_factory.dashapp.DjangoDash")
     @patch('plotting.plot_factory.plot_factory.PlotFactory.create_trace_list')
     @patch('plotting.plot_factory.plot_factory.Layout')
-    def test_construct_plot(self, mock_layout, mock_get_trace,  mock_dashapp):
+    def test_construct_plot(self, mock_layout, mock_get_trace, mock_dashapp):
         """
         Test: dashapp object is returned
         When: called with self.create_trace_list() and Layout().layout
         """
-        actual = PlotFactory().create_plot(
-            plot_meta_file_location=MockPlotVariables().plot_meta_file_location,
-            data=MockPlotVariables().raw_multi_single_data_dataframe,
-            figure_name=MockPlotVariables().plot_name)
+        actual = PlotFactory().create_plot(plot_meta_file_location=MockPlotVariables().plot_meta_file_location,
+                                           data=MockPlotVariables().raw_multi_single_data_dataframe,
+                                           figure_name=MockPlotVariables().plot_name)
 
         mock_dashapp.assert_called_once()
 

@@ -21,7 +21,6 @@ def deactivate_invalid_instruments(func):
     """
     Deactivate instruments if they are invalid
     """
-
     @functools.wraps(func)
     def request_processor(request, *args, **kws):
         """

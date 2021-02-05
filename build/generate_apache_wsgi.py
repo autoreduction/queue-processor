@@ -30,8 +30,7 @@ def _generate_conf_file():
         root_dir = root_dir.replace('\\', '/')
         _write_file(root_dir)
     else:
-        raise RuntimeError("Unable to generate apache_django_wsgi.conf."
-                           "Root directory: %s -  was invalid" % root_dir)
+        raise RuntimeError("Unable to generate apache_django_wsgi.conf." "Root directory: %s -  was invalid" % root_dir)
 
 
 def _write_file(root_dir):

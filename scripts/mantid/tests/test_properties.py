@@ -17,7 +17,6 @@ class TestProperties(unittest.TestCase):
     """
     Ensure that the Mantid Properties script is generated correctly
     """
-
     def setUp(self):
         """ Store the path that the Mantid Properties file will be written to """
         self.expected_path = os.path.join(os.getcwd(), 'Mantid.user.properties')
@@ -28,8 +27,7 @@ class TestProperties(unittest.TestCase):
         When: generate is called with no arguments
         """
         generate_mantid_properties_file()
-        self.validate([r'/isis/NDXGEM/Instrument/data/cycle_19_3',
-                       r'/isis/NDXGEM/Instrument/data/cycle_19_4'])
+        self.validate([r'/isis/NDXGEM/Instrument/data/cycle_19_3', r'/isis/NDXGEM/Instrument/data/cycle_19_4'])
 
     def test_instrument_subset(self):
         """
@@ -37,10 +35,10 @@ class TestProperties(unittest.TestCase):
         When: generate is called with an instruments argument
         """
         generate_mantid_properties_file(instruments=['test', 'other'])
-        self.validate([r'/isis/NDXtest/Instrument/data/cycle_19_3',
-                       r'/isis/NDXtest/Instrument/data/cycle_19_4',
-                       r'/isis/NDXother/Instrument/data/cycle_19_3',
-                       r'/isis/NDXother/Instrument/data/cycle_19_3'])
+        self.validate([
+            r'/isis/NDXtest/Instrument/data/cycle_19_3', r'/isis/NDXtest/Instrument/data/cycle_19_4',
+            r'/isis/NDXother/Instrument/data/cycle_19_3', r'/isis/NDXother/Instrument/data/cycle_19_3'
+        ])
 
     def test_cycle_subset(self):
         """
@@ -48,8 +46,7 @@ class TestProperties(unittest.TestCase):
         When: generate is called with a cycles argument
         """
         generate_mantid_properties_file(cycles=['11_1', '14_3'])
-        self.validate([r'/isis/NDXGEM/Instrument/data/cycle_11_1',
-                       r'/isis/NDXGEM/Instrument/data/cycle_14_3'])
+        self.validate([r'/isis/NDXGEM/Instrument/data/cycle_11_1', r'/isis/NDXGEM/Instrument/data/cycle_14_3'])
 
     def validate(self, should_exist):
         """

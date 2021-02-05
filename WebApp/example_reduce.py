@@ -10,6 +10,7 @@ import shutil
 import sys
 import reduce_vars as web_var
 
+
 def validate(file, dir):
     """
     Function that validates if a file and/or directory exist. If not a
@@ -28,7 +29,7 @@ def validate(file, dir):
         if not os.path.isdir(dir):
             raise RuntimeError("Unable to find directory: {}".format(dir))
     print("Validation successful")
-        
+
 
 def main(input_file, output_dir):
     """
@@ -54,6 +55,7 @@ def main(input_file, output_dir):
     shutil.copy(input_file, output_dir)
 
     # And of course, here and below insert your reduction code!
+
 
 if __name__ == "__main__":
     main("some input file", "some output dir")
