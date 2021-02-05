@@ -35,7 +35,7 @@ setup_requires = [
     'mysqlclient==2.0.3',
     'mysql-connector==2.2.9',
     'nexusformat==0.6.0',
-    'numpy==1.19.2',
+    'numpy==1.20.0',
     'pandas==1.2.1',
     'plotly==4.14.3',
     'pytz==2021.1',
