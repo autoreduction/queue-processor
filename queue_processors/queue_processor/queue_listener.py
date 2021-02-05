@@ -14,6 +14,7 @@ import logging
 import time
 import traceback
 from contextlib import contextmanager
+from typing import Tuple
 
 from model.message.message import Message
 from queue_processors.queue_processor.handle_message import HandleMessage
@@ -83,11 +84,11 @@ class QueueListener:
                                   type(exp).__name__, exp, traceback.format_exc())
 
 
-def setup_connection(consumer_name):
+def setup_connection(consumer_name) -> Tuple[QueueClient, QueueListener]:
     """
     Starts the ActiveMQ connection and registers the event listener
-    :return: (Listener) A listener instance which has subscribed to an
-             ActiveMQ queue
+    :return: A client connected and subscribed to the queue specified in credentials, and
+             a listener instance which will handle incoming messages
     """
     # Connect to ActiveMQ
     activemq_client = QueueClient()

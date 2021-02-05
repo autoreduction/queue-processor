@@ -24,7 +24,8 @@ def validate_run_number(run_number):
 
 def validate_rb_number(rb_number):
     """
-    Detects if the RB number is valid e.g. (above 0 and not a string)
+    Detects whether the RB number is a 7-digit number.
+
     :param rb_number:
     :return: False If the RB is not valid, otherwise true
     """

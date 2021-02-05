@@ -24,7 +24,6 @@ def get_instrument(instrument_name):
     """
     Find the instrument record associated with the name provided in the database
     :param instrument_name: (str) The name of the instrument to search for
-    :param create: (bool) If True, then create the record if it does not exist
     :return: (Instrument) The instrument object from the database
     """
     database = start_database()
@@ -36,7 +35,6 @@ def get_status(status_value):
     """
     Find the status record associated with the value provided in the database
     :param status_value: (str) The value of the status record e.g. 'Completed'
-    :param create: (bool) If True, then create the record if it does not exist
     :return: (Status) The Status object from the database
     :raises: (ValueError): If status_value is not: Error, Queued, Processing, Completed or Skipped
     """
@@ -52,7 +50,6 @@ def get_experiment(rb_number):
     """
     Find the Experiment record associated with the rb_number provided in the database
     :param rb_number: (str) The rb_number of the Experiment record e.g. 12345
-    :param create: (bool) If True, then create the record if it does not exist
     :return: (Experiment) The Experiment object from the database
     """
     database = start_database()
@@ -97,7 +94,7 @@ def find_highest_run_version(experiment, run_number) -> int:
     Search for the highest run version in the database
     :param experiment: (str) The experiment number associated
     :param run_number: (int) The run number to search for
-    :return: (int) The highest known version number for a given reduction job
+    :return: (int) The highest known run version for a given run number
     """
     last_run = experiment.reduction_runs.filter(run_number=run_number).order_by('-run_version').first()
     if last_run:  # previous run exists - increment version by 1 for this run

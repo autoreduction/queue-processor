@@ -6,10 +6,7 @@
 # ############################################################################### #
 # !/usr/bin/env python
 # pylint: disable=broad-except
-# pylint: disable=bare-except
-"""
-Post Process Administrator. It kicks off cataloging and reduction jobs.
-"""
+
 import io
 import logging
 import sys
@@ -27,8 +24,6 @@ logger = logging.getLogger("reduction_runner")
 
 class ReductionRunner:
     """ Main class for the ReductionRunner """
-
-    # pylint: disable=too-many-instance-attributes
     def __init__(self, message):
         self.read_write_map = {"R": "read", "W": "write"}
         self.message = message

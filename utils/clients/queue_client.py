@@ -86,9 +86,6 @@ class QueueClient(AbstractClient):
         :param queue_list: The queue(s) to subscribe to as a string or list of strings
         :param consumer_name: A name to assign to the consumer
         :param listener: A ConnectionListener object to assign to the stomp connection, optionally
-        :param ack: The acknowledge type
-
-        TODO remove ack from call stack & tests
         """
         if not isinstance(queue_list, list):
             queue_list = [queue_list]
@@ -107,7 +104,6 @@ class QueueClient(AbstractClient):
         Subscribe to queues including DataReady
         :param consumer_name: A name to assign to the consumer
         :param listener: A ConnectionListener object to assign to the stomp connection, optionally
-        :param ack: The acknowledge type
         """
         self.subscribe_queues(queue_list=[self.credentials.data_ready], consumer_name=consumer_name, listener=listener)
 

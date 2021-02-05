@@ -4,9 +4,6 @@
 # Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
-"""
-Tests for post process admin and helper functionality
-"""
 
 import json
 import sys
@@ -20,7 +17,6 @@ from queue_processors.queue_processor.reduction.runner import ReductionRunner, m
 
 
 class TestReductionRunner(unittest.TestCase):
-    """Unit tests for Post Process Admin"""
     DIR = "queue_processors.queue_processor.reduction"
 
     def setUp(self):
