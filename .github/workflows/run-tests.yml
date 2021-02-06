@@ -75,16 +75,10 @@ jobs:
       - name: Install chrome
         run: sudo apt-get install -y google-chrome-stable
 
-      - name: Run Django server
-        run: |
-          cd WebApp/autoreduce_webapp
-          python manage.py runserver &
-          sleep 10
-
       - name: Run tests
         run: |
           mv webtests/config.json.example webtests/config.json
-          python -m webtests.runner --headless
+          pytest WebApp/autoreduce_webapp/selenium_tests -n 23 --ds=autoreduce_webapp.settings
 
       - uses: actions/upload-artifact@v2
         if: failure()
