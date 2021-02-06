@@ -77,7 +77,7 @@ jobs:
 
       - name: Run tests
         run: |
-          mv webtests/config.json.example webtests/config.json
+          mv WebApp/autoreduce_webapp/selenium_tests/config.json.example WebApp/autoreduce_webapp/selenium_tests/config.json.example
           pytest WebApp/autoreduce_webapp/selenium_tests -n 2 --ds=autoreduce_webapp.settings
 
       - uses: actions/upload-artifact@v2
