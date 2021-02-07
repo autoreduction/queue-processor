@@ -134,4 +134,3 @@ jobs:
           pylint systemtests
           pylint utils
           pylint plotting
-          pylint webtests
