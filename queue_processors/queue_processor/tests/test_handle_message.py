@@ -12,7 +12,7 @@ Tests message handling for the queue processor
 from functools import partial
 import random
 from unittest import TestCase, mock, main
-from mock import Mock, patch
+from unittest.mock import Mock, patch
 
 from django.db.utils import IntegrityError
 from parameterized import parameterized

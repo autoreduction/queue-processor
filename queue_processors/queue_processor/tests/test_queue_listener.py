@@ -11,8 +11,8 @@ Test cases for the queue processor
 
 import uuid
 from unittest import TestCase, mock
+from unittest.mock import patch
 from copy import deepcopy
-from mock import patch
 
 from model.message.message import Message
 from queue_processors.queue_processor import queue_listener
