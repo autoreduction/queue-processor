@@ -11,9 +11,8 @@ Tests message handling for the queue processor
 
 from functools import partial
 import random
-import unittest
-from unittest import mock
-from unittest.mock import Mock, patch
+from unittest import TestCase, mock, main
+from mock import Mock, patch
 
 from django.db.utils import IntegrityError
 from parameterized import parameterized
@@ -55,7 +54,7 @@ class FakeMessage:
     message = "I am a message"
 
 
-class TestHandleMessage(unittest.TestCase):
+class TestHandleMessage(TestCase):
     """
     Directly tests the message handling classes
     """
@@ -366,4 +365,4 @@ class TestHandleMessage(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    main()

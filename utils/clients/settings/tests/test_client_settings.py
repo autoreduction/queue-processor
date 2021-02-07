@@ -7,14 +7,13 @@
 """
 Test the ClientSettings package
 """
-import unittest
-from unittest import mock
+from unittest import TestCase, mock
 
 from utils.clients.settings.client_settings import ClientSettings
 
 
 # pylint:disable=missing-docstring
-class TestClientSettings(unittest.TestCase):
+class TestClientSettings(TestCase):
 
     def test_valid_init(self):
         settings = ClientSettings(username='user',

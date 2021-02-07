@@ -8,10 +8,8 @@ from unittest.mock import (Mock, patch, call)
 
 from filelock import FileLock
 
-import monitors.run_detection as eorm
+import monitors.run_detection
 from model.message.message import Message
-from monitors.run_detection import (InstrumentMonitor,
-                                    InstrumentMonitorError)
 from monitors.settings import (CYCLE_FOLDER, LAST_RUNS_CSV)
 
 # Test data
@@ -70,24 +68,24 @@ class TestRunDetection(unittest.TestCase):
 
     def test_get_prefix_zeros(self):
         run_number = '00012345'
-        zeros = eorm.get_prefix_zeros(run_number)
+        zeros = monitors.run_detection.get_prefix_zeros(run_number)
         self.assertEqual('000', zeros)
 
     def test_get_prefix_zeros_no_zeros(self):
         run_number = '12345'
-        zeros = eorm.get_prefix_zeros(run_number)
+        zeros = monitors.run_detection.get_prefix_zeros(run_number)
         self.assertEqual('', zeros)
 
     def test_get_prefix_zeros_all_zeros(self):
         run_number = '00000'
-        zeros = eorm.get_prefix_zeros(run_number)
+        zeros = monitors.run_detection.get_prefix_zeros(run_number)
         self.assertEqual(run_number, zeros)
 
     def test_read_instrument_last_run(self):
         with open('test_lastrun.txt', 'w') as last_run:
             last_run.write(LAST_RUN_FILE)
 
-        inst_mon = InstrumentMonitor(None, 'WISH')
+        inst_mon = monitors.run_detection.InstrumentMonitor(None, 'WISH')
         inst_mon.last_run_file = 'test_lastrun.txt'
         last_run_data = inst_mon.read_instrument_last_run()
 
@@ -100,9 +98,9 @@ class TestRunDetection(unittest.TestCase):
         with open('test_lastrun.txt', 'w') as last_run:
             last_run.write(INVALID_LAST_RUN_FILE)
 
-        inst_mon = InstrumentMonitor(None, 'WISH')
+        inst_mon = monitors.run_detection.InstrumentMonitor(None, 'WISH')
         inst_mon.last_run_file = 'test_lastrun.txt'
-        with self.assertRaises(InstrumentMonitorError):
+        with self.assertRaises(monitors.run_detection.InstrumentMonitorError):
             inst_mon.read_instrument_last_run()
 
     # pylint:disable=invalid-name
@@ -110,7 +108,7 @@ class TestRunDetection(unittest.TestCase):
         with open('test_summary.txt', 'w') as summary:
             summary.write(SUMMARY_FILE)
 
-        inst_mon = InstrumentMonitor(None, 'WISH')
+        inst_mon = monitors.run_detection.InstrumentMonitor(None, 'WISH')
         inst_mon.summary_file = 'test_summary.txt'
         rb_number = inst_mon.read_rb_number_from_summary()
         self.assertEqual(RUN_DATA['rb_number'], rb_number)
@@ -118,9 +116,9 @@ class TestRunDetection(unittest.TestCase):
     def test_read_rb_number_from_summary_invalid(self):
         with open('test_summary.txt', 'w') as summary:
             summary.write(' ')
-        inst_mon = InstrumentMonitor(None, 'WISH')
+        inst_mon = monitors.run_detection.InstrumentMonitor(None, 'WISH')
         inst_mon.summary_file = 'test_summary.txt'
-        self.assertRaises(InstrumentMonitorError, inst_mon.read_rb_number_from_summary)
+        self.assertRaises(monitors.run_detection.InstrumentMonitorError, inst_mon.read_rb_number_from_summary)
 
     @patch('os.path.isfile', return_value=True)
     @patch('monitors.run_detection.read_rb_number_from_nexus_file',
@@ -130,7 +128,7 @@ class TestRunDetection(unittest.TestCase):
         client.send = Mock(return_value=None)
         # client.serialise_data = Mock(return_value=)
 
-        inst_mon = InstrumentMonitor(client, 'WISH')
+        inst_mon = monitors.run_detection.InstrumentMonitor(client, 'WISH')
         inst_mon.data_dir = '/my/data/dir'
         data_loc = os.path.join(inst_mon.data_dir, CYCLE_FOLDER, FILE_NAME)
 
@@ -149,7 +147,7 @@ class TestRunDetection(unittest.TestCase):
         client = Mock()
         client.send = Mock(return_value=None)
 
-        inst_mon = InstrumentMonitor(client, 'WISH')
+        inst_mon = monitors.run_detection.InstrumentMonitor(client, 'WISH')
         inst_mon.data_dir = '/my/data/dir'
         data_loc = os.path.join(inst_mon.data_dir, CYCLE_FOLDER, FILE_NAME)
         with self.assertRaises(FileNotFoundError):
@@ -163,7 +161,7 @@ class TestRunDetection(unittest.TestCase):
         client = Mock()
         client.send = Mock(return_value=None)
 
-        inst_mon = InstrumentMonitor(client, 'WISH')
+        inst_mon = monitors.run_detection.InstrumentMonitor(client, 'WISH')
         inst_mon.data_dir = '/my/data/dir'
         data_loc = os.path.join(inst_mon.data_dir, CYCLE_FOLDER, FILE_NAME)
 
@@ -181,28 +179,28 @@ class TestRunDetection(unittest.TestCase):
 
     @patch('monitors.run_detection.h5py.File', return_value=NXLOAD_MOCK)
     def test_read_rb_number_from_nexus(self, nxload_mock):
-        rb_num = eorm.read_rb_number_from_nexus_file('mynexus.nxs')
+        rb_num = monitors.run_detection.read_rb_number_from_nexus_file('mynexus.nxs')
         self.assertEqual(rb_num, '1910232')
         kwargs = {"mode": "r"}
         nxload_mock.assert_called_once_with('mynexus.nxs', **kwargs)
 
     @patch('monitors.run_detection.h5py.File', return_value=NXLOAD_MOCK_EMPTY)
     def test_read_rb_number_from_nexus_invalid(self, nxload_mock):
-        rb_num = eorm.read_rb_number_from_nexus_file('mynexus.nxs')
+        rb_num = monitors.run_detection.read_rb_number_from_nexus_file('mynexus.nxs')
         self.assertIsNone(rb_num)
         kwargs = {"mode": "r"}
         nxload_mock.assert_called_once_with('mynexus.nxs', **kwargs)
 
     @patch('monitors.run_detection.h5py.File', side_effect=IOError('HDF4 file'))
     def test_read_rb_number_from_nexus_hdf4(self, nxload_mock):
-        rb_num = eorm.read_rb_number_from_nexus_file('mynexus.nxs')
+        rb_num = monitors.run_detection.read_rb_number_from_nexus_file('mynexus.nxs')
         self.assertIsNone(rb_num)
         kwargs = {"mode": "r"}
         nxload_mock.assert_called_once_with('mynexus.nxs', **kwargs)
 
     def test_submit_run_difference(self):
         # Setup test
-        inst_mon = InstrumentMonitor(None, 'WISH')
+        inst_mon = monitors.run_detection.InstrumentMonitor(None, 'WISH')
         inst_mon.submit_run = Mock(return_value=None)
         inst_mon.file_ext = '.nxs'
         inst_mon.read_instrument_last_run = Mock(return_value=['WISH',
@@ -220,7 +218,7 @@ class TestRunDetection(unittest.TestCase):
 
     def test_submit_run_difference_no_file(self):
         # Setup test
-        inst_mon = InstrumentMonitor(None, 'WISH')
+        inst_mon = monitors.run_detection.InstrumentMonitor(None, 'WISH')
         inst_mon.submit_run = Mock(side_effect=FileNotFoundError('File not found'))
         inst_mon.file_ext = '.nxs'
         inst_mon.read_instrument_last_run = Mock(return_value=['WISH',
@@ -242,7 +240,7 @@ class TestRunDetection(unittest.TestCase):
             last_runs.write(CSV_FILE)
 
         # Perform test
-        eorm.update_last_runs('test_last_runs.csv')
+        monitors.run_detection.update_last_runs('test_last_runs.csv')
         inst_mon_mock.assert_called()
         run_diff_mock.assert_called_with('44733')
 
@@ -256,14 +254,14 @@ class TestRunDetection(unittest.TestCase):
     @patch('monitors.run_detection.InstrumentMonitor.__init__',
            return_value=None)
     @patch('monitors.run_detection.InstrumentMonitor.submit_run_difference',
-           side_effect=InstrumentMonitorError('Error'))
+           side_effect=monitors.run_detection.InstrumentMonitorError('Error'))
     def test_update_last_runs_with_error(self, run_diff_mock, inst_mon_mock):
         # Setup test
         with open('test_last_runs.csv', 'w') as last_runs:
             last_runs.write(CSV_FILE)
 
         # Perform test
-        eorm.update_last_runs('test_last_runs.csv')
+        monitors.run_detection.update_last_runs('test_last_runs.csv')
         inst_mon_mock.assert_called()
         run_diff_mock.assert_called_with('44733')
 
@@ -276,11 +274,11 @@ class TestRunDetection(unittest.TestCase):
 
     @patch('monitors.run_detection.update_last_runs')
     def test_main(self, update_last_runs_mock):
-        eorm.main()
+        monitors.run_detection.main()
         update_last_runs_mock.assert_called_with(LAST_RUNS_CSV)
         update_last_runs_mock.assert_called_once()
 
     @patch('monitors.run_detection.update_last_runs')
     def test_main_lock_timeout(self, _):
         with FileLock('{}.lock'.format(LAST_RUNS_CSV)):
-            eorm.main()
+            monitors.run_detection.main()

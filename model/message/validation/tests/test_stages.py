@@ -7,14 +7,13 @@
 """
 Exercise the functions that handle validating a message at each pipeline stage
 """
-import unittest
-from unittest import mock
+from unittest import TestCase, mock
 
 from model.message.validation import stages, validators
 from model.message.message import Message
 
 
-class TestStages(unittest.TestCase):
+class TestStages(TestCase):
     """
     Assert the stages return the correct bool value based on if they are valid
     """

@@ -9,11 +9,10 @@
 Test cases for the queue processor
 """
 
-import unittest
 import uuid
+from unittest import TestCase, mock
 from copy import deepcopy
-from unittest import mock
-from unittest.mock import patch
+from mock import patch
 
 from model.message.message import Message
 from queue_processors.queue_processor import queue_listener
@@ -22,7 +21,7 @@ from queue_processors.queue_processor.queue_listener import QueueListener
 from utils.clients.queue_client import QueueClient
 
 
-class TestQueueProcessor(unittest.TestCase):
+class TestQueueProcessor(TestCase):
     """
     Exercises the functions within listener.py
     """
@@ -49,7 +48,7 @@ class TestQueueProcessor(unittest.TestCase):
         self.assertIsInstance(args[1].client, QueueClient)
 
 
-class TestQueueListener(unittest.TestCase):
+class TestQueueListener(TestCase):
     # We have too many public methods as our Class Under Test does too much...
     # pylint: disable=too-many-public-methods
     """

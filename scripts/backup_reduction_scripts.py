@@ -33,8 +33,7 @@ import shutil
 import traceback
 from pathlib import Path
 
-import git
-from git import Git
+from git import Git, exc
 
 from utils.project.static_content import LOG_FORMAT
 from utils.project.structure import get_log_file
@@ -110,7 +109,7 @@ def main(args):
 
     try:
         check_if_git_directory(STORAGE_DIR)
-    except git.exc.GitCommandError as err:  # pylint: disable=no-member
+    except exc.GitCommandError as err:  # pylint: disable=no-member
         log.error(
             "Destination folder %s is not a Git repository. "
             "Please configure it manually before running this script.", str(STORAGE_DIR))
