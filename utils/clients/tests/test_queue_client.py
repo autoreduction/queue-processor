@@ -8,7 +8,7 @@
 Test functionality for the activemq client
 """
 from unittest import TestCase, mock
-from mock import patch
+from unittest.mock import patch
 
 from model.message.message import Message
 from utils.clients.connection_exception import ConnectionException
