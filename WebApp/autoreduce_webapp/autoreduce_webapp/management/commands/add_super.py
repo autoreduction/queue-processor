@@ -8,6 +8,7 @@
 Custom manage.py command to add a super user to the database
 """
 from django.core.management.base import BaseCommand
+from django.contrib.auth.models import User
 
 
 class Command(BaseCommand):
@@ -21,6 +22,5 @@ class Command(BaseCommand):
         (THIS SHOULD ONLY BE USED FOR DEVELOPMENT)
         handler to add super user to database
         """
-        from django.contrib.auth.models import User
         User.objects.filter(username='super').delete()
         User.objects.create_superuser('super', '', 'super')
