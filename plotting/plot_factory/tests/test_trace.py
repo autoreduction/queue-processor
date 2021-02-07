@@ -13,7 +13,6 @@ Unit tests for plot factory Trace
 import unittest
 import plotly
 import pandas
-import logging
 
 # Mocked values
 from plotting.plot_factory.tests.mocked_values import MockPlotVariables
