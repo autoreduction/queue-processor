@@ -7,8 +7,7 @@
 """
 Tests the Queue Listener Daemon
 """
-import unittest
-from unittest import mock
+from unittest import main, mock
 import pytest
 
 from queue_processors.queue_processor import queue_listener_daemon
@@ -135,4 +134,4 @@ def test_main_daemon_start(patched_logging, patched_daemon, patched_sys):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    main()

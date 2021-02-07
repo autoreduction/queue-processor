@@ -7,10 +7,8 @@
 """
 Test functionality for the activemq client
 """
-import unittest
-from unittest import mock
-
-from unittest.mock import patch
+from unittest import TestCase, mock
+from mock import patch
 
 from model.message.message import Message
 from utils.clients.connection_exception import ConnectionException
@@ -19,7 +17,7 @@ from utils.clients.settings.client_settings_factory import ClientSettingsFactory
 
 
 # pylint:disable=protected-access,invalid-name,missing-docstring
-class TestQueueClient(unittest.TestCase):
+class TestQueueClient(TestCase):
     """
     Exercises the queue client
     """

@@ -9,12 +9,11 @@
 Unit tests for the record helper module
 """
 
-import unittest
-from unittest import mock
+from unittest import TestCase, mock
 import model.database.records as records
 
 
-class TestDatabaseRecords(unittest.TestCase):
+class TestDatabaseRecords(TestCase):
     """
     Tests the Record helpers for the ORM layer
     """
