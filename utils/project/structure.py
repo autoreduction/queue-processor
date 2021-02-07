@@ -9,6 +9,7 @@ Helper functions for navigating the project
 """
 
 import os
+import git
 
 
 def get_project_root() -> str:
@@ -17,7 +18,6 @@ def get_project_root() -> str:
     :return: file path to root of the project folder
     """
     # pylint:disable=import-outside-toplevel
-    import git
     git_repo = git.Repo(os.path.dirname(os.path.realpath(__file__)), search_parent_directories=True)
     git_root = git_repo.git.rev_parse("--show-toplevel")
 
