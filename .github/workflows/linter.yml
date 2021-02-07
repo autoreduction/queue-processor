@@ -1,0 +1,44 @@
+name: Lint Code Base
+on: [push]
+
+jobs:
+  build:
+    name: Lint Code Base
+    runs-on: ubuntu-18.04
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_USER: test-user
+          MYSQL_PASSWORD: pass
+          MYSQL_DATABASE: autoreduction
+        ports:
+          - '3306:3306'
+        options: >-
+          --health-cmd="mysqladmin ping" --health-interval=10s
+          --health-timeout=5s --health-retries=3
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+
+      - uses: actions/cache@v1
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+            
+      - uses: ./.github/actions/build-autoreduction
+
+      - name: Lint Code Base
+        uses: github/super-linter@v3
+        env:
+          VALIDATE_ALL_CODEBASE: false
+          DEFAULT_BRANCH: master
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
