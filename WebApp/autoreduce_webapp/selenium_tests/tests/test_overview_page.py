@@ -17,7 +17,7 @@ class TestOverviewPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
     """
     Test cases for the overview page
     """
-    fixtures = ["test_overview_page"]
+    fixtures = BaseTestCase.fixtures + ["test_overview_page"]
 
     def setUp(self) -> None:
         """
@@ -48,7 +48,7 @@ class TestOverviewPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
             .get_instruments_from_buttons()
         for instrument in instruments:
             self.page.click_instrument(instrument)
-            self.assertEqual(InstrumentSummaryPage.url() % instrument, self.driver.current_url)
+            self.assertTrue(self.driver.current_url.endswith(InstrumentSummaryPage.url_path() % instrument))
             self.page.launch()
 
     def test_tour(self):
