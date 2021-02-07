@@ -23,12 +23,12 @@ from selenium_tests.pages.overview_page import OverviewPage
 
 from utils.project.structure import get_project_root
 
-@override_settings(AUTHENTICATION_BACKENDS=('django.contrib.auth.backends.ModelBackend',))
 class BaseTestCase(StaticLiveServerTestCase):
     """
     Base test class that provides setup and teardown of driver aswell as screenshotting capability
     on failed tests
     """
+    fixtures = ["super_user_fixture"]
 
     def setUp(self) -> None:
         """
