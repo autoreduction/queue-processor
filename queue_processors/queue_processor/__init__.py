@@ -66,11 +66,19 @@ LOGGING = {
             'formatter': 'verbose',
             'maxBytes': 104857600,
             'backupCount': 20,
-        }
+        },
+        'root_file': {
+            'level': LOG_LEVEL,
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(PROJECT_ROOT, 'logs', 'root.log'),
+            'formatter': 'verbose',
+            'maxBytes': 104857600,
+            'backupCount': 20,
+        },
     },
     'root': {
         'level': LOG_LEVEL,
-        'handlers': ['queue_processor_file'],
+        'handlers': ['root_file'],
         'propagate': True
     },
     'loggers': {
@@ -83,6 +91,11 @@ LOGGING = {
             'handlers': ['queue_processor_file'],
             'propagate': True,
             'level': LOG_LEVEL,
+        },
+        'django.server': {
+            'handlers': ['webapp_file'],
+            'propagate': True,
+            'level': 'DEBUG',
         },
         'app': {
             'handlers': ['webapp_file'],
