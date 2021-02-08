@@ -15,25 +15,26 @@ can be more confident we are not affecting the execution
 import json
 import logging
 import operator
+import traceback
 
 from autoreduce_webapp.icat_cache import ICATCache
-from autoreduce_webapp.settings import UOWS_LOGIN_URL, USER_ACCESS_CHECKS, DEVELOPMENT_MODE
+from autoreduce_webapp.settings import (DEBUG, DEVELOPMENT_MODE, UOWS_LOGIN_URL, USER_ACCESS_CHECKS)
 from autoreduce_webapp.uows_client import UOWSClient
-from autoreduce_webapp.view_utils import (login_and_uows_valid, render_with, require_admin, check_permissions)
-from django.contrib.auth import logout as django_logout, authenticate, login
+from autoreduce_webapp.view_utils import (check_permissions, login_and_uows_valid, render_with, require_admin)
+from django.contrib.auth import authenticate, login
+from django.contrib.auth import logout as django_logout
 from django.contrib.auth.models import User
-from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.db.models import Q
 from django.http import HttpResponseNotFound
 from django.shortcuts import redirect
 from instrument.utils import InstrumentVariablesUtils, MessagingUtils
-from reduction_viewer.models import Experiment, ReductionRun, Instrument, Status
-from reduction_viewer.utils import StatusUtils, ReductionRunUtils
-from reduction_viewer.view_utils import deactivate_invalid_instruments
-from instrument.utils import InstrumentVariablesUtils
+from plotting.plot_handler import PlotHandler
 from utilities.pagination import CustomPaginator
 
-from plotting.plot_handler import PlotHandler
+from reduction_viewer.models import (Experiment, Instrument, ReductionRun, Status)
+from reduction_viewer.utils import STATUS, ReductionRunUtils
+from reduction_viewer.view_utils import deactivate_invalid_instruments
 
 LOGGER = logging.getLogger('app')
 
@@ -116,8 +117,8 @@ def run_queue(request):
     Render status of queue
     """
     # Get all runs that should be shown
-    queued_status = StatusUtils().get_queued()
-    processing_status = StatusUtils().get_processing()
+    queued_status = STATUS.get_queued()
+    processing_status = STATUS.get_processing()
     pending_jobs = ReductionRun.objects.filter(Q(status=queued_status)
                                                | Q(status=processing_status)).order_by('created')
     # Filter those which the user shouldn't be able to see
@@ -147,13 +148,13 @@ def fail_queue(request):
     Render status of failed queue
     """
     # render the page
-    error_status = StatusUtils().get_error()
+    error_status = STATUS.get_error()
     failed_jobs = ReductionRun.objects.filter(Q(status=error_status)
                                               & Q(hidden_in_failviewer=False)).order_by('-created')
     context_dictionary = {
         'queue': failed_jobs,
-        'status_success': StatusUtils().get_completed(),
-        'status_failed': StatusUtils().get_error()
+        'status_success': STATUS.get_completed(),
+        'status_failed': STATUS.get_error()
     }
 
     if request.method == 'POST':
@@ -307,8 +308,8 @@ def runs_list(request, instrument=None):
             'instrument_name': instrument_obj.name,
             'runs': runs,
             'last_instrument_run': runs[0],
-            'processing': runs.filter(status=StatusUtils().get_processing()),
-            'queued': runs.filter(status=StatusUtils().get_queued()),
+            'processing': runs.filter(status=STATUS.get_processing()),
+            'queued': runs.filter(status=STATUS.get_queued()),
             'filtering': filter_by,
             'sort': sort_by,
             'has_variables': has_variables
@@ -337,6 +338,8 @@ def runs_list(request, instrument=None):
     # pylint:disable=broad-except
     except Exception as exception:
         LOGGER.error(exception)
+        if DEBUG:
+            print(traceback.format_exc())
         return {'message': "An unexpected error has occurred when loading the instrument."}
 
     return context_dictionary

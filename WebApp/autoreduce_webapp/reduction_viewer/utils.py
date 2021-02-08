@@ -13,55 +13,20 @@ should be able to be removed. Many are relating to imports
 """
 import datetime
 import logging
-import os
-import sys
 import time
 import traceback
 
 import django.core.exceptions
 import django.http
 from django.utils import timezone
+
+from reduction_viewer.models import DataLocation, Instrument, ReductionRun
 from instrument.models import RunVariable
-from reduction_viewer.models import Instrument, Status, ReductionRun, DataLocation
 
-sys.path.append(os.path.join("../", os.path.dirname(os.path.dirname(__file__))))
-os.environ["DJANGO_SETTINGS_MODULE"] = "autoreduce_webapp.settings"
+from queue_processors.queue_processor.status_utils import StatusUtils
+
+STATUS = StatusUtils()
 LOGGER = logging.getLogger('app')
-
-
-class StatusUtils(object):
-    """
-    Utilities for the Status model
-    """
-    @staticmethod
-    def _get_status(status_value):
-        """
-        Helper method that will try to get a status matching the given
-        name or create one if it doesn't yet exist
-        """
-        # pylint:disable=no-member
-        status = Status.objects.get(value=status_value)
-        return status
-
-    def get_error(self):
-        """ :return: Error Status object """
-        return self._get_status("e")
-
-    def get_completed(self):
-        """ :return: Completed Status object """
-        return self._get_status("c")
-
-    def get_processing(self):
-        """ :return: Processing Status object """
-        return self._get_status("p")
-
-    def get_queued(self):
-        """ :return: Queued Status object """
-        return self._get_status("q")
-
-    def get_skipped(self):
-        """ :return: Skipped Status object """
-        return self._get_status("s")
 
 
 # pylint:disable=too-few-public-methods
@@ -165,7 +130,7 @@ class ReductionRunUtils(object):
             # provide variables if they aren't already
             InstrumentVariablesUtils().create_variables_for_run(new_job)
 
-        return new_job
+        return new_job  #
 
     @staticmethod
     def get_script_and_arguments(reduction_run):
