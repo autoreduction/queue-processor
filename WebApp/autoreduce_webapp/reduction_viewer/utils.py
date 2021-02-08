@@ -18,11 +18,13 @@ import traceback
 
 import django.core.exceptions
 import django.http
+from autoreduce_webapp.settings import FACILITY
 from django.utils import timezone
+from model.message.message import Message
 
 from reduction_viewer.models import DataLocation, Instrument, ReductionRun
+from utils.clients.queue_client import QueueClient
 from instrument.models import RunVariable
-
 from queue_processors.queue_processor.status_utils import StatusUtils
 
 STATUS = StatusUtils()
@@ -52,6 +54,40 @@ class ReductionRunUtils(object):
     """
     Utilities for the ReductionRun model
     """
+    @staticmethod
+    def make_kwargs_from_runvariables(reduction_run):
+        standard_vars = {}
+        advanced_vars = {}
+
+        for run_variable in reduction_run.run_variables.all():
+            variable = run_variable.variable
+            if variable.is_advanced:
+                advanced_vars[variable.name] = variable
+            else:
+                standard_vars[variable.name] = variable
+
+        return {"standard_vars": standard_vars, "advanced_vars": advanced_vars}
+
+    @staticmethod
+    def send_retry_message(user_id: int, most_recent_run: ReductionRun, script_text: str, new_script_arguments: dict,
+                           overwrite_previous_data: bool):
+        message = Message(started_by=user_id,
+                          run_number=most_recent_run.run_number,
+                          instrument=most_recent_run.instrument.name,
+                          rb_number=most_recent_run.experiment.reference_number,
+                          data=most_recent_run.data_location.first().file_path,
+                          reduction_script=script_text,
+                          reduction_arguments=new_script_arguments,
+                          run_version=most_recent_run.run_version,
+                          facility=FACILITY,
+                          overwrite=overwrite_previous_data)
+        MessagingUtils.send(message)
+
+    @staticmethod
+    def send_retry_message_same_args(user_id, most_recent_run):
+        ReductionRunUtils.send_retry_message(user_id, most_recent_run, most_recent_run.script,
+                                             ReductionRunUtils.make_kwargs_from_runvariables(most_recent_run),
+                                             most_recent_run.overwrite)
 
     # pylint:disable=invalid-name,too-many-arguments,too-many-locals
     @staticmethod
@@ -199,3 +235,46 @@ class ScriptUtils(object):
         time_format = "%Y-%m-%d %H:%M:%S"
         string_time = string_time[:string_time.find('+')]
         return int(time.mktime(time.strptime(string_time, time_format)))
+
+
+class MessagingUtils(object):
+    """
+    Utilities for sending messages to ActiveMQ
+    """
+    def send_pending(self, reduction_run, delay=None):
+        raise RuntimeError("Stop using this")
+
+    def send_cancel(self, reduction_run):
+        raise RuntimeError("Stop using this")
+
+    @staticmethod
+    def _make_pending_msg(reduction_run):
+        """ Creates a Message from the given run, ready to be sent to ReductionPending. """
+        script, arguments = ReductionRunUtils().get_script_and_arguments(reduction_run)
+
+        # Currently only support single location
+        data_location = reduction_run.data_location.first()
+        if data_location:
+            data_path = data_location.file_path
+        else:
+            raise Exception("No data path found for reduction run")
+
+        message = Message(run_number=reduction_run.run_number,
+                          instrument=reduction_run.instrument.name,
+                          rb_number=str(reduction_run.experiment.reference_number),
+                          data=data_path,
+                          reduction_script=script,
+                          reduction_arguments=arguments,
+                          run_version=reduction_run.run_version,
+                          facility=FACILITY,
+                          overwrite=reduction_run.overwrite)
+        return message
+
+    @staticmethod
+    def send(message):
+        """ Sends message to ReductionPending (with the specified delay) """
+        message_client = QueueClient()
+        message_client.connect()
+
+        message_client.send('/queue/DataReady', message, priority='1')
+        message_client.disconnect()

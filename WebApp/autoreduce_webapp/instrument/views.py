@@ -10,17 +10,16 @@ This imports into another view, thus no middleware
 """
 import logging
 
-from autoreduce_webapp.settings import FACILITY
 from autoreduce_webapp.view_utils import (check_permissions, login_and_uows_valid, render_with)
+from django.db.models.query import QuerySet
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
-from model.message.message import Message
-from reduction_viewer.models import Instrument, ReductionRun
-from reduction_viewer.utils import (InstrumentUtils, StatusUtils)
 from utilities import input_processing
 
-from instrument.models import InstrumentVariable, RunVariable
-from instrument.utils import InstrumentVariablesUtils, MessagingUtils
+from reduction_viewer.models import Instrument, ReductionRun
+from reduction_viewer.utils import (InstrumentUtils, ReductionRunUtils, StatusUtils)
+from instrument.models import InstrumentVariable
+from instrument.utils import InstrumentVariablesUtils
 
 LOGGER = logging.getLogger("app")
 
@@ -300,19 +299,9 @@ def submit_runs(request, instrument=None):
         runs_for_instrument = instrument.reduction_runs.all()
         last_run = runs_for_instrument.exclude(status=skipped_status).last()
 
-        standard_vars = {}
-        advanced_vars = {}
-
-        default_standard_variables = {}
-        default_advanced_variables = {}
-        for run_variable in last_run.run_variables.all():
-            variable = run_variable.variable
-            if variable.is_advanced:
-                advanced_vars[variable.name] = variable
-                default_advanced_variables[variable.name] = variable
-            else:
-                standard_vars[variable.name] = variable
-                default_standard_variables[variable.name] = variable
+        kwargs = ReductionRunUtils.make_kwargs_from_runvariables(last_run)
+        standard_vars = kwargs["standard_vars"]
+        advanced_vars = kwargs["advanced_vars"]
 
         # pylint:disable=no-member
         context_dictionary = {
@@ -322,8 +311,8 @@ def submit_runs(request, instrument=None):
             'queued': runs_for_instrument.filter(status=queued_status),
             'standard_variables': standard_vars,
             'advanced_variables': advanced_vars,
-            'default_standard_variables': default_standard_variables,
-            'default_advanced_variables': default_advanced_variables,
+            'default_standard_variables': standard_vars,
+            'default_advanced_variables': advanced_vars,
         }
 
         return context_dictionary
@@ -428,7 +417,8 @@ def run_confirmation(request, instrument: str):
                                       "queued at a time".format(len(run_numbers), max_runs)
         return context_dictionary
 
-    related_runs = ReductionRun.objects.filter(instrument__name=instrument, run_number__in=run_numbers)
+    related_runs: QuerySet[ReductionRun] = ReductionRun.objects.filter(instrument__name=instrument,
+                                                                       run_number__in=run_numbers)
     # Check that RB numbers are the same for the range entered
     # pylint:disable=no-member
     rb_number = related_runs.values_list('experiment__reference_number', flat=True).distinct()
@@ -440,12 +430,12 @@ def run_confirmation(request, instrument: str):
 
     use_current_script = request.POST.get('use_current_script', u"true").lower() == u"true"
     if use_current_script:
-        script_text = InstrumentVariablesUtils().get_current_script_text(instrument)[0]
+        script_text = InstrumentVariablesUtils().get_current_script_text(instrument)
         default_variables = InstrumentVariablesUtils().get_default_variables(instrument)
     else:
         raise NotImplementedError("TODO this branch")
-        script_text = most_recent_previous_run.script
-        default_variables = most_recent_previous_run.run_variables.all()
+        script_text = most_recent_run.script
+        default_variables = most_recent_run.run_variables.all()
 
     for run_number in run_numbers:
         matching_previous_runs_queryset = related_runs.filter(run_number=run_number).order_by('-run_version')
@@ -469,20 +459,11 @@ def run_confirmation(request, instrument: str):
                 format(len(run_description), max_run_name_length)
             return context_dictionary
 
-        most_recent_previous_run = matching_previous_runs_queryset.first()
+        most_recent_run: ReductionRun = matching_previous_runs_queryset.first()
         # User can choose whether to overwrite with the re-run or create new data
         overwrite_previous_data = bool(request.POST.get('overwrite_checkbox') == 'on')
-        message = Message(started_by=request.user.id,
-                          run_number=most_recent_previous_run.run_number,
-                          instrument=most_recent_previous_run.instrument.name,
-                          rb_number=most_recent_previous_run.experiment.reference_number,
-                          data=most_recent_previous_run.data_location.first().file_path,
-                          reduction_script=script_text,
-                          reduction_arguments=new_script_arguments,
-                          run_version=most_recent_previous_run.run_version,
-                          facility=FACILITY,
-                          overwrite=overwrite_previous_data)
-        MessagingUtils.send(message)
+        ReductionRunUtils.send_retry_message(request.user.id, most_recent_run, script_text, new_script_arguments,
+                                             overwrite_previous_data)
 
     return context_dictionary
 
@@ -493,11 +474,11 @@ def find_reason_to_avoid_re_run(matching_previous_runs_queryset):
     """
     Che
     """
-    most_recent_previous_run = matching_previous_runs_queryset.first()
+    most_recent_run = matching_previous_runs_queryset.first()
 
     # Check old run exists - if it doesn't exist there's nothing to re-run!
-    if most_recent_previous_run is None:
-        return False, f"Run number {most_recent_previous_run.run_number} hasn't been ran by autoreduction yet."
+    if most_recent_run is None:
+        return False, f"Run number {most_recent_run.run_number} hasn't been ran by autoreduction yet."
 
     # Prevent multiple queueings of the same re-run
     queued_runs = matching_previous_runs_queryset.filter(status=STATUS.get_queued()).first()

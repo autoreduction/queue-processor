@@ -393,9 +393,9 @@ class InstrumentVariablesUtils(object):
         Fetches the reduction script and variables script for
         the given instrument, and returns each as a string.
         """
-        script_text = self._load_reduction_script(instrument_name)
-        script_vars_text = self._load_reduction_vars_script(instrument_name)
-        return script_text, script_vars_text
+        reduce_vars = ReductionScript(instrument_name)
+        # TODO handle raises
+        return reduce_vars.text()
 
     def _update_variables(self, variables, save=True):
         """
@@ -555,64 +555,3 @@ class InstrumentVariablesUtils(object):
         help_text = cgi.escape(help_text)  # Remove any HTML already in the help string
         help_text = help_text.replace('\n', '<br>').replace('\t', '&nbsp;&nbsp;&nbsp;&nbsp;')
         return help_text
-
-
-class MessagingUtils(object):
-    """
-    Utilities for sending messages to ActiveMQ
-    """
-    def send_pending(self, reduction_run, delay=None):
-        """ Sends a message to the queue with the details of the job to run. """
-        message = self._make_pending_msg(reduction_run)
-        self._send_pending_msg(message, delay)
-
-    @staticmethod
-    def _make_pending_msg(reduction_run):
-        """ Creates a Message from the given run, ready to be sent to ReductionPending. """
-        script, arguments = ReductionRunUtils().get_script_and_arguments(reduction_run)
-
-        # Currently only support single location
-        data_location = reduction_run.data_location.first()
-        if data_location:
-            data_path = data_location.file_path
-        else:
-            raise Exception("No data path found for reduction run")
-
-        message = Message(run_number=reduction_run.run_number,
-                          instrument=reduction_run.instrument.name,
-                          rb_number=str(reduction_run.experiment.reference_number),
-                          data=data_path,
-                          reduction_script=script,
-                          reduction_arguments=arguments,
-                          run_version=reduction_run.run_version,
-                          facility=FACILITY,
-                          overwrite=reduction_run.overwrite)
-        return message
-
-    @staticmethod
-    def _add_project_root_to_path():
-        """
-        Discovers and adds the project root directory to the system path
-        """
-        file_path = os.path.dirname(os.path.realpath(__file__))
-        path_parts = file_path.split('WebApp')
-        project_root = path_parts[0]  # This path should lead to git root dir
-        sys.path.append(project_root)
-
-    @staticmethod
-    def _send_pending_msg(message, delay=None):
-        """ Sends message to ReductionPending (with the specified delay) """
-        message_client = QueueClient()
-        message_client.connect()
-
-        message_client.send('/queue/ReductionPending', message, priority='0', delay=delay)
-        message_client.disconnect()
-
-    @staticmethod
-    def send(message):
-        """ Sends message to ReductionPending (with the specified delay) """
-        message_client = QueueClient()
-        message_client.connect()
-
-        message_client.send('/queue/DataReady', message, priority='1')
-        message_client.disconnect()
