@@ -126,6 +126,7 @@ else:
             },
         }
     }
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/dev/topics/i18n/
