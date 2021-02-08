@@ -188,7 +188,7 @@ LOGGING = {
 # ActiveMQ
 
 ACTIVEMQ = {
-    'topics': ['/queue/DataReady', '/queue/ReductionStarted', '/queue/ReductionComplete', '/queue/ReductionError'],
+    'topics': ['/queue/DataReady'],
     'username': get_str('QUEUE', 'user'),
     'password': get_str('QUEUE', 'password'),
     'broker': [(get_str('QUEUE', 'host'), get_str('QUEUE', 'port'))],
