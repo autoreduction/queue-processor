@@ -55,16 +55,16 @@ class ReductionRunUtils(object):
     Utilities for the ReductionRun model
     """
     @staticmethod
-    def make_kwargs_from_runvariables(reduction_run):
+    def make_kwargs_from_runvariables(reduction_run, use_value=False):
         standard_vars = {}
         advanced_vars = {}
 
         for run_variable in reduction_run.run_variables.all():
             variable = run_variable.variable
             if variable.is_advanced:
-                advanced_vars[variable.name] = variable
+                advanced_vars[variable.name] = variable.value if use_value else variable
             else:
-                standard_vars[variable.name] = variable
+                standard_vars[variable.name] = variable.value if use_value else variable
 
         return {"standard_vars": standard_vars, "advanced_vars": advanced_vars}
 
@@ -84,9 +84,9 @@ class ReductionRunUtils(object):
         MessagingUtils.send(message)
 
     @staticmethod
-    def send_retry_message_same_args(user_id, most_recent_run):
+    def send_retry_message_same_args(user_id: int, most_recent_run: ReductionRun):
         ReductionRunUtils.send_retry_message(user_id, most_recent_run, most_recent_run.script,
-                                             ReductionRunUtils.make_kwargs_from_runvariables(most_recent_run),
+                                             ReductionRunUtils.make_kwargs_from_runvariables(most_recent_run, use_value=True),
                                              most_recent_run.overwrite)
 
     # pylint:disable=invalid-name,too-many-arguments,too-many-locals

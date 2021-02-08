@@ -166,12 +166,8 @@ def fail_queue(request):
             for run in selected_runs:
                 run_number = int(run[0])
                 run_version = int(run[1])
-                rb_number = int(run[2])
 
-                experiment = Experiment.objects.filter(reference_number=rb_number).first()
-                reduction_run = ReductionRun.objects.get(experiment=experiment,
-                                                         run_number=run_number,
-                                                         run_version=run_version)
+                reduction_run = failed_jobs.get(run_number=run_number, run_version=run_version)
 
                 if action == "hide":
                     reduction_run.hidden_in_failviewer = True
@@ -182,14 +178,7 @@ def fail_queue(request):
                     if run_version != highest_version:
                         continue  # do not run multiples of the same run
 
-                    new_job = ReductionRunUtils().createRetryRun(user_id=request.user.id, reduction_run=reduction_run)
-
-                    # try:
-                    #     MessagingUtils().send_pending(new_job)
-                    # # pylint:disable=broad-except
-                    # except Exception as exception:
-                    #     new_job.delete()
-                    #     raise exception
+                    ReductionRunUtils.send_retry_message_same_args(request.user.id, reduction_run)
 
                 elif action == "default":
                     pass
