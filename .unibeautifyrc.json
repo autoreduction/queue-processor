@@ -1,0 +1,8 @@
+{
+    "Python": {
+        "beautifiers": [
+            "YAPF"
+        ],
+        "wrap_line_length": 120
+    }
+}
