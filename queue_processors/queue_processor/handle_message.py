@@ -114,7 +114,7 @@ class HandleMessage:
         """
         # Create all of the variables for the run that are described in it's reduce_vars.py
         self._logger.info('Creating variables for run')
-        variables = self.instrument_variable.create_run_variables(reduction_run)
+        variables = self.instrument_variable.create_run_variables(reduction_run, message.reduction_arguments)
         if not variables:
             self._logger.warning("No instrument variables found on %s for run %s", instrument.name, message.run_number)
 
