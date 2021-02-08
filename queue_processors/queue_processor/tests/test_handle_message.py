@@ -294,7 +294,7 @@ class TestHandleMessage(TestCase):
         self.handler.instrument_variable.create_run_variables = mock.Mock(return_value=[])
 
         message = self.handler.create_run_variables(self.reduction_run, self.msg, self.instrument)
-        self.handler.instrument_variable.create_run_variables.assert_called_once_with(self.reduction_run)
+        self.handler.instrument_variable.create_run_variables.assert_called_once_with(self.reduction_run, {})
         assert self.mocked_logger.info.call_count == 2
         self.mocked_logger.warning.assert_called_once()
         assert message.reduction_arguments == expected_args

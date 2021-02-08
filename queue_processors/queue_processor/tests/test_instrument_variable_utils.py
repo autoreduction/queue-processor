@@ -112,6 +112,31 @@ class TestInstrumentVariableUtils(unittest.TestCase):
         self.delete_on_teardown = [reduction_run, new_variables]
 
     @patch("queue_processors.queue_processor.reduction.service.ReductionScript.load", return_value=FakeModule())
+    def test_new_reduction_run_with_message_reduction_args(self, _):
+        """
+        Tests with a never before seen Reduction Run
+        """
+        reduction_run = create_reduction_run_record(self.experiment, self.instrument, FakeMessage(), 0,
+                                                    self.fake_script_text, self.status)
+        reduction_run.save()
+
+        before_creating_variables = self.variable_model.InstrumentVariable.objects.count()
+        new_variables = InstrumentVariablesUtils().create_run_variables(reduction_run,
+                                                                        {"standard_vars": {
+                                                                            "standard_var1": 123
+                                                                        }})
+        after_creating_variables = self.variable_model.InstrumentVariable.objects.count()
+
+        self.assertGreater(after_creating_variables, before_creating_variables)
+
+        self.assertEqual(new_variables[0].variable.name, "standard_var1")
+        self.assertEqual(new_variables[0].variable.value, "123")
+        self.assertEqual(new_variables[1].variable.name, "advanced_var1")
+        self.assertEqual(new_variables[1].variable.value, "advanced_value1")
+
+        self.delete_on_teardown = [reduction_run, new_variables]
+
+    @patch("queue_processors.queue_processor.reduction.service.ReductionScript.load", return_value=FakeModule())
     def test_two_reduction_runs_only_creates_one_set_of_variables(self, _):
         """
         Tests that creating variables for a module that has the same variables will
@@ -407,21 +432,51 @@ class TestInstrumentVariableUtils(unittest.TestCase):
         assert variables[0].variable != newer_variables[0].variable
         self.delete_on_teardown = [reduction_run, variables, newer_reduction_run, newer_variables]
 
+    @staticmethod
+    def test_merge_arguments():
+        """
+        Tests that the arguments are merged correctly when both standard and advanced are being replaced
+        """
+        message_args = {"standard_vars": {"standard_var1": 123}, "advanced_vars": {"advanced_var1": "321"}}
+        fakemod = FakeModule()
 
-def test_get_help_module_dict_name_not_in_variable_help():
-    """
-    Test that empty string is returned
-    When the variable name is not contained in the help
-    """
-    assert not InstrumentVariablesUtils.get_help_text("apples", "123", FakeModule())
+        expected = {
+            "standard_vars": {
+                "standard_var1": 123
+            },
+            "advanced_vars": {
+                "advanced_var1": "321"
+            },
+            "variable_help": fakemod.variable_help
+        }
 
+        assert InstrumentVariablesUtils().merge_arguments(message_args, fakemod) == expected
 
-def test_get_help_module_no_variable_help():
-    """
-    Test that empty string is returned
-    When there is no variable_help in reduce_vars
-    """
-    assert not InstrumentVariablesUtils.get_help_text("apples", "123", {})
+    @staticmethod
+    def test_get_help_module_dict_name_not_in_variable_help():
+        """
+        Test that empty string is returned
+        When the variable name is not contained in the help
+        """
+        assert not InstrumentVariablesUtils.get_help_text(
+            "apples", "123", {"variable_help": {
+                "standard_args": {
+                    "variable1": "help text 1"
+                }
+            }})
+
+    @staticmethod
+    def test_get_help():
+        """
+        Test that empty string is returned
+        When the variable name is not contained in the help
+        """
+        assert InstrumentVariablesUtils.get_help_text(
+            "standard_args", "variable1", {"variable_help": {
+                "standard_args": {
+                    "variable1": "help text 1"
+                }
+            }}) == "help text 1"
 
 
 if __name__ == '__main__':

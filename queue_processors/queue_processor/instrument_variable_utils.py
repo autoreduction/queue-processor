@@ -37,7 +37,7 @@ class InstrumentVariablesUtils:
         self.model = db.start_database()
 
     @transaction.atomic
-    def create_run_variables(self, reduction_run) -> List:
+    def create_run_variables(self, reduction_run, message_reduction_arguments: dict = {}) -> List:
         """
         Finds the appropriate InstrumentVariables for the given reduction run, and creates
         RunVariables from them.
@@ -49,6 +49,11 @@ class InstrumentVariablesUtils:
         Otherwise if variables set for the run's run number exist, they'll be used.
 
         If not, the instrument's default variables will be used.
+
+        :param reduction_run: The reduction run object
+        :param message_reduction_arguments: Preset arguments that will override whatever is in the
+                                           reduce_vars.py script. They are passed in from the web app
+                                           and have been acquired via direct user input
         """
         instrument_name = reduction_run.instrument.name
 
@@ -63,19 +68,38 @@ class InstrumentVariablesUtils:
         reduce_vars = ReductionScript(instrument_name, 'reduce_vars.py')
         reduce_vars_module = reduce_vars.load()
 
-        variables = self._find_or_make_variables(possible_variables, run_number, instrument_id, reduce_vars_module)
+        final_reduction_arguments = self.merge_arguments(message_reduction_arguments, reduce_vars_module)
+
+        variables = self._find_or_make_variables(possible_variables, run_number, instrument_id,
+                                                 final_reduction_arguments)
 
         logging.info('Creating RunVariables')
         # Create run variables from these instrument variables, and return them.
         return VariableUtils.save_run_variables(variables, reduction_run)
 
-    def _find_or_make_variables(self, possible_variables, run_number, instrument_id, reduce_vars_module) -> List:
-        # pylint: disable=too-many-locals
-        standard_vars = getattr(reduce_vars_module, 'standard_vars', {})
-        advanced_vars = getattr(reduce_vars_module, 'advanced_vars', {})
+    @staticmethod
+    def merge_arguments(message_reduction_arguments: dict, reduce_vars_module):
+        """
+        Merges the reduction arguments provided from the message and from the reduce_vars module,
+        with the ones from the message taking precedent.
+        """
+        reduction_args = {
+            'standard_vars': getattr(reduce_vars_module, 'standard_vars', {}),
+            'advanced_vars': getattr(reduce_vars_module, 'advanced_vars', {})
+        }
+        # update overwrites the values in the initial dictionary with the ones provided in the argument
+        # and this is what we want here - the message reduction arguments should be top priority
+        reduction_args.update(message_reduction_arguments)
 
-        all_vars: List[Tuple[str, Any, bool]] = [(name, value, False) for name, value in standard_vars.items()]
-        all_vars.extend([(name, value, True) for name, value in advanced_vars.items()])
+        reduction_args["variable_help"] = getattr(reduce_vars_module, 'variable_help', {})
+        return reduction_args
+
+    def _find_or_make_variables(self, possible_variables, run_number, instrument_id, reduction_arguments: dict) -> List:
+        # pylint: disable=too-many-locals
+
+        all_vars: List[Tuple[str, Any, bool]] = [(name, value, False)
+                                                 for name, value in reduction_arguments["standard_vars"].items()]
+        all_vars.extend([(name, value, True) for name, value in reduction_arguments["advanced_vars"].items()])
 
         if len(all_vars) == 0:
             return []
@@ -83,7 +107,7 @@ class InstrumentVariablesUtils:
         variables = []
         for name, value, is_advanced in all_vars:
             script_help_text = self.get_help_text('standard_vars' if not is_advanced else 'advanced_vars', name,
-                                                  reduce_vars_module)
+                                                  reduction_arguments)
             script_value = str(value).replace('[', '').replace(']', '')
             script_type = VariableUtils.get_type_string(value)
 
@@ -146,10 +170,9 @@ class InstrumentVariablesUtils:
         return variable
 
     @staticmethod
-    def get_help_text(dict_name, key, reduce_vars_module):
+    def get_help_text(dict_name, key, reduction_arguments: dict):
         """ Get variable help text. """
-        if 'variable_help' in dir(reduce_vars_module):
-            if dict_name in reduce_vars_module.variable_help:
-                if key in reduce_vars_module.variable_help[dict_name]:
-                    return _replace_special_chars(reduce_vars_module.variable_help[dict_name][key])
+        if dict_name in reduction_arguments["variable_help"]:
+            if key in reduction_arguments["variable_help"][dict_name]:
+                return _replace_special_chars(reduction_arguments["variable_help"][dict_name][key])
         return ""
