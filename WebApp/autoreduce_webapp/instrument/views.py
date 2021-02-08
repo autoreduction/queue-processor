@@ -357,9 +357,9 @@ def run_summary(request, instrument_name, run_number, run_version=0):
     Handles request to view the summary of a run
     """
     # pylint:disable=no-member
-    instrument = Instrument.objects.get(name=instrument_name)
-    # pylint:disable=no-member
-    reduction_run = ReductionRun.objects.get(instrument=instrument, run_number=run_number, run_version=run_version)
+    reduction_run = ReductionRun.objects.get(instrument__name=instrument_name,
+                                             run_number=run_number,
+                                             run_version=run_version)
     variables = reduction_run.run_variables.all()
 
     standard_vars = {}
@@ -370,15 +370,9 @@ def run_summary(request, instrument_name, run_number, run_version=0):
         else:
             standard_vars[variable.name] = variable
 
-    current_variables = InstrumentVariablesUtils().\
-        get_default_variables(reduction_run.instrument.name)
-    current_standard_variables = {}
-    current_advanced_variables = {}
-    for variable in current_variables:
-        if variable.is_advanced:
-            current_advanced_variables[variable.name] = variable
-        else:
-            current_standard_variables[variable.name] = variable
+    current_variables = InstrumentVariablesUtils().get_default_variables(instrument_name)
+    current_standard_variables = current_variables["standard_vars"]
+    current_advanced_variables = current_variables["advanced_vars"]
 
     context_dictionary = {
         'run_number': run_number,
