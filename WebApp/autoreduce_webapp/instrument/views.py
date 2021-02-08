@@ -392,7 +392,7 @@ def run_summary(request, instrument_name, run_number, run_version=0):
 @login_and_uows_valid
 @check_permissions
 @render_with('run_confirmation.html')
-def run_confirmation(request, instrument):
+def run_confirmation(request, instrument: str):
     """
     Handles request for user to confirm re-run
     """
@@ -440,8 +440,8 @@ def run_confirmation(request, instrument):
 
     use_current_script = request.POST.get('use_current_script', u"true").lower() == u"true"
     if use_current_script:
-        script_text = InstrumentVariablesUtils().get_current_script_text(instrument.name)[0]
-        default_variables = InstrumentVariablesUtils().get_default_variables(instrument.name)
+        script_text = InstrumentVariablesUtils().get_current_script_text(instrument)[0]
+        default_variables = InstrumentVariablesUtils().get_default_variables(instrument)
     else:
         raise NotImplementedError("TODO this branch")
         script_text = most_recent_previous_run.script
@@ -469,11 +469,13 @@ def run_confirmation(request, instrument):
                 format(len(run_description), max_run_name_length)
             return context_dictionary
 
+        most_recent_previous_run = matching_previous_runs_queryset.first()
         # User can choose whether to overwrite with the re-run or create new data
         overwrite_previous_data = bool(request.POST.get('overwrite_checkbox') == 'on')
-        message = Message(run_number=most_recent_previous_run.run_number,
+        message = Message(started_by=request.user.id,
+                          run_number=most_recent_previous_run.run_number,
                           instrument=most_recent_previous_run.instrument.name,
-                          rb_number=str(most_recent_previous_run.experiment.reference_number),
+                          rb_number=most_recent_previous_run.experiment.reference_number,
                           data=most_recent_previous_run.data_location.first().file_path,
                           reduction_script=script_text,
                           reduction_arguments=new_script_arguments,
@@ -506,7 +508,7 @@ def find_reason_to_avoid_re_run(matching_previous_runs_queryset):
 
 
 def make_reduction_arguments(POST_arguments, default_variables):
-    new_script_arguments = {}
+    new_script_arguments = {"standard_vars": {}, "advanced_vars": {}}
     for key, value in POST_arguments:
         if 'var-' in key:
             if 'var-advanced-' in key:
