@@ -290,29 +290,38 @@ def submit_runs(request, instrument=None):
     """
     LOGGER.info('Submitting runs')
     # pylint:disable=no-member
-    instrument = Instrument.objects.get(name=instrument)
+    instrument = Instrument.objects.prefetch_related('reduction_runs').get(name=instrument)
     if request.method == 'GET':
         processing_status = StatusUtils().get_processing()
         queued_status = StatusUtils().get_queued()
         skipped_status = StatusUtils().get_skipped()
 
         # pylint:disable=no-member
-        last_run = ReductionRun.\
-            objects.filter(instrument=instrument).\
-            exclude(status=skipped_status).order_by('-run_number').first()
+        runs_for_instrument = instrument.reduction_runs.all()
+        last_run = runs_for_instrument.exclude(status=skipped_status).last()
 
-        default_variables = InstrumentVariablesUtils().get_default_variables(instrument.name)
-        default_standard_variables = default_variables["standard_vars"]
-        default_advanced_variables = default_variables["advanced_vars"]
+        standard_vars = {}
+        advanced_vars = {}
+
+        default_standard_variables = {}
+        default_advanced_variables = {}
+        for run_variable in last_run.run_variables.all():
+            variable = run_variable.variable
+            if variable.is_advanced:
+                advanced_vars[variable.name] = variable
+                default_advanced_variables[variable.name] = variable
+            else:
+                standard_vars[variable.name] = variable
+                default_standard_variables[variable.name] = variable
 
         # pylint:disable=no-member
         context_dictionary = {
             'instrument': instrument,
             'last_instrument_run': last_run,
-            'processing': ReductionRun.objects.filter(instrument=instrument, status=processing_status),
-            'queued': ReductionRun.objects.filter(instrument=instrument, status=queued_status),
-            'standard_variables': default_standard_variables,
-            'advanced_variables': default_advanced_variables,
+            'processing': runs_for_instrument.filter(status=processing_status),
+            'queued': runs_for_instrument.filter(status=queued_status),
+            'standard_variables': standard_vars,
+            'advanced_variables': advanced_vars,
             'default_standard_variables': default_standard_variables,
             'default_advanced_variables': default_advanced_variables,
         }
