@@ -91,7 +91,4 @@ class Message:
         :param destination: (str) The name of the queue to send the data to
         """
         if destination == '/queue/DataReady':
-            try:
-                stages.validate_data_ready(self)
-            except RuntimeError as err:
-                raise RuntimeError(f"Message was not valid for queue {destination}.") from err
+            stages.validate_data_ready(self)
