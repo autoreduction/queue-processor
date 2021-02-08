@@ -16,19 +16,16 @@ import re
 import sys
 
 import chardet
+from autoreduce_webapp.icat_communication import ICATCommunication
+from autoreduce_webapp.settings import FACILITY, REDUCTION_DIRECTORY
+from reduction_viewer.models import Notification, ReductionRun
+from reduction_viewer.utils import InstrumentUtils, ReductionRunUtils
+from instrument.models import InstrumentVariable, RunVariable
 
 from model.message.message import Message
-
-sys.path.append(os.path.join("../", os.path.dirname(os.path.dirname(__file__))))
-os.environ["DJANGO_SETTINGS_MODULE"] = "autoreduce_webapp.settings"
-
-# pylint:disable=wrong-import-position
-from autoreduce_webapp.icat_communication import ICATCommunication
-from autoreduce_webapp.settings import REDUCTION_DIRECTORY
-from reduction_viewer.models import Notification, ReductionRun
-from reduction_viewer.utils import InstrumentUtils
-from instrument.models import InstrumentVariable, RunVariable
+from queue_processors.queue_processor.reduction.service import ReductionScript
 from queue_processors.queue_processor.status_utils import StatusUtils
+from utils.clients.queue_client import QueueClient
 
 STATUS = StatusUtils()
 
@@ -37,7 +34,6 @@ LOGGER = logging.getLogger('django')
 
 class DataTooLong(ValueError):
     """ Specific valueError to add detail """
-    pass
 
 
 def log_error_and_notify(message):
@@ -206,7 +202,7 @@ class InstrumentVariablesUtils(object):
         (current_variables, upcoming_variables_by_run, upcoming_variables_by_experiment)
         """
         instrument = InstrumentUtils().get_instrument(instrument_name)
-        completed_status = StatusUtils().get_completed()
+        completed_status = STATUS.get_completed()
 
         # First, we find the latest run number to determine what's upcoming.
         try:
@@ -372,7 +368,8 @@ class InstrumentVariablesUtils(object):
             return [VariableUtils().copy_variable(var) for var in variables]
         return []
 
-    def get_default_variables(self, instrument_name, reduce_script=None):
+    def get_default_variables(self, instrument_name, reduce_script=None) -> dict:
+        # TODO move me in queue processor
         """
         Creates and returns a list of variables from the reduction script
         on disk for the instrument.
@@ -382,25 +379,14 @@ class InstrumentVariablesUtils(object):
         if not reduce_script:
             reduce_script = self._load_reduction_vars_script(instrument_name)
 
-        reduce_vars_module = self._read_script(
-            reduce_script, os.path.join(self._reduction_script_location(instrument_name), 'reduce_vars.py'))
-
-        if not reduce_vars_module:
-            return []
-
-        instrument = InstrumentUtils().get_instrument(instrument_name)
-        variables = []
-        if 'standard_vars' in dir(reduce_vars_module):
-            variables.extend(
-                self._create_variables(instrument, reduce_vars_module, reduce_vars_module.standard_vars, False))
-        if 'advanced_vars' in dir(reduce_vars_module):
-            variables.extend(
-                self._create_variables(instrument, reduce_vars_module, reduce_vars_module.advanced_vars, True))
-
-        for var in variables:
-            var.tracks_script = True
-
-        return variables
+        reduce_vars = ReductionScript(instrument_name, 'reduce_vars.py')
+        # TODO handle raises
+        module = reduce_vars.load()
+        return {
+            "standard_vars": getattr(module, 'standard_vars', {}),
+            "advanced_vars": getattr(module, 'advanced_vars', {}),
+            "variable_help": getattr(module, 'variable_help', {})
+        }
 
     def get_current_script_text(self, instrument_name):
         """
@@ -616,12 +602,17 @@ class MessagingUtils(object):
     @staticmethod
     def _send_pending_msg(message, delay=None):
         """ Sends message to ReductionPending (with the specified delay) """
-        # To prevent circular dependencies
-        MessagingUtils._add_project_root_to_path()
-        from utils.clients.queue_client import QueueClient
-
         message_client = QueueClient()
         message_client.connect()
 
         message_client.send('/queue/ReductionPending', message, priority='0', delay=delay)
+        message_client.disconnect()
+
+    @staticmethod
+    def send(message):
+        """ Sends message to ReductionPending (with the specified delay) """
+        message_client = QueueClient()
+        message_client.connect()
+
+        message_client.send('/queue/DataReady', message, priority='1')
         message_client.disconnect()
