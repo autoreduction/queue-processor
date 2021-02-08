@@ -184,12 +184,12 @@ def fail_queue(request):
 
                     new_job = ReductionRunUtils().createRetryRun(user_id=request.user.id, reduction_run=reduction_run)
 
-                    try:
-                        MessagingUtils().send_pending(new_job)
-                    # pylint:disable=broad-except
-                    except Exception as exception:
-                        new_job.delete()
-                        raise exception
+                    # try:
+                    #     MessagingUtils().send_pending(new_job)
+                    # # pylint:disable=broad-except
+                    # except Exception as exception:
+                    #     new_job.delete()
+                    #     raise exception
 
                 elif action == "default":
                     pass
