@@ -59,6 +59,14 @@ LOGGING = {
             'maxBytes': 104857600,
             'backupCount': 20,
         },
+        'webapp_file': {
+            'level': LOG_LEVEL,
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(PROJECT_ROOT, 'logs', 'webapp.log'),
+            'formatter': 'verbose',
+            'maxBytes': 104857600,
+            'backupCount': 20,
+        }
     },
     'root': {
         'level': LOG_LEVEL,
@@ -77,7 +85,7 @@ LOGGING = {
             'level': LOG_LEVEL,
         },
         'app': {
-            'handlers': ['queue_processor_file'],
+            'handlers': ['webapp_file'],
             'propagate': True,
             'level': 'DEBUG',
         },
