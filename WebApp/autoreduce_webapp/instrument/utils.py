@@ -376,8 +376,8 @@ class InstrumentVariablesUtils(object):
         If reduce_script is supplied, return variables using that script
         instead of the one on disk.
         """
-        if not reduce_script:
-            reduce_script = self._load_reduction_vars_script(instrument_name)
+        # if not reduce_script:
+        #     reduce_script = self._load_reduction_vars_script(instrument_name)
 
         reduce_vars = ReductionScript(instrument_name, 'reduce_vars.py')
         # TODO handle raises
