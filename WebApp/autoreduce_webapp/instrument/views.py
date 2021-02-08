@@ -301,19 +301,9 @@ def submit_runs(request, instrument=None):
             objects.filter(instrument=instrument).\
             exclude(status=skipped_status).order_by('-run_number').first()
 
-        standard_vars = {}
-        advanced_vars = {}
-
         default_variables = InstrumentVariablesUtils().get_default_variables(instrument.name)
-        default_standard_variables = {}
-        default_advanced_variables = {}
-        for variable in default_variables:
-            if variable.is_advanced:
-                advanced_vars[variable.name] = variable
-                default_advanced_variables[variable.name] = variable
-            else:
-                standard_vars[variable.name] = variable
-                default_standard_variables[variable.name] = variable
+        default_standard_variables = default_variables["standard_vars"]
+        default_advanced_variables = default_variables["advanced_vars"]
 
         # pylint:disable=no-member
         context_dictionary = {
@@ -321,8 +311,8 @@ def submit_runs(request, instrument=None):
             'last_instrument_run': last_run,
             'processing': ReductionRun.objects.filter(instrument=instrument, status=processing_status),
             'queued': ReductionRun.objects.filter(instrument=instrument, status=queued_status),
-            'standard_variables': standard_vars,
-            'advanced_variables': advanced_vars,
+            'standard_variables': default_standard_variables,
+            'advanced_variables': default_advanced_variables,
             'default_standard_variables': default_standard_variables,
             'default_advanced_variables': default_advanced_variables,
         }
