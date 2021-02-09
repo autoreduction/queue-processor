@@ -7,7 +7,7 @@
     {% if instrument_list %}
         {% for instrument in instrument_list %}
                 <div class="instrument-btn col-md-4 text-center" id={{ instrument }}-instrument-btn>
-                    <a href="/instrument/{{ instrument }}" class="btn btn-primary btn-lg btn-block">{{ instrument }}</a>
+                    <a href="{% url 'runs_list' instrument %}" class="btn btn-primary btn-lg btn-block">{{ instrument }}</a>
                 </div>
         {% if forloop.counter|divisibleby:3 %}
         </div>
