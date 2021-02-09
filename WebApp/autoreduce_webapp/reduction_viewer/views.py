@@ -33,7 +33,7 @@ from plotting.plot_handler import PlotHandler
 from utilities.pagination import CustomPaginator
 
 from reduction_viewer.models import (Experiment, Instrument, ReductionRun, Status)
-from reduction_viewer.utils import STATUS, ReductionRunUtils
+from reduction_viewer.utils import ReductionRunUtils
 from reduction_viewer.view_utils import deactivate_invalid_instruments
 
 LOGGER = logging.getLogger('app')

@@ -13,23 +13,20 @@ import io
 import logging
 import os
 import re
-import sys
 
 import chardet
 from autoreduce_webapp.icat_communication import ICATCommunication
-from autoreduce_webapp.settings import FACILITY, REDUCTION_DIRECTORY
-from reduction_viewer.models import Notification, ReductionRun
-from reduction_viewer.utils import InstrumentUtils, ReductionRunUtils
-from instrument.models import InstrumentVariable, RunVariable
+from autoreduce_webapp.settings import REDUCTION_DIRECTORY
 
-from model.message.message import Message
+from reduction_viewer.models import Notification, ReductionRun
+from reduction_viewer.utils import InstrumentUtils
+from instrument.models import InstrumentVariable, RunVariable
 from queue_processors.queue_processor.reduction.service import ReductionScript
 from queue_processors.queue_processor.status_utils import StatusUtils
-from utils.clients.queue_client import QueueClient
 
 STATUS = StatusUtils()
 
-LOGGER = logging.getLogger('django')
+LOGGER = logging.getLogger('app')
 
 
 class DataTooLong(ValueError):

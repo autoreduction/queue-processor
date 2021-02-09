@@ -17,7 +17,7 @@ from django.shortcuts import redirect, render
 from utilities import input_processing
 
 from reduction_viewer.models import Instrument, ReductionRun
-from reduction_viewer.utils import (InstrumentUtils, ReductionRunUtils, StatusUtils)
+from reduction_viewer.utils import (InstrumentUtils, ReductionRunUtils)
 from instrument.models import InstrumentVariable
 from instrument.utils import InstrumentVariablesUtils
 
@@ -195,9 +195,9 @@ def instrument_variables(request, instrument=None, start=0, end=0, experiment_re
         instrument = InstrumentUtils().get_instrument(instrument_name)
 
         editing = (start > 0 or experiment_reference > 0)
-        completed_status = StatusUtils().get_completed()
-        processing_status = StatusUtils().get_processing()
-        queued_status = StatusUtils().get_queued()
+        completed_status = STATUS.get_completed()
+        processing_status = STATUS.get_processing()
+        queued_status = STATUS.get_queued()
 
         try:
             # pylint:disable=no-member
@@ -255,7 +255,7 @@ def instrument_variables(request, instrument=None, start=0, end=0, experiment_re
                 default_standard_variables[variable.name] = variable
         # pylint:disable=no-member
         last_inst_run = ReductionRun.objects.filter(instrument=instrument).\
-            exclude(status=StatusUtils().get_skipped()).order_by('-run_number')[0]
+            exclude(status=STATUS.get_skipped()).order_by('-run_number')[0]
 
         # pylint:disable=no-member
         context_dictionary = {
@@ -291,9 +291,9 @@ def submit_runs(request, instrument=None):
     # pylint:disable=no-member
     instrument = Instrument.objects.prefetch_related('reduction_runs').get(name=instrument)
     if request.method == 'GET':
-        processing_status = StatusUtils().get_processing()
-        queued_status = StatusUtils().get_queued()
-        skipped_status = StatusUtils().get_skipped()
+        processing_status = STATUS.get_processing()
+        queued_status = STATUS.get_queued()
+        skipped_status = STATUS.get_skipped()
 
         # pylint:disable=no-member
         runs_for_instrument = instrument.reduction_runs.all()

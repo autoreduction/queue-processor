@@ -11,24 +11,15 @@ Note: This file has a large number of pylint disable as it was un unit tested
 at the time of fixing the pylint issues. Once unit tested properly, these disables
 should be able to be removed. Many are relating to imports
 """
-import datetime
-import logging
 import time
-import traceback
 
 import django.core.exceptions
 import django.http
 from autoreduce_webapp.settings import FACILITY
-from django.utils import timezone
+
+from reduction_viewer.models import Instrument, ReductionRun
 from model.message.message import Message
-
-from reduction_viewer.models import DataLocation, Instrument, ReductionRun
 from utils.clients.queue_client import QueueClient
-from instrument.models import RunVariable
-from queue_processors.queue_processor.status_utils import StatusUtils
-
-STATUS = StatusUtils()
-LOGGER = logging.getLogger('app')
 
 
 # pylint:disable=too-few-public-methods
