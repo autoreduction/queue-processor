@@ -15,12 +15,11 @@ from django.conf.urls import include
 from django.contrib import admin
 from django.urls import path
 
-from utils.project.structure import get_project_root
-
-sys.path.append(os.path.join(get_project_root(), 'WebApp', 'autoreduce_webapp'))
-
 from reduction_viewer import views as reduction_viewer_views
 from instrument import views as reduction_variables_views
+from utils.project.structure import PROJECT_ROOT
+
+sys.path.append(os.path.join(PROJECT_ROOT, 'WebApp', 'autoreduce_webapp'))
 
 # pylint: disable=invalid-name
 handler400 = 'autoreduce_webapp.views.handler400'

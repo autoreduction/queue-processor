@@ -23,7 +23,6 @@ class InstrumentSummaryPage(Page, NavbarMixin, FooterMixin, TourMixin):
     """
     Page model class for instrument summary page
     """
-
     def __init__(self, driver, instrument):
         super().__init__(driver)
         self.instrument = instrument
@@ -50,8 +49,7 @@ class InstrumentSummaryPage(Page, NavbarMixin, FooterMixin, TourMixin):
         :return: (List) List of strings of the run numbers of the current instrument summary page
         """
         self.driver.find_elements_by_class_name("non-existant class")
-        return [run.text.split(" - ")[0] for run in
-                self.driver.find_elements_by_class_name("run-num-links")]
+        return [run.text.split(" - ")[0] for run in self.driver.find_elements_by_class_name("run-num-links")]
 
     def click_run(self, run_number: int, version: int) -> RunSummaryPage:
         """
