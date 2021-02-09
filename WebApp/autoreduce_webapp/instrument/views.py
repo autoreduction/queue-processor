@@ -19,7 +19,7 @@ from utilities import input_processing
 from reduction_viewer.models import Instrument, ReductionRun
 from reduction_viewer.utils import (InstrumentUtils, ReductionRunUtils)
 from instrument.models import InstrumentVariable
-from instrument.utils import InstrumentVariablesUtils
+from instrument.utils import InstrumentVariablesUtils, STATUS
 
 LOGGER = logging.getLogger("app")
 
