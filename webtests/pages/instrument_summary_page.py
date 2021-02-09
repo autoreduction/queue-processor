@@ -23,4 +23,4 @@ class InstrumentSummaryPage(Page, NavbarMixin, FooterMixin, TourMixin):
         Return the path section of the instrument url
         :return: (str) Path section of the page url
         """
-        return "/instrument/%s/"
+        return "/runs/%s/"
