@@ -430,8 +430,8 @@ def run_confirmation(request, instrument: str):
 
     use_current_script = request.POST.get('use_current_script', u"true").lower() == u"true"
     if use_current_script:
-        script_text = InstrumentVariablesUtils().get_current_script_text(instrument)
-        default_variables = InstrumentVariablesUtils().get_default_variables(instrument)
+        script_text = InstrumentVariablesUtils.get_current_script_text(instrument)
+        default_variables = InstrumentVariablesUtils.get_default_variables(instrument)
     else:
         raise NotImplementedError("TODO this branch")
         script_text = most_recent_run.script

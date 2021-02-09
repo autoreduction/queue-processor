@@ -365,7 +365,8 @@ class InstrumentVariablesUtils(object):
             return [VariableUtils().copy_variable(var) for var in variables]
         return []
 
-    def get_default_variables(self, instrument_name, reduce_script=None) -> dict:
+    @staticmethod
+    def get_default_variables(instrument_name, reduce_script=None) -> dict:
         # TODO move me in queue processor
         """
         Creates and returns a list of variables from the reduction script
@@ -385,7 +386,8 @@ class InstrumentVariablesUtils(object):
             "variable_help": getattr(module, 'variable_help', {})
         }
 
-    def get_current_script_text(self, instrument_name):
+    @staticmethod
+    def get_current_script_text(instrument_name):
         """
         Fetches the reduction script and variables script for
         the given instrument, and returns each as a string.
