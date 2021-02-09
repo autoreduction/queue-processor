@@ -28,13 +28,15 @@ from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.db.models import Q
 from django.http import HttpResponseNotFound
 from django.shortcuts import redirect
-from instrument.utils import InstrumentVariablesUtils, MessagingUtils
+from instrument.utils import InstrumentVariablesUtils
 from plotting.plot_handler import PlotHandler
 from utilities.pagination import CustomPaginator
 
 from reduction_viewer.models import (Experiment, Instrument, ReductionRun, Status)
 from reduction_viewer.utils import ReductionRunUtils
 from reduction_viewer.view_utils import deactivate_invalid_instruments
+from instrument.utils import InstrumentVariablesUtils, STATUS
+from plotting.plot_handler import PlotHandler
 
 LOGGER = logging.getLogger('app')
 
