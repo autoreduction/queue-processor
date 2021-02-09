@@ -7,11 +7,15 @@
 #! /usr/bin/env python
 """
 Check that the last run is correct
+
+Issue to convert this to use the ORM is at
+https://github.com/ISISScientificComputing/autoreduce/issues/1096
 """
 from __future__ import print_function
 import sys
 from os import path
 
+# pylint:disable=import-error
 import MySQLdb
 import MySQLdb.cursors
 
