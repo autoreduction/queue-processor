@@ -26,10 +26,11 @@ from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponseNotFound
 from django.shortcuts import redirect
-from reduction_variables.utils import InstrumentVariablesUtils, MessagingUtils
+from instrument.utils import InstrumentVariablesUtils, MessagingUtils
 from reduction_viewer.models import Experiment, ReductionRun, Instrument, Status
 from reduction_viewer.utils import StatusUtils, ReductionRunUtils
 from reduction_viewer.view_utils import deactivate_invalid_instruments
+from instrument.utils import InstrumentVariablesUtils
 from utilities.pagination import CustomPaginator
 
 from plotting.plot_handler import PlotHandler

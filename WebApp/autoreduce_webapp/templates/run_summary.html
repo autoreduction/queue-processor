@@ -191,7 +191,7 @@
             {% endif %}
             {% if reduction_variables_on and has_variables%}
                 {% autoescape on %}
-                    {% view "reduction_variables.views.run_summary" instrument run_number run_version %}
+                    {% view "instrument.views.run_summary" instrument run_number run_version %}
                 {% endautoescape %}
             {% endif %}
           </div>
