@@ -17,7 +17,7 @@ import time
 import atexit
 from signal import SIGTERM
 
-LOGGER = logging.getLogger(__file__)
+LOGGER = logging.getLogger("queue_processor")
 
 
 class Daemon:
@@ -44,7 +44,9 @@ class Daemon:
                 # exit first parent
                 sys.exit(0)
         except OSError as exp:
-            LOGGER.error("fork #1 failed: %d (%s)\n", exp.errno, exp.strerror)
+            msg = f"fork #1 failed: {exp.errno} ({exp.strerror})\n"
+            print(msg, file=sys.stderr)
+            LOGGER.error(msg)
             sys.exit(1)
 
         # decouple from parent environment
@@ -61,7 +63,9 @@ class Daemon:
                 # exit from second parent
                 sys.exit(0)
         except OSError as exp:
-            LOGGER.error("fork #2 failed: %d (%s)\n", exp.errno, exp.strerror)
+            msg = f"fork #2 failed: {exp.errno} ({exp.strerror})\n"
+            print(msg, file=sys.stderr)
+            LOGGER.error(msg)
             sys.exit(1)
 
         # redirect standard file descriptors
@@ -80,7 +84,9 @@ class Daemon:
         pid = str(os.getpid())
         with open(self.pidfile, 'w+') as pid_file:
             pid_file.write("%s\n" % pid)
-        LOGGER.info("Started daemon with PID %s", str(pid))
+        msg = f"Started daemon with PID {pid}"
+        print(msg)
+        LOGGER.info(msg)
 
     def delpid(self):
         """ delete the pid file """
@@ -98,8 +104,9 @@ class Daemon:
             pid = None
 
         if pid:
-            message = "pidfile %s already exist. Daemon already running?\n"
-            LOGGER.warning(message, self.pidfile)
+            message = f"pidfile {self.pidfile} already exist. Daemon already running?"
+            print(message, file=sys.stderr)
+            LOGGER.warning(message)
             sys.exit(1)
 
         # Start the daemon
@@ -118,8 +125,8 @@ class Daemon:
             pid = None
 
         if not pid:
-            message = "pidfile %s does not exist. Daemon not running?\n"
-            LOGGER.error(message, self.pidfile)
+            message = f"pidfile {self.pidfile} does not exist. Daemon not running?\n"
+            LOGGER.error(message)
             # Not an error in a restart
             return
 
