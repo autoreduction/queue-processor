@@ -21,7 +21,7 @@ INI_FILE = os.path.join(PROJECT_ROOT, 'utils', 'credentials.ini')
 CONFIG.read(INI_FILE)
 
 
-def get_setting(section, key):
+def get_setting(section: str, key: str) -> str:
     """
     Gets the value of the key from the section.
     """
