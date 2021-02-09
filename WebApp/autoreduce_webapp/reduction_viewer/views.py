@@ -280,9 +280,9 @@ def run_summary(_, instrument_name=None, run_number=None, run_version=0):
 
 @login_and_uows_valid
 @check_permissions
-@render_with('instrument_summary.html')
+@render_with('runs_list.html')
 # pylint:disable=no-member,unused-argument
-def instrument_summary(request, instrument=None):
+def runs_list(request, instrument=None):
     """
     Render instrument summary
     """
@@ -418,21 +418,6 @@ def help(_):
     Note: _ is replacing the passed in request parameter
     """
     return {}
-
-
-@login_and_uows_valid
-@check_permissions
-# pylint:disable=no-member
-def instrument_pause(request, instrument=None):
-    """
-    Renders pausing of instrument returning a JSON response
-    """
-    # ToDo: Check ICAT credentials
-    instrument_obj = Instrument.objects.get(name=instrument)
-    currently_paused = (request.POST.get("currently_paused").lower() == u"false")
-    instrument_obj.is_paused = currently_paused
-    instrument_obj.save()
-    return JsonResponse({'currently_paused': str(currently_paused)})  # Blank response
 
 
 @render_with('admin/graph_home.html')

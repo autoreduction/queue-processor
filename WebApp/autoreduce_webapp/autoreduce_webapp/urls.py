@@ -38,6 +38,7 @@ urlpatterns = [
     path('overview/', reduction_viewer_views.overview, name='overview'),
     path('runs/queue/', reduction_viewer_views.run_queue, name='run_queue'),
     path('runs/failed/', reduction_viewer_views.fail_queue, name='fail_queue'),
+    path('runs/<str:instrument>/', reduction_viewer_views.runs_list, name='runs_list'),
     path('runs/<str:instrument_name>/<int:run_number>/', reduction_viewer_views.run_summary, name='run_summary'),
     path('runs/<str:instrument_name>/<int:run_number>/<int:run_version>/',
          reduction_viewer_views.run_summary,
@@ -45,8 +46,6 @@ urlpatterns = [
     path('runs/<str:instrument>/confirmation/', reduction_variables_views.run_confirmation, name='run_confirmation'),
 
     # ===========================INSTRUMENT========================== #
-    path('instrument/<str:instrument>/', reduction_viewer_views.instrument_summary, name='instrument_summary'),
-    path('instrument/<str:instrument>/pause', reduction_viewer_views.instrument_pause, name='instrument_pause'),
     path('instrument/', include('instrument.urls')),
 
     # ===========================EXPERIMENT========================== #
@@ -55,7 +54,7 @@ urlpatterns = [
     # ===========================SCRIPTS============================= #
     path('graph/', reduction_viewer_views.graph_home, name="graph"),
     path('graph/<str:instrument_name>', reduction_viewer_views.graph_instrument, name="graph_instrument"),
-    path('stats', reduction_viewer_views.stats, name="stats"),
+    path('stats/', reduction_viewer_views.stats, name="stats"),
 
     # ===========================VISUALISATION============================= #
     path('django_plotly_dash/', include('django_plotly_dash.urls'))

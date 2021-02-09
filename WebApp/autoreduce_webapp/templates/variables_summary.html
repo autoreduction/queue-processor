@@ -13,7 +13,7 @@
         {% if reduction_variables_on %}
         <div class="row">
             <div class="col-md-12 text-center">
-                {% view "instrument.views.instrument_summary" instrument=instrument.name last_run_object=last_instrument_run %}
+                {% view "instrument.views.runs_list" instrument=instrument.name last_run_object=last_instrument_run %}
             </div>
         </div>
         {% endif %}

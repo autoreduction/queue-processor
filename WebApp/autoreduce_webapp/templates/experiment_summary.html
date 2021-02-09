@@ -24,7 +24,7 @@
                                     <strong>Principal Investigator:</strong> {{ experiment_details.pi }}
                                 </div>
                                 <div>
-                                    <strong>Instrument:</strong> {% if experiment_details.instrument %}<a href="{% url 'instrument_summary' instrument=experiment_details.instrument %}">{{ experiment_details.instrument }}{% endif %}</a>
+                                    <strong>Instrument:</strong> {% if experiment_details.instrument %}<a href="{% url 'runs_list' instrument=experiment_details.instrument %}">{{ experiment_details.instrument }}{% endif %}</a>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -39,7 +39,7 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="file-path">
-                                    <strong>Data:</strong> 
+                                    <strong>Data:</strong>
                                     {% if data %}
                                         {% for location in data %}
                                             {{ location.file_path }}<br/>
@@ -51,7 +51,7 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="file-path">
-                                    <strong>Reduced:</strong> 
+                                    <strong>Reduced:</strong>
                                     {% if reduced_data %}
                                         {% for location in reduced_data %}
                                             {{ location.file_path }}<br/>

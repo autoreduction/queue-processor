@@ -10,97 +10,17 @@ This imports into another view, thus no middleware
 """
 import logging
 
-from django.shortcuts import redirect
-from django.shortcuts import render
-from autoreduce_webapp.view_utils import (login_and_uows_valid, render_with, check_permissions)
-from instrument.models import InstrumentVariable, RunVariable
-from instrument.utils import InstrumentVariablesUtils, MessagingUtils
+from autoreduce_webapp.view_utils import (check_permissions, login_and_uows_valid, render_with)
+from django.http import JsonResponse
+from django.shortcuts import redirect, render
 from reduction_viewer.models import Instrument, ReductionRun
-from reduction_viewer.utils import InstrumentUtils, StatusUtils, ReductionRunUtils
+from reduction_viewer.utils import (InstrumentUtils, ReductionRunUtils, StatusUtils)
 from utilities import input_processing
 
-from instrument.models import InstrumentVariable
-from instrument.utils import InstrumentVariablesUtils
+from instrument.models import InstrumentVariable, RunVariable
+from instrument.utils import InstrumentVariablesUtils, MessagingUtils
 
 LOGGER = logging.getLogger("app")
-
-
-# pylint:disable=too-many-locals
-def instrument_summary(request, instrument, last_run_object):
-    """
-    Handles view request for the instrument summary page
-    """
-    # pylint:disable=no-member
-    instrument = Instrument.objects.get(name=instrument)
-
-    # pylint:disable=invalid-name
-    current_variables, upcoming_variables_by_run, upcoming_variables_by_experiment = \
-        InstrumentVariablesUtils().get_current_and_upcoming_variables(instrument.name,
-                                                                      last_run_object)
-
-    # Create a nested dictionary for by-run
-    upcoming_variables_by_run_dict = {}
-    for variable in upcoming_variables_by_run:
-        if variable.start_run not in upcoming_variables_by_run_dict:
-            upcoming_variables_by_run_dict[variable.start_run] = {
-                'run_start': variable.start_run,
-                'run_end': 0,  # We'll fill this in after
-                'tracks_script': variable.tracks_script,
-                'variables': [],
-                'instrument': instrument,
-            }
-        upcoming_variables_by_run_dict[variable.start_run]['variables'].append(variable)
-
-    # Fill in the run end numbers
-    run_end = 0
-    for run_number in sorted(list(upcoming_variables_by_run_dict.keys()), reverse=True):
-        upcoming_variables_by_run_dict[run_number]['run_end'] = run_end
-        run_end = max(run_number - 1, 0)
-
-    current_start = current_variables[0].start_run
-    # pylint:disable=deprecated-lambda
-    next_run_starts = list(filter(lambda start: start > current_start, sorted(upcoming_variables_by_run_dict.keys())))
-    current_end = next_run_starts[0] - 1 if next_run_starts else 0
-
-    current_vars = {
-        'run_start': current_start,
-        'run_end': current_end,
-        'tracks_script': current_variables[0].tracks_script,
-        'variables': current_variables,
-        'instrument': instrument,
-    }
-
-    # Move the upcoming vars into an ordered list
-    upcoming_variables_by_run_ordered = []
-    for key in sorted(upcoming_variables_by_run_dict):
-        upcoming_variables_by_run_ordered.append(upcoming_variables_by_run_dict[key])
-
-    # Create a nested dictionary for by-experiment
-    upcoming_variables_by_experiment_dict = {}
-    for variables in upcoming_variables_by_experiment:
-        if variables.experiment_reference not in upcoming_variables_by_experiment_dict:
-            upcoming_variables_by_experiment_dict[variables.experiment_reference] = {
-                'experiment': variables.experiment_reference,
-                'variables': [],
-                'instrument': instrument,
-            }
-        upcoming_variables_by_experiment_dict[variables.experiment_reference]['variables'].\
-            append(variables)
-
-    # Move the upcoming vars into an ordered list
-    upcoming_variables_by_experiment_ordered = []
-    for key in sorted(upcoming_variables_by_experiment_dict):
-        upcoming_variables_by_experiment_ordered.append(upcoming_variables_by_experiment_dict[key])
-    sorted(upcoming_variables_by_experiment_ordered, key=lambda r: r['experiment'])
-
-    context_dictionary = {
-        'instrument': instrument,
-        'current_variables': current_vars,
-        'upcoming_variables_by_run': upcoming_variables_by_run_ordered,
-        'upcoming_variables_by_experiment': upcoming_variables_by_experiment_ordered,
-    }
-
-    return render(request, 'snippets/instrument_summary_variables.html', context_dictionary)
 
 
 # pylint:disable=unused-argument
@@ -119,7 +39,7 @@ def delete_instrument_variables(request, instrument=None, start=0, end=0, experi
     else:
         InstrumentVariablesUtils().set_variables_for_runs(instrument_name, [], start, end)
 
-    return redirect('instrument_summary', instrument=instrument_name)
+    return redirect('runs_list', instrument=instrument_name)
 
 
 @login_and_uows_valid
@@ -190,7 +110,7 @@ def instrument_variables(request, instrument=None, start=0, end=0, experiment_re
             modify_vars(instr_vars, new_var_dict)
             InstrumentVariablesUtils().set_variables_for_experiment(instrument_name, instr_vars, experiment_reference)
 
-        return redirect('instrument_summary', instrument=instrument_name)
+        return redirect('runs_list', instrument=instrument_name)
 
     else:
         instrument = InstrumentUtils().get_instrument(instrument_name)
@@ -404,7 +324,7 @@ def run_confirmation(request, instrument):
     Handles request for user to confirm re-run
     """
     if request.method != 'POST':
-        return redirect('instrument_summary', instrument=instrument.name)
+        return redirect('runs_list', instrument=instrument.name)
 
     # POST
     # pylint:disable=no-member
@@ -538,3 +458,18 @@ def run_confirmation(request, instrument):
             context_dictionary['error'] = 'Failed to send new job. (%s)' % str(exception)
 
     return context_dictionary
+
+
+@login_and_uows_valid
+@check_permissions
+# pylint:disable=no-member
+def instrument_pause(request, instrument=None):
+    """
+    Renders pausing of instrument returning a JSON response
+    """
+    # ToDo: Check ICAT credentials
+    instrument_obj = Instrument.objects.get(name=instrument)
+    currently_paused = (request.POST.get("currently_paused").lower() == u"false")
+    instrument_obj.is_paused = currently_paused
+    instrument_obj.save()
+    return JsonResponse({'currently_paused': str(currently_paused)})  # Blank response

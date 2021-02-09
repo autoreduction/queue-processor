@@ -5,7 +5,7 @@ individual page in the pagination.
 This works in a similar way to the standard Paginator for Django but gives the added benefit of
 easier display names, as well as setting a maximum number of pages to display in the pagination
 
-This is currently used in the instrument_summary.html page
+This is currently used in the runs_list.html page
 """
 
 import math
