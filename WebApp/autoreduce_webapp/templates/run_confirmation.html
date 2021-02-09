@@ -19,7 +19,7 @@
                             {% else %}
                                 Successfully submitted runs for reduction: <br>
                                 {% for run in runs %}
-                                    <a href="{% url 'run_summary' instrument_name=run.instrument.name run_number=run.run_number run_version=run.run_version %}">#{{ run.run_number }}</a>,
+                                    <a href="{% url 'runs:summary' instrument_name=run.instrument.name run_number=run.run_number run_version=run.run_version %}">#{{ run.run_number }}</a>,
                                 {% endfor %}
                             {% endif%}
 
@@ -51,7 +51,7 @@
                         {% if runs|length == 1 %}
                             <div class="row">
                                 <div class="col-md-12 text-center">
-                                    <a href="{% url 'run_summary' instrument_name=runs.0.instrument.name run_number=runs.0.run_number run_version=runs.0.run_version %}">View this reduction job</a>
+                                    <a href="{% url 'runs:summary' instrument_name=runs.0.instrument.name run_number=runs.0.run_number run_version=runs.0.run_version %}">View this reduction job</a>
                                 </div>
                             </div>
                         {% endif %}

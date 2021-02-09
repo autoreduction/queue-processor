@@ -26,11 +26,11 @@
                         <a href="{% url 'overview' %}">All Instruments</a>
                     </li>
                     <li>
-                        <a href="{% url 'run_queue' %}">Job Queue</a>
+                        <a href="{% url 'runs:queue' %}">Job Queue</a>
                     </li>
                     {% if user.is_superuser %}
                     <li>
-                        <a href="{% url 'fail_queue' %}">Failed Jobs</a>
+                        <a href="{% url 'runs:failed' %}">Failed Jobs</a>
                     </li>
                     <li>
                         <a href="{% url 'admin:index' %}">Admin</a>

@@ -36,13 +36,7 @@ urlpatterns = [
 
     # ===========================RUNS================================= #
     path('overview/', reduction_viewer_views.overview, name='overview'),
-    path('runs/queue/', reduction_viewer_views.run_queue, name='run_queue'),
-    path('runs/failed/', reduction_viewer_views.fail_queue, name='fail_queue'),
-    path('runs/<str:instrument>/', reduction_viewer_views.runs_list, name='runs_list'),
-    path('runs/<str:instrument_name>/<int:run_number>/', reduction_viewer_views.run_summary, name='run_summary'),
-    path('runs/<str:instrument_name>/<int:run_number>/<int:run_version>/',
-         reduction_viewer_views.run_summary,
-         name='run_summary'),
+    path('runs/', include('reduction_viewer.urls')),
     path('runs/<str:instrument>/confirmation/', reduction_variables_views.run_confirmation, name='run_confirmation'),
 
     # ===========================INSTRUMENT========================== #

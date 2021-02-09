@@ -25,7 +25,7 @@
                 {% for job, started_by in queue %}
                     <tr class="{% colour_table_row job.status.value_verbose %}">
                         <td>
-                            <a href="{% url 'run_summary' instrument_name=job.instrument.name run_number=job.run_number run_version=job.run_version %}">{{ job.title }}</a>
+                            <a href="{% url 'runs:summary' instrument_name=job.instrument.name run_number=job.run_number run_version=job.run_version %}">{{ job.title }}</a>
                         </td>
                         <td>{{ job.instrument.name }}</td>
                         <td><strong>{{ job.status.value_verbose }}</strong></td>
@@ -41,5 +41,5 @@
                 <h3>No pending reduction jobs.</h3>
             </div>
         </div>
-    {% endif %} 
+    {% endif %}
 {% endblock %}

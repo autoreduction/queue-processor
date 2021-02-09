@@ -25,5 +25,5 @@ urlpatterns = [
          views.delete_instrument_variables,
          name='delete_variables_by_experiment'),
     path('<str:instrument>/default_variables/', views.current_default_variables, name='current_default_variables'),
-    path('<str:instrument>/pause', views.instrument_pause, name='pause'),
+    path('<str:instrument>/pause/', views.instrument_pause, name='pause'),
 ]

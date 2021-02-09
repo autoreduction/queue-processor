@@ -24,7 +24,7 @@
                     <option value="hide">Hide </option>
                     <option value="cancel">Cancel retry</option>
                 </select>
-                <form id="actionForm" method="POST" action="{% url 'fail_queue' %}" style="float: left; padding-left: 5px;">
+                <form id="actionForm" method="POST" action="{% url 'runs:failed' %}" style="float: left; padding-left: 5px;">
                     <input type='hidden' name='csrfmiddlewaretoken' value='{{ csrf_token }}' />
                     <input type="hidden" name="selectedRuns">
                     <input type="hidden" name="action">
@@ -51,7 +51,7 @@
                       {% endif %}
                             <td><input type='checkbox' name='runCheckbox' data-run_number='{{job.run_number}}' data-run_version='{{job.run_version}}' data-rb_number='{{job.experiment.reference_number}}'></td>
                             <td>
-                                <a href="{% url 'run_summary' instrument_name=job.instrument.name run_number=job.run_number run_version=job.run_version %}">{{ job.title }}</a>
+                                <a href="{% url 'runs:summary' instrument_name=job.instrument.name run_number=job.run_number run_version=job.run_version %}">{{ job.title }}</a>
                             </td>
                             <td>{{ job.instrument.name }}</td>
                             <td style="width:600px;"><strong>{{ job.message }}</strong></td>
@@ -63,7 +63,7 @@
                                         <span> (Last attempt)</span>
                                     {% endif %}
                                     {% if job.retry_run %}
-                                        <a href="{% url 'run_summary' instrument_name=job.instrument.name run_number=job.retry_run.run_number run_version=job.retry_run.run_version %}"> ({{ job.retry_run.status.value_verbose }})</a>
+                                        <a href="{% url 'runs:summary' instrument_name=job.instrument.name run_number=job.retry_run.run_number run_version=job.retry_run.run_version %}"> ({{ job.retry_run.status.value_verbose }})</a>
                                     {% endif %}
                                 {% else %}
                                     Never
@@ -79,9 +79,9 @@
                 <h3>No failed jobs.</h3>
             </div>
         </div>
-    {% endif %} 
+    {% endif %}
 {% endblock %}
 
 {% block scripts %}
-    <script src='{% static "javascript/fail_queue.js" %}'> </script>
+    <script src='{% static "javascript/runs:failed.js" %}'> </script>
 {% endblock %}

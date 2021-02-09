@@ -23,6 +23,84 @@ from instrument.utils import InstrumentVariablesUtils, MessagingUtils
 LOGGER = logging.getLogger("app")
 
 
+# pylint:disable=too-many-locals
+def instrument_summary(request, instrument, last_run_object):
+    """
+    Handles view request for the instrument summary page
+    """
+    # pylint:disable=no-member
+    instrument = Instrument.objects.get(name=instrument)
+
+    # pylint:disable=invalid-name
+    current_variables, upcoming_variables_by_run, upcoming_variables_by_experiment = \
+        InstrumentVariablesUtils().get_current_and_upcoming_variables(instrument.name,
+                                                                      last_run_object)
+
+    # Create a nested dictionary for by-run
+    upcoming_variables_by_run_dict = {}
+    for variable in upcoming_variables_by_run:
+        if variable.start_run not in upcoming_variables_by_run_dict:
+            upcoming_variables_by_run_dict[variable.start_run] = {
+                'run_start': variable.start_run,
+                'run_end': 0,  # We'll fill this in after
+                'tracks_script': variable.tracks_script,
+                'variables': [],
+                'instrument': instrument,
+            }
+        upcoming_variables_by_run_dict[variable.start_run]['variables'].append(variable)
+
+    # Fill in the run end numbers
+    run_end = 0
+    for run_number in sorted(list(upcoming_variables_by_run_dict.keys()), reverse=True):
+        upcoming_variables_by_run_dict[run_number]['run_end'] = run_end
+        run_end = max(run_number - 1, 0)
+
+    current_start = current_variables[0].start_run
+    # pylint:disable=deprecated-lambda
+    next_run_starts = list(filter(lambda start: start > current_start, sorted(upcoming_variables_by_run_dict.keys())))
+    current_end = next_run_starts[0] - 1 if next_run_starts else 0
+
+    current_vars = {
+        'run_start': current_start,
+        'run_end': current_end,
+        'tracks_script': current_variables[0].tracks_script,
+        'variables': current_variables,
+        'instrument': instrument,
+    }
+
+    # Move the upcoming vars into an ordered list
+    upcoming_variables_by_run_ordered = []
+    for key in sorted(upcoming_variables_by_run_dict):
+        upcoming_variables_by_run_ordered.append(upcoming_variables_by_run_dict[key])
+
+    # Create a nested dictionary for by-experiment
+    upcoming_variables_by_experiment_dict = {}
+    for variables in upcoming_variables_by_experiment:
+        if variables.experiment_reference not in upcoming_variables_by_experiment_dict:
+            upcoming_variables_by_experiment_dict[variables.experiment_reference] = {
+                'experiment': variables.experiment_reference,
+                'variables': [],
+                'instrument': instrument,
+            }
+        upcoming_variables_by_experiment_dict[variables.experiment_reference]['variables'].\
+            append(variables)
+
+    # Move the upcoming vars into an ordered list
+    upcoming_variables_by_experiment_ordered = []
+    for key in sorted(upcoming_variables_by_experiment_dict):
+        upcoming_variables_by_experiment_ordered.append(upcoming_variables_by_experiment_dict[key])
+    sorted(upcoming_variables_by_experiment_ordered, key=lambda r: r['experiment'])
+
+    context_dictionary = {
+        'instrument': instrument,
+        'current_variables': current_vars,
+        'upcoming_variables_by_run': upcoming_variables_by_run_ordered,
+        'upcoming_variables_by_experiment': upcoming_variables_by_experiment_ordered,
+    }
+
+    return render(request, 'snippets/instrument_summary_variables.html', context_dictionary)
+
+
 # pylint:disable=unused-argument
 @login_and_uows_valid
 @check_permissions
