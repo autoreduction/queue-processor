@@ -48,8 +48,8 @@ class BaseTestCase(StaticLiveServerTestCase):
     def _screenshot_driver(self):
         now = datetime.datetime.now()
         screenshot_name = f"{self._testMethodName}-{now.strftime('%Y-%m-%d_%H-%M-%S')}.png"
-        path = str(Path(get_project_root(), "WebApp", "autoreduce_webapp", "selenium_tests", "screenshots",
-                        screenshot_name))
+        path = str(
+            Path(get_project_root(), "WebApp", "autoreduce_webapp", "selenium_tests", "screenshots", screenshot_name))
         self.driver.save_screenshot(path)
 
     def _is_test_failure(self):
@@ -64,7 +64,6 @@ class NavbarTestMixin:
     """
     Contains test cases for pages with the NavbarMixin
     """
-
     def test_navbar_visible(self):
         """
         Test: Navbar is visible on current page

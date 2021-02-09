@@ -5,6 +5,7 @@
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 # pylint: skip-file
+import sys
 import os
 import configparser
 from utils.project.structure import PROJECT_ROOT
@@ -126,7 +127,6 @@ else:
             },
         }
     }
-}
 
 # Internationalization
 # https://docs.djangoproject.com/en/dev/topics/i18n/

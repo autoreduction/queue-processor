@@ -26,7 +26,6 @@ class TestOverviewPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
         super().setUp()
         self.page = OverviewPage(self.driver)
 
-
     def test_correct_instruments_visible(self):
         """
         Tests: Correct instruments displayed

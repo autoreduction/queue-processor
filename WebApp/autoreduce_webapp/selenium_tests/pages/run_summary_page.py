@@ -18,7 +18,6 @@ class RunSummaryPage(Page, NavbarMixin, FooterMixin, TourMixin):
     """
     Page model class for run summary page
     """
-
     def __init__(self, driver, instrument, run_number, version):
         super().__init__(driver)
         self.instrument = instrument
@@ -38,7 +37,7 @@ class RunSummaryPage(Page, NavbarMixin, FooterMixin, TourMixin):
         Open the page with the webdriver
         :return: The RunSummaryPage object model
         """
-        self.driver.get(configuration.get_url()) # Add note to readme about the login hack with the double get
+        self.driver.get(configuration.get_url())  # Add note to readme about the login hack with the double get
         self.driver.get(RunSummaryPage.url() % (self.instrument, self.run_number, self.version))
         return self
 
