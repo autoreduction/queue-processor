@@ -25,9 +25,6 @@ venv3/
 venv36/
 venv37/
 
-# Ignore migrations files
-migrations/
-
 # Ignore pip install installation
 AutoReduction.egg-info/
 
