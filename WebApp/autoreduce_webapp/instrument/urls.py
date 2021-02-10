@@ -6,24 +6,24 @@
 # ############################################################################### #
 
 from django.urls import path
-from instrument import views
+from instrument.views import runs, variables, pause
 
 app_name = "instrument"
 
 urlpatterns = [
-    path('<str:instrument>/submit_runs/', views.submit_runs, name='submit_runs'),
-    path('<str:instrument>/variables/', views.instrument_variables, name='variables'),
-    path('<str:instrument>/variables/<int:start>/<int:end>/', views.instrument_variables, name='variables'),
-    path('<str:instrument>/variables_summary/', views.instrument_variables_summary, name='variables_summary'),
+    path('<str:instrument>/submit_runs/', runs.submit_runs, name='submit_runs'),
+    path('<str:instrument>/variables/', variables.instrument_variables, name='variables'),
+    path('<str:instrument>/variables/<int:start>/<int:end>/', variables.instrument_variables, name='variables'),
+    path('<str:instrument>/variables_summary/', variables.instrument_variables_summary, name='variables_summary'),
     path('<str:instrument>/variables/<int:start>/<int:end>/delete',
-         views.delete_instrument_variables,
+         variables.delete_instrument_variables,
          name='delete_variables'),
     path('<str:instrument>/variables/experiment/<int:experiment_reference>/',
-         views.instrument_variables,
+         variables.instrument_variables,
          name='variables_by_experiment'),
     path('<str:instrument>/variables/experiment/<int:experiment_reference>/delete/',
-         views.delete_instrument_variables,
+         variables.delete_instrument_variables,
          name='delete_variables_by_experiment'),
-    path('<str:instrument>/default_variables/', views.current_default_variables, name='current_default_variables'),
-    path('<str:instrument>/pause/', views.instrument_pause, name='pause'),
+    path('<str:instrument>/default_variables/', variables.current_default_variables, name='current_default_variables'),
+    path('<str:instrument>/pause/', pause.instrument_pause, name='pause'),
 ]
