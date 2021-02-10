@@ -7,7 +7,8 @@ omit =
     # Requires external deps
     */virtualenv/*
     *.so
-
+    */test/*
+    */tests/*
 
 [report]
 exclude_lines =
