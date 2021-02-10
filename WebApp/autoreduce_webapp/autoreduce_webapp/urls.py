@@ -4,11 +4,6 @@
 # Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
-"""
-Routing for URI to page contents
-"""
-import os
-import sys
 
 from django.conf import settings
 from django.conf.urls import include
@@ -16,10 +11,7 @@ from django.contrib import admin
 from django.urls import path
 
 from reduction_viewer import views as reduction_viewer_views
-from instrument import views as reduction_variables_views
-from utils.project.structure import PROJECT_ROOT
-
-sys.path.append(os.path.join(PROJECT_ROOT, 'WebApp', 'autoreduce_webapp'))
+from instrument.views import runs
 
 # pylint: disable=invalid-name
 handler400 = 'autoreduce_webapp.views.handler400'
@@ -37,7 +29,7 @@ urlpatterns = [
     # ===========================RUNS================================= #
     path('overview/', reduction_viewer_views.overview, name='overview'),
     path('runs/', include('reduction_viewer.urls')),
-    path('runs/<str:instrument>/confirmation/', reduction_variables_views.run_confirmation, name='run_confirmation'),
+    path('runs/<str:instrument>/confirmation/', runs.run_confirmation, name='run_confirmation'),
 
     # ===========================INSTRUMENT========================== #
     path('instrument/', include('instrument.urls')),

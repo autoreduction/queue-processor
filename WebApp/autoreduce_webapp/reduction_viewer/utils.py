@@ -33,6 +33,7 @@ class InstrumentUtils(object):
         Helper method that will try to get an instrument matching the given name
         or create one if it doesn't yet exist
         """
+        # TODO remove?
         try:
             # pylint:disable=no-member
             instrument = Instrument.objects.get(name__iexact=instrument_name)
@@ -47,10 +48,15 @@ class ReductionRunUtils(object):
     """
     @staticmethod
     def make_kwargs_from_runvariables(reduction_run, use_value=False):
+
+        return ReductionRunUtils.make_kwargs_from_variables(reduction_run.run_variables.all(), use_value)
+
+    @staticmethod
+    def make_kwargs_from_variables(variables, use_value=False):
         standard_vars = {}
         advanced_vars = {}
 
-        for run_variable in reduction_run.run_variables.all():
+        for run_variable in variables:
             variable = run_variable.variable
             if variable.is_advanced:
                 advanced_vars[variable.name] = variable.value if use_value else variable
