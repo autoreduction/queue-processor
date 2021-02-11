@@ -110,14 +110,10 @@ def run_confirmation(request, instrument: str):
                                       ' please select a different range.'
         return context_dictionary
 
-    use_current_script = request.POST.get('use_current_script', u"true").lower() == u"true"
+    use_current_script = request.POST.get('use_current_script') == "on"
     if use_current_script:
         script_text = InstrumentVariablesUtils.get_current_script_text(instrument)
         default_variables = InstrumentVariablesUtils.get_default_variables(instrument)
-    else:
-        raise NotImplementedError("TODO this branch")
-        script_text = most_recent_run.script
-        default_variables = most_recent_run.run_variables.all()
 
     for run_number in run_numbers:
         matching_previous_runs_queryset = related_runs.filter(run_number=run_number).order_by('-run_version')
@@ -126,6 +122,9 @@ def run_confirmation(request, instrument: str):
             context_dictionary['error'] = reason
             break
 
+        most_recent_run: ReductionRun = matching_previous_runs_queryset.first()
+        script_text = most_recent_run.script
+        default_variables = ReductionRunUtils.make_kwargs_from_runvariables(most_recent_run)
         try:
             new_script_arguments = make_reduction_arguments(request.POST.items(), default_variables)
         except ValueError as err:
@@ -141,13 +140,10 @@ def run_confirmation(request, instrument: str):
                 format(len(run_description), max_run_name_length)
             return context_dictionary
 
-        most_recent_run: ReductionRun = matching_previous_runs_queryset.first()
         # User can choose whether to overwrite with the re-run or create new data
         overwrite_previous_data = bool(request.POST.get('overwrite_checkbox') == 'on')
         ReductionRunUtils.send_retry_message(request.user.id, most_recent_run, script_text, new_script_arguments,
                                              overwrite_previous_data)
-
-    return context_dictionary
 
     return context_dictionary
 
