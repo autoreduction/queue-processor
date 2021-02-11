@@ -311,19 +311,15 @@ def run_summary(request, instrument_name, run_number, run_version=0):
     """
     Handles request to view the summary of a run
     """
+    # TODO this should be part of the WebApp/autoreduce_webapp/reduction_viewer/views.py::run_summary
     # pylint:disable=no-member
     reduction_run = ReductionRun.objects.get(instrument__name=instrument_name,
                                              run_number=run_number,
                                              run_version=run_version)
-    variables = reduction_run.run_variables.all()
 
-    standard_vars = {}
-    advanced_vars = {}
-    for variable in variables:
-        if variable.is_advanced:
-            advanced_vars[variable.name] = variable
-        else:
-            standard_vars[variable.name] = variable
+    vars_kwargs = ReductionRunUtils.make_kwargs_from_runvariables(reduction_run)
+    standard_vars = vars_kwargs["standard_vars"]
+    advanced_vars = vars_kwargs["advanced_vars"]
 
     current_variables = InstrumentVariablesUtils().get_default_variables(instrument_name)
     current_standard_variables = current_variables["standard_vars"]
