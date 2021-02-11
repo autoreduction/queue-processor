@@ -67,9 +67,6 @@ def run_confirmation(request, instrument: str):
     """
     Handles request for user to confirm re-run
     """
-    if request.method != 'POST':
-        return redirect('runs_list', instrument=instrument.name)
-
     range_string = request.POST.get('run_range')
     run_description = request.POST.get('run_description')
 
