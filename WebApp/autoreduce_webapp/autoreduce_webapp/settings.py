@@ -195,15 +195,7 @@ ACTIVEMQ = {
     'SSL': False
 }
 
-# File Locations
-
-if os.name == 'nt':
-    REDUCTION_DIRECTORY = r'\\isis\inst$\NDX%s\user\scripts\autoreduction'  # %(instrument)
-else:
-    REDUCTION_DIRECTORY = '/isis/NDX%s/user/scripts/autoreduction'  # %(instrument)
-
 # ICAT
-
 ICAT = {
     'AUTH': get_str('ICAT', 'auth'),
     'URL': get_str('ICAT', 'host'),
