@@ -71,13 +71,17 @@ def run_confirmation(request, instrument: str):
         return redirect('runs_list', instrument=instrument.name)
 
     range_string = request.POST.get('run_range')
+    run_description = request.POST.get('run_description')
 
     # pylint:disable=no-member
     queue_count = ReductionRun.objects.filter(instrument__name=instrument, status=STATUS.get_queued()).count()
     context_dictionary = {
+        # list stores (run_number, run_version)
         'runs': [],
         'variables': None,
         'queued': queue_count,
+        'instrument_name': instrument,
+        'run_description': run_description
     }
 
     try:
@@ -120,23 +124,13 @@ def run_confirmation(request, instrument: str):
         return context_dictionary
 
     for run_number in run_numbers:
-        matching_previous_runs_queryset = related_runs.filter(run_number=run_number).order_by('-run_version')
-        run_suitable, reason = find_reason_to_avoid_re_run(matching_previous_runs_queryset)
+        matching_previous_runs = related_runs.filter(run_number=run_number).order_by('-run_version')
+        run_suitable, reason = find_reason_to_avoid_re_run(matching_previous_runs, run_number)
         if not run_suitable:
             context_dictionary['error'] = reason
             break
 
-        most_recent_run: ReductionRun = matching_previous_runs_queryset.first()
-        script_text = most_recent_run.script
-        default_variables = ReductionRunUtils.make_kwargs_from_runvariables(most_recent_run)
-        try:
-            new_script_arguments = make_reduction_arguments(request.POST.items(), default_variables)
-        except ValueError as err:
-            context_dictionary['error'] = err
-            break
-
         # run_description gets stored in run_name in the ReductionRun object
-        run_description = request.POST.get('run_description')
         max_run_name_length = ReductionRun._meta.get_field('run_name').max_length
         if len(run_description) > max_run_name_length:
             context_dictionary["error"] = "The description contains {0} characters, " \
@@ -144,26 +138,29 @@ def run_confirmation(request, instrument: str):
                 format(len(run_description), max_run_name_length)
             return context_dictionary
 
+        most_recent_run: ReductionRun = matching_previous_runs.first()
         # User can choose whether to overwrite with the re-run or create new data
         overwrite_previous_data = bool(request.POST.get('overwrite_checkbox') == 'on')
         ReductionRunUtils.send_retry_message(request.user.id, most_recent_run, script_text, new_script_arguments,
                                              overwrite_previous_data)
+        # list stores (run_number, run_version)
+        context_dictionary["runs"].append((run_number, most_recent_run.run_version + 1))
 
     return context_dictionary
 
 
-def find_reason_to_avoid_re_run(matching_previous_runs_queryset):
+def find_reason_to_avoid_re_run(matching_previous_runs, run_number):
     """
     Che
     """
-    most_recent_run = matching_previous_runs_queryset.first()
+    most_recent_run = matching_previous_runs.first()
 
     # Check old run exists - if it doesn't exist there's nothing to re-run!
     if most_recent_run is None:
-        return False, f"Run number {most_recent_run.run_number} hasn't been ran by autoreduction yet."
+        return False, f"Run number {run_number} hasn't been ran by autoreduction yet."
 
     # Prevent multiple queueings of the same re-run
-    queued_runs = matching_previous_runs_queryset.filter(status=STATUS.get_queued()).first()
+    queued_runs = matching_previous_runs.filter(status=STATUS.get_queued()).first()
     if queued_runs is not None:
         return False, f"Run number {queued_runs.run_number} is already queued to run"
 
