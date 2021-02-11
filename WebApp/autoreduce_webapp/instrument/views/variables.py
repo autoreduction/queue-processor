@@ -307,7 +307,7 @@ def current_default_variables(request, instrument=None):
     return context_dictionary
 
 
-def run_summary(request, instrument_name, run_number, run_version=0):
+def render_run_variables(request, instrument_name, run_number, run_version=0):
     """
     Handles request to view the summary of a run
     """
