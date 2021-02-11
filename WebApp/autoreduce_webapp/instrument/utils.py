@@ -16,7 +16,6 @@ import re
 
 import chardet
 from autoreduce_webapp.icat_communication import ICATCommunication
-from autoreduce_webapp.settings import REDUCTION_DIRECTORY
 
 from reduction_viewer.models import Notification, ReductionRun
 from reduction_viewer.utils import InstrumentUtils
@@ -378,8 +377,11 @@ class InstrumentVariablesUtils(object):
         #     reduce_script = self._load_reduction_vars_script(instrument_name)
 
         reduce_vars = ReductionScript(instrument_name, 'reduce_vars.py')
-        # TODO handle raises
-        module = reduce_vars.load()
+        try:
+            module = reduce_vars.load()
+        except (FileNotFoundError, ImportError, SyntaxError):
+            return {}
+
         return {
             "standard_vars": getattr(module, 'standard_vars', {}),
             "advanced_vars": getattr(module, 'advanced_vars', {}),
@@ -510,16 +512,6 @@ class InstrumentVariablesUtils(object):
         except Exception as exception:
             log_error_and_notify("Unable to load reduction script %s - %s" % (path, exception))
             return None
-
-    @staticmethod
-    def _reduction_script_location(instrument_name):
-        return REDUCTION_DIRECTORY % instrument_name
-
-    def _load_reduction_script(self, instrument_name):
-        return self._load_script(os.path.join(self._reduction_script_location(instrument_name), 'reduce.py'))
-
-    def _load_reduction_vars_script(self, instrument_name):
-        return self._load_script(os.path.join(self._reduction_script_location(instrument_name), 'reduce_vars.py'))
 
     def _create_variables(self, instrument, script, variable_dict, is_advanced):
         variables = []

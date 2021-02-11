@@ -33,9 +33,6 @@ CEPH_DIRECTORY = f"{PROJECT_ROOT}/reduced-data/%s/RB%s/autoreduced/%s/"
 ARCHIVE_ROOT = os.path.join(PROJECT_ROOT, 'data-archive')
 
 # Variables that get changes less
-# %(instrument)
-# ONLY USED IN THE WebApp and should be removed in https://github.com/ISISScientificComputing/autoreduce/issues/1042
-REDUCTION_DIRECTORY = os.path.join(ARCHIVE_ROOT, 'NDX%s', 'user', 'scripts', 'autoreduction')
 # %(instrument, cycle, experiment_number, run_number)
 CYCLE_DIRECTORY = os.path.join(ARCHIVE_ROOT, 'NDX%s', 'Instrument', 'data', 'cycle_%s')
 SCRIPTS_DIRECTORY = f"{ARCHIVE_ROOT}/NDX%s/user/scripts/autoreduction/"
