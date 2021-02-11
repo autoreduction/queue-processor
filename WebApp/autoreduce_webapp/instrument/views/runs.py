@@ -110,10 +110,14 @@ def run_confirmation(request, instrument: str):
                                       ' please select a different range.'
         return context_dictionary
 
-    use_current_script = request.POST.get('use_current_script') == "on"
-    if use_current_script:
-        script_text = InstrumentVariablesUtils.get_current_script_text(instrument)
-        default_variables = InstrumentVariablesUtils.get_default_variables(instrument)
+    script_text = InstrumentVariablesUtils.get_current_script_text(instrument)
+    default_variables = InstrumentVariablesUtils.get_default_variables(instrument)
+    try:
+        new_script_arguments = make_reduction_arguments(request.POST.items(), default_variables)
+        context_dictionary['variables'] = new_script_arguments
+    except ValueError as err:
+        context_dictionary['error'] = err
+        return context_dictionary
 
     for run_number in run_numbers:
         matching_previous_runs_queryset = related_runs.filter(run_number=run_number).order_by('-run_version')
