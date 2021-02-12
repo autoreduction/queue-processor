@@ -134,7 +134,7 @@ class InstrumentVariablesUtils:
                 # if the variable is tracking the reduce_vars script
                 # then update it's value to the one from the script. This is True
                 # for variables that were created via manual_submission or run_detection.
-                # "Configuring new jobs" from the web app will set it to False so that
+                # "Configuring new Runs" from the web app will set it to False so that
                 # the value always overrides the script, until changed back by the user
                 self._update_or_copy_if_changed(variable, script_value, script_type, script_help_text, run_number)
 

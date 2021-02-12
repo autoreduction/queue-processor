@@ -52,10 +52,10 @@
             {% endif %}
 
             <!-- Configure new runs button -->
-            <div class="col-md-6 text-center" id="btn-configure_new_jobs">
+            <div class="col-md-6 text-center" id="btn-configure_new_runs">
                 <p><a href="{% url 'instrument:variables' instrument=instrument_name %}"
                       class="btn btn-success btn-block"><i class="fa fa-plus"></i>&nbsp;&nbsp;Configure
-                    New Jobs</a></p>
+                    New Runs</a></p>
             </div>
 
             {% if reduction_variables_on and has_variables %}

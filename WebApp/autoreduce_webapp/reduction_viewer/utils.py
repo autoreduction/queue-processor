@@ -49,15 +49,15 @@ class ReductionRunUtils(object):
     @staticmethod
     def make_kwargs_from_runvariables(reduction_run, use_value=False):
 
-        return ReductionRunUtils.make_kwargs_from_variables(reduction_run.run_variables.all(), use_value)
+        return ReductionRunUtils.make_kwargs_from_variables(
+            [runvar.variable for runvar in reduction_run.run_variables.all()], use_value)
 
     @staticmethod
     def make_kwargs_from_variables(variables, use_value=False):
         standard_vars = {}
         advanced_vars = {}
 
-        for run_variable in variables:
-            variable = run_variable.variable
+        for variable in variables:
             if variable.is_advanced:
                 advanced_vars[variable.name] = variable.value if use_value else variable
             else:

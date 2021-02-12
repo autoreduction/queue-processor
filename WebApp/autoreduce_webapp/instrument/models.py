@@ -40,7 +40,7 @@ class InstrumentVariable(Variable):
 
     - Holds the IDs of the variables used for the instrument
 
-    - Holds `start_run` for functionality to "Configure new jobs" - e.g. variables starting from `start_run` will use the defaults that are queried with
+    - Holds `start_run` for functionality to "Configure new runs" - e.g. variables starting from `start_run` will use the defaults that are queried with
 
     """
     instrument = models.ForeignKey(Instrument, on_delete=models.CASCADE)

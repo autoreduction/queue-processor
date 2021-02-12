@@ -191,3 +191,167 @@ def make_reduction_arguments(POST_arguments, default_variables):
         raise ValueError('No variables were found to be submitted.')
 
     return new_script_arguments
+
+
+# pylint:disable=too-many-statements,too-many-branches
+@login_and_uows_valid
+@check_permissions
+@render_with('configure_new_runs.html')
+def configure_new_runs(request, instrument=None, start=0, end=0, experiment_reference=0):
+    """
+    Handles request to view instrument variables
+    """
+    instrument_name = instrument
+    start, end = int(start), int(end)
+
+    if request.method == 'POST':
+        return configure_new_runs_POST(request, instrument_name, start, end, experiment_reference)
+    else:
+        return configure_new_runs_GET(request, instrument, start, end, experiment_reference)
+
+
+def configure_new_runs_POST(request, instrument_name, start=0, end=0, experiment_reference=0):
+    # Submission to modify variables.
+    # [("var-standard-"+name, value) or ("var-advanced-"+name, value)]
+    var_list = [t for t in request.POST.items() if t[0].startswith("var-")]
+    # Remove the first two prefixes from the names to give {name: value}
+    new_var_dict = {"".join(t[0].split("-")[2:]): t[1] for t in var_list}
+
+    tracks_script = request.POST.get("track_script_checkbox") == "on"
+
+    # Which variables should we modify?
+    is_run_range = request.POST.get("variable-range-toggle-value", "True") == "True"
+    start = int(request.POST.get("run_start", 1))
+    end = int(request.POST.get("run_end", None)) if request.POST.get("run_end", None) else None
+    """
+
+    _find_or_make_variables for start with track_script = False
+    and _find_or_make_variables for end with track_script = True
+
+    so that once we're past end the variables get updated automatically
+
+    but this makes track_script=True useless in the web app,
+    because their values will be overwritten immediatelly?
+
+    or will they? try it
+
+    this is a lot easier for experiment_reference.. just make the variables for it and that's it
+    extend _find_or_make_variables to experiment ref number?
+    """
+    experiment_reference = request.POST.get("experiment_reference_number", 1)
+
+    def modify_vars(old_vars, new_values):
+        """
+        Update an old variable with values from the new variable
+        """
+        for item in old_vars:
+            if item.name in new_values:
+                item.value = new_values[item.name]
+            item.tracks_script = tracks_script
+
+    if is_run_range:
+        # Get the variables for the first run, modify them, and set them for the given range.
+        instr_vars = InstrumentVariablesUtils().show_variables_for_run(instrument_name, start)
+        modify_vars(instr_vars, new_var_dict)
+        InstrumentVariablesUtils().set_variables_for_runs(instrument_name, instr_vars, start, end)
+    else:
+        # Get the variables for the experiment, modify them, and set them for the experiment.
+        instr_vars = InstrumentVariablesUtils().\
+            show_variables_for_experiment(instrument_name,
+                                            experiment_reference)
+        if not instr_vars:
+            instr_vars = InstrumentVariablesUtils().get_default_variables(instrument_name)
+        modify_vars(instr_vars, new_var_dict)
+        InstrumentVariablesUtils().set_variables_for_experiment(instrument_name, instr_vars, experiment_reference)
+
+    return redirect('runs_list', instrument=instrument_name)
+
+
+def configure_new_runs_GET(request, instrument_name, start=0, end=0, experiment_reference=0):
+    instrument = Instrument.objects.get(name__iexact=instrument_name)
+
+    editing = (start > 0 or experiment_reference > 0)
+
+    # TODO merge the lower 3 in one query.....
+    try:
+        # pylint:disable=no-member
+        # TODO why run_version 0
+        # TODO merge the two into a single query with Q(status) | Q(status)
+        latest_completed_run = instrument.reduction_runs.filter(
+            run_version=0, status=STATUS.get_completed()).order_by('-run_number').first().run_number
+    except AttributeError:
+        latest_completed_run = 0
+    try:
+        # pylint:disable=no-member
+        latest_processing_run = instrument.reduction_runs.filter(
+            run_version=0, status=STATUS.get_processing()).order_by('-run_number').first().run_number
+    except AttributeError:
+        latest_processing_run = 0
+
+    try:
+        last_run = instrument.reduction_runs.exclude(status=STATUS.get_skipped()).last()
+    except AttributeError:
+        # TODO this instrument hasn't had a non-skipped run so what do
+        last_run = 0
+        raise ValueError("Nema takava durjava")
+
+    current_variables = ReductionRunUtils.make_kwargs_from_runvariables(last_run)
+    standard_vars = current_variables["standard_vars"]
+    advanced_vars = current_variables["advanced_vars"]
+
+    # TODO how to use this?
+    # if experiment_reference > 0:
+    #     current_variables = instrument.instrumentvariable_set.filter(experiment_reference=experiment_reference)
+    # else:
+    #     current_variables = last_run.filter(start_run=last_variable_run_number)
+
+    upcoming_variables = instrument.instrumentvariable_set.filter(start_run=last_run.run_number + 1)
+    # variables = InstrumentVariablesUtils().\
+    # show_variables_for_run(instrument_name, start)
+
+    # if not editing or not variables:
+    #     variables = InstrumentVariablesUtils().\
+    #         show_variables_for_run(instrument.name)
+    #     if not variables:
+    #         variables = InstrumentVariablesUtils().get_default_variables(instrument.name)
+    #     editing = False
+
+    # TODO pretty sure we do this somewhere else
+
+    # # pylint:disable=invalid-name
+    # _, upcoming_variables_by_run, _ = \
+    #     InstrumentVariablesUtils().get_current_and_upcoming_variables(instrument.name)
+
+    # Unique, comma-joined list of all start runs belonging to the upcoming variables.
+    upcoming_run_variables = ','.join(list(set([str(var.start_run) for var in upcoming_variables])))
+
+    # default_variables = InstrumentVariablesUtils().get_default_variables(instrument.name)
+    # default_standard_variables = {}
+    # default_advanced_variables = {}
+    # for variable in default_variables:
+    #     if variable.is_advanced:
+    #         default_advanced_variables[variable.name] = variable
+    #     else:
+    #         default_standard_variables[variable.name] = variable
+    # pylint:disable=no-member
+
+    # pylint:disable=no-member
+    context_dictionary = {
+        'instrument': instrument,
+        'last_instrument_run': last_run,
+        'processing': ReductionRun.objects.filter(instrument=instrument, status=STATUS.get_processing()),
+        'queued': ReductionRun.objects.filter(instrument=instrument, status=STATUS.get_queued()),
+        'standard_variables': standard_vars,
+        'advanced_variables': advanced_vars,
+        'default_standard_variables': standard_vars,
+        'default_advanced_variables': advanced_vars,
+        'run_start': start,
+        'run_end': end,
+        'experiment_reference': experiment_reference,
+        'minimum_run_start': max(latest_completed_run, latest_processing_run),
+        'upcoming_run_variables': upcoming_run_variables,
+        'editing': editing,
+        'tracks_script': '',
+    }
+
+    return context_dictionary
