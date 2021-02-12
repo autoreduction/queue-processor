@@ -9,7 +9,7 @@
                             <div class="panel-title">Current Variables</div>
                         </div>
                         <div class="panel-body">
-                            {% include "snippets/variables.html" with instrument:variables=current_variables instrument=instrument csrf_token=csrf_token upcoming=False only %}
+                            {% include "snippets/variables.html" with instrument_variables=current_variables instrument=instrument csrf_token=csrf_token upcoming=False only %}
                         </div>
                     </div>
                 </div>
@@ -30,7 +30,7 @@
                         </div>
                         <div class="panel-body zebra-rows">
                             {% for upcoming_variable in upcoming_variables_by_run %}
-                                {% include "snippets/variables.html" with instrument:variables=upcoming_variable instrument=instrument csrf_token=csrf_token upcoming=True only %}
+                                {% include "snippets/variables.html" with instrument_variables=upcoming_variable instrument=instrument csrf_token=csrf_token upcoming=True only %}
                             {% endfor %}
                         </div>
                     </div>
@@ -49,7 +49,7 @@
                         </div>
                         <div class="panel-body zebra-rows">
                             {% for upcoming_variable in upcoming_variables_by_experiment %}
-                                {% include "snippets/variables.html" with instrument:variables=upcoming_variable instrument=instrument csrf_token=csrf_token only %}
+                                {% include "snippets/variables.html" with instrument_variables=upcoming_variable instrument=instrument csrf_token=csrf_token only %}
                             {% endfor %}
                         </div>
                     </div>

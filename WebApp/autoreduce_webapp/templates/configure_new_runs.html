@@ -20,9 +20,7 @@
             <div class="row">
                 <div class="col-md-12 text-center">
                     <p>
-                        <a href="{% url 'runs:list' instrument=instrument.name %}">
-                            View upcoming saved configurations
-                        </a>
+                        <a href="{% url 'instrument:variables_summary' instrument=instrument.name %}">View upcoming saved configurations</a>
                     </p>
                 </div>
             </div>
@@ -74,7 +72,6 @@
                                 <label for="run_start" class="control-label col-md-6">Run Number Start</label>
                                 <div class="col-md-6">
                                     <input type="number" id="run_start" name="run_start" value="
-
                                             {% if run_start and run_start > minimum_run_start %}{{ run_start }}{% else %}{{ minimum_run_start }}{% endif %}"
                                            min="{{ minimum_run_start }}" class="form-control"/>
                                 </div>

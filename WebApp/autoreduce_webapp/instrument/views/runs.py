@@ -17,6 +17,8 @@ from reduction_viewer.utils import ReductionRunUtils
 from instrument.models import InstrumentVariable
 from instrument.utils import InstrumentVariablesUtils, STATUS
 
+from queue_processors.queue_processor.instrument_variable_utils import InstrumentVariablesUtils
+from queue_processors.queue_processor.reduction.service import ReductionScript
 LOGGER = logging.getLogger("app")
 
 
@@ -214,19 +216,30 @@ def configure_new_runs_POST(request, instrument_name, start=0, end=0, experiment
     # Submission to modify variables.
     # [("var-standard-"+name, value) or ("var-advanced-"+name, value)]
     var_list = [t for t in request.POST.items() if t[0].startswith("var-")]
+
+    standard_vars = {
+        var[0].replace("var-standard-", ""): var[1]
+        for var in var_list if var[0].startswith("var-standard")
+    }
+    advanced_vars = {
+        var[0].replace("var-advanced-", ""): var[1]
+        for var in var_list if var[0].startswith("var-advanced")
+    }
+    all_vars = {"standard_vars": standard_vars, "advanced_vars": advanced_vars}
     # Remove the first two prefixes from the names to give {name: value}
-    new_var_dict = {"".join(t[0].split("-")[2:]): t[1] for t in var_list}
+    # new_var_dict = {"".join(t[0].split("-")[2:]): t[1] for t in var_list}
 
     tracks_script = request.POST.get("track_script_checkbox") == "on"
 
     # Which variables should we modify?
     is_run_range = request.POST.get("variable-range-toggle-value", "True") == "True"
     start = int(request.POST.get("run_start", 1))
+    # TODO actually respect END run
     end = int(request.POST.get("run_end", None)) if request.POST.get("run_end", None) else None
     """
 
-    _find_or_make_variables for start with track_script = False
-    and _find_or_make_variables for end with track_script = True
+    find_or_make_variables for start with track_script = False
+    and find_or_make_variables for end with track_script = True
 
     so that once we're past end the variables get updated automatically
 
@@ -236,57 +249,74 @@ def configure_new_runs_POST(request, instrument_name, start=0, end=0, experiment
     or will they? try it
 
     this is a lot easier for experiment_reference.. just make the variables for it and that's it
-    extend _find_or_make_variables to experiment ref number?
+    extend find_or_make_variables to experiment ref number?
+
+    tests:
+    - run without changes
+    - run with N changed vars and no end run (this should add N variables)
+    - run with N changed vars and end run (this should add N*2 variables)
+    - run with N changed vars for the same run - no new variables should be created, instead the var value should be updated
+    - Check that variables for a run are top priority, order:
+        - Variables for specific run range
+        - Variables for experiment
+        - Variables from reduce_vars
+
     """
     experiment_reference = request.POST.get("experiment_reference_number", 1)
 
-    def modify_vars(old_vars, new_values):
-        """
-        Update an old variable with values from the new variable
-        """
-        for item in old_vars:
-            if item.name in new_values:
-                item.value = new_values[item.name]
-            item.tracks_script = tracks_script
+    reduce_vars = ReductionScript(instrument_name, 'reduce_vars.py')
+    reduce_vars_module = reduce_vars.load()
+    args_for_range = InstrumentVariablesUtils.merge_arguments(all_vars, reduce_vars_module)
+    instrument = Instrument.objects.get(name=instrument_name)
 
     if is_run_range:
-        # Get the variables for the first run, modify them, and set them for the given range.
-        instr_vars = InstrumentVariablesUtils().show_variables_for_run(instrument_name, start)
-        modify_vars(instr_vars, new_var_dict)
-        InstrumentVariablesUtils().set_variables_for_runs(instrument_name, instr_vars, start, end)
-    else:
-        # Get the variables for the experiment, modify them, and set them for the experiment.
-        instr_vars = InstrumentVariablesUtils().\
-            show_variables_for_experiment(instrument_name,
-                                            experiment_reference)
-        if not instr_vars:
-            instr_vars = InstrumentVariablesUtils().get_default_variables(instrument_name)
-        modify_vars(instr_vars, new_var_dict)
-        InstrumentVariablesUtils().set_variables_for_experiment(instrument_name, instr_vars, experiment_reference)
+        possible_variables = InstrumentVariable.objects.filter(start_run__lte=start, instrument__name=instrument_name)
 
-    return redirect('runs_list', instrument=instrument_name)
+        # Makes the variables that will be active for the range START -> END
+        # These variables DO NOT track the script - their value will not be updated until:
+        # - The user manually sets new variables in the web app
+        # - The end run number is passed
+        InstrumentVariablesUtils.find_or_make_variables(possible_variables,
+                                                        start,
+                                                        instrument.id,
+                                                        args_for_range,
+                                                        experiment_reference,
+                                                        tracks_script=False)
+        if end:
+            post_range_args = InstrumentVariablesUtils.merge_arguments({
+                'standard_vars': {},
+                'advanced_vars': {}
+            }, reduce_vars_module)
+
+            # Makes the variables that will be active for the range END + 1 -> onwards
+            InstrumentVariablesUtils.find_or_make_variables(possible_variables, end + 1, instrument.id, post_range_args)
+
+    else:
+        possible_variables = InstrumentVariable.objects.filter(experiment_reference=experiment_reference,
+                                                               instrument__name=instrument_name)
+        InstrumentVariablesUtils.find_or_make_variables(possible_variables,
+                                                        start,
+                                                        instrument.id,
+                                                        args_for_range,
+                                                        experiment_reference,
+                                                        tracks_script=False,
+                                                        force_update=True)
+
+        # # Get the variables for the experiment, modify them, and set them for the experiment.
+        # instr_vars = InstrumentVariablesUtils().\
+        #     show_variables_for_experiment(instrument_name,
+        #                                     experiment_reference)
+        # if not instr_vars:
+        #     instr_vars = InstrumentVariablesUtils().get_default_variables(instrument_name)
+        # modify_vars(instr_vars, new_var_dict)
+        # InstrumentVariablesUtils().set_variables_for_experiment(instrument_name, instr_vars, experiment_reference)
+    return redirect('runs:list', instrument=instrument_name)
 
 
 def configure_new_runs_GET(request, instrument_name, start=0, end=0, experiment_reference=0):
     instrument = Instrument.objects.get(name__iexact=instrument_name)
 
-    editing = (start > 0 or experiment_reference > 0)
-
-    # TODO merge the lower 3 in one query.....
-    try:
-        # pylint:disable=no-member
-        # TODO why run_version 0
-        # TODO merge the two into a single query with Q(status) | Q(status)
-        latest_completed_run = instrument.reduction_runs.filter(
-            run_version=0, status=STATUS.get_completed()).order_by('-run_number').first().run_number
-    except AttributeError:
-        latest_completed_run = 0
-    try:
-        # pylint:disable=no-member
-        latest_processing_run = instrument.reduction_runs.filter(
-            run_version=0, status=STATUS.get_processing()).order_by('-run_number').first().run_number
-    except AttributeError:
-        latest_processing_run = 0
+    editing = (start > 0 or experiment_reference > 0)  # TODO what is this for?
 
     try:
         last_run = instrument.reduction_runs.exclude(status=STATUS.get_skipped()).last()
@@ -306,25 +336,12 @@ def configure_new_runs_GET(request, instrument_name, start=0, end=0, experiment_
     #     current_variables = last_run.filter(start_run=last_variable_run_number)
 
     upcoming_variables = instrument.instrumentvariable_set.filter(start_run=last_run.run_number + 1)
-    # variables = InstrumentVariablesUtils().\
-    # show_variables_for_run(instrument_name, start)
-
-    # if not editing or not variables:
-    #     variables = InstrumentVariablesUtils().\
-    #         show_variables_for_run(instrument.name)
-    #     if not variables:
-    #         variables = InstrumentVariablesUtils().get_default_variables(instrument.name)
-    #     editing = False
-
-    # TODO pretty sure we do this somewhere else
-
-    # # pylint:disable=invalid-name
-    # _, upcoming_variables_by_run, _ = \
-    #     InstrumentVariablesUtils().get_current_and_upcoming_variables(instrument.name)
 
     # Unique, comma-joined list of all start runs belonging to the upcoming variables.
+    # TODO unsure this is necessary
     upcoming_run_variables = ','.join(list(set([str(var.start_run) for var in upcoming_variables])))
 
+    # TODO get default vars from reduce_vars.py
     # default_variables = InstrumentVariablesUtils().get_default_variables(instrument.name)
     # default_standard_variables = {}
     # default_advanced_variables = {}
@@ -333,9 +350,9 @@ def configure_new_runs_GET(request, instrument_name, start=0, end=0, experiment_
     #         default_advanced_variables[variable.name] = variable
     #     else:
     #         default_standard_variables[variable.name] = variable
-    # pylint:disable=no-member
+    min_run_start = last_run.run_number
+    run_start = min_run_start + 1
 
-    # pylint:disable=no-member
     context_dictionary = {
         'instrument': instrument,
         'last_instrument_run': last_run,
@@ -345,10 +362,10 @@ def configure_new_runs_GET(request, instrument_name, start=0, end=0, experiment_
         'advanced_variables': advanced_vars,
         'default_standard_variables': standard_vars,
         'default_advanced_variables': advanced_vars,
-        'run_start': start,
+        'run_start': run_start,
         'run_end': end,
-        'experiment_reference': experiment_reference,
-        'minimum_run_start': max(latest_completed_run, latest_processing_run),
+        'experiment_reference': last_run.experiment.reference_number,
+        'minimum_run_start': min_run_start,
         'upcoming_run_variables': upcoming_run_variables,
         'editing': editing,
         'tracks_script': '',

@@ -12,6 +12,7 @@ import logging
 
 from autoreduce_webapp.view_utils import (check_permissions, login_and_uows_valid, render_with)
 from django.shortcuts import redirect, render
+from instrument.models import InstrumentVariable
 
 from reduction_viewer.models import Instrument, ReductionRun
 from reduction_viewer.utils import ReductionRunUtils
@@ -29,9 +30,11 @@ def instrument_summary(request, instrument, last_run_object):
     instrument = Instrument.objects.get(name=instrument)
 
     # pylint:disable=invalid-name
-    current_variables, upcoming_variables_by_run, upcoming_variables_by_experiment = \
-        InstrumentVariablesUtils().get_current_and_upcoming_variables(instrument.name,
-                                                                      last_run_object)
+    current_variables = [runvar.variable.instrumentvariable for runvar in last_run_object.run_variables.all()]
+
+    upcoming_variables_by_run = InstrumentVariable.objects.filter(start_run__gt=last_run_object.run_number)
+    upcoming_variables_by_experiment = InstrumentVariable.objects.filter(
+        experiment_reference=last_run_object.experiment.reference_number)
 
     # Create a nested dictionary for by-run
     upcoming_variables_by_run_dict = {}

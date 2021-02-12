@@ -10,10 +10,12 @@ Module for dealing with instrument reduction variables.
 import html
 import logging
 import logging.config
+from copy import deepcopy
 from typing import Any, List, Tuple
 
 from django.db import transaction
 from django.db.models import Q
+from django.db.models.query import QuerySet
 from model.database import access as db
 
 from queue_processors.queue_processor.variable_utils import VariableUtils
@@ -70,8 +72,8 @@ class InstrumentVariablesUtils:
 
         final_reduction_arguments = self.merge_arguments(message_reduction_arguments, reduce_vars_module)
 
-        variables = self._find_or_make_variables(possible_variables, run_number, instrument_id,
-                                                 final_reduction_arguments)
+        variables = self.find_or_make_variables(possible_variables, run_number, instrument_id,
+                                                final_reduction_arguments, experiment_reference)
 
         logging.info('Creating RunVariables')
         # Create run variables from these instrument variables, and return them.
@@ -84,17 +86,34 @@ class InstrumentVariablesUtils:
         with the ones from the message taking precedent.
         """
         reduction_args = {
-            'standard_vars': getattr(reduce_vars_module, 'standard_vars', {}),
-            'advanced_vars': getattr(reduce_vars_module, 'advanced_vars', {})
+            'standard_vars': deepcopy(getattr(reduce_vars_module, 'standard_vars', {})),
+            'advanced_vars': deepcopy(getattr(reduce_vars_module, 'advanced_vars', {}))
         }
-        # update overwrites the values in the initial dictionary with the ones provided in the argument
-        # and this is what we want here - the message reduction arguments should be top priority
-        reduction_args.update(message_reduction_arguments)
+        InstrumentVariablesUtils.set_with_correct_type(message_reduction_arguments, reduction_args, 'standard_vars')
+        InstrumentVariablesUtils.set_with_correct_type(message_reduction_arguments, reduction_args, 'advanced_vars')
+        # for name, value in message_reduction_arguments['standard_vars'].items():
+        #     real_type = VariableUtils.get_type_string(reduction_args['standard_vars'][name])
+        #     reduction_args['standard_vars'][name] = VariableUtils.convert_variable_to_type(value, real_type)
 
         reduction_args["variable_help"] = getattr(reduce_vars_module, 'variable_help', {})
         return reduction_args
 
-    def _find_or_make_variables(self, possible_variables, run_number, instrument_id, reduction_arguments: dict) -> List:
+    @staticmethod
+    def set_with_correct_type(message_reduction_arguments: dict, reduction_args: dict, dict_name: str):
+        if dict_name in message_reduction_arguments and dict_name in reduction_args:
+            for name, value in message_reduction_arguments[dict_name].items():
+                real_type = VariableUtils.get_type_string(reduction_args[dict_name][name])
+                reduction_args[dict_name][name] = VariableUtils.convert_variable_to_type(value, real_type)
+
+    @staticmethod
+    def find_or_make_variables(possible_variables: QuerySet,
+                               run_number: int,
+                               instrument_id: int,
+                               reduction_arguments: dict,
+                               experiment_reference,
+                               tracks_script=True,
+                               force_update=False) -> List:
+
         # pylint: disable=too-many-locals
 
         all_vars: List[Tuple[str, Any, bool]] = [(name, value, False)
@@ -106,8 +125,8 @@ class InstrumentVariablesUtils:
 
         variables = []
         for name, value, is_advanced in all_vars:
-            script_help_text = self.get_help_text('standard_vars' if not is_advanced else 'advanced_vars', name,
-                                                  reduction_arguments)
+            script_help_text = InstrumentVariablesUtils.get_help_text(
+                'standard_vars' if not is_advanced else 'advanced_vars', name, reduction_arguments)
             script_value = str(value).replace('[', '').replace(']', '')
             script_type = VariableUtils.get_type_string(value)
 
@@ -127,16 +146,21 @@ class InstrumentVariablesUtils:
                 # if the variable was just created then set it to track the script
                 # and that it starts on the current run
                 # if it was found already existing just leave it as it is
-                variable.tracks_script = True
+                variable.tracks_script = tracks_script
                 variable.start_run = run_number
+                variable.experiment_reference = experiment_reference
                 variable.save()
-            elif variable.tracks_script:
+            elif variable.tracks_script or force_update:
                 # if the variable is tracking the reduce_vars script
                 # then update it's value to the one from the script. This is True
                 # for variables that were created via manual_submission or run_detection.
                 # "Configuring new Runs" from the web app will set it to False so that
-                # the value always overrides the script, until changed back by the user
-                self._update_or_copy_if_changed(variable, script_value, script_type, script_help_text, run_number)
+                # the value always overrides the script, until changed back by the user or a later variable
+                # takes priority.
+                # However, the web app can provide force_update to force an update - this is used
+                # to ensure that "Configuring new Runs" makes only 1 configuration for each experiment number
+                InstrumentVariablesUtils._update_or_copy_if_changed(variable, script_value, script_type,
+                                                                    script_help_text, run_number)
 
             variables.append(variable)
         return variables
