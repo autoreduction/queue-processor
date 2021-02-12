@@ -34,7 +34,7 @@ SECRET_KEY = 'YOUR-SECRET-KEY'
 # having to run `manage.py collectstatic` each time. On production
 # we use Apache to serve static content instead.
 DEBUG = True
-DEBUG_PROPAGATE_EXCEPTIONS = False
+DEBUG_PROPAGATE_EXCEPTIONS = True
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'reducedev2.isis.cclrc.ac.uk']
 INTERNAL_IPS = ['localhost', '127.0.0.1']
