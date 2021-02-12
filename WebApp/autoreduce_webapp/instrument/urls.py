@@ -12,14 +12,14 @@ app_name = "instrument"
 
 urlpatterns = [
     path('<str:instrument>/submit_runs/', runs.submit_runs, name='submit_runs'),
-    path('<str:instrument>/variables/', variables.instrument_variables, name='variables'),
-    path('<str:instrument>/variables/<int:start>/<int:end>/', variables.instrument_variables, name='variables'),
+    path('<str:instrument>/configure_new_runs/', runs.configure_new_runs, name='variables'),
+    path('<str:instrument>/configure_new_runs/<int:start>/<int:end>/', runs.configure_new_runs, name='variables'),
     path('<str:instrument>/variables_summary/', variables.instrument_variables_summary, name='variables_summary'),
     path('<str:instrument>/variables/<int:start>/<int:end>/delete',
          variables.delete_instrument_variables,
          name='delete_variables'),
     path('<str:instrument>/variables/experiment/<int:experiment_reference>/',
-         variables.instrument_variables,
+         runs.configure_new_runs,
          name='variables_by_experiment'),
     path('<str:instrument>/variables/experiment/<int:experiment_reference>/delete/',
          variables.delete_instrument_variables,
