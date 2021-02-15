@@ -149,8 +149,10 @@ class InstrumentVariablesUtils:
                 # and that it starts on the current run
                 # if it was found already existing just leave it as it is
                 variable.tracks_script = tracks_script
-                variable.reference_number = experiment_reference
-                variable.start_run = run_number
+                if experiment_reference:
+                    variable.reference_number = experiment_reference
+                else:
+                    variable.start_run = run_number
                 variable.save()
             elif variable.tracks_script or force_update:
                 # if the variable is tracking the reduce_vars script
