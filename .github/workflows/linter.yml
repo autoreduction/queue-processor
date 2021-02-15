@@ -1,5 +1,5 @@
 name: Lint Code Base
-on: [push]
+on: [ push ]
 
 jobs:
   build:
@@ -33,12 +33,31 @@ jobs:
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
-            
+
       - uses: ./.github/actions/build-autoreduction
 
       - name: Lint Code Base
         uses: github/super-linter@v3
         env:
-          VALIDATE_ALL_CODEBASE: false
+          VALIDATE_ALL_CODEBASE: true
           DEFAULT_BRANCH: master
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#          FILTER_REGEX_INCLUDE: >-
+#            /(
+#            build|
+#            docker_reduction|
+#            model|
+#            monitors|
+#            queue_processors|
+#            scripts|
+#            systemtests|
+#            utils|
+#            plotting|
+#            webtests
+#            )/.*
+
+          # Python environment variables
+          VALIDATE_PYTHON: true
+          VALIDATE_PYTHON_PYLINT: true
+          LINTER_RULES_PATH: '.'
+          PYTHON_PYLINT_CONFIG_FILE: .pylintrc
