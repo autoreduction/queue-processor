@@ -229,39 +229,14 @@ def configure_new_runs_POST(request, instrument_name, start=0, end=0, experiment
     # Remove the first two prefixes from the names to give {name: value}
     # new_var_dict = {"".join(t[0].split("-")[2:]): t[1] for t in var_list}
 
+    # TODO remove this in favour of just removing the variable
     tracks_script = request.POST.get("track_script_checkbox") == "on"
 
-    # Which variables should we modify?
     is_run_range = request.POST.get("variable-range-toggle-value", "True") == "True"
     start = int(request.POST.get("run_start", 1))
     # TODO actually respect END run
     end = int(request.POST.get("run_end", None)) if request.POST.get("run_end", None) else None
-    """
 
-    find_or_make_variables for start with track_script = False
-    and find_or_make_variables for end with track_script = True
-
-    so that once we're past end the variables get updated automatically
-
-    but this makes track_script=True useless in the web app,
-    because their values will be overwritten immediatelly?
-
-    or will they? try it
-
-    this is a lot easier for experiment_reference.. just make the variables for it and that's it
-    extend find_or_make_variables to experiment ref number?
-
-    tests:
-    - run without changes
-    - run with N changed vars and no end run (this should add N variables)
-    - run with N changed vars and end run (this should add N*2 variables)
-    - run with N changed vars for the same run - no new variables should be created, instead the var value should be updated
-    - Check that variables for a run are top priority, order:
-        - Variables for specific run range
-        - Variables for experiment
-        - Variables from reduce_vars
-
-    """
     experiment_reference = request.POST.get("experiment_reference_number", 1)
 
     reduce_vars = ReductionScript(instrument_name, 'reduce_vars.py')
@@ -302,14 +277,6 @@ def configure_new_runs_POST(request, instrument_name, start=0, end=0, experiment
                                                         tracks_script=False,
                                                         force_update=True)
 
-        # # Get the variables for the experiment, modify them, and set them for the experiment.
-        # instr_vars = InstrumentVariablesUtils().\
-        #     show_variables_for_experiment(instrument_name,
-        #                                     experiment_reference)
-        # if not instr_vars:
-        #     instr_vars = InstrumentVariablesUtils().get_default_variables(instrument_name)
-        # modify_vars(instr_vars, new_var_dict)
-        # InstrumentVariablesUtils().set_variables_for_experiment(instrument_name, instr_vars, experiment_reference)
     return redirect('runs:list', instrument=instrument_name)
 
 
@@ -339,6 +306,9 @@ def configure_new_runs_GET(request, instrument_name, start=0, end=0, experiment_
 
     # Unique, comma-joined list of all start runs belonging to the upcoming variables.
     # TODO unsure this is necessary
+    # This seems to be used to prevent submission if trying to resubmit variables for already
+    # configured future run numbers - check the checkForConflicts function
+    # This should probably be done by the POST method anyway.. so remove it
     upcoming_run_variables = ','.join(list(set([str(var.start_run) for var in upcoming_variables])))
 
     # TODO get default vars from reduce_vars.py
