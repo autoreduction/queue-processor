@@ -442,7 +442,7 @@ class TestInstrumentVariableUtils(unittest.TestCase):
 
         expected = {
             "standard_vars": {
-                "standard_var1": 123
+                "standard_var1": '123'
             },
             "advanced_vars": {
                 "advanced_var1": "321"
@@ -450,7 +450,7 @@ class TestInstrumentVariableUtils(unittest.TestCase):
             "variable_help": fakemod.variable_help
         }
 
-        assert InstrumentVariablesUtils().merge_arguments(message_args, fakemod) == expected
+        assert InstrumentVariablesUtils.merge_arguments(message_args, fakemod) == expected
 
     @staticmethod
     def test_get_help_module_dict_name_not_in_variable_help():

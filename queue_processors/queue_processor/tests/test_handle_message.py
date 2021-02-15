@@ -80,7 +80,7 @@ class TestHandleMessage(TestCase):
         self.variable_model = db_handle.variable_model
 
         self.experiment, _ = self.data_model.Experiment.objects.get_or_create(reference_number=1231231)
-        self.instrument, _ = self.data_model.Instrument.objects.get_or_create(name="ARMI", is_active=1, is_paused=0)
+        self.instrument, _ = self.data_model.Instrument.objects.get_or_create(name="ARMI")
         status = STATUS.get_queued()
         fake_script_text = "scripttext"
         self.reduction_run = create_reduction_run_record(self.experiment, self.instrument, FakeMessage(), 0,
@@ -279,7 +279,6 @@ class TestHandleMessage(TestCase):
             assert message.run_version == i
             assert instrument == self.instrument
             assert instrument.name == self.msg.instrument
-            assert instrument.is_active
             assert reduction_run.script == "print(123)"
             assert reduction_run.data_location.first().file_path == message.data
             assert reduction_run.status == STATUS.get_queued()
@@ -341,7 +340,7 @@ class TestHandleMessage(TestCase):
     @patch("queue_processors.queue_processor.handle_message.ReductionProcessManager")
     def test_data_ready_sends_onwards_completed(self, rpm, load: Mock):
         "Test data_ready success path sends the message onwards for reduction"
-        rpm.return_value.run = partial(self.do_post_started_assertions, 4)
+        rpm.return_value.run = partial(self.do_post_started_assertions, 5)
         self.handler.create_run_records = Mock(return_value=(self.reduction_run, self.msg, self.instrument))
         self.handler.data_ready(self.msg)
         assert self.mocked_logger.info.call_count == 1
@@ -354,7 +353,7 @@ class TestHandleMessage(TestCase):
     def test_data_ready_sends_onwards_error(self, rpm, load: Mock):
         "Test data_ready error path sends the message onwards to be marked as errored"
         self.msg.message = "I am error"
-        rpm.return_value.run = partial(self.do_post_started_assertions, 4)
+        rpm.return_value.run = partial(self.do_post_started_assertions, 5)
         self.handler.create_run_records = Mock(return_value=(self.reduction_run, self.msg, self.instrument))
         self.handler.data_ready(self.msg)
         assert self.mocked_logger.info.call_count == 1

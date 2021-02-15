@@ -16,6 +16,8 @@ from typing import Any, List, Tuple
 from django.db import transaction
 from django.db.models import Q
 from django.db.models.query import QuerySet
+from django.core.exceptions import ObjectDoesNotExist
+
 from model.database import access as db
 
 from queue_processors.queue_processor.variable_utils import VariableUtils
@@ -73,7 +75,7 @@ class InstrumentVariablesUtils:
         final_reduction_arguments = self.merge_arguments(message_reduction_arguments, reduce_vars_module)
 
         variables = self.find_or_make_variables(possible_variables, run_number, instrument_id,
-                                                final_reduction_arguments, experiment_reference)
+                                                final_reduction_arguments)
 
         logging.info('Creating RunVariables')
         # Create run variables from these instrument variables, and return them.
@@ -91,9 +93,6 @@ class InstrumentVariablesUtils:
         }
         InstrumentVariablesUtils.set_with_correct_type(message_reduction_arguments, reduction_args, 'standard_vars')
         InstrumentVariablesUtils.set_with_correct_type(message_reduction_arguments, reduction_args, 'advanced_vars')
-        # for name, value in message_reduction_arguments['standard_vars'].items():
-        #     real_type = VariableUtils.get_type_string(reduction_args['standard_vars'][name])
-        #     reduction_args['standard_vars'][name] = VariableUtils.convert_variable_to_type(value, real_type)
 
         reduction_args["variable_help"] = getattr(reduce_vars_module, 'variable_help', {})
         return reduction_args
@@ -110,7 +109,7 @@ class InstrumentVariablesUtils:
                                run_number: int,
                                instrument_id: int,
                                reduction_arguments: dict,
-                               experiment_reference,
+                               experiment_reference=None,
                                tracks_script=True,
                                force_update=False) -> List:
 
@@ -139,16 +138,19 @@ class InstrumentVariablesUtils:
                 'instrument_id': instrument_id
             }
 
-            variable = possible_variables.filter(name=name).order_by("-start_run").first()
+            # Try to find a suitable variable to re-use from the ones that already exist
+            variable = InstrumentVariablesUtils._find_appropriate_variable(possible_variables, name,
+                                                                           experiment_reference)
 
+            # if no suitable variable is found - create a new one
             if variable is None:
                 variable = possible_variables.create(**var_kwargs)
                 # if the variable was just created then set it to track the script
                 # and that it starts on the current run
                 # if it was found already existing just leave it as it is
                 variable.tracks_script = tracks_script
+                variable.reference_number = experiment_reference
                 variable.start_run = run_number
-                variable.experiment_reference = experiment_reference
                 variable.save()
             elif variable.tracks_script or force_update:
                 # if the variable is tracking the reduce_vars script
@@ -164,6 +166,28 @@ class InstrumentVariablesUtils:
 
             variables.append(variable)
         return variables
+
+    @staticmethod
+    def _find_appropriate_variable(possible_variables, name, expriment_reference):
+        """
+        Find the appropriate variable that should be used.
+
+        This function enforces the following priority:
+        - Variables set for an Experiment number will ALWAYS be used - top priority
+        - Next come variables set for specific run number ranges
+        """
+        # enforce a uniqueness using the (name, expriment_reference) fields
+        # this will allow to only have 1 variable with that name for 1 experiment reference
+        try:
+            variables_set_for_experiment = possible_variables.get(name=name, experiment_reference=expriment_reference)
+        except ObjectDoesNotExist:
+            variables_set_for_experiment = []
+
+        if not variables_set_for_experiment:
+            # if a variable set for the experiment was not found - then find the latest variable with that name
+            return possible_variables.filter(name=name).order_by("-start_run").first()
+
+        return variables_set_for_experiment
 
     @staticmethod
     def _update_or_copy_if_changed(variable, new_value, new_type, new_help_text, run_number: int):
