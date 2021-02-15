@@ -29,8 +29,6 @@ setup_requires = [
     'filelock==3.0.12',
     'fire==0.4.0',
     'gitpython==3.1.12',
-    'mysqlclient==2.0.3',
-    'mysql-connector==2.2.9',
     'nexusformat==0.6.0',
     'numpy==1.20.1',
     'pandas==1.2.2',
