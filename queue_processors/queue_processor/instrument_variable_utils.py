@@ -11,7 +11,7 @@ import html
 import logging
 import logging.config
 from copy import deepcopy
-from typing import Any, List, Tuple
+from typing import Any, List, Optional, Tuple
 
 from django.db import transaction
 from django.db.models import Q
@@ -74,8 +74,10 @@ class InstrumentVariablesUtils:
 
         final_reduction_arguments = self.merge_arguments(message_reduction_arguments, reduce_vars_module)
 
-        variables = self.find_or_make_variables(possible_variables, run_number, instrument_id,
-                                                final_reduction_arguments)
+        variables = self.find_or_make_variables(possible_variables,
+                                                instrument_id,
+                                                final_reduction_arguments,
+                                                run_number=run_number)
 
         logging.info('Creating RunVariables')
         # Create run variables from these instrument variables, and return them.
@@ -106,15 +108,23 @@ class InstrumentVariablesUtils:
 
     @staticmethod
     def find_or_make_variables(possible_variables: QuerySet,
-                               run_number: int,
                                instrument_id: int,
                                reduction_arguments: dict,
-                               experiment_reference=None,
-                               tracks_script=True,
-                               force_update=False) -> List:
+                               run_number: Optional[int] = None,
+                               experiment_reference: Optional[int] = None,
+                               tracks_script=True) -> List:
+        """
+        Find appropriate variables from the possible_variables QuerySet, or make the necessary variables
 
-        # pylint: disable=too-many-locals
-
+        :param possible_variables: A queryset holding the possible variables to be re-used
+        :param instrument_id: ID of the instrument object
+        :param reduction_arguments: A dictionary holding all required reduction arguments
+        :param run_number: Optional, the run number from which these variables will be active
+        :param expriment_reference: Optional, the experiment number for which these variables WILL ALWAYS be used.
+                                    Variables set for experiment are treated as top-priority and can only be changed or deleted
+                                    from the web app. They will not be affected by settings variable for a run range or changing
+                                    the values in reduce_vars.
+        """
         all_vars: List[Tuple[str, Any, bool]] = [(name, value, False)
                                                  for name, value in reduction_arguments["standard_vars"].items()]
         all_vars.extend([(name, value, True) for name, value in reduction_arguments["advanced_vars"].items()])
@@ -126,13 +136,13 @@ class InstrumentVariablesUtils:
         for name, value, is_advanced in all_vars:
             script_help_text = InstrumentVariablesUtils.get_help_text(
                 'standard_vars' if not is_advanced else 'advanced_vars', name, reduction_arguments)
-            script_value = str(value).replace('[', '').replace(']', '')
-            script_type = VariableUtils.get_type_string(value)
+            new_value = str(value).replace('[', '').replace(']', '')
+            new_type = VariableUtils.get_type_string(value)
 
             var_kwargs = {
                 'name': name,
-                'value': script_value,
-                'type': script_type,
+                'value': new_value,
+                'type': new_type,
                 'help_text': script_help_text,
                 'is_advanced': is_advanced,
                 'instrument_id': instrument_id
@@ -141,33 +151,48 @@ class InstrumentVariablesUtils:
             # Try to find a suitable variable to re-use from the ones that already exist
             variable = InstrumentVariablesUtils._find_appropriate_variable(possible_variables, name,
                                                                            experiment_reference)
-
             # if no suitable variable is found - create a new one
             if variable is None:
                 variable = possible_variables.create(**var_kwargs)
                 # if the variable was just created then set it to track the script
                 # and that it starts on the current run
                 # if it was found already existing just leave it as it is
-                variable.tracks_script = tracks_script
                 if experiment_reference:
-                    variable.reference_number = experiment_reference
+                    variable.experiment_reference = experiment_reference
                 else:
                     variable.start_run = run_number
+                    variable.tracks_script = tracks_script
                 variable.save()
-            elif variable.tracks_script or force_update:
-                # if the variable is tracking the reduce_vars script
-                # then update it's value to the one from the script. This is True
-                # for variables that were created via manual_submission or run_detection.
-                # "Configuring new Runs" from the web app will set it to False so that
-                # the value always overrides the script, until changed back by the user or a later variable
-                # takes priority.
-                # However, the web app can provide force_update to force an update - this is used
-                # to ensure that "Configuring new Runs" makes only 1 configuration for each experiment number
-                InstrumentVariablesUtils._update_or_copy_if_changed(variable, script_value, script_type,
-                                                                    script_help_text, run_number)
-
+            else:
+                InstrumentVariablesUtils.update_if_necessary(variable, experiment_reference, run_number, new_value,
+                                                             new_type, script_help_text)
             variables.append(variable)
         return variables
+
+    @staticmethod
+    def update_if_necessary(variable, experiment_reference, run_number, new_value, new_type, script_help_text):
+        if experiment_reference is not None and variable.experiment_reference == experiment_reference:
+            # we do not copy variables for an experiment_reference - we overwrite them to ensure only one exists
+            if InstrumentVariablesUtils.variable_was_updated(variable, new_value, new_type, script_help_text):
+                variable.save()
+        elif variable.tracks_script:
+            # if the variable is tracking the reduce_vars script
+            # then update it's value to the one from the script. This is True
+            # for variables that were created via manual_submission or run_detection.
+            # "Configuring new Runs" from the web app will set it to False so that
+            # the value always overrides the script, until changed back by the user or a later variable
+            # takes priority.
+            if InstrumentVariablesUtils.variable_was_updated(variable, new_value, new_type, script_help_text):
+                # if the run number is different than what is already saved, then we will copy the
+                # variable that contains the new values rather than overwriting the old variable
+                # This allows the user to see the old run with the exact values that were used the first time
+                if variable.start_run != run_number:
+                    variable.pk = None
+                    variable.id = None
+                    # updates the effect of the new variable value to start from the current run
+                    variable.start_run = run_number
+
+                variable.save()
 
     @staticmethod
     def _find_appropriate_variable(possible_variables, name, expriment_reference):
@@ -183,16 +208,16 @@ class InstrumentVariablesUtils:
         try:
             variables_set_for_experiment = possible_variables.get(name=name, experiment_reference=expriment_reference)
         except ObjectDoesNotExist:
-            variables_set_for_experiment = []
+            variables_set_for_experiment = None
 
         if not variables_set_for_experiment:
             # if a variable set for the experiment was not found - then find the latest variable with that name
-            return possible_variables.filter(name=name).order_by("-start_run").first()
+            return possible_variables.filter(name=name).last()
 
         return variables_set_for_experiment
 
     @staticmethod
-    def _update_or_copy_if_changed(variable, new_value, new_type, new_help_text, run_number: int):
+    def variable_was_updated(variable, new_value, new_type, new_help_text):
         changed = False
         if new_value != variable.value:
             variable.value = new_value
@@ -205,19 +230,7 @@ class InstrumentVariablesUtils:
         if new_help_text != variable.help_text:
             variable.help_text = new_help_text
             changed = True
-
-        if changed:
-            # if the run number is different than what is already saved, then we will copy the
-            # variable that contains the new values rather than overwriting them.
-            # This allows the user to see the old run with the exact values that were used the first time
-            if variable.start_run != run_number:
-                variable.pk = None
-                variable.id = None
-                # updates the effect of the new variable value to start from the current run
-                variable.start_run = run_number
-
-            variable.save()
-        return variable
+        return changed
 
     @staticmethod
     def get_help_text(dict_name, key, reduction_arguments: dict):

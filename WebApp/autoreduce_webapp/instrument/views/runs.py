@@ -252,9 +252,9 @@ def configure_new_runs_POST(request, instrument_name, start=0, end=0, experiment
         # - The user manually sets new variables in the web app
         # - The end run number is passed
         InstrumentVariablesUtils.find_or_make_variables(possible_variables,
-                                                        start,
                                                         instrument.id,
                                                         args_for_range,
+                                                        start,
                                                         experiment_reference,
                                                         tracks_script=False)
         if end:
@@ -264,18 +264,17 @@ def configure_new_runs_POST(request, instrument_name, start=0, end=0, experiment
             }, reduce_vars_module)
 
             # Makes the variables that will be active for the range END + 1 -> onwards
-            InstrumentVariablesUtils.find_or_make_variables(possible_variables, end + 1, instrument.id, post_range_args)
+            InstrumentVariablesUtils.find_or_make_variables(possible_variables, instrument.id, post_range_args, end + 1)
 
     else:
         possible_variables = InstrumentVariable.objects.filter(experiment_reference=experiment_reference,
                                                                instrument__name=instrument_name)
         InstrumentVariablesUtils.find_or_make_variables(possible_variables,
-                                                        start,
                                                         instrument.id,
                                                         args_for_range,
+                                                        start,
                                                         experiment_reference,
-                                                        tracks_script=False,
-                                                        force_update=True)
+                                                        tracks_script=False)
 
     return redirect('runs:list', instrument=instrument_name)
 
