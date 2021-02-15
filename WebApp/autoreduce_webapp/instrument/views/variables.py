@@ -12,11 +12,10 @@ import logging
 
 from autoreduce_webapp.view_utils import (check_permissions, login_and_uows_valid, render_with)
 from django.shortcuts import redirect, render
-from instrument.models import InstrumentVariable
-
 from reduction_viewer.models import Instrument, ReductionRun
 from reduction_viewer.utils import ReductionRunUtils
-from instrument.utils import InstrumentVariablesUtils, STATUS
+from instrument.models import InstrumentVariable
+from instrument.utils import InstrumentVariablesUtils
 
 LOGGER = logging.getLogger("app")
 
