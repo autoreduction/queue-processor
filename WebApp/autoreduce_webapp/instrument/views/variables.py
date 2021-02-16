@@ -128,11 +128,7 @@ def instrument_variables_summary(request, instrument):
     Handles request to view instrument variables
     """
     instrument = Instrument.objects.get(name=instrument)
-    runs = (ReductionRun.objects.only('status', 'last_updated', 'run_number',
-                                      'run_version').select_related('status').filter(instrument=instrument).order_by(
-                                          '-run_number', 'run_version'))
-
-    context_dictionary = {'instrument': instrument, 'last_instrument_run': runs[0]}
+    context_dictionary = {'instrument': instrument, 'last_instrument_run': instrument.reduction_runs.last()}
     return context_dictionary
 
 
