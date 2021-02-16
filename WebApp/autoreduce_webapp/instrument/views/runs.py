@@ -226,25 +226,19 @@ def configure_new_runs_POST(request, instrument_name, start=0, end=0, experiment
         for var in var_list if var[0].startswith("var-advanced")
     }
     all_vars = {"standard_vars": standard_vars, "advanced_vars": advanced_vars}
-    # Remove the first two prefixes from the names to give {name: value}
-    # new_var_dict = {"".join(t[0].split("-")[2:]): t[1] for t in var_list}
 
-    # TODO remove this in favour of just removing the variable
+    # TODO reconsider the need for this
     tracks_script = request.POST.get("track_script_checkbox") == "on"
-
-    is_run_range = request.POST.get("variable-range-toggle-value", "True") == "True"
-    start = int(request.POST.get("run_start", 1))
-    # TODO actually respect END run
-    end = int(request.POST.get("run_end", None)) if request.POST.get("run_end", None) else None
-
-    experiment_reference = request.POST.get("experiment_reference_number", 1)
-
     reduce_vars = ReductionScript(instrument_name, 'reduce_vars.py')
     reduce_vars_module = reduce_vars.load()
     args_for_range = InstrumentVariablesUtils.merge_arguments(all_vars, reduce_vars_module)
     instrument = Instrument.objects.get(name=instrument_name)
 
+    is_run_range = request.POST.get("variable-range-toggle-value", "True") == "True"
     if is_run_range:
+        start = int(request.POST.get("run_start", 1))
+        # TODO actually respect END run
+        end = int(request.POST.get("run_end", None)) if request.POST.get("run_end", None) else None
         possible_variables = InstrumentVariable.objects.filter(start_run__lte=start, instrument__name=instrument_name)
 
         # Makes the variables that will be active for the range START -> END
@@ -267,6 +261,7 @@ def configure_new_runs_POST(request, instrument_name, start=0, end=0, experiment
             InstrumentVariablesUtils.find_or_make_variables(possible_variables, instrument.id, post_range_args, end + 1)
 
     else:
+        experiment_reference = request.POST.get("experiment_reference_number", 1)
         possible_variables = InstrumentVariable.objects.filter(experiment_reference=experiment_reference,
                                                                instrument__name=instrument_name)
         InstrumentVariablesUtils.find_or_make_variables(possible_variables,
