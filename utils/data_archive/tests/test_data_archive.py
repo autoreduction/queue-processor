@@ -14,14 +14,13 @@ from utils.project.structure import get_project_root
 
 
 class TestDataArchive(TestCase):
-
     def setUp(self) -> None:
         if Path(ARCHIVE_ROOT).exists():
             rmtree(ARCHIVE_ROOT)
         self.data_archive = DataArchive(["test"], 19, 20)
         self.expected_cycle_path = Path(get_project_root(), "data-archive", "NDXtest", "Instrument", "data")
-        self.expected_script_path = Path(Path(get_project_root(), "data-archive", "NDXtest", "user", "scripts",
-                                              "autoreduction"))
+        self.expected_script_path = Path(
+            Path(get_project_root(), "data-archive", "NDXtest", "user", "scripts", "autoreduction"))
 
     def tearDown(self) -> None:
         if Path(ARCHIVE_ROOT).exists():

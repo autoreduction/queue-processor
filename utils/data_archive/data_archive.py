@@ -15,7 +15,6 @@ class DataArchive:
     """
     Class for the local data-archive used in the end to end tests.
     """
-
     def __init__(self, instruments: List[str], start_year: int, end_year: int):
         self.instruments = instruments
         self.start_year = start_year
@@ -85,4 +84,3 @@ class DataArchive:
         Remove the created data-archive from disk.
         """
         rmtree(ARCHIVE_ROOT)
-
