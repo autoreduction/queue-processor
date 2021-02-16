@@ -124,7 +124,6 @@ class TestEndToEnd(unittest.TestCase):
         # Get Result from database
         results = self._find_run_in_database()
 
-
         assert results
         return results
 
