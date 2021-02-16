@@ -26,13 +26,9 @@
             </div>
             <br/>
             {% if experiment_reference > 0 %}
-                <form id="instrument_variables" method="POST"
-                      action="{% url 'instrument:variables_by_experiment' instrument=instrument.name experiment_reference=experiment_reference %}"
-                      class="form-horizontal">
+                <form id="instrument_variables" method="POST" action="{% url 'instrument:variables_by_experiment' instrument=instrument.name experiment_reference=experiment_reference %}" class="form-horizontal">
             {% else %}
-                <form id="instrument_variables" method="POST"
-                      action="{% url 'instrument:variables' instrument=instrument.name start=run_start end=run_end %}"
-                      class="form-horizontal">
+                <form id="instrument_variables" method="POST" action="{% url 'instrument:variables' instrument=instrument.name start=run_start end=run_end %}" class="form-horizontal">
             {% endif %}
         {% csrf_token %}
         <input type="hidden" id="upcoming_runs" name="upcoming_runs" value="{{ upcoming_run_variables }}"/>
