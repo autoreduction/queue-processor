@@ -9,7 +9,7 @@ from shutil import rmtree
 from unittest import TestCase
 
 from queue_processors.queue_processor.settings import CYCLE_DIRECTORY, ARCHIVE_ROOT
-from utils.data_archive.data_archive import DataArchive
+from systemtests.utils.data_archive import DataArchive
 from utils.project.structure import get_project_root
 
 
