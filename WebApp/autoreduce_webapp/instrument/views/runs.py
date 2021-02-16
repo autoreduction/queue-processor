@@ -249,7 +249,6 @@ def configure_new_runs_POST(request, instrument_name, start=0, end=0, experiment
                                                         instrument.id,
                                                         args_for_range,
                                                         start,
-                                                        experiment_reference,
                                                         tracks_script=False)
         if end:
             post_range_args = InstrumentVariablesUtils.merge_arguments({
