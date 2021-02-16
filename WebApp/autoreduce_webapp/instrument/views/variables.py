@@ -21,7 +21,7 @@ LOGGER = logging.getLogger("app")
 
 
 # pylint:disable=too-many-locals
-def instrument_summary(request, instrument, last_run_object):
+def summarize_variables(request, instrument, last_run_object):
     """
     Handles view request for the instrument summary page
     """
@@ -33,7 +33,7 @@ def instrument_summary(request, instrument, last_run_object):
 
     upcoming_variables_by_run = InstrumentVariable.objects.filter(start_run__gt=last_run_object.run_number)
     upcoming_variables_by_experiment = InstrumentVariable.objects.filter(
-        experiment_reference=last_run_object.experiment.reference_number)
+        experiment_reference__gte=last_run_object.experiment.reference_number)
 
     # Create a nested dictionary for by-run
     upcoming_variables_by_run_dict = {}
@@ -50,7 +50,7 @@ def instrument_summary(request, instrument, last_run_object):
 
     # Fill in the run end numbers
     run_end = 0
-    for run_number in sorted(list(upcoming_variables_by_run_dict.keys()), reverse=True):
+    for run_number in sorted(upcoming_variables_by_run_dict.keys(), reverse=True):
         upcoming_variables_by_run_dict[run_number]['run_end'] = run_end
         run_end = max(run_number - 1, 0)
 
@@ -159,7 +159,6 @@ def render_run_variables(request, instrument_name, run_number, run_version=0):
     """
     Handles request to view the summary of a run
     """
-    # TODO this should be part of the WebApp/autoreduce_webapp/reduction_viewer/views.py::run_summary
     # pylint:disable=no-member
     reduction_run = ReductionRun.objects.get(instrument__name=instrument_name,
                                              run_number=run_number,
