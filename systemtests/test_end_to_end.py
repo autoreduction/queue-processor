@@ -8,24 +8,20 @@
 Linux only!
 Tests that data can traverse through the autoreduction system successfully
 """
-import shutil
 import os
-import unittest
+import shutil
 import time
+import unittest
 from pathlib import Path
+
 from model.database import access as db
 from model.message.message import Message
-
-from scripts.manual_operations import manual_remove as remove
-
-from utils.clients.django_database_client import DatabaseClient
-from utils.data_archive.data_archive_creator import DataArchiveCreator
-from utils.data_archive.archive_explorer import ArchiveExplorer
-from utils.project.structure import PROJECT_ROOT
-
-from utils.clients.connection_exception import ConnectionException
-
 from queue_processors.queue_processor.queue_listener import main
+from scripts.manual_operations import manual_remove as remove
+from utils.clients.connection_exception import ConnectionException
+from utils.clients.django_database_client import DatabaseClient
+from utils.data_archive.data_archive import DataArchive
+from utils.project.structure import PROJECT_ROOT
 
 REDUCE_SCRIPT = \
     'def main(input_file, output_dir):\n' \
@@ -59,8 +55,6 @@ class TestEndToEnd(unittest.TestCase):
             raise RuntimeError("Could not connect to ActiveMQ - check you credentials. If running locally check that "
                                "ActiveMQ is running and started by `python setup.py start`") from err
         # Create test archive and add data
-        self.data_archive_creator = DataArchiveCreator(PROJECT_ROOT, overwrite=True)
-        self.archive_explorer = ArchiveExplorer(f'{PROJECT_ROOT}/data-archive')
         # Add placeholder variables:
         # these are used to ensure runs are deleted even if test fails before completion
         self.instrument = 'ARMI'
@@ -72,9 +66,9 @@ class TestEndToEnd(unittest.TestCase):
         self.queue_client.disconnect()
         self.database_client.disconnect()
         self._remove_run_from_database(self.instrument, self.run_number)
+        self.data_archive.delete()
 
         self._delete_reduction_directory()
-        del self.data_archive_creator
 
     def _setup_data_structures(self, reduce_script, vars_script):
         """
@@ -84,18 +78,12 @@ class TestEndToEnd(unittest.TestCase):
         :return: file_path to the reduced data
         """
         raw_file = '{}{}.nxs'.format(self.instrument, self.run_number)
-        # Create and add data to archive
-        self.data_archive_creator.make_data_archive([self.instrument], 19, 19, 1)
-        self.data_archive_creator.add_reduce_script(instrument=self.instrument, file_content=reduce_script)
-        self.data_archive_creator.add_reduce_vars_script(self.instrument, vars_script)
-        self.data_archive_creator.add_data_to_most_recent_cycle(self.instrument, raw_file)
-
-        # Make temporary location to add reduced files to
-        # self._make_reduction_directory(self.instrument, self.rb_number, self.run_number)
-
-        # Submit message to activemq
-        cycle_path = self.archive_explorer.get_cycle_directory(self.instrument, 19, 1)
-        return os.path.join(cycle_path, raw_file)
+        self.data_archive = DataArchive([self.instrument], 19, 19)
+        self.data_archive.create()
+        self.data_archive.add_reduction_script(self.instrument, reduce_script)
+        self.data_archive.add_reduce_vars_script(self.instrument, vars_script)
+        raw_file = self.data_archive.add_data_file(self.instrument, raw_file, 19, 1)
+        return raw_file
 
     def _find_run_in_database(self):
         """
@@ -126,16 +114,16 @@ class TestEndToEnd(unittest.TestCase):
             shutil.rmtree(path.absolute())
 
     def send_and_wait_for_result(self, message):
-        "Sends the message to the queue and waits until the listener has finished processing it"
+        """Sends the message to the queue and waits until the listener has finished processing it"""
         # forces the is_processing to return True so that the listener has time to actually start processing the message
         self.listener._processing = True  #pylint:disable=protected-access
         self.queue_client.send('/queue/DataReady', message)
-
         while self.listener.is_processing_message():
             time.sleep(0.5)
 
         # Get Result from database
         results = self._find_run_in_database()
+
 
         assert results
         return results
@@ -153,7 +141,7 @@ class TestEndToEnd(unittest.TestCase):
         # Create and send json message to ActiveMQ
         data_ready_message = Message(rb_number=self.rb_number,
                                      instrument=self.instrument,
-                                     data=file_location,
+                                     data=str(file_location),
                                      run_number=self.run_number,
                                      facility="ISIS",
                                      started_by=0)
@@ -242,7 +230,7 @@ class TestEndToEnd(unittest.TestCase):
         self.assertIn("ValueError('hello from the other side')", results[0].message)
 
     def test_end_to_end_wish_vars_script_gets_new_variable(self):
-        "Test running the same run twice, but the second time the reduce_vars has a new variable"
+        """Test running the same run twice, but the second time the reduce_vars has a new variable"""
         # Create supporting data structures e.g. Data Archive, Reduce directory
         file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script='')
 
@@ -259,7 +247,7 @@ class TestEndToEnd(unittest.TestCase):
         assert len(result_one) == 1
         run_without_vars = result_one[0]
 
-        self.data_archive_creator.add_reduce_vars_script(self.instrument, VARS_SCRIPT)
+        self.data_archive.add_reduce_vars_script(self.instrument, VARS_SCRIPT)
         result_two = self.send_and_wait_for_result(data_ready_message)
 
         assert len(result_two) == 2
@@ -273,7 +261,7 @@ class TestEndToEnd(unittest.TestCase):
         assert var.value == "value1"
 
     def test_end_to_end_wish_vars_script_loses_variable(self):
-        "Test running the same run twice, but the second time the reduce_vars has one less variable"
+        """Test running the same run twice, but the second time the reduce_vars has one less variable"""
         # Create supporting data structures e.g. Data Archive, Reduce directory
         file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script=VARS_SCRIPT)
 
@@ -294,7 +282,7 @@ class TestEndToEnd(unittest.TestCase):
         assert var.name == "variable1"
         assert var.value == "value1"
 
-        self.data_archive_creator.add_reduce_vars_script(self.instrument, "")
+        self.data_archive.add_reduce_vars_script(self.instrument, "")
         result_two = self.send_and_wait_for_result(data_ready_message)
 
         assert len(result_two) == 2
@@ -303,7 +291,7 @@ class TestEndToEnd(unittest.TestCase):
         assert run_without_vars.run_variables.count() == 0
 
     def test_end_to_end_vars_script_has_variable_value_changed(self):
-        "Test that reducing the same run after changing the reduce_vars updates the variable's value"
+        """Test that reducing the same run after changing the reduce_vars updates the variable's value"""
         # Create supporting data structures e.g. Data Archive, Reduce directory
         file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script=VARS_SCRIPT)
 
@@ -324,7 +312,7 @@ class TestEndToEnd(unittest.TestCase):
         assert var.name == "variable1"
         assert var.value == "value1"
 
-        self.data_archive_creator.add_reduce_vars_script(self.instrument, 'standard_vars={"variable1": 123}')
+        self.data_archive.add_reduce_vars_script(self.instrument, 'standard_vars={"variable1": 123}')
         result_two = self.send_and_wait_for_result(data_ready_message)
 
         assert len(result_two) == 2
@@ -341,7 +329,7 @@ class TestEndToEnd(unittest.TestCase):
         assert initial_var == changed_var
 
     def test_end_to_end_wish_vars_script_has_variable_reused_on_new_run_number(self):
-        "Test that the variables are reused on new run numbers, IF their value has not changed"
+        """Test that the variables are reused on new run numbers, IF their value has not changed"""
         # Create supporting data structures e.g. Data Archive, Reduce directory
         file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script=VARS_SCRIPT)
 
@@ -370,7 +358,7 @@ class TestEndToEnd(unittest.TestCase):
         assert initial_var == new_var
 
     def test_end_to_end_wish_vars_script_has_variable_copied_on_new_run_number_when_value_changed(self):
-        "Test that the variable is copied for a new run WHEN it's value has been changed"
+        """Test that the variable is copied for a new run WHEN it's value has been changed"""
         # Create supporting data structures e.g. Data Archive, Reduce directory
         file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script=VARS_SCRIPT)
 
@@ -394,7 +382,7 @@ class TestEndToEnd(unittest.TestCase):
 
         # update the run number in the class because it's used to query for the correct run
         data_ready_message.run_number = self.run_number = 102
-        self.data_archive_creator.add_reduce_vars_script(self.instrument, 'standard_vars={"variable1": 123}')
+        self.data_archive.add_reduce_vars_script(self.instrument, 'standard_vars={"variable1": 123}')
         result_two = self.send_and_wait_for_result(data_ready_message)
 
         # making the run_number a list so that they can be deleted by the tearDown!
