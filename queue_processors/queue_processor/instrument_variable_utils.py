@@ -205,16 +205,18 @@ class InstrumentVariablesUtils:
         """
         # enforce a uniqueness using the (name, expriment_reference) fields
         # this will allow to only have 1 variable with that name for 1 experiment reference
-        try:
-            variables_set_for_experiment = possible_variables.get(name=name, experiment_reference=expriment_reference)
-        except ObjectDoesNotExist:
-            variables_set_for_experiment = None
+        variable = None
+        if expriment_reference is not None:
+            try:
+                variable = possible_variables.get(name=name, experiment_reference=expriment_reference)
+            except ObjectDoesNotExist:
+                pass
 
-        if not variables_set_for_experiment:
+        if not variable:
             # if a variable set for the experiment was not found - then find the latest variable with that name
             return possible_variables.filter(name=name).last()
 
-        return variables_set_for_experiment
+        return variable
 
     @staticmethod
     def variable_was_updated(variable, new_value, new_type, new_help_text):
