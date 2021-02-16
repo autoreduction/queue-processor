@@ -21,7 +21,7 @@
                         <ul class="list-inline comma-seperated-list">
                             {% for job in processing %}
                                 <li>
-                                    <a href="{% url 'run:summary' instrument_name=last_instrument_run.instrument.name run_number=job.run_number run_version=job.run_version %}">{{ job.title }}</a>
+                                    <a href="{% url 'runs:summary' instrument_name=last_instrument_run.instrument.name run_number=job.run_number run_version=job.run_version %}">{{ job.title }}</a>
                                 </li>
                             {% endfor %}
                         </ul>
