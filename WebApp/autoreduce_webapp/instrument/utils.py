@@ -24,10 +24,14 @@ os.environ["DJANGO_SETTINGS_MODULE"] = "autoreduce_webapp.settings"
 
 # pylint:disable=wrong-import-position
 from autoreduce_webapp.icat_communication import ICATCommunication
-from autoreduce_webapp.settings import REDUCTION_DIRECTORY, FACILITY
-from reduction_variables.models import InstrumentVariable, RunVariable
-from reduction_viewer.models import ReductionRun, Notification
-from reduction_viewer.utils import InstrumentUtils, StatusUtils, ReductionRunUtils
+from autoreduce_webapp.settings import REDUCTION_DIRECTORY
+from reduction_viewer.models import Notification, ReductionRun
+from reduction_viewer.utils import InstrumentUtils
+from instrument.models import InstrumentVariable, RunVariable
+from queue_processors.queue_processor.reduction.service import ReductionScript
+from queue_processors.queue_processor.status_utils import StatusUtils
+
+STATUS = StatusUtils()
 
 LOGGER = logging.getLogger('django')
 
@@ -189,33 +193,6 @@ class InstrumentVariablesUtils(object):
     """
     Instrument variable specific helper functions
     """
-    def create_variables_for_run(self, reduction_run):
-        """
-        Finds the appropriate `InstrumentVariable`s for the given reduction run,
-        and creates `RunVariable`s from them.
-        If the run is a re-run, use the previous run's variables.
-        If instrument variables set for the run's experiment are found, they're used.
-        Otherwise if variables set for the run's run number exist, they'll be used.
-        If not, the instrument's default variables will be.
-        """
-        instrument_name = reduction_run.instrument.name
-        variables = []
-
-        if not variables:
-            # No previous run versions. Find the instrument variables we want to use.
-            variables = self.show_variables_for_experiment(instrument_name, reduction_run.experiment.reference_number)
-
-        if not variables:
-            # No experiment-specific variables, so let's look for variables set by run number.
-            variables = self.show_variables_for_run(instrument_name, reduction_run.run_number)
-
-        if not variables:
-            # No variables are set, so we'll use the defaults, and set them them while we're at it.
-            variables = self.get_default_variables(instrument_name)
-            self.set_variables_for_runs(instrument_name, variables, reduction_run.run_number)
-
-        # Create run variables from these instrument variables, and return them.
-        return VariableUtils().save_run_variables(variables, reduction_run)
 
     # pylint:disable=invalid-name
     def get_current_and_upcoming_variables(self, instrument_name, last_run_object=None):

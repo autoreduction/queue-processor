@@ -67,7 +67,7 @@
                                 </div>
                                 <div>
                                     <strong>Instrument:</strong> <a
-                                        href="{% url 'instrument_summary' instrument=run.instrument.name %}">{{ run.instrument.name }}</a>
+                                        href="{% url 'runs:list' instrument=run.instrument.name %}">{{ run.instrument.name }}</a>
                                 </div>
                                 <div>
                                     <strong>RB Number:</strong> <a
@@ -117,7 +117,7 @@
                                                 <span> (Last attempt)</span>
                                             {% endif %}
                                             {% if run.retry_run %}
-                                                <a href="{% url 'run_summary' instrument_name=run.instrument.name run_number=run.retry_run.run_number run_version=run.retry_run.run_version %}">
+                                                <a href="{% url 'runs:summary' instrument_name=run.instrument.name run_number=run.retry_run.run_number run_version=run.retry_run.run_version %}">
                                                     ({{ run.retry_run.status.value_verbose }})</a>
                                             {% endif %}
                                         {% else %}
@@ -191,7 +191,7 @@
             {% endif %}
             {% if reduction_variables_on and has_variables%}
                 {% autoescape on %}
-                    {% view "reduction_variables.views.run_summary" instrument run_number run_version %}
+                    {% view "instrument.views.instrument_summary" instrument run_number run_version %}
                 {% endautoescape %}
             {% endif %}
           </div>
@@ -219,7 +219,7 @@
                                 <tr>
                                     <td>
                                         {% if job.run_version != run.run_version %}
-                                            <a href="{% url 'run_summary' instrument_name=run.instrument.name run_number=job.run_number run_version=job.run_version %}">{{ job.title }}</a>
+                                            <a href="{% url 'runs:summary' instrument_name=run.instrument.name run_number=job.run_number run_version=job.run_version %}">{{ job.title }}</a>
                                         {% else %}
                                             {{ job.title }}
                                         {% endif %}

@@ -34,7 +34,7 @@
                         Autoreduction on {{ instrument_name }}</a>
                 {% endif %}
                 <form id="form-pause" method="POST"
-                      action="{% url 'instrument_pause' instrument_name %}">
+                      action="{% url 'instrument:pause' instrument_name %}">
                     {% csrf_token %}
                     <input type="hidden" name="currently_paused" id="currently_paused"
                            value="{{ instrument.is_paused }}">
@@ -45,7 +45,7 @@
             <!-- Re-run past runs button -->
             {% if has_variables %}
                 <div class="col-md-6 text-center" id="btn-re-run_past_job">
-                    <p><a href="{% url 'instrument_submit_runs' instrument=instrument_name %}"
+                    <p><a href="{% url 'instrument:submit_runs' instrument=instrument_name %}"
                           class="btn btn-success btn-block"><i class="fa fa-arrow-left"></i>&nbsp;&nbsp;Re-run
                         past jobs</a></p>
                 </div>
@@ -53,14 +53,14 @@
 
             <!-- Configure new runs button -->
             <div class="col-md-6 text-center" id="btn-configure_new_jobs">
-                <p><a href="{% url 'instrument_variables' instrument=instrument_name %}"
+                <p><a href="{% url 'instrument:variables' instrument=instrument_name %}"
                       class="btn btn-success btn-block"><i class="fa fa-plus"></i>&nbsp;&nbsp;Configure
                     New Jobs</a></p>
             </div>
 
             {% if reduction_variables_on and has_variables %}
                 <div class="col-md-6 text-center" id="btn-see_instrument_variables">
-                    <p><a href="{% url 'instrument_variables_summary' instrument=instrument_name %}"
+                    <p><a href="{% url 'instrument:variables_summary' instrument=instrument_name %}"
                           class="btn btn-success btn-block"><i class="fa fa-eye"></i>&nbsp;&nbsp;See
                         Instrument variables</a></p>
                 </div>
@@ -142,7 +142,7 @@
                         <div class="row run-row">
                     {% endif %}
                 <div class="col-md-5 col-sm-5 col-md-offset-1 col-xs-4"><a
-                        href="{% url 'run_summary' instrument_name=instrument_name run_number=run.run_number run_version=run.run_version %}"
+                        href="{% url 'runs:summary' instrument_name=instrument_name run_number=run.run_number run_version=run.run_version %}"
                         id="top-run-number">{{ run.title }}</a></div>
                 <div class="col-md-2 col-sm-2 col-xs-4 run-status text-{% colour_table_row run.status.value_verbose %}">
                     <strong>{{ run.status.value_verbose }}</strong></div>
@@ -171,7 +171,7 @@
                         {% for run in associated_runs %}
                             <div class="row run-row-internal">
                                 <div class="col-md-5 col-sm-5 col-md-offset-1 col-xs-4"><a
-                                        href="{% url 'run_summary' instrument_name=instrument_name run_number=run.run_number run_version=run.run_version %}">{{ run.title }}</a>
+                                        href="{% url 'runs:summary' instrument_name=instrument_name run_number=run.run_number run_version=run.run_version %}">{{ run.title }}</a>
                                 </div>
                                 <div class="col-md-2 col-sm-2 col-xs-4 run-status text-{% colour_table_row run.status.value_verbose %}">
                                     <strong>{{ run.status.value_verbose }}</strong></div>
@@ -253,7 +253,7 @@
     </script>
     <script src="{% static "javascript/pause_instrument.js" %}"></script>
     <script src="{% static "javascript/instrument_variables.js" %}"></script>
-    <script src="{% static "javascript/instrument_summary.js" %}"></script>
+    <script src="{% static "javascript/runs_list.js" %}"></script>
 
     <script src="{% static "javascript/vendor/bootstrap-tour.min.js" %}"></script>
     <script src="{% static "javascript/tours/instrument_summary_tour.js" %}"></script>

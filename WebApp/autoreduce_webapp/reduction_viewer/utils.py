@@ -23,7 +23,7 @@ import django.http
 
 from django.utils import timezone
 from reduction_viewer.models import Instrument, Status, ReductionRun, DataLocation
-from reduction_variables.models import RunVariable
+from instrument.models import RunVariable
 
 sys.path.append(os.path.join("../", os.path.dirname(os.path.dirname(__file__))))
 os.environ["DJANGO_SETTINGS_MODULE"] = "autoreduce_webapp.settings"
@@ -100,7 +100,7 @@ class ReductionRunUtils(object):
         variable (retry_run.cancel) that tells the frontend to not schedule another retry
         if the next run fails.
         """
-        from reduction_variables.utils import MessagingUtils
+        from instrument.utils import MessagingUtils
 
         def set_cancelled(run):
             """
@@ -152,7 +152,7 @@ class ReductionRunUtils(object):
         them with the new one, otherwise use the previous run's.
         If a script (as a string) is supplied then use it, otherwise use the previous run's.
         """
-        from reduction_variables.utils import InstrumentVariablesUtils
+        from instrument.utils import InstrumentVariablesUtils
 
         run_last_updated = reduction_run.last_updated
 
@@ -228,7 +228,7 @@ class ReductionRunUtils(object):
         Fetch the reduction script from the given run and return it as a string,
         along with a dictionary of arguments.
         """
-        from reduction_variables.utils import VariableUtils
+        from instrument.utils import VariableUtils
 
         script = reduction_run.script
 

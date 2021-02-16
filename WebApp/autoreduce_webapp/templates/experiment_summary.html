@@ -24,7 +24,7 @@
                                     <strong>Principal Investigator:</strong> {{ experiment_details.pi }}
                                 </div>
                                 <div>
-                                    <strong>Instrument:</strong> {% if experiment_details.instrument %}<a href="{% url 'instrument_summary' instrument=experiment_details.instrument %}">{{ experiment_details.instrument }}{% endif %}</a>
+                                    <strong>Instrument:</strong> {% if experiment_details.instrument %}<a href="{% url 'runs:list' instrument=experiment_details.instrument %}">{{ experiment_details.instrument }}{% endif %}</a>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -39,7 +39,7 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="file-path">
-                                    <strong>Data:</strong> 
+                                    <strong>Data:</strong>
                                     {% if data %}
                                         {% for location in data %}
                                             {{ location.file_path }}<br/>
@@ -51,7 +51,7 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="file-path">
-                                    <strong>Reduced:</strong> 
+                                    <strong>Reduced:</strong>
                                     {% if reduced_data %}
                                         {% for location in reduced_data %}
                                             {{ location.file_path }}<br/>
@@ -83,7 +83,7 @@
                             {% for job, started_by in runs_with_started_by %}
                                 <tr>
                                     <td>
-                                        <a href="{% url 'run_summary' instrument_name=job.instrument.name run_number=job.run_number run_version=job.run_version %}">{{ job.title }}</a>
+                                        <a href="{% url 'runs:summary' instrument_name=job.instrument.name run_number=job.run_number run_version=job.run_version %}">{{ job.title }}</a>
                                     </td>
                                     <td class="text-{% colour_table_row job.status.value_verbose %}"><strong>{{ job.status.value_verbose }}</strong></td>
                                     <td title="{{ job.last_updated|date:'SHORT_DATETIME_FORMAT' }}">{{ job.last_updated|naturaltime }}</td>

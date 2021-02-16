@@ -75,7 +75,7 @@ class DjangoORM:
         """
         if not self.variable_model:
             # pylint:disable=import-outside-toplevel,import-error
-            import reduction_variables.models as variable_model
+            import instrument.models as variable_model
             self.variable_model = variable_model
         return self.variable_model
 

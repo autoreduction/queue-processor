@@ -8,7 +8,7 @@
             <div class="row">
                 <div class="col-md-4"><strong>Last run on instrument:</strong></div>
                 <div class="col-md-8">
-                    <a href="{% url 'run_summary' instrument_name=last_instrument_run.instrument.name run_number=last_instrument_run.run_number run_version=last_instrument_run.run_version %}">{{ last_instrument_run.title }}</a>
+                    <a href="{% url 'runs:summary' instrument_name=last_instrument_run.instrument.name run_number=last_instrument_run.run_number run_version=last_instrument_run.run_version %}">{{ last_instrument_run.title }}</a>
                     <strong class="text-{% colour_table_row last_instrument_run.status.value_verbose %}"> ({{ last_instrument_run.status.value_verbose }})</strong>
                 </div>
             </div>
@@ -19,7 +19,7 @@
                         <ul class="list-inline comma-seperated-list">
                             {% for job in processing %}
                             <li>
-                                <a href="{% url 'run_summary' instrument_name=last_instrument_run.instrument.name run_number=job.run_number run_version=job.run_version %}">{{ job.title }}</a>
+                                <a href="{% url 'runs:summary' instrument_name=last_instrument_run.instrument.name run_number=job.run_number run_version=job.run_version %}">{{ job.title }}</a>
                             </li>
                             {% endfor %}
                         </ul>
@@ -33,7 +33,7 @@
                         <ul class="list-inline comma-seperated-list">
                             {% for job in queued %}
                                 <li>
-                                    <a href="{% url 'run_summary' instrument_name=last_instrument_run.instrument.name run_number=job.run_number run_version=job.run_version %}">{{ job.title }}</a>
+                                    <a href="{% url 'runs:summary' instrument_name=last_instrument_run.instrument.name run_number=job.run_number run_version=job.run_version %}">{{ job.title }}</a>
                                 </li>
                             {% endfor %}
                         </ul>
@@ -43,7 +43,7 @@
         {% else %}
             <div class="text-center">
                 <strong>Last run on instrument: </strong>
-                <a href="{% url 'run_summary' instrument_name=last_instrument_run.instrument.name run_number=last_instrument_run.run_number run_version=last_instrument_run.run_version %}">{{ last_instrument_run.title }}</a>
+                <a href="{% url 'runs:summary' instrument_name=last_instrument_run.instrument.name run_number=last_instrument_run.run_number run_version=last_instrument_run.run_version %}">{{ last_instrument_run.title }}</a>
                 <strong class="text-{% colour_table_row last_instrument_run.status.value_verbose %}"> ({{ last_instrument_run.status.value_verbose }})</strong>
             </div>
             <div class="text-center">

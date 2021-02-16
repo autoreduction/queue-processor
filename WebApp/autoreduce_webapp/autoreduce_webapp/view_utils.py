@@ -158,7 +158,7 @@ def render_with(template):
                 output['outdated'] = outdated
 
             if 'reduction_variables_on' not in output:
-                output['reduction_variables_on'] = ('reduction_variables' in INSTALLED_APPS)
+                output['reduction_variables_on'] = ('instrument' in INSTALLED_APPS)
 
             if 'support_email' not in output:
                 # pylint: disable=no-member

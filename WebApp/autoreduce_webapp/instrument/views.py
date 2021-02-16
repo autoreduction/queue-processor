@@ -10,14 +10,15 @@ This imports into another view, thus no middleware
 """
 import logging
 
-from django.shortcuts import redirect
-from django.shortcuts import render
-from autoreduce_webapp.view_utils import (login_and_uows_valid, render_with, check_permissions)
-from reduction_variables.models import InstrumentVariable, RunVariable
-from reduction_variables.utils import InstrumentVariablesUtils, MessagingUtils
+from autoreduce_webapp.view_utils import (check_permissions, login_and_uows_valid, render_with)
+from django.http import JsonResponse
+from django.shortcuts import redirect, render
 from reduction_viewer.models import Instrument, ReductionRun
-from reduction_viewer.utils import InstrumentUtils, StatusUtils, ReductionRunUtils
+from reduction_viewer.utils import (InstrumentUtils, ReductionRunUtils, StatusUtils)
 from utilities import input_processing
+
+from instrument.models import InstrumentVariable, RunVariable
+from instrument.utils import InstrumentVariablesUtils, MessagingUtils
 
 LOGGER = logging.getLogger("app")
 
@@ -116,7 +117,7 @@ def delete_instrument_variables(request, instrument=None, start=0, end=0, experi
     else:
         InstrumentVariablesUtils().set_variables_for_runs(instrument_name, [], start, end)
 
-    return redirect('instrument_summary', instrument=instrument_name)
+    return redirect('runs_list', instrument=instrument_name)
 
 
 @login_and_uows_valid
@@ -187,7 +188,7 @@ def instrument_variables(request, instrument=None, start=0, end=0, experiment_re
             modify_vars(instr_vars, new_var_dict)
             InstrumentVariablesUtils().set_variables_for_experiment(instrument_name, instr_vars, experiment_reference)
 
-        return redirect('instrument_summary', instrument=instrument_name)
+        return redirect('runs_list', instrument=instrument_name)
 
     else:
         instrument = InstrumentUtils().get_instrument(instrument_name)
@@ -401,7 +402,7 @@ def run_confirmation(request, instrument):
     Handles request for user to confirm re-run
     """
     if request.method != 'POST':
-        return redirect('instrument_summary', instrument=instrument.name)
+        return redirect('runs_list', instrument=instrument.name)
 
     # POST
     # pylint:disable=no-member
@@ -535,3 +536,18 @@ def run_confirmation(request, instrument):
             context_dictionary['error'] = 'Failed to send new job. (%s)' % str(exception)
 
     return context_dictionary
+
+
+@login_and_uows_valid
+@check_permissions
+# pylint:disable=no-member
+def instrument_pause(request, instrument=None):
+    """
+    Renders pausing of instrument returning a JSON response
+    """
+    # ToDo: Check ICAT credentials
+    instrument_obj = Instrument.objects.get(name=instrument)
+    currently_paused = (request.POST.get("currently_paused").lower() == u"false")
+    instrument_obj.is_paused = currently_paused
+    instrument_obj.save()
+    return JsonResponse({'currently_paused': str(currently_paused)})  # Blank response
