@@ -20,7 +20,7 @@ from queue_processors.queue_processor.queue_listener import main
 from scripts.manual_operations import manual_remove as remove
 from utils.clients.connection_exception import ConnectionException
 from utils.clients.django_database_client import DatabaseClient
-from utils.data_archive.data_archive import DataArchive
+from systemtests.utils.data_archive import DataArchive
 from utils.project.structure import PROJECT_ROOT
 
 REDUCE_SCRIPT = \
