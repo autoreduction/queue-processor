@@ -74,7 +74,8 @@ class DataArchive:
     def _create_script_directory(instrument: str) -> None:
         Path(SCRIPTS_DIRECTORY % instrument).mkdir(parents=True)
 
-    def _create_file_at_location(self, location: Path, file_text: str) -> None:
+    @staticmethod
+    def _create_file_at_location(location: Path, file_text: str) -> None:
         with open(location, "w+") as fle:
             fle.write(file_text)
 

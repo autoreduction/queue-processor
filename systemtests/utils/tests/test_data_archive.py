@@ -37,6 +37,9 @@ class TestDataArchive(TestCase):
         self.assertFalse(test_archive_path.exists())
 
     def test_delete_post_create(self):
+        """
+        Tests delete when archvie was created from create
+        """
         self.data_archive.create()
         self.data_archive.delete()
         self.assertFalse(self.expected_cycle_path.exists())
