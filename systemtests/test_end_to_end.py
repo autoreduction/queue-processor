@@ -18,9 +18,9 @@ from model.database import access as db
 from model.message.message import Message
 from queue_processors.queue_processor.queue_listener import main
 from scripts.manual_operations import manual_remove as remove
+from systemtests.utils.data_archive import DataArchive
 from utils.clients.connection_exception import ConnectionException
 from utils.clients.django_database_client import DatabaseClient
-from systemtests.utils.data_archive import DataArchive
 from utils.project.structure import PROJECT_ROOT
 
 REDUCE_SCRIPT = \
@@ -54,12 +54,16 @@ class TestEndToEnd(unittest.TestCase):
         except ConnectionException as err:
             raise RuntimeError("Could not connect to ActiveMQ - check you credentials. If running locally check that "
                                "ActiveMQ is running and started by `python setup.py start`") from err
-        # Create test archive and add data
+
         # Add placeholder variables:
         # these are used to ensure runs are deleted even if test fails before completion
         self.instrument = 'ARMI'
         self.rb_number = 1234567
         self.run_number = 101
+
+        # Create test archive and add data
+        self.data_archive = DataArchive([self.instrument], 19, 19)
+        self.data_archive.create()
 
     def tearDown(self):
         """ Disconnect from services, stop external services and delete data archive """
@@ -78,8 +82,6 @@ class TestEndToEnd(unittest.TestCase):
         :return: file_path to the reduced data
         """
         raw_file = '{}{}.nxs'.format(self.instrument, self.run_number)
-        self.data_archive = DataArchive([self.instrument], 19, 19)
-        self.data_archive.create()
         self.data_archive.add_reduction_script(self.instrument, reduce_script)
         self.data_archive.add_reduce_vars_script(self.instrument, vars_script)
         raw_file = self.data_archive.add_data_file(self.instrument, raw_file, 19, 1)
