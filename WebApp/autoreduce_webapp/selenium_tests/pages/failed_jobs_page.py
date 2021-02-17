@@ -16,7 +16,6 @@ class FailedJobsPage(Page, NavbarMixin, FooterMixin):
     """
     Page model class for failed jobs page
     """
-
     @staticmethod
     def url_path():
         """

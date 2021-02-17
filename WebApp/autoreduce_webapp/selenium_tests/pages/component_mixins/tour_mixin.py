@@ -4,7 +4,6 @@
 # Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
-
 """
 Module containing the tour mixin
 """
@@ -37,16 +36,16 @@ class TourMixin:
         Checks if the tour is currently visible
         :return: (bool) True if tour is visible, False otherwise
         """
-        return WebDriverWait(self.driver, 10).until(
-            EC.presence_of_element_located((By.ID, self.TOUR_STEP_ID % self.step)))
+        return WebDriverWait(self.driver,
+                             10).until(EC.presence_of_element_located((By.ID, self.TOUR_STEP_ID % self.step)))
 
     def is_tour_hidden(self):
         """
         Checks if the tour is currently hidden
         :return: (bool) True if tour is visible, False otherwise
         """
-        return WebDriverWait(self.driver, 30).until_not(
-            EC.presence_of_element_located((By.ID, self.TOUR_STEP_ID % self.step)))
+        return WebDriverWait(self.driver,
+                             30).until_not(EC.presence_of_element_located((By.ID, self.TOUR_STEP_ID % self.step)))
 
     def next_tour_step(self):
         """

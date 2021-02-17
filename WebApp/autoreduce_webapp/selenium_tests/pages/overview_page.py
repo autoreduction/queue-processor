@@ -23,7 +23,6 @@ class OverviewPage(Page, NavbarMixin, FooterMixin, TourMixin):
     """
     Overview page model class
     """
-
     def __init__(self, driver):
         super().__init__(driver)
         self.step = 0
@@ -36,8 +35,7 @@ class OverviewPage(Page, NavbarMixin, FooterMixin, TourMixin):
         """
         self.driver.get(configuration.get_url())
         self.driver.get(OverviewPage.url())
-        WebDriverWait(self.driver, 10).until(
-            presence_of_element_located((By.CLASS_NAME, "instrument-btn")))
+        WebDriverWait(self.driver, 10).until(presence_of_element_located((By.CLASS_NAME, "instrument-btn")))
         return self
 
     @staticmethod
@@ -56,8 +54,7 @@ class OverviewPage(Page, NavbarMixin, FooterMixin, TourMixin):
         Gets the names of the instruments which have buttons on the overview page
         :return: (List) The instrument names which have buttons on the overview page
         """
-        return [instrument_btn.get_attribute("id").split("-")[0] for instrument_btn in
-                self._get_instrument_buttons()]
+        return [instrument_btn.get_attribute("id").split("-")[0] for instrument_btn in self._get_instrument_buttons()]
 
     def click_instrument(self, instrument: str) -> InstrumentSummaryPage:
         """
