@@ -35,6 +35,10 @@ def summarize_variables(request, instrument, last_run_object):
     upcoming_variables_by_experiment = InstrumentVariable.objects.filter(
         experiment_reference__gte=last_run_object.experiment.reference_number)
 
+    # TODO the tracks_script that is being set is often innacurate
+    # vars made from the web app DO NOT track the script
+    # the view itself is innacurate as "tracks script" is set on a per-variable basis
+    # rather than the whole configuration
     # Create a nested dictionary for by-run
     upcoming_variables_by_run_dict = {}
     for variable in upcoming_variables_by_run:
@@ -62,7 +66,7 @@ def summarize_variables(request, instrument, last_run_object):
     current_vars = {
         'run_start': current_start,
         'run_end': current_end,
-        'tracks_script': current_variables[0].tracks_script,
+        'tracks_script': not any((var.tracks_script for var in current_variables)),
         'variables': current_variables,
         'instrument': instrument,
     }
@@ -107,16 +111,18 @@ def delete_instrument_variables(request, instrument=None, start=0, end=0, experi
     """
     Handles request for deleting instrument variables
     """
-    instrument_name = instrument
-    start, end = int(start), int(end)
 
     # We "save" an empty list to delete the previous variables.
     if experiment_reference is not None:
-        InstrumentVariablesUtils().set_variables_for_experiment(instrument_name, [], experiment_reference)
+        InstrumentVariable.objects.filter(instrument__name=instrument,
+                                          experiment_reference=experiment_reference).delete()
     else:
-        InstrumentVariablesUtils().set_variables_for_runs(instrument_name, [], start, end)
+        start_run_kwargs = {"start_run__gte": start}
+        if end > 0:
+            start_run_kwargs["start_run__lte"] = end
+        InstrumentVariable.objects.filter(instrument__name=instrument, **start_run_kwargs).delete()
 
-    return redirect('runs_list', instrument=instrument_name)
+    return redirect('instrument:variables_summary', instrument=instrument)
 
 
 @login_and_uows_valid

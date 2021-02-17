@@ -32,9 +32,9 @@
                 <small>(Tracking script changes)</small>
                 <br/>
             {% endif %}
+            {% if upcoming %}
             <br/>
             <a href="{% url 'instrument:variables' instrument=instrument.name start=instrument_variables.run_start end=instrument_variables.run_end %}">edit variables</a>
-            {% if upcoming %}
                 <br/>
                 <a href="{% url 'instrument:delete_variables' instrument=instrument.name start=instrument_variables.run_start end=instrument_variables.run_end %}">delete variables</a>
             {% endif %}

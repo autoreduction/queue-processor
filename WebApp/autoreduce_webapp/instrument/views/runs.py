@@ -238,7 +238,7 @@ def configure_new_runs_POST(request, instrument_name, start=0, end=0, experiment
     if is_run_range:
         start = int(request.POST.get("run_start", 1))
         # TODO actually respect END run
-        end = int(request.POST.get("run_end", None)) if request.POST.get("run_end", None) else None
+        end = int(request.POST.get("run_end")) if request.POST.get("run_end", None) else None
         possible_variables = InstrumentVariable.objects.filter(start_run__lte=start, instrument__name=instrument_name)
 
         # Makes the variables that will be active for the range START -> END
@@ -272,7 +272,7 @@ def configure_new_runs_POST(request, instrument_name, start=0, end=0, experiment
                                                         experiment_reference,
                                                         tracks_script=False)
 
-    return redirect('runs:list', instrument=instrument_name)
+    return redirect('instrument:variables_summary', instrument=instrument_name)
 
 
 def configure_new_runs_GET(request, instrument_name, start=0, end=0, experiment_reference=0):
@@ -285,22 +285,16 @@ def configure_new_runs_GET(request, instrument_name, start=0, end=0, experiment_
     except AttributeError:
         # TODO this instrument hasn't had a non-skipped run so what do
         last_run = 0
-        raise ValueError("Nema takava durjava")
+        raise ValueError("TODO implement me")
 
     current_variables = ReductionRunUtils.make_kwargs_from_runvariables(last_run)
     standard_vars = current_variables["standard_vars"]
     advanced_vars = current_variables["advanced_vars"]
 
-    # TODO how to use this?
-    # if experiment_reference > 0:
-    #     current_variables = instrument.instrumentvariable_set.filter(experiment_reference=experiment_reference)
-    # else:
-    #     current_variables = last_run.filter(start_run=last_variable_run_number)
-
     upcoming_variables = instrument.instrumentvariable_set.filter(start_run=last_run.run_number + 1)
 
-    # Unique, comma-joined list of all start runs belonging to the upcoming variables.
     # TODO unsure this is necessary
+    # Unique, comma-joined list of all start runs belonging to the upcoming variables.
     # This seems to be used to prevent submission if trying to resubmit variables for already
     # configured future run numbers - check the checkForConflicts function
     # This should probably be done by the POST method anyway.. so remove it
@@ -316,7 +310,7 @@ def configure_new_runs_GET(request, instrument_name, start=0, end=0, experiment_
     #     else:
     #         default_standard_variables[variable.name] = variable
     min_run_start = last_run.run_number
-    run_start = min_run_start + 1
+    run_start = min_run_start + 1 if start == 0 else start
 
     context_dictionary = {
         'instrument': instrument,
@@ -329,7 +323,7 @@ def configure_new_runs_GET(request, instrument_name, start=0, end=0, experiment_
         'default_advanced_variables': advanced_vars,
         'run_start': run_start,
         'run_end': end,
-        'experiment_reference': last_run.experiment.reference_number,
+        'experiment_reference': experiment_reference,
         'minimum_run_start': min_run_start,
         'upcoming_run_variables': upcoming_run_variables,
         'editing': editing,
