@@ -24,7 +24,7 @@ from django.contrib.auth import logout as django_logout, authenticate, login
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from django.db.models import Q
-from django.http import JsonResponse, HttpResponseNotFound
+from django.http import HttpResponseNotFound
 from django.shortcuts import redirect
 from instrument.utils import InstrumentVariablesUtils, MessagingUtils
 from reduction_viewer.models import Experiment, ReductionRun, Instrument, Status
