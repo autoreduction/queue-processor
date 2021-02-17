@@ -251,6 +251,8 @@ def configure_new_runs_POST(request, instrument_name, start=0, end=0, experiment
                                                         start,
                                                         tracks_script=False)
         if end:
+            possible_variables = InstrumentVariable.objects.filter(start_run__lte=end + 1,
+                                                                   instrument__name=instrument_name)
             post_range_args = InstrumentVariablesUtils.merge_arguments({
                 'standard_vars': {},
                 'advanced_vars': {}
