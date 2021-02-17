@@ -14,7 +14,6 @@ class GraphsPage(Page):
     """
     Page model class for graphs page
     """
-
     @staticmethod
     def url_path():
         """
