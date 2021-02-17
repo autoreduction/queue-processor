@@ -28,7 +28,7 @@ class BaseTestCase(StaticLiveServerTestCase):
     Base test class that provides setup and teardown of driver aswell as screenshotting capability
     on failed tests
     """
-    fixtures = ["super_user_fixture"]
+    fixtures = ["super_user_fixture", "status_fixture"]
 
     def setUp(self) -> None:
         """
