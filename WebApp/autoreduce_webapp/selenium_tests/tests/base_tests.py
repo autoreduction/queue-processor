@@ -20,7 +20,7 @@ from selenium_tests.pages.help_page import HelpPage
 from selenium_tests.pages.job_queue_page import JobQueuePage
 from selenium_tests.pages.overview_page import OverviewPage
 
-from utils.project.structure import get_project_root
+from utils.project.structure import PROJECT_ROOT
 
 
 class BaseTestCase(StaticLiveServerTestCase):
@@ -49,7 +49,7 @@ class BaseTestCase(StaticLiveServerTestCase):
         now = datetime.datetime.now()
         screenshot_name = f"{self._testMethodName}-{now.strftime('%Y-%m-%d_%H-%M-%S')}.png"
         path = str(
-            Path(get_project_root(), "WebApp", "autoreduce_webapp", "selenium_tests", "screenshots", screenshot_name))
+            Path(PROJECT_ROOT, "WebApp", "autoreduce_webapp", "selenium_tests", "screenshots", screenshot_name))
         self.driver.save_screenshot(path)
 
     def _is_test_failure(self):
