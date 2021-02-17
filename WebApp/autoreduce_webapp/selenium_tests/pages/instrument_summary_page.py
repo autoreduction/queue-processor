@@ -48,7 +48,6 @@ class InstrumentSummaryPage(Page, NavbarMixin, FooterMixin, TourMixin):
         Get the list of run numbers visible on the current table of the instrument summary page
         :return: (List) List of strings of the run numbers of the current instrument summary page
         """
-        self.driver.find_elements_by_class_name("non-existant class")
         return [run.text.split(" - ")[0] for run in self.driver.find_elements_by_class_name("run-num-links")]
 
     def click_run(self, run_number: int, version: int) -> RunSummaryPage:
