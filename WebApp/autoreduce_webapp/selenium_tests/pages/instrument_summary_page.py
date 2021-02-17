@@ -9,6 +9,7 @@ Module for the instrument summary page model
 """
 from typing import List
 
+from django.urls import reverse
 from selenium.common.exceptions import NoSuchElementException
 
 from selenium_tests import configuration
@@ -33,7 +34,7 @@ class InstrumentSummaryPage(Page, NavbarMixin, FooterMixin, TourMixin):
         Return the path section of the instrument url
         :return: (str) Path section of the page url
         """
-        return "/instrument/%s/"
+        return "/runs/%s/"
 
     def launch(self):
         """
