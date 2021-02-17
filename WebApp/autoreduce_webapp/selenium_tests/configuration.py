@@ -13,10 +13,10 @@ import sys
 from pathlib import Path
 from shutil import copyfile
 
-from utils.project.structure import get_project_root
+from utils.project.structure import PROJECT_ROOT
 
-CONFIG_PATH = Path(get_project_root(), "WebApp/autoreduce_webapp/selenium_tests/config.json")
-TEMP_CONFIG_PATH = Path(get_project_root(), "Webapp/autoreduce_webapp/selenium_tests/temp_config.json")
+CONFIG_PATH = Path(PROJECT_ROOT, "WebApp/autoreduce_webapp/selenium_tests/config.json")
+TEMP_CONFIG_PATH = Path(PROJECT_ROOT, "Webapp/autoreduce_webapp/selenium_tests/temp_config.json")
 
 
 def store_original_config():
