@@ -30,7 +30,7 @@ jobs:
 
       - name: Run unit tests
         run: >-
-          pytest --ignore=systemtests --cov=build --cov=monitors --cov=queue_processors
+          pytest -pno:django --ignore=systemtests --cov=build --cov=monitors --cov=queue_processors
           --cov=scripts --cov=utils --cov=WebApp/autoreduce_webapp --cov=docker_reduction
           --cov=paths --cov=plotting --cov=model --ignore=WebApp/autoreduce_webapp/selenium_tests/
 
