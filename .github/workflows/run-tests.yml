@@ -77,7 +77,6 @@ jobs:
 
       - name: Run tests
         run: |
-          mv WebApp/autoreduce_webapp/selenium_tests/config.json.example WebApp/autoreduce_webapp/selenium_tests/config.json
           cd WebApp/autoreduce_webapp
           python manage.py test selenium_tests
 
