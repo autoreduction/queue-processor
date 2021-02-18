@@ -98,4 +98,3 @@ class NavbarMixin:
         :return: The text of the notifications messages
         """
         return [notification.text for notification in self.driver.find_elements_by_class_name("notification-message")]
-

@@ -160,8 +160,6 @@ class NavbarTestMixin:
         self.assertNotIn(self.ADMIN_NOTIFICATION_MESSAGE, notifications)
 
 
-
-
 class FooterTestMixin:
     """
     Contains test cases for pages with the FooterMixin
