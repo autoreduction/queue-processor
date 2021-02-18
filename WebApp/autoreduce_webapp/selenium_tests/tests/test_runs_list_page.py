@@ -5,14 +5,14 @@
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 """
-Selenium tests for the instrument summary page
+Selenium tests for the runs summary page
 """
 
-from selenium_tests.pages.instrument_summary_page import InstrumentSummaryPage
+from selenium_tests.pages.runs_list_page import RunsListPage
 from selenium_tests.tests.base_tests import NavbarTestMixin, BaseTestCase, FooterTestMixin
 
 
-class TestInstrumentSummaryPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
+class TestRunsListPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
     """
     Test cases for the InstrumentSummary page
     """
@@ -24,13 +24,12 @@ class TestInstrumentSummaryPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
         Sets up the InstrumentSummaryPage object
         """
         super().setUp()
-        self.page = InstrumentSummaryPage(self.driver, "TestInstrument")
+        self.page = RunsListPage(self.driver, "TestInstrument")
 
     def test_reduction_run_displayed(self):
         """
         Test: Reduction run is displayed
         When: The run exists in the database
         """
-        runs = self.page.launch() \
-            .get_run_numbers_from_table()
+        runs = self.page.launch().get_run_numbers_from_table()
         self.assertIn("99999", runs)

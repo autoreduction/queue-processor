@@ -20,7 +20,7 @@ from selenium_tests.pages.page import Page
 from selenium_tests.pages.run_summary_page import RunSummaryPage
 
 
-class InstrumentSummaryPage(Page, NavbarMixin, FooterMixin, TourMixin):
+class RunsListPage(Page, NavbarMixin, FooterMixin, TourMixin):
     """
     Page model class for instrument summary page
     """
@@ -28,20 +28,19 @@ class InstrumentSummaryPage(Page, NavbarMixin, FooterMixin, TourMixin):
         super().__init__(driver)
         self.instrument = instrument
 
-    @staticmethod
-    def url_path():
+    def url_path(self):
         """
         Return the path section of the instrument url
         :return: (str) Path section of the page url
         """
-        return "/runs/%s/"
+        return reverse("runs:list", kwargs={"instrument": self.instrument})
 
     def launch(self):
         """
         Open the instrument summary page with the webdriver
         """
         self.driver.get(configuration.get_url())
-        self.driver.get(InstrumentSummaryPage.url() % self.instrument)
+        self.driver.get(self.url())
         return self
 
     def get_run_numbers_from_table(self) -> List[str]:
