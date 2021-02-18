@@ -202,7 +202,6 @@ if os.name == 'nt':
 else:
     REDUCTION_DIRECTORY = '/isis/NDX%s/user/scripts/autoreduction'  # %(instrument)
 
-
 # ICAT
 
 ICAT = {
