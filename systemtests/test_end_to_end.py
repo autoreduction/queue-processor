@@ -142,7 +142,7 @@ class TestEndToEnd(unittest.TestCase):
         # Create and send json message to ActiveMQ
         data_ready_message = Message(rb_number=self.rb_number,
                                      instrument=self.instrument,
-                                     data=str(file_location),
+                                     data=file_location,
                                      run_number=self.run_number,
                                      facility="ISIS",
                                      started_by=0)
