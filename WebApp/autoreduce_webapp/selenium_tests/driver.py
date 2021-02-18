@@ -7,6 +7,7 @@
 """
 Module containing functions for obtaining webdrivers
 """
+import os
 
 from selenium import webdriver
 from selenium_tests import configuration
@@ -22,6 +23,12 @@ def get_chrome_driver():
     options = webdriver.ChromeOptions()
     if configuration.is_headless():
         options.add_argument("--headless")
+    else:
+        if "DISPLAY" not in os.environ:
+            raise RuntimeError("Trying to run Chrome driver with a GUI but no DISPLAY environment variable! "
+                               + "This results in Chrome crashing. Please set the DISPLAY environment "
+                               + "variable and run the tests again.")
+
     options.add_argument("--window-size=" + WINDOW_SIZE)
     options.add_argument("log-level=3")
     driver = webdriver.Chrome(options=options)
