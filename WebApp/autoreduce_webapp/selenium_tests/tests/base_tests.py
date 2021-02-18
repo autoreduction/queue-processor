@@ -28,7 +28,7 @@ class BaseTestCase(StaticLiveServerTestCase):
     Base test class that provides setup and teardown of driver aswell as screenshotting capability
     on failed tests
     """
-    fixtures = ["super_user_fixture", "status_fixture"]
+    fixtures = ["super_user_fixture", "status_fixture", "notification_fixture"]
 
     def setUp(self) -> None:
         """
@@ -64,6 +64,9 @@ class NavbarTestMixin:
     """
     Contains test cases for pages with the NavbarMixin
     """
+    ADMIN_NOTIFICATION_MESSAGE = "This notification should only be visible to admins"
+    NON_ADMIN_NOTIFICATION_MESSAGE = "This notification should be visible to everyone"
+
     def test_navbar_visible(self):
         """
         Test: Navbar is visible on current page
@@ -133,6 +136,30 @@ class NavbarTestMixin:
             .launch() \
             .click_navbar_help()
         self.assertEqual(HelpPage.url(), self.driver.current_url)
+
+    def test_admin_notification_visible_to_admins(self):
+        """
+        Tests: Admin notifications visible to admins
+        """
+        notifications = self.page.launch().get_notification_messages()
+        self.assertIn(self.ADMIN_NOTIFICATION_MESSAGE, notifications)
+
+    def test_non_admin_notifications_visible_to_admins(self):
+        """
+        Tests: non admin notifications visible to admins
+        """
+        notifications = self.page.launch().get_notification_messages()
+        self.assertIn(self.NON_ADMIN_NOTIFICATION_MESSAGE, notifications)
+
+    def test_admin_notifications_not_visible_to_non_admin(self):
+        """
+        Tests: Admin notifications not visible for non admins
+        """
+        self.driver.get(self.live_server_url + "/overview")
+        notifications = self.page.get_notification_messages()
+        self.assertNotIn(self.ADMIN_NOTIFICATION_MESSAGE, notifications)
+
+
 
 
 class FooterTestMixin:
