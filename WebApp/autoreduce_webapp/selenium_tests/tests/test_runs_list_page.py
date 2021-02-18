@@ -17,7 +17,7 @@ class TestRunsListPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
     Test cases for the InstrumentSummary page
     """
 
-    fixtures = BaseTestCase.fixtures + ["test_instrument_summary_page"]
+    fixtures = BaseTestCase.fixtures + ["test_runs_list_page"]
 
     def setUp(self) -> None:
         """
