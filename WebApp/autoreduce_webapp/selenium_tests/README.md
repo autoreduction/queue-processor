@@ -51,9 +51,9 @@ failure is produced, a ZIP of the screenshot folder for that run is downloadable
 that run.
 
 ## Configuration
-**Note:** Until these tests can be run with pytest-django. Parallel execution is not avaible.    
-A configuration file has to be used to allow test settings to be shared across threads. An example 
-configuration file is provided and can be copied from `config.json.example` to `config.json`.
+**Note:** Until these tests can be run with pytest-django and their open issue for xdist compatibility is fixed,
+parallel execution is not avaible.    
+A configuration file has to be used to allow test settings to be shared across threads.
 
 ## Database Injection
 To inject data for tests a fixture file must be created within `WebApp/autoreduce_webapp/autoreduce_webapp/fixtures`.
