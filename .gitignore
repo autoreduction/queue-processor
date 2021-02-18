@@ -50,4 +50,3 @@ Webapp/autoreduce_webapp/static/graphs/
 # Ignore The screenshot folder in Selenium tests
 WebApp/autoreduce_webapp/selenium_tests/screenshots
 !WebApp/autoreduce_webapp/selenium_tests/screenshots/.keep
-WebApp/autoreduce_webapp/selenium_tests/config.json
