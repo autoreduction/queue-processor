@@ -25,9 +25,9 @@ def get_chrome_driver():
         options.add_argument("--headless")
     else:
         if "DISPLAY" not in os.environ:
-            raise RuntimeError("Trying to run Chrome driver with a GUI but no DISPLAY environment variable! "
-                               + "This results in Chrome crashing. Please set the DISPLAY environment "
-                               + "variable and run the tests again.")
+            raise RuntimeError("Trying to run Chrome driver with a GUI but no DISPLAY environment variable! " +
+                               "This results in Chrome crashing. Please set the DISPLAY environment " +
+                               "variable and run the tests again.")
 
     options.add_argument("--window-size=" + WINDOW_SIZE)
     options.add_argument("log-level=3")
