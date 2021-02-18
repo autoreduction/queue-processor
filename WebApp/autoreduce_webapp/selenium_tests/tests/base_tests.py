@@ -45,6 +45,7 @@ class BaseTestCase(StaticLiveServerTestCase):
             self._screenshot_driver()
         self.driver.quit()
         set_url("http://localhost:0000")
+
     def _screenshot_driver(self):
         now = datetime.datetime.now()
         screenshot_name = f"{self._testMethodName}-{now.strftime('%Y-%m-%d_%H-%M-%S')}.png"
