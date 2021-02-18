@@ -7,6 +7,8 @@
 """
 Module for the overview page model
 """
+from django.urls.base import reverse
+
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.expected_conditions import presence_of_element_located
 from selenium.webdriver.support.wait import WebDriverWait
@@ -15,7 +17,7 @@ from selenium_tests import configuration
 from selenium_tests.pages.component_mixins.footer_mixin import FooterMixin
 from selenium_tests.pages.component_mixins.navbar_mixin import NavbarMixin
 from selenium_tests.pages.component_mixins.tour_mixin import TourMixin
-from selenium_tests.pages.instrument_summary_page import InstrumentSummaryPage
+from selenium_tests.pages.runs_list_page import RunsListPage
 from selenium_tests.pages.page import Page
 
 
@@ -34,17 +36,16 @@ class OverviewPage(Page, NavbarMixin, FooterMixin, TourMixin):
         dev/local environments we can remove this method and add proper logging in methods and tests
         """
         self.driver.get(configuration.get_url())
-        self.driver.get(OverviewPage.url())
+        self.driver.get(self.url())
         WebDriverWait(self.driver, 10).until(presence_of_element_located((By.CLASS_NAME, "instrument-btn")))
         return self
 
-    @staticmethod
-    def url_path():
+    def url_path(self):
         """
         Return the path section of the overview page url
         :return: (str) Path section of the page url
         """
-        return "/overview/"
+        return reverse("overview")
 
     def _get_instrument_buttons(self):
         return self.driver.find_elements_by_class_name("instrument-btn")
@@ -56,11 +57,11 @@ class OverviewPage(Page, NavbarMixin, FooterMixin, TourMixin):
         """
         return [instrument_btn.get_attribute("id").split("-")[0] for instrument_btn in self._get_instrument_buttons()]
 
-    def click_instrument(self, instrument: str) -> InstrumentSummaryPage:
+    def click_instrument(self, instrument: str) -> RunsListPage:
         """
         Clicks the instrument button for the given instrument
         :param instrument: (str) instrument name
         :return: (InstrumentSummaryPage) The overview page object
         """
         self.driver.find_element_by_id(f"{instrument}-instrument-btn").click()
-        return InstrumentSummaryPage(self.driver, instrument)
+        return RunsListPage(self.driver, instrument)

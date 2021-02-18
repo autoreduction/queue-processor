@@ -15,7 +15,7 @@ from selenium_tests import configuration
 WINDOW_SIZE = "1920,1080"
 
 
-def get_chrome_driver():
+def get_chrome_driver() -> webdriver.Chrome:
     """
     Get an instance of a chrome driver
     :return: (Chrome) instance of a chromedriver
