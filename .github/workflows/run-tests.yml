@@ -77,8 +77,7 @@ jobs:
 
       - name: Run tests
         run: |
-          cd WebApp/autoreduce_webapp
-          python manage.py test selenium_tests
+          pytest WebApp/autoreduce_webapp/selenium_tests
 
       - uses: actions/upload-artifact@v2
         if: failure()
