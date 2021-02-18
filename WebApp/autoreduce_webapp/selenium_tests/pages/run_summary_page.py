@@ -7,6 +7,7 @@
 """
 Module for the run summary page model
 """
+from django.urls.base import reverse
 from selenium_tests import configuration
 from selenium_tests.pages.component_mixins.footer_mixin import FooterMixin
 from selenium_tests.pages.component_mixins.navbar_mixin import NavbarMixin
@@ -24,13 +25,17 @@ class RunSummaryPage(Page, NavbarMixin, FooterMixin, TourMixin):
         self.run_number = run_number
         self.version = version
 
-    @staticmethod
-    def url_path():
+    def url_path(self):
         """
         Return the lazy formatted url path in the form /runs/<instrument>/<run_number>/<version>/
         :return: (str) lazy formatted url path e.g. /runs/%s/%s/%s/
         """
-        return "/runs/%s/%s/%s/"
+        return reverse("runs:summary",
+                       kwargs={
+                           "instrument_name": self.instrument,
+                           "run_number": self.run_number,
+                           "run_version": self.version
+                       })
 
     def launch(self):
         """
@@ -38,7 +43,7 @@ class RunSummaryPage(Page, NavbarMixin, FooterMixin, TourMixin):
         :return: The RunSummaryPage object model
         """
         self.driver.get(configuration.get_url())  # Add note to readme about the login hack with the double get
-        self.driver.get(RunSummaryPage.url() % (self.instrument, self.run_number, self.version))
+        self.driver.get(self.url())
         return self
 
     def is_rerun_form_visible(self) -> bool:
