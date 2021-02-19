@@ -8,14 +8,11 @@
         <div class="col-md-12 text-center">
             <h2>{{ instrument.name }} - Reduction Variables</h2>
         </div>
-    </div>
-        {% if reduction_variables_on %}
         <div class="row">
             <div class="col-md-12 text-center">
                 {% view "instrument.views.variables.summarize_variables" instrument=instrument.name last_run_object=last_instrument_run %}
             </div>
         </div>
-        {% endif %}
     {% else %}
         <div class="text-center col-md-6 col-md-offset-3 well well-small">
             Instrument not found.
