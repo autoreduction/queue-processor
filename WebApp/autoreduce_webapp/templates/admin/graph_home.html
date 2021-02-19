@@ -7,9 +7,11 @@
         body {
             font-size: 20px;
         }
+
         #list-container {
             width: 500px;
         }
+
         li {
             margin-top: 20px;
         }
@@ -25,9 +27,14 @@
     <p>Choose the number of runs you want to display on the graph and click 'Graph'.</p>
     <div id="list-container">
         <ul>
-        {% for instrument in instruments %}
-            <li><form action="/graph/{{ instrument.name }}">{{ instrument.name }}<input type="number" name="last" min="1" max="2000" value="50"> most recent runs <input value="Graph" type="submit"> </form></li>
-        {% endfor %}
+            {% for instrument in instruments %}
+                <li>
+                    <form action="/graph/{{ instrument.name }}">{{ instrument.name }}<input type="number" name="last"
+                                                                                            min="1" max="2000"
+                                                                                            value="50"> most recent runs
+                        <input value="Graph" type="submit"></form>
+                </li>
+            {% endfor %}
         </ul>
     </div>
 </body>

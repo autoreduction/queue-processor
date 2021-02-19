@@ -9,75 +9,78 @@
             crossorigin="anonymous"></script>
 </head>
 <body>
-<div>
-    <canvas id="myChart"></canvas>
+    <div>
+        <canvas id="myChart"></canvas>
 
-</div>
-<div><canvas id="myChart2"></canvas></div>
+    </div>
+    <div>
+        <canvas id="myChart2"></canvas>
+    </div>
 
 </body>
 <script>
-var ctx = document.getElementById("myChart").getContext('2d');
+    var ctx = document.getElementById("myChart").getContext('2d');
 
-var statuses = [
-    {% for status in statuses %}
-    {
-        'name': '{{ status.name}}',
-        'count': {{ status.count }},
-    },
-    {% endfor %}
-];
-
-function getStatusNames(){
-    return statuses.map(x => x.name);
-}
-
-function getStatusCounts() {
-    return statuses.map(x => x.count);
-}
-
-function getColours() {
-    return [
-        '#ff1500',
-        '#00aeff',
-        '#31708f',
-        '#00c93c'
+    var statuses = [
+        {% for status in statuses %}
+            {
+                'name': '{{ status.name}}',
+                'count': {{ status.count }},
+            },
+        {% endfor %}
     ];
-}
-var myChart = new Chart(ctx, {
-    type: 'pie',
-    data: {
-        labels: getStatusNames(),
-        datasets: [{
-            label: 'Execution Time',
-            data: getStatusCounts(),
-            backgroundColor: getColours(),
-            borderWidth: 2
-        }]
 
-    },
-    options: {
-        title: {
-            display: true,
-            text: 'Reduction Runs'
-        },
-        legend: {
-            display: true
-        },
-        responsive: true
-
+    function getStatusNames() {
+        return statuses.map(x => x.name);
     }
-});
 
-function graphClickEvent(evt) {
-    var activeElement = myChart.getElementAtEvent(evt);
-    // Check we're clicking on a bar
-    if(!activeElement.length){
-        return;
+    function getStatusCounts() {
+        return statuses.map(x => x.count);
     }
-    label = activeElement[0]._model.label
-    var win = window.open('/runs/{{ instrument }}/' + label.replace('-', '/') + '/', '_blank');
-}
+
+    function getColours() {
+        return [
+            '#ff1500',
+            '#00aeff',
+            '#31708f',
+            '#00c93c'
+        ];
+    }
+
+    var myChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: getStatusNames(),
+            datasets: [{
+                label: 'Execution Time',
+                data: getStatusCounts(),
+                backgroundColor: getColours(),
+                borderWidth: 2
+            }]
+
+        },
+        options: {
+            title: {
+                display: true,
+                text: 'Reduction Runs'
+            },
+            legend: {
+                display: true
+            },
+            responsive: true
+
+        }
+    });
+
+    function graphClickEvent(evt) {
+        var activeElement = myChart.getElementAtEvent(evt);
+        // Check we're clicking on a bar
+        if (!activeElement.length) {
+            return;
+        }
+        label = activeElement[0]._model.label
+        var win = window.open('/runs/{{ instrument }}/' + label.replace('-', '/') + '/', '_blank');
+    }
 
 </script>
 </html>

@@ -29,18 +29,18 @@
                         <a href="{% url 'runs:queue' %}">Job Queue</a>
                     </li>
                     {% if user.is_superuser %}
-                    <li>
-                        <a href="{% url 'runs:failed' %}">Failed Jobs</a>
-                    </li>
-                    <li>
-                        <a href="{% url 'admin:index' %}">Admin</a>
-                    </li>
-                    <li>
-                        <a href="{% url 'graph' %} ">Graphs</a>
-                    </li>
-                    <li>
-                        <a href="{% url 'help' %} ">Help</a>
-                    </li>
+                        <li>
+                            <a href="{% url 'runs:failed' %}">Failed Jobs</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'admin:index' %}">Admin</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'graph' %} ">Graphs</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'help' %} ">Help</a>
+                        </li>
                     {% endif %}
                     <li>
                         <a href="{% url 'logout' %}">Logout</a>

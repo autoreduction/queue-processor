@@ -184,13 +184,14 @@
                         </div>
                         <div class="panel-body collapse in" id="graphs">
                             {% for graph in run.graph %}
-                                <div class="text-center"><a href="{{ graph }}" target="_blank" rel="noopener noreferrer"><img src="{{ graph }}"/></a>
+                                <div class="text-center"><a href="{{ graph }}" target="_blank"
+                                                            rel="noopener noreferrer"><img src="{{ graph }}"/></a>
                                 </div>
                             {% endfor %}
                         </div>
                     </div>
                 {% endif %}
-                {% if reduction_variables_on and has_variables%}
+                {% if reduction_variables_on and has_variables %}
                     {% autoescape on %}
                         {% view "instrument.views.instrument_summary" instrument run_number run_version %}
                     {% endautoescape %}
@@ -208,35 +209,35 @@
                     <div class="modal-body">
                         <table class="table table-striped table-bordered">
                             <thead>
-                            <tr>
-                                <th>Job Number</th>
-                                <th>Status</th>
-                                <th>Last Updated</th>
-                                <th>Submitted By</th>
-                            </tr>
+                                <tr>
+                                    <th>Job Number</th>
+                                    <th>Status</th>
+                                    <th>Last Updated</th>
+                                    <th>Submitted By</th>
+                                </tr>
                             </thead>
                             <tbody>
-                            {% for job in history %}
-                                <tr>
-                                    <td>
-                                        {% if job.run_version != run.run_version %}
-                                            <a href="{% url 'runs:summary' instrument_name=run.instrument.name run_number=job.run_number run_version=job.run_version %}">{{ job.title }}</a>
-                                        {% else %}
-                                            {{ job.title }}
-                                        {% endif %}
-                                    </td>
-                                    <td class="text-{% colour_table_row job.status.value_verbose %}">
-                                        <strong>{{ job.status.value_verbose }}</strong></td>
-                                    <td title="{{ job.last_updated|date:'SHORT_DATETIME_FORMAT' }}">{{ job.last_updated|naturaltime }}</td>
-                                    <td>
-                                        {% if started_by %}
-                                            {{ started_by }}
-                                        {% else %}
-                                            Unknown
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                            {% endfor %}
+                                {% for job in history %}
+                                    <tr>
+                                        <td>
+                                            {% if job.run_version != run.run_version %}
+                                                <a href="{% url 'runs:summary' instrument_name=run.instrument.name run_number=job.run_number run_version=job.run_version %}">{{ job.title }}</a>
+                                            {% else %}
+                                                {{ job.title }}
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-{% colour_table_row job.status.value_verbose %}">
+                                            <strong>{{ job.status.value_verbose }}</strong></td>
+                                        <td title="{{ job.last_updated|date:'SHORT_DATETIME_FORMAT' }}">{{ job.last_updated|naturaltime }}</td>
+                                        <td>
+                                            {% if started_by %}
+                                                {{ started_by }}
+                                            {% else %}
+                                                Unknown
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
                             </tbody>
                         </table>
                     </div>
