@@ -1,0 +1,22 @@
+[
+  {
+    "model": "reduction_viewer.notification",
+    "pk": 1,
+    "fields": {
+      "message": "This notification should only be visible to admins",
+      "is_active": 1,
+      "is_staff_only": 1,
+      "severity": "e"
+    }
+  },
+  {
+  "model": "reduction_viewer.notification",
+  "pk": 2,
+  "fields": {
+    "message": "This notification should be visible to everyone",
+    "is_active": 1,
+    "is_staff_only": 0,
+    "severity": "e"
+    }
+  }
+]

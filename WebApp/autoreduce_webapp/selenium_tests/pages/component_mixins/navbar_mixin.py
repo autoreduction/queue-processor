@@ -7,6 +7,9 @@
 """
 Module containing the NavbarMixin
 """
+from typing import List
+
+from selenium.webdriver.remote.webelement import WebElement
 
 
 class NavbarMixin:
@@ -59,32 +62,39 @@ class NavbarMixin:
         """
         self.driver.find_element_by_xpath(self.HELP_XPATH).click()
 
-    def _get_navbar(self):
+    def _get_navbar(self) -> WebElement:
         return self.driver.find_element_by_class_name(self.NAVBAR_CLASS)
 
-    def _get_logo(self):
+    def _get_logo(self) -> WebElement:
         return self.driver.find_element_by_class_name(self.LOGO_CLASS)
 
-    def _get_navbar_links(self):
+    def _get_navbar_links(self) -> WebElement:
         return self.driver.find_element_by_id(self.LINKS_ID)
 
-    def is_navbar_logo_visible(self):
+    def is_navbar_logo_visible(self) -> bool:
         """
         Check if the brand logo is visible in the navbar
         :return: (bool) True if logo is visible, otherwise False
         """
         return self._get_logo().is_displayed()
 
-    def is_navbar_visible(self):
+    def is_navbar_visible(self) -> bool:
         """
         Check if the navbar is visible on a page
         :return: (bool) True if navbar is visible, otherwise False
         """
         return self._get_navbar().is_displayed()
 
-    def is_navbar_links_visible(self):
+    def is_navbar_links_visible(self) -> bool:
         """
         Check if the navbar links are visible
         :return: (bool) True if links are visible, otherwise False
         """
         return self._get_navbar_links().is_displayed()
+
+    def get_notification_messages(self) -> List[str]:
+        """
+        Get the notification messages on the page.
+        :return: (list of str) The text of the notifications messages
+        """
+        return [notification.text for notification in self.driver.find_elements_by_class_name("notification-message")]
