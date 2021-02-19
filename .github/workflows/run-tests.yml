@@ -36,7 +36,7 @@ jobs:
 
       - name: Run system tests
         run: |
-          pytest systemtests --cov-append
+          pytest -pno:django systemtests --cov-append
 
       - name: Coveralls
         env:
