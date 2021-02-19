@@ -25,10 +25,10 @@ class RunSummaryPage(Page, NavbarMixin, FooterMixin, TourMixin):
         self.run_number = run_number
         self.version = version
 
-    def url_path(self):
+    def url_path(self) -> str:
         """
-        Return the lazy formatted url path in the form /runs/<instrument>/<run_number>/<version>/
-        :return: (str) lazy formatted url path e.g. /runs/%s/%s/%s/
+        Return the current URL of the page.
+        :return: (str) the url path
         """
         return reverse("runs:summary",
                        kwargs={
@@ -42,7 +42,7 @@ class RunSummaryPage(Page, NavbarMixin, FooterMixin, TourMixin):
         Open the page with the webdriver
         :return: The RunSummaryPage object model
         """
-        self.driver.get(configuration.get_url())  # Add note to readme about the login hack with the double get
+        self.driver.get(configuration.get_url())
         self.driver.get(self.url())
         return self
 

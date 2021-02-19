@@ -187,13 +187,17 @@
                             {% endfor %}
                         </div>
                     </div>
-                {% endif %}
-                {% if reduction_variables_on and has_variables%}
-                    {% autoescape on %}
-                        {% view "instrument.views.variables.render_run_variables" instrument run_number run_version %}
-                    {% endautoescape %}
-                {% endif %}
-            </div>
+            {% endif %}
+            {% if reduction_variables_on and has_variables %}
+                {% autoescape on %}
+                    {% view "instrument.views.variables.render_run_variables" instrument run_number run_version %}
+                {% endautoescape %}
+            {% else %}
+                    <div>
+                        <p class="text-center">No variables found for this run.</p>
+                    </div>
+            {% endif %}
+          </div>
         {% endif %}
         <div class="run-history modal fade" tabindex="-1" role="dialog" aria-hidden="true">
             <div class="modal-dialog">
