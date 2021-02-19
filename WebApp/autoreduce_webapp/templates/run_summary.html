@@ -188,7 +188,7 @@
                         </div>
                     </div>
             {% endif %}
-            {% if reduction_variables_on and has_variables %}
+            {% if has_variables %}
                 {% autoescape on %}
                     {% view "instrument.views.variables.render_run_variables" instrument run_number run_version %}
                 {% endautoescape %}
@@ -270,20 +270,16 @@
 
 
 {% block stylesheets %}
-    {% if reduction_variables_on %}
-        <link rel="stylesheet" href="{% static "css/vendor/prettify.css" %}">
-    {% endif %}
-    <link rel="stylesheet" href="{% static "css/vendor/bootstrap-tour.min.css" %}">
+    <link rel="stylesheet" href="{% static 'css/vendor/prettify.css' %}">
+    <link rel="stylesheet" href="{% static 'css/vendor/bootstrap-tour.min.css' %}">
 {% endblock %}
 {% block scripts %}
     <script src="{% static "javascript/run_summary.js" %}"></script>
-    {% if reduction_variables_on %}
-        <script src="{% static "javascript/vendor/prettify.js" %}"></script>
-        <script src="{% static "javascript/run_variables.js" %}"></script>
-        <script src="{% static "javascript/vendor/bootstrap-tour.min.js" %}"></script>
+    <script src="{% static 'javascript/vendor/prettify.js' %}"></script>
+    <script src="{% static 'javascript/run_variables.js' %}"></script>
+    <script src="{% static 'javascript/vendor/bootstrap-tour.min.js' %}"></script>
 
-        <script src="{% static "javascript/tours/run_summary_tour.js" %}"></script>
-        <script src="{% static "javascript/tours/navbar_tour.js" %}"></script>
-        <script src="{% static "javascript/create_tour.js" %}"></script>
-    {% endif %}
+    <script src="{% static 'javascript/tours/run_summary_tour.js' %}"></script>
+    <script src="{% static 'javascript/tours/navbar_tour.js' %}"></script>
+    <script src="{% static 'javascript/create_tour.js' %}"></script>
 {% endblock %}
