@@ -53,3 +53,6 @@ WebApp/autoreduce_webapp/selenium_tests/screenshots
 
 # Ignore developer specific .vscode/settings.json
 .vscode/settings.json
+
+# ignore sqlite3 db files
+**/sqlite3*.db*
