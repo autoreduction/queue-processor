@@ -9,7 +9,7 @@ Module containing the base Page object class
 """
 from abc import ABC, abstractmethod
 
-from webtests import configuration
+from selenium_tests import configuration
 
 
 class Page(ABC):
@@ -19,20 +19,18 @@ class Page(ABC):
     def __init__(self, driver):
         self.driver = driver
 
-    @staticmethod
     @abstractmethod
-    def url_path():
+    def url_path(self):
         """
         Abstract method to return the path section of the page URL
         """
 
-    @classmethod
-    def url(cls):
+    def url(self):
         """
         Return the URL of the page object
         :return: (str) The url of the page object
         """
-        return configuration.get_url() + cls.url_path()
+        return configuration.get_url() + self.url_path()
 
     def launch(self):
         """

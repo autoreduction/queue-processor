@@ -13,10 +13,10 @@ import sys
 from pathlib import Path
 from shutil import copyfile
 
-from utils.project.structure import get_project_root
+from utils.project.structure import PROJECT_ROOT
 
-CONFIG_PATH = Path(get_project_root(), "webtests/config.json")
-TEMP_CONFIG_PATH = Path(get_project_root(), "webtests/temp_config.json")
+CONFIG_PATH = Path(PROJECT_ROOT, "WebApp/autoreduce_webapp/selenium_tests/config.json")
+TEMP_CONFIG_PATH = Path(PROJECT_ROOT, "Webapp/autoreduce_webapp/selenium_tests/temp_config.json")
 
 
 def store_original_config():
@@ -28,14 +28,6 @@ def store_original_config():
         copyfile(CONFIG_PATH, TEMP_CONFIG_PATH)
     except OSError:
         sys.exit(f"Config file: {CONFIG_PATH} could not be loaded...")
-
-
-def is_local_environment():
-    """
-    Returns true if the environment type in the config is set to local
-    :return: (bool) True if the environment type in the config is set to local
-    """
-    return load_config_file()["environment_type"].lower() == "local"
 
 
 def get_url():
@@ -53,16 +45,6 @@ def is_headless():
     :return: (bool) The headless boolean from the config
     """
     return load_config_file()["run_headless"]
-
-
-def set_environment(environment):
-    """
-    Set the environment type in the config. Either local or remote
-    :param environment: (str) the environment type to be set
-    """
-    config = load_config_file()
-    config["environment_type"] = environment
-    dump_to_config_file(config)
 
 
 def set_url(url):

@@ -1,0 +1,13 @@
+[
+  {
+    "model": "auth.user",
+    "pk": 1,
+    "fields": {
+      "password": "pbkdf2_sha256$216000$IbJL1BmcD5Pv$vYPUY0ZQwqX59nJ30aCdzrNPXkxFc7DO6xQW0upezwo=",
+      "username": "super",
+      "is_superuser": 1,
+      "is_staff": 1,
+      "date_joined": "2021-01-27 16:30:47.129251+00:00"
+    }
+  }
+]

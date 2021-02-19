@@ -37,13 +37,10 @@ ARCHIVE_ROOT = os.path.join(PROJECT_ROOT, 'data-archive')
 # ONLY USED IN THE WebApp and should be removed in https://github.com/ISISScientificComputing/autoreduce/issues/1042
 REDUCTION_DIRECTORY = os.path.join(ARCHIVE_ROOT, 'NDX%s', 'user', 'scripts', 'autoreduction')
 # %(instrument, cycle, experiment_number, run_number)
-ARCHIVE_DIRECTORY = os.path.join(ARCHIVE_ROOT, 'NDX%s', 'Instrument', 'data', 'cycle_%s', 'autoreduced', '%s', '%s')
+CYCLE_DIRECTORY = os.path.join(ARCHIVE_ROOT, 'NDX%s', 'Instrument', 'data', 'cycle_%s')
 SCRIPTS_DIRECTORY = f"{ARCHIVE_ROOT}/NDX%s/user/scripts/autoreduction/"
 
 SCRIPT_TIMEOUT = 3600  # The max time to wait for a user script to finish running (seconds)
 MANTID_PATH = "/opt/Mantid/lib"
 TEMP_ROOT_DIRECTORY = "/autoreducetmp"
 FLAT_OUTPUT_INSTRUMENTS = ["LET", "MARI", "MAPS", "MERLIN", "WISH", "GEM"]
-
-TEST_REDUCTION_DIRECTORY = '/reducedev/isis/output/NDX%s/user/scripts/autoreduction'
-TEST_ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s'

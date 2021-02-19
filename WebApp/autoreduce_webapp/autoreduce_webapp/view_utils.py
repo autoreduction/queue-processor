@@ -118,9 +118,11 @@ def render_with(template):
                 output['request'] = request
 
             # pylint: disable=no-member
-            notifications = Notification.objects.filter(is_active=True,
-                                                        is_staff_only=(request.user.is_authenticated
-                                                                       and request.user.is_staff))
+            if request.user.is_staff and request.user.is_authenticated:
+                notifications = Notification.objects.filter(is_active=True)
+            else:
+                notifications = Notification.objects.filter(is_active=True, is_staff_only=False)
+
             if 'notifications' not in output:
                 output['notifications'] = notifications
             else:

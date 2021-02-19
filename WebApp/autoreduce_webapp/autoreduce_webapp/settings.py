@@ -5,6 +5,7 @@
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 # pylint: skip-file
+import sys
 import os
 import configparser
 from utils.project.structure import PROJECT_ROOT
@@ -106,18 +107,17 @@ WSGI_APPLICATION = 'autoreduce_webapp.wsgi.application'
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
 
 DATABASES = {
-    # To switch the backend database to MySQL, uncomment the lines below, and comment out sqlite3 references
-    #     'default': {
-    #         'ENGINE': 'django.db.backends.mysql',
-    #         'NAME': get_str('DATABASE', 'name'),
-    #         'USER': get_str('DATABASE', 'user'),
-    #         'PASSWORD': get_str('DATABASE', 'password'),
-    #         'HOST': get_str('DATABASE', 'host'),
-    #         'PORT': get_str('DATABASE', 'port'),
-    #         'OPTIONS': {
-    #             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-    #         },
-    #     }
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.mysql',
+    #     'NAME': get_str('DATABASE', 'name'),
+    #     'USER': get_str('DATABASE', 'user'),
+    #     'PASSWORD': get_str('DATABASE', 'password'),
+    #     'HOST': get_str('DATABASE', 'host'),
+    #     'PORT': get_str('DATABASE', 'port'),
+    #     'OPTIONS': {
+    #         'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+    #     },
+    # }
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',  # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
         'NAME': f'{PROJECT_ROOT}/sqlite3.db',  # Or path to database file if using sqlite3.
@@ -199,17 +199,8 @@ ACTIVEMQ = {
 
 if os.name == 'nt':
     REDUCTION_DIRECTORY = r'\\isis\inst$\NDX%s\user\scripts\autoreduction'  # %(instrument)
-    ARCHIVE_DIRECTORY = r'\\isis\inst$\NDX%s\Instrument\data\cycle_%s\autoreduced\%s\%s'  # %(instrument, cycle, experiment_number, run_number)
-
-    TEST_REDUCTION_DIRECTORY = r'\\reducedev\isis\output\NDX%s\user\scripts\autoreduction'
-    TEST_ARCHIVE_DIRECTORY = r'\\isis\inst$\NDX%s\Instrument\data\cycle_%s\autoreduced\%s\%s'
-
 else:
     REDUCTION_DIRECTORY = '/isis/NDX%s/user/scripts/autoreduction'  # %(instrument)
-    ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s'  # %(instrument, cycle, experiment_number, run_number)
-
-    TEST_REDUCTION_DIRECTORY = '/reducedev/isis/output/NDX%s/user/scripts/autoreduction'
-    TEST_ARCHIVE_DIRECTORY = '/isis/NDX%s/Instrument/data/cycle_%s/autoreduced/%s/%s'
 
 # ICAT
 

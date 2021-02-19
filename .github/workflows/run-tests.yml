@@ -30,13 +30,13 @@ jobs:
 
       - name: Run unit tests
         run: >-
-          pytest --ignore=systemtests --cov=build --cov=monitors --cov=queue_processors
+          pytest -pno:django --ignore=systemtests --cov=build --cov=monitors --cov=queue_processors
           --cov=scripts --cov=utils --cov=WebApp/autoreduce_webapp --cov=docker_reduction
-          --cov=paths --cov=plotting --cov=model --ignore=webtests/
+          --cov=paths --cov=plotting --cov=model --ignore=WebApp/autoreduce_webapp/selenium_tests/
 
       - name: Run system tests
         run: |
-          pytest systemtests --cov-append
+          pytest -pno:django systemtests --cov-append
 
       - name: Coveralls
         env:
@@ -75,39 +75,19 @@ jobs:
       - name: Install chrome
         run: sudo apt-get install -y google-chrome-stable
 
-      - name: Run Django server
-        run: |
-          cd WebApp/autoreduce_webapp
-          python manage.py runserver &
-          sleep 10
-
       - name: Run tests
         run: |
-          mv webtests/config.json.example webtests/config.json
-          python -m webtests.runner --headless
+          pytest WebApp/autoreduce_webapp/selenium_tests
 
       - uses: actions/upload-artifact@v2
         if: failure()
         with:
           name: screenshots
-          path: webtests/screenshots/
+          path: WebApp/autoreduce_webapp/selenium_tests/screenshots
 
   pylint:
     name: Pylint
     runs-on: ubuntu-18.04
-    services:
-      mysql:
-        image: mysql:5.7
-        env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: yes
-          MYSQL_USER: test-user
-          MYSQL_PASSWORD: pass
-          MYSQL_DATABASE: autoreduction
-        ports:
-          - '3306:3306'
-        options: >-
-          --health-cmd="mysqladmin ping" --health-interval=10s
-          --health-timeout=5s --health-retries=3
     strategy:
       fail-fast: false
 
@@ -139,4 +119,3 @@ jobs:
           pylint systemtests
           pylint utils
           pylint plotting
-          pylint webtests

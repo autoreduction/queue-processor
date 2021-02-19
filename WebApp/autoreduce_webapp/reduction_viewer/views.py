@@ -1,7 +1,7 @@
 # ############################################################################### #
 # Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
 #
-# Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
+# Copyright &copy; 2021 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 """
@@ -24,7 +24,7 @@ from django.contrib.auth import logout as django_logout, authenticate, login
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from django.db.models import Q
-from django.http import JsonResponse, HttpResponseNotFound
+from django.http import HttpResponseNotFound
 from django.shortcuts import redirect
 from instrument.utils import InstrumentVariablesUtils, MessagingUtils
 from reduction_viewer.models import Experiment, ReductionRun, Instrument, Status
@@ -34,7 +34,6 @@ from instrument.utils import InstrumentVariablesUtils
 from utilities.pagination import CustomPaginator
 
 from plotting.plot_handler import PlotHandler
-from utils.settings import VALID_INSTRUMENTS
 
 LOGGER = logging.getLogger('app')
 
@@ -102,8 +101,8 @@ def overview(_):
     Render the overview landing page (redirect from /index)
     Note: _ is replacing the passed in request parameter
     """
-    instruments = VALID_INSTRUMENTS
     context_dictionary = {}
+    instruments = Instrument.objects.values_list("name", flat=True)
     if instruments:
         context_dictionary = {'instrument_list': instruments}
     return context_dictionary
