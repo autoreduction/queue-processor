@@ -8,6 +8,7 @@
 Module containing functions for obtaining webdrivers
 """
 import os
+import atexit
 
 from selenium import webdriver
 from selenium_tests import configuration
@@ -34,4 +35,6 @@ def get_chrome_driver() -> webdriver.Chrome:
     driver = webdriver.Chrome(options=options)
     driver.implicitly_wait(10)
     driver.set_page_load_timeout(30)
+    # register the close function to run on process exit - this will close the Chrome window
+    atexit.register(driver.close)
     return driver

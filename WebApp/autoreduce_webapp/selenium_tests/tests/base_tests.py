@@ -7,7 +7,6 @@
 """
 Module containing the base test cases for a page and componenets
 """
-
 import datetime
 from pathlib import Path
 
@@ -26,21 +25,27 @@ class BaseTestCase(StaticLiveServerTestCase):
     """
     fixtures = ["super_user_fixture", "status_fixture", "notification_fixture"]
 
-    def setUp(self) -> None:
+    @classmethod
+    def setUpClass(cls) -> None:
         """
         Obtain the webdriver to be used in a testcase
         """
-        self.driver = get_chrome_driver()
-        set_url(self.live_server_url)
+        super().setUpClass()
+        cls.driver = get_chrome_driver()
+        set_url(cls.live_server_url)
 
-    def tearDown(self) -> None:
+    @classmethod
+    def tearDownClass(cls) -> None:
         """
         Quit the webdriver and screenshot the contents if there was a test failure
         """
+        super().tearDownClass()
+        cls.driver.quit()
+        set_url("http://localhost:0000")
+
+    def tearDown(self) -> None:
         if self._is_test_failure():
             self._screenshot_driver()
-        self.driver.quit()
-        set_url("http://localhost:0000")
 
     def _screenshot_driver(self):
         now = datetime.datetime.now()
