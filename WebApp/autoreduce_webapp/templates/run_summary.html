@@ -24,9 +24,9 @@
             <div class="row plot-container">
                 {% for plot_file in plot_locations %}
                     {% if plot_locations|length == 1 %}
-                        <img class="center-block" src="{{ plot_file }}">
+                        <img class="center-block" src="{{ plot_file }}" alt="Plot image">
                     {% else %}
-                        <img class="col-md-6" src="{{ plot_file }}">
+                        <img class="col-md-6" src="{{ plot_file }}" alt="Plot image">
                     {% endif %}
                 {% endfor %}
             </div>
