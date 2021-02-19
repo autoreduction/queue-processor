@@ -95,6 +95,6 @@ class NavbarMixin:
     def get_notification_messages(self) -> List[str]:
         """
         Get the notification messages on the page.
-        :return: The text of the notifications messages
+        :return: (list of str) The text of the notifications messages
         """
         return [notification.text for notification in self.driver.find_elements_by_class_name("notification-message")]

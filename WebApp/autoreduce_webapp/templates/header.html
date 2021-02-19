@@ -5,7 +5,7 @@
         {% for notification in notifications %}
             <div class="alert alert-{% replace notification.severity_verbose 'error' 'danger' %} hide" role="alert" data-notification-id="{{ notification.id }}">
                 <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-                    <p class="notification-message"><i class="fa fa-{% replace notification.severity_verbose 'error' 'exclamation' %} fa-{% replace notification.severity_verbose 'error' 'exclamation' %}-circle fa-lg"></i> {{ notification.message }}</p>
+                <p class="notification-message"><i class="fa fa-{% replace notification.severity_verbose 'error' 'exclamation' %} fa-{% replace notification.severity_verbose 'error' 'exclamation' %}-circle fa-lg"></i> {{ notification.message }}</p>
             </div>
         {% endfor %}
     {% endif %}
