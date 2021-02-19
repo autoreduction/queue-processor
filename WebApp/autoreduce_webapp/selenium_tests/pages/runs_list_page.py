@@ -50,7 +50,7 @@ class RunsListPage(Page, NavbarMixin, FooterMixin, TourMixin):
         """
         return [run.text.split(" - ")[0] for run in self.driver.find_elements_by_class_name("run-num-links")]
 
-    def click_run(self, run_number: int, version: int) -> RunSummaryPage:
+    def click_run(self, run_number: int, version: int = 0) -> RunSummaryPage:
         """
         Click the run number link on the instrument summary table matching the given run number and
         version
