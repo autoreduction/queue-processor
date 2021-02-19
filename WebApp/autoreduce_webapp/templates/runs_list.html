@@ -242,14 +242,7 @@
     {% if preload_runs %}
         <script>window.preload_runs = true;</script>
     {% endif %}
-    <script>
-        function changePage(page) {
-            let paginationChoice = document.getElementById("pagination_select").value;
-            let filterChoice = document.getElementById("filter_select").value;
-            let sortChoice = document.getElementById("sort_select").value
-            document.location.href = window.location.origin + window.location.pathname + '?page=' + arguments[0] + '&filter=' + filterChoice + '&pagination=' + paginationChoice + '&sort=' + sortChoice;
-        }
-    </script>
+
     <script src="{% static "javascript/pause_instrument.js" %}"></script>
     <script src="{% static "javascript/instrument_variables.js" %}"></script>
     <script src="{% static "javascript/runs_list.js" %}"></script>
