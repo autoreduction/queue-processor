@@ -6,7 +6,7 @@ django-debug-toolbar==3.2
 django_plotly_dash==1.5.0
 pandas==1.2.2
 plotly==4.14.3
-pylint==2.6.0
+pylint==2.6.2
 pytest==6.2.2
 pytest-cov==2.11.1
 pytest-django==4.1.0
