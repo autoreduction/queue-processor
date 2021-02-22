@@ -17,6 +17,14 @@
         }
     },
     {
+        "pk": 1,
+        "model": "reduction_viewer.datalocation",
+        "fields": {
+            "file_path": "/tmp",
+            "reduction_run_id": 1
+        }
+    },
+    {
         "model": "reduction_viewer.experiment",
         "pk": 1,
         "fields": {
