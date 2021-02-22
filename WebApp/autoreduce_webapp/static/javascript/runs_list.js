@@ -17,7 +17,7 @@
         if (select !== null) {
             select.onchange = function () {
                 setProgressCursor($(this));
-                document.getElementById('filter_options').submit();
+                document.getElementById('filter_options');
             };
         }
 
