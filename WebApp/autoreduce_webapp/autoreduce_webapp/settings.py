@@ -106,23 +106,29 @@ WSGI_APPLICATION = 'autoreduce_webapp.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
 
-DATABASES = {
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.mysql',
-    #     'NAME': get_str('DATABASE', 'name'),
-    #     'USER': get_str('DATABASE', 'user'),
-    #     'PASSWORD': get_str('DATABASE', 'password'),
-    #     'HOST': get_str('DATABASE', 'host'),
-    #     'PORT': get_str('DATABASE', 'port'),
-    #     'OPTIONS': {
-    #         'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-    #     },
-    # }
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',  # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': f'{PROJECT_ROOT}/sqlite3.db',  # Or path to database file if using sqlite3.
+if "RUNNING_VIA_PYTEST" in os.environ:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': ':memory:',
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            #     'ENGINE': 'django.db.backends.mysql',
+            #     'NAME': get_str('DATABASE', 'name'),
+            #     'USER': get_str('DATABASE', 'user'),
+            #     'PASSWORD': get_str('DATABASE', 'password'),
+            #     'HOST': get_str('DATABASE', 'host'),
+            #     'PORT': get_str('DATABASE', 'port'),
+            #     'OPTIONS': {
+            #         'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            #     },
+            'ENGINE': 'django.db.backends.sqlite3',  # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+            'NAME': f'{PROJECT_ROOT}/sqlite3.db',  # Or path to database file if using sqlite3.
+        }
+    }
 
 # Internationalization
 # https://docs.djangoproject.com/en/dev/topics/i18n/
