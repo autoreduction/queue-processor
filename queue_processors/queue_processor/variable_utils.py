@@ -11,6 +11,7 @@ import re
 import logging
 
 from model.database import access
+from queue_processors.queue_processor.reduction.service import ReductionScript
 
 
 class VariableUtils:
@@ -91,3 +92,49 @@ class VariableUtils:
         if var_type == "boolean":
             return value.lower() == 'true'
         return value
+
+    @staticmethod
+    def get_default_variables(instrument_name, reduce_script=None) -> dict:
+        # TODO move me in queue processor
+        """
+        Creates and returns a list of variables from the reduction script
+        on disk for the instrument.
+        If reduce_script is supplied, return variables using that script
+        instead of the one on disk.
+        """
+        # if not reduce_script:
+        #     reduce_script = self._load_reduction_vars_script(instrument_name)
+
+        reduce_vars = ReductionScript(instrument_name, 'reduce_vars.py')
+        try:
+            module = reduce_vars.load()
+        except (FileNotFoundError, ImportError, SyntaxError):
+            return {}
+
+        variable_help = getattr(module, 'variable_help', {})
+
+        return {
+            "standard_vars":
+            VariableUtils.make_variable_like_dict(
+                getattr(module, 'standard_vars', {}),
+                variable_help["standard_vars"] if "standard_vars" in variable_help else {}),
+            "advanced_vars":
+            VariableUtils.make_variable_like_dict(
+                getattr(module, 'advanced_vars', {}),
+                variable_help["advanced_vars"] if "advanced_vars" in variable_help else {}),
+            "variable_help":
+            getattr(module, 'variable_help', {})
+        }
+
+    @staticmethod
+    def make_variable_like_dict(vars: dict, help: dict):
+        result = {}
+        for name, value in vars.items():
+            result[name] = {
+                "name": name,
+                "value": value,
+                "type": VariableUtils.get_type_string(value),
+                "help_text": help["name"] if name in help else ""
+            }
+
+        return result

@@ -8,7 +8,12 @@
 {% load static %}
 
 {% block body %}
-    {% if run %}
+    {% if not run %}
+        <div class="text-center col-md-6 col-md-offset-3 well well-small">
+            Reduction run not found or error encountered: {{ message }}.
+        </div>
+    {% else %}
+        <title>Reduction Job #{{ run.title }}</title>
         <div class="row">
             <div class="col-md-12 text-center">
                 <h2>Reduction Job #{{ run.title }}</h2>
@@ -259,10 +264,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-    {% else %}
-        <div class="text-center col-md-6 col-md-offset-3 well well-small">
-            Reduction run not found or error encountered: {{ message }}.
         </div>
     {% endif %}
 {% endblock %}

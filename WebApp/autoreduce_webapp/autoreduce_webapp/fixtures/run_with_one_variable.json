@@ -4,7 +4,7 @@
         "pk": 1,
         "fields": {
             "run_number": 99999,
-            "status_id": 4,
+            "status_id": 2,
             "run_version": 0,
             "last_updated": "2020-10-19 17:35:04+00:00",
             "created": "2020-10-19 17:30:04+00:00",
@@ -33,13 +33,21 @@
         }
     },
     {
-        "model": "instrument.instrumentvariable",
+        "model": "instrument.variable",
         "pk": 1,
         "fields": {
             "name": "variable1",
             "value": "value1",
             "type": "text",
             "is_advanced": false,
+            "help_text": ""
+        }
+    },
+    {
+        "model": "instrument.instrumentvariable",
+        "pk": 1,
+        "fields": {
+            "variable_ptr_id": 1,
             "instrument_id": 1,
             "experiment_reference": 1234567,
             "start_run": 99999

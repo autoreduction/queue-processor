@@ -15,7 +15,7 @@ from django.shortcuts import redirect, render
 from reduction_viewer.models import Instrument, ReductionRun
 from reduction_viewer.utils import ReductionRunUtils
 from instrument.models import InstrumentVariable
-from instrument.utils import InstrumentVariablesUtils
+from queue_processors.queue_processor.variable_utils import VariableUtils
 
 LOGGER = logging.getLogger("app")
 
@@ -145,14 +145,11 @@ def current_default_variables(request, instrument=None):
     """
     Handles request to view default variables
     """
-    variables = InstrumentVariablesUtils().get_default_variables(instrument)
-    standard_vars = {}
-    advanced_vars = {}
-    for variable in variables:
-        if variable.is_advanced:
-            advanced_vars[variable.name] = variable
-        else:
-            standard_vars[variable.name] = variable
+
+    current_variables = VariableUtils.get_default_variables(instrument)
+    standard_vars = current_variables["standard_vars"]
+    advanced_vars = current_variables["advanced_vars"]
+
     context_dictionary = {
         'instrument': instrument,
         'standard_variables': standard_vars,
@@ -174,7 +171,7 @@ def render_run_variables(request, instrument_name, run_number, run_version=0):
     standard_vars = vars_kwargs["standard_vars"]
     advanced_vars = vars_kwargs["advanced_vars"]
 
-    current_variables = InstrumentVariablesUtils().get_default_variables(instrument_name)
+    current_variables = VariableUtils.get_default_variables(instrument_name)
     current_standard_variables = current_variables["standard_vars"]
     current_advanced_variables = current_variables["advanced_vars"]
 
@@ -183,8 +180,6 @@ def render_run_variables(request, instrument_name, run_number, run_version=0):
         'run_version': run_version,
         'standard_variables': standard_vars,
         'advanced_variables': advanced_vars,
-        'default_standard_variables': standard_vars,
-        'default_advanced_variables': advanced_vars,
         'current_standard_variables': current_standard_variables,
         'current_advanced_variables': current_advanced_variables,
         'instrument': reduction_run.instrument,

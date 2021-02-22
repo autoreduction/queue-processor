@@ -37,6 +37,7 @@ from reduction_viewer.utils import ReductionRunUtils
 from reduction_viewer.view_utils import deactivate_invalid_instruments
 from instrument.utils import InstrumentVariablesUtils, STATUS
 from plotting.plot_handler import PlotHandler
+from queue_processors.queue_processor.variable_utils import VariableUtils
 
 LOGGER = logging.getLogger('app')
 
@@ -204,9 +205,10 @@ def run_summary(_, instrument_name=None, run_number=None, run_version=0):
     """
     # pylint:disable=broad-except
     try:
-        history = list(
-            ReductionRun.objects.filter(instrument__name=instrument_name, run_number=run_number).order_by(
-                '-run_version').select_related('status').select_related('experiment').select_related('instrument'))
+        history = ReductionRun.objects.filter(instrument__name=instrument_name, run_number=run_number).order_by(
+            '-run_version').select_related('status').select_related('experiment').select_related('instrument')
+        if len(history) == 0:
+            raise ValueError(f"Could not find any matching runs for instrument {instrument_name} run {run_number}")
         run = next(run for run in history if run.run_version == int(run_version))
         started_by = started_by_id_to_name(run.started_by)
         # run status value of "s" means the run is skipped
@@ -221,8 +223,8 @@ def run_summary(_, instrument_name=None, run_number=None, run_version=0):
             reduction_location = reduction_location.replace('\\', '/')
 
         rb_number = run.experiment.reference_number
-        has_variables = bool(InstrumentVariablesUtils().get_default_variables(run.instrument.name)
-                             or run.run_variables.all())  # We check default vars and run vars in case none exist
+        has_variables = bool(VariableUtils.get_default_variables(run.instrument.name)
+                             or run.run_variables.count())  # We check default vars and run vars in case none exist
         # for run but could exist for default
 
         context_dictionary = {

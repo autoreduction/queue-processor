@@ -1,7 +1,7 @@
 <div class="panel panel-default">
     <div class="panel-heading">
         <div class="panel-title">
-            <a data-toggle="collapse" href="#toggleForm" data-target="#rerun_form">
+            <a data-toggle="collapse" href="#toggleForm" data-target="#rerun_form" id="toggle_form">
                 <i class="fa fa-chevron-right"></i> Re-run reduction job
             </a>
         </div>
@@ -79,14 +79,14 @@
     </div>
     <div class="row col-md-12">
         <div class="text-center">
-            <a href="{% url 'runs:list' instrument.name %}" class="btn btn-primary">Back to {{ instrument.name }} runs</a>
+            <a href="{% url 'runs:list' instrument.name %}" class="btn btn-primary" id="back_button">Back to {{ instrument.name }} runs</a>
         </div>
     </div>
 </div>
 
 <div class="hide">
     <div class="js-default-variables">
-        {% include "snippets/edit_variables.html" with standard_variables=default_standard_variables advanced_variables=default_advanced_variables instrument=instrument.name only %}
+        {% include "snippets/edit_variables.html" with standard_variables=standard_variables advanced_variables=advanced_variables instrument=instrument.name only %}
     </div>
     <div class="js-current-variables">
         {% include "snippets/edit_variables.html" with standard_variables=current_standard_variables advanced_variables=current_advanced_variables instrument=instrument.name only %}
