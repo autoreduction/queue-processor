@@ -294,7 +294,7 @@ def runs_list(request, instrument=None):
         if len(runs) == 0:
             return {'message': "No runs found for instrument."}
 
-        has_variables = bool(InstrumentVariablesUtils().get_default_variables(instrument_obj.name))
+        has_variables = bool(VariableUtils.get_default_variables(instrument_obj.name))
 
         context_dictionary = {
             'instrument': instrument_obj,
