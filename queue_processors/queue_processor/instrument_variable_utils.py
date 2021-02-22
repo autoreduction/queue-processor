@@ -241,3 +241,13 @@ class InstrumentVariablesUtils:
             if key in reduction_arguments["variable_help"][dict_name]:
                 return _replace_special_chars(reduction_arguments["variable_help"][dict_name][key])
         return ""
+
+    @staticmethod
+    def get_current_script_text(instrument_name):
+        """
+        Fetches the reduction script and variables script for
+        the given instrument, and returns each as a string.
+        """
+        reduce_vars = ReductionScript(instrument_name)
+        # TODO handle raises
+        return reduce_vars.text()

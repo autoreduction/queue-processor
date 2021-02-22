@@ -46,3 +46,6 @@ class StatusUtils:
     def get_skipped(self):
         """Gets the skipped status"""
         return self._get_status('s')
+
+
+STATUS = StatusUtils()
