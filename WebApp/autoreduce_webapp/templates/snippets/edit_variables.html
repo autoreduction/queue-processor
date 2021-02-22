@@ -1,6 +1,5 @@
 {% load variable_type %}
 
-<input type="hidden" id="updateURL" value="{% url 'instrument:current_default_variables' instrument=instrument %}"/>
 {% for name,variable in standard_variables.items %}
     <div class="form-group">
         <label for="var-standard-{{ variable.sanitized_name }}" class="control-label col-md-3">
@@ -32,7 +31,7 @@
         <div class="panel-heading">
             <div class="panel-title">
                 <a data-toggle="collapse" href="#toggleVariables"
-                   data-target="#advanced_variables">
+                   data-target="#advanced_variables" id="toggle_form">
                     <i class="fa fa-chevron-right"></i>Advanced Variables
                 </a>
             </div>
