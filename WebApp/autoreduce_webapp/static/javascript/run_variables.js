@@ -285,7 +285,7 @@
         $('[data-toggle="popover"]').popover();
     };
 
-    var resetCurrentVariables = function resetCurrentVariables(event) {
+    var resetToValuesInCurrentScript = function resetToValuesInCurrentScript(event) {
         event.preventDefault();
         $form = getForm();
         // Overwrite the current form HTML with the one rendered using the default variables
@@ -360,7 +360,7 @@
         $('#script-preview-modal').on('click', '#downloadScript', downloadScript);
 
         $('#run_variables,#instrument_variables').on('click', '#resetValues', resetDefaultVariables);
-        $('#run_variables,#instrument_variables,#submit_jobs').on('click', '#currentScript', resetCurrentVariables);
+        $('#run_variables,#instrument_variables,#submit_jobs').on('click', '#currentScript', resetToValuesInCurrentScript);
         document.getElementById("variableSubmit").onclick = submitForm;
         $('#run_variables,#instrument_variables').on('click', 'input[type=checkbox][data-type=boolean]', updateBoolean);
 
