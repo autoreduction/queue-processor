@@ -15,10 +15,12 @@ from utilities import input_processing
 from reduction_viewer.models import Instrument, ReductionRun
 from reduction_viewer.utils import ReductionRunUtils
 from instrument.models import InstrumentVariable
-from instrument.utils import InstrumentVariablesUtils, STATUS
 
 from queue_processors.queue_processor.instrument_variable_utils import InstrumentVariablesUtils
 from queue_processors.queue_processor.reduction.service import ReductionScript
+from queue_processors.queue_processor.variable_utils import VariableUtils
+from queue_processors.queue_processor.status_utils import STATUS
+
 LOGGER = logging.getLogger("app")
 
 
@@ -114,7 +116,7 @@ def run_confirmation(request, instrument: str):
         return context_dictionary
 
     script_text = InstrumentVariablesUtils.get_current_script_text(instrument)
-    default_variables = InstrumentVariablesUtils.get_default_variables(instrument)
+    default_variables = VariableUtils.get_default_variables(instrument)
     try:
         new_script_arguments = make_reduction_arguments(request.POST.items(), default_variables)
         context_dictionary['variables'] = new_script_arguments
