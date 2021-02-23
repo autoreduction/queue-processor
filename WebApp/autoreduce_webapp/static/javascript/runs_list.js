@@ -27,7 +27,7 @@
                 setProgressCursor($(this));
             };
         }
-    }
+    };
 
     init();
 }())
