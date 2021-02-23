@@ -1,4 +1,4 @@
-var ctx = document.getElementById("myChart").getContext('2d');
+var ctx = document.getElementById("chart").getContext('2d');
 
 function getStatusNames() {
     return statuses.map(x => x.name);
@@ -17,7 +17,7 @@ function getColours() {
     ];
 }
 
-var myChart = new Chart(ctx, {
+var chart = new Chart(ctx, {
     type: 'pie',
     data: {
         labels: getStatusNames(),
@@ -43,7 +43,7 @@ var myChart = new Chart(ctx, {
 });
 
 function graphClickEvent(evt) {
-    var activeElement = myChart.getElementAtEvent(evt);
+    var activeElement = chart.getElementAtEvent(evt);
     // Check we're clicking on a bar
     if (!activeElement.length) {
         return;

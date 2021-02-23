@@ -1,4 +1,4 @@
-var ctx = document.getElementById("myChart").getContext('2d');
+var ctx = document.getElementById("chart").getContext('2d');
 
 function getRunTitles() {
     return reductionRuns.map(x => (x.runNumber + '-' + x.runVersion));
@@ -37,7 +37,7 @@ function getCreated(runTitle) {
 
 }
 
-var myChart = new Chart(ctx, {
+var chart = new Chart(ctx, {
     type: 'bar',
     data: {
         labels: getRunTitles(),
@@ -101,7 +101,7 @@ var myChart = new Chart(ctx, {
 });
 
 function graphClickEvent(evt) {
-    var activeElement = myChart.getElementAtEvent(evt);
+    var activeElement = chart.getElementAtEvent(evt);
     // Check we're clicking on a bar
     if (!activeElement.length) {
         return;
