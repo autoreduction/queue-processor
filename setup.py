@@ -30,6 +30,7 @@ setup_requires = [
     'fire==0.4.0',
     'gitpython==3.1.12',
     'nexusformat==0.6.0',
+    'numpy==1.19.2',
     'pandas==1.1.5',
     'plotly==4.14.3',
     'pytz==2021.1',
