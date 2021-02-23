@@ -207,17 +207,3 @@ class TestReductionRunner(unittest.TestCase):
     def test_get_mantid_version(self, logger: Mock):
         assert ReductionRunner._get_mantid_version() is None
         assert logger.error.call_count == 2
-
-    # @patch(f'{DIR}.runner.ReductionRunner._get_mantid_version', return_value="5.1.0")
-    # @patch(f'{DIR}.runner.reduce')
-    # def test_reduce(self, reduce: Mock, _get_mantid_version: Mock):
-    #     with tempfile.NamedTemporaryFile() as tmpfile:
-    #         self.message.data = tmpfile.name
-
-    #         runner = ReductionRunner(self.message)
-    #         runner.reduce()
-
-    #     reduce.assert_called_once()
-    #     assert reduce.call_args[0][3] == tmpfile.name
-    #     assert runner.message.reduction_data is not None
-    #     assert runner.message.software == "5.1.0"
