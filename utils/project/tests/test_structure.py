@@ -22,7 +22,7 @@ class TestStructure(unittest.TestCase):
         ]
         actual = os.listdir(path)
         for directory in expected:
-            self.assertTrue(directory in actual)
+            self.assertIn(directory, actual)
 
     def test_get_log_file(self):
         actual = get_log_file('test.log')
