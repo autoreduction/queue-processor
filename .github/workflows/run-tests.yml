@@ -95,7 +95,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Build container
-        run: docker build -f dependabot-container/Dockerfile .
+        run: docker build -f dependency-check/Dockerfile .
 
   pylint:
     name: Pylint
