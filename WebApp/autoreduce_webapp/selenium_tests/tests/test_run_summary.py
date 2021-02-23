@@ -16,7 +16,7 @@ from selenium_tests.tests.base_tests import NavbarTestMixin, BaseTestCase, Foote
 from systemtests.utils.data_archive import DataArchive
 
 
-class TestRunSummaryPageNoRerunForm(BaseTestCase):
+class TestRunSummaryPage(BaseTestCase):
     """
     Test cases for the InstrumentSummary page when the Rerun form is NOT visible
     """
@@ -42,11 +42,10 @@ class TestRunSummaryPageNoRerunForm(BaseTestCase):
         self.page = RunSummaryPage(self.driver, self.instrument_name, 99999, 0)
         self.page.launch()
 
-    def test_reduction_job_panel_correct_contents(self):
+    def test_reduction_job_panel_displayed(self):
         """Tests that the reduction job panel is showing the right things"""
         rjp = self.page.reduction_job_panel
         assert rjp.is_displayed()
-        # rjp.
 
     def test_reduction_job_panel_reset_to_values_first_used_for_run(self):
         """Test that the button to reset the variables to the values first used for the run works"""

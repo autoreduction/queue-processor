@@ -75,6 +75,13 @@ class RunSummaryPage(Page, NavbarMixin, FooterMixin, TourMixin):
         return self.driver.find_element_by_id("back_button")
 
     @property
+    def submit_button(self) -> WebElement:
+        """
+        Finds and returns the back button for toggling the form on the page.
+        """
+        return self.driver.find_element_by_id("variableSubmit")
+
+    @property
     def reset_to_initial_values(self) -> WebElement:
         """
         Finds and returns the "Reset to original script and values" button
