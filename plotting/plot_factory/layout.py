@@ -10,6 +10,8 @@ Constructs a dashapp layout and additional layout meta parameters
 import logging
 
 # Internal Dependencies
+from typing import Optional
+
 from plotting.plot_meta_language.interpreter import Interpreter
 
 
@@ -30,7 +32,7 @@ class Layout:
         self.error_bars = None
         self.layout = self._extract_layout()
 
-    def _read_plot_meta_data(self):
+    def _read_plot_meta_data(self) -> Optional[dict]:
         """
         Use plot interpreter to interpret plot meta data
 
@@ -41,6 +43,7 @@ class Layout:
             return interpreted_layout
         except ImportError:
             logging.error("Could not Interpret: %s", self.meta_data)
+            return None
 
     def _extract_layout(self):
         """
