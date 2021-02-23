@@ -85,6 +85,18 @@ jobs:
           name: screenshots
           path: WebApp/autoreduce_webapp/selenium_tests/screenshots
 
+  dependency-check:
+    name: Dependency-Check
+    runs-on: ubuntu-18.04
+    strategy:
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build container
+        run: docker build -f dependabot-container/Dockerfile .
+
   pylint:
     name: Pylint
     runs-on: ubuntu-18.04
