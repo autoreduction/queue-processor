@@ -243,12 +243,12 @@ class TestSchedulerDataProcessor(unittest.TestCase):
         sdp = SchedulerDataProcessor()
         cycles = sdp._process(self.test_cycle_data, [self.test_maintenance_dict["within_first_cycle"]])
         mocked_md_warning.assert_not_called()
-        self.assertTrue(len(cycles) == len(self.test_cycle_data))
+        self.assertEqual(len(self.test_cycle_data), len(cycles))
         for cycle in cycles:
             self.assertIsInstance(cycle, Cycle)
             if cycle is not cycles[0]:
-                self.assertTrue(len(cycle.maintenance_days) == 0)
-        self.assertTrue(len(cycles[0].maintenance_days) == 1)
+                self.assertEqual(0, len(cycle.maintenance_days))
+        self.assertEqual(1, len(cycles[0].maintenance_days))
         m_day = cycles[0].maintenance_days.pop()
         self.assertTrue(m_day.start == self.test_maintenance_dict["within_first_cycle"]["start"]
                         and m_day.end == self.test_maintenance_dict["within_first_cycle"]["end"])
