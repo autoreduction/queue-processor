@@ -48,6 +48,9 @@ def submit_runs(request, instrument=None):
         standard_vars = kwargs["standard_vars"]
         advanced_vars = kwargs["advanced_vars"]
 
+        current_variables = VariableUtils.get_default_variables(instrument)
+        current_standard_variables = current_variables["standard_vars"]
+        current_advanced_variables = current_variables["advanced_vars"]
         # pylint:disable=no-member
         context_dictionary = {
             'instrument': instrument,
@@ -56,8 +59,8 @@ def submit_runs(request, instrument=None):
             'queued': runs_for_instrument.filter(status=queued_status),
             'standard_variables': standard_vars,
             'advanced_variables': advanced_vars,
-            'default_standard_variables': standard_vars,
-            'default_advanced_variables': advanced_vars,
+            'current_standard_variables': current_standard_variables,
+            'current_advanced_variables': current_advanced_variables,
         }
 
         return context_dictionary
