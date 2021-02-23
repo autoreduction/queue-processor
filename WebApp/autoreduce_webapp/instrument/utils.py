@@ -8,6 +8,7 @@
 Utility functions for reduction variables
 """
 import cgi
+import importlib.util as imp
 import io
 import logging
 import os
@@ -15,7 +16,6 @@ import re
 import sys
 
 import chardet
-import importlib.util as imp
 
 from model.message.message import Message
 
@@ -28,7 +28,6 @@ from autoreduce_webapp.settings import REDUCTION_DIRECTORY
 from reduction_viewer.models import Notification, ReductionRun
 from reduction_viewer.utils import InstrumentUtils
 from instrument.models import InstrumentVariable, RunVariable
-from queue_processors.queue_processor.reduction.service import ReductionScript
 from queue_processors.queue_processor.status_utils import StatusUtils
 
 STATUS = StatusUtils()
