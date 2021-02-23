@@ -23,7 +23,7 @@ setup_requires = [
     'dash_core_components==1.12.1',
     'docker==4.4.3',
     'Django==3.1.2',
-    'django_extensions==3.1.0',
+    'django_extensions==3.1.1',
     'django_plotly_dash==1.5.0',
     'django-user-agents==0.4.0',
     'filelock==3.0.12',
