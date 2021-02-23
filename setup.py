@@ -28,7 +28,7 @@ setup_requires = [
     'django-user-agents==0.4.0',
     'filelock==3.0.12',
     'fire==0.4.0',
-    'gitpython==3.1.12',
+    'gitpython==3.1.13',
     'nexusformat==0.6.0',
     'numpy==1.19.2',
     'pandas==1.1.5',
