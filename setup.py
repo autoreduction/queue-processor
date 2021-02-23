@@ -20,7 +20,7 @@ setup_requires = [
     'dash==1.16.3',
     'dash_html_components==1.1.1',
     # dash 1.16.3 depends on dash-core-components 1.12.1
-    'dash_core_components==1.12.1',
+    'dash_core_components==1.15.0',
     'docker==4.4.3',
     'Django==3.1.2',
     'django_extensions==3.1.0',
