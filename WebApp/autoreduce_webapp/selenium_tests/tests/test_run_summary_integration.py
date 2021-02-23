@@ -20,7 +20,7 @@ from utils.clients.connection_exception import ConnectionException
 from utils.clients.django_database_client import DatabaseClient
 
 
-class TestRunSummaryPageIntegration(BaseTestCase, FooterTestMixin, NavbarTestMixin):
+class TestRunSummaryPageIntegration(NavbarTestMixin, BaseTestCase, FooterTestMixin):
     """
     Test cases for the InstrumentSummary page when the Rerun form is NOT visible
     """

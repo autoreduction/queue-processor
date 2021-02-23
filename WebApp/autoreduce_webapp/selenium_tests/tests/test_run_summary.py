@@ -9,7 +9,6 @@ Selenium tests for the runs summary page
 """
 
 from django.urls import reverse
-from selenium.common.exceptions import NoSuchElementException
 from selenium_tests.pages.run_summary_page import RunSummaryPage
 from selenium_tests.tests.base_tests import NavbarTestMixin, BaseTestCase, FooterTestMixin
 
