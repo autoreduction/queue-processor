@@ -51,11 +51,6 @@ class TestConfigureNewRunsPageIntegration(BaseTestCase):
         cls.data_archive.delete()
         super().tearDownClass()
 
-    def setUp(self) -> None:
-        super().setUp()
-        self.page = ConfigureNewRunsPage(self.driver, self.instrument_name)
-        self.page.launch()
-
     def _find_run_in_database(self):
         """
         Find a ReductionRun record in the database
@@ -128,10 +123,8 @@ class TestConfigureNewRunsPageIntegration(BaseTestCase):
     #         summary.upcoming_variables_by_experiment.is_displayed()
 
     def test_submit_experiment_var(self):
-        # .click() raises selenium.common.exceptions.ElementClickInterceptedException
-        # so this uses a workaround where it just uses JS to do the click
-        # from https://stackoverflow.com/a/48667924/2823526
-        self.driver.execute_script("arguments[0].click()", self.page.range_or_experiment_toggle)
+        self.page = ConfigureNewRunsPage(self.driver, self.instrument_name, experiment_reference=self.rb_number)
+        self.page.launch()
         self.page.variable1_field = "new_value"
         self.page.submit_button.click()
         assert InstrumentVariable.objects.count() == 2
@@ -139,3 +132,15 @@ class TestConfigureNewRunsPageIntegration(BaseTestCase):
         assert new_var.start_run is None
         assert new_var.experiment_reference == self.rb_number
         assert new_var.value == "new_value"
+
+        summary = VariableSummaryPage(self.driver, self.instrument_name)
+        assert summary.current_variables_by_run.is_displayed()
+        assert summary.upcoming_variables_by_experiment.is_displayed()
+
+        with self.assertRaises(NoSuchElementException):
+            summary.upcoming_variables_by_run.is_displayed()
+
+    # def test_submit_multiple_run_ranges
+    # def test_submit_multiple_experiments
+    # def test_submit_multiple_run_ranges_and_then_experiment
+    # ??

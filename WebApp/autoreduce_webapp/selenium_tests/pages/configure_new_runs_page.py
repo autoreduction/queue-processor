@@ -26,21 +26,31 @@ class ConfigureNewRunsPage(Page, RerunFormMixin, NavbarMixin, FooterMixin, TourM
     """
     Page model class for run summary page
     """
-    def __init__(self, driver, instrument, start_run_number=None, end_run_number=None, experiment_reference=None):
+    def __init__(self, driver, instrument, run_start=None, run_end=None, experiment_reference=None):
         super().__init__(driver)
         self.instrument = instrument
-        self.start_run_number = start_run_number
-        self.end_run_number = end_run_number
-        self.experiment_reference = experiment_reference
+        self._run_start_number = run_start
+        self._run_end_number = run_end
+        self._experiment_reference = experiment_reference
 
     def url_path(self) -> str:
         """
         Return the current URL of the page.
         :return: (str) the url path
         """
-        return reverse("instrument:variables", kwargs={
+        kwargs = {
             "instrument": self.instrument,
-        })
+        }
+        if self._run_start_number:
+            kwargs["run_start"] = self._run_start_number
+
+        if self._run_end_number:
+            kwargs["run_end"] = self._run_end_number
+
+        if self._experiment_reference:
+            kwargs["experiment_reference"] = self._experiment_reference
+
+        return reverse("instrument:variables", kwargs=kwargs)
 
     @property
     def run_start(self) -> WebElement:
