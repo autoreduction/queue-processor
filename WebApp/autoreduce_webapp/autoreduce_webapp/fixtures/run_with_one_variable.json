@@ -57,7 +57,7 @@
         "fields": {
             "variable_ptr_id": 1,
             "instrument_id": 1,
-            "experiment_reference": 1234567,
+            "experiment_reference": null,
             "start_run": 99999,
             "tracks_script": true
         }
