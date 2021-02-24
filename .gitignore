@@ -56,3 +56,8 @@ WebApp/autoreduce_webapp/selenium_tests/screenshots
 
 # ignore sqlite3 db files
 **/sqlite3*.db*
+
+# folders that get created from tests
+reduced-data/
+data-archive/
+test-archive/
