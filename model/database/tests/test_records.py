@@ -73,7 +73,6 @@ class TestDatabaseRecords(TestCase):
             started_by=mock_msg.started_by,
             # Hardcoded below
             run_name=mock.ANY,
-            cancel=mock.ANY,
             hidden_in_failviewer=mock.ANY,
             admin_log=mock.ANY,
             reduction_log=mock.ANY)
