@@ -14,11 +14,12 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium_tests import configuration
 from selenium_tests.pages.component_mixins.footer_mixin import FooterMixin
 from selenium_tests.pages.component_mixins.navbar_mixin import NavbarMixin
+from selenium_tests.pages.component_mixins.rerun_form_mixin import RerunFormMixin
 from selenium_tests.pages.component_mixins.tour_mixin import TourMixin
 from selenium_tests.pages.page import Page
 
 
-class RerunJobsPage(Page, NavbarMixin, FooterMixin, TourMixin):
+class RerunJobsPage(Page, RerunFormMixin, NavbarMixin, FooterMixin, TourMixin):
     """
     Page model class for run summary page
     """
@@ -56,13 +57,6 @@ class RerunJobsPage(Page, NavbarMixin, FooterMixin, TourMixin):
         return self.driver.find_element_by_id("submit_jobs")
 
     @property
-    def submit_button(self) -> WebElement:
-        """
-        Finds and returns the back button for toggling the form on the page.
-        """
-        return self.driver.find_element_by_id("variableSubmit")
-
-    @property
     def run_range_field(self) -> WebElement:
         """
         Finds and returns the back button for toggling the form on the page.
@@ -74,17 +68,7 @@ class RerunJobsPage(Page, NavbarMixin, FooterMixin, TourMixin):
         """
         Finds and returns the back button for toggling the form on the page.
         """
-        var_field = self.run_range_field
-        var_field.clear()
-        new_value = value
-        var_field.send_keys(new_value)
-
-    @property
-    def cancel_button(self) -> WebElement:
-        """
-        Finds and returns the back button for toggling the form on the page.
-        """
-        return self.driver.find_element_by_id("cancel")
+        self._set_field(self.run_range_field, value)
 
     @property
     def reset_to_current_values(self) -> WebElement:
@@ -92,22 +76,3 @@ class RerunJobsPage(Page, NavbarMixin, FooterMixin, TourMixin):
         Finds and returns the "Reset to values in the current reduce_vars script" button
         """
         return self.driver.find_element_by_id("currentScript")
-
-    @property
-    def variable1_field(self) -> WebElement:
-        """
-        Finds and returns the variabl1 input field
-        """
-        return self.driver.find_element_by_id("var-standard-variable1")
-
-    @variable1_field.setter
-    def variable1_field(self, value):
-        """
-        Clears the field and sends the keys to the input field.
-
-        Selenium requires that we clear the field first!
-        """
-        var_field = self.variable1_field
-        var_field.clear()
-        new_value = value
-        var_field.send_keys(new_value)
