@@ -20,10 +20,9 @@ import traceback
 
 import django.core.exceptions
 import django.http
-
 from django.utils import timezone
-from reduction_viewer.models import Instrument, Status, ReductionRun, DataLocation
 from instrument.models import RunVariable
+from reduction_viewer.models import Instrument, Status, ReductionRun, DataLocation
 
 sys.path.append(os.path.join("../", os.path.dirname(os.path.dirname(__file__))))
 os.environ["DJANGO_SETTINGS_MODULE"] = "autoreduce_webapp.settings"
@@ -88,60 +87,6 @@ class ReductionRunUtils(object):
     """
     Utilities for the ReductionRun model
     """
-
-    # pylint:disable=invalid-name
-    @staticmethod
-    def cancelRun(reduction_run):
-        """
-        Try to cancel the run given, or the run that was scheduled as the next retry of the run.
-        When we cancel, we send a message to the backend queue processor, telling it to ignore
-        this run if it arrives (likely through a delayed message through ActiveMQ's scheduler).
-        We also set statuses and error messages. If we can't do any of the above, we set the
-        variable (retry_run.cancel) that tells the frontend to not schedule another retry
-        if the next run fails.
-        """
-        from instrument.utils import MessagingUtils
-
-        def set_cancelled(run):
-            """
-            Set a run status to cancelled and update related variables
-            :param run: The run to update
-            """
-            run.message = "Run cancelled by user"
-            run.status = StatusUtils().get_error()
-            run.finished = timezone.now().replace(microsecond=0)
-            run.retry_when = None
-            run.save()
-
-        # This is the queued run, send the message to queueProcessor to cancel it
-        if reduction_run.status == StatusUtils().get_queued():
-            MessagingUtils().send_cancel(reduction_run)
-            set_cancelled(reduction_run)
-
-        # otherwise this run has already failed, and we're looking at a scheduled rerun of it
-        elif not reduction_run.retry_run:
-            # we don't actually have a rerun,
-            # so just ensure the retry time is set to "Never" (None)
-            reduction_run.retry_when = None
-
-        # This run is being queued to retry, so send the message
-        # to queueProcessor to cancel it, and set it as cancelled
-        elif reduction_run.retry_run.status == StatusUtils().get_queued():
-            MessagingUtils().send_cancel(reduction_run.retry_run)
-            set_cancelled(reduction_run.retry_run)
-
-        # we have a run that's retrying, so just make sure it doesn't retry next time
-        elif reduction_run.retry_run.status == StatusUtils().get_processing():
-            reduction_run.cancel = True
-            reduction_run.retry_run.cancel = True
-
-        else:  # the retry run already completed, so do nothing
-            pass
-
-        # save the run states we modified
-        reduction_run.save()
-        if reduction_run.retry_run:
-            reduction_run.retry_run.save()
 
     # pylint:disable=invalid-name,too-many-arguments,too-many-locals
     @staticmethod
