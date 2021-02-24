@@ -115,7 +115,6 @@ class ReductionRun(models.Model):
     started = models.DateTimeField(null=True, blank=True)
 
     # Bool field
-    cancel = models.BooleanField(default=False)
     hidden_in_failviewer = models.BooleanField(default=False)
     overwrite = models.NullBooleanField(default=True)
 
