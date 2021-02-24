@@ -1,11 +1,10 @@
 {% extends "base.html" %}
+{% block title %}{{ instrument.name|default:"Instrument not found" }} - Configure new jobs{% endblock %}
 {% load view %}
 {% load static %}
 {% block body %}
     {% if instrument %}
         {% if instrument.is_active %}
-            <title>{{ instrument.name }} - Configure New Jobs</title>
-
             <div class="row">
                 <div class="col-md-12 text-center">
                     <h2>{{ instrument.name }} - Configure New Jobs</h2>
@@ -19,109 +18,136 @@
             <div class="row">
                 <div class="col-md-12 text-center">
                     <p>
-                        <a href="{% url 'runs:list' instrument=instrument.name %}">View upcoming saved configurations</a>
+                        <a href="{% url 'runs:list' instrument=instrument.name %}">
+                            View upcoming saved configurations
+                        </a>
                     </p>
                 </div>
             </div>
             <br/>
             {% if experiment_reference > 0 %}
-                <form id="instrument:variables" method="POST" action="{% url 'instrument:variables_by_experiment' instrument=instrument.name experiment_reference=experiment_reference %}" class="form-horizontal">
+                <form id="instrument_variables" method="POST"
+                      action="{% url 'instrument:variables_by_experiment' instrument=instrument.name experiment_reference=experiment_reference %}"
+                      class="form-horizontal">
             {% else %}
-                <form id="instrument:variables" method="POST" action="{% url 'instrument:variables' instrument=instrument.name start=run_start end=run_end %}" class="form-horizontal">
+                <form id="instrument_variables" method="POST"
+                      action="{% url 'instrument:variables' instrument=instrument.name start=run_start end=run_end %}"
+                      class="form-horizontal">
             {% endif %}
-                {% csrf_token %}
-                <input type="hidden" id="upcoming_runs" name="upcoming_runs" value="{{upcoming_run_variables}}" />
-                <input type="hidden" id="is_editing" name="is_editing" value="{{editing}}" />
+        {% csrf_token %}
+        <input type="hidden" id="upcoming_runs" name="upcoming_runs" value="{{ upcoming_run_variables }}"/>
+        <input type="hidden" id="is_editing" name="is_editing" value="{{ editing }}"/>
+        <div class="row">
+            <div class="col-md-9">
+                {% include "snippets/form_warnings.html" %}
+                <div class="text-center">
+                    <span class="js-experiment-label">By Experiment Reference Number</span>
+                    <input type="checkbox" name="variable-range-toggle" id="variable-range-toggle" data-on-text="&nbsp;"
+                           data-off-text="&nbsp;" data-off-color="default" data-on-color="default" data-animate="false"
+                           data-invert="true"/>
+                    <input type="hidden" name="variable-range-toggle-value" id="variable-range-toggle-value"
+                           value="{% if experiment_reference > 0 %}False{% else %}True{% endif %}"/>
+                    <span class="js-run-label">By Run Number Range</span>
+                </div>
+                <br/>
+                <div class="js-variable-by-experiment">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="run_start" class="control-label col-md-3">Experiment Reference
+                                    Number</label>
+                                <div class="col-md-9">
+                                    <input type="number" id="experiment_reference_number"
+                                           name="experiment_reference_number" value="{{ experiment_reference }}"
+                                           class="form-control"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="js-variable-by-run">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="run_start" class="control-label col-md-6">Run Number Start</label>
+                                <div class="col-md-6">
+                                    <input type="number" id="run_start" name="run_start" value="
+
+                                            {% if run_start and run_start > minimum_run_start %}{{ run_start }}{% else %}{{ minimum_run_start }}{% endif %}"
+                                           min="{{ minimum_run_start }}" class="form-control"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="run_end" class="control-label col-md-6">Finished
+                                    <small>(Optional)</small></label>
+                                <div class="col-md-6">
+                                    <input type="number" id="run_end" name="run_end"
+                                           value="{% if run_end %}{{ run_end }}{% endif %}" class="form-control"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-10 col-md-offset-1">
+                            <div class="alert alert-warning collapse" id="run_finish_warning">
+                                <strong>Please Note:</strong> The <a href="#" class="js-show-default-variables">default
+                                script values</a> will be used from run <span id="next_run"></span> onwards. You will be
+                                able to change this by selecting the appropriate "edit variables" link from the
+                                Instrument Summary page.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="js-variables-container">
+                    {% include "snippets/edit_variables.html" with standard_variables=standard_variables advanced_variables=advanced_variables instrument=instrument.name only %}
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="well well-sm">
+                    <div class="row">
+                        <div class="col-md-12"><h4>Additional Actions</h4></div>
+                    </div>
+                    <div class="row">
+                        <ul class="js-form-actions">
+                            <li>
+                                <a href="#currentScript" id="currentScript">Reset to values in current script</a>
+                                <div class="js-explaination visible-xs-block">Reset all variables to those set in the
+                                    script. This will pick up any changes made to the reduce_vars.py script.
+                                </div>
+                            </li>
+                            <div>
+                                <input type="checkbox" name="track_script_checkbox" id="track_script_checkbox"
+                                       {% if tracks_script %}checked{% endif %}>
+                                <a href="#track_script" id="track_script"> Track script changes</a>
+                                <div class="js-explaination visible-xs-block">Check this box to ensure that the
+                                    reduce.py script used for these variables is always up to date with the one on the
+                                    instrument
+                                </div>
+                            </div>
+                        </ul>
+                    </div>
+                </div>
                 <div class="row">
-                    <div class="col-md-9">
-                        {% include "snippets/form_warnings.html" %}
-                        <div class="text-center">
-                            <span class="js-experiment-label">By Experiment Reference Number</span>
-                            <input type="checkbox" name="variable-range-toggle" id="variable-range-toggle" data-on-text="&nbsp;" data-off-text="&nbsp;" data-off-color="default"  data-on-color="default" data-animate="false" data-invert="true" />
-                            <input type="hidden" name="variable-range-toggle-value" id="variable-range-toggle-value" value="{% if experiment_reference > 0 %}False{% else %}True{% endif %}" />
-                            <span class="js-run-label">By Run Number Range</span>
-                        </div>
-                        <br/>
-                        <div class="js-variable-by-experiment">
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <div class="form-group">
-                                        <label for="run_start" class="control-label col-md-3">Experiment Reference Number</label>
-                                        <div class="col-md-9">
-                                            <input type="number" id="experiment_reference_number" name="experiment_reference_number" value="{{experiment_reference}}" class="form-control"/>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="js-variable-by-run">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="run_start" class="control-label col-md-6">Run Number Start</label>
-                                        <div class="col-md-6">
-                                            <input type="number" id="run_start" name="run_start" value="{% if run_start and run_start > minimum_run_start %}{{run_start}}{%else%}{{minimum_run_start}}{% endif %}" min="{{minimum_run_start}}" class="form-control"/>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="run_end" class="control-label col-md-6">Finished <small>(Optional)</small></label>
-                                        <div class="col-md-6">
-                                            <input type="number" id="run_end" name="run_end" value="{% if run_end %}{{run_end}}{% endif %}" class="form-control"/>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-10 col-md-offset-1">
-                                    <div class="alert alert-warning collapse" id="run_finish_warning">
-                                        <strong>Please Note:</strong> The <a href="#" class="js-show-default-variables">default script values</a> will be used from run <span id="next_run"></span> onwards. You will be able to change this by selecting the appropriate "edit variables" link from the Instrument Summary page.
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="js-variables-container">
-                            {% include "snippets/edit_variables.html" with standard_variables=standard_variables advanced_variables=advanced_variables instrument=instrument.name only %}
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="well well-sm">
-                            <div class="row">
-                                <div class="col-md-12"><h4>Additional Actions</h4></div>
-                            </div>
-                            <div class="row">
-                                <ul class="js-form-actions">
-                                    <li>
-                                        <a href="#currentScript" id="currentScript">Reset to values in current script</a>
-                                        <div class="js-explaination visible-xs-block">Reset all variables to those set in the script. This will pick up any changes made to the reduce_vars.py script.</div>
-                                    </li>
-                                    <div>
-                                        <input type="checkbox" name="track_script_checkbox" id="track_script_checkbox" {% if tracks_script %}checked{% endif %}>
-                                        <a href="#track_script" id="track_script"> Track script changes</a>
-                                        <div class="js-explaination visible-xs-block">Check this box to ensure that the reduce.py script used for these variables is always up to date with the one on the instrument</div>
-                                    </div>
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-12 js-action-explaination"></div>
-                        </div>
-                    </div>
+                    <div class="col-md-12 js-action-explaination"></div>
                 </div>
-                <div class="form-group variables-buttons">
-                    <div class="col-md-9 text-right">
-                        <a href="#cancelForm" class="btn btn-danger" id="cancelForm">Cancel</a>
-                        <input type="submit" value="Submit Changes" class="btn btn-success" id="variableSubmit" />
-                    </div>
-                </div>
-            </form>
+            </div>
+        </div>
+        <div class="form-group variables-buttons">
+            <div class="col-md-9 text-right">
+                <a href="#cancelForm" class="btn btn-danger" id="cancelForm">Cancel</a>
+                <input type="submit" value="Submit Changes" class="btn btn-success" id="variableSubmit"/>
+            </div>
+        </div>
+        </form>
 
             <div class="modal fade" id="default-variables-modal">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                            <button type="button" class="close" data-dismiss="modal"><span
+                                    aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
                             <h4 class="modal-title">Default Variables</h4>
                         </div>
                         <div class="modal-body">
@@ -146,7 +172,8 @@
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                            <button type="button" class="close" data-dismiss="modal"><span
+                                    aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
                             <h4 class="modal-title">Overwrite Existing Variables?</h4>
                         </div>
                         <div class="modal-body">

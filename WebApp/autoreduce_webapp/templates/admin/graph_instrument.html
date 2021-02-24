@@ -1,141 +1,34 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Graph</title>
+{% extends "base.html" %}
+{% block title %}Graph{% endblock %}
+{% load static %}
+
+{% block body %}
+    <h2>{{ instrument }} Graph</h2>
+    <div>
+        <canvas id="chart"></canvas>
+    </div>
+{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{% static "css/graphs.css" %}">
+{% endblock %}
+{% block scripts %}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.js"
             integrity="sha256-JG6hsuMjFnQ2spWq0UiaDRJBaarzhFbUxiUTxQDA9Lk="
             crossorigin="anonymous"></script>
-</head>
-<body>
-<div>
-    <canvas id="myChart"></canvas>
-</div>
-
-</body>
-<script>
-var ctx = document.getElementById("myChart").getContext('2d');
-
-var reductionRuns = [
-    {% for run in runs %}
-    {
-        'runNumber': '{{ run.run_number}}',
-        'runVersion': '{{ run.run_version}}',
-        'executionTime': '{{ run.run_time }}',
-        'status': '{{ run.status.value_verbose }}',
-        'created': '{{ run.created }}'
-    },
-    {% endfor %}
-];
-
-function getRunTitles(){
-    return reductionRuns.map(x => (x.runNumber + '-' + x.runVersion));
-}
-
-function getData() {
-    return reductionRuns.map(x => x.executionTime);
-
-}
-
-function getColours() {
-    function getColour(status){
-        var red = 'rgba(255, 10, 50, 0.7)';
-        var green = 'rgba(20, 255, 20, 0.7)';
-        if(status == 'Completed') {
-            return green;
-        } else {
-            return red;
-        }
-    }
-    return reductionRuns.map(x => getColour(x.status));
-}
-
-function getStatus(runTitle) {
-    var runNumber = runTitle.split('-')[0];
-    var runVersion = runTitle.split('-')[1];
-    return reductionRuns.filter(x => x.runNumber == runNumber && x.runVersion == runVersion).map(x => x.status);
-
-}
-
-function getCreated(runTitle) {
-    var runNumber = runTitle.split('-')[0];
-    var runVersion = runTitle.split('-')[1];
-    return reductionRuns.filter(x => x.runNumber == runNumber && x.runVersion == runVersion).map(x => x.created);
-
-}
-
-var myChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-        labels: getRunTitles(),
-        datasets: [{
-            label: 'Execution Time',
-            data: getData(),
-            backgroundColor: getColours(),
-            borderWidth: 2
-        }]
-
-    },
-    options: {
-        onClick: graphClickEvent,
-        scales: {
-            yAxes: [{
-                scaleLabel: {
-                    display: true,
-                    labelString: 'Execution time'
+    <script>
+        let instrument = "{{ instrument }}";
+        let reductionRuns = [
+            {% for run in runs %}
+                {
+                    'runNumber': '{{ run.run_number}}',
+                    'runVersion': '{{ run.run_version}}',
+                    'executionTime': '{{ run.run_time }}',
+                    'status': '{{ run.status.value_verbose }}',
+                    'created': '{{ run.created }}'
                 },
-                ticks: {
-                    beginAtZero: true,
-                    callback: function(value, index, values) {
-                        return value + ' secs';
-                    }
-                }
-            }],
-            xAxes: [{
-                stacked: false,
-                beginAtZero: true,
-                scaleLabel: {
-                    display: true,
-                    labelString: 'Run Number'
-                },
-                ticks: {
-                    autoSkip: false
-                }
-            }],
-        },
-        tooltips: {
-            mode: 'single',
-            callbacks: {
-                label: function(tooltipItem) {
-                    return tooltipItem.yLabel + ' seconds';
-                },
-
-                afterBody: function(tooltipItem) {
-                    var multistringText = ['Status: ' + getStatus(tooltipItem[0].xLabel)];
-                    multistringText.push('Created: ' + getCreated(tooltipItem[0].xLabel));
-                    return multistringText;
-                }
-            }
-        },
-          title: {
-            display: true,
-            text: '{{ instrument }} Reduction Runs'
-        },
-        legend: {
-            display: false
-         }
-    }
-});
-
-function graphClickEvent(evt) {
-    var activeElement = myChart.getElementAtEvent(evt);
-    // Check we're clicking on a bar
-    if(!activeElement.length){
-        return;
-    }
-    var label = activeElement[0]._model.label
-    var win = window.open('/runs/{{ instrument }}/' + label.replace('-', '/') + '/', '_blank');
-}
-
-</script>
-</html>
+            {% endfor %}
+        ];
+    </script>
+    <script src="{% static "javascript/graph_instrument.js" %}"></script>
+{% endblock %}

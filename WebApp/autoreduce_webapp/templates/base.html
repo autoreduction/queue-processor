@@ -1,40 +1,42 @@
 <!DOCTYPE html>
 {% load static %}
-<html>
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="shortcut icon" href="{% static "images/favicon.ico" %}" type="image/x-icon" />
-    <link rel="stylesheet" href="{% static "css/vendor/bootstrap.min.css" %}">
-    <link rel="stylesheet" href="{% static "css/vendor/font-awesome.min.css" %}">
-    <link rel="stylesheet" href="{% static "css/base.css" %}">
-    {% block stylesheets %}{% endblock %}
-</head>
+
+{% if outdated %}
+    {% include "outdated_browser.html" %}
+{% else %}
+    <html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>{% block title %}{% endblock %} - ISIS Auto-reduction</title>
+        <link rel="shortcut icon" href="{% static "images/favicon.ico" %}" type="image/x-icon"/>
+        <link rel="stylesheet" href="{% static "css/vendor/bootstrap.min.css" %}">
+        <link rel="stylesheet" href="{% static "css/vendor/font-awesome.min.css" %}">
+        <link rel="stylesheet" href="{% static "css/base.css" %}">
+        {% block stylesheets %}{% endblock %}
+    </head>
+
     <body>
-        {% if outdated %}
-            {% include "outdated_browser.html" %}
-        {% else %}
-            {% include "navbar.html" %}
-            <div class="container">
-                {% include "header.html" with notifications=notifications %}
-                {% block header %}{% endblock %}
-                <hr />
+        {% include "navbar.html" %}
+        <div class="container">
+            {% include "header.html" with notifications=notifications %}
+            {% block header %}{% endblock %}
+            <hr/>
 
-                <div class="main-content">
-                    {% block body %}{% endblock %}
-                </div>
-
-                {% block footer %}{% endblock %}
-                {% include "footer.html" %}
+            <div class="main-content">
+                {% block body %}{% endblock %}
             </div>
-            <script src="{% static "javascript/vendor/jquery.min.js" %}"></script>
-            <script src="{% static "javascript/vendor/bootstrap.min.js" %}"></script>
-            <script src="{% static "javascript/cookies.js" %}"></script>
-            <script src="{% static "javascript/polyfills.js" %}"></script>
-            <script src="{% static "javascript/base.js" %}"></script>
-            {% block scripts %}{% endblock %}
-            <title>ISIS Auto-reduction</title>
-        {% endif %}
+
+            {% block footer %}{% endblock %}
+            {% include "footer.html" %}
+        </div>
+        <script src="{% static "javascript/vendor/jquery.min.js" %}"></script>
+        <script src="{% static "javascript/vendor/bootstrap.min.js" %}"></script>
+        <script src="{% static "javascript/cookies.js" %}"></script>
+        <script src="{% static "javascript/polyfills.js" %}"></script>
+        <script src="{% static "javascript/base.js" %}"></script>
+        {% block scripts %}{% endblock %}
     </body>
-</html>
+    </html>
+{% endif %}

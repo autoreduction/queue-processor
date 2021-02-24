@@ -1,30 +1,27 @@
 {% load static %}
 
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <style>
         table {
             margin-left: 50px;
             padding: 10px;
-            border-collapse:separate;
-            border-spacing:1em;
-        }
-        th {
-            align: "center";
+            border-collapse: separate;
+            border-spacing: 1em;
         }
     </style>
     <meta charset="UTF-8">
-    <title>Browser not supported</title>
+    <title>Browser not supported - Autoreduction</title>
 </head>
 <body>
-    <section class="help-topic panel panel-default" data-topics="experiments mine investigations">
+    <section role="main" class="help-topic panel panel-default" data-topics="experiments mine investigations">
         <div class="panel-heading">
-            <h2>You are using an outdated browser.</h2>
+            <h1>You are using an outdated browser.</h1>
         </div>
         <div class="panel-body">
             <p>
-                Unfortunately, you are using a browser which is outdated and is not supported by the Autoreduction service.
+                Unfortunately, you are using a browser which is outdated and is not supported by the Autoreduction
+                service.
                 This means that you are unable to access the Autoreduction service.
             </p>
             <p>
@@ -35,7 +32,7 @@
                 <li><b>Version:</b> {{ version }}</li>
             </ul>
             <p>
-                You can read more about up to date browers <a href="http://outdatedbrowser.com/en">here</a>. You can also
+                <a href="http://outdatedbrowser.com/en">Read more about up to date browsers </a>. You can also
                 click the links below to be taken directly to the download page for the latest browsers. Note that
                 Microsoft Edge is only available to Windows 10 users.
             </p>
@@ -66,7 +63,7 @@
             </td>
             <td style="text-align: center">
                 <a href="https://www.microsoft.com/en-gb/windows/microsoft-edge">
-                    <img src="/static/images/edge.png" alt="Chrome Logo" style="width:150px;height:150px;">
+                    <img src="/static/images/edge.png" alt="Edge Logo" style="width:150px;height:150px;">
                 </a>
             </td>
         </tr>

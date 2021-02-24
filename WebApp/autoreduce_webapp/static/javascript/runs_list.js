@@ -1,8 +1,9 @@
-(function(){
+(function () {
     function setProgressCursor(elem) {
         elem.css('cursor', 'progress');
         $('body').css('cursor', 'progress');
     }
+
     function setDefaultCursor(elem) {
         elem.css('cursor', '');
         $('body').css('cursor', '');
@@ -31,3 +32,10 @@
 
     init();
 }())
+
+function changePage(page) {
+    let paginationChoice = document.getElementById("pagination_select").value;
+    let filterChoice = document.getElementById("filter_select").value;
+    let sortChoice = document.getElementById("sort_select").value
+    document.location.href = window.location.origin + window.location.pathname + '?page=' + arguments[0] + '&filter=' + filterChoice + '&pagination=' + paginationChoice + '&sort=' + sortChoice;
+}

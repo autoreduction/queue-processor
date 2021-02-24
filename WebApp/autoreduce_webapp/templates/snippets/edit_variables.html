@@ -3,18 +3,26 @@
 <input type="hidden" id="updateURL" value="{% url 'instrument:current_default_variables' instrument=instrument %}"/>
 {% for name,variable in standard_variables.items %}
     <div class="form-group">
-        <label for="var-standard-{{variable.sanitized_name}}" class="control-label col-md-3">
-            {{variable.name}}
+        <label for="var-standard-{{ variable.sanitized_name }}" class="control-label col-md-3">
+            {{ variable.name }}
             {% if variable.help_text %}
-                <a href="#" data-toggle="popover" data-html="true" data-content="{{ variable.help_text }}" data-trigger="hover click focus" data-placement="top" data-container="body"><i class="fa fa-info-circle"></i></a>
+                <a href="#" data-toggle="popover" data-html="true" data-content="{{ variable.help_text }}"
+                   data-trigger="hover click focus" data-placement="top" data-container="body">
+                    <i class="fa fa-info-circle"></i>
+                </a>
             {% endif %}
         </label>
         <div class="col-md-9">
             {% if variable.type == 'boolean' %}
-                <input id="var-standard-{{variable.sanitized_name}}" name="checkbox-{{variable.sanitized_name}}" type="{% variable_type variable.type %}" data-type="{{variable.type}}" value="{{variable.value}}" {% if variable.value.lower == 'true' %}checked{%endif%}/>
-                <input name="var-standard-{{variable.sanitized_name}}" type="hidden" data-type="{{variable.type}}" value="{{variable.value}}" />
+                <input id="var-standard-{{ variable.sanitized_name }}" name="checkbox-{{ variable.sanitized_name }}"
+                       type="{% variable_type variable.type %}" data-type="{{ variable.type }}"
+                       value="{{ variable.value }}" {% if variable.value.lower == 'true' %}checked{% endif %}/>
+                <input name="var-standard-{{ variable.sanitized_name }}" type="hidden" data-type="{{ variable.type }}"
+                       value="{{ variable.value }}"/>
             {% else %}
-                <input id="var-standard-{{variable.sanitized_name}}" name="var-standard-{{variable.sanitized_name}}" type="{% variable_type variable.type %}" data-type="{{variable.type}}" value="{{variable.value}}" class="form-control" />
+                <input id="var-standard-{{ variable.sanitized_name }}" name="var-standard-{{ variable.sanitized_name }}"
+                       type="{% variable_type variable.type %}" data-type="{{ variable.type }}"
+                       value="{{ variable.value }}" class="form-control"/>
             {% endif %}
         </div>
     </div>
@@ -22,23 +30,39 @@
 {% if advanced_variables %}
     <div class="panel panel-default">
         <div class="panel-heading">
-          <div class="panel-title"><a data-toggle="collapse" href="#toggleVariables" data-target="#advanced_variables"><i class="fa fa-chevron-right"></i> Advanced Variables</a></div>
+            <div class="panel-title">
+                <a data-toggle="collapse" href="#toggleVariables"
+                   data-target="#advanced_variables">
+                    <i class="fa fa-chevron-right"></i>Advanced Variables
+                </a>
+            </div>
         </div>
         <div class="panel-body collapse" id="advanced_variables">
             {% for name,variable in advanced_variables.items %}
                 <div class="form-group">
-                    <label for="var-advanced-{{variable.sanitized_name}}" class="control-label col-md-3">
-                        {{variable.name}}
+                    <label for="var-advanced-{{ variable.sanitized_name }}" class="control-label col-md-3">
+                        {{ variable.name }}
                         {% if variable.help_text %}
-                            <a href="#" data-toggle="popover" data-html="true" data-content="{{ variable.help_text }}" data-trigger="hover click focus" data-placement="top" data-container="body"><i class="fa fa-info-circle"></i></a>
+                            <a href="#" data-toggle="popover" data-html="true" data-content="{{ variable.help_text }}"
+                               data-trigger="hover click focus" data-placement="top" data-container="body">
+                                <i class="fa fa-info-circle"></i>
+                            </a>
                         {% endif %}
                     </label>
                     <div class="col-md-9">
                         {% if variable.type == 'boolean' %}
-                            <input id="var-advanced-{{variable.sanitized_name}}" name="checkbox-{{variable.sanitized_name}}" type="{% variable_type variable.type %}" data-type="{{variable.type}}" value="{{variable.value}}" {% if variable.value.lower == 'true' %}checked{%endif%}/>
-                            <input name="var-advanced-{{variable.sanitized_name}}" type="hidden" data-type="{{variable.type}}" value="{{variable.value}}" />
+                            <input id="var-advanced-{{ variable.sanitized_name }}"
+                                   name="checkbox-{{ variable.sanitized_name }}"
+                                   type="{% variable_type variable.type %}" data-type="{{ variable.type }}"
+                                   value="{{ variable.value }}"
+                                   {% if variable.value.lower == 'true' %}checked{% endif %}/>
+                            <input name="var-advanced-{{ variable.sanitized_name }}" type="hidden"
+                                   data-type="{{ variable.type }}" value="{{ variable.value }}"/>
                         {% else %}
-                            <input id="var-advanced-{{variable.sanitized_name}}" name="var-advanced-{{variable.sanitized_name}}" type="{% variable_type variable.type %}" data-type="{{variable.type}}" value="{{variable.value}}" class="form-control" />
+                            <input id="var-advanced-{{ variable.sanitized_name }}"
+                                   name="var-advanced-{{ variable.sanitized_name }}"
+                                   type="{% variable_type variable.type %}" data-type="{{ variable.type }}"
+                                   value="{{ variable.value }}" class="form-control"/>
                         {% endif %}
                     </div>
                 </div>

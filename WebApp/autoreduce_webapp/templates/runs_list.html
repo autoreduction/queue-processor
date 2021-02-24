@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% block title %}{{ instrument_name|default:"Instrument not found" }}{% endblock %}
 {% load view %}
 {% load static %}
 {% load colour_table_rows %}
@@ -9,7 +10,6 @@
             {{ message }}
         </div>
     {% else %}
-        <title>{{ instrument_name }}</title>
         <!-- Instrument Name -->
         <div class="row">
             <div class="col-md-12 text-center">
@@ -74,7 +74,7 @@
             <!-- Filter , Sort and Pagination options -->
             <form action="{{ request.path }}" method="get" id="filter_options">
                 <div class="col-md-3">
-                    <h3>Filter by</h3>
+                    <label for="filter_select">Filter by: </label>
                     <select class="form-control" name="filter" form="filter_options"
                             id="filter_select">
                         <option value="run" title="Display run numbers"
@@ -88,7 +88,7 @@
                 </div>
 
                 <div class="col-md-3">
-                    <h3>Sort by</h3>
+                    <label for="sort_select">Sort by</label>
                     <select class="form-control" name="sort" form="filter_options" id="sort_select">
                         <option value="run" {% if sort == 'run' %}selected="selected"{% endif %}>
                             Number
@@ -102,7 +102,7 @@
 
                 {% if filtering == 'run' %}
                     <div class="col-md-3">
-                        <h3>Items per page</h3>
+                        <label for="pagination_select">Items per page</label>
                         <select title="The number of reduction jobs that should be shown per page"
                                 class="form-control" name="pagination" form="filter_options"
                                 id="pagination_select">
@@ -143,7 +143,7 @@
                     {% endif %}
                 <div class="col-md-5 col-sm-5 col-md-offset-1 col-xs-4"><a
                         href="{% url 'runs:summary' instrument_name=instrument_name run_number=run.run_number run_version=run.run_version %}"
-                        id="top-run-number" class="run-num-links">{{ run.title }}</a></div>
+                        {% if forloop.first %} id="top-run-number" {% endif %} class="run-num-links">{{ run.title }}</a></div>
                 <div class="col-md-2 col-sm-2 col-xs-4 run-status text-{% colour_table_row run.status.value_verbose %}">
                     <strong>{{ run.status.value_verbose }}</strong></div>
                 <div class="col-md-4 col-sm-5 col-xs-4"><strong>Last
@@ -242,15 +242,7 @@
     {% if preload_runs %}
         <script>window.preload_runs = true;</script>
     {% endif %}
-    <script>
-        function changePage(page) {
-            var pagination_choice = document.getElementById("pagination_select").value;
-            var filter_choice = document.getElementById("filter_select").value;
-            var sort_choice = document.getElementById("sort_select").value
-            var new_url = window.location.origin + window.location.pathname + '?page=' + arguments[0] + '&filter=' + filter_choice + '&pagination=' + pagination_choice + '&sort=' + sort_choice;
-            document.location.href = new_url;
-        }
-    </script>
+
     <script src="{% static "javascript/pause_instrument.js" %}"></script>
     <script src="{% static "javascript/instrument_variables.js" %}"></script>
     <script src="{% static "javascript/runs_list.js" %}"></script>

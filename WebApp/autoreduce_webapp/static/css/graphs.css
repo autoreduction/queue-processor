@@ -1,0 +1,12 @@
+#list-container {
+    width: 500px;
+}
+
+.instrument-graph-input-row {
+    margin-top: 20px;
+}
+
+input[type~="number"] {
+    width: 50px;
+    margin-left: 10px;
+}
