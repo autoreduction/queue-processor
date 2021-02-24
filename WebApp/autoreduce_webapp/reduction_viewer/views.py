@@ -181,8 +181,6 @@ def fail_queue(request):
                     if run_version != highest_version:
                         continue  # do not run multiples of the same run
 
-                    ReductionRunUtils().cancelRun(reduction_run)
-                    reduction_run.cancel = False
                     new_job = ReductionRunUtils().createRetryRun(user_id=request.user.id, reduction_run=reduction_run)
 
                     try:
@@ -191,9 +189,6 @@ def fail_queue(request):
                     except Exception as exception:
                         new_job.delete()
                         raise exception
-
-                elif action == "cancel":
-                    ReductionRunUtils().cancelRun(reduction_run)
 
                 elif action == "default":
                     pass
