@@ -580,12 +580,6 @@ class MessagingUtils(object):
         message = self._make_pending_msg(reduction_run)
         self._send_pending_msg(message, delay)
 
-    def send_cancel(self, reduction_run):
-        """ Sends a message to the queue telling it to cancel any reruns of the job. """
-        message = self._make_pending_msg(reduction_run)
-        message.cancel = True
-        self._send_pending_msg(message)
-
     @staticmethod
     def _make_pending_msg(reduction_run):
         """ Creates a Message from the given run, ready to be sent to ReductionPending. """
