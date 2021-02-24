@@ -31,7 +31,7 @@ setup_requires = [
     'gitpython==3.1.13',
     'nexusformat==0.6.0',
     'numpy==1.19.2',
-    'pandas==1.1.5',
+    'pandas==1.2.2',
     'plotly==4.14.3',
     'pytz==2021.1',
     'PyMySQL==1.0.2',
