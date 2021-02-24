@@ -71,12 +71,12 @@
             </div>
         </div>
     {% else %}
-        <div class="row">
+        <div class="row" id="error_container">
             <div class="col-md-8 col-md-offset-2">
                 <div class="alert alert-danger">
                     <div class="row">
                         <div class="col-md-12 text-center">
-                            {{ error }} <a href="#back">Go Back</a>
+                            <span id="error_message">{{ error }}</span><a href="#back">Go Back</a>
                         </div>
                     </div>
                 </div>
