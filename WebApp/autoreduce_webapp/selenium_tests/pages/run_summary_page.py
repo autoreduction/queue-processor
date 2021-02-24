@@ -91,7 +91,7 @@ class RunSummaryPage(Page, NavbarMixin, FooterMixin, TourMixin):
     @property
     def reset_to_current_values(self) -> WebElement:
         """
-        Finds and returns the "Reset to current script and values" button
+        Finds and returns the "Reset to values in the current reduce_vars script" button
         """
         return self.driver.find_element_by_id("currentScript")
 
