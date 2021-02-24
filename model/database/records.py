@@ -25,7 +25,6 @@ def create_reduction_run_record(experiment, instrument, message, run_version, sc
     reduction_run = data_model.ReductionRun(run_number=message.run_number,
                                             run_version=run_version,
                                             run_name='',
-                                            cancel=0,
                                             hidden_in_failviewer=0,
                                             admin_log='',
                                             reduction_log='',
