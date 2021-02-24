@@ -24,7 +24,6 @@
                     <option value="default">Select action to apply to selected runs</option>
                     <option value="rerun">Re-run</option>
                     <option value="hide">Hide</option>
-                    <option value="cancel">Cancel retry</option>
                 </select>
                 <form id="actionForm" method="POST" action="{% url 'runs:failed' %}"
                       style="float: left; padding-left: 5px;">
@@ -45,7 +44,6 @@
                         <th>Instrument</th>
                         <th>Message</th>
                         <th>Submitted</th>
-                        <th>Retrying</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -73,22 +71,7 @@
                         <td>{{ job.instrument.name }}</td>
                         <td style="width:600px;"><strong>{{ job.message }}</strong></td>
                         <td title="{{ job.created|date:'SHORT_DATETIME_FORMAT' }}">{{ job.created|naturaltime }}</td>
-                        <td>
-                            {% if job.retry_when %}
-                                {{ job.retry_when|naturaltime }}
-                                {% if job.cancel %}
-                                    <span> (Last attempt)</span>
-                                {% endif %}
-                                {% if job.retry_run %}
-                                    <a href="{% url 'runs:summary' instrument_name=job.instrument.name run_number=job.retry_run.run_number run_version=job.retry_run.run_version %}">
-                                        ({{ job.retry_run.status.value_verbose }})
-                                    </a>
-                                {% endif %}
-                            {% else %}
-                                Never
-                            {% endif %}
-                        </td>
-                    {% endfor %}
+                                           {% endfor %}
                 </tbody>
             </table>
         </div>
