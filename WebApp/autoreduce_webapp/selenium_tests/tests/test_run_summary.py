@@ -49,34 +49,22 @@ class TestRunSummaryPage(BaseTestCase):
     def test_reduction_job_panel_reset_to_values_first_used_for_run(self):
         """Test that the button to reset the variables to the values first used for the run works"""
         self.page.toggle_button.click()
-        var_field = self.page.variable1_field
-        var_field.clear()
-
-        new_value = "the new value in the field"
-        var_field.send_keys(new_value)
-        assert var_field.get_attribute("value") == new_value
+        self.page.variable1_field = "the new value in the field"
 
         self.page.reset_to_initial_values.click()
 
         # need to re-query the driver because resetting replaces the elements
-        var_field = self.page.variable1_field
-        assert var_field.get_attribute("value") == "value1"
+        assert self.page.variable1_field.get_attribute("value") == "value1"
 
     def test_reduction_job_panel_reset_to_current_reduce_vars(self):
         """Test that the button to reset the variables to the values from the reduce_vars script works"""
         self.page.toggle_button.click()
-        var_field = self.page.variable1_field
-        var_field.clear()
-
-        new_value = "the new value in the field"
-        var_field.send_keys(new_value)
-        assert var_field.get_attribute("value") == new_value
+        self.page.variable1_field = "the new value in the field"
 
         self.page.reset_to_current_values.click()
 
         # need to re-query the driver because resetting replaces the elements
-        var_field = self.page.variable1_field
-        assert var_field.get_attribute("value") == "test_variable_value_123"
+        assert self.page.variable1_field.get_attribute("value") == "test_variable_value_123"
 
     def test_rerun_form(self):
         """

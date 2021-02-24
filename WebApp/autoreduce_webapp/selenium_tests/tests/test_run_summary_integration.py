@@ -31,7 +31,6 @@ class TestRunSummaryPageIntegration(NavbarTestMixin, BaseTestCase, FooterTestMix
     def setUpClass(cls):
         """ Start all external services """
         super().setUpClass()
-        # Get all clients
         cls.database_client = DatabaseClient()
         cls.database_client.connect()
         try:
@@ -40,8 +39,6 @@ class TestRunSummaryPageIntegration(NavbarTestMixin, BaseTestCase, FooterTestMix
             raise RuntimeError("Could not connect to ActiveMQ - check you credentials. If running locally check that "
                                "ActiveMQ is running and started by `python setup.py start`") from err
 
-        # Add placeholder variables:
-        # these are used to ensure runs are deleted even if test fails before completion
         cls.instrument_name = "TestInstrument"
         cls.rb_number = 1234567
         cls.run_number = 99999
@@ -121,10 +118,7 @@ class TestRunSummaryPageIntegration(NavbarTestMixin, BaseTestCase, FooterTestMix
         Test: Open submit page, change a variable, submit the run
         """
         # change the value of the variable field
-        var_field = self.page.variable1_field
-        var_field.clear()
-        new_value = "the new value in the field"
-        var_field.send_keys(new_value)
+        self.page.variable1_field = "the new value in the field"
 
         self.page.submit_button.click()
         result = self.wait_for_result()
@@ -145,10 +139,7 @@ class TestRunSummaryPageIntegration(NavbarTestMixin, BaseTestCase, FooterTestMix
         will correctly use the initial values
         """
         # change the value of the variable field
-        var_field = self.page.variable1_field
-        var_field.clear()
-        new_value = "the new value in the field"
-        var_field.send_keys(new_value)
+        self.page.variable1_field = "the new value in the field"
 
         self.page.reset_to_initial_values.click()
         self.submit_after_reset()
@@ -190,3 +181,7 @@ class TestRunSummaryPageIntegration(NavbarTestMixin, BaseTestCase, FooterTestMix
         self.page.submit_button.click()
         expected_url = reverse("run_confirmation", kwargs={"instrument": self.instrument_name})
         assert expected_url in self.driver.current_url
+        # wait until the message processing is complete before ending the test
+        # otherwise the message handling can polute the DB state for the next test
+        result = self.wait_for_result()
+        assert len(result) == 2

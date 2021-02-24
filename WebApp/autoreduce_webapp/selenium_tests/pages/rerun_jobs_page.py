@@ -47,8 +47,8 @@ class RerunJobsPage(Page, NavbarMixin, FooterMixin, TourMixin):
         return self
 
     @property
-    def reduction_job_panel(self) -> WebElement:
-        return self.driver.find_element_by_id("reduction_job_panel")
+    def form_validation_message(self) -> WebElement:
+        return self.driver.find_element_by_id("form_validation_message")
 
     @property
     def form(self) -> WebElement:
@@ -68,6 +68,16 @@ class RerunJobsPage(Page, NavbarMixin, FooterMixin, TourMixin):
         Finds and returns the back button for toggling the form on the page.
         """
         return self.driver.find_element_by_id("run_range")
+
+    @run_range_field.setter
+    def run_range_field(self, value) -> None:
+        """
+        Finds and returns the back button for toggling the form on the page.
+        """
+        var_field = self.run_range_field
+        var_field.clear()
+        new_value = value
+        var_field.send_keys(new_value)
 
     @property
     def cancel_button(self) -> WebElement:
@@ -89,3 +99,15 @@ class RerunJobsPage(Page, NavbarMixin, FooterMixin, TourMixin):
         Finds and returns the variabl1 input field
         """
         return self.driver.find_element_by_id("var-standard-variable1")
+
+    @variable1_field.setter
+    def variable1_field(self, value):
+        """
+        Clears the field and sends the keys to the input field.
+
+        Selenium requires that we clear the field first!
+        """
+        var_field = self.variable1_field
+        var_field.clear()
+        new_value = value
+        var_field.send_keys(new_value)

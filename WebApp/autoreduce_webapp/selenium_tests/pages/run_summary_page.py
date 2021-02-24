@@ -101,3 +101,16 @@ class RunSummaryPage(Page, NavbarMixin, FooterMixin, TourMixin):
         Finds and returns the variabl1 input field
         """
         return self.driver.find_element_by_id("var-standard-variable1")
+
+    @variable1_field.setter
+    def variable1_field(self, value) -> None:
+        """
+        Clears the field and sends the keys to the input field.
+
+        Selenium requires that we clear the field first!
+        """
+        var_field = self.variable1_field
+        var_field.clear()
+        new_value = value
+        var_field.send_keys(new_value)
+        assert var_field.get_attribute("value") == new_value
