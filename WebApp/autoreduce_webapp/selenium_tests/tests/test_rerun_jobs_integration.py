@@ -122,7 +122,8 @@ class TestRerunJobsPageIntegration(BaseTestCase):
 
     def test_submit_rerun_after_clicking_reset_current_script(self):
         """
-        Test: Submitting a run after clicking the reset to current script uses the values saved in the current script
+        Test: Submitting a run after clicking the "Reset to values in the current reduce_vars script"
+              uses the values saved in the current reduce_vars script
         """
         self.page.reset_to_current_values.click()
         self.submit_after_reset()
