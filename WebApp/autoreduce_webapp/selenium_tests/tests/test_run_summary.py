@@ -84,7 +84,7 @@ class TestRunSummaryPage(BaseTestCase):
         """
         Test: Clicking back goes back to the instrument
         """
-        back = self.page.back_button
+        back = self.page.cancel_button
         assert back.is_displayed()
         assert back.text == f"Back to {self.instrument_name} runs"
         back.click()
