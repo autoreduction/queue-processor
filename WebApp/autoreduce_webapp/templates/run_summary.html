@@ -113,9 +113,6 @@
                                     {% if run.finished %}
                                         {% if run.retry_when %}
                                             {{ run.retry_when|naturaltime }}
-                                            {% if run.cancel %}
-                                                <span> (Last attempt)</span>
-                                            {% endif %}
                                             {% if run.retry_run %}
                                                 <a href="{% url 'runs:summary' instrument_name=run.instrument.name run_number=run.retry_run.run_number run_version=run.retry_run.run_version %}">
                                                     ({{ run.retry_run.status.value_verbose }})</a>
