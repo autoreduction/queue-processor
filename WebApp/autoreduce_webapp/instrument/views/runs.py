@@ -214,7 +214,7 @@ def configure_new_runs(request, instrument=None, start=0, end=0, experiment_refe
     if request.method == 'POST':
         return configure_new_runs_POST(request, instrument_name, start, end, experiment_reference)
     else:
-        return configure_new_runs_GET(request, instrument, start, end, experiment_reference)
+        return configure_new_runs_GET(instrument, start, end, experiment_reference)
 
 
 def configure_new_runs_POST(request, instrument_name, start=0, end=0, experiment_reference=0):
@@ -280,7 +280,7 @@ def configure_new_runs_POST(request, instrument_name, start=0, end=0, experiment
     return redirect('instrument:variables_summary', instrument=instrument_name)
 
 
-def configure_new_runs_GET(request, instrument_name, start=0, end=0, experiment_reference=0):
+def configure_new_runs_GET(instrument_name, start=0, end=0, experiment_reference=0):
     instrument = Instrument.objects.get(name__iexact=instrument_name)
 
     editing = (start > 0 or experiment_reference > 0)  # TODO what is this for?
@@ -288,9 +288,9 @@ def configure_new_runs_GET(request, instrument_name, start=0, end=0, experiment_
     try:
         last_run = instrument.reduction_runs.exclude(status=STATUS.get_skipped()).last()
     except AttributeError:
-        # TODO this instrument hasn't had a non-skipped run so what do
-        last_run = 0
-        raise ValueError("TODO implement me")
+        # TODO this instrument hasn't had a non-skipped run so what do we do?
+        # context_dictionary["error"] = "All previous runs have been skipped." # ?
+        raise NotImplementedError("TODO this branch")
 
     current_variables = ReductionRunUtils.make_kwargs_from_runvariables(last_run)
     standard_vars = current_variables["standard_vars"]
@@ -305,17 +305,12 @@ def configure_new_runs_GET(request, instrument_name, start=0, end=0, experiment_
     # This should probably be done by the POST method anyway.. so remove it
     upcoming_run_variables = ','.join(list(set([str(var.start_run) for var in upcoming_variables])))
 
-    # TODO get default vars from reduce_vars.py
-    # default_variables = InstrumentVariablesUtils().get_default_variables(instrument.name)
-    # default_standard_variables = {}
-    # default_advanced_variables = {}
-    # for variable in default_variables:
-    #     if variable.is_advanced:
-    #         default_advanced_variables[variable.name] = variable
-    #     else:
-    #         default_standard_variables[variable.name] = variable
+    current_variables = VariableUtils.get_default_variables(instrument)
+    current_standard_variables = current_variables["standard_vars"]
+    current_advanced_variables = current_variables["advanced_vars"]
     min_run_start = last_run.run_number
     run_start = min_run_start + 1 if start == 0 else start
+    # experiment_reference = experiment_reference if experiment_reference>0 else last_run.experiment.reference_number
 
     context_dictionary = {
         'instrument': instrument,
@@ -324,8 +319,8 @@ def configure_new_runs_GET(request, instrument_name, start=0, end=0, experiment_
         'queued': ReductionRun.objects.filter(instrument=instrument, status=STATUS.get_queued()),
         'standard_variables': standard_vars,
         'advanced_variables': advanced_vars,
-        'default_standard_variables': standard_vars,
-        'default_advanced_variables': advanced_vars,
+        'current_standard_variables': current_standard_variables,
+        'current_advanced_variables': current_advanced_variables,
         'run_start': run_start,
         'run_end': end,
         'experiment_reference': experiment_reference,
