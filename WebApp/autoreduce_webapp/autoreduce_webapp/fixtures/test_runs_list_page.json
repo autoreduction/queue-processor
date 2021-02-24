@@ -10,7 +10,6 @@
       "created": "2020-10-19 17:30:04+00:00",
       "reduction_log": "test_log",
       "admin_log": "log",
-      "cancel": 0,
       "hidden_in_failviewer": 0,
       "experiment_id": 1,
       "instrument_id": 1
