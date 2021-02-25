@@ -89,44 +89,53 @@ class TestConfigureNewRunsPageIntegration(BaseTestCase):
             time.sleep(1)
             self.page.submit_button.click()
 
-    # def test_submit_submit_same_variables_does_not_add_new_variables(self):
-    #     """
-    #     Test: Just opening the submit page and clicking rerun
-    #     """
-    #     self.page.submit_button.click()
-    #     assert InstrumentVariable.objects.count() == 1
+    def _submit_var_value(self, value, start=None, end=None, experiment_number=None):
+        self.page = ConfigureNewRunsPage(self.driver,
+                                         self.instrument_name,
+                                         run_start=start,
+                                         run_end=end,
+                                         experiment_reference=experiment_number)
+        self.page.launch()
+        self.page.variable1_field = value
+        self.page.submit_button.click()
 
-    #     summary = VariableSummaryPage(self.driver, self.instrument_name)
-    #     assert summary.current_variables_by_run.is_displayed()
+    def test_submit_submit_same_variables_does_not_add_new_variables(self):
+        """
+        Test: Just opening the submit page and clicking rerun
+        """
+        self.page = ConfigureNewRunsPage(self.driver, self.instrument_name, run_start=self.run_number + 1)
+        self.page.launch()
+        self.page.submit_button.click()
+        assert InstrumentVariable.objects.count() == 1
 
-    #     with self.assertRaises(NoSuchElementException):
-    #         summary.upcoming_variables_by_run.is_displayed()
-    #     with self.assertRaises(NoSuchElementException):
-    #         summary.upcoming_variables_by_experiment.is_displayed()
+        summary = VariableSummaryPage(self.driver, self.instrument_name)
+        assert summary.current_variables_by_run.is_displayed()
 
-    # def test_submit_new_value(self):
-    #     """
-    #     Test: Just opening the submit page and clicking rerun
-    #     """
-    #     self.page.variable1_field = "new_value"
-    #     self.page.submit_button.click()
-    #     assert InstrumentVariable.objects.count() == 2
-    #     new_var = InstrumentVariable.objects.last()
-    #     assert new_var.start_run == self.run_number + 1
-    #     assert new_var.value == "new_value"
+        with self.assertRaises(NoSuchElementException):
+            summary.upcoming_variables_by_run.is_displayed()
+        with self.assertRaises(NoSuchElementException):
+            summary.upcoming_variables_by_experiment.is_displayed()
 
-    #     summary = VariableSummaryPage(self.driver, self.instrument_name)
-    #     assert summary.current_variables_by_run.is_displayed()
-    #     assert summary.upcoming_variables_by_run.is_displayed()
+    def test_submit_new_value(self):
+        """
+        Test: Just opening the submit page and clicking rerun
+        """
+        self._submit_var_value("new_value", self.run_number + 1)
+        assert InstrumentVariable.objects.count() == 2
+        new_var = InstrumentVariable.objects.last()
+        assert new_var.start_run == self.run_number + 1
+        assert new_var.value == "new_value"
 
-    #     with self.assertRaises(NoSuchElementException):
-    #         summary.upcoming_variables_by_experiment.is_displayed()
+        summary = VariableSummaryPage(self.driver, self.instrument_name)
+        assert summary.current_variables_by_run.is_displayed()
+        assert summary.upcoming_variables_by_run.is_displayed()
+
+        with self.assertRaises(NoSuchElementException):
+            summary.upcoming_variables_by_experiment.is_displayed()
 
     def test_submit_experiment_var(self):
-        self.page = ConfigureNewRunsPage(self.driver, self.instrument_name, experiment_reference=self.rb_number)
-        self.page.launch()
-        self.page.variable1_field = "new_value"
-        self.page.submit_button.click()
+        self._submit_var_value("new_value", experiment_number=self.rb_number)
+
         assert InstrumentVariable.objects.count() == 2
         new_var = InstrumentVariable.objects.last()
         assert new_var.start_run is None
@@ -142,14 +151,8 @@ class TestConfigureNewRunsPageIntegration(BaseTestCase):
 
     def test_submit_multiple_run_ranges(self):
         """Test submitting variables for multiple run ranges, and that they show up correctly in 'see instrument variablers'"""
-        self.page = ConfigureNewRunsPage(self.driver, self.instrument_name, run_start=self.run_number)
-        self.page.launch()
-        self.page.variable1_field = "new_value"
-        self.page.submit_button.click()
-        self.page = ConfigureNewRunsPage(self.driver, self.instrument_name, run_start=self.run_number + 100)
-        self.page.launch()
-        self.page.variable1_field = "the newest value"
-        self.page.submit_button.click()
+        self._submit_var_value("new_value", self.run_number + 1)
+        self._submit_var_value("the newest value", self.run_number + 101)
 
         assert InstrumentVariable.objects.count() == 3
         first_var, second_var, third_var = InstrumentVariable.objects.all()
@@ -167,21 +170,42 @@ class TestConfigureNewRunsPageIntegration(BaseTestCase):
 
         summary = VariableSummaryPage(self.driver, self.instrument_name)
         assert summary.current_variables_by_run.is_displayed()
-        assert summary.upcoming_variables_by_experiment.is_displayed()
+        assert summary.upcoming_variables_by_run.is_displayed()
 
         with self.assertRaises(NoSuchElementException):
-            summary.upcoming_variables_by_run.is_displayed()
+            assert summary.upcoming_variables_by_experiment.is_displayed()
+
+    def test_submit_multiple_run_ranges_with_ends(self):
+        """Test submitting variables for multiple run ranges, and that they show up correctly in 'see instrument variablers'"""
+        self._submit_var_value("new_value", self.run_number + 1, self.run_number + 101)
+        self._submit_var_value("the newest value", self.run_number + 201, self.run_number + 401)
+
+        assert InstrumentVariable.objects.count() == 5
+        first_var, second_var, third_var, fourth_var, fifth_var = InstrumentVariable.objects.all()
+        assert first_var.start_run == self.run_number
+        assert first_var.experiment_reference is None
+        assert first_var.value == "value1"
+
+        assert second_var.start_run == self.run_number + 1
+        assert second_var.experiment_reference is None
+        assert second_var.value == "new_value"
+
+        assert third_var.start_run == self.run_number + 102
+        assert third_var.experiment_reference is None
+        assert third_var.value == "test_variable_value_123"  # back to the default value from the reduce_vars!
+
+        assert fourth_var.start_run == self.run_number + 201
+        assert fourth_var.experiment_reference is None
+        assert fourth_var.value == "the newest value"
+
+        assert fifth_var.start_run == self.run_number + 402
+        assert fifth_var.experiment_reference is None
+        assert fifth_var.value == "test_variable_value_123"  # back to the default value from the reduce_vars!
 
     def test_submit_multiple_experiments(self):
         """Test submitting vars for multiple experiments"""
-        self.page = ConfigureNewRunsPage(self.driver, self.instrument_name, experiment_reference=self.rb_number)
-        self.page.launch()
-        self.page.variable1_field = "new_value"
-        self.page.submit_button.click()
-        self.page = ConfigureNewRunsPage(self.driver, self.instrument_name, experiment_reference=self.rb_number + 100)
-        self.page.launch()
-        self.page.variable1_field = "the newest value"
-        self.page.submit_button.click()
+        self._submit_var_value("new_value", experiment_number=self.rb_number)
+        self._submit_var_value("the newest value", experiment_number=self.rb_number + 100)
 
         assert InstrumentVariable.objects.count() == 3
         first_var, second_var, third_var = InstrumentVariable.objects.all()
