@@ -56,6 +56,10 @@ class ConfigureNewRunsPage(Page, RerunFormMixin, NavbarMixin, FooterMixin, TourM
     def run_start(self) -> WebElement:
         return self.driver.find_element_by_id("run_start")
 
+    @property
+    def run_start_val(self) -> WebElement:
+        return self.driver.find_element_by_id("run_start").get_attribute("value")
+
     @run_start.setter
     def run_start(self, value):
         self._set_field(self.run_start, value)
@@ -64,6 +68,10 @@ class ConfigureNewRunsPage(Page, RerunFormMixin, NavbarMixin, FooterMixin, TourM
     def run_end(self) -> WebElement:
         return self.driver.find_element_by_id("run_end")
 
+    @property
+    def run_end_val(self) -> WebElement:
+        return self.driver.find_element_by_id("run_end").get_attribute("value")
+
     @run_end.setter
     def run_end(self, value):
         self._set_field(self.run_end, value)
@@ -71,6 +79,10 @@ class ConfigureNewRunsPage(Page, RerunFormMixin, NavbarMixin, FooterMixin, TourM
     @property
     def experiment_reference_number(self) -> WebElement:
         return self.driver.find_element_by_id("experiment_reference_number")
+
+    @property
+    def experiment_reference_number_val(self) -> WebElement:
+        return self.driver.find_element_by_id("experiment_reference_number").get_attribute("value")
 
     @experiment_reference_number.setter
     def experiment_reference_number(self, value):

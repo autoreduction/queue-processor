@@ -35,6 +35,13 @@ class RerunFormMixin:
         """
         return self.driver.find_element_by_id("var-standard-variable1")
 
+    @property
+    def variable1_field_val(self) -> WebElement:
+        """
+        Finds and returns the variabl1 input field
+        """
+        return self.driver.find_element_by_id("var-standard-variable1").get_attribute("value")
+
     @variable1_field.setter
     def variable1_field(self, value) -> None:
         """
