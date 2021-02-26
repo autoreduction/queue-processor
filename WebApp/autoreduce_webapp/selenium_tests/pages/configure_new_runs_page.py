@@ -98,3 +98,7 @@ class ConfigureNewRunsPage(Page, RerunFormMixin, NavbarMixin, FooterMixin, TourM
         Finds and returns the "Reset to values in the current reduce_vars script" button
         """
         return self.driver.find_element_by_id("currentScript")
+
+    @property
+    def replace_confirm(self) -> WebElement:
+        return self.driver.find_element_by_id("replace_confirm")
