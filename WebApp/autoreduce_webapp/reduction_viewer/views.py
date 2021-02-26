@@ -222,10 +222,12 @@ def run_summary(_, instrument_name=None, run_number=None, run_version=0):
             reduction_location = reduction_location.replace('\\', '/')
 
         rb_number = run.experiment.reference_number
-        has_variables = bool(VariableUtils.get_default_variables(run.instrument.name)
-                             or run.run_variables.count())  # We check default vars and run vars in case none exist
-        # for run but could exist for default
+        try:
+            current_variables = VariableUtils.get_default_variables(run.instrument.name)
+        except (FileNotFoundError, ImportError, SyntaxError) as err:
+            current_variables = {}
 
+        has_variables = bool(current_variables or run.run_variables.count())
         context_dictionary = {
             'run': run,
             'run_number': run_number,
@@ -293,7 +295,11 @@ def runs_list(request, instrument=None):
         if len(runs) == 0:
             return {'message': "No runs found for instrument."}
 
-        has_variables = bool(VariableUtils.get_default_variables(instrument_obj.name))
+        try:
+            current_variables = VariableUtils.get_default_variables(instrument_obj.name)
+        except (FileNotFoundError, ImportError, SyntaxError) as err:
+            current_variables = {}
+        has_variables = bool(current_variables)
 
         context_dictionary = {
             'instrument': instrument_obj,

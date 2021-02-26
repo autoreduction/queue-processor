@@ -146,7 +146,10 @@ def current_default_variables(request, instrument=None):
     Handles request to view default variables
     """
 
-    current_variables = VariableUtils.get_default_variables(instrument)
+    try:
+        current_variables = VariableUtils.get_default_variables(instrument)
+    except (FileNotFoundError, ImportError, SyntaxError) as err:
+        return {"message": str(err)}
     standard_vars = current_variables["standard_vars"]
     advanced_vars = current_variables["advanced_vars"]
 
@@ -171,7 +174,10 @@ def render_run_variables(request, instrument_name, run_number, run_version=0):
     standard_vars = vars_kwargs["standard_vars"]
     advanced_vars = vars_kwargs["advanced_vars"]
 
-    current_variables = VariableUtils.get_default_variables(instrument_name)
+    try:
+        current_variables = VariableUtils.get_default_variables(instrument_name)
+    except (FileNotFoundError, ImportError, SyntaxError) as err:
+        return {"message": str(err)}
     current_standard_variables = current_variables["standard_vars"]
     current_advanced_variables = current_variables["advanced_vars"]
 
