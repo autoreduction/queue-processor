@@ -5,7 +5,7 @@
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 
-from typing import List
+from typing import List, Tuple
 
 from django.urls import reverse
 from selenium.common.exceptions import NoSuchElementException
@@ -50,3 +50,35 @@ class VariableSummaryPage(Page, NavbarMixin, FooterMixin, TourMixin):
     @property
     def upcoming_variables_by_experiment(self) -> WebElement:
         return self.driver.find_element_by_id("upcoming_variables_by_experiment")
+
+    def run_edit_button_for(self, start: int, end: int) -> Tuple[WebElement, str]:
+        url = reverse("instrument:variables", kwargs={"instrument": self.instrument, "start": start, "end": end})
+        return self.driver.find_element_by_css_selector(f'[href*="{url}"]'), url
+
+    def run_delete_button_for(self, start: int, end: int) -> Tuple[WebElement, str]:
+        url = reverse("instrument:delete_variables", kwargs={"instrument": self.instrument, "start": start, "end": end})
+        return self.driver.find_element_by_css_selector(f'[href*="{url}"]'), url
+
+    def experiment_edit_button_for(self, experiment_reference: int) -> Tuple[WebElement, str]:
+        url = reverse("instrument:variables_by_experiment",
+                      kwargs={
+                          "instrument": self.instrument,
+                          "experiment_reference": experiment_reference
+                      })
+        return self.driver.find_element_by_css_selector(f'[href*="{url}"]'), url
+
+    def experiment_delete_button_for(self, experiment_reference: int) -> Tuple[WebElement, str]:
+        url = reverse("instrument:delete_variables_by_experiment",
+                      kwargs={
+                          "instrument": self.instrument,
+                          "experiment_reference": experiment_reference
+                      })
+        return self.driver.find_element_by_css_selector(f'[href*="{url}"]'), url
+
+    @property
+    def message(self) -> WebElement:
+        return self.driver.find_element_by_id("message")
+
+    @property
+    def panels(self) -> List[WebElement]:
+        return self.driver.find_elements_by_class_name("panel-body")
