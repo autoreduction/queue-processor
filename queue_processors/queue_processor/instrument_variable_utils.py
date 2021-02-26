@@ -112,7 +112,7 @@ class InstrumentVariablesUtils:
                                reduction_arguments: dict,
                                run_number: Optional[int] = None,
                                experiment_reference: Optional[int] = None,
-                               tracks_script=True) -> List:
+                               from_webapp=False) -> List:
         """
         Find appropriate variables from the possible_variables QuerySet, or make the necessary variables
 
@@ -124,6 +124,8 @@ class InstrumentVariablesUtils:
                                     Variables set for experiment are treated as top-priority and can only be changed or deleted
                                     from the web app. They will not be affected by settings variable for a run range or changing
                                     the values in reduce_vars.
+        :param from_webapp: If the call is made from the web app we want to ignore the variable's own tracks_script flag
+                            and ALWAYS overwrite the value of the variable with what has been passed in
         """
         all_vars: List[Tuple[str, Any, bool]] = [(name, value, False)
                                                  for name, value in reduction_arguments["standard_vars"].items()]
@@ -161,21 +163,22 @@ class InstrumentVariablesUtils:
                     variable.experiment_reference = experiment_reference
                 else:
                     variable.start_run = run_number
-                    variable.tracks_script = tracks_script
+                    variable.tracks_script = not from_webapp
                 variable.save()
             else:
                 InstrumentVariablesUtils.update_if_necessary(variable, experiment_reference, run_number, new_value,
-                                                             new_type, script_help_text)
+                                                             new_type, script_help_text, from_webapp)
             variables.append(variable)
         return variables
 
     @staticmethod
-    def update_if_necessary(variable, experiment_reference, run_number, new_value, new_type, script_help_text):
+    def update_if_necessary(variable, experiment_reference, run_number, new_value, new_type, script_help_text,
+                            from_webapp):
         if experiment_reference is not None and variable.experiment_reference == experiment_reference:
             # we do not copy variables for an experiment_reference - we overwrite them to ensure only one exists
             if InstrumentVariablesUtils.variable_was_updated(variable, new_value, new_type, script_help_text):
                 variable.save()
-        elif variable.tracks_script:
+        elif from_webapp or variable.tracks_script:
             # if the variable is tracking the reduce_vars script
             # then update it's value to the one from the script. This is True
             # for variables that were created via manual_submission or run_detection.

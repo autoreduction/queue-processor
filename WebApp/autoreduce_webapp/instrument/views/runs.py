@@ -261,7 +261,7 @@ def configure_new_runs_POST(request, instrument_name, start=0, end=0, experiment
                                                         instrument.id,
                                                         args_for_range,
                                                         start,
-                                                        tracks_script=False)
+                                                        from_webapp=True)
         if end:
             possible_variables = InstrumentVariable.objects.filter(start_run__lte=end + 1,
                                                                    instrument__name=instrument_name)
@@ -282,7 +282,7 @@ def configure_new_runs_POST(request, instrument_name, start=0, end=0, experiment
                                                         args_for_range,
                                                         start,
                                                         experiment_reference,
-                                                        tracks_script=False)
+                                                        from_webapp=True)
 
     return redirect('instrument:variables_summary', instrument=instrument_name)
 
