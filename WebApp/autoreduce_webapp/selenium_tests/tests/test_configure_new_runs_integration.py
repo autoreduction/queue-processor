@@ -74,21 +74,6 @@ class TestConfigureNewRunsPageIntegration(BaseTestCase):
         assert results
         return results
 
-    def submit_after_reset(self):
-        """
-        Submit after a reset button has been clicked.
-
-        Sticks the submission in a loop in case the first time doesn't work. The reason
-        it may not work is that resetting actually swaps out the whole form using JS, which
-        replaces ALL the elements and triggers a bunch of DOM re-renders/updates, and that isn't fast.
-        """
-        page_url = self.page.url()
-        while page_url in self.driver.current_url:
-            # NOTE that we MUST wait first and then try to submit, otherwise the processing
-            # may be finished before wait_for_result is called, causing it to be stuck forever
-            time.sleep(1)
-            self.page.submit_button.click()
-
     def _submit_var_value(self, value, start=None, end=None, experiment_number=None):
         self.page = ConfigureNewRunsPage(self.driver,
                                          self.instrument_name,
