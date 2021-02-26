@@ -95,7 +95,7 @@ class VariableUtils:
         return value
 
     @staticmethod
-    def get_default_variables(instrument_name, reduce_script=None) -> dict:
+    def get_default_variables(instrument_name) -> dict:
         # TODO move me in queue processor
         """
         Creates and returns a list of variables from the reduction script
@@ -107,10 +107,7 @@ class VariableUtils:
         #     reduce_script = self._load_reduction_vars_script(instrument_name)
 
         reduce_vars = ReductionScript(instrument_name, 'reduce_vars.py')
-        try:
-            module = reduce_vars.load()
-        except (FileNotFoundError, ImportError, SyntaxError):
-            return {}
+        module = reduce_vars.load()
 
         variable_help = getattr(module, 'variable_help', {})
 

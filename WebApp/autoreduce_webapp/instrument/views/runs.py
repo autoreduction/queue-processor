@@ -48,7 +48,11 @@ def submit_runs(request, instrument=None):
         standard_vars = kwargs["standard_vars"]
         advanced_vars = kwargs["advanced_vars"]
 
-        current_variables = VariableUtils.get_default_variables(instrument)
+        try:
+            current_variables = VariableUtils.get_default_variables(instrument)
+        except (FileNotFoundError, ImportError, SyntaxError) as err:
+            return {"message": str(err)}
+
         current_standard_variables = current_variables["standard_vars"]
         current_advanced_variables = current_variables["advanced_vars"]
         # pylint:disable=no-member
@@ -119,7 +123,10 @@ def run_confirmation(request, instrument: str):
         return context_dictionary
 
     script_text = InstrumentVariablesUtils.get_current_script_text(instrument)
-    default_variables = VariableUtils.get_default_variables(instrument)
+    try:
+        default_variables = VariableUtils.get_default_variables(instrument)
+    except (FileNotFoundError, ImportError, SyntaxError) as err:
+        return {"message": str(err)}
     try:
         new_script_arguments = make_reduction_arguments(request.POST.items(), default_variables)
         context_dictionary['variables'] = new_script_arguments
@@ -305,7 +312,11 @@ def configure_new_runs_GET(instrument_name, start=0, end=0, experiment_reference
     # This should probably be done by the POST method anyway.. so remove it
     upcoming_run_variables = ','.join(list(set([str(var.start_run) for var in upcoming_variables])))
 
-    current_variables = VariableUtils.get_default_variables(instrument)
+    try:
+        current_variables = VariableUtils.get_default_variables(instrument)
+    except (FileNotFoundError, ImportError, SyntaxError) as err:
+        return {"message": str(err)}
+
     current_standard_variables = current_variables["standard_vars"]
     current_advanced_variables = current_variables["advanced_vars"]
     min_run_start = last_run.run_number
