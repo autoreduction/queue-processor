@@ -230,3 +230,43 @@ class TestConfigureNewRunsPageIntegration(BaseTestCase):
 
     def test_submit_multiple_run_ranges_and_then_experiment(self):
         """Test submitting both run range vars and experiment vars"""
+        self._submit_var_value("new_value", self.run_number + 1, self.run_number + 101)
+        self._submit_var_value("the newest value", self.run_number + 201, self.run_number + 401)
+        self._submit_var_value("some value for experiment", experiment_number=self.rb_number)
+        self._submit_var_value("some different value for experiment", experiment_number=self.rb_number + 100)
+
+        assert InstrumentVariable.objects.count() == 7
+        first_var, second_var, third_var, fourth_var, fifth_var, exp_var1, exp_var2 = InstrumentVariable.objects.all()
+
+        assert first_var.start_run == self.run_number
+        assert first_var.experiment_reference is None
+        assert first_var.value == "value1"
+
+        assert second_var.start_run == self.run_number + 1
+        assert second_var.experiment_reference is None
+        assert second_var.value == "new_value"
+
+        assert third_var.start_run == self.run_number + 102
+        assert third_var.experiment_reference is None
+        assert third_var.value == "test_variable_value_123"  # back to the default value from the reduce_vars!
+
+        assert fourth_var.start_run == self.run_number + 201
+        assert fourth_var.experiment_reference is None
+        assert fourth_var.value == "the newest value"
+
+        assert fifth_var.start_run == self.run_number + 402
+        assert fifth_var.experiment_reference is None
+        assert fifth_var.value == "test_variable_value_123"  # back to the default value from the reduce_vars!
+
+        assert exp_var1.start_run is None
+        assert exp_var1.experiment_reference == self.rb_number
+        assert exp_var1.value == "some value for experiment"
+
+        assert exp_var2.start_run is None
+        assert exp_var2.experiment_reference == self.rb_number + 100
+        assert exp_var2.value == "some different value for experiment"
+
+        summary = VariableSummaryPage(self.driver, self.instrument_name)
+        assert summary.current_variables_by_run.is_displayed()
+        assert summary.upcoming_variables_by_experiment.is_displayed()
+        assert summary.upcoming_variables_by_run.is_displayed()
