@@ -274,7 +274,7 @@ def configure_new_runs_POST(request, instrument_name, start=0, end=0, experiment
             InstrumentVariablesUtils.find_or_make_variables(possible_variables, instrument.id, post_range_args, end + 1)
 
     else:
-        experiment_reference = request.POST.get("experiment_reference_number", 1)
+        experiment_reference = int(request.POST.get("experiment_reference_number", 1))
         possible_variables = InstrumentVariable.objects.filter(experiment_reference=experiment_reference,
                                                                instrument__name=instrument_name)
         InstrumentVariablesUtils.find_or_make_variables(possible_variables,
