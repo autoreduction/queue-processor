@@ -6,15 +6,15 @@
 # ############################################################################### #
 
 from typing import List
-from selenium_tests.pages.variables_summary_page import VariableSummaryPage
 
-from selenium_tests.tests.base_tests import NavbarTestMixin, BaseTestCase, FooterTestMixin
-from systemtests.utils.data_archive import DataArchive
-from selenium_tests.pages.configure_new_runs_page import ConfigureNewRunsPage
 from parameterized import parameterized
+from selenium_tests.pages.configure_new_runs_page import ConfigureNewRunsPage
+from selenium_tests.pages.variables_summary_page import VariableSummaryPage
+from selenium_tests.tests.base_tests import (BaseTestCase, FooterTestMixin, NavbarTestMixin)
+from systemtests.utils.data_archive import DataArchive
 
 
-class TestSeeInstrumentVariablesPageWithMissingFiles(BaseTestCase):
+class TestSeeInstrumentVariablesPageWithMissingFiles(BaseTestCase, NavbarTestMixin, FooterTestMixin):
     """
     Test the SeeInstrumentVariablesPage without creating the test archive files first.
     This tests error cases, e.g. when reduce_vars is missing.

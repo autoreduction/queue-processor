@@ -15,7 +15,7 @@ from selenium_tests.tests.base_tests import NavbarTestMixin, BaseTestCase, Foote
 from systemtests.utils.data_archive import DataArchive
 
 
-class TestRunSummaryPage(BaseTestCase):
+class TestRunSummaryPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
     """
     Test cases for the InstrumentSummary page when the Rerun form is NOT visible
     """

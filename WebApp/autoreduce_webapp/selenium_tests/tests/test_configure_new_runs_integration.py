@@ -6,22 +6,23 @@
 # ############################################################################### #
 
 import time
-from selenium_tests.pages.variables_summary_page import VariableSummaryPage
 
-from selenium_tests.tests.base_tests import NavbarTestMixin, BaseTestCase, FooterTestMixin
-from model.database import access as db
+from selenium.common.exceptions import NoSuchElementException
+from selenium_tests.pages.configure_new_runs_page import ConfigureNewRunsPage
+from selenium_tests.pages.variables_summary_page import VariableSummaryPage
+from selenium_tests.tests.base_tests import (BaseTestCase, FooterTestMixin, NavbarTestMixin)
+
 from instrument.models import InstrumentVariable
-from systemtests.utils.data_archive import DataArchive
+from model.database import access as db
 from queue_processors.queue_processor.queue_listener import main
+from systemtests.utils.data_archive import DataArchive
 from utils.clients.connection_exception import ConnectionException
 from utils.clients.django_database_client import DatabaseClient
-from selenium_tests.pages.configure_new_runs_page import ConfigureNewRunsPage
-from selenium.common.exceptions import NoSuchElementException
 
 REDUCE_VARS_DEFAULT_VALUE = "default value from reduce_vars"
 
 
-class TestConfigureNewRunsPageIntegration(BaseTestCase):
+class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterTestMixin):
 
     fixtures = BaseTestCase.fixtures + ["run_with_one_variable"]
 
