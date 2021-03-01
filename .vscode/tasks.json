@@ -6,7 +6,7 @@
         {
             "label": "Build database",
             "type": "shell",
-            "command": "python",
+            "command": "${config:python.pythonPath}",
             "args": [
                 "setup.py",
                 "database"
@@ -20,7 +20,7 @@
         {
             "label": "Install fixtures",
             "type": "shell",
-            "command": "python",
+            "command": "${config:python.pythonPath}",
             "args": [
                 "setup.py",
                 "fixtures"
