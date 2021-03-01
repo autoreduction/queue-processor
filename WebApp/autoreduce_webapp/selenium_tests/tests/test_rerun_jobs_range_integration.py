@@ -6,23 +6,21 @@
 # ############################################################################### #
 
 import time
-from unittest import runner
+
 from django.urls import reverse
 from selenium_tests.pages.rerun_jobs_page import RerunJobsPage
-from selenium_tests.pages.runs_list_page import RunsListPage
 from selenium_tests.pages.run_summary_page import RunSummaryPage
+from selenium_tests.pages.runs_list_page import RunsListPage
+from selenium_tests.tests.base_tests import (BaseTestCase, FooterTestMixin, NavbarTestMixin)
 
-from selenium_tests.tests.base_tests import NavbarTestMixin, BaseTestCase, FooterTestMixin
-from model.database import access as db
-
-from systemtests.utils.data_archive import DataArchive
 from queue_processors.queue_processor.queue_listener import main
 from utils.clients.connection_exception import ConnectionException
 from utils.clients.django_database_client import DatabaseClient
-from selenium_tests.pages.overview_page import OverviewPage
+from model.database import access as db
+from systemtests.utils.data_archive import DataArchive
 
 
-class TestRerunJobsRangePageIntegration(BaseTestCase):
+class TestRerunJobsRangePageIntegration(NavbarTestMixin, BaseTestCase, FooterTestMixin):
 
     fixtures = BaseTestCase.fixtures + ["two_runs"]
 

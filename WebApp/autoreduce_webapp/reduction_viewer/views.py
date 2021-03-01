@@ -15,10 +15,9 @@ can be more confident we are not affecting the execution
 import json
 import logging
 import operator
-import traceback
 
 from autoreduce_webapp.icat_cache import ICATCache
-from autoreduce_webapp.settings import (DEBUG, DEVELOPMENT_MODE, UOWS_LOGIN_URL, USER_ACCESS_CHECKS)
+from autoreduce_webapp.settings import (DEVELOPMENT_MODE, UOWS_LOGIN_URL, USER_ACCESS_CHECKS)
 from autoreduce_webapp.uows_client import UOWSClient
 from autoreduce_webapp.view_utils import (check_permissions, login_and_uows_valid, render_with, require_admin)
 from django.contrib.auth import authenticate, login
@@ -28,7 +27,6 @@ from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.db.models import Q
 from django.http import HttpResponseNotFound
 from django.shortcuts import redirect
-from plotting.plot_handler import PlotHandler
 from utilities.pagination import CustomPaginator
 
 from reduction_viewer.models import (Experiment, Instrument, ReductionRun, Status)
@@ -297,8 +295,9 @@ def runs_list(request, instrument=None):
 
         try:
             current_variables = VariableUtils.get_default_variables(instrument_obj.name)
-        except (FileNotFoundError, ImportError, SyntaxError) as err:
+        except (FileNotFoundError, ImportError, SyntaxError):
             current_variables = {}
+
         has_variables = bool(current_variables)
 
         context_dictionary = {
@@ -336,8 +335,6 @@ def runs_list(request, instrument=None):
     # pylint:disable=broad-except
     except Exception as exception:
         LOGGER.error(exception)
-        if DEBUG:
-            print(traceback.format_exc())
         return {'message': "An unexpected error has occurred when loading the instrument."}
 
     return context_dictionary

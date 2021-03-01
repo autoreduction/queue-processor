@@ -1,16 +1,23 @@
+# ############################################################################### #
+# Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
+#
+# Copyright &copy; 2021 ISIS Rutherford Appleton Laboratory UKRI
+# SPDX - License - Identifier: GPL-3.0-or-later
+# ############################################################################### #
+
 import time
+
 from django.urls import reverse
 from selenium_tests.pages.rerun_jobs_page import RerunJobsPage
-from selenium_tests.tests.base_tests import NavbarTestMixin, BaseTestCase, FooterTestMixin
-from model.database import access as db
-
+from selenium_tests.tests.base_tests import (BaseTestCase, FooterTestMixin, NavbarTestMixin)
 from systemtests.utils.data_archive import DataArchive
-from queue_processors.queue_processor.queue_listener import main
 from utils.clients.connection_exception import ConnectionException
 from utils.clients.django_database_client import DatabaseClient
+from model.database import access as db
+from queue_processors.queue_processor.queue_listener import main
 
 
-class TestRerunJobsPageIntegration(BaseTestCase):
+class TestRerunJobsPageIntegration(NavbarTestMixin, BaseTestCase, FooterTestMixin):
 
     fixtures = BaseTestCase.fixtures + ["run_with_one_variable"]
 
