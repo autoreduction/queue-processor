@@ -138,7 +138,9 @@ class NavbarTestMixin:
         """
         Tests: Admin notifications not visible for non admins
         """
-        self.driver.get(self.live_server_url + "/overview")  # We do this due to issues with logging in. see README
+        self.driver.get(f"{self.live_server_url}{reverse('logout')}")
+        # Go directly to the /overview page to avoid the logging in that happens at the index view
+        self.driver.get(f"{self.live_server_url}{reverse('overview')}")
         notifications = self.page.get_notification_messages()
         self.assertNotIn(self.ADMIN_NOTIFICATION_MESSAGE, notifications)
 

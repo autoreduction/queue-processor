@@ -91,7 +91,7 @@ def logout(request):
         UOWSClient().logout(session_id)
     django_logout(request)
     request.session.flush()
-    return redirect('index')
+    return redirect('overview')
 
 
 @login_and_uows_valid
