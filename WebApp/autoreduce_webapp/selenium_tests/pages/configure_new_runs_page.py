@@ -34,16 +34,17 @@ class ConfigureNewRunsPage(Page, RerunFormMixin, NavbarMixin, FooterMixin, TourM
         kwargs = {
             "instrument": self.instrument,
         }
-        if self._run_start_number:
-            kwargs["start"] = self._run_start_number
+        if self._experiment_reference:
+            kwargs["experiment_reference"] = self._experiment_reference
+            return reverse("instrument:variables_by_experiment", kwargs=kwargs)
+        else:
+            if self._run_start_number:
+                kwargs["start"] = self._run_start_number
 
             if self._run_end_number:
                 kwargs["end"] = self._run_end_number
-            return reverse("instrument:variables", kwargs=kwargs)
 
-        elif self._experiment_reference:
-            kwargs["experiment_reference"] = self._experiment_reference
-            return reverse("instrument:variables_by_experiment", kwargs=kwargs)
+            return reverse("instrument:variables", kwargs=kwargs)
 
     @property
     def run_start(self) -> WebElement:

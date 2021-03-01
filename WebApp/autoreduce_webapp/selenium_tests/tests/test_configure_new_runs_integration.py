@@ -54,6 +54,10 @@ class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterT
         cls.data_archive.delete()
         super().tearDownClass()
 
+    def setUp(self) -> None:
+        super().setUp()
+        self.page = ConfigureNewRunsPage(self.driver, self.instrument_name, run_start=self.run_number + 1)
+
     def _find_run_in_database(self):
         """
         Find a ReductionRun record in the database
