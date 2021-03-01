@@ -1,0 +1,117 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Pytest",
+            "type": "python",
+            "request": "launch",
+            "module": "pytest",
+            "args": [
+                "-pno:django",
+                "-v",
+                "${file}"
+            ],
+            "presentation": {
+                "hidden": false,
+                "group": "autoreduce",
+            },
+            "env": {
+                "RUNNING_VIA_PYTEST": "true"
+            }
+        },
+        {
+            "name": "Pytest - Django",
+            "type": "python",
+            "request": "launch",
+            "module": "pytest",
+            "args": [
+                "-v",
+                "${file}"
+            ],
+            "django": true,
+            "presentation": {
+                "hidden": false,
+                "group": "autoreduce",
+            },
+            "env": {
+                "DISPLAY": ":1",
+                "RUNNING_VIA_PYTEST": "true"
+            }
+        },
+        {
+            "name": "Pytest - coverage",
+            "type": "python",
+            "request": "launch",
+            "module": "pytest",
+            "args": [
+                "--cov-report",
+                "html",
+                "--cov=${workspaceFolder}/queue_processors",
+                "-pno:django",
+                "-v",
+                "${file}"
+            ],
+            "presentation": {
+                "hidden": false,
+                "group": "autoreduce",
+            },
+            "env": {
+                "RUNNING_VIA_PYTEST": "true"
+            }
+        },
+        {
+            "name": "Web app",
+            "type": "python",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/WebApp/autoreduce_webapp/",
+            "program": "${workspaceFolder}/WebApp/autoreduce_webapp/manage.py",
+            "args": [
+                "runserver"
+            ],
+            "django": true,
+            "presentation": {
+                "hidden": false,
+                "group": "autoreduce",
+                "order": 1
+            },
+        },
+        {
+            "name": "Queue Listener",
+            "type": "python",
+            "request": "launch",
+            "program": "queue_processors/queue_processor/queue_listener.py",
+            "console": "integratedTerminal",
+            "presentation": {
+                "hidden": false,
+                "group": "autoreduce",
+                "order": 2
+            }
+        },
+        {
+            "name": "Queue Listener Daemon",
+            "type": "python",
+            "request": "launch",
+            "program": "queue_processors/queue_processor/queue_listener_daemon.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "start"
+            ],
+            "presentation": {
+                "hidden": false,
+                "group": "autoreduce",
+                "order": 3
+            }
+        },
+        {
+            "name": "Attach",
+            "type": "python",
+            "request": "attach",
+            "host": "127.0.0.1", // replace this with remote machine name
+            "port": 5678
+        }
+    ]
+}
