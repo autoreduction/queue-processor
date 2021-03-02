@@ -131,7 +131,7 @@ class TestRunSummaryPageIntegration(NavbarTestMixin, BaseTestCase, FooterTestMix
             # the value of the variable has been overwritten because it's the same run number
             assert run0_var.variable == run1_var.variable
 
-        assert result[1].run_variables.first().variable.value == new_value
+        assert result[1].run_variables.first().variable.value == "the new value in the field"
 
     def test_submit_rerun_after_clicking_reset_initial(self):
         """
