@@ -19,6 +19,7 @@ from typing import Tuple
 from model.message.message import Message
 from queue_processors.queue_processor.handle_message import HandleMessage
 from utils.clients.queue_client import QueueClient
+from utils.clients.connection_exception import ConnectionException
 
 
 class QueueListener:
@@ -113,15 +114,16 @@ def main():
 if __name__ == '__main__':
     try:
         main()
+    except ConnectionException as exp:
+        logging.getLogger("queue_listener").error("Exception occurred while connecting: %s %s\n\n%s",
+                                                  type(exp).__name__, exp, traceback.format_exc())
+        raise
 
-        # print a success message to the terminal in case it's not being run through the daemon
-        print("QueueClient connected and QueueListener active.")
+    # print a success message to the terminal in case it's not being run through the daemon
+    print("QueueClient connected and QueueListener active.")
 
-        # if running this script as main (e.g. when debigging the queue listener)
-        # the activemq connection runs async and without this sleep the process will
-        # just connect to activemq then exit completely
-        while True:
-            time.sleep(0.5)
-    except Exception as exp:
-        print("This is an exception that needs to be logged")
-
+    # if running this script as main (e.g. when debigging the queue listener)
+    # the activemq connection runs async and without this sleep the process will
+    # just connect to activemq then exit completely
+    while True:
+        time.sleep(0.5)
