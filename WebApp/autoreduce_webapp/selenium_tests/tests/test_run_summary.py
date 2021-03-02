@@ -9,10 +9,44 @@ Selenium tests for the runs summary page
 """
 
 from django.urls import reverse
+from selenium.common.exceptions import NoSuchElementException
 from selenium_tests.pages.run_summary_page import RunSummaryPage
 from selenium_tests.tests.base_tests import NavbarTestMixin, BaseTestCase, FooterTestMixin
 
 from systemtests.utils.data_archive import DataArchive
+
+
+class TestRunSummaryPageNoArchive(BaseTestCase):
+    fixtures = BaseTestCase.fixtures + ["run_with_one_variable"]
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.instrument_name = "TestInstrument"
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.page = RunSummaryPage(self.driver, self.instrument_name, 99999, 0)
+        self.page.launch()
+
+    def test_opening_run_summary_without_reduce_vars(self):
+        """
+        Test that opening the run summary without a reduce_vars present for the instrument
+        will not show the "Reset to current" buttons as there is no current values!
+        """
+        # the reset to current values should not be visible
+        with self.assertRaises(NoSuchElementException):
+            self.page.reset_to_current_values.is_displayed()
+
+    def test_reduction_job_panel_reset_to_values_first_used_for_run(self):
+        """Test that the button to reset the variables to the values first used for the run works"""
+        self.page.toggle_button.click()
+        self.page.variable1_field = "the new value in the field"
+
+        self.page.reset_to_initial_values.click()
+
+        # need to re-query the driver because resetting replaces the elements
+        assert self.page.variable1_field.get_attribute("value") == "value1"
 
 
 class TestRunSummaryPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):

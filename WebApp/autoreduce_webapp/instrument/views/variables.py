@@ -176,10 +176,11 @@ def render_run_variables(request, instrument_name, run_number, run_version=0):
 
     try:
         current_variables = VariableUtils.get_default_variables(instrument_name)
-    except (FileNotFoundError, ImportError, SyntaxError) as err:
-        return {"message": str(err)}
-    current_standard_variables = current_variables["standard_vars"]
-    current_advanced_variables = current_variables["advanced_vars"]
+        current_standard_variables = current_variables["standard_vars"]
+        current_advanced_variables = current_variables["advanced_vars"]
+    except (FileNotFoundError, ImportError, SyntaxError):
+        current_standard_variables = {}
+        current_advanced_variables = {}
 
     context_dictionary = {
         'run_number': run_number,
