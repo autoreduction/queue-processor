@@ -480,7 +480,7 @@ class TestInstrumentVariableUtils(unittest.TestCase):
 
     def test_find_appropriate_var_chooses_experiment_vars_as_top_priority(self):
         """
-        Test that _find_appropriate_variable will prefer a variable with matching experiment number
+        Test that find_appropriate_variable will prefer a variable with matching experiment number
         """
         start_run = 1234567
         exp_ref = 4321
@@ -514,11 +514,11 @@ class TestInstrumentVariableUtils(unittest.TestCase):
         possible_variables = self.variable_model.InstrumentVariable.objects.filter(instrument=self.instrument)
         assert len(possible_variables) == 3
 
-        assert InstrumentVariablesUtils._find_appropriate_variable(possible_variables, name, exp_ref) == var2
+        assert InstrumentVariablesUtils.find_appropriate_variable(possible_variables, name, exp_ref) == var2
 
     def test_find_appropriate_var_chooses_latest_var(self):
         """
-        Test that, lacking a var with experiment number, _find_appropriate_variable will prefer
+        Test that, lacking a var with experiment number, find_appropriate_variable will prefer
         the variable with the latest start_run
         """
         start_run = 1234567
@@ -545,7 +545,7 @@ class TestInstrumentVariableUtils(unittest.TestCase):
         possible_variables = self.variable_model.InstrumentVariable.objects.filter(instrument=self.instrument)
         assert len(possible_variables) == 2
 
-        assert InstrumentVariablesUtils._find_appropriate_variable(possible_variables, name, exp_ref) == var2
+        assert InstrumentVariablesUtils.find_appropriate_variable(possible_variables, name, exp_ref) == var2
 
     def test_find_or_make_overwrites_variable_for_experiment_reference(self):
         """
@@ -553,7 +553,6 @@ class TestInstrumentVariableUtils(unittest.TestCase):
         when the variable is provided a new value. (This behaviour is different than for start_run,
         as a new value for a start_run will COPY the variable instead, not overwrite)
         """
-        start_run = 1234567
         exp_ref = 4321
         name = "test_variable1"
         red_args = {'standard_vars': {name: "test_value3"}, 'advanced_vars': {}, 'variable_help': {}}

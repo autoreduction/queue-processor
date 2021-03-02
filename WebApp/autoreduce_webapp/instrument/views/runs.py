@@ -122,11 +122,13 @@ def run_confirmation(request, instrument: str):
                                       ' please select a different range.'
         return context_dictionary
 
-    script_text = InstrumentVariablesUtils.get_current_script_text(instrument)
     try:
+        script_text = InstrumentVariablesUtils.get_current_script_text(instrument)
         default_variables = VariableUtils.get_default_variables(instrument)
     except (FileNotFoundError, ImportError, SyntaxError) as err:
-        return {"message": str(err)}
+        context_dictionary['error'] = err
+        return context_dictionary
+
     try:
         new_script_arguments = make_reduction_arguments(request.POST.items(), default_variables)
         context_dictionary['variables'] = new_script_arguments
