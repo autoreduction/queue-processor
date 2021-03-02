@@ -1,6 +1,6 @@
 # Test Env. Requirements
 
-coveralls==3.0.0
+coveralls==3.0.1
 dash==1.16.3
 django-debug-toolbar==3.2
 django_plotly_dash==1.6.1
