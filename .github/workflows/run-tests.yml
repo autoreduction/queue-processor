@@ -25,9 +25,6 @@ jobs:
 
       - uses: ./.github/actions/build-autoreduction
 
-      - name: YAPF
-        run: python -m yapf --exclude '**/migrations' --parallel --diff --recursive .
-
       - name: Run unit tests
         run: >-
           pytest -pno:django --ignore=systemtests --cov=build --cov=monitors --cov=queue_processors
@@ -97,8 +94,8 @@ jobs:
       - name: Build container
         run: docker build -f dependency-check/Dockerfile .
 
-  pylint:
-    name: Pylint
+  Inspection:
+    name: Code Inspection
     runs-on: ubuntu-18.04
     strategy:
       fail-fast: false
@@ -131,3 +128,9 @@ jobs:
           pylint systemtests
           pylint utils
           pylint plotting
+
+      - name: YAPF
+          run: python -m yapf --exclude '**/migrations' --parallel --diff --recursive .
+
+      - name: Vulture
+          run: vulture --min-confidence 100 build docker_reduction model monitors scripts queue_processors systemtests utils plotting
