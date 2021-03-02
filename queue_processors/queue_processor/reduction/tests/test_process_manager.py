@@ -37,7 +37,6 @@ class TestReductionProcessManager(unittest.TestCase):
     @patch('queue_processors.queue_processor.reduction.process_manager.subprocess.run')
     def test_run_subprocess_error(self, subprocess_run: Mock):
         """Test proper handling of a subprocess encountering an error"""
-
         def side_effect(args, **_kwargs):
             raise CalledProcessError(1, args)
 
@@ -51,7 +50,6 @@ class TestReductionProcessManager(unittest.TestCase):
     @patch('queue_processors.queue_processor.reduction.process_manager.subprocess.run')
     def test_run(self, subprocess_run: Mock):
         """Tests success path - it uses side effect to set the expected output file rather than raise an exception"""
-
         def side_effect(args, **_kwargs):
             with open(args[-1], 'w') as tmpfile:
                 tmpfile.write(self.message.serialize())
