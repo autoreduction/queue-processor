@@ -96,16 +96,12 @@ class VariableUtils:
 
     @staticmethod
     def get_default_variables(instrument_name) -> dict:
-        # TODO move me in queue processor
         """
         Creates and returns a list of variables from the reduction script
         on disk for the instrument.
         If reduce_script is supplied, return variables using that script
         instead of the one on disk.
         """
-        # if not reduce_script:
-        #     reduce_script = self._load_reduction_vars_script(instrument_name)
-
         reduce_vars = ReductionScript(instrument_name, 'reduce_vars.py')
         module = reduce_vars.load()
 

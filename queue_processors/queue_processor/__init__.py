@@ -30,7 +30,7 @@ LOGGING = {
         'root_file': {
             'level': LOG_LEVEL,
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(PROJECT_ROOT, 'logs', 'everything_else.log'),
+            'filename': os.path.join(PROJECT_ROOT, 'logs', 'root.log'),
             'formatter': 'verbose',
             'maxBytes': 104857600,
             'backupCount': 20,
@@ -63,14 +63,6 @@ LOGGING = {
             'level': LOG_LEVEL,
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': os.path.join(PROJECT_ROOT, 'logs', 'webapp.log'),
-            'formatter': 'verbose',
-            'maxBytes': 104857600,
-            'backupCount': 20,
-        },
-        'root_file': {
-            'level': LOG_LEVEL,
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(PROJECT_ROOT, 'logs', 'root.log'),
             'formatter': 'verbose',
             'maxBytes': 104857600,
             'backupCount': 20,

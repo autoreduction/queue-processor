@@ -23,6 +23,8 @@ from model.database import access as db
 from queue_processors.queue_processor.variable_utils import VariableUtils
 from queue_processors.queue_processor.reduction.service import ReductionScript
 
+# pylint:disable=too-many-arguments,too-many-locals
+
 
 class DataTooLong(ValueError):
     """ Error class used for when reduction variables are too long. """
@@ -41,7 +43,7 @@ class InstrumentVariablesUtils:
         self.model = db.start_database()
 
     @transaction.atomic
-    def create_run_variables(self, reduction_run, message_reduction_arguments: dict = {}) -> List:
+    def create_run_variables(self, reduction_run, message_reduction_arguments: dict = None) -> List:
         """
         Finds the appropriate InstrumentVariables for the given reduction run, and creates
         RunVariables from them.
@@ -56,9 +58,11 @@ class InstrumentVariablesUtils:
 
         :param reduction_run: The reduction run object
         :param message_reduction_arguments: Preset arguments that will override whatever is in the
-                                           reduce_vars.py script. They are passed in from the web app
-                                           and have been acquired via direct user input
+                                            reduce_vars.py script. They are passed in from the web app
+                                            and have been acquired via direct user input
         """
+        if message_reduction_arguments is None:
+            message_reduction_arguments = {}
         instrument_name = reduction_run.instrument.name
 
         model = self.model.variable_model
@@ -101,6 +105,17 @@ class InstrumentVariablesUtils:
 
     @staticmethod
     def set_with_correct_type(message_reduction_arguments: dict, reduction_args: dict, dict_name: str):
+        """
+        Set the value of the variable with the correct type.
+
+        It retrieves the type string of the value in reduce_vars.py (the reduction_args param),
+        and converts the value to that type.
+
+        This is done to enforce type consistency between reduce_vars.py and message_reduction_arguments.
+
+        message_reduction_arguments can contain bad types when it gets sent from the web app - some
+        values are incorrectly strings and they create extra duplicates.
+        """
         if dict_name in message_reduction_arguments and dict_name in reduction_args:
             for name, value in message_reduction_arguments[dict_name].items():
                 real_type = VariableUtils.get_type_string(reduction_args[dict_name][name])
@@ -121,8 +136,9 @@ class InstrumentVariablesUtils:
         :param reduction_arguments: A dictionary holding all required reduction arguments
         :param run_number: Optional, the run number from which these variables will be active
         :param expriment_reference: Optional, the experiment number for which these variables WILL ALWAYS be used.
-                                    Variables set for experiment are treated as top-priority and can only be changed or deleted
-                                    from the web app. They will not be affected by settings variable for a run range or changing
+                                    Variables set for experiment are treated as top-priority.
+                                    They can only be changed or deleted from the web app.
+                                    They will not be affected by variables for a run range or changing
                                     the values in reduce_vars.
         :param from_webapp: If the call is made from the web app we want to ignore the variable's own tracks_script flag
                             and ALWAYS overwrite the value of the variable with what has been passed in
@@ -141,20 +157,19 @@ class InstrumentVariablesUtils:
             new_value = str(value).replace('[', '').replace(']', '')
             new_type = VariableUtils.get_type_string(value)
 
-            var_kwargs = {
-                'name': name,
-                'value': new_value,
-                'type': new_type,
-                'help_text': script_help_text,
-                'is_advanced': is_advanced,
-                'instrument_id': instrument_id
-            }
-
             # Try to find a suitable variable to re-use from the ones that already exist
-            variable = InstrumentVariablesUtils._find_appropriate_variable(possible_variables, name,
-                                                                           experiment_reference)
+            variable = InstrumentVariablesUtils.find_appropriate_variable(possible_variables, name,
+                                                                          experiment_reference)
             # if no suitable variable is found - create a new one
             if variable is None:
+                var_kwargs = {
+                    'name': name,
+                    'value': new_value,
+                    'type': new_type,
+                    'help_text': script_help_text,
+                    'is_advanced': is_advanced,
+                    'instrument_id': instrument_id
+                }
                 variable = possible_variables.create(**var_kwargs)
                 # if the variable was just created then set it to track the script
                 # and that it starts on the current run
@@ -172,8 +187,14 @@ class InstrumentVariablesUtils:
         return variables
 
     @staticmethod
-    def update_if_necessary(variable, experiment_reference, run_number, new_value, new_type, script_help_text,
-                            from_webapp):
+    def update_if_necessary(variable, experiment_reference: Optional[int], run_number: Optional[int], new_value: Any,
+                            new_type: str, script_help_text: str, from_webapp: bool):
+        """
+        Updates the variable if necessary:
+            - Vars for experiment_reference are always updated in-place (i.e. a new variable is never made)
+            - Vars for run ranges are updated in-place, if the current run is the same as the start_run.
+              Otherwise the variable is copied, so that the original run can be re-reduced with it's original values
+        """
         if experiment_reference is not None and variable.experiment_reference == experiment_reference:
             # we do not copy variables for an experiment_reference - we overwrite them to ensure only one exists
             if InstrumentVariablesUtils.variable_was_updated(variable, new_value, new_type, script_help_text):
@@ -198,7 +219,7 @@ class InstrumentVariablesUtils:
                 variable.save()
 
     @staticmethod
-    def _find_appropriate_variable(possible_variables, name, expriment_reference):
+    def find_appropriate_variable(possible_variables, name, expriment_reference):
         """
         Find the appropriate variable that should be used.
 
@@ -222,7 +243,10 @@ class InstrumentVariablesUtils:
         return variable
 
     @staticmethod
-    def variable_was_updated(variable, new_value, new_type, new_help_text):
+    def variable_was_updated(variable, new_value: Any, new_type: str, new_help_text: str) -> bool:
+        """
+        Returns whether any of the variable's field was updated.
+        """
         changed = False
         if new_value != variable.value:
             variable.value = new_value
@@ -235,6 +259,7 @@ class InstrumentVariablesUtils:
         if new_help_text != variable.help_text:
             variable.help_text = new_help_text
             changed = True
+
         return changed
 
     @staticmethod
@@ -251,6 +276,4 @@ class InstrumentVariablesUtils:
         Fetches the reduction script and variables script for
         the given instrument, and returns each as a string.
         """
-        reduce_vars = ReductionScript(instrument_name)
-        # TODO handle raises
-        return reduce_vars.text()
+        return ReductionScript(instrument_name).text()
