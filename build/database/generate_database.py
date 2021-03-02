@@ -45,6 +45,10 @@ def generate_schema(project_root_path, logger):
 
 
 def load_fixtures(project_root_path, fixtures: list, logger):
+    """
+    Load fixtures into the database
+    """
+
     path_to_manage = os.path.join(project_root_path, 'WebApp', 'autoreduce_webapp', 'manage.py')
     for fixture in fixtures:
         if run_process_and_log([sys.executable, path_to_manage, 'loaddata', fixture]) is False:
