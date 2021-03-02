@@ -130,7 +130,7 @@ jobs:
           pylint plotting
 
       - name: YAPF
-          run: python -m yapf --exclude '**/migrations' --parallel --diff --recursive .
+        run: python -m yapf --exclude '**/migrations' --parallel --diff --recursive .
 
       - name: Vulture
-          run: vulture --min-confidence 100 build docker_reduction model monitors scripts queue_processors systemtests utils plotting
+        run: vulture --min-confidence 100 build docker_reduction model monitors scripts queue_processors systemtests utils plotting
