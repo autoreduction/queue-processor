@@ -222,7 +222,7 @@ def run_summary(_, instrument_name=None, run_number=None, run_version=0):
         rb_number = run.experiment.reference_number
         try:
             current_variables = VariableUtils.get_default_variables(run.instrument.name)
-        except (FileNotFoundError, ImportError, SyntaxError) as err:
+        except (FileNotFoundError, ImportError, SyntaxError):
             current_variables = {}
 
         has_variables = bool(current_variables or run.run_variables.count())
