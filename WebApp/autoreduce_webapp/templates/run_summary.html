@@ -193,14 +193,18 @@
                         </div>
                     </div>
             {% endif %}
-            {% if has_variables %}
+            {% if has_run_variables and has_reduce_vars  %}
                 {% autoescape on %}
                     {% view "instrument.views.variables.render_run_variables" instrument run_number run_version %}
                 {% endautoescape %}
-            {% else %}
-                    <div>
-                        <p class="text-center">No variables found for this run.</p>
-                    </div>
+            {% elif not has_reduce_vars %}
+                <div>
+                    <p class="text-center">The reduce_vars.py script is missing for this instrument. Please create it before being able to submit re-runs.</p>
+                </div>
+            {% elif not has_run_variables %}
+                <div>
+                    <p class="text-center">No variables found for this run.</p>
+                </div>
             {% endif %}
           </div>
         {% endif %}

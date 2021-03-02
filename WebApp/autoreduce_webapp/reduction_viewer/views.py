@@ -206,6 +206,7 @@ def run_summary(_, instrument_name=None, run_number=None, run_version=0):
             '-run_version').select_related('status').select_related('experiment').select_related('instrument')
         if len(history) == 0:
             raise ValueError(f"Could not find any matching runs for instrument {instrument_name} run {run_number}")
+
         run = next(run for run in history if run.run_version == int(run_version))
         started_by = started_by_id_to_name(run.started_by)
         # run status value of "s" means the run is skipped
@@ -225,7 +226,8 @@ def run_summary(_, instrument_name=None, run_number=None, run_version=0):
         except (FileNotFoundError, ImportError, SyntaxError):
             current_variables = {}
 
-        has_variables = bool(current_variables and run.run_variables.count())
+        has_reduce_vars = bool(current_variables)
+        has_run_variables = bool(run.run_variables.count())
         context_dictionary = {
             'run': run,
             'run_number': run_number,
@@ -236,7 +238,8 @@ def run_summary(_, instrument_name=None, run_number=None, run_version=0):
             'history': history,
             'reduction_location': reduction_location,
             'started_by': started_by,
-            'has_variables': has_variables
+            'has_reduce_vars': has_reduce_vars,
+            'has_run_variables': has_run_variables
         }
 
     except PermissionDenied:
