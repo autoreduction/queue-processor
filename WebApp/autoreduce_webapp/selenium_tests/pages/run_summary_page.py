@@ -81,3 +81,10 @@ class RunSummaryPage(Page, RerunFormMixin, NavbarMixin, FooterMixin, TourMixin):
         Finds and returns the "Reset to values in the current reduce_vars script" button
         """
         return self.driver.find_element_by_id("currentScript")
+
+    @property
+    def warning_message(self) -> WebElement:
+        """
+        Finds and returns the "warning_message" box
+        """
+        return self.driver.find_element_by_id("warning_message")
