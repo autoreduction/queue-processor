@@ -225,7 +225,7 @@ def run_summary(_, instrument_name=None, run_number=None, run_version=0):
         except (FileNotFoundError, ImportError, SyntaxError):
             current_variables = {}
 
-        has_variables = bool(current_variables or run.run_variables.count())
+        has_variables = bool(current_variables and run.run_variables.count())
         context_dictionary = {
             'run': run,
             'run_number': run_number,

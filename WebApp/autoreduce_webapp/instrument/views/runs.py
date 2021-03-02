@@ -297,9 +297,10 @@ def configure_new_runs_GET(instrument_name, start=0, end=0, experiment_reference
     try:
         last_run = instrument.reduction_runs.exclude(status=STATUS.get_skipped()).last()
     except AttributeError:
-        # TODO this instrument hasn't had a non-skipped run so what do we do?
-        # context_dictionary["error"] = "All previous runs have been skipped." # ?
-        raise NotImplementedError("TODO this branch")
+        return {
+            "error":
+            "All previous runs have been skipped and they cannot be re-run. You can still submit manual runs for this instrument."
+        }
 
     current_variables = ReductionRunUtils.make_kwargs_from_runvariables(last_run)
     standard_vars = current_variables["standard_vars"]
