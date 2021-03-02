@@ -40,6 +40,3 @@ class Page(ABC):
         self.driver.get(configuration.get_url())
         self.driver.get(self.url())
         return self
-
-    def get_id(self, id_str: str):
-        return self.driver.find_element_by_id(id_str)

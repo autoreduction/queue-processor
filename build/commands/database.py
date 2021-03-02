@@ -55,5 +55,4 @@ class LoadDBFixtures(Command):
 
     def run(self):
         """ Run the setup scripts required for localhost database """
-        # pylint:disable=import-outside-toplevel
         load_fixtures(ROOT_DIR, ["super_user_fixture", "status_fixture", "run_with_one_variable"], BUILD_LOGGER.logger)
