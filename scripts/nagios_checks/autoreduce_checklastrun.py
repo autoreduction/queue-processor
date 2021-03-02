@@ -64,6 +64,4 @@ def checkLastRun():
     return 0
 
 
-# pylint: disable=using-constant-test
-if "__name__":
-    sys.exit(checkLastRun())
+sys.exit(checkLastRun())

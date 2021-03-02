@@ -36,6 +36,4 @@ def checkConsumer():
     return 0
 
 
-# pylint: disable=using-constant-test
-if "__name__":
-    sys.exit(checkConsumer())
+sys.exit(checkConsumer())

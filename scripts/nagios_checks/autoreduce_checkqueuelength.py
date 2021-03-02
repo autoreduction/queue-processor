@@ -43,6 +43,4 @@ def checkQueueLength(warning, critical):
     return 0
 
 
-# pylint: disable=using-constant-test
-if "__name__":
-    sys.exit(checkQueueLength(3, 10))
+sys.exit(checkQueueLength(3, 10))
