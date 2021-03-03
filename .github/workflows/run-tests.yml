@@ -97,6 +97,7 @@ jobs:
 
       - name: Pip install
         run: | 
+          cat /etc/centos-release
           pip install --upgrade pip
           pip install -r requirements.txt
           pip install -e .
