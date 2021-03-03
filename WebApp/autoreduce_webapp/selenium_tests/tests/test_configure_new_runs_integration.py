@@ -264,6 +264,7 @@ class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterT
         assert summary.upcoming_variables_by_run.is_displayed()
 
     def test_submit_then_edit_then_delete_run_vars(self):
+        """Test submitting new variables for run ranges, then editing them, then deleting them"""
         self._submit_var_value("new_value", self.run_number + 1, self.run_number + 101)
         self._submit_var_value("the newest value", self.run_number + 201, self.run_number + 401)
 
@@ -318,6 +319,7 @@ class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterT
         assert "Ongoing" in incoming_run_numbers[1].text
 
     def test_submit_then_edit_then_delete_experiment_vars(self):
+        """Test submitting new variables for experiment reference, then editing them, then deleting them"""
         self._submit_var_value("new_value", experiment_number=1234567)
         self._submit_var_value("the newest value", experiment_number=2345678)
         summary = VariableSummaryPage(self.driver, self.instrument_name)
