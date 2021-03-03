@@ -298,8 +298,13 @@ def runs_list(request, instrument=None):
 
         try:
             current_variables = VariableUtils.get_default_variables(instrument_obj.name)
-        except (FileNotFoundError, ImportError, SyntaxError):
+            error_reason = ""
+        except FileNotFoundError:
             current_variables = {}
+            error_reason = "reduce_vars.py is missing for this instrument"
+        except (ImportError, SyntaxError):
+            current_variables = {}
+            error_reason = "reduce_vars.py has an import or syntax error"
 
         has_variables = bool(current_variables)
 
@@ -312,7 +317,8 @@ def runs_list(request, instrument=None):
             'queued': runs.filter(status=STATUS.get_queued()),
             'filtering': filter_by,
             'sort': sort_by,
-            'has_variables': has_variables
+            'has_variables': has_variables,
+            'error_reason': error_reason
         }
 
         if filter_by == 'experiment':
