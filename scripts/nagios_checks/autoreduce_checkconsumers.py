@@ -36,4 +36,5 @@ def checkConsumer():
     return 0
 
 
-sys.exit(checkConsumer())
+if __name__ == "__main__":
+    sys.exit(checkConsumer())

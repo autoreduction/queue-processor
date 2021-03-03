@@ -4,7 +4,7 @@
 # Copyright &copy; 2019 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
-#! /usr/bin/env python
+# ! /usr/bin/env python
 """
 Check that the last run is correct
 
@@ -64,4 +64,5 @@ def checkLastRun():
     return 0
 
 
-sys.exit(checkLastRun())
+if __name__ == "__main__":
+    sys.exit(checkLastRun())

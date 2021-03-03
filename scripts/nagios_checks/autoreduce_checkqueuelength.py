@@ -4,7 +4,7 @@
 # Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
-#! /usr/bin/env python
+# ! /usr/bin/env python
 """
 Check the length of the queues
 """
@@ -43,4 +43,5 @@ def checkQueueLength(warning, critical):
     return 0
 
 
-sys.exit(checkQueueLength(3, 10))
+if __name__ == "__main__":
+    sys.exit(checkQueueLength(3, 10))
