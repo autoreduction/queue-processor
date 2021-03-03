@@ -6,8 +6,8 @@
 # ############################################################################### #
 
 from django.urls.base import reverse
+from selenium.common.exceptions import ElementClickInterceptedException
 from selenium.webdriver.support.wait import WebDriverWait
-
 from model.database import access as db
 
 
@@ -39,8 +39,11 @@ def submit_and_wait_for_result(test):
     expected_url = reverse("run_confirmation", kwargs={"instrument": test.instrument_name})
 
     def submit_successful(driver) -> bool:
-        test.page.submit_button.click()
-        # the submit is successful
+        try:
+            test.page.submit_button.click()
+        except ElementClickInterceptedException:
+            pass
+        # the submit is successful if the URL has changed
         return expected_url in driver.current_url
 
     WebDriverWait(test.driver, 30).until(submit_successful)
