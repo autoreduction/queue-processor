@@ -88,14 +88,18 @@ jobs:
   dependency-check:
     name: Dependency-Check
     runs-on: ubuntu-18.04
+    container: centos/python-36-centos
     strategy:
       fail-fast: false
 
     steps:
       - uses: actions/checkout@v2
 
-      - name: Build container
-        run: docker build -f dependency-check/Dockerfile .
+      - name: Pip install
+        run: | 
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -e .
 
   pylint:
     name: Pylint
