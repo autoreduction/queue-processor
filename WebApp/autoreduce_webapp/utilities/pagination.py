@@ -13,10 +13,9 @@ import math
 
 class PageLimitException(Exception):
     """ Custom Exception class to catch when page record limit is reached"""
-    pass
 
 
-class CustomPaginator(object):
+class CustomPaginator:
     """
     CustomPaginator to allow for more complex functionality to be used without doing heavy
     lifting in the django template code
@@ -102,8 +101,7 @@ class CustomPaginator(object):
             else:
                 if len(self.display_list) >= 1 and self.display_list[-1] == "...":
                     continue
-                else:
-                    self.display_list.append("...")
+                self.display_list.append("...")
 
     def _set_next_and_previous(self):
         """
@@ -117,7 +115,7 @@ class CustomPaginator(object):
             self.has_previous = True
 
 
-class CustomPage(object):
+class CustomPage:
     """
     Generic CustomPage class to model a single page in the pagination
     """
@@ -137,7 +135,6 @@ class CustomPage(object):
 
     def set_start_and_end(self):
         """ Implemented by child class """
-        pass
 
     def add_record(self, record):
         """
