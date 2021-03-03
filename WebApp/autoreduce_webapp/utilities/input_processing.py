@@ -19,7 +19,7 @@ def parse_user_run_numbers(user_input):
     :raises Syntax error if the users input contains malformed chars
     """
     allowed_non_numeric = ['-', ',']
-    is_list = True if any(x in user_input for x in allowed_non_numeric) else False
+    is_list = any(x in user_input for x in allowed_non_numeric)
 
     # Single value handling
     if not is_list:
