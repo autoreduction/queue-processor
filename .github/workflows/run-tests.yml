@@ -139,6 +139,7 @@ jobs:
           pylint systemtests
           pylint utils
           pylint plotting
+          pylint WebApp
 
       - name: YAPF
         run: python -m yapf --exclude '**/migrations' --parallel --diff --recursive .
