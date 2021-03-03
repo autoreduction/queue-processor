@@ -49,6 +49,7 @@ class RerunJobsPage(Page, RerunFormMixin, NavbarMixin, FooterMixin, TourMixin):
 
     @property
     def form_validation_message(self) -> WebElement:
+        """Finds and returns the form validation message"""
         return self.driver.find_element_by_id("form_validation_message")
 
     @property
