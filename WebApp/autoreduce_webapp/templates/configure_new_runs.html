@@ -28,9 +28,9 @@
                 <div class="col-md-12 text-center">
                     <p>
                         {% if current_experiment_reference > 0 %}
-                        <a href="{% url 'instrument:variables' instrument=instrument.name start=run_start end=run_end %}">Click here to submit variables for a run range</a>
+                        <a href="{% url 'instrument:variables' instrument=instrument.name start=run_start end=run_end %}" id="go_to_other">Click here to submit variables for a run range</a>
                         {% else %}
-                        <a href="{% url 'instrument:variables_by_experiment' instrument=instrument.name experiment_reference=submit_for_experiment_reference %}">Click here to submit variables for an experiment reference</a>
+                        <a href="{% url 'instrument:variables_by_experiment' instrument=instrument.name experiment_reference=submit_for_experiment_reference %}" id="go_to_other">Click here to submit variables for an experiment reference</a>
                         {% endif %}
                     </p>
                 </div>

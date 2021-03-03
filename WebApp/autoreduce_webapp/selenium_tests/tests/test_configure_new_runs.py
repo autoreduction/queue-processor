@@ -56,3 +56,20 @@ class TestConfigureNewRunsPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
         assert back.text == "Cancel"
         back.click()
         assert reverse("runs:list", kwargs={"instrument": self.instrument_name}) in self.driver.current_url
+
+    def test_go_to_other_goes_to_experiment(self):
+        self.page.go_to_other.click()
+        url = reverse("instrument:variables_by_experiment",
+                      kwargs={
+                          "instrument": self.instrument_name,
+                          "experiment_reference": 1234567
+                      })
+        assert url in self.driver.current_url
+
+    def test_go_to_other_goes_to_run_range(self):
+        self.page = ConfigureNewRunsPage(self.driver, self.instrument_name, experiment_reference=1234567)
+        self.page.launch()
+
+        self.page.go_to_other.click()
+        url = reverse("instrument:variables", kwargs={"instrument": self.instrument_name, "start": 100001, "end": 0})
+        assert url in self.driver.current_url
