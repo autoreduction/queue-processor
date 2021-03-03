@@ -96,3 +96,7 @@ class ConfigureNewRunsPage(Page, RerunFormMixin, NavbarMixin, FooterMixin, TourM
     @property
     def replace_confirm(self) -> WebElement:
         return self.driver.find_element_by_id("replace_confirm")
+
+    @property
+    def go_to_other(self) -> WebElement:
+        return self.driver.find_element_by_id("go_to_other")
