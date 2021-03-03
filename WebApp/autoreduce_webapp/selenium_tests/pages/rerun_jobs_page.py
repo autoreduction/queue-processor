@@ -76,3 +76,16 @@ class RerunJobsPage(Page, RerunFormMixin, NavbarMixin, FooterMixin, TourMixin):
         Finds and returns the "Reset to values in the current reduce_vars script" button
         """
         return self.driver.find_element_by_id("currentScript")
+
+    @property
+    def error_container(self) -> WebElement:
+        """
+        Returns the container of the error message
+        """
+        return self.driver.find_element_by_id("error_container")
+
+    def error_message_text(self) -> str:
+        """
+        Returns the text shown in the error message
+        """
+        return self.driver.find_element_by_id("error_message").text

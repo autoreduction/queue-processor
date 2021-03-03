@@ -1,7 +1,7 @@
 # ############################################################################### #
 # Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
 #
-# Copyright &copy; 2020 ISIS Rutherford Appleton Laboratory UKRI
+# Copyright &copy; 2021 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 """
@@ -9,18 +9,18 @@ Selenium tests for the runs summary page
 """
 
 from django.urls import reverse
-from selenium.webdriver.support.ui import WebDriverWait
 
-from model.database import access as db
-from queue_processors.queue_processor.queue_listener import main
 from selenium_tests.pages.run_summary_page import RunSummaryPage
 from selenium_tests.tests.base_tests import (BaseTestCase, FooterTestMixin, NavbarTestMixin)
+from selenium_tests.utils import submit_and_wait_for_result
+
+from queue_processors.queue_processor.queue_listener import main
 from systemtests.utils.data_archive import DataArchive
 from utils.clients.connection_exception import ConnectionException
 from utils.clients.django_database_client import DatabaseClient
 
 
-class TestRunSummaryPageIntegration(NavbarTestMixin, BaseTestCase, FooterTestMixin):
+class TestRunSummaryPageIntegration(BaseTestCase, FooterTestMixin, NavbarTestMixin):
     """
     Test cases for the InstrumentSummary page when the Rerun form is NOT visible
     """
@@ -62,62 +62,11 @@ class TestRunSummaryPageIntegration(NavbarTestMixin, BaseTestCase, FooterTestMix
         # clicks the toggle to show the rerun panel, otherwise the buttons in the form are non interactable
         self.page.toggle_button.click()
 
-    def _find_run_in_database(self):
-        """
-        Find a ReductionRun record in the database
-        This includes a timeout to wait for several seconds to ensure the database has received
-        the record in question
-        :return: The resulting record
-        """
-        instrument = db.get_instrument(self.instrument_name)
-        return instrument.reduction_runs.filter(run_number=self.run_number)
-
-    def submit_and_wait_for_result(self):
-        """Waits until the queue listener has finished processing the current message"""
-        # forces the is_processing to return True so that the listener has time to actually start processing the message
-        self.listener._processing = True  #pylint:disable=protected-access
-
-        # only then submit, to avoid a deadlock that can happen while waiting
-        self.page.submit_button.click()
-
-        WebDriverWait(self.driver, 30).until(lambda _: not self.listener.is_processing_message())
-
-        # Get Result from database
-        results = self._find_run_in_database()
-
-        assert results
-        return results
-
-    def submit_after_reset_and_wait_for_result(self):
-        """
-        Submit after a reset button has been clicked. Then waits until the queue listener has finished processing.
-
-        Sticks the submission in a loop in case the first time doesn't work. The reason
-        it may not work is that resetting actually swaps out the whole form using JS, which
-        replaces ALL the elements and triggers a bunch of DOM re-renders/updates, and that isn't fast.
-        """
-        self.listener._processing = True  #pylint:disable=protected-access
-        expected_url = reverse("run_confirmation", kwargs={"instrument": self.instrument_name})
-
-        def submit_successful(driver) -> bool:
-            self.page.submit_button.click()
-            # the submit is successful
-            return expected_url in driver.current_url
-
-        WebDriverWait(self.driver, 30).until(submit_successful)
-        WebDriverWait(self.driver, 30).until(lambda _: not self.listener.is_processing_message())
-
-        # Get Result from database
-        results = self._find_run_in_database()
-
-        assert results
-        return results
-
     def test_submit_rerun_same_variables(self):
         """
         Test: Just opening the submit page and clicking rerun
         """
-        result = self.submit_and_wait_for_result()
+        result = submit_and_wait_for_result(self)
         assert len(result) == 2
 
         assert result[0].run_version == 0
@@ -133,7 +82,7 @@ class TestRunSummaryPageIntegration(NavbarTestMixin, BaseTestCase, FooterTestMix
         # change the value of the variable field
         self.page.variable1_field = "the new value in the field"
 
-        result = self.submit_and_wait_for_result()
+        result = submit_and_wait_for_result(self)
         assert len(result) == 2
 
         assert result[0].run_version == 0
@@ -154,7 +103,7 @@ class TestRunSummaryPageIntegration(NavbarTestMixin, BaseTestCase, FooterTestMix
         self.page.variable1_field = "the new value in the field"
 
         self.page.reset_to_initial_values.click()
-        result = self.submit_after_reset_and_wait_for_result()
+        result = submit_and_wait_for_result(self)
         assert len(result) == 2
 
         assert result[0].run_version == 0
@@ -171,7 +120,7 @@ class TestRunSummaryPageIntegration(NavbarTestMixin, BaseTestCase, FooterTestMix
         Test: Submitting a run after clicking the reset to current script uses the values saved in the current script
         """
         self.page.reset_to_current_values.click()
-        result = self.submit_after_reset_and_wait_for_result()
+        result = submit_and_wait_for_result(self)
 
         assert len(result) == 2
 
@@ -188,7 +137,7 @@ class TestRunSummaryPageIntegration(NavbarTestMixin, BaseTestCase, FooterTestMix
         """
         Test: Submitting a run leads to the correct page
         """
-        result = self.submit_and_wait_for_result()
+        result = submit_and_wait_for_result(self)
         expected_url = reverse("run_confirmation", kwargs={"instrument": self.instrument_name})
         assert expected_url in self.driver.current_url
         # wait until the message processing is complete before ending the test
