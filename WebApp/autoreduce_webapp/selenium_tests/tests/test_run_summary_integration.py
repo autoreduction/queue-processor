@@ -72,10 +72,13 @@ class TestRunSummaryPageIntegration(NavbarTestMixin, BaseTestCase, FooterTestMix
         instrument = db.get_instrument(self.instrument_name)
         return instrument.reduction_runs.filter(run_number=self.run_number)
 
-    def wait_for_result(self):
+    def submit_and_wait_for_result(self):
         """Waits until the queue listener has finished processing the current message"""
         # forces the is_processing to return True so that the listener has time to actually start processing the message
         self.listener._processing = True  #pylint:disable=protected-access
+
+        # only then submit, to avoid a deadlock that can happen while waiting
+        self.page.submit_button.click()
         while self.listener.is_processing_message():
             time.sleep(0.5)
 
@@ -85,26 +88,36 @@ class TestRunSummaryPageIntegration(NavbarTestMixin, BaseTestCase, FooterTestMix
         assert results
         return results
 
-    def submit_after_reset(self):
+    def submit_after_reset_and_wait_for_result(self):
         """
-        Submit after a reset button has been clicked.
+        Submit after a reset button has been clicked. Then waits until the queue listener has finished processing.
 
         Sticks the submission in a loop in case the first time doesn't work. The reason
         it may not work is that resetting actually swaps out the whole form using JS, which
         replaces ALL the elements and triggers a bunch of DOM re-renders/updates, and that isn't fast.
         """
+        self.listener._processing = True  #pylint:disable=protected-access
+
         while str(self.run_number) in self.driver.current_url:
             # NOTE that we MUST wait first and then try to submit, otherwise the processing
             # may be finished before wait_for_result is called, causing it to be stuck forever
             time.sleep(1)
             self.page.submit_button.click()
 
+        while self.listener.is_processing_message():
+            time.sleep(0.5)
+
+        # Get Result from database
+        results = self._find_run_in_database()
+
+        assert results
+        return results
+
     def test_submit_rerun_same_variables(self):
         """
         Test: Just opening the submit page and clicking rerun
         """
-        self.page.submit_button.click()
-        result = self.wait_for_result()
+        result = self.submit_and_wait_for_result()
         assert len(result) == 2
 
         assert result[0].run_version == 0
@@ -120,8 +133,7 @@ class TestRunSummaryPageIntegration(NavbarTestMixin, BaseTestCase, FooterTestMix
         # change the value of the variable field
         self.page.variable1_field = "the new value in the field"
 
-        self.page.submit_button.click()
-        result = self.wait_for_result()
+        result = self.submit_and_wait_for_result()
         assert len(result) == 2
 
         assert result[0].run_version == 0
@@ -142,9 +154,7 @@ class TestRunSummaryPageIntegration(NavbarTestMixin, BaseTestCase, FooterTestMix
         self.page.variable1_field = "the new value in the field"
 
         self.page.reset_to_initial_values.click()
-        self.submit_after_reset()
-
-        result = self.wait_for_result()
+        result = self.submit_after_reset_and_wait_for_result()
         assert len(result) == 2
 
         assert result[0].run_version == 0
@@ -161,8 +171,8 @@ class TestRunSummaryPageIntegration(NavbarTestMixin, BaseTestCase, FooterTestMix
         Test: Submitting a run after clicking the reset to current script uses the values saved in the current script
         """
         self.page.reset_to_current_values.click()
-        self.submit_after_reset()
-        result = self.wait_for_result()
+        result = self.submit_after_reset_and_wait_for_result()
+
         assert len(result) == 2
 
         assert result[0].run_version == 0
@@ -178,10 +188,9 @@ class TestRunSummaryPageIntegration(NavbarTestMixin, BaseTestCase, FooterTestMix
         """
         Test: Submitting a run leads to the correct page
         """
-        self.page.submit_button.click()
+        result = self.submit_and_wait_for_result()
         expected_url = reverse("run_confirmation", kwargs={"instrument": self.instrument_name})
         assert expected_url in self.driver.current_url
         # wait until the message processing is complete before ending the test
         # otherwise the message handling can polute the DB state for the next test
-        result = self.wait_for_result()
         assert len(result) == 2
