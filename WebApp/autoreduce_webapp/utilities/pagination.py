@@ -23,7 +23,7 @@ class CustomPaginator(object):
     lifting in the django template code
     """
 
-    # pylint:disable=too-many-instance-attributes,too-many-arguments
+    # pylint:disable=too-many-arguments
     def __init__(self, page_type, query_set, items_per_page, page_tolerance, current_page):
         """
         :param query_set: All data to show
