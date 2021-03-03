@@ -56,7 +56,7 @@ NXLOAD_MOCK_EMPTY = Mock()
 NXLOAD_MOCK_EMPTY.items = Mock(return_value=[('raw_data_1', DataHolder(['']))])
 
 
-# pylint:disable=missing-docstring,no-self-use,too-many-public-methods
+# pylint:disable=missing-docstring,no-self-use
 class TestRunDetection(unittest.TestCase):
     def tearDown(self):
         if os.path.isfile('test_lastrun.txt'):
