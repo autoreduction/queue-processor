@@ -16,7 +16,6 @@ from queue_processors.queue_processor.variable_utils import VariableUtils as vu
 from model.database import access
 
 
-# pylint:disable=missing-class-docstring
 class TestVariableUtils(unittest.TestCase):
     def setUp(self):
         self.var_model = access.start_database().variable_model

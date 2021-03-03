@@ -16,7 +16,6 @@ from queue_processors.queue_processor.status_utils import StatusUtils
 from utils.clients.django_database_client import DjangoORM
 
 
-# pylint:disable=missing-class-docstring,missing-function-docstring
 class TestStatusUtils(unittest.TestCase):
     def setUp(self):
         self.status_utils = StatusUtils()
