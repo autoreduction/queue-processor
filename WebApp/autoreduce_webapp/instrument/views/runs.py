@@ -227,7 +227,12 @@ def configure_new_runs(request, instrument=None, start=0, end=0, experiment_refe
 
 
 def configure_new_runs_POST(request, instrument_name, start=0, end=0, experiment_reference=0):
-    # Submission to modify variables.
+    """
+    Submission to modify variables. Acts on POST request.
+
+    Depending on the parameters it either makes them for a run range (when start is given, end is optional)
+    or for experiment reference (when experiment_reference is given).
+    """
     # [("var-standard-"+name, value) or ("var-advanced-"+name, value)]
     var_list = [t for t in request.POST.items() if t[0].startswith("var-")]
 
@@ -241,8 +246,6 @@ def configure_new_runs_POST(request, instrument_name, start=0, end=0, experiment
     }
     all_vars = {"standard_vars": standard_vars, "advanced_vars": advanced_vars}
 
-    # TODO reconsider the need for this
-    tracks_script = request.POST.get("track_script_checkbox") == "on"
     reduce_vars = ReductionScript(instrument_name, 'reduce_vars.py')
     reduce_vars_module = reduce_vars.load()
     args_for_range = InstrumentVariablesUtils.merge_arguments(all_vars, reduce_vars_module)
@@ -251,7 +254,6 @@ def configure_new_runs_POST(request, instrument_name, start=0, end=0, experiment
     is_run_range = request.POST.get("variable-range-toggle-value", "True") == "True"
     if is_run_range:
         start = int(request.POST.get("run_start", 1))
-        # TODO actually respect END run
         end = int(request.POST.get("run_end")) if request.POST.get("run_end", None) else None
         possible_variables = InstrumentVariable.objects.filter(start_run__lte=start, instrument__name=instrument_name)
 
@@ -290,6 +292,9 @@ def configure_new_runs_POST(request, instrument_name, start=0, end=0, experiment
 
 
 def configure_new_runs_GET(instrument_name, start=0, end=0, experiment_reference=0):
+    """
+    GET for the configure new runs page
+    """
     instrument = Instrument.objects.get(name__iexact=instrument_name)
 
     editing = (start > 0 or experiment_reference > 0)  # TODO what is this for?
