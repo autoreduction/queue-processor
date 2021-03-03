@@ -16,7 +16,7 @@ jobs:
         with:
           python-version: 3.7
 
-      - uses: actions/cache@v1
+      - uses: actions/cache@v2
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
@@ -57,7 +57,7 @@ jobs:
         with:
           python-version: 3.7
 
-      - uses: actions/cache@v1
+      - uses: actions/cache@v2
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
@@ -88,14 +88,25 @@ jobs:
   dependency-check:
     name: Dependency-Check
     runs-on: ubuntu-18.04
+    container: centos/python-36-centos7
     strategy:
       fail-fast: false
 
     steps:
       - uses: actions/checkout@v2
-
-      - name: Build container
-        run: docker build -f dependency-check/Dockerfile .
+      
+      - uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ job.container.image }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ job.container.image }}-pip-
+      
+      - name: Pip install
+        run: | 
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -e .
 
   pylint:
     name: Pylint
@@ -111,7 +122,7 @@ jobs:
         with:
           python-version: 3.7
 
-      - uses: actions/cache@v1
+      - uses: actions/cache@v2
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
