@@ -55,7 +55,7 @@ class TestCustomPage(unittest.TestCase):
         self.assertRaises(PageLimitException, self.page.add_record, 'test_record_2')
 
 
-class MockRunData(object):
+class MockRunData:
     """ Test class to simulate a Run record from the database """
     def __init__(self, run_number, date):
         self.run_number = run_number
