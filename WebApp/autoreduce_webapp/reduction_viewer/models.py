@@ -59,12 +59,6 @@ class Status(models.Model):
         """ :return: (unicode str) of the status field"""
         return u'%s' % self.value
 
-    def __str__(self):
-        """
-        :return: str representation of status
-        """
-        return f"{self.value}"
-
     def value_verbose(self):
         """
         :return: (str) the status as its textual value
