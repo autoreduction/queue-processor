@@ -62,9 +62,9 @@
                         {% if not has_variables %}disabled{% endif %}><i class="fa fa-eye"></i>&nbsp;&nbsp;See Instrument variables</a></p>
             </div>
             {% if not has_variables %}
-            <div class="col-md-offset-6 col-md-6 text-center alert alert-warning" role="alert">
+            <div class="col-md-offset-6 col-md-6 text-center alert alert-warning" role="alert" id="alert_message">
                 <i class="fa fa-exclamation-triangle"></i>&nbsp;&nbsp;
-                The buttons above have been disabled because reduce_vars.py is missing for this instrument.
+                The buttons above have been disabled because {{ error_reason }}.
             </div>
             {% endif %}
 

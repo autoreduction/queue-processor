@@ -10,6 +10,7 @@ Selenium tests for the runs summary page
 
 from selenium_tests.pages.runs_list_page import RunsListPage
 from selenium_tests.tests.base_tests import NavbarTestMixin, BaseTestCase, FooterTestMixin
+from systemtests.utils.data_archive import DataArchive
 
 
 class TestRunsListPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
@@ -24,7 +25,8 @@ class TestRunsListPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
         Sets up the InstrumentSummaryPage object
         """
         super().setUp()
-        self.page = RunsListPage(self.driver, "TestInstrument")
+        self.instrument_name = "TestInstrument"
+        self.page = RunsListPage(self.driver, self.instrument_name)
 
     def test_reduction_run_displayed(self):
         """
@@ -32,4 +34,28 @@ class TestRunsListPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
         When: The run exists in the database
         """
         runs = self.page.launch().get_run_numbers_from_table()
-        self.assertIn("99999", runs)
+        assert "99999" in runs
+
+    def test_alert_message_when_missing_reduce_vars(self):
+        """
+        Test that the correct message is shown when the reduce_vars.py file is missing
+        """
+        self.page.launch()
+        expected = "The buttons above have been disabled because reduce_vars.py is missing for this instrument."
+        assert self.page.alert_message_text() == expected
+
+    def test_alert_message_when_reduce_vars_has_error(self):
+        """
+        Test that the correct message is shown when the reduce_vars.py has an error in it
+        """
+        data_archive = DataArchive([self.instrument_name], 21, 21)
+        data_archive.create()
+
+        # add a reduce_vars script with a syntax error -> a missing " after value1
+        data_archive.add_reduce_vars_script(self.instrument_name, """standard_vars={"variable1":"value1}""")
+
+        self.page.launch()
+        expected = "The buttons above have been disabled because reduce_vars.py has an import or syntax error."
+        assert self.page.alert_message_text() == expected
+
+        data_archive.delete()
