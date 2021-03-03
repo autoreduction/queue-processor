@@ -8,9 +8,9 @@
 Selenium tests for the runs summary page
 """
 
-import time
-
 from django.urls import reverse
+from selenium.webdriver.support.ui import WebDriverWait
+
 from model.database import access as db
 from queue_processors.queue_processor.queue_listener import main
 from selenium_tests.pages.run_summary_page import RunSummaryPage
@@ -79,8 +79,8 @@ class TestRunSummaryPageIntegration(NavbarTestMixin, BaseTestCase, FooterTestMix
 
         # only then submit, to avoid a deadlock that can happen while waiting
         self.page.submit_button.click()
-        while self.listener.is_processing_message():
-            time.sleep(0.5)
+
+        WebDriverWait(self.driver, 30).until(lambda _: not self.listener.is_processing_message())
 
         # Get Result from database
         results = self._find_run_in_database()
@@ -97,15 +97,15 @@ class TestRunSummaryPageIntegration(NavbarTestMixin, BaseTestCase, FooterTestMix
         replaces ALL the elements and triggers a bunch of DOM re-renders/updates, and that isn't fast.
         """
         self.listener._processing = True  #pylint:disable=protected-access
+        expected_url = reverse("run_confirmation", kwargs={"instrument": self.instrument_name})
 
-        while str(self.run_number) in self.driver.current_url:
-            # NOTE that we MUST wait first and then try to submit, otherwise the processing
-            # may be finished before wait_for_result is called, causing it to be stuck forever
-            time.sleep(1)
+        def submit_successful(driver) -> bool:
             self.page.submit_button.click()
+            # the submit is successful
+            return expected_url in driver.current_url
 
-        while self.listener.is_processing_message():
-            time.sleep(0.5)
+        WebDriverWait(self.driver, 30).until(submit_successful)
+        WebDriverWait(self.driver, 30).until(lambda _: not self.listener.is_processing_message())
 
         # Get Result from database
         results = self._find_run_in_database()

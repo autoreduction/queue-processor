@@ -68,19 +68,6 @@ class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterT
         instrument = db.get_instrument(self.instrument_name)
         return instrument.reduction_runs.filter(run_number=self.run_number)
 
-    def wait_for_result(self):
-        """Waits until the queue listener has finished processing the current message"""
-        # forces the is_processing to return True so that the listener has time to actually start processing the message
-        self.listener._processing = True  #pylint:disable=protected-access
-        while self.listener.is_processing_message():
-            time.sleep(0.5)
-
-        # Get Result from database
-        results = self._find_run_in_database()
-
-        assert results
-        return results
-
     def _submit_var_value(self, value, start=None, end=None, experiment_number=None):
         self.page = ConfigureNewRunsPage(self.driver,
                                          self.instrument_name,
