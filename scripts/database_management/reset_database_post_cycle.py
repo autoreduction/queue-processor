@@ -17,7 +17,6 @@ import re
 import pymysql
 
 
-# pylint:disable=too-few-public-methods
 # pylint:disable=too-many-arguments,attribute-defined-outside-init
 class DatabaseReset:
     """

@@ -31,7 +31,6 @@ class TestAbstractClient(unittest.TestCase):
         extends ClientSettings
         """
 
-        # pylint:disable=too-few-public-methods
         class DerivedSettings(ClientSettings):
             pass
 

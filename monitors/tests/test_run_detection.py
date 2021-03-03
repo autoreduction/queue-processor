@@ -34,7 +34,7 @@ RUN_DATA = {
 CSV_FILE = "WISH,44733,lastrun_wish.txt,summary_wish.txt,data_dir,.nxs"
 
 
-# pylint:disable=too-few-public-methods,missing-function-docstring
+# pylint:disable=missing-function-docstring
 class DataHolder:
     """
     Small helper class to represent expected nexus data format

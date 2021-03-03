@@ -64,7 +64,6 @@ class StatusUtils(object):
         return self._get_status("s")
 
 
-# pylint:disable=too-few-public-methods
 class InstrumentUtils(object):
     """
     Utilities for the Instrument model

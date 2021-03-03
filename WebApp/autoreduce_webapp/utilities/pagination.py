@@ -11,7 +11,6 @@ This is currently used in the runs_list.html page
 import math
 
 
-# pylint:disable=too-few-public-methods
 class PageLimitException(Exception):
     """ Custom Exception class to catch when page record limit is reached"""
     pass
@@ -118,7 +117,6 @@ class CustomPaginator(object):
             self.has_previous = True
 
 
-# pylint:disable=too-few-public-methods
 class CustomPage(object):
     """
     Generic CustomPage class to model a single page in the pagination
@@ -152,7 +150,6 @@ class CustomPage(object):
         self.records.append(record)
 
 
-# pylint:disable=too-few-public-methods
 class RunPage(CustomPage):
     """
     Specific implementation for rendering the pagination if sorting by Run Number
@@ -170,7 +167,6 @@ class RunPage(CustomPage):
             self.display_name = "{} - {}".format(self.start, self.end)
 
 
-# pylint:disable=too-few-public-methods
 class DatePage(CustomPage):
     """
     Specific implementation for rendering the pagination if sorting by Date

@@ -13,7 +13,6 @@ from ..settings import SCRIPT_TIMEOUT
 class TimeOut:
     """ Class used for handling script timeouts"""
 
-    # pylint: disable=too-few-public-methods
     def __init__(self,
                  seconds=1,
                  error_message='Script ran for more than ' + str(SCRIPT_TIMEOUT) + ' seconds - timed out'):
