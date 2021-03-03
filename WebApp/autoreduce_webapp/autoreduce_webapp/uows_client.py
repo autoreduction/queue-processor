@@ -43,7 +43,7 @@ class UOWSClient(object):
         try:
             return self.client.service.isTokenValid(session_id)
         except suds.WebFault:
-            LOGGER.warn("Session ID is not valid: %s", session_id)
+            LOGGER.warning("Session ID is not valid: %s", session_id)
             return False
 
     def get_person(self, session_id):
@@ -67,7 +67,7 @@ class UOWSClient(object):
                 }
                 return trimmed_person
         except suds.WebFault:
-            LOGGER.warn("Session ID is not valid: %s", session_id)
+            LOGGER.warning("Session ID is not valid: %s", session_id)
         return None
 
     def logout(self, session_id):
@@ -78,4 +78,4 @@ class UOWSClient(object):
         try:
             self.client.service.logout(session_id)
         except suds.WebFault:
-            LOGGER.warn("Failed to logout Session ID %s", session_id)
+            LOGGER.warning("Failed to logout Session ID %s", session_id)
