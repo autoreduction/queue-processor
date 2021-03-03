@@ -84,7 +84,6 @@ class TestManualRemove(unittest.TestCase):
         Test: That the correct number of run versions are discovered
         When: find_run_versions_in_database is called
         """
-        # Test data originates from build/database/populate_reduction_viewer.sql
         actual = self.manual_remove.find_run_versions_in_database(run_number=101)
         self.assertEqual(3, len(actual))
 
@@ -93,7 +92,6 @@ class TestManualRemove(unittest.TestCase):
         Test: That no run versions are found for a run number that doesn't exist in the database
         When: find_run_versions_in_database is called
         """
-        # Test data originates from build/database/populate_reduction_viewer.sql
         actual = self.manual_remove.find_run_versions_in_database(run_number='000')
         self.assertEqual(0, len(actual))
 

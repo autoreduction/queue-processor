@@ -33,7 +33,7 @@ class UOWSClient(object):
     def __enter__(self):
         return self
 
-    def __exit__(self, exit_type, value, traceback):
+    def __exit__(self, _, value, traceback):
         pass
 
     def check_session(self, session_id):
