@@ -23,7 +23,7 @@ class TestDjangoDashApp(unittest.TestCase):
     @patch("plotting.plot_meta_language.interpreter.Interpreter.interpret")
     @patch("plotting.plot_factory.plot_factory.PlotFactory")
     @patch("plotting.plot_factory.dashapp.DjangoDash")
-    def test_get_dashapp(self, mock_dashapp, mock_plot_factory, mock_interpreter, mock_prepare):
+    def test_get_dashapp(self, mock_dashapp, _, __, ___):
         """
         Test:get_dashapp() is called returning an instance of DjangoDash DashApp object
         When: called with within DjangoDashApp() during class initialisation

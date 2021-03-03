@@ -37,7 +37,7 @@ class TestPlotFactory(unittest.TestCase):
     @patch("plotting.plot_factory.dashapp.DjangoDash")
     @patch('plotting.plot_factory.plot_factory.PlotFactory.create_trace_list')
     @patch('plotting.plot_factory.plot_factory.Layout')
-    def test_construct_plot(self, mock_layout, mock_get_trace, mock_dashapp):
+    def test_construct_plot(self, _, __, mock_dashapp):
         """
         Test: dashapp object is returned
         When: called with self.create_trace_list() and Layout().layout
