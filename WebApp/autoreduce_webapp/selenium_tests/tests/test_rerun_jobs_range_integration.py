@@ -107,17 +107,16 @@ class TestRerunJobsRangePageIntegration(NavbarTestMixin, BaseTestCase, FooterTes
                                "run_version": 1
                            })
 
-        run_number_99999_v1 = self.driver.find_element_by_css_selector(f'[href*="{make_run_url(99999)}"]')
-        run_number_100000_v1 = self.driver.find_element_by_css_selector(f'[href*="{make_run_url(100000)}"]')
-
-        assert run_number_99999_v1.is_displayed()
-        assert run_number_100000_v1.is_displayed()
-
-        # TODO check variables!
-        assert RunSummaryPage(self.driver, self.instrument_name, 99999,
-                              1).launch().variable1_field.get_attribute("value") == variable_value
-        assert RunSummaryPage(self.driver, self.instrument_name, 100000,
-                              1).launch().variable1_field.get_attribute("value") == variable_value
+        runs_list_page = RunsListPage(self.driver, self.instrument_name)
+        for run in self.run_number:
+            runs_list_page.launch()
+            run_number_v1 = self.driver.find_element_by_css_selector(f'[href*="{make_run_url(run)}"]')
+            assert run_number_v1.is_displayed()
+            assert RunSummaryPage(self.driver, self.instrument_name, run,
+                                  1).launch().variable1_field.get_attribute("value") == variable_value
+            vars_for_run_v1 = InstrumentVariable.objects.filter(start_run=run)
+            for var in vars_for_run_v1:
+                assert var.value == variable_value
 
     def test_run_range_default_variable_value(self):
         assert not self.page.form_validation_message.is_displayed()
