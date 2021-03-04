@@ -3,6 +3,7 @@
     // Search all topics and filter them according to search terms and a category
     function filterHelpTopics(searchTerms, category) {
         $('section.help-topic, .no-results').hide();
+        $('#topics-sidebar').removeClass('active');
 
         let i, searchTerm;
         if (searchTerms.length > 0) {
@@ -40,10 +41,11 @@
 
     // Generate a link for each topic heading and add the link also to the sidebar
     function generateSideNavLinks() {
+        const sidenav = $('#sidenav-contents');
         $('.main-content section .panel-heading h3').each(function () {
             let id = headingTextToDashed($(this).text());
             let link = '<a href="#' + id + '">' + $(this).text() + '</a>';
-            $('#sidenav').append('<li>' + link + '</li>');
+            sidenav.append('<li>' + link + '</li>');
             $(this).html(link);
             $(this).attr("id", id);
         });
@@ -92,7 +94,7 @@
         });
 
         // Reset search filters on clicking sidebar link
-        $('#sidenav').click(function () {
+        $('#sidenav-contents').click(function () {
             $('[data-category="all"]').click();
             $('#help-search').val("");
             filterHelpTopics(stringToSearchTerms($(this).val()),
