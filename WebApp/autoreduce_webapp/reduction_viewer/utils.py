@@ -13,35 +13,14 @@ should be able to be removed. Many are relating to imports
 """
 import time
 
-import django.core.exceptions
-import django.http
 from autoreduce_webapp.settings import FACILITY
+from reduction_viewer.models import ReductionRun
 
-from reduction_viewer.models import Instrument, ReductionRun
 from model.message.message import Message
 from utils.clients.queue_client import QueueClient
 
 
-class InstrumentUtils(object):
-    """
-    Utilities for the Instrument model
-    """
-    @staticmethod
-    def get_instrument(instrument_name):
-        """
-        Helper method that will try to get an instrument matching the given name
-        or create one if it doesn't yet exist
-        """
-        # TODO remove?
-        try:
-            # pylint:disable=no-member
-            instrument = Instrument.objects.get(name__iexact=instrument_name)
-        except django.core.exceptions.ObjectDoesNotExist:
-            raise django.http.Http404()
-        return instrument
-
-
-class ReductionRunUtils(object):
+class ReductionRunUtils:
     """
     Utilities for the ReductionRun model
     """
@@ -64,9 +43,10 @@ class ReductionRunUtils(object):
 
         return {"standard_vars": standard_vars, "advanced_vars": advanced_vars}
 
+    # pylint: disable=too-many-arguments
     @staticmethod
     def send_retry_message(user_id: int, most_recent_run: ReductionRun, run_description: str, script_text: str,
-                           new_script_arguments: dict, overwrite_previous_data: bool):
+                           new_script_arguments: dict, overwrite_previous_data: bool) -> None:
         """
         Creates & sends a retry message given the parameters
 
@@ -103,7 +83,7 @@ class ReductionRunUtils(object):
             ReductionRunUtils.make_kwargs_from_runvariables(most_recent_run, use_value=True), most_recent_run.overwrite)
 
 
-class ScriptUtils(object):
+class ScriptUtils:
     """
     Utilities for the scripts field
     """
@@ -147,7 +127,7 @@ class ScriptUtils(object):
         return int(time.mktime(time.strptime(string_time, time_format)))
 
 
-class MessagingUtils(object):
+class MessagingUtils:
     """
     Utilities for sending messages to ActiveMQ
     """
