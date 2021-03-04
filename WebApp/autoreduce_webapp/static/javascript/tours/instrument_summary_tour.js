@@ -11,7 +11,7 @@ steps = [
         content: "You can view details about the instrument when active here.",
         placement: "bottom"
     },
-        {
+    {
         element: "#pause",
         title: "Pause Reduction",
         content: "Here, you are able to pause and unpause reduction for the instrument.",
@@ -24,8 +24,8 @@ steps = [
         placement: "bottom"
     },
     {
-        element: "#btn-configure_new_jobs",
-        title: "Configuring New Jobs",
+        element: "#btn-configure_new_runs",
+        title: "Configuring New Runs",
         content: "To configure a new job, you can select this button.",
         placement: "bottom"
     },
@@ -79,14 +79,14 @@ steps = [
             "page here.",
         placement: "bottom"
     },
-        {
+    {
         element: "#apply_filters",
         title: "Filters",
         content: "Lastly, you can apply your filtered changes by selecting apply.",
         placement: "bottom"
     },
 ];
-if (typeof tourSteps == 'undefined'){
+if (typeof tourSteps == 'undefined') {
     tourSteps = steps
 }
 else {

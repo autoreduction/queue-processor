@@ -54,5 +54,5 @@ class TestProcess(unittest.TestCase):
         Test: An expected string is returned
         When: dict_to_string is called with a valid dict
         """
-        expected = "\n\tcheck_1 - True\n\tcheck_2 - True\n"
+        expected = "check_1 - True, check_2 - True"
         self.assertEqual(process.dict_to_string(self.true_validity_dict), expected)

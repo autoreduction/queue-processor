@@ -1,7 +1,7 @@
 <div class="panel panel-default">
     <div class="panel-heading">
         <div class="panel-title">
-            <a data-toggle="collapse" href="#toggleForm" data-target="#rerun_form">
+            <a data-toggle="collapse" href="#toggleForm" data-target="#rerun_form" id="toggle_form">
                 <i class="fa fa-chevron-right"></i> Re-run reduction job
             </a>
         </div>
@@ -10,7 +10,6 @@
         <form id="run_variables" method="POST" action="{% url 'run_confirmation' instrument=instrument.name %}"
               class="form-horizontal">
             {% csrf_token %}
-            <input type="hidden" name="use_current_script" id="use_current_script" value="false">
             <input type="hidden" name="run_range" value="{{ run_number }}">
             <input type="hidden" name="run_version" value="{{ run_version }}">
             <div class="row">
@@ -41,17 +40,15 @@
                         <div class="row">
                             <ul class="js-form-actions">
                                 <li>
-                                    <a href="#resetValues" id="resetValues">Reset to original script and values</a>
-                                    <div class="js-explaination visible-xs-block">Reset to the script and variables
-                                        previously specified for the run.
-                                    </div>
+                                    <a href="#resetValues" id="resetValues">Reset variables to initial values used for this run</a>
+                                    <div class="js-explaination visible-xs-block">Reset the values of the variables to the ones previously used for this run.</div>
                                 </li>
+                                {% if current_standard_variables %}
                                 <li>
-                                    <a href="#currentScript" id="currentScript">Reset to current script and values</a>
-                                    <div class="js-explaination visible-xs-block">Reset to use the current script and
-                                        the default variables that it contains.
-                                    </div>
+                                    <a href="#currentScript" id="currentScript">Reset to values in the current reduce_vars script</a>
+                                    <div class="js-explaination visible-xs-block">Reset to the values currently contained in the reduce_vars script.</div>
                                 </li>
+                                {% endif %}
                                 <li>
                                     <input type="checkbox" name="overwrite_checkbox" id="overwrite_checkbox" checked>
                                     <a href="#overwrite" id="overwrite"> Overwrite Previous Data</a>
@@ -62,6 +59,7 @@
                                         separate out the data output from your different re-runs.
                                     </div>
                                 </li>
+
                             </ul>
                         </div>
                     </div>
@@ -72,17 +70,21 @@
             </div>
             <div class="form-group variables-buttons">
                 <div class="col-md-9 text-right">
-                    <a href="#cancelForm" class="btn btn-danger" id="cancelForm">Cancel</a>
-                    <input type="submit" value="Re-run with new variables" class="btn btn-success" id="variableSubmit"/>
+                    <input type="submit" value="Re-run with new variables" class="btn btn-success" id="variableSubmit" />
                 </div>
             </div>
         </form>
+    </div>
+    <div class="row col-md-12 pt-2">
+        <div class="text-center">
+            <a href="{% url 'runs:list' instrument.name %}" class="btn btn-primary" id="cancel">Back to {{ instrument.name }} runs</a>
+        </div>
     </div>
 </div>
 
 <div class="hide">
     <div class="js-default-variables">
-        {% include "snippets/edit_variables.html" with standard_variables=default_standard_variables advanced_variables=default_advanced_variables instrument=instrument.name only %}
+        {% include "snippets/edit_variables.html" with standard_variables=standard_variables advanced_variables=advanced_variables instrument=instrument.name only %}
     </div>
     <div class="js-current-variables">
         {% include "snippets/edit_variables.html" with standard_variables=current_standard_variables advanced_variables=current_advanced_variables instrument=instrument.name only %}

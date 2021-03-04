@@ -66,6 +66,9 @@ class Status(models.Model):
         return dict(Status.STATUS_CHOICES)[self.value]
 
     def __str__(self) -> str:
+        """
+        :return: str representation of status
+        """
         return self.value_verbose()
 
 

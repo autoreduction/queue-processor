@@ -19,6 +19,7 @@ from typing import Tuple
 from model.message.message import Message
 from queue_processors.queue_processor.handle_message import HandleMessage
 from utils.clients.queue_client import QueueClient
+from utils.clients.connection_exception import ConnectionException
 
 
 class QueueListener:
@@ -111,7 +112,12 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except ConnectionException as exp:
+        logging.getLogger("queue_listener").error("Exception occurred while connecting: %s %s\n\n%s",
+                                                  type(exp).__name__, exp, traceback.format_exc())
+        raise
 
     # print a success message to the terminal in case it's not being run through the daemon
     print("QueueClient connected and QueueListener active.")

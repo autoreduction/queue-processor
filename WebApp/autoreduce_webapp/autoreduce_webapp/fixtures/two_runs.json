@@ -1,0 +1,126 @@
+[
+    {
+        "model": "reduction_viewer.reductionrun",
+        "pk": 1,
+        "fields": {
+            "run_number": 99999,
+            "status_id": 5,
+            "run_version": 0,
+            "last_updated": "2020-10-19 17:35:04+00:00",
+            "created": "2020-10-19 17:30:04+00:00",
+            "reduction_log": "test_log",
+            "admin_log": "log",
+            "hidden_in_failviewer": 0,
+            "experiment_id": 1,
+            "instrument_id": 1
+        }
+    },
+    {
+        "model": "reduction_viewer.reductionrun",
+        "pk": 2,
+        "fields": {
+            "run_number": 100000,
+            "status_id": 5,
+            "run_version": 0,
+            "last_updated": "2020-10-19 17:35:04+00:00",
+            "created": "2020-10-19 17:30:04+00:00",
+            "reduction_log": "test_log",
+            "admin_log": "log",
+            "hidden_in_failviewer": 0,
+            "experiment_id": 1,
+            "instrument_id": 1
+        }
+    },
+    {
+        "pk": 1,
+        "model": "reduction_viewer.datalocation",
+        "fields": {
+            "file_path": "/tmp",
+            "reduction_run_id": 1
+        }
+    },
+    {
+        "pk": 2,
+        "model": "reduction_viewer.datalocation",
+        "fields": {
+            "file_path": "/tmp",
+            "reduction_run_id": 2
+        }
+    },
+    {
+        "model": "reduction_viewer.experiment",
+        "pk": 1,
+        "fields": {
+            "reference_number": 1234567
+        }
+    },
+    {
+        "model": "reduction_viewer.instrument",
+        "pk": 1,
+        "fields": {
+            "name": "TestInstrument",
+            "is_active": true,
+            "is_paused": false
+        }
+    },
+    {
+        "model": "instrument.variable",
+        "pk": 1,
+        "fields": {
+            "name": "variable1",
+            "value": "value1",
+            "type": "text",
+            "is_advanced": false,
+            "help_text": ""
+        }
+    },
+    {
+        "model": "instrument.variable",
+        "pk": 2,
+        "fields": {
+            "name": "variable1",
+            "value": "value2",
+            "type": "text",
+            "is_advanced": false,
+            "help_text": ""
+        }
+    },
+    {
+        "model": "instrument.instrumentvariable",
+        "pk": 1,
+        "fields": {
+            "variable_ptr_id": 1,
+            "instrument_id": 1,
+            "experiment_reference": null,
+            "start_run": 99999,
+            "tracks_script": true
+        }
+    },
+    {
+        "model": "instrument.instrumentvariable",
+        "pk": 2,
+        "fields": {
+            "variable_ptr_id": 2,
+            "instrument_id": 1,
+            "experiment_reference": null,
+            "start_run": 100000,
+            "tracks_script": true
+        }
+    },
+    {
+        "model": "instrument.runvariable",
+        "pk": 1,
+        "fields": {
+            "variable_id": 1,
+            "reduction_run_id": 1
+        }
+    },
+    {
+        "model": "instrument.runvariable",
+        "pk": 2,
+        "fields": {
+            "variable_id": 2,
+            "reduction_run_id": 2
+        }
+    }
+]

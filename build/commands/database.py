@@ -11,7 +11,7 @@ import os
 # pylint:disable=no-name-in-module,import-error
 from distutils.core import Command
 
-from build.database.generate_database import generate_schema
+from build.database.generate_database import generate_schema, load_fixtures
 from build.utils.common import BUILD_LOGGER, ROOT_DIR
 
 
@@ -41,3 +41,18 @@ class InitialiseTestDatabase(Command):
         if generate_schema(ROOT_DIR, BUILD_LOGGER.logger) is False:
             return
         BUILD_LOGGER.print_and_log("Test database successfully initialised\n")
+
+
+class LoadDBFixtures(Command):
+    description = 'Create the test database on local host'
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        """ Run the setup scripts required for localhost database """
+        load_fixtures(ROOT_DIR, ["super_user_fixture", "status_fixture", "run_with_one_variable"], BUILD_LOGGER.logger)

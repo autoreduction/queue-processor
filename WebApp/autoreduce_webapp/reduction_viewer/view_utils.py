@@ -9,10 +9,9 @@ Utility functions for the view of django models
 """
 import functools
 import logging
-from pathlib import Path
 
-from autoreduce_webapp.settings import REDUCTION_DIRECTORY
 from reduction_viewer.models import Instrument
+from queue_processors.queue_processor.reduction.service import ReductionScript
 
 LOGGER = logging.getLogger(__name__)
 
@@ -29,7 +28,7 @@ def deactivate_invalid_instruments(func):
         """
         instruments = Instrument.objects.all()
         for instrument in instruments:
-            script_path = Path(REDUCTION_DIRECTORY % instrument.name, 'reduce.py')
+            script_path = ReductionScript(instrument.name)
             if instrument.is_active != script_path.exists():
                 instrument.is_active = script_path.exists()
                 instrument.save(update_fields=['is_active'])

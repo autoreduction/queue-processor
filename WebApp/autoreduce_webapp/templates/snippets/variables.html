@@ -1,47 +1,47 @@
 <div class="row">
     <div class="col-md-4 text-center">
-        {% if instrument:variables.experiment %}
+        {% if instrument_variables.experiment %}
             <div class="run-numbers">
                 <div class="middle">
                     Experiment
-                    <div>#{{ instrument:variables.experiment }}</div>
+                    <div>#{{ instrument_variables.experiment }}</div>
                 </div>
             </div>
-            <a href="{% url 'preview_script_by_experiment' instrument=instrument.name experiment_reference=instrument:variables.experiment %}">preview reduction script</a>
+            {#<!-- <a href="{% url 'preview_script_by_experiment' instrument=instrument.name experiment_reference=instrument_variables.experiment %}">preview reduction script</a> -->#}
+            <!-- <br/> -->
+            <a href="{% url 'instrument:variables_by_experiment' instrument=instrument.name experiment_reference=instrument_variables.experiment %}">edit variables</a>
             <br/>
-            <a href="{% url 'instrument:variables_by_experiment' instrument=instrument.name experiment_reference=instrument:variables.experiment %}">edit variables</a>
-            <br/>
-            <a href="{% url 'instrument:delete_variables_by_experiment' instrument=instrument.name experiment_reference=instrument:variables.experiment %}">delete variables</a>
+            <a href="{% url 'instrument:delete_variables_by_experiment' instrument=instrument.name experiment_reference=instrument_variables.experiment %}">delete variables</a>
         {% else %}
             <div class="run-numbers">
                 <div class="middle">
                     Runs
-                    <div>{{ instrument:variables.run_start }}</div>
-                    <div>
-                        <i class="fa fa-arrow-down hidden-xs"></i>
-                        <i class="fa fa-arrow-right visible-xs"></i>
-                    </div>
-                    {% if instrument:variables.run_end > 0 %}
-                        <div>{{ instrument:variables.run_end }}</div>
+                    <div>{{ instrument_variables.run_start }}</div>
+                        <div>
+                            <i class="fa fa-arrow-down hidden-xs"></i>
+                            <i class="fa fa-arrow-right visible-xs"></i>
+                        </div>
+                    {% if instrument_variables.run_end > 0 %}
+                        <div>{{ instrument_variables.run_end }}</div>
                     {% else %}
                         <div>Ongoing</div>
                     {% endif %}
                 </div>
             </div>
-            {% if instrument:variables.tracks_script %}
+            {% if instrument_variables.tracks_script %}
                 <small>(Tracking script changes)</small>
                 <br/>
             {% endif %}
-            <br/>
-            <a href="{% url 'instrument:variables' instrument=instrument.name start=instrument:variables.run_start end=instrument:variables.run_end %}">edit variables</a>
             {% if upcoming %}
+            <br/>
+            <a href="{% url 'instrument:variables' instrument=instrument.name start=instrument_variables.run_start end=instrument_variables.run_end %}">edit variables</a>
                 <br/>
-                <a href="{% url 'instrument:delete_variables' instrument=instrument.name start=instrument:variables.run_start end=instrument:variables.run_end %}">delete variables</a>
+                <a href="{% url 'instrument:delete_variables' instrument=instrument.name start=instrument_variables.run_start end=instrument_variables.run_end %}">delete variables</a>
             {% endif %}
         {% endif %}
     </div>
     <div class="col-md-8">
-        {% for variable in instrument:variables.variables|dictsort:"name" %}
+        {% for variable in instrument_variables.variables|dictsort:"name" %}
             <div>
                 <strong>{{ variable.name }}:</strong> {{ variable.value }}
             </div>

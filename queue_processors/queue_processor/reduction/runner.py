@@ -31,7 +31,7 @@ class ReductionRunner:
         try:
             self.data_file = windows_to_linux_path(self.validate_input('data'), TEMP_ROOT_DIRECTORY)
             self.facility = self.validate_input('facility')
-            self.instrument = self.validate_input('instrument').upper()
+            self.instrument = self.validate_input('instrument')
             self.proposal = str(int(self.validate_input('rb_number')))  # Integer-string validation
             self.run_number = str(int(self.validate_input('run_number')))
             self.reduction_arguments = self.validate_input('reduction_arguments')

@@ -52,6 +52,7 @@ class FakeMessage:
     started_by = 0
     run_number = 1234567
     message = "I am a message"
+    description = "This is a fake description"
 
 
 class TestHandleMessage(TestCase):
@@ -69,6 +70,7 @@ class TestHandleMessage(TestCase):
             "reduction_data": "/path/1",
             "started_by": -1,
             "data": "/path",
+            "description": "This is a fake description",
             "instrument": "ARMI"  # Autoreduction Mock Instrument
         })
         with patch("logging.getLogger") as patched_logger:
@@ -80,7 +82,7 @@ class TestHandleMessage(TestCase):
         self.variable_model = db_handle.variable_model
 
         self.experiment, _ = self.data_model.Experiment.objects.get_or_create(reference_number=1231231)
-        self.instrument, _ = self.data_model.Instrument.objects.get_or_create(name="ARMI", is_active=1, is_paused=0)
+        self.instrument, _ = self.data_model.Instrument.objects.get_or_create(name="ARMI")
         status = STATUS.get_queued()
         fake_script_text = "scripttext"
         self.reduction_run = create_reduction_run_record(self.experiment, self.instrument, FakeMessage(), 0,
@@ -105,6 +107,7 @@ class TestHandleMessage(TestCase):
 
         assert self.reduction_run.status == expected_status
         assert self.reduction_run.message == "I am a message"
+        assert self.reduction_run.run_name == "This is a fake description"
         self.mocked_logger.info.assert_called_once()
         assert self.mocked_logger.info.call_args[0][1] == self.msg.run_number
 
@@ -266,6 +269,8 @@ class TestHandleMessage(TestCase):
         "Test creating multiple version of the same run"
         self.instrument.is_active = False
 
+        self.msg.description = "Testing multiple versions"
+
         reduction_script.return_value.text.return_value = "print(123)"
         self.msg.run_number = random.randint(1000000, 10000000)
         db_objects_to_delete = []
@@ -276,10 +281,10 @@ class TestHandleMessage(TestCase):
             assert reduction_run.run_number == self.msg.run_number
             assert reduction_run.experiment.reference_number == self.msg.rb_number
             assert reduction_run.run_version == i
+            assert reduction_run.run_name == "Testing multiple versions"
             assert message.run_version == i
             assert instrument == self.instrument
             assert instrument.name == self.msg.instrument
-            assert instrument.is_active
             assert reduction_run.script == "print(123)"
             assert reduction_run.data_location.first().file_path == message.data
             assert reduction_run.status == STATUS.get_queued()
@@ -294,7 +299,7 @@ class TestHandleMessage(TestCase):
         self.handler.instrument_variable.create_run_variables = mock.Mock(return_value=[])
 
         message = self.handler.create_run_variables(self.reduction_run, self.msg, self.instrument)
-        self.handler.instrument_variable.create_run_variables.assert_called_once_with(self.reduction_run)
+        self.handler.instrument_variable.create_run_variables.assert_called_once_with(self.reduction_run, {})
         assert self.mocked_logger.info.call_count == 2
         self.mocked_logger.warning.assert_called_once()
         assert message.reduction_arguments == expected_args
@@ -341,7 +346,7 @@ class TestHandleMessage(TestCase):
     @patch("queue_processors.queue_processor.handle_message.ReductionProcessManager")
     def test_data_ready_sends_onwards_completed(self, rpm, load: Mock):
         "Test data_ready success path sends the message onwards for reduction"
-        rpm.return_value.run = partial(self.do_post_started_assertions, 4)
+        rpm.return_value.run = partial(self.do_post_started_assertions, 5)
         self.handler.create_run_records = Mock(return_value=(self.reduction_run, self.msg, self.instrument))
         self.handler.data_ready(self.msg)
         assert self.mocked_logger.info.call_count == 1
@@ -354,7 +359,7 @@ class TestHandleMessage(TestCase):
     def test_data_ready_sends_onwards_error(self, rpm, load: Mock):
         "Test data_ready error path sends the message onwards to be marked as errored"
         self.msg.message = "I am error"
-        rpm.return_value.run = partial(self.do_post_started_assertions, 4)
+        rpm.return_value.run = partial(self.do_post_started_assertions, 5)
         self.handler.create_run_records = Mock(return_value=(self.reduction_run, self.msg, self.instrument))
         self.handler.data_ready(self.msg)
         assert self.mocked_logger.info.call_count == 1

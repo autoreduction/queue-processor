@@ -42,3 +42,16 @@ def generate_schema(project_root_path, logger):
         return False
     logger.info("Database migrated successfully")
     return True
+
+
+def load_fixtures(project_root_path, fixtures: list, logger):
+    """
+    Load fixtures into the database
+    """
+
+    path_to_manage = os.path.join(project_root_path, 'WebApp', 'autoreduce_webapp', 'manage.py')
+    for fixture in fixtures:
+        if run_process_and_log([sys.executable, path_to_manage, 'loaddata', fixture]) is False:
+            logger.error("Error encountered when running loaddata for fixture %s" % fixture)
+            return False
+    return True

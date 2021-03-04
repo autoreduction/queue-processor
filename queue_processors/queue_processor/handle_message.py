@@ -12,10 +12,10 @@ and takes appropriate action(s) based on the message contents.
 For example, this may include shuffling the message to another queue,
 update relevant DB fields or logging out the status.
 """
-import datetime
 import logging
 from typing import Optional
 from django.db import transaction
+from django.utils import timezone
 
 import model.database.records as db_records
 from model.database import access as db_access
@@ -114,7 +114,7 @@ class HandleMessage:
         """
         # Create all of the variables for the run that are described in it's reduce_vars.py
         self._logger.info('Creating variables for run')
-        variables = self.instrument_variable.create_run_variables(reduction_run)
+        variables = self.instrument_variable.create_run_variables(reduction_run, message.reduction_arguments)
         if not variables:
             self._logger.warning("No instrument variables found on %s for run %s", instrument.name, message.run_number)
 
@@ -188,7 +188,7 @@ class HandleMessage:
         """
         self._logger.info("Run %s has started reduction", message.run_number)
         reduction_run.status = self.status.get_processing()
-        reduction_run.started = datetime.datetime.utcnow()
+        reduction_run.started = timezone.now()
         reduction_run.save()
 
     @transaction.atomic
@@ -234,7 +234,7 @@ class HandleMessage:
     @staticmethod
     def _common_reduction_run_update(reduction_run, status, message):
         reduction_run.status = status
-        reduction_run.finished = datetime.datetime.utcnow()
+        reduction_run.finished = timezone.now()
         reduction_run.message = message.message
         reduction_run.reduction_log = message.reduction_log
         reduction_run.admin_log = message.admin_log

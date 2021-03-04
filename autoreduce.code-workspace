@@ -1,0 +1,24 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"iosfwd": "cpp"
+		},
+		"html.format.indentHandlebars": true,
+		"html.format.templating": true,
+		"html.format.enable": false,
+		"python.linting.pylintEnabled": true,
+		"python.linting.flake8Enabled": false,
+		"python.linting.enabled": true,
+		"python.formatting.provider": "yapf",
+		{
+			"files.associations": {
+				"*.html": "jinja-html"
+			}
+		}
+	},
+}

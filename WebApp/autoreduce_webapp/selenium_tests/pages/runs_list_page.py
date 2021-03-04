@@ -11,6 +11,7 @@ from typing import List
 
 from django.urls import reverse
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.remote.webelement import WebElement
 
 from selenium_tests import configuration
 from selenium_tests.pages.component_mixins.footer_mixin import FooterMixin
@@ -50,7 +51,7 @@ class RunsListPage(Page, NavbarMixin, FooterMixin, TourMixin):
         """
         return [run.text.split(" - ")[0] for run in self.driver.find_elements_by_class_name("run-num-links")]
 
-    def click_run(self, run_number: int, version: int) -> RunSummaryPage:
+    def click_run(self, run_number: int, version: int = 0) -> RunSummaryPage:
         """
         Click the run number link on the instrument summary table matching the given run number and
         version
@@ -65,3 +66,6 @@ class RunsListPage(Page, NavbarMixin, FooterMixin, TourMixin):
                 run.click()
                 return RunSummaryPage(self.driver, self.instrument, run_number, version)
         raise NoSuchElementException
+
+    def alert_message_text(self) -> str:
+        return self.driver.find_element_by_id("alert_message").text.strip()

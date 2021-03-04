@@ -35,7 +35,7 @@ class TestMessage(unittest.TestCase):
             'run_version': None,
             'job_id': None,
             'reduction_script': None,
-            'reduction_arguments': None,
+            'reduction_arguments': {},
             'reduction_log': "",
             'admin_log': "",
             'return_message': None,
@@ -63,7 +63,7 @@ class TestMessage(unittest.TestCase):
             'run_version': None,
             'job_id': None,
             'reduction_script': None,
-            'reduction_arguments': None,
+            'reduction_arguments': {},
             'reduction_log': "",
             'admin_log': "",
             'message': None,
@@ -90,7 +90,7 @@ class TestMessage(unittest.TestCase):
         self.assertIsNone(empty_msg.run_version)
         self.assertIsNone(empty_msg.job_id)
         self.assertIsNone(empty_msg.reduction_script)
-        self.assertIsNone(empty_msg.reduction_arguments)
+        self.assertEqual(empty_msg.reduction_arguments, {})
         self.assertEqual(empty_msg.reduction_log, "")
         self.assertEqual(empty_msg.admin_log, "")
         self.assertIsNone(empty_msg.message)

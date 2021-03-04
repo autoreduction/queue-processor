@@ -8,7 +8,12 @@
 {% load static %}
 
 {% block body %}
-    {% if run %}
+    {% if not run %}
+        <div class="text-center col-md-6 col-md-offset-3 well well-small">
+            Reduction run not found or error encountered: {{ message }}.
+        </div>
+    {% else %}
+        <title>Reduction Job #{{ run.title }}</title>
         <div class="row">
             <div class="col-md-12 text-center">
                 <h2>Reduction Job #{{ run.title }}</h2>
@@ -187,13 +192,21 @@
                             {% endfor %}
                         </div>
                     </div>
-                {% endif %}
-                {% if reduction_variables_on and has_variables %}
-                    {% autoescape on %}
-                        {% view "instrument.views.instrument_summary" instrument run_number run_version %}
-                    {% endautoescape %}
-                {% endif %}
-            </div>
+            {% endif %}
+            {% if has_run_variables and has_reduce_vars  %}
+                {% autoescape on %}
+                    {% view "instrument.views.variables.render_run_variables" instrument run_number run_version %}
+                {% endautoescape %}
+            {% elif not has_run_variables %}
+                    <div>
+                        <p class="text-center" id="warning_message">No variables found for this run.</p>
+                    </div>
+            {% elif not has_reduce_vars %}
+                <div>
+                    <p class="text-center" id="warning_message">The reduce_vars.py script is missing for this instrument. Please create it before being able to submit re-runs.</p>
+                </div>
+            {% endif %}
+          </div>
         {% endif %}
         <div class="run-history modal fade" tabindex="-1" role="dialog" aria-hidden="true">
             <div class="modal-dialog">
@@ -256,30 +269,22 @@
                 </div>
             </div>
         </div>
-    {% else %}
-        <div class="text-center col-md-6 col-md-offset-3 well well-small">
-            Reduction run not found or error encountered: {{ message }}.
-        </div>
     {% endif %}
 {% endblock %}
 
 
 
 {% block stylesheets %}
-    {% if reduction_variables_on %}
-        <link rel="stylesheet" href="{% static "css/vendor/prettify.css" %}">
-    {% endif %}
-    <link rel="stylesheet" href="{% static "css/vendor/bootstrap-tour.min.css" %}">
+    <link rel="stylesheet" href="{% static 'css/vendor/prettify.css' %}">
+    <link rel="stylesheet" href="{% static 'css/vendor/bootstrap-tour.min.css' %}">
 {% endblock %}
 {% block scripts %}
     <script src="{% static "javascript/run_summary.js" %}"></script>
-    {% if reduction_variables_on %}
-        <script src="{% static "javascript/vendor/prettify.js" %}"></script>
-        <script src="{% static "javascript/run_variables.js" %}"></script>
-        <script src="{% static "javascript/vendor/bootstrap-tour.min.js" %}"></script>
+    <script src="{% static 'javascript/vendor/prettify.js' %}"></script>
+    <script src="{% static 'javascript/run_variables.js' %}"></script>
+    <script src="{% static 'javascript/vendor/bootstrap-tour.min.js' %}"></script>
 
-        <script src="{% static "javascript/tours/run_summary_tour.js" %}"></script>
-        <script src="{% static "javascript/tours/navbar_tour.js" %}"></script>
-        <script src="{% static "javascript/create_tour.js" %}"></script>
-    {% endif %}
+    <script src="{% static 'javascript/tours/run_summary_tour.js' %}"></script>
+    <script src="{% static 'javascript/tours/navbar_tour.js' %}"></script>
+    <script src="{% static 'javascript/create_tour.js' %}"></script>
 {% endblock %}

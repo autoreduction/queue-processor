@@ -17,23 +17,24 @@ import logging
 import operator
 
 from autoreduce_webapp.icat_cache import ICATCache
-from autoreduce_webapp.settings import UOWS_LOGIN_URL, USER_ACCESS_CHECKS, DEVELOPMENT_MODE
+from autoreduce_webapp.settings import (DEVELOPMENT_MODE, UOWS_LOGIN_URL, USER_ACCESS_CHECKS)
 from autoreduce_webapp.uows_client import UOWSClient
-from autoreduce_webapp.view_utils import (login_and_uows_valid, render_with, require_admin, check_permissions)
-from django.contrib.auth import logout as django_logout, authenticate, login
+from autoreduce_webapp.view_utils import (check_permissions, login_and_uows_valid, render_with, require_admin)
+from django.contrib.auth import authenticate, login
+from django.contrib.auth import logout as django_logout
 from django.contrib.auth.models import User
-from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.db.models import Q
 from django.http import HttpResponseNotFound
 from django.shortcuts import redirect
-from instrument.utils import InstrumentVariablesUtils, MessagingUtils
-from reduction_viewer.models import Experiment, ReductionRun, Instrument, Status
-from reduction_viewer.utils import StatusUtils, ReductionRunUtils
-from reduction_viewer.view_utils import deactivate_invalid_instruments
-from instrument.utils import InstrumentVariablesUtils
 from utilities.pagination import CustomPaginator
 
+from reduction_viewer.models import (Experiment, Instrument, ReductionRun, Status)
+from reduction_viewer.utils import ReductionRunUtils
+from reduction_viewer.view_utils import deactivate_invalid_instruments
 from plotting.plot_handler import PlotHandler
+from queue_processors.queue_processor.variable_utils import VariableUtils
+from queue_processors.queue_processor.status_utils import STATUS
 
 LOGGER = logging.getLogger('app')
 
@@ -90,7 +91,7 @@ def logout(request):
         UOWSClient().logout(session_id)
     django_logout(request)
     request.session.flush()
-    return redirect('index')
+    return redirect('overview')
 
 
 @login_and_uows_valid
@@ -116,8 +117,8 @@ def run_queue(request):
     Render status of queue
     """
     # Get all runs that should be shown
-    queued_status = StatusUtils().get_queued()
-    processing_status = StatusUtils().get_processing()
+    queued_status = STATUS.get_queued()
+    processing_status = STATUS.get_processing()
     pending_jobs = ReductionRun.objects.filter(Q(status=queued_status)
                                                | Q(status=processing_status)).order_by('created')
     # Filter those which the user shouldn't be able to see
@@ -147,13 +148,13 @@ def fail_queue(request):
     Render status of failed queue
     """
     # render the page
-    error_status = StatusUtils().get_error()
+    error_status = STATUS.get_error()
     failed_jobs = ReductionRun.objects.filter(Q(status=error_status)
                                               & Q(hidden_in_failviewer=False)).order_by('-created')
     context_dictionary = {
         'queue': failed_jobs,
-        'status_success': StatusUtils().get_completed(),
-        'status_failed': StatusUtils().get_error()
+        'status_success': STATUS.get_completed(),
+        'status_failed': STATUS.get_error()
     }
 
     if request.method == 'POST':
@@ -165,12 +166,8 @@ def fail_queue(request):
             for run in selected_runs:
                 run_number = int(run[0])
                 run_version = int(run[1])
-                rb_number = int(run[2])
 
-                experiment = Experiment.objects.filter(reference_number=rb_number).first()
-                reduction_run = ReductionRun.objects.get(experiment=experiment,
-                                                         run_number=run_number,
-                                                         run_version=run_version)
+                reduction_run = failed_jobs.get(run_number=run_number, run_version=run_version)
 
                 if action == "hide":
                     reduction_run.hidden_in_failviewer = True
@@ -181,14 +178,7 @@ def fail_queue(request):
                     if run_version != highest_version:
                         continue  # do not run multiples of the same run
 
-                    new_job = ReductionRunUtils().createRetryRun(user_id=request.user.id, reduction_run=reduction_run)
-
-                    try:
-                        MessagingUtils().send_pending(new_job)
-                    # pylint:disable=broad-except
-                    except Exception as exception:
-                        new_job.delete()
-                        raise exception
+                    ReductionRunUtils.send_retry_message_same_args(request.user.id, reduction_run)
 
                 elif action == "default":
                     pass
@@ -212,9 +202,11 @@ def run_summary(_, instrument_name=None, run_number=None, run_version=0):
     """
     # pylint:disable=broad-except
     try:
-        history = list(
-            ReductionRun.objects.filter(instrument__name=instrument_name, run_number=run_number).order_by(
-                '-run_version').select_related('status').select_related('experiment').select_related('instrument'))
+        history = ReductionRun.objects.filter(instrument__name=instrument_name, run_number=run_number).order_by(
+            '-run_version').select_related('status').select_related('experiment').select_related('instrument')
+        if len(history) == 0:
+            raise ValueError(f"Could not find any matching runs for instrument {instrument_name} run {run_number}")
+
         run = next(run for run in history if run.run_version == int(run_version))
         started_by = started_by_id_to_name(run.started_by)
         # run status value of "s" means the run is skipped
@@ -229,10 +221,13 @@ def run_summary(_, instrument_name=None, run_number=None, run_version=0):
             reduction_location = reduction_location.replace('\\', '/')
 
         rb_number = run.experiment.reference_number
-        has_variables = bool(InstrumentVariablesUtils().get_default_variables(run.instrument.name)
-                             or run.run_variables.all())  # We check default vars and run vars in case none exist
-        # for run but could exist for default
+        try:
+            current_variables = VariableUtils.get_default_variables(run.instrument.name)
+        except (FileNotFoundError, ImportError, SyntaxError):
+            current_variables = {}
 
+        has_reduce_vars = bool(current_variables)
+        has_run_variables = bool(run.run_variables.count())
         context_dictionary = {
             'run': run,
             'run_number': run_number,
@@ -243,7 +238,8 @@ def run_summary(_, instrument_name=None, run_number=None, run_version=0):
             'history': history,
             'reduction_location': reduction_location,
             'started_by': started_by,
-            'has_variables': has_variables
+            'has_reduce_vars': has_reduce_vars,
+            'has_run_variables': has_run_variables
         }
 
     except PermissionDenied:
@@ -300,18 +296,29 @@ def runs_list(request, instrument=None):
         if len(runs) == 0:
             return {'message': "No runs found for instrument."}
 
-        has_variables = bool(InstrumentVariablesUtils().get_default_variables(instrument_obj.name))
+        try:
+            current_variables = VariableUtils.get_default_variables(instrument_obj.name)
+            error_reason = ""
+        except FileNotFoundError:
+            current_variables = {}
+            error_reason = "reduce_vars.py is missing for this instrument"
+        except (ImportError, SyntaxError):
+            current_variables = {}
+            error_reason = "reduce_vars.py has an import or syntax error"
+
+        has_variables = bool(current_variables)
 
         context_dictionary = {
             'instrument': instrument_obj,
             'instrument_name': instrument_obj.name,
             'runs': runs,
             'last_instrument_run': runs[0],
-            'processing': runs.filter(status=StatusUtils().get_processing()),
-            'queued': runs.filter(status=StatusUtils().get_queued()),
+            'processing': runs.filter(status=STATUS.get_processing()),
+            'queued': runs.filter(status=STATUS.get_queued()),
             'filtering': filter_by,
             'sort': sort_by,
-            'has_variables': has_variables
+            'has_variables': has_variables,
+            'error_reason': error_reason
         }
 
         if filter_by == 'experiment':

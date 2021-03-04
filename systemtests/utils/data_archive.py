@@ -68,11 +68,11 @@ class DataArchive:
     def _create_cycle_path(self, instrument: str) -> None:
         for year in range(self.start_year, self.end_year):
             for cycle_number in range(1, 6):
-                Path(CYCLE_DIRECTORY % (instrument, f"{year}_{cycle_number}")).mkdir(parents=True)
+                Path(CYCLE_DIRECTORY % (instrument, f"{year}_{cycle_number}")).mkdir(parents=True, exist_ok=True)
 
     @staticmethod
     def _create_script_directory(instrument: str) -> None:
-        Path(SCRIPTS_DIRECTORY % instrument).mkdir(parents=True)
+        Path(SCRIPTS_DIRECTORY % instrument).mkdir(parents=True, exist_ok=True)
 
     @staticmethod
     def _create_file_at_location(location: Path, file_text: str) -> None:

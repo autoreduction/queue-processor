@@ -50,3 +50,14 @@ Webapp/autoreduce_webapp/static/graphs/
 # Ignore The screenshot folder in Selenium tests
 WebApp/autoreduce_webapp/selenium_tests/screenshots
 !WebApp/autoreduce_webapp/selenium_tests/screenshots/.keep
+
+# Ignore developer specific .vscode/settings.json
+.vscode/settings.json
+
+# ignore sqlite3 db files
+**/sqlite3*.db*
+
+# folders that get created from tests
+reduced-data/
+data-archive/
+test-archive/

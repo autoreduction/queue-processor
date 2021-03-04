@@ -278,33 +278,21 @@
     var resetDefaultVariables = function resetDefaultVariables(event) {
         event.preventDefault();
         $form = getForm();
+        // Overwrite the current form HTML with the one rendered using the default variables
         $form.find('.js-variables-container').html($('.js-default-variables').html());
         $('#use_current_script').val("false");
         // We need to enable the popover again as the element is new
         $('[data-toggle="popover"]').popover();
     };
 
-    var resetCurrentVariables = function resetCurrentVariables(event) {
+    var resetToValuesInCurrentScript = function resetToValuesInCurrentScript(event) {
         event.preventDefault();
         $form = getForm();
-        //Set cursor to waiting
-        $("body").css("cursor", "wait");
-        $("#currentScript").css("cursor", "wait");
-
-        if ($("#is_editing").length != 0) {
-            $("#is_editing").val("false"); //Set this so new reduce_vars are picked up from script (bit of a hack)
-        }
-
-        //Update variables to those in reduce_vars
-        $.get($('#updateURL').val(), function (data) {
-            $form.find('.js-variables-container').html(data);
-            $("body").css("cursor", "default");
-            $("#currentScript").css("cursor", "pointer");
-
-            // We need to enable the popover again as the element is new
-            $('[data-toggle="popover"]').popover();
-        });
+        // Overwrite the current form HTML with the one rendered using the default variables
+        $form.find('.js-variables-container').html($('.js-current-variables').html());
         $('#use_current_script').val("true");
+        // We need to enable the popover again as the element is new
+        $('[data-toggle="popover"]').popover();
     };
 
     var toggleTrackScript = function toggleTrackScript(event) {
@@ -317,12 +305,6 @@
         var checkBox = $('#track_script_checkbox');
         $("[id^=var-]").attr("disabled", checkBox.prop("checked"));
     }
-
-    var cancelForm = function cancelForm(event) {
-        event.preventDefault();
-        window.onbeforeunload = undefined;
-        window.location.href = document.referrer;
-    };
 
     var toggleActionExplainations = function toggleActionExplainations(event) {
         if (event.type === 'mouseover') {
@@ -378,9 +360,8 @@
         $('#script-preview-modal').on('click', '#downloadScript', downloadScript);
 
         $('#run_variables,#instrument_variables').on('click', '#resetValues', resetDefaultVariables);
-        $('#run_variables,#instrument_variables,#submit_jobs').on('click', '#currentScript', resetCurrentVariables);
-        $('#run_variables,#instrument_variables,#submit_jobs').on('click', '#variableSubmit', submitForm);
-        $('#run_variables,#instrument_variables,#submit_jobs').on('click', '#cancelForm', cancelForm);
+        $('#run_variables,#instrument_variables,#submit_jobs').on('click', '#currentScript', resetToValuesInCurrentScript);
+        document.getElementById("variableSubmit").onclick = submitForm;
         $('#run_variables,#instrument_variables').on('click', 'input[type=checkbox][data-type=boolean]', updateBoolean);
 
         $('#instrument_variables').on('click', '#track_script', toggleTrackScript);

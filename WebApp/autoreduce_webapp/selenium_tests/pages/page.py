@@ -37,5 +37,6 @@ class Page(ABC):
         Navigate the webdriver to this page
         :return: The page object
         """
+        self.driver.get(configuration.get_url())
         self.driver.get(self.url())
         return self

@@ -40,6 +40,7 @@ class FakeMessage:
         super().__init__()
         self.started_by = 0
         self.run_number = run_number if run_number else 1234567
+        self.description = "This is a fake message"
 
 
 class FakeModule:
@@ -81,7 +82,7 @@ class TestInstrumentVariableUtils(unittest.TestCase):
         self.instrument = self.data_model.Instrument.objects.get_or_create(name="MyInstrument",
                                                                            is_active=1,
                                                                            is_paused=0)[0]
-        self.status = self.data_model.Status.objects.get(value="q")
+        self.status = self.data_model.Status.objects.get_or_create(value="q")[0]
 
     def tearDown(self) -> None:
         self.experiment.delete()
@@ -106,6 +107,31 @@ class TestInstrumentVariableUtils(unittest.TestCase):
 
         self.assertEqual(new_variables[0].variable.name, "standard_var1")
         self.assertEqual(new_variables[0].variable.value, "standard_value1")
+        self.assertEqual(new_variables[1].variable.name, "advanced_var1")
+        self.assertEqual(new_variables[1].variable.value, "advanced_value1")
+
+        self.delete_on_teardown = [reduction_run, new_variables]
+
+    @patch("queue_processors.queue_processor.reduction.service.ReductionScript.load", return_value=FakeModule())
+    def test_new_reduction_run_with_message_reduction_args(self, _):
+        """
+        Tests with a never before seen Reduction Run
+        """
+        reduction_run = create_reduction_run_record(self.experiment, self.instrument, FakeMessage(), 0,
+                                                    self.fake_script_text, self.status)
+        reduction_run.save()
+
+        before_creating_variables = self.variable_model.InstrumentVariable.objects.count()
+        new_variables = InstrumentVariablesUtils().create_run_variables(reduction_run,
+                                                                        {"standard_vars": {
+                                                                            "standard_var1": 123
+                                                                        }})
+        after_creating_variables = self.variable_model.InstrumentVariable.objects.count()
+
+        self.assertGreater(after_creating_variables, before_creating_variables)
+
+        self.assertEqual(new_variables[0].variable.name, "standard_var1")
+        self.assertEqual(new_variables[0].variable.value, "123")
         self.assertEqual(new_variables[1].variable.name, "advanced_var1")
         self.assertEqual(new_variables[1].variable.value, "advanced_value1")
 
@@ -407,22 +433,184 @@ class TestInstrumentVariableUtils(unittest.TestCase):
         assert variables[0].variable != newer_variables[0].variable
         self.delete_on_teardown = [reduction_run, variables, newer_reduction_run, newer_variables]
 
+    @staticmethod
+    def test_merge_arguments():
+        """
+        Tests that the arguments are merged correctly when both standard and advanced are being replaced
+        """
+        message_args = {"standard_vars": {"standard_var1": 123}, "advanced_vars": {"advanced_var1": "321"}}
+        fakemod = FakeModule()
 
-def test_get_help_module_dict_name_not_in_variable_help():
-    """
-    Test that empty string is returned
-    When the variable name is not contained in the help
-    """
-    assert not InstrumentVariablesUtils.get_help_text("apples", "123", FakeModule())
+        expected = {
+            "standard_vars": {
+                "standard_var1": '123'
+            },
+            "advanced_vars": {
+                "advanced_var1": "321"
+            },
+            "variable_help": fakemod.variable_help
+        }
+
+        assert InstrumentVariablesUtils.merge_arguments(message_args, fakemod) == expected
+
+    @staticmethod
+    def test_get_help_module_dict_name_not_in_variable_help():
+        """
+        Test that empty string is returned
+        When the variable name is not contained in the help
+        """
+        assert not InstrumentVariablesUtils.get_help_text(
+            "apples", "123", {"variable_help": {
+                "standard_args": {
+                    "variable1": "help text 1"
+                }
+            }})
+
+    @staticmethod
+    def test_get_help():
+        """
+        Test that empty string is returned
+        When the variable name is not contained in the help
+        """
+        assert InstrumentVariablesUtils.get_help_text(
+            "standard_args", "variable1", {"variable_help": {
+                "standard_args": {
+                    "variable1": "help text 1"
+                }
+            }}) == "help text 1"
+
+    def test_find_appropriate_var_chooses_experiment_vars_as_top_priority(self):
+        """
+        Test that find_appropriate_variable will prefer a variable with matching experiment number
+        """
+        start_run = 1234567
+        exp_ref = 4321
+        name = "test_variable1"
+
+        var1 = self.variable_model.InstrumentVariable.objects.create(name=name,
+                                                                     value="test_value1",
+                                                                     type="string",
+                                                                     is_advanced=False,
+                                                                     instrument=self.instrument,
+                                                                     start_run=start_run)
+        var1.save()
+
+        var2 = self.variable_model.InstrumentVariable.objects.create(name=name,
+                                                                     value="test_value1",
+                                                                     type="string",
+                                                                     is_advanced=False,
+                                                                     instrument=self.instrument,
+                                                                     experiment_reference=exp_ref)
+
+        var2.save()
+
+        var3 = self.variable_model.InstrumentVariable.objects.create(name=name,
+                                                                     value="test_value1",
+                                                                     type="string",
+                                                                     is_advanced=False,
+                                                                     instrument=self.instrument,
+                                                                     start_run=start_run + 10)
+        var3.save()
+        self.delete_on_teardown = [var1, var2, var3]
+        possible_variables = self.variable_model.InstrumentVariable.objects.filter(instrument=self.instrument)
+        assert len(possible_variables) == 3
+
+        assert InstrumentVariablesUtils.find_appropriate_variable(possible_variables, name, exp_ref) == var2
+
+    def test_find_appropriate_var_chooses_latest_var(self):
+        """
+        Test that, lacking a var with experiment number, find_appropriate_variable will prefer
+        the variable with the latest start_run
+        """
+        start_run = 1234567
+        exp_ref = 4321
+        name = "test_variable1"
+
+        var1 = self.variable_model.InstrumentVariable.objects.create(name=name,
+                                                                     value="test_value1",
+                                                                     type="string",
+                                                                     is_advanced=False,
+                                                                     instrument=self.instrument,
+                                                                     start_run=start_run)
+        var1.save()
+
+        var2 = self.variable_model.InstrumentVariable.objects.create(name=name,
+                                                                     value="test_value1",
+                                                                     type="string",
+                                                                     is_advanced=False,
+                                                                     instrument=self.instrument,
+                                                                     start_run=start_run + 10)
+        var2.save()
+
+        self.delete_on_teardown = [var1, var2]
+        possible_variables = self.variable_model.InstrumentVariable.objects.filter(instrument=self.instrument)
+        assert len(possible_variables) == 2
+
+        assert InstrumentVariablesUtils.find_appropriate_variable(possible_variables, name, exp_ref) == var2
+
+    def test_find_or_make_overwrites_variable_for_experiment_reference(self):
+        """
+        Test that find_or_make will overwrite the variable saved for an experiment reference
+        when the variable is provided a new value. (This behaviour is different than for start_run,
+        as a new value for a start_run will COPY the variable instead, not overwrite)
+        """
+        exp_ref = 4321
+        name = "test_variable1"
+        red_args = {'standard_vars': {name: "test_value3"}, 'advanced_vars': {}, 'variable_help': {}}
+        possible_variables = self.variable_model.InstrumentVariable.objects.filter(instrument=self.instrument)
+
+        variables = InstrumentVariablesUtils.find_or_make_variables(possible_variables,
+                                                                    self.instrument.id,
+                                                                    red_args,
+                                                                    experiment_reference=exp_ref)
+        self.delete_on_teardown = [variables]
+
+        assert variables[0].experiment_reference == exp_ref
+        assert variables[0].name == name
+        assert variables[0].value == "test_value3"
+        assert variables[0].start_run is None
+
+        red_args = {'standard_vars': {name: "test_value44"}, 'advanced_vars': {}, 'variable_help': {}}
+        new_variables = InstrumentVariablesUtils.find_or_make_variables(possible_variables,
+                                                                        self.instrument.id,
+                                                                        red_args,
+                                                                        experiment_reference=exp_ref)
+        assert new_variables[0].value == "test_value44"
+        assert new_variables[0].start_run is None
+
+        assert variables[0] == new_variables[0]
+        assert variables[0].name == new_variables[0].name
+        assert variables[0].experiment_reference == new_variables[0].experiment_reference
+        assert variables[0].value != new_variables[0].value
+
+    def test_find_or_make_doesnt_update_without_changes(self):
+        """
+        Test that find_or_make will overwrite the variable saved for an experiment reference
+        when the variable is provided a new value. (This behaviour is different than for start_run,
+        as a new value for a start_run will COPY the variable instead, not overwrite)
+        """
+        exp_ref = 4321
+        name = "test_variable1"
+        red_args = {'standard_vars': {name: "test_value3"}, 'advanced_vars': {}, 'variable_help': {}}
+        possible_variables = self.variable_model.InstrumentVariable.objects.filter(instrument=self.instrument)
+
+        variables = InstrumentVariablesUtils.find_or_make_variables(possible_variables,
+                                                                    self.instrument.id,
+                                                                    red_args,
+                                                                    experiment_reference=exp_ref)
+        self.delete_on_teardown = [variables]
+
+        assert variables[0].experiment_reference == exp_ref
+        assert variables[0].name == name
+        assert variables[0].value == "test_value3"
+        assert variables[0].start_run is None
+
+        new_vars = InstrumentVariablesUtils.find_or_make_variables(possible_variables,
+                                                                   self.instrument.id,
+                                                                   red_args,
+                                                                   experiment_reference=exp_ref)
+        assert variables[0] == new_vars[0]
 
 
-def test_get_help_module_no_variable_help():
-    """
-    Test that empty string is returned
-    When there is no variable_help in reduce_vars
-    """
-    assert not InstrumentVariablesUtils.get_help_text("apples", "123", {})
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

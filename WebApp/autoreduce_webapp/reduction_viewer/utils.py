@@ -11,57 +11,15 @@ Note: This file has a large number of pylint disable as it was un unit tested
 at the time of fixing the pylint issues. Once unit tested properly, these disables
 should be able to be removed. Many are relating to imports
 """
-import datetime
-import logging
-import os
-import sys
 import time
-import traceback
 
 import django.core.exceptions
 import django.http
-from django.utils import timezone
-from instrument.models import RunVariable
-from reduction_viewer.models import Instrument, Status, ReductionRun, DataLocation
+from autoreduce_webapp.settings import FACILITY
 
-sys.path.append(os.path.join("../", os.path.dirname(os.path.dirname(__file__))))
-os.environ["DJANGO_SETTINGS_MODULE"] = "autoreduce_webapp.settings"
-LOGGER = logging.getLogger('app')
-
-
-class StatusUtils(object):
-    """
-    Utilities for the Status model
-    """
-    @staticmethod
-    def _get_status(status_value):
-        """
-        Helper method that will try to get a status matching the given
-        name or create one if it doesn't yet exist
-        """
-        # pylint:disable=no-member
-        status = Status.objects.get(value=status_value)
-        return status
-
-    def get_error(self):
-        """ :return: Error Status object """
-        return self._get_status("e")
-
-    def get_completed(self):
-        """ :return: Completed Status object """
-        return self._get_status("c")
-
-    def get_processing(self):
-        """ :return: Processing Status object """
-        return self._get_status("p")
-
-    def get_queued(self):
-        """ :return: Queued Status object """
-        return self._get_status("q")
-
-    def get_skipped(self):
-        """ :return: Skipped Status object """
-        return self._get_status("s")
+from reduction_viewer.models import Instrument, ReductionRun
+from model.message.message import Message
+from utils.clients.queue_client import QueueClient
 
 
 class InstrumentUtils(object):
@@ -74,6 +32,7 @@ class InstrumentUtils(object):
         Helper method that will try to get an instrument matching the given name
         or create one if it doesn't yet exist
         """
+        # TODO remove?
         try:
             # pylint:disable=no-member
             instrument = Instrument.objects.get(name__iexact=instrument_name)
@@ -86,109 +45,62 @@ class ReductionRunUtils(object):
     """
     Utilities for the ReductionRun model
     """
-
-    # pylint:disable=invalid-name,too-many-arguments,too-many-locals
     @staticmethod
-    def createRetryRun(user_id, reduction_run, overwrite=None, script=None, variables=None, delay=0, description=''):
-        """
-        Create a run ready for re-running based on the run provided.
-        If variables (RunVariable) are provided, copy them and associate
-        them with the new one, otherwise use the previous run's.
-        If a script (as a string) is supplied then use it, otherwise use the previous run's.
-        """
-        from instrument.utils import InstrumentVariablesUtils
+    def make_kwargs_from_runvariables(reduction_run, use_value=False):
 
-        run_last_updated = reduction_run.last_updated
-
-        # find the previous run version, so we don't create a duplicate
-        last_version = -1
-        # pylint:disable=no-member
-        previous_run = ReductionRun.objects.filter(experiment=reduction_run.experiment,
-                                                   run_number=reduction_run.run_number) \
-            .order_by("-run_version").first()
-
-        last_version = previous_run.run_version
-
-        # get the script to use:
-        script_text = script if script is not None else reduction_run.script
-
-        # create the run object and save it
-        new_job = ReductionRun(instrument=reduction_run.instrument,
-                               run_number=reduction_run.run_number,
-                               run_name=description,
-                               run_version=last_version + 1,
-                               experiment=reduction_run.experiment,
-                               started_by=user_id,
-                               status=StatusUtils().get_queued(),
-                               script=script_text,
-                               overwrite=overwrite)
-
-        # Check record is safe to save
-        try:
-            new_job.full_clean()
-        except Exception as exception:
-            LOGGER.error(traceback.format_exc())
-            LOGGER.error(exception)
-            raise
-
-        # Attempt to save
-        try:
-            new_job.save()
-        except ValueError as exception:
-            # This usually indicates a F.K. constraint mismatch. Maybe we didn't get a record in?
-            LOGGER.error(traceback.format_exc())
-            LOGGER.error(exception)
-            raise
-
-        reduction_run.retry_run = new_job
-        reduction_run.retry_when = timezone.now().replace(microsecond=0) + datetime.timedelta(
-            seconds=delay if delay else 0)
-        reduction_run.save()
-
-        # pylint:disable=no-member
-        ReductionRun.objects.filter(id=reduction_run.id).update(last_updated=run_last_updated)
-
-        # copy the previous data locations
-        # pylint:disable=no-member
-        for data_location in reduction_run.data_location.all():
-            new_data_location = DataLocation(file_path=data_location.file_path, reduction_run=new_job)
-            new_data_location.save()
-            new_job.data_location.add(new_data_location)
-
-        if variables is not None:
-            # associate the variables with the new run
-            for var in variables:
-                var.reduction_run = new_job
-                var.save()
-        else:
-            # provide variables if they aren't already
-            InstrumentVariablesUtils().create_variables_for_run(new_job)
-
-        return new_job
+        return ReductionRunUtils.make_kwargs_from_variables(
+            [runvar.variable for runvar in reduction_run.run_variables.all()], use_value)
 
     @staticmethod
-    def get_script_and_arguments(reduction_run):
-        """
-        Fetch the reduction script from the given run and return it as a string,
-        along with a dictionary of arguments.
-        """
-        from instrument.utils import VariableUtils
+    def make_kwargs_from_variables(variables, use_value=False):
+        standard_vars = {}
+        advanced_vars = {}
 
-        script = reduction_run.script
-
-        # pylint:disable=no-member
-        run_variables = RunVariable.objects.filter(reduction_run=reduction_run)
-        standard_vars, advanced_vars = {}, {}
-        for variables in run_variables:
-            value = VariableUtils().convert_variable_to_type(variables.value, variables.type)
-            if variables.is_advanced:
-                advanced_vars[variables.name] = value
+        for variable in variables:
+            if variable.is_advanced:
+                advanced_vars[variable.name] = variable.value if use_value else variable
             else:
-                standard_vars[variables.name] = value
+                standard_vars[variable.name] = variable.value if use_value else variable
 
-        arguments = {'standard_vars': standard_vars, 'advanced_vars': advanced_vars}
+        return {"standard_vars": standard_vars, "advanced_vars": advanced_vars}
 
-        return script, arguments
+    @staticmethod
+    def send_retry_message(user_id: int, most_recent_run: ReductionRun, run_description: str, script_text: str,
+                           new_script_arguments: dict, overwrite_previous_data: bool):
+        """
+        Creates & sends a retry message given the parameters
+
+        :param user_id: The user submitting the run
+        :param most_recent_run: The most recent run, used for common things across the two runs like
+                                run number, instrument name, etc
+        :param run_description: Description of the rerun
+        :param script_text: The script that will NOT be used for this reduction, because of a known issue
+                            https://github.com/ISISScientificComputing/autoreduce/issues/1115
+        :param new_script_arguments: Dict of arguments that will be used for the reduction
+        :param overwrite_previous_data: Whether to overwrite the previous data in the data location
+        """
+        message = Message(started_by=user_id,
+                          description=run_description,
+                          run_number=most_recent_run.run_number,
+                          instrument=most_recent_run.instrument.name,
+                          rb_number=most_recent_run.experiment.reference_number,
+                          data=most_recent_run.data_location.first().file_path,
+                          reduction_script=script_text,
+                          reduction_arguments=new_script_arguments,
+                          run_version=most_recent_run.run_version,
+                          facility=FACILITY,
+                          software=most_recent_run.software,
+                          overwrite=overwrite_previous_data)
+        MessagingUtils.send(message)
+
+    @staticmethod
+    def send_retry_message_same_args(user_id: int, most_recent_run: ReductionRun):
+        """
+        Sends a retry message using the parameters from the most_recent_run
+        """
+        ReductionRunUtils.send_retry_message(
+            user_id, most_recent_run, "Re-run from the failed queue", most_recent_run.script,
+            ReductionRunUtils.make_kwargs_from_runvariables(most_recent_run, use_value=True), most_recent_run.overwrite)
 
 
 class ScriptUtils(object):
@@ -233,3 +145,17 @@ class ScriptUtils(object):
         time_format = "%Y-%m-%d %H:%M:%S"
         string_time = string_time[:string_time.find('+')]
         return int(time.mktime(time.strptime(string_time, time_format)))
+
+
+class MessagingUtils(object):
+    """
+    Utilities for sending messages to ActiveMQ
+    """
+    @staticmethod
+    def send(message):
+        """ Sends message to ReductionPending (with the specified delay) """
+        message_client = QueueClient()
+        message_client.connect()
+
+        message_client.send('/queue/DataReady', message, priority='1')
+        message_client.disconnect()

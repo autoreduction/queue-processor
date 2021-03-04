@@ -9,7 +9,7 @@ from setuptools import setup
 
 import platform
 
-from build.commands.database import InitialiseTestDatabase
+from build.commands.database import InitialiseTestDatabase, LoadDBFixtures
 from build.commands.help import Help
 from build.commands.installs import InstallExternals
 from build.commands.migrate_settings import MigrateTestSettings
@@ -59,6 +59,7 @@ setup(
     cmdclass={
         'test_settings': MigrateTestSettings,
         'database': InitialiseTestDatabase,
+        'fixtures': LoadDBFixtures,
         'externals': InstallExternals,
         'start': Start,
         'help': Help,

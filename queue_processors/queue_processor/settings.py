@@ -30,12 +30,12 @@ CEPH_DIRECTORY = f"{PROJECT_ROOT}/reduced-data/%s/RB%s/autoreduced/%s/"
 # for development/prod or when connecting to the real archive, mounted locally
 # ARCHIVE_ROOT = "/isis"
 # for testing which uses a local folder to simulate an archive
-ARCHIVE_ROOT = os.path.join(PROJECT_ROOT, 'data-archive')
+if "RUNNING_VIA_PYTEST" in os.environ:
+    ARCHIVE_ROOT = os.path.join(PROJECT_ROOT, 'test-archive')
+else:
+    ARCHIVE_ROOT = os.path.join(PROJECT_ROOT, 'data-archive')
 
 # Variables that get changes less
-# %(instrument)
-# ONLY USED IN THE WebApp and should be removed in https://github.com/ISISScientificComputing/autoreduce/issues/1042
-REDUCTION_DIRECTORY = os.path.join(ARCHIVE_ROOT, 'NDX%s', 'user', 'scripts', 'autoreduction')
 # %(instrument, cycle, experiment_number, run_number)
 CYCLE_DIRECTORY = os.path.join(ARCHIVE_ROOT, 'NDX%s', 'Instrument', 'data', 'cycle_%s')
 SCRIPTS_DIRECTORY = f"{ARCHIVE_ROOT}/NDX%s/user/scripts/autoreduction/"

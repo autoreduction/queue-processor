@@ -9,8 +9,10 @@ Class to deal with reduction run variables
 """
 import re
 import logging
+from typing import Dict
 
 from model.database import access
+from queue_processors.queue_processor.reduction.service import ReductionScript
 
 
 class VariableUtils:
@@ -91,3 +93,48 @@ class VariableUtils:
         if var_type == "boolean":
             return value.lower() == 'true'
         return value
+
+    @staticmethod
+    def get_default_variables(instrument_name) -> dict:
+        """
+        Creates and returns a list of variables from the reduction script
+        on disk for the instrument.
+        If reduce_script is supplied, return variables using that script
+        instead of the one on disk.
+        """
+        reduce_vars = ReductionScript(instrument_name, 'reduce_vars.py')
+        module = reduce_vars.load()
+
+        variable_help = getattr(module, 'variable_help', {})
+
+        return {
+            "standard_vars":
+            VariableUtils.make_variable_like_dict(
+                getattr(module, 'standard_vars', {}),
+                variable_help["standard_vars"] if "standard_vars" in variable_help else {}),
+            "advanced_vars":
+            VariableUtils.make_variable_like_dict(
+                getattr(module, 'advanced_vars', {}),
+                variable_help["advanced_vars"] if "advanced_vars" in variable_help else {}),
+            "variable_help":
+            getattr(module, 'variable_help', {})
+        }
+
+    @staticmethod
+    def make_variable_like_dict(variables: dict, help_dict: dict) -> Dict[str, object]:
+        """
+        Returns a dict with unsaved Variable objects.
+
+        Not ideal but better than returning a dict that needs to be kept up to date with the
+        Variable interface. The right solution would be to remove all of this, and is captured in
+        https://github.com/ISISScientificComputing/autoreduce/issues/1137
+        """
+        variable_model = access.start_database().variable_model.Variable
+        result = {}
+        for name, value in variables.items():
+            result[name] = variable_model(name=name,
+                                          value=value,
+                                          type=VariableUtils.get_type_string(value),
+                                          help_text=help_dict["name"] if name in help_dict else "")
+
+        return result

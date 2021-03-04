@@ -2,14 +2,14 @@
     <div class="col-md-6">
         <h3 class="text-center">Variables by run number</h3>
         {% if current_variables.variables %}
-            <div class="row">
+            <div class="row" id="current_variables_by_run">
                 <div class="col-md-12">
                     <div class="panel panel-primary">
                         <div class="panel-heading">
                             <div class="panel-title">Current Variables</div>
                         </div>
                         <div class="panel-body">
-                            {% include "snippets/variables.html" with instrument:variables=current_variables instrument=instrument csrf_token=csrf_token upcoming=False only %}
+                            {% include "snippets/variables.html" with instrument_variables=current_variables instrument=instrument csrf_token=csrf_token upcoming=False only %}
                         </div>
                     </div>
                 </div>
@@ -22,7 +22,7 @@
             </div>
         {% endif %}
         {% if upcoming_variables_by_run %}
-            <div class="row">
+            <div class="row" id="upcoming_variables_by_run">
                 <div class="col-md-12">
                     <div class="panel panel-primary">
                         <div class="panel-heading">
@@ -30,7 +30,7 @@
                         </div>
                         <div class="panel-body zebra-rows">
                             {% for upcoming_variable in upcoming_variables_by_run %}
-                                {% include "snippets/variables.html" with instrument:variables=upcoming_variable instrument=instrument csrf_token=csrf_token upcoming=True only %}
+                                {% include "snippets/variables.html" with instrument_variables=upcoming_variable instrument=instrument csrf_token=csrf_token upcoming=True only %}
                             {% endfor %}
                         </div>
                     </div>
@@ -41,7 +41,7 @@
     <div class="col-md-6">
         <h3 class="text-center">Variables by experiment reference number</h3>
         {% if upcoming_variables_by_experiment %}
-            <div class="row">
+            <div class="row" id="upcoming_variables_by_experiment">
                 <div class="col-md-12">
                     <div class="panel panel-default">
                         <div class="panel-heading">
@@ -49,7 +49,7 @@
                         </div>
                         <div class="panel-body zebra-rows">
                             {% for upcoming_variable in upcoming_variables_by_experiment %}
-                                {% include "snippets/variables.html" with instrument:variables=upcoming_variable instrument=instrument csrf_token=csrf_token only %}
+                                {% include "snippets/variables.html" with instrument_variables=upcoming_variable instrument=instrument csrf_token=csrf_token only %}
                             {% endfor %}
                         </div>
                     </div>

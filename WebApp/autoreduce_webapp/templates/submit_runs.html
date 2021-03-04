@@ -4,7 +4,11 @@
 {% load static %}
 
 {% block body %}
-    {% if instrument %}
+    {% if not instrument %}
+        <div class="text-center col-md-6 col-md-offset-3 well well-small">
+            {{ message }}
+        </div>
+    {% else %}
         {% if instrument.is_active %}
             <div class="row">
                 <div class="col-md-12 text-center">
@@ -81,12 +85,8 @@
                             <div class="row">
                                 <ul class="js-form-actions">
                                     <li>
-                                        <a href="#currentScript" id="currentScript">Reset to values in current
-                                            script</a>
-                                        <div class="js-explaination visible-xs-block">Reset all variables to those set
-                                            in the script. This will pick up any changes made to the reduce_vars.py
-                                            script.
-                                        </div>
+                                        <a href="#currentScript" id="currentScript">Reset to values in the current reduce_vars script</a>
+                                        <div class="js-explaination visible-xs-block">Reset all variables to those set in the script. This will pick up any changes made to the reduce_vars.py script.</div>
                                     </li>
                                     <li>
                                         <input type="checkbox" name="overwrite_checkbox" id="overwrite_checkbox"
@@ -109,8 +109,8 @@
                 </div>
                 <div class="form-group variables-buttons">
                     <div class="col-md-9 text-right">
-                        <a href="#cancelForm" class="btn btn-danger" id="cancelForm">Cancel</a>
-                        <input type="submit" value="Submit Runs" class="btn btn-success" id="variableSubmit"/>
+                        <a href="{% url 'runs:list' instrument.name %}" class="btn btn-danger" id="cancel">Cancel</a>
+                        <input type="submit" value="Submit Runs" class="btn btn-success" id="variableSubmit" />
                     </div>
                 </div>
             </form>
@@ -164,8 +164,8 @@
             </div>
 
             <div class="hide">
-                <div class="js-default-variables">
-                    {% include "snippets/edit_variables.html" with standard_variables=default_standard_variables advanced_variables=default_advanced_variables instrument=instrument.name only %}
+                <div class="js-current-variables">
+                    {% include "snippets/edit_variables.html" with standard_variables=current_standard_variables advanced_variables=current_advanced_variables instrument=instrument.name only %}
                 </div>
             </div>
         {% else %}
@@ -173,19 +173,15 @@
                 Instrument is not active - it has no runs.
             </div>
         {% endif %}
-    {% else %}
-        <div class="text-center col-md-6 col-md-offset-3 well well-small">
-            Instrument not found.
-        </div>
     {% endif %}
 {% endblock %}
 
 {% block stylesheets %}
-    <link rel="stylesheet" href="{% static "css/vendor/prettify.css" %}">
-    <link rel="stylesheet" href="{% static "css/vendor/bootstrap-switch.min.css" %}">
+    <link rel="stylesheet" href="{% static 'css/vendor/prettify.css' %}">
+    <link rel="stylesheet" href="{% static 'css/vendor/bootstrap-switch.min.css' %}">
 {% endblock %}
 {% block scripts %}
-    <script src="{% static "javascript/vendor/prettify.js" %}"></script>
-    <script src="{% static "javascript/vendor/bootstrap-switch.min.js" %}"></script>
-    <script src="{% static "javascript/run_variables.js" %}"></script>
+    <script src="{% static 'javascript/vendor/prettify.js' %}"></script>
+    <script src="{% static 'javascript/vendor/bootstrap-switch.min.js' %}"></script>
+    <script src="{% static 'javascript/run_variables.js' %}"></script>
 {% endblock %}

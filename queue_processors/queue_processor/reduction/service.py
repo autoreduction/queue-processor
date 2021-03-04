@@ -122,6 +122,12 @@ class ReductionScript:
         self.skipped_runs = []
         self.module = None
 
+    def exists(self) -> bool:
+        """
+        Returns whether the script file exists
+        """
+        return self.script_path.exists()
+
     def load(self):
         """
         Loads the reduction script as a module
