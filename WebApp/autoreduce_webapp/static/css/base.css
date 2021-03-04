@@ -330,3 +330,7 @@ pre code {
 .plot-container {
     margin: 0.5em;
 }
+
+.pt-2 {
+    padding-top: 0.5rem;
+}
