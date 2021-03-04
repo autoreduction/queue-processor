@@ -66,9 +66,22 @@ class ReductionRunUtils(object):
         return {"standard_vars": standard_vars, "advanced_vars": advanced_vars}
 
     @staticmethod
-    def send_retry_message(user_id: int, most_recent_run: ReductionRun, script_text: str, new_script_arguments: dict,
-                           overwrite_previous_data: bool):
+    def send_retry_message(user_id: int, most_recent_run: ReductionRun, run_description: str, script_text: str,
+                           new_script_arguments: dict, overwrite_previous_data: bool):
+        """
+        Creates & sends a retry message given the parameters
+
+        :param user_id: The user submitting the run
+        :param most_recent_run: The most recent run, used for common things across the two runs like
+                                run number, instrument name, etc
+        :param run_description: Description of the rerun
+        :param script_text: The script that will NOT be used for this reduction, because of a known issue
+                            https://github.com/ISISScientificComputing/autoreduce/issues/1115
+        :param new_script_arguments: Dict of arguments that will be used for the reduction
+        :param overwrite_previous_data: Whether to overwrite the previous data in the data location
+        """
         message = Message(started_by=user_id,
+                          description=run_description,
                           run_number=most_recent_run.run_number,
                           instrument=most_recent_run.instrument.name,
                           rb_number=most_recent_run.experiment.reference_number,
@@ -83,8 +96,11 @@ class ReductionRunUtils(object):
 
     @staticmethod
     def send_retry_message_same_args(user_id: int, most_recent_run: ReductionRun):
+        """
+        Sends a retry message using the parameters from the most_recent_run
+        """
         ReductionRunUtils.send_retry_message(
-            user_id, most_recent_run, most_recent_run.script,
+            user_id, most_recent_run, "Re-run from the failed queue", most_recent_run.script,
             ReductionRunUtils.make_kwargs_from_runvariables(most_recent_run, use_value=True), most_recent_run.overwrite)
 
 
