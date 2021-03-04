@@ -16,7 +16,7 @@
     </div>
 
     <div id="search-row" class="row">
-        <div id="search-col" class="col-md-8">
+        <div id="search-box-col">
             <div class="form-group">
                 <label for="help-search" class="screenreader-only">Search</label>
                 <input type="search" placeholder="Search" name="help-search" id="help-search"
@@ -26,8 +26,8 @@
             </div>
         </div>
 
-        <div class="col-md-4 text-center">
-            <div class="form-group">
+        <div id="category-col" class="text-center">
+            <div id="category-chooser" class="form-group">
                 <span>Category: </span>
                 <div id="category-filter" class="btn-group btn-group-toggle" data-toggle="buttons">
                     <label class="btn btn-secondary active" data-category="all">
@@ -47,7 +47,7 @@
         </div>
     </div>
 
-    <div id="topics-sidebar-nav" class="navbar navbar-default" role="navigation">
+    <div id="collapsible-topics-nav" class="navbar navbar-default" role="navigation">
         <div id="topics-navbar-brand" class="navbar-brand">Topics</div>
         <button type="button" id="hamburger-toggle" class="navbar-toggle">
             <span class="sr-only">Toggle topics sidebar</span>
@@ -58,8 +58,11 @@
     </div>
 
     <div>
-        <div class="col-xs-6 col-sm-3" id="topics-sidebar" role="navigation">
-            <ul class="nav" id="sidenav"></ul>
+        <div class="panel col-xs-6 col-sm-3" id="topics-sidebar" role="navigation">
+            <div class="panel-heading">
+                <h3>Topics</h3>
+            </div>
+            <ul class="nav" id="sidenav-contents"></ul>
         </div>
 
         <div id="help-topics" class="col-xs-12 col-sm-9">
