@@ -9,12 +9,10 @@
 Tests message handling for the queue processor
 """
 
-from functools import partial
 import random
-from systemtests.utils.data_archive import DefaultDataArchive
-from unittest import TestCase, mock, main
+from functools import partial
+from unittest import TestCase, main, mock
 from unittest.mock import Mock, patch
-
 from django.db.utils import IntegrityError
 from parameterized import parameterized
 
@@ -22,10 +20,11 @@ import model.database.access
 from model.database.records import create_reduction_run_record
 from model.message.message import Message
 from queue_processors.queue_processor.handle_message import HandleMessage
-from queue_processors.queue_processor.status_utils import StatusUtils
 from queue_processors.queue_processor.queue_listener import QueueListener
+from queue_processors.queue_processor.status_utils import StatusUtils
 from queue_processors.queue_processor.tests.test_instrument_variable_utils import \
     FakeModule
+from systemtests.utils.data_archive import DefaultDataArchive
 
 STATUS = StatusUtils()
 
