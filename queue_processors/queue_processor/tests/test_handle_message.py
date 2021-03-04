@@ -52,6 +52,7 @@ class FakeMessage:
     started_by = 0
     run_number = 1234567
     message = "I am a message"
+    description = "This is a fake description"
 
 
 class TestHandleMessage(TestCase):
@@ -69,6 +70,7 @@ class TestHandleMessage(TestCase):
             "reduction_data": "/path/1",
             "started_by": -1,
             "data": "/path",
+            "description": "This is a fake description",
             "instrument": "ARMI"  # Autoreduction Mock Instrument
         })
         with patch("logging.getLogger") as patched_logger:
