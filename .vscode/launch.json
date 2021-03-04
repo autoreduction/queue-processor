@@ -18,9 +18,6 @@
                 "hidden": false,
                 "group": "autoreduce",
             },
-            "env": {
-                "RUNNING_VIA_PYTEST": "true"
-            }
         },
         {
             "name": "Pytest - Django",
