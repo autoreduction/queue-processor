@@ -86,6 +86,7 @@ h3::before {
         width: 100%;
         display: none;
         margin-bottom: 20px;
+        padding-right: 0;
     }
 
     #topics-sidebar.active {
