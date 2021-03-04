@@ -61,11 +61,16 @@
                     <div class="panel-body">
                         <div class="row">
                             <div class="col-md-6">
+                                {% if run.run_name %}
                                 <div>
-                                    {% if started_by is not null %}
-                                        <strong>Started by:</strong> {{ started_by }}
-                                    {% endif %}
+                                    <strong>Run description: </strong> {{ run.run_name }}
                                 </div>
+                                {% endif %}
+                                {% if started_by is not null %}
+                                    <div>
+                                        <strong>Started by:</strong> {{ started_by }}
+                                    </div>
+                                {% endif %}
                                 <div>
                                     <strong>Status:</strong> <strong
                                         class="text-{% colour_table_row run.status.value_verbose %}">{{ run.status.value_verbose }}</strong>
