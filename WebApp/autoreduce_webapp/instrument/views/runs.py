@@ -10,16 +10,15 @@ import logging
 from autoreduce_webapp.view_utils import (check_permissions, login_and_uows_valid, render_with)
 from django.db.models.query import QuerySet
 from django.shortcuts import redirect
-from utilities import input_processing
-
+from instrument.models import InstrumentVariable
 from reduction_viewer.models import Instrument, ReductionRun
 from reduction_viewer.utils import ReductionRunUtils
-from instrument.models import InstrumentVariable
+from utilities import input_processing
 
 from queue_processors.queue_processor.instrument_variable_utils import InstrumentVariablesUtils
 from queue_processors.queue_processor.reduction.service import ReductionScript
-from queue_processors.queue_processor.variable_utils import VariableUtils
 from queue_processors.queue_processor.status_utils import STATUS
+from queue_processors.queue_processor.variable_utils import VariableUtils
 
 LOGGER = logging.getLogger("app")
 
@@ -209,7 +208,6 @@ def make_reduction_arguments(POST_arguments, default_variables):
     return new_script_arguments
 
 
-# pylint:disable=too-many-statements,too-many-branches
 @login_and_uows_valid
 @check_permissions
 @render_with('configure_new_runs.html')
@@ -304,7 +302,8 @@ def configure_new_runs_GET(instrument_name, start=0, end=0, experiment_reference
     except AttributeError:
         return {
             "error":
-            "All previous runs have been skipped and they cannot be re-run. You can still submit manual runs for this instrument."
+                ("All previous runs have been skipped and they cannot be re-run. "
+                 "You can still submit manual runs for this instrument.")
         }
 
     current_variables = ReductionRunUtils.make_kwargs_from_runvariables(last_run)
@@ -329,7 +328,6 @@ def configure_new_runs_GET(instrument_name, start=0, end=0, experiment_reference
     current_advanced_variables = current_variables["advanced_vars"]
     min_run_start = last_run.run_number
     run_start = min_run_start + 1 if start == 0 else start
-    # experiment_reference = experiment_reference if experiment_reference>0 else last_run.experiment.reference_number
 
     context_dictionary = {
         'instrument': instrument,
