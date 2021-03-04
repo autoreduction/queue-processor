@@ -317,7 +317,7 @@ def configure_new_runs_GET(instrument_name, start=0, end=0, experiment_reference
     # This seems to be used to prevent submission if trying to resubmit variables for already
     # configured future run numbers - check the checkForConflicts function
     # This should probably be done by the POST method anyway.. so remove it
-    upcoming_run_variables = ','.join(list(set([str(var.start_run) for var in upcoming_variables])))
+    upcoming_run_variables = ",".join({var.start_run for var in upcoming_variables})
 
     try:
         current_variables = VariableUtils.get_default_variables(instrument)
