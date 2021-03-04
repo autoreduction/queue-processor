@@ -9,12 +9,13 @@ Selenium tests for the runs summary page
 """
 
 from django.urls import reverse
+from selenium.webdriver.support.wait import WebDriverWait
+
 from selenium_tests.pages.run_summary_page import RunSummaryPage
 from selenium_tests.tests.base_tests import NavbarTestMixin, BaseTestCase, FooterTestMixin
+from reduction_viewer.models import ReductionRun
 
 from systemtests.utils.data_archive import DataArchive
-
-from reduction_viewer.models import ReductionRun
 
 
 class TestRunSummaryPageNoArchive(NavbarTestMixin, BaseTestCase, FooterTestMixin):
@@ -53,7 +54,8 @@ class TestRunSummaryPageNoArchive(NavbarTestMixin, BaseTestCase, FooterTestMixin
         assert self.page.run_description_text() == "Run description: This is the test run_name"
 
 
-class TestRunSummaryPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
+class TestRunSummaryPage(BaseTestCase):
+    # class TestRunSummaryPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
     """
     Test cases for the InstrumentSummary page when the Rerun form is NOT visible
     """
@@ -123,9 +125,8 @@ class TestRunSummaryPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
         assert rerun_form.find_element_by_id("var-standard-variable1").get_attribute("value") == "value1"
         labels = rerun_form.find_elements_by_tag_name("label")
 
-        assert labels[0].text == "Re-run description"
-        assert len(labels) == 2
-        assert labels[1].text == "variable1"
+        WebDriverWait(self.driver, 10).until(lambda _: labels[0].text == "Re-run description")
+        WebDriverWait(self.driver, 10).until(lambda _: labels[1].text == "variable1")
 
     def test_back_to_instruments_goes_back(self):
         """
