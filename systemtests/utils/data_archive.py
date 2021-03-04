@@ -94,9 +94,9 @@ class DefaultDataArchive(ContextDecorator):
     """
     def __init__(self, instrument_name) -> None:
         self.instrument_name = instrument_name
+        self.data_archive = DataArchive([self.instrument_name], 21, 21)
 
     def __enter__(self):
-        self.data_archive = DataArchive([self.instrument_name], 21, 21)
         self.data_archive.create()
         self.data_archive.add_reduction_script(self.instrument_name, """def main(in_f, out_d): print('some text')""")
         self.data_archive.add_reduce_vars_script(self.instrument_name, """standard_vars={"variable1":"value1"}""")
