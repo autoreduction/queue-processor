@@ -7,19 +7,19 @@
 """
 Deals with communication with ICAT service
 """
-import logging
-import sys
-import os
+# pylint: disable = wrong-import-position, wrong-import-order
 import datetime
-import icat
+import logging
+import os
+import sys
 
+import icat
 from django.utils.encoding import smart_str
 
+from utils.project.structure import get_project_root
 # The below is a template on the repository
-# pylint: disable=relative-import
 from .settings import ICAT, BASE_DIR
 
-from utils.project.structure import get_project_root
 sys.path.append(os.path.join(get_project_root(), 'WebApp', 'autoreduce_webapp'))
 
 from reduction_viewer.models import Setting
@@ -28,7 +28,7 @@ LOGGER = logging.getLogger(__name__)
 sys.path.insert(0, BASE_DIR)
 
 
-class ICATCommunication(object):
+class ICATCommunication:
     """
     Handles communication with the ICAT service
     """
