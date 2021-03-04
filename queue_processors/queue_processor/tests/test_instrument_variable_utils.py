@@ -40,6 +40,7 @@ class FakeMessage:
         super().__init__()
         self.started_by = 0
         self.run_number = run_number if run_number else 1234567
+        self.description = "This is a fake message"
 
 
 class FakeModule:
