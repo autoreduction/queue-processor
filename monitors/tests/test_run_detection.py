@@ -42,6 +42,9 @@ class DataHolder:
         self.data = data
 
     def get(self, _):
+        """
+        Returns a mock object with the attribute value set to the data value of the DataHolder object
+        """
         mock_value = Mock()
         mock_value.value = self.data
         return mock_value
