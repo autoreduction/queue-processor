@@ -88,17 +88,16 @@
 
         // Show sidebar when hamburger menu clicked
         $('#hamburger-toggle').click(function () {
-            $('#sidebar').toggleClass('active');
+            $('#topics-sidebar').toggleClass('active');
         });
 
         // Reset search filters on clicking sidebar link
-        // Temporarily disabled https://github.com/ISISScientificComputing/autoreduce/issues/701
-        // $('#sidenav').click(function () {
-        //     $('[data-category="all"]').click();
-        //     $('#help-search').val("");
-        //     filterHelpTopics(stringToSearchTerms($(this).val()),
-        //         $('#category-filter > .btn.active').data("category"));
-        // });
+        $('#sidenav').click(function () {
+            $('[data-category="all"]').click();
+            $('#help-search').val("");
+            filterHelpTopics(stringToSearchTerms($(this).val()),
+                $('#category-filter > .btn.active').data("category"));
+        });
 
         generateSideNavLinks();
 

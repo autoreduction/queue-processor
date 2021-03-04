@@ -42,13 +42,13 @@ h3::before {
         padding-top: 0;
     }
 
-    #sidebar {
+    #topics-sidebar {
         width: 100%;
         display: none;
         margin-bottom: 20px;
     }
 
-    #sidebar.active {
+    #topics-sidebar.active {
         display: block;
     }
 
