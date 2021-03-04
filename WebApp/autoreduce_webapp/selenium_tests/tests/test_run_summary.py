@@ -124,6 +124,7 @@ class TestRunSummaryPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
         labels = rerun_form.find_elements_by_tag_name("label")
 
         assert labels[0].text == "Re-run description"
+        assert len(labels) == 2
         assert labels[1].text == "variable1"
 
     def test_back_to_instruments_goes_back(self):
