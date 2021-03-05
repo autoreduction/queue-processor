@@ -11,6 +11,7 @@ from selenium_tests.tests.base_tests import NavbarTestMixin, BaseTestCase, Foote
 from selenium_tests.pages.configure_new_runs_page import ConfigureNewRunsPage
 
 from systemtests.utils.data_archive import DataArchive
+from selenium_tests.pages.variables_summary_page import VariableSummaryPage
 
 
 class TestConfigureNewRunsPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
@@ -78,3 +79,49 @@ class TestConfigureNewRunsPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
         self.page.go_to_other.click()
         url = reverse("instrument:variables", kwargs={"instrument": self.instrument_name, "start": 100001, "end": 0})
         assert url in self.driver.current_url
+
+
+class TestConfigureNewRunsPageSkippedOnly(NavbarTestMixin, BaseTestCase, FooterTestMixin):
+
+    fixtures = BaseTestCase.fixtures + ["skipped_run"]
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.instrument_name = "TestInstrument"
+        cls.data_archive = DataArchive([cls.instrument_name], 21, 21)
+        cls.data_archive.create()
+        cls.data_archive.add_reduction_script(cls.instrument_name, """print('some text')""")
+        cls.data_archive.add_reduce_vars_script(cls.instrument_name,
+                                                """standard_vars={"variable1":"test_variable_value_123"}""")
+        cls.instrument_name = "TestInstrument"
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        cls.data_archive.delete()
+        super().tearDownClass()
+
+    def test_configure_skipped_only_run_vars(self):
+        """Test that configuring new runs works even with only skipped runs present"""
+        self.page = ConfigureNewRunsPage(self.driver, self.instrument_name)
+        self.page.launch()
+        self.page.variable1_field = "the new value in the field"
+
+        self.page.submit_button.click()
+        summary = VariableSummaryPage(self.driver, self.instrument_name)
+        assert summary.current_variables_by_run.is_displayed()
+        assert summary.current_variables_by_run.text == "Current Variables\nNo current variables found"
+        assert "Runs\n100000\nOngoing" in summary.upcoming_variables_by_run.text
+
+    def test_configure_skipped_only_exp_vars(self):
+        """Test that configuring new runs works even with only skipped runs present"""
+        self.page = ConfigureNewRunsPage(self.driver, self.instrument_name, experiment_reference=1234567)
+        self.page.launch()
+        self.page.variable1_field = "the new value in the field"
+
+        self.page.submit_button.click()
+        summary = VariableSummaryPage(self.driver, self.instrument_name)
+        assert summary.current_variables_by_run.is_displayed()
+        assert summary.current_variables_by_run.text == "Current Variables\nNo current variables found"
+        assert summary.upcoming_variables_by_experiment.is_displayed()
+        assert "Experiment\n#1234567" in summary.upcoming_variables_by_experiment.text
