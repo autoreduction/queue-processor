@@ -9,7 +9,6 @@ Selenium tests for the runs summary page
 """
 
 from django.urls import reverse
-from selenium.common.exceptions import NoSuchElementException
 from selenium_tests.pages.run_summary_page import RunSummaryPage
 from selenium_tests.tests.base_tests import NavbarTestMixin, BaseTestCase, FooterTestMixin
 
@@ -18,7 +17,7 @@ from systemtests.utils.data_archive import DataArchive
 from reduction_viewer.models import ReductionRun
 
 
-class TestRunSummaryPageNoArchive(BaseTestCase):
+class TestRunSummaryPageNoArchive(NavbarTestMixin, BaseTestCase, FooterTestMixin):
     fixtures = BaseTestCase.fixtures + ["run_with_one_variable"]
 
     @classmethod
@@ -51,6 +50,7 @@ class TestRunSummaryPageNoArchive(BaseTestCase):
         # the reset to current values should not be visible
         assert self.page.warning_message.is_displayed()
         assert self.page.warning_message.text == "No variables found for this run."
+        assert self.page.run_description_text() == "Run description: This is the test run_name"
 
 
 class TestRunSummaryPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
@@ -81,8 +81,16 @@ class TestRunSummaryPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
 
     def test_reduction_job_panel_displayed(self):
         """Tests that the reduction job panel is showing the right things"""
-        rjp = self.page.reduction_job_panel
-        assert rjp.is_displayed()
+        # only one run in the fixture, get it for assertions
+        run = ReductionRun.objects.first()
+        assert self.page.reduction_job_panel.is_displayed()
+        assert self.page.run_description_text() == f"Run description: {run.run_name}"
+        # because it's started_by: -1, determined in `started_by_id_to_name`
+        assert self.page.started_by_text() == f"Started by: Development team"
+        assert self.page.status_text() == "Status: Processing"
+        assert self.page.instrument_text() == f"Instrument: {run.instrument.name}"
+        assert self.page.rb_number_text() == f"RB Number: {run.experiment.reference_number}"
+        assert self.page.last_updated_text() == f"Last Updated: 19 Oct 2020, 6:35 p.m."
 
     def test_reduction_job_panel_reset_to_values_first_used_for_run(self):
         """Test that the button to reset the variables to the values first used for the run works"""

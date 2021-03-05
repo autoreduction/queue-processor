@@ -21,13 +21,6 @@ class TestQueueClient(TestCase):
     """
     Exercises the queue client
     """
-    def setUp(self):
-        self.incorrect_credentials = ClientSettingsFactory().create('queue',
-                                                                    username='not-user',
-                                                                    password='not-pass',
-                                                                    host='not-host',
-                                                                    port='1234')
-
     def test_default_init(self):
         """
         Test: Class variables are created and set
@@ -55,22 +48,17 @@ class TestQueueClient(TestCase):
         client.connect()
         self.assertTrue(client._test_connection())
 
-    @patch('stomp.connect.StompConnection11.is_connected', return_value=False)
-    def test_invalid_connection_raises_on_test(self, _):
-        """
-        Test: A ConnectionException is raised
-        When: _test_connection is called while a valid connection is not held
-        """
-        client = QueueClient()
-        client.connect()
-        self.assertRaises(ConnectionException, client._test_connection)
-
-    def test_invalid_credentials(self):
+    def test_connection_failed_invalid_credentials(self):
         """
         Test: A ConnectionException is raised
         When: _test_connection is called while invalid credentials are held
         """
-        client = QueueClient(self.incorrect_credentials)
+        incorrect_credentials = ClientSettingsFactory().create('queue',
+                                                               username='not-user',
+                                                               password='not-pass',
+                                                               host='not-host',
+                                                               port='1234')
+        client = QueueClient(incorrect_credentials)
         with self.assertRaises(ConnectionException):
             client.connect()
 
