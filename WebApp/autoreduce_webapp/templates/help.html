@@ -66,7 +66,7 @@
         </div>
 
         <div id="help-topics" class="col-xs-12 col-sm-9">
-            <section class="help-topic panel panel-default" data-category="usage" data-topics="link reduced data">
+            <section class="help-topic panel panel-default" data-category="usage">
                 <div class="panel-heading">
                     <h3>Accessing my reduced data</h3>
                 </div>
@@ -101,7 +101,7 @@
                     </ol>
                 </div>
             </section>
-            <section class="help-topic panel panel-default" data-category="usage" data-topics="reduction_scripts">
+            <section class="help-topic panel panel-default" data-category="usage">
                 <div class="panel-heading">
                     <h3>Reduction Variables Script</h3>
                 </div>
@@ -129,7 +129,7 @@ variable_help = {
 }</code></pre>
                 </div>
             </section>
-            <section class="help-topic panel panel-default" data-category="usage" data-topics="reduction_scripts">
+            <section class="help-topic panel panel-default" data-category="usage">
                 <div class="panel-heading">
                     <h3>Reduction Script</h3>
                 </div>
@@ -238,8 +238,7 @@ import reduce_vars as params</code></pre>
                     </p>
                 </div>
             </section>
-            <section class="help-topic panel panel-default" data-category="usage"
-                     data-topics="Autoreduction GitHub Repository">
+            <section class="help-topic panel panel-default" data-category="usage">
                 <div class="panel-heading">
                     <h3>Autoreduction GitHub Repository</h3>
                 </div>
@@ -249,9 +248,7 @@ import reduce_vars as params</code></pre>
                 </div>
             </section>
 
-            <section class="help-topic panel panel-default" data-category="usage"
-                     data-topics="instrument variables change new">
-
+            <section class="help-topic panel panel-default" data-category="usage">
                 <div class="panel-heading">
                     <h3>How do I add new instrument variables?</h3>
                 </div>
@@ -267,8 +264,7 @@ import reduce_vars as params</code></pre>
                 </div>
             </section>
 
-            <section class="help-topic panel panel-default" data-category="question"
-                     data-topics="invalid variables wrong error value">
+            <section class="help-topic panel panel-default" data-category="question">
                 <div class="panel-heading">
                     <h3>When changing variables why is value X invalid for variable Y?</h3>
                 </div>
@@ -287,8 +283,7 @@ import reduce_vars as params</code></pre>
                 </div>
             </section>
 
-            <section class="help-topic panel panel-default" data-category="question"
-                     data-topics="reduction data file location directory output reduced">
+            <section class="help-topic panel panel-default" data-category="question">
                 <div class="panel-heading">
                     <h3>I've modified my reduction scripts, why aren't my new runs using it?</h3>
                 </div>
@@ -320,8 +315,7 @@ import reduce_vars as params</code></pre>
                 </div>
             </section>
 
-            <section class="help-topic panel panel-default" data-category="question"
-                     data-topics="script compatible work">
+            <section class="help-topic panel panel-default" data-category="question">
                 <div class="panel-heading">
                     <h3>How can I make a reduction script compatible with Autoreduction?</h3>
                 </div>
@@ -359,8 +353,7 @@ import reduce_vars as params</code></pre>
                 </div>
             </section>
 
-            <section class="help-topic panel panel-default" data-category="question"
-                     data-topics="reduction script file location directory">
+            <section class="help-topic panel panel-default" data-category="question">
                 <div class="panel-heading">
                     <h3>Where should I put reduction scripts?</h3>
                 </div>
@@ -379,8 +372,7 @@ import reduce_vars as params</code></pre>
                 </div>
             </section>
 
-            <section class="help-topic panel panel-default" data-category="question"
-                     data-topics="reduction data file location directory output reduced">
+            <section class="help-topic panel panel-default" data-category="question">
                 <div class="panel-heading" id="reduction_data_location">
                     <h3>Where does my reduced data go?</h3>
                 </div>
@@ -396,8 +388,7 @@ import reduce_vars as params</code></pre>
                     </p>
                 </div>
             </section>
-            <section class="help-topic panel panel-default" data-category="question"
-                     data-topics="reduction status error queued processing skipped complete error">
+            <section class="help-topic panel panel-default" data-category="question">
                 <div class="panel-heading">
                     <h3>What do the reduction statuses mean?</h3>
                 </div>
@@ -415,8 +406,7 @@ import reduce_vars as params</code></pre>
                     </ul>
                 </div>
             </section>
-            <section class="help-topic panel panel-default" data-category="question"
-                     data-topics="reduction status error queued processing skipped complete error">
+            <section class="help-topic panel panel-default" data-category="question">
                 <div class="panel-heading">
                     <h3>How do I save out plots from my reduce.py?</h3>
                 </div>
@@ -463,5 +453,6 @@ my_matplotlib_figure.savefig(os.path.join(output_dir, f"{filename}.png"), dpi=No
 {% endblock %}
 
 {% block scripts %}
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.basic.min.js"></script>
     <script src="{% static "javascript/help.js" %}"></script>
 {% endblock %}
