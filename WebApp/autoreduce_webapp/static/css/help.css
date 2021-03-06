@@ -82,6 +82,10 @@ h3::before {
     padding: 0;
 }
 
+code {
+    overflow-wrap: break-word
+}
+
 @media screen and (max-width: 767px) {
     #collapsible-topics-nav {
         display: block;
