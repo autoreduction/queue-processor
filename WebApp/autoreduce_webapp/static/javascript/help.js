@@ -78,6 +78,8 @@
     }
 
     function init() {
+        hljs.highlightAll();
+
         // Trigger searching and remove popover on keyup event of search bar
         $('#help-search').on('keyup', function (event) {
             // Ignore pressing enter

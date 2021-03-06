@@ -4,7 +4,7 @@
 
 {% block stylesheets %}
     <link rel="stylesheet" href="{% static "css/help.css" %}">
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.6.0/styles/github.min.css">
 {% endblock %}
 
 {% block body %}
@@ -28,7 +28,7 @@
 
         <div id="category-col" class="text-center">
             <fieldset id="category-chooser" class="form-group">
-                <legend>Category: </legend>
+                <legend>Category:</legend>
                 <div id="category-filter" class="btn-group btn-group-toggle" data-toggle="buttons">
                     <label class="btn btn-secondary active" data-category="all">
                         <input type="radio" name="categories" id="category-all" checked>
@@ -113,7 +113,7 @@
                         <code>//isis/NDX.../user/script/autoreduction/reduce_vars.py</code> file. This file has the
                         following format:
                     </p>
-                    <pre><code>standard_vars = {
+                    <pre><code class="language-python">standard_vars = {
     'perform corrections': False,
     'reduction option': "Default value"
 }
@@ -144,7 +144,7 @@ variable_help = {
                         A full example script can be seen below:
                     </p>
 
-                    <pre><code>import os
+                    <pre><code class="language-python">import os
 import sys
 from mantid.simpleapi import (Load, Rebin, SaveNexus)
 sys.path.append("/isis/NDXTEST/user/scripts/autoreduction")
@@ -182,7 +182,7 @@ def main(input_file, output_dir):
                         packages, mantid packages and the <code>reduce_vars</code> we defined in the above section.
                     </p>
 
-                    <pre><code># import standard python packages
+                    <pre><code class="language-python"># import standard python packages
 import os
 import sys
 
@@ -199,7 +199,7 @@ import reduce_vars as params</code></pre>
                         found, an exception should be raised. Below is an example for reference:
                     </p>
 
-                    <pre><code>def validate(file, dir):
+                    <pre><code class="language-python">def validate(file, dir):
     """
     Function that validates if a file and/or directory exist. If not a
     RunTimeError is raised which is picked up by Autoreduction.
@@ -224,7 +224,7 @@ import reduce_vars as params</code></pre>
                         reduction steps. The function must take an <code>input_file</code> and <code>output_dir</code>
                         as parameters. Both arguments should be validated in the validate function.
                     </p>
-                    <pre><code>def main(input_file, output_dir):
+                    <pre><code class="language-python">def main(input_file, output_dir):
     # validate
     validate(input_file, output_dir)
     # Perform reduction
@@ -333,7 +333,8 @@ import reduce_vars as params</code></pre>
                             See Here
                         </a>
                         for the full script.
-                        Autoreduction expects the reduction script to have a <code>main()</code> method
+                        Autoreduction expects the reduction script to have a <code
+                            class="language-python">main()</code> method
                         that takes in two arguments, <strong>data</strong> and <strong>output</strong>.
                         These are passed in a kwargs but it may be desirable for these to also be accepted from the
                         command line.
@@ -420,7 +421,7 @@ import reduce_vars as params</code></pre>
 
                     <p>The following function is provided to help you get that information from the input file parameter
                         Autoreduction called the main() method with in reduce.py:</p>
-                    <pre><code>def get_name_of_data_file(datafile):
+                    <pre><code class="language-python">def get_name_of_data_file(datafile):
     """
     Finds only the name of the data file and returns it. Removes the rest
     of the input full path and the file extension.
@@ -433,7 +434,7 @@ import reduce_vars as params</code></pre>
     just_filename, extension = os.path.splitext(filename_and_extension)
     return just_filename</code></pre>
                     <p>To save out your matplotlib figure you can do:</p>
-                    <pre><code> ... some plotting code with matplotlib ...
+                    <pre><code class="language-python"> ... some plotting code with matplotlib ...
 
 filename = get_name_of_data_file(input_file)
 my_matplotlib_figure.savefig(os.path.join(output_dir, f"{filename}.png"), dpi=None)
@@ -454,5 +455,6 @@ my_matplotlib_figure.savefig(os.path.join(output_dir, f"{filename}.png"), dpi=No
 
 {% block scripts %}
     <script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.basic.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.6.0/highlight.min.js"></script>
     <script src="{% static "javascript/help.js" %}"></script>
 {% endblock %}
