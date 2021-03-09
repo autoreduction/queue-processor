@@ -5,9 +5,9 @@
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 # pylint: skip-file
-import sys
-import os
 import configparser
+import os
+
 from utils.project.structure import PROJECT_ROOT
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))

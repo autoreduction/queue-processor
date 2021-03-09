@@ -8,6 +8,7 @@
 from django.urls.base import reverse
 from selenium.common.exceptions import ElementClickInterceptedException
 from selenium.webdriver.support.wait import WebDriverWait
+
 from model.database import access as db
 
 

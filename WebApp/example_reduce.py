@@ -7,7 +7,7 @@
 # pylint: skip-file
 import os
 import shutil
-import sys
+
 import reduce_vars as web_var
 
 

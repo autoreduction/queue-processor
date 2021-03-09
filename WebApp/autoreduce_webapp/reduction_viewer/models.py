@@ -7,8 +7,8 @@
 """
 Models that represent the tables in the database
 """
-from django.db import models
 from django.core.validators import MinValueValidator, MaxLengthValidator
+from django.db import models
 
 
 class Instrument(models.Model):

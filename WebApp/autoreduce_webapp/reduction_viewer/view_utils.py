@@ -11,6 +11,7 @@ import functools
 import logging
 
 from reduction_viewer.models import Instrument
+
 from queue_processors.queue_processor.reduction.service import ReductionScript
 
 LOGGER = logging.getLogger(__name__)
