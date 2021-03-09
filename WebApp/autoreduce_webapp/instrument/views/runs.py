@@ -152,7 +152,7 @@ def run_confirmation(request, instrument: str):
 
         most_recent_run: ReductionRun = matching_previous_runs.first()
         # User can choose whether to overwrite with the re-run or create new data
-        overwrite_previous_data = bool(request.POST.get('overwrite_checkbox') == 'on')
+        overwrite_previous_data = request.POST.get('overwrite_checkbox') == 'on'
         ReductionRunUtils.send_retry_message(request.user.id, most_recent_run, run_description, script_text,
                                              new_script_arguments, overwrite_previous_data)
         # list stores (run_number, run_version)
@@ -179,9 +179,9 @@ def find_reason_to_avoid_re_run(matching_previous_runs, run_number):
     return True, ""
 
 
-def make_reduction_arguments(POST_arguments, default_variables):
+def make_reduction_arguments(post_arguments, default_variables):
     new_script_arguments = {"standard_vars": {}, "advanced_vars": {}}
-    for key, value in POST_arguments:
+    for key, value in post_arguments:
         if 'var-' in key:
             if 'var-advanced-' in key:
                 name = key.replace('var-advanced-', '').replace('-', ' ')
@@ -219,12 +219,12 @@ def configure_new_runs(request, instrument=None, start=0, end=0, experiment_refe
     start, end = int(start), int(end)
 
     if request.method == 'POST':
-        return configure_new_runs_POST(request, instrument_name, start, end, experiment_reference)
+        return configure_new_runs_post(request, instrument_name, start)
     else:
-        return configure_new_runs_GET(instrument, start, end, experiment_reference)
+        return configure_new_runs_get(instrument, start, end, experiment_reference)
 
 
-def configure_new_runs_POST(request, instrument_name, start=0, end=0, experiment_reference=0):
+def configure_new_runs_post(request, instrument_name, start=0):
     """
     Submission to modify variables. Acts on POST request.
 
@@ -244,8 +244,7 @@ def configure_new_runs_POST(request, instrument_name, start=0, end=0, experiment
     }
     all_vars = {"standard_vars": standard_vars, "advanced_vars": advanced_vars}
 
-    reduce_vars = ReductionScript(instrument_name, 'reduce_vars.py')
-    reduce_vars_module = reduce_vars.load()
+    reduce_vars_module = ReductionScript(instrument_name, 'reduce_vars.py').load()
     args_for_range = InstrumentVariablesUtils.merge_arguments(all_vars, reduce_vars_module)
     instrument = Instrument.objects.get(name=instrument_name)
 
@@ -289,7 +288,7 @@ def configure_new_runs_POST(request, instrument_name, start=0, end=0, experiment
     return redirect('instrument:variables_summary', instrument=instrument_name)
 
 
-def configure_new_runs_GET(instrument_name, start=0, end=0, experiment_reference=0):
+def configure_new_runs_get(instrument_name, start=0, end=0, experiment_reference=0):
     """
     GET for the configure new runs page
     """
