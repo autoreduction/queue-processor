@@ -16,6 +16,7 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium_tests import configuration
 from selenium_tests.pages.component_mixins.footer_mixin import FooterMixin
 from selenium_tests.pages.component_mixins.navbar_mixin import NavbarMixin
+from selenium_tests.pages.overview_page import OverviewPage
 from selenium_tests.pages.page import Page
 
 
@@ -42,6 +43,7 @@ class HelpPage(Page, NavbarMixin, FooterMixin):
         # Navigates to / first to force a login. Check the README and
         # the "index" view for more details
         self.driver.get(configuration.get_url())
+        self.driver.get("http://localhost:0000/overview")
         self.driver.get(self.url())
         return self
 
