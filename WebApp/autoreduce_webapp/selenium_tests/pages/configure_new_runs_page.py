@@ -19,6 +19,7 @@ class ConfigureNewRunsPage(Page, RerunFormMixin, NavbarMixin, FooterMixin, TourM
     """
     Page model class for run summary page
     """
+    # pylint:disable=too-many-arguments
     def __init__(self, driver, instrument, run_start=None, run_end=None, experiment_reference=None):
         super().__init__(driver)
         self.instrument = instrument

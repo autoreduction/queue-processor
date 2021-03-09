@@ -40,6 +40,7 @@ class OverviewPage(Page, NavbarMixin, FooterMixin, TourMixin):
         WebDriverWait(self.driver, 10).until(presence_of_element_located((By.CLASS_NAME, "instrument-btn")))
         return self
 
+    # pylint:disable=no-self-use
     def url_path(self):
         """
         Return the path section of the overview page url
