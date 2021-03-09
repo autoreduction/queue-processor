@@ -18,14 +18,12 @@ from .settings import UOWS_URL
 LOGGER = logging.getLogger(__name__)
 
 
-class UOWSClient(object):
+class UOWSClient:
     """
     A client for interacting with the User Office Web Service
     """
     def __init__(self, **kwargs):
-        url = UOWS_URL
-        if 'URL' in kwargs:
-            url = kwargs['URL']
+        url = kwargs.get("URL", default=UOWS_URL)
         self.client = Client(url)
 
     # Add the ability to use 'with'
