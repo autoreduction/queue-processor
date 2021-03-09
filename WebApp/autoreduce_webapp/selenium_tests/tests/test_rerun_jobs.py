@@ -1,7 +1,6 @@
 from django.urls import reverse
 from selenium_tests.pages.rerun_jobs_page import RerunJobsPage
-from selenium_tests.pages.run_summary_page import RunSummaryPage
-from selenium_tests.tests.base_tests import NavbarTestMixin, BaseTestCase, FooterTestMixin
+from selenium_tests.tests.base_tests import BaseTestCase
 
 from systemtests.utils.data_archive import DataArchive
 
