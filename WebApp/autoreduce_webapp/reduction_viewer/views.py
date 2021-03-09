@@ -12,6 +12,7 @@ working unit tests for this code at the point of correcting the pylint errors
 as such we should remove the pylint disables and fix the code when we
 can be more confident we are not affecting the execution
 """
+# pylint:disable=imported-auth-user
 import json
 import logging
 import operator
