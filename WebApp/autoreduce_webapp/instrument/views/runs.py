@@ -196,9 +196,8 @@ def make_reduction_arguments(post_arguments, default_variables):
                 if len(value) > InstrumentVariable._meta.get_field('value').max_length:
                     raise ValueError(f'Value given in {name} is too long.')
 
-                # TODO how much do we care about this
                 if name not in default_variables[dict_key]:
-                    continue  # TODO we just ignore the variable if it has been removed? Can this even happen?
+                    continue
 
                 new_script_arguments[dict_key][name] = value
 
@@ -294,7 +293,7 @@ def configure_new_runs_get(instrument_name, start=0, end=0, experiment_reference
     """
     instrument = Instrument.objects.get(name__iexact=instrument_name)
 
-    editing = (start > 0 or experiment_reference > 0)  # TODO what is this for?
+    editing = (start > 0 or experiment_reference > 0)
 
     try:
         last_run = instrument.reduction_runs.exclude(status=STATUS.get_skipped()).last()
@@ -311,7 +310,6 @@ def configure_new_runs_get(instrument_name, start=0, end=0, experiment_reference
 
     upcoming_variables = instrument.instrumentvariable_set.filter(start_run=last_run.run_number + 1)
 
-    # TODO unsure this is necessary
     # Unique, comma-joined list of all start runs belonging to the upcoming variables.
     # This seems to be used to prevent submission if trying to resubmit variables for already
     # configured future run numbers - check the checkForConflicts function

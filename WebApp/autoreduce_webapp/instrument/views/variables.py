@@ -36,7 +36,6 @@ def summarize_variables(request, instrument, last_run_object):
     upcoming_variables_by_experiment = InstrumentVariable.objects.filter(
         experiment_reference__gte=last_run_object.experiment.reference_number)
 
-    # TODO the tracks_script that is being set is often innacurate
     # vars made from the web app DO NOT track the script
     # the view itself is innacurate as "tracks script" is set on a per-variable basis
     # rather than the whole configuration
