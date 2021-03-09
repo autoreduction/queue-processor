@@ -5,14 +5,12 @@
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 
-import time
-
+from instrument.models import InstrumentVariable
 from selenium.common.exceptions import NoSuchElementException
 from selenium_tests.pages.configure_new_runs_page import ConfigureNewRunsPage
 from selenium_tests.pages.variables_summary_page import VariableSummaryPage
 from selenium_tests.tests.base_tests import (BaseTestCase, FooterTestMixin, NavbarTestMixin)
 
-from instrument.models import InstrumentVariable
 from model.database import access as db
 from queue_processors.queue_processor.queue_listener import main
 from systemtests.utils.data_archive import DataArchive
@@ -23,7 +21,6 @@ REDUCE_VARS_DEFAULT_VALUE = "default value from reduce_vars"
 
 
 class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterTestMixin):
-
     fixtures = BaseTestCase.fixtures + ["run_with_one_variable"]
 
     @classmethod
@@ -129,7 +126,10 @@ class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterT
             summary.upcoming_variables_by_run.is_displayed()
 
     def test_submit_multiple_run_ranges(self):
-        """Test submitting variables for multiple run ranges, and that they show up correctly in 'see instrument variablers'"""
+        """
+        Test submitting variables for multiple run ranges, and that they show up correctly
+        in 'see instrument variablers'
+        """
         self._submit_var_value("new_value", self.run_number + 1)
         self._submit_var_value("the newest value", self.run_number + 101)
 
@@ -155,7 +155,10 @@ class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterT
             assert summary.upcoming_variables_by_experiment.is_displayed()
 
     def test_submit_multiple_run_ranges_with_ends(self):
-        """Test submitting variables for multiple run ranges, and that they show up correctly in 'see instrument variablers'"""
+        """
+        Test submitting variables for multiple run ranges, and that they show up correctly
+        in 'see instrument variablers'
+        """
         self._submit_var_value("new_value", self.run_number + 1, self.run_number + 101)
         self._submit_var_value("the newest value", self.run_number + 201, self.run_number + 401)
 
