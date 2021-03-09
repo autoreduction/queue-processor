@@ -6,7 +6,7 @@
 # ############################################################################### #
 
 import logging
-
+from itertools import chain
 from autoreduce_webapp.view_utils import (check_permissions, login_and_uows_valid, render_with)
 from django.db.models.query import QuerySet
 from django.shortcuts import redirect
@@ -250,8 +250,18 @@ def configure_new_runs_post(request, instrument_name, start=0, experiment_refere
     }
     all_vars = {"standard_vars": standard_vars, "advanced_vars": advanced_vars}
 
-    reduce_vars_module = ReductionScript(instrument_name, 'reduce_vars.py').load()
-    args_for_range = InstrumentVariablesUtils.merge_arguments(all_vars, reduce_vars_module)
+    reduce_vars = ReductionScript(instrument_name, 'reduce_vars.py')
+    reduce_vars_module = reduce_vars.load()
+    try:
+        args_for_range = InstrumentVariablesUtils.merge_arguments(all_vars, reduce_vars_module)
+    except KeyError as err:
+        return {
+            "message":
+            f"Error encountered when processing variable with name: {err}. \
+            Please check that the names of the variables in reduce_vars.py match the \
+            names of the variables shown in the web app."
+        }
+
     instrument = Instrument.objects.get(name=instrument_name)
 
     if start != 0:
@@ -317,7 +327,27 @@ def configure_new_runs_get(instrument_name, start=0, end=0, experiment_reference
     standard_vars = current_variables["standard_vars"]
     advanced_vars = current_variables["advanced_vars"]
 
-    upcoming_variables = instrument.instrumentvariable_set.filter(start_run=last_run.run_number + 1)
+    # if a specific start is provided, include vars upcoming for the specific start
+    filter_kwargs = {"start_run__gte": start if start else last_run.run_number}
+    if end:
+        # if an end run is provided - don't show variables outside the [start-end) range
+        filter_kwargs["start_run__lt"] = end
+
+    upcoming_variables = instrument.instrumentvariable_set.filter(**filter_kwargs)
+    if experiment_reference:
+        upcoming_experiment_variables = instrument.instrumentvariable_set.filter(
+            experiment_reference=experiment_reference)
+    else:
+        upcoming_experiment_variables = []
+
+    # Updates the variables values. Experiment variables are chained second
+    # so they values will overwrite any changes from the run variables
+    for upcoming_var in chain(upcoming_variables, upcoming_experiment_variables):
+        name = upcoming_var.name
+        if name in standard_vars or not upcoming_var.is_advanced:
+            standard_vars[name] = upcoming_var
+        elif name in advanced_vars or upcoming_var.is_advanced:
+            advanced_vars[name] = upcoming_var
 
     # Unique, comma-joined list of all start runs belonging to the upcoming variables.
     # This seems to be used to prevent submission if trying to resubmit variables for already
@@ -326,14 +356,13 @@ def configure_new_runs_get(instrument_name, start=0, end=0, experiment_reference
     upcoming_run_variables = ",".join({str(var.start_run) for var in upcoming_variables})
 
     try:
-        current_variables = VariableUtils.get_default_variables(instrument)
+        reduce_vars_variables = VariableUtils.get_default_variables(instrument)
     except (FileNotFoundError, ImportError, SyntaxError) as err:
         return {"message": str(err)}
 
-    current_standard_variables = current_variables["standard_vars"]
-    current_advanced_variables = current_variables["advanced_vars"]
-    min_run_start = last_run.run_number
-    run_start = min_run_start + 1 if start == 0 else start
+    current_standard_variables = reduce_vars_variables["standard_vars"]
+    current_advanced_variables = reduce_vars_variables["advanced_vars"]
+    run_start = start if start else last_run.run_number + 1
 
     context_dictionary = {
         'instrument': instrument,
@@ -350,7 +379,7 @@ def configure_new_runs_get(instrument_name, start=0, end=0, experiment_reference
         'current_experiment_reference': experiment_reference,
         # used to create the link to an experiment reference form, using this number
         'submit_for_experiment_reference': last_run.experiment.reference_number,
-        'minimum_run_start': min_run_start,
+        'minimum_run_start': last_run.run_number,
         'upcoming_run_variables': upcoming_run_variables,
         'editing': editing,
         'tracks_script': '',
