@@ -9,13 +9,11 @@ Selenium tests for the runs summary page
 """
 
 from django.urls import reverse
-from selenium.common.exceptions import NoSuchElementException
+from reduction_viewer.models import ReductionRun
 from selenium_tests.pages.run_summary_page import RunSummaryPage
 from selenium_tests.tests.base_tests import NavbarTestMixin, BaseTestCase, FooterTestMixin
 
 from systemtests.utils.data_archive import DataArchive
-
-from reduction_viewer.models import ReductionRun
 
 
 class TestRunSummaryPageNoArchive(BaseTestCase):
@@ -38,7 +36,8 @@ class TestRunSummaryPageNoArchive(BaseTestCase):
         """
         # the reset to current values should not be visible
         assert self.page.warning_message.is_displayed()
-        assert self.page.warning_message.text == "The reduce_vars.py script is missing for this instrument. Please create it before being able to submit re-runs."
+        assert self.page.warning_message.text == ("The reduce_vars.py script is missing for this instrument."
+                                                  " Please create it before being able to submit re-runs.")
 
     def test_opening_run_summary_without_run_variables(self):
         """
