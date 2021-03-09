@@ -101,10 +101,13 @@ class TestConfigureNewRunsPageSkippedOnly(NavbarTestMixin, BaseTestCase, FooterT
         cls.data_archive.delete()
         super().tearDownClass()
 
-    def test_configure_skipped_only_run_vars(self):
-        """Test that configuring new runs works even with only skipped runs present"""
+    def setUp(self) -> None:
+        super().setUp()
         self.page = ConfigureNewRunsPage(self.driver, self.instrument_name)
         self.page.launch()
+
+    def test_configure_skipped_only_run_vars(self):
+        """Test that configuring new runs works even with only skipped runs present"""
         self.page.variable1_field = "the new value in the field"
 
         self.page.submit_button.click()
