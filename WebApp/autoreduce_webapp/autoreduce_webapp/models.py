@@ -16,9 +16,8 @@ class Cache(models.Model):
     """
     created = models.DateTimeField(auto_now_add=True, blank=False)
 
-    def __unicode__(self):
-        # pylint: disable=no-member
-        return u'%s' % self.id_name
+    def __str__(self):
+        return f"{self.id_name}"
 
 
 class UserCache(Cache):

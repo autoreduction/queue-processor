@@ -21,10 +21,8 @@ class Variable(models.Model):
     is_advanced = models.BooleanField(default=False)
     help_text = models.TextField(blank=True, null=True, default='')
 
-    def __unicode__(self):
-        """ :return: GEM - variable-name=variable-value """
-        # pylint:disable=no-member
-        return u'%s - %s=%s' % (self.instrument.name, self.name, self.value)
+    def __str__(self):
+        return f"{self.instrument.name} - {self.name}=self.value"
 
     def sanitized_name(self):
         """
