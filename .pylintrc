@@ -243,7 +243,8 @@ method-naming-style=snake_case
 
 # Regular expression matching correct method names. Overrides method-naming-
 # style
-#method-rgx=
+# This regex is necessary due to import errors due to the way imports work in the WebApp
+method-rgx=(([a-z_][a-z0-9_]{2,})|(setUp)|(tearDown)|(setUpClass)|(tearDownClass))$
 
 # Naming style matching correct module names
 module-naming-style=snake_case
