@@ -6,18 +6,17 @@
 # ############################################################################### #
 
 from django.urls import reverse
+from instrument.models import InstrumentVariable
 from selenium_tests.pages.rerun_jobs_page import RerunJobsPage
 from selenium_tests.pages.run_summary_page import RunSummaryPage
 from selenium_tests.pages.runs_list_page import RunsListPage
-from selenium_tests.tests.base_tests import (BaseTestCase, FooterTestMixin, NavbarTestMixin)
+from selenium_tests.tests.base_tests import (BaseTestCase)
+from selenium_tests.utils import submit_and_wait_for_result
 
 from queue_processors.queue_processor.queue_listener import main
-from selenium_tests.utils import submit_and_wait_for_result
+from systemtests.utils.data_archive import DataArchive
 from utils.clients.connection_exception import ConnectionException
 from utils.clients.django_database_client import DatabaseClient
-from systemtests.utils.data_archive import DataArchive
-
-from instrument.models import InstrumentVariable
 
 
 class TestRerunJobsRangePageIntegration(BaseTestCase):
