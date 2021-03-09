@@ -21,6 +21,7 @@ class Variable(models.Model):
     is_advanced = models.BooleanField(default=False)
     help_text = models.TextField(blank=True, null=True, default='')
 
+    # pylint:disable=no-member
     def __str__(self):
         return f"{self.instrument.name} - {self.name}=self.value"
 

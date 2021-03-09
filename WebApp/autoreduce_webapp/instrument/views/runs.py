@@ -69,7 +69,7 @@ def submit_runs(request, instrument=None):
         return context_dictionary
 
 
-# pylint:disable=too-many-return-statements,too-many-branches,too-many-statements
+# pylint:disable=too-many-return-statements,too-many-branches,too-many-statements,too-many-locals
 @login_and_uows_valid
 @check_permissions
 @render_with('run_confirmation.html')
@@ -287,6 +287,7 @@ def configure_new_runs_post(request, instrument_name, start=0):
     return redirect('instrument:variables_summary', instrument=instrument_name)
 
 
+# pylint:disable=too-many-locals
 def configure_new_runs_get(instrument_name, start=0, end=0, experiment_reference=0):
     """
     GET for the configure new runs page
