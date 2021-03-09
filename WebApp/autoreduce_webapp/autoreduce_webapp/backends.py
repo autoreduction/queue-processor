@@ -8,16 +8,16 @@
 UOWS authentication backend
 """
 import logging
+
 from django.contrib.auth.models import User
 
-# pylint: disable=relative-import
-from .uows_client import UOWSClient
 from .icat_cache import ICATCache
+from .uows_client import UOWSClient
 
 LOGGER = logging.getLogger('app')
 
 
-class UOWSAuthenticationBackend(object):
+class UOWSAuthenticationBackend:
     """
     Custom authentication for use with the User Office Web Service
     """

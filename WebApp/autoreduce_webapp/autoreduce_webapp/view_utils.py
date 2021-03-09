@@ -10,18 +10,17 @@ Utility functions for the Django views
 import logging
 import os
 import sys
-from django.shortcuts import redirect
+
 from django.core.exceptions import PermissionDenied
+from django.shortcuts import redirect
 from django.shortcuts import render
 
-# The below is a template on the repository
-# pylint: disable=relative-import
-from .settings import (DEVELOPMENT_MODE, INSTALLED_APPS, LOGIN_URL, OUTDATED_BROWSERS, UOWS_LOGIN_URL,
-                       USER_ACCESS_CHECKS)
-# pylint: disable=relative-import
-from .icat_cache import ICATCache
-
 from utils.project.structure import get_project_root
+from .icat_cache import ICATCache
+# The below is a template on the repository
+from .settings import (DEVELOPMENT_MODE, LOGIN_URL, OUTDATED_BROWSERS, UOWS_LOGIN_URL,
+                       USER_ACCESS_CHECKS)
+
 sys.path.append(os.path.join(get_project_root(), 'WebApp', 'autoreduce_webapp'))
 
 from reduction_viewer.models import ReductionRun, Experiment
