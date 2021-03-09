@@ -7,7 +7,6 @@
 """
 Deals with communication with ICAT service
 """
-# pylint: disable = wrong-import-position, wrong-import-order
 import datetime
 import logging
 import os

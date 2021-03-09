@@ -16,6 +16,7 @@ class Cache(models.Model):
     """
     created = models.DateTimeField(auto_now_add=True, blank=False)
 
+    # pylint:disable=no-member
     def __str__(self):
         return f"{self.id_name}"
 

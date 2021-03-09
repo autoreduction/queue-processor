@@ -4,7 +4,6 @@
 # Copyright &copy; 2021 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
-# pylint:disable=no-name-in-module
 """
 The view for the django database model
 

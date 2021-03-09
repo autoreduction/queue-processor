@@ -9,6 +9,7 @@ UOWS authentication backend
 """
 import logging
 
+# pylint:disable=imported-auth-user
 from django.contrib.auth.models import User
 
 from .icat_cache import ICATCache
