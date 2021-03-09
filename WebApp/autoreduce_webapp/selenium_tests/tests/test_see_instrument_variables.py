@@ -88,14 +88,10 @@ class TestSeeInstrumentVariablesPage(BaseTestCase):
         if end > 0:
             assert new_runs_page.run_end_val == str(end)
 
-        # this is actually the wrong value - known issue and documented at
-        # https://github.com/ISISScientificComputing/autoreduce/issues/1133
-        # Once it's fixed this test should fail - the correct assertion would be
-        # assert new_runs_page.variable1_field_val == "value2"
-        assert new_runs_page.variable1_field_val == "value1"
-
+        assert new_runs_page.variable1_field_val == value_to_modify
         new_runs_page.variable1_field = "some new value"
         new_runs_page.submit_button.click()
+        new_runs_page.replace_confirm.click()
 
         upcoming_panel = self.page.panels[1]
         # make sure the value we are modifying is no longer visible
@@ -146,11 +142,7 @@ class TestSeeInstrumentVariablesPage(BaseTestCase):
                                              self.instrument_name,
                                              experiment_reference=experiment_reference)
 
-        # this is actually the wrong value - known issue and documented at
-        # https://github.com/ISISScientificComputing/autoreduce/issues/1133
-        # Once it's fixed this test should fail - the correct assertion would be
-        # assert new_runs_page.variable1_field_val == f"experiment {experiment_reference} var"
-        assert new_runs_page.variable1_field_val == "value1"
+        assert new_runs_page.variable1_field_val == f"experiment {experiment_reference} var"
 
         new_runs_page.variable1_field = "some new value"
         new_runs_page.submit_button.click()
