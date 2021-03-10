@@ -423,6 +423,16 @@ def help(_):
     return {}
 
 
+@render_with('accessibility_statement.html')
+# pylint:disable=redefined-builtin
+def accessibility_statement(_):
+    """
+    Render accessibility statement page
+    Note: _ is replacing the passed in request parameter
+    """
+    return {}
+
+
 @render_with('admin/graph_home.html')
 # pylint:disable=no-member
 def graph_home(_):

@@ -46,6 +46,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('logout/', reduction_viewer_views.logout, name='logout'),
     path('help/', reduction_viewer_views.help, name='help'),
+    path('accessibility_statement/',
+         reduction_viewer_views.accessibility_statement, name='accessibility_statement'),
 
     # ===========================RUNS================================= #
     path('overview/', reduction_viewer_views.overview, name='overview'),
