@@ -11,12 +11,10 @@ from autoreduce_webapp.settings import DATABASES
 from reduction_viewer.models import Experiment, Instrument, ReductionRun
 
 if DATABASES["default"]["HOST"] != "127.0.0.1":
-    raise RuntimeError(
-        "Trying to clear a DB that is not on 127.0.0.1/LOCALHOST."
-        "This is dangerous so this script stops the exectuion.\n"
-        f"If you really mean to delete the DB at:\n\t{DATABASES['default']['HOST']}"
-        "\nthen you will have to manually go into this script and delete this check."
-    )
+    raise RuntimeError("Trying to clear a DB that is not on 127.0.0.1/LOCALHOST."
+                       "This is dangerous so this script stops the exectuion.\n"
+                       f"If you really mean to delete the DB at:\n\t{DATABASES['default']['HOST']}"
+                       "\nthen you will have to manually go into this script and delete this check.")
 
 for o in Experiment.objects.all():
     o.delete()

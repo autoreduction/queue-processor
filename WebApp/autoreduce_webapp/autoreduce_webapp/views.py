@@ -22,6 +22,7 @@ from reduction_viewer.models import Setting
 
 # pylint: disable=unused-argument
 
+
 def get_admin_email():
     """Check the settings for a valid admin email"""
     try:

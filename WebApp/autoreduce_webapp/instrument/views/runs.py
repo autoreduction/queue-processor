@@ -300,9 +300,8 @@ def configure_new_runs_get(instrument_name, start=0, end=0, experiment_reference
         last_run = instrument.reduction_runs.exclude(status=STATUS.get_skipped()).last()
     except AttributeError:
         return {
-            "error":
-                ("All previous runs have been skipped and they cannot be re-run. "
-                 "You can still submit manual runs for this instrument.")
+            "error": ("All previous runs have been skipped and they cannot be re-run. "
+                      "You can still submit manual runs for this instrument.")
         }
 
     current_variables = ReductionRunUtils.make_kwargs_from_runvariables(last_run)
