@@ -32,22 +32,6 @@
         }
     },
     {
-        "model": "reduction_viewer.reductionrun",
-        "pk": 3,
-        "fields": {
-            "run_number": 100001,
-            "status_id": 5,
-            "run_version": 0,
-            "last_updated": "2020-10-19 17:35:04+00:00",
-            "created": "2020-10-19 17:30:04+00:00",
-            "reduction_log": "test_log",
-            "admin_log": "log",
-            "hidden_in_failviewer": 0,
-            "experiment_id": 1,
-            "instrument_id": 1
-        }
-    },
-    {
         "pk": 1,
         "model": "reduction_viewer.datalocation",
         "fields": {
@@ -199,20 +183,4 @@
             "reduction_run_id": 2
         }
     },
-    {
-        "model": "instrument.runvariable",
-        "pk": 5,
-        "fields": {
-            "variable_id": 1,
-            "reduction_run_id": 3
-        }
-    },
-    {
-        "model": "instrument.runvariable",
-        "pk": 6,
-        "fields": {
-            "variable_id": 2,
-            "reduction_run_id": 3
-        }
-    }
 ]
