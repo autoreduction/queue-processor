@@ -107,7 +107,7 @@ class TestHandleMessage(TestCase):
 
         assert self.reduction_run.status == expected_status
         assert self.reduction_run.message == "I am a message"
-        assert self.reduction_run.run_name == "This is a fake description"
+        assert self.reduction_run.run_description == "This is a fake description"
         self.mocked_logger.info.assert_called_once()
         assert self.mocked_logger.info.call_args[0][1] == self.msg.run_number
 
@@ -281,7 +281,7 @@ class TestHandleMessage(TestCase):
             assert reduction_run.run_number == self.msg.run_number
             assert reduction_run.experiment.reference_number == self.msg.rb_number
             assert reduction_run.run_version == i
-            assert reduction_run.run_name == "Testing multiple versions"
+            assert reduction_run.run_description == "Testing multiple versions"
             assert message.run_version == i
             assert instrument == self.instrument
             assert instrument.name == self.msg.instrument

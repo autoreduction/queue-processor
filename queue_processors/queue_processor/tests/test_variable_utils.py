@@ -37,7 +37,7 @@ class TestVariableUtils(unittest.TestCase):
                                                                 tracks_script=1)
         self.reduction_run = self.data_model.ReductionRun(run_number=1111,
                                                           run_version=0,
-                                                          run_name='run name',
+                                                          run_description='run name',
                                                           hidden_in_failviewer=0,
                                                           admin_log='admin log',
                                                           reduction_log='reduction log',

@@ -51,7 +51,7 @@ class TestRunSummaryPageNoArchive(NavbarTestMixin, BaseTestCase, FooterTestMixin
         # the reset to current values should not be visible
         assert self.page.warning_message.is_displayed()
         assert self.page.warning_message.text == "No variables found for this run."
-        assert self.page.run_description_text() == "Run description: This is the test run_name"
+        assert self.page.run_description_text() == "Run description: This is the test run_description"
 
 
 class TestRunSummaryPage(BaseTestCase):
@@ -86,7 +86,7 @@ class TestRunSummaryPage(BaseTestCase):
         # only one run in the fixture, get it for assertions
         run = ReductionRun.objects.first()
         assert self.page.reduction_job_panel.is_displayed()
-        assert self.page.run_description_text() == f"Run description: {run.run_name}"
+        assert self.page.run_description_text() == f"Run description: {run.run_description}"
         # because it's started_by: -1, determined in `started_by_id_to_name`
         assert self.page.started_by_text() == f"Started by: Development team"
         assert self.page.status_text() == "Status: Processing"

@@ -143,12 +143,12 @@ def run_confirmation(request, instrument: str):
             context_dictionary['error'] = reason
             break
 
-        # run_description gets stored in run_name in the ReductionRun object
-        max_run_name_length = ReductionRun._meta.get_field('run_name').max_length
-        if len(run_description) > max_run_name_length:
+        # run_description gets stored in run_description in the ReductionRun object
+        max_run_description_length = ReductionRun._meta.get_field('run_description').max_length
+        if len(run_description) > max_run_description_length:
             context_dictionary["error"] = "The description contains {0} characters, " \
                                           "a maximum of {1} are allowed".\
-                format(len(run_description), max_run_name_length)
+                format(len(run_description), max_run_description_length)
             return context_dictionary
 
         most_recent_run: ReductionRun = matching_previous_runs.first()
