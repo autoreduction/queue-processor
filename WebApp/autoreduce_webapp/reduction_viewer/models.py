@@ -94,7 +94,7 @@ class ReductionRun(models.Model):
     started_by = models.IntegerField(null=True, blank=True)
 
     # Char fields
-    run_name = models.CharField(max_length=200, blank=True)
+    run_description = models.CharField(max_length=200, blank=True)
 
     # Text fields
     admin_log = models.TextField(blank=True)
@@ -129,9 +129,9 @@ class ReductionRun(models.Model):
                                  on_delete=models.CASCADE)
 
     def __unicode__(self):
-        """ :return: run_number and run_name if given """
-        if self.run_name:
-            return u'%s-%s' % (self.run_number, self.run_name)
+        """ :return: run_number and run_description if given """
+        if self.run_description:
+            return u'%s-%s' % (self.run_number, self.run_description)
         return u'%s' % self.run_number
 
     def __str__(self):
@@ -139,7 +139,7 @@ class ReductionRun(models.Model):
         Return str representation of reduction run based on run name if available else run number
         :return: str representation of ReductionRun
         """
-        return f"{self.run_number}: {self.run_name}" if self.run_name else f"{self.run_number}"
+        return f"{self.run_number}: {self.run_description}" if self.run_description else f"{self.run_number}"
 
     def title(self):
         """
@@ -147,8 +147,8 @@ class ReductionRun(models.Model):
         run name or run version
         """
         if self.run_version > 0:
-            if self.run_name:
-                title = '%s - %s' % (self.run_number, self.run_name)
+            if self.run_description:
+                title = '%s - %s' % (self.run_number, self.run_description)
             else:
                 title = '%s - %s' % (self.run_number, self.run_version)
         else:

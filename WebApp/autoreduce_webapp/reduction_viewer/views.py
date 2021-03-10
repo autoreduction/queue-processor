@@ -286,12 +286,12 @@ def runs_list(request, instrument=None):
         sort_by = request.GET.get('sort', 'run')
         if sort_by == 'run':
             runs = (ReductionRun.objects.only('status', 'last_updated', 'run_number', 'run_version',
-                                              'run_name').select_related('status').filter(
+                                              'run_description').select_related('status').filter(
                                                   instrument=instrument_obj).order_by('-run_number', 'run_version'))
         else:
             runs = (ReductionRun.objects.only(
                 'status', 'last_updated', 'run_number', 'run_version',
-                'run_name').select_related('status').filter(instrument=instrument_obj).order_by('-last_updated'))
+                'run_description').select_related('status').filter(instrument=instrument_obj).order_by('-last_updated'))
 
         if len(runs) == 0:
             return {'message': "No runs found for instrument."}
@@ -452,7 +452,7 @@ def graph_instrument(request, instrument_name):
         # made from load_runs which is very slow.
         select_related('status')
         # Only get these attributes, to speed it up.
-        .only('status', 'started', 'finished', 'last_updated', 'created', 'run_number', 'run_name',
+        .only('status', 'started', 'finished', 'last_updated', 'created', 'run_number', 'run_description',
               'run_version').filter(instrument=instrument.first()).order_by('-created'))
 
     try:

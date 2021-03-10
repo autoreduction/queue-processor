@@ -6,7 +6,7 @@
             "run_number": 99999,
             "status_id": 2,
             "run_version": 0,
-            "run_name": "This is the test run_name",
+            "run_description": "This is the test run_description",
             "last_updated": "2020-10-19 17:35:04+00:00",
             "created": "2020-10-19 17:30:04+00:00",
             "reduction_log": "test_log",
