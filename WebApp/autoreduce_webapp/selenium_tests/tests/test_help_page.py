@@ -8,8 +8,6 @@ class TestHelpPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
     """
     Test cases for the help page
     """
-    fixtures = BaseTestCase.fixtures + ["test_help_page"]
-
     def setUp(self) -> None:
         """
         Sets up the HelpPage object
