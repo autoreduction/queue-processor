@@ -75,7 +75,8 @@ class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterT
         self.page.variable1_field = value
         self.page.submit_button.click()
 
-    def assert_expected_var(self, var: InstrumentVariable, expected_run_number, expected_reference, expected_value):
+    @staticmethod
+    def assert_expected_var(var: InstrumentVariable, expected_run_number, expected_reference, expected_value):
         """
         Assert that a var has the expected values
         :param var: The var to check
