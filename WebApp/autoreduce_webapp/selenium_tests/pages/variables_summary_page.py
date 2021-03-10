@@ -6,6 +6,7 @@
 # ############################################################################### #
 
 from typing import List, Tuple
+from functools import partial
 
 from django.urls import reverse
 from selenium.webdriver.remote.webelement import WebElement
@@ -49,66 +50,48 @@ class VariableSummaryPage(Page, NavbarMixin, FooterMixin, TourMixin):
         """Return the upcoming_variables_by_experiment panel"""
         return self.driver.find_element_by_id("upcoming_variables_by_experiment")
 
-    def click_run_edit_button_for(self, start: int, end: int):
-        """
-        Clicks the edit button for the given run start and end
-        :param start: The start run
-        :param end: The end run
-        :return: The edit button
-        """
-        url = reverse("instrument:variables", kwargs={"instrument": self.instrument, "start": start, "end": end})
-        button = self.driver.find_element_by_css_selector(f'[href*="{url}"]')
-
-        def button_clicked_successfully(driver):
+    def _do_run_button(self, url):
+        def run_button_clicked_successfully(button, url, driver):
             button.click()
             return url in driver.current_url
 
-        WebDriverWait(self.driver, 10).until(button_clicked_successfully)
-
-    def click_run_delete_button_for(self, start: int, end: int):
-        """
-        Clicks the delete button for the given run start and run end
-        :param start: The start run
-        :param end: The end run
-        :return: The delete button
-        """
-        url = reverse("instrument:delete_variables", kwargs={"instrument": self.instrument, "start": start, "end": end})
         button = self.driver.find_element_by_css_selector(f'[href*="{url}"]')
+        WebDriverWait(self.driver, 10).until(partial(run_button_clicked_successfully, button, url))
 
-        def button_clicked_successfully(_):
+    def _do_delete_button(self, url):
+        def delete_button_clicked_successfully(button, _):
             try:
                 button.click()
                 return False
             except StaleElementReferenceException:
                 return True
 
-        WebDriverWait(self.driver, 10).until(button_clicked_successfully)
+        button = self.driver.find_element_by_css_selector(f'[href*="{url}"]')
+        WebDriverWait(self.driver, 10).until(partial(delete_button_clicked_successfully, button))
 
-    def experiment_edit_button_for(self, experiment_reference: int) -> Tuple[WebElement, str]:
-        """
-        Get the edit button for the given experiment reference
-        :param experiment_reference: The experiment reference
-        :return: The edit button
-        """
+    def click_run_edit_button_for(self, start: int, end: int):
+        url = reverse("instrument:variables", kwargs={"instrument": self.instrument, "start": start, "end": end})
+        self._do_run_button(url)
+
+    def click_run_delete_button_for(self, start: int, end: int):
+        url = reverse("instrument:delete_variables", kwargs={"instrument": self.instrument, "start": start, "end": end})
+        self._do_delete_button(url)
+
+    def click_experiment_edit_button_for(self, experiment_reference: int):
         url = reverse("instrument:variables_by_experiment",
                       kwargs={
                           "instrument": self.instrument,
                           "experiment_reference": experiment_reference
                       })
-        return self.driver.find_element_by_css_selector(f'[href*="{url}"]'), url
+        self._do_run_button(url)
 
-    def experiment_delete_button_for(self, experiment_reference: int) -> Tuple[WebElement, str]:
-        """
-        Get the delete button for the given experiment reference
-        :param experiment_reference: The experiment refence
-        :return: The delete button
-        """
+    def click_experiment_delete_button_for(self, experiment_reference: int):
         url = reverse("instrument:delete_variables_by_experiment",
                       kwargs={
                           "instrument": self.instrument,
                           "experiment_reference": experiment_reference
                       })
-        return self.driver.find_element_by_css_selector(f'[href*="{url}"]'), url
+        self._do_delete_button(url)
 
     @property
     def message(self) -> WebElement:
