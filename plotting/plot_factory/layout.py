@@ -17,7 +17,6 @@ from plotting.plot_meta_language.interpreter import Interpreter
 
 class Layout:
     """ Extract Layout as dictionary from interpreted meta data """
-
     def __init__(self, plot_style, title):
         """
         # Layout Properties

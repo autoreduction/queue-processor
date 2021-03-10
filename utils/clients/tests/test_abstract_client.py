@@ -30,7 +30,6 @@ class TestAbstractClient(unittest.TestCase):
         When: A class which implements AbstractClient is initiated with an argument that
         extends ClientSettings
         """
-
         class DerivedSettings(ClientSettings):
             pass
 
