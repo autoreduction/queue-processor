@@ -75,6 +75,24 @@ class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterT
         self.page.variable1_field = value
         self.page.submit_button.click()
 
+    def assert_expected_var(self, var: InstrumentVariable, expected_run_number, expected_reference, expected_value):
+        """
+        Assert that a var has the expected values
+        :param var: The var to check
+        :param expected_run_number: The expected run_number
+        :param expected_reference: The expected reference
+        :param expected_value: The expected var value
+        """
+        if expected_run_number is not None:
+            assert var.start_run == expected_run_number
+        else:
+            assert var.start_run is None
+        if expected_reference is not None:
+            assert var.experiment_reference == expected_reference
+        else:
+            assert var.experiment_reference is None
+        assert var.value == expected_value
+
     def test_submit_submit_same_variables_does_not_add_new_variables(self):
         """
         Test: Just opening the submit page and clicking rerun
@@ -99,8 +117,7 @@ class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterT
         self._submit_var_value("new_value", self.run_number + 1)
         assert InstrumentVariable.objects.count() == 2
         new_var = InstrumentVariable.objects.last()
-        assert new_var.start_run == self.run_number + 1
-        assert new_var.value == "new_value"
+        self.assert_expected_var(new_var, self.rb_number + 1, None, "new_value")
 
         summary = VariableSummaryPage(self.driver, self.instrument_name)
         assert summary.current_variables_by_run.is_displayed()
@@ -114,9 +131,7 @@ class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterT
 
         assert InstrumentVariable.objects.count() == 2
         new_var = InstrumentVariable.objects.last()
-        assert new_var.start_run is None
-        assert new_var.experiment_reference == self.rb_number
-        assert new_var.value == "new_value"
+        self.assert_expected_var(new_var, None, self.rb_number, "new_value")
 
         summary = VariableSummaryPage(self.driver, self.instrument_name)
         assert summary.current_variables_by_run.is_displayed()
@@ -135,17 +150,9 @@ class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterT
 
         assert InstrumentVariable.objects.count() == 3
         first_var, second_var, third_var = InstrumentVariable.objects.all()
-        assert first_var.start_run == self.run_number
-        assert first_var.experiment_reference is None
-        assert first_var.value == "value1"
-
-        assert second_var.start_run == self.run_number + 1
-        assert second_var.experiment_reference is None
-        assert second_var.value == "new_value"
-
-        assert third_var.start_run == self.run_number + 101
-        assert third_var.experiment_reference is None
-        assert third_var.value == "the newest value"
+        self.assert_expected_var(first_var, self.run_number, None, "value1")
+        self.assert_expected_var(second_var, self.run_number + 1, None, "new_value")
+        self.assert_expected_var(third_var, self.run_number + 101, None, "the newest value")
 
         summary = VariableSummaryPage(self.driver, self.instrument_name)
         assert summary.current_variables_by_run.is_displayed()
@@ -164,25 +171,11 @@ class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterT
 
         assert InstrumentVariable.objects.count() == 5
         first_var, second_var, third_var, fourth_var, fifth_var = InstrumentVariable.objects.all()
-        assert first_var.start_run == self.run_number
-        assert first_var.experiment_reference is None
-        assert first_var.value == "value1"
-
-        assert second_var.start_run == self.run_number + 1
-        assert second_var.experiment_reference is None
-        assert second_var.value == "new_value"
-
-        assert third_var.start_run == self.run_number + 102
-        assert third_var.experiment_reference is None
-        assert third_var.value == REDUCE_VARS_DEFAULT_VALUE  # back to the default value from the reduce_vars!
-
-        assert fourth_var.start_run == self.run_number + 201
-        assert fourth_var.experiment_reference is None
-        assert fourth_var.value == "the newest value"
-
-        assert fifth_var.start_run == self.run_number + 402
-        assert fifth_var.experiment_reference is None
-        assert fifth_var.value == REDUCE_VARS_DEFAULT_VALUE  # back to the default value from the reduce_vars!
+        self.assert_expected_var(first_var, self.run_number, None, "value1")
+        self.assert_expected_var(second_var, self.run_number + 1, None, "new_value")
+        self.assert_expected_var(third_var, self.run_number + 102, None, REDUCE_VARS_DEFAULT_VALUE)
+        self.assert_expected_var(fourth_var, self.run_number + 201, None, "the newest value")
+        self.assert_expected_var(fifth_var, self.run_number + 402, None, REDUCE_VARS_DEFAULT_VALUE)
 
     def test_submit_multiple_experiments(self):
         """Test submitting vars for multiple experiments"""
@@ -191,17 +184,9 @@ class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterT
 
         assert InstrumentVariable.objects.count() == 3
         first_var, second_var, third_var = InstrumentVariable.objects.all()
-        assert first_var.start_run == self.run_number
-        assert first_var.experiment_reference is None
-        assert first_var.value == "value1"
-
-        assert second_var.start_run is None
-        assert second_var.experiment_reference == self.rb_number
-        assert second_var.value == "new_value"
-
-        assert third_var.start_run is None
-        assert third_var.experiment_reference == self.rb_number + 100
-        assert third_var.value == "the newest value"
+        self.assert_expected_var(first_var, self.run_number, None, "value1")
+        self.assert_expected_var(second_var, None, self.rb_number, "new_value")
+        self.assert_expected_var(third_var, None, self.rb_number + 100, "the newest value")
 
         summary = VariableSummaryPage(self.driver, self.instrument_name)
         assert summary.current_variables_by_run.is_displayed()
@@ -220,33 +205,13 @@ class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterT
         assert InstrumentVariable.objects.count() == 7
         first_var, second_var, third_var, fourth_var, fifth_var, exp_var1, exp_var2 = InstrumentVariable.objects.all()
 
-        assert first_var.start_run == self.run_number
-        assert first_var.experiment_reference is None
-        assert first_var.value == "value1"
-
-        assert second_var.start_run == self.run_number + 1
-        assert second_var.experiment_reference is None
-        assert second_var.value == "new_value"
-
-        assert third_var.start_run == self.run_number + 102
-        assert third_var.experiment_reference is None
-        assert third_var.value == REDUCE_VARS_DEFAULT_VALUE  # back to the default value from the reduce_vars!
-
-        assert fourth_var.start_run == self.run_number + 201
-        assert fourth_var.experiment_reference is None
-        assert fourth_var.value == "the newest value"
-
-        assert fifth_var.start_run == self.run_number + 402
-        assert fifth_var.experiment_reference is None
-        assert fifth_var.value == REDUCE_VARS_DEFAULT_VALUE  # back to the default value from the reduce_vars!
-
-        assert exp_var1.start_run is None
-        assert exp_var1.experiment_reference == self.rb_number
-        assert exp_var1.value == "some value for experiment"
-
-        assert exp_var2.start_run is None
-        assert exp_var2.experiment_reference == self.rb_number + 100
-        assert exp_var2.value == "some different value for experiment"
+        self.assert_expected_var(first_var, self.run_number, None, "value1")
+        self.assert_expected_var(second_var, self.run_number + 1, None, "new_value")
+        self.assert_expected_var(third_var, self.run_number + 102, None, REDUCE_VARS_DEFAULT_VALUE)
+        self.assert_expected_var(fourth_var, self.run_number + 201, None, "the newest value")
+        self.assert_expected_var(fifth_var, self.run_number + 402, None, REDUCE_VARS_DEFAULT_VALUE)
+        self.assert_expected_var(exp_var1, None, self.rb_number, "some value for experiment")
+        self.assert_expected_var(exp_var2, None, self.rb_number + 100, "some different value for experiment")
 
         summary = VariableSummaryPage(self.driver, self.instrument_name)
         assert summary.current_variables_by_run.is_displayed()
