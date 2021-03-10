@@ -223,7 +223,7 @@ class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterT
 
         summary = VariableSummaryPage(self.driver, self.instrument_name)
 
-        summary.run_edit_button_for(self.run_number + 1, self.run_number + 101)[0].click()
+        summary.click_run_edit_button_for(self.run_number + 1, self.run_number + 101)
 
         self.page.variable1_field = "a new test value 123"
         self.page.submit_button.click()
@@ -234,7 +234,7 @@ class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterT
         assert "new_value" not in upcoming_panel.get_attribute("textContent")
         assert "a new test value 123" in upcoming_panel.get_attribute("textContent")
 
-        summary.run_delete_button_for(self.run_number + 1, self.run_number + 101)[0].click()
+        summary.click_run_delete_button_for(self.run_number + 1, self.run_number + 101)
 
         upcoming_panel = summary.panels[1]
         assert "a new test value 123" not in upcoming_panel.get_attribute("textContent")
@@ -249,16 +249,17 @@ class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterT
         assert "Ongoing" in incoming_run_numbers[2].text
 
         # now for the 2nd variable we made
-        summary.run_edit_button_for(self.run_number + 201, self.run_number + 401)[0].click()
+        summary.click_run_edit_button_for(self.run_number + 201, self.run_number + 401)
         self.page.variable1_field = "another new test value 321"
         self.page.submit_button.click()
+        self.page.replace_confirm.click()
 
         upcoming_panel = summary.panels[1]
 
         assert "new_value" not in upcoming_panel.get_attribute("textContent")
         assert "another new test value 321" in upcoming_panel.get_attribute("textContent")
 
-        summary.run_delete_button_for(self.run_number + 201, self.run_number + 401)[0].click()
+        summary.click_run_delete_button_for(self.run_number + 201, self.run_number + 401)
 
         upcoming_panel = summary.panels[1]
         assert "another new test value 321" not in upcoming_panel.get_attribute("textContent")

@@ -9,7 +9,8 @@ from typing import List, Tuple
 
 from django.urls import reverse
 from selenium.webdriver.remote.webelement import WebElement
-
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.common.exceptions import StaleElementReferenceException
 from selenium_tests.pages.component_mixins.footer_mixin import FooterMixin
 from selenium_tests.pages.component_mixins.navbar_mixin import NavbarMixin
 from selenium_tests.pages.component_mixins.tour_mixin import TourMixin
@@ -48,25 +49,40 @@ class VariableSummaryPage(Page, NavbarMixin, FooterMixin, TourMixin):
         """Return the upcoming_variables_by_experiment panel"""
         return self.driver.find_element_by_id("upcoming_variables_by_experiment")
 
-    def run_edit_button_for(self, start: int, end: int) -> Tuple[WebElement, str]:
+    def click_run_edit_button_for(self, start: int, end: int):
         """
-        Return the edit button for the given run start and end
+        Clicks the edit button for the given run start and end
         :param start: The start run
         :param end: The end run
         :return: The edit button
         """
         url = reverse("instrument:variables", kwargs={"instrument": self.instrument, "start": start, "end": end})
-        return self.driver.find_element_by_css_selector(f'[href*="{url}"]'), url
+        button = self.driver.find_element_by_css_selector(f'[href*="{url}"]')
 
-    def run_delete_button_for(self, start: int, end: int) -> Tuple[WebElement, str]:
+        def button_clicked_successfully(driver):
+            button.click()
+            return url in driver.current_url
+
+        WebDriverWait(self.driver, 10).until(button_clicked_successfully)
+
+    def click_run_delete_button_for(self, start: int, end: int):
         """
-        Return the delete button for the given run start and run end
+        Clicks the delete button for the given run start and run end
         :param start: The start run
         :param end: The end run
         :return: The delete button
         """
         url = reverse("instrument:delete_variables", kwargs={"instrument": self.instrument, "start": start, "end": end})
-        return self.driver.find_element_by_css_selector(f'[href*="{url}"]'), url
+        button = self.driver.find_element_by_css_selector(f'[href*="{url}"]')
+
+        def button_clicked_successfully(_):
+            try:
+                button.click()
+                return False
+            except StaleElementReferenceException:
+                return True
+
+        WebDriverWait(self.driver, 10).until(button_clicked_successfully)
 
     def experiment_edit_button_for(self, experiment_reference: int) -> Tuple[WebElement, str]:
         """
