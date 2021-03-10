@@ -117,7 +117,7 @@ class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterT
         self._submit_var_value("new_value", self.run_number + 1)
         assert InstrumentVariable.objects.count() == 2
         new_var = InstrumentVariable.objects.last()
-        self.assert_expected_var(new_var, self.rb_number + 1, None, "new_value")
+        self.assert_expected_var(new_var, self.run_number + 1, None, "new_value")
 
         summary = VariableSummaryPage(self.driver, self.instrument_name)
         assert summary.current_variables_by_run.is_displayed()
