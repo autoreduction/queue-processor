@@ -20,4 +20,5 @@ class TestHelpPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
         Test that the number of elements in the sidebar equals the number of
         topics on the page
         """
-        WebDriverWait(self.driver, 10).until(len(self.page.get_sidenav_contents()) == len(self.page.get_help_topics()))
+        WebDriverWait(self.driver,
+                      30).until(lambda _: len(self.page.get_sidenav_contents()) == len(self.page.get_help_topics()))

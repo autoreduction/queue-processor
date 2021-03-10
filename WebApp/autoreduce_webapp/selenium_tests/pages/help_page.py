@@ -49,11 +49,14 @@ class HelpPage(Page, NavbarMixin, FooterMixin):
         Get the contents of the collapsible sidebar
         :return: (List) A list of <li> WebElements in #sidebar-contents
         """
-        return self.driver.find_element_by_id("sidenav-contents").find_elements_by_tag_name("li")
+        print("sidenav-contents test")
+        print(list(self.driver.find_elements_by_xpath("//ul[@id='sidenav-contents']/li")))
+        return self.driver.find_elements_by_xpath("//ul[@id='sidenav-contents']/li")
 
     def get_help_topics(self) -> List[WebElement]:
         """
         Get the help topics on the page
         :return: (List) A list of <section> WebElements in .help-topic
         """
+        print(self.driver.find_elements_by_class_name("help-topic"))
         return self.driver.find_elements_by_class_name("help-topic")
