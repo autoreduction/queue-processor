@@ -11,7 +11,6 @@ from autoreduce_webapp.view_utils import (check_permissions, login_and_uows_vali
 from django.db.models.query import QuerySet
 from django.shortcuts import redirect
 from instrument.models import InstrumentVariable
-from instrument.views.helper import get_last
 
 from reduction_viewer.models import Instrument, ReductionRun
 from reduction_viewer.utils import ReductionRunUtils
@@ -42,7 +41,7 @@ def submit_runs(request, instrument=None):
 
         # pylint:disable=no-member
         runs_for_instrument = instrument.reduction_runs.all()
-        last_run = get_last(runs_for_instrument)
+        last_run = instrument.get_last_for_rerun(runs_for_instrument)
 
         kwargs = ReductionRunUtils.make_kwargs_from_runvariables(last_run)
         standard_vars = kwargs["standard_vars"]
@@ -314,7 +313,7 @@ def configure_new_runs_get(instrument_name, start=0, end=0, experiment_reference
 
     editing = (start > 0 or experiment_reference > 0)
 
-    last_run = get_last(runs_for_instrument)
+    last_run = instrument.get_last_for_rerun()
 
     run_variables = ReductionRunUtils.make_kwargs_from_runvariables(last_run)
     standard_vars = run_variables["standard_vars"]
