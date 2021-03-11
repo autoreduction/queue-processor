@@ -88,3 +88,39 @@ class RunSummaryPage(Page, RerunFormMixin, NavbarMixin, FooterMixin, TourMixin):
         Finds and returns the "warning_message" box
         """
         return self.driver.find_element_by_id("warning_message")
+
+    def run_description_text(self) -> str:
+        """
+        Finds and returns the text of the run_description field
+        """
+        return self.driver.find_element_by_id("run_description").text
+
+    def started_by_text(self) -> str:
+        """
+        Finds and returns the text of the started_by field
+        """
+        return self.driver.find_element_by_id("started_by").text
+
+    def status_text(self) -> str:
+        """
+        Finds and returns the text of the status field
+        """
+        return self.driver.find_element_by_id("status").text
+
+    def instrument_text(self) -> str:
+        """
+        Finds and returns the text of the instrument field
+        """
+        return self.driver.find_element_by_id("instrument").text
+
+    def rb_number_text(self) -> str:
+        """
+        Finds and returns the text of the rb_number field
+        """
+        return self.driver.find_element_by_id("rb_number").text
+
+    def last_updated_text(self) -> str:
+        """
+        Finds and returns the text of the last_updated field
+        """
+        return self.driver.find_element_by_id("last_updated").text

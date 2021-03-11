@@ -41,23 +41,28 @@
                             <ul class="js-form-actions">
                                 <li>
                                     <a href="#resetValues" id="resetValues">Reset variables to initial values used for this run</a>
-                                    <div class="js-explaination visible-xs-block">Reset the values of the variables to the ones previously used for this run.</div>
+                                    <a href="#" data-toggle="popover" data-html="true" data-content="Reset the values of the variables to the ones previously used for this run."
+                                    data-trigger="hover click focus" data-placement="top" data-container="body">
+                                     <i class="fa fa-info-circle"></i>
+                                 </a>
                                 </li>
                                 {% if current_standard_variables %}
                                 <li>
                                     <a href="#currentScript" id="currentScript">Reset to values in the current reduce_vars script</a>
-                                    <div class="js-explaination visible-xs-block">Reset to the values currently contained in the reduce_vars script.</div>
+                                    <a href="#" data-toggle="popover" data-html="true" data-content="Reset to the values currently contained in the reduce_vars script."
+                                    data-trigger="hover click focus" data-placement="top" data-container="body">
+                                     <i class="fa fa-info-circle"></i></a>
                                 </li>
                                 {% endif %}
                                 <li>
                                     <input type="checkbox" name="overwrite_checkbox" id="overwrite_checkbox" checked>
                                     <a href="#overwrite" id="overwrite"> Overwrite Previous Data</a>
-                                    <div class="js-explaination visible-xs-block">
-                                        By default, when an autoreduction job is re-run, the original data from the
-                                        initial run will be overwritten. If you uncheck this box,
-                                        original data will not be overwritten and you will have distinct folders to
-                                        separate out the data output from your different re-runs.
-                                    </div>
+                                    <a href="#" data-toggle="popover" data-html="true" data-content="By default, when an autoreduction job is re-run, the original data from the
+                                    initial run will be overwritten. If you uncheck this box,
+                                    original data will not be overwritten and you will have distinct folders to
+                                    separate out the data output from your different re-runs."
+                                    data-trigger="hover click focus" data-placement="top" data-container="body">
+                                     <i class="fa fa-info-circle"></i></a>
                                 </li>
 
                             </ul>

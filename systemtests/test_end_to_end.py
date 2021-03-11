@@ -11,8 +11,11 @@ Tests that data can traverse through the autoreduction system successfully
 import os
 import shutil
 import time
+from typing import Union
 import unittest
 from pathlib import Path
+
+from parameterized.parameterized import parameterized
 
 from model.database import access as db
 from model.message.message import Message
@@ -137,12 +140,17 @@ class TestEndToEnd(unittest.TestCase):
         assert results
         return results
 
-    def test_end_to_end_wish_invalid_rb_number_skipped(self):
+    @parameterized.expand([
+        [222, 222],
+        ["INVALID RB NUMBER CALIBRATION RUN PERHAPS",
+         0]  # the expected_rb_number is 0 because the initial RB number is not an int
+    ])
+    def test_end_to_end_wish_invalid_rb_number_skipped(self, rb_number: Union[int, str], expected_rb_number: int):
         """
-        Test that data gets skipped when the RB Number doesn't validate
+        Test that data gets skipped when the RB Number doesn't validate.
         """
         # Set meta data for test
-        self.rb_number = 222
+        self.rb_number = rb_number
         self.data_ready_message.rb_number = self.rb_number
 
         # Create supporting data structures e.g. Data Archive, Reduce directory
@@ -152,9 +160,9 @@ class TestEndToEnd(unittest.TestCase):
 
         # Validate
         self.assertEqual(self.instrument, results[0].instrument.name)
-        self.assertEqual(self.rb_number, results[0].experiment.reference_number)
+        self.assertEqual(expected_rb_number, results[0].experiment.reference_number)
         self.assertEqual(self.run_number, results[0].run_number)
-        self.assertEqual("This is a system test", results[0].run_name)
+        self.assertEqual("This is a system test", results[0].run_description)
         self.assertEqual('Skipped', results[0].status.value_verbose())
 
     def test_end_to_end_wish_completed(self):
@@ -170,7 +178,7 @@ class TestEndToEnd(unittest.TestCase):
         self.assertEqual(self.instrument, results[0].instrument.name)
         self.assertEqual(self.rb_number, results[0].experiment.reference_number)
         self.assertEqual(self.run_number, results[0].run_number)
-        self.assertEqual("This is a system test", results[0].run_name)
+        self.assertEqual("This is a system test", results[0].run_description)
         self.assertEqual('Completed', results[0].status.value_verbose())
 
     def test_end_to_end_wish_bad_script_syntax_error(self):
@@ -186,7 +194,7 @@ class TestEndToEnd(unittest.TestCase):
         self.assertEqual(self.instrument, results[0].instrument.name)
         self.assertEqual(self.rb_number, results[0].experiment.reference_number)
         self.assertEqual(self.run_number, results[0].run_number)
-        self.assertEqual("This is a system test", results[0].run_name)
+        self.assertEqual("This is a system test", results[0].run_description)
         self.assertEqual('Error', results[0].status.value_verbose())
 
         self.assertIn("REDUCTION Error", results[0].message)
@@ -207,7 +215,7 @@ class TestEndToEnd(unittest.TestCase):
         self.assertEqual(self.instrument, results[0].instrument.name)
         self.assertEqual(self.rb_number, results[0].experiment.reference_number)
         self.assertEqual(self.run_number, results[0].run_number)
-        self.assertEqual("This is a system test", results[0].run_name)
+        self.assertEqual("This is a system test", results[0].run_description)
         self.assertEqual('Error', results[0].status.value_verbose())
         self.assertIn('ValueError', results[0].message)
         self.assertIn('hello from the other side', results[0].message)

@@ -79,7 +79,7 @@ class TestMessage(unittest.TestCase):
         When: The class is initialised
         """
         empty_msg, _ = self._empty()
-        self.assertIsNone(empty_msg.description)
+        self.assertEqual(empty_msg.description, "")
         self.assertEqual(empty_msg.facility, "ISIS")
         self.assertIsNone(empty_msg.run_number)
         self.assertIsNone(empty_msg.instrument)

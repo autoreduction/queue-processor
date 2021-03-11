@@ -142,12 +142,12 @@ def run_confirmation(request, instrument: str):
             context_dictionary['error'] = reason
             break
 
-        # run_description gets stored in run_name in the ReductionRun object
-        max_run_name_length = ReductionRun._meta.get_field('run_name').max_length
-        if len(run_description) > max_run_name_length:
+        # run_description gets stored in run_description in the ReductionRun object
+        max_run_description_length = ReductionRun._meta.get_field('run_description').max_length
+        if len(run_description) > max_run_description_length:
             context_dictionary["error"] = "The description contains {0} characters, " \
                                           "a maximum of {1} are allowed".\
-                format(len(run_description), max_run_name_length)
+                format(len(run_description), max_run_description_length)
             return context_dictionary
 
         most_recent_run: ReductionRun = matching_previous_runs.first()
@@ -247,8 +247,7 @@ def configure_new_runs_post(request, instrument_name, start=0):
     args_for_range = InstrumentVariablesUtils.merge_arguments(all_vars, reduce_vars_module)
     instrument = Instrument.objects.get(name=instrument_name)
 
-    is_run_range = request.POST.get("variable-range-toggle-value", "True") == "True"
-    if is_run_range:
+    if start != 0:
         start = int(request.POST.get("run_start", 1))
         end = int(request.POST.get("run_end")) if request.POST.get("run_end", None) else None
         possible_variables = InstrumentVariable.objects.filter(start_run__lte=start, instrument__name=instrument_name)
@@ -273,7 +272,7 @@ def configure_new_runs_post(request, instrument_name, start=0):
             # Makes the variables that will be active for the range END + 1 -> onwards
             InstrumentVariablesUtils.find_or_make_variables(possible_variables, instrument.id, post_range_args, end + 1)
 
-    else:
+    elif experiment_reference != 0:
         experiment_reference = int(request.POST.get("experiment_reference_number", 1))
         possible_variables = InstrumentVariable.objects.filter(experiment_reference=experiment_reference,
                                                                instrument__name=instrument_name)
@@ -337,7 +336,10 @@ def configure_new_runs_get(instrument_name, start=0, end=0, experiment_reference
         'current_advanced_variables': current_advanced_variables,
         'run_start': run_start,
         'run_end': end,
-        'experiment_reference': experiment_reference,
+        # used to determine whether the current form is for an experiment reference
+        'current_experiment_reference': experiment_reference,
+        # used to create the link to an experiment reference form, using this number
+        'submit_for_experiment_reference': last_run.experiment.reference_number,
         'minimum_run_start': min_run_start,
         'upcoming_run_variables': upcoming_run_variables,
         'editing': editing,

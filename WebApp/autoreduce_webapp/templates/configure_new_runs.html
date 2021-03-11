@@ -24,28 +24,31 @@
                     </p>
                 </div>
             </div>
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <p>
+                        {% if current_experiment_reference > 0 %}
+                        <a href="{% url 'instrument:variables' instrument=instrument.name start=run_start end=run_end %}" id="go_to_other">Click here to submit variables for a run range</a>
+                        {% else %}
+                        <a href="{% url 'instrument:variables_by_experiment' instrument=instrument.name experiment_reference=submit_for_experiment_reference %}" id="go_to_other">Click here to submit variables for an experiment reference</a>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
             <br/>
-            {% if experiment_reference > 0 %}
-                <form id="instrument_variables" method="POST" action="{% url 'instrument:variables_by_experiment' instrument=instrument.name experiment_reference=experiment_reference %}" class="form-horizontal">
-            {% else %}
-                <form id="instrument_variables" method="POST" action="{% url 'instrument:variables' instrument=instrument.name start=run_start end=run_end %}" class="form-horizontal">
-            {% endif %}
+        {% if current_experiment_reference > 0 %}
+        <form id="instrument_variables" method="POST" action="{% url 'instrument:variables_by_experiment' instrument=instrument.name experiment_reference=current_experiment_reference %}" class="form-horizontal">
+        {% else %}
+        <form id="instrument_variables" method="POST" action="{% url 'instrument:variables' instrument=instrument.name start=run_start end=run_end %}" class="form-horizontal">
+        {% endif %}
         {% csrf_token %}
         <input type="hidden" id="upcoming_runs" name="upcoming_runs" value="{{ upcoming_run_variables }}"/>
         <input type="hidden" id="is_editing" name="is_editing" value="{{ editing }}"/>
         <div class="row">
             <div class="col-md-9">
                 {% include "snippets/form_warnings.html" %}
-                <div class="text-center">
-                    <span class="js-experiment-label">By Experiment Reference Number</span>
-                    <input type="checkbox" name="variable-range-toggle" id="variable-range-toggle" data-on-text="&nbsp;"
-                           data-off-text="&nbsp;" data-off-color="default" data-on-color="default" data-animate="false"
-                           data-invert="true"/>
-                    <input type="hidden" name="variable-range-toggle-value" id="variable-range-toggle-value"
-                           value="{% if experiment_reference > 0 %}False{% else %}True{% endif %}"/>
-                    <span class="js-run-label">By Run Number Range</span>
-                </div>
                 <br/>
+                {% if current_experiment_reference > 0 %}
                 <div class="js-variable-by-experiment">
                     <div class="row">
                         <div class="col-md-12">
@@ -54,13 +57,14 @@
                                     Number</label>
                                 <div class="col-md-9">
                                     <input type="number" id="experiment_reference_number"
-                                           name="experiment_reference_number" value="{{ experiment_reference }}"
+                                           name="experiment_reference_number" value="{{ current_experiment_reference }}"
                                            class="form-control"/>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+                {% else %}
                 <div class="js-variable-by-run">
                     <div class="row">
                         <div class="col-md-6">
@@ -93,6 +97,8 @@
                         </div>
                     </div>
                 </div>
+                {% endif %}
+
                 <div class="js-variables-container">
                     {% include "snippets/edit_variables.html" with standard_variables=standard_variables advanced_variables=advanced_variables instrument=instrument.name only %}
                 </div>
@@ -192,10 +198,8 @@
 
 {% block stylesheets %}
     <link rel="stylesheet" href="{% static "css/vendor/prettify.css" %}">
-    <link rel="stylesheet" href="{% static "css/vendor/bootstrap-switch.min.css" %}">
 {% endblock %}
 {% block scripts %}
-    <script src="{% static "javascript/vendor/prettify.js" %}"></script>
-    <script src="{% static "javascript/vendor/bootstrap-switch.min.js" %}"></script>
-    <script src="{% static "javascript/run_variables.js" %}"></script>
+    <script src='{% static "javascript/vendor/prettify.js" %}'></script>
+    <script src='{% static "javascript/run_variables.js" %}'></script>
 {% endblock %}

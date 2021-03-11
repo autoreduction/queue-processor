@@ -83,8 +83,9 @@ class HandleMessage:
         """
         Creates or gets the necessary records to construct a ReductionRun
         """
-        # This must be done before looking up the run version to make sure the record exists
-        experiment = db_access.get_experiment(message.rb_number)
+        # This must be done before looking up the run version to make sure the experiment record exists!
+        rb_number = self.normalise_rb_number(message.rb_number)
+        experiment = db_access.get_experiment(rb_number)
         run_version = db_access.find_highest_run_version(experiment, run_number=str(message.run_number))
         message.run_version = run_version
 
@@ -257,3 +258,13 @@ class HandleMessage:
         arguments = {'standard_vars': standard_vars, 'advanced_vars': advanced_vars}
 
         return arguments
+
+    @staticmethod
+    def normalise_rb_number(rb_number) -> int:
+        """
+        Enfornce the RB number to always be an int. If an invalid integer value is passed it returns 0 instead.
+        """
+        try:
+            return int(rb_number)
+        except ValueError:
+            return 0

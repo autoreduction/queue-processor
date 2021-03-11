@@ -72,7 +72,7 @@ class TestDatabaseRecords(TestCase):
             script=mock_script_text,
             started_by=mock_msg.started_by,
             # Hardcoded below
-            run_name=mock.ANY,
+            run_description=mock.ANY,
             hidden_in_failviewer=mock.ANY,
             admin_log=mock.ANY,
             reduction_log=mock.ANY)
