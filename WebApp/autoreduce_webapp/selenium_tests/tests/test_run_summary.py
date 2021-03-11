@@ -8,14 +8,15 @@
 Selenium tests for the runs summary page
 """
 
+import os
+import tempfile
+
+from autoreduce_webapp.settings import STATIC_PATH
 from django.urls import reverse
-
-from selenium.webdriver.support.wait import WebDriverWait
-
-from selenium_tests.pages.run_summary_page import RunSummaryPage
-from selenium_tests.tests.base_tests import NavbarTestMixin, BaseTestCase, FooterTestMixin
 from reduction_viewer.models import ReductionRun
-
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium_tests.pages.run_summary_page import RunSummaryPage
+from selenium_tests.tests.base_tests import (BaseTestCase, FooterTestMixin, NavbarTestMixin)
 from systemtests.utils.data_archive import DataArchive
 
 
@@ -58,8 +59,7 @@ class TestRunSummaryPageNoArchive(NavbarTestMixin, BaseTestCase, FooterTestMixin
         assert self.page.run_description_text() == "Run description: This is the test run_description"
 
 
-class TestRunSummaryPage(BaseTestCase):
-    # class TestRunSummaryPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
+class TestRunSummaryPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
     """
     Test cases for the InstrumentSummary page when the Rerun form is NOT visible
     """
@@ -144,3 +144,45 @@ class TestRunSummaryPage(BaseTestCase):
         assert back.text == f"Back to {self.instrument_name} runs"
         back.click()
         assert reverse("runs:list", kwargs={"instrument": self.instrument_name}) in self.driver.current_url
+
+
+class TestRunSummaryPagePlots(BaseTestCase):
+    """
+    Test cases for the InstrumentSummary page when the Rerun form is NOT visible
+    """
+
+    fixtures = BaseTestCase.fixtures + ["one_run_plot"]
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.instrument_name = "TestInstrument"
+
+        # run = ReductionRun.objects.first()
+        # self.temp_dir = TemporaryDirectory()
+        # run_red_loc = run.reduction_location.first()
+        # run_red_loc.file_path = self.temp_dir.name
+        # run_red_loc.save()
+
+        self.plot_files = [
+            tempfile.NamedTemporaryFile(prefix="data_", suffix=".png", dir=f"{STATIC_PATH}/graphs/"),
+            tempfile.NamedTemporaryFile(prefix="data_", suffix=".png", dir=f"{STATIC_PATH}/graphs/")
+        ]
+        self.page = RunSummaryPage(self.driver, self.instrument_name, 99999, 0)
+        self.page.launch()
+
+    def tearDown(self) -> None:
+        super().tearDown()
+        # self.temp_dir.cleanup()
+
+    def test_local_plot_files(self):
+        """
+        Test: Just opening the submit page and clicking rerun
+        """
+        # 1 is the logo, the other 2 are the plots
+        images = self.page.images()
+        assert len(images) == 3
+        for idx, img in enumerate(images[1:]):
+            alt_text = img.get_attribute("alt")
+            assert "Plot image stored at" in alt_text
+            plot_filename = os.path.basename(self.plot_files[idx].name)
+            assert plot_filename in alt_text
