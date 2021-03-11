@@ -43,7 +43,6 @@ def make_test_run(experiment, instrument, run_version: str):
     return run
 
 
-# pylint:disable=invalid-name
 class TestManualRemove(unittest.TestCase):
     """
     Test manual_remove.py
