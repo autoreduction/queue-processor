@@ -21,7 +21,7 @@ class Message:
     A class that represents an AMQ Message.
     Messages can be serialized and deserialized for sending messages to and from AMQ
     """
-    description = attr.ib(default=None)
+    description = attr.ib(default="")
     facility = attr.ib(default="ISIS")
     run_number = attr.ib(default=None)
     instrument = attr.ib(default=None)
