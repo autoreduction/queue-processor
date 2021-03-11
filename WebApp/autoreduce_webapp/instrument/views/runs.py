@@ -272,7 +272,7 @@ def configure_new_runs_post(request, instrument_name, start=0):
             # Makes the variables that will be active for the range END + 1 -> onwards
             InstrumentVariablesUtils.find_or_make_variables(possible_variables, instrument.id, post_range_args, end + 1)
 
-    elif experiment_reference != 0:
+    else:
         experiment_reference = int(request.POST.get("experiment_reference_number", 1))
         possible_variables = InstrumentVariable.objects.filter(experiment_reference=experiment_reference,
                                                                instrument__name=instrument_name)
