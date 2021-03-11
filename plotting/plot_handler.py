@@ -45,7 +45,11 @@ class PlotHandler:
 
         :param data_filepath: (str) The full path to the input data
         """
-        full_filename = data_filepath.split("\\")[-1]
+        if "\\" in data_filepath:
+            sep = "\\"
+        else:
+            sep = "/"
+        full_filename = data_filepath.split(sep)[-1]
         filename, _ = os.path.splitext(full_filename)
         return filename
 
@@ -56,7 +60,7 @@ class PlotHandler:
         <data_file_name>*<.png or other extension>
         """
         _file_extension_regex = self._generate_file_extension_regex()
-        return f'{self.data_filename}.*.{_file_extension_regex}'
+        return f'{self.data_filename}{_file_extension_regex}'
 
     def _generate_file_extension_regex(self) -> str:
         """
@@ -64,7 +68,7 @@ class PlotHandler:
         .png, .gif and .jpg: The returned value would be (png|gif|jpg)
         :return: (str) expression pattern matching the file extensions of the plot handler
         """
-        return f"({','.join(self.file_extensions).replace(',', '|')})"
+        return f".*.({','.join(self.file_extensions).replace(',', '|')})"
 
     def _get_plot_files_locally(self) -> List[str]:
         """
