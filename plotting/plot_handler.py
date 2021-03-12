@@ -91,7 +91,7 @@ class PlotHandler:
         # initialise list to store names of existing files matching the search
         _found_files = []
         # regular expression for plot file name(s)
-        file_regex = self._generate_file_name_regex()
+        file_regex = self._generate_file_extension_regex()
         if file_regex:
             # Add files that match regex to the list of files found
             _found_files.extend(client.get_filenames(server_dir_path=self.server_dir, regex=file_regex))
