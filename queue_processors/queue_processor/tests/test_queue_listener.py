@@ -50,7 +50,6 @@ class TestQueueProcessor(TestCase):
 
 class TestQueueListener(TestCase):
     # We have too many public methods as our Class Under Test does too much...
-    # pylint: disable=too-many-public-methods
     """
     Exercises the Listener
     """

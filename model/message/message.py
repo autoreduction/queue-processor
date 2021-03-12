@@ -14,7 +14,6 @@ import attr
 from model.message.validation import stages
 
 
-# pylint:disable=too-many-instance-attributes
 @attr.s
 class Message:
     """

@@ -11,8 +11,6 @@ from typing import List
 
 from django.urls import reverse
 from selenium.common.exceptions import NoSuchElementException
-from selenium.webdriver.remote.webelement import WebElement
-
 from selenium_tests import configuration
 from selenium_tests.pages.component_mixins.footer_mixin import FooterMixin
 from selenium_tests.pages.component_mixins.navbar_mixin import NavbarMixin
@@ -68,4 +66,5 @@ class RunsListPage(Page, NavbarMixin, FooterMixin, TourMixin):
         raise NoSuchElementException
 
     def alert_message_text(self) -> str:
+        """Get the the from the alert message"""
         return self.driver.find_element_by_id("alert_message").text.strip()

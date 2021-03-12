@@ -23,7 +23,7 @@ from scripts.manual_operations.tests.test_manual_remove import create_experiment
 STATUS = StatusUtils()
 
 
-# pylint:disable=no-self-use,too-many-public-methods
+# pylint:disable=no-self-use
 class TestManualSubmission(unittest.TestCase):
     """
     Test manual_submission.py

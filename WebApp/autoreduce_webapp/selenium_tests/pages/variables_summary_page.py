@@ -35,25 +35,45 @@ class VariableSummaryPage(Page, NavbarMixin, FooterMixin, TourMixin):
 
     @property
     def current_variables_by_run(self) -> WebElement:
+        """Return the current_variables_by_run panel"""
         return self.driver.find_element_by_id("current_variables_by_run")
 
     @property
     def upcoming_variables_by_run(self) -> WebElement:
+        """Return the upcoming_variables_by_run panel"""
         return self.driver.find_element_by_id("upcoming_variables_by_run")
 
     @property
     def upcoming_variables_by_experiment(self) -> WebElement:
+        """Return the upcoming_variables_by_experiment panel"""
         return self.driver.find_element_by_id("upcoming_variables_by_experiment")
 
     def run_edit_button_for(self, start: int, end: int) -> Tuple[WebElement, str]:
+        """
+        Return the edit button for the given run start and end
+        :param start: The start run
+        :param end: The end run
+        :return: The edit button
+        """
         url = reverse("instrument:variables", kwargs={"instrument": self.instrument, "start": start, "end": end})
         return self.driver.find_element_by_css_selector(f'[href*="{url}"]'), url
 
     def run_delete_button_for(self, start: int, end: int) -> Tuple[WebElement, str]:
+        """
+        Return the delete button for the given run start and run end
+        :param start: The start run
+        :param end: The end run
+        :return: The delete button
+        """
         url = reverse("instrument:delete_variables", kwargs={"instrument": self.instrument, "start": start, "end": end})
         return self.driver.find_element_by_css_selector(f'[href*="{url}"]'), url
 
     def experiment_edit_button_for(self, experiment_reference: int) -> Tuple[WebElement, str]:
+        """
+        Get the edit button for the given experiment reference
+        :param experiment_reference: The experiment reference
+        :return: The edit button
+        """
         url = reverse("instrument:variables_by_experiment",
                       kwargs={
                           "instrument": self.instrument,
@@ -62,6 +82,11 @@ class VariableSummaryPage(Page, NavbarMixin, FooterMixin, TourMixin):
         return self.driver.find_element_by_css_selector(f'[href*="{url}"]'), url
 
     def experiment_delete_button_for(self, experiment_reference: int) -> Tuple[WebElement, str]:
+        """
+        Get the delete button for the given experiment reference
+        :param experiment_reference: The experiment refence
+        :return: The delete button
+        """
         url = reverse("instrument:delete_variables_by_experiment",
                       kwargs={
                           "instrument": self.instrument,
@@ -71,8 +96,10 @@ class VariableSummaryPage(Page, NavbarMixin, FooterMixin, TourMixin):
 
     @property
     def message(self) -> WebElement:
+        """Return the message"""
         return self.driver.find_element_by_id("message")
 
     @property
     def panels(self) -> List[WebElement]:
+        """Return the variable summary panels"""
         return self.driver.find_elements_by_class_name("panel-body")

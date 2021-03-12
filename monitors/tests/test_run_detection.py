@@ -34,7 +34,6 @@ RUN_DATA = {
 CSV_FILE = "WISH,44733,lastrun_wish.txt,summary_wish.txt,data_dir,.nxs"
 
 
-# pylint:disable=too-few-public-methods,missing-function-docstring
 class DataHolder:
     """
     Small helper class to represent expected nexus data format
@@ -43,6 +42,9 @@ class DataHolder:
         self.data = data
 
     def get(self, _):
+        """
+        Returns a mock object with the attribute value set to the data value of the DataHolder object
+        """
         mock_value = Mock()
         mock_value.value = self.data
         return mock_value
@@ -56,7 +58,7 @@ NXLOAD_MOCK_EMPTY = Mock()
 NXLOAD_MOCK_EMPTY.items = Mock(return_value=[('raw_data_1', DataHolder(['']))])
 
 
-# pylint:disable=missing-docstring,no-self-use,too-many-public-methods
+# pylint:disable=missing-docstring,no-self-use
 class TestRunDetection(unittest.TestCase):
     def tearDown(self):
         if os.path.isfile('test_lastrun.txt'):

@@ -12,7 +12,7 @@ from __future__ import print_function
 import os
 import time
 
-# pylint:disable=no-name-in-module,import-error
+# pylint:disable=no-name-in-module
 from distutils.core import Command
 
 from build.utils.process_runner import run_process_and_log, run_process_with_shell

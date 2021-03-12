@@ -13,20 +13,17 @@ import suds
 from suds.client import Client
 
 # The below is a template on the repository
-# pylint: disable=relative-import
 from .settings import UOWS_URL
 
 LOGGER = logging.getLogger(__name__)
 
 
-class UOWSClient(object):
+class UOWSClient:
     """
     A client for interacting with the User Office Web Service
     """
     def __init__(self, **kwargs):
-        url = UOWS_URL
-        if 'URL' in kwargs:
-            url = kwargs['URL']
+        url = kwargs.get("URL", default=UOWS_URL)
         self.client = Client(url)
 
     # Add the ability to use 'with'
@@ -43,7 +40,7 @@ class UOWSClient(object):
         try:
             return self.client.service.isTokenValid(session_id)
         except suds.WebFault:
-            LOGGER.warn("Session ID is not valid: %s", session_id)
+            LOGGER.warning("Session ID is not valid: %s", session_id)
             return False
 
     def get_person(self, session_id):
@@ -67,7 +64,7 @@ class UOWSClient(object):
                 }
                 return trimmed_person
         except suds.WebFault:
-            LOGGER.warn("Session ID is not valid: %s", session_id)
+            LOGGER.warning("Session ID is not valid: %s", session_id)
         return None
 
     def logout(self, session_id):
@@ -78,4 +75,4 @@ class UOWSClient(object):
         try:
             self.client.service.logout(session_id)
         except suds.WebFault:
-            LOGGER.warn("Failed to logout Session ID %s", session_id)
+            LOGGER.warning("Failed to logout Session ID %s", session_id)

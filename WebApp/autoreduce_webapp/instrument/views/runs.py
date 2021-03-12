@@ -10,16 +10,15 @@ import logging
 from autoreduce_webapp.view_utils import (check_permissions, login_and_uows_valid, render_with)
 from django.db.models.query import QuerySet
 from django.shortcuts import redirect
-from utilities import input_processing
-
+from instrument.models import InstrumentVariable
 from reduction_viewer.models import Instrument, ReductionRun
 from reduction_viewer.utils import ReductionRunUtils
-from instrument.models import InstrumentVariable
+from utilities import input_processing
 
 from queue_processors.queue_processor.instrument_variable_utils import InstrumentVariablesUtils
 from queue_processors.queue_processor.reduction.service import ReductionScript
-from queue_processors.queue_processor.variable_utils import VariableUtils
 from queue_processors.queue_processor.status_utils import STATUS
+from queue_processors.queue_processor.variable_utils import VariableUtils
 
 LOGGER = logging.getLogger("app")
 
@@ -70,7 +69,7 @@ def submit_runs(request, instrument=None):
         return context_dictionary
 
 
-# pylint:disable=too-many-return-statements,too-many-branches,too-many-statements
+# pylint:disable=too-many-return-statements,too-many-branches,too-many-statements,too-many-locals
 @login_and_uows_valid
 @check_permissions
 @render_with('run_confirmation.html')
@@ -153,7 +152,7 @@ def run_confirmation(request, instrument: str):
 
         most_recent_run: ReductionRun = matching_previous_runs.first()
         # User can choose whether to overwrite with the re-run or create new data
-        overwrite_previous_data = bool(request.POST.get('overwrite_checkbox') == 'on')
+        overwrite_previous_data = request.POST.get('overwrite_checkbox') == 'on'
         ReductionRunUtils.send_retry_message(request.user.id, most_recent_run, run_description, script_text,
                                              new_script_arguments, overwrite_previous_data)
         # list stores (run_number, run_version)
@@ -180,9 +179,16 @@ def find_reason_to_avoid_re_run(matching_previous_runs, run_number):
     return True, ""
 
 
-def make_reduction_arguments(POST_arguments, default_variables):
+def make_reduction_arguments(post_arguments, default_variables) -> dict:
+    """
+    Given new variables and the default variables create a dictionary of the new variables
+    :param post_arguments: The new variables to be created
+    :param default_variables: The default variables
+    :return: The new variables as a dict
+    :raises ValueError if any variable values exceed the allowed maximum
+    """
     new_script_arguments = {"standard_vars": {}, "advanced_vars": {}}
-    for key, value in POST_arguments:
+    for key, value in post_arguments:
         if 'var-' in key:
             if 'var-advanced-' in key:
                 name = key.replace('var-advanced-', '').replace('-', ' ')
@@ -197,9 +203,8 @@ def make_reduction_arguments(POST_arguments, default_variables):
                 if len(value) > InstrumentVariable._meta.get_field('value').max_length:
                     raise ValueError(f'Value given in {name} is too long.')
 
-                # TODO how much do we care about this
                 if name not in default_variables[dict_key]:
-                    continue  # TODO we just ignore the variable if it has been removed? Can this even happen?
+                    continue
 
                 new_script_arguments[dict_key][name] = value
 
@@ -209,7 +214,6 @@ def make_reduction_arguments(POST_arguments, default_variables):
     return new_script_arguments
 
 
-# pylint:disable=too-many-statements,too-many-branches
 @login_and_uows_valid
 @check_permissions
 @render_with('configure_new_runs.html')
@@ -221,12 +225,12 @@ def configure_new_runs(request, instrument=None, start=0, end=0, experiment_refe
     start, end = int(start), int(end)
 
     if request.method == 'POST':
-        return configure_new_runs_POST(request, instrument_name, start, end, experiment_reference)
+        return configure_new_runs_post(request, instrument_name, start, experiment_reference)
     else:
-        return configure_new_runs_GET(instrument, start, end, experiment_reference)
+        return configure_new_runs_get(instrument, start, end, experiment_reference)
 
 
-def configure_new_runs_POST(request, instrument_name, start=0, end=0, experiment_reference=0):
+def configure_new_runs_post(request, instrument_name, start=0, experiment_reference=0):
     """
     Submission to modify variables. Acts on POST request.
 
@@ -246,8 +250,7 @@ def configure_new_runs_POST(request, instrument_name, start=0, end=0, experiment
     }
     all_vars = {"standard_vars": standard_vars, "advanced_vars": advanced_vars}
 
-    reduce_vars = ReductionScript(instrument_name, 'reduce_vars.py')
-    reduce_vars_module = reduce_vars.load()
+    reduce_vars_module = ReductionScript(instrument_name, 'reduce_vars.py').load()
     args_for_range = InstrumentVariablesUtils.merge_arguments(all_vars, reduce_vars_module)
     instrument = Instrument.objects.get(name=instrument_name)
 
@@ -287,23 +290,27 @@ def configure_new_runs_POST(request, instrument_name, start=0, end=0, experiment
                                                         experiment_reference,
                                                         from_webapp=True)
 
+    else:
+        raise RuntimeError("see #1203")
+
     return redirect('instrument:variables_summary', instrument=instrument_name)
 
 
-def configure_new_runs_GET(instrument_name, start=0, end=0, experiment_reference=0):
+# pylint:disable=too-many-locals
+def configure_new_runs_get(instrument_name, start=0, end=0, experiment_reference=0):
     """
     GET for the configure new runs page
     """
     instrument = Instrument.objects.get(name__iexact=instrument_name)
 
-    editing = (start > 0 or experiment_reference > 0)  # TODO what is this for?
+    editing = (start > 0 or experiment_reference > 0)
 
     try:
         last_run = instrument.reduction_runs.exclude(status=STATUS.get_skipped()).last()
     except AttributeError:
         return {
-            "error":
-            "All previous runs have been skipped and they cannot be re-run. You can still submit manual runs for this instrument."
+            "error": ("All previous runs have been skipped and they cannot be re-run. "
+                      "You can still submit manual runs for this instrument.")
         }
 
     current_variables = ReductionRunUtils.make_kwargs_from_runvariables(last_run)
@@ -312,12 +319,11 @@ def configure_new_runs_GET(instrument_name, start=0, end=0, experiment_reference
 
     upcoming_variables = instrument.instrumentvariable_set.filter(start_run=last_run.run_number + 1)
 
-    # TODO unsure this is necessary
     # Unique, comma-joined list of all start runs belonging to the upcoming variables.
     # This seems to be used to prevent submission if trying to resubmit variables for already
     # configured future run numbers - check the checkForConflicts function
     # This should probably be done by the POST method anyway.. so remove it
-    upcoming_run_variables = ','.join(list(set([str(var.start_run) for var in upcoming_variables])))
+    upcoming_run_variables = ",".join({str(var.start_run) for var in upcoming_variables})
 
     try:
         current_variables = VariableUtils.get_default_variables(instrument)

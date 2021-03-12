@@ -17,7 +17,6 @@ from model.database import DjangoORM
 from utils.project.structure import get_project_root
 
 
-# pylint:disable=missing-class-docstring
 class TestDjangoORM(unittest.TestCase):
     def test_add_webapp_path_already_exist(self):
         """

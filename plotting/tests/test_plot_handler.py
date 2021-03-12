@@ -24,8 +24,6 @@ class TestPlotHandler(unittest.TestCase):
     """
     Test all the functionality of the PlotHandler
     """
-
-    # pylint:disable=too-many-instance-attributes
     def setUp(self):
         """
         Create a few test PlotHandler objects

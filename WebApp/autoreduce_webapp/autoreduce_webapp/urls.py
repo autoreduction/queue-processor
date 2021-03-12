@@ -9,9 +9,8 @@ from django.conf import settings
 from django.conf.urls import include
 from django.contrib import admin
 from django.urls import path
-
-from reduction_viewer import views as reduction_viewer_views
 from instrument.views import runs
+from reduction_viewer import views as reduction_viewer_views
 
 # pylint: disable=invalid-name
 handler400 = 'autoreduce_webapp.views.handler400'

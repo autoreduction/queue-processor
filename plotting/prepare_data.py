@@ -14,7 +14,6 @@ import pandas as pd
 
 
 class PrepareData:
-    # pylint:disable=too-few-public-methods
     """
     This class prepares data to be plotted by first reading it from a given path,
     validating initial rows are as expected, and ultimately converting the data

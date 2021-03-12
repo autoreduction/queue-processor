@@ -8,24 +8,16 @@
 Utility functions for the Django views
 """
 import logging
-import os
-import sys
-from django.shortcuts import redirect
+
 from django.core.exceptions import PermissionDenied
+from django.shortcuts import redirect
 from django.shortcuts import render
-
-# The below is a template on the repository
-# pylint: disable=relative-import
-from .settings import (DEVELOPMENT_MODE, INSTALLED_APPS, LOGIN_URL, OUTDATED_BROWSERS, UOWS_LOGIN_URL,
-                       USER_ACCESS_CHECKS)
-# pylint: disable=relative-import
-from .icat_cache import ICATCache
-
-from utils.project.structure import get_project_root
-sys.path.append(os.path.join(get_project_root(), 'WebApp', 'autoreduce_webapp'))
-
-from reduction_viewer.models import ReductionRun, Experiment
 from reduction_viewer.models import Notification, Setting
+from reduction_viewer.models import ReductionRun, Experiment
+
+from .icat_cache import ICATCache
+# The below is a template on the repository
+from .settings import (DEVELOPMENT_MODE, LOGIN_URL, OUTDATED_BROWSERS, UOWS_LOGIN_URL, USER_ACCESS_CHECKS)
 
 LOGGER = logging.getLogger(__name__)
 
@@ -192,7 +184,7 @@ def check_permissions(func):
             experiment_reference = None
             owned_instrument_name = None
             viewed_instrument_name = None
-            optional_instrument_names = []
+            optional_instrument_names = set()
             if "run_number" in kwargs:
                 # Get the experiment and instrument from the given run number.
                 # pylint: disable=no-member
@@ -207,8 +199,7 @@ def check_permissions(func):
                     # pylint: disable=no-member
                     experiment_obj = Experiment.objects.filter(reference_number=experiment_reference).first()
                     if experiment_obj:
-                        optional_instrument_names = list(
-                            set([run.instrument.name for run in experiment_obj.reduction_runs.all()]))
+                        optional_instrument_names = {run.instrument.name for run in experiment_obj.reduction_runs.all()}
                 else:
                     # Look for an instrument name under 'instrument_name', or,
                     # failing that, 'instrument'.
@@ -221,7 +212,7 @@ def check_permissions(func):
 
                 # Check for access to the instrument
                 if owned_instrument_name or viewed_instrument_name:
-                    optional_instrument_names.append(
+                    optional_instrument_names.add(
                         owned_instrument_name if owned_instrument_name is not None else viewed_instrument_name)
 
                     # Check access to an owned instrument.
@@ -237,8 +228,7 @@ def check_permissions(func):
 
                 # Check for access to the experiment; if the user owns one
                 # of the associated instruments, we don't need to check this.
-                if optional_instrument_names and list(
-                        set(optional_instrument_names).intersection(owned_instrument_list)):
+                if optional_instrument_names and optional_instrument_names.intersection(owned_instrument_list):
                     pass
                 elif experiment_reference is not None and experiment_reference not in \
                         icat.get_associated_experiments(int(request.user.username)):

@@ -9,6 +9,7 @@ Selenium tests for the runs summary page
 """
 
 from django.urls import reverse
+
 from selenium.webdriver.support.wait import WebDriverWait
 
 from selenium_tests.pages.run_summary_page import RunSummaryPage
@@ -23,10 +24,12 @@ class TestRunSummaryPageNoArchive(NavbarTestMixin, BaseTestCase, FooterTestMixin
 
     @classmethod
     def setUpClass(cls):
+        """Set the instrument for all test cases"""
         super().setUpClass()
         cls.instrument_name = "TestInstrument"
 
     def setUp(self) -> None:
+        """Set up RunSummaryPage before each test case"""
         super().setUp()
         self.page = RunSummaryPage(self.driver, self.instrument_name, 99999, 0)
         self.page.launch()
@@ -38,7 +41,8 @@ class TestRunSummaryPageNoArchive(NavbarTestMixin, BaseTestCase, FooterTestMixin
         """
         # the reset to current values should not be visible
         assert self.page.warning_message.is_displayed()
-        assert self.page.warning_message.text == "The reduce_vars.py script is missing for this instrument. Please create it before being able to submit re-runs."
+        assert self.page.warning_message.text == ("The reduce_vars.py script is missing for this instrument."
+                                                  " Please create it before being able to submit re-runs.")
 
     def test_opening_run_summary_without_run_variables(self):
         """
@@ -64,6 +68,7 @@ class TestRunSummaryPage(BaseTestCase):
 
     @classmethod
     def setUpClass(cls):
+        """Sets up Dataarchive with scripts and sets instrument for all test cases"""
         super().setUpClass()
         cls.instrument_name = "TestInstrument"
         cls.data_archive = DataArchive([cls.instrument_name], 21, 21)
@@ -73,10 +78,12 @@ class TestRunSummaryPage(BaseTestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
+        """Destroys created data archive"""
         cls.data_archive.delete()
         super().tearDownClass()
 
     def setUp(self) -> None:
+        """Sets up RunSummaryPage before each test case"""
         super().setUp()
         self.page = RunSummaryPage(self.driver, self.instrument_name, 99999, 0)
         self.page.launch()
@@ -88,11 +95,11 @@ class TestRunSummaryPage(BaseTestCase):
         assert self.page.reduction_job_panel.is_displayed()
         assert self.page.run_description_text() == f"Run description: {run.run_description}"
         # because it's started_by: -1, determined in `started_by_id_to_name`
-        assert self.page.started_by_text() == f"Started by: Development team"
+        assert self.page.started_by_text() == "Started by: Development team"
         assert self.page.status_text() == "Status: Processing"
         assert self.page.instrument_text() == f"Instrument: {run.instrument.name}"
         assert self.page.rb_number_text() == f"RB Number: {run.experiment.reference_number}"
-        assert self.page.last_updated_text() == f"Last Updated: 19 Oct 2020, 6:35 p.m."
+        assert self.page.last_updated_text() == "Last Updated: 19 Oct 2020, 6:35 p.m."
 
     def test_reduction_job_panel_reset_to_values_first_used_for_run(self):
         """Test that the button to reset the variables to the values first used for the run works"""

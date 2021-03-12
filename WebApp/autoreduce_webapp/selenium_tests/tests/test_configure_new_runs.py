@@ -19,6 +19,7 @@ class TestConfigureNewRunsPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
 
     @classmethod
     def setUpClass(cls):
+        """Sets up the data archive to be shared across test cases"""
         super().setUpClass()
         cls.instrument_name = "TestInstrument"
         cls.data_archive = DataArchive([cls.instrument_name], 21, 21)
@@ -30,10 +31,12 @@ class TestConfigureNewRunsPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
 
     @classmethod
     def tearDownClass(cls) -> None:
+        """Destroys the data archive"""
         cls.data_archive.delete()
         super().tearDownClass()
 
     def setUp(self) -> None:
+        """Sets up the ConfigureNewRunsPage before each test case"""
         super().setUp()
         self.page = ConfigureNewRunsPage(self.driver, self.instrument_name)
         self.page.launch()
@@ -58,6 +61,7 @@ class TestConfigureNewRunsPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
         assert reverse("runs:list", kwargs={"instrument": self.instrument_name}) in self.driver.current_url
 
     def test_go_to_other_goes_to_experiment(self):
+        """Test: clicking the link to configure by experiment goes to configure by experiment"""
         self.page.go_to_other.click()
         url = reverse("instrument:variables_by_experiment",
                       kwargs={
@@ -67,6 +71,7 @@ class TestConfigureNewRunsPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
         assert url in self.driver.current_url
 
     def test_go_to_other_goes_to_run_range(self):
+        """Test: Clicking the link to configure by run range goes to run range"""
         self.page = ConfigureNewRunsPage(self.driver, self.instrument_name, experiment_reference=1234567)
         self.page.launch()
 

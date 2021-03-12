@@ -21,7 +21,6 @@ from utils.project.structure import get_project_root
 LOGGER = logging.getLogger('app')
 
 
-# pylint:disable=too-few-public-methods
 class PlotHandler:
     """
     Takes parameters for a run and (for now) checks if an associated image exists and retrieves it.

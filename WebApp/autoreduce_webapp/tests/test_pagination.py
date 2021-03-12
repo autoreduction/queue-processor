@@ -55,15 +55,13 @@ class TestCustomPage(unittest.TestCase):
         self.assertRaises(PageLimitException, self.page.add_record, 'test_record_2')
 
 
-# pylint:disable=too-few-public-methods
-class MockRunData(object):
+class MockRunData:
     """ Test class to simulate a Run record from the database """
     def __init__(self, run_number, date):
         self.run_number = run_number
         self.last_updated = date
 
 
-# pylint:disable=too-few-public-methods
 class TestRunPage(unittest.TestCase):
     """ Test the specific RunPage functionality """
     def test_set_start_and_end(self):

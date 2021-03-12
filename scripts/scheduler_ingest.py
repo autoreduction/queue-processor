@@ -29,7 +29,6 @@ class TimePeriod:
 
 
 class MaintenanceDay(TimePeriod):
-    # pylint:disable=too-few-public-methods
     """
     Class to represent a cycle maintenance day
     """
@@ -38,7 +37,6 @@ class MaintenanceDay(TimePeriod):
 
 
 class Cycle(TimePeriod):
-    # pylint:disable=too-few-public-methods
     """
     Class to represent a cycle period
     """

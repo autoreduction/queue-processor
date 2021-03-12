@@ -12,9 +12,10 @@ import logging
 
 from autoreduce_webapp.view_utils import (check_permissions, login_and_uows_valid, render_with)
 from django.shortcuts import redirect, render
+from instrument.models import InstrumentVariable
 from reduction_viewer.models import Instrument, ReductionRun
 from reduction_viewer.utils import ReductionRunUtils
-from instrument.models import InstrumentVariable
+
 from queue_processors.queue_processor.variable_utils import VariableUtils
 
 LOGGER = logging.getLogger("app")
@@ -35,7 +36,6 @@ def summarize_variables(request, instrument, last_run_object):
     upcoming_variables_by_experiment = InstrumentVariable.objects.filter(
         experiment_reference__gte=last_run_object.experiment.reference_number)
 
-    # TODO the tracks_script that is being set is often innacurate
     # vars made from the web app DO NOT track the script
     # the view itself is innacurate as "tracks script" is set on a per-variable basis
     # rather than the whole configuration
@@ -59,8 +59,7 @@ def summarize_variables(request, instrument, last_run_object):
         run_end = max(run_number - 1, 0)
 
     current_start = current_variables[0].start_run
-    # pylint:disable=deprecated-lambda
-    next_run_starts = list(filter(lambda start: start > current_start, sorted(upcoming_variables_by_run_dict.keys())))
+    next_run_starts = [start for start in sorted(upcoming_variables_by_run_dict.keys()) if start > current_start]
     current_end = next_run_starts[0] - 1 if next_run_starts else 0
 
     current_vars = {

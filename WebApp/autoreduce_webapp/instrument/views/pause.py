@@ -17,7 +17,6 @@ def instrument_pause(request, instrument=None):
     """
     Renders pausing of instrument returning a JSON response
     """
-    # ToDo: Check ICAT credentials
     instrument_obj = Instrument.objects.get(name=instrument)
     currently_paused = (request.POST.get("currently_paused").lower() == u"false")
     instrument_obj.is_paused = currently_paused

@@ -23,7 +23,6 @@ from .exceptions import DatafileError, ReductionScriptError
 from ..settings import SCRIPTS_DIRECTORY, FLAT_OUTPUT_INSTRUMENTS, CEPH_DIRECTORY, SCRIPT_TIMEOUT
 from .timeout import TimeOut
 
-# pylint:disable=too-few-public-methods; As pylint does not like value objects
 log_stream = io.StringIO()
 logger = logging.getLogger("reduction_service")
 

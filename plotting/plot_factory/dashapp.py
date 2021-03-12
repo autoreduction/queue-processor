@@ -12,7 +12,6 @@ import dash_html_components as html
 from django_plotly_dash import DjangoDash
 
 
-# pylint: disable=too-few-public-methods
 class DashApp:
     """ Creates a DashApp for direct insertion into a web page """
     def __init__(self, figure, app_id):

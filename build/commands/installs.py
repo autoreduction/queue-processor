@@ -14,7 +14,7 @@ import sys
 import logging
 import os
 
-# pylint:disable=no-name-in-module,import-error
+# pylint:disable=no-name-in-module
 from distutils.core import Command
 
 from build.utils.common import BUILD_LOGGER

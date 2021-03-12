@@ -31,7 +31,7 @@ class TempDirPropertyMock(PropertyMock):
         self.return_value = directory.name + path_string
 
 
-# pylint:disable=protected-access,too-many-instance-attributes
+# pylint:disable=protected-access
 
 
 class TestReductionService(unittest.TestCase):

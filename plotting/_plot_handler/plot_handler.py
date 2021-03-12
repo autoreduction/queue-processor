@@ -14,7 +14,6 @@ from plotting.plot_factory.plot_factory import PlotFactory  # Returns DashApp
 from plotting.prepare_data import PrepareData  # Read CSV to generate dataframe
 
 
-# pylint: disable=too-few-public-methods
 class DjangoDashApp:
     """Returns a Dash"""
     def __init__(self, data_location, meta_location, dashapp_name):
