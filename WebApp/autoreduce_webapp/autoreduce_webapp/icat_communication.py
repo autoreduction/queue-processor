@@ -9,19 +9,13 @@ Deals with communication with ICAT service
 """
 import datetime
 import logging
-import os
 import sys
 
 import icat
 from django.utils.encoding import smart_str
-
-from utils.project.structure import get_project_root
-# The below is a template on the repository
-from .settings import ICAT, BASE_DIR
-
-sys.path.append(os.path.join(get_project_root(), 'WebApp', 'autoreduce_webapp'))
-
 from reduction_viewer.models import Setting
+
+from .settings import ICAT, BASE_DIR
 
 LOGGER = logging.getLogger(__name__)
 sys.path.insert(0, BASE_DIR)

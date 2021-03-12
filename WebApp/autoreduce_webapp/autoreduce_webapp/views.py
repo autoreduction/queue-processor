@@ -7,16 +7,9 @@
 """
 Handle page responses for WebApp
 """
-import os
-import sys
 
 from django.shortcuts import render
 from django.template import RequestContext
-
-from utils.project.structure import get_project_root
-
-# pylint: disable=no-member
-sys.path.append(os.path.join(get_project_root(), 'WebApp', 'autoreduce_webapp'))
 
 from reduction_viewer.models import Setting
 
