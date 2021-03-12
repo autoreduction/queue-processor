@@ -139,7 +139,7 @@ jobs:
           pylint systemtests
           pylint utils
           pylint plotting
-          pylint --disable=django-not-configured,import-error,wrong-import-order,no-name-in-module,wrong-import-position --load-plugins pylint_django WebApp
+          pylint --disable=django-not-configured,import-error,no-name-in-module --load-plugins pylint_django WebApp
 
       - name: YAPF
         run: python -m yapf --exclude '**/migrations' --parallel --diff --recursive .
