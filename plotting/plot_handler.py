@@ -87,7 +87,7 @@ class PlotHandler:
         :return: (list) files on the server path that match regex
         """
         client = SFTPClient()
-        file_regex = self._generate_file_extension_regex()
+        file_regex = self._generate_file_name_regex()
         return client.get_filenames(server_dir_path=self.server_dir, regex=file_regex)
 
     def get_plot_file(self):
