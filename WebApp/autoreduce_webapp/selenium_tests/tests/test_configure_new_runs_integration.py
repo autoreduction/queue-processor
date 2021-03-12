@@ -11,6 +11,7 @@ from selenium_tests.pages.configure_new_runs_page import ConfigureNewRunsPage
 from selenium_tests.pages.variables_summary_page import VariableSummaryPage
 from selenium_tests.tests.base_tests import (BaseTestCase, FooterTestMixin, NavbarTestMixin)
 
+from WebApp.autoreduce_webapp.selenium_tests.utils import setup_external_services
 from model.database import access as db
 
 REDUCE_VARS_DEFAULT_VALUE = "default value from reduce_vars"
