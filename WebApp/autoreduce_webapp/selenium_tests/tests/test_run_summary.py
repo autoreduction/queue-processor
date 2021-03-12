@@ -10,6 +10,7 @@ Selenium tests for the runs summary page
 
 import os
 import tempfile
+from unittest.mock import Mock, patch
 
 from autoreduce_webapp.settings import STATIC_PATH
 from django.urls import reverse
@@ -157,32 +158,46 @@ class TestRunSummaryPagePlots(BaseTestCase):
         super().setUp()
         self.instrument_name = "TestInstrument"
 
-        # run = ReductionRun.objects.first()
-        # self.temp_dir = TemporaryDirectory()
-        # run_red_loc = run.reduction_location.first()
-        # run_red_loc.file_path = self.temp_dir.name
-        # run_red_loc.save()
-
-        self.plot_files = [
-            tempfile.NamedTemporaryFile(prefix="data_", suffix=".png", dir=f"{STATIC_PATH}/graphs/"),
-            tempfile.NamedTemporaryFile(prefix="data_", suffix=".png", dir=f"{STATIC_PATH}/graphs/")
-        ]
         self.page = RunSummaryPage(self.driver, self.instrument_name, 99999, 0)
-        self.page.launch()
-
-    def tearDown(self) -> None:
-        super().tearDown()
-        # self.temp_dir.cleanup()
 
     def test_local_plot_files(self):
         """
-        Test: Just opening the submit page and clicking rerun
+        Test: Local plot files are fetched and shown
         """
+        plot_files = [
+            tempfile.NamedTemporaryFile(prefix="data_", suffix=".png", dir=f"{STATIC_PATH}/graphs/"),
+            tempfile.NamedTemporaryFile(prefix="data_", suffix=".png", dir=f"{STATIC_PATH}/graphs/")
+        ]
+        self.page.launch()
+
         # 1 is the logo, the other 2 are the plots
         images = self.page.images()
         assert len(images) == 3
         for idx, img in enumerate(images[1:]):
             alt_text = img.get_attribute("alt")
             assert "Plot image stored at" in alt_text
-            plot_filename = os.path.basename(self.plot_files[idx].name)
+            plot_filename = os.path.basename(plot_files[idx].name)
+            assert plot_filename in alt_text
+
+    @patch("plotting.plot_handler.SFTPClient")
+    def test_remote_plot_files(self, sftp_client: Mock):
+        """
+        Test: Remote plot files are fetched and shown
+        """
+        plot_files = [
+            "file1.png",
+            "file2.png",
+            "file3.png",
+            "file4.png",
+        ]
+        sftp_client.return_value.get_filenames.return_value = plot_files
+
+        self.page.launch()
+        # 1 is the logo, the other 4 are the plots
+        images = self.page.images()
+        assert len(images) == 5
+        for idx, img in enumerate(images[1:]):
+            alt_text = img.get_attribute("alt")
+            assert "Plot image stored at" in alt_text
+            plot_filename = os.path.basename(plot_files[idx])
             assert plot_filename in alt_text
