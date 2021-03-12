@@ -57,7 +57,7 @@ class ConfigureNewRunsPage(Page, RerunFormMixin, NavbarMixin, FooterMixin, TourM
 
     @property
     def run_start_val(self) -> WebElement:
-        """Return the value  run start WebElement"""
+        """Return the value of the run start WebElement"""
         return self.driver.find_element_by_id("run_start").get_attribute("value")
 
     @run_start.setter
