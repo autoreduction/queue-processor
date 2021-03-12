@@ -379,7 +379,8 @@ def configure_new_runs_get(instrument_name, start=0, end=0, experiment_reference
         'current_experiment_reference': experiment_reference,
         # used to create the link to an experiment reference form, using this number
         'submit_for_experiment_reference': last_run.experiment.reference_number,
-        'minimum_run_start': last_run.run_number,
+        'minimum_run_start': run_start,
+        'minimum_run_end': run_start + 1,
         'upcoming_run_variables': upcoming_run_variables,
         'editing': editing,
         'tracks_script': '',
