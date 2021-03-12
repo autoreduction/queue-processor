@@ -13,10 +13,7 @@ from selenium_tests.pages.runs_list_page import RunsListPage
 from selenium_tests.tests.base_tests import (BaseTestCase)
 from selenium_tests.utils import submit_and_wait_for_result
 
-from queue_processors.queue_processor.queue_listener import main
-from systemtests.utils.data_archive import DataArchive
-from utils.clients.connection_exception import ConnectionException
-from utils.clients.django_database_client import DatabaseClient
+from WebApp.autoreduce_webapp.selenium_tests.utils import setup_external_services
 
 
 class TestRerunJobsRangePageIntegration(BaseTestCase):
@@ -28,20 +25,8 @@ class TestRerunJobsRangePageIntegration(BaseTestCase):
         """Starts all external services"""
         super().setUpClass()
         cls.instrument_name = "TestInstrument"
-        cls.data_archive = DataArchive([cls.instrument_name], 21, 21)
-        cls.data_archive.create()
-        cls.data_archive.add_reduction_script(cls.instrument_name, """print('some text')""")
-        cls.data_archive.add_reduce_vars_script(cls.instrument_name,
-                                                """standard_vars={"variable1":"test_variable_value_123"}""")
-        cls.database_client = DatabaseClient()
-        cls.database_client.connect()
-        try:
-            cls.queue_client, cls.listener = main()
-        except ConnectionException as err:
-            raise RuntimeError("Could not connect to ActiveMQ - check you credentials. If running locally check that "
-                               "ActiveMQ is running and started by `python setup.py start`") from err
-
-        cls.instrument_name = "TestInstrument"
+        cls.data_archive, cls.database_client, cls.queue_client, cls.listener = setup_external_services(
+            cls.instrument_name, 21, 21)
         cls.rb_number = 1234567
         cls.run_number = [99999, 100000]
 

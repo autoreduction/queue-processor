@@ -31,20 +31,8 @@ class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterT
         """
         super().setUpClass()
         cls.instrument_name = "TestInstrument"
-        cls.data_archive = DataArchive([cls.instrument_name], 21, 21)
-        cls.data_archive.create()
-        cls.data_archive.add_reduction_script(cls.instrument_name, """print('some text')""")
-        cls.data_archive.add_reduce_vars_script(cls.instrument_name,
-                                                f"""standard_vars={{"variable1":"{REDUCE_VARS_DEFAULT_VALUE}"}}""")
-        cls.database_client = DatabaseClient()
-        cls.database_client.connect()
-        try:
-            cls.queue_client, cls.listener = main()
-        except ConnectionException as err:
-            raise RuntimeError("Could not connect to ActiveMQ - check you credentials. If running locally check that "
-                               "ActiveMQ is running and started by `python setup.py start`") from err
-
-        cls.instrument_name = "TestInstrument"
+        cls.data_archive, cls.database_client, cls.queue_client, cls.listener = setup_external_services(
+            cls.instrument_name, 21, 21)
         cls.rb_number = 1234567
         cls.run_number = 99999
 
