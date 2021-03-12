@@ -225,7 +225,7 @@ def configure_new_runs(request, instrument=None, start=0, end=0, experiment_refe
     start, end = int(start), int(end)
 
     if request.method == 'POST':
-        return configure_new_runs_post(request, instrument_name, start)
+        return configure_new_runs_post(request, instrument_name, start, experiment_reference)
     else:
         return configure_new_runs_get(instrument, start, end, experiment_reference)
 
@@ -289,6 +289,9 @@ def configure_new_runs_post(request, instrument_name, start=0, experiment_refere
                                                         start,
                                                         experiment_reference,
                                                         from_webapp=True)
+
+    else:
+        raise RuntimeError("see #1203")
 
     return redirect('instrument:variables_summary', instrument=instrument_name)
 
