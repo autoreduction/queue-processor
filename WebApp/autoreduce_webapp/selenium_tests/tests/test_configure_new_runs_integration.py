@@ -30,13 +30,15 @@ class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterT
         cls.instrument_name = "TestInstrument"
         cls.data_archive, cls.database_client, cls.queue_client, cls.listener = setup_external_services(
             cls.instrument_name, 21, 21)
+        cls.data_archive.add_reduction_script(cls.instrument_name, """print('some text')""")
+        cls.data_archive.add_reduce_vars_script(cls.instrument_name, REDUCE_VARS_DEFAULT_VALUE)
         cls.rb_number = 1234567
         cls.run_number = 99999
 
     @classmethod
     def tearDownClass(cls) -> None:
         """
-        Destroys the created data-archvie and disconnects the database and queue clients
+        Destroys the created data-archive and disconnects the database and queue clients
         """
         cls.queue_client.disconnect()
         cls.database_client.disconnect()

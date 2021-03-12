@@ -71,8 +71,6 @@ def setup_external_services(instrument_name: str, start_year: int,
     """
     data_archive = DataArchive([instrument_name], start_year, end_year)
     data_archive.create()
-    data_archive.add_reduction_script(instrument_name, """print('some text')""")
-    data_archive.add_reduce_vars_script(instrument_name, """standard_vars={"variable1":"test_variable_value_123"}""")
     database_client = DatabaseClient()
     database_client.connect()
     try:

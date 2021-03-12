@@ -24,7 +24,9 @@ class TestRerunJobsPageIntegration(NavbarTestMixin, BaseTestCase, FooterTestMixi
         cls.instrument_name = "TestInstrument"
         cls.data_archive, cls.database_client, cls.queue_client, cls.listener = setup_external_services(
             cls.instrument_name, 21, 21)
-
+        cls.data_archive.add_reduction_script(cls.instrument_name, """print('some text')""")
+        cls.data_archive.add_reduce_vars_script(cls.instrument_name,
+                                                """standard_vars={"variable1":"test_variable_value_123"}""")
         cls.instrument_name = "TestInstrument"
         cls.rb_number = 1234567
         cls.run_number = 99999
