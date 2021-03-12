@@ -31,7 +31,8 @@ class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterT
         cls.data_archive, cls.database_client, cls.queue_client, cls.listener = setup_external_services(
             cls.instrument_name, 21, 21)
         cls.data_archive.add_reduction_script(cls.instrument_name, """print('some text')""")
-        cls.data_archive.add_reduce_vars_script(cls.instrument_name, REDUCE_VARS_DEFAULT_VALUE)
+        cls.data_archive.add_reduce_vars_script(cls.instrument_name,
+                                                f"""standard_vars={{"variable1":"{REDUCE_VARS_DEFAULT_VALUE}"}}""")
         cls.rb_number = 1234567
         cls.run_number = 99999
 
