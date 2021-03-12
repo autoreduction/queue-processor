@@ -83,12 +83,12 @@ class TestPlotHandler(unittest.TestCase):
         Test: Correct file extension pattern is generated
         When: _generate_file_extension_pattern() is called
         """
-        expected_pattern = '(png|jpg|bmp|gif|tiff)'
+        expected_pattern = '.*.(png|jpg|bmp|gif|tiff)'
         actual_pattern = self.test_plot_handler._generate_file_extension_regex()
         self.assertEqual(expected_pattern, actual_pattern)
 
         self.test_plot_handler.file_extensions.append('txt')
-        expected_pattern = '(png|jpg|bmp|gif|tiff|txt)'
+        expected_pattern = '.*.(png|jpg|bmp|gif|tiff|txt)'
         actual_pattern = self.test_plot_handler._generate_file_extension_regex()
         self.assertEqual(expected_pattern, actual_pattern)
 
