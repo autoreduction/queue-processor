@@ -70,14 +70,31 @@ class VariableSummaryPage(Page, NavbarMixin, FooterMixin, TourMixin):
         WebDriverWait(self.driver, 10).until(partial(delete_button_clicked_successfully, button))
 
     def click_run_edit_button_for(self, start: int, end: int):
+        """
+        Click the edit button for the given run start and end
+        :param start: The start run
+        :param end: The end run
+        :return: The edit button
+        """
         url = reverse("instrument:variables", kwargs={"instrument": self.instrument, "start": start, "end": end})
         self._do_run_button(url)
 
     def click_run_delete_button_for(self, start: int, end: int):
+        """
+        Click the delete button for the given run start and run end
+        :param start: The start run
+        :param end: The end run
+        :return: The delete button
+        """
         url = reverse("instrument:delete_variables", kwargs={"instrument": self.instrument, "start": start, "end": end})
         self._do_delete_button(url)
 
     def click_experiment_edit_button_for(self, experiment_reference: int):
+        """
+        Get the edit button for the given experiment reference
+        :param experiment_reference: The experiment reference
+        :return: The edit button
+        """
         url = reverse("instrument:variables_by_experiment",
                       kwargs={
                           "instrument": self.instrument,
@@ -86,6 +103,11 @@ class VariableSummaryPage(Page, NavbarMixin, FooterMixin, TourMixin):
         self._do_run_button(url)
 
     def click_experiment_delete_button_for(self, experiment_reference: int):
+        """
+        Get the delete button for the given experiment reference
+        :param experiment_reference: The experiment refence
+        :return: The delete button
+        """
         url = reverse("instrument:delete_variables_by_experiment",
                       kwargs={
                           "instrument": self.instrument,
