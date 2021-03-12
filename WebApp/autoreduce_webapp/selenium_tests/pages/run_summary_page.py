@@ -54,6 +54,7 @@ class RunSummaryPage(Page, RerunFormMixin, NavbarMixin, FooterMixin, TourMixin):
 
     @property
     def reduction_job_panel(self) -> WebElement:
+        """Finds the run summary panel on the page."""
         return self.driver.find_element_by_id("reduction_job_panel")
 
     @property

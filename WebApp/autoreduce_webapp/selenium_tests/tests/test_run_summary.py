@@ -24,10 +24,12 @@ class TestRunSummaryPageNoArchive(NavbarTestMixin, BaseTestCase, FooterTestMixin
 
     @classmethod
     def setUpClass(cls):
+        """Set the instrument for all test cases"""
         super().setUpClass()
         cls.instrument_name = "TestInstrument"
 
     def setUp(self) -> None:
+        """Set up RunSummaryPage before each test case"""
         super().setUp()
         self.page = RunSummaryPage(self.driver, self.instrument_name, 99999, 0)
         self.page.launch()
@@ -66,6 +68,7 @@ class TestRunSummaryPage(BaseTestCase):
 
     @classmethod
     def setUpClass(cls):
+        """Sets up Dataarchive with scripts and sets instrument for all test cases"""
         super().setUpClass()
         cls.instrument_name = "TestInstrument"
         cls.data_archive = DataArchive([cls.instrument_name], 21, 21)
@@ -75,10 +78,12 @@ class TestRunSummaryPage(BaseTestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
+        """Destroys created data archive"""
         cls.data_archive.delete()
         super().tearDownClass()
 
     def setUp(self) -> None:
+        """Sets up RunSummaryPage before each test case"""
         super().setUp()
         self.page = RunSummaryPage(self.driver, self.instrument_name, 99999, 0)
         self.page.launch()

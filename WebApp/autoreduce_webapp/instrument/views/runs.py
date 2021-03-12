@@ -179,7 +179,14 @@ def find_reason_to_avoid_re_run(matching_previous_runs, run_number):
     return True, ""
 
 
-def make_reduction_arguments(post_arguments, default_variables):
+def make_reduction_arguments(post_arguments, default_variables) -> dict:
+    """
+    Given new variables and the default variables create a dictionary of the new variables
+    :param post_arguments: The new variables to be created
+    :param default_variables: The default variables
+    :return: The new variables as a dict
+    :raises ValueError if any variable values exceed the allowed maximum
+    """
     new_script_arguments = {"standard_vars": {}, "advanced_vars": {}}
     for key, value in post_arguments:
         if 'var-' in key:

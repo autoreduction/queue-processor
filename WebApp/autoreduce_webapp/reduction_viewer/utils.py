@@ -25,13 +25,24 @@ class ReductionRunUtils:
     Utilities for the ReductionRun model
     """
     @staticmethod
-    def make_kwargs_from_runvariables(reduction_run, use_value=False):
-
+    def make_kwargs_from_runvariables(reduction_run, use_value=False) -> dict:
+        """
+        Given a reduction run and optionally use_value create a kwarg dict from its variables
+        :param reduction_run: The ReductionRun
+        :param use_value: Flag whether to use the variable values
+        :return: kwarg dict of the variables
+        """
         return ReductionRunUtils.make_kwargs_from_variables(
             [runvar.variable for runvar in reduction_run.run_variables.all()], use_value)
 
     @staticmethod
-    def make_kwargs_from_variables(variables, use_value=False):
+    def make_kwargs_from_variables(variables, use_value=False) -> dict:
+        """
+        Given a list of variables, create a kwarg dict of the variables
+        :param variables: The variables to make into a kwarg dict
+        :param use_value: Flag whether to use the variable values
+        :return: Kwarg dict of variables
+        """
         standard_vars = {}
         advanced_vars = {}
 

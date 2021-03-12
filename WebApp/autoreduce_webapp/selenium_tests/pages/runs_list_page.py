@@ -66,4 +66,5 @@ class RunsListPage(Page, NavbarMixin, FooterMixin, TourMixin):
         raise NoSuchElementException
 
     def alert_message_text(self) -> str:
+        """Get the the from the alert message"""
         return self.driver.find_element_by_id("alert_message").text.strip()

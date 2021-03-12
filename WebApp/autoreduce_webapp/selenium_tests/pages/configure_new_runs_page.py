@@ -50,42 +50,54 @@ class ConfigureNewRunsPage(Page, RerunFormMixin, NavbarMixin, FooterMixin, TourM
 
     @property
     def run_start(self) -> WebElement:
+        """
+        Return the run start input WebElement
+        """
         return self.driver.find_element_by_id("run_start")
 
     @property
     def run_start_val(self) -> WebElement:
+        """Return the value  run start WebElement"""
         return self.driver.find_element_by_id("run_start").get_attribute("value")
 
     @run_start.setter
     def run_start(self, value):
+        """Set the value of the start run"""
         self._set_field(self.run_start, value)
 
     @property
     def run_end(self) -> WebElement:
+        """Return the end run WebElement"""
         return self.driver.find_element_by_id("run_end")
 
     @property
     def run_end_val(self) -> WebElement:
+        """Return the value of the run end element"""
         return self.driver.find_element_by_id("run_end").get_attribute("value")
 
     @run_end.setter
     def run_end(self, value):
+        """Set the value of the end run"""
         self._set_field(self.run_end, value)
 
     @property
     def experiment_reference_number(self) -> WebElement:
+        """Return the reference number input WebElement"""
         return self.driver.find_element_by_id("experiment_reference_number")
 
     @property
     def experiment_reference_number_val(self) -> WebElement:
+        """Return the value of the reference number input WebElement"""
         return self.driver.find_element_by_id("experiment_reference_number").get_attribute("value")
 
     @experiment_reference_number.setter
     def experiment_reference_number(self, value):
+        """Set the reference number value for the reference number input"""
         self._set_field(self.experiment_reference_number, value)
 
     @property
     def range_or_experiment_toggle(self) -> WebElement:
+        """Return the run range or experiment reference toggle"""
         return self.driver.find_element_by_id("variable-range-toggle")
 
     @property
@@ -97,8 +109,10 @@ class ConfigureNewRunsPage(Page, RerunFormMixin, NavbarMixin, FooterMixin, TourM
 
     @property
     def replace_confirm(self) -> WebElement:
+        """Return the confirmation button from the modal"""
         return self.driver.find_element_by_id("replace_confirm")
 
     @property
     def go_to_other(self) -> WebElement:
+        """Return the link to toggle between by run range or by reference"""
         return self.driver.find_element_by_id("go_to_other")

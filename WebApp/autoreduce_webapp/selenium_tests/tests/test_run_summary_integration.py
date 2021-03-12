@@ -50,16 +50,18 @@ class TestRunSummaryPageIntegration(BaseTestCase, FooterTestMixin, NavbarTestMix
 
     @classmethod
     def tearDownClass(cls) -> None:
+        """Stop all external services"""
         cls.queue_client.disconnect()
         cls.database_client.disconnect()
         cls.data_archive.delete()
         super().tearDownClass()
 
     def setUp(self) -> None:
+        """Sets up the RunSummaryPage and shows the rerun panel before each test case"""
         super().setUp()
         self.page = RunSummaryPage(self.driver, self.instrument_name, 99999, 0)
         self.page.launch()
-        # clicks the toggle to show the rerun panel, otherwise the buttons in the form are non interactable
+        # clicks the toggle to show the rerun panel, otherwise the buttons in the form are non interactive
         self.page.toggle_button.click()
 
     def test_submit_rerun_same_variables(self):
@@ -141,5 +143,5 @@ class TestRunSummaryPageIntegration(BaseTestCase, FooterTestMixin, NavbarTestMix
         expected_url = reverse("run_confirmation", kwargs={"instrument": self.instrument_name})
         assert expected_url in self.driver.current_url
         # wait until the message processing is complete before ending the test
-        # otherwise the message handling can polute the DB state for the next test
+        # otherwise the message handling can pollute the DB state for the next test
         assert len(result) == 2

@@ -25,6 +25,10 @@ class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterT
 
     @classmethod
     def setUpClass(cls):
+        """
+        Sets up the Datarchive complete with scripts, the database client and checks the queue client and listerner
+        are running for all testcases
+        """
         super().setUpClass()
         cls.instrument_name = "TestInstrument"
         cls.data_archive = DataArchive([cls.instrument_name], 21, 21)
@@ -46,12 +50,16 @@ class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterT
 
     @classmethod
     def tearDownClass(cls) -> None:
+        """
+        Destroys the created data-archvie and disconnects the database and queue clients
+        """
         cls.queue_client.disconnect()
         cls.database_client.disconnect()
         cls.data_archive.delete()
         super().tearDownClass()
 
     def setUp(self) -> None:
+        """Sets up the ConfigureNewRunsPage before each test case"""
         super().setUp()
         self.page = ConfigureNewRunsPage(self.driver, self.instrument_name, run_start=self.run_number + 1)
 
@@ -128,6 +136,7 @@ class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterT
             summary.upcoming_variables_by_experiment.is_displayed()
 
     def test_submit_experiment_var(self):
+        """Tests the functionality foe submitting a new variable for an experiment"""
         self._submit_var_value("new_value", experiment_number=self.rb_number)
 
         assert InstrumentVariable.objects.count() == 2
@@ -144,7 +153,7 @@ class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterT
     def test_submit_multiple_run_ranges(self):
         """
         Test submitting variables for multiple run ranges, and that they show up correctly
-        in 'see instrument variablers'
+        in 'see instrument variables'
         """
         self._submit_var_value("new_value", self.run_number + 1)
         self._submit_var_value("the newest value", self.run_number + 101)

@@ -21,6 +21,7 @@ class TestRerunJobsPageIntegration(NavbarTestMixin, BaseTestCase, FooterTestMixi
 
     @classmethod
     def setUpClass(cls):
+        """Starts external services and sets instrument for all test cases"""
         super().setUpClass()
         cls.instrument_name = "TestInstrument"
         cls.data_archive = DataArchive([cls.instrument_name], 21, 21)
@@ -42,12 +43,14 @@ class TestRerunJobsPageIntegration(NavbarTestMixin, BaseTestCase, FooterTestMixi
 
     @classmethod
     def tearDownClass(cls) -> None:
+        """Stops external services."""
         cls.queue_client.disconnect()
         cls.database_client.disconnect()
         cls.data_archive.delete()
         super().tearDownClass()
 
     def setUp(self) -> None:
+        """Sets up RerunJobsPage before each test case"""
         super().setUp()
         self.page = RerunJobsPage(self.driver, self.instrument_name)
         self.page.launch()

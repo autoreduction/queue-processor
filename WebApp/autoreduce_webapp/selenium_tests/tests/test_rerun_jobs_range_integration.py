@@ -25,6 +25,7 @@ class TestRerunJobsRangePageIntegration(BaseTestCase):
 
     @classmethod
     def setUpClass(cls):
+        """Starts all external services"""
         super().setUpClass()
         cls.instrument_name = "TestInstrument"
         cls.data_archive = DataArchive([cls.instrument_name], 21, 21)
@@ -46,12 +47,14 @@ class TestRerunJobsRangePageIntegration(BaseTestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
+        """Stops all external services"""
         cls.queue_client.disconnect()
         cls.database_client.disconnect()
         cls.data_archive.delete()
         super().tearDownClass()
 
     def setUp(self) -> None:
+        """Sets up and launches RerunJobsPage before each test case"""
         super().setUp()
         self.page = RerunJobsPage(self.driver, self.instrument_name)
         self.page.launch()
@@ -61,6 +64,7 @@ class TestRerunJobsRangePageIntegration(BaseTestCase):
         Verifies that the run with version 1 exists and has the expected value
         """
         def make_run_url(run_number):
+            """Constructs the url of the run summary with a django reverse"""
             return reverse("runs:summary",
                            kwargs={
                                "instrument_name": self.instrument_name,
@@ -90,7 +94,7 @@ class TestRerunJobsRangePageIntegration(BaseTestCase):
         expected_url = reverse("run_confirmation", kwargs={"instrument": self.instrument_name})
         assert expected_url in self.driver.current_url
         # wait until the message processing is complete before ending the test
-        # otherwise the message handling can polute the DB state for the next test
+        # otherwise the message handling can pollute the DB state for the next test
         assert len(result) == 4
 
         self._verify_runs_exist_and_have_variable_value("value2")
@@ -107,7 +111,7 @@ class TestRerunJobsRangePageIntegration(BaseTestCase):
         expected_url = reverse("run_confirmation", kwargs={"instrument": self.instrument_name})
         assert expected_url in self.driver.current_url
         # wait until the message processing is complete before ending the test
-        # otherwise the message handling can polute the DB state for the next test
+        # otherwise the message handling can pollute the DB state for the next test
         assert len(result) == 4
 
         self._verify_runs_exist_and_have_variable_value(new_value)

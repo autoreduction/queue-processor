@@ -23,12 +23,16 @@ class TestSeeInstrumentVariablesPageWithMissingFiles(BaseTestCase, NavbarTestMix
     fixtures = BaseTestCase.fixtures + ["one_run_mixed_vars"]
 
     def setUp(self) -> None:
+        """
+        Sets up the VariableSummaryPage before each test
+        """
         super().setUp()
         self.instrument_name = "TestInstrument"
         self.page = VariableSummaryPage(self.driver, self.instrument_name)
         self.page.launch()
 
     def test_edit_no_reduce_vars_shows_error(self):
+        """Tests: Error is shown when no reduce_vars.py exists and edit variables is clicked."""
         btn, url = self.page.run_edit_button_for(100100, 100150)
         btn.click()
         assert url in self.driver.current_url
@@ -44,6 +48,7 @@ class TestSeeInstrumentVariablesPage(BaseTestCase):
 
     @classmethod
     def setUpClass(cls):
+        """Sets up the data archive with a reduce and reduce_vars script to be shared between test cases"""
         super().setUpClass()
         cls.instrument_name = "TestInstrument"
         cls.data_archive = DataArchive([cls.instrument_name], 21, 21)
@@ -56,10 +61,12 @@ class TestSeeInstrumentVariablesPage(BaseTestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
+        """Destroys the created DataArchive"""
         cls.data_archive.delete()
         super().tearDownClass()
 
     def setUp(self) -> None:
+        """Sets up the VariableSummaryPage before each test case"""
         super().setUp()
         self.page = VariableSummaryPage(self.driver, self.instrument_name)
         self.page.launch()
@@ -68,6 +75,7 @@ class TestSeeInstrumentVariablesPage(BaseTestCase):
                            (100151, 100199, "value3", ["value2", "some new value", "value4"]),
                            (100200, 0, "value4", ["value2", "value3", "some new value"])])
     def test_edit(self, start: int, end: int, value_to_modify: str, expected_strings: List[str]):
+        """Test: That run variables can be edited for upcoming runs."""
         upcoming_panel = self.page.panels[1]
         # makes sure the value we are going to modify is present in the initial values
         assert value_to_modify in upcoming_panel.get_attribute("textContent")
@@ -100,7 +108,7 @@ class TestSeeInstrumentVariablesPage(BaseTestCase):
     @parameterized.expand([(100100, 100150, "value2", 100150), (100151, 100199, "value3", 100099),
                            (100200, 0, "value4", 100099)])
     def test_delete_variable_for_run(self, start: int, end: int, value_to_delete: str, end_run_for_current_vars: int):
-
+        """Tests that variables can be deleted from upcoming runs"""
         upcoming_panel = self.page.panels[1]
         # makes sure the value we are going to modify is present in the initial values
         assert value_to_delete in upcoming_panel.get_attribute("textContent")
@@ -126,6 +134,7 @@ class TestSeeInstrumentVariablesPage(BaseTestCase):
 
     @parameterized.expand([[1234567], [7654321]])
     def test_edit_experiment(self, experiment_reference):
+        """Tests: Variables can be edited for upcoming runs for an experiment"""
         experiment_panel = self.page.panels[2]
         # makes sure the value we are going to modify is present in the initial values
         assert f"experiment {experiment_reference} var" in experiment_panel.get_attribute("textContent")
@@ -152,6 +161,7 @@ class TestSeeInstrumentVariablesPage(BaseTestCase):
 
     @parameterized.expand([[1234567], [7654321]])
     def test_delete_variable_for_experiment(self, experiment_reference):
+        """Tests: Variables can be deleted for an experiment"""
         experiment_panel = self.page.panels[2]
         # makes sure the value we are going to modify is present in the initial values
         assert f"experiment {experiment_reference} var" in experiment_panel.get_attribute("textContent")
