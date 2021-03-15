@@ -145,20 +145,14 @@ class TestRerunJobsPageIntegrationSkippedOnly(BaseTestCase):
 
     @classmethod
     def setUpClass(cls):
+        """Starts external services and sets instrument for all test cases"""
         super().setUpClass()
         cls.instrument_name = "TestInstrument"
-        cls.data_archive = DataArchive([cls.instrument_name], 21, 21)
-        cls.data_archive.create()
+        cls.data_archive, cls.database_client, cls.queue_client, cls.listener = setup_external_services(
+            cls.instrument_name, 21, 21)
         cls.data_archive.add_reduction_script(cls.instrument_name, """print('some text')""")
         cls.data_archive.add_reduce_vars_script(cls.instrument_name,
                                                 """standard_vars={"variable1":"test_variable_value_123"}""")
-        cls.database_client = DatabaseClient()
-        cls.database_client.connect()
-        try:
-            cls.queue_client, cls.listener = main()
-        except ConnectionException as err:
-            raise RuntimeError("Could not connect to ActiveMQ - check your credentials. If running locally check that "
-                               "ActiveMQ is running and started by `python setup.py start`") from err
 
         cls.instrument_name = "TestInstrument"
         cls.rb_number = 1234567
@@ -166,12 +160,14 @@ class TestRerunJobsPageIntegrationSkippedOnly(BaseTestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
+        """Stops external services."""
         cls.queue_client.disconnect()
         cls.database_client.disconnect()
         cls.data_archive.delete()
         super().tearDownClass()
 
     def setUp(self) -> None:
+        """Sets up RerunJobsPage before each test case"""
         super().setUp()
         self.page = RerunJobsPage(self.driver, self.instrument_name)
         self.page.launch()

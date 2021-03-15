@@ -87,6 +87,7 @@ class TestConfigureNewRunsPageSkippedOnly(NavbarTestMixin, BaseTestCase, FooterT
 
     @classmethod
     def setUpClass(cls):
+        """Makes test data archive and sets instrument for all test cases"""
         super().setUpClass()
         cls.instrument_name = "TestInstrument"
         cls.data_archive = DataArchive([cls.instrument_name], 21, 21)
@@ -98,10 +99,12 @@ class TestConfigureNewRunsPageSkippedOnly(NavbarTestMixin, BaseTestCase, FooterT
 
     @classmethod
     def tearDownClass(cls) -> None:
+        """Destroys the data archive"""
         cls.data_archive.delete()
         super().tearDownClass()
 
     def setUp(self) -> None:
+        """Sets up the ConfigureNewRunsPage before each test case"""
         super().setUp()
         self.page = ConfigureNewRunsPage(self.driver, self.instrument_name)
         self.page.launch()
