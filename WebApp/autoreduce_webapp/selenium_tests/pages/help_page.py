@@ -66,13 +66,20 @@ class HelpPage(Page, NavbarMixin, FooterMixin):
         """
         return self.driver.find_elements_by_class_name("help-topic")
 
+    def get_help_topic_header_elements(self) -> List[WebElement]:
+        """
+
+        :return:
+        """
+        return [x.find_element_by_xpath("./div[@class='panel-heading']") for x in self.get_help_topic_elements()]
+
     def get_help_topic_headers(self) -> List[str]:
         """
         Get the headers of the help topics.
         Should be run post JS topic link generation.
         :return (List) A list of topic headers
         """
-        return [x.find_element_by_xpath("./div[@class='panel-heading']/h3/a").text.strip() for x in self.get_help_topic_elements()]
+        return [x.find_element_by_xpath("/h3/a").text.strip() for x in self.get_help_topic_header_elements()]
 
     def _get_category_filter_elements(self) -> List[WebElement]:
         """
@@ -81,12 +88,12 @@ class HelpPage(Page, NavbarMixin, FooterMixin):
         """
         return self.driver.find_elements_by_xpath("//div[id='category-filter']/label")
 
-    def get_topic_categories(self) -> List[str]:
+    def get_topic_filters(self) -> List[str]:
         """
-        Get the topic categories from the category filter
+        Get the topic filters from the category filter
         :return: (List) A list of categories
         """
-        return [x.text.strip().lower() for x in self._get_category_filter_elements() if x != "All"]
+        return [x.text.strip().lower() for x in self._get_category_filter_elements()]
 
     def get_each_help_topic_category(self) -> List[str]:
         """
@@ -95,9 +102,29 @@ class HelpPage(Page, NavbarMixin, FooterMixin):
         """
         return [x.get_attribute("data-category") for x in self.get_help_topic_elements()]
 
-    def get_each_help_topic_content(self):
+    def get_each_help_topic_content(self) -> List[str]:
         """
         Get each content text for each topic
         :return: (List) A list of topic contents
         """
         return [x.find_element_by_class_name("panel-body").text for x in self.get_help_topic_elements()]
+
+    def click_category_filter(self, category):
+        """
+
+        :param category:
+        :return:
+        """
+        filter_button = next((x for x in self._get_category_filter_elements() if x.get_attribute("data-category") == category), None)
+
+        if filter_button == None:
+            raise Exception(f"Category {category} does not exist.")
+
+        filter_button.click()
+
+    def get_visible_topic_elements(self):
+        """
+
+        :return:
+        """
+
