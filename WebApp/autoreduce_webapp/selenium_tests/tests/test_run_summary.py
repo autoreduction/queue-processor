@@ -155,6 +155,9 @@ class TestRunSummaryPagePlots(BaseTestCase):
     fixtures = BaseTestCase.fixtures + ["one_run_plot"]
 
     def setUp(self) -> None:
+        """
+        Set up the instrument name and page
+        """
         super().setUp()
         self.instrument_name = "TestInstrument"
 
