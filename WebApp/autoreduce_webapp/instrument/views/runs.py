@@ -222,21 +222,25 @@ def configure_new_runs(request, instrument=None, start=0, end=0, experiment_refe
     Handles request to view instrument variables
     """
     instrument_name = instrument
-    start, end = int(start), int(end)
 
     if request.method == 'POST':
-        return configure_new_runs_post(request, instrument_name, start, experiment_reference)
+        return configure_new_runs_post(request, instrument_name)
     else:
         return configure_new_runs_get(instrument, start, end, experiment_reference)
 
 
-def configure_new_runs_post(request, instrument_name, start=0, experiment_reference=0):
+def configure_new_runs_post(request, instrument_name):
     """
     Submission to modify variables. Acts on POST request.
 
     Depending on the parameters it either makes them for a run range (when start is given, end is optional)
     or for experiment reference (when experiment_reference is given).
     """
+    start = int(request.POST.get("run_start")) if request.POST.get("run_start", None) else None
+    end = int(request.POST.get("run_end")) if request.POST.get("run_end", None) else None
+    experiment_reference = int(request.POST.get("experiment_reference_number")) if request.POST.get(
+        "experiment_reference_number", None) else None
+
     # [("var-standard-"+name, value) or ("var-advanced-"+name, value)]
     var_list = [t for t in request.POST.items() if t[0].startswith("var-")]
 
@@ -264,9 +268,7 @@ def configure_new_runs_post(request, instrument_name, start=0, experiment_refere
 
     instrument = Instrument.objects.get(name=instrument_name)
 
-    if start != 0:
-        start = int(request.POST.get("run_start", 1))
-        end = int(request.POST.get("run_end")) if request.POST.get("run_end", None) else None
+    if start and start > 0:
         possible_variables = InstrumentVariable.objects.filter(start_run__lte=start, instrument__name=instrument_name)
 
         # Makes the variables that will be active for the range START -> END
@@ -289,7 +291,7 @@ def configure_new_runs_post(request, instrument_name, start=0, experiment_refere
             # Makes the variables that will be active for the range END + 1 -> onwards
             InstrumentVariablesUtils.find_or_make_variables(possible_variables, instrument.id, post_range_args, end + 1)
 
-    elif experiment_reference != 0:
+    else:
         experiment_reference = int(request.POST.get("experiment_reference_number", 1))
         possible_variables = InstrumentVariable.objects.filter(experiment_reference=experiment_reference,
                                                                instrument__name=instrument_name)
@@ -299,10 +301,6 @@ def configure_new_runs_post(request, instrument_name, start=0, experiment_refere
                                                         start,
                                                         experiment_reference,
                                                         from_webapp=True)
-
-    else:
-        raise RuntimeError("see #1203")
-
     return redirect('instrument:variables_summary', instrument=instrument_name)
 
 

@@ -44,11 +44,7 @@
                 </div>
             </div>
             <br/>
-        {% if current_experiment_reference > 0 %}
-        <form id="instrument_variables" method="POST" action="{% url 'instrument:variables_by_experiment' instrument=instrument.name experiment_reference=current_experiment_reference %}" class="form-horizontal">
-        {% else %}
-        <form id="instrument_variables" method="POST" action="{% url 'instrument:variables' instrument=instrument.name start=run_start end=run_end %}" class="form-horizontal">
-        {% endif %}
+        <form id="instrument_variables" method="POST" action="{% url 'instrument:variables' instrument=instrument.name %}" class="form-horizontal">
         {% csrf_token %}
         <input type="hidden" id="upcoming_runs" name="upcoming_runs" value="{{ upcoming_run_variables }}"/>
         <input type="hidden" id="is_editing" name="is_editing" value="{{ editing }}"/>
