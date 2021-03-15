@@ -44,19 +44,33 @@ class HelpPage(Page, NavbarMixin, FooterMixin):
         self.driver.get(self.url())
         return self
 
-    def get_sidenav_contents(self) -> List[WebElement]:
+    def _get_sidenav_contents_elements(self) -> List[WebElement]:
         """
-        Get the contents of the collapsible sidebar
-        :return: (List) A list of <li> WebElements in #sidebar-contents
+        Get the contents of the sidenav
+        :return: (List) A list of <li> WebElements in #sidenav-contents
         """
-        print("sidenav-contents test")
-        print(list(self.driver.find_elements_by_xpath("//ul[@id='sidenav-contents']/li")))
         return self.driver.find_elements_by_xpath("//ul[@id='sidenav-contents']/li")
 
-    def get_help_topics(self) -> List[WebElement]:
+    def get_sidenav_contents(self) -> List[str]:
         """
-        Get the help topics on the page
+        Get the contents of the sidenav as a list of strings.
+        Should be run post topic JS link generation.
+        :return: (List) A list of strings inside of each <a> element
+        """
+        return [x.find_element_by_tag_name("a").text for x in self._get_sidenav_contents_elements()]
+
+    def get_help_topic_elements(self) -> List[WebElement]:
+        """
+        Get the help topics
         :return: (List) A list of <section> WebElements in .help-topic
         """
-        print(self.driver.find_elements_by_class_name("help-topic"))
         return self.driver.find_elements_by_class_name("help-topic")
+
+    def get_help_topics_headers(self) -> List[str]:
+        """
+        Get the headers of the help topics.
+        Should be run post JS topic link generation.
+        :return (List) A list of topic headers
+        """
+        return [x.find_element_by_xpath("./div[@class='panel-heading']/h3/a").text for x in self.get_help_topic_elements()]
+
