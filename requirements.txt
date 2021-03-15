@@ -16,4 +16,4 @@ requests==2.25.1
 selenium==3.141.0
 stomp.py==6.1.0
 vulture==2.3
-yapf==0.30.0
+yapf==0.31.0
