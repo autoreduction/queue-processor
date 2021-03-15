@@ -3,8 +3,16 @@
 {% load view %}
 {% load static %}
 {% block body %}
-    {% if instrument %}
-        {% if instrument.is_active %}
+    {% if not instrument or message %}
+        <div class="text-center col-md-6 col-md-offset-3 well well-small" id="message">
+            {{ message }}
+        </div>
+        {% else %}
+        {% if not instrument.is_active %}
+            <div class="text-center col-md-6 col-md-offset-3 well well-small">
+                Instrument is not active.
+            </div>
+        {% else %}
             <title>{{ instrument.name }} - Configure New Runs</title>
 
             <div class="row">
@@ -80,8 +88,7 @@
                                 <label for="run_end" class="control-label col-md-6">Finished
                                     <small>(Optional)</small></label>
                                 <div class="col-md-6">
-                                    <input type="number" id="run_end" name="run_end"
-                                           value="{% if run_end %}{{ run_end }}{% endif %}" class="form-control"/>
+                                    <input type="number" id="run_end" name="run_end" value="{% if run_end %}{{ run_end }}{% endif %}" min="{{ minimum_run_end }}" class="form-control"/>
                                 </div>
                             </div>
                         </div>
@@ -184,15 +191,7 @@
                     {% include "snippets/edit_variables.html" with standard_variables=current_standard_variables advanced_variables=current_advanced_variables instrument=instrument.name only %}
                 </div>
             </div>
-        {% else %}
-            <div class="text-center col-md-6 col-md-offset-3 well well-small">
-                Instrument is not active.
-            </div>
         {% endif %}
-    {% else %}
-        <div class="text-center col-md-6 col-md-offset-3 well well-small" id="message">
-            {{ message }}
-        </div>
     {% endif %}
 {% endblock %}
 

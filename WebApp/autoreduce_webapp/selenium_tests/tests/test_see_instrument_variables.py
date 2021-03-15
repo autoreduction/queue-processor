@@ -33,9 +33,7 @@ class TestSeeInstrumentVariablesPageWithMissingFiles(BaseTestCase, NavbarTestMix
 
     def test_edit_no_reduce_vars_shows_error(self):
         """Tests: Error is shown when no reduce_vars.py exists and edit variables is clicked."""
-        btn, url = self.page.run_edit_button_for(100100, 100150)
-        btn.click()
-        assert url in self.driver.current_url
+        self.page.click_run_edit_button_for(100100, 100150)
         message = self.page.message
         assert message.is_displayed()
         assert "No such file or directory" in message.text
@@ -80,22 +78,17 @@ class TestSeeInstrumentVariablesPage(BaseTestCase):
         # makes sure the value we are going to modify is present in the initial values
         assert value_to_modify in upcoming_panel.get_attribute("textContent")
 
-        btn, url = self.page.run_edit_button_for(start, end)
-        btn.click()
-        assert url in self.driver.current_url
+        self.page.click_run_edit_button_for(start, end)
+
         new_runs_page = ConfigureNewRunsPage(self.driver, self.instrument_name, start, end)
         assert new_runs_page.run_start_val == str(start)
         if end > 0:
             assert new_runs_page.run_end_val == str(end)
 
-        # this is actually the wrong value - known issue and documented at
-        # https://github.com/ISISScientificComputing/autoreduce/issues/1133
-        # Once it's fixed this test should fail - the correct assertion would be
-        # assert new_runs_page.variable1_field_val == "value2"
-        assert new_runs_page.variable1_field_val == "value1"
-
+        assert new_runs_page.variable1_field_val == value_to_modify
         new_runs_page.variable1_field = "some new value"
         new_runs_page.submit_button.click()
+        new_runs_page.replace_confirm.click()
 
         upcoming_panel = self.page.panels[1]
         # make sure the value we are modifying is no longer visible
@@ -122,8 +115,7 @@ class TestSeeInstrumentVariablesPage(BaseTestCase):
         assert "100200" in incoming_run_numbers[2].text
         assert "Ongoing" in incoming_run_numbers[2].text
 
-        btn, _ = self.page.run_delete_button_for(start, end)
-        btn.click()
+        self.page.click_run_delete_button_for(start, end)
 
         current_panel_runs = self.page.panels[0].find_element_by_class_name("run-numbers")
         # check that the current variables end at the correct run
@@ -139,18 +131,12 @@ class TestSeeInstrumentVariablesPage(BaseTestCase):
         # makes sure the value we are going to modify is present in the initial values
         assert f"experiment {experiment_reference} var" in experiment_panel.get_attribute("textContent")
 
-        btn, url = self.page.experiment_edit_button_for(experiment_reference)
-        btn.click()
-        assert url in self.driver.current_url
+        self.page.click_experiment_edit_button_for(experiment_reference)
         new_runs_page = ConfigureNewRunsPage(self.driver,
                                              self.instrument_name,
                                              experiment_reference=experiment_reference)
 
-        # this is actually the wrong value - known issue and documented at
-        # https://github.com/ISISScientificComputing/autoreduce/issues/1133
-        # Once it's fixed this test should fail - the correct assertion would be
-        # assert new_runs_page.variable1_field_val == f"experiment {experiment_reference} var"
-        assert new_runs_page.variable1_field_val == "value1"
+        assert new_runs_page.variable1_field_val == f"experiment {experiment_reference} var"
 
         new_runs_page.variable1_field = "some new value"
         new_runs_page.submit_button.click()
@@ -166,7 +152,6 @@ class TestSeeInstrumentVariablesPage(BaseTestCase):
         # makes sure the value we are going to modify is present in the initial values
         assert f"experiment {experiment_reference} var" in experiment_panel.get_attribute("textContent")
 
-        btn, _ = self.page.experiment_delete_button_for(experiment_reference)
-        btn.click()
+        self.page.click_experiment_delete_button_for(experiment_reference)
         experiment_panel = self.page.panels[2]
         assert f"experiment {experiment_reference} var" not in experiment_panel.get_attribute("textContent")

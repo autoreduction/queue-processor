@@ -5,14 +5,15 @@
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 
-from instrument.models import InstrumentVariable
 from selenium.common.exceptions import NoSuchElementException
 from selenium_tests.pages.configure_new_runs_page import ConfigureNewRunsPage
 from selenium_tests.pages.variables_summary_page import VariableSummaryPage
 from selenium_tests.tests.base_tests import (BaseTestCase, FooterTestMixin, NavbarTestMixin)
 
-from WebApp.autoreduce_webapp.selenium_tests.utils import setup_external_services
+from instrument.models import InstrumentVariable
 from model.database import access as db
+from WebApp.autoreduce_webapp.selenium_tests.utils import \
+    setup_external_services
 
 REDUCE_VARS_DEFAULT_VALUE = "default value from reduce_vars"
 
@@ -223,7 +224,7 @@ class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterT
 
         summary = VariableSummaryPage(self.driver, self.instrument_name)
 
-        summary.run_edit_button_for(self.run_number + 1, self.run_number + 101)[0].click()
+        summary.click_run_edit_button_for(self.run_number + 1, self.run_number + 101)
 
         self.page.variable1_field = "a new test value 123"
         self.page.submit_button.click()
@@ -234,7 +235,7 @@ class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterT
         assert "new_value" not in upcoming_panel.get_attribute("textContent")
         assert "a new test value 123" in upcoming_panel.get_attribute("textContent")
 
-        summary.run_delete_button_for(self.run_number + 1, self.run_number + 101)[0].click()
+        summary.click_run_delete_button_for(self.run_number + 1, self.run_number + 101)
 
         upcoming_panel = summary.panels[1]
         assert "a new test value 123" not in upcoming_panel.get_attribute("textContent")
@@ -249,16 +250,17 @@ class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterT
         assert "Ongoing" in incoming_run_numbers[2].text
 
         # now for the 2nd variable we made
-        summary.run_edit_button_for(self.run_number + 201, self.run_number + 401)[0].click()
+        summary.click_run_edit_button_for(self.run_number + 201, self.run_number + 401)
         self.page.variable1_field = "another new test value 321"
         self.page.submit_button.click()
+        self.page.replace_confirm.click()
 
         upcoming_panel = summary.panels[1]
 
         assert "new_value" not in upcoming_panel.get_attribute("textContent")
         assert "another new test value 321" in upcoming_panel.get_attribute("textContent")
 
-        summary.run_delete_button_for(self.run_number + 201, self.run_number + 401)[0].click()
+        summary.click_run_delete_button_for(self.run_number + 201, self.run_number + 401)
 
         upcoming_panel = summary.panels[1]
         assert "another new test value 321" not in upcoming_panel.get_attribute("textContent")
@@ -276,7 +278,7 @@ class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterT
         self._submit_var_value("new_value", experiment_number=1234567)
         self._submit_var_value("the newest value", experiment_number=2345678)
         summary = VariableSummaryPage(self.driver, self.instrument_name)
-        summary.experiment_edit_button_for(1234567)[0].click()
+        summary.click_experiment_edit_button_for(1234567)
 
         self.page.variable1_field = "a new test value 123"
         self.page.submit_button.click()
@@ -286,14 +288,14 @@ class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterT
         assert "new_value" not in experiment_panel.get_attribute("textContent")
         assert "a new test value 123" in experiment_panel.get_attribute("textContent")
 
-        summary.experiment_delete_button_for(1234567)[0].click()
+        summary.click_experiment_delete_button_for(1234567)
 
         experiment_panel = summary.panels[1]
         incoming_exp_numbers = experiment_panel.find_elements_by_class_name("run-numbers")
 
         assert "2345678" in incoming_exp_numbers[0].text
 
-        summary.experiment_edit_button_for(2345678)[0].click()
+        summary.click_experiment_edit_button_for(2345678)
 
         self.page.variable1_field = "a new value for experiment 2345678"
         self.page.submit_button.click()
@@ -303,7 +305,7 @@ class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterT
         assert "the newest value" not in experiment_panel.get_attribute("textContent")
         assert "a new value for experiment 2345678" in experiment_panel.get_attribute("textContent")
 
-        summary.experiment_delete_button_for(2345678)[0].click()
+        summary.click_experiment_delete_button_for(2345678)
 
         # only the current variables panel left
         assert len(summary.panels) == 1

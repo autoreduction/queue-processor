@@ -58,8 +58,7 @@ class TestRunSummaryPageNoArchive(NavbarTestMixin, BaseTestCase, FooterTestMixin
         assert self.page.run_description_text() == "Run description: This is the test run_description"
 
 
-class TestRunSummaryPage(BaseTestCase):
-    # class TestRunSummaryPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
+class TestRunSummaryPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
     """
     Test cases for the InstrumentSummary page when the Rerun form is NOT visible
     """
