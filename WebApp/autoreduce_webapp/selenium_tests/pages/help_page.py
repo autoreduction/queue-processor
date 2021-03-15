@@ -59,7 +59,7 @@ class HelpPage(Page, NavbarMixin, FooterMixin):
         """
         return [x.find_element_by_tag_name("a").text.strip() for x in self._get_sidenav_contents_elements()]
 
-    def get_help_topic_elements(self) -> List[WebElement]:
+    def get_all_help_topic_elements(self) -> List[WebElement]:
         """
         Get the help topics
         :return: (List) A list of <section> WebElements in .help-topic
@@ -71,7 +71,7 @@ class HelpPage(Page, NavbarMixin, FooterMixin):
 
         :return:
         """
-        return [x.find_element_by_xpath("./div[@class='panel-heading']") for x in self.get_help_topic_elements()]
+        return [x.find_element_by_xpath("./div[@class='panel-heading']") for x in self.get_all_help_topic_elements()]
 
     def get_help_topic_headers(self) -> List[str]:
         """
@@ -100,14 +100,14 @@ class HelpPage(Page, NavbarMixin, FooterMixin):
         Get each data-category from each topic
         :return: (List) A list of categories from each topic
         """
-        return [x.get_attribute("data-category") for x in self.get_help_topic_elements()]
+        return [x.get_attribute("data-category") for x in self.get_all_help_topic_elements()]
 
     def get_each_help_topic_content(self) -> List[str]:
         """
         Get each content text for each topic
         :return: (List) A list of topic contents
         """
-        return [x.find_element_by_class_name("panel-body").text for x in self.get_help_topic_elements()]
+        return [x.find_element_by_class_name("panel-body").text for x in self.get_all_help_topic_elements()]
 
     def click_category_filter(self, category):
         """
@@ -122,9 +122,26 @@ class HelpPage(Page, NavbarMixin, FooterMixin):
 
         filter_button.click()
 
-    def get_visible_topic_elements(self):
+    def filter_help_topics_by_search_term(self, text):
+        """
+
+        :param text:
+        :return:
+        """
+        help_search = self.driver.find_element_by_id("help-search")
+        help_search.clear()
+        help_search.send_keys(text)
+
+    def get_visible_topic_elements(self) -> List[WebElement]:
         """
 
         :return:
         """
+        return [x for x in self.get_all_help_topic_elements() if x.is_displayed()]
 
+    def get_mock_help_topic(self):
+        """
+
+        :return:
+        """
+        return self.driver.find_element_by_id("mock-help-topic")
