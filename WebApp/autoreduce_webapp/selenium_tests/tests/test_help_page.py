@@ -26,15 +26,16 @@ class TestHelpPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
         Test that the sidebar contents is exactly the list of topic headers
         """
         WebDriverWait(self.driver,
-                      10).until(lambda _: self.page.get_sidenav_contents() == self.page.get_help_topics_headers())
+                      10).until(lambda _: self.page.get_sidenav_contents() == self.page.get_help_topic_headers())
 
-    # def test_all_topics_have_a_valid_category(self):
-    #     """
-    #     Test that all topics have a valid data-topics="..."
-    #     """
-    #     WebDriverWait(self.driver,
-    #                   10).until(lambda _: set(self.page.get_help_topics_categories()).issubset(self.page.get_categories()))
+    def test_all_topics_have_a_valid_category(self):
+        """
+        Test that all topics have a valid data-category="..."
+        """
+        WebDriverWait(self.driver,
+                      10).until(lambda _: set(self.page.get_each_help_topic_category()) == set(self.page.get_topic_categories()))
 
     # def test_all_topics_have_content
     # def test_filter_by_categories
+    # def test_topics_link_generation
     # def test_scroll_to_header

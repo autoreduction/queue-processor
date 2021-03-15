@@ -66,7 +66,7 @@ class HelpPage(Page, NavbarMixin, FooterMixin):
         """
         return self.driver.find_elements_by_class_name("help-topic")
 
-    def get_help_topics_headers(self) -> List[str]:
+    def get_help_topic_headers(self) -> List[str]:
         """
         Get the headers of the help topics.
         Should be run post JS topic link generation.
@@ -74,3 +74,23 @@ class HelpPage(Page, NavbarMixin, FooterMixin):
         """
         return [x.find_element_by_xpath("./div[@class='panel-heading']/h3/a").text for x in self.get_help_topic_elements()]
 
+    def _get_category_filter_elements(self) -> List[WebElement]:
+        """
+        Get the filter elements in #category-filter
+        :return: (List) A list of filter elements
+        """
+        return self.driver.find_elements_by_xpath("//div[id='category-filter']/label")
+
+    def get_topic_categories(self) -> List[str]:
+        """
+        Get the topic categories from the category filter
+        :return: (List) A list of categories
+        """
+        return [x.text.lower() for x in self._get_category_filter_elements() if x != "All"]
+
+    def get_each_help_topic_category(self) -> List[str]:
+        """
+        Get each data-category from each topic
+        :return: (List) A list of categories from each topic
+        """
+        return [x.get_attribute("data-category") for x in self.get_help_topic_elements()]
