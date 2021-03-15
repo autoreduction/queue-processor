@@ -240,7 +240,6 @@ def configure_new_runs_post(request, instrument_name):
     or for experiment reference (when experiment_reference is given).
     """
     start = int(request.POST.get("run_start")) if request.POST.get("run_start", None) else None
-    end = int(request.POST.get("run_end")) if request.POST.get("run_end", None) else None
     experiment_reference = int(request.POST.get("experiment_reference_number")) if request.POST.get(
         "experiment_reference_number", None) else None
 
