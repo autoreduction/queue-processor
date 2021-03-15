@@ -5,7 +5,7 @@
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 
-from typing import List, Tuple
+from typing import List
 from functools import partial
 
 from django.urls import reverse
