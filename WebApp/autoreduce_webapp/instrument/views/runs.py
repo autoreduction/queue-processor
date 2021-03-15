@@ -346,7 +346,7 @@ def configure_new_runs_get(instrument_name, start=0, end=0, experiment_reference
     # configured future run numbers - check the checkForConflicts function
     # This should probably be done by the POST method anyway.. so remove it when
     if upcoming_variables:
-        upcoming_run_variables = ','.join(list(set([str(var.start_run) for var in upcoming_variables])))
+        upcoming_run_variables = ','.join({str(var.start_run) for var in upcoming_variables})
     else:
         upcoming_run_variables = ""
 
