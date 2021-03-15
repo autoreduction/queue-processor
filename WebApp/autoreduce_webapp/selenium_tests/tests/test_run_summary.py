@@ -176,11 +176,10 @@ class TestRunSummaryPagePlots(BaseTestCase):
         # 1 is the logo, the other 2 are the plots
         images = self.page.images()
         assert len(images) == 3
-        for idx, img in enumerate(images[1:]):
+        for img in images[1:]:
             alt_text = img.get_attribute("alt")
             assert "Plot image stored at" in alt_text
-            plot_filename = os.path.basename(plot_files[idx].name)
-            assert plot_filename in alt_text
+            assert any(os.path.basename(f.name) in alt_text for f in plot_files)
 
     @patch("plotting.plot_handler.SFTPClient")
     def test_remote_plot_files(self, sftp_client: Mock):
@@ -199,8 +198,7 @@ class TestRunSummaryPagePlots(BaseTestCase):
         # 1 is the logo, the other 4 are the plots
         images = self.page.images()
         assert len(images) == 5
-        for idx, img in enumerate(images[1:]):
+        for img in images[1:]:
             alt_text = img.get_attribute("alt")
             assert "Plot image stored at" in alt_text
-            plot_filename = os.path.basename(plot_files[idx])
-            assert plot_filename in alt_text
+            assert any(os.path.basename(f) in alt_text for f in plot_files)
