@@ -57,7 +57,7 @@ class HelpPage(Page, NavbarMixin, FooterMixin):
         Should be run post topic JS link generation.
         :return: (List) A list of strings inside of each <a> element
         """
-        return [x.find_element_by_tag_name("a").text for x in self._get_sidenav_contents_elements()]
+        return [x.find_element_by_tag_name("a").text.strip() for x in self._get_sidenav_contents_elements()]
 
     def get_help_topic_elements(self) -> List[WebElement]:
         """
@@ -72,7 +72,7 @@ class HelpPage(Page, NavbarMixin, FooterMixin):
         Should be run post JS topic link generation.
         :return (List) A list of topic headers
         """
-        return [x.find_element_by_xpath("./div[@class='panel-heading']/h3/a").text for x in self.get_help_topic_elements()]
+        return [x.find_element_by_xpath("./div[@class='panel-heading']/h3/a").text.strip() for x in self.get_help_topic_elements()]
 
     def _get_category_filter_elements(self) -> List[WebElement]:
         """
@@ -86,7 +86,7 @@ class HelpPage(Page, NavbarMixin, FooterMixin):
         Get the topic categories from the category filter
         :return: (List) A list of categories
         """
-        return [x.text.lower() for x in self._get_category_filter_elements() if x != "All"]
+        return [x.text.strip().lower() for x in self._get_category_filter_elements() if x != "All"]
 
     def get_each_help_topic_category(self) -> List[str]:
         """
@@ -94,3 +94,10 @@ class HelpPage(Page, NavbarMixin, FooterMixin):
         :return: (List) A list of categories from each topic
         """
         return [x.get_attribute("data-category") for x in self.get_help_topic_elements()]
+
+    def get_each_help_topic_content(self):
+        """
+        Get each content text for each topic
+        :return: (List) A list of topic contents
+        """
+        return [x.find_element_by_class_name("panel-body").text for x in self.get_help_topic_elements()]

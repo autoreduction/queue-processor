@@ -35,6 +35,14 @@ class TestHelpPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
         WebDriverWait(self.driver,
                       10).until(lambda _: set(self.page.get_each_help_topic_category()) == set(self.page.get_topic_categories()))
 
+    def test_all_topics_have_content(self):
+        """
+
+        :return:
+        """
+        WebDriverWait(self.driver,
+                      10).until(lambda _: "" not in [x.strip() for x in self.page.get_each_help_topic_content()])
+
     # def test_all_topics_have_content
     # def test_filter_by_categories
     # def test_topics_link_generation
