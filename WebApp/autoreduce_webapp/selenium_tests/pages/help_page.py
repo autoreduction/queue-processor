@@ -79,21 +79,21 @@ class HelpPage(Page, NavbarMixin, FooterMixin):
         Should be run post JS topic link generation.
         :return (List) A list of topic headers
         """
-        return [x.find_element_by_xpath("/h3/a").text.strip() for x in self.get_help_topic_header_elements()]
+        return [x.find_element_by_xpath("./h3/a").text.strip() for x in self.get_help_topic_header_elements()]
 
     def _get_category_filter_elements(self) -> List[WebElement]:
         """
         Get the filter elements in #category-filter
         :return: (List) A list of filter elements
         """
-        return self.driver.find_elements_by_xpath("//div[id='category-filter']/label")
+        return self.driver.find_elements_by_xpath("//div[@id='category-filter']/label")
 
     def get_topic_filters(self) -> List[str]:
         """
         Get the topic filters from the category filter
         :return: (List) A list of categories
         """
-        return [x.text.strip().lower() for x in self._get_category_filter_elements()]
+        return [x.get_attribute("data-category").strip().lower() for x in self._get_category_filter_elements()]
 
     def get_valid_topics(self) -> List[str]:
         filters = self.get_topic_filters()
@@ -143,10 +143,3 @@ class HelpPage(Page, NavbarMixin, FooterMixin):
         :return:
         """
         return [x for x in self.get_all_help_topic_elements() if x.is_displayed()]
-
-    def get_mock_help_topic_element(self) -> WebElement:
-        """
-
-        :return:
-        """
-        return self.driver.find_element_by_id("mock-help-topic")
