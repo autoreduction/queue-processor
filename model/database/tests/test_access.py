@@ -12,6 +12,7 @@ import unittest
 from unittest.mock import patch, Mock
 
 from model.database import access
+from model.database.access import get_all_instrument_names
 from model.database.records import create_reduction_run_record
 from queue_processors.queue_processor.tests.test_handle_message import FakeMessage
 
@@ -41,6 +42,12 @@ class TestAccess(unittest.TestCase):
         actual = access.get_instrument('GEM')
         self.assertIsNotNone(actual)
         self.assertEqual('GEM', actual.name)
+
+    def test_get_all_instrument_names(self):
+        """
+        Test: Correct instument names returned
+        """
+        self.assertEqual(["GEM"], get_all_instrument_names())
 
     def test_get_status(self):
         """
