@@ -7,6 +7,7 @@
 """
 Common functions for accessing and creating records in the database
 """
+from typing import Union, List
 from utils.clients.django_database_client import DatabaseClient
 
 
@@ -31,7 +32,16 @@ def get_instrument(instrument_name):
     return instrument
 
 
-def get_status(status_value):
+def get_all_instrument_names() -> List[str]:
+    """
+    Return the names of all instruments in the database
+    :return: (List) instrument names from database
+    """
+    database = start_database()
+    return list(database.data_model.Instrument.objects.values_list("name", flat=True))
+
+
+def get_status(status_value: str):
     """
     Find the status record associated with the value provided in the database
     :param status_value: (str) The value of the status record e.g. 'Completed'
