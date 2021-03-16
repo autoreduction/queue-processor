@@ -75,7 +75,7 @@ class TestConfigureNewRunsPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
         self.page.launch()
 
         self.page.go_to_other.click()
-        url = reverse("instrument:variables", kwargs={"instrument": self.instrument_name, "start": 100001, "end": 0})
+        url = reverse("instrument:variables", kwargs={"instrument": self.instrument_name, "start": 100001})
         assert url in self.driver.current_url
 
 
