@@ -42,7 +42,7 @@ class TestProperties(unittest.TestCase):
             r'/isis/NDXother/Instrument/data/cycle_19_3', r'/isis/NDXother/Instrument/data/cycle_19_3'
         ])
 
-    @patch("model.database.access.get_all_instrument_names", return_value=["GEM"])
+    @patch("scripts.mantid.properties.INSTRUMENTS", return_value=["GEM"])
     def test_cycle_subset(self, _):
         """
         Test: A Mantid Properties file is generated for a given set of years/cycles

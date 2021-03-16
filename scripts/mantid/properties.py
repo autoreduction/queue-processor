@@ -61,12 +61,11 @@ pythonscripts.directories=/tmp/repo/direct_inelastic/MARI/;/tmp/repo/direct_inel
 # This is not used at the moment, but the idea is for it to automate the creation of instrument specific MANTID
 # user configurations - to allow different instruments to allow calibration files and other metadata more easily.
 
-
 INSTRUMENTS = get_all_instrument_names()
 
 
 # pylint:disable=dangerous-default-value
-def generate_mantid_properties_file(instruments=INSTRUMENTS, cycles: List[str]=['19_3', '19_4']) -> None:
+def generate_mantid_properties_file(instruments=INSTRUMENTS, cycles: List[str] = ['19_3', '19_4']) -> None:
     """
     Generate the correct data directories for the given instruments and cycles
     :param instruments: All instruments to create directories for
