@@ -282,8 +282,7 @@ def configure_new_runs_post(request, instrument_name):
                                                         args_for_range,
                                                         start,
                                                         from_webapp=True)
-    elif experiment_reference != 0:
-        experiment_reference = int(request.POST.get("experiment_reference_number", 1))
+    else:
         possible_variables = InstrumentVariable.objects.filter(experiment_reference=experiment_reference,
                                                                instrument__name=instrument_name)
         InstrumentVariablesUtils.find_or_make_variables(possible_variables,
