@@ -33,6 +33,17 @@ def get_instrument(instrument_name):
     return instrument
 
 
+def is_instrument_flat_output(instrument_name: str) -> bool:
+    """
+    Given an instrument name return if it is a flat output instrument
+    :param instrument_name: (str) The name of the instrument
+    :return: (bool) True if flat instrument, False otherwise
+    """
+    database = start_database()
+
+    return database.data_model.Instrument.objects.filter(name=instrument_name).first().is_flat_output
+
+
 def get_all_instrument_names() -> List[str]:
     """
     Return the names of all instruments in the database
