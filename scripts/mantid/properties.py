@@ -8,6 +8,9 @@
 Generate a mantid properties file
 """
 import os
+from typing import List
+
+from model.database.access import get_all_instrument_names
 from utils.settings import VALID_INSTRUMENTS
 
 CALIBRATION_DIRECTORIES = [
@@ -60,8 +63,11 @@ pythonscripts.directories=/tmp/repo/direct_inelastic/MARI/;/tmp/repo/direct_inel
 # user configurations - to allow different instruments to allow calibration files and other metadata more easily.
 
 
+INSTRUMENTS = get_all_instrument_names()
+
+
 # pylint:disable=dangerous-default-value
-def generate_mantid_properties_file(instruments=VALID_INSTRUMENTS, cycles=['19_3', '19_4']):
+def generate_mantid_properties_file(instruments=INSTRUMENTS, cycles: List[str]=['19_3', '19_4']) -> None:
     """
     Generate the correct data directories for the given instruments and cycles
     :param instruments: All instruments to create directories for
