@@ -47,7 +47,11 @@ class TestAccess(unittest.TestCase):
         """
         Test: Correct instument names returned
         """
-        self.assertEqual(["GEM"], get_all_instrument_names())
+        instrument, _ = self.database.data_model.Instrument.objects.get_or_create(name="ARMI", is_active=1, is_paused=0)
+
+        self.assertEqual(["ARMI"], get_all_instrument_names())
+
+        instrument.delete()
 
     def test_get_status(self):
         """

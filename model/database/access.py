@@ -7,7 +7,8 @@
 """
 Common functions for accessing and creating records in the database
 """
-from typing import Union, List
+from typing import List
+
 from utils.clients.django_database_client import DatabaseClient
 
 
