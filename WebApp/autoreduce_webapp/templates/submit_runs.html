@@ -85,9 +85,10 @@
                             <div class="row">
                                 <ul class="js-form-actions">
                                     <li>
-                                        <a href="#currentScript" id="currentScript">Reset to values in the current reduce_vars script</a>
-                                        <div class="js-explaination visible-xs-block">Reset all variables to those set in the script. This will pick up any changes made to the reduce_vars.py script.</div>
-                                    </li>
+                                        <a href="#currentScript" id="currentScript" role="button">Reset to values in the current reduce_vars script</a>
+                                        <a href="#" data-toggle="popover" data-html="true" data-content="Reset to the values currently contained in the reduce_vars script."
+                                        data-trigger="hover click focus" data-placement="top" data-container="body">
+                                         <i class="fa fa-info-circle"></i></a>                                    </li>
                                     <li>
                                         <input type="checkbox" name="overwrite_checkbox" id="overwrite_checkbox"
                                                checked>
