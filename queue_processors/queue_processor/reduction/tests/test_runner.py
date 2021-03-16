@@ -154,7 +154,8 @@ class TestReductionRunner(unittest.TestCase):
 
     @patch(f'{DIR}.runner.ReductionRunner._get_mantid_version', return_value="5.1.0")
     @patch(f'{DIR}.runner.reduce')
-    def test_reduce_throws_reductionscripterror(self, reduce: Mock, _get_mantid_version: Mock):
+    @patch(f'{DIR}.service.is_instrument_flat_output', return_value=False)
+    def test_reduce_throws_reductionscripterror(self, _, reduce: Mock, _get_mantid_version: Mock):
         reduce.side_effect = ReductionScriptError
         with tempfile.NamedTemporaryFile() as tmpfile:
             self.message.data = tmpfile.name
@@ -171,7 +172,8 @@ class TestReductionRunner(unittest.TestCase):
 
     @patch(f'{DIR}.runner.ReductionRunner._get_mantid_version', return_value="5.1.0")
     @patch(f'{DIR}.runner.reduce')
-    def test_reduce_throws_any_exception(self, reduce: Mock, _get_mantid_version: Mock):
+    @patch(f'{DIR}.service.is_instrument_flat_output', return_value=False)
+    def test_reduce_throws_any_exception(self, _, reduce: Mock, _get_mantid_version: Mock):
         reduce.side_effect = Exception
         with tempfile.NamedTemporaryFile() as tmpfile:
             self.message.data = tmpfile.name
@@ -188,7 +190,8 @@ class TestReductionRunner(unittest.TestCase):
 
     @patch(f'{DIR}.runner.ReductionRunner._get_mantid_version', return_value="5.1.0")
     @patch(f'{DIR}.runner.reduce')
-    def test_reduce_ok(self, reduce: Mock, _get_mantid_version: Mock):
+    @patch(f'{DIR}.service.is_instrument_flat_output', return_value=False)
+    def test_reduce_ok(self, _, reduce: Mock, _get_mantid_version: Mock):
         with tempfile.NamedTemporaryFile() as tmpfile:
             self.message.data = tmpfile.name
 
