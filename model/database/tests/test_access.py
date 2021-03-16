@@ -58,11 +58,13 @@ class TestAccess(unittest.TestCase):
         Test: returns true for flat, False otherwise
         """
         flat_instrument, _ = self.database.data_model.Instrument.objects.get_or_create(name="flat_instrument",
-                                                                                       is_active=1, is_paused=0,
+                                                                                       is_active=1,
+                                                                                       is_paused=0,
                                                                                        is_flat_output=1)
 
         non_flat_instrument, _ = self.database.data_model.Instrument.objects.get_or_create(name="non_flat_instrument",
-                                                                                           is_active=1, is_paused=1,
+                                                                                           is_active=1,
+                                                                                           is_paused=1,
                                                                                            is_flat_output=0)
 
         self.assertTrue(is_instrument_flat_output("flat_instrument"))
