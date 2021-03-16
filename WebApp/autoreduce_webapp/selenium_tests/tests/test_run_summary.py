@@ -8,14 +8,16 @@
 Selenium tests for the runs summary page
 """
 
+import os
+import tempfile
+from unittest.mock import Mock, patch
+
+from autoreduce_webapp.settings import STATIC_PATH
 from django.urls import reverse
-
-from selenium.webdriver.support.wait import WebDriverWait
-
-from selenium_tests.pages.run_summary_page import RunSummaryPage
-from selenium_tests.tests.base_tests import NavbarTestMixin, BaseTestCase, FooterTestMixin
 from reduction_viewer.models import ReductionRun
-
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium_tests.pages.run_summary_page import RunSummaryPage
+from selenium_tests.tests.base_tests import (BaseTestCase, FooterTestMixin, NavbarTestMixin)
 from systemtests.utils.data_archive import DataArchive
 
 
@@ -143,3 +145,60 @@ class TestRunSummaryPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
         assert back.text == f"Back to {self.instrument_name} runs"
         back.click()
         assert reverse("runs:list", kwargs={"instrument": self.instrument_name}) in self.driver.current_url
+
+
+class TestRunSummaryPagePlots(BaseTestCase):
+    """
+    Test cases for the InstrumentSummary page when the Rerun form is NOT visible
+    """
+
+    fixtures = BaseTestCase.fixtures + ["one_run_plot"]
+
+    def setUp(self) -> None:
+        """
+        Set up the instrument name and page
+        """
+        super().setUp()
+        self.instrument_name = "TestInstrument"
+
+        self.page = RunSummaryPage(self.driver, self.instrument_name, 99999, 0)
+
+    def test_local_plot_files(self):
+        """
+        Test: Local plot files are fetched and shown
+        """
+        plot_files = [
+            tempfile.NamedTemporaryFile(prefix="data_", suffix=".png", dir=f"{STATIC_PATH}/graphs/"),
+            tempfile.NamedTemporaryFile(prefix="data_", suffix=".png", dir=f"{STATIC_PATH}/graphs/")
+        ]
+        self.page.launch()
+
+        # 1 is the logo, the other 2 are the plots
+        images = self.page.images()
+        assert len(images) == 3
+        for img in images[1:]:
+            alt_text = img.get_attribute("alt")
+            assert "Plot image stored at" in alt_text
+            assert any(os.path.basename(f.name) in alt_text for f in plot_files)
+
+    @patch("plotting.plot_handler.SFTPClient")
+    def test_remote_plot_files(self, sftp_client: Mock):
+        """
+        Test: Remote plot files are fetched and shown
+        """
+        plot_files = [
+            "file1.png",
+            "file2.png",
+            "file3.png",
+            "file4.png",
+        ]
+        sftp_client.return_value.get_filenames.return_value = plot_files
+
+        self.page.launch()
+        # 1 is the logo, the other 4 are the plots
+        images = self.page.images()
+        assert len(images) == 5
+        for img in images[1:]:
+            alt_text = img.get_attribute("alt")
+            assert "Plot image stored at" in alt_text
+            assert any(os.path.basename(f) in alt_text for f in plot_files)

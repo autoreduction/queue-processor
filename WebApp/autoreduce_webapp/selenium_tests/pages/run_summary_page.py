@@ -9,12 +9,15 @@ Module for the run summary page model
 """
 from __future__ import annotations
 
+from typing import List
+
 from django.urls.base import reverse
 from selenium.webdriver.remote.webelement import WebElement
 from selenium_tests import configuration
 from selenium_tests.pages.component_mixins.footer_mixin import FooterMixin
 from selenium_tests.pages.component_mixins.navbar_mixin import NavbarMixin
-from selenium_tests.pages.component_mixins.rerun_form_mixin import RerunFormMixin
+from selenium_tests.pages.component_mixins.rerun_form_mixin import \
+    RerunFormMixin
 from selenium_tests.pages.component_mixins.tour_mixin import TourMixin
 from selenium_tests.pages.page import Page
 
@@ -125,3 +128,9 @@ class RunSummaryPage(Page, RerunFormMixin, NavbarMixin, FooterMixin, TourMixin):
         Finds and returns the text of the last_updated field
         """
         return self.driver.find_element_by_id("last_updated").text
+
+    def images(self) -> List[WebElement]:
+        """
+        Returns all image elements on the page.
+        """
+        return self.driver.find_elements_by_tag_name("img")
