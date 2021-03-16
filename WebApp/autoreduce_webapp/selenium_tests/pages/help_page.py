@@ -95,6 +95,11 @@ class HelpPage(Page, NavbarMixin, FooterMixin):
         """
         return [x.text.strip().lower() for x in self._get_category_filter_elements()]
 
+    def get_valid_topics(self) -> List[str]:
+        filters = self.get_topic_filters()
+        filters.remove("all")
+        return filters
+
     def get_each_help_topic_category(self) -> List[str]:
         """
         Get each data-category from each topic
@@ -139,7 +144,7 @@ class HelpPage(Page, NavbarMixin, FooterMixin):
         """
         return [x for x in self.get_all_help_topic_elements() if x.is_displayed()]
 
-    def get_mock_help_topic(self):
+    def get_mock_help_topic_element(self) -> WebElement:
         """
 
         :return:

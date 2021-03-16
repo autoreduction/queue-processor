@@ -16,6 +16,7 @@ class TestHelpPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
         """
         super().setUp()
         self.page = HelpPage(self.driver)
+        self.page.launch()
 
     def test_at_least_one_topic_exists(self):
         """
@@ -36,7 +37,7 @@ class TestHelpPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
         Test that all topics have a valid data-category="..."
         """
         WebDriverWait(self.driver,
-                      10).until(lambda _: set(self.page.get_each_help_topic_category()) == set(self.page.get_topic_filters()).remove("all"))
+                      10).until(lambda _: set(self.page.get_each_help_topic_category()) == set(self.page.get_valid_topics()))
 
     def test_all_topics_have_content(self):
         """
@@ -63,7 +64,7 @@ class TestHelpPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
 
         :return:
         """
-        valid_searches = ["Lorem", "Siit", "vOlUptateM", "Header Two"]
+        valid_searches = ["Lorem", "Siit", "Siit hello" "vOlUptateM", "Header Two"]
         invalid_searches = ["randomtext", "very Random text 123456789", "£$%^&"]
 
         mock_categories = self.page.get_topic_filters()
@@ -97,7 +98,7 @@ document.getElementById("help-topics").innerHTML = `
 
                 sleep(10)
 
-                mock_help_topic = self.page.get_mock_help_topic()
+                mock_help_topic = self.page.get_mock_help_topic_element()
 
                 if filter_by_category != "all" and mock_category != filter_by_category:
                     self.assertNotIn(mock_help_topic, self.page.get_visible_topic_elements())
