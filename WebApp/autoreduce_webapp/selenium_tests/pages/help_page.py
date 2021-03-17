@@ -80,7 +80,7 @@ class HelpPage(Page, NavbarMixin, FooterMixin):
         Get the help topic headers link elements
         :return: (List) A list of WebElement links found in the headers of help topics
         """
-        return [x.element.find_element_by_xpath("./h3/a") for x in self.get_help_topic_header_elements()]
+        return [x.find_element_by_xpath("./h3/a") for x in self.get_help_topic_header_elements()]
 
     def get_each_help_topic_header(self) -> List[str]:
         """
