@@ -14,7 +14,7 @@ from reduction_viewer.models import Instrument
 
 from queue_processors.queue_processor.reduction.service import ReductionScript
 
-LOGGER = logging.getLogger(__name__)
+LOGGER = logging.getLogger("app")
 
 
 def deactivate_invalid_instruments(func):

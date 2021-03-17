@@ -17,7 +17,7 @@ from reduction_viewer.models import Setting
 
 from .settings import ICAT, BASE_DIR
 
-LOGGER = logging.getLogger(__name__)
+LOGGER = logging.getLogger("app")
 sys.path.insert(0, BASE_DIR)
 
 

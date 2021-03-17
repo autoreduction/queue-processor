@@ -19,7 +19,7 @@ from .icat_cache import ICATCache
 # The below is a template on the repository
 from .settings import (DEVELOPMENT_MODE, LOGIN_URL, OUTDATED_BROWSERS, UOWS_LOGIN_URL, USER_ACCESS_CHECKS)
 
-LOGGER = logging.getLogger(__name__)
+LOGGER = logging.getLogger("app")
 
 
 def has_valid_login(request):

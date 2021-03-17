@@ -15,7 +15,7 @@ from suds.client import Client
 # The below is a template on the repository
 from .settings import UOWS_URL
 
-LOGGER = logging.getLogger(__name__)
+LOGGER = logging.getLogger("app")
 
 
 class UOWSClient:
