@@ -41,17 +41,6 @@ class RunSummaryPage(Page, RerunFormMixin, NavbarMixin, FooterMixin, TourMixin):
                            "run_version": self.version
                        })
 
-    def launch(self) -> RunSummaryPage:
-        """
-        Open the page with the webdriver
-        :return: The RunSummaryPage object model
-        """
-        # Navigates to / first to force a login. Check the README and
-        # the "index" view for more details
-        self.driver.get(configuration.get_url())
-        self.driver.get(self.url())
-        return self
-
     @property
     def reduction_job_panel(self) -> WebElement:
         return self.driver.find_element_by_id("reduction_job_panel")
