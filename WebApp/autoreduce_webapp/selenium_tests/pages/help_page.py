@@ -33,20 +33,9 @@ class HelpPage(Page, NavbarMixin, FooterMixin):
         """
         return reverse("help")
 
-    def launch(self) -> HelpPage:
+    def get_sidenav_contents_elements(self) -> List[WebElement]:
         """
-        Open the page with the webdriver
-        :return: (HelpPage) The HelpPage object model
-        """
-        # Navigates to / first to force a login. Check the README and
-        # the "index" view for more details
-        self.driver.get(configuration.get_url())
-        self.driver.get(self.url())
-        return self
-
-    def _get_sidenav_contents_elements(self) -> List[WebElement]:
-        """
-        Get the contents of the sidenav
+        Get the contents of the sidenav.
         :return: (List) A list of <li> WebElements in #sidenav-contents
         """
         return self.driver.find_elements_by_xpath("//ul[@id='sidenav-contents']/li")
@@ -54,92 +43,100 @@ class HelpPage(Page, NavbarMixin, FooterMixin):
     def get_sidenav_contents(self) -> List[str]:
         """
         Get the contents of the sidenav as a list of strings.
-        Should be run post topic JS link generation.
         :return: (List) A list of strings inside of each <a> element
         """
-        return [x.find_element_by_tag_name("a").text.strip() for x in self._get_sidenav_contents_elements()]
+        return [x.find_element_by_tag_name("a").text.strip() for x in self.get_sidenav_contents_elements()]
 
-    def get_all_help_topic_elements(self) -> List[WebElement]:
+    def get_help_topic_elements(self) -> List[WebElement]:
         """
         Get the help topics
-        :return: (List) A list of <section> WebElements in .help-topic
+        :return: (List) A list of <section> WebElements of class .help-topic
         """
         return self.driver.find_elements_by_class_name("help-topic")
 
+    def get_each_help_topic_category(self) -> List[str]:
+        """
+        Get each data-category value from each help topic
+        :return: (List) A list of categories from each help topic
+        """
+        return [x.get_attribute("data-category") for x in self.get_help_topic_elements()]
+
+    def get_each_help_topic_content(self) -> List[str]:
+        """
+        Get each content text for each help topic
+        :return: (List) A list of topic contents
+        """
+        return [x.find_element_by_class_name("panel-body").text for x in self.get_help_topic_elements()]
+
     def get_help_topic_header_elements(self) -> List[WebElement]:
         """
-
-        :return:
+        Get the help topic headers
+        :return: (List) A list of <div> WebElements of class .panel-header
         """
-        return [x.find_element_by_xpath("./div[@class='panel-heading']") for x in self.get_all_help_topic_elements()]
+        return [x.find_element_by_xpath("./div[@class='panel-heading']") for x in self.get_help_topic_elements()]
 
-    def get_help_topic_headers(self) -> List[str]:
+    def get_each_help_topic_header(self) -> List[str]:
         """
         Get the headers of the help topics.
-        Should be run post JS topic link generation.
-        :return (List) A list of topic headers
+        :return (List) A list of help topic headers
         """
         return [x.find_element_by_xpath("./h3/a").text.strip() for x in self.get_help_topic_header_elements()]
 
-    def _get_category_filter_elements(self) -> List[WebElement]:
+    def get_category_filter_elements(self) -> List[WebElement]:
         """
-        Get the filter elements in #category-filter
+        Get the category filter elements in #category-filter
         :return: (List) A list of filter elements
         """
         return self.driver.find_elements_by_xpath("//div[@id='category-filter']/label")
 
-    def get_topic_filters(self) -> List[str]:
+    def get_help_topic_filters(self) -> List[str]:
         """
-        Get the topic filters from the category filter
+        Get the help topic filters from the category filter
         :return: (List) A list of categories
         """
-        return [x.get_attribute("data-category").strip().lower() for x in self._get_category_filter_elements()]
+        return [x.get_attribute("data-category").strip() for x in self.get_category_filter_elements()]
 
-    def get_valid_topics(self) -> List[str]:
-        filters = self.get_topic_filters()
+    def get_available_help_topic_categories(self) -> List[str]:
+        """
+        Get the available categories for topics on the page
+        :return: (List) A list of categories 
+        """
+        filters = self.get_help_topic_filters()
         filters.remove("all")
         return filters
 
-    def get_each_help_topic_category(self) -> List[str]:
-        """
-        Get each data-category from each topic
-        :return: (List) A list of categories from each topic
-        """
-        return [x.get_attribute("data-category") for x in self.get_all_help_topic_elements()]
-
-    def get_each_help_topic_content(self) -> List[str]:
-        """
-        Get each content text for each topic
-        :return: (List) A list of topic contents
-        """
-        return [x.find_element_by_class_name("panel-body").text for x in self.get_all_help_topic_elements()]
-
     def click_category_filter(self, category):
         """
-
-        :param category:
-        :return:
+        Click a category filter button
+        :param category: (str) The category name to select
         """
-        filter_button = next((x for x in self._get_category_filter_elements() if x.get_attribute("data-category") == category), None)
+        filter_button = next(
+            (x for x in self.get_category_filter_elements() if x.get_attribute("data-category") == category), None)
 
-        if filter_button == None:
+        if filter_button is None:
             raise Exception(f"Category {category} does not exist.")
 
         filter_button.click()
 
     def filter_help_topics_by_search_term(self, text):
         """
-
-        :param text:
-        :return:
+        Filter help topics by a search term using fuzzy search
+        :param text: The search term to enter into #help-search
         """
         help_search = self.driver.find_element_by_id("help-search")
         help_search.clear()
         help_search.send_keys(text)
 
-    def get_visible_topic_elements(self) -> List[WebElement]:
+    def clear_search_box(self):
         """
+        Clear the text in the search box
+        """
+        help_search = self.driver.find_element_by_id("help-search")
+        help_search.clear()
 
-        :return:
+    def get_visible_help_topic_elements(self) -> List[WebElement]:
         """
-        return [x for x in self.get_all_help_topic_elements() if x.is_displayed()]
+        Get the visible help topics on the page
+        :return: (List) A list of help topics that are not display:none
+        """
+        return [x for x in self.get_help_topic_elements() if x.is_displayed()]
