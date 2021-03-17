@@ -1,4 +1,5 @@
 import re
+from time import sleep
 
 from selenium_tests.pages.help_page import HelpPage
 from selenium_tests.tests.base_tests import NavbarTestMixin, BaseTestCase, \
@@ -62,43 +63,39 @@ class TestHelpPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
         """
         # Search for first word in content of first help topic with filter "all"
         self.page.filter_help_topics_by_search_term(self.page.get_each_help_topic_content()[0].split()[0])
-        WebDriverWait(
-            self.driver,
-            10).until(lambda _: self.page.get_help_topic_elements()[0] in self.page.get_visible_help_topic_elements())
+        self.assertIn(self.page.get_help_topic_elements()[0], self.page.get_visible_help_topic_elements())
 
         self.page.clear_search_box()
+        WebDriverWait(self.driver, 10).until(lambda _: self.page.get_each_help_topic_content()[0] != "")
 
         # Search for first word in header of first help topic with filter "all"
         self.page.filter_help_topics_by_search_term(self.page.get_each_help_topic_header()[0].split()[0])
-        WebDriverWait(
-            self.driver,
-            10).until(lambda _: self.page.get_help_topic_elements()[0] in self.page.get_visible_help_topic_elements())
+        self.assertIn(self.page.get_help_topic_elements()[0], self.page.get_visible_help_topic_elements())
 
         self.page.clear_search_box()
+        WebDriverWait(self.driver, 10).until(lambda _: self.page.get_each_help_topic_content()[0] != "")
 
         # Search for a word not in the first topic with filter "all"
         self.page.filter_help_topics_by_search_term("veryrandomstringthatshouldnotbeintopic")
-        WebDriverWait(self.driver, 10).until(
-            lambda _: self.page.get_help_topic_elements()[0] not in self.page.get_visible_help_topic_elements())
+        self.assertNotIn(self.page.get_help_topic_elements()[0], self.page.get_visible_help_topic_elements())
 
         self.page.clear_search_box()
+        WebDriverWait(self.driver, 10).until(lambda _: self.page.get_each_help_topic_content()[0] != "")
 
         # Search for first word in content of first help topic with filter that is the same as the first topic category
         self.page.filter_help_topics_by_search_term(self.page.get_each_help_topic_content()[0].split()[0])
         self.page.click_category_filter(self.page.get_each_help_topic_category()[0])
-        WebDriverWait(
-            self.driver,
-            10).until(lambda _: self.page.get_help_topic_elements()[0] in self.page.get_visible_help_topic_elements())
+        self.assertIn(self.page.get_help_topic_elements()[0], self.page.get_visible_help_topic_elements())
 
         self.page.clear_search_box()
+        WebDriverWait(self.driver, 10).until(lambda _: self.page.get_each_help_topic_content()[0] != "")
 
         # Search for first word in content of first help topic with filter that is different to the first topic category
         self.page.filter_help_topics_by_search_term(self.page.get_each_help_topic_content()[0].split()[0])
         categories = self.page.get_available_help_topic_categories()
         categories.remove(self.page.get_each_help_topic_category()[0])
         self.page.click_category_filter(categories[0])
-        WebDriverWait(self.driver, 10).until(
-            lambda _: self.page.get_help_topic_elements()[0] not in self.page.get_visible_help_topic_elements())
+        self.assertNotIn(self.page.get_help_topic_elements()[0], self.page.get_visible_help_topic_elements())
 
     def test_help_topic_link_generation(self):
         """
@@ -107,6 +104,5 @@ class TestHelpPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
         def to_link_text(text):
             return re.sub("[^A-Za-z0-9\\s]+", "", text).replace(" ", "-").lower()
 
-        for element in self.page.get_help_topic_header_elements():
-            link_element = element.find_element_by_xpath("./h3/a")
+        for link_element in self.page.get_help_topic_header_link_elements():
             self.assertEqual(link_element.get_attribute("href").split("#", 1)[1], to_link_text(link_element.text))

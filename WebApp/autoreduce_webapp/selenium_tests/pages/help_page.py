@@ -11,9 +11,9 @@ from __future__ import annotations
 from typing import List
 
 from django.urls.base import reverse
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webelement import WebElement
 
-from selenium_tests import configuration
 from selenium_tests.pages.component_mixins.footer_mixin import FooterMixin
 from selenium_tests.pages.component_mixins.navbar_mixin import NavbarMixin
 from selenium_tests.pages.page import Page
@@ -75,6 +75,13 @@ class HelpPage(Page, NavbarMixin, FooterMixin):
         """
         return [x.find_element_by_xpath("./div[@class='panel-heading']") for x in self.get_help_topic_elements()]
 
+    def get_help_topic_header_link_elements(self) -> List[WebElement]:
+        """
+        Get the help topic headers link elements
+        :return: (List) A list of WebElement links found in the headers of help topics
+        """
+        return [x.element.find_element_by_xpath("./h3/a") for x in self.get_help_topic_header_elements()]
+
     def get_each_help_topic_header(self) -> List[str]:
         """
         Get the headers of the help topics.
@@ -133,6 +140,7 @@ class HelpPage(Page, NavbarMixin, FooterMixin):
         """
         help_search = self.driver.find_element_by_id("help-search")
         help_search.clear()
+        help_search.send_keys(Keys.BACKSPACE)  # Send onKeyUp event to #help-search
 
     def get_visible_help_topic_elements(self) -> List[WebElement]:
         """
