@@ -9,29 +9,117 @@
         </div>
     </div>
 
-
     <div class="col-md-12">
         <p>
-            This accessibility statement applies to all web pages in the domain of <a
-                href="/">reduce.isis.cclrc.ac.uk</a> that are accessible to any user with or without an ISIS User Office account.
+            This accessibility statement applies to all web pages in the domain of
+            <a href="https://reduce.isis.cclrc.ac.uk">reduce.isis.cclrc.ac.uk</a>.
             This website is run by the Science and Technology Facilities Council (STFC). We want as many people as possible to be able to use this website. For example, that means you should be able to:
         </p>
+        <ul>
+            <li>zoom in up to 300% without the text spilling off the screen</li>
+            <li>navigate most of the website using just a keyboard</li>
+            <li>navigate most of the website using speech recognition software</li>
+            <li>listen to most of the website using a screen reader</li>
+        </ul>
+        <p>
+            <a rel="external"
+               href="https://mcmw.abilitynet.org.uk/">AbilityNet</a> has advice on making your device easier to use if you have a disability.
+        </p>
+
         <h3>How accessible this website is</h3>
+        <p>
+            The Auto-reduction Development Team is actively making an effort to improve accessibility. We know some parts of this website are not fully accessible:
+        </p>
+        <ul>
+            <li>Some text boxes do not have WCAG-Compliant contrast with their background</li>
+            <li>Some form controls do not have associated labels</li>
+            <li>Some adjacent text links are for the same resource</li>
+        </ul>
+
         <h3>Feedback and contact information</h3>
+        <p>
+            If you need information on this website in a different format like accessible PDF, large print, easy read, audio recording or braille please email:
+            <a href="mailto:{{ support_email }}">{{ support_email }}</a>. We’ll consider your request and get back to you as soon as possible.
+        </p>
+
         <h3>Reporting accessibility problems with this website</h3>
+        <p>
+            We’re always looking to improve the accessibility of this website. If you find any problems not listed on this page or think we’re not meeting accessibility requirements, contact:
+        </p>
+        <ul>
+            <li>The Auto-reduction Development Team: <a href="mailto:{{ support_email }}">{{ support_email }}</a></li>
+            <li>STFC: <a href="mailto:enquiries@stfc.ac.uk">enquiries@stfc.ac.uk</a></li>
+        </ul>
+
         <h3>Enforcement procedure</h3>
-        <h3>Contacting us by phone or visiting us in person</h3>
+        <p>
+            The Equality and Human Rights Commission (EHRC) is responsible for enforcing the Public Sector Bodies (Websites and Mobile Applications) (No. 2) Accessibility Regulations 2018 (the 'accessibility regulations'). If you're not happy with how we respond to your complaint, contact the
+            <a rel="external"
+               href="https://www.equalityadvisoryservice.com/">Equality Advisory and Support Service (EASS)</a>
+        </p>
+
+        <del><h3>Contacting us by phone or visiting us in person</h3></del>
+
         <h3>Technical information about this website’s accessibility</h3>
-        <h3>Compliance status</h3>
-        <h3>Technical information about this website’s accessibility</h3>
+        <p>
+            STFC is committed to making its website accessible, in accordance with the Public Sector Bodies (Websites and Mobile Applications) (No. 2) Accessibility Regulations 2018.
+        </p>
+
         <h4>Compliance status</h4>
-        <h4>Non-accessible content</h4>
+        <p>
+            This website is partially compliant with the <a rel="external"
+                                                            href="https://www.w3.org/TR/WCAG21/">Web Content Accessibility Guidelines version 2.1</a> AA standard, due to the non-compliances listed below.
+        </p>
+
+        <h3>Non-accessible content</h3>
+        <p>
+            <i>The content listed below is non-accessible for the following reasons.</i>
+        </p>
+
         <h4>Non-compliance with the accessibility regulations</h4>
+        <table class="table table-bordered">
+            <tr>
+                <th>Accessibility problem</th>
+                <th>WCAG 2.1 AA criteria</th>
+                <th>Our plan to fix the problem</th>
+            </tr>
+            <tr>
+                <td>Contrast issues with text foreground and background colours due to third-party software providing the styling for our site.</td>
+                <td>1.4.3 Contrast (Minimum)</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Some form controls have no associated label are built using third party software.</td>
+                <td>1.1.1 Non-text Content (Level A)</td>
+                <td></td>
+            </tr>
+        </table>
+
         <h4>Disproportionate burden</h4>
-        <h4>Technical information about this website’s accessibility</h4>
-        <h4>Content that’s not within the scope of the accessibility regulations</h4>
-        <h3>What we’re doing to improve accessibility</h3>
+        <ul>
+            <li>...</li>
+        </ul>
+
+        <p>
+            We’ve assessed the time for fixing the issues with contrast and form controls. We believe that doing so now would be a disproportionate burden within the meaning of the accessibility regulations. We will make another assessment when the supplier contract is up for renewal.
+        </p>
+
+        <del><h4>Content that’s not within the scope of the accessibility regulations</h4></del>
+
+        <del><h3>What we’re doing to improve accessibility</h3></del>
+
         <h3>Preparation of this accessibility statement</h3>
+        <p>
+            This statement was prepared on <b>17/03/2021</b>. It was last reviewed on <b>17/03/2021</b>.
+        </p>
+        <p>
+            This website was last tested on
+            <b>17/03/2021</b>. The test was carried out by the Auto-reduction Development Team.
+        </p>
+        <p>
+            We used the <a rel="external"
+                           href="https://wave.webaim.org/">WAVE Web Accessibility Evaluation Tool</a> approach to deciding on a sample of pages to test
+        </p>
     </div>
 
 {% endblock %}
