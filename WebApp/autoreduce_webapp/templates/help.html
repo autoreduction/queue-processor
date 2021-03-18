@@ -447,6 +447,36 @@ my_matplotlib_figure.savefig(os.path.join(output_dir, f"{filename}.png"), dpi=No
                         </code></pre>
                 </div>
             </section>
+                        <section class="help-topic panel panel-default" data-category="question"
+                     data-topics="output type structure reduction directory format">
+                <div class="panel-heading">
+                    <h3>What are the output structures available in autoreduction?</h3>
+                </div>
+                <div class="panel-body">
+                    <p>
+                        There are 2 different output structures for reduction runs:
+                    </p>
+                    <ul>
+                        <li>
+                            <p>
+                                <strong>Flat Output:</strong> In flat output mode all files are outputted into a flat
+                                structure. This means that all runs for the same RB will be in the same folder. This
+                                mode offers the most simple structure but means every subsequent rerun of a run would
+                                overwrite the previous run.
+
+                            </p>
+                        </li>
+                        <li>
+                            <p>
+                                <strong>Versioned output:</strong> In Versioned output mode, each run all reruns of
+                                runs will be outputted into their own separate folder. For example
+                                <code>RB123/1234/run-version-1</code>. This structure results in more files and folders
+                                but has the benefit that every version of a reduction run will be kept.
+                            </p>
+                        </li>
+                    </ul>
+                </div>
+            </section>
 
             <div class="no-results collapse row well">
                 <div class="col-md-12 text-center">
