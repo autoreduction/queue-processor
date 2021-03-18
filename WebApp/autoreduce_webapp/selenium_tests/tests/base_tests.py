@@ -191,10 +191,12 @@ class AccessibilityTestMixin:
     """
     Contains Axe accessibility test
     """
-    excluded_accessibility_rules = None # A list of [rules.id, rules.selector] to be excluded from the test. Reference: https://www.deque.com/axe/core-documentation/api-documentation/#parameters-1
-    run_only_accessibility_tags = ['wcag21aa'] # A list of Axe tags to be excluded from the test. Reference: https://www.deque.com/axe/core-documentation/api-documentation/#options-parameter
+    excluded_accessibility_rules = None  # A list of [rules.id, rules.selector] to be excluded from the test. Reference: https://www.deque.com/axe/core-documentation/api-documentation/#parameters-1
+    run_only_accessibility_tags = [
+        'wcag21aa'
+    ]  # A list of Axe tags to be excluded from the test. Reference: https://www.deque.com/axe/core-documentation/api-documentation/#options-parameter
 
-    RESULTS_LOCATION = "selenium_tests/a11y_report.json"
+    RESULTS_PATH = str(Path(PROJECT_ROOT, "WebApp", "autoreduce_webapp", "selenium_tests", "a11y_report.json"))
 
     def test_accessibility(self):
         """
@@ -205,7 +207,7 @@ class AccessibilityTestMixin:
         axe = Axe(self.driver)
         axe.inject()
         results = axe.run(options=self._build_axe_options())
-        axe.write_results(results, self.RESULTS_LOCATION)
+        axe.write_results(results, self.RESULTS_PATH)
 
         self.assertEqual(len(results['violations']), 0, axe.report(results["violations"]))
 
