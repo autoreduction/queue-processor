@@ -83,7 +83,7 @@ class NavbarTestMixin:
 
     def test_all_instruments_goes_returns_to_overview(self):
         """
-        Tests: driver navigates to overview page
+        Test: driver navigates to overview page
         When: all instruments link is clicked
         """
         self.page.launch().click_navbar_all_instruments()
@@ -99,7 +99,7 @@ class NavbarTestMixin:
 
     def test_failed_jobs_goes_to_failed_jobs(self):
         """
-        Tests: driver navigates to failed jobs page
+        Test: driver navigates to failed jobs page
         When: failed jobs link is clicked
         """
         self.page.launch().click_navbar_failed_jobs()
@@ -123,21 +123,21 @@ class NavbarTestMixin:
 
     def test_admin_notification_visible_to_admins(self):
         """
-        Tests: Admin notifications visible to admins
+        Test: Admin notifications visible to admins
         """
         notifications = self.page.launch().get_notification_messages()
         self.assertIn(self.ADMIN_NOTIFICATION_MESSAGE, notifications)
 
     def test_non_admin_notifications_visible_to_admins(self):
         """
-        Tests: non admin notifications visible to admins
+        Test: non admin notifications visible to admins
         """
         notifications = self.page.launch().get_notification_messages()
         self.assertIn(self.NON_ADMIN_NOTIFICATION_MESSAGE, notifications)
 
     def test_admin_notifications_not_visible_to_non_admin(self):
         """
-        Tests: Admin notifications not visible for non admins
+        Test: Admin notifications not visible for non admins
         """
         self.driver.get(f"{self.live_server_url}{reverse('logout')}")
         # Go directly to the /overview page to avoid the logging in that happens at the index view
@@ -154,7 +154,7 @@ class FooterTestMixin:
 
     def test_footer_visible(self):
         """
-        Tests: Footer is visible
+        Test: Footer is visible
         When: Page has FooterMixin
         """
         self.page.launch()
@@ -162,7 +162,7 @@ class FooterTestMixin:
 
     def test_github_link_navigates_to_github(self):
         """
-        Tests: Github link navigates to autoreduction github page
+        Test: Github link navigates to autoreduction github page
         When: Github link is clicked
         """
         self.page.launch().click_footer_github_link()
@@ -171,7 +171,7 @@ class FooterTestMixin:
 
     def test_help_link_navigates_to_help_page(self):
         """
-        Tests: Help page link navigates to help page
+        Test: Help page link navigates to help page
         When: Help page link is clicked
         """
         self.page.launch().click_footer_help_link()
@@ -187,15 +187,47 @@ class FooterTestMixin:
         self.assertTrue(self.page.is_footer_email_visible())
 
 
-class AccessibilityMixin:
+class AccessibilityTestMixin:
     """
     Contains Axe accessibility test
     """
+    excluded_accessibility_rules = None # A list of [rules.id, rules.selector] to be excluded from the test. Reference: https://www.deque.com/axe/core-documentation/api-documentation/#parameters-1
+    run_only_accessibility_tags = ['wcag21aa'] # A list of Axe tags to be excluded from the test. Reference: https://www.deque.com/axe/core-documentation/api-documentation/#options-parameter
+
+    RESULTS_LOCATION = "selenium_tests/a11y_report.json"
+
     def test_accessibility(self):
+        """
+        Test: Page contains no Axe accessibility violations excluding rules mentioned in excluded_accessibility_rules and run_only_accessibility_tags
+        When: Page has AccessibilityMixin
+        """
         self.page.launch()
-        axe = Axe()
+        axe = Axe(self.driver)
         axe.inject()
-        results = axe.run()
-        axe.write_results(results, 'a11y.json')
+        results = axe.run(options=self._build_axe_options())
+        axe.write_results(results, self.RESULTS_LOCATION)
 
         self.assertEqual(len(results['violations']), 0, axe.report(results["violations"]))
+
+    def _build_axe_options(self) -> str:
+        """
+        Create the Axe options JSON using self.run_only_accessibility_tags and self.excluded_accessibility_rules
+        :return: (str) A JSON string which is used for Axe options
+        """
+        def build_rules(rules):
+            if rules is None:
+                return "{}"
+
+            return ', '.join([f"'{x[0]}': {{enabled: false, selector: '{x[1]}'}}" for x in rules])
+
+        return f'''
+        {{
+            'runOnly': {{
+                type: 'tag',
+                values: {self.run_only_accessibility_tags}
+            }},
+            'rules': {{
+                {build_rules(self.excluded_accessibility_rules)}
+            }}
+        }}
+        '''
