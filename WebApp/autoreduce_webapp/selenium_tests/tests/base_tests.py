@@ -191,16 +191,20 @@ class AccessibilityTestMixin:
     """
     Contains Axe accessibility test
     """
-    excluded_accessibility_rules = None  # A list of [rules.id, rules.selector] to be excluded from the test. Reference: https://www.deque.com/axe/core-documentation/api-documentation/#parameters-1
-    run_only_accessibility_tags = [
-        'wcag21aa'
-    ]  # A list of Axe tags to be excluded from the test. Reference: https://www.deque.com/axe/core-documentation/api-documentation/#options-parameter
+    # A list of [rules.id, rules.selector] to be excluded from the test.
+    # Reference: https://www.deque.com/axe/core-documentation/api-documentation/#parameters-1
+    excluded_accessibility_rules = None
+
+    # A list of Axe tags to be excluded from the test.
+    # Reference: https://www.deque.com/axe/core-documentation/api-documentation/#options-parameter
+    run_only_accessibility_tags = ['wcag21aa']
 
     RESULTS_PATH = str(Path(PROJECT_ROOT, "WebApp", "autoreduce_webapp", "selenium_tests", "a11y_report.json"))
 
     def test_accessibility(self):
         """
-        Test: Page contains no Axe accessibility violations excluding rules mentioned in excluded_accessibility_rules and run_only_accessibility_tags
+        Test: Page contains no Axe accessibility violations excluding rules mentioned in
+        excluded_accessibility_rules and run_only_accessibility_tags
         When: Page has AccessibilityMixin
         """
         self.page.launch()
@@ -213,7 +217,8 @@ class AccessibilityTestMixin:
 
     def _build_axe_options(self) -> str:
         """
-        Create the Axe options JSON using self.run_only_accessibility_tags and self.excluded_accessibility_rules
+        Create the Axe options JSON using self.run_only_accessibility_tags and
+        self.excluded_accessibility_rules
         :return: (str) A JSON string which is used for Axe options
         """
         def build_rules(rules):
