@@ -82,7 +82,7 @@ jobs:
           name: screenshots_and_logs
           path: |
             WebApp/autoreduce_webapp/selenium_tests/screenshots
-            WebApp/autoreduce_webapp/selenium_tests/a11y.json
+            WebApp/autoreduce_webapp/selenium_tests/a11y_report.json
 
   dependency-check:
     name: Dependency-Check

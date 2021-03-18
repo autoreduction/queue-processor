@@ -9,14 +9,17 @@ Selenium tests for the overview page
 """
 
 from selenium_tests.pages.overview_page import OverviewPage
-from selenium_tests.tests.base_tests import NavbarTestMixin, BaseTestCase, FooterTestMixin, AccessibilityMixin
+from selenium_tests.tests.base_tests import NavbarTestMixin, BaseTestCase, FooterTestMixin, AccessibilityTestMixin
 
 
-class TestOverviewPage(NavbarTestMixin, BaseTestCase, FooterTestMixin, AccessibilityMixin):
+class TestOverviewPage(NavbarTestMixin, BaseTestCase, FooterTestMixin, AccessibilityTestMixin):
     """
     Test cases for the overview page
     """
     fixtures = BaseTestCase.fixtures + ["test_overview_page"]
+    excluded_accessibility_rules = [
+        ["color-contrast", "*"]
+    ]
 
     def setUp(self) -> None:
         """
