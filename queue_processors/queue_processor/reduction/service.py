@@ -23,7 +23,6 @@ from .timeout import TimeOut
 from .utilities import channels_redirected
 from ..settings import SCRIPTS_DIRECTORY, CEPH_DIRECTORY, SCRIPT_TIMEOUT
 
-log_stream = io.StringIO()
 logger = logging.getLogger("reduction_service")
 
 
@@ -176,8 +175,9 @@ class ReductionScript:
             return self.module.main(input_file=str(input_file.path), output_dir=str(output_dir.path))
 
 
-# We will remove the log_Stream once we look at logging in Reduction Runner more closely
-def reduce(reduction_dir, temp_dir, datafile, script):
+# pylint:disable=too-many-arguments; We will remove the log_Stream once we look at logging in ppa
+# more closely
+def reduce(reduction_dir, temp_dir, datafile, script, log_stream):
     """
     Performs a reduction on the given datafile using the given script, outputting to the given
     output directory
