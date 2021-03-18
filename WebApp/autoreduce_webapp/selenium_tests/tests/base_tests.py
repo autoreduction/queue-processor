@@ -15,6 +15,7 @@ from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.urls.base import reverse
 from selenium_tests.configuration import set_url
 from selenium_tests.driver import get_chrome_driver
+from axe_selenium_python import Axe
 
 from utils.project.structure import PROJECT_ROOT
 
@@ -184,3 +185,17 @@ class FooterTestMixin:
         """
         self.page.launch()
         self.assertTrue(self.page.is_footer_email_visible())
+
+
+class AccessibilityMixin:
+    """
+    Contains Axe accessibility test
+    """
+    def test_accessibility(self):
+        self.page.launch()
+        axe = Axe()
+        axe.inject()
+        results = axe.run()
+        axe.write_results(results, 'a11y.json')
+
+        self.assertEqual(len(results['violations']), 0, axe.report(results["violations"]))
