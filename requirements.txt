@@ -1,5 +1,6 @@
 # Test Env. Requirements
 
+axe-selenium-python==2.1.6
 coveralls==3.0.1
 dash==1.16.3
 django-debug-toolbar==3.2
