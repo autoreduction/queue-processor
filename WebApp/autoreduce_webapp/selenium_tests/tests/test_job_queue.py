@@ -30,11 +30,11 @@ class TestJobQueuePage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
         Test: All expected runs on table
         """
         expected_runs = ["123", "456"]
-        self.assertItemsEqual(expected_runs, self.page.get_run_numbers_from_table())
+        self.assertCountEqual(expected_runs, self.page.get_run_numbers_from_table())
 
     def test_runs_have_correct_status(self):
         """
         Test runs have expected statuses
         """
         self.assertEqual("Processing", self.page.get_status_from_run(123))
-        self.assertQual("Queued", self.page.get_status_from_run(456))
+        self.assertEQual("Queued", self.page.get_status_from_run(456))
