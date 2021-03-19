@@ -22,7 +22,7 @@ class JobQueuePage(Page, NavbarMixin, FooterMixin):
         Return the path section of the job queue url
         :return: (str) path section of job queue url
         """
-        return reverse("queue")
+        return reverse("runs:queue")
 
     def get_run_numbers_from_table(self) -> List[str]:
         """
