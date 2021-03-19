@@ -9,7 +9,7 @@ Module for the job queue page model
 """
 from typing import Union, List
 
-from django.urls import reverse
+from django.urls.base import reverse
 from selenium_tests.pages.component_mixins.footer_mixin import FooterMixin
 from selenium_tests.pages.component_mixins.navbar_mixin import NavbarMixin
 from selenium_tests.pages.page import Page
