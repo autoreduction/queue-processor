@@ -152,9 +152,8 @@ def run_confirmation(request, instrument: str):
 
         most_recent_run: ReductionRun = matching_previous_runs.first()
         # User can choose whether to overwrite with the re-run or create new data
-        overwrite_previous_data = request.POST.get('overwrite_checkbox') == 'on'
         ReductionRunUtils.send_retry_message(request.user.id, most_recent_run, run_description, script_text,
-                                             new_script_arguments, overwrite_previous_data)
+                                             new_script_arguments, False)
         # list stores (run_number, run_version)
         context_dictionary["runs"].append((run_number, most_recent_run.run_version + 1))
 
