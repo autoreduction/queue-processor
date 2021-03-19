@@ -14,8 +14,6 @@ import os
 from utils.project.structure import PROJECT_ROOT
 from utils.clients.settings.client_settings_factory import ClientSettingsFactory
 
-VALID_INSTRUMENTS = ['ENGINX', 'GEM', 'HRPD', 'MAPS', 'MARI', 'MUSR', 'OSIRIS', 'POLARIS', 'POLREF', 'WISH']
-
 CONFIG = configparser.ConfigParser()
 INI_FILE = os.path.join(PROJECT_ROOT, 'utils', 'credentials.ini')
 CONFIG.read(INI_FILE)

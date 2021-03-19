@@ -18,10 +18,11 @@ from tempfile import TemporaryDirectory
 
 import chardet
 
-from .utilities import channels_redirected
+from model.database.access import is_instrument_flat_output
 from .exceptions import DatafileError, ReductionScriptError
-from ..settings import SCRIPTS_DIRECTORY, FLAT_OUTPUT_INSTRUMENTS, CEPH_DIRECTORY, SCRIPT_TIMEOUT
 from .timeout import TimeOut
+from .utilities import channels_redirected
+from ..settings import SCRIPTS_DIRECTORY, CEPH_DIRECTORY, SCRIPT_TIMEOUT
 
 log_stream = io.StringIO()
 logger = logging.getLogger("reduction_service")
@@ -34,7 +35,7 @@ class ReductionDirectory:
     """
     def __init__(self, instrument, rb_number, run_number, overwrite=False):
         self.overwrite = overwrite
-        self._is_flat_directory = instrument in FLAT_OUTPUT_INSTRUMENTS
+        self._is_flat_directory = is_instrument_flat_output(instrument)
         self.path = Path(CEPH_DIRECTORY % (instrument, rb_number, run_number))
         self._build_path()
         self.log_path = self.path / "reduction_log"

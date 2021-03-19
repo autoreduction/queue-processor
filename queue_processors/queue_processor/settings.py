@@ -47,4 +47,3 @@ SCRIPTS_DIRECTORY = f"{ARCHIVE_ROOT}/NDX%s/user/scripts/autoreduction/"
 SCRIPT_TIMEOUT = 3600  # The max time to wait for a user script to finish running (seconds)
 MANTID_PATH = "/opt/Mantid/lib"
 TEMP_ROOT_DIRECTORY = "/autoreducetmp"
-FLAT_OUTPUT_INSTRUMENTS = ["LET", "MARI", "MAPS", "MERLIN", "WISH", "GEM"]
