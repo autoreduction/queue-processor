@@ -36,10 +36,9 @@ def summarize_variables(request, instrument, last_run_object):
     upcoming_variables_by_experiment = InstrumentVariable.objects.filter(
         experiment_reference__gte=last_run_object.experiment.reference_number)
 
-    # vars made from the web app DO NOT track the script
-    # the view itself is innacurate as "tracks script" is set on a per-variable basis
-    # rather than the whole configuration
-    # Create a nested dictionary for by-run
+    # There's a known issue with inaccurate display of tracks script:
+    # https://github.com/ISISScientificComputing/autoreduce/issues/1187
+    # Creates a nested dictionary for by-run
     upcoming_variables_by_run_dict = {}
     for variable in upcoming_variables_by_run:
         if variable.start_run not in upcoming_variables_by_run_dict:
@@ -58,17 +57,21 @@ def summarize_variables(request, instrument, last_run_object):
         upcoming_variables_by_run_dict[run_number]['run_end'] = run_end
         run_end = max(run_number - 1, 0)
 
-    current_start = current_variables[0].start_run
-    next_run_starts = [start for start in sorted(upcoming_variables_by_run_dict.keys()) if start > current_start]
-    current_end = next_run_starts[0] - 1 if next_run_starts else 0
+    if current_variables:
+        current_start = current_variables[0].start_run
+        next_run_starts = list(
+            filter(lambda start: start > current_start, sorted(upcoming_variables_by_run_dict.keys())))
+        current_end = next_run_starts[0] - 1 if next_run_starts else 0
 
-    current_vars = {
-        'run_start': current_start,
-        'run_end': current_end,
-        'tracks_script': not any((var.tracks_script for var in current_variables)),
-        'variables': current_variables,
-        'instrument': instrument,
-    }
+        current_vars = {
+            'run_start': current_start,
+            'run_end': current_end,
+            'tracks_script': not any((var.tracks_script for var in current_variables)),
+            'variables': current_variables,
+            'instrument': instrument,
+        }
+    else:
+        current_vars = {}
 
     # Move the upcoming vars into an ordered list
     upcoming_variables_by_run_ordered = []

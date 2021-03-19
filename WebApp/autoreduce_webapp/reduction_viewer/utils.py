@@ -32,6 +32,9 @@ class ReductionRunUtils:
         :param use_value: Flag whether to use the variable values
         :return: kwarg dict of the variables
         """
+        if reduction_run.run_variables.count() == 0:
+            return {"standard_vars": {}, "advanced_vars": {}}
+
         return ReductionRunUtils.make_kwargs_from_variables(
             [runvar.variable for runvar in reduction_run.run_variables.all()], use_value)
 
