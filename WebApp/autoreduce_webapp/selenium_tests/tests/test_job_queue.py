@@ -37,4 +37,4 @@ class TestJobQueuePage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
         Test runs have expected statuses
         """
         self.assertEqual("Processing", self.page.get_status_from_run(123))
-        self.assertEQual("Queued", self.page.get_status_from_run(456))
+        self.assertEqual("Queued", self.page.get_status_from_run(456))
