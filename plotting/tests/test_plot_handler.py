@@ -62,6 +62,8 @@ class TestPlotHandler(unittest.TestCase):
         When: PlotHandler is initialised
         """
         self.assertEqual("MARI1234", self.test_plot_handler._get_only_data_file_name(self.input_data_filepath))
+        self.assertEqual("MARI1234",
+                         self.test_plot_handler._get_only_data_file_name(self.input_data_filepath.replace("\\", "/")))
 
     def test_generate_file_name_regex(self):
         """

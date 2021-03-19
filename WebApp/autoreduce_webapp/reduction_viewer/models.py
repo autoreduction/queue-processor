@@ -10,6 +10,8 @@ Models that represent the tables in the database
 from django.core.validators import MinValueValidator, MaxLengthValidator
 from django.db import models
 
+from queue_processors.queue_processor.status_utils import STATUS
+
 
 class Instrument(models.Model):
     """
@@ -18,12 +20,28 @@ class Instrument(models.Model):
     name = models.CharField(max_length=80)
     is_active = models.BooleanField(default=False)
     is_paused = models.BooleanField(default=False)
+    is_flat_output = models.BooleanField(default=False)
 
     def __str__(self):
         """
         :return: str representation of instrument
         """
         return f"{self.name}"
+
+    def get_last_for_rerun(self, runs=None):
+        """
+        Gets the last non-skipped run, unless all the runs are skipped.
+        In that case it just gets the last skipped run.
+        """
+        if not runs:
+            runs = self.reduction_runs.all()
+
+        # try to get the last non-skipped run
+        last_run = runs.exclude(status=STATUS.get_skipped()).last()
+        if not last_run:
+            # if no non-skipped runs exist, just return the last skipped one
+            last_run = runs.last()
+        return last_run
 
 
 class Experiment(models.Model):

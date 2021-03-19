@@ -36,17 +36,6 @@ class RerunJobsPage(Page, RerunFormMixin, NavbarMixin, FooterMixin, TourMixin):
             "instrument": self.instrument,
         })
 
-    def launch(self) -> RerunJobsPage:
-        """
-        Open the page with the webdriver
-        :return: The RunSummaryPage object model
-        """
-        # Navigates to / first to force a login. Check the README and
-        # the "index" view for more details
-        self.driver.get(configuration.get_url())
-        self.driver.get(self.url())
-        return self
-
     @property
     def form_validation_message(self) -> WebElement:
         """Finds and returns the form validation message"""

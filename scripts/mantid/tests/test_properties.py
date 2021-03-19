@@ -9,6 +9,7 @@ Test that the Mantid properties file is generated correctly
 """
 import unittest
 import os
+from unittest.mock import patch
 
 from scripts.mantid.properties import generate_mantid_properties_file
 
@@ -21,7 +22,8 @@ class TestProperties(unittest.TestCase):
         """ Store the path that the Mantid Properties file will be written to """
         self.expected_path = os.path.join(os.getcwd(), 'Mantid.user.properties')
 
-    def test_generate_default(self):
+    @patch("scripts.mantid.properties.get_all_instrument_names", return_value=["GEM"])
+    def test_generate_default(self, _):
         """
         Test: A Mantid Properties file is generated that contains the default paths
         When: generate is called with no arguments
@@ -40,7 +42,8 @@ class TestProperties(unittest.TestCase):
             r'/isis/NDXother/Instrument/data/cycle_19_3', r'/isis/NDXother/Instrument/data/cycle_19_3'
         ])
 
-    def test_cycle_subset(self):
+    @patch("scripts.mantid.properties.get_all_instrument_names", return_value=["GEM"])
+    def test_cycle_subset(self, _):
         """
         Test: A Mantid Properties file is generated for a given set of years/cycles
         When: generate is called with a cycles argument
