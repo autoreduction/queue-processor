@@ -22,7 +22,7 @@ class TestJobQueuePage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
         Setup and launch job queue page
         """
         super().setUp()
-        self.page = JobQueuePage()
+        self.page = JobQueuePage(self.driver)
         self.page.launch()
 
     def test_runs_shown_in_table(self):
