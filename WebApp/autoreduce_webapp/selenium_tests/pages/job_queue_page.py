@@ -37,4 +37,4 @@ class JobQueuePage(Page, NavbarMixin, FooterMixin):
         :param run_number: (str/int) The run number
         :return: (status) The status as a string
         """
-        return self.driver.find_element_by_id(f"status-{run_number}").text()
+        return self.driver.find_element_by_id(f"status-{run_number}").text
