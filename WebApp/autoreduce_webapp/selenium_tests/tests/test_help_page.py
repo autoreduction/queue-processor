@@ -1,5 +1,11 @@
+# ############################################################################### #
+# Autoreduction Repository : https://github.com/ISISScientificComputing/autoreduce
+#
+# Copyright &copy; 2021 ISIS Rutherford Appleton Laboratory UKRI
+# SPDX - License - Identifier: GPL-3.0-or-later
+# ############################################################################### #
+
 import re
-from time import sleep
 
 from selenium_tests.pages.help_page import HelpPage
 from selenium_tests.tests.base_tests import NavbarTestMixin, BaseTestCase, \
