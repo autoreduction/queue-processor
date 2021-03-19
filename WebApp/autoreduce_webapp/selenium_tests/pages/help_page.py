@@ -23,10 +23,8 @@ class HelpPage(Page, NavbarMixin, FooterMixin):
     """
     Page model class for help page
     """
-    def __init__(self, driver):
-        super().__init__(driver)
-
-    def url_path(self) -> str:
+    @staticmethod
+    def url_path() -> str:
         """
         Return the current URL of the page.
         :return: (str) the url path
@@ -106,7 +104,7 @@ class HelpPage(Page, NavbarMixin, FooterMixin):
     def get_available_help_topic_categories(self) -> List[str]:
         """
         Get the available categories for topics on the page
-        :return: (List) A list of categories 
+        :return: (List) A list of categories
         """
         filters = self.get_help_topic_filters()
         filters.remove("all")
