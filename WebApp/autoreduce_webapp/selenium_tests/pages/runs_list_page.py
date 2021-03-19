@@ -34,14 +34,6 @@ class RunsListPage(Page, NavbarMixin, FooterMixin, TourMixin):
         """
         return reverse("runs:list", kwargs={"instrument": self.instrument})
 
-    def launch(self):
-        """
-        Open the instrument summary page with the webdriver
-        """
-        self.driver.get(configuration.get_url())
-        self.driver.get(self.url())
-        return self
-
     def get_run_numbers_from_table(self) -> List[str]:
         """
         Get the list of run numbers visible on the current table of the instrument summary page
