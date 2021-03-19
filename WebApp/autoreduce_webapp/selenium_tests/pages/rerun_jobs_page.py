@@ -11,7 +11,6 @@ from __future__ import annotations
 
 from django.urls.base import reverse
 from selenium.webdriver.remote.webelement import WebElement
-from selenium_tests import configuration
 from selenium_tests.pages.component_mixins.footer_mixin import FooterMixin
 from selenium_tests.pages.component_mixins.navbar_mixin import NavbarMixin
 from selenium_tests.pages.component_mixins.rerun_form_mixin import RerunFormMixin
