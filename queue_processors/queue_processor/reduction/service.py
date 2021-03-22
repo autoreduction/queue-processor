@@ -33,9 +33,9 @@ class ReductionDirectory:
     ReductionDirectory encapsulated directory creation, deletion and handling output type
     (flat or not)
     """
-    def __init__(self, instrument, rb_number, run_number, overwrite=False):
+    def __init__(self, instrument, rb_number, run_number, overwrite=False, flat_output=False):
         self.overwrite = overwrite
-        self._is_flat_directory = is_instrument_flat_output(instrument)
+        self._is_flat_directory = flat_output
         self.path = Path(CEPH_DIRECTORY % (instrument, rb_number, run_number))
         self._build_path()
         self.log_path = self.path / "reduction_log"

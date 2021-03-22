@@ -68,7 +68,10 @@ class ReductionRunner:
         reduction_script = ReductionScript(self.instrument)
         reduction_script_path = reduction_script.script_path
 
-        reduction_dir = ReductionDirectory(self.instrument, self.proposal, self.run_number)
+        reduction_dir = ReductionDirectory(self.instrument,
+                                           self.proposal,
+                                           self.run_number,
+                                           flat_output=self.message.flat_output)
         temp_dir = TemporaryReductionDirectory(self.proposal, self.run_number)
         try:
             reduction_log_stream = reduce(reduction_dir, temp_dir, datafile, reduction_script)

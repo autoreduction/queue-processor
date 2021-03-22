@@ -89,6 +89,9 @@ class TestReductionRunner(unittest.TestCase):
         mock_reduce.assert_called_once()
 
     def test_main_bad_data_for_populate(self):
+        """
+        Test: Providing bad data for the `main` function, i.e. not enough arguments
+        """
         with tempfile.NamedTemporaryFile() as tmp_file:
             sys.argv = ['', json.dumps({"apples": 13}), tmp_file.name]
             self.assertRaises(ValueError, main)
@@ -144,6 +147,9 @@ class TestReductionRunner(unittest.TestCase):
     @patch(f'{DIR}.runner.logger.info')
     @patch(f'{DIR}.runner.ReductionRunner._get_mantid_version', return_value="5.1.0")
     def test_reduce_bad_datafile(self, _get_mantid_version: Mock, mock_logger_info: Mock):
+        """
+        Test: Bad datafile is provided
+        """
         self.message.description = "testdescription"
         runner = ReductionRunner(self.message)
         runner.reduce()
@@ -154,8 +160,10 @@ class TestReductionRunner(unittest.TestCase):
 
     @patch(f'{DIR}.runner.ReductionRunner._get_mantid_version', return_value="5.1.0")
     @patch(f'{DIR}.runner.reduce')
-    @patch(f'{DIR}.service.is_instrument_flat_output', return_value=False)
-    def test_reduce_throws_reductionscripterror(self, _, reduce: Mock, _get_mantid_version: Mock):
+    def test_reduce_throws_reductionscripterror(self, reduce: Mock, _get_mantid_version: Mock):
+        """
+        Test: reduce throwing an ReductionScriptError
+        """
         reduce.side_effect = ReductionScriptError
         with tempfile.NamedTemporaryFile() as tmpfile:
             self.message.data = tmpfile.name
@@ -172,8 +180,10 @@ class TestReductionRunner(unittest.TestCase):
 
     @patch(f'{DIR}.runner.ReductionRunner._get_mantid_version', return_value="5.1.0")
     @patch(f'{DIR}.runner.reduce')
-    @patch(f'{DIR}.service.is_instrument_flat_output', return_value=False)
-    def test_reduce_throws_any_exception(self, _, reduce: Mock, _get_mantid_version: Mock):
+    def test_reduce_throws_any_exception(self, reduce: Mock, _get_mantid_version: Mock):
+        """
+        Test: Reduce throwing any exception
+        """
         reduce.side_effect = Exception
         with tempfile.NamedTemporaryFile() as tmpfile:
             self.message.data = tmpfile.name
@@ -190,8 +200,10 @@ class TestReductionRunner(unittest.TestCase):
 
     @patch(f'{DIR}.runner.ReductionRunner._get_mantid_version', return_value="5.1.0")
     @patch(f'{DIR}.runner.reduce')
-    @patch(f'{DIR}.service.is_instrument_flat_output', return_value=False)
-    def test_reduce_ok(self, _, reduce: Mock, _get_mantid_version: Mock):
+    def test_reduce_ok(self, reduce: Mock, _get_mantid_version: Mock):
+        """
+        Test: An OK reduction
+        """
         with tempfile.NamedTemporaryFile() as tmpfile:
             self.message.data = tmpfile.name
 
@@ -208,5 +220,27 @@ class TestReductionRunner(unittest.TestCase):
 
     @patch(f'{DIR}.runner.logger')
     def test_get_mantid_version(self, logger: Mock):
+        """
+        Test: Getting the mantid version
+        """
         assert ReductionRunner._get_mantid_version() is None
         assert logger.error.call_count == 2
+
+    @patch(f'{DIR}.runner.ReductionRunner._get_mantid_version', return_value="5.1.0")
+    @patch(f'{DIR}.runner.reduce')
+    def test_flat_output_respected(self, reduce: Mock, _get_mantid_version: Mock):
+        """
+        Test: The flat_output state is respected
+        """
+        self.message.flat_output = True
+
+        with tempfile.NamedTemporaryFile() as tmpfile:
+            self.message.data = tmpfile.name
+
+            runner = ReductionRunner(self.message)
+            runner.reduce()
+
+        reduce.assert_called_once()
+        _get_mantid_version.assert_called_once()
+        assert str(reduce.call_args[0][2].path) == tmpfile.name
+        assert runner.message.flat_output is True

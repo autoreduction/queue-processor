@@ -136,6 +136,7 @@ class HandleMessage:
             self.reduction_skipped(reduction_run, message)
         else:
             self.activate_db_inst(instrument)
+            message.flat_output = instrument.is_flat_output
             self.do_reduction(reduction_run, message)
 
     @staticmethod
