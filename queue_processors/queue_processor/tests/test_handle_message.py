@@ -70,6 +70,7 @@ class TestHandleMessage(TestCase):
             "reduction_data": "/path/1",
             "started_by": -1,
             "data": "/path",
+            "software": "6.0.0",
             "description": "This is a fake description",
             "instrument": self.instrument_name  # Autoreduction Mock Instrument
         })
@@ -148,6 +149,8 @@ class TestHandleMessage(TestCase):
         assert self.reduction_run.finished is not None
         assert self.reduction_run.status == STATUS.get_completed()
         self.mocked_logger.info.assert_called_once()
+        assert self.reduction_run.software.name == "Mantid"
+        assert self.reduction_run.software.version == self.msg.software
         assert self.reduction_run.reduction_location.count() == 0
 
     def test_reduction_complete_with_reduction_data(self):
