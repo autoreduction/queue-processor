@@ -18,7 +18,6 @@ from tempfile import TemporaryDirectory
 
 import chardet
 
-from model.database.access import is_instrument_flat_output
 from .exceptions import DatafileError, ReductionScriptError
 from .timeout import TimeOut
 from .utilities import channels_redirected
