@@ -55,28 +55,25 @@
         };
 
         var validateRunRange = function validateRunRange() {
-            var $start = $('#run_start');
-            var $end = $('#run_end');
-            var $experiment_reference = $('#experiment_reference_number');
-            if ($start.length && $end.length && $experiment_reference.length) {
-                if ($('#variable-range-toggle').length > 0 && !$('#variable-range-toggle').bootstrapSwitch('state')) {
-                    validateNotEmpty.call($experiment_reference[0]);
-                    if (!isNumber($experiment_reference.val())) {
-                        addInvalid($experiment_reference, '<strong>Experiment Reference Number</strong> must be a number.')
-                    }
-                } else {
-                    validateNotEmpty.call($start[0]);
-                    var start_val = $start.val();
-                    var end_val = $end.val();
-                    if (!isNumber(start_val)) {
-                        addInvalid($start, '<strong>Run start</strong> must be a number.')
-                    }
-                    if (end_val !== '' && !isNumber(end_val)) {
-                        addInvalid($end, '<strong>Run finish</strong> can only be a number.')
-                    }
-                    if (parseInt(end_val) < parseInt(start_val) && parseInt(end_val) != 0) {
-                        addInvalid($end, '<strong>Run finish</strong> must be greater than the run start.')
-                    }
+            var start = document.getElementById('run_start');
+            var end = document.getElementById('run_end');
+            var experiment_reference = document.getElementById('experiment_reference_number');
+
+            if (experiment_reference) {
+                if (!isNumber(experiment_reference.value)) {
+                    addInvalid($experiment_reference, '<strong>Experiment Reference Number</strong> must be a number.')
+                }
+            } else {
+                var start_val = start.value;
+                var end_val = end.value;
+                if (start_val !== "" && !isNumber(start_val)) {
+                    addInvalid($(start), '<strong>Run start</strong> must be a number.')
+                }
+                if (end_val !== '' && !isNumber(end_val)) {
+                    addInvalid($(end), '<strong>Run finish</strong> can only be a number.')
+                }
+                if (parseInt(end_val) < parseInt(start_val) && parseInt(end_val) != 0) {
+                    addInvalid($(end), '<strong>Run finish</strong> must be greater than the run start.')
                 }
             }
         };
