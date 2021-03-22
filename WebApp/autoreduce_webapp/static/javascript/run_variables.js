@@ -135,7 +135,6 @@
             }
         };
         var validateBatchRunRange = function validateBatchRunRange() {
-            debugger
             const run_range = document.getElementById('run_range');
 
             // Check all comma and '-' seperated elements
