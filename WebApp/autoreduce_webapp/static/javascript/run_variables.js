@@ -136,6 +136,9 @@
         };
         var validateBatchRunRange = function validateBatchRunRange() {
             const run_range = document.getElementById('run_range');
+            if (!run_range) {
+                return
+            }
 
             // Check all comma and '-' seperated elements
             const comma_split_items = run_range.value.split(',');
