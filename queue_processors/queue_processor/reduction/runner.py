@@ -9,6 +9,7 @@
 
 import io
 import logging
+import socket
 import sys
 import traceback
 
@@ -55,6 +56,7 @@ class ReductionRunner:
     def reduce(self):
         """Start the reduction job."""
         self.message.software = self._get_mantid_version()
+        logger.info("Running on host: %s", socket.gethostname())
         if self.message.description is not None:
             logger.info("DESCRIPTION: %s", self.message.description)
 
