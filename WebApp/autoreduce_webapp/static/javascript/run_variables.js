@@ -55,15 +55,15 @@
         };
 
         var validateRunRange = function validateRunRange() {
-            var start = document.getElementById('run_start');
-            var end = document.getElementById('run_end');
-            var experiment_reference = document.getElementById('experiment_reference_number');
+            const start = document.getElementById('run_start');
+            const end = document.getElementById('run_end');
+            const experiment_reference = document.getElementById('experiment_reference_number');
 
             if (experiment_reference) {
                 if (!isNumber(experiment_reference.value)) {
-                    addInvalid($experiment_reference, '<strong>Experiment Reference Number</strong> must be a number.')
+                    addInvalid($(experiment_reference), '<strong>Experiment Reference Number</strong> must be a number.')
                 }
-            } else {
+            } else if (start) {
                 var start_val = start.value;
                 var end_val = end.value;
                 if (start_val !== "" && !isNumber(start_val)) {
@@ -75,6 +75,8 @@
                 if (parseInt(end_val) < parseInt(start_val) && parseInt(end_val) != 0) {
                     addInvalid($(end), '<strong>Run finish</strong> must be greater than the run start.')
                 }
+            } else {
+                validateBatchRunRange();
             }
         };
 
@@ -133,21 +135,23 @@
             }
         };
         var validateBatchRunRange = function validateBatchRunRange() {
-            // Validates the batch re-run text
-            validateNotEmpty.call(this);
-            if ($(this).val().trim().endsWith(',')) {
-                addInvalid($(this), '<strong>Run Numbers</strong> must be a comma separated list of either numbers or ranges.');
-            }
+            debugger
+            const run_range = document.getElementById('run_range');
 
             // Check all comma and '-' seperated elements
-            comma_split_items = $(this).val().split(',');
-            var still_valid = true
-            for (i = 0; (i < comma_split_items.length) && still_valid; i++) {
+            const comma_split_items = run_range.value.split(',');
+            let still_valid = true
+            for (let i = 0; (i < comma_split_items.length) && still_valid; i++) {
                 var all_split_items = comma_split_items[i].split('-');
 
-                for (i = 0; i < all_split_items.length; i++) {
+                for (let i = 0; i < all_split_items.length; i++) {
                     if (!isNumber(all_split_items[i])) {
-                        addInvalid($(this), '<strong>Run Numbers</strong> must be a comma separated list of either numbers or ranges.');
+                        addInvalid($(run_range), '<strong>Run Numbers</strong> must be a comma separated list of either numbers or ranges.');
+                        still_valid = false
+                        break;
+                    }
+                    if (i > 0 && parseInt(all_split_items[i]) < parseInt(all_split_items[i - 1])) {
+                        addInvalid($(run_range), '<strong>Run Range</strong> must end in a later run.');
                         still_valid = false
                         break;
                     }
@@ -158,7 +162,6 @@
         // Finished validation at this point
         resetValidationStates();
         validateRunRange();
-        $('#run_range').each(validateBatchRunRange);
         $form.find('[data-type="text"]').each(validateText);
         $form.find('[data-type="number"]').each(validateNumber);
         $form.find('[data-type="boolean"]').each(validateBoolean);
@@ -170,7 +173,7 @@
             $('.js-form-validation-message').html('');
             $('.js-form-validation-message').append($('<p/>').text('Please fix the following error:'));
             $errorList = $('<ul/>');
-            for (var i = 0; i < errorMessages.length; i++) {
+            for (let i = 0; i < errorMessages.length; i++) {
                 $errorList.append($('<li/>').html(errorMessages[i]));
             }
             $('.js-form-validation-message').append($errorList).show();
