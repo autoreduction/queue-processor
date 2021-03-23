@@ -45,9 +45,9 @@ class BaseTestCase(StaticLiveServerTestCase):
 
     def _screenshot_driver(self):
         now = datetime.datetime.now()
-        screenshot_name = f"{self._testMethodName}-{now.strftime('%Y-%m-%d_%H-%M-%S')}.png"
-        path = str(Path(PROJECT_ROOT, "WebApp", "autoreduce_webapp", "selenium_tests", "screenshots", screenshot_name))
-        self.driver.save_screenshot(path)
+        screenshot_name = f"{type(self.page).__name__}-{self._testMethodName}-{now.strftime('%Y-%m-%d_%H-%M-%S')}.png"
+        report_path = str(Path(PROJECT_ROOT, "WebApp", "autoreduce_webapp", "selenium_tests", "screenshots", screenshot_name))
+        self.driver.save_screenshot(report_path)
 
     def _is_test_failure(self):
         if hasattr(self, '_outcome'):
@@ -199,8 +199,6 @@ class AccessibilityTestMixin:
     # Reference: https://www.deque.com/axe/core-documentation/api-documentation/#axe-core-tags
     run_only_accessibility_tags = ['wcag2a', 'wcag2aa', 'wcag21aa']
 
-    RESULTS_PATH = str(Path(PROJECT_ROOT, "WebApp", "autoreduce_webapp", "selenium_tests", "a11y_report.json"))
-
     def test_accessibility(self):
         """
         Test: Page contains no Axe accessibility violations excluding rules mentioned in
@@ -211,7 +209,13 @@ class AccessibilityTestMixin:
         axe = Axe(self.driver)
         axe.inject()
         results = axe.run(options=self._build_axe_options())
-        axe.write_results(results, self.RESULTS_PATH)
+
+        now = datetime.datetime.now()
+        report_name = f"{type(self.page).__name__}-{now.strftime('%Y-%m-%d_%H-%M-%S')}.json"
+        report_path = str(
+            Path(PROJECT_ROOT, "WebApp", "autoreduce_webapp", "selenium_tests", "a11y_reports", report_name))
+
+        axe.write_results(results, report_path)
 
         self.assertEqual(len(results['violations']), 0, axe.report(results["violations"]))
 
