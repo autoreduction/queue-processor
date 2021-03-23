@@ -19,7 +19,6 @@ class ClientSettingsFactory:
     ignore_kwargs = ['username', 'password', 'host', 'port']
     valid_types = ['database', 'icat', 'queue', 'sftp', 'cycle']
 
-    # pylint:disable=too-many-arguments
     def create(self, settings_type, username, password, host, port, **kwargs):
         """
         Create a settings object to use with a client
@@ -138,7 +137,6 @@ class ActiveMQSettings(ClientSettings):
     data_ready = None
     all_subscriptions = None
 
-    # pylint:disable=too-many-arguments
     def __init__(self, data_ready='/queue/DataReady', **kwargs):
         # TODO explicitly state args
         super(ActiveMQSettings, self).__init__(**kwargs)  # pylint:disable=super-with-arguments

@@ -176,8 +176,7 @@ class ReductionScript:
             return self.module.main(input_file=str(input_file.path), output_dir=str(output_dir.path))
 
 
-# pylint:disable=too-many-arguments; We will remove the log_Stream once we look at logging in ppa
-# more closely
+# We will remove the log_Stream once we look at logging in Reduction Runner more closely
 def reduce(reduction_dir, temp_dir, datafile, script):
     """
     Performs a reduction on the given datafile using the given script, outputting to the given

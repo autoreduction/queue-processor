@@ -20,8 +20,6 @@ class CustomPaginator:
     CustomPaginator to allow for more complex functionality to be used without doing heavy
     lifting in the django template code
     """
-
-    # pylint:disable=too-many-arguments
     def __init__(self, page_type, query_set, items_per_page, page_tolerance, current_page):
         """
         :param query_set: All data to show

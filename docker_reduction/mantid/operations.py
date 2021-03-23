@@ -18,8 +18,6 @@ class MantidDocker:
     Class that contains the information required to perform
     a data reduction inside the mantid docker container
     """
-
-    # pylint:disable=too-many-arguments
     def __init__(self, reduction_script, input_file, output_directory, input_mount=None, output_mount=None):
         self.image_name = 'mantid-reduction-container'
         self.reduction_script = reduction_script
