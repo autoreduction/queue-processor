@@ -31,9 +31,23 @@ class AccessibilityStatementPage(Page, NavbarMixin, FooterMixin):
         """
         return reverse("accessibility_statement")
 
-    def get_accessibility_statement_contents_element(self) -> WebElement:
+    def _get_accessibility_statement_contents_element(self) -> WebElement:
         """
         Get the <div> #accessibility-statement-contents
         :return: (WebElement) The element #accessibility-statement-contents
         """
         return self.driver.find_element_by_id("accessibility-statement-contents")
+
+    def is_accessibility_statement_visible(self) -> bool:
+        """
+        Is #accessibility-statement-contents visible
+        :return: (str) True if #accessibility-statement-contents is visible else False
+        """
+        return self._get_accessibility_statement_contents_element().is_displayed()
+
+    def get_accessibility_statement_contents_text(self) -> str:
+        """
+        Get the contents of #accessibility-statement-contents
+        :return: (str) The text in #accessibility-statement-contents
+        """
+        return self._get_accessibility_statement_contents_element().text
