@@ -196,8 +196,8 @@ class AccessibilityTestMixin:
     excluded_accessibility_rules = None
 
     # A list of Axe tags to be excluded from the test.
-    # Reference: https://www.deque.com/axe/core-documentation/api-documentation/#options-parameter
-    run_only_accessibility_tags = ['wcag21aa']
+    # Reference: https://www.deque.com/axe/core-documentation/api-documentation/#axe-core-tags
+    run_only_accessibility_tags = ['wcag2a', 'wcag2aa', 'wcag21aa']
 
     RESULTS_PATH = str(Path(PROJECT_ROOT, "WebApp", "autoreduce_webapp", "selenium_tests", "a11y_report.json"))
 
@@ -223,7 +223,7 @@ class AccessibilityTestMixin:
         """
         def build_rules(rules):
             if rules is None:
-                return "{}"
+                return ""
 
             return ', '.join([f"'{x[0]}': {{enabled: false, selector: '{x[1]}'}}" for x in rules])
 
