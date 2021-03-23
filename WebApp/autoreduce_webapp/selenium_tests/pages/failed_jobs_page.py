@@ -15,7 +15,7 @@ from selenium.webdriver.support.select import Select
 
 from selenium_tests.pages.component_mixins.footer_mixin import FooterMixin
 from selenium_tests.pages.component_mixins.navbar_mixin import NavbarMixin
-from slenium_tests.pages.page import Page
+from selenium_tests.pages.page import Page
 
 
 class FailedJobsPage(Page, NavbarMixin, FooterMixin):
