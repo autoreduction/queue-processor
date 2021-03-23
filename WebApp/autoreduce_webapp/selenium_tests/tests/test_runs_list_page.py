@@ -9,16 +9,17 @@ Selenium tests for the runs summary page
 """
 
 from selenium_tests.pages.runs_list_page import RunsListPage
-from selenium_tests.tests.base_tests import NavbarTestMixin, BaseTestCase, FooterTestMixin
+from selenium_tests.tests.base_tests import NavbarTestMixin, BaseTestCase, FooterTestMixin, AccessibilityTestMixin
 from systemtests.utils.data_archive import DataArchive
 
 
-class TestRunsListPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
+class TestRunsListPage(NavbarTestMixin, BaseTestCase, FooterTestMixin, AccessibilityTestMixin):
     """
     Test cases for the InstrumentSummary page
     """
 
     fixtures = BaseTestCase.fixtures + ["test_runs_list_page"]
+    excluded_accessibility_rules = [["color-contrast", "*"]]
 
     def setUp(self) -> None:
         """
