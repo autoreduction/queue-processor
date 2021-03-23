@@ -18,7 +18,6 @@ from tempfile import TemporaryDirectory
 
 import chardet
 
-from model.database.access import is_instrument_flat_output
 from .exceptions import DatafileError, ReductionScriptError
 from .timeout import TimeOut
 from .utilities import channels_redirected
@@ -33,9 +32,9 @@ class ReductionDirectory:
     ReductionDirectory encapsulated directory creation, deletion and handling output type
     (flat or not)
     """
-    def __init__(self, instrument, rb_number, run_number, overwrite=False):
+    def __init__(self, instrument, rb_number, run_number, overwrite=False, flat_output=False):
         self.overwrite = overwrite
-        self._is_flat_directory = is_instrument_flat_output(instrument)
+        self._is_flat_directory = flat_output
         self.path = Path(CEPH_DIRECTORY % (instrument, rb_number, run_number))
         self._build_path()
         self.log_path = self.path / "reduction_log"
@@ -177,8 +176,7 @@ class ReductionScript:
             return self.module.main(input_file=str(input_file.path), output_dir=str(output_dir.path))
 
 
-# pylint:disable=too-many-arguments; We will remove the log_Stream once we look at logging in ppa
-# more closely
+# We will remove the log_Stream once we look at logging in Reduction Runner more closely
 def reduce(reduction_dir, temp_dir, datafile, script):
     """
     Performs a reduction on the given datafile using the given script, outputting to the given

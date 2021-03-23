@@ -115,7 +115,6 @@ class QueueClient(AbstractClient):
         # pylint:disable=no-value-for-parameter
         self._connection.ack(message_id, subscription)
 
-    # pylint:disable=too-many-arguments
     def send(self, destination, message, persistent='true', priority='4', delay=None):
         """
         Send a message via the open connection to a queue
