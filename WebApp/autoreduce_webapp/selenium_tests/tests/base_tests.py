@@ -5,7 +5,7 @@
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 """
-Module containing the base test cases for a page and componenets
+Module containing the base test cases for a page and components
 """
 
 import datetime
@@ -22,7 +22,7 @@ from utils.project.structure import PROJECT_ROOT
 
 class BaseTestCase(StaticLiveServerTestCase):
     """
-    Base test class that provides setup and teardown of driver aswell as screenshotting capability
+    Base test class that provides setup and teardown of driver as well as screenshotting capability
     on failed tests
     """
     fixtures = ["super_user_fixture", "status_fixture", "notification_fixture"]
@@ -45,8 +45,9 @@ class BaseTestCase(StaticLiveServerTestCase):
 
     def _screenshot_driver(self):
         now = datetime.datetime.now()
-        screenshot_name = f"{type(self.page).__name__}-{self._testMethodName}-{now.strftime('%Y-%m-%d_%H-%M-%S')}.png"
-        report_path = str(Path(PROJECT_ROOT, "WebApp", "autoreduce_webapp", "selenium_tests", "screenshots", screenshot_name))
+        screenshot_name = f"{type(self).__name__}-{self._testMethodName}-{now.strftime('%Y-%m-%d_%H-%M-%S')}.png"
+        report_path = str(
+            Path(PROJECT_ROOT, "WebApp", "autoreduce_webapp", "selenium_tests", "screenshots", screenshot_name))
         self.driver.save_screenshot(report_path)
 
     def _is_test_failure(self):
