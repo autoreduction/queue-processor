@@ -17,12 +17,13 @@ from django.urls import reverse
 from reduction_viewer.models import ReductionRun
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium_tests.pages.run_summary_page import RunSummaryPage
-from selenium_tests.tests.base_tests import (BaseTestCase, FooterTestMixin, NavbarTestMixin)
+from selenium_tests.tests.base_tests import BaseTestCase, FooterTestMixin, NavbarTestMixin, AccessibilityTestMixin
 from systemtests.utils.data_archive import DataArchive
 
 
-class TestRunSummaryPageNoArchive(NavbarTestMixin, BaseTestCase, FooterTestMixin):
+class TestRunSummaryPageNoArchive(NavbarTestMixin, BaseTestCase, FooterTestMixin, AccessibilityTestMixin):
     fixtures = BaseTestCase.fixtures + ["run_with_one_variable"]
+    excluded_accessibility_rules = [["color-contrast", "*"]]
 
     @classmethod
     def setUpClass(cls):
