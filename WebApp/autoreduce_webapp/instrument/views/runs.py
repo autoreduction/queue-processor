@@ -97,6 +97,10 @@ def run_confirmation(request, instrument: str):
         context_dictionary['error'] = exception.msg
         return context_dictionary
 
+    if not run_numbers:
+        context_dictionary['error'] = f"Could not correctly parse range input {range_string}"
+        return context_dictionary
+
     # Determine user level to set a maximum limit to the number of runs that can be re-queued
     if request.user.is_superuser:
         max_runs = 500
