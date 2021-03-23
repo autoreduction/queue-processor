@@ -7,8 +7,8 @@
 """
 Selenium tests for failed jobs page
 """
-from WebApp.autoreduce_webapp.selenium_tests.pages.failed_jobs_page import FailedJobsPage
-from WebApp.autoreduce_webapp.selenium_tests.tests.base_tests import FooterTestMixin, BaseTestCase, NavbarTestMixin
+from selenium_tests.pages.failed_jobs_page import FailedJobsPage
+from selenium_tests.tests.base_tests import FooterTestMixin, BaseTestCase, NavbarTestMixin
 
 
 class TestFailedJobsPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
