@@ -10,17 +10,18 @@ from typing import List
 from parameterized import parameterized
 from selenium_tests.pages.configure_new_runs_page import ConfigureNewRunsPage
 from selenium_tests.pages.variables_summary_page import VariableSummaryPage
-from selenium_tests.tests.base_tests import (BaseTestCase, FooterTestMixin, NavbarTestMixin)
+from selenium_tests.tests.base_tests import BaseTestCase, FooterTestMixin, NavbarTestMixin, AccessibilityTestMixin
 from systemtests.utils.data_archive import DataArchive
 
 
-class TestSeeInstrumentVariablesPageWithMissingFiles(BaseTestCase, NavbarTestMixin, FooterTestMixin):
+class TestSeeInstrumentVariablesPageWithMissingFiles(BaseTestCase, NavbarTestMixin, FooterTestMixin, AccessibilityTestMixin):
     """
     Test the SeeInstrumentVariablesPage without creating the test archive files first.
     This tests error cases, e.g. when reduce_vars is missing.
     """
 
     fixtures = BaseTestCase.fixtures + ["one_run_mixed_vars"]
+    excluded_accessibility_rules = [["color-contrast", "*"]]
 
     def setUp(self) -> None:
         """
