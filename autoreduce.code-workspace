@@ -15,10 +15,5 @@
 		"python.linting.flake8Enabled": false,
 		"python.linting.enabled": true,
 		"python.formatting.provider": "yapf",
-		{
-			"files.associations": {
-				"*.html": "jinja-html"
-			}
-		}
 	},
 }

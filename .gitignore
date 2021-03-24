@@ -61,3 +61,5 @@ WebApp/autoreduce_webapp/selenium_tests/screenshots
 reduced-data/
 data-archive/
 test-archive/
+
+autoreduce.code-workspace
