@@ -36,7 +36,6 @@ jobs:
         run: |
           pytest -pno:django systemtests --cov-append
 
-      - uses: actions/checkout@master
       - uses: codecov/codecov-action@v1
         with:
           files: ./coverage.xml
