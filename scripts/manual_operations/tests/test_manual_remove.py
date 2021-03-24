@@ -79,19 +79,6 @@ class TestManualRemove(unittest.TestCase):
         return mock
 
     @patch('scripts.manual_operations.manual_remove.ManualRemove.run_not_found')
-    def test_process_results_not_found(self, mock_not_found):
-        """
-        Test: run_not_found is called
-        When: No matching records are found in the database
-        """
-        self.manual_remove.to_delete['101'] = []
-        self.manual_remove.process_results(delete_all_versions=True)
-        mock_not_found.assert_called_once()
-        mock_not_found.reset_mock()
-        self.manual_remove.process_results(delete_all_versions=True)
-        mock_not_found.assert_called_once()
-
-    @patch('scripts.manual_operations.manual_remove.ManualRemove.run_not_found')
     @patch('scripts.manual_operations.manual_remove.ManualRemove.multiple_versions_found')
     def test_process_results_single(self, mock_multi, mock_not_found):
         """
