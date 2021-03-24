@@ -55,9 +55,8 @@
         };
 
         var validateRunRange = function validateRunRange() {
-            const start = document.getElementById('run_start');
-            const end = document.getElementById('run_end');
-            const experiment_reference = document.getElementById('experiment_reference_number');
+            var start = document.getElementById('run_start');
+            var experiment_reference = document.getElementById('experiment_reference_number');
 
             if (experiment_reference) {
                 if (!isNumber(experiment_reference.value)) {
@@ -65,15 +64,8 @@
                 }
             } else if (start) {
                 var start_val = start.value;
-                var end_val = end.value;
                 if (start_val !== "" && !isNumber(start_val)) {
                     addInvalid($(start), '<strong>Run start</strong> must be a number.')
-                }
-                if (end_val !== '' && !isNumber(end_val)) {
-                    addInvalid($(end), '<strong>Run finish</strong> can only be a number.')
-                }
-                if (parseInt(end_val) < parseInt(start_val) && parseInt(end_val) != 0) {
-                    addInvalid($(end), '<strong>Run finish</strong> must be greater than the run start.')
                 }
             } else {
                 validateBatchRunRange();
