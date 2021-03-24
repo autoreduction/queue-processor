@@ -18,7 +18,7 @@ class TimeOut:
         self.seconds = seconds
         self.error_message = error_message
 
-    def handle_timeout(self):
+    def handle_timeout(self, *args):
         """ Handle timeout. """
         raise Exception(self.error_message)
 
