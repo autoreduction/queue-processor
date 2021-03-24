@@ -19,11 +19,10 @@ class ConfigureNewRunsPage(Page, RerunFormMixin, NavbarMixin, FooterMixin, TourM
     """
     Page model class for run summary page
     """
-    def __init__(self, driver, instrument, run_start=None, run_end=None, experiment_reference=None):
+    def __init__(self, driver, instrument, run_start=None, experiment_reference=None):
         super().__init__(driver)
         self.instrument = instrument
         self._run_start_number = run_start
-        self._run_end_number = run_end
         self._experiment_reference = experiment_reference
 
     def url_path(self) -> str:
@@ -40,10 +39,6 @@ class ConfigureNewRunsPage(Page, RerunFormMixin, NavbarMixin, FooterMixin, TourM
         else:
             if self._run_start_number:
                 kwargs["start"] = self._run_start_number
-
-            if self._run_end_number:
-                kwargs["end"] = self._run_end_number
-
             return reverse("instrument:variables", kwargs=kwargs)
 
     @property

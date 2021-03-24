@@ -62,11 +62,10 @@ class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterT
         instrument = db.get_instrument(self.instrument_name)
         return instrument.reduction_runs.filter(run_number=self.run_number)
 
-    def _submit_var_value(self, value, start=None, end=None, experiment_number=None):
+    def _submit_var_value(self, value, start=None, experiment_number=None):
         self.page = ConfigureNewRunsPage(self.driver,
                                          self.instrument_name,
                                          run_start=start,
-                                         run_end=end,
                                          experiment_reference=experiment_number)
         self.page.launch()
         self.page.variable1_field = value
@@ -165,16 +164,14 @@ class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterT
         Test submitting variables for multiple run ranges, and that they show up correctly
         in 'see instrument variablers'
         """
-        self._submit_var_value("new_value", self.run_number + 1, self.run_number + 101)
-        self._submit_var_value("the newest value", self.run_number + 201, self.run_number + 401)
+        self._submit_var_value("new_value", self.run_number + 1)
+        self._submit_var_value("the newest value", self.run_number + 201)
 
-        assert InstrumentVariable.objects.count() == 5
-        first_var, second_var, third_var, fourth_var, fifth_var = InstrumentVariable.objects.all()
+        assert InstrumentVariable.objects.count() == 3
+        first_var, second_var, fourth_var = InstrumentVariable.objects.all()
         self.assert_expected_var(first_var, self.run_number, None, "value1")
         self.assert_expected_var(second_var, self.run_number + 1, None, "new_value")
-        self.assert_expected_var(third_var, self.run_number + 102, None, REDUCE_VARS_DEFAULT_VALUE)
         self.assert_expected_var(fourth_var, self.run_number + 201, None, "the newest value")
-        self.assert_expected_var(fifth_var, self.run_number + 402, None, REDUCE_VARS_DEFAULT_VALUE)
 
     def test_submit_multiple_experiments(self):
         """Test submitting vars for multiple experiments"""
@@ -196,19 +193,17 @@ class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterT
 
     def test_submit_multiple_run_ranges_and_then_experiment(self):
         """Test submitting both run range vars and experiment vars"""
-        self._submit_var_value("new_value", self.run_number + 1, self.run_number + 101)
-        self._submit_var_value("the newest value", self.run_number + 201, self.run_number + 401)
+        self._submit_var_value("new_value", self.run_number + 1)
+        self._submit_var_value("the newest value", self.run_number + 201)
         self._submit_var_value("some value for experiment", experiment_number=self.rb_number)
         self._submit_var_value("some different value for experiment", experiment_number=self.rb_number + 100)
 
-        assert InstrumentVariable.objects.count() == 7
-        first_var, second_var, third_var, fourth_var, fifth_var, exp_var1, exp_var2 = InstrumentVariable.objects.all()
+        assert InstrumentVariable.objects.count() == 5
+        first_var, second_var, fourth_var, exp_var1, exp_var2 = InstrumentVariable.objects.all()
 
         self.assert_expected_var(first_var, self.run_number, None, "value1")
         self.assert_expected_var(second_var, self.run_number + 1, None, "new_value")
-        self.assert_expected_var(third_var, self.run_number + 102, None, REDUCE_VARS_DEFAULT_VALUE)
         self.assert_expected_var(fourth_var, self.run_number + 201, None, "the newest value")
-        self.assert_expected_var(fifth_var, self.run_number + 402, None, REDUCE_VARS_DEFAULT_VALUE)
         self.assert_expected_var(exp_var1, None, self.rb_number, "some value for experiment")
         self.assert_expected_var(exp_var2, None, self.rb_number + 100, "some different value for experiment")
 
@@ -219,12 +214,14 @@ class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterT
 
     def test_submit_then_edit_then_delete_run_vars(self):
         """Test submitting new variables for run ranges, then editing them, then deleting them"""
-        self._submit_var_value("new_value", self.run_number + 1, self.run_number + 101)
-        self._submit_var_value("the newest value", self.run_number + 201, self.run_number + 401)
+        self._submit_var_value("new_value", self.run_number + 1)
+        self._submit_var_value("the newest value", self.run_number + 101)
+        self._submit_var_value("value for 201", self.run_number + 201)
+        self._submit_var_value("value for 301", self.run_number + 301)
 
         summary = VariableSummaryPage(self.driver, self.instrument_name)
 
-        summary.click_run_edit_button_for(self.run_number + 1, self.run_number + 101)
+        summary.click_run_edit_button_for(self.run_number + 1, self.run_number + 100)
 
         self.page.variable1_field = "a new test value 123"
         self.page.submit_button.click()
@@ -235,22 +232,22 @@ class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterT
         assert "new_value" not in upcoming_panel.get_attribute("textContent")
         assert "a new test value 123" in upcoming_panel.get_attribute("textContent")
 
-        summary.click_run_delete_button_for(self.run_number + 1, self.run_number + 101)
+        summary.click_run_delete_button_for(self.run_number + 1, self.run_number + 100)
 
         upcoming_panel = summary.panels[1]
         assert "a new test value 123" not in upcoming_panel.get_attribute("textContent")
 
         incoming_run_numbers = upcoming_panel.find_elements_by_class_name("run-numbers")
 
-        assert "100101" in incoming_run_numbers[0].text
+        assert "100100" in incoming_run_numbers[0].text
         assert "100199" in incoming_run_numbers[0].text
         assert "100200" in incoming_run_numbers[1].text
-        assert "100400" in incoming_run_numbers[1].text
-        assert "100401" in incoming_run_numbers[2].text
+        assert "100299" in incoming_run_numbers[1].text
+        assert "100300" in incoming_run_numbers[2].text
         assert "Ongoing" in incoming_run_numbers[2].text
 
         # now for the 2nd variable we made
-        summary.click_run_edit_button_for(self.run_number + 201, self.run_number + 401)
+        summary.click_run_edit_button_for(self.run_number + 201, self.run_number + 300)
         self.page.variable1_field = "another new test value 321"
         self.page.submit_button.click()
         self.page.replace_confirm.click()
@@ -260,7 +257,7 @@ class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterT
         assert "new_value" not in upcoming_panel.get_attribute("textContent")
         assert "another new test value 321" in upcoming_panel.get_attribute("textContent")
 
-        summary.click_run_delete_button_for(self.run_number + 201, self.run_number + 401)
+        summary.click_run_delete_button_for(self.run_number + 201, self.run_number + 300)
 
         upcoming_panel = summary.panels[1]
         assert "another new test value 321" not in upcoming_panel.get_attribute("textContent")
@@ -268,9 +265,9 @@ class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterT
         incoming_run_numbers = upcoming_panel.find_elements_by_class_name("run-numbers")
 
         # there's a few leftover default variables, but that's OK because the user can remove them
-        assert "100101" in incoming_run_numbers[0].text
-        assert "100400" in incoming_run_numbers[0].text
-        assert "100401" in incoming_run_numbers[1].text
+        assert "100100" in incoming_run_numbers[0].text
+        assert "100299" in incoming_run_numbers[0].text
+        assert "100300" in incoming_run_numbers[1].text
         assert "Ongoing" in incoming_run_numbers[1].text
 
     def test_submit_then_edit_then_delete_experiment_vars(self):
