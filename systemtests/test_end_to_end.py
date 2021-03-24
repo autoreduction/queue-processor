@@ -217,8 +217,9 @@ class TestEndToEnd(unittest.TestCase):
         self.assertEqual(self.run_number, results[0].run_number)
         self.assertEqual("This is a system test", results[0].run_description)
         self.assertEqual('Error', results[0].status.value_verbose())
-        self.assertIn('ValueError', results[0].message)
-        self.assertIn('hello from the other side', results[0].message)
+        self.assertIn('Error encountered when running the reduction script', results[0].message)
+        self.assertIn('Exception in reduction script', results[0].reduction_log)
+        self.assertIn('hello from the other side', results[0].reduction_log)
 
     def test_end_to_end_wish_vars_script_gets_new_variable(self):
         """Test running the same run twice, but the second time the reduce_vars has a new variable"""
