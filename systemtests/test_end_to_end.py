@@ -179,7 +179,8 @@ class TestEndToEnd(unittest.TestCase):
         self.assertEqual(self.rb_number, results[0].experiment.reference_number)
         self.assertEqual(self.run_number, results[0].run_number)
         self.assertEqual("This is a system test", results[0].run_description)
-        self.assertEqual('Completed', results[0].status.value_verbose())
+        self.assertEqual('Completed', results[0].status.value_verbose(),
+                         "Reduction log: %s\nAdmin log: %s" % (results[0].reduction_log, results[0].admin_log))
 
     def test_end_to_end_wish_bad_script_syntax_error(self):
         """
