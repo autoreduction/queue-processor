@@ -8,15 +8,17 @@
 import re
 
 from selenium_tests.pages.help_page import HelpPage
-from selenium_tests.tests.base_tests import NavbarTestMixin, BaseTestCase, \
-    FooterTestMixin
+from selenium_tests.tests.base_tests import (NavbarTestMixin, BaseTestCase, FooterTestMixin,
+                                             AccessibilityTestMixin)
 from selenium.webdriver.support.wait import WebDriverWait
 
 
-class TestHelpPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
+class TestHelpPage(NavbarTestMixin, BaseTestCase, FooterTestMixin, AccessibilityTestMixin):
     """
     Test cases for the help page
     """
+    excluded_accessibility_rules = [["color-contrast", "*"]]
+
     def setUp(self) -> None:
         """
         Sets up the HelpPage object
@@ -29,7 +31,7 @@ class TestHelpPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
         """
         Test that at least one help topic is on the page
         """
-        WebDriverWait(self.driver, 10).until(lambda _: len(self.page.get_help_topic_elements()) != 0)
+        self.assertNotEqual(0, len(self.page.get_help_topic_elements()))
 
     def test_all_sidebar_content_generated(self):
         """

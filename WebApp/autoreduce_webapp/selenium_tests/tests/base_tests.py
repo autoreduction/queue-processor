@@ -217,7 +217,6 @@ class AccessibilityTestMixin:
             Path(PROJECT_ROOT, "WebApp", "autoreduce_webapp", "selenium_tests", "a11y_reports", report_name))
 
         axe.write_results(results, report_path)
-
         self.assertEqual(len(results['violations']), 0, axe.report(results["violations"]))
 
     def _build_axe_options(self) -> str:
