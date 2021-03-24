@@ -23,7 +23,7 @@ class UOWSClient:
     A client for interacting with the User Office Web Service
     """
     def __init__(self, **kwargs):
-        url = kwargs.get("URL", default=UOWS_URL)
+        url = kwargs.get("URL", UOWS_URL)
         self.client = Client(url)
 
     # Add the ability to use 'with'
