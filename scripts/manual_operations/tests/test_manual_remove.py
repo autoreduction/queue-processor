@@ -78,22 +78,6 @@ class TestManualRemove(unittest.TestCase):
         mock.variable_ptr_id = variable_ptr_id
         return mock
 
-    def test_find_run(self):
-        """
-        Test: That the correct number of run versions are discovered
-        When: find_run_versions_in_database is called
-        """
-        actual = self.manual_remove.find_run_versions_in_database(run_number=101)
-        self.assertEqual(3, len(actual))
-
-    def test_find_run_invalid(self):
-        """
-        Test: That no run versions are found for a run number that doesn't exist in the database
-        When: find_run_versions_in_database is called
-        """
-        actual = self.manual_remove.find_run_versions_in_database(run_number='000')
-        self.assertEqual(0, len(actual))
-
     @patch('scripts.manual_operations.manual_remove.ManualRemove.run_not_found')
     def test_process_results_not_found(self, mock_not_found):
         """
