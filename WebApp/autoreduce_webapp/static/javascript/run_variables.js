@@ -67,6 +67,8 @@
                 if (start_val !== "" && !isNumber(start_val)) {
                     addInvalid($(start), '<strong>Run start</strong> must be a number.')
                 }
+            } else {
+                validateBatchRunRange();
             }
         };
 
