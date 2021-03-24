@@ -12,8 +12,8 @@ import os
 import shutil
 import time
 from typing import Union
-import unittest
 from pathlib import Path
+from django.test.testcases import TransactionTestCase
 
 from parameterized.parameterized import parameterized
 
@@ -45,8 +45,10 @@ standard_vars={"variable1":"value1"}
 """
 
 
-class TestEndToEnd(unittest.TestCase):
+class TestEndToEnd(TransactionTestCase):
     """ Class to test pipelines in autoreduction"""
+    fixtures = ["super_user_fixture", "status_fixture", "notification_fixture"]
+
     def setUp(self):
         """ Start all external services """
         # Get all clients

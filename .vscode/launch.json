@@ -38,7 +38,8 @@
             },
             "env": {
                 "DISPLAY": ":1",
-                "RUNNING_VIA_PYTEST": "true"
+                "RUNNING_VIA_PYTEST": "true",
+                "PYTHONPATH": "${workspaceFolder}/WebApp/autoreduce_webapp"
             }
         },
         {
