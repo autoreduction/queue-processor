@@ -18,6 +18,9 @@
                 "hidden": false,
                 "group": "autoreduce",
             },
+            "env": {
+                "DISPLAY": ":1",
+            }
         },
         {
             "name": "Pytest - Django",
@@ -85,22 +88,6 @@
                 "hidden": false,
                 "group": "autoreduce",
                 "order": 2
-            }
-        },
-        {
-            "name": "Queue Listener Daemon",
-            "type": "python",
-            "request": "launch",
-            "program": "queue_processors/queue_processor/queue_listener_daemon.py",
-            "console": "integratedTerminal",
-            "cwd": "${workspaceFolder}",
-            "args": [
-                "start"
-            ],
-            "presentation": {
-                "hidden": false,
-                "group": "autoreduce",
-                "order": 3
             }
         },
         {

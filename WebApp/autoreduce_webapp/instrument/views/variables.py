@@ -112,6 +112,11 @@ def summarize_variables(request, instrument, last_run_object):
 def delete_instrument_variables(request, instrument=None, start=0, end=0, experiment_reference=None):
     """
     Handles request for deleting instrument variables
+
+    :param instrument: Name of the instrument for which variables are being deleted
+    :param start: The start run from which variables are being deleted
+    :param end: Used to limit how many variables get deleted, otherwise a delete would wipe ALL variables > start
+    :param experiment_reference: If provided - use the experiment reference to delete variables instead of start_run
     """
 
     # We "save" an empty list to delete the previous variables.

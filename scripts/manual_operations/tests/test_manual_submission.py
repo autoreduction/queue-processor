@@ -266,7 +266,6 @@ class TestManualSubmission(unittest.TestCase):
                           data_file_location=None,
                           run_number=None))
 
-    # pylint:disable=too-many-arguments
     @patch('scripts.manual_operations.manual_submission.login_icat')
     @patch('scripts.manual_operations.manual_submission.login_database')
     @patch('scripts.manual_operations.manual_submission.login_queue')

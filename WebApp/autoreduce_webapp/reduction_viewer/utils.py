@@ -57,7 +57,6 @@ class ReductionRunUtils:
 
         return {"standard_vars": standard_vars, "advanced_vars": advanced_vars}
 
-    # pylint: disable=too-many-arguments
     @staticmethod
     def send_retry_message(user_id: int, most_recent_run: ReductionRun, run_description: str, script_text: str,
                            new_script_arguments: dict, overwrite_previous_data: bool) -> None:

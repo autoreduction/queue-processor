@@ -50,8 +50,7 @@ class TestReductionService(unittest.TestCase):
         self.log_stream = MagicMock()
 
     @patch(f"{REDUCTION_SERVICE_DIR}.ReductionDirectory._build_path")
-    @patch(f"{REDUCTION_SERVICE_DIR}.is_instrument_flat_output", return_value=False)
-    def test_reduction_directory_init_(self, _, mock_build):
+    def test_reduction_directory_init_(self, mock_build):
         """
         Test: correct fields setup
         When: Object is created
@@ -71,8 +70,7 @@ class TestReductionService(unittest.TestCase):
 
     @patch(f"{REDUCTION_SERVICE_DIR}.Path")
     @patch(f"{REDUCTION_SERVICE_DIR}.ReductionDirectory._build_path")
-    @patch(f"{REDUCTION_SERVICE_DIR}.is_instrument_flat_output", return_value=False)
-    def test_reduction_directory_create(self, _, __, ___):
+    def test_reduction_directory_create(self, _, __):
         """
         Test: Directory is created
         When: create is called
@@ -89,21 +87,19 @@ class TestReductionService(unittest.TestCase):
             self.assertTrue(reduction_dir.mantid_log.exists())
             self.assertTrue(reduction_dir.script_log.exists())
 
-    @patch(f"{REDUCTION_SERVICE_DIR}.is_instrument_flat_output", return_value=True)
     @patch(f"{REDUCTION_SERVICE_DIR}.CEPH_DIRECTORY",
            new_callable=PropertyMock(return_value="/instrument/%s/RBNumber/RB%s/autoreduced/%s"))
-    def test_reduction_directory_build_path_flat_output_removes_run_number(self, _, __):
+    def test_reduction_directory_build_path_flat_output_removes_run_number(self, _):
         """
         Tests: Run number is removed from path
         When: _build_path is called for flat output instrument
         """
-        reduction_dir = ReductionDirectory(self.instrument, self.rb_number, self.run_number)
+        reduction_dir = ReductionDirectory(self.instrument, self.rb_number, self.run_number, flat_output=True)
         expected = Path(f"/instrument/{self.instrument}/RBNumber/RB{self.rb_number}/autoreduced")
         self.assertEqual(expected, reduction_dir.path)
 
-    @patch(f"{REDUCTION_SERVICE_DIR}.is_instrument_flat_output", return_value=False)
     @patch(f"{REDUCTION_SERVICE_DIR}.ReductionDirectory._append_run_version")
-    def test_reduction_directory_build_path_non_flat_builds_path(self, mock_append, _):
+    def test_reduction_directory_build_path_non_flat_builds_path(self, mock_append):
         """
         Tests: _append_run_version is called
         When: _build_path is called for non flat output instrument
@@ -113,13 +109,16 @@ class TestReductionService(unittest.TestCase):
         expected = Path(CEPH_DIRECTORY % (self.instrument, self.rb_number, self.run_number))
         self.assertEqual(expected, reduction_dir.path)
 
-    @patch(f"{REDUCTION_SERVICE_DIR}.is_instrument_flat_output", return_value=True)
-    def test_reduction_directory_append_run_version_overwrite_true(self, _):
+    def test_reduction_directory_append_run_version_overwrite_true(self):
         """
         Tests: run-version-0 is appended
         When: overwrite is True
         """
-        reduction_dir = ReductionDirectory(self.instrument, self.rb_number, self.run_number, overwrite=True)
+        reduction_dir = ReductionDirectory(self.instrument,
+                                           self.rb_number,
+                                           self.run_number,
+                                           overwrite=True,
+                                           flat_output=True)
         with TemporaryDirectory() as directory:
             reduction_dir.path = Path(directory)
             reduction_dir._append_run_version()
@@ -127,8 +126,7 @@ class TestReductionService(unittest.TestCase):
             expected_path = Path(directory) / "run-version-0"
             self.assertEqual(expected_path, reduction_dir.path)
 
-    @patch(f"{REDUCTION_SERVICE_DIR}.is_instrument_flat_output", return_value=False)
-    def test_reduction_directory_append_run_version_existing_version(self, _):
+    def test_reduction_directory_append_run_version_existing_version(self):
         """
         Tests: Correct run-version appened
         When: a run-version already exists
@@ -141,8 +139,7 @@ class TestReductionService(unittest.TestCase):
             expected_path = Path(directory) / "run-version-1"
             self.assertEqual(expected_path, reduction_dir.path)
 
-    @patch(f"{REDUCTION_SERVICE_DIR}.is_instrument_flat_output", return_value=False)
-    def test_reduction_directory_append_run_version_no_existing_version(self, _):
+    def test_reduction_directory_append_run_version_no_existing_version(self):
         """
         Tests: run-version-0 is appended
         When: No versions currently exist

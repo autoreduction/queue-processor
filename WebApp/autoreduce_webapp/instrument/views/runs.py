@@ -97,6 +97,10 @@ def run_confirmation(request, instrument: str):
         context_dictionary['error'] = exception.msg
         return context_dictionary
 
+    if not run_numbers:
+        context_dictionary['error'] = f"Could not correctly parse range input {range_string}"
+        return context_dictionary
+
     # Determine user level to set a maximum limit to the number of runs that can be re-queued
     if request.user.is_superuser:
         max_runs = 500
@@ -236,7 +240,6 @@ def configure_new_runs_post(request, instrument_name):
     or for experiment reference (when experiment_reference is given).
     """
     start = int(request.POST.get("run_start")) if request.POST.get("run_start", None) else None
-    end = int(request.POST.get("run_end")) if request.POST.get("run_end", None) else None
     experiment_reference = int(request.POST.get("experiment_reference_number")) if request.POST.get(
         "experiment_reference_number", None) else None
 
@@ -279,19 +282,7 @@ def configure_new_runs_post(request, instrument_name):
                                                         args_for_range,
                                                         start,
                                                         from_webapp=True)
-        if end:
-            possible_variables = InstrumentVariable.objects.filter(start_run__lte=end + 1,
-                                                                   instrument__name=instrument_name)
-            post_range_args = InstrumentVariablesUtils.merge_arguments({
-                'standard_vars': {},
-                'advanced_vars': {}
-            }, reduce_vars_module)
-
-            # Makes the variables that will be active for the range END + 1 -> onwards
-            InstrumentVariablesUtils.find_or_make_variables(possible_variables, instrument.id, post_range_args, end + 1)
-
     else:
-        experiment_reference = int(request.POST.get("experiment_reference_number", 1))
         possible_variables = InstrumentVariable.objects.filter(experiment_reference=experiment_reference,
                                                                instrument__name=instrument_name)
         InstrumentVariablesUtils.find_or_make_variables(possible_variables,
@@ -368,7 +359,6 @@ def configure_new_runs_get(instrument_name, start=0, end=0, experiment_reference
         'current_standard_variables': current_standard_variables,
         'current_advanced_variables': current_advanced_variables,
         'run_start': run_start,
-        'run_end': end,
         # used to determine whether the current form is for an experiment reference
         'current_experiment_reference': experiment_reference,
         # used to create the link to an experiment reference form, using this number

@@ -13,7 +13,6 @@ import datetime
 import model.database.access
 
 
-# pylint: disable=too-many-arguments
 def create_reduction_run_record(experiment, instrument, message, run_version, script_text, status):
     """
     Creates an ORM record for the given reduction run and returns

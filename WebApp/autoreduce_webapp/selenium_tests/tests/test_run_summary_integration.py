@@ -133,3 +133,6 @@ class TestRunSummaryPageIntegration(BaseTestCase, FooterTestMixin, NavbarTestMix
         # wait until the message processing is complete before ending the test
         # otherwise the message handling can pollute the DB state for the next test
         assert len(result) == 2
+        # check that the error is because of missing Mantid
+        # if this fails then something else in the reduction caused an error instead!
+        assert "Mantid" in result[1].admin_log

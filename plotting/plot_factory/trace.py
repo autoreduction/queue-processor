@@ -13,9 +13,9 @@ import sys
 import plotly.graph_objects as go  # pylint: disable=unused-import
 
 
-class Trace:  # pylint: disable=too-many-arguments, line-too-long
+class Trace:
     """Creates a trace object """
-    def __init__(self, data, plot_style, plot_name, mode=None, error_bars=None):  # pylint: disable=too-many-arguments, line-too-long
+    def __init__(self, data, plot_style, plot_name, mode=None, error_bars=None):
         """
         Trace Object
         :param data (pandas dataframe)
@@ -56,7 +56,6 @@ class Trace:  # pylint: disable=too-many-arguments, line-too-long
         """
         return getattr(sys.modules[go.__name__], classname)
 
-    # pylint: disable=too-many-arguments
     def create_trace(self, data, plot_style, name, error_bars, mode=None):
         """
         Creates a trace
