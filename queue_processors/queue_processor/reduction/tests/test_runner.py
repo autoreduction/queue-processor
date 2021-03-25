@@ -156,7 +156,37 @@ class TestReductionRunner(unittest.TestCase):
         assert mock_logger_info.call_count == 2
         assert mock_logger_info.call_args[0][1] == "testdescription"
         _get_mantid_version.assert_called_once()
-        assert runner.message.message == 'REDUCTION Error: Problem reading datafile: /isis/data.nxs'
+        assert runner.message.message == 'Error encountered when trying to access the datafile /isis/data.nxs'
+
+    @patch(f'{DIR}.runner.ReductionScript', side_effect=PermissionError("error message"))
+    def test_reduce_reductionscript_any_raise(self, _: Mock):
+        """
+        Test: ReductionDirectory raising any exception
+        """
+        with tempfile.NamedTemporaryFile() as tmpfile:
+            self.message.data = tmpfile.name
+
+            runner = ReductionRunner(self.message)
+            runner.reduce()
+
+        assert runner.message.message == "Error encountered when trying to read the reduction script"
+        assert "Exception:" in runner.message.reduction_log
+        assert "error message" in runner.message.reduction_log
+
+    @patch(f'{DIR}.runner.ReductionDirectory', side_effect=PermissionError("error message"))
+    def test_reduce_reductiondirectory_any_raise(self, _: Mock):
+        """
+        Test: ReductionDirectory raising any exception
+        """
+        with tempfile.NamedTemporaryFile() as tmpfile:
+            self.message.data = tmpfile.name
+
+            runner = ReductionRunner(self.message)
+            runner.reduce()
+
+        assert runner.message.message == "Error encountered when trying to read the reduction directory"
+        assert "Exception:" in runner.message.reduction_log
+        assert "error message" in runner.message.reduction_log
 
     @patch(f'{DIR}.runner.ReductionRunner._get_mantid_version', return_value="5.1.0")
     @patch(f'{DIR}.runner.reduce')
