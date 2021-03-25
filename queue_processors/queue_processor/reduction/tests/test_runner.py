@@ -156,7 +156,7 @@ class TestReductionRunner(unittest.TestCase):
         assert mock_logger_info.call_count == 2
         assert mock_logger_info.call_args[0][1] == "testdescription"
         _get_mantid_version.assert_called_once()
-        assert runner.message.message == 'REDUCTION Error: Problem reading datafile: /isis/data.nxs'
+        assert runner.message.message == 'Error encountered when trying to access the datafile /isis/data.nxs'
 
     @patch(f'{DIR}.runner.ReductionRunner._get_mantid_version', return_value="5.1.0")
     @patch(f'{DIR}.runner.reduce')
