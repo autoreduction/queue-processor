@@ -165,11 +165,11 @@ class HandleMessage:
         """
         reduction_process_manager = ReductionProcessManager(message)
         self.reduction_started(reduction_run, message)
-        message = reduction_process_manager.run()
-        if message.message is not None:
-            self.reduction_error(reduction_run, message)
+        output_message = reduction_process_manager.run()
+        if output_message.message is not None:
+            self.reduction_error(reduction_run, output_message)
         else:
-            self.reduction_complete(reduction_run, message)
+            self.reduction_complete(reduction_run, output_message)
 
     def activate_db_inst(self, instrument):
         """
@@ -201,6 +201,8 @@ class HandleMessage:
         self._logger.info("Run %s has completed reduction", message.run_number)
 
         self._common_reduction_run_update(reduction_run, self.status.get_completed(), message)
+
+        reduction_run.software = db_access.get_software("Mantid", message.software)
 
         if message.reduction_data is not None:
             reduction_location = self.data_model.ReductionLocation(file_path=message.reduction_data,

@@ -26,8 +26,10 @@ else:
 # %(instrument, experiment_number, run_number)
 if "AUTOREDUCTION_PRODUCTION" in os.environ:
     CEPH_DIRECTORY = "/instrument/%s/RBNumber/RB%s/autoreduced/%s"
+    MANTID_PATH = "/opt/Mantid/lib"
 else:
     CEPH_DIRECTORY = f"{PROJECT_ROOT}/reduced-data/%s/RB%s/autoreduced/%s/"
+    MANTID_PATH = "/tmp/Mantid/lib"
 
 if "AUTOREDUCTION_PRODUCTION" in os.environ:
     # for when deploying on production - this is the real path where the mounts are
@@ -45,5 +47,4 @@ CYCLE_DIRECTORY = os.path.join(ARCHIVE_ROOT, 'NDX%s', 'Instrument', 'data', 'cyc
 SCRIPTS_DIRECTORY = f"{ARCHIVE_ROOT}/NDX%s/user/scripts/autoreduction/"
 
 SCRIPT_TIMEOUT = 3600  # The max time to wait for a user script to finish running (seconds)
-MANTID_PATH = "/opt/Mantid/lib"
 TEMP_ROOT_DIRECTORY = "/autoreducetmp"

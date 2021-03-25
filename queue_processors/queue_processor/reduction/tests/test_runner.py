@@ -153,7 +153,7 @@ class TestReductionRunner(unittest.TestCase):
         self.message.description = "testdescription"
         runner = ReductionRunner(self.message)
         runner.reduce()
-        mock_logger_info.assert_called_once()
+        assert mock_logger_info.call_count == 2
         assert mock_logger_info.call_args[0][1] == "testdescription"
         _get_mantid_version.assert_called_once()
         assert runner.message.message == 'REDUCTION Error: Problem reading datafile: /isis/data.nxs'
@@ -176,7 +176,7 @@ class TestReductionRunner(unittest.TestCase):
         assert str(reduce.call_args[0][2].path) == tmpfile.name
         assert runner.message.reduction_data is None
         assert runner.message.software == "5.1.0"
-        assert "REDUCTION Error: Error encountered when running the reduction script" in runner.message.message
+        assert "Error encountered when running the reduction script" in runner.message.message
 
     @patch(f'{DIR}.runner.ReductionRunner._get_mantid_version', return_value="5.1.0")
     @patch(f'{DIR}.runner.reduce')

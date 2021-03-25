@@ -7,6 +7,7 @@
 """
 Tests for parts of the reduction_service
 """
+import io
 import os
 import unittest
 from pathlib import Path
@@ -306,7 +307,8 @@ class TestReductionService(unittest.TestCase):
         """
         self.script.skipped_runs = []
         self.script.run.return_value = None
-        reduce(self.reduction_dir, self.temp_dir, self.datafile, self.script)
+        reduction_log_stream = io.StringIO()
+        reduce(self.reduction_dir, self.temp_dir, self.datafile, self.script, reduction_log_stream)
         self.reduction_dir.create.assert_called_once()
         self.script.load.assert_called_once()
         self.temp_dir.copy.assert_called_once_with(self.reduction_dir.path)
@@ -320,7 +322,8 @@ class TestReductionService(unittest.TestCase):
         """
         self.script.skipped_runs = []
         self.script.run.return_value = "some/path"
-        reduce(self.reduction_dir, self.temp_dir, self.datafile, self.script)
+        reduction_log_stream = io.StringIO()
+        reduce(self.reduction_dir, self.temp_dir, self.datafile, self.script, reduction_log_stream)
         self.reduction_dir.create.assert_called_once()
         self.script.load.assert_called_once()
         self.temp_dir.copy.assert_has_calls([call(self.reduction_dir.path), call("some/path")])
@@ -337,8 +340,9 @@ class TestReductionService(unittest.TestCase):
         self.script.skipped_runs = []
         self.script.run.side_effect = Exception
         file = mock_open.return_value
+        reduction_log_stream = io.StringIO()
         with self.assertRaises(ReductionScriptError):
-            reduce(self.reduction_dir, self.temp_dir, self.datafile, self.script)
+            reduce(self.reduction_dir, self.temp_dir, self.datafile, self.script, reduction_log_stream)
             file.writelines.assert_called_once()
             mock_traceback.format_exc.assert_called_once()
             file.write.assert_called_once()

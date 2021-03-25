@@ -9,6 +9,7 @@
 
 import io
 import logging
+import socket
 import sys
 import traceback
 
@@ -55,6 +56,7 @@ class ReductionRunner:
     def reduce(self):
         """Start the reduction job."""
         self.message.software = self._get_mantid_version()
+        logger.info("Running on host: %s", socket.gethostname())
         if self.message.description is not None:
             logger.info("DESCRIPTION: %s", self.message.description)
 
@@ -73,14 +75,16 @@ class ReductionRunner:
                                            self.run_number,
                                            flat_output=self.message.flat_output)
         temp_dir = TemporaryReductionDirectory(self.proposal, self.run_number)
+        reduction_log_stream = io.StringIO()
         try:
-            reduction_log_stream = reduce(reduction_dir, temp_dir, datafile, reduction_script)
+            reduce(reduction_dir, temp_dir, datafile, reduction_script, reduction_log_stream)
             self.message.reduction_log = reduction_log_stream.getvalue()
             self.message.reduction_data = str(reduction_dir.path)
         except ReductionScriptError as exp:
-            logger.error("Error encountered when running the reduction script: %s", reduction_script_path)
-            self.message.message = "REDUCTION Error: Error encountered when running the reduction script: %s\n\n%s" % (
-                reduction_script_path, exp)
+            logger.error("Reduction script path: %s", reduction_script_path)
+            self.message.message = "Error encountered when running the reduction script"
+            self.message.reduction_log = "Exception:\n%s\n\n%s\n\n## Script output ##\n%s" % (
+                reduction_script_path, exp, reduction_log_stream.getvalue())
 
         except Exception as exp:
             logger.error(traceback.format_exc())
