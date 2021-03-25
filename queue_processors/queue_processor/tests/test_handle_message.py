@@ -266,6 +266,8 @@ class TestHandleMessage(TestCase):
         rpm.return_value.run.assert_not_called()
         assert self.reduction_run.status == STATUS.get_skipped()
         assert "Validation error" in self.reduction_run.message
+        assert "Validation error" in self.reduction_run.reduction_log
+        assert "Running on host" in self.reduction_run.admin_log
 
     @patch("queue_processors.queue_processor.handle_message.ReductionScript")
     def test_create_run_records_multiple_versions(self, reduction_script: Mock):

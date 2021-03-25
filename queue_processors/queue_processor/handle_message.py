@@ -78,7 +78,6 @@ class HandleMessage:
         message.message = err_msg
         self._logger.error("%s\n%s", err_msg, str(err))
         message.reduction_log = str(err)
-        message.admin_log = "Running on host: %s" % socket.gethostname()
         self.reduction_error(reduction_run, message)
 
     @transaction.atomic
@@ -136,6 +135,7 @@ class HandleMessage:
         skip_reason = self.find_reason_to_skip_run(reduction_run, message, instrument)
         if skip_reason is not None:
             message.message = skip_reason
+            message.reduction_log = skip_reason
             self.reduction_skipped(reduction_run, message)
         else:
             self.activate_db_inst(instrument)
@@ -244,6 +244,7 @@ class HandleMessage:
         reduction_run.finished = timezone.now()
         reduction_run.message = message.message
         reduction_run.reduction_log = message.reduction_log
+        message.admin_log += "Running on host: %s" % socket.gethostname()
         reduction_run.admin_log = message.admin_log
 
     @staticmethod
