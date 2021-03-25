@@ -55,11 +55,17 @@ class ReductionRunner:
 
     def reduce(self):
         """Start the reduction job."""
+        self._do_reduce()
+        self.message.admin_log = self.admin_log_stream.getvalue()
+
+    def _do_reduce(self):
+        """Actually do the reduction job."""
         self.message.software = self._get_mantid_version()
         logger.info("Running on host: %s", socket.gethostname())
         if self.message.description is not None:
             logger.info("DESCRIPTION: %s", self.message.description)
 
+        # Attempt to read the datafile
         try:
             datafile = Datafile(self.data_file)
         except DatafileError as exp:
@@ -67,14 +73,27 @@ class ReductionRunner:
             self.message.message = "REDUCTION Error: %s" % exp
             return  # stops the reduction and allows the parent to read the outcome in the message
 
-        reduction_script = ReductionScript(self.instrument)
-        reduction_script_path = reduction_script.script_path
+        # Attempt to read the reduction script
+        try:
+            reduction_script = ReductionScript(self.instrument)
+            reduction_script_path = reduction_script.script_path
+        except Exception as err:
+            self.message.message = "Error encountered when trying to read the reduction script"
+            self.message.reduction_log = "Exception:\n%s" % (err)
+            return  # stops the reduction and allows the parent to read the outcome in the message
 
-        reduction_dir = ReductionDirectory(self.instrument,
-                                           self.proposal,
-                                           self.run_number,
-                                           flat_output=self.message.flat_output)
-        temp_dir = TemporaryReductionDirectory(self.proposal, self.run_number)
+        # Attempt to open the reduction directory
+        try:
+            reduction_dir = ReductionDirectory(self.instrument,
+                                               self.proposal,
+                                               self.run_number,
+                                               flat_output=self.message.flat_output)
+            temp_dir = TemporaryReductionDirectory(self.proposal, self.run_number)
+        except Exception as err:
+            self.message.message = "Error encountered when trying to read the reduction directory"
+            self.message.reduction_log = "Exception:\n%s" % (err)
+            return  # stops the reduction and allows the parent to read the outcome in the message
+
         reduction_log_stream = io.StringIO()
         try:
             reduce(reduction_dir, temp_dir, datafile, reduction_script, reduction_log_stream)
@@ -85,12 +104,9 @@ class ReductionRunner:
             self.message.message = "Error encountered when running the reduction script"
             self.message.reduction_log = "Exception:\n%s\n\n%s\n\n## Script output ##\n%s" % (
                 reduction_script_path, exp, reduction_log_stream.getvalue())
-
         except Exception as exp:
             logger.error(traceback.format_exc())
             self.message.message = "REDUCTION Error: %s" % exp
-
-        self.message.admin_log = self.admin_log_stream.getvalue()
 
     @staticmethod
     def _get_mantid_version():
