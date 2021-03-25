@@ -13,6 +13,7 @@ For example, this may include shuffling the message to another queue,
 update relevant DB fields or logging out the status.
 """
 import logging
+import socket
 from typing import Optional
 from django.db import transaction
 from django.utils import timezone
@@ -73,9 +74,11 @@ class HandleMessage:
 
     def _handle_error(self, reduction_run, message, err):
         # couldn't save the state in the database properly - mark the run as errored
-        err_msg = f"Encountered error in transaction to save RunVariables, error: {str(err)}"
-        self._logger.error(err_msg)
+        err_msg = "Encountered error when saving run variables"
         message.message = err_msg
+        self._logger.error("%s\n%s", err_msg, str(err))
+        message.reduction_log = str(err)
+        message.admin_log = "Running on host: %s" % socket.gethostname()
         self.reduction_error(reduction_run, message)
 
     @transaction.atomic
