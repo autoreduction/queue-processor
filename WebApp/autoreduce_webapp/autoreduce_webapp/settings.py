@@ -176,12 +176,6 @@ LOGGING = {
         },
     },
     'handlers': {
-        'file': {
-            'level': LOG_LEVEL,
-            'class': 'logging.FileHandler',
-            'filename': LOG_FILE,
-            'formatter': 'verbose'
-        },
         'webapp_file': {
             'level': LOG_LEVEL,
             'class': 'logging.handlers.RotatingFileHandler',
@@ -193,7 +187,7 @@ LOGGING = {
     },
     'loggers': {
         'django': {
-            'handlers': ['file'],
+            'handlers': ['webapp_file'],
             'propagate': True,
             'level': LOG_LEVEL,
         },
