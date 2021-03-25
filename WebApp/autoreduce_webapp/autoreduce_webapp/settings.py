@@ -176,21 +176,23 @@ LOGGING = {
         },
     },
     'handlers': {
-        'file': {
+        'webapp_file': {
             'level': LOG_LEVEL,
-            'class': 'logging.FileHandler',
-            'filename': LOG_FILE,
-            'formatter': 'verbose'
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(PROJECT_ROOT, 'logs', 'webapp.log'),
+            'formatter': 'verbose',
+            'maxBytes': 104857600,
+            'backupCount': 20,
         },
     },
     'loggers': {
         'django': {
-            'handlers': ['file'],
+            'handlers': ['webapp_file'],
             'propagate': True,
             'level': LOG_LEVEL,
         },
         'app': {
-            'handlers': ['file'],
+            'handlers': ['webapp_file'],
             'propagate': True,
             'level': 'DEBUG',
         },
