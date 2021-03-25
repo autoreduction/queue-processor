@@ -68,9 +68,10 @@ class ReductionRunner:
         # Attempt to read the datafile
         try:
             datafile = Datafile(self.data_file)
-        except DatafileError as exp:
+        except DatafileError as err:
             logger.error("Problem reading datafile: %s", traceback.format_exc())
-            self.message.message = "REDUCTION Error: %s" % exp
+            self.message.message = "Error encountered when trying to access the datafile %s" % self.data_file
+            self.message.reduction_log = "Exception:\n%s" % (err)
             return  # stops the reduction and allows the parent to read the outcome in the message
 
         # Attempt to read the reduction script
@@ -99,14 +100,14 @@ class ReductionRunner:
             reduce(reduction_dir, temp_dir, datafile, reduction_script, reduction_log_stream)
             self.message.reduction_log = reduction_log_stream.getvalue()
             self.message.reduction_data = str(reduction_dir.path)
-        except ReductionScriptError as exp:
+        except ReductionScriptError as err:
             logger.error("Reduction script path: %s", reduction_script_path)
             self.message.message = "Error encountered when running the reduction script"
             self.message.reduction_log = "Exception:\n%s\n\n%s\n\n## Script output ##\n%s" % (
-                reduction_script_path, exp, reduction_log_stream.getvalue())
-        except Exception as exp:
+                reduction_script_path, err, reduction_log_stream.getvalue())
+        except Exception as err:
             logger.error(traceback.format_exc())
-            self.message.message = "REDUCTION Error: %s" % exp
+            self.message.message = "REDUCTION Error: %s" % err
 
     @staticmethod
     def _get_mantid_version():
