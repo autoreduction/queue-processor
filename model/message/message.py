@@ -83,7 +83,7 @@ class Message:
                     # Set the value of the variable on this object accessing it by name
                     setattr(self, key, value)
             else:
-                raise ValueError("Unexpected key encountered during Message population: '{key}'.")
+                raise ValueError(f"Unexpected key encountered during Message population: '{key}'.")
 
     def validate(self, destination):
         """
