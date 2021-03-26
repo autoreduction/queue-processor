@@ -82,7 +82,7 @@ class HandleMessage:
 
     def create_run_records(self, message: Message):
         """
-        Creates or gets the necessary records to construct a ReductionRun
+        Creates or gets the necessary records to construct a ReductionRun.
         """
         # This must be done before looking up the run version to make sure the experiment record exists!
         rb_number = self.normalise_rb_number(message.rb_number)
@@ -94,6 +94,9 @@ class HandleMessage:
 
     @transaction.atomic
     def do_create_reduction_record(self, message: Message, experiment, instrument):
+        """
+        Creates the reduction record
+        """
         script = ReductionScript(instrument.name)
         script_text = script.text()
 
