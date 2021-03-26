@@ -142,6 +142,7 @@ class TestQueueClient(TestCase):
     def test_connect_connection_not_connected(self, mock_con, mock_disc):
         client = QueueClient()
         client._connection = MagicMock()
+        client._connection.is_connected.return_value = False
         client.connect()
         mock_disc.assert_called_once()
         mock_con.assert_called_once()
