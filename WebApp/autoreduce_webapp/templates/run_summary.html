@@ -211,7 +211,12 @@
                     <p class="text-center" id="warning_message">The reduce_vars.py script is missing for this instrument. Please create it before being able to submit re-runs.</p>
                 </div>
             {% endif %}
-          </div>
+        </div>
+        <div class="row col-md-12 my-2">
+            <div class="text-center">
+                <a href="{% url 'runs:list' run.instrument.name %}" class="btn btn-primary" id="cancel">Back to {{ run.instrument.name }} runs</a>
+            </div>
+        </div>
         {% endif %}
         <div class="run-history modal fade" tabindex="-1" role="dialog" aria-hidden="true">
             <div class="modal-dialog">
