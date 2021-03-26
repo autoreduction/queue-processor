@@ -26,8 +26,8 @@ class QueueListener:
     """ Listener class that is used to consume messages from ActiveMQ. """
     def __init__(self, client: QueueClient):
         """ Initialise listener. """
-        self.client: QueueClient = client
-        self.message_handler = HandleMessage(queue_listener=self)
+        self.client = client
+        self.message_handler = HandleMessage()
 
         self.logger = logging.getLogger("queue_listener")
 
