@@ -343,8 +343,8 @@ def runs_list(request, instrument=None):
             context_dictionary['max_items'] = max_items_per_page
 
     # pylint:disable=broad-except
-    except Exception as exception:
-        LOGGER.error(exception)
+    except Exception:
+        LOGGER.error(traceback.format_exc())
         return {'message': "An unexpected error has occurred when loading the instrument."}
 
     return context_dictionary
