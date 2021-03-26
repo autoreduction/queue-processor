@@ -9,6 +9,7 @@ Client class for accessing queuing service
 """
 import logging
 import uuid
+import socket
 
 import stomp
 from stomp.exception import ConnectFailedException
@@ -93,7 +94,7 @@ class QueueClient(AbstractClient):
         for queue in queue_list:
             # prefetchSize limits the processing to 1 message at a time
             self._connection.subscribe(destination=queue,
-                                       id=str(uuid.uuid4()),
+                                       id=socket.gethostname(),
                                        ack="client-individual",
                                        header={'activemq.prefetchSize': '1'})
             self._logger.info("[%s] Subscribing to %s", consumer_name, queue)
