@@ -80,7 +80,6 @@ class HandleMessage:
         message.reduction_log = str(err)
         self.reduction_error(reduction_run, message)
 
-    @transaction.atomic
     def create_run_records(self, message: Message):
         """
         Creates or gets the necessary records to construct a ReductionRun
@@ -90,15 +89,19 @@ class HandleMessage:
         experiment = db_access.get_experiment(rb_number)
         run_version = db_access.find_highest_run_version(experiment, run_number=str(message.run_number))
         message.run_version = run_version
-
         instrument = db_access.get_instrument(str(message.instrument))
+        return self.do_create_reduction_record(message, experiment, instrument)
+
+    @transaction.atomic
+    def do_create_reduction_record(self, message: Message, experiment, instrument):
         script = ReductionScript(instrument.name)
         script_text = script.text()
+
         # Make the new reduction run with the information collected so far
         reduction_run = db_records.create_reduction_run_record(experiment=experiment,
                                                                instrument=instrument,
                                                                message=message,
-                                                               run_version=run_version,
+                                                               run_version=message.run_version,
                                                                script_text=script_text,
                                                                status=self.status.get_queued())
         reduction_run.save()
