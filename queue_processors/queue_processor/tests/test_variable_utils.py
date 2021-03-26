@@ -8,12 +8,12 @@
 Test utility functions for constructing run variables
 """
 
-import unittest
 import datetime
-
-from queue_processors.queue_processor.variable_utils import VariableUtils as vu
+import unittest
+from unittest.mock import patch
 
 from model.database import access
+from queue_processors.queue_processor.variable_utils import VariableUtils as vu
 
 
 class TestVariableUtils(unittest.TestCase):
@@ -106,3 +106,94 @@ class TestVariableUtils(unittest.TestCase):
         Test: number type conversion with non number
         """
         self.assertIsNone(vu.convert_variable_to_type('string', 'number'))
+
+    def test_make_dict_with_unsaved_variables(self):
+        """
+        Test: the unsaved variables are correctly made
+        """
+        some_vars = {"var1": 123, "var2": 432, "var3": 666}
+        help_dict = {"var1": "help1", "var2": "help2", "var3": "help3"}
+        result = vu.make_dict_with_unsaved_variables(some_vars, help_dict)
+
+        assert len(result) == 3
+        assert all(isinstance(var, self.var_model.Variable) for var in result.values())
+
+        for name, value in some_vars.items():
+            assert name == result[name].name
+            assert value == result[name].value
+
+        # make sure they're not in the DB
+        assert self.var_model.Variable.objects.filter(name="var1").count() == 0
+        assert self.var_model.Variable.objects.filter(name="var2").count() == 0
+        assert self.var_model.Variable.objects.filter(name="var3").count() == 0
+
+    @patch("queue_processors.queue_processor.variable_utils.ReductionScript")
+    def test_get_default_variables(self, reduction_script):
+        """
+        Test: Getting the default variables returns the expected keys
+        """
+        reduction_script.load.return_value = {
+            "standard_vars": {
+                "var1": 123,
+                "var2": 432,
+                "var3": 666
+            },
+            "advanced_vars": {
+                "adv_var1": 123,
+                "adv_var2": 432,
+                "adv_var3": 666
+            },
+            "variable_help": {
+                "var1": "test_help",
+                "var2": "test_help",
+                "var3": "test_help",
+                "adv_var1": "test_help",
+                "adv_var2": "test_help",
+                "adv_var3": "test_help",
+            }
+        }
+        result = vu.get_default_variables("TestInstrument")
+
+        assert "standard_vars" in result
+        assert "advanced_vars" in result
+        assert "variable_help" in result
+
+        # make sure they're not in the DB
+        for name in ["var1", "var2", "var3", "adv_var1", "adv_var2", "adv_var3"]:
+            assert self.var_model.Variable.objects.filter(name=name).count() == 0
+
+        for _, variables in result.items():
+            for var in variables:
+                assert var.help_text == "test_help"
+
+    @patch("queue_processors.queue_processor.variable_utils.ReductionScript")
+    def test_get_default_variables_empty_help(self, reduction_script):
+        """
+        Test: Getting the default variables returns the expected keys
+        """
+        reduction_script.load.return_value = {
+            "standard_vars": {
+                "var1": 123,
+                "var2": 432,
+                "var3": 666
+            },
+            "advanced_vars": {
+                "adv_var1": 123,
+                "adv_var2": 432,
+                "adv_var3": 666
+            },
+            "variable_help": {}
+        }
+        result = vu.get_default_variables("TestInstrument")
+
+        assert "standard_vars" in result
+        assert "advanced_vars" in result
+        assert "variable_help" in result
+
+        # make sure they're not in the DB
+        for name in ["var1", "var2", "var3", "adv_var1", "adv_var2", "adv_var3"]:
+            assert self.var_model.Variable.objects.filter(name=name).count() == 0
+
+        for _, variables in result.items():
+            for var in variables:
+                assert var.help_text == ""
