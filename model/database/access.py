@@ -133,4 +133,5 @@ def save_record(record):
     record.save()
 
 
+# Initialises the DjangoORM immediately on importing this module
 start_database()
