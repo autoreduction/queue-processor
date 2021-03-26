@@ -8,7 +8,7 @@
 Test functionality for the activemq client
 """
 from unittest import TestCase, mock
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 from model.message.message import Message
 from utils.clients.connection_exception import ConnectionException
@@ -128,3 +128,20 @@ class TestQueueClient(TestCase):
         client.subscribe_queues('single-queue', 'consumer', None)
         mock_stomp_set_listener.assert_called_once_with('consumer', None)
         mock_stomp_subscribe.assert_called_once()
+
+    @patch('utils.clients.queue_client.QueueClient.disconnect')
+    @patch('utils.clients.queue_client.QueueClient._create_connection')
+    def test_connect_connection_none_connection_created(self, mock_con, mock_discon):
+        client = QueueClient()
+        client.connect()
+        mock_discon.assert_called_once()
+        mock_con.assert_called_once()
+
+    @patch('utils.clients.queue_client.QueueClient.disconnect')
+    @patch('utils.clients.queue_client.QueueClient._create_connection')
+    def test_connect_connection_not_connected(self, mock_con, mock_disc):
+        client = QueueClient()
+        client._connection = MagicMock()
+        client.connect()
+        mock_disc.assert_called_once()
+        mock_con.assert_called_once()
