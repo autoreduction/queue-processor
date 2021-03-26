@@ -48,7 +48,7 @@ class Experiment(models.Model):
     """
     Holds data about an Experiment
     """
-    reference_number = models.IntegerField()
+    reference_number = models.IntegerField(unique=True)
 
     def __str__(self):
         """
