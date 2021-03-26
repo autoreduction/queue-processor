@@ -16,6 +16,7 @@ can be more confident we are not affecting the execution
 import json
 import logging
 import operator
+import traceback
 
 from autoreduce_webapp.icat_cache import ICATCache
 from autoreduce_webapp.settings import (DEVELOPMENT_MODE, UOWS_LOGIN_URL, USER_ACCESS_CHECKS)
