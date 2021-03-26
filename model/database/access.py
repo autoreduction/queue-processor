@@ -131,3 +131,6 @@ def save_record(record):
     Note: This is mostly a wrapper to aid unit testing
     """
     record.save()
+
+
+start_database()
