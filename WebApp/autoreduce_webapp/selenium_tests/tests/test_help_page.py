@@ -19,7 +19,7 @@ class TestHelpPage(NavbarTestMixin, BaseTestCase, FooterTestMixin, Accessibility
     accessibility_test_known_issues = {
         # https://github.com/ISISScientificComputing/autoreduce/issues/790
         "color-contrast": "*",
-    }
+    }  # pylint: disable=duplicate-code
 
     def setUp(self) -> None:
         """
