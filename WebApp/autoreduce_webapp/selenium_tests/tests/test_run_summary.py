@@ -73,7 +73,6 @@ class TestRunSummaryPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
         """Sets up Dataarchive with scripts and sets instrument for all test cases"""
         super().setUpClass()
         run = ReductionRun.objects.first()
-        run.reduction_host = socket.getfqdn()
         cls.instrument_name = "TestInstrument"
         cls.data_archive = DataArchive([cls.instrument_name], 21, 21)
         cls.data_archive.create()
@@ -104,7 +103,7 @@ class TestRunSummaryPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
         assert self.page.instrument_text() == f"Instrument: {run.instrument.name}"
         assert self.page.rb_number_text() == f"RB Number: {run.experiment.reference_number}"
         assert self.page.last_updated_text() == "Last Updated: 19 Oct 2020, 6:35 p.m."
-        assert self.page.reduction_host_text() == f"Host: {socket.getfqdn()}"
+        assert self.page.reduction_host_text() == f"Host: test-host-123"
 
     def test_reduction_job_panel_reset_to_values_first_used_for_run(self):
         """Test that the button to reset the variables to the values first used for the run works"""
