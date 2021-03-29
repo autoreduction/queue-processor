@@ -194,7 +194,7 @@ class AccessibilityTestMixin:
     """
     # A list of [rules.id, rules.selector] to be excluded from the test.
     # Reference: https://www.deque.com/axe/core-documentation/api-documentation/#parameters-1
-    excluded_accessibility_rules = None
+    accessibility_test_known_issues = {}
 
     # A list of Axe tags to be excluded from the test.
     # Reference: https://www.deque.com/axe/core-documentation/api-documentation/#axe-core-tags
@@ -226,10 +226,11 @@ class AccessibilityTestMixin:
         :return: (str) A JSON string which is used for Axe options
         """
         def build_rules(rules):
-            if rules is None:
+            if rules == {}:
                 return ""
 
-            return ', '.join([f"'{x[0]}': {{enabled: false, selector: '{x[1]}'}}" for x in rules])
+            return ', '.join(
+                [f"'{rule}': {{enabled: false, selector: '{selector}'}}" for rule, selector in rules.items()])
 
         return f'''
         {{
@@ -238,7 +239,7 @@ class AccessibilityTestMixin:
                 values: {self.run_only_accessibility_tags}
             }},
             'rules': {{
-                {build_rules(self.excluded_accessibility_rules)}
+                {build_rules(self.accessibility_test_known_issues)}
             }}
         }}
         '''

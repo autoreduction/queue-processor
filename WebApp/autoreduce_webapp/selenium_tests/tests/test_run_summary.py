@@ -23,7 +23,7 @@ from systemtests.utils.data_archive import DataArchive
 
 class TestRunSummaryPageNoArchive(NavbarTestMixin, BaseTestCase, FooterTestMixin, AccessibilityTestMixin):
     fixtures = BaseTestCase.fixtures + ["run_with_one_variable"]
-    excluded_accessibility_rules = [["color-contrast", "*"]]
+    accessibility_test_known_issues = {"color-contrast": "*"}
 
     @classmethod
     def setUpClass(cls):

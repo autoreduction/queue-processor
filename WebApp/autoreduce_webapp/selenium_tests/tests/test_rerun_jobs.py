@@ -11,7 +11,7 @@ class TestRerunJobsPage(NavbarTestMixin, BaseTestCase, FooterTestMixin, Accessib
     """
 
     fixtures = BaseTestCase.fixtures + ["run_with_one_variable"]
-    excluded_accessibility_rules = [["color-contrast", "*"], ["duplicate-id-aria", "input"]]
+    accessibility_test_known_issues = {"color-contrast": "*", "duplicate-id-aria": "input"}
 
     @classmethod
     def setUpClass(cls):

@@ -16,7 +16,7 @@ class TestHelpPage(NavbarTestMixin, BaseTestCase, FooterTestMixin, Accessibility
     """
     Test cases for the help page
     """
-    excluded_accessibility_rules = [["color-contrast", "*"], ["label", "#help-search"]]
+    accessibility_test_known_issues = {"color-contrast": "*"}
 
     def setUp(self) -> None:
         """

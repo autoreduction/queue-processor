@@ -22,7 +22,7 @@ class TestSeeInstrumentVariablesPageWithMissingFiles(BaseTestCase, NavbarTestMix
     """
 
     fixtures = BaseTestCase.fixtures + ["one_run_mixed_vars"]
-    excluded_accessibility_rules = [["color-contrast", "*"]]
+    accessibility_test_known_issues = {"color-contrast": "*"}
 
     def setUp(self) -> None:
         """
