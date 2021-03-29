@@ -23,13 +23,15 @@ handler500 = 'autoreduce_webapp.views.handler500'
 class NegativeIntConverter:
     regex = r'-?\d+'
 
-    def to_python(self, value):
+    @staticmethod
+    def to_python(value):
         """
         Return the value as a Python object
         """
         return int(value)
 
-    def to_url(self, value):
+    @staticmethod
+    def to_url(value):
         """
         Return the value as a URL string
         """
