@@ -107,6 +107,7 @@ class ReductionRun(models.Model):
     graph = models.TextField(null=True, blank=True)
     message = models.TextField(null=True, blank=True)
     reduction_log = models.TextField(blank=True)
+    reduction_host = models.TextField(default="", blank=True, verbose_name="Reduction hostname")
     # Scripts should be 100,000 chars or less. The DB supports up to 4GB strings here
     script = models.TextField(blank=False, validators=[MaxLengthValidator(100000)])
 

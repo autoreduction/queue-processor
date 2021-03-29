@@ -133,7 +133,8 @@ class HandleMessage:
                                                                message=message,
                                                                run_version=message.run_version,
                                                                script_text=script_text,
-                                                               status=self.status.get_queued())
+                                                               status=self.status.get_queued(),
+                                                               db_handle=self.database)
         reduction_run.save()
 
         # Create a new data location entry which has a foreign key linking it to the current
