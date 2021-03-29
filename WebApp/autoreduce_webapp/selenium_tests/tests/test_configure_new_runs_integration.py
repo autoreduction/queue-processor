@@ -8,7 +8,7 @@
 from selenium.common.exceptions import NoSuchElementException
 from selenium_tests.pages.configure_new_runs_page import ConfigureNewRunsPage
 from selenium_tests.pages.variables_summary_page import VariableSummaryPage
-from selenium_tests.tests.base_tests import (BaseTestCase, FooterTestMixin, NavbarTestMixin)
+from selenium_tests.tests.base_tests import (BaseTestCase, FooterTestMixin, NavbarTestMixin, AccessibilityTestMixin)
 
 from instrument.models import InstrumentVariable
 from model.database import access as db
@@ -18,8 +18,9 @@ from WebApp.autoreduce_webapp.selenium_tests.utils import \
 REDUCE_VARS_DEFAULT_VALUE = "default value from reduce_vars"
 
 
-class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterTestMixin):
+class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterTestMixin, AccessibilityTestMixin):
     fixtures = BaseTestCase.fixtures + ["run_with_one_variable"]
+    excluded_accessibility_rules = [["color-contrast", "*"], ["duplicate-id-aria", "input"]]
 
     @classmethod
     def setUpClass(cls):
