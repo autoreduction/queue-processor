@@ -19,7 +19,7 @@ class TestRunsListPage(NavbarTestMixin, BaseTestCase, FooterTestMixin, Accessibi
     """
 
     fixtures = BaseTestCase.fixtures + ["test_runs_list_page"]
-    excluded_accessibility_rules = [["color-contrast", "*"]]
+    accessibility_test_known_issues = {"color-contrast": "*"}
 
     def setUp(self) -> None:
         """

@@ -15,7 +15,7 @@ from WebApp.autoreduce_webapp.selenium_tests.utils import setup_external_service
 
 class TestRerunJobsPageIntegration(NavbarTestMixin, BaseTestCase, FooterTestMixin, AccessibilityTestMixin):
     fixtures = BaseTestCase.fixtures + ["run_with_one_variable"]
-    excluded_accessibility_rules = [["color-contrast", "*"], ["duplicate-id-aria", "input"]]
+    accessibility_test_known_issues = {"color-contrast": "*", "duplicate-id-aria": "input"}
 
     @classmethod
     def setUpClass(cls):

@@ -22,7 +22,7 @@ class TestRunSummaryPageIntegration(BaseTestCase, FooterTestMixin, NavbarTestMix
     """
 
     fixtures = BaseTestCase.fixtures + ["run_with_one_variable"]
-    excluded_accessibility_rules = [["color-contrast", "*"], ["duplicate-id-aria", "input, #run_description"]]
+    accessibility_test_known_issues = {"color-contrast": "*", "duplicate-id-aria": "input, #run_description"}
 
     @classmethod
     def setUpClass(cls):
