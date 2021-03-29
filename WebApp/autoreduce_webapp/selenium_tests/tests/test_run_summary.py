@@ -9,7 +9,6 @@ Selenium tests for the runs summary page
 """
 
 import os
-import socket
 import tempfile
 from unittest.mock import Mock, patch
 
