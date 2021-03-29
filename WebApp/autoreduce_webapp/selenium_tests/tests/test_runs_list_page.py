@@ -9,7 +9,8 @@ Selenium tests for the runs summary page
 """
 
 from selenium_tests.pages.runs_list_page import RunsListPage
-from selenium_tests.tests.base_tests import NavbarTestMixin, BaseTestCase, FooterTestMixin, AccessibilityTestMixin
+from selenium_tests.tests.base_tests import NavbarTestMixin, BaseTestCase, FooterTestMixin, \
+    AccessibilityTestMixin
 from systemtests.utils.data_archive import DataArchive
 
 
@@ -19,7 +20,9 @@ class TestRunsListPage(NavbarTestMixin, BaseTestCase, FooterTestMixin, Accessibi
     """
 
     fixtures = BaseTestCase.fixtures + ["test_runs_list_page"]
-    accessibility_test_known_issues = {"color-contrast": "*"}
+    accessibility_test_known_issues = {
+        "color-contrast": "*",  # https://github.com/ISISScientificComputing/autoreduce/issues/790
+    }
 
     def setUp(self) -> None:
         """

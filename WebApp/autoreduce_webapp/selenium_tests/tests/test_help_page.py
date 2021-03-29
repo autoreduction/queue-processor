@@ -16,7 +16,9 @@ class TestHelpPage(NavbarTestMixin, BaseTestCase, FooterTestMixin, Accessibility
     """
     Test cases for the help page
     """
-    accessibility_test_known_issues = {"color-contrast": "*"}
+    accessibility_test_known_issues = {
+        "color-contrast": "*",  # https://github.com/ISISScientificComputing/autoreduce/issues/790
+    }
 
     def setUp(self) -> None:
         """

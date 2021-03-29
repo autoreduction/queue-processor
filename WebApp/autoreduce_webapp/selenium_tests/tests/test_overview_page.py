@@ -17,7 +17,9 @@ class TestOverviewPage(NavbarTestMixin, BaseTestCase, FooterTestMixin, Accessibi
     Test cases for the overview page
     """
     fixtures = BaseTestCase.fixtures + ["test_overview_page"]
-    accessibility_test_known_issues = {"color-contrast": "*"}
+    accessibility_test_known_issues = {
+        "color-contrast": "*",  # https://github.com/ISISScientificComputing/autoreduce/issues/790
+    }
 
     def setUp(self) -> None:
         """
