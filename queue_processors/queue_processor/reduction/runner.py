@@ -9,7 +9,6 @@
 
 import io
 import logging
-import socket
 import sys
 import traceback
 

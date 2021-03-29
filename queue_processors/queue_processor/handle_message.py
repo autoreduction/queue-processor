@@ -13,7 +13,6 @@ For example, this may include shuffling the message to another queue,
 update relevant DB fields or logging out the status.
 """
 import logging
-import socket
 from contextlib import contextmanager
 from typing import Optional
 from django.db import transaction
