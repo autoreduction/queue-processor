@@ -9,6 +9,7 @@ Selenium tests for the runs summary page
 """
 
 import os
+import socket
 import tempfile
 from unittest.mock import Mock, patch
 
@@ -101,6 +102,7 @@ class TestRunSummaryPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
         assert self.page.instrument_text() == f"Instrument: {run.instrument.name}"
         assert self.page.rb_number_text() == f"RB Number: {run.experiment.reference_number}"
         assert self.page.last_updated_text() == "Last Updated: 19 Oct 2020, 6:35 p.m."
+        assert self.page.reduction_host_text() == f"Host: {socket.getfqdn()}"
 
     def test_reduction_job_panel_reset_to_values_first_used_for_run(self):
         """Test that the button to reset the variables to the values first used for the run works"""
