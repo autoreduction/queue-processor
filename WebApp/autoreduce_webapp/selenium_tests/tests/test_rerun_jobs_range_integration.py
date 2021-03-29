@@ -10,15 +10,15 @@ from instrument.models import InstrumentVariable
 from selenium_tests.pages.rerun_jobs_page import RerunJobsPage
 from selenium_tests.pages.run_summary_page import RunSummaryPage
 from selenium_tests.pages.runs_list_page import RunsListPage
-from selenium_tests.tests.base_tests import (BaseTestCase)
+from selenium_tests.tests.base_tests import (NavbarTestMixin, BaseTestCase, FooterTestMixin, AccessibilityTestMixin)
 from selenium_tests.utils import submit_and_wait_for_result
 
 from WebApp.autoreduce_webapp.selenium_tests.utils import setup_external_services
 
 
-class TestRerunJobsRangePageIntegration(BaseTestCase):
-
+class TestRerunJobsRangePageIntegration(NavbarTestMixin, BaseTestCase, FooterTestMixin, AccessibilityTestMixin):
     fixtures = BaseTestCase.fixtures + ["two_runs"]
+    excluded_accessibility_rules = [["color-contrast", "*"], ["duplicate-id-aria", "input"]]
 
     @classmethod
     def setUpClass(cls):
