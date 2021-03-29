@@ -25,7 +25,7 @@ class TestRerunJobsRangePageIntegration(NavbarTestMixin, BaseTestCase, FooterTes
 
         # https://github.com/ISISScientificComputing/autoreduce/issues/1267
         "duplicate-id-aria": "input",
-    }
+    }  # pylint: disable=duplicate-code
 
     @classmethod
     def setUpClass(cls):

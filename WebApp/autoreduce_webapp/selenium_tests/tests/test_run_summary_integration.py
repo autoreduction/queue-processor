@@ -30,7 +30,7 @@ class TestRunSummaryPageIntegration(BaseTestCase, FooterTestMixin, NavbarTestMix
         # https://github.com/ISISScientificComputing/autoreduce/issues/1267
         # https://github.com/ISISScientificComputing/autoreduce/issues/1268
         "duplicate-id-aria": "input, #run_description",
-    }
+    }  # pylint: disable=duplicate-code
 
     @classmethod
     def setUpClass(cls):

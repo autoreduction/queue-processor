@@ -236,7 +236,7 @@ class AccessibilityTestMixin:
         {{
             'runOnly': {{
                 type: 'tag',
-                values: {self.run_only_accessibility_tags}
+                values: {self.accessibility_test_known_issues}
             }},
             'rules': {{
                 {build_rules(self.accessibility_test_known_issues)}

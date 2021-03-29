@@ -28,7 +28,7 @@ class TestRunSummaryPageNoArchive(NavbarTestMixin, BaseTestCase, FooterTestMixin
     accessibility_test_known_issues = {
         # https://github.com/ISISScientificComputing/autoreduce/issues/790
         "color-contrast": "*",
-    }
+    }  # pylint: disable=duplicate-code
 
     @classmethod
     def setUpClass(cls):
