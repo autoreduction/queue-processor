@@ -23,10 +23,10 @@ class TestSeeInstrumentVariablesPageWithMissingFiles(BaseTestCase, NavbarTestMix
 
     fixtures = BaseTestCase.fixtures + ["one_run_mixed_vars"]
 
-    accessibility_test_known_issues = {
+    accessibility_test_ignore_rules = {
         # https://github.com/ISISScientificComputing/autoreduce/issues/790
         "color-contrast": "*",
-    }  # pylint: disable=duplicate-code
+    }
 
     def setUp(self) -> None:
         """

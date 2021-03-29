@@ -19,13 +19,13 @@ from WebApp.autoreduce_webapp.selenium_tests.utils import setup_external_service
 class TestRerunJobsRangePageIntegration(NavbarTestMixin, BaseTestCase, FooterTestMixin, AccessibilityTestMixin):
     fixtures = BaseTestCase.fixtures + ["two_runs"]
 
-    accessibility_test_known_issues = {
+    accessibility_test_ignore_rules = {
         # https://github.com/ISISScientificComputing/autoreduce/issues/790
         "color-contrast": "*",
 
         # https://github.com/ISISScientificComputing/autoreduce/issues/1267
         "duplicate-id-aria": "input",
-    }  # pylint: disable=duplicate-code
+    }
 
     @classmethod
     def setUpClass(cls):

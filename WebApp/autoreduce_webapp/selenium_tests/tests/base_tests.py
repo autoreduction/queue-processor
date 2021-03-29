@@ -194,7 +194,7 @@ class AccessibilityTestMixin:
     """
     # A dict of {rules.id: rules.selector, ...} to be ignored from the test.
     # Reference: https://www.deque.com/axe/core-documentation/api-documentation/#parameters-1
-    accessibility_test_known_issues = {}
+    accessibility_test_ignore_rules = {}
 
     # A list of Axe tags to be run in the test.
     # Reference: https://www.deque.com/axe/core-documentation/api-documentation/#axe-core-tags
@@ -203,7 +203,7 @@ class AccessibilityTestMixin:
     def test_accessibility(self):
         """
         Test: Page contains no Axe accessibility violations for tags accessibility_test_tags and
-        excluding the rules in accessibility_test_known_issues
+        excluding the rules in accessibility_test_ignore_rules
         When: Page has AccessibilityMixin
         """
         self.page.launch()
@@ -221,7 +221,7 @@ class AccessibilityTestMixin:
 
     def _build_axe_options(self) -> str:
         """
-        Create the Axe options JSON using accessibility_test_known_issues and
+        Create the Axe options JSON using accessibility_test_ignore_rules and
         accessibility_test_tags
         :return: (str) A JSON string which is used for Axe options
         """
@@ -236,10 +236,10 @@ class AccessibilityTestMixin:
         {{
             'runOnly': {{
                 type: 'tag',
-                values: {self.accessibility_test_known_issues}
+                values: {self.accessibility_test_tags}
             }},
             'rules': {{
-                {build_rules(self.accessibility_test_known_issues)}
+                {build_rules(self.accessibility_test_ignore_rules)}
             }}
         }}
         '''
