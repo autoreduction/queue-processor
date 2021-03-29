@@ -8,8 +8,7 @@
 import re
 
 from selenium_tests.pages.help_page import HelpPage
-from selenium_tests.tests.base_tests import (NavbarTestMixin, BaseTestCase, FooterTestMixin,
-                                             AccessibilityTestMixin)
+from selenium_tests.tests.base_tests import (NavbarTestMixin, BaseTestCase, FooterTestMixin, AccessibilityTestMixin)
 from selenium.webdriver.support.wait import WebDriverWait
 
 
