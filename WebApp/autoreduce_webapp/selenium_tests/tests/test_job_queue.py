@@ -17,10 +17,10 @@ class TestJobQueuePage(NavbarTestMixin, BaseTestCase, FooterTestMixin, Accessibi
     """
     fixtures = BaseTestCase.fixtures + ["test_job_queue_fixture"]
 
-    accessibility_test_known_issues = {
+    accessibility_test_ignore_rules = {
         # https://github.com/ISISScientificComputing/autoreduce/issues/790
         "color-contrast": "*",
-    }  # pylint: disable=duplicate-code
+    }
 
     def setUp(self):
         """

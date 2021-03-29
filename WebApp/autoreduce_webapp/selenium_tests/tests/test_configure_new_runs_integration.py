@@ -21,13 +21,13 @@ REDUCE_VARS_DEFAULT_VALUE = "default value from reduce_vars"
 class TestConfigureNewRunsPageIntegration(NavbarTestMixin, BaseTestCase, FooterTestMixin, AccessibilityTestMixin):
     fixtures = BaseTestCase.fixtures + ["run_with_one_variable"]
 
-    accessibility_test_known_issues = {
+    accessibility_test_ignore_rules = {
         # https://github.com/ISISScientificComputing/autoreduce/issues/790
         "color-contrast": "*",
 
         # https://github.com/ISISScientificComputing/autoreduce/issues/1267
         "duplicate-id-aria": "input",
-    }  # pylint: disable=duplicate-code
+    }
 
     @classmethod
     def setUpClass(cls):
