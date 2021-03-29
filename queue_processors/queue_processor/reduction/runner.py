@@ -61,7 +61,6 @@ class ReductionRunner:
     def _do_reduce(self):
         """Actually do the reduction job."""
         self.message.software = self._get_mantid_version()
-        logger.info("Running on host: %s", socket.gethostname())
         if self.message.description is not None:
             logger.info("DESCRIPTION: %s", self.message.description)
 

@@ -278,7 +278,6 @@ class HandleMessage:
         reduction_run.finished = timezone.now()
         reduction_run.message = message.message
         reduction_run.reduction_log = message.reduction_log
-        message.admin_log += "Running on host: %s" % socket.getfqdn()
         reduction_run.admin_log = message.admin_log
 
     @staticmethod

@@ -270,7 +270,6 @@ class TestHandleMessage(TestCase):
         assert self.reduction_run.status == STATUS.get_skipped()
         assert "Validation error" in self.reduction_run.message
         assert "Validation error" in self.reduction_run.reduction_log
-        assert "Running on host" in self.reduction_run.admin_log
 
     @patch("queue_processors.queue_processor.handle_message.ReductionScript")
     def test_create_run_records_multiple_versions(self, reduction_script: Mock):
@@ -339,7 +338,6 @@ class TestHandleMessage(TestCase):
         self.mocked_logger.error.assert_called_once()
         assert self.reduction_run.status == STATUS.get_error()
         assert "Encountered error when saving run variables" in self.reduction_run.message
-        assert "Running on host" in self.reduction_run.admin_log
 
     def test_data_ready_no_reduce_vars(self):
         "Test data_ready when the reduce_vars script does not exist and throws a FileNotFoundError"
@@ -350,7 +348,6 @@ class TestHandleMessage(TestCase):
         self.mocked_logger.error.assert_called_once()
         assert self.reduction_run.status == STATUS.get_error()
         assert "Encountered error when saving run variables" in self.reduction_run.message
-        assert "Running on host" in self.reduction_run.admin_log
 
     @patch('queue_processors.queue_processor.reduction.service.ReductionScript.load', return_value=FakeModule())
     @patch("queue_processors.queue_processor.handle_message.ReductionProcessManager")
