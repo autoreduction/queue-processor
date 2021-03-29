@@ -14,6 +14,7 @@ update relevant DB fields or logging out the status.
 """
 import logging
 import socket
+from contextlib import contextmanager
 from typing import Optional
 from django.db import transaction
 from django.utils import timezone
@@ -42,8 +43,34 @@ class HandleMessage:
 
         self._logger = logging.getLogger("handle_queue_message")
 
+        self.database = None
+        self.data_model = None
+
+    def connect(self):
+        """
+        Starts a connection to the database
+        """
         self.database = db_access.start_database()
         self.data_model = self.database.data_model
+
+    def disconnect(self):
+        """
+        Disconnects from the database
+        """
+        self.database.disconnect()
+        self.database = None
+        self.data_model = None
+
+    @contextmanager
+    def connected(self):
+        """
+        Context manager for the connection state to the DB
+        """
+        self.connect()
+        try:
+            yield
+        finally:
+            self.disconnect()
 
     def data_ready(self, message: Message):
         """
