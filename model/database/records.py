@@ -9,18 +9,22 @@
 Contains various helper methods for managing or creating ORM records
 """
 
-import datetime
-import model.database.access
+import socket
+from django.utils import timezone
 
 
-def create_reduction_run_record(experiment, instrument, message, run_version, script_text, status):
+def create_reduction_run_record(experiment, instrument, message, run_version, script_text, status, db_handle=None):
     """
     Creates an ORM record for the given reduction run and returns
     this record without saving it to the DB
     """
-    db_handle = model.database.access.start_database()
+    if not db_handle:
+        # pylint:disable=import-outside-toplevel
+        import model.database.access
+        db_handle = model.database.access.start_database()
+
     data_model = db_handle.data_model
-    time_now = datetime.datetime.utcnow()
+    time_now = timezone.now()
     reduction_run = data_model.ReductionRun(run_number=message.run_number,
                                             run_version=run_version,
                                             run_description=message.description,
@@ -33,5 +37,6 @@ def create_reduction_run_record(experiment, instrument, message, run_version, sc
                                             instrument=instrument,
                                             status_id=status.id,
                                             script=script_text,
-                                            started_by=message.started_by)
+                                            started_by=message.started_by,
+                                            reduction_host=socket.getfqdn())
     return reduction_run

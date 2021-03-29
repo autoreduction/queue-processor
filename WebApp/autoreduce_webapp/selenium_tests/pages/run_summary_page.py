@@ -117,6 +117,12 @@ class RunSummaryPage(Page, RerunFormMixin, NavbarMixin, FooterMixin, TourMixin):
         """
         return self.driver.find_element_by_id("last_updated").text
 
+    def reduction_host_text(self) -> WebElement:
+        """
+        Returns the reduction host text
+        """
+        return self.driver.find_element_by_id("reduction_host").text
+
     def images(self) -> List[WebElement]:
         """
         Returns all image elements on the page.
