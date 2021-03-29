@@ -7,15 +7,15 @@
 
 from django.urls import reverse
 from selenium_tests.pages.rerun_jobs_page import RerunJobsPage
-from selenium_tests.tests.base_tests import (BaseTestCase, FooterTestMixin, NavbarTestMixin)
+from selenium_tests.tests.base_tests import (BaseTestCase, FooterTestMixin, NavbarTestMixin, AccessibilityTestMixin)
 from selenium_tests.utils import submit_and_wait_for_result
 
 from WebApp.autoreduce_webapp.selenium_tests.utils import setup_external_services
 
 
-class TestRerunJobsPageIntegration(NavbarTestMixin, BaseTestCase, FooterTestMixin):
-
+class TestRerunJobsPageIntegration(NavbarTestMixin, BaseTestCase, FooterTestMixin, AccessibilityTestMixin):
     fixtures = BaseTestCase.fixtures + ["run_with_one_variable"]
+    excluded_accessibility_rules = [["color-contrast", "*"], ["duplicate-id-aria", "input"]]
 
     @classmethod
     def setUpClass(cls):
@@ -140,7 +140,6 @@ class TestRerunJobsPageIntegration(NavbarTestMixin, BaseTestCase, FooterTestMixi
 
 
 class TestRerunJobsPageIntegrationSkippedOnly(BaseTestCase):
-
     fixtures = BaseTestCase.fixtures + ["skipped_run"]
 
     @classmethod
