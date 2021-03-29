@@ -9,6 +9,7 @@
 Unit tests for the record helper module
 """
 
+import socket
 from unittest import TestCase, mock
 import model.database.records as records
 
@@ -32,9 +33,8 @@ class TestDatabaseRecords(TestCase):
         db_layer.start_database.return_value.data_model\
             .ReductionRun.assert_called_once()
 
-    @mock.patch("model.database.access")
-    @mock.patch("datetime.datetime")
-    def test_create_reduction_record_forwards_correctly(self, datetime_patch, db_layer):
+    @mock.patch("model.database.records.timezone")
+    def test_create_reduction_record_forwards_correctly(self, timezone_mock):
         """
         Test: Reduction Record uses args correctly.
         Any fields which are hard-coded are mocked with ANY to prevent
@@ -50,22 +50,23 @@ class TestDatabaseRecords(TestCase):
         mock_script_text = mock.NonCallableMock()
         mock_status = mock.NonCallableMock()
 
-        returned = records.create_reduction_run_record(experiment=mock_experiment,
-                                                       instrument=mock_inst,
-                                                       message=mock_msg,
-                                                       run_version=mock_run_version,
-                                                       script_text=mock_script_text,
-                                                       status=mock_status)
+        with mock.patch("model.database") as db_layer:
+            returned = records.create_reduction_run_record(experiment=mock_experiment,
+                                                           instrument=mock_inst,
+                                                           message=mock_msg,
+                                                           run_version=mock_run_version,
+                                                           script_text=mock_script_text,
+                                                           status=mock_status)
 
-        mock_record_orm = db_layer.start_database.return_value.data_model
+            mock_record_orm = db_layer.access.start_database.return_value.data_model
 
         self.assertEqual(mock_record_orm.ReductionRun.return_value, returned)
 
         mock_record_orm.ReductionRun.assert_called_once_with(
             run_number=mock_msg.run_number,
             run_version=mock_run_version,
-            created=datetime_patch.utcnow.return_value,
-            last_updated=datetime_patch.utcnow.return_value,
+            created=timezone_mock.now.return_value,
+            last_updated=timezone_mock.now.return_value,
             experiment=mock_experiment,
             instrument=mock_inst,
             status_id=mock_status.id,
@@ -75,4 +76,5 @@ class TestDatabaseRecords(TestCase):
             run_description=mock.ANY,
             hidden_in_failviewer=mock.ANY,
             admin_log=mock.ANY,
-            reduction_log=mock.ANY)
+            reduction_log=mock.ANY,
+            reduction_host=socket.getfqdn())
