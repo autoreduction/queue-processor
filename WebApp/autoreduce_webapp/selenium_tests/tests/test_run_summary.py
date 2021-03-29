@@ -72,7 +72,6 @@ class TestRunSummaryPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
     def setUpClass(cls):
         """Sets up Dataarchive with scripts and sets instrument for all test cases"""
         super().setUpClass()
-        run = ReductionRun.objects.first()
         cls.instrument_name = "TestInstrument"
         cls.data_archive = DataArchive([cls.instrument_name], 21, 21)
         cls.data_archive.create()
