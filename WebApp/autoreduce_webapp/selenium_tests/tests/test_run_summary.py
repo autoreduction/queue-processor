@@ -24,8 +24,10 @@ from systemtests.utils.data_archive import DataArchive
 
 class TestRunSummaryPageNoArchive(NavbarTestMixin, BaseTestCase, FooterTestMixin, AccessibilityTestMixin):
     fixtures = BaseTestCase.fixtures + ["run_with_one_variable"]
+
     accessibility_test_known_issues = {
-        "color-contrast": "*",  # https://github.com/ISISScientificComputing/autoreduce/issues/790
+        # https://github.com/ISISScientificComputing/autoreduce/issues/790
+        "color-contrast": "*",
     }
 
     @classmethod

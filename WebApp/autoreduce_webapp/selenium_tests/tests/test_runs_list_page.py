@@ -20,8 +20,10 @@ class TestRunsListPage(NavbarTestMixin, BaseTestCase, FooterTestMixin, Accessibi
     """
 
     fixtures = BaseTestCase.fixtures + ["test_runs_list_page"]
+
     accessibility_test_known_issues = {
-        "color-contrast": "*",  # https://github.com/ISISScientificComputing/autoreduce/issues/790
+        # https://github.com/ISISScientificComputing/autoreduce/issues/790
+        "color-contrast": "*",
     }
 
     def setUp(self) -> None:

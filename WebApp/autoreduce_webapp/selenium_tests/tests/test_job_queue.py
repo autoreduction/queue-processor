@@ -16,8 +16,10 @@ class TestJobQueuePage(NavbarTestMixin, BaseTestCase, FooterTestMixin, Accessibi
     Test cases for JobQueuePage
     """
     fixtures = BaseTestCase.fixtures + ["test_job_queue_fixture"]
+
     accessibility_test_known_issues = {
-        "color-contrast": "*",  # https://github.com/ISISScientificComputing/autoreduce/issues/790
+        # https://github.com/ISISScientificComputing/autoreduce/issues/790
+        "color-contrast": "*",
     }
 
     def setUp(self):

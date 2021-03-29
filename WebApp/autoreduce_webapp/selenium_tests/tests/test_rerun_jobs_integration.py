@@ -15,10 +15,13 @@ from WebApp.autoreduce_webapp.selenium_tests.utils import setup_external_service
 
 class TestRerunJobsPageIntegration(NavbarTestMixin, BaseTestCase, FooterTestMixin, AccessibilityTestMixin):
     fixtures = BaseTestCase.fixtures + ["run_with_one_variable"]
+
     accessibility_test_known_issues = {
-        "color-contrast": "*",  # https://github.com/ISISScientificComputing/autoreduce/issues/790
-        "duplicate-id-aria": "input",
+        # https://github.com/ISISScientificComputing/autoreduce/issues/790
+        "color-contrast": "*",
+
         # https://github.com/ISISScientificComputing/autoreduce/issues/1267
+        "duplicate-id-aria": "input",
     }
 
     @classmethod
