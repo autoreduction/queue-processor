@@ -46,9 +46,9 @@ class BaseTestCase(StaticLiveServerTestCase):
     def _screenshot_driver(self):
         now = datetime.datetime.now()
         screenshot_name = f"{type(self).__name__}-{self._testMethodName}-{now.strftime('%Y-%m-%d_%H-%M-%S')}.png"
-        report_path = str(
+        screenshot_path = str(
             Path(PROJECT_ROOT, "WebApp", "autoreduce_webapp", "selenium_tests", "screenshots", screenshot_name))
-        self.driver.save_screenshot(report_path)
+        self.driver.save_screenshot(screenshot_path)
 
     def _is_test_failure(self):
         if hasattr(self, '_outcome'):
