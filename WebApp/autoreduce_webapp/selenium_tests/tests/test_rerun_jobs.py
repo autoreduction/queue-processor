@@ -12,10 +12,10 @@ class TestRerunJobsPage(NavbarTestMixin, BaseTestCase, FooterTestMixin, Accessib
 
     fixtures = BaseTestCase.fixtures + ["run_with_one_variable"]
 
-    # accessibility_test_ignore_rules = {
-    #     # https://github.com/ISISScientificComputing/autoreduce/issues/1267
-    #     "duplicate-id-aria": "input",
-    # }
+    accessibility_test_ignore_rules = {
+        # https://github.com/ISISScientificComputing/autoreduce/issues/1267
+        "duplicate-id-aria": "input",
+    }
 
     @classmethod
     def setUpClass(cls):
