@@ -19,7 +19,7 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/dev-requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
 
@@ -57,7 +57,7 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/dev-requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
 
@@ -91,19 +91,19 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      
+
       - uses: actions/cache@v2
         with:
           path: ~/.cache/pip
-          key: ${{ job.container.image }}-pip-${{ hashFiles('**/requirements.txt') }}
+          key: ${{ job.container.image }}-pip-${{ hashFiles('**/dev-requirements.txt') }}
           restore-keys: |
             ${{ job.container.image }}-pip-
-      
+
       - name: Pip install
-        run: | 
+        run: |
           pip install --upgrade pip
+          pip install -r dev-requirements.txt
           pip install -r requirements.txt
-          pip install -e .
 
   Inspection:
     name: Code Inspection
@@ -122,7 +122,7 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/dev-requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
 

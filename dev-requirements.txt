@@ -1,0 +1,19 @@
+# Test Env. Requirements
+
+coveralls==3.0.1
+dash==1.16.3
+django-debug-toolbar==3.2
+django_plotly_dash==1.6.2
+parameterized==0.8.1
+plotly==4.14.3
+pylint==2.7.2
+pylint-django==2.4.2
+pytest==6.2.2
+pytest-cov==2.11.1
+pytest-django==4.1.0
+pytest-xdist==2.2.1
+requests==2.25.1
+selenium==3.141.0
+stomp.py==6.1.0
+vulture==2.3
+yapf==0.31.0
