@@ -36,7 +36,7 @@ setup_requires = [
     'pytz==2021.1',
     'PyMySQL==1.0.2',
     'pysftp==0.2.9',
-    'python-icat==0.17.0',
+    'python-icat==0.18.0',
     'requests==2.25.1',
     'service_identity==18.1.0',
     'stomp.py==6.1.0',
