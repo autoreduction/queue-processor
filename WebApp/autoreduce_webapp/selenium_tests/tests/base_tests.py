@@ -190,7 +190,7 @@ class FooterTestMixin:
 
 class AccessibilityTestMixin:
     """
-    Contains Axe accessibility test
+    Contains axe accessibility test
     """
     # A dict of {rules.id: rules.selector, ...} to be ignored from the a11y test.
     # Reference: https://www.deque.com/axe/core-documentation/api-documentation/#parameters-1
@@ -203,13 +203,17 @@ class AccessibilityTestMixin:
         "color-contrast": "*",
     }
 
-    # A list of Axe tags to be run in the test.
+    # A list of axe tags to be run in the test.
     # Reference: https://www.deque.com/axe/core-documentation/api-documentation/#axe-core-tags
     accessibility_test_tags = ['wcag2a', 'wcag2aa', 'wcag21aa']
 
+    # The axe reporter name. By default the reporter only reports violations results.
+    # Reference: https://www.deque.com/axe/core-documentation/api-documentation/#api-name-axeconfigure
+    accessibility_reporter_name = "no-passes"
+
     def test_accessibility(self):
         """
-        Test: Page contains no Axe accessibility violations for tags accessibility_test_tags and
+        Test: Page contains no axe accessibility violations for tags accessibility_test_tags and
         excluding the rules in accessibility_test_ignore_rules
         When: Page has AccessibilityMixin
         """
@@ -228,9 +232,9 @@ class AccessibilityTestMixin:
 
     def _build_axe_options(self) -> str:
         """
-        Create the Axe options JSON using accessibility_test_ignore_rules and
+        Create the axe options JSON using accessibility_test_ignore_rules and
         accessibility_test_tags
-        :return: (str) A JSON string which is used for Axe options
+        :return: (str) A JSON string which is used for axe options
         """
         def build_rules(rules):
             if rules == {}:
@@ -249,6 +253,7 @@ class AccessibilityTestMixin:
             }},
             'rules': {{
                 {build_rules(all_rules)}
-            }}
+            }},
+            'reporter': '{self.accessibility_reporter_name}'
         }}
         '''
