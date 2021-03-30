@@ -29,7 +29,7 @@ setup_requires = [
     'filelock==3.0.12',
     'fire==0.4.0',
     'gitpython==3.1.14',
-    'nexusformat==0.6.0',
+    'nexusformat==0.6.1',
     'numpy==1.19.2',
     'pandas==1.1.5',
     'plotly==4.14.3',
