@@ -15,34 +15,37 @@ from queue_processors.queue_processor import queue_listener_daemon
 from queue_processors.queue_processor.queue_listener_daemon import QueueListenerDaemon
 
 
-@mock.patch("queue_processors.queue_processor.queue_listener_daemon.queue_listener")
-def test_daemon_start(patched_queue_listener):
+@mock.patch("queue_processors.queue_processor.queue_listener_daemon.QueueClient")
+@mock.patch("queue_processors.queue_processor.queue_listener_daemon.QueueListener")
+def test_daemon_start(mock_listener, mock_client):
     """
     Test: The main method correctly starts the daemon
     """
-    mock_client, mock_listener = mock.Mock(), mock.Mock()
-    patched_queue_listener.main.return_value = (mock_client, mock_listener)
+    mocked_client = mock_client.return_value
+    mocked_listener = mock_listener.return_value
+
     qld = QueueListenerDaemon("/tmp/file.pid")
     qld.logger = mock.Mock()
     # avoids blocking the test in the while sleep loop
     qld._shutting_down = True  # pylint:disable=protected-access
     qld.run()
 
-    mock_client.disconnect.assert_not_called()
-    mock_listener.is_processing_message.assert_not_called()
+    mocked_client.disconnect.assert_not_called()
+    mocked_listener.is_processing_message.assert_not_called()
+    mocked_listener.connect_and_subscribe.assert_called_once()
 
-    patched_queue_listener.main.assert_called_once()
     qld.logger.info.assert_called_once()
 
 
+@mock.patch("queue_processors.queue_processor.queue_listener_daemon.QueueClient")
 @mock.patch("queue_processors.queue_processor.queue_listener_daemon.time")
-@mock.patch("queue_processors.queue_processor.queue_listener_daemon.queue_listener")
-def test_daemon_start_goes_into_while_loop(patched_queue_listener, time: mock.Mock):
+@mock.patch("queue_processors.queue_processor.queue_listener_daemon.QueueListener")
+def test_daemon_start_goes_into_while_loop(mock_listener, time: mock.Mock, mock_client):
     """
     Test: The main method correctly starts the daemon
     """
-    mock_client, mock_listener = mock.Mock(), mock.Mock()
-    patched_queue_listener.main.return_value = (mock_client, mock_listener)
+    mocked_client = mock_client.return_value
+    mocked_listener = mock_listener.return_value
 
     qld = QueueListenerDaemon("/tmp/file.pid")
     qld.logger = mock.Mock()
@@ -57,41 +60,44 @@ def test_daemon_start_goes_into_while_loop(patched_queue_listener, time: mock.Mo
     qld.run()
     time.sleep.assert_called_once_with(0.5)
 
-    mock_client.disconnect.assert_not_called()
-    mock_listener.is_processing_message.assert_not_called()
+    mocked_client.disconnect.assert_not_called()
+    mocked_listener.is_processing_message.assert_not_called()
 
-    patched_queue_listener.main.assert_called_once()
     qld.logger.info.assert_called_once()
 
 
-@mock.patch("queue_processors.queue_processor.queue_listener_daemon.queue_listener")
-def test_daemon_start_and_stop_while_not_processing(patched_queue_listener):
+@mock.patch("queue_processors.queue_processor.queue_listener_daemon.QueueClient")
+@mock.patch("queue_processors.queue_processor.queue_listener_daemon.QueueListener")
+def test_daemon_start_and_stop_while_not_processing(mock_listener, mock_client):
     """
     Test: The main method correctly stops the daemon when nothing is being processed
     """
-    mock_client, mock_listener = mock.Mock(), mock.Mock()
-    patched_queue_listener.main.return_value = (mock_client, mock_listener)
+    mocked_client = mock_client.return_value
+    mocked_listener = mock_listener.return_value
+
     qld = QueueListenerDaemon("/tmp/file.pid")
     # avoids blocking the test in the while sleep loop
     qld._shutting_down = True  # pylint:disable=protected-access
     qld.run()
 
     qld.logger = mock.Mock()
-    mock_listener.is_processing_message.return_value = False
+    mocked_listener.is_processing_message.return_value = False
     qld.stop()
 
-    mock_client.disconnect.assert_called_once()
-    mock_listener.is_processing_message.assert_called_once()
+    mocked_client.disconnect.assert_called_once()
+    mocked_listener.is_processing_message.assert_called_once()
     qld.logger.info.assert_called_once()
 
 
-@mock.patch("queue_processors.queue_processor.queue_listener_daemon.queue_listener")
-def test_daemon_start_and_stop_while_processing(patched_queue_listener):
+@mock.patch("queue_processors.queue_processor.queue_listener_daemon.QueueClient")
+@mock.patch("queue_processors.queue_processor.queue_listener_daemon.QueueListener")
+def test_daemon_start_and_stop_while_processing(mock_listener, mock_client):
     """
     Test: The main method stops the daemon and logs when a run is processing
     """
-    mock_client, mock_listener = mock.Mock(), mock.Mock()
-    patched_queue_listener.main.return_value = (mock_client, mock_listener)
+    mocked_client = mock_client.return_value
+    mocked_listener = mock_listener.return_value
+
     qld = QueueListenerDaemon("/tmp/file.pid")
     # avoids blocking the test in the while sleep loop
     qld._shutting_down = True  # pylint:disable=protected-access
@@ -101,8 +107,8 @@ def test_daemon_start_and_stop_while_processing(patched_queue_listener):
     mock_listener.is_processing_message.return_value = True
     qld.stop()
 
-    mock_client.disconnect.assert_called_once()
-    mock_listener.is_processing_message.assert_called_once()
+    mocked_client.disconnect.assert_called_once()
+    mocked_listener.is_processing_message.assert_called_once()
     assert qld.logger.info.call_count == 2
 
 
