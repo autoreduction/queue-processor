@@ -14,7 +14,7 @@ import signal
 import time
 from typing import Optional
 
-from queue_processors.queue_processor.autoreduction_queue_listener import QueueListener
+from queue_processors.queue_processor.queue_listener import QueueListener
 from utils.clients.queue_client import QueueClient
 
 from queue_processors.daemon import Daemon, control_daemon_from_cli
