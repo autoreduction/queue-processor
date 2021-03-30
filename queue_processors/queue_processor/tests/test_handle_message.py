@@ -77,6 +77,7 @@ class TestHandleMessage(TestCase):
         })
         with patch("logging.getLogger") as patched_logger:
             self.handler = HandleMessage()
+            self.handler.connect()
             self.mocked_logger = patched_logger.return_value
 
         db_handle = model.database.access.start_database()
