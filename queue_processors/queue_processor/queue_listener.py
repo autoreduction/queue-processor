@@ -75,7 +75,7 @@ class QueueListener(stomp.ConnectionListener):
                     self.message_handler.data_ready(message)
                 else:
                     self.logger.warning("Recieved message on unknown topic: %s", destination)
-            except Exception as ex:
+            except Exception as ex:  # pylint:disable=broad-except
                 self.logger.error("An unhandled exception occured: %s\n\n%s",
                                   type(ex).__name__, traceback.format_exc())
 

@@ -19,12 +19,13 @@ from parameterized.parameterized import parameterized
 
 from model.database import access as db
 from model.message.message import Message
-from queue_processors.queue_processor.queue_listener import main
+from queue_processors.queue_processor.queue_listener import main, QueueListener
 from queue_processors.queue_processor.settings import MANTID_PATH
 from scripts.manual_operations import manual_remove as remove
 from systemtests.utils.data_archive import DataArchive
 from utils.clients.connection_exception import ConnectionException
 from utils.clients.django_database_client import DatabaseClient
+from utils.clients.queue_client import QueueClient
 from utils.project.structure import PROJECT_ROOT
 
 REDUCE_SCRIPT = \
@@ -60,7 +61,9 @@ class TestEndToEnd(unittest.TestCase):
         self.database_client = DatabaseClient()
         self.database_client.connect()
         try:
-            self.queue_client, self.listener = main()
+            self.queue_client = QueueClient()
+            self.listener = QueueListener(self.queue_client)
+            self.listener.connect_and_subscribe()
         except ConnectionException as err:
             raise RuntimeError("Could not connect to ActiveMQ - check you credentials. If running locally check that "
                                "ActiveMQ is running and started by `python setup.py start`") from err
