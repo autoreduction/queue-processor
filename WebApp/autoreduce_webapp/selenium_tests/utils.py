@@ -74,7 +74,9 @@ def setup_external_services(instrument_name: str, start_year: int,
     database_client = DatabaseClient()
     database_client.connect()
     try:
-        queue_client, listener = main()
+        queue_client = QueueClient()
+        listener = QueueListener(queue_client)
+        listener.connect_and_subscribe()
     except ConnectionException as err:
         raise RuntimeError("Could not connect to ActiveMQ - check your credentials. If running locally check that "
                            "ActiveMQ is running and started by `python setup.py start`") from err
