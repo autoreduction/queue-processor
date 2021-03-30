@@ -13,7 +13,7 @@ For example, this may include shuffling the message to another queue,
 update relevant DB fields or logging out the status.
 """
 import logging
-import socket
+from contextlib import contextmanager
 from typing import Optional
 from django.db import transaction
 from django.utils import timezone
@@ -42,8 +42,34 @@ class HandleMessage:
 
         self._logger = logging.getLogger("handle_queue_message")
 
+        self.database = None
+        self.data_model = None
+
+    def connect(self):
+        """
+        Starts a connection to the database
+        """
         self.database = db_access.start_database()
         self.data_model = self.database.data_model
+
+    def disconnect(self):
+        """
+        Disconnects from the database
+        """
+        self.database.disconnect()
+        self.database = None
+        self.data_model = None
+
+    @contextmanager
+    def connected(self):
+        """
+        Context manager for the connection state to the DB
+        """
+        self.connect()
+        try:
+            yield
+        finally:
+            self.disconnect()
 
     def data_ready(self, message: Message):
         """
@@ -106,7 +132,8 @@ class HandleMessage:
                                                                message=message,
                                                                run_version=message.run_version,
                                                                script_text=script_text,
-                                                               status=self.status.get_queued())
+                                                               status=self.status.get_queued(),
+                                                               db_handle=self.database)
         reduction_run.save()
 
         # Create a new data location entry which has a foreign key linking it to the current
@@ -250,7 +277,6 @@ class HandleMessage:
         reduction_run.finished = timezone.now()
         reduction_run.message = message.message
         reduction_run.reduction_log = message.reduction_log
-        message.admin_log += "Running on host: %s" % socket.gethostname()
         reduction_run.admin_log = message.admin_log
 
     @staticmethod

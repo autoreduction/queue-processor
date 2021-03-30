@@ -94,7 +94,7 @@ class QueueClient(AbstractClient):
         for queue in queue_list:
             # prefetchSize limits the processing to 1 message at a time
             self._connection.subscribe(destination=queue,
-                                       id=socket.gethostname(),
+                                       id=socket.getfqdn(),
                                        ack="client-individual",
                                        header={'activemq.prefetchSize': '1'})
             self._logger.info("[%s] Subscribing to %s", consumer_name, queue)

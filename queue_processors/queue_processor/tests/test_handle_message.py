@@ -76,6 +76,7 @@ class TestHandleMessage(TestCase):
         })
         with patch("logging.getLogger") as patched_logger:
             self.handler = HandleMessage(self.mocked_client)
+            self.handler.connect()
             self.mocked_logger = patched_logger.return_value
 
         db_handle = model.database.access.start_database()
@@ -91,6 +92,8 @@ class TestHandleMessage(TestCase):
         self.reduction_run.save()
 
     def tearDown(self) -> None:
+        if self.handler.database is not None:
+            self.handler.disconnect()
         self.experiment.delete()
         self.instrument.delete()
         self.reduction_run.delete()
@@ -267,7 +270,6 @@ class TestHandleMessage(TestCase):
         assert self.reduction_run.status == STATUS.get_skipped()
         assert "Validation error" in self.reduction_run.message
         assert "Validation error" in self.reduction_run.reduction_log
-        assert "Running on host" in self.reduction_run.admin_log
 
     @patch("queue_processors.queue_processor.handle_message.ReductionScript")
     def test_create_run_records_multiple_versions(self, reduction_script: Mock):
@@ -336,7 +338,6 @@ class TestHandleMessage(TestCase):
         self.mocked_logger.error.assert_called_once()
         assert self.reduction_run.status == STATUS.get_error()
         assert "Encountered error when saving run variables" in self.reduction_run.message
-        assert "Running on host" in self.reduction_run.admin_log
 
     def test_data_ready_no_reduce_vars(self):
         "Test data_ready when the reduce_vars script does not exist and throws a FileNotFoundError"
@@ -347,7 +348,6 @@ class TestHandleMessage(TestCase):
         self.mocked_logger.error.assert_called_once()
         assert self.reduction_run.status == STATUS.get_error()
         assert "Encountered error when saving run variables" in self.reduction_run.message
-        assert "Running on host" in self.reduction_run.admin_log
 
     @patch('queue_processors.queue_processor.reduction.service.ReductionScript.load', return_value=FakeModule())
     @patch("queue_processors.queue_processor.handle_message.ReductionProcessManager")
@@ -391,6 +391,21 @@ class TestHandleMessage(TestCase):
         with DefaultDataArchive(self.instrument_name):
             reduction_run, _, _ = self.handler.create_run_records(self.msg)
             assert reduction_run.experiment.reference_number == self.msg.rb_number
+
+    def test_connected(self):
+        """
+        Test the connected context manager properly starts/clears the DB connection
+        """
+        # Disconnect first to remove state from TestCase.setUp
+        self.handler.disconnect()
+
+        with self.handler.connected():
+            assert self.handler.database is not None
+            assert self.handler.data_model is not None
+
+        # at the end of the context there should be a disconnect
+        assert self.handler.database is None
+        assert self.handler.data_model is None
 
 
 if __name__ == '__main__':
