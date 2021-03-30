@@ -81,20 +81,22 @@ class HandleMessage:
         """
         self._logger.info("Data ready for processing run %s on %s", message.run_number, message.instrument)
 
-        try:
-            reduction_run, message, instrument = self.create_run_records(message)
-        except Exception as err:
-            # failed to even create the reduction run object - can't reacover from this
-            self._logger.error("Encountered error in transaction to create ReductionRun and related records, error: %s",
-                               str(err))
-            raise
+        with self.connected():
+            try:
+                reduction_run, message, instrument = self.create_run_records(message)
+            except Exception as err:
+                # failed to even create the reduction run object - can't recover from this
+                self._logger.error(
+                    "Encountered error in transaction to create ReductionRun and related records, error: %s",
+                    str(err))
+                raise
 
-        try:
-            message = self.create_run_variables(reduction_run, message, instrument)
-            self.send_message_onwards(reduction_run, message, instrument)
-        except Exception as err:
-            self._handle_error(reduction_run, message, err)
-            raise
+            try:
+                message = self.create_run_variables(reduction_run, message, instrument)
+                self.send_message_onwards(reduction_run, message, instrument)
+            except Exception as err:
+                self._handle_error(reduction_run, message, err)
+                raise
 
     def _handle_error(self, reduction_run, message, err):
         # couldn't save the state in the database properly - mark the run as errored
