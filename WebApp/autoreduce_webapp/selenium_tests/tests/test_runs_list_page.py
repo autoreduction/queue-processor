@@ -21,11 +21,6 @@ class TestRunsListPage(NavbarTestMixin, BaseTestCase, FooterTestMixin, Accessibi
 
     fixtures = BaseTestCase.fixtures + ["test_runs_list_page"]
 
-    accessibility_test_ignore_rules = {
-        # https://github.com/ISISScientificComputing/autoreduce/issues/790
-        "color-contrast": "*",
-    }
-
     def setUp(self) -> None:
         """
         Sets up the InstrumentSummaryPage object

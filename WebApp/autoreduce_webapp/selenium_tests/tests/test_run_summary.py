@@ -25,11 +25,6 @@ from systemtests.utils.data_archive import DataArchive
 class TestRunSummaryPageNoArchive(NavbarTestMixin, BaseTestCase, FooterTestMixin, AccessibilityTestMixin):
     fixtures = BaseTestCase.fixtures + ["run_with_one_variable"]
 
-    accessibility_test_ignore_rules = {
-        # https://github.com/ISISScientificComputing/autoreduce/issues/790
-        "color-contrast": "*",
-    }
-
     @classmethod
     def setUpClass(cls):
         """Set the instrument for all test cases"""

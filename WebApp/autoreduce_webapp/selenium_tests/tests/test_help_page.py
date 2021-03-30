@@ -16,11 +16,6 @@ class TestHelpPage(NavbarTestMixin, BaseTestCase, FooterTestMixin, Accessibility
     """
     Test cases for the help page
     """
-    accessibility_test_ignore_rules = {
-        # https://github.com/ISISScientificComputing/autoreduce/issues/790
-        "color-contrast": "*",
-    }
-
     def setUp(self) -> None:
         """
         Sets up the HelpPage object

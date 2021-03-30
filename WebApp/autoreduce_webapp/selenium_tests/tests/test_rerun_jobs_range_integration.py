@@ -20,9 +20,6 @@ class TestRerunJobsRangePageIntegration(NavbarTestMixin, BaseTestCase, FooterTes
     fixtures = BaseTestCase.fixtures + ["two_runs"]
 
     accessibility_test_ignore_rules = {
-        # https://github.com/ISISScientificComputing/autoreduce/issues/790
-        "color-contrast": "*",
-
         # https://github.com/ISISScientificComputing/autoreduce/issues/1267
         "duplicate-id-aria": "input",
     }
