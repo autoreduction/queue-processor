@@ -226,7 +226,7 @@ OUTDATED_BROWSERS = {
 # UserOffice WebService
 
 UOWS_URL = 'https://api.facilities.rl.ac.uk/ws/UserOfficeWebService?wsdl'
-UOWS_LOGIN_URL = 'https://users.facilities.rl.ac.uk/auth/?service=http://reduce.isis.cclrc.ac.uk&redirecturl='
+UOWS_LOGIN_URL = 'https://users.facilities.rl.ac.uk/auth/?service=https://reduce.isis.cclrc.ac.uk&redirecturl='
 
 # Email for notifications
 
@@ -235,7 +235,7 @@ EMAIL_HOST = 'exchsmtp.stfc.ac.uk'
 EMAIL_PORT = 25
 EMAIL_ERROR_RECIPIENTS = ['isisreduce@stfc.ac.uk']
 EMAIL_ERROR_SENDER = 'autoreducedev@reduce.isis.cclrc.ac.uk'
-BASE_URL = 'http://reduce.isis.cclrc.ac.uk/'
+BASE_URL = 'https://reduce.isis.cclrc.ac.uk/'
 
 # Constant vars
 SESSION_COOKIE_AGE = 3600  # The MAX length before user is logged out, 1 hour in seconds

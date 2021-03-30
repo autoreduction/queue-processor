@@ -153,7 +153,7 @@ class TestReductionRunner(unittest.TestCase):
         self.message.description = "testdescription"
         runner = ReductionRunner(self.message)
         runner.reduce()
-        assert mock_logger_info.call_count == 2
+        mock_logger_info.assert_called_once()
         assert mock_logger_info.call_args[0][1] == "testdescription"
         _get_mantid_version.assert_called_once()
         assert runner.message.message == 'Error encountered when trying to access the datafile /isis/data.nxs'

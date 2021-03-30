@@ -109,11 +109,11 @@ class VariableUtils:
 
         return {
             "standard_vars":
-            VariableUtils.make_variable_like_dict(
+            VariableUtils.make_dict_with_unsaved_variables(
                 getattr(module, 'standard_vars', {}),
                 variable_help["standard_vars"] if "standard_vars" in variable_help else {}),
             "advanced_vars":
-            VariableUtils.make_variable_like_dict(
+            VariableUtils.make_dict_with_unsaved_variables(
                 getattr(module, 'advanced_vars', {}),
                 variable_help["advanced_vars"] if "advanced_vars" in variable_help else {}),
             "variable_help":
@@ -121,7 +121,7 @@ class VariableUtils:
         }
 
     @staticmethod
-    def make_variable_like_dict(variables: dict, help_dict: dict) -> Dict[str, object]:
+    def make_dict_with_unsaved_variables(variables: dict, help_dict: dict) -> Dict[str, object]:
         """
         Returns a dict with unsaved Variable objects.
 
@@ -135,6 +135,6 @@ class VariableUtils:
             result[name] = variable_model(name=name,
                                           value=value,
                                           type=VariableUtils.get_type_string(value),
-                                          help_text=help_dict["name"] if name in help_dict else "")
+                                          help_text=help_dict[name] if name in help_dict else "")
 
         return result

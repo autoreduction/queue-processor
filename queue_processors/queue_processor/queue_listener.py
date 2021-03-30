@@ -69,6 +69,7 @@ class QueueListener(stomp.ConnectionListener):
                 return
 
             self.client.ack(headers["message-id"], headers["subscription"])
+
             try:
                 if destination == "/queue/DataReady":
                     self.message_handler.data_ready(message)
@@ -77,6 +78,7 @@ class QueueListener(stomp.ConnectionListener):
             except Exception as ex:
                 self.logger.error("An unhandled exception occured: %s\n\n%s",
                                   type(ex).__name__, traceback.format_exc())
+
 
     def connect_and_subscribe(self) -> None:
         """

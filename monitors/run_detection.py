@@ -132,6 +132,7 @@ class InstrumentMonitor:
                               rb_number=rb_number,
                               run_number=run_number,
                               data=file_path,
+                              facility="ISIS",
                               started_by=0)  # Autoreduction service code
             self.client.send('/queue/DataReady', message, priority='9')
         else:

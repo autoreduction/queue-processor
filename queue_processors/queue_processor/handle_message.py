@@ -13,6 +13,7 @@ For example, this may include shuffling the message to another queue,
 update relevant DB fields or logging out the status.
 """
 import logging
+from contextlib import contextmanager
 from typing import Optional
 from django.db import transaction
 from django.utils import timezone
@@ -39,8 +40,34 @@ class HandleMessage:
 
         self._logger = logging.getLogger("handle_queue_message")
 
+        self.database = None
+        self.data_model = None
+
+    def connect(self):
+        """
+        Starts a connection to the database
+        """
         self.database = db_access.start_database()
         self.data_model = self.database.data_model
+
+    def disconnect(self):
+        """
+        Disconnects from the database
+        """
+        self.database.disconnect()
+        self.database = None
+        self.data_model = None
+
+    @contextmanager
+    def connected(self):
+        """
+        Context manager for the connection state to the DB
+        """
+        self.connect()
+        try:
+            yield
+        finally:
+            self.disconnect()
 
     def data_ready(self, message: Message):
         """
@@ -71,32 +98,40 @@ class HandleMessage:
 
     def _handle_error(self, reduction_run, message, err):
         # couldn't save the state in the database properly - mark the run as errored
-        err_msg = f"Encountered error in transaction to save RunVariables, error: {str(err)}"
-        self._logger.error(err_msg)
+        err_msg = "Encountered error when saving run variables"
         message.message = err_msg
+        self._logger.error("%s\n%s", err_msg, str(err))
+        message.reduction_log = str(err)
         self.reduction_error(reduction_run, message)
 
-    @transaction.atomic
     def create_run_records(self, message: Message):
         """
-        Creates or gets the necessary records to construct a ReductionRun
+        Creates or gets the necessary records to construct a ReductionRun.
         """
         # This must be done before looking up the run version to make sure the experiment record exists!
         rb_number = self.normalise_rb_number(message.rb_number)
         experiment = db_access.get_experiment(rb_number)
         run_version = db_access.find_highest_run_version(experiment, run_number=str(message.run_number))
         message.run_version = run_version
-
         instrument = db_access.get_instrument(str(message.instrument))
+        return self.do_create_reduction_record(message, experiment, instrument)
+
+    @transaction.atomic
+    def do_create_reduction_record(self, message: Message, experiment, instrument):
+        """
+        Creates the reduction record
+        """
         script = ReductionScript(instrument.name)
         script_text = script.text()
+
         # Make the new reduction run with the information collected so far
         reduction_run = db_records.create_reduction_run_record(experiment=experiment,
                                                                instrument=instrument,
                                                                message=message,
-                                                               run_version=run_version,
+                                                               run_version=message.run_version,
                                                                script_text=script_text,
-                                                               status=self.status.get_queued())
+                                                               status=self.status.get_queued(),
+                                                               db_handle=self.database)
         reduction_run.save()
 
         # Create a new data location entry which has a foreign key linking it to the current
@@ -131,6 +166,7 @@ class HandleMessage:
         skip_reason = self.find_reason_to_skip_run(reduction_run, message, instrument)
         if skip_reason is not None:
             message.message = skip_reason
+            message.reduction_log = skip_reason
             self.reduction_skipped(reduction_run, message)
         else:
             self.activate_db_inst(instrument)

@@ -92,6 +92,8 @@ class TestHandleMessage(TestCase):
         self.reduction_run.save()
 
     def tearDown(self) -> None:
+        if self.handler.database is not None:
+            self.handler.disconnect()
         self.experiment.delete()
         self.instrument.delete()
         self.reduction_run.delete()
@@ -267,6 +269,7 @@ class TestHandleMessage(TestCase):
         rpm.return_value.run.assert_not_called()
         assert self.reduction_run.status == STATUS.get_skipped()
         assert "Validation error" in self.reduction_run.message
+        assert "Validation error" in self.reduction_run.reduction_log
 
     @patch("queue_processors.queue_processor.handle_message.ReductionScript")
     def test_create_run_records_multiple_versions(self, reduction_script: Mock):
@@ -334,7 +337,7 @@ class TestHandleMessage(TestCase):
         assert self.mocked_logger.info.call_count == 2
         self.mocked_logger.error.assert_called_once()
         assert self.reduction_run.status == STATUS.get_error()
-        assert "Encountered error in transaction to save RunVariables" in self.reduction_run.message
+        assert "Encountered error when saving run variables" in self.reduction_run.message
 
     def test_data_ready_no_reduce_vars(self):
         """Test data_ready when the reduce_vars script does not exist and throws a FileNotFoundError"""
@@ -344,7 +347,7 @@ class TestHandleMessage(TestCase):
         assert self.mocked_logger.info.call_count == 3
         self.mocked_logger.error.assert_called_once()
         assert self.reduction_run.status == STATUS.get_error()
-        assert "Encountered error in transaction to save RunVariables" in self.reduction_run.message
+        assert "Encountered error when saving run variables" in self.reduction_run.message
 
     @patch('queue_processors.queue_processor.reduction.service.ReductionScript.load', return_value=FakeModule())
     @patch("queue_processors.queue_processor.handle_message.ReductionProcessManager")
@@ -388,6 +391,21 @@ class TestHandleMessage(TestCase):
         with DefaultDataArchive(self.instrument_name):
             reduction_run, _, _ = self.handler.create_run_records(self.msg)
             assert reduction_run.experiment.reference_number == self.msg.rb_number
+
+    def test_connected(self):
+        """
+        Test the connected context manager properly starts/clears the DB connection
+        """
+        # Disconnect first to remove state from TestCase.setUp
+        self.handler.disconnect()
+
+        with self.handler.connected():
+            assert self.handler.database is not None
+            assert self.handler.data_model is not None
+
+        # at the end of the context there should be a disconnect
+        assert self.handler.database is None
+        assert self.handler.data_model is None
 
 
 if __name__ == '__main__':

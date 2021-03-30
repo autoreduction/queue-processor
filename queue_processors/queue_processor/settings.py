@@ -33,7 +33,7 @@ else:
 
 if "AUTOREDUCTION_PRODUCTION" in os.environ:
     # for when deploying on production - this is the real path where the mounts are
-    ARCHIVE_ROOT = "/isis"
+    ARCHIVE_ROOT = "\\\\isis\\inst$\\" if os.name == "nt" else "/isis"
 elif "RUNNING_VIA_PYTEST" in os.environ:
     # for testing which uses a local folder to simulate an archive
     ARCHIVE_ROOT = os.path.join(PROJECT_ROOT, 'test-archive')
@@ -44,7 +44,7 @@ else:
 # Variables that get changes less
 # %(instrument, cycle, experiment_number, run_number)
 CYCLE_DIRECTORY = os.path.join(ARCHIVE_ROOT, 'NDX%s', 'Instrument', 'data', 'cycle_%s')
-SCRIPTS_DIRECTORY = f"{ARCHIVE_ROOT}/NDX%s/user/scripts/autoreduction/"
+SCRIPTS_DIRECTORY = os.path.join(ARCHIVE_ROOT, "NDX%s", "user", "scripts", "autoreduction")
 
 SCRIPT_TIMEOUT = 3600  # The max time to wait for a user script to finish running (seconds)
 TEMP_ROOT_DIRECTORY = "/autoreducetmp"
