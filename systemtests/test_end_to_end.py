@@ -11,16 +11,15 @@ Tests that data can traverse through the autoreduction system successfully
 import os
 import shutil
 import time
-from contextlib import contextmanager
-from typing import Union
 import unittest
 from pathlib import Path
+from typing import Union
 
 from parameterized.parameterized import parameterized
 
 from model.database import access as db
 from model.message.message import Message
-from queue_processors.queue_processor.queue_listener import main, QueueListener
+from queue_processors.queue_processor.queue_listener import QueueListener
 from queue_processors.queue_processor.settings import MANTID_PATH
 from scripts.manual_operations import manual_remove as remove
 from systemtests.utils.data_archive import DataArchive
