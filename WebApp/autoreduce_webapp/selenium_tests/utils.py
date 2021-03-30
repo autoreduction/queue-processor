@@ -4,6 +4,7 @@
 # Copyright &copy; 2021 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
+import time
 from typing import Tuple
 
 from django.urls.base import reverse
@@ -54,7 +55,10 @@ def submit_and_wait_for_result(test):
         return expected_url in driver.current_url
 
     WebDriverWait(test.driver, 30).until(submit_successful)
-    WebDriverWait(test.driver, 30).until(lambda _: not test.listener.is_processing_message())
+    now = time.time()
+    while test.listener.is_processing_message():
+        if time.time() > now + 30:
+            break
 
     return find_run_in_database(test)
 
