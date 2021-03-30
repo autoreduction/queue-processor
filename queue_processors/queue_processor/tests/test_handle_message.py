@@ -59,7 +59,6 @@ class TestHandleMessage(TestCase):
     """
     Directly tests the message handling classes
     """
-
     def setUp(self):
         self.mocked_client = mock.Mock(spec=QueueListener)
         self.instrument_name = "ARMI"

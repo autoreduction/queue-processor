@@ -87,7 +87,6 @@ class TestQueueListener(TestCase):
         self.listener.on_message(headers, {"run_number": 1234567})
         self.mocked_logger.warning.assert_called_once()
 
-
     def test_on_message_sends_acknowledgement(self):
         "Test that acknowledgement is sent when the message is received and parsed successfully"
         message = {"run_number": 1234567}

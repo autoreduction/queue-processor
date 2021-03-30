@@ -76,9 +76,7 @@ class QueueListener(stomp.ConnectionListener):
                 else:
                     self.logger.warning("Recieved message on unknown topic: %s", destination)
             except Exception as ex:  # pylint:disable=broad-except
-                self.logger.error("An unhandled exception occured: %s\n\n%s",
-                                  type(ex).__name__, traceback.format_exc())
-
+                self.logger.error("An unhandled exception occured: %s\n\n%s", type(ex).__name__, traceback.format_exc())
 
     def connect_and_subscribe(self) -> None:
         """
@@ -116,7 +114,6 @@ if __name__ == '__main__':
         main()
     except ConnectionException as exp:
         logging.getLogger("queue_listener").error("Exception occured while connecting: %s %s \n\n%s",
-
                                                   type(exp).__name__, exp, traceback.format_exc())
         raise
 

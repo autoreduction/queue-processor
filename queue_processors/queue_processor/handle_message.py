@@ -33,7 +33,6 @@ class HandleMessage:
     Handles messages from the queue client and forwards through various
     stages depending on the message contents.
     """
-
     def __init__(self):
         self.status = StatusUtils()
         self.instrument_variable = InstrumentVariablesUtils()
@@ -87,8 +86,7 @@ class HandleMessage:
             except Exception as err:
                 # failed to even create the reduction run object - can't recover from this
                 self._logger.error(
-                    "Encountered error in transaction to create ReductionRun and related records, error: %s",
-                    str(err))
+                    "Encountered error in transaction to create ReductionRun and related records, error: %s", str(err))
                 raise
 
             try:
