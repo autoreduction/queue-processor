@@ -11,6 +11,7 @@ Tests that data can traverse through the autoreduction system successfully
 import os
 import shutil
 import time
+from contextlib import contextmanager
 from typing import Union
 import unittest
 from pathlib import Path
@@ -108,6 +109,16 @@ class TestEndToEnd(unittest.TestCase):
         if self.test_mantid_py:
             shutil.rmtree(MANTID_PATH)
 
+    def wait_for_listener(self):
+        """
+        Wait for upto 30 seconds for the queue listener to finish processing before continuing
+        """
+        now = time.time()
+        while self.listener.is_processing_message():
+            time.sleep(0.5)
+            if time.time() > now + 30:
+                break
+
     def _setup_data_structures(self, reduce_script, vars_script):
         """
         Sets up a fake archive and reduced data save location on the system
@@ -154,8 +165,7 @@ class TestEndToEnd(unittest.TestCase):
         # forces the is_processing to return True so that the listener has time to actually start processing the message
         self.listener._processing = True  #pylint:disable=protected-access
         self.queue_client.send('/queue/DataReady', message)
-        while self.listener.is_processing_message():
-            time.sleep(0.5)
+        self.wait_for_listener()
 
         # Get Result from database
         results = self._find_run_in_database()
