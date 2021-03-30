@@ -85,18 +85,7 @@ class TestQueueListener(TestCase):
         headers = deepcopy(self.headers)
         headers["destination"] = "unknown"
         self.listener.on_message(headers, {"run_number": 1234567})
-        self.mocked_logger.error.assert_called_once()
-
-    def test_on_message_can_receive_a_prepopulated_message(self):
-        "Test receiving an already constructed Message object"
-        message = Message()
-        message.populate({"run_number": 1234567})
-        self.listener.on_message(self.headers, message)
-        self.assertFalse(self.listener.is_processing_message())
-        self.mocked_logger.info.assert_called_once()
-        self.mocked_client.ack.assert_called_once_with(self.headers["message-id"], self.headers["subscription"])
-        self.mocked_handler.data_ready.assert_called_once()
-        self.assertIsInstance(self.mocked_handler.data_ready.call_args[0][0], Message)
+        self.mocked_logger.warning.assert_called_once()
 
     def test_on_message_sends_acknowledgement(self):
         "Test that acknowledgement is sent when the message is received and parsed successfully"

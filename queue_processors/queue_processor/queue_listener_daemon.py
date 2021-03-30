@@ -13,6 +13,8 @@ import logging
 import signal
 import time
 from typing import Optional
+
+from queue_processors.queue_processor.autoreduction_queue_listener import QueueListener
 from utils.clients.queue_client import QueueClient
 
 from queue_processors.daemon import Daemon, control_daemon_from_cli
@@ -36,7 +38,9 @@ class QueueListenerDaemon(Daemon):
     def run(self):
         """ Run queue processor. """
         self.logger.info("Starting Queue Processor")
-        self.client, self.listener = queue_listener.main()
+        self.client = QueueClient()
+        self.listener = QueueListener(self.client)
+        self.listener.connect_and_subscribe()
         # keeps the daemon alive as the main call above does not block
         # but simply runs the connections in async. If this sleep isn't
         # here the deamon will just exit after connecting
