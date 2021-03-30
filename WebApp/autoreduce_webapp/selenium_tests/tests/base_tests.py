@@ -192,9 +192,16 @@ class AccessibilityTestMixin:
     """
     Contains Axe accessibility test
     """
-    # A dict of {rules.id: rules.selector, ...} to be ignored from the test.
+    # A dict of {rules.id: rules.selector, ...} to be ignored from the a11y test.
     # Reference: https://www.deque.com/axe/core-documentation/api-documentation/#parameters-1
     accessibility_test_ignore_rules = {}
+
+    # A shared dict of {rules.id: rules.selector, ...} to also be ignored from the a11y test.
+    # Reference: https://www.deque.com/axe/core-documentation/api-documentation/#parameters-1
+    _shared_accessibility_test_ignore_rules = {
+        # https://github.com/ISISScientificComputing/autoreduce/issues/790
+        "color-contrast": "*",
+    }
 
     # A list of Axe tags to be run in the test.
     # Reference: https://www.deque.com/axe/core-documentation/api-documentation/#axe-core-tags
@@ -232,6 +239,8 @@ class AccessibilityTestMixin:
             return ', '.join(
                 [f"'{rule}': {{enabled: false, selector: '{selector}'}}" for rule, selector in rules.items()])
 
+        all_rules = {**self._shared_accessibility_test_ignore_rules, **self.accessibility_test_ignore_rules}
+
         return f'''
         {{
             'runOnly': {{
@@ -239,7 +248,7 @@ class AccessibilityTestMixin:
                 values: {self.accessibility_test_tags}
             }},
             'rules': {{
-                {build_rules(self.accessibility_test_ignore_rules)}
+                {build_rules(all_rules)}
             }}
         }}
         '''
