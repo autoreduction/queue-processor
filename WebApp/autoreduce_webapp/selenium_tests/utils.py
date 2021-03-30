@@ -11,7 +11,7 @@ from selenium.common.exceptions import ElementClickInterceptedException
 from selenium.webdriver.support.wait import WebDriverWait
 
 from model.database import access as db
-from queue_processors.queue_processor.queue_listener import main, QueueListener
+from queue_processors.queue_processor.queue_listener import QueueListener
 from systemtests.utils.data_archive import DataArchive
 from utils.clients.connection_exception import ConnectionException
 from utils.clients.django_database_client import DatabaseClient
