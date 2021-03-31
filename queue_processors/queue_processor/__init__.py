@@ -67,6 +67,11 @@ LOGGING = {
             'maxBytes': 104857600,
             'backupCount': 20,
         },
+        'stdout': {
+            'level': LOG_LEVEL,
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
     },
     'root': {
         'level': LOG_LEVEL,
@@ -75,37 +80,37 @@ LOGGING = {
     },
     'loggers': {
         'queue_processor': {
-            'handlers': ['queue_processor_file'],
+            'handlers': ['stdout', 'queue_processor_file'],
             'propagate': True,
             'level': LOG_LEVEL,
         },
         'queue_listener': {
-            'handlers': ['queue_processor_file'],
+            'handlers': ['stdout', 'queue_processor_file'],
             'propagate': True,
             'level': LOG_LEVEL,
         },
         'django.server': {
-            'handlers': ['webapp_file'],
+            'handlers': ['stdout', 'webapp_file'],
             'propagate': True,
             'level': 'DEBUG',
         },
         'app': {
-            'handlers': ['webapp_file'],
+            'handlers': ['stdout', 'webapp_file'],
             'propagate': True,
             'level': 'DEBUG',
         },
         'reduction_runner': {
-            'handlers': ['autoreduction_file'],
+            'handlers': ['stdout', 'autoreduction_file'],
             'propagate': True,
             'level': LOG_LEVEL,
         },
         'reduction_service': {
-            'handlers': ['autoreduction_file'],
+            'handlers': ['stdout', 'autoreduction_file'],
             'propagate': True,
             'level': LOG_LEVEL,
         },
         'handle_queue_message': {
-            'handlers': ['handle_queue_message_file'],
+            'handlers': ['stdout', 'handle_queue_message_file'],
             'propagate': True,
             'level': LOG_LEVEL,
         },
