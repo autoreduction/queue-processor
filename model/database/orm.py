@@ -14,6 +14,7 @@ import logging
 
 import django
 from django.conf import settings
+from django.db import close_old_connections, connection
 
 from utils.project.structure import get_project_root
 
@@ -41,6 +42,21 @@ class DjangoORM:
             sys.path.append(path)
 
     @staticmethod
+    def remove_old_db_connections():
+        """
+        Remove expired database connections. The connections can expire on both ends:
+        - on the QP after the value of CONN_MAX_AGE
+        - on the DB server (MySQL specifically) after the value of `wait_timeout` (which by default is 8 hours)
+
+        `connection.connection` is None means there hasn't been a connection to the DB before.
+        """
+        if connection.connection and not connection.is_usable():
+            # destroy the default mysql connection
+            # after this line, when you use ORM methods
+            # django will reconnect to the default mysql
+            close_old_connections()
+
+    @staticmethod
     def setup_django():
         """
         Use the WebApp settings to initialise a django instance that can be used for model access
@@ -50,12 +66,16 @@ class DjangoORM:
             # import here to avoid failure without calling add_webapp_path first
             # pylint:disable=import-outside-toplevel
             from WebApp.autoreduce_webapp.autoreduce_webapp.settings import DATABASES, ORM_INSTALL
+
             if not settings.configured:
                 settings.configure(
                     DATABASES=DATABASES,
                     INSTALLED_APPS=ORM_INSTALL,
                 )
                 django.setup()
+
+            if DATABASES["default"]["ENGINE"] == "django.db.backends.mysql":
+                DjangoORM.remove_old_db_connections()
         except RuntimeError as excep:
             logging.warning("Exception raised when attempting to setup: %s", excep)
 
