@@ -2,6 +2,12 @@
 	"folders": [
 		{
 			"path": "."
+		},
+		{
+			"path": "../autoreduce-ansible"
+		},
+		{
+			"path": "../autoreduce-containers"
 		}
 	],
 	"settings": {
