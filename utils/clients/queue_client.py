@@ -8,6 +8,7 @@
 Client class for accessing queuing service
 """
 import logging
+import os
 import uuid
 import socket
 
@@ -67,6 +68,18 @@ class QueueClient(AbstractClient):
         Create the connection to the queuing service and store as self._connection
         :param listener: A ConnectionListener object to assign to the stomp connection, optionally
         """
+        inteded_for_production = "AUTOREDUCTION_PRODUCTION" in os.environ
+        aimed_at_dev = self.credentials.host == "127.0.0.1" or "dev" in str(self.credentials.host)
+        # Prevent unintentional submission to non-development envs
+        if not inteded_for_production and not aimed_at_dev:
+            raise RuntimeError(
+                f"Trying to submit to a potentially non-development environment at `{self.credentials.host}`. "
+                "You must declare AUTOREDUCTION_PRODUCTION in the environment "
+                "if you intend to submit to the production environment")
+        elif inteded_for_production and aimed_at_dev:
+            raise RuntimeError(f"Trying to submit to production environment but host is `{self.credentials.host}`. "
+                               "Remove AUTOREDUCTION_PRODUCTION if that is unintentional.")
+
         if self._connection is None or not self._connection.is_connected():
             try:
                 host_port = [(self.credentials.host, int(self.credentials.port))]
