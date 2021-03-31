@@ -247,3 +247,4 @@ DEVELOPMENT_MODE = True  # If the installation is in a development environment, 
 # we are not constrained by having to log in through the user office. This will authenticate
 # anyone visiting the site as a super user
 X_FRAME_OPTIONS = 'SAMEORIGIN'  # Enables the use of frames within HTML
+CONN_MAX_AGE = 60
