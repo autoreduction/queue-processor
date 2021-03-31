@@ -82,7 +82,7 @@ class ReductionRunUtils:
                           reduction_arguments=new_script_arguments,
                           run_version=most_recent_run.run_version,
                           facility=FACILITY,
-                          software=most_recent_run.software,
+                          software=str(most_recent_run.software),
                           overwrite=overwrite_previous_data)
         MessagingUtils.send(message)
 
