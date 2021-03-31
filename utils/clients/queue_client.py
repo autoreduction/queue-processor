@@ -69,7 +69,7 @@ class QueueClient(AbstractClient):
         :param listener: A ConnectionListener object to assign to the stomp connection, optionally
         """
         inteded_for_production = "AUTOREDUCTION_PRODUCTION" in os.environ
-        aimed_at_dev = self.credentials.host == "127.0.0.1" or "dev" in str(self.credentials.host)
+        aimed_at_dev = self.credentials.host.startswith("127") or "dev" in str(self.credentials.host)
         # Prevent unintentional submission to non-development envs
         if not inteded_for_production and not aimed_at_dev:
             raise RuntimeError(
