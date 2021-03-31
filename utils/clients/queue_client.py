@@ -76,7 +76,7 @@ class QueueClient(AbstractClient):
                 f"Trying to submit to a potentially non-development environment at `{self.credentials.host}`. "
                 "You must declare AUTOREDUCTION_PRODUCTION in the environment "
                 "if you intend to submit to the production environment")
-        elif inteded_for_production and aimed_at_dev:
+        if inteded_for_production and aimed_at_dev:
             raise RuntimeError(f"Trying to submit to production environment but host is `{self.credentials.host}`. "
                                "Remove AUTOREDUCTION_PRODUCTION if that is unintentional.")
 
