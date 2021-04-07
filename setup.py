@@ -39,7 +39,7 @@ setup_requires = [
     'python-icat==0.18.0',
     'requests==2.25.1',
     'service_identity==18.1.0',
-    'stomp.py==6.1.0',
+    'stomp.py==6.1.1',
     'suds-py3==1.4.4.1',
     'PyYAML==5.4.1'
 ]
