@@ -22,7 +22,7 @@ setup_requires = [
     # dash 1.16.3 depends on dash-core-components 1.12.1
     'dash_core_components==1.15.0',
     'docker==5.0.0',
-    'Django==3.1.7',
+    'Django==3.2',
     'django_extensions==3.1.1',
     'django_plotly_dash==1.6.3',
     'django-user-agents==0.4.0',
