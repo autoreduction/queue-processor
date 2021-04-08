@@ -16,7 +16,7 @@ import os
 import re
 import shutil
 from typing import List
-from utils.project.structure import get_project_root
+from WebApp.autoreduce_webapp.autoreduce_webapp.settings import STATIC_ROOT
 
 LOGGER = logging.getLogger('app')
 
@@ -34,7 +34,7 @@ class PlotHandler:
         self.server_dir = server_dir
         self.file_extensions = ["png", "jpg", "bmp", "gif", "tiff"]
         # Directory to place fetched data files / images
-        self.static_graph_dir = os.path.join(get_project_root(), 'WebApp', 'autoreduce_webapp', 'static', 'graphs')
+        self.static_graph_dir = os.path.join(STATIC_ROOT, 'graphs')
 
     @staticmethod
     def _get_only_data_file_name(data_filepath: str) -> str:
