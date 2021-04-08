@@ -48,8 +48,8 @@ def index(request):
     Render the index page
     """
     return_url = UOWS_LOGIN_URL + request.build_absolute_uri()
-    if request.GET.get('next'):
-        next_url = request.GET.get('next')
+    next_url = request.GET.get('next')
+    if next_url:
         if url_has_allowed_host_and_scheme(next_url, ALLOWED_HOSTS, require_https=True):
             return_url = UOWS_LOGIN_URL + request.build_absolute_uri(next_url)
         else:
