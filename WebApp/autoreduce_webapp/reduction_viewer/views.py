@@ -53,7 +53,7 @@ def index(request):
         if url_has_allowed_host_and_scheme(next_url, ALLOWED_HOSTS, require_https=True):
             return_url = UOWS_LOGIN_URL + request.build_absolute_uri(next_url)
         else:
-            # the next_url was not safe so don't use it
+            # the next_url was not safe so don't use it - build from request.path to ignore GET parameters
             return_url = UOWS_LOGIN_URL + request.build_absolute_uri(request.path)
 
     use_query_next = request.build_absolute_uri(request.GET.get('next'))
