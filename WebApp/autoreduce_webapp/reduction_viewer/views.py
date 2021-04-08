@@ -19,7 +19,7 @@ import operator
 import traceback
 
 from autoreduce_webapp.icat_cache import ICATCache
-from autoreduce_webapp.settings import (DEVELOPMENT_MODE, UOWS_LOGIN_URL, USER_ACCESS_CHECKS)
+from autoreduce_webapp.settings import (ALLOWED_HOSTS, DEVELOPMENT_MODE, UOWS_LOGIN_URL, USER_ACCESS_CHECKS)
 from autoreduce_webapp.uows_client import UOWSClient
 from autoreduce_webapp.view_utils import (check_permissions, login_and_uows_valid, render_with, require_admin)
 from django.contrib.auth import authenticate, login
@@ -29,6 +29,7 @@ from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.db.models import Q
 from django.http import HttpResponseNotFound
 from django.shortcuts import redirect
+from django.utils.http import url_has_allowed_host_and_scheme
 from reduction_viewer.models import (Experiment, Instrument, ReductionRun, Status)
 from reduction_viewer.utils import ReductionRunUtils
 from reduction_viewer.view_utils import deactivate_invalid_instruments
@@ -46,9 +47,7 @@ def index(request):
     """
     Render the index page
     """
-    return_url = UOWS_LOGIN_URL + request.build_absolute_uri()
-    if request.GET.get('next'):
-        return_url = UOWS_LOGIN_URL + request.build_absolute_uri(request.GET.get('next'))
+    return_url = _make_return_url(request, request.GET.get('next'))
 
     use_query_next = request.build_absolute_uri(request.GET.get('next'))
     default_next = 'overview'
@@ -81,6 +80,22 @@ def index(request):
                     return_url = default_next
 
     return redirect(return_url)
+
+
+def _make_return_url(request, next_url):
+    """
+    Make the return URL based on whether a next_url is present in the url.
+
+    If there is a next_url, verify that the url is safe and allowed before using it. If not, default to the host.
+    """
+    if next_url:
+        if url_has_allowed_host_and_scheme(next_url, ALLOWED_HOSTS, require_https=True):
+            return UOWS_LOGIN_URL + request.build_absolute_uri(next_url)
+        else:
+            # the next_url was not safe so don't use it - build from request.path to ignore GET parameters
+            return UOWS_LOGIN_URL + request.build_absolute_uri(request.path)
+    else:
+        return UOWS_LOGIN_URL + request.build_absolute_uri()
 
 
 @login_and_uows_valid
