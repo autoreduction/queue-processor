@@ -254,3 +254,7 @@ USER_ACCESS_CHECKS = False  # Should the webapp prevent users from accessing run
 DEVELOPMENT_MODE = DEBUG
 X_FRAME_OPTIONS = 'SAMEORIGIN'  # Enables the use of frames within HTML
 CONN_MAX_AGE = 60
+
+# If this request header is present then set https.
+# Currently this is attached to the request when it goes through the proxy server
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
