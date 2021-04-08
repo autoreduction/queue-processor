@@ -47,14 +47,7 @@ def index(request):
     """
     Render the index page
     """
-    return_url = UOWS_LOGIN_URL + request.build_absolute_uri()
-    next_url = request.GET.get('next')
-    if next_url:
-        if url_has_allowed_host_and_scheme(next_url, ALLOWED_HOSTS, require_https=True):
-            return_url = UOWS_LOGIN_URL + request.build_absolute_uri(next_url)
-        else:
-            # the next_url was not safe so don't use it - build from request.path to ignore GET parameters
-            return_url = UOWS_LOGIN_URL + request.build_absolute_uri(request.path)
+    return_url = _make_return_url(request, request.GET.get('next'))
 
     use_query_next = request.build_absolute_uri(request.GET.get('next'))
     default_next = 'overview'
@@ -87,6 +80,22 @@ def index(request):
                     return_url = default_next
 
     return redirect(return_url)
+
+
+def _make_return_url(request, next_url):
+    """
+    Make the return URL based on whether a next_url is present in the url.
+
+    If there is a next_url, verify that the url is safe and allowed before using it. If not, default to the host.
+    """
+    if next_url:
+        if url_has_allowed_host_and_scheme(next_url, ALLOWED_HOSTS, require_https=True):
+            return UOWS_LOGIN_URL + request.build_absolute_uri(next_url)
+        else:
+            # the next_url was not safe so don't use it - build from request.path to ignore GET parameters
+            return UOWS_LOGIN_URL + request.build_absolute_uri(request.path)
+    else:
+        return UOWS_LOGIN_URL + request.build_absolute_uri()
 
 
 @login_and_uows_valid
