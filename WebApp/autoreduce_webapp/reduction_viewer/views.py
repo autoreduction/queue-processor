@@ -19,7 +19,7 @@ import operator
 import traceback
 
 from autoreduce_webapp.icat_cache import ICATCache
-from autoreduce_webapp.settings import (DEVELOPMENT_MODE, UOWS_LOGIN_URL, USER_ACCESS_CHECKS)
+from autoreduce_webapp.settings import (ALLOWED_HOSTS, DEVELOPMENT_MODE, UOWS_LOGIN_URL, USER_ACCESS_CHECKS)
 from autoreduce_webapp.uows_client import UOWSClient
 from autoreduce_webapp.view_utils import (check_permissions, login_and_uows_valid, render_with, require_admin)
 from django.contrib.auth import authenticate, login
@@ -29,6 +29,7 @@ from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.db.models import Q
 from django.http import HttpResponseNotFound
 from django.shortcuts import redirect
+from django.utils.http import url_has_allowed_host_and_scheme
 from reduction_viewer.models import (Experiment, Instrument, ReductionRun, Status)
 from reduction_viewer.utils import ReductionRunUtils
 from reduction_viewer.view_utils import deactivate_invalid_instruments
@@ -48,7 +49,12 @@ def index(request):
     """
     return_url = UOWS_LOGIN_URL + request.build_absolute_uri()
     if request.GET.get('next'):
-        return_url = UOWS_LOGIN_URL + request.build_absolute_uri(request.GET.get('next'))
+        next_url = request.GET.get('next')
+        if url_has_allowed_host_and_scheme(next_url, ALLOWED_HOSTS, require_https=True):
+            return_url = UOWS_LOGIN_URL + request.build_absolute_uri(next_url)
+        else:
+            # the next_url was not safe so don't use it
+            return_url = UOWS_LOGIN_URL + request.build_absolute_uri()
 
     use_query_next = request.build_absolute_uri(request.GET.get('next'))
     default_next = 'overview'
