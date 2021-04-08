@@ -108,6 +108,10 @@ class TemporaryReductionDirectory:
         """
         return f"{self._path}/"
 
+    def exists(self) -> bool:
+        """Checks that the path for the TemporaryReductionDirectory exists"""
+        return self._path.exists()
+
 
 class Datafile:
     """
