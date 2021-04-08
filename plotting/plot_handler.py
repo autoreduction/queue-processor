@@ -14,8 +14,8 @@ Instructing the Plotting factory to build an IFrame based on the above
 import logging
 import os
 import re
+import shutil
 from typing import List
-from utils.clients.sftp_client import SFTPClient
 from utils.project.structure import get_project_root
 
 LOGGER = logging.getLogger('app')
@@ -86,9 +86,17 @@ class PlotHandler:
         Searches the server directory for existing plot files using the directory specified.
         :return: (list) files on the server path that match regex
         """
-        client = SFTPClient()
-        file_regex = self._generate_file_name_regex()
-        return client.get_filenames(server_dir_path=self.server_dir, regex=file_regex)
+        if os.path.exists(self.server_dir):
+            file_regex = self._generate_file_name_regex()
+
+            filenames = os.listdir(self.server_dir)
+            matches = []
+
+            for name in filenames:
+                if re.match(file_regex, name) is not None:
+                    matches.append(name)
+
+            return matches
 
     def get_plot_file(self):
         """
@@ -104,14 +112,13 @@ class PlotHandler:
         _existing_plot_files = self._check_for_plot_files()
         local_plot_paths = []
         if _existing_plot_files:
-            client = SFTPClient()
             for plot_file in _existing_plot_files:
                 # Generate paths to data on server and destination on local machine
                 _server_path = f"{self.server_dir}/{plot_file}"
                 _local_path = os.path.join(self.static_graph_dir, plot_file)
 
                 try:
-                    client.retrieve(server_file_path=_server_path, local_file_path=_local_path, override=True)
+                    shutil.copy(_server_path, _local_path)
                     LOGGER.info('File \'%s\' found and saved to %s', _server_path, _local_path)
                 except RuntimeError:
                     LOGGER.error("File \'%s\' does not exist", _server_path)
