@@ -54,7 +54,7 @@ def index(request):
             return_url = UOWS_LOGIN_URL + request.build_absolute_uri(next_url)
         else:
             # the next_url was not safe so don't use it
-            return_url = UOWS_LOGIN_URL + request.build_absolute_uri()
+            return_url = UOWS_LOGIN_URL + request.build_absolute_uri(request.path)
 
     use_query_next = request.build_absolute_uri(request.GET.get('next'))
     default_next = 'overview'
