@@ -12,6 +12,7 @@ construction of regular expression for looking up existing files
 calling the SFTPClient with correct parameters
 """
 import os
+import shutil
 import unittest
 from unittest.mock import Mock, patch
 from parameterized import parameterized
@@ -161,7 +162,7 @@ class TestPlotHandler(unittest.TestCase):
     @patch('plotting.plot_handler.LOGGER')
     @patch('plotting.plot_handler.PlotHandler._check_for_plot_files')
     @patch('plotting.plot_handler.shutil.copy')
-    def test_get_plot_files_cant_download_none_local(
+    def test_get_plot_files_exception_raised(
         self,
         exc_type: Exception,
         expected_log_message: str,
@@ -180,6 +181,18 @@ class TestPlotHandler(unittest.TestCase):
         mock_logger.error.assert_called_once()
         assert expected_log_message in mock_logger.error.call_args[0][0]
         assert self.mari_base in mock_logger.error.call_args[0][1]
+
+    def test_ensure_staticfiles_graphs_exists(self):
+        """
+        Test that the plot handler makes the subfolders necessary for copying to succeed.
+        """
+        self.test_plot_handler.static_graph_dir = "/tmp/test_static_graph_dir/"
+        try:
+            assert not os.path.exists(self.test_plot_handler.static_graph_dir)
+            self.test_plot_handler._ensure_staticfiles_graphs_exists()
+            assert os.path.exists(self.test_plot_handler.static_graph_dir)
+        finally:
+            shutil.rmtree(self.test_plot_handler.static_graph_dir, ignore_errors=True)
 
 
 if __name__ == '__main__':
