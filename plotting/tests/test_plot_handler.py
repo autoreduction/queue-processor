@@ -13,8 +13,8 @@ calling the SFTPClient with correct parameters
 """
 import os
 import unittest
-from parameterized import parameterized
 from unittest.mock import Mock, patch
+from parameterized import parameterized
 
 from plotting.plot_handler import PlotHandler
 

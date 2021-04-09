@@ -87,6 +87,7 @@ class PlotHandler:
                     matches.append(name)
 
             return matches
+        return []
 
     def get_plot_file(self):
         """
