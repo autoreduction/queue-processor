@@ -21,10 +21,8 @@ class AccessibilityStatementPage(Page, NavbarMixin, FooterMixin):
     """
     Page model class for accessibility statement page
     """
-    def __init__(self, driver):
-        super().__init__(driver)
-
-    def url_path(self) -> str:
+    @staticmethod
+    def url_path() -> str:
         """
         Return the current URL of the page.
         :return: (str) the url path
