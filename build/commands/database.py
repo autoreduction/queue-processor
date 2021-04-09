@@ -8,6 +8,7 @@
 Module to generate a testing database to be used for local testing of the project
 """
 import os
+import sys
 # pylint:disable=no-name-in-module
 from distutils.core import Command
 
@@ -39,7 +40,8 @@ class InitialiseTestDatabase(Command):
         BUILD_LOGGER.print_and_log("==================== Building Database ======================")
         BUILD_LOGGER.print_and_log("Migrating databases from django model")
         if generate_schema(ROOT_DIR, BUILD_LOGGER.logger) is False:
-            return
+            print("ERROR: Failed generating schema", file=sys.stderr)
+            sys.exit(1)
         BUILD_LOGGER.print_and_log("Test database successfully initialised\n")
 
 
