@@ -10,9 +10,7 @@ Selenium tests for the runs summary page
 
 import os
 import tempfile
-from unittest.mock import Mock, patch
 
-from autoreduce_webapp.settings import STATIC_PATH
 from django.urls import reverse
 from reduction_viewer.models import ReductionRun
 from selenium.webdriver.support.wait import WebDriverWait
@@ -164,13 +162,16 @@ class TestRunSummaryPagePlots(BaseTestCase):
 
         self.page = RunSummaryPage(self.driver, self.instrument_name, 99999, 0)
 
-    def test_local_plot_files(self):
+    def test_plot_files(self):
         """
         Test: Local plot files are fetched and shown
         """
+        run = ReductionRun.objects.first()
+
+        # the plot files are expected to be in the reduction location, so we write them there for the test to work
         plot_files = [
-            tempfile.NamedTemporaryFile(prefix="data_", suffix=".png", dir=f"{STATIC_PATH}/graphs/"),
-            tempfile.NamedTemporaryFile(prefix="data_", suffix=".png", dir=f"{STATIC_PATH}/graphs/")
+            tempfile.NamedTemporaryFile(prefix="data_", suffix=".png", dir=run.reduction_location.first().file_path),
+            tempfile.NamedTemporaryFile(prefix="data_", suffix=".png", dir=run.reduction_location.first().file_path)
         ]
         self.page.launch()
 
@@ -181,25 +182,3 @@ class TestRunSummaryPagePlots(BaseTestCase):
             alt_text = img.get_attribute("alt")
             assert "Plot image stored at" in alt_text
             assert any(os.path.basename(f.name) in alt_text for f in plot_files)
-
-    @patch("plotting.plot_handler.SFTPClient")
-    def test_remote_plot_files(self, sftp_client: Mock):
-        """
-        Test: Remote plot files are fetched and shown
-        """
-        plot_files = [
-            "file1.png",
-            "file2.png",
-            "file3.png",
-            "file4.png",
-        ]
-        sftp_client.return_value.get_filenames.return_value = plot_files
-
-        self.page.launch()
-        # 1 is the logo, the other 4 are the plots
-        images = self.page.images()
-        assert len(images) == 5
-        for img in images[1:]:
-            alt_text = img.get_attribute("alt")
-            assert "Plot image stored at" in alt_text
-            assert any(os.path.basename(f) in alt_text for f in plot_files)
