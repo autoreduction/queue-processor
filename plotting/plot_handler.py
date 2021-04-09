@@ -105,15 +105,10 @@ class PlotHandler:
         but will only copy over one.
         :return: (str) local path to downloaded files OR None if no files found
         """
-        _existing_plot_files = self._get_plot_files_locally()
-        if _existing_plot_files:
-            return _existing_plot_files
-
         _existing_plot_files = self._check_for_plot_files()
         local_plot_paths = []
         if _existing_plot_files:
             for plot_file in _existing_plot_files:
-                # Generate paths to data on server and destination on local machine
                 _server_path = f"{self.server_dir}/{plot_file}"
                 _local_path = os.path.join(self.static_graph_dir, plot_file)
 
