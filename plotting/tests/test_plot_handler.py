@@ -105,6 +105,16 @@ class TestPlotHandler(unittest.TestCase):
         # check that only the valid matches have been found
         assert mock_os.listdir.return_value[0:2] == self.test_plot_handler._check_for_plot_files()
 
+    @patch('plotting.plot_handler.os')
+    def test_check_for_plot_files_path_doesnt_exist(self, mock_os):
+        """
+        Test: sftpclient.get_filenames is called with the correct parameters if only one plot_type is used
+        When: sftpclient.get_filenames is used to look for existing plot files
+        """
+        mock_os.path.exists.return_value = False
+        # check that only the valid matches have been found
+        assert [] == self.test_plot_handler._check_for_plot_files()
+
     @patch('plotting.plot_handler.PlotHandler._check_for_plot_files')
     @patch('plotting.plot_handler.shutil.copy')
     def test_get_plot_files(self, mock_copy: Mock, mock_find_files):
