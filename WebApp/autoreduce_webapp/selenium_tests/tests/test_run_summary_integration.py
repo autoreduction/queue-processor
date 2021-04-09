@@ -10,18 +10,24 @@ Selenium tests for the runs summary page
 
 from django.urls import reverse
 from selenium_tests.pages.run_summary_page import RunSummaryPage
-from selenium_tests.tests.base_tests import (BaseTestCase, FooterTestMixin, NavbarTestMixin)
+from selenium_tests.tests.base_tests import (BaseTestCase, FooterTestMixin, NavbarTestMixin, AccessibilityTestMixin)
 from selenium_tests.utils import submit_and_wait_for_result
 
 from WebApp.autoreduce_webapp.selenium_tests.utils import setup_external_services
 
 
-class TestRunSummaryPageIntegration(BaseTestCase, FooterTestMixin, NavbarTestMixin):
+class TestRunSummaryPageIntegration(BaseTestCase, FooterTestMixin, NavbarTestMixin, AccessibilityTestMixin):
     """
     Test cases for the InstrumentSummary page when the Rerun form is NOT visible
     """
 
     fixtures = BaseTestCase.fixtures + ["run_with_one_variable"]
+
+    accessibility_test_ignore_rules = {
+        # https://github.com/ISISScientificComputing/autoreduce/issues/1267
+        # https://github.com/ISISScientificComputing/autoreduce/issues/1268
+        "duplicate-id-aria": "input, #run_description",
+    }
 
     @classmethod
     def setUpClass(cls):

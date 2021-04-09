@@ -9,10 +9,10 @@ Selenium tests for the overview page
 """
 
 from selenium_tests.pages.overview_page import OverviewPage
-from selenium_tests.tests.base_tests import NavbarTestMixin, BaseTestCase, FooterTestMixin
+from selenium_tests.tests.base_tests import (NavbarTestMixin, BaseTestCase, FooterTestMixin, AccessibilityTestMixin)
 
 
-class TestOverviewPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
+class TestOverviewPage(NavbarTestMixin, BaseTestCase, FooterTestMixin, AccessibilityTestMixin):
     """
     Test cases for the overview page
     """

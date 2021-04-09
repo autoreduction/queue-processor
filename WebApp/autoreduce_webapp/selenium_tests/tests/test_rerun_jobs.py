@@ -1,16 +1,21 @@
 from django.urls import reverse
 from selenium_tests.pages.rerun_jobs_page import RerunJobsPage
-from selenium_tests.tests.base_tests import BaseTestCase
+from selenium_tests.tests.base_tests import (NavbarTestMixin, BaseTestCase, FooterTestMixin, AccessibilityTestMixin)
 
 from systemtests.utils.data_archive import DataArchive
 
 
-class TestRerunJobsPage(BaseTestCase):
+class TestRerunJobsPage(NavbarTestMixin, BaseTestCase, FooterTestMixin, AccessibilityTestMixin):
     """
     Test cases for the InstrumentSummary page when the Rerun form is NOT visible
     """
 
     fixtures = BaseTestCase.fixtures + ["run_with_one_variable"]
+
+    accessibility_test_ignore_rules = {
+        # https://github.com/ISISScientificComputing/autoreduce/issues/1267
+        "duplicate-id-aria": "input",
+    }
 
     @classmethod
     def setUpClass(cls):

@@ -8,10 +8,10 @@
 Tests for JobQueuePage
 """
 from selenium_tests.pages.job_queue_page import JobQueuePage
-from selenium_tests.tests.base_tests import FooterTestMixin, BaseTestCase, NavbarTestMixin
+from selenium_tests.tests.base_tests import (FooterTestMixin, BaseTestCase, NavbarTestMixin, AccessibilityTestMixin)
 
 
-class TestJobQueuePage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
+class TestJobQueuePage(NavbarTestMixin, BaseTestCase, FooterTestMixin, AccessibilityTestMixin):
     """
     Test cases for JobQueuePage
     """
