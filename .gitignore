@@ -44,8 +44,11 @@ vault.yml
 .DS_Store
 
 # Ignore downloaded graphs
-Webapp/autoreduce_webapp/static/graphs/
+!Webapp/autoreduce_webapp/static/graphs
 !Webapp/autoreduce_webapp/static/graphs/.keep
+
+# Ignore collected staticfiles
+WebApp/autoreduce_webapp/staticfiles
 
 # Ignore The screenshot folder in Selenium tests
 WebApp/autoreduce_webapp/selenium_tests/screenshots
@@ -63,3 +66,4 @@ data-archive/
 test-archive/
 
 autoreduce.code-workspace
+
