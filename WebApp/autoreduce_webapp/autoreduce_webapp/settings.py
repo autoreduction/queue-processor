@@ -64,7 +64,6 @@ INSTALLED_APPS = [
 INSTALLED_APPS = INSTALLED_APPS + ORM_INSTALL
 
 MIDDLEWARE = [
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -74,9 +73,13 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_plotly_dash.middleware.BaseMiddleware',
 ]
-
-# Add debug toolbar only if in DEBUG mode
-if DEBUG:
+if not DEBUG:
+    # sets up whitenoise for providing staticfiles when the app is running outside of DEBUG mode
+    # In this mode if you see errors with files not found, you probably have to run `manage.py collectstatic` first
+    MIDDLEWARE.insert(0, 'whitenoise.middleware.WhiteNoiseMiddleware')
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+else:
+    # Add debug toolbar only if in DEBUG mode
     INSTALLED_APPS.append('debug_toolbar')
     MIDDLEWARE.insert(3, 'debug_toolbar.middleware.DebugToolbarMiddleware')
 
@@ -154,56 +157,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+if not DEBUG:
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+else:
+    STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
-# Logging
-# https://docs.python.org/2/howto/logging.html
-
-LOG_FILE = os.path.join(BASE_DIR, 'autoreduction.log')
-if DEBUG:
-    LOG_LEVEL = 'INFO'
-else:
-    LOG_LEVEL = 'INFO'
-
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
-            'datefmt': "%d/%b/%Y %H:%M:%S"
-        },
-        'simple': {
-            'format': '%(levelname)s %(message)s'
-        },
-    },
-    'handlers': {
-        'webapp_file': {
-            'level': LOG_LEVEL,
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(PROJECT_ROOT, 'logs', 'webapp.log'),
-            'formatter': 'verbose',
-            'maxBytes': 104857600,
-            'backupCount': 20,
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['webapp_file'],
-            'propagate': True,
-            'level': LOG_LEVEL,
-        },
-        'app': {
-            'handlers': ['webapp_file'],
-            'propagate': True,
-            'level': 'DEBUG',
-        },
-    }
-}
 
 # ActiveMQ
 
