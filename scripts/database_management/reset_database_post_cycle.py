@@ -17,8 +17,7 @@ import re
 import pymysql
 
 
-# pylint:disable=too-many-instance-attributes,too-few-public-methods
-# pylint:disable=too-many-arguments,attribute-defined-outside-init
+# pylint:disable=attribute-defined-outside-init
 class DatabaseReset:
     """
     Handles resetting the database after cycle

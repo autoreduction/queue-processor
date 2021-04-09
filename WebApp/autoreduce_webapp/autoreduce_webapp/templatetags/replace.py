@@ -8,10 +8,9 @@
 Node for handling replacing
 """
 from django.template import Library, Node, Variable, TemplateSyntaxError
-# pylint: disable=relative-import
+
 from .common_helpers import get_var
 
-# pylint:disable=invalid-name
 register = Library()
 
 
@@ -19,8 +18,8 @@ class ReplaceNode(Node):
     """
     Node for replacing text
     """
-    def __init__(self, s, old, new):
-        self.s = Variable(s)
+    def __init__(self, text, old, new):
+        self.text = Variable(text)
         self.old = Variable(old)
         self.new = Variable(new)
 
@@ -28,10 +27,10 @@ class ReplaceNode(Node):
         """
         Render the replace text Node
         """
-        s = str(get_var(self.s, context))
+        text = str(get_var(self.text, context))
         old = str(get_var(self.old, context))
         new = str(get_var(self.new, context))
-        return s.replace(old, new)
+        return text.replace(old, new)
 
 
 @register.tag

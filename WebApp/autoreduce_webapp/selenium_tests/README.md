@@ -2,7 +2,7 @@
 
 This package holds the selenium tests for the autoreduction webapp.
 ## Running the Tests
-From `WebApp/autoreduce_webapp` run `pytest WebApp/autoreduce_webapp/selenium_tests`
+From `WebApp/autoreduce_webapp` run `pytest selenium_tests`
 
 ## Pages
 The pages are built using the fluent page object model pattern. With common components being created
@@ -26,7 +26,7 @@ that run.
 
 ## Configuration
 **Note:** Until these tests can be run with pytest-django and their open issue for xdist compatibility is fixed,
-parallel execution is not avaible.
+parallel execution is not available.
 A configuration file has to be used to allow test settings to be shared across threads.
 
 ## Database Injection

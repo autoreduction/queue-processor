@@ -7,8 +7,10 @@
 """
 Models that represent the tables in the database
 """
-from django.db import models
 from django.core.validators import MinValueValidator, MaxLengthValidator
+from django.db import models
+
+from queue_processors.queue_processor.status_utils import STATUS
 
 
 class Instrument(models.Model):
@@ -18,10 +20,7 @@ class Instrument(models.Model):
     name = models.CharField(max_length=80)
     is_active = models.BooleanField(default=False)
     is_paused = models.BooleanField(default=False)
-
-    def __unicode__(self):
-        """ :return: Unicode name """
-        return u'%s' % self.name
+    is_flat_output = models.BooleanField(default=False)
 
     def __str__(self):
         """
@@ -29,16 +28,27 @@ class Instrument(models.Model):
         """
         return f"{self.name}"
 
+    def get_last_for_rerun(self, runs=None):
+        """
+        Gets the last non-skipped run, unless all the runs are skipped.
+        In that case it just gets the last skipped run.
+        """
+        if not runs:
+            runs = self.reduction_runs.all()
+
+        # try to get the last non-skipped run
+        last_run = runs.exclude(status=STATUS.get_skipped()).last()
+        if not last_run:
+            # if no non-skipped runs exist, just return the last skipped one
+            last_run = runs.last()
+        return last_run
+
 
 class Experiment(models.Model):
     """
     Holds data about an Experiment
     """
-    reference_number = models.IntegerField()
-
-    def __unicode__(self):
-        """ :return: Unicode reference number (RB number)"""
-        return u'%s' % self.reference_number
+    reference_number = models.IntegerField(unique=True)
 
     def __str__(self):
         """
@@ -54,10 +64,6 @@ class Status(models.Model):
     STATUS_CHOICES = (('q', 'Queued'), ('p', 'Processing'), ('s', 'Skipped'), ('c', 'Completed'), ('e', 'Error'))
 
     value = models.CharField(max_length=1, choices=STATUS_CHOICES)
-
-    def __unicode__(self):
-        """ :return: (unicode str) of the status field"""
-        return u'%s' % self.value
 
     def value_verbose(self):
         """
@@ -79,8 +85,8 @@ class Software(models.Model):
     name = models.CharField(max_length=100, blank=False, null=False)
     version = models.CharField(max_length=20, blank=False, null=False)
 
-    def __unicode__(self):
-        return f'{self.name}-{self.version}'
+    def __str__(self):
+        return f"{self.name}-{self.version}"
 
 
 class ReductionRun(models.Model):
@@ -94,13 +100,14 @@ class ReductionRun(models.Model):
     started_by = models.IntegerField(null=True, blank=True)
 
     # Char fields
-    run_name = models.CharField(max_length=200, blank=True)
+    run_description = models.CharField(max_length=200, blank=True)
 
     # Text fields
     admin_log = models.TextField(blank=True)
     graph = models.TextField(null=True, blank=True)
     message = models.TextField(null=True, blank=True)
     reduction_log = models.TextField(blank=True)
+    reduction_host = models.TextField(default="", blank=True, verbose_name="Reduction hostname")
     # Scripts should be 100,000 chars or less. The DB supports up to 4GB strings here
     script = models.TextField(blank=False, validators=[MaxLengthValidator(100000)])
 
@@ -128,18 +135,12 @@ class ReductionRun(models.Model):
                                  null=True,
                                  on_delete=models.CASCADE)
 
-    def __unicode__(self):
-        """ :return: run_number and run_name if given """
-        if self.run_name:
-            return u'%s-%s' % (self.run_number, self.run_name)
-        return u'%s' % self.run_number
-
     def __str__(self):
         """
         Return str representation of reduction run based on run name if available else run number
         :return: str representation of ReductionRun
         """
-        return f"{self.run_number}: {self.run_name}" if self.run_name else f"{self.run_number}"
+        return f"{self.run_number}: {self.run_description}" if self.run_description else f"{self.run_number}"
 
     def title(self):
         """
@@ -147,8 +148,8 @@ class ReductionRun(models.Model):
         run name or run version
         """
         if self.run_version > 0:
-            if self.run_name:
-                title = '%s - %s' % (self.run_number, self.run_name)
+            if self.run_description:
+                title = '%s - %s' % (self.run_number, self.run_description)
             else:
                 title = '%s - %s' % (self.run_number, self.run_version)
         else:
@@ -162,10 +163,6 @@ class DataLocation(models.Model):
     """
     file_path = models.CharField(max_length=255)
     reduction_run = models.ForeignKey(ReductionRun, blank=False, related_name='data_location', on_delete=models.CASCADE)
-
-    def __unicode__(self):
-        """ :return: the file path to the data"""
-        return u'%s' % self.file_path
 
     def __str__(self):
         """
@@ -184,10 +181,6 @@ class ReductionLocation(models.Model):
                                       related_name='reduction_location',
                                       on_delete=models.CASCADE)
 
-    def __unicode__(self):
-        """ :return: the file path to the data"""
-        return u'%s' % self.file_path
-
     def __str__(self):
         """
         :return: str representation of ReductionLocation
@@ -201,10 +194,6 @@ class Setting(models.Model):
     """
     name = models.CharField(max_length=50, blank=False)
     value = models.CharField(max_length=50)
-
-    def __unicode__(self):
-        """ :return: unicode string of: name=value """
-        return u'%s=%s' % (self.name, self.value)
 
     def __str__(self):
         """
@@ -223,10 +212,6 @@ class Notification(models.Model):
     is_active = models.BooleanField(default=True)
     severity = models.CharField(max_length=1, choices=SEVERITY_CHOICES, default='i')
     is_staff_only = models.BooleanField(default=False)
-
-    def __unicode__(self):
-        """ :return: The message """
-        return u'%s' % self.message
 
     def __str__(self):
         """

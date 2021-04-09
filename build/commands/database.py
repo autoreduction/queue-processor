@@ -8,7 +8,7 @@
 Module to generate a testing database to be used for local testing of the project
 """
 import os
-# pylint:disable=no-name-in-module,import-error
+# pylint:disable=no-name-in-module
 from distutils.core import Command
 
 from build.database.generate_database import generate_schema, load_fixtures

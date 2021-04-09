@@ -11,19 +11,15 @@ This is currently used in the runs_list.html page
 import math
 
 
-# pylint:disable=too-few-public-methods
 class PageLimitException(Exception):
     """ Custom Exception class to catch when page record limit is reached"""
-    pass
 
 
-class CustomPaginator(object):
+class CustomPaginator:
     """
     CustomPaginator to allow for more complex functionality to be used without doing heavy
     lifting in the django template code
     """
-
-    # pylint:disable=too-many-instance-attributes,too-many-arguments
     def __init__(self, page_type, query_set, items_per_page, page_tolerance, current_page):
         """
         :param query_set: All data to show
@@ -103,8 +99,7 @@ class CustomPaginator(object):
             else:
                 if len(self.display_list) >= 1 and self.display_list[-1] == "...":
                     continue
-                else:
-                    self.display_list.append("...")
+                self.display_list.append("...")
 
     def _set_next_and_previous(self):
         """
@@ -118,8 +113,7 @@ class CustomPaginator(object):
             self.has_previous = True
 
 
-# pylint:disable=too-few-public-methods
-class CustomPage(object):
+class CustomPage:
     """
     Generic CustomPage class to model a single page in the pagination
     """
@@ -139,7 +133,6 @@ class CustomPage(object):
 
     def set_start_and_end(self):
         """ Implemented by child class """
-        pass
 
     def add_record(self, record):
         """
@@ -152,7 +145,6 @@ class CustomPage(object):
         self.records.append(record)
 
 
-# pylint:disable=too-few-public-methods
 class RunPage(CustomPage):
     """
     Specific implementation for rendering the pagination if sorting by Run Number
@@ -170,7 +162,6 @@ class RunPage(CustomPage):
             self.display_name = "{} - {}".format(self.start, self.end)
 
 
-# pylint:disable=too-few-public-methods
 class DatePage(CustomPage):
     """
     Specific implementation for rendering the pagination if sorting by Date

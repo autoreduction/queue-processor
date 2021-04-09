@@ -50,13 +50,12 @@ class TestQueueProcessor(TestCase):
 
 class TestQueueListener(TestCase):
     # We have too many public methods as our Class Under Test does too much...
-    # pylint: disable=too-many-public-methods
     """
     Exercises the Listener
     """
     def setUp(self):
         self.mocked_client = mock.Mock(spec=QueueClient)
-        self.mocked_handler = mock.Mock(spec=HandleMessage)
+        self.mocked_handler = mock.MagicMock(spec=HandleMessage)
         self.headers = self._get_header()
 
         with patch("queue_processors.queue_processor.queue_listener"
@@ -97,6 +96,7 @@ class TestQueueListener(TestCase):
         self.mocked_logger.info.assert_called_once()
         self.mocked_client.ack.assert_called_once_with(self.headers["message-id"], self.headers["subscription"])
         self.mocked_handler.data_ready.assert_called_once()
+        self.mocked_handler.connected.assert_called_once()
         self.assertIsInstance(self.mocked_handler.data_ready.call_args[0][0], Message)
 
     def test_on_message_sends_acknowledgement(self):
@@ -107,6 +107,7 @@ class TestQueueListener(TestCase):
         self.mocked_logger.info.assert_called_once()
         self.mocked_client.ack.assert_called_once_with(self.headers["message-id"], self.headers["subscription"])
         self.mocked_handler.data_ready.assert_called_once()
+        self.mocked_handler.connected.assert_called_once()
         self.assertIsInstance(self.mocked_handler.data_ready.call_args[0][0], Message)
 
     def test_on_message_handler_catches_exceptions(self):

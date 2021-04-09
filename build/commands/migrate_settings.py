@@ -10,7 +10,7 @@ Command to move test_settings.py to settings.py
 import os
 from shutil import copyfile
 
-# pylint:disable=no-name-in-module,import-error
+# pylint:disable=no-name-in-module
 from distutils.core import Command
 
 from build.utils.common import BUILD_LOGGER, ROOT_DIR

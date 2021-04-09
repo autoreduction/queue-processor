@@ -9,10 +9,10 @@ Selenium tests for the overview page
 """
 
 from selenium_tests.pages.overview_page import OverviewPage
-from selenium_tests.tests.base_tests import NavbarTestMixin, BaseTestCase, FooterTestMixin
+from selenium_tests.tests.base_tests import (NavbarTestMixin, BaseTestCase, FooterTestMixin, AccessibilityTestMixin)
 
 
-class TestOverviewPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
+class TestOverviewPage(NavbarTestMixin, BaseTestCase, FooterTestMixin, AccessibilityTestMixin):
     """
     Test cases for the overview page
     """
@@ -28,11 +28,10 @@ class TestOverviewPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
     def test_correct_instruments_visible(self):
         """
         Tests: Correct instruments displayed
-        When: VALID_INSTRUMENTS is viewable from test environment
         """
         actual_instruments = self.page.launch().get_instruments_from_buttons()
-        expected_instruments = ["ActiveInstrument", "InactiveInstrument", "PausedInstrument"]
-        self.assertTrue(set(expected_instruments).issubset(actual_instruments))
+        expected_instruments = {"ActiveInstrument", "InactiveInstrument", "PausedInstrument"}
+        self.assertTrue(expected_instruments.issubset(actual_instruments))
 
     def test_instrument_buttons_go_to_instrument_summary_pages(self):
         """

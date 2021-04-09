@@ -7,6 +7,7 @@
 """
 Tests for parts of the reduction_service
 """
+import io
 import os
 import unittest
 from pathlib import Path
@@ -31,7 +32,7 @@ class TempDirPropertyMock(PropertyMock):
         self.return_value = directory.name + path_string
 
 
-# pylint:disable=protected-access,too-many-instance-attributes
+# pylint:disable=protected-access
 
 
 class TestReductionService(unittest.TestCase):
@@ -87,16 +88,14 @@ class TestReductionService(unittest.TestCase):
             self.assertTrue(reduction_dir.mantid_log.exists())
             self.assertTrue(reduction_dir.script_log.exists())
 
-    @patch(f"{REDUCTION_SERVICE_DIR}.FLAT_OUTPUT_INSTRUMENTS",
-           new_callable=PropertyMock(return_value=["testinstrument"]))
     @patch(f"{REDUCTION_SERVICE_DIR}.CEPH_DIRECTORY",
            new_callable=PropertyMock(return_value="/instrument/%s/RBNumber/RB%s/autoreduced/%s"))
-    def test_reduction_directory_build_path_flat_output_removes_run_number(self, _, __):
+    def test_reduction_directory_build_path_flat_output_removes_run_number(self, _):
         """
         Tests: Run number is removed from path
         When: _build_path is called for flat output instrument
         """
-        reduction_dir = ReductionDirectory(self.instrument, self.rb_number, self.run_number)
+        reduction_dir = ReductionDirectory(self.instrument, self.rb_number, self.run_number, flat_output=True)
         expected = Path(f"/instrument/{self.instrument}/RBNumber/RB{self.rb_number}/autoreduced")
         self.assertEqual(expected, reduction_dir.path)
 
@@ -116,7 +115,11 @@ class TestReductionService(unittest.TestCase):
         Tests: run-version-0 is appended
         When: overwrite is True
         """
-        reduction_dir = ReductionDirectory(self.instrument, self.rb_number, self.run_number, overwrite=True)
+        reduction_dir = ReductionDirectory(self.instrument,
+                                           self.rb_number,
+                                           self.run_number,
+                                           overwrite=True,
+                                           flat_output=True)
         with TemporaryDirectory() as directory:
             reduction_dir.path = Path(directory)
             reduction_dir._append_run_version()
@@ -156,7 +159,7 @@ class TestReductionService(unittest.TestCase):
         When: object is created
         """
         temp_dir = TemporaryReductionDirectory(self.rb_number, self.run_number)
-        self.assertTrue(temp_dir.path.exists())
+        self.assertTrue(temp_dir.exists())
         self.assertTrue(temp_dir.log_path.exists())
         self.assertTrue(temp_dir.mantid_log.exists())
         self.assertTrue(temp_dir.script_log.exists())
@@ -164,7 +167,7 @@ class TestReductionService(unittest.TestCase):
         self.assertEqual(f"RB_{self.rb_number}_Run_{self.run_number}_Mantid.log", temp_dir.mantid_log.name)
         self.assertEqual(f"RB_{self.rb_number}_Run_{self.run_number}_Script.out", temp_dir.script_log.name)
         temp_dir.delete()
-        self.assertFalse(temp_dir.path.exists())
+        self.assertFalse(temp_dir.exists())
 
     def test_temp_reduction_directory_delete(self):
         """
@@ -172,9 +175,9 @@ class TestReductionService(unittest.TestCase):
         When: Delete is called
         """
         temp_dir = TemporaryReductionDirectory(self.rb_number, self.rb_number)
-        self.assertTrue(temp_dir.path.exists())
+        self.assertTrue(temp_dir.exists())
         temp_dir.delete()
-        self.assertFalse(temp_dir.path.exists())
+        self.assertFalse(temp_dir.exists())
 
     def test_temporary_reduction_directory_copy(self):
         """
@@ -185,10 +188,10 @@ class TestReductionService(unittest.TestCase):
             temp_reduction_dir = TemporaryReductionDirectory(self.instrument, self.rb_number)
             dest_folder = Path(dest)
             src_folder = Path(src)
-            temp_reduction_dir.path = src_folder
-            fill_mockup_directory(temp_reduction_dir.path)
+            temp_reduction_dir._path = src_folder
+            fill_mockup_directory(temp_reduction_dir._path)
 
-            temp_reduction_dir.copy(dest)
+            temp_reduction_dir.copy(dest_folder)
             self.assertTrue((dest_folder / "myfile.nxs").exists())
             self.assertTrue((dest_folder / "reduction_log").exists())
             self.assertTrue((dest_folder / "reduction_log" / "script.out"))
@@ -304,7 +307,8 @@ class TestReductionService(unittest.TestCase):
         """
         self.script.skipped_runs = []
         self.script.run.return_value = None
-        reduce(self.reduction_dir, self.temp_dir, self.datafile, self.script)
+        reduction_log_stream = io.StringIO()
+        reduce(self.reduction_dir, self.temp_dir, self.datafile, self.script, reduction_log_stream)
         self.reduction_dir.create.assert_called_once()
         self.script.load.assert_called_once()
         self.temp_dir.copy.assert_called_once_with(self.reduction_dir.path)
@@ -318,7 +322,8 @@ class TestReductionService(unittest.TestCase):
         """
         self.script.skipped_runs = []
         self.script.run.return_value = "some/path"
-        reduce(self.reduction_dir, self.temp_dir, self.datafile, self.script)
+        reduction_log_stream = io.StringIO()
+        reduce(self.reduction_dir, self.temp_dir, self.datafile, self.script, reduction_log_stream)
         self.reduction_dir.create.assert_called_once()
         self.script.load.assert_called_once()
         self.temp_dir.copy.assert_has_calls([call(self.reduction_dir.path), call("some/path")])
@@ -335,8 +340,9 @@ class TestReductionService(unittest.TestCase):
         self.script.skipped_runs = []
         self.script.run.side_effect = Exception
         file = mock_open.return_value
+        reduction_log_stream = io.StringIO()
         with self.assertRaises(ReductionScriptError):
-            reduce(self.reduction_dir, self.temp_dir, self.datafile, self.script)
+            reduce(self.reduction_dir, self.temp_dir, self.datafile, self.script, reduction_log_stream)
             file.writelines.assert_called_once()
             mock_traceback.format_exc.assert_called_once()
             file.write.assert_called_once()

@@ -9,57 +9,53 @@ Selenium tests for the runs summary page
 """
 
 from django.urls import reverse
-
 from selenium_tests.pages.run_summary_page import RunSummaryPage
-from selenium_tests.tests.base_tests import (BaseTestCase, FooterTestMixin, NavbarTestMixin)
+from selenium_tests.tests.base_tests import (BaseTestCase, FooterTestMixin, NavbarTestMixin, AccessibilityTestMixin)
 from selenium_tests.utils import submit_and_wait_for_result
 
-from queue_processors.queue_processor.queue_listener import main
-from systemtests.utils.data_archive import DataArchive
-from utils.clients.connection_exception import ConnectionException
-from utils.clients.django_database_client import DatabaseClient
+from WebApp.autoreduce_webapp.selenium_tests.utils import setup_external_services
 
 
-class TestRunSummaryPageIntegration(BaseTestCase, FooterTestMixin, NavbarTestMixin):
+class TestRunSummaryPageIntegration(BaseTestCase, FooterTestMixin, NavbarTestMixin, AccessibilityTestMixin):
     """
     Test cases for the InstrumentSummary page when the Rerun form is NOT visible
     """
 
     fixtures = BaseTestCase.fixtures + ["run_with_one_variable"]
 
+    accessibility_test_ignore_rules = {
+        # https://github.com/ISISScientificComputing/autoreduce/issues/1267
+        # https://github.com/ISISScientificComputing/autoreduce/issues/1268
+        "duplicate-id-aria": "input, #run_description",
+    }
+
     @classmethod
     def setUpClass(cls):
         """ Start all external services """
         super().setUpClass()
-        cls.database_client = DatabaseClient()
-        cls.database_client.connect()
-        try:
-            cls.queue_client, cls.listener = main()
-        except ConnectionException as err:
-            raise RuntimeError("Could not connect to ActiveMQ - check you credentials. If running locally check that "
-                               "ActiveMQ is running and started by `python setup.py start`") from err
-
         cls.instrument_name = "TestInstrument"
         cls.rb_number = 1234567
         cls.run_number = 99999
-
-        cls.data_archive = DataArchive([cls.instrument_name], 21, 21)
-        cls.data_archive.create()
+        cls.data_archive, cls.database_client, cls.queue_client, cls.listener = setup_external_services(
+            cls.instrument_name, 21, 21)
+        cls.data_archive.add_reduction_script(cls.instrument_name, """print('some text')""")
         cls.data_archive.add_reduce_vars_script(cls.instrument_name,
                                                 """standard_vars={"variable1":"test_variable_value_123"}""")
 
     @classmethod
     def tearDownClass(cls) -> None:
+        """Stop all external services"""
         cls.queue_client.disconnect()
         cls.database_client.disconnect()
         cls.data_archive.delete()
         super().tearDownClass()
 
     def setUp(self) -> None:
+        """Sets up the RunSummaryPage and shows the rerun panel before each test case"""
         super().setUp()
         self.page = RunSummaryPage(self.driver, self.instrument_name, 99999, 0)
         self.page.launch()
-        # clicks the toggle to show the rerun panel, otherwise the buttons in the form are non interactable
+        # clicks the toggle to show the rerun panel, otherwise the buttons in the form are non interactive
         self.page.toggle_button.click()
 
     def test_submit_rerun_same_variables(self):
@@ -141,5 +137,8 @@ class TestRunSummaryPageIntegration(BaseTestCase, FooterTestMixin, NavbarTestMix
         expected_url = reverse("run_confirmation", kwargs={"instrument": self.instrument_name})
         assert expected_url in self.driver.current_url
         # wait until the message processing is complete before ending the test
-        # otherwise the message handling can polute the DB state for the next test
+        # otherwise the message handling can pollute the DB state for the next test
         assert len(result) == 2
+        # check that the error is because of missing Mantid
+        # if this fails then something else in the reduction caused an error instead!
+        assert "Mantid" in result[1].admin_log

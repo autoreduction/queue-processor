@@ -8,7 +8,9 @@
 Generate a mantid properties file
 """
 import os
-from utils.settings import VALID_INSTRUMENTS
+from typing import List
+
+from model.database.access import get_all_instrument_names
 
 CALIBRATION_DIRECTORIES = [
     r'/home/autoreduce/InstrumentFiles/WISH/Calibration/Cycle_11_4/', r'/isis/NDXENGINX/Instrument/data/cycle_14_3/',
@@ -61,12 +63,14 @@ pythonscripts.directories=/tmp/repo/direct_inelastic/MARI/;/tmp/repo/direct_inel
 
 
 # pylint:disable=dangerous-default-value
-def generate_mantid_properties_file(instruments=VALID_INSTRUMENTS, cycles=['19_3', '19_4']):
+def generate_mantid_properties_file(instruments: List[str] = None, cycles: List[str] = ['19_3', '19_4']) -> None:
     """
     Generate the correct data directories for the given instruments and cycles
     :param instruments: All instruments to create directories for
     :param cycles: All cycles to create directories for
     """
+    if instruments is None:
+        instruments = get_all_instrument_names()
     dir_template = r'/isis/NDX{}/Instrument/data/cycle_{}/'
     data_dirs = []
     for instrument in instruments:

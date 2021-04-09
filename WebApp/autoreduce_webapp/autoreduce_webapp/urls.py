@@ -8,16 +8,37 @@
 from django.conf import settings
 from django.conf.urls import include
 from django.contrib import admin
-from django.urls import path
+from django.urls import register_converter, path
 
-from reduction_viewer import views as reduction_viewer_views
 from instrument.views import runs
+from reduction_viewer import views as reduction_viewer_views
 
 # pylint: disable=invalid-name
 handler400 = 'autoreduce_webapp.views.handler400'
 handler403 = 'autoreduce_webapp.views.handler403'
 handler404 = 'autoreduce_webapp.views.handler404'
 handler500 = 'autoreduce_webapp.views.handler500'
+
+
+class NegativeIntConverter:
+    regex = r'-?\d+'
+
+    @staticmethod
+    def to_python(value):
+        """
+        Return the value as a Python object
+        """
+        return int(value)
+
+    @staticmethod
+    def to_url(value):
+        """
+        Return the value as a URL string
+        """
+        return '%d' % value
+
+
+register_converter(NegativeIntConverter, 'negint')
 
 urlpatterns = [
     # ===========================MISC================================= #
@@ -36,7 +57,7 @@ urlpatterns = [
     path('instrument/', include('instrument.urls')),
 
     # ===========================EXPERIMENT========================== #
-    path('experiment/<int:reference_number>/', reduction_viewer_views.experiment_summary, name='experiment_summary'),
+    path('experiment/<negint:reference_number>/', reduction_viewer_views.experiment_summary, name='experiment_summary'),
 
     # ===========================SCRIPTS============================= #
     path('graph/', reduction_viewer_views.graph_home, name="graph"),

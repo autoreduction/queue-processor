@@ -12,12 +12,14 @@ working unit tests for this code at the point of correcting the pylint errors
 as such we should remove the pylint disables and fix the code when we
 can be more confident we are not affecting the execution
 """
+# pylint:disable=imported-auth-user
 import json
 import logging
 import operator
+import traceback
 
 from autoreduce_webapp.icat_cache import ICATCache
-from autoreduce_webapp.settings import (DEVELOPMENT_MODE, UOWS_LOGIN_URL, USER_ACCESS_CHECKS)
+from autoreduce_webapp.settings import (ALLOWED_HOSTS, DEVELOPMENT_MODE, UOWS_LOGIN_URL, USER_ACCESS_CHECKS)
 from autoreduce_webapp.uows_client import UOWSClient
 from autoreduce_webapp.view_utils import (check_permissions, login_and_uows_valid, render_with, require_admin)
 from django.contrib.auth import authenticate, login
@@ -27,14 +29,15 @@ from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.db.models import Q
 from django.http import HttpResponseNotFound
 from django.shortcuts import redirect
-from utilities.pagination import CustomPaginator
-
+from django.utils.http import url_has_allowed_host_and_scheme
 from reduction_viewer.models import (Experiment, Instrument, ReductionRun, Status)
 from reduction_viewer.utils import ReductionRunUtils
 from reduction_viewer.view_utils import deactivate_invalid_instruments
+from utilities.pagination import CustomPaginator
+
 from plotting.plot_handler import PlotHandler
-from queue_processors.queue_processor.variable_utils import VariableUtils
 from queue_processors.queue_processor.status_utils import STATUS
+from queue_processors.queue_processor.variable_utils import VariableUtils
 
 LOGGER = logging.getLogger('app')
 
@@ -44,9 +47,7 @@ def index(request):
     """
     Render the index page
     """
-    return_url = UOWS_LOGIN_URL + request.build_absolute_uri()
-    if request.GET.get('next'):
-        return_url = UOWS_LOGIN_URL + request.build_absolute_uri(request.GET.get('next'))
+    return_url = _make_return_url(request, request.GET.get('next'))
 
     use_query_next = request.build_absolute_uri(request.GET.get('next'))
     default_next = 'overview'
@@ -79,6 +80,22 @@ def index(request):
                     return_url = default_next
 
     return redirect(return_url)
+
+
+def _make_return_url(request, next_url):
+    """
+    Make the return URL based on whether a next_url is present in the url.
+
+    If there is a next_url, verify that the url is safe and allowed before using it. If not, default to the host.
+    """
+    if next_url:
+        if url_has_allowed_host_and_scheme(next_url, ALLOWED_HOSTS, require_https=True):
+            return UOWS_LOGIN_URL + request.build_absolute_uri(next_url)
+        else:
+            # the next_url was not safe so don't use it - build from request.path to ignore GET parameters
+            return UOWS_LOGIN_URL + request.build_absolute_uri(request.path)
+    else:
+        return UOWS_LOGIN_URL + request.build_absolute_uri()
 
 
 @login_and_uows_valid
@@ -195,7 +212,7 @@ def fail_queue(request):
 @login_and_uows_valid
 @check_permissions
 @render_with('run_summary.html')
-# pylint:disable=no-member
+# pylint:disable=no-member,too-many-locals
 def run_summary(_, instrument_name=None, run_number=None, run_version=0):
     """
     Render run summary
@@ -271,7 +288,7 @@ def run_summary(_, instrument_name=None, run_number=None, run_version=0):
 @login_and_uows_valid
 @check_permissions
 @render_with('runs_list.html')
-# pylint:disable=no-member,unused-argument
+# pylint:disable=no-member,unused-argument,too-many-locals
 def runs_list(request, instrument=None):
     """
     Render instrument summary
@@ -286,12 +303,12 @@ def runs_list(request, instrument=None):
         sort_by = request.GET.get('sort', 'run')
         if sort_by == 'run':
             runs = (ReductionRun.objects.only('status', 'last_updated', 'run_number', 'run_version',
-                                              'run_name').select_related('status').filter(
+                                              'run_description').select_related('status').filter(
                                                   instrument=instrument_obj).order_by('-run_number', 'run_version'))
         else:
             runs = (ReductionRun.objects.only(
                 'status', 'last_updated', 'run_number', 'run_version',
-                'run_name').select_related('status').filter(instrument=instrument_obj).order_by('-last_updated'))
+                'run_description').select_related('status').filter(instrument=instrument_obj).order_by('-last_updated'))
 
         if len(runs) == 0:
             return {'message': "No runs found for instrument."}
@@ -342,8 +359,8 @@ def runs_list(request, instrument=None):
             context_dictionary['max_items'] = max_items_per_page
 
     # pylint:disable=broad-except
-    except Exception as exception:
-        LOGGER.error(exception)
+    except Exception:
+        LOGGER.error(traceback.format_exc())
         return {'message': "An unexpected error has occurred when loading the instrument."}
 
     return context_dictionary
@@ -462,7 +479,7 @@ def graph_instrument(request, instrument_name):
         # made from load_runs which is very slow.
         select_related('status')
         # Only get these attributes, to speed it up.
-        .only('status', 'started', 'finished', 'last_updated', 'created', 'run_number', 'run_name',
+        .only('status', 'started', 'finished', 'last_updated', 'created', 'run_number', 'run_description',
               'run_version').filter(instrument=instrument.first()).order_by('-created'))
 
     try:

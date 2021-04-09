@@ -27,7 +27,7 @@ class QueueListenerDaemon(Daemon):
 
         self.client: Optional[QueueClient] = None
         self.listener: Optional[queue_listener.QueueListener] = None
-        self.logger = logging.getLogger(__file__)
+        self.logger = logging.getLogger("queue_listener")
         self._shutting_down = False
 
         signal.signal(signal.SIGTERM, self.stop)

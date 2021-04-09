@@ -51,6 +51,10 @@ Webapp/autoreduce_webapp/static/graphs/
 WebApp/autoreduce_webapp/selenium_tests/screenshots
 !WebApp/autoreduce_webapp/selenium_tests/screenshots/.keep
 
+# Ignore The a11y folder in Selenium tests
+WebApp/autoreduce_webapp/selenium_tests/a11y_reports
+!WebApp/autoreduce_webapp/selenium_tests/a11y_reports/.keep
+
 # Ignore developer specific .vscode/settings.json
 .vscode/settings.json
 
@@ -61,3 +65,5 @@ WebApp/autoreduce_webapp/selenium_tests/screenshots
 reduced-data/
 data-archive/
 test-archive/
+
+autoreduce.code-workspace

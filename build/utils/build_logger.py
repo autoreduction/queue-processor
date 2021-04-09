@@ -14,7 +14,6 @@ import os
 import logging
 
 
-# pylint:disable=too-few-public-methods
 class BuildLogger:
     """
     Class to handle logging for build script

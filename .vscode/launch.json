@@ -18,6 +18,9 @@
                 "hidden": false,
                 "group": "autoreduce",
             },
+            "env": {
+                "DISPLAY": ":1",
+            }
         },
         {
             "name": "Pytest - Django",
@@ -88,27 +91,19 @@
             }
         },
         {
-            "name": "Queue Listener Daemon",
-            "type": "python",
-            "request": "launch",
-            "program": "queue_processors/queue_processor/queue_listener_daemon.py",
-            "console": "integratedTerminal",
-            "cwd": "${workspaceFolder}",
-            "args": [
-                "start"
-            ],
-            "presentation": {
-                "hidden": false,
-                "group": "autoreduce",
-                "order": 3
-            }
-        },
-        {
             "name": "Attach",
             "type": "python",
             "request": "attach",
-            "host": "127.0.0.1", // replace this with remote machine name
-            "port": 5678
+            "connect": {
+                "host": "127.0.0.1",
+                "port": 5678
+            },
+            "pathMappings": [
+                {
+                    "localRoot": "${workspaceFolder}",
+                    "remoteRoot": "/autoreduce"
+                }
+            ]
         }
     ]
 }

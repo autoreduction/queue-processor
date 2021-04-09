@@ -21,10 +21,9 @@ class Variable(models.Model):
     is_advanced = models.BooleanField(default=False)
     help_text = models.TextField(blank=True, null=True, default='')
 
-    def __unicode__(self):
-        """ :return: GEM - variable-name=variable-value """
-        # pylint:disable=no-member
-        return u'%s - %s=%s' % (self.instrument.name, self.name, self.value)
+    # pylint:disable=no-member
+    def __str__(self):
+        return f"{self.instrument.name} - {self.name}=self.value"
 
     def sanitized_name(self):
         """
@@ -40,7 +39,8 @@ class InstrumentVariable(Variable):
 
     - Holds the IDs of the variables used for the instrument
 
-    - Holds `start_run` for functionality to "Configure new runs" - e.g. variables starting from `start_run` will use the defaults that are queried with
+    - Holds `start_run` for functionality to "Configure new runs" - e.g. variables starting from `start_run` will
+      use the defaults that are queried with
 
     """
     instrument = models.ForeignKey(Instrument, on_delete=models.CASCADE)

@@ -21,7 +21,6 @@ from utils.project.structure import get_project_root
 LOGGER = logging.getLogger('app')
 
 
-# pylint:disable=too-few-public-methods
 class PlotHandler:
     """
     Takes parameters for a run and (for now) checks if an associated image exists and retrieves it.
@@ -46,7 +45,11 @@ class PlotHandler:
 
         :param data_filepath: (str) The full path to the input data
         """
-        full_filename = data_filepath.split("\\")[-1]
+        if "\\" in data_filepath:
+            sep = "\\"
+        else:
+            sep = "/"
+        full_filename = data_filepath.split(sep)[-1]
         filename, _ = os.path.splitext(full_filename)
         return filename
 
@@ -57,7 +60,7 @@ class PlotHandler:
         <data_file_name>*<.png or other extension>
         """
         _file_extension_regex = self._generate_file_extension_regex()
-        return f'{self.data_filename}.*.{_file_extension_regex}'
+        return f'{self.data_filename}{_file_extension_regex}'
 
     def _generate_file_extension_regex(self) -> str:
         """
@@ -65,7 +68,7 @@ class PlotHandler:
         .png, .gif and .jpg: The returned value would be (png|gif|jpg)
         :return: (str) expression pattern matching the file extensions of the plot handler
         """
-        return f"({','.join(self.file_extensions).replace(',', '|')})"
+        return f".*.({','.join(self.file_extensions).replace(',', '|')})"
 
     def _get_plot_files_locally(self) -> List[str]:
         """
@@ -83,18 +86,9 @@ class PlotHandler:
         Searches the server directory for existing plot files using the directory specified.
         :return: (list) files on the server path that match regex
         """
-        # start sftpclient
         client = SFTPClient()
-        # initialise list to store names of existing files matching the search
-        _found_files = []
-        # regular expression for plot file name(s)
         file_regex = self._generate_file_name_regex()
-        if file_regex:
-            # Add files that match regex to the list of files found
-            _found_files.extend(client.get_filenames(server_dir_path=self.server_dir, regex=file_regex))
-        else:
-            return None
-        return _found_files
+        return client.get_filenames(server_dir_path=self.server_dir, regex=file_regex)
 
     def get_plot_file(self):
         """

@@ -8,7 +8,9 @@
 Client class for accessing queuing service
 """
 import logging
+import os
 import uuid
+import socket
 
 import stomp
 from stomp.exception import ConnectFailedException
@@ -29,7 +31,7 @@ class QueueClient(AbstractClient):
         super(QueueClient, self).__init__(credentials)  # pylint:disable=super-with-arguments
         self._connection = None
         self._consumer_name = consumer_name
-        self._logger = logging.getLogger(__file__)
+        self._logger = logging.getLogger("queue_listener")
 
     # pylint:disable=arguments-differ
     def connect(self, listener=None):
@@ -66,6 +68,18 @@ class QueueClient(AbstractClient):
         Create the connection to the queuing service and store as self._connection
         :param listener: A ConnectionListener object to assign to the stomp connection, optionally
         """
+        inteded_for_production = "AUTOREDUCTION_PRODUCTION" in os.environ
+        aimed_at_dev = self.credentials.host.startswith("127") or "dev" in str(self.credentials.host)
+        # Prevent unintentional submission to non-development envs
+        if not inteded_for_production and not aimed_at_dev:
+            raise RuntimeError(
+                f"Trying to submit to a potentially non-development environment at `{self.credentials.host}`. "
+                "You must declare AUTOREDUCTION_PRODUCTION in the environment "
+                "if you intend to submit to the production environment")
+        if inteded_for_production and aimed_at_dev:
+            raise RuntimeError(f"Trying to submit to production environment but host is `{self.credentials.host}`. "
+                               "Remove AUTOREDUCTION_PRODUCTION if that is unintentional.")
+
         if self._connection is None or not self._connection.is_connected():
             try:
                 host_port = [(self.credentials.host, int(self.credentials.port))]
@@ -93,7 +107,7 @@ class QueueClient(AbstractClient):
         for queue in queue_list:
             # prefetchSize limits the processing to 1 message at a time
             self._connection.subscribe(destination=queue,
-                                       id=str(uuid.uuid4()),
+                                       id=socket.getfqdn(),
                                        ack="client-individual",
                                        header={'activemq.prefetchSize': '1'})
             self._logger.info("[%s] Subscribing to %s", consumer_name, queue)
@@ -115,7 +129,6 @@ class QueueClient(AbstractClient):
         # pylint:disable=no-value-for-parameter
         self._connection.ack(message_id, subscription)
 
-    # pylint:disable=too-many-arguments
     def send(self, destination, message, persistent='true', priority='4', delay=None):
         """
         Send a message via the open connection to a queue

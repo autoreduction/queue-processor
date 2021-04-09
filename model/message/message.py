@@ -14,14 +14,13 @@ import attr
 from model.message.validation import stages
 
 
-# pylint:disable=too-many-instance-attributes
 @attr.s
 class Message:
     """
     A class that represents an AMQ Message.
     Messages can be serialized and deserialized for sending messages to and from AMQ
     """
-    description = attr.ib(default=None)
+    description = attr.ib(default="")
     facility = attr.ib(default="ISIS")
     run_number = attr.ib(default=None)
     instrument = attr.ib(default=None)
@@ -39,6 +38,7 @@ class Message:
     retry_in = attr.ib(default=None)
     reduction_data = attr.ib(default=None)  # Required by reduction runner
     software = attr.ib(default=None)
+    flat_output = attr.ib(default=False)
 
     def serialize(self, indent=None, limit_reduction_script=False):
         """
@@ -83,7 +83,7 @@ class Message:
                     # Set the value of the variable on this object accessing it by name
                     setattr(self, key, value)
             else:
-                raise ValueError("Unexpected key encountered during Message population: '{key}'.")
+                raise ValueError(f"Unexpected key encountered during Message population: '{key}'.")
 
     def validate(self, destination):
         """

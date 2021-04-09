@@ -18,13 +18,11 @@ from tempfile import TemporaryDirectory
 
 import chardet
 
-from .utilities import channels_redirected
 from .exceptions import DatafileError, ReductionScriptError
-from ..settings import SCRIPTS_DIRECTORY, FLAT_OUTPUT_INSTRUMENTS, CEPH_DIRECTORY, SCRIPT_TIMEOUT
 from .timeout import TimeOut
+from .utilities import channels_redirected
+from ..settings import SCRIPTS_DIRECTORY, CEPH_DIRECTORY, SCRIPT_TIMEOUT
 
-# pylint:disable=too-few-public-methods; As pylint does not like value objects
-log_stream = io.StringIO()
 logger = logging.getLogger("reduction_service")
 
 
@@ -33,9 +31,9 @@ class ReductionDirectory:
     ReductionDirectory encapsulated directory creation, deletion and handling output type
     (flat or not)
     """
-    def __init__(self, instrument, rb_number, run_number, overwrite=False):
+    def __init__(self, instrument, rb_number, run_number, overwrite=False, flat_output=False):
         self.overwrite = overwrite
-        self._is_flat_directory = instrument in FLAT_OUTPUT_INSTRUMENTS
+        self._is_flat_directory = flat_output
         self.path = Path(CEPH_DIRECTORY % (instrument, rb_number, run_number))
         self._build_path()
         self.log_path = self.path / "reduction_log"
@@ -75,8 +73,8 @@ class TemporaryReductionDirectory:
     """
     def __init__(self, rb_number, run_number):
         self._temp_dir = TemporaryDirectory()
-        self.path = Path(self._temp_dir.name)
-        self.log_path = self.path / "reduction_log"
+        self._path = Path(self._temp_dir.name)
+        self.log_path = self._path / "reduction_log"
         self.mantid_log = self.log_path / f"RB_{rb_number}_Run_{run_number}_Mantid.log"
         self.script_log = self.log_path / f"RB_{rb_number}_Run_{run_number}_Script.out"
         self._create()
@@ -92,7 +90,7 @@ class TemporaryReductionDirectory:
         """
         self._temp_dir.cleanup()
 
-    def copy(self, destination):
+    def copy(self, destination: Path):
         """
         Copy the contents of the temporary directory to the given destination, overwriting what is
         already present.
@@ -100,6 +98,19 @@ class TemporaryReductionDirectory:
         """
         logger.info("Copying %s to %s", self.path, destination)
         copy_tree(self.path, str(destination))  # We have to convert path objects to str
+
+    @property
+    def path(self) -> str:
+        """
+        Returns the path string with a slash at the end. This is because some reduction scripts just do
+        `output_dir + str` resulting in broken output copying, as all output files end up being /tmp/abcedfgFILENAME.nxs
+        rather than /tmp/abcedfg/FILENAME.nxs
+        """
+        return f"{self._path}/"
+
+    def exists(self) -> bool:
+        """Checks that the path for the TemporaryReductionDirectory exists"""
+        return self._path.exists()
 
 
 class Datafile:
@@ -177,9 +188,7 @@ class ReductionScript:
             return self.module.main(input_file=str(input_file.path), output_dir=str(output_dir.path))
 
 
-# pylint:disable=too-many-arguments; We will remove the log_Stream once we look at logging in ppa
-# more closely
-def reduce(reduction_dir, temp_dir, datafile, script):
+def reduce(reduction_dir, temp_dir, datafile, script, log_stream):
     """
     Performs a reduction on the given datafile using the given script, outputting to the given
     output directory
@@ -187,7 +196,7 @@ def reduce(reduction_dir, temp_dir, datafile, script):
     :param temp_dir: (TemporaryReductionDirectory) Where the reduction initially outputs to
     :param datafile: (Datafile) The datafile to perform the reduction on
     :param script: (ReductionScript) The Script used to reduce the data
-    :param run_number: (String) The run number of this reduction
+    :param log_stream: (StringIO) A stream to which the log output will be written
     :return (StringIO): The log stream of the reduction script
     """
     reduction_dir.create()

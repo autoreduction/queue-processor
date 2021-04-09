@@ -12,9 +12,10 @@ import logging
 
 from autoreduce_webapp.view_utils import (check_permissions, login_and_uows_valid, render_with)
 from django.shortcuts import redirect, render
+from instrument.models import InstrumentVariable
 from reduction_viewer.models import Instrument, ReductionRun
 from reduction_viewer.utils import ReductionRunUtils
-from instrument.models import InstrumentVariable
+
 from queue_processors.queue_processor.variable_utils import VariableUtils
 
 LOGGER = logging.getLogger("app")
@@ -35,11 +36,9 @@ def summarize_variables(request, instrument, last_run_object):
     upcoming_variables_by_experiment = InstrumentVariable.objects.filter(
         experiment_reference__gte=last_run_object.experiment.reference_number)
 
-    # TODO the tracks_script that is being set is often innacurate
-    # vars made from the web app DO NOT track the script
-    # the view itself is innacurate as "tracks script" is set on a per-variable basis
-    # rather than the whole configuration
-    # Create a nested dictionary for by-run
+    # There's a known issue with inaccurate display of tracks script:
+    # https://github.com/ISISScientificComputing/autoreduce/issues/1187
+    # Creates a nested dictionary for by-run
     upcoming_variables_by_run_dict = {}
     for variable in upcoming_variables_by_run:
         if variable.start_run not in upcoming_variables_by_run_dict:
@@ -58,18 +57,21 @@ def summarize_variables(request, instrument, last_run_object):
         upcoming_variables_by_run_dict[run_number]['run_end'] = run_end
         run_end = max(run_number - 1, 0)
 
-    current_start = current_variables[0].start_run
-    # pylint:disable=deprecated-lambda
-    next_run_starts = list(filter(lambda start: start > current_start, sorted(upcoming_variables_by_run_dict.keys())))
-    current_end = next_run_starts[0] - 1 if next_run_starts else 0
+    if current_variables:
+        current_start = current_variables[0].start_run
+        next_run_starts = list(
+            filter(lambda start: start > current_start, sorted(upcoming_variables_by_run_dict.keys())))
+        current_end = next_run_starts[0] - 1 if next_run_starts else 0
 
-    current_vars = {
-        'run_start': current_start,
-        'run_end': current_end,
-        'tracks_script': not any((var.tracks_script for var in current_variables)),
-        'variables': current_variables,
-        'instrument': instrument,
-    }
+        current_vars = {
+            'run_start': current_start,
+            'run_end': current_end,
+            'tracks_script': not any((var.tracks_script for var in current_variables)),
+            'variables': current_variables,
+            'instrument': instrument,
+        }
+    else:
+        current_vars = {}
 
     # Move the upcoming vars into an ordered list
     upcoming_variables_by_run_ordered = []
@@ -110,6 +112,11 @@ def summarize_variables(request, instrument, last_run_object):
 def delete_instrument_variables(request, instrument=None, start=0, end=0, experiment_reference=None):
     """
     Handles request for deleting instrument variables
+
+    :param instrument: Name of the instrument for which variables are being deleted
+    :param start: The start run from which variables are being deleted
+    :param end: Used to limit how many variables get deleted, otherwise a delete would wipe ALL variables > start
+    :param experiment_reference: If provided - use the experiment reference to delete variables instead of start_run
     """
 
     # We "save" an empty list to delete the previous variables.

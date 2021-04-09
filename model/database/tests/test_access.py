@@ -12,6 +12,7 @@ import unittest
 from unittest.mock import patch, Mock
 
 from model.database import access
+from model.database.access import get_all_instrument_names, is_instrument_flat_output
 from model.database.records import create_reduction_run_record
 from queue_processors.queue_processor.tests.test_handle_message import FakeMessage
 
@@ -41,6 +42,36 @@ class TestAccess(unittest.TestCase):
         actual = access.get_instrument('GEM')
         self.assertIsNotNone(actual)
         self.assertEqual('GEM', actual.name)
+
+    def test_get_all_instrument_names(self):
+        """
+        Test: Correct instument names returned
+        """
+        instrument, _ = self.database.data_model.Instrument.objects.get_or_create(name="ARMI", is_active=1, is_paused=0)
+
+        self.assertEqual(["ARMI"], get_all_instrument_names())
+
+        instrument.delete()
+
+    def test_is_instrument_flat_output(self):
+        """
+        Test: returns true for flat, False otherwise
+        """
+        flat_instrument, _ = self.database.data_model.Instrument.objects.get_or_create(name="flat_instrument",
+                                                                                       is_active=1,
+                                                                                       is_paused=0,
+                                                                                       is_flat_output=1)
+
+        non_flat_instrument, _ = self.database.data_model.Instrument.objects.get_or_create(name="non_flat_instrument",
+                                                                                           is_active=1,
+                                                                                           is_paused=1,
+                                                                                           is_flat_output=0)
+
+        self.assertTrue(is_instrument_flat_output("flat_instrument"))
+        self.assertFalse(is_instrument_flat_output("non_flat_instrument"))
+
+        flat_instrument.delete()
+        non_flat_instrument.delete()
 
     def test_get_status(self):
         """

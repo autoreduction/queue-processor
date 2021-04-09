@@ -24,8 +24,6 @@ class TestPlotHandler(unittest.TestCase):
     """
     Test all the functionality of the PlotHandler
     """
-
-    # pylint:disable=too-many-instance-attributes
     def setUp(self):
         """
         Create a few test PlotHandler objects
@@ -64,6 +62,8 @@ class TestPlotHandler(unittest.TestCase):
         When: PlotHandler is initialised
         """
         self.assertEqual("MARI1234", self.test_plot_handler._get_only_data_file_name(self.input_data_filepath))
+        self.assertEqual("MARI1234",
+                         self.test_plot_handler._get_only_data_file_name(self.input_data_filepath.replace("\\", "/")))
 
     def test_generate_file_name_regex(self):
         """
@@ -85,12 +85,12 @@ class TestPlotHandler(unittest.TestCase):
         Test: Correct file extension pattern is generated
         When: _generate_file_extension_pattern() is called
         """
-        expected_pattern = '(png|jpg|bmp|gif|tiff)'
+        expected_pattern = '.*.(png|jpg|bmp|gif|tiff)'
         actual_pattern = self.test_plot_handler._generate_file_extension_regex()
         self.assertEqual(expected_pattern, actual_pattern)
 
         self.test_plot_handler.file_extensions.append('txt')
-        expected_pattern = '(png|jpg|bmp|gif|tiff|txt)'
+        expected_pattern = '.*.(png|jpg|bmp|gif|tiff|txt)'
         actual_pattern = self.test_plot_handler._generate_file_extension_regex()
         self.assertEqual(expected_pattern, actual_pattern)
 

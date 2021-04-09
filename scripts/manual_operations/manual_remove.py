@@ -75,7 +75,7 @@ class ManualRemove:
         # Display run_number - title - version for all matching runs
         print("Discovered multiple reduction versions for {}{}:".format(self.instrument, run_number))
         for run in self.to_delete[run_number]:
-            print("\tv{} - {}".format(run.run_version, run.run_name))
+            print("\tv{} - {}".format(run.run_version, run.run_description))
 
         # Get user input for which versions they wish to delete
         user_input = input("Which runs would you like to delete (e.g. 0,1,2,3 or 0-3): ")

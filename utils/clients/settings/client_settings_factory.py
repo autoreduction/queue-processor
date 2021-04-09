@@ -11,7 +11,6 @@ Factory for creating settings objects that can be used in the client classes
 from utils.clients.settings.client_settings import ClientSettings
 
 
-# pylint:disable=too-few-public-methods
 class ClientSettingsFactory:
     """
     Class for the settings factory
@@ -20,7 +19,6 @@ class ClientSettingsFactory:
     ignore_kwargs = ['username', 'password', 'host', 'port']
     valid_types = ['database', 'icat', 'queue', 'sftp', 'cycle']
 
-    # pylint:disable=too-many-arguments
     def create(self, settings_type, username, password, host, port, **kwargs):
         """
         Create a settings object to use with a client
@@ -106,7 +104,6 @@ class ClientSettingsFactory:
                                  " Valid kwargs: {1}".format(key, expected))
 
 
-# pylint:disable=too-few-public-methods
 class ICATSettings(ClientSettings):
     """
     ICAT settings object
@@ -118,7 +115,6 @@ class ICATSettings(ClientSettings):
         self.auth = authentication_type
 
 
-# pylint:disable=too-few-public-methods
 class MySQLSettings(ClientSettings):
     """
     MySQL settings to be used as a Database settings object
@@ -134,7 +130,6 @@ class MySQLSettings(ClientSettings):
         return 'mysql+mysqldb://{0}:{1}@{2}/{3}'.format(self.username, self.password, self.host, self.database)
 
 
-# pylint:disable=too-few-public-methods
 class ActiveMQSettings(ClientSettings):
     """
     ActiveMq settings to be used as a Queue settings object
@@ -142,7 +137,6 @@ class ActiveMQSettings(ClientSettings):
     data_ready = None
     all_subscriptions = None
 
-    # pylint:disable=too-many-arguments
     def __init__(self, data_ready='/queue/DataReady', **kwargs):
         # TODO explicitly state args
         super(ActiveMQSettings, self).__init__(**kwargs)  # pylint:disable=super-with-arguments

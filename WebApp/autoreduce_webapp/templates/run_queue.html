@@ -25,10 +25,10 @@
                 {% for job, started_by in queue %}
                     <tr class="{% colour_table_row job.status.value_verbose %}">
                         <td>
-                            <a href="{% url 'runs:summary' instrument_name=job.instrument.name run_number=job.run_number run_version=job.run_version %}">{{ job.title }}</a>
+                            <a class="run-link" href="{% url 'runs:summary' instrument_name=job.instrument.name run_number=job.run_number run_version=job.run_version %}">{{ job.title }}</a>
                         </td>
                         <td>{{ job.instrument.name }}</td>
-                        <td><strong>{{ job.status.value_verbose }}</strong></td>
+                        <td id="status-{{job.run_number}}"><strong>{{ job.status.value_verbose }}</strong></td>
                         <td title="{{ job.created|date:'SHORT_DATETIME_FORMAT' }}">{{ job.created|naturaltime }}</td>
                         <td> {{ started_by }} </td>
                     </tr>

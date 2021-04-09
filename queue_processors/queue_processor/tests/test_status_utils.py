@@ -16,7 +16,6 @@ from queue_processors.queue_processor.status_utils import StatusUtils
 from utils.clients.django_database_client import DjangoORM
 
 
-# pylint:disable=missing-class-docstring,missing-function-docstring
 class TestStatusUtils(unittest.TestCase):
     def setUp(self):
         self.status_utils = StatusUtils()
@@ -27,26 +26,31 @@ class TestStatusUtils(unittest.TestCase):
 
     @patch('queue_processors.queue_processor.status_utils.StatusUtils._get_status')
     def test_get_error(self, mock_get_status):
+        """Tests: Correct internal call made to get error status """
         self.status_utils.get_error()
         mock_get_status.assert_called_with('e')
 
     @patch('queue_processors.queue_processor.status_utils.StatusUtils._get_status')
     def test_get_completed(self, mock_get_status):
+        """Tests: Correct internal call made to get complete status"""
         self.status_utils.get_completed()
         mock_get_status.assert_called_with('c')
 
     @patch('queue_processors.queue_processor.status_utils.StatusUtils._get_status')
     def test_get_processing(self, mock_get_status):
+        """Tests: Correct internal made to get processing status"""
         self.status_utils.get_processing()
         mock_get_status.assert_called_with('p')
 
     @patch('queue_processors.queue_processor.status_utils.StatusUtils._get_status')
     def test_get_queued(self, mock_get_status):
+        """Tests: Correct internal call made to get queued status"""
         self.status_utils.get_queued()
         mock_get_status.assert_called_with('q')
 
     @patch('queue_processors.queue_processor.status_utils.StatusUtils._get_status')
     def test_get_skipped(self, mock_get_status):
+        """Tests: Correct internal call made to get skipped status"""
         self.status_utils.get_skipped()
         mock_get_status.assert_called_with('s')
 

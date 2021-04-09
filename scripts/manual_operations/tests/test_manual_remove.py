@@ -43,7 +43,6 @@ def make_test_run(experiment, instrument, run_version: str):
     return run
 
 
-# pylint:disable=invalid-name,too-many-public-methods
 class TestManualRemove(unittest.TestCase):
     """
     Test manual_remove.py
@@ -299,7 +298,7 @@ class TestManualRemove(unittest.TestCase):
         mock_process.assert_called_once()
         mock_delete.assert_called_once()
 
-    # pylint:disable=no-self-use, too-many-arguments
+    # pylint:disable=no-self-use
     @patch('scripts.manual_operations.manual_remove.ManualRemove.find_run_versions_in_database')
     @patch('scripts.manual_operations.manual_remove.ManualRemove.process_results')
     @patch('scripts.manual_operations.manual_remove.ManualRemove.delete_records')

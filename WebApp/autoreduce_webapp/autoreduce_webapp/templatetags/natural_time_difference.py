@@ -9,7 +9,7 @@ Renders the time difference between to given times
 """
 from django.template import Library, Node, Variable, TemplateSyntaxError
 from django.template.defaultfilters import pluralize
-# pylint: disable=relative-import
+
 from .common_helpers import get_var
 
 # pylint:disable=invalid-name

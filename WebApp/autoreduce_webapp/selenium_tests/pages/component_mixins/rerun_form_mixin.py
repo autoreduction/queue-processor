@@ -9,7 +9,8 @@ from selenium.webdriver.remote.webelement import WebElement
 
 
 class RerunFormMixin:
-    def _set_field(self, field, value):
+    @staticmethod
+    def _set_field(field, value):
         field.clear()
         new_value = value
         field.send_keys(new_value)

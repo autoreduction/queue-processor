@@ -6,7 +6,8 @@
 # ############################################################################### #
 from pathlib import Path
 from shutil import rmtree
-from typing import List
+from contextlib import ContextDecorator
+from typing import List, Optional
 
 from queue_processors.queue_processor.settings import SCRIPTS_DIRECTORY, CYCLE_DIRECTORY, ARCHIVE_ROOT
 
@@ -85,3 +86,20 @@ class DataArchive:
         Remove the created data-archive from disk.
         """
         rmtree(ARCHIVE_ROOT)
+
+
+class DefaultDataArchive(ContextDecorator):
+    """
+    Provides a context managed data archive that creates and deletes itself with some sample values.
+    """
+    def __init__(self, instrument_name) -> None:
+        self.instrument_name = instrument_name
+        self.data_archive = DataArchive([self.instrument_name], 21, 21)
+
+    def __enter__(self):
+        self.data_archive.create()
+        self.data_archive.add_reduction_script(self.instrument_name, """def main(in_f, out_d): print('some text')""")
+        self.data_archive.add_reduce_vars_script(self.instrument_name, """standard_vars={"variable1":"value1"}""")
+
+    def __exit__(self, *exc) -> Optional[bool]:
+        self.data_archive.delete()

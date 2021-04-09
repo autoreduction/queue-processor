@@ -56,7 +56,7 @@ class TestQueueClient(TestCase):
         incorrect_credentials = ClientSettingsFactory().create('queue',
                                                                username='not-user',
                                                                password='not-pass',
-                                                               host='not-host',
+                                                               host='127.does.not.exist',
                                                                port='1234')
         client = QueueClient(incorrect_credentials)
         with self.assertRaises(ConnectionException):

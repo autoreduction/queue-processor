@@ -7,47 +7,44 @@
 
 from django.urls import reverse
 from selenium_tests.pages.rerun_jobs_page import RerunJobsPage
-from selenium_tests.tests.base_tests import (BaseTestCase, FooterTestMixin, NavbarTestMixin)
+from selenium_tests.tests.base_tests import (BaseTestCase, FooterTestMixin, NavbarTestMixin, AccessibilityTestMixin)
 from selenium_tests.utils import submit_and_wait_for_result
-from systemtests.utils.data_archive import DataArchive
-from utils.clients.connection_exception import ConnectionException
-from utils.clients.django_database_client import DatabaseClient
-from queue_processors.queue_processor.queue_listener import main
+
+from WebApp.autoreduce_webapp.selenium_tests.utils import setup_external_services
 
 
-class TestRerunJobsPageIntegration(NavbarTestMixin, BaseTestCase, FooterTestMixin):
-
+class TestRerunJobsPageIntegration(NavbarTestMixin, BaseTestCase, FooterTestMixin, AccessibilityTestMixin):
     fixtures = BaseTestCase.fixtures + ["run_with_one_variable"]
+
+    accessibility_test_ignore_rules = {
+        # https://github.com/ISISScientificComputing/autoreduce/issues/1267
+        "duplicate-id-aria": "input",
+    }
 
     @classmethod
     def setUpClass(cls):
+        """Starts external services and sets instrument for all test cases"""
         super().setUpClass()
         cls.instrument_name = "TestInstrument"
-        cls.data_archive = DataArchive([cls.instrument_name], 21, 21)
-        cls.data_archive.create()
+        cls.data_archive, cls.database_client, cls.queue_client, cls.listener = setup_external_services(
+            cls.instrument_name, 21, 21)
         cls.data_archive.add_reduction_script(cls.instrument_name, """print('some text')""")
         cls.data_archive.add_reduce_vars_script(cls.instrument_name,
                                                 """standard_vars={"variable1":"test_variable_value_123"}""")
-        cls.database_client = DatabaseClient()
-        cls.database_client.connect()
-        try:
-            cls.queue_client, cls.listener = main()
-        except ConnectionException as err:
-            raise RuntimeError("Could not connect to ActiveMQ - check your credentials. If running locally check that "
-                               "ActiveMQ is running and started by `python setup.py start`") from err
-
         cls.instrument_name = "TestInstrument"
         cls.rb_number = 1234567
         cls.run_number = 99999
 
     @classmethod
     def tearDownClass(cls) -> None:
+        """Stops external services."""
         cls.queue_client.disconnect()
         cls.database_client.disconnect()
         cls.data_archive.delete()
         super().tearDownClass()
 
     def setUp(self) -> None:
+        """Sets up RerunJobsPage before each test case"""
         super().setUp()
         self.page = RerunJobsPage(self.driver, self.instrument_name)
         self.page.launch()
@@ -144,3 +141,54 @@ class TestRerunJobsPageIntegration(NavbarTestMixin, BaseTestCase, FooterTestMixi
 
         assert self.page.error_container.is_displayed()
         assert self.page.error_message_text() == f"Run number {expected_run} hasn't been ran by autoreduction yet."
+
+
+class TestRerunJobsPageIntegrationSkippedOnly(BaseTestCase):
+    fixtures = BaseTestCase.fixtures + ["skipped_run"]
+
+    @classmethod
+    def setUpClass(cls):
+        """Starts external services and sets instrument for all test cases"""
+        super().setUpClass()
+        cls.instrument_name = "TestInstrument"
+        cls.data_archive, cls.database_client, cls.queue_client, cls.listener = setup_external_services(
+            cls.instrument_name, 21, 21)
+        cls.data_archive.add_reduction_script(cls.instrument_name, """print('some text')""")
+        cls.data_archive.add_reduce_vars_script(cls.instrument_name,
+                                                """standard_vars={"variable1":"test_variable_value_123"}""")
+
+        cls.instrument_name = "TestInstrument"
+        cls.rb_number = 1234567
+        cls.run_number = 99999
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        """Stops external services."""
+        cls.queue_client.disconnect()
+        cls.database_client.disconnect()
+        cls.data_archive.delete()
+        super().tearDownClass()
+
+    def setUp(self) -> None:
+        """Sets up RerunJobsPage before each test case"""
+        super().setUp()
+        self.page = RerunJobsPage(self.driver, self.instrument_name)
+        self.page.launch()
+
+    def test_submit_rerun_after_clicking_reset_current_script(self):
+        """
+        Test: Submitting a run after clicking the "Reset to values in the current reduce_vars script"
+              uses the values saved in the current reduce_vars script
+        """
+        self.page.reset_to_current_values.click()
+        result = submit_and_wait_for_result(self)
+        assert len(result) == 2
+
+        assert result[0].run_version == 0
+        assert result[1].run_version == 1
+
+        for run0_var, run1_var in zip(result[0].run_variables.all(), result[1].run_variables.all()):
+            # the value of the variable has been overwritten because it's the same run number
+            assert run0_var.variable == run1_var.variable
+
+        assert result[1].run_variables.first().variable.value == "test_variable_value_123"

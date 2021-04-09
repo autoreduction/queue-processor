@@ -9,11 +9,13 @@ Chached data from the ICAT service
 """
 import datetime
 import logging
+
 from django.utils import timezone
-# pylint: disable=import-error, relative-import
-from .settings import CACHE_LIFETIME
+
 from .icat_communication import ICATCommunication
 from .models import UserCache, InstrumentCache, ExperimentCache
+
+from .settings import CACHE_LIFETIME
 
 LOGGER = logging.getLogger("app")
 
@@ -22,10 +24,9 @@ class ICATConnectionException(Exception):
     """
     Used to handle exceptions that we might expect from ICAT
     """
-    pass
 
 
-class ICATCache(object):
+class ICATCache:
     """
     A wrapper for ICATCommunication that caches information, and in the case of
     ICAT failure will try to use this cache.
@@ -55,7 +56,7 @@ class ICATCache(object):
         except Exception as excep:
             # pylint: disable=no-member,protected-access
             LOGGER.error("Failed to connect to ICAT: %s - %s", type(excep).__name, excep)
-            raise ICATConnectionException()
+            raise ICATConnectionException() from excep
 
     def is_valid(self, cache_obj):
         """ Check whether a cache object is fresh and is not None. """

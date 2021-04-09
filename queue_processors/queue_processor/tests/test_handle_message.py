@@ -9,11 +9,10 @@
 Tests message handling for the queue processor
 """
 
-from functools import partial
 import random
-from unittest import TestCase, mock, main
+from functools import partial
+from unittest import TestCase, main, mock
 from unittest.mock import Mock, patch
-
 from django.db.utils import IntegrityError
 from parameterized import parameterized
 
@@ -21,10 +20,11 @@ import model.database.access
 from model.database.records import create_reduction_run_record
 from model.message.message import Message
 from queue_processors.queue_processor.handle_message import HandleMessage
-from queue_processors.queue_processor.status_utils import StatusUtils
 from queue_processors.queue_processor.queue_listener import QueueListener
+from queue_processors.queue_processor.status_utils import StatusUtils
 from queue_processors.queue_processor.tests.test_instrument_variable_utils import \
     FakeModule
+from systemtests.utils.data_archive import DefaultDataArchive
 
 STATUS = StatusUtils()
 
@@ -61,7 +61,7 @@ class TestHandleMessage(TestCase):
     """
     def setUp(self):
         self.mocked_client = mock.Mock(spec=QueueListener)
-
+        self.instrument_name = "ARMI"
         self.msg = Message()
         self.msg.populate({
             "run_number": 7654321,
@@ -70,11 +70,13 @@ class TestHandleMessage(TestCase):
             "reduction_data": "/path/1",
             "started_by": -1,
             "data": "/path",
+            "software": "6.0.0",
             "description": "This is a fake description",
-            "instrument": "ARMI"  # Autoreduction Mock Instrument
+            "instrument": self.instrument_name  # Autoreduction Mock Instrument
         })
         with patch("logging.getLogger") as patched_logger:
             self.handler = HandleMessage(self.mocked_client)
+            self.handler.connect()
             self.mocked_logger = patched_logger.return_value
 
         db_handle = model.database.access.start_database()
@@ -82,7 +84,7 @@ class TestHandleMessage(TestCase):
         self.variable_model = db_handle.variable_model
 
         self.experiment, _ = self.data_model.Experiment.objects.get_or_create(reference_number=1231231)
-        self.instrument, _ = self.data_model.Instrument.objects.get_or_create(name="ARMI")
+        self.instrument, _ = self.data_model.Instrument.objects.get_or_create(name=self.instrument_name)
         status = STATUS.get_queued()
         fake_script_text = "scripttext"
         self.reduction_run = create_reduction_run_record(self.experiment, self.instrument, FakeMessage(), 0,
@@ -90,6 +92,8 @@ class TestHandleMessage(TestCase):
         self.reduction_run.save()
 
     def tearDown(self) -> None:
+        if self.handler.database is not None:
+            self.handler.disconnect()
         self.experiment.delete()
         self.instrument.delete()
         self.reduction_run.delete()
@@ -107,7 +111,7 @@ class TestHandleMessage(TestCase):
 
         assert self.reduction_run.status == expected_status
         assert self.reduction_run.message == "I am a message"
-        assert self.reduction_run.run_name == "This is a fake description"
+        assert self.reduction_run.run_description == "This is a fake description"
         self.mocked_logger.info.assert_called_once()
         assert self.mocked_logger.info.call_args[0][1] == self.msg.run_number
 
@@ -148,6 +152,8 @@ class TestHandleMessage(TestCase):
         assert self.reduction_run.finished is not None
         assert self.reduction_run.status == STATUS.get_completed()
         self.mocked_logger.info.assert_called_once()
+        assert self.reduction_run.software.name == "Mantid"
+        assert self.reduction_run.software.version == self.msg.software
         assert self.reduction_run.reduction_location.count() == 0
 
     def test_reduction_complete_with_reduction_data(self):
@@ -263,6 +269,7 @@ class TestHandleMessage(TestCase):
         rpm.return_value.run.assert_not_called()
         assert self.reduction_run.status == STATUS.get_skipped()
         assert "Validation error" in self.reduction_run.message
+        assert "Validation error" in self.reduction_run.reduction_log
 
     @patch("queue_processors.queue_processor.handle_message.ReductionScript")
     def test_create_run_records_multiple_versions(self, reduction_script: Mock):
@@ -281,7 +288,7 @@ class TestHandleMessage(TestCase):
             assert reduction_run.run_number == self.msg.run_number
             assert reduction_run.experiment.reference_number == self.msg.rb_number
             assert reduction_run.run_version == i
-            assert reduction_run.run_name == "Testing multiple versions"
+            assert reduction_run.run_description == "Testing multiple versions"
             assert message.run_version == i
             assert instrument == self.instrument
             assert instrument.name == self.msg.instrument
@@ -330,7 +337,7 @@ class TestHandleMessage(TestCase):
         assert self.mocked_logger.info.call_count == 2
         self.mocked_logger.error.assert_called_once()
         assert self.reduction_run.status == STATUS.get_error()
-        assert "Encountered error in transaction to save RunVariables" in self.reduction_run.message
+        assert "Encountered error when saving run variables" in self.reduction_run.message
 
     def test_data_ready_no_reduce_vars(self):
         "Test data_ready when the reduce_vars script does not exist and throws a FileNotFoundError"
@@ -340,7 +347,7 @@ class TestHandleMessage(TestCase):
         assert self.mocked_logger.info.call_count == 3
         self.mocked_logger.error.assert_called_once()
         assert self.reduction_run.status == STATUS.get_error()
-        assert "Encountered error in transaction to save RunVariables" in self.reduction_run.message
+        assert "Encountered error when saving run variables" in self.reduction_run.message
 
     @patch('queue_processors.queue_processor.reduction.service.ReductionScript.load', return_value=FakeModule())
     @patch("queue_processors.queue_processor.handle_message.ReductionProcessManager")
@@ -367,6 +374,38 @@ class TestHandleMessage(TestCase):
         assert self.reduction_run.status == STATUS.get_error()
         assert self.reduction_run.message == "I am error"
         load.assert_called_once()
+
+    def test_create_run_records_invalid_rb_number(self):
+        """
+        Test creating a run record when the rb number is invalid.
+        """
+        with DefaultDataArchive(self.instrument_name):
+            self.msg.rb_number = "INVALID RB NUMBER CALIBRATION RUN PERHAPS"
+            reduction_run, _, _ = self.handler.create_run_records(self.msg)
+            assert reduction_run.experiment.reference_number == 0
+
+    def test_create_run_records_valid_rb_number(self):
+        """
+        Test creating a run record when the rb number is invalid.
+        """
+        with DefaultDataArchive(self.instrument_name):
+            reduction_run, _, _ = self.handler.create_run_records(self.msg)
+            assert reduction_run.experiment.reference_number == self.msg.rb_number
+
+    def test_connected(self):
+        """
+        Test the connected context manager properly starts/clears the DB connection
+        """
+        # Disconnect first to remove state from TestCase.setUp
+        self.handler.disconnect()
+
+        with self.handler.connected():
+            assert self.handler.database is not None
+            assert self.handler.data_model is not None
+
+        # at the end of the context there should be a disconnect
+        assert self.handler.database is None
+        assert self.handler.data_model is None
 
 
 if __name__ == '__main__':

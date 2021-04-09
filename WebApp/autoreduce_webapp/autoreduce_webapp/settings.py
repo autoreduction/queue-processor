@@ -5,9 +5,9 @@
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 # pylint: skip-file
-import sys
-import os
 import configparser
+import os
+
 from utils.project.structure import PROJECT_ROOT
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -26,17 +26,21 @@ def get_str(section, key):
 # See https://docs.djangoproject.com/en/dev/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'YOUR-SECRET-KEY'
+SECRET_KEY = get_str("WEBAPP", "secret_key")
 
 # SECURITY WARNING: don't run with these turned on in production!
 
 # Enable debug by default, this allows us to serve static content without
 # having to run `manage.py collectstatic` each time. On production
 # we use Apache to serve static content instead.
-DEBUG = True
+DEBUG = not "AUTOREDUCTION_PRODUCTION" in os.environ
 DEBUG_PROPAGATE_EXCEPTIONS = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'reducedev2.isis.cclrc.ac.uk']
+if DEBUG:
+    ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'reducedev2.isis.cclrc.ac.uk']
+else:
+    ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'reduce.isis.cclrc.ac.uk']
+
 INTERNAL_IPS = ['localhost', '127.0.0.1']
 
 # Application definition
@@ -176,21 +180,23 @@ LOGGING = {
         },
     },
     'handlers': {
-        'file': {
+        'webapp_file': {
             'level': LOG_LEVEL,
-            'class': 'logging.FileHandler',
-            'filename': LOG_FILE,
-            'formatter': 'verbose'
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(PROJECT_ROOT, 'logs', 'webapp.log'),
+            'formatter': 'verbose',
+            'maxBytes': 104857600,
+            'backupCount': 20,
         },
     },
     'loggers': {
         'django': {
-            'handlers': ['file'],
+            'handlers': ['webapp_file'],
             'propagate': True,
             'level': LOG_LEVEL,
         },
         'app': {
-            'handlers': ['file'],
+            'handlers': ['webapp_file'],
             'propagate': True,
             'level': 'DEBUG',
         },
@@ -224,7 +230,7 @@ OUTDATED_BROWSERS = {
 # UserOffice WebService
 
 UOWS_URL = 'https://api.facilities.rl.ac.uk/ws/UserOfficeWebService?wsdl'
-UOWS_LOGIN_URL = 'https://users.facilities.rl.ac.uk/auth/?service=http://reduce.isis.cclrc.ac.uk&redirecturl='
+UOWS_LOGIN_URL = 'https://users.facilities.rl.ac.uk/auth/?service=https://reduce.isis.cclrc.ac.uk&redirecturl='
 
 # Email for notifications
 
@@ -233,7 +239,7 @@ EMAIL_HOST = 'exchsmtp.stfc.ac.uk'
 EMAIL_PORT = 25
 EMAIL_ERROR_RECIPIENTS = ['isisreduce@stfc.ac.uk']
 EMAIL_ERROR_SENDER = 'autoreducedev@reduce.isis.cclrc.ac.uk'
-BASE_URL = 'http://reduce.isis.cclrc.ac.uk/'
+BASE_URL = 'https://reduce.isis.cclrc.ac.uk/'
 
 # Constant vars
 SESSION_COOKIE_AGE = 3600  # The MAX length before user is logged out, 1 hour in seconds
@@ -241,7 +247,14 @@ FACILITY = "ISIS"
 PRELOAD_RUNS_UNDER = 100  # If the index run list has fewer than this many runs to show the user, preload them all.
 CACHE_LIFETIME = 3600  # Objects in ICATCache live this many seconds when ICAT is available to update them.
 USER_ACCESS_CHECKS = False  # Should the webapp prevent users from accessing runs/instruments they're not allowed to?
-DEVELOPMENT_MODE = True  # If the installation is in a development environment, set this variable to True so that
+
+# If the installation is in a development environment, set this variable to True so that
 # we are not constrained by having to log in through the user office. This will authenticate
-# anyone visiting the site as a super user
+# anyone visiting the site as a super user. It defaults to the DEBUG value
+DEVELOPMENT_MODE = DEBUG
 X_FRAME_OPTIONS = 'SAMEORIGIN'  # Enables the use of frames within HTML
+CONN_MAX_AGE = 60
+
+# If this request header is present then set https.
+# Currently this is attached to the request when it goes through the proxy server
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

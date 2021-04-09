@@ -23,7 +23,7 @@ from model.database import access as db
 from queue_processors.queue_processor.variable_utils import VariableUtils
 from queue_processors.queue_processor.reduction.service import ReductionScript
 
-# pylint:disable=too-many-arguments,too-many-locals
+# pylint:disable=too-many-locals
 
 
 class DataTooLong(ValueError):
