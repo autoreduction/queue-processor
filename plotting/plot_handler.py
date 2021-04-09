@@ -15,7 +15,6 @@ import logging
 import os
 import re
 import shutil
-from typing import List
 from WebApp.autoreduce_webapp.autoreduce_webapp.settings import STATIC_ROOT
 
 LOGGER = logging.getLogger('app')
@@ -72,17 +71,6 @@ class PlotHandler:
         """
         return f".*.({','.join(self.file_extensions).replace(',', '|')})"
 
-    def _get_plot_files_locally(self) -> List[str]:
-        """
-        Searches the local graph folder for files matching the generated file name regex and returns
-        a list of matching paths
-        :return: (list) - The list of matching file paths.
-        """
-        file_name_regex = self._generate_file_name_regex()
-        return [
-            f'/static/graphs/{file}' for file in os.listdir(self.static_graph_dir) if re.match(file_name_regex, file)
-        ]
-
     def _check_for_plot_files(self):
         """
         Searches the server directory for existing plot files using the directory specified.
@@ -117,11 +105,12 @@ class PlotHandler:
                 try:
                     shutil.copy(_server_path, _local_path)
                     LOGGER.info('File \'%s\' found and saved to %s', _server_path, _local_path)
-                except RuntimeError:
+                    # URL to retrieve the static assert from the static dir - only if succesful
+                    local_plot_paths.append(f'/static/graphs/{plot_file}')
+                except FileNotFoundError:
                     LOGGER.error("File \'%s\' does not exist", _server_path)
-                    return None
-                # URL to retrieve the static assert from the static dir
-                local_plot_paths.append(f'/static/graphs/{plot_file}')
+                except PermissionError:
+                    LOGGER.error("Insufficient permissions to read \'%s\' ", _server_path)
             return local_plot_paths
         # No files found
         return None
