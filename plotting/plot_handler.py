@@ -13,6 +13,7 @@ Instructing the Plotting factory to build an IFrame based on the above
 """
 import logging
 import os
+import traceback
 import re
 import shutil
 from WebApp.autoreduce_webapp.autoreduce_webapp.settings import STATIC_ROOT
@@ -89,6 +90,10 @@ class PlotHandler:
             return matches
         return []
 
+    def _ensure_staticfiles_graphs_exists(self):
+        if not os.path.exists(self.static_graph_dir):
+            os.makedirs(self.static_graph_dir, exist_ok=True)
+
     def get_plot_file(self):
         """
         Searches for and retrieves a plot file from CEPH.
@@ -97,6 +102,7 @@ class PlotHandler:
         :return: (str) local path to downloaded files OR None if no files found
         """
         _existing_plot_files = self._check_for_plot_files()
+        self._ensure_staticfiles_graphs_exists()
         local_plot_paths = []
         if _existing_plot_files:
             for plot_file in _existing_plot_files:
@@ -109,9 +115,10 @@ class PlotHandler:
                     # URL to retrieve the static assert from the static dir - only if succesful
                     local_plot_paths.append(f'/static/graphs/{plot_file}')
                 except FileNotFoundError:
-                    LOGGER.error("File \'%s\' does not exist", _server_path)
+                    LOGGER.error("File \'%s\' does not exist. Error: %s", _server_path, traceback.format_exc())
                 except PermissionError:
-                    LOGGER.error("Insufficient permissions to read \'%s\' ", _server_path)
+                    LOGGER.error("Insufficient permissions to read \'%s\'. Error: %s", _server_path,
+                                 traceback.format_exc())
             return local_plot_paths
         # No files found
         return None
