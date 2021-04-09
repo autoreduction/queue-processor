@@ -30,7 +30,9 @@ class PlotHandler:
     """
     def __init__(self, data_filepath: str, server_dir: str, rb_number: str = None):
         self.data_filename: str = self._get_only_data_file_name(data_filepath)
-        self.rb_number = rb_number  # Used when searching for full Experiment graph
+        # Used when searching for full Experiment graph. TODO: not actually used right now
+        self.rb_number = rb_number
+        # this is a path somewhere on CEPH
         self.server_dir = server_dir
         self.file_extensions = ["png", "jpg", "bmp", "gif", "tiff"]
         # Directory to place fetched data files / images
@@ -118,7 +120,8 @@ class PlotHandler:
                 except RuntimeError:
                     LOGGER.error("File \'%s\' does not exist", _server_path)
                     return None
-                local_plot_paths.append(f'/static/graphs/{plot_file}')  # shortcut to static dir
+                # URL to retrieve the static assert from the static dir
+                local_plot_paths.append(f'/static/graphs/{plot_file}')
             return local_plot_paths
         # No files found
         return None
