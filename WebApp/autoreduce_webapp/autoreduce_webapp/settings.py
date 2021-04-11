@@ -79,9 +79,14 @@ if not DEBUG:
     MIDDLEWARE.insert(0, 'whitenoise.middleware.WhiteNoiseMiddleware')
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 else:
-    # Add debug toolbar only if in DEBUG mode
-    INSTALLED_APPS.append('debug_toolbar')
-    MIDDLEWARE.insert(3, 'debug_toolbar.middleware.DebugToolbarMiddleware')
+    # Add debug toolbar only if in DEBUG mode and installed
+    try:
+        import debug_toolbar
+        INSTALLED_APPS.append('debug_toolbar')
+        MIDDLEWARE.insert(3, 'debug_toolbar.middleware.DebugToolbarMiddleware')
+    except ModuleNotFoundError:
+        # debug_toolbar not installed - just run without it
+        pass
 
 AUTHENTICATION_BACKENDS = [
     'autoreduce_webapp.backends.UOWSAuthenticationBackend',
