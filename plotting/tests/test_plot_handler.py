@@ -12,11 +12,12 @@ construction of regular expression for looking up existing files
 calling the SFTPClient with correct parameters
 """
 import os
+import shutil
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
+from parameterized import parameterized
 
 from plotting.plot_handler import PlotHandler
-from utils.project.structure import get_project_root
 
 
 # pylint:disable=line-too-long, protected-access
@@ -35,15 +36,13 @@ class TestPlotHandler(unittest.TestCase):
         self.expected_mari_data_filename = "MARI1234"
         self.expected_mari_file_regex = f'{self.expected_mari_data_filename}.*.{self.expected_file_extension_regex}'
         self.input_data_filepath = "\\\\isis\\inst$\\NDXMARI\\Instrument\\data\\cycle_test\\MARI1234.nxs"
+        self.mari_base = "/instrument/MARI/RBNumber/RB12345678/1234"
         self.expected_mari_rb_number = 12345678
-        self.expected_mari_rb_folder = "/instrument/MARI/RBNumber/RB12345678/1234/autoreduced"
+        self.expected_mari_rb_folder = f"{self.mari_base}/autoreduced"
 
         self.test_plot_handler = PlotHandler(data_filepath=self.input_data_filepath,
                                              server_dir=self.expected_mari_rb_folder,
                                              rb_number=self.expected_mari_rb_number)
-
-        self.expected_static_graph_dir = os.path.join(get_project_root(), 'WebApp', 'autoreduce_webapp', 'static',
-                                                      'graphs')
 
     def test_init(self):
         """
@@ -54,7 +53,6 @@ class TestPlotHandler(unittest.TestCase):
         self.assertEqual(self.test_plot_handler.server_dir, self.expected_mari_rb_folder)
         self.assertEqual(self.test_plot_handler.file_extensions, ["png", "jpg", "bmp", "gif", "tiff"])
         self.assertEqual(self.test_plot_handler.rb_number, self.expected_mari_rb_number)
-        self.assertEqual(self.test_plot_handler.static_graph_dir, self.expected_static_graph_dir)
 
     def test_get_only_data_file_name(self):
         """
@@ -94,94 +92,49 @@ class TestPlotHandler(unittest.TestCase):
         actual_pattern = self.test_plot_handler._generate_file_extension_regex()
         self.assertEqual(expected_pattern, actual_pattern)
 
-    @patch("os.listdir", return_value=["MARI1234_123.456.png", "MARI1234_124.png", "MARI123.nxs"])
-    @patch("plotting.plot_handler.PlotHandler._generate_file_name_regex")
-    def test_get_plot_files_locally_files_exist_returns_list(self, mock_gfn_regex, mock_listdir):
-        """
-        Test: Correct file paths are returned
-        When: Multiple matching files exist
-        """
-        mock_gfn_regex.return_value = self.expected_mari_file_regex
-
-        expected_files = ["/static/graphs/MARI1234_123.456.png", "/static/graphs/MARI1234_124.png"]
-        actual = self.test_plot_handler._get_plot_files_locally()
-        self.assertEqual(expected_files, actual)
-
-        mock_listdir.assert_called()
-        mock_gfn_regex.assert_called()
-
-    @patch("os.listdir", return_value=["MARI1234.png"])
-    @patch("plotting.plot_handler.PlotHandler._generate_file_name_regex")
-    def test_get_plot_files_locally_single_file_returns_list(self, mock_gfn_regex, mock_listdir):
-        """
-        Test: Correct file path is returned
-        When: Single matching file exists
-        """
-        mock_gfn_regex.return_value = self.expected_mari_file_regex
-
-        expected_files = ["/static/graphs/MARI1234.png"]
-        actual = self.test_plot_handler._get_plot_files_locally()
-        self.assertEqual(expected_files, actual)
-
-        mock_listdir.assert_called()
-        mock_gfn_regex.assert_called()
-
-    @patch("os.listdir", return_value=["MARI1234.nxs"])
-    @patch("plotting.plot_handler.PlotHandler._generate_file_name_regex")
-    def test_get_plot_files_no_matching_file_returns_empty_list(self, mock_gfn_regex, mock_listdir):
-        """
-        Test: Empty list is returned
-        When: No matching file exists
-        """
-        mock_gfn_regex.return_value = self.expected_mari_file_regex
-
-        expected_files = []
-        actual = self.test_plot_handler._get_plot_files_locally()
-        self.assertEqual(expected_files, actual)
-
-        mock_listdir.assert_called()
-        mock_gfn_regex.assert_called()
-
-    @patch('utils.clients.sftp_client.SFTPClient.__init__', return_value=None)
-    @patch('utils.clients.sftp_client.SFTPClient.get_filenames')
-    def test_check_for_plot_files(self, mock_get_filenames, mock_client_init):
+    @patch('plotting.plot_handler.os')
+    def test_check_for_plot_files_path_exists(self, mock_os):
         """
         Test: sftpclient.get_filenames is called with the correct parameters if only one plot_type is used
         When: sftpclient.get_filenames is used to look for existing plot files
         """
-        self.test_plot_handler._check_for_plot_files()
-        mock_client_init.assert_called_once()
-        mock_get_filenames.assert_called_once_with(server_dir_path=self.expected_mari_rb_folder,
-                                                   regex=self.expected_mari_file_regex)
+        mock_os.path.exists.return_value = True
+        mock_os.listdir.return_value = [
+            "MARI1234_sometext_1.png", "MARI1234_sometext_2.png", "MARI1234.nxs", "MARI1234_sometext.nxs"
+        ]
+
+        # check that only the valid matches have been found
+        assert mock_os.listdir.return_value[0:2] == self.test_plot_handler._check_for_plot_files()
+
+    @patch('plotting.plot_handler.os')
+    def test_check_for_plot_files_path_doesnt_exist(self, mock_os):
+        """
+        Test: sftpclient.get_filenames is called with the correct parameters if only one plot_type is used
+        When: sftpclient.get_filenames is used to look for existing plot files
+        """
+        mock_os.path.exists.return_value = False
+        # check that only the valid matches have been found
+        assert [] == self.test_plot_handler._check_for_plot_files()
 
     @patch('plotting.plot_handler.PlotHandler._check_for_plot_files')
-    @patch('utils.clients.sftp_client.SFTPClient.__init__', return_value=None)
-    @patch('utils.clients.sftp_client.SFTPClient.retrieve')
-    @patch("plotting.plot_handler.PlotHandler._get_plot_files_locally", return_value=[])
-    def test_get_plot_files_no_local_files(self, mock_gpfl, mock_retrieve, mock_client_init, mock_find_files):
+    @patch('plotting.plot_handler.shutil.copy')
+    def test_get_plot_files(self, mock_copy: Mock, mock_find_files):
         """
         Test: get_plot_files returns the expected plot files
         When: called with valid arguments and files exist on server and none exist locally
         """
         expected_files = ['expected.png']
         mock_find_files.return_value = expected_files
-        expected_local = os.path.join(self.expected_static_graph_dir, expected_files[0])
+        expected_local = os.path.join(self.test_plot_handler.static_graph_dir, expected_files[0])
         expected_server = os.path.join(self.expected_mari_rb_folder, expected_files[0])
 
         actual_path = self.test_plot_handler.get_plot_file()
-        mock_client_init.assert_called_once()
-        mock_retrieve.assert_called_once_with(server_file_path=expected_server,
-                                              local_file_path=expected_local,
-                                              override=True)
+        mock_copy.assert_called_once_with(expected_server, expected_local)
         self.assertEqual([f'/static/graphs/{expected_files[0]}'], actual_path)
 
-        mock_gpfl.assert_called()
-
-    @patch('utils.clients.sftp_client.SFTPClient.retrieve')
     @patch('plotting.plot_handler.PlotHandler._check_for_plot_files')
-    @patch('utils.clients.sftp_client.SFTPClient.__init__', return_value=None)
-    @patch("plotting.plot_handler.PlotHandler._get_plot_files_locally", return_value=[])
-    def test_get_plot_files_multiple_none_local(self, mock_gpfl, mock_client_init, mock_find_files, _):
+    @patch('plotting.plot_handler.shutil.copy')
+    def test_get_plot_files_multiple(self, mock_copy: Mock, mock_find_files):
         """
         Test: Multiple file paths are returned as a list
         When: Multiple image files exist on the server relating to the same run and none exist
@@ -193,52 +146,53 @@ class TestPlotHandler(unittest.TestCase):
         expected_paths = [f'/static/graphs/{expected_files[0]}', f'/static/graphs/{expected_files[1]}']
 
         actual_paths = self.test_plot_handler.get_plot_file()
-        mock_client_init.assert_called_once()  # Ensure this is not initialised more than once
+        self.assertEqual(mock_copy.call_count, len(expected_files))
         self.assertEqual(expected_paths, actual_paths)
 
-        mock_gpfl.assert_called()
-
     @patch('plotting.plot_handler.PlotHandler._check_for_plot_files', return_value=[])
-    @patch("plotting.plot_handler.PlotHandler._get_plot_files_locally", return_value=[])
-    def test_get_plot_file_none_found(self, mock_gpfl, _):
+    def test_get_plot_file_none_found(self, mock_cfpl: Mock):
         """
         Test: None is returned
         When: No files can be found on the server or locally
         """
         self.assertIsNone(self.test_plot_handler.get_plot_file())
-        mock_gpfl.assert_called()
+        mock_cfpl.assert_called_once()
 
+    @parameterized.expand([[FileNotFoundError, "does not exist"], [PermissionError, "Insufficient permissions"]])
+    @patch('plotting.plot_handler.LOGGER')
     @patch('plotting.plot_handler.PlotHandler._check_for_plot_files')
-    @patch('utils.clients.sftp_client.SFTPClient.__init__', return_value=None)
-    @patch('utils.clients.sftp_client.SFTPClient.retrieve')
-    @patch("plotting.plot_handler.PlotHandler._get_plot_files_locally", return_value=[])
-    def test_get_plot_files_cant_download_none_local(self, mock_gpfl, mock_retrieve, mock_client_init, mock_find_files):
+    @patch('plotting.plot_handler.shutil.copy')
+    def test_get_plot_files_exception_raised(
+        self,
+        exc_type: Exception,
+        expected_log_message: str,
+        mock_copy: Mock,
+        mock_find_files,
+        mock_logger,
+    ):
         """
         Test: get_plot_files returns the expected plot files
         When: called with valid arguments and files exist on server and not locally
         """
         expected_files = ['expected.png']
         mock_find_files.return_value = expected_files
-        mock_retrieve.side_effect = RuntimeError
-        self.assertIsNone(self.test_plot_handler.get_plot_file())
-        mock_gpfl.assert_called()
-        mock_client_init.assert_called_once()
+        mock_copy.side_effect = exc_type
+        assert not self.test_plot_handler.get_plot_file()
+        mock_logger.error.assert_called_once()
+        assert expected_log_message in mock_logger.error.call_args[0][0]
+        assert self.mari_base in mock_logger.error.call_args[0][1]
 
-    @patch("plotting.plot_handler.PlotHandler._check_for_plot_files")
-    @patch("plotting.plot_handler.PlotHandler._get_plot_files_locally")
-    def test_get_plot_file_from_local_storage(self, mock_gpfl, mock_cfpf):
+    def test_ensure_staticfiles_graphs_exists(self):
         """
-        Test: Correct files returned from local storage
-        When: When files exist already exist locally
+        Test that the plot handler makes the subfolders necessary for copying to succeed.
         """
-        mock_gpfl.return_value = ["/static/graphs/expected.png"]
-
-        expected = ["/static/graphs/expected.png"]
-        actual = self.test_plot_handler.get_plot_file()
-        self.assertEqual(expected, actual)
-
-        mock_gpfl.assert_called()
-        mock_cfpf.assert_not_called()
+        self.test_plot_handler.static_graph_dir = "/tmp/test_static_graph_dir/"
+        try:
+            assert not os.path.exists(self.test_plot_handler.static_graph_dir)
+            self.test_plot_handler._ensure_staticfiles_graphs_exists()
+            assert os.path.exists(self.test_plot_handler.static_graph_dir)
+        finally:
+            shutil.rmtree(self.test_plot_handler.static_graph_dir, ignore_errors=True)
 
 
 if __name__ == '__main__':
