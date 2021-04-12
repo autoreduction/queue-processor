@@ -42,7 +42,6 @@ setup_requires = [
     'stomp.py==6.1.0',
     'suds-py3==1.4.4.1',
     'PyYAML==5.4.1',
-    'whitenoise==5.2.0'
 ]
 
 if platform.system() == 'Windows':
