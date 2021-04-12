@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}Accessibility Statement{% endblock %}
+{% load static %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-md-12 text-center">
+            <h2>Accessibility Statement</h2>
+        </div>
+    </div>
+
+    <div id="accessibility-statement-contents" class="col-md-12">
+        <p>
+            This accessibility statement applies to all web pages in the domain of
+            <a href="https://reduce.isis.cclrc.ac.uk">reduce.isis.cclrc.ac.uk</a>.
+            This website is run by the Science and Technology Facilities Council (STFC). We want as many people as possible to be able to use this website. For example, that means you should be able to:
+        </p>
+        <ul>
+            <li>zoom in up to 300% without the text spilling off the screen</li>
+            <li>navigate most of the website using just a keyboard</li>
+            <li>navigate most of the website using speech recognition software</li>
+            <li>listen to most of the website using a screen reader</li>
+        </ul>
+        <p>
+            <a rel="external"
+               href="https://mcmw.abilitynet.org.uk/">AbilityNet</a> has advice on making your device easier to use if you have a disability.
+        </p>
+
+        <h3>How accessible this website is</h3>
+        <p>
+            The Auto-reduction Development Team is actively making an effort to improve accessibility. We know some parts of this website are not fully accessible:
+        </p>
+        <ul>
+            <li>Some text boxes do not have WCAG-Compliant contrast with their background</li>
+            <li>The alt text of plot images do not describe the plots when viewing a reduced run</li>
+            <li>Some element ids are repeated on the same page</li>
+        </ul>
+
+        <h3>Feedback and contact information</h3>
+        <p>
+            If you need information on this website in a different format like accessible PDF, large print, easy read, audio recording or braille please email:
+            <a href="mailto:{{ support_email }}">{{ support_email }}</a>. We’ll consider your request and get back to you as soon as possible.
+        </p>
+
+        <h3>Reporting accessibility problems with this website</h3>
+        <p>
+            We’re always looking to improve the accessibility of this website. If you find any problems not listed on this page or think we’re not meeting accessibility requirements, contact:
+        </p>
+        <ul>
+            <li>The Auto-reduction Development Team: <a href="mailto:{{ support_email }}">{{ support_email }}</a></li>
+            <li>STFC: <a href="mailto:enquiries@stfc.ac.uk">enquiries@stfc.ac.uk</a></li>
+        </ul>
+
+        <h3>Enforcement procedure</h3>
+        <p>
+            The Equality and Human Rights Commission (EHRC) is responsible for enforcing the Public Sector Bodies (Websites and Mobile Applications) (No. 2) Accessibility Regulations 2018 (the 'accessibility regulations'). If you're not happy with how we respond to your complaint, contact the
+            <a rel="external"
+               href="https://www.equalityadvisoryservice.com/">Equality Advisory and Support Service (EASS)</a>
+        </p>
+
+        <h3>Technical information about this website’s accessibility</h3>
+        <p>
+            STFC is committed to making its website accessible, in accordance with the Public Sector Bodies (Websites and Mobile Applications) (No. 2) Accessibility Regulations 2018.
+        </p>
+
+        <h4>Compliance status</h4>
+        <p>
+            This website is partially compliant with the <a rel="external"
+                                                            href="https://www.w3.org/TR/WCAG21/">Web Content Accessibility Guidelines version 2.1</a> AA standard, due to the non-compliances listed below.
+        </p>
+
+        <h3>Non-accessible content</h3>
+        <p>
+            <i>The content listed below is non-accessible for the following reasons.</i>
+        </p>
+
+        <h4>Non-compliance with the accessibility regulations</h4>
+        <table class="table table-bordered">
+            <tr>
+                <th>Accessibility problem</th>
+                <th>WCAG 2.1 AA criteria</th>
+                <th>Our plan to fix the problem</th>
+            </tr>
+            <tr>
+                <td>There are contrast issues with text foreground and background colours in some parts of the site. This is due to third-party software providing the styling for our site.</td>
+                <td>
+                    <a href="https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum.html">1.4.3 Contrast (Minimum) (Level AA)</a>
+                </td>
+                <td>Before 21_1 ISIS cycle (27/04/2021)</td>
+            </tr>
+            <tr>
+                <td>The plot images generated on the run summary pages (/[instrument name]/[run number]/) do not have fully descriptive alt texts of the plots. A general alt text is provided: "Plot image stored at [plot file]". This issue is due to the plots being generated dynamically and therefore we are unable to generate a very descriptive alt text.</td>
+                <td>
+                    <a href="https://www.w3.org/WAI/WCAG21/Understanding/non-text-content.html">1.1.1 Non-text Content (Level A)</a>
+                </td>
+                <td>Before 21_1 ISIS cycle (27/04/2021)</td>
+            </tr>
+            <tr>
+                <td>Elements with the id "var-standard-..." are sometimes repeated on the same page.</td>
+                <td><a href="https://www.w3.org/WAI/WCAG21/Understanding/parsing.html">4.1.1 Parsing (Level A)</a></td>
+                <td>Before 21_1 ISIS cycle (27/04/2021)</td>
+            </tr>
+        </table>
+
+        <h3>Preparation of this accessibility statement</h3>
+        <p>
+            This statement was prepared on <b>09/04/2021</b>. It was last reviewed on <b>09/04/2021</b>.
+        </p>
+        <p>
+            This website was last tested manually on
+            <b>30/03/2021</b>. The test was carried out by the Auto-reduction Development Team.
+        </p>
+        <p>
+            We used the <a rel="external"
+                           href="https://wave.webaim.org/">WAVE Web Accessibility Evaluation Tool</a> for manual accessibility testing,
+            and <a rel="external" href="https://www.deque.com/axe/">axe</a> for automated accessibility testing.
+        </p>
+    </div>
+{% endblock %}
