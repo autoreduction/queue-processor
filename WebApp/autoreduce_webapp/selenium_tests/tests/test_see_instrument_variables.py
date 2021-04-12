@@ -82,8 +82,6 @@ class TestSeeInstrumentVariablesPage(BaseTestCase):
 
         new_runs_page = ConfigureNewRunsPage(self.driver, self.instrument_name, start, end)
         assert new_runs_page.run_start_val == str(start)
-        if end > 0:
-            assert new_runs_page.run_end_val == str(end)
 
         assert new_runs_page.variable1_field_val == value_to_modify
         new_runs_page.variable1_field = "some new value"

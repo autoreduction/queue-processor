@@ -36,7 +36,7 @@
                 <div class="col-md-12 text-center">
                     <p>
                         {% if current_experiment_reference > 0 %}
-                        <a href="{% url 'instrument:variables' instrument=instrument.name start=run_start end=run_end %}" id="go_to_other">Click here to submit variables for a run range</a>
+                        <a href="{% url 'instrument:variables' instrument=instrument.name start=run_start %}" id="go_to_other">Click here to submit variables for a run range</a>
                         {% else %}
                         <a href="{% url 'instrument:variables_by_experiment' instrument=instrument.name experiment_reference=submit_for_experiment_reference %}" id="go_to_other">Click here to submit variables for an experiment reference</a>
                         {% endif %}
@@ -71,20 +71,11 @@
                 {% else %}
                 <div class="js-variable-by-run">
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-12">
                             <div class="form-group">
-                                <label for="run_start" class="control-label col-md-6">Run Number Start</label>
-                                <div class="col-md-6">
+                                <label for="run_start" class="control-label col-md-3">Run Number Start</label>
+                                <div class="col-md-9">
                                     <input type="number" id="run_start" name="run_start" value="{{ run_start }}" min="{{ minimum_run_start }}" class="form-control"/>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="run_end" class="control-label col-md-6">Finished
-                                    <small>(Optional)</small></label>
-                                <div class="col-md-6">
-                                    <input type="number" id="run_end" name="run_end" value="{% if run_end %}{{ run_end }}{% endif %}" min="{{ minimum_run_end }}" class="form-control"/>
                                 </div>
                             </div>
                         </div>

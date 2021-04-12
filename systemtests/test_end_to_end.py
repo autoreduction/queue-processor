@@ -20,6 +20,7 @@ from parameterized.parameterized import parameterized
 from model.database import access as db
 from model.message.message import Message
 from queue_processors.queue_processor.queue_listener import main
+from queue_processors.queue_processor.settings import MANTID_PATH
 from scripts.manual_operations import manual_remove as remove
 from systemtests.utils.data_archive import DataArchive
 from utils.clients.connection_exception import ConnectionException
@@ -44,9 +45,15 @@ VARS_SCRIPT = """
 standard_vars={"variable1":"value1"}
 """
 
+FAKE_MANTID = """
+__version__ = "5.1.0"
+"""
+
 
 class TestEndToEnd(unittest.TestCase):
     """ Class to test pipelines in autoreduction"""
+    DIR = "queue_processors.queue_processor.reduction"
+
     def setUp(self):
         """ Start all external services """
         # Get all clients
@@ -74,7 +81,17 @@ class TestEndToEnd(unittest.TestCase):
                                           run_number=self.run_number,
                                           description="This is a system test",
                                           facility="ISIS",
+                                          software="6.0.0",
                                           started_by=0)
+
+        expected_mantid_py = f"{MANTID_PATH}/mantid.py"
+        if not os.path.exists(expected_mantid_py):
+            os.makedirs(MANTID_PATH)
+            with open(expected_mantid_py, "w") as self.test_mantid_py:
+                self.test_mantid_py.write(FAKE_MANTID)
+        else:
+            # Mantid is installed, don't create or delete (in tearDown) anything
+            self.test_mantid_py = None
 
     def tearDown(self):
         """ Disconnect from services, stop external services and delete data archive """
@@ -84,6 +101,9 @@ class TestEndToEnd(unittest.TestCase):
         self.data_archive.delete()
 
         self._delete_reduction_directory()
+
+        if self.test_mantid_py:
+            shutil.rmtree(MANTID_PATH)
 
     def _setup_data_structures(self, reduce_script, vars_script):
         """
@@ -179,7 +199,8 @@ class TestEndToEnd(unittest.TestCase):
         self.assertEqual(self.rb_number, results[0].experiment.reference_number)
         self.assertEqual(self.run_number, results[0].run_number)
         self.assertEqual("This is a system test", results[0].run_description)
-        self.assertEqual('Completed', results[0].status.value_verbose())
+        self.assertEqual('Completed', results[0].status.value_verbose(),
+                         "Reduction log: %s\nAdmin log: %s" % (results[0].reduction_log, results[0].admin_log))
 
     def test_end_to_end_wish_bad_script_syntax_error(self):
         """
@@ -197,9 +218,8 @@ class TestEndToEnd(unittest.TestCase):
         self.assertEqual("This is a system test", results[0].run_description)
         self.assertEqual('Error', results[0].status.value_verbose())
 
-        self.assertIn("REDUCTION Error", results[0].message)
         self.assertIn("Error encountered when running the reduction script", results[0].message)
-        self.assertIn("SyntaxError('EOL while scanning string literal'", results[0].message)
+        self.assertIn("SyntaxError('EOL while scanning string literal'", results[0].reduction_log)
 
     def test_end_to_end_wish_bad_script_raises_exception(self):
         """
@@ -217,8 +237,9 @@ class TestEndToEnd(unittest.TestCase):
         self.assertEqual(self.run_number, results[0].run_number)
         self.assertEqual("This is a system test", results[0].run_description)
         self.assertEqual('Error', results[0].status.value_verbose())
-        self.assertIn('ValueError', results[0].message)
-        self.assertIn('hello from the other side', results[0].message)
+        self.assertIn('Error encountered when running the reduction script', results[0].message)
+        self.assertIn('Exception in reduction script', results[0].reduction_log)
+        self.assertIn('hello from the other side', results[0].reduction_log)
 
     def test_end_to_end_wish_vars_script_gets_new_variable(self):
         """Test running the same run twice, but the second time the reduce_vars has a new variable"""

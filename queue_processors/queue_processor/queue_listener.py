@@ -75,14 +75,15 @@ class QueueListener:
             # has to submit an acknowledgement for receiving the message
             # (otherwise I think that it is not removed from the queue but I am not sure about that)
             self.client.ack(headers["message-id"], headers["subscription"])
-            try:
-                if destination == '/queue/DataReady':
-                    self.message_handler.data_ready(message)
-                else:
-                    self.logger.error("Received a message on an unknown topic '%s'", destination)
-            except Exception as exp:  # pylint:disable=broad-except
-                self.logger.error("Unhandled exception encountered: %s %s\n\n%s",
-                                  type(exp).__name__, exp, traceback.format_exc())
+            with self.message_handler.connected():
+                try:
+                    if destination == '/queue/DataReady':
+                        self.message_handler.data_ready(message)
+                    else:
+                        self.logger.error("Received a message on an unknown topic '%s'", destination)
+                except Exception as exp:  # pylint:disable=broad-except
+                    self.logger.error("Unhandled exception encountered: %s %s\n\n%s",
+                                      type(exp).__name__, exp, traceback.format_exc())
 
 
 def setup_connection(consumer_name) -> Tuple[QueueClient, QueueListener]:

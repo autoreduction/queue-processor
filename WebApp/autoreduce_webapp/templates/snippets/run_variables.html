@@ -7,8 +7,7 @@
         </div>
     </div>
     <div class="panel-body collapse" id="rerun_form">
-        <form id="run_variables" method="POST" action="{% url 'run_confirmation' instrument=instrument.name %}"
-              class="form-horizontal">
+        <form id="run_variables" method="POST" action="{% url 'run_confirmation' instrument=instrument.name %}" class="form-horizontal">
             {% csrf_token %}
             <input type="hidden" name="run_range" value="{{ run_number }}">
             <input type="hidden" name="run_version" value="{{ run_version }}">
@@ -25,7 +24,7 @@
                             </a>
                         </label>
                         <div class="col-md-10">
-                            <input type="text" id="run_description" name="run_description" class="form-control"/>
+                            <input type="text" id="run_description" name="run_description" class="form-control" />
                         </div>
                     </div>
                     <div class="js-variables-container">
@@ -35,23 +34,23 @@
                 <div class="col-md-3">
                     <div class="well well-sm">
                         <div class="row">
-                            <div class="col-md-12"><h4>Additional Actions</h4></div>
+                            <div class="col-md-12">
+                                <h4>Additional Actions</h4>
+                            </div>
                         </div>
                         <div class="row">
                             <ul class="js-form-actions">
                                 <li>
                                     <a href="#resetValues" id="resetValues">Reset variables to initial values used for this run</a>
-                                    <a href="#" data-toggle="popover" data-html="true" data-content="Reset the values of the variables to the ones previously used for this run."
-                                    data-trigger="hover click focus" data-placement="top" data-container="body">
-                                     <i class="fa fa-info-circle"></i>
-                                 </a>
+                                    <a href="#" data-toggle="popover" data-html="true" data-content="Reset the values of the variables to the ones previously used for this run." data-trigger="hover click focus" data-placement="top" data-container="body">
+                                        <i class="fa fa-info-circle"></i>
+                                    </a>
                                 </li>
                                 {% if current_standard_variables %}
                                 <li>
                                     <a href="#currentScript" id="currentScript">Reset to values in the current reduce_vars script</a>
-                                    <a href="#" data-toggle="popover" data-html="true" data-content="Reset to the values currently contained in the reduce_vars script."
-                                    data-trigger="hover click focus" data-placement="top" data-container="body">
-                                     <i class="fa fa-info-circle"></i></a>
+                                    <a href="#" data-toggle="popover" data-html="true" data-content="Reset to the values currently contained in the reduce_vars script." data-trigger="hover click focus" data-placement="top" data-container="body">
+                                        <i class="fa fa-info-circle"></i></a>
                                 </li>
                                 {% endif %}
                             </ul>
@@ -68,11 +67,6 @@
                 </div>
             </div>
         </form>
-    </div>
-    <div class="row col-md-12 pt-2">
-        <div class="text-center">
-            <a href="{% url 'runs:list' instrument.name %}" class="btn btn-primary" id="cancel">Back to {{ instrument.name }} runs</a>
-        </div>
     </div>
 </div>
 

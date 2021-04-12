@@ -8,6 +8,7 @@
 Common functions for accessing and creating records in the database
 """
 from typing import List
+from django.db import transaction
 
 from utils.clients.django_database_client import DatabaseClient
 
@@ -22,6 +23,7 @@ def start_database():
     return database
 
 
+@transaction.atomic
 def get_instrument(instrument_name):
     """
     Find the instrument record associated with the name provided in the database
@@ -53,6 +55,7 @@ def get_all_instrument_names() -> List[str]:
     return list(database.data_model.Instrument.objects.values_list("name", flat=True))
 
 
+@transaction.atomic
 def get_status(status_value: str):
     """
     Find the status record associated with the value provided in the database
@@ -68,6 +71,7 @@ def get_status(status_value: str):
     return database.data_model.Status.objects.get_or_create(value=status_value)[0]
 
 
+@transaction.atomic
 def get_experiment(rb_number):
     """
     Find the Experiment record associated with the rb_number provided in the database
@@ -78,6 +82,7 @@ def get_experiment(rb_number):
     return database.data_model.Experiment.objects.get_or_create(reference_number=rb_number)[0]
 
 
+@transaction.atomic
 def get_software(name, version):
     """
     Find the Software record associated with the name and version provided
@@ -126,3 +131,7 @@ def save_record(record):
     Note: This is mostly a wrapper to aid unit testing
     """
     record.save()
+
+
+# Initialises the DjangoORM immediately on importing this module
+start_database()
