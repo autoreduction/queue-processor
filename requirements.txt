@@ -10,7 +10,7 @@ pylint==2.7.4
 pylint-django==2.4.3
 pytest==6.2.3
 pytest-cov==2.11.1
-pytest-django==4.1.0
+pytest-django==4.2.0
 pytest-xdist==2.2.1
 requests==2.25.1
 selenium==3.141.0
