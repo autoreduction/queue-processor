@@ -19,6 +19,7 @@ from reduction_viewer.models import ReductionRun, Experiment
 from .icat_cache import ICATCache, ICATConnectionException
 # The below is a template on the repository
 from .settings import (DEVELOPMENT_MODE, LOGIN_URL, OUTDATED_BROWSERS, UOWS_LOGIN_URL, USER_ACCESS_CHECKS)
+from .views import get_admin_email
 
 LOGGER = logging.getLogger("app")
 
@@ -251,4 +252,4 @@ def render_exception(sent_request: HttpRequest, exception: Exception):
     :param exception: The exception that's message will be displayed
     :return: (HttpResponse) The error page
     """
-    return render(sent_request, "error.html", {"message": exception})
+    return render(sent_request, 'error.html', {'message': exception, 'admin_email': get_admin_email()}, status=500)
