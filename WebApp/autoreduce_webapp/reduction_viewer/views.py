@@ -16,6 +16,7 @@ can be more confident we are not affecting the execution
 import json
 import logging
 import operator
+import traceback
 
 from autoreduce_webapp.icat_cache import ICATCache
 from autoreduce_webapp.settings import (DEVELOPMENT_MODE, UOWS_LOGIN_URL, USER_ACCESS_CHECKS)
@@ -343,8 +344,8 @@ def runs_list(request, instrument=None):
             context_dictionary['max_items'] = max_items_per_page
 
     # pylint:disable=broad-except
-    except Exception as exception:
-        LOGGER.error(exception)
+    except Exception:
+        LOGGER.error(traceback.format_exc())
         return {'message': "An unexpected error has occurred when loading the instrument."}
 
     return context_dictionary

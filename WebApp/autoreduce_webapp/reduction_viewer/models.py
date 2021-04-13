@@ -48,7 +48,7 @@ class Experiment(models.Model):
     """
     Holds data about an Experiment
     """
-    reference_number = models.IntegerField()
+    reference_number = models.IntegerField(unique=True)
 
     def __str__(self):
         """
@@ -107,6 +107,7 @@ class ReductionRun(models.Model):
     graph = models.TextField(null=True, blank=True)
     message = models.TextField(null=True, blank=True)
     reduction_log = models.TextField(blank=True)
+    reduction_host = models.TextField(default="", blank=True, verbose_name="Reduction hostname")
     # Scripts should be 100,000 chars or less. The DB supports up to 4GB strings here
     script = models.TextField(blank=False, validators=[MaxLengthValidator(100000)])
 
