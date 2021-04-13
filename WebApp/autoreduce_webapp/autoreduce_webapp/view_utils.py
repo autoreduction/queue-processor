@@ -235,8 +235,8 @@ def check_permissions(func):
                     elif experiment_reference is not None and experiment_reference not in \
                             icat.get_associated_experiments(int(request.user.username)):
                         raise PermissionDenied()
-            except ICATConnectionException as e:
-                return render_error(request, str(e))
+            except ICATConnectionException as excep:
+                return render_error(request, str(excep))
 
         # If we're here, the access checks have passed.
         return func(request, *args, **kwargs)

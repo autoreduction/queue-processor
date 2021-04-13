@@ -73,8 +73,8 @@ def index(request):
         request.session['sessionid'] = request.GET.get('sessionid')
         try:
             user = authenticate(token=request.GET.get('sessionid'))
-        except ICATConnectionException as e:
-            return render_error(request, str(e))
+        except ICATConnectionException as excep:
+            return render_error(request, str(excep))
 
         if user is not None:
             if user.is_active:
@@ -152,8 +152,8 @@ def run_queue(request):
                 pending_jobs = filter(
                     lambda job: job.instrument.name in icat.get_owned_instruments(int(request.user.username)),
                     pending_jobs)  # check instrument
-        except ICATConnectionException as e:
-            return render_error(request, str(e))
+        except ICATConnectionException as excep:
+            return render_error(request, str(excep))
     # Initialise list to contain the names of user/team that started runs
     started_by = []
     # cycle through all filtered runs and retrieve the name of the user/team that started the run
@@ -406,14 +406,14 @@ def experiment_summary(request, reference_number=None):
                 try:
                     with ICATCache() as icat:
                         experiment_details = icat.get_experiment_details(int(reference_number))
-                except ICATConnectionException as e:
-                    render_error(request, str(e))
+                except ICATConnectionException as excep:
+                    render_error(request, str(excep))
             else:
                 try:
                     with ICATCache(AUTH='uows', SESSION={'sessionid': request.session['sessionid']}) as icat:
                         experiment_details = icat.get_experiment_details(int(reference_number))
-                except ICATConnectionException as e:
-                    render_error(request, str(e))
+                except ICATConnectionException as excep:
+                    render_error(request, str(excep))
         # pylint:disable=broad-except
         except Exception as icat_e:
             LOGGER.error(icat_e)
