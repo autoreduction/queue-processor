@@ -21,7 +21,7 @@ import traceback
 from autoreduce_webapp.icat_cache import ICATCache, ICATConnectionException
 from autoreduce_webapp.settings import (ALLOWED_HOSTS, DEVELOPMENT_MODE, UOWS_LOGIN_URL, USER_ACCESS_CHECKS)
 from autoreduce_webapp.uows_client import UOWSClient
-from autoreduce_webapp.views import render_exception
+from autoreduce_webapp.views import render_error
 from autoreduce_webapp.view_utils import (check_permissions, login_and_uows_valid, render_with, require_admin)
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import logout as django_logout
@@ -74,7 +74,7 @@ def index(request):
         try:
             user = authenticate(token=request.GET.get('sessionid'))
         except ICATConnectionException as e:
-            return render_exception(request, e)
+            return render_error(request, str(e))
 
         if user is not None:
             if user.is_active:
@@ -153,7 +153,7 @@ def run_queue(request):
                     lambda job: job.instrument.name in icat.get_owned_instruments(int(request.user.username)),
                     pending_jobs)  # check instrument
         except ICATConnectionException as e:
-            return render_exception(request, e)
+            return render_error(request, str(e))
     # Initialise list to contain the names of user/team that started runs
     started_by = []
     # cycle through all filtered runs and retrieve the name of the user/team that started the run
@@ -407,13 +407,13 @@ def experiment_summary(request, reference_number=None):
                     with ICATCache() as icat:
                         experiment_details = icat.get_experiment_details(int(reference_number))
                 except ICATConnectionException as e:
-                    render_exception(e)
+                    render_error(request, str(e))
             else:
                 try:
                     with ICATCache(AUTH='uows', SESSION={'sessionid': request.session['sessionid']}) as icat:
                         experiment_details = icat.get_experiment_details(int(reference_number))
                 except ICATConnectionException as e:
-                    render_exception(e)
+                    render_error(request, str(e))
         # pylint:disable=broad-except
         except Exception as icat_e:
             LOGGER.error(icat_e)

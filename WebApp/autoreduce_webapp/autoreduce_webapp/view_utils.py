@@ -15,7 +15,7 @@ from django.shortcuts import render
 from reduction_viewer.models import Notification, Setting
 from reduction_viewer.models import ReductionRun, Experiment
 
-from .views import render_exception
+from .views import render_error
 from .icat_cache import ICATCache, ICATConnectionException
 # The below is a template on the repository
 from .settings import (DEVELOPMENT_MODE, LOGIN_URL, OUTDATED_BROWSERS, UOWS_LOGIN_URL, USER_ACCESS_CHECKS)
@@ -236,7 +236,7 @@ def check_permissions(func):
                             icat.get_associated_experiments(int(request.user.username)):
                         raise PermissionDenied()
             except ICATConnectionException as e:
-                return render_exception(request, e)
+                return render_error(request, str(e))
 
         # If we're here, the access checks have passed.
         return func(request, *args, **kwargs)
