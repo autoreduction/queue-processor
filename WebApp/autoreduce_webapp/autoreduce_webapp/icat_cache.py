@@ -24,6 +24,7 @@ class ICATConnectionException(Exception):
     """
     Used to handle exceptions that we might expect from ICAT
     """
+    message = "ISIS ICAT is currently unavailable"
 
 
 class ICATCache:
@@ -55,7 +56,7 @@ class ICATCache:
                 self.icat = ICATCommunication(**self.kwargs)
         except Exception as excep:
             # pylint: disable=no-member,protected-access
-            LOGGER.error("Failed to connect to ICAT: %s - %s", type(excep).__name, excep)
+            LOGGER.error("Failed to connect to ICAT: %s - %s", type(excep).__name__, excep)
             raise ICATConnectionException() from excep
 
     def is_valid(self, cache_obj):
