@@ -13,7 +13,6 @@ from django.template import RequestContext
 
 from reduction_viewer.models import Setting
 
-
 # pylint: disable=unused-argument
 
 
@@ -55,11 +54,11 @@ def handler500(request):
     return response
 
 
-def render_exception(request: HttpRequest, exception: Exception):
+def render_error(request: HttpRequest, message: str):
     """
-    Return the error page with an exception message displayed.
+    Return the error page with a message displayed.
     :param request: (HttpRequest) The original sent request
-    :param exception: The exception that's message will be displayed
+    :param message: (str) The message that will be displayed
     :return: (HttpResponse) The error page
     """
-    return render(request, 'error.html', {'message': exception, 'admin_email': get_admin_email()}, status=500)
+    return render(request, 'error.html', {'message': message, 'admin_email': get_admin_email()}, status=500)
