@@ -72,35 +72,6 @@ class TestManualSubmission(unittest.TestCase):
             ret_obj[0].reference_number = self.valid_return[1]
         return ret_obj
 
-    @patch('scripts.manual_operations.manual_submission.get_location_and_rb_from_database', return_value=None)
-    @patch('scripts.manual_operations.manual_submission.get_location_and_rb_from_icat')
-    def test_get_checks_database_then_icat(self, mock_from_icat, mock_from_database):
-        """
-        Test: Data for a given run is searched for in the database before calling ICAT
-        When: get_location_and_rb is called for a datafile which isn't in the database
-        """
-        ms.get_location_and_rb(*self.loc_and_rb_args)
-        mock_from_database.assert_called_once()
-        mock_from_icat.assert_called_once()
-
-    def test_get_from_data_base_no_client(self):
-        """
-        Test: None is returned
-        When: get_location_and_rb_from_database called with no database_client
-        """
-        self.assertIsNone(ms.get_location_and_rb_from_database(None, 'GEM', 123))
-
-    @patch('model.database.access.get_reduction_run')
-    def test_get_from_database_no_run(self, mock_get_run):
-        """
-        Test: None is returned
-        When: get_location_and_rb_from_database can't find a ReductionRun record
-        """
-        mock_database_client = Mock()
-        mock_get_run.return_value = None
-        self.assertIsNone(ms.get_location_and_rb_from_database(mock_database_client, 'GEM', 123))
-        mock_get_run.assert_called_once()
-
     def test_get_from_database(self):
         """
         Test: Data for a given run can be retrieved from the database in the expected format
