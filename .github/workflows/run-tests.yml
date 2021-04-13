@@ -37,11 +37,11 @@ jobs:
           pytest -pno:django systemtests --cov-append
 
       - uses: codecov/codecov-action@v1
-          with:
-            files: ./coverage.xml
-            name: codecov-umbrella
-            fail_ci_if_error: true
-            verbose: true
+        with:
+          files: ./coverage.xml
+          name: codecov-umbrella
+          fail_ci_if_error: true
+          verbose: true
 
   selenium:
     name: Selenium
