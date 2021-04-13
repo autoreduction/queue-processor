@@ -24,7 +24,8 @@ class ICATConnectionException(Exception):
     """
     Used to handle exceptions that we might expect from ICAT
     """
-    message = "ISIS ICAT is currently unavailable"
+    def __init__(self, message='ISIS ICAT is currently unavailable'):
+        super().__init__(message)
 
 
 class ICATCache:

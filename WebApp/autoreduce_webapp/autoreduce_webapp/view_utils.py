@@ -12,6 +12,7 @@ import logging
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import redirect
 from django.shortcuts import render
+from django.http import HttpRequest
 from reduction_viewer.models import Notification, Setting
 from reduction_viewer.models import ReductionRun, Experiment
 
@@ -235,9 +236,19 @@ def check_permissions(func):
                             icat.get_associated_experiments(int(request.user.username)):
                         raise PermissionDenied()
             except ICATConnectionException as e:
-                return render(request, "error.html", {"message": e.message})
+                return render_exception(request, e)
 
         # If we're here, the access checks have passed.
         return func(request, *args, **kwargs)
 
     return request_processor
+
+
+def render_exception(sent_request: HttpRequest, exception: Exception):
+    """
+    Return the error page with an exception message displayed.
+    :param sent_request: (HttpRequest) The original sent request
+    :param exception: The exception that's message will be displayed
+    :return: (HttpResponse) The error page
+    """
+    return render(sent_request, "error.html", {"message": exception})
