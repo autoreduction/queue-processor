@@ -18,7 +18,7 @@ import logging
 import operator
 import traceback
 
-from autoreduce_webapp.icat_cache import ICATCache
+from autoreduce_webapp.icat_cache import ICATCache, ICATConnectionException
 from autoreduce_webapp.settings import (ALLOWED_HOSTS, DEVELOPMENT_MODE, UOWS_LOGIN_URL, USER_ACCESS_CHECKS)
 from autoreduce_webapp.uows_client import UOWSClient
 from autoreduce_webapp.view_utils import (check_permissions, login_and_uows_valid, render_with, require_admin)
@@ -28,7 +28,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.db.models import Q
 from django.http import HttpResponseNotFound
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
 from reduction_viewer.models import (Experiment, Instrument, ReductionRun, Status)
 from reduction_viewer.utils import ReductionRunUtils
@@ -70,7 +70,11 @@ def index(request):
             return_url = default_next
     elif request.GET.get('sessionid'):
         request.session['sessionid'] = request.GET.get('sessionid')
-        user = authenticate(token=request.GET.get('sessionid'))
+        try:
+            user = authenticate(token=request.GET.get('sessionid'))
+        except ICATConnectionException as e:
+            return render(request, "error.html", {"message": e.message})
+
         if user is not None:
             if user.is_active:
                 login(request, user)
@@ -140,12 +144,15 @@ def run_queue(request):
                                                | Q(status=processing_status)).order_by('created')
     # Filter those which the user shouldn't be able to see
     if USER_ACCESS_CHECKS and not request.user.is_superuser:
-        with ICATCache(AUTH='uows', SESSION={'sessionid': request.session['sessionid']}) as icat:
-            pending_jobs = filter(lambda job: job.experiment.reference_number in icat.get_associated_experiments(
-                int(request.user.username)), pending_jobs)  # check RB numbers
-            pending_jobs = filter(
-                lambda job: job.instrument.name in icat.get_owned_instruments(int(request.user.username)),
-                pending_jobs)  # check instrument
+        try:
+            with ICATCache(AUTH='uows', SESSION={'sessionid': request.session['sessionid']}) as icat:
+                pending_jobs = filter(lambda job: job.experiment.reference_number in icat.get_associated_experiments(
+                    int(request.user.username)), pending_jobs)  # check RB numbers
+                pending_jobs = filter(
+                    lambda job: job.instrument.name in icat.get_owned_instruments(int(request.user.username)),
+                    pending_jobs)  # check instrument
+        except ICATConnectionException as e:
+            return render(request, "error.html", {"message": e.message})
     # Initialise list to contain the names of user/team that started runs
     started_by = []
     # cycle through all filtered runs and retrieve the name of the user/team that started the run
