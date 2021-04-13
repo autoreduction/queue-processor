@@ -106,8 +106,9 @@ class TestDjangoORM(unittest.TestCase):
         orm = DjangoORM()
         self.assertFalse(orm.connect())
 
+    @staticmethod
     @patch.multiple('model.database.orm', connection=DEFAULT, close_old_connections=DEFAULT)
-    def test_remove_old_db_connections_not_usable(self, connection, close_old_connections):
+    def test_remove_old_db_connections_not_usable(connection, close_old_connections):
         """
         Test that old db connections are removed if they are not usable
         """
@@ -116,8 +117,9 @@ class TestDjangoORM(unittest.TestCase):
         connection.is_usable.assert_called_once()
         close_old_connections.assert_called_once()
 
+    @staticmethod
     @patch.multiple('model.database.orm', connection=DEFAULT, close_old_connections=DEFAULT)
-    def test_remove_old_db_connections_usable(self, connection, close_old_connections):
+    def test_remove_old_db_connections_usable(connection, close_old_connections):
         """
         Test that old db connections are not touched if they are usable
         """
@@ -126,8 +128,9 @@ class TestDjangoORM(unittest.TestCase):
         connection.is_usable.assert_called_once()
         close_old_connections.assert_not_called()
 
+    @staticmethod
     @patch.multiple('model.database.orm', connection=DEFAULT, close_old_connections=DEFAULT)
-    def test_setup_django_removes_only_when_mysql(self, connection, close_old_connections):
+    def test_setup_django_removes_only_when_mysql(connection, close_old_connections):
         """
         Test that old db connections are not touched if they are usable
         """
