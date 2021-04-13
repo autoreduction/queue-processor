@@ -1,5 +1,5 @@
 name: Tests
-on: [push]
+on: [ push ]
 
 jobs:
   pytest:
@@ -30,15 +30,18 @@ jobs:
           pytest -pno:django --ignore=systemtests --cov=build --cov=monitors --cov=queue_processors
           --cov=scripts --cov=utils --cov=WebApp/autoreduce_webapp --cov=docker_reduction
           --cov=paths --cov=plotting --cov=model --ignore=WebApp/autoreduce_webapp/selenium_tests/
+          --cov-report=xml
 
       - name: Run system tests
         run: |
           pytest -pno:django systemtests --cov-append
 
-      - name: Coveralls
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: coveralls --service=github
+      - uses: codecov/codecov-action@v1
+        with:
+          files: ./coverage.xml
+          name: codecov-umbrella
+          fail_ci_if_error: true
+          verbose: true
 
   selenium:
     name: Selenium
@@ -91,16 +94,16 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      
+
       - uses: actions/cache@v2
         with:
           path: ~/.cache/pip
           key: ${{ job.container.image }}-pip-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
             ${{ job.container.image }}-pip-
-      
+
       - name: Pip install
-        run: | 
+        run: |
           pip install --upgrade pip
           pip install -r requirements.txt
           pip install -e .
