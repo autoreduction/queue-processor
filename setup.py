@@ -17,13 +17,12 @@ from build.commands.start import Start
 
 setup_requires = [
     'attrs==20.3.0',
-    'dash==1.19.0',
-    'dash_html_components==1.1.2',
-    # dash 1.16.3 depends on dash-core-components 1.12.1
-    'dash_core_components==1.15.0',
-    'docker==4.4.4',
-    'Django==3.1.7',
-    'django_extensions==3.1.1',
+    'dash==1.20.0',
+    'dash_html_components==1.1.3',
+    'dash_core_components==1.16.0',
+    'docker==5.0.0',
+    'Django==3.2',
+    'django_extensions==3.1.2',
     'django_plotly_dash==1.6.3',
     'django-user-agents==0.4.0',
     'filelock==3.0.12',
