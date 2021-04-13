@@ -11,7 +11,7 @@ import sys
 import unittest
 import os
 
-from unittest.mock import patch
+from unittest.mock import DEFAULT, patch
 
 from model.database import DjangoORM
 from utils.project.structure import get_project_root
@@ -105,3 +105,43 @@ class TestDjangoORM(unittest.TestCase):
         mock_data.Instrument.objects.first.side_effect = RuntimeError
         orm = DjangoORM()
         self.assertFalse(orm.connect())
+
+    @patch.multiple('model.database.orm', connection=DEFAULT, close_old_connections=DEFAULT)
+    def test_remove_old_db_connections_not_usable(self, connection, close_old_connections):
+        """
+        Test that old db connections are removed if they are not usable
+        """
+        connection.is_usable.return_value = False
+        DjangoORM.remove_old_db_connections()
+        connection.is_usable.assert_called_once()
+        close_old_connections.assert_called_once()
+
+    @patch.multiple('model.database.orm', connection=DEFAULT, close_old_connections=DEFAULT)
+    def test_remove_old_db_connections_usable(self, connection, close_old_connections):
+        """
+        Test that old db connections are not touched if they are usable
+        """
+        connection.is_usable.return_value = True
+        DjangoORM.remove_old_db_connections()
+        connection.is_usable.assert_called_once()
+        close_old_connections.assert_not_called()
+
+    @patch.multiple('model.database.orm', connection=DEFAULT, close_old_connections=DEFAULT)
+    def test_setup_django_removes_only_when_mysql(self, connection, close_old_connections):
+        """
+        Test that old db connections are not touched if they are usable
+        """
+        connection.is_usable.return_value = True
+        with patch("WebApp.autoreduce_webapp.autoreduce_webapp.settings.DATABASES") as dbmock:
+            # mocks the dict access to the DATABASE setting
+            setattr(dbmock, "__getitem__", lambda self, key: {"ENGINE": "django.db.backends.mysql"})
+            DjangoORM.setup_django()
+            connection.is_usable.assert_called_once()
+            close_old_connections.assert_not_called()
+
+        with patch("WebApp.autoreduce_webapp.autoreduce_webapp.settings.DATABASES") as dbmock:
+            # mocks the dict access to the DATABASE setting
+            setattr(dbmock, "__getitem__", lambda self, key: {"ENGINE": "django.db.backends.sqlite3"})
+            DjangoORM.setup_django()
+            connection.is_usable.assert_called_once()
+            close_old_connections.assert_not_called()
