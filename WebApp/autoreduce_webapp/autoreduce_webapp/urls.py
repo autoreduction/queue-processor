@@ -8,8 +8,7 @@
 from django.conf import settings
 from django.conf.urls import include
 from django.contrib import admin
-from django.urls import register_converter, path
-
+from django.urls import path, register_converter
 from instrument.views import runs
 from reduction_viewer import views as reduction_viewer_views
 
@@ -46,6 +45,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('logout/', reduction_viewer_views.logout, name='logout'),
     path('help/', reduction_viewer_views.help, name='help'),
+    path('accessibility_statement/', reduction_viewer_views.accessibility_statement, name='accessibility_statement'),
 
     # ===========================RUNS================================= #
     path('overview/', reduction_viewer_views.overview, name='overview'),
@@ -68,7 +68,12 @@ urlpatterns = [
 ]
 
 if settings.DEBUG:
-    import debug_toolbar
-    urlpatterns = [
-        path('__debug__/', include(debug_toolbar.urls)),
-    ] + urlpatterns
+    try:
+        import debug_toolbar
+
+        urlpatterns = [
+            path('__debug__/', include(debug_toolbar.urls)),
+        ] + urlpatterns
+    except ModuleNotFoundError:
+        # debug_toolbar not installed - just run without it
+        pass

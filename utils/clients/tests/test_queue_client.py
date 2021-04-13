@@ -7,6 +7,8 @@
 """
 Test functionality for the activemq client
 """
+import os
+
 from unittest import TestCase, mock
 from unittest.mock import patch
 
@@ -56,7 +58,7 @@ class TestQueueClient(TestCase):
         incorrect_credentials = ClientSettingsFactory().create('queue',
                                                                username='not-user',
                                                                password='not-pass',
-                                                               host='not-host',
+                                                               host='127.does.not.exist',
                                                                port='1234')
         client = QueueClient(incorrect_credentials)
         with self.assertRaises(ConnectionException):
@@ -128,3 +130,21 @@ class TestQueueClient(TestCase):
         client.subscribe_queues('single-queue', 'consumer', None)
         mock_stomp_set_listener.assert_called_once_with('consumer', None)
         mock_stomp_subscribe.assert_called_once()
+
+    def test_create_connection_bad_development(self):
+        client = QueueClient()
+        real_host = client.credentials.host
+        client.credentials.host = "production.domain.com"
+        self.assertRaisesRegex(RuntimeError, "non-development", client._create_connection)
+        client.credentials.host = real_host
+
+    def test_create_connection_bad_production(self):
+        client = QueueClient()
+        real_host = client.credentials.host
+
+        os.environ["AUTOREDUCTION_PRODUCTION"] = "1"
+        client.credentials.host = "127.0.0.1"
+        self.assertRaisesRegex(RuntimeError, ".*production environment.*", client._create_connection)
+
+        client.credentials.host = real_host
+        del os.environ["AUTOREDUCTION_PRODUCTION"]

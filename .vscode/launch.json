@@ -94,8 +94,16 @@
             "name": "Attach",
             "type": "python",
             "request": "attach",
-            "host": "127.0.0.1", // replace this with remote machine name
-            "port": 5678
+            "connect": {
+                "host": "127.0.0.1",
+                "port": 5678
+            },
+            "pathMappings": [
+                {
+                    "localRoot": "${workspaceFolder}",
+                    "remoteRoot": "/autoreduce"
+                }
+            ]
         }
     ]
 }

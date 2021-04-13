@@ -26,17 +26,21 @@ def get_str(section, key):
 # See https://docs.djangoproject.com/en/dev/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'YOUR-SECRET-KEY'
+SECRET_KEY = get_str("WEBAPP", "secret_key")
 
 # SECURITY WARNING: don't run with these turned on in production!
 
 # Enable debug by default, this allows us to serve static content without
 # having to run `manage.py collectstatic` each time. On production
 # we use Apache to serve static content instead.
-DEBUG = True
+DEBUG = not "AUTOREDUCTION_PRODUCTION" in os.environ
 DEBUG_PROPAGATE_EXCEPTIONS = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'reducedev2.isis.cclrc.ac.uk']
+if DEBUG:
+    ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'reducedev2.isis.cclrc.ac.uk']
+else:
+    ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'reduce.isis.cclrc.ac.uk']
+
 INTERNAL_IPS = ['localhost', '127.0.0.1']
 
 # Application definition
@@ -69,11 +73,15 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_plotly_dash.middleware.BaseMiddleware',
 ]
-
-# Add debug toolbar only if in DEBUG mode
 if DEBUG:
-    INSTALLED_APPS.append('debug_toolbar')
-    MIDDLEWARE.insert(3, 'debug_toolbar.middleware.DebugToolbarMiddleware')
+    # Add debug toolbar only if in DEBUG mode and installed
+    try:
+        import debug_toolbar
+        INSTALLED_APPS.append('debug_toolbar')
+        MIDDLEWARE.insert(3, 'debug_toolbar.middleware.DebugToolbarMiddleware')
+    except ModuleNotFoundError:
+        # debug_toolbar not installed - just run without it
+        pass
 
 AUTHENTICATION_BACKENDS = [
     'autoreduce_webapp.backends.UOWSAuthenticationBackend',
@@ -149,55 +157,14 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_PATH = os.path.join(BASE_DIR, 'static')
+if not DEBUG:
+    STATIC_ROOT = '/staticfiles'
+else:
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
-
-# Logging
-# https://docs.python.org/2/howto/logging.html
-
-LOG_FILE = os.path.join(BASE_DIR, 'autoreduction.log')
-if DEBUG:
-    LOG_LEVEL = 'INFO'
-else:
-    LOG_LEVEL = 'INFO'
-
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
-            'datefmt': "%d/%b/%Y %H:%M:%S"
-        },
-        'simple': {
-            'format': '%(levelname)s %(message)s'
-        },
-    },
-    'handlers': {
-        'webapp_file': {
-            'level': LOG_LEVEL,
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(PROJECT_ROOT, 'logs', 'webapp.log'),
-            'formatter': 'verbose',
-            'maxBytes': 104857600,
-            'backupCount': 20,
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['webapp_file'],
-            'propagate': True,
-            'level': LOG_LEVEL,
-        },
-        'app': {
-            'handlers': ['webapp_file'],
-            'propagate': True,
-            'level': 'DEBUG',
-        },
-    }
-}
 
 # ActiveMQ
 
@@ -243,7 +210,14 @@ FACILITY = "ISIS"
 PRELOAD_RUNS_UNDER = 100  # If the index run list has fewer than this many runs to show the user, preload them all.
 CACHE_LIFETIME = 3600  # Objects in ICATCache live this many seconds when ICAT is available to update them.
 USER_ACCESS_CHECKS = False  # Should the webapp prevent users from accessing runs/instruments they're not allowed to?
-DEVELOPMENT_MODE = True  # If the installation is in a development environment, set this variable to True so that
+
+# If the installation is in a development environment, set this variable to True so that
 # we are not constrained by having to log in through the user office. This will authenticate
-# anyone visiting the site as a super user
+# anyone visiting the site as a super user. It defaults to the DEBUG value
+DEVELOPMENT_MODE = DEBUG
 X_FRAME_OPTIONS = 'SAMEORIGIN'  # Enables the use of frames within HTML
+CONN_MAX_AGE = 60
+
+# If this request header is present then set https.
+# Currently this is attached to the request when it goes through the proxy server
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

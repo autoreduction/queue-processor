@@ -8,13 +8,17 @@
 from django.urls import reverse
 from selenium_tests.pages.configure_new_runs_page import ConfigureNewRunsPage
 from selenium_tests.pages.variables_summary_page import VariableSummaryPage
-from selenium_tests.tests.base_tests import (BaseTestCase, FooterTestMixin, NavbarTestMixin)
+from selenium_tests.tests.base_tests import (BaseTestCase, FooterTestMixin, NavbarTestMixin, AccessibilityTestMixin)
 from systemtests.utils.data_archive import DataArchive
 
 
-class TestConfigureNewRunsPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
-
+class TestConfigureNewRunsPage(NavbarTestMixin, BaseTestCase, FooterTestMixin, AccessibilityTestMixin):
     fixtures = BaseTestCase.fixtures + ["two_runs"]
+
+    accessibility_test_ignore_rules = {
+        # https://github.com/ISISScientificComputing/autoreduce/issues/1267
+        "duplicate-id-aria": "input",
+    }
 
     @classmethod
     def setUpClass(cls):
@@ -80,7 +84,6 @@ class TestConfigureNewRunsPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
 
 
 class TestConfigureNewRunsPageSkippedOnly(NavbarTestMixin, BaseTestCase, FooterTestMixin):
-
     fixtures = BaseTestCase.fixtures + ["skipped_run"]
 
     @classmethod
