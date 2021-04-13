@@ -7,11 +7,12 @@
 """
 Handle page responses for WebApp
 """
-
+from django.http import HttpRequest
 from django.shortcuts import render
 from django.template import RequestContext
 
 from reduction_viewer.models import Setting
+
 
 # pylint: disable=unused-argument
 
@@ -52,3 +53,13 @@ def handler500(request):
     response = render(RequestContext(request), '500.html', {'admin_email': get_admin_email()})
     response.status_code = 500
     return response
+
+
+def render_exception(request: HttpRequest, exception: Exception):
+    """
+    Return the error page with an exception message displayed.
+    :param request: (HttpRequest) The original sent request
+    :param exception: The exception that's message will be displayed
+    :return: (HttpResponse) The error page
+    """
+    return render(request, 'error.html', {'message': exception, 'admin_email': get_admin_email()}, status=500)

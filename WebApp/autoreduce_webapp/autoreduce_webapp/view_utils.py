@@ -12,14 +12,13 @@ import logging
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import redirect
 from django.shortcuts import render
-from django.http import HttpRequest
 from reduction_viewer.models import Notification, Setting
 from reduction_viewer.models import ReductionRun, Experiment
 
+from .views import render_exception
 from .icat_cache import ICATCache, ICATConnectionException
 # The below is a template on the repository
 from .settings import (DEVELOPMENT_MODE, LOGIN_URL, OUTDATED_BROWSERS, UOWS_LOGIN_URL, USER_ACCESS_CHECKS)
-from .views import get_admin_email
 
 LOGGER = logging.getLogger("app")
 
@@ -243,13 +242,3 @@ def check_permissions(func):
         return func(request, *args, **kwargs)
 
     return request_processor
-
-
-def render_exception(sent_request: HttpRequest, exception: Exception):
-    """
-    Return the error page with an exception message displayed.
-    :param sent_request: (HttpRequest) The original sent request
-    :param exception: The exception that's message will be displayed
-    :return: (HttpResponse) The error page
-    """
-    return render(sent_request, 'error.html', {'message': exception, 'admin_email': get_admin_email()}, status=500)
