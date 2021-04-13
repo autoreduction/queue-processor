@@ -21,7 +21,8 @@ import traceback
 from autoreduce_webapp.icat_cache import ICATCache, ICATConnectionException
 from autoreduce_webapp.settings import (ALLOWED_HOSTS, DEVELOPMENT_MODE, UOWS_LOGIN_URL, USER_ACCESS_CHECKS)
 from autoreduce_webapp.uows_client import UOWSClient
-from autoreduce_webapp.view_utils import (check_permissions, login_and_uows_valid, render_with, require_admin, render_exception)
+from autoreduce_webapp.views import render_exception
+from autoreduce_webapp.view_utils import (check_permissions, login_and_uows_valid, render_with, require_admin)
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import logout as django_logout
 from django.contrib.auth.models import User
