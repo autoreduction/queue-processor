@@ -14,7 +14,8 @@
             "experiment_id": 1,
             "instrument_id": 1,
             "started_by": -1,
-            "reduction_host": "test-host-123"
+            "reduction_host": "test-host-123",
+            "software_id": 1
         }
     },
     {
@@ -117,6 +118,17 @@
         "pk": 6,
         "fields": {
             "name": "variable_none",
+            "value": "None",
+            "type": "text",
+            "is_advanced": false,
+            "help_text": ""
+        }
+    },
+    {
+        "model": "instrument.variable",
+        "pk": 7,
+        "fields": {
+            "name": "variable_empty",
             "value": "",
             "type": "text",
             "is_advanced": false,
@@ -234,6 +246,25 @@
         "pk": 6,
         "fields": {
             "variable_id": 6,
+            "reduction_run_id": 1
+        }
+    },
+    {
+        "model": "instrument.instrumentvariable",
+        "pk": 7,
+        "fields": {
+            "variable_ptr_id": 7,
+            "instrument_id": 1,
+            "experiment_reference": null,
+            "start_run": 99999,
+            "tracks_script": true
+        }
+    },
+    {
+        "model": "instrument.runvariable",
+        "pk": 7,
+        "fields": {
+            "variable_id": 7,
             "reduction_run_id": 1
         }
     }
