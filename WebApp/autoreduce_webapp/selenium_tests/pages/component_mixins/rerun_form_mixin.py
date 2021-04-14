@@ -51,3 +51,141 @@ class RerunFormMixin:
         Selenium requires that we clear the field first!
         """
         self._set_field(self.variable1_field, value)
+
+    @property
+    def variable_str_field(self) -> WebElement:
+        """
+        Finds and returns the variabl1 input field
+        """
+        return self.driver.find_element_by_id("var-standard-variable_str")
+
+    @property
+    def variable_str_field_val(self) -> WebElement:
+        """
+        Finds and returns the variabl1 input field
+        """
+        return self.driver.find_element_by_id("var-standard-variable_str").get_attribute("value")
+
+    @variable_str_field.setter
+    def variable_str_field(self, value) -> None:
+        """
+        Clears the field and sends the keys to the input field.
+
+        Selenium requires that we clear the field first!
+        """
+        self._set_field(self.variable_str_field, value)
+
+    @property
+    def variable_int_field(self) -> WebElement:
+        """
+        Finds and returns the variabl1 input field
+        """
+        return self.driver.find_element_by_id("var-standard-variable_int")
+
+    @property
+    def variable_int_field_val(self) -> WebElement:
+        """
+        Finds and returns the variabl1 input field
+        """
+        return self.driver.find_element_by_id("var-standard-variable_int").get_attribute("value")
+
+    @variable_int_field.setter
+    def variable_int_field(self, value) -> None:
+        """
+        Clears the field and sends the keys to the input field.
+
+        Selenium requires that we clear the field first!
+        """
+        self._set_field(self.variable_int_field, value)
+
+    @property
+    def variable_float_field(self) -> WebElement:
+        """
+        Finds and returns the variabl1 input field
+        """
+        return self.driver.find_element_by_id("var-standard-variable_float")
+
+    @property
+    def variable_float_field_val(self) -> WebElement:
+        """
+        Finds and returns the variabl1 input field
+        """
+        return self.driver.find_element_by_id("var-standard-variable_float").get_attribute("value")
+
+    @variable_float_field.setter
+    def variable_float_field(self, value) -> None:
+        """
+        Clears the field and sends the keys to the input field.
+
+        Selenium requires that we clear the field first!
+        """
+        self._set_field(self.variable_float_field, value)
+
+    @property
+    def variable_listint_field(self) -> WebElement:
+        """
+        Finds and returns the variabl1 input field
+        """
+        return self.driver.find_element_by_id("var-standard-variable_listint")
+
+    @property
+    def variable_listint_field_val(self) -> WebElement:
+        """
+        Finds and returns the variabl1 input field
+        """
+        return self.driver.find_element_by_id("var-standard-variable_listint").get_attribute("value")
+
+    @variable_listint_field.setter
+    def variable_listint_field(self, value) -> None:
+        """
+        Clears the field and sends the keys to the input field.
+
+        Selenium requires that we clear the field first!
+        """
+        self._set_field(self.variable_listint_field, value)
+
+    @property
+    def variable_liststr_field(self) -> WebElement:
+        """
+        Finds and returns the variabl1 input field
+        """
+        return self.driver.find_element_by_id("var-standard-variable_liststr")
+
+    @property
+    def variable_liststr_field_val(self) -> WebElement:
+        """
+        Finds and returns the variabl1 input field
+        """
+        return self.driver.find_element_by_id("var-standard-variable_liststr").get_attribute("value")
+
+    @variable_liststr_field.setter
+    def variable_liststr_field(self, value) -> None:
+        """
+        Clears the field and sends the keys to the input field.
+
+        Selenium requires that we clear the field first!
+        """
+        self._set_field(self.variable_liststr_field, value)
+
+    @property
+    def variable_none_field(self) -> WebElement:
+        """
+        Finds and returns the variabl1 input field
+        """
+        return self.driver.find_element_by_id("var-standard-variable_none")
+
+    @property
+    def variable_none_field_val(self) -> WebElement:
+        """
+        Finds and returns the variabl1 input field
+        """
+        return self.driver.find_element_by_id("var-standard-variable_none").get_attribute("value")
+
+    @variable_none_field.setter
+    def variable_none_field(self, value) -> None:
+        """
+        Clears the field and sends the keys to the input field.
+
+        Selenium requires that we clear the field first!
+        """
+        self._set_field(self.variable_none_field, value)
