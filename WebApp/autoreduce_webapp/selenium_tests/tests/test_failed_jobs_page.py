@@ -10,6 +10,9 @@ Selenium tests for failed jobs page
 from selenium_tests.pages.failed_jobs_page import FailedJobsPage
 from selenium_tests.tests.base_tests import FooterTestMixin, BaseTestCase, NavbarTestMixin
 
+from WebApp.autoreduce_webapp.selenium_tests.utils import setup_external_services
+from model.database import access
+
 
 class TestFailedJobsPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
     """
@@ -37,3 +40,12 @@ class TestFailedJobsPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
         """
         self.page.toggle_run("99999").hide_runs()
         self.assertEqual([], self.page.get_failed_run_numbers())
+
+    def test_rerun_failed_run(self):
+        """
+        Test rerunning failed run creates rerun
+        """
+        setup_external_services("TestInstrument", 21, 21)
+        self.page.toggle_run("99999").retry_runs()
+        runs = access.get_reduction_run("TestInstrument", "999999")
+        self.assertTrue(any(run.description == "Re-run from the failed queue" for run in runs))
