@@ -189,3 +189,26 @@ class RerunFormMixin:
         Selenium requires that we clear the field first!
         """
         self._set_field(self.variable_none_field, value)
+
+    @property
+    def variable_empty_field(self) -> WebElement:
+        """
+        Finds and returns the variabl1 input field
+        """
+        return self.driver.find_element_by_id("var-standard-variable_empty")
+
+    @property
+    def variable_empty_field_val(self) -> WebElement:
+        """
+        Finds and returns the variabl1 input field
+        """
+        return self.driver.find_element_by_id("var-standard-variable_empty").get_attribute("value")
+
+    @variable_empty_field.setter
+    def variable_empty_field(self, value) -> None:
+        """
+        Clears the field and sends the keys to the input field.
+
+        Selenium requires that we clear the field first!
+        """
+        self._set_field(self.variable_empty_field, value)
