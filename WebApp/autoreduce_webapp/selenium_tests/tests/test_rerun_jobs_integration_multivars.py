@@ -14,7 +14,7 @@ from selenium_tests.utils import submit_and_wait_for_result
 
 from WebApp.autoreduce_webapp.selenium_tests.utils import setup_external_services
 
-TEMP_OUT_FILE = tempfile.TemporaryFile()
+TEMP_OUT_FILE = tempfile.NamedTemporaryFile()
 SCRIPT = f"""
 import sys
 import os
@@ -29,7 +29,7 @@ def main(input_file, output_dir):
 """
 
 
-class TestRerunJobsPageIntegrationMultiVar(NavbarTestMixin, BaseTestCase, FooterTestMixin, AccessibilityTestMixin):
+class TestRerunJobsPageIntegrationMultiVar(BaseTestCase, NavbarTestMixin, FooterTestMixin, AccessibilityTestMixin):
     fixtures = BaseTestCase.fixtures + ["run_with_multiple_variables"]
 
     accessibility_test_ignore_rules = {
