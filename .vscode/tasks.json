@@ -30,6 +30,65 @@
                 "kind": "build",
                 "isDefault": true
             }
+        },
+        {
+            "label": "Run Docker Queue Processor",
+            "type": "shell",
+            "command": "docker",
+            "isBackground": true,
+            "args": [
+                "run",
+                "--network=host",
+                "-v",
+                "${workspaceFolder}:/autoreduce",
+                "--name",
+                "queue-processor-debugpy",
+                "-it",
+                "autoreduction/qp",
+                "python3",
+                "-m",
+                "debugpy",
+                "--listen",
+                "5678",
+                "--wait-for-client",
+                "/autoreduce/queue_processors/queue_processor/queue_listener.py"
+            ]
+        },
+        {
+            "label": "Kill queue-processor-debugpy",
+            "type": "shell",
+            "command": "docker kill queue-processor-debugpy",
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Docker Web App",
+            "type": "shell",
+            "command": "docker",
+            "isBackground": true,
+            "args": [
+                "run",
+                "--network=host",
+                "-v",
+                "${workspaceFolder}:/autoreduce",
+                "--name",
+                "webapp-debugpy",
+                "-it",
+                "autoreduction/qp",
+                "python3",
+                "-m",
+                "debugpy",
+                "--listen",
+                "5678",
+                "--wait-for-client",
+                "/autoreduce/WebApp/autoreduce_webapp/manage.py",
+                "runserver"
+            ]
+        },
+        {
+            "label": "Kill webapp-debugpy",
+            "type": "shell",
+            "command": "docker kill webapp-debugpy",
+            "problemMatcher": []
         }
     ]
 }

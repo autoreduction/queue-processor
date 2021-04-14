@@ -104,6 +104,50 @@
                     "remoteRoot": "/autoreduce"
                 }
             ]
+        },
+        {
+            "name": "Queue Processor Docker Attach",
+            "type": "python",
+            "request": "attach",
+            "connect": {
+                "host": "127.0.0.1",
+                "port": 5678
+            },
+            "pathMappings": [
+                {
+                    "localRoot": "${workspaceFolder}",
+                    "remoteRoot": "/autoreduce"
+                }
+            ],
+            "presentation": {
+                "hidden": false,
+                "group": "autoreduce-docker",
+                "order": 1
+            },
+            "preLaunchTask": "Run Docker Queue Processor",
+            "postDebugTask": "Kill queue-processor-debugpy"
+        },
+        {
+            "name": "Webapp Docker Attach",
+            "type": "python",
+            "request": "attach",
+            "connect": {
+                "host": "127.0.0.1",
+                "port": 5678
+            },
+            "pathMappings": [
+                {
+                    "localRoot": "${workspaceFolder}",
+                    "remoteRoot": "/autoreduce"
+                }
+            ],
+            "presentation": {
+                "hidden": false,
+                "group": "autoreduce-docker",
+                "order": 1
+            },
+            "preLaunchTask": "Run Docker Web App",
+            "postDebugTask": "Kill webapp-debugpy"
         }
     ]
 }
