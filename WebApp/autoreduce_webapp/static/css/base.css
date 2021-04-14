@@ -210,6 +210,10 @@ search#run_search {
     word-wrap: break-word;
 }
 
+a#cancel {
+    margin-bottom: 12px;
+}
+
 /****************
  7. Variables
 ****************/
