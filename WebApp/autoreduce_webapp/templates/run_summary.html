@@ -142,7 +142,6 @@
                                         <em>No software data found</em>
                                     {% endif %}
                                 </div>
-                                <div id="reduction_host"><strong>Host:</strong>{{ run.reduction_host }}</div>
                             </div>
                         </div>
                         <div class="row">
@@ -175,6 +174,7 @@
                                     <strong>Logs:</strong>
                                     <a href="#" class="js-log-display" id="show_reduction_logs">Show reduction logs</a>
                                 {% endif %}
+                                <div id="reduction_host"><strong>Host:</strong> {{ run.reduction_host }}</div>
                             </div>
                         </div>
                     </div>

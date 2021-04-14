@@ -100,10 +100,14 @@
         };
         var validateListNumber = function validateListNumber() {
             var items, i;
-            if ($(this).val().trim().endsWith(',')) {
+
+            // get the value and remove any [ ] in the string
+            const value = $(this).val().trim().replace("[", "").replace("]", "");
+
+            if (value.endsWith(',')) {
                 addInvalid($(this), getVarName($(this)) + ' must be a comma separated list.')
-            } else if ($(this).val() !== '') {
-                items = $(this).val().split(',');
+            } else if (value !== '') {
+                items = value.split(',');
                 for (i = 0; i < items.length; i++) {
                     if (!isNumber(items[i])) {
                         addInvalid($(this), getVarName($(this)) + ' must be a comma separated list of numbers.')
@@ -114,10 +118,12 @@
         };
         var validateListText = function validateListText() {
             var items, i;
-            if ($(this).val().trim().endsWith(',')) {
+            const value = $(this).val().trim().replace("[", "").replace("]", "");
+
+            if (value.endsWith(',')) {
                 addInvalid($(this), getVarName($(this)) + ' must be a comma separated list.')
-            } else if ($(this).val() !== '') {
-                items = $(this).val().split(',');
+            } else if (value !== '') {
+                items = value.split(',');
                 for (i = 0; i < items.length; i++) {
                     if (items[i].trim() === '') {
                         addInvalid($(this), getVarName($(this)) + ' must be a comma separated list.')
