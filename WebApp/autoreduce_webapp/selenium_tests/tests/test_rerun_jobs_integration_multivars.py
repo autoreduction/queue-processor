@@ -5,6 +5,8 @@
 # SPDX - License - Identifier: GPL-3.0-or-later
 # ############################################################################### #
 
+import tempfile
+
 from django.urls import reverse
 from selenium_tests.pages.rerun_jobs_page import RerunJobsPage
 from selenium_tests.tests.base_tests import (BaseTestCase, FooterTestMixin, NavbarTestMixin, AccessibilityTestMixin)
@@ -12,7 +14,8 @@ from selenium_tests.utils import submit_and_wait_for_result
 
 from WebApp.autoreduce_webapp.selenium_tests.utils import setup_external_services
 
-SCRIPT = """
+TEMP_OUT_FILE = tempfile.TemporaryFile()
+SCRIPT = f"""
 import sys
 import os
 
@@ -21,7 +24,7 @@ sys.path.append(os.path.dirname(__file__))
 import reduce_vars as web_var
 
 def main(input_file, output_dir):
-    with open("/tmp/testfile", 'w+') as file:
+    with open("{TEMP_OUT_FILE.name}", 'w+') as file:
         file.write("\\n".join([str(var) for var in web_var.standard_vars.items()]))
 """
 
@@ -46,7 +49,7 @@ class TestRerunJobsPageIntegrationMultiVar(NavbarTestMixin, BaseTestCase, Footer
             cls.instrument_name, """standard_vars={"variable_str":"test_variable_value_123",
                                                 "variable_int":123, "variable_float":123.321,
                                                 "variable_listint":[1,2,3], "variable_liststr":["a","b","c"],
-                                                "variable_none":None}""")
+                                                "variable_none":None, "variable_empty":""}""")
         cls.instrument_name = "TestInstrument"
         cls.rb_number = 1234567
         cls.run_number = 99999
@@ -120,6 +123,12 @@ class TestRerunJobsPageIntegrationMultiVar(NavbarTestMixin, BaseTestCase, Footer
         assert run_vars[2].variable.value == new_float
         assert run_vars[3].variable.value == new_listint
         assert run_vars[4].variable.value == new_liststr
-        assert run_vars[5].variable.value == ""
+        assert run_vars[5].variable.value == "None"
+        assert run_vars[6].variable.value == ""
 
-    # TODO: verify the saved out file's values against the expected - currently BROKEN!
+        with open(TEMP_OUT_FILE.name, 'r') as fil:
+            contents = fil.read()
+
+        for runvar in run_vars:
+            assert runvar.variable.name in contents
+            assert runvar.variable.value in contents
