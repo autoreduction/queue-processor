@@ -11,6 +11,7 @@ import io
 import logging
 import os
 import traceback
+import types
 from distutils.dir_util import copy_tree
 from importlib.util import spec_from_file_location, module_from_spec
 from pathlib import Path
@@ -175,6 +176,39 @@ class ReductionScript:
         with io.open(self.script_path, 'r', encoding=encoding) as file_decoded:
             return file_decoded.read()
 
+    def replace_variables(self, reduction_arguments):
+        """
+        We mock up the web_var module according to what's expected. The scripts want standard_vars
+        and advanced_vars, e.g.
+        https://github.com/mantidproject/mantid/blob/master/scripts/Inelastic/Direct/ReductionWrapper.py
+        """
+        def merge_dicts(dict_name):
+            """
+            Merge self.reduction_arguments[dictName] into reduce_script.web_var[dictName],
+            overwriting any key that exists in both with the value from sourceDict.
+            """
+            def merge_dict_to_name(dictionary_name, source_dict):
+                """ Merge the two dictionaries. """
+                old_dict = {}
+                if hasattr(self.module.web_var, dictionary_name):
+                    old_dict = getattr(self.module.web_var, dictionary_name)
+                else:
+                    pass
+                old_dict.update(source_dict)
+                setattr(self.module.web_var, dictionary_name, old_dict)
+
+            def ascii_encode(var):
+                """ ASCII encode var. """
+                return var.encode('ascii', 'ignore') if type(var).__name__ == "unicode" else var
+
+            encoded_dict = {k: ascii_encode(v) for k, v in reduction_arguments[dict_name].items()}
+            merge_dict_to_name(dict_name, encoded_dict)
+
+        if not hasattr(self.module, "web_var"):
+            self.module.web_var = types.ModuleType("reduce_vars")
+        merge_dicts("standard_vars")
+        merge_dicts("advanced_vars")
+
     def run(self, input_file, output_dir):
         """
         Runs the reduction script on the given input file and outputs to the given
@@ -188,7 +222,7 @@ class ReductionScript:
             return self.module.main(input_file=str(input_file.path), output_dir=str(output_dir.path))
 
 
-def reduce(reduction_dir, temp_dir, datafile, script, log_stream):
+def reduce(reduction_dir, temp_dir, datafile, script, reduction_arguments, log_stream):
     """
     Performs a reduction on the given datafile using the given script, outputting to the given
     output directory
@@ -215,6 +249,7 @@ def reduce(reduction_dir, temp_dir, datafile, script, log_stream):
 
     try:
         script.load()
+        script.replace_variables(reduction_arguments)
         with channels_redirected(temp_dir.script_log, temp_dir.mantid_log, log_stream):
             additional_output_dirs = script.run(datafile, temp_dir)
         logger.removeHandler(log_stream_handler)
