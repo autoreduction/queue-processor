@@ -23,11 +23,3 @@ def variable_type(var_type):
     if var_type in ('list_number', 'list_text'):
         return 'text'
     return var_type
-
-
-@register.filter
-def get(dictionary: dict, key: str):
-    """
-    :return: variable type expected deepening on table element
-    """
-    return dictionary.get(key).variable.value
