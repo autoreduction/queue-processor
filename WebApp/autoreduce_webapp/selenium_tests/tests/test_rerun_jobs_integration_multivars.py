@@ -77,6 +77,7 @@ class TestRerunJobsPageIntegrationMultiVar(BaseTestCase, NavbarTestMixin, Footer
         assert self.page.variable_listint_field_val == "[1, 2, 3]"
         assert self.page.variable_liststr_field_val == "['a', 'b', 'c']"
         assert self.page.variable_none_field_val == "None"
+        assert self.page.variable_bool_field_val == "True"
 
     def test_submit_rerun_same_variables(self):
         """
