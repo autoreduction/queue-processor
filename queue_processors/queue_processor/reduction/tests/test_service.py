@@ -159,7 +159,7 @@ class TestReductionService(unittest.TestCase):
         When: object is created
         """
         temp_dir = TemporaryReductionDirectory(self.rb_number, self.run_number)
-        self.assertTrue(temp_dir.path.exists())
+        self.assertTrue(temp_dir.exists())
         self.assertTrue(temp_dir.log_path.exists())
         self.assertTrue(temp_dir.mantid_log.exists())
         self.assertTrue(temp_dir.script_log.exists())
@@ -167,7 +167,7 @@ class TestReductionService(unittest.TestCase):
         self.assertEqual(f"RB_{self.rb_number}_Run_{self.run_number}_Mantid.log", temp_dir.mantid_log.name)
         self.assertEqual(f"RB_{self.rb_number}_Run_{self.run_number}_Script.out", temp_dir.script_log.name)
         temp_dir.delete()
-        self.assertFalse(temp_dir.path.exists())
+        self.assertFalse(temp_dir.exists())
 
     def test_temp_reduction_directory_delete(self):
         """
@@ -175,9 +175,9 @@ class TestReductionService(unittest.TestCase):
         When: Delete is called
         """
         temp_dir = TemporaryReductionDirectory(self.rb_number, self.rb_number)
-        self.assertTrue(temp_dir.path.exists())
+        self.assertTrue(temp_dir.exists())
         temp_dir.delete()
-        self.assertFalse(temp_dir.path.exists())
+        self.assertFalse(temp_dir.exists())
 
     def test_temporary_reduction_directory_copy(self):
         """
@@ -188,10 +188,10 @@ class TestReductionService(unittest.TestCase):
             temp_reduction_dir = TemporaryReductionDirectory(self.instrument, self.rb_number)
             dest_folder = Path(dest)
             src_folder = Path(src)
-            temp_reduction_dir.path = src_folder
-            fill_mockup_directory(temp_reduction_dir.path)
+            temp_reduction_dir._path = src_folder
+            fill_mockup_directory(temp_reduction_dir._path)
 
-            temp_reduction_dir.copy(dest)
+            temp_reduction_dir.copy(dest_folder)
             self.assertTrue((dest_folder / "myfile.nxs").exists())
             self.assertTrue((dest_folder / "reduction_log").exists())
             self.assertTrue((dest_folder / "reduction_log" / "script.out"))

@@ -13,10 +13,10 @@ Instructing the Plotting factory to build an IFrame based on the above
 """
 import logging
 import os
+import traceback
 import re
-from typing import List
-from utils.clients.sftp_client import SFTPClient
-from utils.project.structure import get_project_root
+import shutil
+from WebApp.autoreduce_webapp.autoreduce_webapp.settings import STATIC_ROOT
 
 LOGGER = logging.getLogger('app')
 
@@ -30,11 +30,13 @@ class PlotHandler:
     """
     def __init__(self, data_filepath: str, server_dir: str, rb_number: str = None):
         self.data_filename: str = self._get_only_data_file_name(data_filepath)
-        self.rb_number = rb_number  # Used when searching for full Experiment graph
+        # Used when searching for full Experiment graph. TODO: not actually used right now
+        self.rb_number = rb_number
+        # this is a path somewhere on CEPH
         self.server_dir = server_dir
         self.file_extensions = ["png", "jpg", "bmp", "gif", "tiff"]
         # Directory to place fetched data files / images
-        self.static_graph_dir = os.path.join(get_project_root(), 'WebApp', 'autoreduce_webapp', 'static', 'graphs')
+        self.static_graph_dir = os.path.join(STATIC_ROOT, 'graphs')
 
     @staticmethod
     def _get_only_data_file_name(data_filepath: str) -> str:
@@ -70,25 +72,27 @@ class PlotHandler:
         """
         return f".*.({','.join(self.file_extensions).replace(',', '|')})"
 
-    def _get_plot_files_locally(self) -> List[str]:
-        """
-        Searches the local graph folder for files matching the generated file name regex and returns
-        a list of matching paths
-        :return: (list) - The list of matching file paths.
-        """
-        file_name_regex = self._generate_file_name_regex()
-        return [
-            f'/static/graphs/{file}' for file in os.listdir(self.static_graph_dir) if re.match(file_name_regex, file)
-        ]
-
     def _check_for_plot_files(self):
         """
         Searches the server directory for existing plot files using the directory specified.
         :return: (list) files on the server path that match regex
         """
-        client = SFTPClient()
-        file_regex = self._generate_file_name_regex()
-        return client.get_filenames(server_dir_path=self.server_dir, regex=file_regex)
+        if os.path.exists(self.server_dir):
+            file_regex = self._generate_file_name_regex()
+
+            filenames = os.listdir(self.server_dir)
+            matches = []
+
+            for name in filenames:
+                if re.match(file_regex, name) is not None:
+                    matches.append(name)
+
+            return matches
+        return []
+
+    def _ensure_staticfiles_graphs_exists(self):
+        if not os.path.exists(self.static_graph_dir):
+            os.makedirs(self.static_graph_dir, exist_ok=True)
 
     def get_plot_file(self):
         """
@@ -97,26 +101,24 @@ class PlotHandler:
         but will only copy over one.
         :return: (str) local path to downloaded files OR None if no files found
         """
-        _existing_plot_files = self._get_plot_files_locally()
-        if _existing_plot_files:
-            return _existing_plot_files
-
         _existing_plot_files = self._check_for_plot_files()
+        self._ensure_staticfiles_graphs_exists()
         local_plot_paths = []
         if _existing_plot_files:
-            client = SFTPClient()
             for plot_file in _existing_plot_files:
-                # Generate paths to data on server and destination on local machine
                 _server_path = f"{self.server_dir}/{plot_file}"
                 _local_path = os.path.join(self.static_graph_dir, plot_file)
 
                 try:
-                    client.retrieve(server_file_path=_server_path, local_file_path=_local_path, override=True)
+                    shutil.copy(_server_path, _local_path)
                     LOGGER.info('File \'%s\' found and saved to %s', _server_path, _local_path)
-                except RuntimeError:
-                    LOGGER.error("File \'%s\' does not exist", _server_path)
-                    return None
-                local_plot_paths.append(f'/static/graphs/{plot_file}')  # shortcut to static dir
+                    # URL to retrieve the static assert from the static dir - only if succesful
+                    local_plot_paths.append(f'/static/graphs/{plot_file}')
+                except FileNotFoundError:
+                    LOGGER.error("File \'%s\' does not exist. Error: %s", _server_path, traceback.format_exc())
+                except PermissionError:
+                    LOGGER.error("Insufficient permissions to read \'%s\'. Error: %s", _server_path,
+                                 traceback.format_exc())
             return local_plot_paths
         # No files found
         return None

@@ -73,8 +73,8 @@ class TemporaryReductionDirectory:
     """
     def __init__(self, rb_number, run_number):
         self._temp_dir = TemporaryDirectory()
-        self.path = Path(self._temp_dir.name)
-        self.log_path = self.path / "reduction_log"
+        self._path = Path(self._temp_dir.name)
+        self.log_path = self._path / "reduction_log"
         self.mantid_log = self.log_path / f"RB_{rb_number}_Run_{run_number}_Mantid.log"
         self.script_log = self.log_path / f"RB_{rb_number}_Run_{run_number}_Script.out"
         self._create()
@@ -90,7 +90,7 @@ class TemporaryReductionDirectory:
         """
         self._temp_dir.cleanup()
 
-    def copy(self, destination):
+    def copy(self, destination: Path):
         """
         Copy the contents of the temporary directory to the given destination, overwriting what is
         already present.
@@ -98,6 +98,19 @@ class TemporaryReductionDirectory:
         """
         logger.info("Copying %s to %s", self.path, destination)
         copy_tree(self.path, str(destination))  # We have to convert path objects to str
+
+    @property
+    def path(self) -> str:
+        """
+        Returns the path string with a slash at the end. This is because some reduction scripts just do
+        `output_dir + str` resulting in broken output copying, as all output files end up being /tmp/abcedfgFILENAME.nxs
+        rather than /tmp/abcedfg/FILENAME.nxs
+        """
+        return f"{self._path}/"
+
+    def exists(self) -> bool:
+        """Checks that the path for the TemporaryReductionDirectory exists"""
+        return self._path.exists()
 
 
 class Datafile:

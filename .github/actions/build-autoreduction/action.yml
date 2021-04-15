@@ -24,4 +24,5 @@ runs:
         cat build.log
         _LOCAL_PYTHON_PATH=$(which python)
         sudo $_LOCAL_PYTHON_PATH setup.py start
+        python WebApp/autoreduce_webapp/manage.py collectstatic
       shell: bash

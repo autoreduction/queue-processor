@@ -82,8 +82,10 @@ jobs:
       - uses: actions/upload-artifact@v2
         if: failure()
         with:
-          name: screenshots
-          path: WebApp/autoreduce_webapp/selenium_tests/screenshots
+          name: screenshots_and_reports
+          path: |
+            WebApp/autoreduce_webapp/selenium_tests/screenshots
+            WebApp/autoreduce_webapp/selenium_tests/a11y_reports
 
   dependency-check:
     name: Dependency-Check
