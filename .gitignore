@@ -65,9 +65,9 @@ WebApp/autoreduce_webapp/selenium_tests/a11y_reports
 **/sqlite3*.db*
 
 # folders that get created from tests
-reduced-data/
-data-archive/
-test-archive/
+reduced-data*/
+data-archive*/
+test-archive*/
 
 autoreduce.code-workspace
 
