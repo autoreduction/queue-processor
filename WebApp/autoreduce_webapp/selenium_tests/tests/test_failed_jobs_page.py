@@ -7,6 +7,7 @@
 """
 Selenium tests for failed jobs page
 """
+from selenium.webdriver.support.wait import WebDriverWait
 from selenium_tests.pages.failed_jobs_page import FailedJobsPage
 from selenium_tests.tests.base_tests import FooterTestMixin, BaseTestCase, NavbarTestMixin
 
@@ -46,10 +47,13 @@ class TestFailedJobsPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
         Test rerunning failed run creates rerun
         """
 
-        archive, db_client, queue_client, _ = setup_external_services("TestInstrument", 21, 21)
+        archive, db_client, queue_client, listener = setup_external_services("TestInstrument", 21, 21)
         try:
+            listener._processing = True
             self.page.toggle_run("99999").retry_runs()
+            WebDriverWait(self.driver, 30).until(lambda _: not listener.is_processing_message())
             runs = access.get_reduction_run("TestInstrument", "99999")
+
             self.assertTrue(any((run.description == "Re-run from the failed queue" for run in runs)))
         finally:
             archive.delete()
