@@ -28,7 +28,7 @@
                         </div>
                     </div>
                     <div class="js-variables-container">
-                        {% include "snippets/variables/form.html" with standard_variables=standard_variables advanced_variables=advanced_variables current_standard_variables=current_standard_variables current_advanced_variables=current_advanced_variables instrument=instrument.name only %}
+                        {% include "snippets/variables/form.html" with standard_variables=standard_variables advanced_variables=advanced_variables instrument=instrument.name only %}
                     </div>
                 </div>
                 <div class="col-md-3">
@@ -41,19 +41,14 @@
                         <div class="row">
                             <ul class="js-form-actions">
                                 <li>
-                                    <a href="#resetValues" id="resetValues">Reset variables to initial values used for this run</a>
-                                    <a href="#" data-toggle="popover" data-html="true" data-content="Reset the values of the variables to the ones previously used for this run." data-trigger="hover click focus" data-placement="top" data-container="body" aria-label="Reset the values of the variables to the ones previously used for this run.">
+                                    <a href="#resetValues" id="resetValues">Reset all to initial values</a>
+                                    <a href="#" data-toggle="popover" data-html="true" data-content="Reset the values of the variables to the ones used in this reduction run." data-trigger="hover click focus" data-placement="top" data-container="body" aria-label="Reset the values of the variables to the ones previously used for this run.">
                                         <i class="fa fa-info-circle"></i>
                                     </a>
                                 </li>
-                                {% if current_standard_variables %}
                                 <li>
-                                    <a href="#currentScript" id="currentScript">Reset to values in the current reduce_vars script</a>
-                                    <a href="#" data-toggle="popover" data-html="true" data-content="Reset to the values currently contained in the reduce_vars script." data-trigger="hover click focus" data-placement="top" data-container="body">
-                                        <i class="fa fa-info-circle"></i>
-                                    </a>
+                                    {% include "snippets/reset_to_reduce_vars.html" %}
                                 </li>
-                                {% endif %}
                             </ul>
                         </div>
                     </div>
