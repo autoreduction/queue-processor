@@ -187,22 +187,25 @@ class ReductionScript:
             Merge self.reduction_arguments[dictName] into reduce_script.web_var[dictName],
             overwriting any key that exists in both with the value from sourceDict.
             """
-            def merge_dict_to_name(dictionary_name, source_dict):
+            def merge_dict_to_name(source_dict):
                 """ Merge the two dictionaries. """
                 old_dict = {}
-                if hasattr(self.module.web_var, dictionary_name):
-                    old_dict = getattr(self.module.web_var, dictionary_name)
+                if hasattr(self.module.web_var, dict_name):
+                    old_dict = getattr(self.module.web_var, dict_name)
                 else:
                     pass
                 old_dict.update(source_dict)
-                setattr(self.module.web_var, dictionary_name, old_dict)
+                setattr(self.module.web_var, dict_name, old_dict)
 
             def ascii_encode(var):
                 """ ASCII encode var. """
                 return var.encode('ascii', 'ignore') if type(var).__name__ == "unicode" else var
 
             encoded_dict = {k: ascii_encode(v) for k, v in reduction_arguments[dict_name].items()}
-            merge_dict_to_name(dict_name, encoded_dict)
+            merge_dict_to_name(encoded_dict)
+
+        if not self.module:
+            raise RuntimeError("The script has not been loaded yet")
 
         if not hasattr(self.module, "web_var"):
             self.module.web_var = types.ModuleType("reduce_vars")
