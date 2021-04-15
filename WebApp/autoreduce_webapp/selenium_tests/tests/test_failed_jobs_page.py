@@ -54,7 +54,7 @@ class TestFailedJobsPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
             WebDriverWait(self.driver, 30).until(lambda _: not listener.is_processing_message())
             runs = access.get_reduction_run("TestInstrument", "99999")
 
-            self.assertTrue(any((run.description == "Re-run from the failed queue" for run in runs)))
+            self.assertTrue(any((run.run_description == "Re-run from the failed queue" for run in runs)))
         finally:
             archive.delete()
             db_client.disconnect()
