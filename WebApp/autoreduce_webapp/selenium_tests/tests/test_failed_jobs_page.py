@@ -49,7 +49,7 @@ class TestFailedJobsPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
         archive, db_client, queue_client, _ = setup_external_services("TestInstrument", 21, 21)
         try:
             self.page.toggle_run("99999").retry_runs()
-            runs = access.get_reduction_run("TestInstrument", "999999")
+            runs = access.get_reduction_run("TestInstrument", "99999")
             self.assertTrue(any((run.description == "Re-run from the failed queue" for run in runs)))
         finally:
             archive.delete()
