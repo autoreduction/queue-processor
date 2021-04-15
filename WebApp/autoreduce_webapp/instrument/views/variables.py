@@ -168,7 +168,7 @@ def current_default_variables(request, instrument=None):
     return context_dictionary
 
 
-def _combine_dicts(current, default):
+def _combine_dicts(current: dict, default: dict):
     final = {}
     for name, var in current.items():
         final[name] = {"current": var, "default": default.get(name, None)}
@@ -189,19 +189,20 @@ def render_run_variables(request, instrument_name, run_number, run_version=0):
     advanced_vars = vars_kwargs["advanced_vars"]
 
     try:
-        current_variables = VariableUtils.get_default_variables(instrument_name)
-        current_standard_variables = current_variables["standard_vars"]
-        current_advanced_variables = current_variables["advanced_vars"]
+        default_variables = VariableUtils.get_default_variables(instrument_name)
+        default_standard_variables = default_variables["standard_vars"]
+        default_advanced_variables = default_variables["advanced_vars"]
     except (FileNotFoundError, ImportError, SyntaxError):
-        current_standard_variables = {}
-        current_advanced_variables = {}
+        default_standard_variables = {}
+        default_advanced_variables = {}
 
-    final_current = _combine_dicts(standard_vars, current_standard_variables)
-    final_advanced = _combine_dicts(advanced_vars, current_advanced_variables)
+    final_standard = _combine_dicts(standard_vars, default_standard_variables)
+    final_advanced = _combine_dicts(advanced_vars, default_advanced_variables)
+
     context_dictionary = {
         'run_number': run_number,
         'run_version': run_version,
-        'standard_variables': final_current,
+        'standard_variables': final_standard,
         'advanced_variables': final_advanced,
         'instrument': reduction_run.instrument,
     }
