@@ -45,7 +45,13 @@ class TestFailedJobsPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
         """
         Test rerunning failed run creates rerun
         """
-        setup_external_services("TestInstrument", 21, 21)
-        self.page.toggle_run("99999").retry_runs()
-        runs = access.get_reduction_run("TestInstrument", "999999")
-        self.assertTrue(any(run.description == "Re-run from the failed queue" for run in runs))
+
+        archive, db_client, queue_client, queue_listener = setup_external_services("TestInstrument", 21, 21)
+        try:
+            self.page.toggle_run("99999").retry_runs()
+            runs = access.get_reduction_run("TestInstrument", "999999")
+            self.assertTrue(any(run.description == "Re-run from the failed queue" for run in runs))
+        finally:
+            archive.delete()
+            db_client.disconnect()
+            queue_client.disconnect()
