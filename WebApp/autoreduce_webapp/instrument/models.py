@@ -16,7 +16,7 @@ class Variable(models.Model):
     Generic model class that should be treated as abstract
     """
     name = models.CharField(max_length=50, blank=False)
-    value = models.CharField(max_length=300, blank=False)
+    value = models.CharField(max_length=300, blank=True)
     type = models.CharField(max_length=50, blank=False)
     is_advanced = models.BooleanField(default=False)
     help_text = models.TextField(blank=True, null=True, default='')
