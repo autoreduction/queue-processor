@@ -7,7 +7,6 @@
 
 import tempfile
 
-from django.urls import reverse
 from selenium_tests.pages.rerun_jobs_page import RerunJobsPage
 from selenium_tests.tests.base_tests import (BaseTestCase, FooterTestMixin, NavbarTestMixin, AccessibilityTestMixin)
 from selenium_tests.utils import submit_and_wait_for_result
