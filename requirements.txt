@@ -2,7 +2,7 @@
 
 axe-selenium-python==2.1.6
 coveralls==3.0.1
-django-debug-toolbar==3.2
+django-debug-toolbar==3.2.1
 parameterized==0.8.1
 pylint==2.7.4
 pylint-django==2.4.3
