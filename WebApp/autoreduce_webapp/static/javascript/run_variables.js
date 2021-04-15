@@ -1,3 +1,14 @@
+function reset_to_initial(field) {
+    debugger
+    const receiver = document.getElementById(field.dataset["for"]);
+    receiver.value = receiver.dataset["initial"];
+}
+function reset_to_default(field) {
+    debugger
+    const receiver = document.getElementById(field.dataset["for"]);
+    receiver.value = receiver.dataset["default"];
+}
+
 (function () {
     if ($('#run_variables').length) {
         var originalFormUrl = $('#run_variables').attr('action');
