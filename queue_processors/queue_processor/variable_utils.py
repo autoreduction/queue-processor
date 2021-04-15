@@ -9,7 +9,7 @@ Class to deal with reduction run variables
 """
 import re
 import logging
-from typing import Dict
+from typing import Dict, List
 
 from model.database import access
 from queue_processors.queue_processor.reduction.service import ReductionScript
@@ -53,6 +53,13 @@ class VariableUtils:
             return "text"
 
     @staticmethod
+    def _prepare_list(input_list: str) -> List[str]:
+        if not isinstance(input_list, list):
+            return input_list.replace("[", "").replace("]", "").split(",")
+        else:
+            return input_list
+
+    @staticmethod
     def convert_variable_to_type(value, var_type):
         """
         Convert the given value a type matching that of var_type.
@@ -73,7 +80,7 @@ class VariableUtils:
                 return float(value)
             return int(re.sub("[^0-9]+", "", str(value)))
         if var_type == "list_text":
-            var_list = str(value).split(',')
+            var_list = VariableUtils._prepare_list(value)
             list_text = []
             for list_val in var_list:
                 item = list_val.strip().strip("'")
@@ -81,7 +88,7 @@ class VariableUtils:
                     list_text.append(item)
             return list_text
         if var_type == "list_number":
-            var_list = value.split(',')
+            var_list = VariableUtils._prepare_list(value)
             list_number = []
             for list_val in var_list:
                 if list_val:
@@ -91,7 +98,11 @@ class VariableUtils:
                         list_number.append(int(list_val))
             return list_number
         if var_type == "boolean":
-            return value.lower() == 'true'
+            if isinstance(value, bool):
+                return value
+            else:
+                return value.lower() == 'true'
+
         return value
 
     @staticmethod

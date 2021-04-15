@@ -154,7 +154,6 @@ class InstrumentVariablesUtils:
         for name, value, is_advanced in all_vars:
             script_help_text = InstrumentVariablesUtils.get_help_text(
                 'standard_vars' if not is_advanced else 'advanced_vars', name, reduction_arguments)
-            new_value = str(value).replace('[', '').replace(']', '')
             new_type = VariableUtils.get_type_string(value)
 
             # Try to find a suitable variable to re-use from the ones that already exist
@@ -164,7 +163,7 @@ class InstrumentVariablesUtils:
             if variable is None:
                 var_kwargs = {
                     'name': name,
-                    'value': new_value,
+                    'value': value,
                     'type': new_type,
                     'help_text': script_help_text,
                     'is_advanced': is_advanced,
@@ -181,7 +180,7 @@ class InstrumentVariablesUtils:
                     variable.tracks_script = not from_webapp
                 variable.save()
             else:
-                InstrumentVariablesUtils.update_if_necessary(variable, experiment_reference, run_number, new_value,
+                InstrumentVariablesUtils.update_if_necessary(variable, experiment_reference, run_number, value,
                                                              new_type, script_help_text, from_webapp)
             variables.append(variable)
         return variables
