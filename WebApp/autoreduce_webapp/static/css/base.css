@@ -210,7 +210,7 @@ search#run_search {
     word-wrap: break-word;
 }
 
-a#cancel {
+a.back {
     margin-bottom: 12px;
 }
 

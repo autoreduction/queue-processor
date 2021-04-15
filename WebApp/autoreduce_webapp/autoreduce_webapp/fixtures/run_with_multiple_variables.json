@@ -1,4 +1,5 @@
-[{
+[
+    {
         "model": "reduction_viewer.reductionrun",
         "pk": 1,
         "fields": {
@@ -136,6 +137,17 @@
         }
     },
     {
+        "model": "instrument.variable",
+        "pk": 8,
+        "fields": {
+            "name": "variable_bool",
+            "value": true,
+            "type": "boolean",
+            "is_advanced": false,
+            "help_text": ""
+        }
+    },
+    {
         "model": "instrument.instrumentvariable",
         "pk": 1,
         "fields": {
@@ -265,6 +277,25 @@
         "pk": 7,
         "fields": {
             "variable_id": 7,
+            "reduction_run_id": 1
+        }
+    },
+    {
+        "model": "instrument.instrumentvariable",
+        "pk": 8,
+        "fields": {
+            "variable_ptr_id": 8,
+            "instrument_id": 1,
+            "experiment_reference": null,
+            "start_run": 99999,
+            "tracks_script": true
+        }
+    },
+    {
+        "model": "instrument.runvariable",
+        "pk": 8,
+        "fields": {
+            "variable_id": 8,
             "reduction_run_id": 1
         }
     }

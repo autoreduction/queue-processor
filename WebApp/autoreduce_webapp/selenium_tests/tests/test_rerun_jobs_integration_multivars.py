@@ -48,7 +48,7 @@ class TestRerunJobsPageIntegrationMultiVar(BaseTestCase, NavbarTestMixin, Footer
             cls.instrument_name, """standard_vars={"variable_str":"test_variable_value_123",
                                                 "variable_int":123, "variable_float":123.321,
                                                 "variable_listint":[1,2,3], "variable_liststr":["a","b","c"],
-                                                "variable_none":None, "variable_empty":""}""")
+                                                "variable_none":None, "variable_empty":"", "variable_bool":True}""")
         cls.instrument_name = "TestInstrument"
         cls.rb_number = 1234567
         cls.run_number = 99999
@@ -77,6 +77,7 @@ class TestRerunJobsPageIntegrationMultiVar(BaseTestCase, NavbarTestMixin, Footer
         assert self.page.variable_listint_field_val == "[1, 2, 3]"
         assert self.page.variable_liststr_field_val == "['a', 'b', 'c']"
         assert self.page.variable_none_field_val == "None"
+        assert self.page.variable_bool_field_val == "True"
 
     def test_submit_rerun_same_variables(self):
         """
@@ -105,6 +106,8 @@ class TestRerunJobsPageIntegrationMultiVar(BaseTestCase, NavbarTestMixin, Footer
         self.page.variable_listint_field = new_listint
         new_liststr = "['string1', 'string2']"
         self.page.variable_liststr_field = new_liststr
+        new_bool = False
+        self.page.variable_bool_field = new_bool
 
         result = submit_and_wait_for_result(self)
         assert len(result) == 2
@@ -124,6 +127,7 @@ class TestRerunJobsPageIntegrationMultiVar(BaseTestCase, NavbarTestMixin, Footer
         assert run_vars[4].variable.value == new_liststr
         assert run_vars[5].variable.value == "None"
         assert run_vars[6].variable.value == ""
+        assert run_vars[7].variable.value == "False"
 
         with open(TEMP_OUT_FILE.name, 'r') as fil:
             contents = fil.read()
