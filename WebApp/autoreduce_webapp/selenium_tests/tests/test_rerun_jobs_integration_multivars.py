@@ -105,6 +105,8 @@ class TestRerunJobsPageIntegrationMultiVar(BaseTestCase, NavbarTestMixin, Footer
         self.page.variable_listint_field = new_listint
         new_liststr = "['string1', 'string2']"
         self.page.variable_liststr_field = new_liststr
+        new_bool = False
+        self.page.variable_bool_field = new_bool
 
         result = submit_and_wait_for_result(self)
         assert len(result) == 2
