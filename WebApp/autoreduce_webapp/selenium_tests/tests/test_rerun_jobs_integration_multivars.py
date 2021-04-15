@@ -48,7 +48,7 @@ class TestRerunJobsPageIntegrationMultiVar(BaseTestCase, NavbarTestMixin, Footer
             cls.instrument_name, """standard_vars={"variable_str":"test_variable_value_123",
                                                 "variable_int":123, "variable_float":123.321,
                                                 "variable_listint":[1,2,3], "variable_liststr":["a","b","c"],
-                                                "variable_none":None, "variable_empty":""}""")
+                                                "variable_none":None, "variable_empty":"", "variable_bool":True}""")
         cls.instrument_name = "TestInstrument"
         cls.rb_number = 1234567
         cls.run_number = 99999
@@ -124,6 +124,7 @@ class TestRerunJobsPageIntegrationMultiVar(BaseTestCase, NavbarTestMixin, Footer
         assert run_vars[4].variable.value == new_liststr
         assert run_vars[5].variable.value == "None"
         assert run_vars[6].variable.value == ""
+        assert run_vars[7].variable.value == "False"
 
         with open(TEMP_OUT_FILE.name, 'r') as fil:
             contents = fil.read()

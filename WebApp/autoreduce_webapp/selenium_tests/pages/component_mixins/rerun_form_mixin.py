@@ -212,3 +212,27 @@ class RerunFormMixin:
         Selenium requires that we clear the field first!
         """
         self._set_field(self.variable_empty_field, value)
+
+    @property
+    def variable_bool_field(self) -> WebElement:
+        """
+        Finds and returns the variabl1 input field
+        """
+        return self.driver.find_element_by_id("var-standard-variable_bool")
+
+    @property
+    def variable_bool_field_val(self) -> WebElement:
+        """
+        Finds and returns the variabl1 input field
+        """
+        return self.driver.find_element_by_id("var-standard-variable_bool").get_attribute("value")
+
+    @variable_bool_field.setter
+    def variable_bool_field(self, value) -> None:
+        """
+        Clears the field and sends the keys to the input field.
+
+        Selenium requires that we clear the field first!
+        """
+        if self.variable_bool_field.is_selected() != value:
+            self.driver.execute_script("arguments[0].click();", self.variable_bool_field)
