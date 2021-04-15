@@ -92,6 +92,10 @@ def get_software(name, version):
     :return: (Software) The Software object from the database
     """
     database = start_database()
+    if not version:
+        # Hard-code a version if not provided unitl
+        # https://autoreduce.atlassian.net/browse/AR-1230 is addressed
+        version = "6"
     return database.data_model.Software.objects.get_or_create(name=name, version=version)[0]
 
 

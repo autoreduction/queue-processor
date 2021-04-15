@@ -9,7 +9,9 @@ Tests for parts of the reduction_service
 """
 import io
 import os
+import tempfile
 import unittest
+from contextlib import contextmanager
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import Mock, PropertyMock
@@ -48,7 +50,27 @@ class TestReductionService(unittest.TestCase):
         self.script = MagicMock()
         self.temp_dir = MagicMock()
         self.reduction_dir = MagicMock()
+        self.reduction_arguments = {
+            "standard_vars": {
+                "arg1": "somevalue",
+                "arg2": 123
+            },
+            "advanced_vars": {
+                "adv_arg1": "advancedvalue",
+                "adv_arg2": ""
+            }
+        }
         self.log_stream = MagicMock()
+
+    @contextmanager
+    def _test_module(self, test_string: str):
+        with tempfile.NamedTemporaryFile(mode='w', suffix=".py") as script_file:
+            script_file.write(test_string)
+            script_file.flush()
+            red_script = ReductionScript(self.instrument)
+            red_script.script_path = Path(script_file.name)
+            red_script.load()
+            yield red_script
 
     @patch(f"{REDUCTION_SERVICE_DIR}.ReductionDirectory._build_path")
     def test_reduction_directory_init_(self, mock_build):
@@ -262,43 +284,48 @@ class TestReductionService(unittest.TestCase):
         """
         Test importing a module that has a syntax error in it
         """
-        red_script = ReductionScript(self.instrument)
         module_with_syntax_error_str = """TEST_DICTIONARY = {"key1": "value1"""
-        module_path = os.path.join("/tmp", "module_with_syntax_error.py")
-        red_script.script_path = Path(module_path)
-
-        with open(module_path, 'w') as file:
-            file.write(module_with_syntax_error_str)
-
         with self.assertRaises(SyntaxError):
-            red_script.load()
-
-        os.remove(module_path)
+            with self._test_module(module_with_syntax_error_str):
+                pass
 
     @patch("io.open", side_effect=IOError)
     def test_reduction_script_text_ioerror(self, _: Mock):
         """
-        Test importing a module that has a syntax error in it
+        Test throwing an IOError just gives empty text
         """
         red_script = ReductionScript(self.instrument)
         assert red_script.text() == ""
 
     def test_reduction_script_text(self):
         """
-        Test importing a module that has a syntax error in it
+        Test that the script text is correctly loaded
         """
-        script_file = Path("/tmp/somepath.py")
         test_string = 'print(123)'
+        with self._test_module(test_string) as red_script:
+            assert red_script.text() == test_string
 
-        with open("/tmp/somepath.py", 'w') as file:
-            file.write(test_string)
-
+    def test_reduction_script_replace_variables_before_load(self):
+        """
+        Test that replace variables raises if called before the module is loaded
+        """
         red_script = ReductionScript(self.instrument)
-        red_script.script_path = script_file
+        red_script.script_path = Path("/tmp/file")
+        self.assertRaises(RuntimeError, red_script.replace_variables, self.reduction_arguments)
 
-        assert red_script.text() == test_string
+    def test_reduction_script_replace_variables(self):
+        """
+        Test that replace variables properly replaces the web_var dictionary in the module
+        """
+        test_string = 'print(123)'
+        with self._test_module(test_string) as red_script:
+            red_script.replace_variables(self.reduction_arguments)
+            assert red_script.text() == test_string
 
-        os.remove(script_file)
+        assert red_script.module.web_var.standard_vars["arg1"] == "somevalue"
+        assert red_script.module.web_var.standard_vars["arg2"] == 123
+        assert red_script.module.web_var.advanced_vars["adv_arg1"] == "advancedvalue"
+        assert red_script.module.web_var.advanced_vars["adv_arg2"] == ""
 
     @patch(f"{REDUCTION_SERVICE_DIR}.channels_redirected")
     def test_reduce(self, _):
@@ -308,7 +335,8 @@ class TestReductionService(unittest.TestCase):
         self.script.skipped_runs = []
         self.script.run.return_value = None
         reduction_log_stream = io.StringIO()
-        reduce(self.reduction_dir, self.temp_dir, self.datafile, self.script, reduction_log_stream)
+        reduce(self.reduction_dir, self.temp_dir, self.datafile, self.script, self.reduction_arguments,
+               reduction_log_stream)
         self.reduction_dir.create.assert_called_once()
         self.script.load.assert_called_once()
         self.temp_dir.copy.assert_called_once_with(self.reduction_dir.path)
@@ -323,7 +351,8 @@ class TestReductionService(unittest.TestCase):
         self.script.skipped_runs = []
         self.script.run.return_value = "some/path"
         reduction_log_stream = io.StringIO()
-        reduce(self.reduction_dir, self.temp_dir, self.datafile, self.script, reduction_log_stream)
+        reduce(self.reduction_dir, self.temp_dir, self.datafile, self.script, self.reduction_arguments,
+               reduction_log_stream)
         self.reduction_dir.create.assert_called_once()
         self.script.load.assert_called_once()
         self.temp_dir.copy.assert_has_calls([call(self.reduction_dir.path), call("some/path")])
@@ -342,7 +371,8 @@ class TestReductionService(unittest.TestCase):
         file = mock_open.return_value
         reduction_log_stream = io.StringIO()
         with self.assertRaises(ReductionScriptError):
-            reduce(self.reduction_dir, self.temp_dir, self.datafile, self.script, reduction_log_stream)
+            reduce(self.reduction_dir, self.temp_dir, self.datafile, self.script, self.reduction_arguments,
+                   reduction_log_stream)
             file.writelines.assert_called_once()
             mock_traceback.format_exc.assert_called_once()
             file.write.assert_called_once()

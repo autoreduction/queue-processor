@@ -358,7 +358,7 @@ class TestInstrumentVariableUtils(unittest.TestCase):
 
         var = new_variables_again[0].variable
         assert var.name == "standard_var1"
-        assert var.value == "123"
+        assert var.value == 123
         assert var.type == "number"
         assert var.help_text == "CHANGED HELP FOR VARIABLE"
 

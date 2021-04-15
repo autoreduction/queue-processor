@@ -11,6 +11,7 @@ Test utility functions for constructing run variables
 import datetime
 import unittest
 from unittest.mock import patch
+from parameterized import parameterized
 
 from model.database import access
 from queue_processors.queue_processor.variable_utils import VariableUtils as vu
@@ -67,32 +68,43 @@ class TestVariableUtils(unittest.TestCase):
         """
         self.assertEqual(vu.get_type_string({'key': 'value'}), 'text')
 
-    def test_convert_variable_to_type(self):
+    @parameterized.expand([
+        ["text", "text", str],
+        ["", "text", str],
+        ["None", "text", str],
+        [None, "text", str],
+        ['1', 'number', int],
+        ['1.0', 'number', float],
+        ['True', 'boolean', bool],
+        ['False', 'boolean', bool],
+        [1, 'number', int],
+        [1.0, 'number', float],
+        [True, 'boolean', bool],
+        [False, 'boolean', bool],
+    ])
+    def test_convert_variable_to_type(self, value, value_type, exp_type):
         """
         Test: database variables types are successfully recognised and converted into python
         single variable types
         When: calling convert_variable_to_type with valid arguments
         """
-        self.assertIsInstance(vu.convert_variable_to_type('text', 'text'), str)
-        self.assertIsInstance(vu.convert_variable_to_type('1', 'number'), int)
-        self.assertIsInstance(vu.convert_variable_to_type('1.0', 'number'), float)
-        self.assertIsInstance(vu.convert_variable_to_type('True', 'boolean'), bool)
-        self.assertIsInstance(vu.convert_variable_to_type('False', 'boolean'), bool)
+        self.assertIsInstance(vu.convert_variable_to_type(value, value_type), exp_type)
 
-    def test_convert_variable_to_type_list_types(self):
+    @parameterized.expand([
+        ["'s','t'", 'list_text', str],
+        ['1,2', 'list_number', int],
+        ['1.0,2.0', 'list_number', float],
+        ["[1, 2]", 'list_number', int],
+        ["[1.0,2.0]", 'list_number', float],
+    ])
+    def test_convert_variable_to_type_list_types(self, value, value_type, exp_type):
         """
         Test database variables types are successfully recognised and converted into python
         for list types
         """
-        str_list = vu.convert_variable_to_type('[\'s\',\'t\'', 'list_text')
-        self.assertIsInstance(str_list, list)
-        self.assertIsInstance(str_list[0], str)
-        int_list = vu.convert_variable_to_type('1,2', 'list_number')
-        self.assertIsInstance(int_list, list)
-        self.assertIsInstance(int_list[0], int)
-        float_list = vu.convert_variable_to_type('1.0,2.0', 'list_number')
-        self.assertIsInstance(float_list, list)
-        self.assertIsInstance(float_list[0], float)
+        result_list = vu.convert_variable_to_type(value, value_type)
+        self.assertIsInstance(result_list, list)
+        self.assertIsInstance(result_list[0], exp_type)
 
     def test_convert_variable_unknown_type(self):
         """

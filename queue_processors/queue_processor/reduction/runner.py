@@ -95,7 +95,7 @@ class ReductionRunner:
 
         reduction_log_stream = io.StringIO()
         try:
-            reduce(reduction_dir, temp_dir, datafile, reduction_script, reduction_log_stream)
+            reduce(reduction_dir, temp_dir, datafile, reduction_script, self.reduction_arguments, reduction_log_stream)
             self.message.reduction_log = reduction_log_stream.getvalue()
             self.message.reduction_data = str(reduction_dir.path)
         except ReductionScriptError as err:
