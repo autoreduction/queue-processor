@@ -49,7 +49,7 @@ class TestFailedJobsPage(NavbarTestMixin, BaseTestCase, FooterTestMixin):
 
         archive, db_client, queue_client, listener = setup_external_services("TestInstrument", 21, 21)
         try:
-            listener._processing = True
+            listener._processing = True  # pylint:disable=protected-access
             self.page.toggle_run("99999").retry_runs()
             WebDriverWait(self.driver, 30).until(lambda _: not listener.is_processing_message())
             runs = access.get_reduction_run("TestInstrument", "99999")
