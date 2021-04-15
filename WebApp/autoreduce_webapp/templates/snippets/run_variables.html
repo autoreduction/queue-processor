@@ -13,7 +13,7 @@
             <input type="hidden" name="run_version" value="{{ run_version }}">
             <div class="row">
                 <div class="col-md-9">
-                    {% include "snippets/form_warnings.html" %}
+                    {% include "snippets/variables/form_warnings.html" %}
                     <div class="form-group">
                         <label for="run_description" class="control-label col-md-2">
                             Re-run description
@@ -28,7 +28,7 @@
                         </div>
                     </div>
                     <div class="js-variables-container">
-                        {% include "snippets/edit_variables.html" with standard_variables=standard_variables advanced_variables=advanced_variables instrument=instrument.name only %}
+                        {% include "snippets/variables/form.html" with standard_variables=standard_variables advanced_variables=advanced_variables current_standard_variables=current_standard_variables current_advanced_variables=current_advanced_variables instrument=instrument.name only %}
                     </div>
                 </div>
                 <div class="col-md-3">
@@ -68,14 +68,5 @@
                 </div>
             </div>
         </form>
-    </div>
-</div>
-
-<div class="hide">
-    <div class="js-default-variables">
-        {% include "snippets/edit_variables.html" with standard_variables=standard_variables advanced_variables=advanced_variables instrument=instrument.name only %}
-    </div>
-    <div class="js-current-variables">
-        {% include "snippets/edit_variables.html" with standard_variables=current_standard_variables advanced_variables=current_advanced_variables instrument=instrument.name only %}
     </div>
 </div>

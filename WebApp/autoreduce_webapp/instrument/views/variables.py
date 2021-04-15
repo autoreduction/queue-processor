@@ -147,7 +147,7 @@ def instrument_variables_summary(request, instrument):
 
 @login_and_uows_valid
 @check_permissions
-@render_with('snippets/edit_variables.html')
+@render_with('snippets/variables/form.html')
 def current_default_variables(request, instrument=None):
     """
     Handles request to view default variables
@@ -166,6 +166,13 @@ def current_default_variables(request, instrument=None):
         'advanced_variables': advanced_vars,
     }
     return context_dictionary
+
+
+def _combine_dicts(current, default):
+    final = {}
+    for name, var in current.items():
+        final[name] = {"current": var, "default": default.get(name, None)}
+    return final
 
 
 def render_run_variables(request, instrument_name, run_number, run_version=0):
@@ -189,13 +196,13 @@ def render_run_variables(request, instrument_name, run_number, run_version=0):
         current_standard_variables = {}
         current_advanced_variables = {}
 
+    final_current = _combine_dicts(standard_vars, current_standard_variables)
+    final_advanced = _combine_dicts(advanced_vars, current_advanced_variables)
     context_dictionary = {
         'run_number': run_number,
         'run_version': run_version,
-        'standard_variables': standard_vars,
-        'advanced_variables': advanced_vars,
-        'current_standard_variables': current_standard_variables,
-        'current_advanced_variables': current_advanced_variables,
+        'standard_variables': final_current,
+        'advanced_variables': final_advanced,
         'instrument': reduction_run.instrument,
     }
     return render(request, 'snippets/run_variables.html', context_dictionary)

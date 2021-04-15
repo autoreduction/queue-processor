@@ -27,7 +27,7 @@
                 {% csrf_token %}
                 <div class="row">
                     <div class="col-md-9">
-                        {% include "snippets/form_warnings.html" %}
+                        {% include "snippets/variables/form_warnings.html" %}
                         <br/>
                         <div class="row">
                             <div class="col-md-10 col-md-offset-1">
@@ -75,7 +75,7 @@
                             </div>
                         </div>
                         <div class="js-variables-container">
-                            {% include "snippets/edit_variables.html" with standard_variables=standard_variables advanced_variables=advanced_variables instrument=instrument.name only %}
+                            {% include "snippets/variables/form.html" with standard_variables=standard_variables advanced_variables=advanced_variables instrument=instrument.name only %}
                         </div>
                     </div>
                     <div class="col-md-3">
@@ -157,7 +157,7 @@
 
             <div class="hide">
                 <div class="js-current-variables">
-                    {% include "snippets/edit_variables.html" with standard_variables=current_standard_variables advanced_variables=current_advanced_variables instrument=instrument.name only %}
+                    {% include "snippets/variables/form.html" with standard_variables=current_standard_variables advanced_variables=current_advanced_variables instrument=instrument.name only %}
                 </div>
             </div>
         {% else %}

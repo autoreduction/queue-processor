@@ -1,0 +1,36 @@
+{% load variable_type %}
+
+{% for name, variable in variables.items %}
+<div class="form-group">
+    <label for="var-{{ type }}-{{ variable.current.sanitized_name }}" class="control-label col-md-3">
+    {{ name }}
+    {% if variable.current.help_text %}
+        <a href="#" data-toggle="popover" data-html="true" data-content="{{ variable.current.help_text }}"
+            data-trigger="hover click focus" data-placement="top" data-container="body">
+            <i class="fa fa-info-circle"></i>
+        </a>
+    {% endif %}
+    </label>
+    <div class="col-md-9">
+        <div class="col-xs-11 col-md-11">
+        <input id="var-{{ type }}-{{ variable.current.sanitized_name }}" type="{% variable_type variable.current.type %}" data-type="{{ variable.current.type }}" value="{{ variable.current.value }}" data-initial="{{ variable.current.value }}"
+        {% if variable.current.type == 'boolean' %}
+            class="form-check variable.current-field"
+            name="checkbox-{{ variable.current.sanitized_name }}" {% if variable.current.value.lower == 'true' %} checked {% endif %}
+            />
+            <input name="var-{{ type }}-{{ variable.current.sanitized_name }}" type="hidden" data-type="{{ variable.current.type }}" value="{{ variable.current.value }}" />
+        {% else %}
+            class="form-control variable.current-field"
+            name="var-{{ type }}-{{ variable.current.sanitized_name }}" />
+        {% endif %}
+    </div>
+    <div class="col-xs-1 col-md-1 mt-2">
+        <div class="row">
+            <a aria-label="Reset to original value" title="Reset to initial value" data-for="var-{{ type }}-{{ variable.current.sanitized_name }}"><i class="fa fa-repeat fa-lg"></i></a>
+            <a aria-label="Reset to script value" title="Reset to script value"><i class="fa fa-file-code-o fa-lg"></i></a>
+        </div>
+    </div>
+    </div>
+
+</div>
+{% endfor %}
