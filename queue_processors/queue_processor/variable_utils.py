@@ -98,7 +98,11 @@ class VariableUtils:
                         list_number.append(int(list_val))
             return list_number
         if var_type == "boolean":
-            return value.lower() == 'true'
+            if isinstance(value, bool):
+                return value
+            else:
+                return value.lower() == 'true'
+
         return value
 
     @staticmethod
