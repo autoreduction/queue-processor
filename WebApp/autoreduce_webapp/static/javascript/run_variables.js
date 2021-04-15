@@ -362,7 +362,10 @@
         $('#run_variables,#instrument_variables').on('click', '#resetValues', resetDefaultVariables);
         $('#run_variables,#instrument_variables,#submit_jobs').on('click', '#currentScript', resetToValuesInCurrentScript);
         document.getElementById("variableSubmit").onclick = submitForm;
-        $('#run_variables,#instrument_variables').on('click', 'input[type=checkbox][data-type=boolean]', updateBoolean);
+
+        for (const elem of document.querySelectorAll("input[type=checkbox][data-type=boolean]")) {
+            elem.onclick = updateBoolean;
+        }
 
         $('#instrument_variables').on('click', '#track_script', toggleTrackScript);
         $('#instrument_variables').on('click', '#track_script_checkbox', updateTrackFields);
