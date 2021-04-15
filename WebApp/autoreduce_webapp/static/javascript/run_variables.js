@@ -1,13 +1,27 @@
 function reset_to_initial(field) {
-    debugger
     const receiver = document.getElementById(field.dataset["for"]);
     receiver.value = receiver.dataset["initial"];
 }
 function reset_to_default(field) {
-    debugger
     const receiver = document.getElementById(field.dataset["for"]);
     receiver.value = receiver.dataset["default"];
 }
+
+function reset_to_initial_all(event) {
+    // prevents the browser from scrolling to the anchor link & appending it to the URL
+    event.preventDefault()
+    for (const field of document.getElementsByClassName("variable-field")) {
+        field.value = field.dataset["initial"];
+    }
+};
+
+function reset_to_default_all(event) {
+    // prevents the browser from scrolling to the anchor link & appending it to the URL
+    event.preventDefault()
+    for (const field of document.getElementsByClassName("variable-field")) {
+        field.value = field.dataset["default"];
+    }
+};
 
 (function () {
     if ($('#run_variables').length) {
@@ -286,26 +300,6 @@ function reset_to_default(field) {
         });
     };
 
-    var resetDefaultVariables = function resetDefaultVariables(event) {
-        event.preventDefault();
-        $form = getForm();
-        // Overwrite the current form HTML with the one rendered using the default variables
-        $form.find('.js-variables-container').html($('.js-default-variables').html());
-        $('#use_current_script').val("false");
-        // We need to enable the popover again as the element is new
-        $('[data-toggle="popover"]').popover();
-    };
-
-    var resetToValuesInCurrentScript = function resetToValuesInCurrentScript(event) {
-        event.preventDefault();
-        $form = getForm();
-        // Overwrite the current form HTML with the one rendered using the default variables
-        $form.find('.js-variables-container').html($('.js-current-variables').html());
-        $('#use_current_script').val("true");
-        // We need to enable the popover again as the element is new
-        $('[data-toggle="popover"]').popover();
-    };
-
     var toggleTrackScript = function toggleTrackScript(event) {
         var checkBox = $('#track_script_checkbox');
         checkBox.prop("checked", !checkBox.prop("checked"));
@@ -370,12 +364,23 @@ function reset_to_default(field) {
     var init = function init() {
         $('#script-preview-modal').on('click', '#downloadScript', downloadScript);
 
-        $('#run_variables,#instrument_variables').on('click', '#resetValues', resetDefaultVariables);
-        $('#run_variables,#instrument_variables,#submit_jobs').on('click', '#currentScript', resetToValuesInCurrentScript);
-        document.getElementById("variableSubmit").onclick = submitForm;
+        // using this function instead of JQuery because this always runs in selenium,
+        // while JQuery only sometimes seems to run in selenium
+        function set_onclick(id, callback) {
+            const field = document.getElementById(id);
+            if (field) {
+                field.onclick = callback;
+            } else {
+                console.log("Field with id", id, "was not found on this page.");
+            }
+        }
+        set_onclick("resetValues", reset_to_initial_all);
+        set_onclick("currentScript", reset_to_default_all)
+        set_onclick("variableSubmit", submitForm)
 
+        // attaches our custom event on clicking boolean fields
         for (const elem of document.querySelectorAll("input[type=checkbox][data-type=boolean]")) {
-            elem.onclick = updateBoolean;
+            set_onclick(elem, updateBoolean)
         }
 
         $('#instrument_variables').on('click', '#track_script', toggleTrackScript);
