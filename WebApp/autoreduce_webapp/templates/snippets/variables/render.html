@@ -15,12 +15,12 @@
         <div class="col-xs-11 col-md-11">
         <input id="var-{{ type }}-{{ variable.current.sanitized_name }}" type="{% variable_type variable.current.type %}" data-type="{{ variable.current.type }}" value="{{ variable.current.value }}" data-initial="{{ variable.current.value }}" data-default="{{ variable.default.value }}"
         {% if variable.current.type == 'boolean' %}
-            class="form-check variable.current-field"
+            class="form-check variable-field"
             name="checkbox-{{ variable.current.sanitized_name }}" {% if variable.current.value.lower == 'true' %} checked {% endif %}
             />
             <input name="var-{{ type }}-{{ variable.current.sanitized_name }}" type="hidden" data-type="{{ variable.current.type }}" value="{{ variable.current.value }}" />
         {% else %}
-            class="form-control variable.current-field"
+            class="form-control variable-field"
             name="var-{{ type }}-{{ variable.current.sanitized_name }}" />
         {% endif %}
     </div>
