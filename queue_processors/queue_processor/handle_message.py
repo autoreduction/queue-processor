@@ -33,7 +33,6 @@ class HandleMessage:
     Handles messages from the queue client and forwards through various
     stages depending on the message contents.
     """
-
     def __init__(self):
         self.status = StatusUtils()
         self.instrument_variable = InstrumentVariablesUtils()

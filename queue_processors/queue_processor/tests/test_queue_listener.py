@@ -94,7 +94,6 @@ class TestQueueListener(TestCase):
 
     def test_on_message_handler_catches_exceptions(self):
         """Test on_message correctly handles an exception being raised"""
-
         def raise_expected_exception(msg):
             raise Exception(msg)
 

@@ -20,6 +20,7 @@ from utils.clients.settings.client_settings_factory import ClientSettingsFactory
 from utils.settings import ACTIVEMQ_SETTINGS
 
 
+# pylint:disable=protected-access
 class TestQueueClient(TestCase):
     """
     Exercises the queue client
@@ -119,6 +120,10 @@ class TestQueueClient(TestCase):
         mock_stomp_ack.assert_called_once_with('test', "subscription")
 
     def test_create_connection_bad_development(self):
+        """
+        Test: Exception raised
+        When: production host used in non production environment
+        """
         client = QueueClient()
         real_host = client.credentials.host
         client.credentials.host = "production.domain.com"
@@ -126,6 +131,10 @@ class TestQueueClient(TestCase):
         client.credentials.host = real_host
 
     def test_create_connection_bad_production(self):
+        """
+        Test: Exception raised
+        When: Local host used in production environment
+        """
         client = QueueClient()
         real_host = client.credentials.host
 
@@ -137,6 +146,11 @@ class TestQueueClient(TestCase):
         del os.environ["AUTOREDUCTION_PRODUCTION"]
 
     def test__test_connection_not_connected(self):
+        """
+        Test: Exception raised
+        When: test_connection called when not connected
+
+        """
         client = QueueClient()
         mock_connection = MagicMock()
         mock_connection.is_connected.return_value = False
@@ -145,6 +159,10 @@ class TestQueueClient(TestCase):
             client._test_connection()
 
     def test__test_connection_connected(self):
+        """
+        Test: test_connection returns True
+        When: Connected
+        """
         client = QueueClient()
         mock_connection = MagicMock()
         mock_connection.is_connected.return_value = True
@@ -152,6 +170,10 @@ class TestQueueClient(TestCase):
         self.assertTrue(client._test_connection())
 
     def test_subscribe(self):
+        """
+        Test: correct calls made
+        When: subscribe is called
+        """
         client = QueueClient()
         mock_connection = MagicMock()
         mock_listener = MagicMock()
