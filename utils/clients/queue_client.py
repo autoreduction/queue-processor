@@ -34,14 +34,13 @@ class QueueClient(AbstractClient):
         self._logger = logging.getLogger("queue_listener")
 
     # pylint:disable=arguments-differ
-    def connect(self, listener=None):
+    def connect(self):
         """
         Create the connection if the connection has not been created
-        :param listener: A ConnectionListener object to assign to the stomp connection, optionally
         """
         if self._connection is None or not self._connection.is_connected():
             self.disconnect()
-            self._create_connection(listener)
+            self._create_connection()
 
     def _test_connection(self):
         if not self._connection.is_connected():
@@ -63,10 +62,9 @@ class QueueClient(AbstractClient):
             self._logger.info("Disconnected from ActiveMQ.")
         self._connection = None
 
-    def _create_connection(self, listener=None):
+    def _create_connection(self):
         """
         Create the connection to the queuing service and store as self._connection
-        :param listener: A ConnectionListener object to assign to the stomp connection, optionally
         """
         inteded_for_production = "AUTOREDUCTION_PRODUCTION" in os.environ
         aimed_at_dev = self.credentials.host.startswith("127") or "dev" in str(self.credentials.host)
@@ -84,8 +82,6 @@ class QueueClient(AbstractClient):
             try:
                 host_port = [(self.credentials.host, int(self.credentials.port))]
                 connection = stomp.Connection(host_and_ports=host_port, use_ssl=False)
-                if listener:
-                    connection.set_listener('Autoreduction', listener)
                 self._logger.info("Starting connection to %s", host_port)
                 connection.connect(username=self.credentials.username, passcode=self.credentials.password, wait=True)
             except ConnectFailedException as exp:
