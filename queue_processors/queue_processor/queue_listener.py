@@ -56,6 +56,10 @@ class QueueListener(ConnectionListener):
         finally:
             self._processing = False
 
+    def on_disconnected(self):
+        self.client.connect()
+        self.client.subscribe(self)
+
     def on_message(self, headers, message):
         """ This method is where consumed messages are dealt with. It will
         consume a message. """
