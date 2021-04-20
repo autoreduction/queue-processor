@@ -32,12 +32,14 @@ class QueueClient(AbstractClient):
         self._connection = None
         self._consumer_name = consumer_name
         self._logger = logging.getLogger("queue_listener")
+        self.disconnecting = False
 
     # pylint:disable=arguments-differ
     def connect(self):
         """
         Create the connection if the connection has not been created
         """
+        self.disconnecting = False
         if self._connection is None or not self._connection.is_connected():
             self.disconnect()
             self._create_connection()
@@ -51,6 +53,7 @@ class QueueClient(AbstractClient):
         """
         Disconnect from queue service
         """
+        self.disconnecting = True
         self._logger.info("Starting disconnect from ActiveMQ...")
         if self._connection is not None and self._connection.is_connected():
             # By passing a receipt Stomp will call stop on the transport layer
