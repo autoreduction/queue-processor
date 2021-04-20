@@ -60,6 +60,7 @@ class QueueListener(ConnectionListener):
         """
         Called when the listener loses connection to activemq
         """
+        self.logger.warning("Connection to ActiveMQ lost unexpectedly, attempting to reconnect...")
         self.client.connect()
         self.client.subscribe(self)
 
