@@ -41,11 +41,6 @@ class QueueClient(AbstractClient):
             self.disconnect()
             self._create_connection()
 
-    def _test_connection(self):
-        if not self._connection.is_connected():
-            raise ConnectionException("ActiveMQ")
-        return True
-
     def disconnect(self):
         """
         Disconnect from queue service

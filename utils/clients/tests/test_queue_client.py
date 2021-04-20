@@ -18,7 +18,6 @@ from utils.clients.queue_client import QueueClient
 from utils.clients.settings.client_settings_factory import ClientSettingsFactory
 
 
-# pylint:disable=protected-access,invalid-name,missing-docstring
 class TestQueueClient(TestCase):
     """
     Exercises the queue client
@@ -48,7 +47,7 @@ class TestQueueClient(TestCase):
         """
         client = QueueClient()
         client.connect()
-        self.assertTrue(client._test_connection())
+        self.assertTrue(client._connection.is_connected())
 
     def test_connection_failed_invalid_credentials(self):
         """
@@ -80,7 +79,6 @@ class TestQueueClient(TestCase):
         mocked_connection.disconnect.assert_called_with(receipt=str(1))
         self.assertIsNone(client._connection)
 
-    # pylint:disable=no-self-use
     @patch('stomp.connect.StompConnection11.send')
     def test_send_with_raw_string(self, mock_stomp_send):
         """
