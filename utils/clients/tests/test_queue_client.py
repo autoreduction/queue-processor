@@ -117,20 +117,6 @@ class TestQueueClient(TestCase):
         client.ack("test", "subscription")
         mock_stomp_ack.assert_called_once_with('test', "subscription")
 
-    @patch('stomp.connect.StompConnection11.set_listener')
-    @patch('stomp.connect.StompConnection11.subscribe')
-    def test_subscribe_to_single_queue(self, mock_stomp_subscribe, mock_stomp_set_listener):
-        """
-        Test: subscribe_queues handles a single queue (non-list)
-        and calls stomp.subscribe_queues for it
-        When: subscribe_queues is called a single queue passed as queue_list
-        """
-        client = QueueClient()
-        client.connect()
-        client.subscribe_queues('single-queue', 'consumer', None)
-        mock_stomp_set_listener.assert_called_once_with('consumer', None)
-        mock_stomp_subscribe.assert_called_once()
-
     def test_create_connection_bad_development(self):
         client = QueueClient()
         real_host = client.credentials.host

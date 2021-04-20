@@ -16,13 +16,15 @@ import traceback
 from contextlib import contextmanager
 from typing import Tuple
 
+from stomp import ConnectionListener
+
 from model.message.message import Message
 from queue_processors.queue_processor.handle_message import HandleMessage
 from utils.clients.queue_client import QueueClient
 from utils.clients.connection_exception import ConnectionException
 
 
-class QueueListener:
+class QueueListener(ConnectionListener):
     """ Listener class that is used to consume messages from ActiveMQ. """
     def __init__(self, client: QueueClient):
         """ Initialise listener. """
@@ -86,7 +88,7 @@ class QueueListener:
                                       type(exp).__name__, exp, traceback.format_exc())
 
 
-def setup_connection(consumer_name) -> Tuple[QueueClient, QueueListener]:
+def setup_connection() -> Tuple[QueueClient, QueueListener]:
     """
     Starts the ActiveMQ connection and registers the event listener
     :return: A client connected and subscribed to the queue specified in credentials, and
@@ -100,7 +102,7 @@ def setup_connection(consumer_name) -> Tuple[QueueClient, QueueListener]:
     listener = QueueListener(activemq_client)
 
     # Subscribe to queues
-    activemq_client.subscribe_autoreduce(consumer_name, listener)
+    activemq_client.subscribe(listener)
     return activemq_client, listener
 
 
@@ -109,7 +111,7 @@ def main():
     Main method.
     :return: (Listener) returns a handle to a connected Active MQ listener
     """
-    return setup_connection('queue_processor')
+    return setup_connection()
 
 
 if __name__ == '__main__':

@@ -90,36 +90,20 @@ class QueueClient(AbstractClient):
                 connection.connect(username=self.credentials.username, passcode=self.credentials.password, wait=True)
             except ConnectFailedException as exp:
                 raise ConnectionException("ActiveMQ") from exp
-            # Sleep required to avoid using the service too quickly after establishing connection
-            # time.sleep(0.5)
             self._connection = connection
 
-    def subscribe_queues(self, queue_list, consumer_name, listener):
+    def subscribe(self, listener):
         """
-        Subscribe a listener to the provided queues
-        :param queue_list: The queue(s) to subscribe to as a string or list of strings
-        :param consumer_name: A name to assign to the consumer
-        :param listener: A ConnectionListener object to assign to the stomp connection, optionally
+        Subscribes to the data_ready queue
+        :param listener:
+        :return:
         """
-        if not isinstance(queue_list, list):
-            queue_list = [queue_list]
-        self._connection.set_listener(consumer_name, listener)
-        for queue in queue_list:
-            # prefetchSize limits the processing to 1 message at a time
-            self._connection.subscribe(destination=queue,
-                                       id=socket.getfqdn(),
-                                       ack="client-individual",
-                                       header={'activemq.prefetchSize': '1'})
-            self._logger.info("[%s] Subscribing to %s", consumer_name, queue)
-        self._logger.info("Successfully subscribed to all of the queues")
-
-    def subscribe_autoreduce(self, consumer_name, listener):
-        """
-        Subscribe to queues including DataReady
-        :param consumer_name: A name to assign to the consumer
-        :param listener: A ConnectionListener object to assign to the stomp connection, optionally
-        """
-        self.subscribe_queues(queue_list=[self.credentials.data_ready], consumer_name=consumer_name, listener=listener)
+        self._logger.info("Subscribing to data ready queue")
+        self._connection.set_listener("queue_processor", listener)
+        self._connection.subscribe(destination=self.credentials.data_ready,
+                                   id=socket.getfqdn(),
+                                   ack="client-individual",
+                                   header={"activemq.prefetchSize": "1"})
 
     def ack(self, message_id, subscription):
         """
