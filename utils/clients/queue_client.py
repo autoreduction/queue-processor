@@ -32,14 +32,11 @@ class QueueClient(AbstractClient):
         self._connection = None
         self._consumer_name = consumer_name
         self._logger = logging.getLogger("queue_listener")
-        self.disconnecting = False
 
-    # pylint:disable=arguments-differ
     def connect(self):
         """
         Create the connection if the connection has not been created
         """
-        self.disconnecting = False
         if self._connection is None or not self._connection.is_connected():
             self.disconnect()
             self._create_connection()
@@ -53,7 +50,6 @@ class QueueClient(AbstractClient):
         """
         Disconnect from queue service
         """
-        self.disconnecting = True
         self._logger.info("Starting disconnect from ActiveMQ...")
         if self._connection is not None and self._connection.is_connected():
             # By passing a receipt Stomp will call stop on the transport layer
@@ -61,6 +57,10 @@ class QueueClient(AbstractClient):
             # running). Without this step we just drop out, so the behaviour
             # is not guaranteed. UUID is used by Stomp if we don't pass in
             # a receipt so this matches the behaviour under the hood
+            try:
+                self._connection.remove_listener("queue_processor")
+            except KeyError:
+                pass  # If no listener was set for this client instance
             self._connection.disconnect(receipt=str(uuid.uuid4()))
             self._logger.info("Disconnected from ActiveMQ.")
         self._connection = None
