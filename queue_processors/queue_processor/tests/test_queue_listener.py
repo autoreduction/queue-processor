@@ -30,23 +30,17 @@ class TestQueueProcessor(TestCase):
 
     @patch('utils.clients.queue_client.QueueClient.__init__', return_value=None)
     @patch('utils.clients.queue_client.QueueClient.connect')
-    @patch('utils.clients.queue_client.QueueClient.subscribe_autoreduce')
-    def test_setup_connection(self, mock_sub_ar, mock_connect, mock_client):
+    @patch('utils.clients.queue_client.QueueClient.subscribe')
+    def test_setup_connection(self, mock_subscribe, mock_connect, mock_client):
         """
         Test: Connection to ActiveMQ setup, along with subscription to queues
         When: setup_connection is called with a consumer name
         """
         queue_listener.main()
 
+        mock_subscribe.assert_called_once()
         mock_client.assert_called_once()
         mock_connect.assert_called_once()
-        mock_sub_ar.assert_called_once()
-
-        (args, _) = mock_sub_ar.call_args
-        self.assertEqual(args[0], "queue_processor")
-        self.assertIsInstance(args[1], QueueListener)
-        self.assertIsInstance(args[1].client, QueueClient)
-
 
 class TestQueueListener(TestCase):
     # We have too many public methods as our Class Under Test does too much...
