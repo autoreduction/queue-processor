@@ -57,10 +57,13 @@ class QueueListener(ConnectionListener):
             self._processing = False
 
     def on_disconnected(self):
+        """
+        Called when the listener loses connection to activemq
+        """
         self.client.connect()
         self.client.subscribe(self)
 
-    def on_message(self, headers, message):
+    def on_message(self, headers, body):
         """ This method is where consumed messages are dealt with. It will
         consume a message. """
         with self.mark_processing():
@@ -69,10 +72,8 @@ class QueueListener(ConnectionListener):
             self.logger.info("Destination: %s Priority: %s", destination, priority)
             # Load the JSON message and header into dictionaries
             try:
-                if not isinstance(message, Message):
-                    json_string = message
-                    message = Message()
-                    message.populate(json_string)
+                message = Message()
+                message.populate(body)
             except ValueError:
                 self.logger.error("Could not decode message from %s\n\n%s", destination, traceback.format_exc())
                 return
@@ -129,7 +130,7 @@ if __name__ == '__main__':
     # print a success message to the terminal in case it's not being run through the daemon
     print("QueueClient connected and QueueListener active.")
 
-    # if running this script as main (e.g. when debigging the queue listener)
+    # if running this script as main (e.g. when debugging the queue listener)
     # the activemq connection runs async and without this sleep the process will
     # just connect to activemq then exit completely
     while True:

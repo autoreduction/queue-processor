@@ -42,8 +42,8 @@ class TestQueueProcessor(TestCase):
         mock_client.assert_called_once()
         mock_connect.assert_called_once()
 
+
 class TestQueueListener(TestCase):
-    # We have too many public methods as our Class Under Test does too much...
     """
     Exercises the Listener
     """
@@ -75,14 +75,14 @@ class TestQueueListener(TestCase):
         self.mocked_logger.error.assert_called_once()
 
     def test_on_message_unknown_topic(self):
-        "Test receiving a message on an unknown topic"
+        """Test receiving a message on an unknown topic"""
         headers = deepcopy(self.headers)
         headers["destination"] = "unknown"
         self.listener.on_message(headers, {"run_number": 1234567})
         self.mocked_logger.error.assert_called_once()
 
     def test_on_message_can_receive_a_prepopulated_message(self):
-        "Test receiving an already constructed Message object"
+        """Test receiving an already constructed Message object"""
         message = Message()
         message.populate({"run_number": 1234567})
         self.listener.on_message(self.headers, message)
@@ -94,7 +94,7 @@ class TestQueueListener(TestCase):
         self.assertIsInstance(self.mocked_handler.data_ready.call_args[0][0], Message)
 
     def test_on_message_sends_acknowledgement(self):
-        "Test that acknowledgement is sent when the message is received and parsed successfully"
+        """Test that acknowledgement is sent when the message is received and parsed successfully"""
         message = {"run_number": 1234567}
         self.listener.on_message(self.headers, message)
         self.assertFalse(self.listener.is_processing_message())
@@ -105,7 +105,7 @@ class TestQueueListener(TestCase):
         self.assertIsInstance(self.mocked_handler.data_ready.call_args[0][0], Message)
 
     def test_on_message_handler_catches_exceptions(self):
-        "Test on_message correctly handles an exception being raised"
+        """Test on_message correctly handles an exception being raised"""
 
         def raise_expected_exception(msg):
             raise Exception(msg)

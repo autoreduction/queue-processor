@@ -94,8 +94,7 @@ class QueueClient(AbstractClient):
     def subscribe(self, listener):
         """
         Subscribes to the data_ready queue
-        :param listener:
-        :return:
+        :param listener: QueueListener object
         """
         self._logger.info("Subscribing to data ready queue")
         self._connection.set_listener("queue_processor", listener)
