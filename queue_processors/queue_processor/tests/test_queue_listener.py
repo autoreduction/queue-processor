@@ -11,7 +11,7 @@ Test cases for the queue processor
 
 import uuid
 from unittest import TestCase, mock
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from copy import deepcopy
 
 from model.message.message import Message
@@ -31,7 +31,7 @@ class TestQueueProcessor(TestCase):
     @patch('utils.clients.queue_client.QueueClient.__init__', return_value=None)
     @patch('utils.clients.queue_client.QueueClient.connect')
     @patch('utils.clients.queue_client.QueueClient.subscribe')
-    def test_setup_connection(self, mock_subscribe, mock_connect, mock_client):
+    def test_setup_connection(self, mock_subscribe, mock_connect, mock_client):  # pylint:disable=no-self-use
         """
         Test: Connection to ActiveMQ setup, along with subscription to queues
         When: setup_connection is called with a consumer name
@@ -101,3 +101,15 @@ class TestQueueListener(TestCase):
         self.mocked_handler.data_ready.side_effect = raise_expected_exception
         self.listener.on_message(self.headers, {"run_number": 1234567})
         self.mocked_logger.error.assert_called_once()
+
+    def test_on_disconnected(self):
+        """Test correct calls on disconnect"""
+        mock_con = MagicMock()
+        mock_sub = MagicMock()
+        self.mocked_client.connect = mock_con
+        self.mocked_client.subscribe = mock_sub
+
+        self.listener.on_disconnected()
+
+        mock_con.assert_called_once()
+        mock_sub.assert_called_once()
