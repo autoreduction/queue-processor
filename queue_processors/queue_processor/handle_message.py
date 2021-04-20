@@ -34,9 +34,7 @@ class HandleMessage:
     stages depending on the message contents.
     """
 
-    # We cannot type hint queue listener without introducing a circular dep.
-    def __init__(self, queue_listener):
-        self._client = queue_listener
+    def __init__(self):
         self.status = StatusUtils()
         self.instrument_variable = InstrumentVariablesUtils()
 

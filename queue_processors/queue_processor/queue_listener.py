@@ -27,7 +27,7 @@ class QueueListener:
     def __init__(self, client: QueueClient):
         """ Initialise listener. """
         self.client: QueueClient = client
-        self.message_handler = HandleMessage(queue_listener=self)
+        self.message_handler = HandleMessage()
 
         self.logger = logging.getLogger("queue_listener")
 
