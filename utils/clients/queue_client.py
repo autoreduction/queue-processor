@@ -20,6 +20,7 @@ from utils.clients.abstract_client import AbstractClient
 from utils.clients.connection_exception import ConnectionException
 from utils.settings import ACTIVEMQ_SETTINGS
 
+
 class QueueClient(AbstractClient):
     """
     Class for client to access messaging service via python

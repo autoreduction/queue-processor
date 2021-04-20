@@ -8,20 +8,23 @@
 Test functionality for the activemq client
 """
 import os
+import socket
 
 from unittest import TestCase, mock
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 from model.message.message import Message
 from utils.clients.connection_exception import ConnectionException
 from utils.clients.queue_client import QueueClient
 from utils.clients.settings.client_settings_factory import ClientSettingsFactory
+from utils.settings import ACTIVEMQ_SETTINGS
 
 
 class TestQueueClient(TestCase):
     """
     Exercises the queue client
     """
+
     def test_default_init(self):
         """
         Test: Class variables are created and set
@@ -132,3 +135,31 @@ class TestQueueClient(TestCase):
 
         client.credentials.host = real_host
         del os.environ["AUTOREDUCTION_PRODUCTION"]
+
+    def test__test_connection_not_connected(self):
+        client = QueueClient()
+        mock_connection = MagicMock()
+        mock_connection.is_connected.return_value = False
+        client._connection = mock_connection
+        with self.assertRaises(ConnectionException):
+            client._test_connection()
+
+    def test__test_connection_connected(self):
+        client = QueueClient()
+        mock_connection = MagicMock()
+        mock_connection.is_connected.return_value = True
+        client._connection = mock_connection
+        self.assertTrue(client._test_connection())
+
+    def test_subscribe(self):
+        client = QueueClient()
+        mock_connection = MagicMock()
+        mock_listener = MagicMock()
+        client._connection = mock_connection
+        client.subscribe(mock_listener)
+
+        mock_connection.set_listener.assert_called_with("queue_processor", mock_listener)
+        mock_connection.subscribe.assert_called_with(destination=ACTIVEMQ_SETTINGS.data_ready,
+                                                     id=socket.getfqdn(),
+                                                     ack="client-individual",
+                                                     header={"activemq.prefetchSize": "1"})
