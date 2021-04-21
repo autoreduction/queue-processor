@@ -12,14 +12,13 @@ import os
 import shutil
 import subprocess
 import time
-from typing import Union
 import unittest
 from pathlib import Path
+from typing import Union
 
 from parameterized.parameterized import parameterized
 
 from build.settings import ACTIVEMQ_EXECUTABLE
-from build.utils.process_runner import run_process_and_log
 from model.database import access as db
 from model.message.message import Message
 from queue_processors.queue_processor.queue_listener import main
