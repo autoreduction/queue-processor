@@ -18,6 +18,7 @@ from model.message.message import Message
 from queue_processors.queue_processor import queue_listener
 from queue_processors.queue_processor.handle_message import HandleMessage
 from queue_processors.queue_processor.queue_listener import QueueListener
+from utils.clients.connection_exception import ConnectionException
 from utils.clients.queue_client import QueueClient
 
 
@@ -112,3 +113,23 @@ class TestQueueListener(TestCase):
 
         mock_con.assert_called_once()
         mock_sub.assert_called_once()
+
+    @patch("queue_processors.queue_processor.queue_listener.time.sleep")
+    def test_on_diconnected_fail_to_reconnect_retries(self, mock_sleep):
+        """
+        Test: Attempts to reconnect
+        When: Reconnect fails
+        """
+        mock_con = MagicMock()
+        mock_sub = MagicMock()
+        self.mocked_client.connect = mock_con
+        self.mocked_client.subscribe = mock_sub
+        mock_con.side_effect = [ConnectionException("AMQ"), None]
+
+        self.listener.on_disconnected()
+
+        mock_con.assert_called()
+        mock_sleep.assert_called()
+        mock_con.assert_called()
+        mock_sub.assert_called_once()
+
