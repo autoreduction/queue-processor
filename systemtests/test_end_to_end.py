@@ -149,10 +149,13 @@ class TestEndToEnd(unittest.TestCase):
     def send_and_wait_for_result(self, message):
         """Sends the message to the queue and waits until the listener has finished processing it"""
         # forces the is_processing to return True so that the listener has time to actually start processing the message
-        self.listener._processing = True  #pylint:disable=protected-access
+        self.listener._processing = True  # pylint:disable=protected-access
         self.queue_client.send('/queue/DataReady', message)
+        start_time = time.time()
         while self.listener.is_processing_message():
             time.sleep(0.5)
+            if time.time() > start_time + 120:  # Prevent waiting indefinitely and break after 2 minutes
+                break
 
         # Get Result from database
         results = self._find_run_in_database()
