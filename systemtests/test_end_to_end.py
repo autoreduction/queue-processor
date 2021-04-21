@@ -10,6 +10,7 @@ Tests that data can traverse through the autoreduction system successfully
 """
 import os
 import shutil
+import subprocess
 import time
 from typing import Union
 import unittest
@@ -17,6 +18,8 @@ from pathlib import Path
 
 from parameterized.parameterized import parameterized
 
+from build.settings import ACTIVEMQ_EXECUTABLE
+from build.utils.process_runner import run_process_and_log
 from model.database import access as db
 from model.message.message import Message
 from queue_processors.queue_processor.queue_listener import main
@@ -162,6 +165,28 @@ class TestEndToEnd(unittest.TestCase):
 
         assert results
         return results
+
+    @staticmethod
+    def _start_activemq():
+        subprocess.Popen([ACTIVEMQ_EXECUTABLE, "start"]).wait(timeout=60)
+
+    @staticmethod
+    def _stop_activemq():
+        subprocess.Popen([ACTIVEMQ_EXECUTABLE, "stop"]).wait(timeout=60)
+
+    def test_reconnect_on_activemq_failure(self):
+        """
+        Test: Listener is still listening
+        When: ActiveMQ has started after stopping
+        """
+        self._stop_activemq()
+        self._start_activemq()
+
+        file_location = self._setup_data_structures(reduce_script=REDUCE_SCRIPT, vars_script='')
+        self.data_ready_message.data = file_location
+
+        results = self.send_and_wait_for_result(self.data_ready_message)
+        self.assertEqual(1, len(results))
 
     @parameterized.expand([
         [222, 222],
