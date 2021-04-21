@@ -144,7 +144,7 @@ class TestQueueClient(TestCase):
         client.credentials.host = real_host
         del os.environ["AUTOREDUCTION_PRODUCTION"]
 
-    def test__test_connection_not_connected(self):
+    def test_test_connection_not_connected(self):
         """
         Test: Exception raised
         When: test_connection called when not connected
@@ -157,7 +157,7 @@ class TestQueueClient(TestCase):
         with self.assertRaises(ConnectionException):
             client._test_connection()
 
-    def test__test_connection_connected(self):
+    def test_test_connection_connected(self):
         """
         Test: test_connection returns True
         When: Connected
