@@ -20,7 +20,7 @@ from utils.clients.settings.client_settings_factory import ClientSettingsFactory
 from utils.settings import ACTIVEMQ_SETTINGS
 
 
-# pylint:disable=protected-access
+# pylint:disable=protected-access,no-self-use
 class TestQueueClient(TestCase):
     """
     Exercises the queue client
