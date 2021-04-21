@@ -132,4 +132,3 @@ class TestQueueListener(TestCase):
         mock_sleep.assert_called()
         mock_con.assert_called()
         mock_sub.assert_called_once()
-
