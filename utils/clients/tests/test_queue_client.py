@@ -25,7 +25,6 @@ class TestQueueClient(TestCase):
     """
     Exercises the queue client
     """
-
     def test_default_init(self):
         """
         Test: Class variables are created and set
