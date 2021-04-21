@@ -61,8 +61,13 @@ class QueueListener(ConnectionListener):
         Called when the listener loses connection to activemq
         """
         self.logger.warning("Connection to ActiveMQ lost unexpectedly, attempting to reconnect...")
-        self.client.connect()
-        self.client.subscribe(self)
+        try:
+            self.client.connect()
+            self.client.subscribe(self)
+        except ConnectionException:
+            self.logger.warning("Failed to reconnect trying again in 30 seconds")
+            time.sleep(30)
+            self.on_disconnected()
 
     def on_message(self, headers, body):
         """ This method is where consumed messages are dealt with. It will
