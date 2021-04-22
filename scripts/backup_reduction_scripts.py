@@ -70,7 +70,7 @@ def ensure_storage_exists(path: Path):
 
     :param path: The path to the directory
     """
-    path.mkdir(exist_ok=True)
+    path.mkdir(parents=True, exist_ok=True)
 
     if not path.is_dir():
         raise RuntimeError(f"Could not make the '{path}' directory.")
