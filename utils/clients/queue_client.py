@@ -71,7 +71,7 @@ class QueueClient(AbstractClient):
         """
         inteded_for_production = "AUTOREDUCTION_PRODUCTION" in os.environ
         aimed_at_dev = self.credentials.host.startswith("127") or "dev" in str(
-            self.credentials.host) or "activemq" == self.credentials.host
+            self.credentials.host) or self.credentials.host == "activemq"
         # Prevent unintentional submission to non-development envs
         if not inteded_for_production and not aimed_at_dev:
             raise RuntimeError(
