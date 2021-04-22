@@ -276,8 +276,8 @@ class TestReductionService(unittest.TestCase):
         Test importing a module that does not exist
         """
         red_script = ReductionScript(self.instrument)
-        red_script.script_path = Path("some.module.that.does.not.exist")
-        with self.assertRaises(ImportError):
+        red_script.script_path = Path("/tmp/doesnotexist_module.py")
+        with self.assertRaises(FileNotFoundError):
             red_script.load()
 
     def test_reduction_script_load_syntax_error(self):
