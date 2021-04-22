@@ -155,7 +155,7 @@
             "request": "attach",
             "connect": {
                 "host": "127.0.0.1",
-                "port": 5679
+                "port": 5680
             },
             "pathMappings": [
                 {
