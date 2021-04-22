@@ -146,5 +146,11 @@ class TestQueueClient(TestCase):
         client.credentials.host = "127.0.0.1"
         self.assertRaisesRegex(RuntimeError, ".*production environment.*", client._create_connection)
 
+        client.credentials.host = "somethingdev"
+        self.assertRaisesRegex(RuntimeError, ".*production environment.*", client._create_connection)
+
+        client.credentials.host = "activemq"
+        self.assertRaisesRegex(RuntimeError, ".*production environment.*", client._create_connection)
+
         client.credentials.host = real_host
         del os.environ["AUTOREDUCTION_PRODUCTION"]
