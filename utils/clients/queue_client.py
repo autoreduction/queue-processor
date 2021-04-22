@@ -70,7 +70,8 @@ class QueueClient(AbstractClient):
         Create the connection to the queuing service and store as self._connection
         """
         inteded_for_production = "AUTOREDUCTION_PRODUCTION" in os.environ
-        aimed_at_dev = self.credentials.host.startswith("127") or "dev" in str(self.credentials.host)
+        aimed_at_dev = self.credentials.host.startswith("127") or "dev" in str(
+            self.credentials.host) or self.credentials.host == "activemq"
         # Prevent unintentional submission to non-development envs
         if not inteded_for_production and not aimed_at_dev:
             raise RuntimeError(
