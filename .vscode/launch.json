@@ -74,8 +74,8 @@
             "django": true,
             "presentation": {
                 "hidden": false,
-                "group": "autoreduce",
-                "order": 1
+                "group": "autoreduce-native",
+                "order": 99
             },
         },
         {
@@ -86,8 +86,8 @@
             "console": "integratedTerminal",
             "presentation": {
                 "hidden": false,
-                "group": "autoreduce",
-                "order": 2
+                "group": "autoreduce-native",
+                "order": 98
             }
         },
         {

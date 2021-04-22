@@ -29,7 +29,14 @@
                 "setup.py",
                 "fixtures"
             ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Export UID:GID to $USERID",
+            "type": "shell",
+            "command": "echo 'export USERID=$(id -u):$(id -g)' > ~/.userid.sh",
             "problemMatcher": [],
+            "detail": "Exports the current user's user and group IDs so that the output files are owned by the correct user"
         },
         {
             "label": "Run Docker Queue Processor",
@@ -132,6 +139,58 @@
                 "showReuseMessage": true,
                 "clear": false
             }
+        },
+        {
+            "label": "Migrate database (with fixtures via setup.py)",
+            "type": "shell",
+            "command": "source",
+            "isBackground": true,
+            "args": [
+                "~/.userid.sh",
+                "&&",
+                "docker",
+                "run",
+                "--rm",
+                "-v",
+                "${workspaceFolder}:/autoreduce",
+                "--user",
+                "$USERID",
+                "-it",
+                "autoreduction/qp",
+                "python3",
+                "/autoreduce/setup.py",
+                "database"
+            ],
+            "problemMatcher": [],
+            "dependsOn": [
+                "Export UID:GID to $USERID"
+            ],
+        },
+        {
+            "label": "Migrate database (clean via manage.py)",
+            "type": "shell",
+            "command": "source",
+            "isBackground": true,
+            "args": [
+                "~/.userid.sh",
+                "&&",
+                "docker",
+                "run",
+                "--rm",
+                "-v",
+                "${workspaceFolder}:/autoreduce",
+                "--user",
+                "$USERID",
+                "-it",
+                "autoreduction/qp",
+                "python3",
+                "/autoreduce/WebApp/autoreduce_webapp/manage.py",
+                "migrate"
+            ],
+            "problemMatcher": [],
+            "dependsOn": [
+                "Export UID:GID to $USERID"
+            ],
         }
     ]
 }
