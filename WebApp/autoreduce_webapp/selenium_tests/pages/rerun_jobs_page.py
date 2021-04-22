@@ -7,8 +7,6 @@
 """
 Module for the run summary page model
 """
-from __future__ import annotations
-
 from django.urls.base import reverse
 from selenium.webdriver.remote.webelement import WebElement
 from selenium_tests.pages.component_mixins.footer_mixin import FooterMixin
