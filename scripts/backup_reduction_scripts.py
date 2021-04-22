@@ -117,7 +117,7 @@ def main(args):
 
     for inst in [directory for directory in os.listdir(ISIS_MOUNT_PATH) if directory.startswith("NDX")]:
         path = ISIS_MOUNT_PATH / inst / AUTOREDUCTION_PATH
-        destination = STORAGE_DIR / inst
+        destination = STORAGE_DIR / inst / AUTOREDUCTION_PATH
 
         ensure_storage_exists(destination)
 
