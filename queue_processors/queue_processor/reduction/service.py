@@ -151,8 +151,6 @@ class ReductionScript:
         module_name = os.path.splitext(self.script_path.name)[0]
         try:
             spec = spec_from_file_location(module_name, self.script_path)
-            if spec is None:
-                raise ImportError(f"Module at {self.script_path} does not exist.")
             self.module = module_from_spec(spec)
             spec.loader.exec_module(self.module)
             return self.module
@@ -161,6 +159,9 @@ class ReductionScript:
             raise
         except SyntaxError:
             logger.error("Syntax error in reduction script %s", self.script_path)
+            raise
+        except FileNotFoundError:
+            logger.error("Did not find reduction script at %s", self.script_path)
             raise
 
     def text(self) -> str:

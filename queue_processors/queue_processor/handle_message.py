@@ -13,6 +13,7 @@ For example, this may include shuffling the message to another queue,
 update relevant DB fields or logging out the status.
 """
 import logging
+import traceback
 from contextlib import contextmanager
 from typing import Optional
 from django.db import transaction
@@ -95,15 +96,15 @@ class HandleMessage:
             message = self.create_run_variables(reduction_run, message, instrument)
             self.send_message_onwards(reduction_run, message, instrument)
         except Exception as err:
-            self._handle_error(reduction_run, message, err)
+            self._handle_error(reduction_run, message, err, traceback.format_exc())
             raise
 
-    def _handle_error(self, reduction_run, message, err):
-        # couldn't save the state in the database properly - mark the run as errored
+    def _handle_error(self, reduction_run, message, err, traceback: str):
         err_msg = "Encountered error when saving run variables"
         message.message = err_msg
         self._logger.error("%s\n%s", err_msg, str(err))
         message.reduction_log = str(err)
+        message.admin_log = traceback
         self.reduction_error(reduction_run, message)
 
     def create_run_records(self, message: Message):
