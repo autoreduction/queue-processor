@@ -190,6 +190,6 @@
         //         "order": 1
         //     },
         //     "preLaunchTask": "Run Docker pytest django",
-    }
-]
+        // }
+    ]
 }
