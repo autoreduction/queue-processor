@@ -7,8 +7,6 @@
 """
 Module for the accessibility statement page model
 """
-from __future__ import annotations
-
 from django.urls.base import reverse
 from selenium.webdriver.remote.webelement import WebElement
 
