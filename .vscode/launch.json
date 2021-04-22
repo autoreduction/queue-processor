@@ -148,6 +148,48 @@
             },
             "preLaunchTask": "Run Docker Web App",
             "postDebugTask": "Kill webapp-debugpy"
-        }
-    ]
+        },
+        {
+            "name": "pytest Docker Attach",
+            "type": "python",
+            "request": "attach",
+            "connect": {
+                "host": "127.0.0.1",
+                "port": 5679
+            },
+            "pathMappings": [
+                {
+                    "localRoot": "${workspaceFolder}",
+                    "remoteRoot": "/autoreduce"
+                }
+            ],
+            "presentation": {
+                "hidden": false,
+                "group": "autoreduce-docker",
+                "order": 1
+            },
+            "preLaunchTask": "Run Docker pytest",
+        },
+        // {
+        //     "name": "pytest django Docker Attach",
+        //     "type": "python",
+        //     "request": "attach",
+        //     "connect": {
+        //         "host": "127.0.0.1",
+        //         "port": 5679
+        //     },
+        //     "pathMappings": [
+        //         {
+        //             "localRoot": "${workspaceFolder}",
+        //             "remoteRoot": "/autoreduce"
+        //         }
+        //     ],
+        //     "presentation": {
+        //         "hidden": false,
+        //         "group": "autoreduce-docker",
+        //         "order": 1
+        //     },
+        //     "preLaunchTask": "Run Docker pytest django",
+    }
+]
 }
