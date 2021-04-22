@@ -7,8 +7,6 @@
 """
 Module for the run summary page model
 """
-from __future__ import annotations
-
 from typing import List
 
 from django.urls.base import reverse
