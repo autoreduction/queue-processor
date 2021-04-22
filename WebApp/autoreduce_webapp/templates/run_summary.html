@@ -156,6 +156,7 @@
                                         <em>No data found</em>
                                     {% endif %}
                                 </div>
+                                <div id="reduction_host"><strong>Host:</strong> {{ run.reduction_host }}</div>
                             </div>
                             <div class="col-md-6">
                                 <div class="file-path">
@@ -171,10 +172,11 @@
                                     {% endif %}
                                 </div>
                                 {% if not is_skipped %}
+                                <div>
                                     <strong>Logs:</strong>
                                     <a href="#" class="js-log-display" id="show_reduction_logs">Show reduction logs</a>
+                                </div>
                                 {% endif %}
-                                <div id="reduction_host"><strong>Host:</strong> {{ run.reduction_host }}</div>
                             </div>
                         </div>
                     </div>
