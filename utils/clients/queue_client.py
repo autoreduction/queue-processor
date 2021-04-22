@@ -25,7 +25,6 @@ class QueueClient(AbstractClient):
     """
     Class for client to access messaging service via python
     """
-
     def __init__(self, credentials=None, consumer_name='queue_client'):
         if not credentials:
             credentials = ACTIVEMQ_SETTINGS
