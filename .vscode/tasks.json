@@ -166,6 +166,10 @@
                 "${workspaceFolder}:/autoreduce",
                 "--name",
                 "devtest",
+                "-e",
+                "DISPLAY=:1",
+                "-e",
+                "SELENIUM_REMOTE=1",
                 "-it",
                 "autoreduction/devtest",
                 "python3",
@@ -186,7 +190,7 @@
                 "panel": "shared",
                 "showReuseMessage": true,
                 "clear": false
-            }
+            },
         },
         {
             "label": "Kill webapp-debugpy",
@@ -292,6 +296,12 @@
             "dependsOn": [
                 "Export UID:GID to $USERID"
             ],
+        },
+        {
+            "label": "Selenium Docker",
+            "type": "shell",
+            "command": "docker run --rm -it --network=host -v /dev/shm:/dev/shm selenium/standalone-chrome:4.0.0-beta-3-prerelease-20210422",
+            "problemMatcher": [],
         }
     ]
 }

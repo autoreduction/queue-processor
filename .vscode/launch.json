@@ -5,107 +5,6 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Pytest",
-            "type": "python",
-            "request": "launch",
-            "module": "pytest",
-            "args": [
-                "-pno:django",
-                "-v",
-                "${file}"
-            ],
-            "presentation": {
-                "hidden": false,
-                "group": "autoreduce",
-            },
-            "env": {
-                "DISPLAY": ":1",
-            }
-        },
-        {
-            "name": "Pytest - Django",
-            "type": "python",
-            "request": "launch",
-            "module": "pytest",
-            "args": [
-                "-v",
-                "${file}"
-            ],
-            "django": true,
-            "presentation": {
-                "hidden": false,
-                "group": "autoreduce",
-            },
-            "env": {
-                "DISPLAY": ":1",
-                "RUNNING_VIA_PYTEST": "true"
-            }
-        },
-        {
-            "name": "Pytest - coverage",
-            "type": "python",
-            "request": "launch",
-            "module": "pytest",
-            "args": [
-                "--cov-report",
-                "html",
-                "--cov=${workspaceFolder}/queue_processors",
-                "-pno:django",
-                "-v",
-                "${file}"
-            ],
-            "presentation": {
-                "hidden": false,
-                "group": "autoreduce",
-            },
-            "env": {
-                "RUNNING_VIA_PYTEST": "true"
-            }
-        },
-        {
-            "name": "Web app",
-            "type": "python",
-            "request": "launch",
-            "cwd": "${workspaceFolder}/WebApp/autoreduce_webapp/",
-            "program": "${workspaceFolder}/WebApp/autoreduce_webapp/manage.py",
-            "args": [
-                "runserver"
-            ],
-            "django": true,
-            "presentation": {
-                "hidden": false,
-                "group": "autoreduce-native",
-                "order": 99
-            },
-        },
-        {
-            "name": "Queue Listener",
-            "type": "python",
-            "request": "launch",
-            "program": "queue_processors/queue_processor/queue_listener.py",
-            "console": "integratedTerminal",
-            "presentation": {
-                "hidden": false,
-                "group": "autoreduce-native",
-                "order": 98
-            }
-        },
-        {
-            "name": "Attach",
-            "type": "python",
-            "request": "attach",
-            "connect": {
-                "host": "127.0.0.1",
-                "port": 5678
-            },
-            "pathMappings": [
-                {
-                    "localRoot": "${workspaceFolder}",
-                    "remoteRoot": "/autoreduce"
-                }
-            ]
-        },
-        {
             "name": "Queue Processor Docker Attach",
             "type": "python",
             "request": "attach",
@@ -170,26 +69,127 @@
             },
             "preLaunchTask": "Run Docker pytest",
         },
-        // {
-        //     "name": "pytest django Docker Attach",
-        //     "type": "python",
-        //     "request": "attach",
-        //     "connect": {
-        //         "host": "127.0.0.1",
-        //         "port": 5679
-        //     },
-        //     "pathMappings": [
-        //         {
-        //             "localRoot": "${workspaceFolder}",
-        //             "remoteRoot": "/autoreduce"
-        //         }
-        //     ],
-        //     "presentation": {
-        //         "hidden": false,
-        //         "group": "autoreduce-docker",
-        //         "order": 1
-        //     },
-        //     "preLaunchTask": "Run Docker pytest django",
-        // }
+        {
+            "name": "pytest django Docker Attach",
+            "type": "python",
+            "request": "attach",
+            "connect": {
+                "host": "127.0.0.1",
+                "port": 5681
+            },
+            "pathMappings": [
+                {
+                    "localRoot": "${workspaceFolder}",
+                    "remoteRoot": "/autoreduce"
+                }
+            ],
+            "presentation": {
+                "hidden": false,
+                "group": "autoreduce-docker",
+                "order": 1
+            },
+            "preLaunchTask": "Run Docker pytest django",
+        },
+        {
+            "name": "Pytest",
+            "type": "python",
+            "request": "launch",
+            "module": "pytest",
+            "args": [
+                "-pno:django",
+                "-v",
+                "${file}"
+            ],
+            "presentation": {
+                "hidden": false,
+                "group": "autoreduce-native",
+            },
+            "env": {
+                "DISPLAY": ":1",
+            }
+        },
+        {
+            "name": "Pytest - Django",
+            "type": "python",
+            "request": "launch",
+            "module": "pytest",
+            "args": [
+                "-v",
+                "${file}"
+            ],
+            "django": true,
+            "presentation": {
+                "hidden": false,
+                "group": "autoreduce-native",
+            },
+            "env": {
+                "DISPLAY": ":1",
+                "RUNNING_VIA_PYTEST": "true"
+            }
+        },
+        {
+            "name": "Pytest - coverage",
+            "type": "python",
+            "request": "launch",
+            "module": "pytest",
+            "args": [
+                "--cov-report",
+                "html",
+                "--cov=${workspaceFolder}/queue_processors",
+                "-pno:django",
+                "-v",
+                "${file}"
+            ],
+            "presentation": {
+                "hidden": false,
+                "group": "autoreduce-native",
+            },
+            "env": {
+                "RUNNING_VIA_PYTEST": "true"
+            }
+        },
+        {
+            "name": "Web app",
+            "type": "python",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/WebApp/autoreduce_webapp/",
+            "program": "${workspaceFolder}/WebApp/autoreduce_webapp/manage.py",
+            "args": [
+                "runserver"
+            ],
+            "django": true,
+            "presentation": {
+                "hidden": false,
+                "group": "autoreduce-native",
+                "order": 99
+            },
+        },
+        {
+            "name": "Queue Listener",
+            "type": "python",
+            "request": "launch",
+            "program": "queue_processors/queue_processor/queue_listener.py",
+            "console": "integratedTerminal",
+            "presentation": {
+                "hidden": false,
+                "group": "autoreduce-native",
+                "order": 98
+            }
+        },
+        {
+            "name": "Attach",
+            "type": "python",
+            "request": "attach",
+            "connect": {
+                "host": "127.0.0.1",
+                "port": 5678
+            },
+            "pathMappings": [
+                {
+                    "localRoot": "${workspaceFolder}",
+                    "remoteRoot": "/autoreduce"
+                }
+            ]
+        },
     ]
 }
