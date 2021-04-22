@@ -38,6 +38,7 @@
             "isBackground": true,
             "args": [
                 "run",
+                "--rm",
                 "--network=host",
                 "-v",
                 "${workspaceFolder}:/autoreduce",
@@ -58,7 +59,15 @@
             "label": "Kill queue-processor-debugpy",
             "type": "shell",
             "command": "docker kill queue-processor-debugpy",
-            "problemMatcher": []
+            "problemMatcher": [],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            }
         },
         {
             "label": "Run Docker Web App",
@@ -67,6 +76,7 @@
             "isBackground": true,
             "args": [
                 "run",
+                "--rm",
                 "--network=host",
                 "-v",
                 "${workspaceFolder}:/autoreduce",
@@ -78,7 +88,7 @@
                 "-m",
                 "debugpy",
                 "--listen",
-                "5678",
+                "5679",
                 "--wait-for-client",
                 "/autoreduce/WebApp/autoreduce_webapp/manage.py",
                 "runserver"
@@ -88,7 +98,15 @@
             "label": "Kill webapp-debugpy",
             "type": "shell",
             "command": "docker kill webapp-debugpy",
-            "problemMatcher": []
+            "problemMatcher": [],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            }
         },
         {
             "label": "Run ActiveMQ Docker",
