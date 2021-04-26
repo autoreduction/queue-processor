@@ -119,7 +119,7 @@
         "pk": 6,
         "fields": {
             "name": "variable_none",
-            "value": "None",
+            "value": null,
             "type": "text",
             "is_advanced": false,
             "help_text": ""
