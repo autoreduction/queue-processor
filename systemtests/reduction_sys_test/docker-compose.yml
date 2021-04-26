@@ -1,0 +1,9 @@
+services:
+  activemq:
+    image: rmohr/activemq:5.15.9
+    ports:
+    - 6163:6163
+    - 8161:8161
+
+  queueprocessors:
+    image: autoreduction/qp
