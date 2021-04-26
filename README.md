@@ -1,5 +1,6 @@
 [![Build Status](https://github.com/ISISScientificComputing/autoreduce/workflows/Tests/badge.svg?branch=master)](https://github.com/ISISScientificComputing/autoreduce/actions?query=workflow%3ATests+branch%3Amaster)
 [![codecov](https://codecov.io/gh/ISISScientificComputing/autoreduce/branch/master/graph/badge.svg?token=ZJ1C5VE5WN)](https://codecov.io/gh/ISISScientificComputing/autoreduce)
+[![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=ISISScientificComputing/autoreduce)](https://dependabot.com)
 
 
 # Autoreduction v20.1
