@@ -16,18 +16,20 @@ import traceback
 from contextlib import contextmanager
 from typing import Tuple
 
+from stomp import ConnectionListener
+
 from model.message.message import Message
 from queue_processors.queue_processor.handle_message import HandleMessage
 from utils.clients.queue_client import QueueClient
 from utils.clients.connection_exception import ConnectionException
 
 
-class QueueListener:
+class QueueListener(ConnectionListener):
     """ Listener class that is used to consume messages from ActiveMQ. """
     def __init__(self, client: QueueClient):
         """ Initialise listener. """
         self.client: QueueClient = client
-        self.message_handler = HandleMessage(queue_listener=self)
+        self.message_handler = HandleMessage()
 
         self.logger = logging.getLogger("queue_listener")
 
@@ -54,7 +56,20 @@ class QueueListener:
         finally:
             self._processing = False
 
-    def on_message(self, headers, message):
+    def on_disconnected(self):
+        """
+        Called when the listener loses connection to activemq
+        """
+        self.logger.warning("Connection to ActiveMQ lost unexpectedly, attempting to reconnect...")
+        try:
+            self.client.connect()
+            self.client.subscribe(self)
+        except ConnectionException:
+            self.logger.warning("Failed to reconnect trying again in 30 seconds")
+            time.sleep(30)
+            self.on_disconnected()
+
+    def on_message(self, headers, body):
         """ This method is where consumed messages are dealt with. It will
         consume a message. """
         with self.mark_processing():
@@ -63,10 +78,8 @@ class QueueListener:
             self.logger.info("Destination: %s Priority: %s", destination, priority)
             # Load the JSON message and header into dictionaries
             try:
-                if not isinstance(message, Message):
-                    json_string = message
-                    message = Message()
-                    message.populate(json_string)
+                message = Message()
+                message.populate(body)
             except ValueError:
                 self.logger.error("Could not decode message from %s\n\n%s", destination, traceback.format_exc())
                 return
@@ -86,7 +99,7 @@ class QueueListener:
                                       type(exp).__name__, exp, traceback.format_exc())
 
 
-def setup_connection(consumer_name) -> Tuple[QueueClient, QueueListener]:
+def setup_connection() -> Tuple[QueueClient, QueueListener]:
     """
     Starts the ActiveMQ connection and registers the event listener
     :return: A client connected and subscribed to the queue specified in credentials, and
@@ -100,7 +113,7 @@ def setup_connection(consumer_name) -> Tuple[QueueClient, QueueListener]:
     listener = QueueListener(activemq_client)
 
     # Subscribe to queues
-    activemq_client.subscribe_autoreduce(consumer_name, listener)
+    activemq_client.subscribe(listener)
     return activemq_client, listener
 
 
@@ -109,7 +122,7 @@ def main():
     Main method.
     :return: (Listener) returns a handle to a connected Active MQ listener
     """
-    return setup_connection('queue_processor')
+    return setup_connection()
 
 
 if __name__ == '__main__':
@@ -123,7 +136,7 @@ if __name__ == '__main__':
     # print a success message to the terminal in case it's not being run through the daemon
     print("QueueClient connected and QueueListener active.")
 
-    # if running this script as main (e.g. when debigging the queue listener)
+    # if running this script as main (e.g. when debugging the queue listener)
     # the activemq connection runs async and without this sleep the process will
     # just connect to activemq then exit completely
     while True:
